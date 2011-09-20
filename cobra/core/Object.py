@@ -1,0 +1,97 @@
+#cobra.core.Object.py
+#
+#Defines common behavior of object in cobra.core
+class Object(object):
+    #__slots__ = ['id']
+    def __init__(self, the_id=None):
+        """
+        the_id: None or a string
+        
+        """
+        self.id = the_id
+    def __getstate__(self):
+        """To prevent excessive replication during deepcopy.
+        """
+        state = self.__dict__.copy()
+        if '_model' in state:
+            state['_model'] = None
+        return state
+    ## def __setstate__(self, state):
+    ##     self.__dict__.update(state)
+    ## def __getstate__(self):
+    ##     the_dict = dict([(x, eval('self.%s'%x))
+    ##                      for x in self.__slots__])
+    ##     return(the_dict)
+    ## def __setstate__(self, the_dict):
+    ##     self.id = the_dict.pop('id')
+    #Allows comparison of Objects based on ids and with ids
+    #
+    #Not the best idea.  This will be removed in the next major
+    #release
+    #
+    def __lt__(self, other):
+        if hasattr(other, 'id'):
+            x = self.id < other.id
+        elif type(other) == type(self.id):
+            x = self.id < other
+        return x
+    
+    def __le__(self, other):
+        if hasattr(other, 'id'):
+            x = self.id <= other.id
+        elif type(other) == type(self.id):
+            x = self.id <= other
+        return x
+    
+    def __gt__(self, other):
+        if hasattr(other, 'id'):
+            x = self.id > other.id
+        elif type(other) == type(self.id):
+            x = self.id > other
+        return x
+    
+    def __ge__(self, other):
+        if hasattr(other, 'id'):
+            x = self.id >= other.id
+        elif type(other) == type(self.id):
+            x = self.id >= other
+        return x
+    
+    def __ne__(self, other):
+        if hasattr(other, 'id'):
+            x = self.id != other.id
+        elif type(other) == type(self.id):
+            x = self.id != other
+        return x
+    
+    def __eq__(self, other):
+        x = False
+        if hasattr(other, 'id'):
+            x = self.id == other.id
+        elif type(other) == type(self.id):
+            x = self.id == other
+        return x
+
+    def startswith(self, x):
+        return self.id.startswith(x)
+
+    def endswith(self, x):
+        return self.id.endswith(x)
+
+    def __contains__(self, x):
+        return self.id.__contains__(x)
+
+    def __iter__(self):
+       return list(self.id).__iter__()
+
+    def __getitem__(self, index):
+        return self.id[index]
+    
+    def __getslice__(self, i, j):
+        return self.id[i:j]
+    
+    def __repr__(self):
+        return repr(self.id)
+
+    def __str__(self):
+        return str(self.id)

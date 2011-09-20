@@ -1,0 +1,45 @@
+The heart of cobra for python is in cobra/core, but the items that one will use are in the toplevel namespace:
+  cobra.Model, cobra.Reaction, cobra.Gene, cobra.Metabolite
+  use dir() and help() to learn about them or look at the code.  Some scripts (cobra/io/sbml.py) come with examples at the bottom.
+ 
+To use cobra, it is necessary to install:
+   1) NumPy 1.6 or later
+   2) SciPy 0.9 or later
+
+To perform any optimization simulations (cobra/flux_analysis/), one or more of the following must be installed:
+   1) pyGLPK 0.3 or later (http://www.tfinley.net/software/pyglpk/release.html)
+      -This requires GLPK 4.18 or later
+      -This cannot solve quadratic programming problems.
+   2) gurobi 4.0 or later (http://gurobi.com)
+      -There is a free academic license
+      -Make sure you easy_install their python module, or add it to your PYTHONPATH
+   3) ILOG/CPLEX 12.2 (http://www-01.ibm.com/software/integration/optimization/cplex-optimizer/)
+       -There is a free academic license (http://www-01.ibm.com/software/websphere/products/optimization/academic-initiative/)
+      -Make sure you easy_install their python module, or add it to your PYTHONPATH
+      -On Mac OS X, there is only a 32-bit python module for the 12.2 release.
+
+To read / write Systems Biology Markup Language (SBML) files (cobra/io/sbml.py):
+   1) libSBML 4.3.1 or later (http://sbml.org)
+      -Make sure that the python bindings are installed, if not then you'll need to compile yourself.
+
+To perform some of the statistical functions (cobra/stats/):
+  NOTE: many functions in this directory have not be audited.
+  1) rpy2 2.1.8 or later (http://rpy.sourceforge.net/rpy2.html)
+     -or, easy_install rpy2
+
+To use any of the parallel functions:
+  1) parallel python 1.6 or later (http://www.parallelpython.com/)
+    -or, easy_install pp
+
+To access the COBRA Toolbox for MATLAB (cobra/mlab/):
+  1) mlabwrap 1.1 or later (http://mlabwrap.sourceforge.net/)
+    -This is an advance topic and might be difficult to install.
+    -This will likely be difficult or impossible to run on Microsoft Windows - Good Luck.
+
+EXPERIMENTAL: To use linear algebra to calculate metabolite formulas (cobra/manipulation/balance.py):
+  Seriously, don't use this because it's not complete and going to be redesigned.
+  1) sympy 0.6.7 or later (http://sympy.org/)
+   - easy_install sympy
+
+DO NOT CONSIDER USING:
+   cobra.jython

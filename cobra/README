@@ -1,0 +1,8 @@
+cobra for python is under development at the moment and is not supported.  If you're interested have a look around, but please know that any questions posted to the mailing lists or e-mailed to us will be ignored.  
+
+it is accessible via subversion:
+  svn co https://opencobra.svn.sourceforge.net/svnroot/opencobra/pycobra/cobra
+
+don't forget to add it to your python path.  we don't have setup / install scripts at the moment.
+
+If you're really interested in using this early on then please note that it has only been tested on Mac OS X 10.6 and Ubuntu GNU/Linux 10.0.4.  As things are, a number of modules must be installed on your system (see INSTALL) to use this package, and some of them are not currently (or easily) compatible with Microsoft Windows.
