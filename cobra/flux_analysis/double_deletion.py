@@ -12,7 +12,8 @@ except:
     print 'Parallel mode is not available.  Is Parallel Python installed?'
 from cPickle import dump
 #from double_deletion import double_deletion
-from cobra.manipulation import initialize_growth_medium, delete_model_genes
+from cobra.manipulation import initialize_growth_medium
+from cobra.manipulation import delete_model_genes, undelete_model_genes
 def double_deletion_parallel(cobra_model, n_processes=4,
                              genes_of_interest=None, method='fba', the_medium=None,
                              the_problem='return', element_type='gene',
@@ -148,14 +149,14 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
 
     #BUG: Since this might be called from ppmap, the modules need to
     #be imported.  Modify ppmap to take depfuncs
-    from copy import deepcopy
     from numpy import zeros, nan
     from cobra.flux_analysis.single_deletion import single_deletion
-    from cobra.manipulation import initialize_growth_medium, delete_model_genes
+    from cobra.manipulation import initialize_growth_medium
+    from cobra.manipulation import delete_model_genes, undelete_model_genes
     ##TODO: Use keywords instead
     if isinstance(cobra_model, dict):
         tmp_dict = cobra_model
-        cobra_model = deepcopy(tmp_dict['cobra_model'])
+        cobra_model = tmp_dict['cobra_model']
         if 'gene_list_1' in tmp_dict:
             gene_list_1 = tmp_dict['gene_list_1']
         if 'gene_list_2' in tmp_dict:
@@ -171,9 +172,10 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
         if 'error_reporting' in tmp_dict:
             error_reporting = tmp_dict['error_reporting']
     else:
-        cobra_model = deepcopy(cobra_model)
+        cobra_model = cobra_model
     #this is a slow way to revert models.
-    wt_model = cobra_model.copy()
+    wt_model = cobra_model  #NOTE: It may no longer be necessary to use a wt_model
+    #due to undelete_model_genes
     if not gene_list_1:
         gene_list_1 = cobra_model.genes
     #Get default values to use if the deletions do not alter any reactions
@@ -245,7 +247,7 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
                                 print '%s / %s: %s status: %s'%(gene_1, gene_2, solver,
                                                                 the_status)   
                             #Reset the model to orginial form.
-                            cobra_model = wt_model.copy()
+                            undelete_model_genes(cobra_model)
                         else:
                             tmp_solution = basal_f
                     deletion_array[j, i] = deletion_array[i, j] = tmp_solution
@@ -290,7 +292,7 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
                                 print '%s / %s: %s status: %s'%(gene_1, gene_2, solver,
                                                             cobra_model.solution.status)
                             #Reset the model to wt form
-                            cobra_model = wt_model.copy()
+                            undelete_model_genes(cobra_model)
                         else:
                             tmp_solution = basal_f
                     deletion_array[i, j] = tmp_solution
@@ -443,7 +445,7 @@ def old_double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
     ##TODO: Use keywords instead
     if isinstance(cobra_model, dict):
         tmp_dict = cobra_model
-        cobra_model = deepcopy(tmp_dict['cobra_model'])
+        cobra_model = tmp_dict['cobra_model']
         if 'gene_list_1' in tmp_dict:
             gene_list_1 = tmp_dict['gene_list_1']
         if 'gene_list_2' in tmp_dict:
@@ -459,8 +461,8 @@ def old_double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
         if 'error_reporting' in tmp_dict:
             error_reporting = tmp_dict['error_reporting']
     else:
-        cobra_model = deepcopy(cobra_model)
-    wt_model = cobra_model.copy()
+        cobra_model = cobra_model
+    wt_model = cobra_model
     if not gene_list_1:
         gene_list_1 = cobra_model.genes
     #Get default values to use if the deletions do not alter any reactions
@@ -536,7 +538,7 @@ def old_double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
                                 print '%s / %s: %s status: %s'%(gene_1, gene_2, solver,
                                                                 the_status)
                             #Reset the model to orginial form.
-                            cobra_model = wt_model.copy()
+                            undelete_model_genes(cobra_model)
                         else:
                             tmp_solution = basal_f
                     deletion_array[j, i] = deletion_array[i, j] = tmp_solution
@@ -584,7 +586,7 @@ def old_double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
                                 print '%s / %s: %s status: %s'%(gene_1, gene_2, solver,
                                                             cobra_model.solution.status)
                             #Reset the model to the wt
-                            cobra_model = wt_model.copy()
+                            undelete_model_genes(cobra_model)
                         else:
                             tmp_solution = basal_f
                     deletion_array[i, j] = tmp_solution
@@ -592,7 +594,7 @@ def old_double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
     return({'x': gene_list_1, 'y': gene_list_2, 'data': deletion_array})
 
 
-if __name__ == '__main__' and False:
+if __name__ == '__main__':
     from cPickle import load
     from time import time
     from math import floor
@@ -639,6 +641,9 @@ if __name__ == '__main__' and False:
     for solver in solver_list:
         print 'testing solver: ' + solver
         for method, the_growth_rates in growth_dict.items():
+            if method == 'moma':
+                print "MOMA isn't functional now, check back later"
+                continue
             print '\twith method: ' + method 
             element_list_1 = the_growth_rates['x']
             element_list_2 = the_growth_rates['y']
@@ -650,7 +655,10 @@ if __name__ == '__main__' and False:
                                            element_type=element_type,
                                            solver=solver,
                                            error_reporting=error_reporting)
+
             s_data = the_solution['data']
+            print 'Double deletion simulation of %i genes ran in %1.3f seconds'%(s_data.size,
+                                                                                 time()-start_time)
             s_x = the_solution['x']
             s_y = the_solution['y']
             for gene_x in element_list_1:

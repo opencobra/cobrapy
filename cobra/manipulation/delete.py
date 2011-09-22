@@ -59,6 +59,33 @@ def prune_unused_reactions(cobra_model):
         return
 
 
+def undelete_model_genes(cobra_model):
+    """Undoes the effects of a call to delete_model_genes. Modifies cobra_model in place.
+
+    cobra_model:  A cobra.Model object
+
+    """
+
+    if cobra_model._trimmed_genes is not None:
+        [setattr(x, 'functional', True)
+         for x in cobra_model._trimmed_genes]
+    
+    if cobra_model._trimmed_reactions is not None:
+        for the_reaction, (lower_bound,
+                           upper_bound) in cobra_model._trimmed_reactions.items():
+            the_reaction.lower_bound = lower_bound
+            the_reaction.upper_bound = upper_bound
+    #
+    cobra_model._trimmed_genes = None
+    cobra_model._trimmed_reactions = None
+    cobra_model._trimmed = False
+    #Reset these to deal with potential bugs from users accessing private variables
+    for the_attribute in  ['_lower_bounds', '_upper_bounds',
+                           '_S', '_objective_coefficients']:
+        if hasattr(cobra_model, the_attribute):
+            setattr(cobra_model, the_attribute, None)
+
+        
 
 def delete_model_genes(cobra_model, gene_list,
                        cumulative_deletions=False, disable_orphans=False):
@@ -97,7 +124,9 @@ def delete_model_genes(cobra_model, gene_list,
             tmp_gene_dict = dict([(x.name, x) for x in cobra_model.genes])
         gene_list = [tmp_gene_dict[x] for x in gene_list]
 
-
+    #Make the genes non-functional
+    [setattr(x, 'functional', False)
+     for x in gene_list]
     the_reactions = set()
     [the_reactions.update(x._reaction)
      for x in gene_list]
