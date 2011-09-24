@@ -527,3 +527,21 @@ if __name__ == '__main__':
         print 'Deleting %s'%sbml_file
         unlink(sbml_file)
             
+        the_reaction = cobra_model.reactions[100]
+        print the_reaction
+        print the_reaction.gene_reaction_rule
+        print repr(the_reaction._genes)
+        the_gene = the_reaction._genes.keys()[0]
+        print the_gene
+        the_gene.remove_from_model(cobra_model)
+        print the_reaction.gene_reaction_rule
+        print repr(the_reaction._genes)
+        print 'lower bound: %f'%the_reaction.lower_bound
+        print 'upper bound: %f'%the_reaction.upper_bound
+        the_gene = the_reaction._genes.keys()[0]
+        print the_gene
+        the_gene.remove_from_model(cobra_model)
+        print the_reaction.gene_reaction_rule
+        print repr(the_reaction._genes)
+        print 'lower bound: %f'%the_reaction.lower_bound
+        print 'upper bound: %f'%the_reaction.upper_bound

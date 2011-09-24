@@ -41,7 +41,7 @@ class Reaction(Object):
         Object.__init__(self, name)
         self.reversibility = 0 #Deprecated.  This is determined by the lower
         #and upper bound
-        self.gene_reaction_rule = ''
+        self.gene_reaction_rule = '' #Deprecated
         self.subsystem = ''
         self._genes = {} #A gene and the number of copies required for the
         #reaction.  _ Indicates that it is not preferred to add a gene to a reaction

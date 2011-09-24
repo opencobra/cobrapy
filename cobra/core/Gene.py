@@ -2,6 +2,7 @@
 #######################
 #BEGIN Class Gene
 #
+import re
 from Metabolite import Metabolite
 class Gene(Metabolite):
     """A Gene is a special class of metabolite.
@@ -41,6 +42,48 @@ class Gene(Metabolite):
         self.locus_end = locus_end
         self.strand = strand
         self.functional = functional
+
+    def remove_from_model(self, the_model,
+                          make_dependent_reactions_nonfunctional=True):
+        """Removes the association
+
+        the_model: cobra.Model object.  remove the reaction from this model.
+
+        make_dependent_reactions_nonfunctional: Boolean.  If True then replace
+        the gene with 'False' in the gene association, else replace the gene
+        with 'True'
+
+        TODO:  Better handling of the gene association
+        
+        """
+        if make_dependent_reactions_nonfunctional:
+            gene_state = 'False'
+        else:
+            gene_state = 'True'
+        the_gene_re = re.compile('(^|(?<=( |\()))%s(?=( |\)|$))'%re.escape(self.id))
+        if the_model != self._model:
+            raise Exception('%s not in %s ergo it cannot be removed. (%s)'%(self,
+                                                                  the_model,
+                                                                  self._model))
+                                                            
+        self._model.genes.remove(self)
+        self._model._gene_dict.pop(self.id)
+        self._model = None
+        
+        for the_reaction in self._reaction:
+            the_reaction.gene_reaction_rule = the_gene_re.sub(gene_state,
+                                                              the_reaction.gene_reaction_rule)
+            the_reaction._genes.pop(self)
+            #Now deactivate the reaction if its gene association evaluates to False
+            the_gene_reaction_relation = the_reaction.gene_reaction_rule
+            for other_gene in the_reaction._genes:
+                other_gene_re = re.compile('(^|(?<=( |\()))%s(?=( |\)|$))'%re.escape(other_gene.id))
+                the_gene_reaction_relation = other_gene_re.sub('True', the_gene_reaction_relation)
+            #
+            if not eval(the_gene_reaction_relation):
+                the_reaction.lower_bound = 0
+                the_reaction.upper_bound = 0
+                                       
 #
 #END Class Gene
 ########################
