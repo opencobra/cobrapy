@@ -63,7 +63,7 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
     should be displayed.
 
     quadratic_component: None or 
-          scipy.sparse.array of dim(len(cobra_model.reactions),len(cobra_model.reactions))
+          scipy.sparse.dok of dim(len(cobra_model.reactions),len(cobra_model.reactions))
          If not None:
           Solves quadratic programming problems for cobra_models of the form:
           minimize: 0.5 * x' * quadratic_component * x + cobra_model._objective_coefficients' * x
@@ -148,7 +148,7 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
                 coefficient_list.append(the_reaction._metabolites[the_metabolite])
             the_linear_expressions.append(SparsePair(ind=variable_list,
                                                      val=coefficient_list))
-        if quadratic_component:
+        if quadratic_component is not None:
             quadratic_component_scaled = quadratic_component.todok()
             lp.set_problem_type(Cplex.problem_type.QP)
             lp.parameters.emphasis.numerical.set(1)
@@ -335,7 +335,7 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
 
 
     quadratic_component: None or 
-          scipy.sparse.array of dim(len(cobra_model.reactions),len(cobra_model.reactions))
+          scipy.sparse.dok of dim(len(cobra_model.reactions),len(cobra_model.reactions))
          If not None:
           Solves quadratic programming problems for cobra_models of the form:
           minimize: 0.5 * x' * quadratic_component * x + cobra_model._objective_coefficients' * x
@@ -395,7 +395,7 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
         # Integrate new variables
         lp.update()
         #Set objective to quadratic program
-        if hasattr(quadratic_component, 'todok'):
+        if quadratic_component is not None:
             quadratic_objective = QuadExpr()
             for (index_0, index_1), the_value in quadratic_component.todok().items():
                 quadratic_objective.addTerms(the_value,
@@ -517,7 +517,7 @@ def optimize_quadratic_program(cobra_model, quadratic_component,
     cobra_model._S * x (cobra_model._constraint_sense) cobra_model._b
 
     quadratic_component: Int / Float or 
-    scipy.sparse.array of dim(len(cobra_model.reactions),len(cobra_model.reactions))
+    scipy.sparse.dok of dim(len(cobra_model.reactions),len(cobra_model.reactions))
 
     DEPRECATED:  quadratic_component will be integrated with the standard optimize_solver
     calls
