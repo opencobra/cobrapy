@@ -149,6 +149,8 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
             the_linear_expressions.append(SparsePair(ind=variable_list,
                                                      val=coefficient_list))
         if quadratic_component is not None:
+            if not hasattr(quadratic_component, 'todok'):
+                raise Exception('quadratic component must be a scipy.sparse type array')
             quadratic_component_scaled = quadratic_component.todok()
             lp.set_problem_type(Cplex.problem_type.QP)
             lp.parameters.emphasis.numerical.set(1)
@@ -396,6 +398,9 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
         lp.update()
         #Set objective to quadratic program
         if quadratic_component is not None:
+            if not hasattr(quadratic_component, 'todok'):
+                raise Exception('quadratic component must be a scipy.sparse type array')
+
             quadratic_objective = QuadExpr()
             for (index_0, index_1), the_value in quadratic_component.todok().items():
                 quadratic_objective.addTerms(the_value,
