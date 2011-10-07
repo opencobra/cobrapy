@@ -9,7 +9,9 @@ from collections import defaultdict
 from numpy import mean, array,std, log10
 from cobra.tools import log_function
 from cobra.stats.stats import combine_p_values, error_weighted
-print "WARNING: cobra.io.feature_extraction is not ready for general use "
+from warnings import warn
+warn("WARNING: cobra.io.feature_extraction is not ready for general use ")
+
 def parse_file(in_file, polarity=1, return_id='accession',
                normalization=None, lowess_parameter=0.33, log_base=10):
     """Extract data from feature extraction >=9.5 files.  Returns
@@ -102,11 +104,13 @@ def parse_file_a(in_file, polarity = 1, quality_control=False):
     
     TODO merge this with parse_file
     """
+    warn('This is going to be replaced queries to a db backend to make it '+\
+         'easier to set quality filtering flags')
     with open(in_file) as in_file_handle:
         the_header = in_file_handle.readline().rstrip('\r\n').split('\t')
         while not the_header[0] == 'FEATURES':
             the_header = in_file_handle.readline().rstrip('\r\n').split('\t')
-
+        #parse the rows.  skip the non-data spots
         the_data = [x.rstrip('\r\n').split('\t')
                      for x in in_file_handle.readlines()
                     if 'GE_BrightCorner' not in x and 'DarkCorner' not in x]
@@ -118,28 +122,42 @@ def parse_file_a(in_file, polarity = 1, quality_control=False):
                        'p_value': the_header.index('PValueLogRatio'),
                        'intensity_1': the_header.index('gProcessedSignal'),
                        'intensity_2': the_header.index('rProcessedSignal')}
+    warn('Need to add in lowess normalization before collapsing to SystematicName')
     if quality_control:
+        #Get the column indices for the quality control statistics and
+        #assign the value that must be met to pass the test.
         quality_control_indices = {}
         [quality_control_indices.update({the_header.index(k): 1})
          for k in map(lambda x: x + 'IsFound', ['r','g'])
-         if k in the_header]
+         if k in the_header] #1 means the spot is found
         [[quality_control_indices.update({the_header.index(k): 0})
          for k in map(lambda x: x + y, ['r','g'])
           if k in the_header]
-         for y in ['IsSaturated', 'IsFeatNonUnifOL']]
-        quality_control_indices[the_header.index('IsManualFlag')] = 0
+         for y in ['IsSaturated', 'IsFeatNonUnifOL']] #0 means the spot is not saturatd and not a nonuniform outlier
+        
+        quality_control_indices[the_header.index('IsManualFlag')] = 0 #0 means it wasn't flagged by the user.
+        #Dictionary for holding all the different spot values to correspond to a specific SystematicName
         gene_dict = dict([(x[gene_index], defaultdict(list))
                           for x in the_data])
+
         for the_row in the_data:
+            passes_quality_control = True
             for k, v in quality_control_indices.items():
                 if int(the_row[k]) != v:
-                    continue
-            the_dict = gene_dict[the_row[gene_index]]
-            [the_dict[k].append(float(the_row[v]))
-             for k, v in column_to_index.items()]
-        [the_dict.pop(k)
-         for k, v in the_dict.items()
+                    passes_quality_control = False
+                    break
+            if passes_quality_control: #Only add in probes that pass the quality control test
+                the_dict = gene_dict[the_row[gene_index]]
+                [the_dict[k].append(float(the_row[v]))
+                 for k, v in column_to_index.items()]
+        #Now remove the genes that don't have any probes passing the quality control
+        #tests.
+        [gene_dict.pop(k)
+         for k, v in gene_dict.items()
          if len(v) == 0]
+        #[the_dict.pop(k)
+        # for k, v in the_dict.items()
+        # if len(v) == 0]
         
     else:
         gene_dict = dict([(x[gene_index], defaultdict(list))
@@ -261,6 +279,7 @@ def combine_files(file_list, annotation_file, polarity_list=None,
             polarity_list = [1]*len(file_list)
         else:
             polarity_list = list(polarity_list)
+    #Extract the values to load into the database
     [parsed_files.append(parse_file_a(the_file,
                                      the_polarity,
                                       quality_control=quality_control))
@@ -271,17 +290,24 @@ def combine_files(file_list, annotation_file, polarity_list=None,
                        time() - start_time)
         start_time = time()
 
-    #now combine measurements.  Assume that the files
-    #all have the same ids in them.
+
+    #If quality filtering is on then some genes may not exist in
+    #both files.
+    the_keys = set(parsed_files[0]).union(parsed_files[1])
     #Only look at items that are in the annotation file
-    the_keys = set(parsed_files[0]).intersection(accession_to_entrez)
+    the_keys = the_keys.intersection(accession_to_entrez)
     combined_data = {}
     the_data_fields = parsed_files[0].values()[0].keys()
     #Merge the results for each field across files into a list
     for the_key in the_keys:
         tmp_dict = combined_data[the_key] = defaultdict(list)
         for data_dict in parsed_files:
-            data_dict = data_dict[the_key]
+            #If quality filtering is on then some genes may not exist in
+            #both files.
+            try:
+                data_dict = data_dict[the_key] 
+            except:
+                continue
             [tmp_dict[the_field].append(data_dict[the_field])
              for the_field in the_data_fields]
     if print_time:
