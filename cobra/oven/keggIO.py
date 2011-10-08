@@ -64,11 +64,11 @@ def import_kegg_reactions(compartment="c", reactionlstpath=None,
 
     returns: cobra model with all of the included reactions"""
 
-    if reactionlstpath == None:
+    if reactionlstpath is None:
         reactionlstpath = reactionlst_default
-    if keggdictpath == None:
+    if keggdictpath is None:
         keggdictpath = keggdictpath_default
-    if blacklistpath == None:
+    if blacklistpath is None:
         blacklistpath = blacklistpath_default
 
     # read in kegg dictionary to translate between kegg and cobra id's

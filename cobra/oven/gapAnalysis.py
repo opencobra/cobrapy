@@ -6,7 +6,9 @@ class SUXModelMILP(cobra.Model):
     """Model with additional Universal and Exchange reactions.
     Adds corresponding dummy reactions and dummy metabolites for each added
     reaction which are used to impose MILP constraints to minimize the
-    total number of added reactions. See the figure for more information"""
+    total number of added reactions. See the figure for more
+    information on the structure of the matrix.
+    """
     def __init__(self, model, Universal,
             threshold=0.05, penalties={"Universal": 1}):
         cobra.Model.__init__(self, "")
@@ -32,6 +34,9 @@ class SUXModelMILP(cobra.Model):
         self.added_reactions = self.reactions[len(model.reactions):]
 
         # add in the dummy reactions for each added reaction
+        # a dict will map from each added reaction (the key) to
+        # the dummy reaction (the value)
+        self._dummy_reaction_map = {}
         for reaction in self.added_reactions:
             dummy_metabolite = cobra.Metabolite("dummy_met_" + reaction.id)
             dummy_metabolite._constraint_sense = "L"
@@ -42,21 +47,27 @@ class SUXModelMILP(cobra.Model):
             the_dummy_reaction.upper_bound = 1
             the_dummy_reaction.variable_kind = "integer"
             dummy_reactions.append(the_dummy_reaction)
+            self._dummy_reaction_map[reaction] = the_dummy_reaction
         self.add_reactions(dummy_reactions)
         # add in the dummy metabolite for the actual objective function
         self.objective_metabolite = cobra.Metabolite(
             "dummy_metabolite_objective_function")
         self.objective_metabolite._constraint_sense = "G"
         self.objective_metabolite._bound = self.threshold
-        self.update_objectives()
+        self._update_objectives()
         # make .add_reaction(s) call the ._add_reaction(s) functions
         self.add_reation = self._add_reaction
         self.add_reations = self._add_reactions
 
-    def update_objectives(self):
+    def _update_objectives(self):
+        """Update the metabolite which encodes the objective function
+        with the objective coefficients for the reaction, and impose
+        penalties for added reactions.
+        """
         for reaction in self.original_reactions:
             reaction.add_metabolites({self.objective_metabolite: \
                                     reaction.objective_coefficient})
+            reaction.objective_coefficient = 0
         # now make the objective coefficient the penalty
         for reaction in self.added_reactions:
             reaction.objective_coefficient = \
@@ -65,30 +76,35 @@ class SUXModelMILP(cobra.Model):
     def _add_reaction(self, reaction):
         cobra.Model.add_reaction(self, reaction)
         self.original_reactions.append(reaction)
-        self.update_objectives()
+        self._update_objectives()
 
     def _add_reactions(self, reactions):
         cobra.Model.add_reactions(self, reactions)
         self.original_reactions.extend(reaction)
-        self.update_objectives()
+        self._update_objectives()
 
     def solve(self, iterations=5):
         used_reactions = []
-        self.update_objectives()
+        numeric_error_cutoff = 0.0001
+        self._update_objectives()
         # TODO implement iterations part of the algorithm
         for i in range(1):
             self.optimize(objective_sense="minimize")
             if self.solution.f != 0:
                 pass
         for reaction in self.added_reactions:
-            if self.solution.x_dict[reaction.id] != 0:
+            # The dummy reaction should have a flux of either 0 or 1.
+            # If it is 1 (nonzero), then the reaction was used in
+            # the solution.
+            if self.solution.x_dict[self._dummy_reaction_map[
+                    reaction].id] > numeric_error_cutoff:
                 used_reactions.append(reaction)
         return used_reactions
 
 
 def growMatch(model, Universal=None):
     """runs growMatch"""
-    if Universal == None:
+    if Universal is None:
         Universal = import_kegg_reactions()
     SUX = SUXModelMILP(model, Universal)
     used_reactions = SUX.solve()
@@ -98,10 +114,16 @@ def growMatch(model, Universal=None):
 
 
 def SMILEY(model, metabolite_id, Universal=None):
-    """runs the SMILEY algorithm.
+    """runs the SMILEY algorithm to determine which gaps should be
+     filled in order for the model to create the metabolite with the
+     given metabolite_id.
+
     This function is good for running the algorithm once.
-    For more fine grain control, <TODO: write directions>"""
-    if Universal == None:
+    For more fine grain control, create a SUXModelMILP object, add a
+     demand reation for the given metabolite_id, and call the solve
+     function on the SUXModelMILP object.
+    """
+    if Universal is None:
         Universal = import_kegg_reactions()
     SUX = SUXModelMILP(model, Universal)
     # change the objective to be the metabolite
