@@ -1,12 +1,12 @@
 import csv
 import re
 import copy
-from os.path import join, abspath, dirname
+from os.path import join, abspath, split
 
 import cobra
 
 # the default file locations
-kegg_directory = join(abspath(dirname(__file__)), "kegg_files")
+kegg_directory = join(split(abspath(__file__))[0], "kegg_files")
 keggdictpath_default = join(kegg_directory, "kegg_dict.csv")
 reactionlst_default = join(kegg_directory, "reaction.lst")
 blacklistpath_default = join(kegg_directory, "kegg_blacklist.csv")

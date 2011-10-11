@@ -1,5 +1,9 @@
-from numpy import linspace, zeros, array, meshgrid, abs, empty
+from numpy import linspace, zeros, array, meshgrid, abs, empty, arange, int32
 # not all plotting libraries may be installed
+try:
+    from cobra.external.ppmap import ppmap
+except ImportError:
+    ppmap = None
 try:
     from mayavi import mlab
 except ImportError:
@@ -31,16 +35,22 @@ class phenotypePhasePlaneData:
         self.growth_rates = zeros((reaction1_npoints, reaction2_npoints))
         self.shadow_prices1 = zeros((reaction1_npoints, reaction2_npoints))
         self.shadow_prices2 = zeros((reaction1_npoints, reaction2_npoints))
-        self.segments = []
+        self.segments = zeros(self.growth_rates.shape, dtype=int32)
         self.phases = []
 
     def plot(self):
         if mlab is not None:
             self.plot_mayavi()
-        else:
+        elif pyplot is not None:
             self.plot_matplotlib()
+        else:
+            raise (ImportError, "No suitable 3D plotting package found")
 
     def plot_matplotlib(self):
+        """Use matplotlib to plot a phenotype phase plane in 3D.
+        The resulting figure may be slow to interact with in real time,
+        but will be easy to save as a vector figure.
+        returns: maptlotlib 3d subplot object"""
         if pyplot is None:
             raise (ImportError, "Error importing matplotlib 3D plotting")
         # pick colors
@@ -62,11 +72,17 @@ class phenotypePhasePlaneData:
         axes.set_ylabel(self.reaction2_name)
         axes.set_zlabel("Growth rates")
         pyplot.show()
+        return axes
 
     def plot_mayavi(self):
+        """Use matplotlib to plot a phenotype phase plane in 3D.
+        The resulting figure will be quick to interact with in real time,
+        but might be difficult to save as a vector figure.
+        returns: mlab figure object"""
         if mlab is None:
             raise (ImportError, "Error importing mayavi 3D plotting")
-        mlab.figure(bgcolor=(1, 1, 1))
+        figure = mlab.figure(bgcolor=(1, 1, 1))
+        figure.name = "Phenotype Phase Plane"
         max = 10.0
         xmax = self.reaction1_fluxes.max()
         ymax = self.reaction2_fluxes.max()
@@ -78,49 +94,80 @@ class phenotypePhasePlaneData:
         yscale = max / ymax
         zscale = max / zmax
         mlab.surf(xgrid * xscale, ygrid * yscale, self.growth_rates * zscale,
-            representation="wireframe", color=(0, 0, 0))
+            representation="wireframe", color=(0, 0, 0), figure=figure)
         mlab.mesh(xgrid * xscale, ygrid * yscale, self.growth_rates * zscale,
             scalars=self.shadow_prices1 + self.shadow_prices2, resolution=1,
-            representation="surface", opacity=0.75)
+            representation="surface", opacity=0.75, figure=figure)
         # draw axes
         mlab.outline(extent=(0, max, 0, max, 0, max))
         mlab.axes(opacity=0, ranges=[0, xmax, 0, ymax, 0, zmax])
         mlab.xlabel(self.reaction1_name)
         mlab.ylabel(self.reaction2_name)
         mlab.zlabel("Growth rates")
+        return figure
 
     def segment(self, threshold=0.005):
-        self.segments = zeros(self.growth_rates.size)
+        self.segments *= 0
         # each entry in phases will consist of the following tuple
         # ((x, y), shadow_price1, shadow_price2)
         self.phases = []
         # initialize the area to be all False
         covered_area = (self.growth_rates * 0 == 1)
         # as long as part of the area has not been covered
-        i = 0
-        j = 0
         segment_id = 0
-        while covered_area.min() == False:
+        while self.segments.min() == 0:
             segment_id += 1
+            # i and j are indices for a current point which has not been
+            # assigned a segment yet
+            i = self.segments.argmin() / self.segments.shape[0]
+            j = self.segments.argmin() % self.segments.shape[0]
+            # update the segment id for any point with a similar shadow price
+            # to the current point
             self.segments[
                 (abs(self.shadow_prices1 - self.shadow_prices1[i, j])
                     < threshold) *
                 (abs(self.shadow_prices2 - self.shadow_prices2[i, j])
-                    < threshold)] = segment_id
+                    < threshold)] += segment_id
+            # add the current point as one of the phases
             self.phases.append((
                 (self.reaction1_fluxes[i], self.reaction2_fluxes[j]),
                 self.shadow_prices1[i, j], self.shadow_prices2[i, j]))
-            covered_area += self.segments[-1]
-            i = covered_area.argmin() / covered_area.shape[0]
-            j = covered_area.argmin() % covered_area.shape[0]
 
 
-# TODO - parallelize
+def _calculate_subset(arguments):
+    """Calculate a subset of the phenotype phase plane data.
+    Store each result tuple as:
+    (i, j, growth_rate, shadow_price1, shadow_price2)"""
+    # unpack all arguments
+    for key in arguments.iterkeys():
+        exec("%s = arguments['%s']" % (key, key))
+    results = []
+    hot_start = None
+    reaction1 = model.reactions[index1]
+    reaction2 = model.reactions[index2]
+    for a, flux1 in enumerate(reaction1_fluxes):
+        i = i_list[a]
+        reaction1.lower_bound = -1 * flux1 - tolerance
+        reaction1.upper_bound = -1 * flux1 + tolerance
+        for b, flux2 in enumerate(reaction2_fluxes):
+            j = j_list[b]
+            reaction2.lower_bound = -1 * flux2 - tolerance
+            reaction2.upper_bound = -1 * flux2 + tolerance
+            hot_start = model.optimize(the_problem=hot_start)
+            if model.solution.status == "optimal":
+                results.append((i, j, model.solution.f,
+                    model.solution.y[index1],
+                    model.solution.y[index2]))
+            else:
+                results.append((i, j, 0, 0, 0))
+    return results
+
+
 def calculate_phenotype_phase_plane(model,
         reaction1_name, reaction2_name,
         reaction1_range_max=20, reaction2_range_max=20,
         reaction1_npoints=50, reaction2_npoints=50,
-        tolerance=1e-6):
+        n_processes=1, tolerance=1e-6):
     """calculates the growth rates while varying the uptake rates for two
     reactions.
 
@@ -131,44 +178,66 @@ def calculate_phenotype_phase_plane(model,
     data = calculate_phenotype_phase_plane(my_model, "EX_foo", "EX_bar")
     data.plot()
     """
-    data = phenotypePhasePlaneData(str(reaction1_name), str(reaction2_name),
+    data = phenotypePhasePlaneData(
+            str(reaction1_name), str(reaction2_name),
             reaction1_range_max, reaction2_range_max,
             reaction1_npoints, reaction2_npoints)
     # find the objects for the reactions and metabolites
-    reaction1 = model.reactions[model.reactions.index(data.reaction1_name)]
-    reaction2 = model.reactions[model.reactions.index(data.reaction2_name)]
-    metabolite1 = model.metabolites[model.metabolites.index(
-        data.reaction1_name[3:])]
-    metabolite2 = model.metabolites[model.metabolites.index(
-        data.reaction2_name[3:])]
-    # create a hot_start to help make solving faster
-    hot_start = None
-    for i in range(data.reaction1_npoints):
-        reaction1.lower_bound = -1 * data.reaction1_fluxes[i] - tolerance
-        reaction1.upper_bound = -1 * data.reaction1_fluxes[i] + tolerance
-        for j in range(data.reaction2_npoints):
-            reaction2.lower_bound = -1 * data.reaction1_fluxes[j] - tolerance
-            reaction2.upper_bound = -1 * data.reaction1_fluxes[j] + tolerance
-            hot_start = model.optimize(the_problem=hot_start)
-            if model.solution.status == "optimal":
-                data.growth_rates[i, j] = model.solution.f
-                data.shadow_prices1[i, j] = \
-                    abs(model.solution.y_dict[data.reaction1_name])
-                data.shadow_prices2[i, j] = \
-                    abs(model.solution.y_dict[data.reaction2_name])
-            else:
-                data.growth_rates[i, j] = 0
-                data.shadow_prices1[i, j] = 0
-                data.shadow_prices2[i, j] = 0
+    index1 = model.reactions.index(data.reaction1_name)
+    index2 = model.reactions.index(data.reaction2_name)
+    if n_processes > reaction1_npoints:
+        n_processes = reaction1_npoints
+    range_add = reaction1_npoints / n_processes
+    arguments_list = []
+    i = arange(reaction1_npoints)
+    j = arange(reaction2_npoints)
+    for n in range(n_processes):
+        start = n * range_add
+        if n != n_processes - 1:
+            r1_range = data.reaction1_fluxes[start:start + range_add]
+            i_list = i[start:start + range_add]
+        else:
+            r1_range = data.reaction1_fluxes[start:]
+            i_list = i[start:]
+        arguments_list.append({"model": model.copy(),
+            "index1": index1, "index2": index2,
+            "reaction1_fluxes": r1_range,
+            "reaction2_fluxes": data.reaction2_fluxes.copy(),
+            "i_list": i_list, "j_list": j.copy(),
+            "tolerance": tolerance})
+    if n_processes > 1:
+        results = list(ppmap(n_processes, _calculate_subset, arguments_list))
+    else:
+        results = [_calculate_subset(arguments_list[0])]
+    for result_list in results:
+        for result in result_list:
+            i = result[0]
+            j = result[1]
+            data.growth_rates[i, j] = result[2]
+            data.shadow_prices1[i, j] = result[3]
+            data.shadow_prices2[i, j] = result[4]
     return data
 
 
 if __name__ == "__main__":
+    from time import time
+    from os.path import join, split
+
     import cobra
     from cobra.io.sbml import create_cobra_model_from_sbml_file
-    model = create_cobra_model_from_sbml_file(
-        r"C:\Python27\Lib\site-packages\cobra\examples\files\salmonella.xml")
-    data = calculate_phenotype_phase_plane(model, 'EX_glc__D_e', 'EX_o2_e',
-        reaction1_npoints=20, reaction2_npoints=20)
-    data.segment()
+    from cobra.test import data_directory
+
+    n1 = 20
+    n2 = 20
+    the_file = join(data_directory, "salmonella.xml")
+    model = create_cobra_model_from_sbml_file(the_file)
+    print "sbml imported"
+    start_time = time()
+    data = calculate_phenotype_phase_plane(model, 'EX_glc__D_e',
+        'EX_o2_e', reaction1_npoints=n1, reaction2_npoints=n2, n_processes=1)
+    print "took %.2f seconds with 1 process" % (time() - start_time)
+    start_time = time()
+    data = calculate_phenotype_phase_plane(model, 'EX_glc__D_e',
+        'EX_o2_e', reaction1_npoints=n1, reaction2_npoints=n2, n_processes=4)
+    print "took %.2f seconds with 4 processes" % (time() - start_time)
     data.plot()
