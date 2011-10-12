@@ -1,4 +1,5 @@
+from warnings import warn
 try:
     from sbml import *
 except:
-    print 'libsbml does not appear to be installed'
+    warn ('Unable to import cobra.io.sbml.  Perhaps your external sbml libraries are not installed?')

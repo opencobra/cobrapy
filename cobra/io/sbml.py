@@ -2,6 +2,7 @@
 #this module
 #System modules
 from cobra import Model, Reaction, Metabolite, Formula
+from os.path import isfile
 from copy import deepcopy
 from numpy import zeros
 from scipy.sparse import lil_matrix
@@ -53,6 +54,9 @@ def create_cobra_model_from_sbml_file(sbml_file, old_sbml=False, legacy_metaboli
 
 	
     """
+     # Ensure that the file exists
+    if not isfile(sbml_file):
+        raise IOError('Your SBML file is not found: %s'%sbml_file)
     #Expressions to change SBML Ids to Palsson Lab Ids
     metabolite_re = re.compile('^M_')
     reaction_re = re.compile('^R_')

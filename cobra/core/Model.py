@@ -445,7 +445,8 @@ class Model(Object):
                  min_norm=0, the_problem=None, solver='glpk', 
                  error_reporting=None, tolerance_optimality=1e-6,
                  tolerance_feasibility=1e-6, tolerance_barrier=1e-10,
-                 lp_method=0, lp_parallel=-1, copy_problem=False, relax_b=None):
+                 lp_method=0, lp_parallel=-1, copy_problem=False, relax_b=None,
+                 quadratic_component=None):
         """Optimize self for self._objective_coefficients or new_objective.
 
         new_objective: Reaction, String, or Integer referring to a reaction in
@@ -483,6 +484,15 @@ class Model(Object):
 
         relax_b: Float.  Allow for error in the linear equality constraints.  Only enable if
         absolutely necessary, this can result in an inaccurate solution
+
+        quadratic_component: None or 
+        scipy.sparse.dok of dim(len(cobra_model.reactions),len(cobra_model.reactions))
+        If not None:
+          Solves quadratic programming problems for cobra_models of the form:
+          minimize: 0.5 * x' * quadratic_component * x + cobra_model._objective_coefficients' * x
+          such that,
+            cobra_model._lower_bounds <= x <= cobra_model._upper_bounds
+            cobra_model._S * x (cobra_model._constraint_sense) cobra_model._b
         
         """
         #TODO: change solver if other ones fail
@@ -499,7 +509,8 @@ class Model(Object):
                                    tolerance_feasibility=tolerance_feasibility,
                                    tolerance_barrier=tolerance_barrier,
                                    lp_method=lp_method, lp_parallel=lp_parallel,
-                                   copy_problem=copy_problem, relax_b=relax_b)
+                                   copy_problem=copy_problem, relax_b=relax_b,
+                                   quadratic_component=quadratic_component)
 
         solver_function = solver_dict.pop(solver)
         the_solution = None
