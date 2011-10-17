@@ -1,8 +1,11 @@
 #cobra.io.feature_extraction.py
 #Tools for parsing agilent feature extraction files.
 from time import time
-from rpy2.robjects import r
+from rpy2 import robjects
+r = robjects.r
 import rpy2.robjects.numpy2ri
+robjects.numpy2ri.activate()
+
 from copy import deepcopy
 import os, sys
 from collections import defaultdict
@@ -30,7 +33,7 @@ def parse_file(in_file, polarity=1, return_id='accession',
     lowess_parameter: Float.  Smoothing parameter for lowess normalization
 
     """
-    
+    raise Exception('Deprecated')
     in_file_handle = open(in_file)
     the_header = in_file_handle.readline().rstrip('\r\n').split('\t')
     while not the_header[0] == 'FEATURES':
@@ -95,8 +98,141 @@ def parse_file(in_file, polarity=1, return_id='accession',
         for k,v in the_gene_dict.items():
             the_gene_dict[k] = log10(mean(map(lambda x: 10**x, v)))
         return the_gene_dict
+def parse_file_b(in_file, polarity=1, quality_control=True, return_id='accession',
+               normalization=None, lowess_parameter=0.33, log_base=10):
+    """Extract data from feature extraction >=9.5 files.  Returns
+    the average log ratios for each return_id.
 
-def parse_file_a(in_file, polarity = 1, quality_control=False):
+    in_file: String.  Name of input file.
+
+    polarity: 1 or -1.  Indicates whether to do red over green (1) or
+    green over red.  If normalization isn't performed then the polarity
+    is multiplied by the log ratio.
+
+    return_id: 'accession' or 'probe'
+
+    normalization: 'lowess' or None
+
+    lowess_parameter: Float.  Smoothing parameter for lowess normalization
+
+    """
+    ## in_file = '/Users/danie/tg/Work/Li_et_al/Data/Feature_Extraction/for GEO/Oxam+.txt'
+    ## polarity = 1
+    ## quality_control = True
+    ## return_id = 'accession'
+    ## normalization = 'lowess'
+    ## lowess_parameter = 0.33
+    ## log_base = 10
+
+    with open(in_file) as in_file_handle:
+        the_header = in_file_handle.readline().rstrip('\r\n').split('\t')
+        while not the_header[0] == 'FEATURES':
+            the_header = in_file_handle.readline().rstrip('\r\n').split('\t')
+        #parse the rows.  skip the non-data spots
+        the_data = [x.rstrip('\r\n').split('\t')
+                     for x in in_file_handle.readlines()
+                    if 'GE_BrightCorner' not in x and 'DarkCorner' not in x]
+ 
+    if return_id.lower() == 'accession':
+        gene_index = the_header.index('SystematicName')
+    elif return_id.lower() == 'probe':
+        gene_index = the_header.index('ProbeName')
+    else:
+        raise Exception("return_id must be 'accession' or 'probe' not '%s'"%return_id)
+    column_to_index = {'log_ratio': the_header.index('LogRatio'),
+                       'log_error': the_header.index('LogRatioError'),
+                       'p_value': the_header.index('PValueLogRatio'),
+                       'intensity_1': the_header.index('gProcessedSignal'),
+                       'intensity_2': the_header.index('rProcessedSignal'),
+                       #The last two are in case lowess normalization needs to be
+                       #performed.
+                       'background_subtracted_1': the_header.index('gBGSubSignal'),
+                       'background_subtracted_2': the_header.index('rBGSubSignal')}
+    for the_row in the_data: #Speed this up
+        the_row[column_to_index['log_ratio']] = polarity*float(the_row[column_to_index['log_ratio']])
+    if polarity == -1: #Change the polarity if requested.  Doing so here makes it easier
+        #to run the calculations downstream.
+        column_to_index.update({'intensity_1': the_header.index('rProcessedSignal'),
+                                'intensity_2': the_header.index('gProcessedSignal'),
+                                'background_subtracted_1': the_header.index('rBGSubSignal'),
+                                'background_subtracted_2': the_header.index('gBGSubSignal')})
+
+    #These need to be popped because they're only used during lowess normalization
+    channel_2_index = column_to_index.pop('background_subtracted_2')
+    channel_1_index = column_to_index.pop('background_subtracted_1')
+
+    if quality_control:
+        #Get the column indices for the quality control statistics and
+        #assign the value that must be met to pass the test.
+        quality_control_indices = {}
+        [quality_control_indices.update({the_header.index(k): '1'})
+         for k in map(lambda x: x + 'IsFound', ['r','g'])
+         if k in the_header] #1 means the spot is found
+        [[quality_control_indices.update({the_header.index(k): '0'})
+         for k in map(lambda x: x + y, ['r','g'])
+          if k in the_header]
+         for y in ['IsSaturated', 'IsFeatNonUnifOL']] #0 means the spot is not saturatd and not a nonuniform outlier
+        
+        quality_control_indices[the_header.index('IsManualFlag')] = '0' #0 means it wasn't flagged by the user.
+        filtered_data = []
+        flagged_rows = []
+        for the_row in the_data:
+            the_row_is_good = True
+            for the_index, passing_flag in quality_control_indices.items():
+                if the_row[the_index] != passing_flag:
+                    the_row_is_good = False
+                    break
+            if the_row_is_good:
+                filtered_data.append(the_row)
+            else:
+                flagged_rows.append(the_row)
+        the_data = filtered_data #Use the filtered data from here on out
+
+
+    if normalization is not None and normalization.lower() == 'lowess':
+        warn('Lowess Normalization looks off, please correct')
+        #Polarity is already adjusted above
+        log_ratio_index = column_to_index['log_ratio']
+        #Now that we're not using the processed values we need to do change intensity
+        #indices to use the unprocessed intensities.
+        column_to_index['intensity_1'] = channel_1_index
+        column_to_index['intensity_2'] = channel_2_index
+        channel_2_signal = []
+        channel_1_signal = []
+        data_to_normalize = []
+        #We can't take log ratios of 0 or divide by 0
+        for the_row in the_data:
+            channel_1_value = float(the_row[channel_1_index])
+            channel_2_value = float(the_row[channel_2_index])
+            if channel_1_value > 0. and channel_2_value > 0.:
+                data_to_normalize.append(the_row)
+                channel_1_signal.append(channel_1_value)
+                channel_2_signal.append(channel_2_value)
+        the_data = data_to_normalize
+        #Now perform the lowess normalization
+        channel_2_signal = array(channel_2_signal)
+        channel_1_signal = array(channel_1_signal)
+        a = log10(channel_2_signal*channel_1_signal)/2. 
+        m = log10(channel_2_signal/channel_1_signal)
+        lowess_fit = array(r.lowess(a, m, lowess_parameter)).T
+        m = m - lowess_fit[:,1]
+        #Now update the_data list to use the normalized values
+        for the_row, the_log_ratio in zip(the_data, list(m)):
+            the_row[log_ratio_index] = float(the_log_ratio)
+    #We're returning on locus ids
+    gene_dict = dict([(x[gene_index], defaultdict(list))
+                      for x in the_data])
+    for the_row in the_data:
+        the_dict = gene_dict[the_row[gene_index]]
+        [the_dict[k].append(float(the_row[v]))
+         for k, v in column_to_index.items()]
+    #Now combined the items        
+    [collapse_fields(v) for v in gene_dict.values()]
+    return gene_dict
+    
+def parse_file_a(in_file, polarity = 1, quality_control=False,
+                 normalization=None, lowess_parameter=0.33, log_base=10,
+                 return_id='Systematic_Name'):
     """
 
     quality_control:  Boolean.  Indicates whether to exclude probes that
@@ -104,6 +240,7 @@ def parse_file_a(in_file, polarity = 1, quality_control=False):
     
     TODO merge this with parse_file
     """
+    raise Exception('This does not take polarity into account')
     warn('This is going to be replaced queries to a db backend to make it '+\
          'easier to set quality filtering flags')
     with open(in_file) as in_file_handle:
@@ -122,6 +259,7 @@ def parse_file_a(in_file, polarity = 1, quality_control=False):
                        'p_value': the_header.index('PValueLogRatio'),
                        'intensity_1': the_header.index('gProcessedSignal'),
                        'intensity_2': the_header.index('rProcessedSignal')}
+    
     warn('Need to add in lowess normalization before collapsing to SystematicName')
     if quality_control:
         #Get the column indices for the quality control statistics and
@@ -136,6 +274,8 @@ def parse_file_a(in_file, polarity = 1, quality_control=False):
          for y in ['IsSaturated', 'IsFeatNonUnifOL']] #0 means the spot is not saturatd and not a nonuniform outlier
         
         quality_control_indices[the_header.index('IsManualFlag')] = 0 #0 means it wasn't flagged by the user.
+
+
         #Dictionary for holding all the different spot values to correspond to a specific SystematicName
         gene_dict = dict([(x[gene_index], defaultdict(list))
                           for x in the_data])
@@ -280,7 +420,7 @@ def combine_files(file_list, annotation_file, polarity_list=None,
         else:
             polarity_list = list(polarity_list)
     #Extract the values to load into the database
-    [parsed_files.append(parse_file_a(the_file,
+    [parsed_files.append(parse_file_b(the_file,
                                      the_polarity,
                                       quality_control=quality_control))
      for the_file, the_polarity in zip(file_list,

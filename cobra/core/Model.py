@@ -18,6 +18,7 @@ else:
     from numpy import ones, nonzero, zeros
     from scipy import sparse
     from scipy.sparse import lil_matrix, dok_matrix
+from warnings import warn
 from copy import deepcopy
 from cobra.query import *
 from cobra.flux_analysis import optimize_cplex, optimize_glpk, optimize_gurobi
@@ -27,8 +28,12 @@ from Reaction import Reaction
 from Metabolite import Metabolite
 from Formula import Formula
 #*********************************************************************************
-#2011-05-04: danielhyduke@gmail.com
+#2011-10-11: danielhyduke@gmail.com
 #
+#We will be moving the vector / matrix related functions to a separate module
+#for advanced users to reduce confusion.  
+#
+#2011-05-04: danielhyduke@gmail.com
 #**Properties that will be made private to indicate that they need to be
 #updated if reactions / metabolites are modified, added, or removed from the
 #Model:
@@ -106,6 +111,8 @@ class Model(Object):
         self._objective_coefficients = None
         self._lower_bounds = None
         self._upper_bounds = None
+
+
     def __add__(self, other_model):
         """Adds two models. +
 
@@ -215,12 +222,22 @@ class Model(Object):
                 self._S = self._S.tolil()
 
 
-    def update_reaction(self, reaction):
+    def _update_reaction(self, reaction):
         """Updates everything associated with the reaction.id of reaction.
 
         reaction: A cobra.Reaction object, or a list of these objects.
+
+        WARNING: This function is only used after the Model has been
+        converted to matrices.  It is typically faster to access the objects
+        in the Model directly.  This function will eventually moved to another
+        module for advanced users due to the potential for mistakes.
     
         """
+        warn("WARNING: This function is only used after the Model has been " +\
+             "converted to matrices.  It is typically faster to access the objects" +\
+             "in the Model directly.  This function will eventually moved to another" +\
+             "module for advanced users due to the potential for mistakes.")
+
         if not hasattr(reaction, '__iter__'):
             reaction = [reaction]
         for the_reaction in reaction:
@@ -328,18 +345,24 @@ class Model(Object):
         self.reactions += reaction_list
 
         if update_stoichiometric_matrix:
-            self.update_stoichiometric_matrix(reaction_list)
+            self._update_stoichiometric_matrix(reaction_list)
     def construct_stoichiometric_matrix():
         """Large sparse matrices take time to construct and to read / write.
         This function allows one to let the model exists without cobra_model._S
         and then generate it at needed.
         
         """
-        self.update_stoichiometric_matrix() #This does basic construction as well.
+        self._update_stoichiometric_matrix() #This does basic construction as well.
 
-    def update_reaction_vectors(self):
+    def _update_reaction_vectors(self):
         """regenerates the _lower_bounds, _upper_bounds,
         and _objective_coefficients vectors.
+
+        WARNING: This function is only used after the Model has been
+        converted to matrices.  It is typically faster to access the objects
+        in the Model directly.  This function will eventually moved to another
+        module for advanced users due to the potential for mistakes.
+
 
         """
         lower_bounds, upper_bounds = [], []
@@ -351,8 +374,14 @@ class Model(Object):
         self._lower_bounds = array(lower_bounds)
         self._upper_bounds = array(upper_bounds)
         self._objective_coefficients = array(objective_coefficients)
-    def update_metabolite_vectors(self):
+    def _update_metabolite_vectors(self):
         """regenerates _b and _constraint_sense
+
+        WARNING: This function is only used after the Model has been
+        converted to matrices.  It is typically faster to access the objects
+        in the Model directly.  This function will eventually moved to another
+        module for advanced users due to the potential for mistakes.
+
         """
         _b, _constraint_sense = [], []
         [(_b.append(x._bound),
@@ -362,7 +391,7 @@ class Model(Object):
         self._constraint_sense = _constraint_sense
          
 
-    def update_stoichiometric_matrix(self, reaction_list=None):
+    def _update_stoichiometric_matrix(self, reaction_list=None):
         """
         reaction_list: None or a list of cobra.Reaction objects that are in
         self.reactions.  If None then reconstruct the whole matrix.
@@ -371,7 +400,12 @@ class Model(Object):
 
         In the future, we'll be able to use reactions from anywhere in the
         list
+
         
+        WARNING: This function is only used after the Model has been
+        converted to matrices.  It is typically faster to access the objects
+        in the Model directly.  This function will eventually moved to another
+        module for advanced users due to the potential for mistakes.
 
         """
         #Pretty much all of these things are unnecessary to use the objects and
@@ -437,9 +471,9 @@ class Model(Object):
     def update(self):
         """Regenerates the stoichiometric matrix and vectors
         """
-        self.update_stoichiometric_matrix()
-        self.update_reaction_vectors()
-        self.update_metabolite_vectors()
+        self._update_stoichiometric_matrix()
+        self._update_reaction_vectors()
+        self._update_metabolite_vectors()
 
     def optimize(self, new_objective=None, objective_sense='maximize',
                  min_norm=0, the_problem=None, solver='glpk', 
@@ -578,7 +612,7 @@ class Model(Object):
         return unbalanced_reactions
 
 
-    def update_metabolite_formula(self, metabolite_name, metabolite_formula):
+    def _update_metabolite_formula(self, metabolite_name, metabolite_formula):
         """Associate metabolite_formula with all self.metabolite_names that
         match metabolite_name.
 
