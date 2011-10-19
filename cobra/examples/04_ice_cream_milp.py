@@ -14,7 +14,7 @@ except:
             raise Exception("Couldn't import glpk, cplex, or gurobi")
 # simple MILP problem instance selling ice cream cones and popsicles in a COBRAesque way
 
-cone_selling_price = 6.
+cone_selling_price = 7.
 cone_production_cost = 3.
 popsicle_selling_price = 2.
 popsicle_production_cost = 1.
@@ -131,7 +131,7 @@ print('Objective value is: %1.2f'%cobra_model.solution.f)
 for the_reaction, the_value in cobra_model.solution.x_dict.items():
     print '%s: %1.2f'%(the_reaction, the_value)
 print
-print('So we are currently making only cones since that is what yields the highest profit...\nWhat happens when we impose the MILP constraints?')
+print('Who wants 1/3 of a cone, WTF???  Cones and popsicles are units aka integers, reformulate as MILP')
 Cone_production.variable_kind = 'integer'
 Cone_production.upper_bound = 50000;
 Popsicle_production.variable_kind = 'integer'
@@ -149,4 +149,4 @@ for the_reaction, the_value in cobra_model.solution.x_dict.items():
 
 
 print
-print('We now make a popsicle since otherwise we would not produce anything with our remaining $1.\n')
+print('We now make full items\n')
