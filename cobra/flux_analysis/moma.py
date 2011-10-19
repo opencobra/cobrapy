@@ -190,18 +190,20 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver='gurobi',
         print 'Took %f seconds to update combined model'%(time()-start_time)
         start_time = time()
         
-    the_solution = optimize_quadratic_program(cobra_model,objective_sense='minimize',
+    the_result = optimize_quadratic_program(cobra_model,objective_sense='minimize',
                                               quadratic_component=quadratic_component,
                                               the_problem=the_problem, solver=solver,
                                               tolerance_optimality=tolerance_optimality,
                                               tolerance_feasibility=tolerance_feasibility,
                                               lp_method=lp_method, reuse_basis=reuse_basis)
+    the_problem = the_result['the_problem']
+    the_solution = the_result['the_problem']
 
     if print_time:
         print 'Took %f seconds to solve problem'%(time()-start_time)
         start_time = time()
     mutant_dict = {}
-    x_vector = the_solution.pop('x')
+    x_vector = the_solution.x
     if hasattr(x_vector, 'flatten'):
         x_vector = x_vector.flatten()
     mutant_dict['x'] = mutant_fluxes = array(x_vector[1*number_of_reactions:2*number_of_reactions])
@@ -210,9 +212,9 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver='gurobi',
     wt_model.solution.x = array(x_vector[:number_of_reactions])
     mutant_dict['objective_value'] = mutant_f = float(matrix(mutant_fluxes)*matrix([x.objective_coefficient
                                                                                     for x in mutant_model.reactions]).T)
-    mutant_dict['status'] = the_solution.pop('status')
+    mutant_dict['status'] = the_solution.status
     mutant_dict['flux_difference'] = flux_difference = sum((wt_model.solution.x - mutant_fluxes)**2)
-    mutant_dict['the_problem'] = the_solution.pop('the_problem')
+    mutant_dict['the_problem'] = the_problem
     mutant_dict['combined_model'] = combined_model
     if print_time:
         print 'Took %f seconds to assemble solution'%(time()-start_time)

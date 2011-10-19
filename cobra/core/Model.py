@@ -23,7 +23,6 @@ from copy import deepcopy
 from cobra.query import *
 from cobra.flux_analysis import optimize_cplex, optimize_glpk, optimize_gurobi
 from Object import Object
-from Solution import Solution
 from Reaction import Reaction
 from Metabolite import Metabolite
 from Formula import Formula
@@ -567,10 +566,7 @@ class Model(Object):
             self.solution = None
             return(the_solution)
         else:
-            self.solution = Solution(the_solution['objective value'],
-                                     array(the_solution['x']),
-                                     x_dict=the_solution['x_dict'],
-                                     status=the_solution['status'])
+            self.solution = the_solution['the_solution']
             return(the_solution['the_problem'])
 
     def get_active_genes(self):

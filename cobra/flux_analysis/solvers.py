@@ -2,7 +2,7 @@
 #Converts cobra.Model objects into problems for the LP/QP solvers.
 
 #TODO: Speed up problem construction for each of the optimize routines.
-
+from cobra.core.Solution import Solution
 from time import time
 def update_objective(cobra_model, the_objectives):
     """Revised to take advantage of the new Reaction classes.
@@ -291,21 +291,31 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
     status = lp.status
     if status in ['optimal', 'MIP_optimal']:
         objective_value = lp.solution.get_objective_value()
+        #This can be sped up a little
         x_dict = dict(zip(lp.variables.get_names(),
                      lp.solution.get_values()))
         x = array(lp.solution.get_values())
         x = x.reshape(x.shape[0],1)
+        y_dict = dict(zip(lp.variables.get_names(),
+                          lp.solution.get_dual_values()))
+        y = array(lp.solution.get_dual_values())
+        y = y.reshape(y.shape[0],1)
+
     else:
         objective_value = nan
         x = [nan]*lp.variables.get_num()
         x_dict = dict(zip(lp.variables.get_names(), x))
         x = array(x).reshape(len(x),1)
+        y = [nan]*lp.variables.get_num()
+        y_dict = dict(zip(lp.variables.get_names(), y))
+        y = array(y).reshape(len(y),1)
+        
         if error_reporting:
             print 'cplex failed: %s'%lp.status
 
-
-    solution = {'the_problem': lp, 'objective value': objective_value,
-                'status': status, 'x': array(x), 'x_dict': x_dict}
+    the_solution = Solution(objective_value, x=array(x), x_dict=x_dict,
+                            status=status, y=array(y), y_dict=y_dict)
+    solution = {'the_problem': lp, 'the_solution': the_solution}
     return solution    
    
 
@@ -516,8 +526,9 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
         objective_value = nan
         if error_reporting:
             print 'gurobi failed: %s'%lp.status  
-    solution = {'the_problem': lp, 'objective value': objective_value,
-                'status': status, 'x': array(x), 'x_dict': x_dict}
+    the_solution = Solution(objective_value, x=array(x), x_dict=x_dict,
+                            status=status)
+    solution = {'the_problem': lp, 'the_solution': the_solution}
     return solution
 
 
@@ -540,43 +551,45 @@ def optimize_quadratic_program(cobra_model, quadratic_component,
     calls
 
     """
-    if solver == 'glpk' and hasattr(quadratic_component, 'todok'):
-        the_problem = 'return'
-        print "GLPK can't solve MOMA or quadratic programs.  " +\
-              "I'll see if you have gurobi or cplex installed"
-        try:
-            import cplex
-            solver = 'cplex'
-        except:
-            try:
-                import gurobipy
-                solver = 'gurobi'
-            except:
-                raise Exception("Couldn't load cplex or gurobi and glpk can't solve MOMA problems")
-    if solver.lower() == 'gurobi':
-        the_solution = optimize_gurobi(cobra_model,objective_sense='minimize',
-                                       quadratic_component=quadratic_component,
-                                       the_problem=the_problem,
-                                       tolerance_optimality=tolerance_optimality,
-                                       tolerance_feasibility=tolerance_feasibility,
-                                       lp_method=lp_method, reuse_basis=reuse_basis)
+    raise Exception('optimize_quadratic_component is deprecated.  just pass an hessian\n'+\
+                    'to the specific optimize_* call')
+    ## if solver == 'glpk' and hasattr(quadratic_component, 'todok'):
+    ##     the_problem = 'return'
+    ##     print "GLPK can't solve MOMA or quadratic programs.  " +\
+    ##           "I'll see if you have gurobi or cplex installed"
+    ##     try:
+    ##         import cplex
+    ##         solver = 'cplex'
+    ##     except:
+    ##         try:
+    ##             import gurobipy
+    ##             solver = 'gurobi'
+    ##         except:
+    ##             raise Exception("Couldn't load cplex or gurobi and glpk can't solve MOMA problems")
+    ## if solver.lower() == 'gurobi':
+    ##     the_solution = optimize_gurobi(cobra_model,objective_sense='minimize',
+    ##                                    quadratic_component=quadratic_component,
+    ##                                    the_problem=the_problem,
+    ##                                    tolerance_optimality=tolerance_optimality,
+    ##                                    tolerance_feasibility=tolerance_feasibility,
+    ##                                    lp_method=lp_method, reuse_basis=reuse_basis)
 
-    elif solver.lower() == 'cplex':
-        the_solution = optimize_cplex(cobra_model,objective_sense='minimize',
-                                      the_problem=the_problem,
-                                      tolerance_optimality=tolerance_optimality,
-                                      tolerance_feasibility=tolerance_feasibility,
-                                      lp_method=lp_method,
-                                      quadratic_component=quadratic_component,
-                                      reuse_basis=reuse_basis)
-    elif solver.lower() == 'glpk':
-        the_solution = optimize_gurobi(cobra_model,objective_sense='minimize',
-                                       quadratic_component=quadratic_component,
-                                       the_problem=the_problem,
-                                       tolerance_optimality=tolerance_optimality,
-                                       tolerance_feasibility=tolerance_feasibility,
-                                       lp_method=lp_method, reuse_basis=reuse_basis)
-    return the_solution
+    ## elif solver.lower() == 'cplex':
+    ##     the_solution = optimize_cplex(cobra_model,objective_sense='minimize',
+    ##                                   the_problem=the_problem,
+    ##                                   tolerance_optimality=tolerance_optimality,
+    ##                                   tolerance_feasibility=tolerance_feasibility,
+    ##                                   lp_method=lp_method,
+    ##                                   quadratic_component=quadratic_component,
+    ##                                   reuse_basis=reuse_basis)
+    ## elif solver.lower() == 'glpk':
+    ##     the_solution = optimize_gurobi(cobra_model,objective_sense='minimize',
+    ##                                    quadratic_component=quadratic_component,
+    ##                                    the_problem=the_problem,
+    ##                                    tolerance_optimality=tolerance_optimality,
+    ##                                    tolerance_feasibility=tolerance_feasibility,
+    ##                                    lp_method=lp_method, reuse_basis=reuse_basis)
+    ## return the_solution
 
 
 
@@ -770,7 +783,9 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
     if print_solver_time:
         print 'simplex time: %f'%(time() - start_time)
     x = []
+    y = []
     x_dict = {}
+    y_dict = {}
     status = lp.status
     if status == 'opt':
         objective_value = lp.obj.value
@@ -779,10 +794,15 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
         objective_value = nan
         if error_reporting:
             print 'glpk failed: %s'%lp.status
-    [(x.append(float(c.primal)), x_dict.update({c.name:c.primal})) for c in lp.cols]
-    solution = {'the_problem': lp, 'status': status,
-                'objective value': objective_value,
-                'x': array(x), 'x_dict': x_dict}
+    [(x.append(float(c.primal)),
+      x_dict.update({c.name:c.primal}),
+      y.append(float(c.dual)),
+      y_dict.update({c.name:c.dual})) for c in lp.cols]
+    the_solution = Solution(objective_value, x=array(x), x_dict=x_dict,
+                            y=array(y), y_dict=y_dict,
+                            status=status)
+    solution = {'the_problem': lp, 'the_solution': the_solution}
+
     return solution
 
 
@@ -817,13 +837,17 @@ if __name__ == '__main__':
     for the_solver, the_function in solver_dict.items():
         print 'testing ' + the_solver
         start_time = time()
-        the_solution = the_function(cobra_model, the_problem='return', print_solver_time=True)
+        the_result = the_function(cobra_model, the_problem='return', print_solver_time=True)
+        the_problem = the_result['the_problem']
+        the_solution = the_result['the_solution']
         print '%s cold start: %f'%(the_solver, time() - start_time)
-        if round(the_solution['objective value'], 2) != the_growth_rate:
-            print 'Simulation failed %f to match expectation %f'%(the_solution['objective value'],
+        if round(the_solution.f, 2) != the_growth_rate:
+            print 'Simulation failed %f to match expectation %f'%(the_solution.f,
                                                                   the_growth_rate)
-        the_solution = the_function(cobra_model, the_problem=the_solution['the_problem'], print_solver_time=True)
+        the_solution = the_function(cobra_model, the_problem=the_problem, print_solver_time=True)
+        the_problem = the_result['the_problem']
+        the_solution = the_result['the_solution']
         print '%s hot start: %f'%(the_solver, time() - start_time)
-        if round(the_solution['objective value'], 2) != the_growth_rate:
-            print 'Simulation failed %f to match expectation %f'%(the_solution['objective value'],
+        if round(the_solution.f, 2) != the_growth_rate:
+            print 'Simulation failed %f to match expectation %f'%(the_solution.f,
                                                                   the_growth_rate)                                                                 
