@@ -83,8 +83,6 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
          hot start: 0.05 seconds (slow due to copying the LP)
 
     """
-    variable_kind_dict = {'continuous': 'C',
-                          'integer': 'I'}
     if relax_b is not None:
         raise Exception('Need to reimplement constraint relaxation')
     from numpy import array, nan, zeros
@@ -94,6 +92,9 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
         start_time = time()
     try:
         from cplex import Cplex, SparsePair
+        variable_kind_dict = {'continuous': Cplex.variables.type.continuous,
+                              'integer': Cplex.variables.type.integer}
+
     except ImportError as e:
         import sys
         if 'wrong architecture' in e[0] and sys.maxsize > 2**32:
@@ -118,11 +119,12 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
           variable_names.append(x.id),
           variable_kinds.append(variable_kind_dict[x.variable_kind]))
          for x in cobra_model.reactions]
-        variable_kinds = reduce(lambda x, y: x + y, variable_kinds) 
+#        variable_kinds = reduce(lambda x, y: x + y, variable_kinds) 
         lp.variables.add(obj=objective_coefficients,
                          lb=lower_bounds,
                          ub=upper_bounds,
-                         names=variable_names)
+                         names=variable_names,
+                         types=variable_kinds)
         
         if relax_b:
             raise Exception('need to reimplement relax_b')
@@ -152,7 +154,7 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
             if not hasattr(quadratic_component, 'todok'):
                 raise Exception('quadratic component must be a scipy.sparse type array')
             quadratic_component_scaled = quadratic_component.todok()
-            lp.set_problem_type(Cplex.problem_type.QP)
+
             lp.parameters.emphasis.numerical.set(1)
             for k, v in quadratic_component_scaled.items():
                 lp.objective.set_quadratic_coefficients(int(k[0]), int(k[1]), v)
@@ -174,6 +176,16 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
         if error_reporting == 'time':
             print 'setup new problem: ' + repr(time()-start_time)
             start_time = time()
+        #Set the problem type as cplex doesn't appear to do this correctly
+        problem_type = Cplex.problem_type.LP
+        if Cplex.variables.type.integer in variable_kinds:
+            if quadratic_component is not None:
+                problem_type = Cplex.problem.type.MIQP
+            else:
+                problem_type = Cplex.problem_type.MILP
+        elif quadratic_component is not None:
+            problem_type = Cplex.problem_type.MIQP
+        lp.set_problem_type(problem_type)
     else:
         if copy_problem:
             lp = Cplex(the_problem)
@@ -277,7 +289,7 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
     x = []
     x_dict = {}
     status = lp.status
-    if status in ['optimal', 'num_best']:
+    if status in ['optimal', 'MIP_optimal']:
         objective_value = lp.solution.get_objective_value()
         x_dict = dict(zip(lp.variables.get_names(),
                      lp.solution.get_values()))
