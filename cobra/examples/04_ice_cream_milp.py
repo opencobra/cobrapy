@@ -8,7 +8,7 @@ except:
         solver = 'cplex'
     except:
         try:
-            from gurobipy import Model
+            from gurobipy import Model as gurobi_model
             solver = 'gurobi'
         except:
             raise Exception("Couldn't import glpk, cplex, or gurobi")
@@ -130,6 +130,11 @@ print('Objective value is: %1.2f'%cobra_model.solution.f)
 
 for the_reaction, the_value in cobra_model.solution.x_dict.items():
     print '%s: %1.2f'%(the_reaction, the_value)
+
+
+
+
+
 print
 print('Who wants 1/3 of a cone, WTF???  Cones and popsicles are units aka integers, reformulate as MILP')
 Cone_production.variable_kind = 'integer'
