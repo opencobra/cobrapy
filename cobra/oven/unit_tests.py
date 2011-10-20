@@ -1,8 +1,10 @@
 import unittest
 import warnings
 from cPickle import load
+import sys
 
 import cobra
+from cobra.test import data_directory, salmonella_sbml, salmonella_pickle
 
 # libraries which may or may not be installed
 libraries = ["libsbml", "glpk", "gurobipy", "cplex"]
@@ -12,19 +14,16 @@ for library in libraries:
     except ImportError:
         exec("%s = None" % library)
 
-data_directory = "../test/data/"
+
+class CobraTestCase(unittest.TestCase):
+    def setUp(self):
+        infile = open(salmonella_pickle, "rb")
+        self.model = load(infile)
+        infile.close()
 
 
-def setUp(self):
-    infile = open(data_directory + "salmonella.pickle", "rb")
-    self.model = load(infile)
-    infile.close()
-
-
-class TestCobraCore(unittest.TestCase):
+class TestCobraCore(CobraTestCase):
     """test core cobra functions"""
-
-    setUp = setUp
 
     def test_add_reaction(self):
         """test adding and deleting reactions"""
@@ -63,12 +62,10 @@ class TestCobraCore(unittest.TestCase):
             len(model_copy.reactions))
 
 
-class TestCobraFlux_analysis(unittest.TestCase):
+class TestCobraFlux_analysis(CobraTestCase):
 
     def setUp(self):
-        infile = open(data_directory + "salmonella.pickle", "rb")
-        self.model = load(infile)
-        infile.close()
+        CobraTestCase.setUp(self)
         self.old_solution = self.model.solution.f
 
     @unittest.skipIf(glpk is None, "glpk is required")
@@ -90,16 +87,15 @@ class TestCobraFlux_analysis(unittest.TestCase):
         self.assertAlmostEqual(self.model.solution.f, old_solution, places=5)
 
 
-class TestCobraIO(unittest.TestCase):
-
-    setUp = setUp
+class TestCobraIO(CobraTestCase):
 
     @unittest.skipIf(libsbml is None, "libsbml is required")
     def test_sbml_read(self):
         with warnings.catch_warnings(record=True) as w:
             from cobra.io.sbml import create_cobra_model_from_sbml_file
-            model = create_cobra_model_from_sbml_file("data/salmonella.xml")
+            model = create_cobra_model_from_sbml_file(salmonella_sbml)
         self.assertEqual(len(model.reactions), len(self.model.reactions))
+        # make sure that an error is raised when given a nonexistent file
         self.assertRaises(IOError, create_cobra_model_from_sbml_file,
             "not_a_real_file_at_all")
 
@@ -108,5 +104,9 @@ class TestCobraIO(unittest.TestCase):
         from cobra.io.sbml import write_cobra_model_to_sbml_file
         write_cobra_model_to_sbml_file(self.model, "salmonella_out.xml")
 
+# make a test suite to run all of the tests
+loader = unittest.TestLoader()
+suite = loader.loadTestsFromModule(sys.modules[__name__])
+
 if __name__ == "__main__":
-    unittest.main(verbosity=2)
+    unittest.TextTestRunner(verbosity=2).run(suite)
