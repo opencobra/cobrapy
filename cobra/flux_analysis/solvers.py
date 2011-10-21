@@ -119,7 +119,6 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
           variable_names.append(x.id),
           variable_kinds.append(variable_kind_dict[x.variable_kind]))
          for x in cobra_model.reactions]
-#        variable_kinds = reduce(lambda x, y: x + y, variable_kinds) 
         lp.variables.add(obj=objective_coefficients,
                          lb=lower_bounds,
                          ub=upper_bounds,
@@ -180,7 +179,7 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
         problem_type = Cplex.problem_type.LP
         if Cplex.variables.type.integer in variable_kinds:
             if quadratic_component is not None:
-                problem_type = Cplex.problem.type.MIQP
+                problem_type = Cplex.problem_type.MIQP
             else:
                 problem_type = Cplex.problem_type.MILP
         elif quadratic_component is not None:
@@ -289,32 +288,32 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
     x = []
     x_dict = {}
     status = lp.status
+    #TODO: It might be able to speed this up a little.
     if status in ['optimal', 'MIP_optimal']:
+        status = 'optimal'
         objective_value = lp.solution.get_objective_value()
         #This can be sped up a little
         x_dict = dict(zip(lp.variables.get_names(),
                      lp.solution.get_values()))
         x = array(lp.solution.get_values())
         x = x.reshape(x.shape[0],1)
-        y_dict = dict(zip(lp.variables.get_names(),
-                          lp.solution.get_dual_values()))
-        y = array(lp.solution.get_dual_values())
-        y = y.reshape(y.shape[0],1)
+        #MIP's don't have duals
+        if lp.get_problem_type() in (Cplex.problem_type.MIQP,
+                                     Cplex.problem_type.MILP):
 
+            y = y_dict = None
+        else:
+            y_dict = dict(zip(lp.variables.get_names(),
+                              lp.solution.get_dual_values()))
+            y = array(lp.solution.get_dual_values())
+            y = y.reshape(y.shape[0],1)
     else:
-        objective_value = nan
-        x = [nan]*lp.variables.get_num()
-        x_dict = dict(zip(lp.variables.get_names(), x))
-        x = array(x).reshape(len(x),1)
-        y = [nan]*lp.variables.get_num()
-        y_dict = dict(zip(lp.variables.get_names(), y))
-        y = array(y).reshape(len(y),1)
-        
+        x = y = x_dict = y_dict = objective_value = None
         if error_reporting:
             print 'cplex failed: %s'%lp.status
 
-    the_solution = Solution(objective_value, x=array(x), x_dict=x_dict,
-                            status=status, y=array(y), y_dict=y_dict)
+    the_solution = Solution(objective_value, x=x, x_dict=x_dict,
+                            status=status, y=y, y_dict=y_dict)
     solution = {'the_problem': lp, 'the_solution': the_solution}
     return solution    
    
@@ -509,24 +508,30 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
     if print_solver_time:
         print 'optimize time: %f'%(time() - start_time)
     x_dict = {}
+    y_dict = {}
+    
     if lp.status == GRB.OPTIMAL:
-        [x_dict.update({v.VarName: v.X}) for v in lp.getVars()]
-    else:
-        x_dict = dict([(x, nan) for x in cobra_model.reactions])
-    if hasattr(cobra_model.reactions[0], 'id'):
-        x = [x_dict[v.id] for v in cobra_model.reactions]
-    else:
-        x = [x_dict[v] for v in cobra_model.reactions]
-    start_time = time()
-    status = lp.status
-    if status == GRB.OPTIMAL:
         objective_value = objective_sense*lp.ObjVal
         status = 'optimal'
+
+        if lp.isMIP:
+            [x_dict.update({v.VarName: v.X}) for v in lp.getVars()]
+            y = y_dict = None #MIP's don't have duals
+        else:
+            [(x_dict.update({v.VarName: v.X}),
+              y_dict.update({v.VarName: v.Y}))
+             for v in lp.getVars()]
+            y = array([y_dict[v.id] for v in cobra_model.reactions])
+        #
+        x = array([x_dict[v.id] for v in cobra_model.reactions])
     else:
-        objective_value = nan
+        y = y_dict = x = x_dict = None
+        objective_value = None
         if error_reporting:
             print 'gurobi failed: %s'%lp.status  
-    the_solution = Solution(objective_value, x=array(x), x_dict=x_dict,
+    #
+    the_solution = Solution(objective_value, x=x, x_dict=x_dict,
+                            y=y, y_dict=y_dict,
                             status=status)
     solution = {'the_problem': lp, 'the_solution': the_solution}
     return solution
@@ -553,47 +558,7 @@ def optimize_quadratic_program(cobra_model, quadratic_component,
     """
     raise Exception('optimize_quadratic_component is deprecated.  just pass an hessian\n'+\
                     'to the specific optimize_* call')
-    ## if solver == 'glpk' and hasattr(quadratic_component, 'todok'):
-    ##     the_problem = 'return'
-    ##     print "GLPK can't solve MOMA or quadratic programs.  " +\
-    ##           "I'll see if you have gurobi or cplex installed"
-    ##     try:
-    ##         import cplex
-    ##         solver = 'cplex'
-    ##     except:
-    ##         try:
-    ##             import gurobipy
-    ##             solver = 'gurobi'
-    ##         except:
-    ##             raise Exception("Couldn't load cplex or gurobi and glpk can't solve MOMA problems")
-    ## if solver.lower() == 'gurobi':
-    ##     the_solution = optimize_gurobi(cobra_model,objective_sense='minimize',
-    ##                                    quadratic_component=quadratic_component,
-    ##                                    the_problem=the_problem,
-    ##                                    tolerance_optimality=tolerance_optimality,
-    ##                                    tolerance_feasibility=tolerance_feasibility,
-    ##                                    lp_method=lp_method, reuse_basis=reuse_basis)
-
-    ## elif solver.lower() == 'cplex':
-    ##     the_solution = optimize_cplex(cobra_model,objective_sense='minimize',
-    ##                                   the_problem=the_problem,
-    ##                                   tolerance_optimality=tolerance_optimality,
-    ##                                   tolerance_feasibility=tolerance_feasibility,
-    ##                                   lp_method=lp_method,
-    ##                                   quadratic_component=quadratic_component,
-    ##                                   reuse_basis=reuse_basis)
-    ## elif solver.lower() == 'glpk':
-    ##     the_solution = optimize_gurobi(cobra_model,objective_sense='minimize',
-    ##                                    quadratic_component=quadratic_component,
-    ##                                    the_problem=the_problem,
-    ##                                    tolerance_optimality=tolerance_optimality,
-    ##                                    tolerance_feasibility=tolerance_feasibility,
-    ##                                    lp_method=lp_method, reuse_basis=reuse_basis)
-    ## return the_solution
-
-
-
-
+ 
 def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
                   min_norm=0, the_problem=None, 
                   tolerance_optimality=1e-6, tolerance_feasibility=1e-6, tolerance_integer=1e-9,
@@ -790,16 +755,27 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
     if status == 'opt':
         objective_value = lp.obj.value
         status = 'optimal'
+        if lp.kind == float:
+            #return the duals as well as the primals for LPs
+            [(x.append(float(c.primal)),
+              x_dict.update({c.name:c.primal}),
+              y.append(float(c.dual)),
+              y_dict.update({c.name:c.dual})) for c in lp.cols]
+        else:
+            #MIPs don't have duals
+            [(x.append(float(c.primal)),
+              x_dict.update({c.name:c.primal}))
+             for c in lp.cols]
+
+            y = y_dict = None
+        x = array(x)
+            
     else:
-        objective_value = nan
+        x = y = x_dict = y_dict = objective_value = None
         if error_reporting:
             print 'glpk failed: %s'%lp.status
-    [(x.append(float(c.primal)),
-      x_dict.update({c.name:c.primal}),
-      y.append(float(c.dual)),
-      y_dict.update({c.name:c.dual})) for c in lp.cols]
-    the_solution = Solution(objective_value, x=array(x), x_dict=x_dict,
-                            y=array(y), y_dict=y_dict,
+    the_solution = Solution(objective_value, x=x, x_dict=x_dict,
+                            y=y, y_dict=y_dict,
                             status=status)
     solution = {'the_problem': lp, 'the_solution': the_solution}
 

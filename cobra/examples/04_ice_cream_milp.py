@@ -121,7 +121,7 @@ the_reaction.add_metabolites({production_capacity_constraint: popsicle_productio
 print
 print('Here is what happens in the continuous (LP) case...')
 
-the_solution = cobra_model.optimize(objective_sense='maximize',solver=solver)
+the_program = cobra_model.optimize(objective_sense='maximize',solver=solver)
 print
 print('Status is: %s'%cobra_model.solution.status)
 print('Objective value is: %1.2f'%cobra_model.solution.f)
@@ -142,7 +142,7 @@ Cone_production.upper_bound = 50000;
 Popsicle_production.variable_kind = 'integer'
 Popsicle_production.upper_bound = 50000;
 
-the_solution = cobra_model.optimize(objective_sense='maximize', solver=solver)
+the_program = cobra_model.optimize(objective_sense='maximize', solver=solver)
 print
 print('Status is: %s'%cobra_model.solution.status)
 print('Objective value is: %1.2f'%cobra_model.solution.f)

@@ -26,6 +26,7 @@ from Object import Object
 from Reaction import Reaction
 from Metabolite import Metabolite
 from Formula import Formula
+from cobra.collections.DictList import DictList
 #*********************************************************************************
 #2011-10-11: danielhyduke@gmail.com
 #
@@ -84,16 +85,13 @@ class Model(Object):
         self._trimmed = False #This might get changed to a dict of 
         #gene:[reactions in which the gene participates]
         self._trimmed_genes = None #This will be integrated with _trimmed
-        self._trimmed_reactions = None #this
+        self._trimmed_reactions = None #as will this
         self.legacy_format = False #DEPRECATED
         #Allow the creation of an empty object which will facilitate development
         #of SBML parsers and other development issues.
-        self.genes = []
-        self.reactions = [] #A list of cobra.Reactions
-        self.metabolites = [] #A list of cobra.Metabolites
-        self._metabolite_dict = {} #A dictionary that provides access to
-        #metabolites based on their ids {Metabolite.id: Metabolite}
-        self._gene_dict = {} #A dictionary that provides access to
+        self.genes = DictList()
+        self.reactions = DictList() #A list of cobra.Reactions
+        self.metabolites = DictList() #A list of cobra.Metabolites
         #genes based on their ids {Gene.id: Gene}
         self.compartments = {}
 
@@ -160,29 +158,28 @@ class Model(Object):
         if print_time:
             from time import time
             start_time = time()
-        the_metabolites = [x.guided_copy(the_copy)
-                           for x in self.metabolites]
+        the_metabolites = DictList([x.guided_copy(the_copy)
+                                    for x in self.metabolites])
         if print_time:
             print 'Metabolite guided copy: %1.4f'%(time() - start_time)
             start_time = time()
-        the_genes = [x.guided_copy(the_copy)
-                           for x in self.genes]
+        the_genes = DictList([x.guided_copy(the_copy)
+                              for x in self.genes])
         if print_time:
             print 'Gene guided copy: %1.4f'%(time() - start_time)
             start_time = time()
+        #TODO: See if we can use the DictList objects instead
         metabolite_dict = dict([(k.id, k)
                                  for k in the_metabolites])
         gene_dict = dict([(k.id, k)
                                  for k in the_genes])
-        the_reactions = [x.guided_copy(the_copy, metabolite_dict, gene_dict)
-                         for x in self.reactions]
+        the_reactions = DictList([x.guided_copy(the_copy, metabolite_dict, gene_dict)
+                                  for x in self.reactions])
         if print_time:
             print 'Reaction guided copy: %1.4f'%(time() - start_time)
         the_copy.reactions = the_reactions
         the_copy.genes = the_genes
         the_copy.metabolites = the_metabolites
-        the_copy._metabolite_dict = metabolite_dict
-        the_copy._gene_dict = gene_dict
         return the_copy
         
 
@@ -205,11 +202,9 @@ class Model(Object):
             metabolite_list = [metabolite_list]
         #First check whether the metabolites exist in the model
         metabolite_list = [x for x in metabolite_list
-                           if x.id not in self._metabolite_dict]
-        self.metabolites += metabolite_list
+                           if x.id not in self.metabolites]
         [setattr(x, '_model', self) for x in metabolite_list]
-        self._metabolite_dict.update(dict([(x.id, x)
-                                           for x in metabolite_list]))
+        self.metabolites += metabolite_list
         #This might already be encapsulated in update_stoichiometric matrix, but
         #may be slower.
         if self._S is not None and expand_stoichiometric_matrix:
@@ -226,10 +221,12 @@ class Model(Object):
 
         reaction: A cobra.Reaction object, or a list of these objects.
 
+
         WARNING: This function is only used after the Model has been
         converted to matrices.  It is typically faster to access the objects
         in the Model directly.  This function will eventually moved to another
         module for advanced users due to the potential for mistakes.
+
     
         """
         warn("WARNING: This function is only used after the Model has been " +\
@@ -254,7 +251,7 @@ class Model(Object):
             self._objective_coefficients[reaction_index] = the_reaction.objective_coefficient
             self.add_metabolites(the_reaction._metabolites)
             #Make sure that the metabolites are the ones contained in the model
-            the_reaction._metabolites = [self._metabolite_dict[x.id]
+            the_reaction._metabolites = [self.metabolite.get_by_id(x.id)
                                         for x in the_reaction._metabolites]
             #Update the stoichiometric matrix
             metabolite_indices = map(self.metabolites.index, the_reaction._metabolites)
@@ -297,6 +294,7 @@ class Model(Object):
         #present in the model.
         if type(reaction_list) not in [tuple, list, set]:
             reaction_list = [reaction_list]
+        #TODO: Use the DictList properties
         reactions_in_model = set([x.id
                                   for x in reaction_list]).intersection([x.id
                                                                        for x in self.reactions])
@@ -304,38 +302,34 @@ class Model(Object):
             print '%i of %i reaction(s) %s already in the model'%(len(reactions_in_model),
                                                           len(reaction_list), repr(reactions_in_model))
             return
-
+        #TODO: Consider using DictList's here, just make sure that the items get appended
+        #to self.metabolites, self.genes
         metabolite_dict = {}
+        gene_dict = {}
         [metabolite_dict.update(dict([(y.id, y) for y in x._metabolites]))
          for x in reaction_list]
-
         new_metabolites = [metabolite_dict[x]
-                           for x in set(metabolite_dict).difference(self._metabolite_dict)]
+                           for x in set(metabolite_dict).difference(self.metabolites._dict)]
         if new_metabolites:
             self.add_metabolites(new_metabolites)
 
-        gene_dict = {}
         [gene_dict.update(dict([(y.id, y) for y in x._genes]))
          for x in reaction_list]
-        
         new_genes = [gene_dict[x]
-                           for x in set(gene_dict).difference(self._gene_dict)]
+                           for x in set(gene_dict).difference(self.genes._dict)]
         if new_genes:
-            self.genes += new_genes
+            self.genes += DictList(new_genes)
             [setattr(x, '_model', self)
              for x in new_genes]
-            self._gene_dict.update(dict([(x.id, x) for x in new_genes]))
-
-
 
         #This might slow down performance
         #Make sure each reaction knows that it is now part of a Model and uses
         #metabolites in the Model and genes in the Model
         for the_reaction in reaction_list:
             the_reaction._model = self
-            the_reaction._metabolites = dict([(self._metabolite_dict[k.id], v)
+            the_reaction._metabolites = dict([(self.metabolites.get_by_id(k.id), v)
                                              for k, v in the_reaction._metabolites.items()])
-            the_reaction._genes = dict([(self._gene_dict[k.id], v)
+            the_reaction._genes = dict([(self.genes.get_by_id(k.id), v)
                                              for k, v in the_reaction._genes.items()])
             #Make sure the metabolites and genes are aware of the reaction
             the_reaction._update_awareness()
@@ -443,12 +437,14 @@ class Model(Object):
         #Using this dictionary speeds up adding reactions by orders of magnitude
         #because indexing lists is slow in python.
         #Get stats to decide how to grow self._S
-        number_of_reactions = len(reaction_list)
-        number_of_reactions_in_model = len(self.reactions) - number_of_reactions
-        reaction_to_index_dict = dict(zip([x.id for x in reaction_list],
-                                          range(number_of_reactions_in_model,
-                                                number_of_reactions_in_model +\
-                                                number_of_reactions)))
+        #NOTE: This was supplanted by the DictList self.reactions, however,
+        ##this may slow thigns down.
+        ## number_of_reactions = len(reaction_list)
+        ## number_of_reactions_in_model = len(self.reactions) - number_of_reactions
+        ## reaction_to_index_dict = dict(zip([x.id for x in reaction_list],
+        ##                                   range(number_of_reactions_in_model,
+        ##                                         number_of_reactions_in_model +\
+        ##                                         number_of_reactions)))
 
 
 
@@ -458,10 +454,11 @@ class Model(Object):
         metabolite_to_index_dict = dict(zip([x.id for x in self.metabolites],
                                             range(len(self.metabolites))))
         for the_reaction in reaction_list:
-            reaction_index = reaction_to_index_dict[the_reaction.id]
-            [coefficient_dictionary.update({(metabolite_to_index_dict[k.id],
-                                             reaction_index): v})
-             for k, v in the_reaction._metabolites.items()]
+            reaction_index = self.reactions.index(the_reaction.id)
+            for the_key, the_value in the_reaction._metabolites.items():
+                coefficient_dictionary[(self.metabolites.index(the_key.id),
+                                        reaction_index)] = the_value
+
         if not self._S.getformat() == 'dok':
             self._S = self._S.todok()
         self._S.update(coefficient_dictionary)
