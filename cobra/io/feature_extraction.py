@@ -16,7 +16,8 @@ from warnings import warn
 warn("WARNING: cobra.io.feature_extraction is not ready for general use ")
 
 def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
-               normalization=None, lowess_parameter=0.33, log_base=10):
+               normalization=None, lowess_parameter=0.33, log_base=10, single_channel=False,
+               single_field='gProcessedSignal'):
     """Extract data from feature extraction >=9.5 files.  Returns
     the average log ratios for each return_id.
 
@@ -40,7 +41,10 @@ def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
     ## normalization = 'lowess'
     ## lowess_parameter = 0.33
     ## log_base = 10
-
+    channel_prefixes = ['r','g']
+    if single_channel:
+        channel_prefixes = [x for x in channel_prefixes
+                            if single_field.startswith(x)]
     with open(in_file) as in_file_handle:
         the_header = in_file_handle.readline().rstrip('\r\n').split('\t')
         while not the_header[0] == 'FEATURES':
@@ -56,37 +60,17 @@ def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
         gene_index = the_header.index('ProbeName')
     else:
         raise Exception("return_id must be 'accession' or 'probe' not '%s'"%return_id)
-    column_to_index = {'log_ratio': the_header.index('LogRatio'),
-                       'log_error': the_header.index('LogRatioError'),
-                       'p_value': the_header.index('PValueLogRatio'),
-                       'intensity_1': the_header.index('gProcessedSignal'),
-                       'intensity_2': the_header.index('rProcessedSignal'),
-                       #The last two are in case lowess normalization needs to be
-                       #performed.
-                       'background_subtracted_1': the_header.index('gBGSubSignal'),
-                       'background_subtracted_2': the_header.index('rBGSubSignal')}
-    for the_row in the_data: #Speed this up
-        the_row[column_to_index['log_ratio']] = polarity*float(the_row[column_to_index['log_ratio']])
-    if polarity == -1: #Change the polarity if requested.  Doing so here makes it easier
-        #to run the calculations downstream.
-        column_to_index.update({'intensity_1': the_header.index('rProcessedSignal'),
-                                'intensity_2': the_header.index('gProcessedSignal'),
-                                'background_subtracted_1': the_header.index('rBGSubSignal'),
-                                'background_subtracted_2': the_header.index('gBGSubSignal')})
 
-    #These need to be popped because they're only used during lowess normalization
-    channel_2_index = column_to_index.pop('background_subtracted_2')
-    channel_1_index = column_to_index.pop('background_subtracted_1')
 
     if quality_control:
         #Get the column indices for the quality control statistics and
         #assign the value that must be met to pass the test.
         quality_control_indices = {}
         [quality_control_indices.update({the_header.index(k): '1'})
-         for k in map(lambda x: x + 'IsFound', ['r','g'])
+         for k in map(lambda x: x + 'IsFound', channel_prefixes)
          if k in the_header] #1 means the spot is found
         [[quality_control_indices.update({the_header.index(k): '0'})
-         for k in map(lambda x: x + y, ['r','g'])
+         for k in map(lambda x: x + y, channel_prefixes)
           if k in the_header]
          for y in ['IsSaturated', 'IsFeatNonUnifOL']] #0 means the spot is not saturatd and not a nonuniform outlier
         
@@ -106,37 +90,68 @@ def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
         the_data = filtered_data #Use the filtered data from here on out
 
 
-    if normalization is not None and normalization.lower() == 'lowess':
-        warn('Lowess Normalization looks off, please correct')
-        #Polarity is already adjusted above
-        log_ratio_index = column_to_index['log_ratio']
-        #Now that we're not using the processed values we need to do change intensity
-        #indices to use the unprocessed intensities.
-        column_to_index['intensity_1'] = channel_1_index
-        column_to_index['intensity_2'] = channel_2_index
-        channel_2_signal = []
-        channel_1_signal = []
-        data_to_normalize = []
-        #We can't take log ratios of 0 or divide by 0
-        for the_row in the_data:
-            channel_1_value = float(the_row[channel_1_index])
-            channel_2_value = float(the_row[channel_2_index])
-            if channel_1_value > 0. and channel_2_value > 0.:
-                data_to_normalize.append(the_row)
-                channel_1_signal.append(channel_1_value)
-                channel_2_signal.append(channel_2_value)
-        the_data = data_to_normalize
-        #Now perform the lowess normalization
-        channel_2_signal = array(channel_2_signal)
-        channel_1_signal = array(channel_1_signal)
-        a = log10(channel_2_signal*channel_1_signal)/2. 
-        m = log10(channel_2_signal/channel_1_signal)
-        lowess_fit = array(r.lowess(a, m, lowess_parameter)).T
-        m = m - lowess_fit[:,1]
-        #Now update the_data list to use the normalized values
-        for the_row, the_log_ratio in zip(the_data, list(m)):
-            the_row[log_ratio_index] = float(the_log_ratio)
-    #We're returning on locus ids
+    if single_channel: #Single channel experiments don't have ratios or polarities
+        column_to_index = {'intensity_1': the_header.index(single_field)}
+    else:
+
+        column_to_index = {'log_ratio': the_header.index('LogRatio'),
+                           'log_error': the_header.index('LogRatioError'),
+                           'p_value': the_header.index('PValueLogRatio'),
+                           'intensity_1': the_header.index('gProcessedSignal'),
+                           'intensity_2': the_header.index('rProcessedSignal'),
+                           #The last two are in case lowess normalization needs to be
+                           #performed.
+                           'background_subtracted_1': the_header.index('gBGSubSignal'),
+                           'background_subtracted_2': the_header.index('rBGSubSignal')}
+        for the_row in the_data: #Speed this up
+            the_row[column_to_index['log_ratio']] = polarity*float(the_row[column_to_index['log_ratio']])
+        if polarity == -1: #Change the polarity if requested.  Doing so here makes it easier
+            #to run the calculations downstream.
+            column_to_index.update({'intensity_1': the_header.index('rProcessedSignal'),
+                                    'intensity_2': the_header.index('gProcessedSignal'),
+                                    'background_subtracted_1': the_header.index('rBGSubSignal'),
+                                    'background_subtracted_2': the_header.index('gBGSubSignal')})
+
+        #These need to be popped because they're only used during lowess normalization
+        channel_2_index = column_to_index.pop('background_subtracted_2')
+        channel_1_index = column_to_index.pop('background_subtracted_1')
+        
+        #Apply lowess normalization to double channel data if requested.
+        if normalization is not None and normalization.lower() == 'lowess':
+            if single_channel:
+                raise Exception('Lowess normalization does not work with single channel arrays')
+            warn('Lowess Normalization looks off, please correct')
+            #Polarity is already adjusted above
+            log_ratio_index = column_to_index['log_ratio']
+            #Now that we're not using the processed values we need to do change intensity
+            #indices to use the unprocessed intensities.
+            column_to_index['intensity_1'] = channel_1_index
+            column_to_index['intensity_2'] = channel_2_index
+            channel_2_signal = []
+            channel_1_signal = []
+            data_to_normalize = []
+            #We can't take log ratios of 0 or divide by 0
+            for the_row in the_data:
+                channel_1_value = float(the_row[channel_1_index])
+                channel_2_value = float(the_row[channel_2_index])
+                if channel_1_value > 0. and channel_2_value > 0.:
+                    data_to_normalize.append(the_row)
+                    channel_1_signal.append(channel_1_value)
+                    channel_2_signal.append(channel_2_value)
+            the_data = data_to_normalize
+            #Now perform the lowess normalization
+            channel_2_signal = array(channel_2_signal)
+            channel_1_signal = array(channel_1_signal)
+            a = log10(channel_2_signal*channel_1_signal)/2. 
+            m = log10(channel_2_signal/channel_1_signal)
+            lowess_fit = array(r.lowess(a, m, lowess_parameter)).T
+            m = m - lowess_fit[:,1]
+            #Now update the_data list to use the normalized values
+            for the_row, the_log_ratio in zip(the_data, list(m)):
+                the_row[log_ratio_index] = float(the_log_ratio)
+
+
+    #Make a dictionary to return the requested values
     gene_dict = dict([(x[gene_index], defaultdict(list))
                       for x in the_data])
     for the_row in the_data:
@@ -204,24 +219,27 @@ def collapse_fields(data_dict, quantitative_fields=['intensity_1',
 
     """
     [data_dict.update({k: mean(data_dict[k])})
-     for k in quantitative_fields]
-    if error_weighting:
-        log_fields = deepcopy(log_fields)
-        mean_field = log_fields.pop(0)
-        std_field = log_fields.pop(0)
-        the_means = map(lambda x: log_base**x, data_dict[mean_field])
-        the_stds = map(lambda x: log_base**x, data_dict[std_field])
-        weighted_mean, weighted_std = error_weighted(the_means, the_stds)
-        data_dict[mean_field] = log_function(weighted_mean, log_base)
-        data_dict[std_field] = log_function(weighted_std, log_base)
-    #TODO:  This needs to be updated for log_error
-    else:
-        [data_dict.update({k: log_function(mean(map(lambda x: log_base**x,
-                                                    data_dict[k])),
-                                           log_base)})
-         for k in log_fields]
-    [data_dict.update({k: combine_p_values(data_dict[k])})
-     for k in p_fields]
+     for k in quantitative_fields
+     if k in data_dict]
+    if log_fields[0] in data_dict:
+        if error_weighting:
+            log_fields = deepcopy(log_fields)
+            mean_field = log_fields.pop(0)
+            std_field = log_fields.pop(0)
+            the_means = map(lambda x: log_base**x, data_dict[mean_field])
+            the_stds = map(lambda x: log_base**x, data_dict[std_field])
+            weighted_mean, weighted_std = error_weighted(the_means, the_stds)
+            data_dict[mean_field] = log_function(weighted_mean, log_base)
+            data_dict[std_field] = log_function(weighted_std, log_base)
+        #TODO:  This needs to be updated for log_error
+        else:
+            [data_dict.update({k: log_function(mean(map(lambda x: log_base**x,
+                                                        data_dict[k])),
+                                               log_base)})
+             for k in log_fields]
+    if p_fields[0] in data_dict:
+        [data_dict.update({k: combine_p_values(data_dict[k])})
+         for k in p_fields]
 
 def combine_files(file_list, annotation_file, polarity_list=None,
                   print_time=False, quality_control=False):

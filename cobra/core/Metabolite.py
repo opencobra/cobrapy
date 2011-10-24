@@ -112,7 +112,6 @@ class Metabolite(Object):
                                                                   self._model))
                                                             
         self._model.metabolites.remove(self)
-        self._model._metabolite_dict.pop(self.id)
         self._model = None
         for the_reaction in self._reaction:
             the_coefficient = the_reaction._metabolites[self]

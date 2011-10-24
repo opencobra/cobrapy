@@ -67,7 +67,6 @@ class Gene(Metabolite):
                                                                   self._model))
                                                             
         self._model.genes.remove(self)
-        self._model._gene_dict.pop(self.id)
         self._model = None
         
         for the_reaction in self._reaction:

@@ -292,7 +292,7 @@ class Model(Object):
         """
         #Only add the reaction if one with the same ID is not already
         #present in the model.
-        if type(reaction_list) not in [tuple, list, set]:
+        if type(reaction_list) not in [tuple, list, set, DictList]:
             reaction_list = [reaction_list]
         #TODO: Use the DictList properties
         reactions_in_model = set([x.id

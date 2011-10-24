@@ -207,16 +207,21 @@ def create_cobra_model_from_sbml_file(sbml_file, old_sbml=False, legacy_metaboli
                      reaction_note_dict['GENES'] != ['']:
                 reaction.systematic_names = reaction_note_dict['GENES'][0]
             elif reaction_note_dict.has_key('LOCUS'):
+                gene_id_to_object = dict([(x.id, x) for x in reaction._genes])
                 for the_row in reaction_note_dict['LOCUS']:
                     tmp_row_dict = {}
                     the_row = 'LOCUS:' + the_row.lstrip('_').rstrip('#')
                     for the_item in the_row.split('#'):
-                        k, v = the_item.split(':')
-                        tmp_row_dict[k] = v
+                        try:
+                            k, v = the_item.split(':')
+                            tmp_row_dict[k] = v
+                        except ValueError, e:
+                            print the_item
+                            raise e
                     tmp_locus_id = tmp_row_dict['LOCUS']
                     if 'TRANSCRIPT' in tmp_row_dict:
                             tmp_locus_id = tmp_locus_id + '.' + tmp_row_dict['TRANSCRIPT']
-                    reaction._genes[reaction._genes.index(tmp_locus_id)].name = tmp_row_dict['ABBREVIATION']
+                    gene_id_to_object[tmp_locus_id].name = tmp_row_dict['ABBREVIATION']
 
         if reaction_note_dict.has_key('SUBSYSTEM'):
             reaction.subsystem = reaction_note_dict['SUBSYSTEM'][0]   
