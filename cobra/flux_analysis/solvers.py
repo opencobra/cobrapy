@@ -509,21 +509,18 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
         print 'optimize time: %f'%(time() - start_time)
     x_dict = {}
     y_dict = {}
-    
+    y = None
     if lp.status == GRB.OPTIMAL:
         objective_value = objective_sense*lp.ObjVal
         status = 'optimal'
-
+        [x_dict.update({v.VarName: v.X}) for v in lp.getVars()]
+        x = array([x_dict[v.id] for v in cobra_model.reactions])
         if lp.isMIP:
-            [x_dict.update({v.VarName: v.X}) for v in lp.getVars()]
             y = y_dict = None #MIP's don't have duals
         else:
-            [(x_dict.update({v.VarName: v.X}),
-              y_dict.update({v.VarName: v.Y}))
-             for v in lp.getVars()]
-            y = array([y_dict[v.id] for v in cobra_model.reactions])
-        #
-        x = array([x_dict[v.id] for v in cobra_model.reactions])
+            [y_dict.update({c.ConstrName: c.Pi})
+             for c in lp.getConstrs()]
+            y = array([y_dict[v.id] for v in cobra_model.metabolites])
     else:
         y = y_dict = x = x_dict = None
         objective_value = None
