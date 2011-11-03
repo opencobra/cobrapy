@@ -303,7 +303,7 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
 
             y = y_dict = None
         else:
-            y_dict = dict(zip(lp.variables.get_names(),
+            y_dict = dict(zip(lp.linear_constraints.get_names(),
                               lp.solution.get_dual_values()))
             y = array(lp.solution.get_dual_values())
             y = y.reshape(y.shape[0],1)
@@ -755,18 +755,17 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
     if status == 'opt':
         objective_value = lp.obj.value
         status = 'optimal'
+        [(x.append(float(c.primal)),
+          x_dict.update({c.name:c.primal}))
+          for c in lp.cols]
+        
         if lp.kind == float:
             #return the duals as well as the primals for LPs
-            [(x.append(float(c.primal)),
-              x_dict.update({c.name:c.primal}),
-              y.append(float(c.dual)),
-              y_dict.update({c.name:c.dual})) for c in lp.cols]
+            [(y.append(float(c.dual)),
+              y_dict.update({c.name:c.dual}))
+             for c in lp.rows]
         else:
             #MIPs don't have duals
-            [(x.append(float(c.primal)),
-              x_dict.update({c.name:c.primal}))
-             for c in lp.cols]
-
             y = y_dict = None
         x = array(x)
             
