@@ -1,6 +1,6 @@
 Index: ../../mlab/__init__.py
 ===================================================================
---- ../../mlab/__init__.py	(revision 173)
+--- ../../mlab/__init__.py	(revision 179)
 +++ ../../mlab/__init__.py	(working copy)
 @@ -1 +1,7 @@
  from mlab import *
@@ -10,11 +10,11 @@ Index: ../../mlab/__init__.py
 +
 +To use MATLAB functions directly, see cobra.matlab
 +"""
-Index: ../../mlab/mlab.py
+Index: mlab/mlab.py
 ===================================================================
---- ../../mlab/mlab.py	(revision 173)
+--- ../../mlab/mlab.py	(revision 179)
 +++ ../../mlab/mlab.py	(working copy)
-@@ -1,13 +1,69 @@
+@@ -1,13 +1,77 @@
  #cobra.mlab.py
  #System modules
 -import cPickle,numpy, os, cobra
@@ -51,15 +51,23 @@ Index: ../../mlab/mlab.py
 +    matlab_cobra_path: the path to the directory containing the MATLAB
 +    cobra installation. Using the default None will attempt to use
 +    ~/Documents/MATLAB/cobra/"""
-+
++    home = os.getenv('USERPROFILE') or os.getenv('HOME')
++    matlab_home = os.path.join(home, "Documents", "MATLAB")
 +    if matlab_cobra_path is None:
 +        home = os.getenv('USERPROFILE') or os.getenv('HOME')
-+        matlab_cobra_path = os.path.join(home, "Documents", "MATLAB", "cobra")
++        matlab_cobra_path = os.path.join(matlab_home, "cobra")
 +    if not os.path.isfile(os.path.join(matlab_cobra_path, "initCobraToolbox.m")):
 +        print "initCobraToolbox not found in given path"
 +        return
 +    # store the current directory so we can return to it
 +    curdir = os.path.abspath(os.curdir)
++    # if the user has a pathdef file, it will not get used by the MATLAB
++    # engine, so it needs to be called manually
++    try:
++        os.chdir(matlab_home)
++        matlab.path(matlab.pathdef())
++    except:
++        pass
 +    os.chdir(matlab_cobra_path)
 +    matlab.initCobraToolbox()
 +    os.chdir(curdir)
@@ -86,7 +94,7 @@ Index: ../../mlab/mlab.py
  #Project defined modules
  def matlab_cell_to_python_list(the_cell):
      try:
-@@ -330,5 +386,3 @@
+@@ -330,5 +394,3 @@
      else:
          print 'FAILURE: pyCOBRA and COBRA Toolbox do not match: %s !~ %s'%(py_cobra_solution,
                                                                                         matlab_solution)

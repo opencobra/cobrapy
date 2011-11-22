@@ -2,11 +2,53 @@ from os.path import isfile
 from csv import reader
 from re import compile, findall
 from warnings import warn
-
-from scipy.io import loadmat, savemat
+from cPickle import (load as _load, dump as _dump)
 
 import cobra
-from cobra.io.sbml import create_cobra_model_from_sbml_file
+from cobra.io.sbml import create_cobra_model_from_sbml_file as _sbml_import
+from scipy.io import loadmat as _loadmat, savemat as _savemat
+from numpy import array as _array, object as _object
+
+# function to help translate an array to a MATLAB cell array
+_cell = lambda x: _array(x, dtype=_object)
+
+
+def load_pickle(pickle_file):
+    """read in a pickle file"""
+    infile = open(pickle_file, "rb")
+    contents = _load(infile)
+    infile.close()
+    return contents
+
+
+def save_matlab_model(outfile, model):
+    """save the cobra model as a .mat file for use in the
+    MATLAB version of COBRA"""
+    model.update()
+    rxns = model.reactions
+    mets = model.metabolites
+    mat = {}
+    csense = ""
+    for m in mets:
+        csense += m._constraint_sense
+    mat["mets"] = _cell(mets.list_attr("id"))
+    mat["metNames"] = _cell(mets.list_attr("name"))
+    mat["metFormulas"] = _cell([str(m.formula) for m in mets])
+    mat["genes"] = _cell(model.genes.list_attr("id"))
+    mat["grRules"] = _cell(rxns.list_attr("gene_reaction_rule"))
+    mat["rxns"] = _cell(rxns.list_attr("id"))
+    mat["rxnNames"] = _cell(rxns.list_attr("name"))
+    mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
+    mat["csense"] = csense 
+    mat["S"] = model._S
+    mat["lb"] = _array(rxns.list_attr("lower_bound"))
+    mat["ub"] = _array(rxns.list_attr("upper_bound"))
+    mat["b"] = _array(mets.list_attr("_bound"))
+    mat["c"] = _array(rxns.list_attr("objective_coefficient"))
+    mat["rev"] = _array(rxns.list_attr("reversibility"))
+    mat["description"] = str(model.description)
+    _savemat(outfile, {str(model.description): mat},
+             appendmat=True, oned_as="column")
 
 
 def _fix_legacy_id(the_id):
@@ -24,15 +66,19 @@ def _fix_legacy_id(the_id):
     the_id = the_id.replace('&lt;', '<')
     the_id = the_id.replace('&gt;', '>')
     the_id = the_id.replace('&quot;', '"')
+    the_id = the_id.replace('__', '-')
     return the_id
 
 
 def read_legacy_sbml(filename):
-    model = create_cobra_model_from_sbml_file(filename)
-    for reaction in model.reactions:
-        reaction.id = _fix_legacy_id(reaction.id)
+    model = _sbml_import(filename)
     for metabolite in model.metabolites:
         metabolite.id = _fix_legacy_id(metabolite.id)
+    model.metabolites._generate_index()
+    for reaction in model.reactions:
+        reaction.id = _fix_legacy_id(reaction.id)
+        reaction.reconstruct_reaction()
+    model.reactions._generate_index()
     return model
 
 
@@ -175,3 +221,4 @@ def read_simpheny(baseName, minlowerbound=-1000, maxupperbound=1000,
         gpr_file.close()
     model.update()
     return model
+
