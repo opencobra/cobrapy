@@ -1,7 +1,7 @@
-Index: ../../test/__init__.py
+Index: test/__init__.py
 ===================================================================
---- ../../test/__init__.py	(revision 0)
-+++ ../../test/__init__.py	(revision 0)
+--- test/__init__.py	(revision 0)
++++ test/__init__.py	(revision 0)
 @@ -0,0 +1,24 @@
 +from os.path import abspath as _abspath
 +from os.path import join as _join

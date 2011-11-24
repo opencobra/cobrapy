@@ -1,0 +1,16 @@
+Index: collections/DictList.py
+===================================================================
+--- collections/DictList.py	(revision 179)
++++ collections/DictList.py	(working copy)
+@@ -145,9 +145,9 @@
+         return self
+     
+     
+-    def index(self, the_id):
++    def index(self, the_id, *args):
+         # because values are unique, start and stop are not relevant
+-        return self._dict[the_id]
++        return self._dict[str(the_id)]
+         
+     def __contains__(self, the_object):
+         """DictList.__contains__(object) <==> object in DictList

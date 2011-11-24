@@ -1,3 +1,4 @@
+import numpy
 from numpy import linspace, zeros, array, meshgrid, abs, empty, arange, int32
 # not all plotting libraries may be installed
 try:
@@ -75,7 +76,7 @@ class phenotypePhasePlaneData:
         return axes
 
     def plot_mayavi(self):
-        """Use matplotlib to plot a phenotype phase plane in 3D.
+        """Use mayavi to plot a phenotype phase plane in 3D.
         The resulting figure will be quick to interact with in real time,
         but might be difficult to save as a vector figure.
         returns: mlab figure object"""
@@ -138,7 +139,7 @@ def _calculate_subset(arguments):
     """Calculate a subset of the phenotype phase plane data.
     Store each result tuple as:
     (i, j, growth_rate, shadow_price1, shadow_price2)"""
-    # unpack all arguments
+    # unpack all arguments, because **kwargs does not work in ppmap
     for key in arguments.iterkeys():
         exec("%s = arguments['%s']" % (key, key))
     results = []
@@ -153,11 +154,11 @@ def _calculate_subset(arguments):
             j = j_list[b]
             reaction2.lower_bound = -1 * flux2 - tolerance
             reaction2.upper_bound = -1 * flux2 + tolerance
-            hot_start = model.optimize(the_problem=hot_start)
+            hot_start = model.optimize(the_problem=hot_start, solver=solver)
             if model.solution.status == "optimal":
                 results.append((i, j, model.solution.f,
-                    model.solution.y[index1],
-                    model.solution.y[index2]))
+                    model.solution.y_dict[metabolite1_name],
+                    model.solution.y_dict[metabolite2_name]))
             else:
                 results.append((i, j, 0, 0, 0))
     return results
@@ -167,7 +168,7 @@ def calculate_phenotype_phase_plane(model,
         reaction1_name, reaction2_name,
         reaction1_range_max=20, reaction2_range_max=20,
         reaction1_npoints=50, reaction2_npoints=50,
-        n_processes=1, tolerance=1e-6):
+        solver='glpk', n_processes=1, tolerance=1e-6):
     """calculates the growth rates while varying the uptake rates for two
     reactions.
 
@@ -185,9 +186,14 @@ def calculate_phenotype_phase_plane(model,
     # find the objects for the reactions and metabolites
     index1 = model.reactions.index(data.reaction1_name)
     index2 = model.reactions.index(data.reaction2_name)
-    if n_processes > reaction1_npoints:
+    metabolite1_name = str(model.reactions.get_by_id( \
+        reaction1_name)._metabolites.keys()[0])
+    metabolite2_name = str(model.reactions.get_by_id( \
+        reaction2_name)._metabolites.keys()[0])
+    if n_processes > reaction1_npoints:  # limit the number of processes
         n_processes = reaction1_npoints
     range_add = reaction1_npoints / n_processes
+    # prepare the list of arguments for each _calculate_subset call
     arguments_list = []
     i = arange(reaction1_npoints)
     j = arange(reaction2_npoints)
@@ -201,10 +207,12 @@ def calculate_phenotype_phase_plane(model,
             i_list = i[start:]
         arguments_list.append({"model": model.copy(),
             "index1": index1, "index2": index2,
+            "metabolite1_name": metabolite1_name,
+            "metabolite2_name": metabolite2_name,
             "reaction1_fluxes": r1_range,
             "reaction2_fluxes": data.reaction2_fluxes.copy(),
             "i_list": i_list, "j_list": j.copy(),
-            "tolerance": tolerance})
+            "tolerance": tolerance, "solver": solver})
     if n_processes > 1:
         results = list(ppmap(n_processes, _calculate_subset, arguments_list))
     else:
@@ -224,20 +232,20 @@ if __name__ == "__main__":
     from os.path import join, split
 
     import cobra
-    from cobra.io.sbml import create_cobra_model_from_sbml_file
-    from cobra.test import data_directory
+    from cobra.test import ecoli_pickle
+    from cobra.oven.legacyIO import load_pickle
 
     n1 = 20
     n2 = 20
-    the_file = join(data_directory, "salmonella.xml")
-    model = create_cobra_model_from_sbml_file(the_file)
-    print "sbml imported"
+
+    model = cobra.oven.legacyIO.load_pickle(ecoli_pickle)
+    # model.reactions.get_by_id("EX_glyc_e").lower_bound = -10
     start_time = time()
-    data = calculate_phenotype_phase_plane(model, 'EX_glc__D_e',
-        'EX_o2_e', reaction1_npoints=n1, reaction2_npoints=n2, n_processes=1)
+    data = calculate_phenotype_phase_plane(model, "EX_glc(e)",
+        'EX_o2(e)', reaction1_npoints=n1, reaction2_npoints=n2, n_processes=1, solver="glpk")
     print "took %.2f seconds with 1 process" % (time() - start_time)
-    start_time = time()
-    data = calculate_phenotype_phase_plane(model, 'EX_glc__D_e',
-        'EX_o2_e', reaction1_npoints=n1, reaction2_npoints=n2, n_processes=4)
-    print "took %.2f seconds with 4 processes" % (time() - start_time)
+    # start_time = time()
+    # data = calculate_phenotype_phase_plane(model, 'EX_glc(e)',
+        # 'EX_o2_e', reaction1_npoints=n1, reaction2_npoints=n2, n_processes=4)
+    # print "took %.2f seconds with 4 processes" % (time() - start_time)
     data.plot()

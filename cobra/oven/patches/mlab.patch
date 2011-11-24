@@ -1,7 +1,7 @@
-Index: ../../mlab/__init__.py
+Index: mlab/__init__.py
 ===================================================================
---- ../../mlab/__init__.py	(revision 179)
-+++ ../../mlab/__init__.py	(working copy)
+--- mlab/__init__.py	(revision 179)
++++ mlab/__init__.py	(working copy)
 @@ -1 +1,7 @@
  from mlab import *
 +__doc__ = """

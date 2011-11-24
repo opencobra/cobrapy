@@ -1,0 +1,28 @@
+Index: core/Model.py
+===================================================================
+--- core/Model.py	(revision 197)
++++ core/Model.py	(working copy)
+@@ -562,9 +562,21 @@
+         if the_solution is None:
+             self.solution = None
+             return(the_solution)
++        self.solution = the_solution['the_solution']
++        # update the reactions with the solution
++        if self.solution.x_dict is not None:
++            for reaction in self.reactions:
++                reaction.x = self.solution.x_dict[reaction.id]
+         else:
+-            self.solution = the_solution['the_solution']
+-            return(the_solution['the_problem'])
++            for reaction in self.reactions:
++                reaction.x = None
++        if self.solution.y_dict is not None:
++            for metabolite in self.metabolites:
++                metabolite.pi = self.solution.y_dict[metabolite.id]
++        else:
++            for metabolite in self.metabolites:
++                metabolite.pi = None
++        return(the_solution['the_problem'])
+ 
+     def get_active_genes(self):
+         """
