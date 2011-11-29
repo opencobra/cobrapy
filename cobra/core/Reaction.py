@@ -438,6 +438,38 @@ class Reaction(Object):
         #Make the metabolites aware of participating in this reaction
         [x._reaction.add(self) for x in self._metabolites]
 
+    def build_reaction_string(self, use_metabolite_names=False):
+        """Generate a human readable reaction string.
+        
+        """
+        reactant_dict = {}
+        product_dict = {}
+        id_type = 'id'
+        if use_metabolite_names:
+            id_type = 'name'
+        for the_metabolite, the_coefficient in self._metabolites.items():
+            the_key = str(getattr(the_metabolite, id_type))
+            if the_coefficient > 0:
+                product_dict[the_key] = repr(the_coefficient)
+            else:
+                reactant_dict[the_key] = repr(abs(the_coefficient))
+        reaction_string = ''
+        for the_key in reactant_dict:
+            reaction_string += ' + %s %s'%(reactant_dict[the_key],
+                                         the_key)
+        if self.reversibility == 0:
+            if self.lower_bound < 0 and self.upper_bound <=0:
+                reaction_string += ' <- '
+            else:
+                reaction_string += ' -> '                
+        else:
+            reaction_string += ' <=> '
+        for the_key in product_dict:
+            reaction_string += "%s %s + "%(product_dict[the_key],
+                                      the_key)
+        reaction_string = reaction_string.lstrip(' + ').rstrip(' + ')
+        return reaction_string
+
         
     def reconstruct_reaction(self):
         """Generate a human readable reaction string.
@@ -450,26 +482,7 @@ class Reaction(Object):
         if len(self._metabolites) == 0:
             self.reaction = None
         else:
-            reactant_dict = {}
-            product_dict = {}
-            for the_metabolite, the_coefficient in self._metabolites.items():
-                if the_coefficient > 0:
-                    product_dict[the_metabolite.id] = the_coefficient
-                else:
-                    reactant_dict[the_metabolite.id] = abs(the_coefficient)
-            self.reaction = ''
-            for the_key in reactant_dict:
-                self.reaction += ' + ' + repr(reactant_dict[the_key]) + ' ' + the_key
-            if self.reversibility == 0:
-                if self.lower_bound < 0 and self.upper_bound <=0:
-                    self.reaction += ' <- '
-                else:
-                    self.reaction += ' -> '                
-            else:
-                self.reaction += ' <=> '
-            for the_key in product_dict:
-                self.reaction += repr(product_dict[the_key]) + ' ' + the_key + ' + '
-            self.reaction = self.reaction.lstrip(' + ').rstrip(' + ')
+            self.reaction = self.build_reaction_string()
 
     def check_mass_balance(self):
         """Makes sure that the reaction is elementally-balanced.
