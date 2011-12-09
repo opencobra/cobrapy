@@ -1,5 +1,6 @@
 #cobra.io.feature_extraction.py
 #Tools for parsing agilent feature extraction files.
+import pdb
 from time import time
 from rpy2 import robjects
 r = robjects.r
@@ -61,7 +62,7 @@ def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
     else:
         raise Exception("return_id must be 'accession' or 'probe' not '%s'"%return_id)
 
-
+    
     if quality_control:
         #Get the column indices for the quality control statistics and
         #assign the value that must be met to pass the test.
@@ -158,7 +159,7 @@ def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
         the_dict = gene_dict[the_row[gene_index]]
         [the_dict[k].append(float(the_row[v]))
          for k, v in column_to_index.items()]
-    #Now combined the items        
+    #Now combined the items       SPEED THIS UP 
     [collapse_fields(v) for v in gene_dict.values()]
     return gene_dict
     
@@ -241,8 +242,8 @@ def collapse_fields(data_dict, quantitative_fields=['intensity_1',
         [data_dict.update({k: combine_p_values(data_dict[k])})
          for k in p_fields]
 
-def combine_files(file_list, annotation_file, polarity_list=None,
-                  print_time=False, quality_control=False):
+def combine_files(file_list, annotation_file=None, polarity_list=None,
+                  print_time=False, quality_control=False, return_id='entrez'):
     """Parse feature extraction files.  This function
     combines multiple technical replicates at the RNA level into a single
     experiment.  Typically multiple replicates will be used when dye-swapping
@@ -257,11 +258,19 @@ def combine_files(file_list, annotation_file, polarity_list=None,
     polarity_list:  A list of integers (1 or -1) indicating the polarity of
     the experiment.  1 indicates that the red channel is divided by the green
     channel and -1 indicates to divide the green channel by the red channel
+
+    return_id: String.  Either 'entrez' or 'accession'.  If 'entrez' then
+    an annotation file must be supplied to convert from the accession
+    ids on the chip to the entrez ids.
     
     """
     if print_time:
         start_time = time()
-    accession_to_entrez = parse_annotation(annotation_file)
+    if return_id.lower() == 'entrez':
+        if annotation_file is None:
+            raise Exception("An annotation file must be supplied if you want " +\
+                            "entrez ids")
+        accession_to_entrez = parse_annotation(annotation_file)
     if print_time:
         print '%s %f'%('annotation time',
                        time() - start_time)
@@ -290,8 +299,9 @@ def combine_files(file_list, annotation_file, polarity_list=None,
     #If quality filtering is on then some genes may not exist in
     #both files.
     the_keys = set(parsed_files[0]).union(parsed_files[1])
-    #Only look at items that are in the annotation file
-    the_keys = the_keys.intersection(accession_to_entrez)
+    if return_id.lower() == 'entrez':
+        #Only look at items that are in the annotation file
+        the_keys = the_keys.intersection(accession_to_entrez)
     combined_data = {}
     the_data_fields = parsed_files[0].values()[0].keys()
     #Merge the results for each field across files into a list
@@ -317,23 +327,25 @@ def combine_files(file_list, annotation_file, polarity_list=None,
         print '%s %f'%('collapse time',
                        time() - start_time)
         start_time = time()
-    
-    #Now get the entrez ids for inserting into the database.
-    the_entrez_ids = set([accession_to_entrez[the_key] for the_key in the_keys])
-    #Now need to collapse to entrez gene ids
-    entrez_data = dict([(k, defaultdict(list))
-                        for k in the_entrez_ids])
-    for the_id, the_dict in combined_data.items():
-        tmp_dict = entrez_data[accession_to_entrez[the_id]]
-        [tmp_dict[k].append(v)
-         for k, v in the_dict.items()]
-    #Now collapse the instances where the ids are have repeats.
-    [collapse_fields(v) for v in entrez_data.values()]
-    if print_time:
-        print '%s %f'%('collapse to entrez and combine time',
-                       time() - start_time)
-    
-    return entrez_data
+    if return_id.lower() == 'entrez':
+        #Now get the entrez ids for inserting into the database.
+        the_entrez_ids = set([accession_to_entrez[the_key] for the_key in the_keys])
+        #Now need to collapse to entrez gene ids
+        entrez_data = dict([(k, defaultdict(list))
+                            for k in the_entrez_ids])
+        for the_id, the_dict in combined_data.items():
+            tmp_dict = entrez_data[accession_to_entrez[the_id]]
+            [tmp_dict[k].append(v)
+             for k, v in the_dict.items()]
+        #Now collapse the instances where the ids are have repeats.
+        [collapse_fields(v) for v in entrez_data.values()]
+        if print_time:
+            print '%s %f'%('collapse to entrez and combine time',
+                           time() - start_time)
+        combined_data = entrez_data
+    #
+        
+    return combined_data
 
 ## def parse_file(in_file, polarity=1, return_id='accession',
 ##                normalization=None, lowess_parameter=0.33, log_base=10):
