@@ -243,7 +243,8 @@ def collapse_fields(data_dict, quantitative_fields=['intensity_1',
          for k in p_fields]
 
 def combine_files(file_list, annotation_file=None, polarity_list=None,
-                  print_time=False, quality_control=False, return_id='entrez'):
+                  print_time=False, quality_control=False, return_id='entrez',
+                  normalization=None):
     """Parse feature extraction files.  This function
     combines multiple technical replicates at the RNA level into a single
     experiment.  Typically multiple replicates will be used when dye-swapping
@@ -262,6 +263,8 @@ def combine_files(file_list, annotation_file=None, polarity_list=None,
     return_id: String.  Either 'entrez' or 'accession'.  If 'entrez' then
     an annotation file must be supplied to convert from the accession
     ids on the chip to the entrez ids.
+
+    normalization: None or 'lowess'
     
     """
     if print_time:
@@ -287,7 +290,8 @@ def combine_files(file_list, annotation_file=None, polarity_list=None,
     #Extract the values to load into the database
     [parsed_files.append(parse_file(the_file,
                                      the_polarity,
-                                      quality_control=quality_control))
+                                      quality_control=quality_control,
+                                    normalization=normalization))
      for the_file, the_polarity in zip(file_list,
                                        polarity_list)]
     if print_time:
@@ -346,87 +350,3 @@ def combine_files(file_list, annotation_file=None, polarity_list=None,
     #
         
     return combined_data
-
-## def parse_file(in_file, polarity=1, return_id='accession',
-##                normalization=None, lowess_parameter=0.33, log_base=10):
-##     """Extract data from feature extraction >=9.5 files.  Returns
-##     the average log ratios for each return_id.
-
-##     in_file: String.  Name of input file.
-
-##     polarity: 1 or -1.  Indicates whether to do red over green (1) or
-##     green over red.  If normalization isn't performed then the polarity
-##     is multiplied by the log ratio.
-
-##     return_id: 'accession' or 'probe'
-
-##     normalization: 'lowess' or None
-
-##     lowess_parameter: Float.  Smoothing parameter for lowess normalization
-
-##     """
-##     raise Exception('Deprecated')
-##     in_file_handle = open(in_file)
-##     the_header = in_file_handle.readline().rstrip('\r\n').split('\t')
-##     while not the_header[0] == 'FEATURES':
-##         the_header = in_file_handle.readline().rstrip('\r\n').split('\t')
-
-##     the_data = [x.rstrip('\r\n').split('\t')
-##                 for x in in_file_handle.readlines() \
-##                 if 'GE_BrightCorner' not in x and 'DarkCorner' not in x]
-##     in_file_handle.close()
-##     if return_id.lower() == 'accession':
-##         return_id = 'SystematicName'
-##     elif return_id.lower() == 'probe':
-##         return_id = 'ProbeName'
-##     else:
-##         return_id = 'SystematicName'
-##     gene_index = the_header.index(return_id)
-##     the_gene_dict = defaultdict(list)
-##     the_error_dict = defaultdict(list)
-##     p_value_dict = defaultdict(list)
-##     if normalization is None:
-##         log_ratio_index = the_header.index('LogRatio')
-##         log_error_index = the_header.index('LogRatioError')
-##         p_value_index = the_header.index('PValueLogRatio')
-##         [(the_gene_dict[x[gene_index]].append(float(x[log_ratio_index])*polarity),
-##           the_error_dict[x[gene_index]].append(float(x[log_error_index])),
-##           p_value_dict[x[gene_index]].append(float(x[p_value_index])))
-##          for x in the_data]
-##         for the_gene, log_ratios in the_gene_dict.items():
-##             if len(log_ratios) == 1:
-##                 the_gene_dict[the_gene] = log_ratios[0]
-##                 p_value_dict[the_gene] = p_value_dict[the_gene][0]
-##                 the_error_dict[the_gene] = the_error_dict[the_gene][0]
-##             else:
-##                 the_means = map(lambda x: log_base**x, log_ratios)
-##                 the_stds = map(lambda x: log_base**x, the_error_dict[the_gene])
-##                 weighted_mean, weighted_std = error_weighted(the_means, the_stds)
-##                 the_gene_dict[the_gene] = log_function(weighted_mean, log_base)
-##                 the_error_dict[the_gene] = log_function(weighted_std, log_base)
-##                 p_value_dict[the_gene] = combine_p_values(p_value_dict[the_gene])
-##         return {'log_ratio':the_gene_dict, 'p_value':p_value_dict, 'log_error': the_error_dict}
-##     elif normalization.lower() == 'lowess':
-##         red_index = the_header.index('rBGSubSignal')
-##         green_index = the_header.index('gBGSubSignal')
-##         gene_names = []
-##         red_signal = []
-##         green_signal = []
-##         [(gene_names.append(x[gene_index]),
-##           red_signal.append(float(x[red_index])),
-##           green_signal.append(float(x[green_index])))
-##          for x in the_data if float(x[red_index]) > 0 and float(x[green_index]) > 0]
-##         red_signal = array(red_signal)
-##         green_signal = array(green_signal)
-##         a = log10(red_signal*green_signal)/2. 
-##         if polarity == 1:
-##             m = log10(red_signal/green_signal)
-##         else:
-##             m = log10(green_signal/red_signal)
-##         lowess_fit = array(r.lowess(a, m, lowess_parameter)).T
-##         m = m - lowess_fit[:,1]
-##         #HERE: there's a problem with zipping
-##         [the_gene_dict[k].append(v) for k,v in zip(gene_names,list(m))]
-##         for k,v in the_gene_dict.items():
-##             the_gene_dict[k] = log10(mean(map(lambda x: 10**x, v)))
-##         return the_gene_dict
