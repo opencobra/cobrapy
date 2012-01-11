@@ -84,6 +84,7 @@ class SUXModelMILP(cobra.Model):
         self._update_objectives()
 
     def solve(self, iterations=5):
+        """solve the MILP problem"""
         used_reactions = []
         numeric_error_cutoff = 0.0001
         self._update_objectives()
@@ -114,14 +115,15 @@ def growMatch(model, Universal=None):
 
 
 def SMILEY(model, metabolite_id, Universal=None):
-    """runs the SMILEY algorithm to determine which gaps should be
-     filled in order for the model to create the metabolite with the
-     given metabolite_id.
+    """
+    runs the SMILEY algorithm to determine which gaps should be
+    filled in order for the model to create the metabolite with the
+    given metabolite_id.
 
-    This function is good for running the algorithm once.
-    For more fine grain control, create a SUXModelMILP object, add a
-     demand reation for the given metabolite_id, and call the solve
-     function on the SUXModelMILP object.
+    This function is good for running the algorithm once. For more fine-
+    grained control, create a SUXModelMILP object, add a demand reaction
+    for the given metabolite_id, and call the solve function on the
+    SUXModelMILP object.
     """
     if Universal is None:
         Universal = import_kegg_reactions()

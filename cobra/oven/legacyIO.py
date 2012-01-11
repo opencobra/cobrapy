@@ -1,12 +1,15 @@
 from os.path import isfile
-from csv import reader
+from csv import reader, writer
 from re import compile, findall
 from warnings import warn
-from cPickle import (load as _load, dump as _dump)
+try:
+    from cPickle import load, dump
+except ImportError:
+    from pickle import load, dump
 
 import cobra
 from cobra.io.sbml import create_cobra_model_from_sbml_file as _sbml_import
-from scipy.io import loadmat as _loadmat, savemat as _savemat
+from scipy.io import loadmat, savemat
 from numpy import array as _array, object as _object
 
 # function to help translate an array to a MATLAB cell array
@@ -14,16 +17,63 @@ _cell = lambda x: _array(x, dtype=_object)
 
 
 def load_pickle(pickle_file):
-    """read in a pickle file"""
+    """Read in a pickle file.
+
+    Parameters
+    ----------
+    pickle_file : str
+        The path to the pickle to load.
+
+    Returns
+    -------
+    contents : the contents of the pickle
+
+    """
+    # if the user does not add the .pickle extension
+    if not isfile(pickle_file) and not pickle_file.endswith(".pickle") \
+            and isfile("pickle_file" + ".pickle"):
+        pickle_file += ".pickle"
     infile = open(pickle_file, "rb")
-    contents = _load(infile)
+    contents = load(infile)
     infile.close()
     return contents
 
 
-def save_matlab_model(outfile, model):
-    """save the cobra model as a .mat file for use in the
-    MATLAB version of COBRA"""
+def export_flux_distribution(model, filepath):
+    """Export flux distribution to import into Simpheny.
+
+    Parameters
+    ----------
+    model : cobra.Model
+    filepath: str
+
+    """
+    from simphenyMapping import mapping
+    outfile = open(filepath, "w")
+    outcsv = writer(outfile, delimiter="\t", lineterminator="\n")
+    outcsv.writerow(["Reaction Number", "Flux Value",
+                     "Lower Bound", "Upper Bound"])
+    for reaction_name, reaction_flux in model.solution.x_dict.iteritems():
+        reaction = model.reactions.get_by_id(reaction_name)
+        try:
+            outcsv.writerow([mapping[reaction_name], reaction_flux,
+                reaction.lower_bound, reaction.upper_bound])
+        except KeyError, e:
+            print "Simpheny id number not found for", e
+    outfile.close()
+
+
+def save_matlab_model(model, outfile_path):
+    """Save the cobra model as a .mat file.
+
+    This .mat file can be used directly in the MATLAB version of COBRA
+
+    Parameters
+    ----------
+    model : cobra.Model
+    outfile_path : str
+
+    """
     model.update()
     rxns = model.reactions
     mets = model.metabolites
@@ -39,7 +89,7 @@ def save_matlab_model(outfile, model):
     mat["rxns"] = _cell(rxns.list_attr("id"))
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
     mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
-    mat["csense"] = csense 
+    mat["csense"] = csense
     mat["S"] = model._S
     mat["lb"] = _array(rxns.list_attr("lower_bound"))
     mat["ub"] = _array(rxns.list_attr("upper_bound"))
@@ -47,7 +97,7 @@ def save_matlab_model(outfile, model):
     mat["c"] = _array(rxns.list_attr("objective_coefficient"))
     mat["rev"] = _array(rxns.list_attr("reversibility"))
     mat["description"] = str(model.description)
-    _savemat(outfile, {str(model.description): mat},
+    savemat(outfile_path, {str(model.description): mat},
              appendmat=True, oned_as="column")
 
 
@@ -71,6 +121,7 @@ def _fix_legacy_id(the_id):
 
 
 def read_legacy_sbml(filename):
+    """read in an sbml file and fix the sbml id's"""
     model = _sbml_import(filename)
     for metabolite in model.metabolites:
         metabolite.id = _fix_legacy_id(metabolite.id)
@@ -117,21 +168,32 @@ def _find_metabolites_by_base(base, metabolites):
     return found
 
 
-def read_simpheny(baseName, minlowerbound=-1000, maxupperbound=1000,
+def read_simpheny(baseName, min_lower_bound=-1000, max_upper_bound=1000,
         maximize_info=True):
-    """Imports SimPheny Exported files. This is a legacy import, and
-    may give an erroenous model. Use with caution.
+    r"""Imports files exported from a SimPheny simulation as a cobra model.
 
-    baseName: The filepath to the exported SimPheny files without any of
-    the extensions. On Windows, it helps if baseName is a raw string
-    (i.e. r"Path\\to\\files")
+    .. warning:: Use with caution. This is a legacy import function, and
+        errors have been observed in the converted gene-reaction rules.
 
-    maximize_info: An optional boolean keyword argument. If True, then an
-    attempt will be made to parse the gpr and metabolite info files, and the
-    function will take a little bit longer.
-    NOTE: Simpheny gene protein relationships have been known to be corrupted
+    Parameters
+    ----------
+    baseName : str
+        The filepath to the exported SimPheny files without any of the
+        extensions. On Windows, it helps if baseName is a raw string
+        (i.e. r"Path\\to\\files")
+    min_lower_bound, max_upper_bound : float or int, optional
+        The bounds on the lower and upper bounds of fluxes in model.
+    maximize_info : bool, optional
+        An optional boolean keyword argument. If True, then an attempt
+        will be made to parse the gpr and metabolite info files, and the
+        function will take a little bit longer.
 
-    returns: the imported simpheny model"""
+    Returns
+    -------
+    model : cobra.Model
+        the imported simpheny model
+
+    """
 
     # check to make sure the files can be read
     if not(isfile(baseName + ".met")
@@ -160,7 +222,7 @@ def read_simpheny(baseName, minlowerbound=-1000, maxupperbound=1000,
         metabolites.append(metabolite)
     model.add_metabolites(metabolites)
     # scalefunc will limit the maximum and minumum fluxes
-    scalefunc = lambda x: max(min(maxupperbound, x), minlowerbound)
+    scalefunc = lambda x: max(min(max_upper_bound, x), min_lower_bound)
     # read in reaction file
     reaction_file = _open_and_skip_header(baseName + ".rxn")
     reactions = []
@@ -221,4 +283,3 @@ def read_simpheny(baseName, minlowerbound=-1000, maxupperbound=1000,
         gpr_file.close()
     model.update()
     return model
-

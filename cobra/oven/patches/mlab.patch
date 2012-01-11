@@ -12,8 +12,8 @@ Index: mlab/__init__.py
 +"""
 Index: mlab/mlab.py
 ===================================================================
---- ../../mlab/mlab.py	(revision 179)
-+++ ../../mlab/mlab.py	(working copy)
+--- mlab/mlab.py	(revision 179)
++++ mlab/mlab.py	(working copy)
 @@ -1,13 +1,77 @@
  #cobra.mlab.py
  #System modules

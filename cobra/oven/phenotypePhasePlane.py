@@ -40,6 +40,7 @@ class phenotypePhasePlaneData:
         self.phases = []
 
     def plot(self):
+        """plot the phenotype phase plane in 3D using any available backend"""
         if mlab is not None:
             self.plot_mayavi()
         elif pyplot is not None:
@@ -108,6 +109,7 @@ class phenotypePhasePlaneData:
         return figure
 
     def segment(self, threshold=0.005):
+        """attempt to segment the data and identify the various phases"""
         self.segments *= 0
         # each entry in phases will consist of the following tuple
         # ((x, y), shadow_price1, shadow_price2)
@@ -242,10 +244,12 @@ if __name__ == "__main__":
     # model.reactions.get_by_id("EX_glyc_e").lower_bound = -10
     start_time = time()
     data = calculate_phenotype_phase_plane(model, "EX_glc(e)",
-        'EX_o2(e)', reaction1_npoints=n1, reaction2_npoints=n2, n_processes=1, solver="glpk")
+        'EX_o2(e)', reaction1_npoints=n1, reaction2_npoints=n2,
+        n_processes=1, solver="glpk")
     print "took %.2f seconds with 1 process" % (time() - start_time)
-    # start_time = time()
-    # data = calculate_phenotype_phase_plane(model, 'EX_glc(e)',
-        # 'EX_o2_e', reaction1_npoints=n1, reaction2_npoints=n2, n_processes=4)
-    # print "took %.2f seconds with 4 processes" % (time() - start_time)
+    start_time = time()
+    data = calculate_phenotype_phase_plane(model, 'EX_glc(e)',
+        'EX_o2(e)', reaction1_npoints=n1, reaction2_npoints=n2,
+        n_processes=2, solver="glpk")
+    print "took %.2f seconds with 2 processes" % (time() - start_time)
     data.plot()

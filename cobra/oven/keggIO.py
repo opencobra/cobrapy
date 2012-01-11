@@ -12,7 +12,7 @@ reactionlst_default = join(kegg_directory, "reaction.lst")
 blacklistpath_default = join(kegg_directory, "kegg_blacklist.csv")
 
 
-def intify(string):
+def _intify(string):
     """returns integer representation of the str
     If str is a single letter, it will return 1"""
     if string.isdigit():
@@ -27,7 +27,7 @@ def intify(string):
         raise ValueError(string)
 
 
-def parse_split_array(str_array):
+def _parse_split_array(str_array):
     """takes in an array of strings, each of which is either
     - a compound OR
     - a number followed by a compound
@@ -43,7 +43,7 @@ def parse_split_array(str_array):
         else:
             the_coefficient, the_metabolite = string.split()
             metabolites.append(the_metabolite)
-            coefficients.append(intify(the_coefficient))
+            coefficients.append(_intify(the_coefficient))
     return [metabolites, coefficients]
 
 
@@ -54,15 +54,18 @@ def import_kegg_reactions(compartment="c", reactionlstpath=None,
 
     If no file is specified for any of these, a default file will be used:
     reactionlstpath: path to path of kegg reactions
-        the format should be
-        reactionid: Met1 + 2 Met2 <=> Met3 + 2 Met4
-    keggdictpath: path to csv file translating between kegg and cobra
-        metabolite ID's
-        first column contains kegg ID, second contains cobra id
-    blacklistpath: path to csv containing the kegg blacklist
-        first columm contains the kegg id's of blacklisted reactions
+    the format should be
+    reactionid: Met1 + 2 Met2 <=> Met3 + 2 Met4
 
-    returns: cobra model with all of the included reactions"""
+    keggdictpath: The path to a csv file translating between kegg and cobra
+    metabolite ID's, where the first column contains the kegg ID, and the
+    second contains cobra id
+
+    blacklistpath: path to a file listing the blacklisted reactions, with
+    one per line
+
+    returns: cobra model with all of the included reactions
+    """
 
     if reactionlstpath is None:
         reactionlstpath = reactionlst_default
@@ -107,9 +110,9 @@ def import_kegg_reactions(compartment="c", reactionlstpath=None,
         # break up reactant and product strings into arrays of
         # metabolites and coefficients
         reactant_metabolites, reactant_coefficients = \
-            parse_split_array(plus_sep(reactants_str))
+            _parse_split_array(plus_sep(reactants_str))
         product_metabolites, product_coefficients = \
-            parse_split_array(plus_sep(products_str))
+            _parse_split_array(plus_sep(products_str))
         # reactant coefficients all need to be multiplied by -1
         for i, coeff in enumerate(reactant_coefficients):
             reactant_coefficients[i] = coeff * -1
