@@ -146,8 +146,18 @@ class DictList(list):
     
     
     def index(self, the_id):
+        """
+        the_id: A string or a cobra.object.  If a cobra.object
+        """
         # because values are unique, start and stop are not relevant
-        return self._dict[the_id]
+        try:
+            the_object = self._dict[the_id]
+        except:
+            the_object = self._dict[the_id.id]
+            if self[the_object] is not the_id:
+                raise Exception("The id for the cobra.object (%s) provided "%repr(the_id) +\
+                                "is in this dictionary but the_id is not the cobra.object")
+        return the_object
         
     def __contains__(self, the_object):
         """DictList.__contains__(object) <==> object in DictList
@@ -222,11 +232,7 @@ if __name__ == '__main__':
     from copy import deepcopy
     from cobra import Model
     from collections import defaultdict
-    import cobra.core.Model_2
-    reload(cobra.core.Model_2)
-    from cobra.core.Model_2 import Model as Model_2
-    model_dict = {'list': Model,
-                  'DictList': Model_2}
+    model_dict = {'DictList': Model}
     
     from cobra.manipulation import initialize_growth_medium
     test_directory = '../../test/data/'

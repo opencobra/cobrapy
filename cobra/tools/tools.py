@@ -1,5 +1,6 @@
 #cobra.tools.py
 #System modules
+from pdb import set_trace
 import numpy, os, re, scipy, sys
 from copy import deepcopy
 from cPickle import dump
@@ -226,9 +227,10 @@ def gene_to_reaction_value(cobra_model, gene_value_dict=None,
     running a large number of these functions in parallel.
 
     spontaneous_value: The value to assign to spontaneous reactions
+
+    returns a dict {cobra_model.reaction[i]: score[i]}
     
     """
-    raise Exception('Update to used the _reaction attribute in each cobra.Gene')
     gene_re = re.compile(gene_prefix + '(\w|\.)+')
     #2010-06-15: Cannot remember by the or was atomized, so deleted it
     #because of problems.  Potential BUG.
@@ -258,59 +260,54 @@ def gene_to_reaction_value(cobra_model, gene_value_dict=None,
       for k, v in gene_value_dict.items()
      if isnan(v).any() or isinf(v).any()]
 
-    the_gene_indices = [cobra_model.genes.index(k)
-                        for k in gene_value_dict]
-    #Determine in which reactions the genes are involved
-    the_reaction_indices = list(set(reduce(lambda x, y: x+y,
-                                           cobra_model._reaction_gene_matrix.T.rows[the_gene_indices])))
+    gene_id_to_value = dict([(k.id, v) for k, v in gene_value_dict.iteritems()])
+    #Since reactions and genes point to each other we
+    #can aggregate based on these
+    the_reactions = set()
+    [the_reactions.update(x._reaction) for x in gene_value_dict]
 
-    the_reaction_indices.sort()
-    tmp_gene_reaction_rules = deepcopy([cobra_model.reactions[x].gene_reaction_rule
-                                        for x in the_reaction_indices])
-    #Replace the spontaneous / orphaned reactions with spontaneous_value because
-    #we are interested in the values associated with the detected items.
-    tmp_gene_reaction_rules = [spontaneous_re.sub(repr(spontaneous_value), y)
-                                for y in tmp_gene_reaction_rules] 
     #This deals with the fact that some genes have the same base but an additional suffix
     #HERE 2010-04-23: Dealing with ids being substrings of other ids.
-    new_rules = []
-    for the_rule in tmp_gene_reaction_rules:
-        old_rule = deepcopy(the_rule)
+    new_rules = {}
+    #Make copies of the gene_reaction_rules for the reactions and
+    #substitute in the spontaneous value
+
+    for the_reaction in the_reactions:
+        the_rule =  deepcopy(the_reaction.gene_reaction_rule)
         if the_rule == '':
-            new_rules.append(spontaneous_value)
+            new_rules[the_reaction] = spontaneous_value
             continue
+        else:
+            the_rule = spontaneous_re.sub(repr(spontaneous_value),
+                                          the_rule)
+
         the_rule = the_rule.replace('+', ' and ').replace(',', ' or ')
         the_gene_list = the_rule.replace('(', '').replace(')', '').replace(' and ', '\t' ).replace(' or ', '\t').replace(' ', '').split('\t')
+
         the_replacements = []
         for the_gene in the_gene_list:
-            if the_gene in gene_value_dict.keys():
-                the_replacements.append(repr(gene_value_dict[the_gene]))
+            if the_gene in gene_id_to_value:
+                the_replacements.append(repr(gene_id_to_value[the_gene]))
             elif the_gene in spontaneous_ids:
                 the_replacements.append(repr(spontaneous_value))
             else:
                 the_replacements.append(repr(default_value))
         #ordered_replace is used to deal with some genes being substrings of other genes
-        new_rules.append(ordered_replace(the_rule, the_gene_list,
-                                         the_replacements))
-
+        new_rules[the_reaction] = ordered_replace(the_rule, the_gene_list,
+                                                  the_replacements)
     #Now calculate the p value for the reaction based on the complex_aggregate
     #flag.
     #TODO:  This needs to be retooled to deal with enzyme complexes
-    reaction_values = []
-    for the_rule in new_rules:
+    for the_reaction, the_rule in new_rules.iteritems():
         if the_rule.startswith('(') and (the_rule.find('or') != -1
                                            or the_rule.find('and') != -1):
-            reaction_values.append(complex_aggregate(eval('(%s)'%the_rule.replace('and', ',').replace('or', ',').replace('(', '').replace(')', ''))))
+            new_rules[the_reaction] = complex_aggregate(eval('(%s)'%the_rule.replace('and', ',').replace('or', ',').replace('(', '').replace(')', '')))
         else:
-            reaction_values.append(eval(the_rule.lstrip('(').rstrip(')')))
+            new_rules[the_reaction] = eval(the_rule.lstrip('(').rstrip(')'))
     if return_id:
-        return([return_id, dict(zip([cobra_model.reactions[x]
-                                       for x in the_reaction_indices],
-                                    reaction_values))])
+        return([return_id, new_rules])
     else:
-        return(dict(zip([cobra_model.reactions[x]
-                            for x in the_reaction_indices],
-                        reaction_values)))
+        return(new_rules)
 
 
 

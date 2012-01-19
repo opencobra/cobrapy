@@ -229,7 +229,9 @@ class Model(Object):
 
     
         """
-        warn("WARNING: This function is only used after the Model has been " +\
+        warn("WARNING: To be modified.  It will be faster to use properties of the DictList " +\
+             "self.reactions to find a reaction and update the matrices " +\
+             "This function is only used after the Model has been " +\
              "converted to matrices.  It is typically faster to access the objects" +\
              "in the Model directly.  This function will eventually moved to another" +\
              "module for advanced users due to the potential for mistakes.")
@@ -263,26 +265,25 @@ class Model(Object):
         reaction.id is not in self.reactions.
 
         reaction: A cobra.Reaction object
-        
-         If the stoichiometric matrix is initially empty then initialize a 1x1
-         sparse matrix and add more rows as needed in the self.add_metabolites
-         function
+
+        Note: If you want to use the internal matrices/vectors immediately after
+        adding a reaction you must call the update() function for the model.
          
         """
         self.add_reactions(reaction)
 
-
-
         
-    def add_reactions(self, reaction_list, update_stoichiometric_matrix=True):
+    def add_reactions(self, reaction_list, update_matrices=False):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
 
         reaction_list: A cobra.Reaction object or a list of them
 
-        update_stoichiometric_matrix: Not yet implemented. Boolean.  If False then the self._S matrix
-        will not be constructed.  This is one of the time consuming steps for
-        large matrices.
+        update_matrices:  Boolean.  If true populate / update matrices
+        _S, _lower_bounds, _upper_bounds, .... Note this is slow to run
+        for very large models and using this option with repeated calls
+        will degrade performance.  Better to call self.update() after
+        adding all reactions.
 
         
          If the stoichiometric matrix is initially empty then initialize a 1x1
@@ -337,15 +338,15 @@ class Model(Object):
         #Add the reactions to the Model
         self.reactions += reaction_list
 
-        if update_stoichiometric_matrix:
-            self._update_stoichiometric_matrix(reaction_list)
-    def construct_stoichiometric_matrix():
+        if update_matrices:
+            self._update_matrices(reaction_list)
+    def _construct_matrices():
         """Large sparse matrices take time to construct and to read / write.
         This function allows one to let the model exists without cobra_model._S
         and then generate it at needed.
         
         """
-        self._update_stoichiometric_matrix() #This does basic construction as well.
+        self._update_matrices() #This does basic construction as well.
 
     def _update_reaction_vectors(self):
         """regenerates the _lower_bounds, _upper_bounds,
@@ -384,7 +385,7 @@ class Model(Object):
         self._constraint_sense = _constraint_sense
          
 
-    def _update_stoichiometric_matrix(self, reaction_list=None):
+    def _update_matrices(self, reaction_list=None):
         """
         reaction_list: None or a list of cobra.Reaction objects that are in
         self.reactions.  If None then reconstruct the whole matrix.
@@ -451,8 +452,6 @@ class Model(Object):
         #Use dok format to speed up additions.
         coefficient_dictionary = {}
         #SPEED this up. This is the slow part.  Can probably use a dict to index.
-        metabolite_to_index_dict = dict(zip([x.id for x in self.metabolites],
-                                            range(len(self.metabolites))))
         for the_reaction in reaction_list:
             reaction_index = self.reactions.index(the_reaction.id)
             for the_key, the_value in the_reaction._metabolites.items():
@@ -466,10 +465,9 @@ class Model(Object):
 
     def update(self):
         """Regenerates the stoichiometric matrix and vectors
+        
         """
-        self._update_stoichiometric_matrix()
-        self._update_reaction_vectors()
-        self._update_metabolite_vectors()
+        self._update_matrices()
 
     def optimize(self, new_objective=None, objective_sense='maximize',
                  min_norm=0, the_problem=None, solver='glpk', 

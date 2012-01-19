@@ -281,14 +281,14 @@ def parse_legacy_sbml_notes(note_string, note_delimiter = ':'):
     return note_dict
 
 
-def write_cobra_model_to_sbml_file(cobra_model, sbml_file,
+def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
                                    sbml_level=2, sbml_version=1,
                                    print_time=False):
     """Write a cobra.Model object to an SBML XML file.
 
     cobra_model:  A cobra.Model object
 
-    sbml_file:  The file to write the SBML XML to.
+    sbml_filename:  The file to write the SBML XML to.
 
     sbml_level:  2 is the only level supported at the moment.
 

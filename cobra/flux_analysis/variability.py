@@ -1,5 +1,6 @@
 #cobra.flux_analysis.variablity.py
 #runs flux variablity analysis on a Model object.
+from pdb import set_trace
 from math import floor,ceil
 from numpy import hstack,zeros
 from scipy import sparse
@@ -89,9 +90,13 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
         cobra_model = cobra_model.copy()
     if not the_reactions:
         the_reactions = cobra_model.reactions
-    if not hasattr(the_reactions[0], 'id'):
-        the_reactions = [cobra_model.reactions[cobra_model.reactions.index(x)]
-                         for x in the_reactions]
+    else:
+        if hasattr(the_reactions[0], 'id'):
+            #Because cobra_model = cobra_model.copy() any cobra.Reactions
+            #from the input won't point to cobra_model
+            the_reactions = [x.id for x in the_reactions]
+        #
+        the_reactions = map(cobra_model.reactions.get_by_id, the_reactions)
     #If parallel mode is called for then give it a try
     if number_of_processes > 1:
         print 'running in parallel. currently needs some speed optimizations'
@@ -127,64 +132,52 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
         pp_pointer = ppmap(number_of_processes,
                            flux_variability_analysis_wrapper, parameter_list)
         [variability_dict.update(x) for x in list(pp_pointer)]
-        return variability_dict
-    #Basically, add a virtual metabolite that reflects the
-    #objective coefficeints and the solution
-    objective_metabolite = Metabolite('objective')
-    [x.add_metabolites({objective_metabolite: x.objective_coefficient})
-     for x in cobra_model.reactions if x.objective_coefficient != 0]
-
-    #TODO: Kick back an error if cobra_model.solution.status is not optimal
-    if objective_sense == 'maximize':
-        objective_cutoff = floor(wt_solution/tolerance_optimality)*\
-                           tolerance_optimality*fraction_of_optimum
     else:
-        objective_cutoff = ceil(wt_solution/tolerance_optimality)*\
-                           tolerance_optimality*fraction_of_optimum
-    objective_metabolite._constraint_sense = 'E'
-    objective_metabolite._bound = objective_cutoff
-    #If objective_metabolite._model is None then we should cycle through
-    #each reaction as the initial objective.
-    if the_problem:
-        the_problem = cobra_model.optimize(solver=solver,
-                                           objective_sense='maximize',
-                                         tolerance_optimality=tolerance_optimality,
-                                         tolerance_feasibility=tolerance_feasibility,
-                                         tolerance_barrier=tolerance_barrier,
-                                         lp_method=lp_method, lp_parallel=lp_parallel,
-                                         the_problem='return', relax_b=relax_b,
-                                         error_reporting=error_reporting)
-    variability_dict = {}
-    #Add in a ppmap section to run it in parallel
-    for the_reaction in the_reactions:
-        if isinstance(the_reactions, list):
-            new_objective = the_reaction
+        #Basically, add a virtual metabolite that reflects the
+        #objective coefficeints and the solution
+        objective_metabolite = Metabolite('objective')
+        [x.add_metabolites({objective_metabolite: x.objective_coefficient})
+         for x in cobra_model.reactions if x.objective_coefficient != 0]
+
+        #TODO: Kick back an error if cobra_model.solution.status is not optimal
+        if objective_sense == 'maximize':
+            objective_cutoff = floor(wt_solution/tolerance_optimality)*\
+                               tolerance_optimality*fraction_of_optimum
         else:
-            new_objective = the_reactions[the_reaction]
-        tmp_dict = {}
-        #reaction_index = cobra_model.reactions.index(the_reaction)
-        the_problem=cobra_model.optimize(solver=solver,
-                                         new_objective=new_objective,
-                                         objective_sense='maximize',
-                                       tolerance_optimality=tolerance_optimality,
-                                       tolerance_feasibility=tolerance_feasibility,
-                                         tolerance_barrier=tolerance_barrier,
-                                         lp_method=lp_method,
-                                         lp_parallel=lp_parallel,
-                                         the_problem=the_problem,
-                                         error_reporting=error_reporting)
-        tmp_dict['maximum'] = cobra_model.solution.f
-        the_problem=cobra_model.optimize(solver=solver,new_objective=new_objective,
-                                         objective_sense='minimize',
-                                       tolerance_optimality=tolerance_optimality,
-                                       tolerance_feasibility=tolerance_feasibility,
-                                         tolerance_barrier=tolerance_barrier,
-                                         lp_method=lp_method,
-                                         lp_parallel=lp_parallel,
-                                         the_problem=the_problem,
-                                         error_reporting=error_reporting)
-        tmp_dict['minimum'] = cobra_model.solution.f
-        variability_dict[the_reaction] = tmp_dict
+            objective_cutoff = ceil(wt_solution/tolerance_optimality)*\
+                               tolerance_optimality*fraction_of_optimum
+        objective_metabolite._constraint_sense = 'E'
+        objective_metabolite._bound = objective_cutoff
+        #If objective_metabolite._model is None then we should cycle through
+        #each reaction as the initial objective.
+        if the_problem:
+            the_problem = cobra_model.optimize(solver=solver,
+                                               objective_sense='maximize',
+                                               tolerance_optimality=tolerance_optimality,
+                                               tolerance_feasibility=tolerance_feasibility,
+                                               tolerance_barrier=tolerance_barrier,
+                                               lp_method=lp_method, lp_parallel=lp_parallel,
+                                               the_problem='return', relax_b=relax_b,
+                                               error_reporting=error_reporting)
+        variability_dict = {}
+        the_sense_dict = {'maximize': 'maximum',
+                          'minimize': 'minimum'}
+        for the_reaction in the_reactions:
+            tmp_dict = {}
+            for the_sense, the_description in the_sense_dict.iteritems():
+                the_problem = cobra_model.optimize(solver=solver,
+                                                   new_objective=the_reaction,
+                                                   objective_sense=the_sense,
+                                                   tolerance_optimality=tolerance_optimality,
+                                                   tolerance_feasibility=tolerance_feasibility,
+                                                   tolerance_barrier=tolerance_barrier,
+                                                   lp_method=lp_method,
+                                                   lp_parallel=lp_parallel,
+                                                   the_problem=the_problem,
+                                                   error_reporting=error_reporting)
+                tmp_dict[the_description] = cobra_model.solution.f
+            variability_dict[the_reaction] = tmp_dict
+            set_trace()
     return variability_dict
 
 

@@ -1,16 +1,18 @@
 #cobra.topology.reporter_metabolites.py: Module for topological analysis of cobra_models
 #Based on Patil et al 2005 PNAS 102:2685-9
 #TODO: Validate cobra.core compliance
+from pdb import set_trace
 from copy import deepcopy
 from numpy import array, corrcoef, mean, std, tril, where, unique, zeros
 from scipy.stats import norm, randint
 from collections import defaultdict
+from warnings import warn
 
-def identify_reporter_metabolites(cobra_model, the_reactions, the_scores,
+def identify_reporter_metabolites(cobra_model, reaction_scores_dict,
                                   number_of_randomizations=1000, number_of_layers=1,
                                   scoring_metric='default', score_type='p',
                                   entire_network=False, background_correction=True,
-                                  return_all=False, ignore_exchange_reactions=True):
+                                  ignore_external_boundary_reactions=False):
     """Calculate the aggregate Z-score for the metabolites in the model.
     Ignore reactions that are solely spontaneous or orphan. Allow the scores to
     have multiple columns / experiments.   This will change the way the output
@@ -18,9 +20,11 @@ def identify_reporter_metabolites(cobra_model, the_reactions, the_scores,
 
     cobra_model: A cobra.Model object
 
-    the_reactions: A list of reactions for which to calculate aggregate scores.
+    TODO: CHANGE TO USING DICTIONARIES for the_reactions: the_scores
 
-    the_scores: Corresponding scores for the_reactions of type score_type.
+    reaction_scores_dict:  A dictionary where the keys are reactions in cobra_model.reactions
+    and the values are the scores.  Currently, only supports a single numeric value as
+    the value; however, this will be updated to allow for lists
 
     number_of_randomizations: Integer.  Number of random shuffles of the
     scores to assess which are significant.
@@ -36,141 +40,103 @@ def identify_reporter_metabolites(cobra_model, the_reactions, the_scores,
     background_correction: Boolean.  If True apply background correction to the aggreagate
     Z-score
 
-    return_all: Boolean.  If True return all scores.  If False only return scores > 0.
-
-    ignore_exchange_reactions: Boolean.  If True do not count exchange reactions when
+    ignore_external_boundary_reactions: Not yet implemented. Boolean.  If True do not count exchange reactions when
     calculating the score.
 
-    #TODO: Rewrite to take advantage of cobra.Objects
+    
 
     
     """
-    cobra_model.update_stoichiometric_matrix()
     #Add in a function to calculate based on correlation coefficients and to
     #deal with other multidimensional data. 
+    the_reactions = reaction_scores_dict.keys()
+    the_scores = reaction_scores_dict.values()
     if score_type == 'p' and not hasattr(the_scores[0], '__iter__'):
         #minimum and maximum p-values are used to prevent numerical problems.
         #haven't decided whether an arbitrary min / max 1e-15 is preferred to
         #blunting the ends based on the values closest to 0 or 1.
-        the_scores = array(the_scores)
-        minimum_p = min(the_scores[ the_scores.nonzero()[0]])
+        the_reactions = reaction_scores_dict.keys()
+        the_scores = array(reaction_scores_dict.values())
+        minimum_p = min(the_scores[the_scores.nonzero()[0]])
         maximum_p = max(the_scores[where(the_scores < 1)[0]])
         the_scores[where(the_scores < minimum_p)] = minimum_p
         the_scores[where(the_scores > maximum_p)] = maximum_p
         the_scores = -norm.ppf(the_scores)
+        #update the dictionary with the new scores
+        reaction_scores_dict = dict(zip(the_reactions, the_scores))
     elif hasattr(the_scores[0], '__iter__'):
         #In the case that the_scores is a list of lists, assume that each list is
         #the score for each reaction in the_reactions across all reactions.  Then
         #for each metabolite, calculate the invnorm(|Pearson Correlation
         #Coefficient| for each reaction pair that it links.
-        tmp_scores = []
-        for the_row in cobra_model._S.rows:
-            tmp_reaction_indices = [the_reactions.index(y)
-                                     for y in [cobra_model.reactions[x]
-                                                for x in the_row] if y in the_reactions ]
-            if len(tmp_reaction_indices) > 1:
-                tmp_array = tril(abs(corrcoef([the_scores[x]
-                                                  for x in tmp_reaction_indices])), -1)
-                #HERE 2010-03-16
-                #TODO: Make sure this is correct and then deal with the latter
-                #part of the function calculating for p-values
-                tmp_p_sum = tmp_array.sum()
-                tmp_k = (tmp_array.shape[0]*(tmp_array.shape[0]-1))/2
-                tmp_score = tmp_p_sum / tmp_k**.5
-                tmp_scores.append(tmp_score)
-            else:
-                tmp_scores.append(0)
-        the_scores = tmp_scores
-    #Get the indices of spontaneous reactions.  They should not be counted as connections.
-    nonenzymatic_reaction_indices = [cobra_model.reactions.index(x)
-                                     for x in cobra_model.reactions 
-                                     if x.gene_reaction_rule == 's0001' or
-                                     x.gene_reaction_rule == '']
-    if hasattr(the_reactions[0], 'id'):
-        scoring_dict = dict(zip(map(lambda x: x.id, the_reactions), the_scores))
-    else:
-        scoring_dict = dict(zip(the_reactions, the_scores))
-    #Create a matrix of the stoichiometry for only the reactions involved in
-    #the reactions.
-    reaction_indices = array(map(cobra_model.reactions.index, the_reactions))
-    #A fast way to identify the connectivity distribution for the metabolites
-    #need to have a function to feed to the defulat dict.
-    def zero():
-        return(0)
-    connectivity_dict = defaultdict(zero)
-    #Here, we transpose the S matrix because it's faster to access rows in
-    #the scipy sparse matrix.  Then we use the rows function which will provide
-    #the indice of each column (metabolite now that the matrix has been transposed)
-    #that is nonzero.  Then we select out the rows (reactions) that correspond to
-    #a reaction in the reactions.
-    #To get the connectivity for each metabolite, we just count the number of
-    #times the index is detected in a row.
-    for x in reduce(lambda x, y: x+y,cobra_model._S.T.rows[reaction_indices]):
-        connectivity_dict[x] += 1
-    #Here we just get the distinct connectivity values.
-    connectivity_values = list(set(connectivity_dict.values()))
+        raise Exception("This isn't implemented yet")
+    
+    #Get the connectivity for each metabolite
+    the_metabolites = set()
+    [the_metabolites.update(x._metabolites)
+     for x in reaction_scores_dict];
 
-    correction_dict = {}
+    metabolite_scores = {}
+    metabolite_connections = {}
+    #Calculate the score for each metabolite
+    for the_metabolite in the_metabolites:
+        nonspontaneous_connections = [x for x in the_metabolite._reaction
+                                      if x.gene_reaction_rule.lower() not in
+                                      ['s0001', '']]
+        tmp_score = 0
+        number_of_connections = len(nonspontaneous_connections)
+        for the_reaction in nonspontaneous_connections:
+            if the_reaction not in reaction_scores_dict:
+                if not entire_network:
+                    number_of_connections -= 1
+                continue
+            else:
+                tmp_score += reaction_scores_dict[the_reaction]
+        metabolite_scores[the_metabolite] = tmp_score
+        metabolite_connections[the_metabolite] = number_of_connections
+
     #NOTE: Doing the corrections based only on the significantly perturbed scores
     #is probably going to underestimate the significance.
     if background_correction:
-        for i in connectivity_values:
+        correction_dict = {}
+        for i in set(metabolite_connections.values()):
             #if entire_network # add in a section to deal with the situation where
             #the entire network structure is considered by only have p-values for
             #a limited subset.
             #
             #Basically, what we're doing here is that for each i we select i
             #scores number_of_randomizations times
-            the_random_indices = randint.rvs(0,len(the_scores),size=(number_of_randomizations, i))
-
+            the_random_indices = randint.rvs(0,len(the_scores), size=(number_of_randomizations, i))
             random_score_distribution = array([sum(the_scores[x]) for x in list(the_random_indices)]) /i**0.5
             correction_dict[i] = [mean(random_score_distribution),
                                       std(random_score_distribution)] 
 
-    metabolite_scores = []
-    metabolite_connections = []
-    #Calculate the score for each metabolite
-    for the_row in cobra_model._S.rows:
-        #Currently, we do all the metabolites in model, but we could speed this
-        #up by only dealing with the keys from connectivity_dict
-        k = 0
-        tmp_score = 0
-        for reaction_index in the_row:
-            the_reaction = cobra_model.reactions[reaction_index]
-            if hasattr(the_reaction, 'id'):
-                the_reaction = the_reaction.id
-            if the_reaction in scoring_dict.keys():
-                tmp_score += scoring_dict[the_reaction]
-                k += 1
-            elif entire_network and reaction_index not in nonenzymatic_reaction_indices:
-                #This increases the k for reactions that are not in the_reactions
-                #but exist in cobra_model and have an associated enzyme.
-                k += 1
-        if k > 0:
+    for the_metabolite, the_score in metabolite_scores.iteritems():
+        number_of_connections = metabolite_connections[the_metabolite]
+        if number_of_connections > 0:
             #Correct based on background distribution
             if background_correction:
                 #if the list of scores is only for significant perturbations then the
                 #background correction shouldn't be applied because the current sampling
                 #method only takes into account the_scores not the entire network.
                 #It'd be more accurate to assign unscored reactions a default score.
-                tmp_score = ((tmp_score / k**.5)-correction_dict[k][0])/correction_dict[k][1]
+                the_score = ((the_score / number_of_connections**.5) -
+                             correction_dict[number_of_connections][0]) / \
+                             correction_dict[number_of_connections][1]
             else:
-                tmp_score = tmp_score / k**.5
-        metabolite_scores.append(tmp_score)
-        metabolite_connections.append(k)
-    if entire_network or return_all:
-        if background_correction:
-            return([deepcopy(cobra_model.metabolites),  array(metabolite_scores),
-                    array(metabolite_connections) , correction_dict])
-        else:
-            return([deepcopy(cobra_model.metabolites), array(metabolite_scores),
-                    array(metabolite_connections)])
-    else:
-        the_indices = list(where(array(metabolite_scores) > 0)[0])
-        return([[cobra_model.metabolites[x] for x in the_indices],
-                array([metabolite_scores[x] for x in the_indices]),
-                array([metabolite_connections[x] for x in the_indices])])
+                the_score = the_score / number_of_connections**.5
+            #Update the score
+            metabolite_scores[the_metabolite] = the_score
 
+
+
+    return_dictionary = {'scores': metabolite_scores,
+                         'connections': metabolite_connections}
+    if background_correction:
+        return_dictionary['corrections'] = correction_dict
+
+    return(return_dictionary)
+    
 def ppmap_identify_reporter_metabolites(keywords):
     """
     A function that receives a dict with all of the parameters for identify_reporter_metabolites
@@ -191,11 +157,11 @@ if __name__ == '__main__':
     with open(test_directory + 'reaction_p_values.pickle') as in_file:
         reaction_p = load(in_file)
 
-    the_reactions = reaction_p.keys()
-    the_scores = [reaction_p[k] for k in the_reactions]
-    tmp_reps = identify_reporter_metabolites(cobra_model, the_reactions,
-                                             the_scores,
-                                             background_correction=True,
-                                             return_all=True)
+    the_reactions = map(cobra_model.reactions.get_by_id, reaction_p.keys())
+    the_scores = reaction_p.values()
+    reaction_scores_dict = dict(zip(the_reactions, the_scores))
+    
+    tmp_reps = identify_reporter_metabolites(cobra_model, reaction_scores_dict,
+                                             background_correction=True)
 
     print 'Need to add in validation for the test'

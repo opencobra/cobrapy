@@ -1,10 +1,12 @@
 #cobra.flux_analysis.double_deletion.py
 #runs flux variablity analysis on a Model object.
+from pdb import set_trace
 from math import floor,ceil
 from numpy import vstack,zeros, nan
 from scipy import sparse
 from copy import deepcopy
 from cobra.flux_analysis.moma import moma
+from warnings import warn
 try:
     from cobra.external.ppmap import ppmap
 except:
@@ -59,7 +61,7 @@ def double_deletion_parallel(cobra_model, n_processes=4,
     """
     if not ppmap:
         if not ppmap:
-           print  'Parallel mode not available is Parallel Python installed'
+           print  'Parallel mode not available is Parallel Python installed?'
            return
     if the_problem:
         #The solver model objects are not thread safe so change the_problem
@@ -71,6 +73,9 @@ def double_deletion_parallel(cobra_model, n_processes=4,
                                              method=method, the_medium=the_medium,
                                              the_problem=the_problem, solver=solver,
                                              error_reporting=error_reporting)
+    else:
+        raise Exception("Double deletion not yet implemented for element_type = %s"%element_type)
+
 
 def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
                     method='fba', single_deletion_growth_dict=None, the_problem='return',
@@ -110,6 +115,8 @@ def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
                                     single_deletion_growth_dict=single_deletion_growth_dict,
                                     the_problem=the_problem, solver=solver,
                                     error_reporting=error_reporting)
+    else:
+        raise Exception("Double deletion not yet implemented for element_type = %s"%element_type)
 
 def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
                          method='fba', single_deletion_growth_dict=None,
@@ -146,7 +153,7 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
     dimension (y), and the growth simulation data (data).
     
     """
-
+    warn("Need to use more of cobra.Gene and less of strs in gene_list")
     #BUG: Since this might be called from ppmap, the modules need to
     #be imported.  Modify ppmap to take depfuncs
     from numpy import zeros, nan
@@ -176,8 +183,10 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
     #this is a slow way to revert models.
     wt_model = cobra_model  #NOTE: It may no longer be necessary to use a wt_model
     #due to undelete_model_genes
-    if not gene_list_1:
+    if gene_list_1 is None:
         gene_list_1 = cobra_model.genes
+    elif not hasattr(gene_list_1[0], 'id'):
+        gene_list_1 = map(cobra_model.genes.get_by_id, gene_list_1)
     #Get default values to use if the deletions do not alter any reactions
     the_problem = cobra_model.optimize(the_problem=the_problem, solver=solver)
     basal_f = cobra_model.solution.f
@@ -187,6 +196,8 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
         combined_model = None
     single_gene_set = set(gene_list_1)
     if gene_list_2:
+        if not hasattr(gene_list_2[0], 'id'):
+            gene_list_2 = map(cobra_model.genes.get_by_id, gene_list_2)
         single_gene_set.update(gene_list_2)
     #Run the single deletion analysis to account for double deletions that
     #target the same gene and lethal deletions.  We assume that there
@@ -197,15 +208,15 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
                                                   the_problem=the_problem,
                                                   solver=solver,
                                                   error_reporting=error_reporting)[0]
-    if gene_list_2 == None or gene_list_1 == gene_list_2:
+    if gene_list_2 is None or gene_list_1 == gene_list_2:
         deletion_array = zeros([len(gene_list_1), len(gene_list_1)]) 
         ##TODO: Speed up this triangular process
         #For the case where the contents of the lists are the same cut the work in half.
         #There might be a faster way to do this by using a triangular array function
         #in numpy
         #Populate the diagonal from the single deletion lists
-        for i in range(deletion_array.shape[0]):
-            deletion_array[i, i] = single_deletion_growth_dict[gene_list_1[i]]
+        for i, the_gene in enumerate(gene_list_1):
+            deletion_array[i, i] = single_deletion_growth_dict[the_gene]
         for i in range(len(gene_list_1)-1):
             gene_1 = gene_list_1[i]
             #TODO: Since there cannot be synthetic rescues we can assume
@@ -255,14 +266,12 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
     else:
         deletion_array = zeros([len(gene_list_1), len(gene_list_2)])
         #Now deal with the case where the gene lists are different
-        for i in range(len(gene_list_1)):
-            gene_1 = gene_list_1[i]
+        for i, gene_1 in enumerate(gene_list_1):
             if single_deletion_growth_dict[gene_1] <= 0:
                 for j in range(len(gene_list_2)):
                     deletion_array[i, j] = 0.
             else:
-                for j in range(len(gene_list_2)):
-                    gene_2 = gene_list_2[j]
+                for j, gene_2 in enumerate(gene_list_2):
                     #Assume no such thing as a synthetic rescue
                     if single_deletion_growth_dict[gene_2] <= 0:
                         tmp_solution = single_deletion_growth_dict[gene_2]
@@ -289,7 +298,7 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
                                     the_status = 'failed'
                             if the_status not in ['opt', 'optimal']  and \
                                    error_reporting:
-                                print '%s / %s: %s status: %s'%(gene_1, gene_2, solver,
+                                print '%s / %s: %s status: %s'%(repr(gene_1), repr(gene_2), solver,
                                                             cobra_model.solution.status)
                             #Reset the model to wt form
                             undelete_model_genes(cobra_model)
@@ -344,6 +353,7 @@ def double_gene_deletion_parallel(cobra_model, n_processes=4,
           double_deletion_growth_rate.
 
     """
+    warn("Need to use more of cobra.Gene and less of strs in gene_list")
     if not ppmap:
         print  'Parallel mode not available is Parallel Python installed'
         return
@@ -361,6 +371,10 @@ def double_gene_deletion_parallel(cobra_model, n_processes=4,
         #for interactions with all genes in the network
         all_genes = genes_of_interest
         second_gene_list = all_genes
+    elif hasattr(genes_of_interest[0], 'id'):
+        #Make sure we're dealing with strings instead of objects because we
+        #haven't audited this for thread safety
+        second_gene_list = all_genes = [x.id for x in genes_of_interest]
     elif hasattr(genes_of_interest[0], '__iter__'):
         all_genes = genes_of_interest[0]
         if len(genes_of_interest) == 2:
@@ -414,20 +428,23 @@ if __name__ == '__main__':
     with open(test_directory + 'salmonella.pickle') as in_file:
         cobra_model = load(in_file)
     initialize_growth_medium(cobra_model, 'LB')
-    growth_dict = {'moma': {'tpiA':1.61, 'metN':2.39, 'atpA':1.40, 'eno':0.33},
-                   'fba':{'tpiA':2.41, 'metN':2.43, 'atpA':1.87, 'eno':1.81}}
+    the_names = ['tpiA', 'metN', 'atpA', 'eno']
+    the_loci =  ['STM4081', 'STM0247', 'STM3867', 'STM2952']
+    the_genes = tpiA, metN, atpA, eno = map(cobra_model.genes.get_by_id, the_loci)
+    growth_dict = {'moma': {tpiA:1.61, metN:2.39, atpA:1.40, eno:0.33},
+                   'fba':{tpiA:2.41, metN:2.43, atpA:1.87, eno:1.81}}
     growth_dict = {'moma':{'data': array([[1.61, 1.60, 0.95, 0.17],
                                           [1.60, 2.39, 1.40, 0.30],
                                           [0.95, 1.40, 1.40, 0.00],
                                           [0.17, 0.30, 0.00, 0.33]]),
-                           'x': ['tpiA', 'metN', 'atpA', 'eno'],
-                           'y': ['tpiA', 'metN', 'atpA', 'eno']},
+                           'x': the_genes,
+                           'y': the_genes},
                    'fba': {'data': array([[2.41, 2.38, 1.77, 1.81],
                                           [2.38, 2.43, 1.86, 1.79],
                                           [1.77, 1.86, 1.87, 1.32],
                                           [1.81, 1.79, 1.32, 1.81]]),
-                           'x': ['tpiA', 'metN', 'atpA', 'eno'],
-                           'y': ['tpiA', 'metN', 'atpA', 'eno']}
+                           'x': the_genes,
+                           'y': the_genes}
                    }
     solver_list = ['glpk',
                    'gurobi',
@@ -475,12 +492,12 @@ if __name__ == '__main__':
                     simulated_value = floor(100*s_data[s_x.index(gene_x),
                                                        s_y.index(gene_y)])/100
                     if simulated_value != expected_value:
-                        print '\t\tFAILED: %s/%s simulation (%1.3f) != expectation (%1.3f)'%(gene_x,
-                                                                                             gene_y,
+                        print '\t\tFAILED: %s/%s simulation (%1.3f) != expectation (%1.3f)'%(gene_x.name,
+                                                                                             gene_y.name,
                                                                                              simulated_value,
                                                                                              expected_value)
                     else:
-                        print '\t\tPASSED: %s/%s simulation (%1.3f) ~= expectation (%1.3f)'%(gene_x,
-                                                                                             gene_y,
+                        print '\t\tPASSED: %s/%s simulation (%1.3f) ~= expectation (%1.3f)'%(gene_x.name,
+                                                                                             gene_y.name,
                                                                                              simulated_value,
                                                                                          expected_value)

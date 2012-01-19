@@ -52,10 +52,6 @@ def add_exchange_reaction(cobra_model, the_metabolites,
         the_reactions.append(the_reaction)
     cobra_model.add_reactions(the_reactions)
     
-##Removed                                                      
-## def modify_reaction_bounds(cobra_model, the_reactions, lower_bound=0,
-##                             upper_bound=0, reaction_reversibility=False):
-
 
 def initialize_growth_medium(cobra_model, the_medium='MgM', exchange_reactions=None,
                              reactions_to_disable=None,

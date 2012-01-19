@@ -1,6 +1,8 @@
 #cobra.io.feature_extraction.py
 #Tools for parsing agilent feature extraction files.
 import pdb
+from numpy import array
+from scipy.stats import pearsonr
 from time import time
 from rpy2 import robjects
 r = robjects.r
@@ -321,6 +323,15 @@ def combine_files(file_list, annotation_file=None, polarity_list=None,
             [tmp_dict[the_field].append(data_dict[the_field])
              for the_field in the_data_fields]
     if print_time:
+        if len(file_list) == 2 and 'log_ratio' in the_data_fields:
+            tmp_array = array([v['log_ratio']
+                               for v in combined_data.itervalues()
+                               if len(v['log_ratio']) ==2])
+            the_correlation = pearsonr(tmp_array[:, 0], tmp_array[:, 1])
+            print 'Correlation for combined channels: %1.2f'%round(the_correlation[0],
+                                                                   2)
+            
+            
         print '%s %f'%('combine time',
                        time() - start_time)
         start_time = time()

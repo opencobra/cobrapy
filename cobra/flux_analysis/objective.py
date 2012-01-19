@@ -10,11 +10,13 @@ else:
     int64 = int
 def assess_objective( cobra_model, the_objective = None,
                       objective_cutoff = 0.001, growth_medium = None ):
-    '''Assesses the ability of the model to produce all reactants in the_objective on
+    """Assesses the ability of the model to produce all reactants in the_objective on
     an individual basis.  Returns True if the_objective can be realized to exceed
     objective_cutoff.  Otherwise, determines which components of the_objective are
     lagging and returns a dict of the components and their required and realized values.
-    '''
+
+    """
+    raise Exception("This needs to be cleaned up.")
     cobra_model = cobra_model.copy()
     if growth_medium:
         initialize_growth_medium(cobra_model, growth_medium)
