@@ -33,12 +33,12 @@ def parse_legacy_id(the_id, the_compartment=None, the_type='metabolite',
             the_id = the_id[:-len(the_compartment)-1]
         the_id += '[%s]'%the_compartment
     return the_id
-def create_cobra_model_from_sbml_file(sbml_file, old_sbml=False, legacy_metabolite=False,
+def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_metabolite=False,
                                       print_time=False, use_hyphens=False):
     """convert an SBML XML file into a cobra.Model object.  Supports
     SBML Level 2 Versions 1 and 4
 
-    sbml_file: String.
+    sbml_filename: String.
     
     old_sbml:  Boolean. Set to True if the XML file has metabolite
     formula appended to metabolite names.  This was a poorly designed
@@ -55,17 +55,17 @@ def create_cobra_model_from_sbml_file(sbml_file, old_sbml=False, legacy_metaboli
 	
     """
      # Ensure that the file exists
-    if not isfile(sbml_file):
-        raise IOError('Your SBML file is not found: %s'%sbml_file)
+    if not isfile(sbml_filename):
+        raise IOError('Your SBML file is not found: %s'%sbml_filename)
     #Expressions to change SBML Ids to Palsson Lab Ids
     metabolite_re = re.compile('^M_')
     reaction_re = re.compile('^R_')
     compartment_re = re.compile('^C_')
     if print_time:
         start_time = time()
-    model_doc = readSBML(sbml_file)
+    model_doc = readSBML(sbml_filename)
     if print_time:
-       print 'Loading %s took %1.2f seconds'%(sbml_file,
+       print 'Loading %s took %1.2f seconds'%(sbml_filename,
                                               time()-start_time)
                                              
      
@@ -427,7 +427,7 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
        print 'Adding %s took %1.2f seconds'%('reactions',
                                              time()-start_time)
 
-    writeSBML(sbml_doc, sbml_file)
+    writeSBML(sbml_doc, sbml_filename)
 
 def add_sbml_species(sbml_model, cobra_metabolite,                                                                  note_start_tag, note_end_tag, boundary_metabolite=False):
     """A helper function for adding cobra metabolites to an sbml model.
@@ -498,10 +498,10 @@ if __name__ == '__main__':
     from cobra.manipulation import initialize_growth_medium
     solver = 'glpk'
     test_directory = '../test/data/'
-    sbml_file = test_directory + 'salmonella.xml'
-    test_file = test_directory + 'salmonella.pickle'
-    if not lexists(test_file):
-        print "Cannot get to test_file %s from current location %s"%(test_file,
+    sbml_filename = test_directory + 'salmonella.xml'
+    test_filename = test_directory + 'salmonella.pickle'
+    if not lexists(test_filename):
+        print "Cannot get to test_filename %s from current location %s"%(test_filename,
                                                                      getcwd())
     else:
         from time import time
@@ -515,14 +515,14 @@ if __name__ == '__main__':
         initialize_growth_medium(cobra_model, 'M9')
         cobra_model.optimize(solver=solver)
         growth_rate =  floor(1000*cobra_model.solution.f)/1000
-        print 'Writing SBML to %s'%sbml_file
+        print 'Writing SBML to %s'%sbml_filename
         start_time = time()
-        write_cobra_model_to_sbml_file(cobra_model, sbml_file, sbml_level,
+        write_cobra_model_to_sbml_file(cobra_model, sbml_filename, sbml_level,
                                        sbml_version, print_time=print_time)
         print 'Time to write SBML file: %1.2f seconds'%(time() - start_time)
         print 'Reading SBML'
         start_time = time()
-        cobra_model = create_cobra_model_from_sbml_file(sbml_file, print_time=print_time,
+        cobra_model = create_cobra_model_from_sbml_file(sbml_filename, print_time=print_time,
                                                         use_hyphens=use_hyphens)
         print 'Time to load SBML file: %1.2f seconds'%(time() - start_time)
         cobra_model.optimize(solver=solver)
@@ -533,5 +533,5 @@ if __name__ == '__main__':
         else:
             print "FAILED: Optimization for growth (%1.3f) != expectation (%1.3f)"%(tmp_result,
                                                                                        growth_rate)
-        print 'Deleting %s'%sbml_file
-        unlink(sbml_file)
+        print 'Deleting %s'%sbml_filename
+        unlink(sbml_filename)

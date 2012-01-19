@@ -139,21 +139,15 @@ class Model(Object):
         self.id = self.id + '_' + other_model.id
         return self
 
-    def copy(self, additional_attributes=None, print_time=False):
+    def copy(self, print_time=False):
         """Provides a partial 'deepcopy' of the Model.  All of the Metabolite, Gene,
-        and Reaction objects are created anew; however, attributes not assigned in
-        the __init__ function will be ignored unless contained in additional_attributes.
-
-        additional_attributes: None or a list of attributes added to the object by
-        the user that should be preserved during the copy procedure.
+        and Reaction objects are created anew but in a faster fashion than deepcopy
 
         print_time: Boolean used for debugging
 
         """
-        the_copy = Model(self.id)
-        if additional_attributes:
-            [setattr(the_copy, x, getattr(self, x))
-             for x in additional_attributes]
+        the_copy = Object.guided_copy(self)
+
         the_copy.compartments = deepcopy(self.compartments)
         if print_time:
             from time import time

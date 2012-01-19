@@ -1,4 +1,5 @@
 #cobra.manipulation.modify.py
+from pdb import set_trace
 import sys
 from copy import deepcopy
 from cobra.core.Metabolite import Metabolite
@@ -147,13 +148,38 @@ def convert_to_irreversible(cobra_model):
             reverse_reaction.lower_bound = 0
             reverse_reaction.upper_bound = reaction.lower_bound * -1
             reaction.lower_bound = 0
+            #Make the directions aware of each other
+            reaction.reflection = reverse_reaction
+            reverse_reaction.reflection = reaction
+            reaction.reversibility = reverse_reaction.reversibility = 0
             reaction_dict = dict([(k, v*-1)
                                   for k, v in reaction._metabolites.items()])
             reverse_reaction.add_metabolites(reaction_dict)
             reactions_to_add.append(reverse_reaction)
     cobra_model.add_reactions(reactions_to_add)
  
+def revert_to_reversible(cobra_model):
+    """This function will convert a reversible model made by convert_to_irreversible
+    into a reversible model.
+
+    cobra_model:  A cobra.Model object which will be modified in place.
+
+    NOTE: It might just be easiest to include this function in the Reaction class
     
+    """
+    reversible_reactions = [x for x in cobra_model.reactions
+                            if x.reflection is not None and
+                            not x.id.endswith('_reverse')]
+
+    for the_reaction in reversible_reactions:
+        the_reflection = the_reaction.reflection
+        the_reaction.lower_bound = -the_reflection.lower_bound
+        the_reaction.reflection = None
+        #Since the metabolites and genes are all still in
+        #use we can do this faster removal step.  We can
+        #probably speed things up here.
+        cobra_model.reactions.remove(the_reaction)
+
    
 def convert_rule_to_boolean_rule(cobra_model, the_rule,
                                  return_gene_indices=False,
@@ -215,7 +241,12 @@ if __name__ == '__main__':
         cobra_model = load(in_file)
 
     print 'Need to add in tests'
-    test_model = cobra_model.copy()
+    irreversible_model = deepcopy(cobra_model)
     start_time = time()
-    convert_to_irreversible(test_model)
+    convert_to_irreversible(irreversible_model)
     print 'Convert to irreversible took %1.3f seconds'%(time()-start_time)
+
+    reverted_model = deepcopy(irreversible_model)
+    start_time = time()
+    revert_to_reversible(reverted_model)
+    print 'Convert to reversible took %1.3f seconds'%(time()-start_time)

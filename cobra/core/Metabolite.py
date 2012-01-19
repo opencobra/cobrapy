@@ -13,7 +13,7 @@ class Metabolite(Object):
     TODO: Clean up.  Allow for creation of empty metabolite
     """
     ## __slots__ = ['id', 'formula', 'name', 'compartment',
-    ##              'notes', 'charge']
+    ##              'charge']
     ##def __setstate__(self, the_dict):
     ##    from cobra.core.Metabolite import Metabolite
     ##    Object.__setstate__(self, the_dict)
@@ -48,7 +48,6 @@ class Metabolite(Object):
         #self.model is None or refers to the cobra.Model that
         #contains self
         self._model =  self.charge = None
-        self.notes = {}
         self._reaction = set() #references to reactions that employ this metabolite
         self._constraint_sense = 'E'
         self._bound = 0.
@@ -82,20 +81,12 @@ class Metabolite(Object):
         new_metabolite = deepcopy(self)
         return new_metabolite
     def guided_copy(self, the_model):
-        """Trying to make a faster copy proceedure for cases where large
+        """Trying to make a faster copy procedure for cases where large
         numbers of metabolites might be copied.  Such as when copying reactions.
 
         """
-        the_copy = Metabolite(self.id)
-        simple_attributes = ['compartment',
-                             'notes',
-                             '_constraint_sense',
-                             '_bound',
-                             'charge',
-                             'name']
-
-        [setattr(the_copy, x, getattr(self, x))
-         for x in simple_attributes]
+        the_copy = Object.guided_copy(self)
+        #Copy the more complex objects in a faster fashion
         the_copy.formula = deepcopy(self.formula)
         the_copy._model = the_model
         return(the_copy)

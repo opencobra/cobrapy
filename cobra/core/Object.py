@@ -9,6 +9,11 @@ class Object(object):
         
         """
         self.id = the_id
+        #The following two fields will eventually
+        #be objects that enforce basic rules about
+        #formatting notes and annotation
+        self.notes = {}
+        self.annotation = {}
     def __getstate__(self):
         """To prevent excessive replication during deepcopy.
         """
@@ -16,6 +21,17 @@ class Object(object):
         if '_model' in state:
             state['_model'] = None
         return state
+    def guided_copy(self):
+        """Trying to make a faster copy procedure for cases where large
+        numbers of metabolites might be copied.  Such as when copying reactions.
+
+        This function allows us to manipulate how specific attributes are copied.
+
+        """
+        the_copy = self.__class__(self.id)
+        [setattr(the_copy, k, v)
+         for k, v in self.__dict__.iteritems()]
+        return(the_copy)
     ## def __setstate__(self, state):
     ##     self.__dict__.update(state)
     ## def __getstate__(self):

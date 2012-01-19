@@ -57,10 +57,12 @@ class Reaction(Object):
         #self.model is None or refers to the cobra.Model that
         #contains self
         self._model  = self.reaction = None
-        self.notes = {}
+
         self.boundary = None #None, 'system_boundary'
         self.objective_coefficient = self.lower_bound = 0.
         self.upper_bound = 1000.
+        self.reflection = None #Either None or if this reaction is irreversible then
+        #a reaction in the model that is essentially self * -1
 	self.variable_kind = 'continuous' #Used during optimization.  Indicates whether the
         #variable is modeled as continuous, integer, binary, semicontinous, or semiinteger.
 
@@ -143,24 +145,12 @@ class Reaction(Object):
         ## self._model = the_model
         return new_reaction
     def guided_copy(self, the_model, metabolite_dict, gene_dict=None):
-        """Trying to make a faster copy proceedure for cases where large
+        """Trying to make a faster copy procedure for cases where large
         numbers of metabolites might be copied.  Such as when copying reactions.
 
         """
-        the_copy = Reaction(self.id)
-        simple_attributes = ['reversibility',
-                             'gene_reaction_rule',
-                             'subsystem',
-                             'boundary',
-                             'objective_coefficient',
-                             'lower_bound',
-                             'upper_bound',
-                             'notes',
-                             'reaction',
-                             'variable_kind',
-                             'name']
-        [setattr(the_copy, x, getattr(self, x))
-         for x in simple_attributes]
+        the_copy = Object.guided_copy(self)
+        #Replace the complex items in a faster fashion
         the_copy._model = the_model
         if gene_dict:
             the_copy._genes = dict([(gene_dict[k.id], v)
