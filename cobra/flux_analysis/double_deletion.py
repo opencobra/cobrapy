@@ -153,6 +153,8 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
     dimension (y), and the growth simulation data (data).
     
     """
+    from warnings import warn
+
     warn("Need to use more of cobra.Gene and less of strs in gene_list")
     #BUG: Since this might be called from ppmap, the modules need to
     #be imported.  Modify ppmap to take depfuncs
@@ -353,6 +355,8 @@ def double_gene_deletion_parallel(cobra_model, n_processes=4,
           double_deletion_growth_rate.
 
     """
+    from warnings import warn
+
     warn("Need to use more of cobra.Gene and less of strs in gene_list")
     if not ppmap:
         print  'Parallel mode not available is Parallel Python installed'

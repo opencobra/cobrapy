@@ -147,7 +147,8 @@ class Model(Object):
 
         """
         the_copy = Object.guided_copy(self)
-
+        the_copy.metabolites = None
+        the_copy.reactions = None
         the_copy.compartments = deepcopy(self.compartments)
         if print_time:
             from time import time
@@ -167,8 +168,10 @@ class Model(Object):
                                  for k in the_metabolites])
         gene_dict = dict([(k.id, k)
                                  for k in the_genes])
-        the_reactions = DictList([x.guided_copy(the_copy, metabolite_dict, gene_dict)
+        the_reactions = DictList([x.guided_copy(the_copy, the_metabolites._object_dict,
+                                                the_genes._object_dict)
                                   for x in self.reactions])
+
         if print_time:
             print 'Reaction guided copy: %1.4f'%(time() - start_time)
         the_copy.reactions = the_reactions
@@ -536,6 +539,7 @@ class Model(Object):
 
         solver_function = solver_dict.pop(solver)
         the_solution = None
+        #the_solution = solve_problem(solver_function)
         try:
             the_solution = solve_problem(solver_function)
         except Exception, e:

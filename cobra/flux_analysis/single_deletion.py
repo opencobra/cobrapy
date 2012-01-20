@@ -1,6 +1,5 @@
 #cobra.flux_analysis.single_deletion.py
 #run single gene or reaction deletions on the model
-from pdb import set_trace
 from numpy import nan
 from time import time
 from copy import deepcopy

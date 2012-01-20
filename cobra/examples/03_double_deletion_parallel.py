@@ -51,7 +51,7 @@ else:
 
 start_time = time()
 print 'running double deletion for %i genes on %i cores'%(len(gene_list), number_of_processes)
-the_results = deletion_analysis(cobra_model, gene_list=gene_list,n_processes=number_of_processes, deletion_type='double')
+the_results = deletion_analysis(cobra_model, element_list=gene_list,n_processes=number_of_processes, deletion_type='double')
 print 'took %1.2f seconds to do double deletion for %i genes'%(time() - start_time, len(gene_list))
 with open(out_filename, 'w') as out_file:
     dump(the_results, out_file)

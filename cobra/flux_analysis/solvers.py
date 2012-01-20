@@ -4,6 +4,17 @@
 #TODO: Speed up problem construction for each of the optimize routines.
 from cobra.core.Solution import Solution
 from time import time
+#This centralizes some of the common elements that are differently named across solvers.
+#These are stored as strings here to prevent problems associated with calling
+#solver objects for solver packages that aren't available
+
+status_dict = {'cplex': "{'MIP_infeasible': 'infeasible', 'MIP_optimal': 'optimal',  'MIP_unbounded': 'unbounded', 'infeasible': 'infeasible', 'optimal': 'optimal', 'unbounded': 'unbounded'}",
+               'glpk': "{'opt': 'optimal', 'nofeas': 'infeasible', 'unbnd': 'unbounded'}",
+               'gurobi': "{GRB.OPTIMAL: 'optimal', GRB.INFEASIBLE: 'infeasible', GRB.UNBOUNDED: 'unbounded'}"}
+variable_kind_dict = {'cplex': "{'continuous': Cplex.variables.type.continuous, 'integer': Cplex.variables.type.integer}",
+                      'glpk': "{'continuous': float, 'integer': int}",
+                      'gurobi': "{'continuous': GRB.CONTINUOUS, 'integer': GRB.INTEGER}"}
+
 def update_objective(cobra_model, the_objectives):
     """Revised to take advantage of the new Reaction classes.
 
@@ -86,15 +97,16 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
     if relax_b is not None:
         raise Exception('Need to reimplement constraint relaxation')
     from numpy import array, nan, zeros
-    from cobra.flux_analysis.solvers import update_objective
+    from cobra.flux_analysis.solvers import update_objective, status_dict, \
+         variable_kind_dict
+
     if error_reporting == 'time' or print_solver_time:
         from time import time
         start_time = time()
     try:
         from cplex import Cplex, SparsePair
-        variable_kind_dict = {'continuous': Cplex.variables.type.continuous,
-                              'integer': Cplex.variables.type.integer}
-
+        variable_kind_dict = eval(variable_kind_dict['cplex'])
+        status_dict = eval(status_dict['cplex'])
     except ImportError as e:
         import sys
         if 'wrong architecture' in e[0] and sys.maxsize > 2**32:
@@ -290,7 +302,6 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
     status = lp.status
     #TODO: It might be able to speed this up a little.
     if status in ['optimal', 'MIP_optimal']:
-        status = 'optimal'
         objective_value = lp.solution.get_objective_value()
         #This can be sped up a little
         x_dict = dict(zip(lp.variables.get_names(),
@@ -311,7 +322,10 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
         x = y = x_dict = y_dict = objective_value = None
         if error_reporting:
             print 'cplex failed: %s'%lp.status
-
+    if lp.status in status_dict:
+        status = status_dict[lp.status]
+    else:
+        status = "failed"
     the_solution = Solution(objective_value, x=x, x_dict=x_dict,
                             status=status, y=y, y_dict=y_dict)
     solution = {'the_problem': lp, 'the_solution': the_solution}
@@ -392,10 +406,11 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
     sense_dict = {'E': GRB.EQUAL,
                   'L': GRB.LESS_EQUAL,
                   'G': GRB.GREATER_EQUAL}
-    variable_kind_dict = {'continuous': GRB.CONTINUOUS,
-                          'integer': GRB.INTEGER}
+    from cobra.flux_analysis.solvers import update_objective, status_dict, \
+         variable_kind_dict
+    variable_kind_dict = eval(variable_kind_dict['gurobi'])
+    status_dict = eval(status_dict['gurobi'])
 
-    from cobra.flux_analysis.solvers import update_objective
     #Update objectives if they are new.
     if new_objective and new_objective != 'update problem':
        update_objective(cobra_model, new_objective)
@@ -512,7 +527,6 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
     y = None
     if lp.status == GRB.OPTIMAL:
         objective_value = objective_sense*lp.ObjVal
-        status = 'optimal'
         [x_dict.update({v.VarName: v.X}) for v in lp.getVars()]
         x = array([x_dict[v.id] for v in cobra_model.reactions])
         if lp.isMIP:
@@ -526,7 +540,10 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
         objective_value = None
         if error_reporting:
             print 'gurobi failed: %s'%lp.status  
-    #
+    if lp.status in status_dict:
+        status = status_dict[lp.status]
+    else:
+        status = "failed"
     the_solution = Solution(objective_value, x=x, x_dict=x_dict,
                             y=y, y_dict=y_dict,
                             status=status)
@@ -602,26 +619,28 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
          cold start: 0.42 seconds
          hot start: 0.0013 seconds
     """
+
     from numpy import zeros, array, nan
-    variable_kind_dict = {'continuous': float,
-                          'integer': int}
     #TODO: Speed up problem creation
     if hasattr(quadratic_component, 'todok'):
         raise Exception('GLPK cannot solve quadratic programs please '+\
                         'try using the gurobi or cplex solvers')
 
     from glpk import LPX
-    from cobra.flux_analysis.solvers import update_objective
+    from cobra.flux_analysis.solvers import update_objective, status_dict, \
+         variable_kind_dict
+    status_dict = eval(status_dict['glpk'])
+    variable_kind_dict = eval(variable_kind_dict['glpk'])
+
     if new_objective and new_objective != 'update problem':
         update_objective(cobra_model, new_objective)
     #Faster to use these dicts than index lists
     index_to_metabolite = dict(zip(range(len(cobra_model.metabolites)),
-                               cobra_model.metabolites))
+                                   cobra_model.metabolites))
     index_to_reaction = dict(zip(range(len(cobra_model.reactions)),
-                               cobra_model.reactions))
-    reaction_to_index = dict(zip(cobra_model.reactions,
-                                 range(len(cobra_model.reactions))))
-    
+                                 cobra_model.reactions))
+    reaction_to_index = dict(zip(index_to_reaction.values(),
+                                 index_to_reaction.keys()))
     if the_problem == None or the_problem in ['return', 'setup'] or \
            not isinstance(the_problem, LPX):
         lp = LPX()        # Create empty problem instance
@@ -641,6 +660,7 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
             elif c == 'G':
                 r.bounds = b, None
             #Add in the linear constraints
+
             for the_reaction in the_metabolite._reaction:
                 reaction_index = reaction_to_index[the_reaction]
                 the_coefficient = the_reaction._metabolites[the_metabolite]
@@ -649,6 +669,7 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
         #Need to assign lp.matrix after constructing the whole list
         lp.matrix = linear_constraints
         objective_coefficients = []
+
         for c in lp.cols:
             the_reaction = index_to_reaction[c.index]
             c.name = the_reaction.id           
@@ -677,7 +698,6 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
                 c.name = the_reaction.id
                 c.bounds = the_reaction.lower_bound, the_reaction.upper_bound
                 c.kind = variable_kind_dict[the_reaction.variable_kind]
-
     if objective_sense.lower() == 'maximize':
         lp.obj.maximize = True # Set this as a maximization problem
     else:
@@ -748,10 +768,8 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
     y = []
     x_dict = {}
     y_dict = {}
-    status = lp.status
-    if status == 'opt':
+    if lp.status == 'opt':
         objective_value = lp.obj.value
-        status = 'optimal'
         [(x.append(float(c.primal)),
           x_dict.update({c.name:c.primal}))
           for c in lp.cols]
@@ -770,6 +788,10 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
         x = y = x_dict = y_dict = objective_value = None
         if error_reporting:
             print 'glpk failed: %s'%lp.status
+    if lp.status in status_dict:
+        status = status_dict[lp.status]
+    else:
+        status = "failed"
     the_solution = Solution(objective_value, x=x, x_dict=x_dict,
                             y=y, y_dict=y_dict,
                             status=status)
