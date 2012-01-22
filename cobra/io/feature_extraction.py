@@ -1,21 +1,15 @@
 #cobra.io.feature_extraction.py
 #Tools for parsing agilent feature extraction files.
-import pdb
-from numpy import array
+from numpy import array, log10
 from scipy.stats import pearsonr
 from time import time
 from rpy2 import robjects
 r = robjects.r
 import rpy2.robjects.numpy2ri
 robjects.numpy2ri.activate()
-
-from copy import deepcopy
-import os, sys
 from collections import defaultdict
-from numpy import mean, array,std, log10
-from cobra.tools import log_function
-from cobra.stats.stats import combine_p_values, error_weighted
 from warnings import warn
+from cobra.stats.tools import collapse_fields
 warn("WARNING: cobra.io.feature_extraction is not ready for general use ")
 
 def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
@@ -197,52 +191,11 @@ def collapse_fields(data_dict, quantitative_fields=['intensity_1',
                                                     'intensity_2'],
                     log_fields=['log_ratio', 'log_error'],
                     p_fields=['p_value'], log_base=10, error_weighting=True):
-    """Collapses the rows for each field from a feature extraction element
-    based on the data type.  Quantative fields are averaged, log_fields are
-    converted to linear scale, averaged, and then log10 is taken. p-value
-    fields are combined using the default method from cobra.stats.stats.
-    combine_p_values.
+    raise Exception("cobra.io.feature_extraction.collapse_fields has moved to " +\
+                    "cobra.stats.tools.collapse_fields")
 
-    data_dict: A dictionary of numerical data values.
 
-    quantitative_fields:  A list of the fields in data_dict that can be
-    directly averaged.
 
-    log_fields: A list of the fields in data_dict that are in log form
-    and must be transformed before averaging.
-
-    p_fields:  A list of the fields in data_dict that are p-values.
-
-    log_base:  The base for the log transform.
-
-    error_weighting:  Boolean.  If True return the error weighted-mean and error.
-    Assumes the mean and std devs are the 1st two fields of log_fields.
-
-    NOTE: This happens in place so the data_dict will be modified.
-
-    """
-    [data_dict.update({k: mean(data_dict[k])})
-     for k in quantitative_fields
-     if k in data_dict]
-    if log_fields[0] in data_dict:
-        if error_weighting:
-            log_fields = deepcopy(log_fields)
-            mean_field = log_fields.pop(0)
-            std_field = log_fields.pop(0)
-            the_means = map(lambda x: log_base**x, data_dict[mean_field])
-            the_stds = map(lambda x: log_base**x, data_dict[std_field])
-            weighted_mean, weighted_std = error_weighted(the_means, the_stds)
-            data_dict[mean_field] = log_function(weighted_mean, log_base)
-            data_dict[std_field] = log_function(weighted_std, log_base)
-        #TODO:  This needs to be updated for log_error
-        else:
-            [data_dict.update({k: log_function(mean(map(lambda x: log_base**x,
-                                                        data_dict[k])),
-                                               log_base)})
-             for k in log_fields]
-    if p_fields[0] in data_dict:
-        [data_dict.update({k: combine_p_values(data_dict[k])})
-         for k in p_fields]
 
 def combine_files(file_list, annotation_file=None, polarity_list=None,
                   print_time=False, quality_control=False, return_id='entrez',

@@ -66,7 +66,8 @@
 #Use this threshold and the spot finder flags for automatically marking a
 #spot as not detected.
 #
-print 'WARNING.  DO NOT USE cobra.io.tm4, it is not ready for general use'
+from warnings import warn
+warn('DO NOT USE cobra.io.tm4, it is not ready for general use')
 #raise Exception('cobra.io.tm4 is not ready for general use')
 bad_flags = {'S': 'Saturated', 'U': 'User Flagged', 'X': 'Failed QC',
              'Y': 'Background > Signal' ,'Z': 'Spot Not Detected'}
@@ -159,9 +160,14 @@ def parse_mev_data(file_data, the_channel_ids,  calculate_p_values=True,
         spot_pixels = the_spot['pixels'] = float(the_line[the_header.index('SA')])
         saturation_factor = the_spot['saturation factor'] = float(the_line[the_header.index('SF')])
         the_spot['QC'] = float(the_line[ the_header.index('QC')])
-        #The way that the stats were calculated involved seeting the background area to the
+        #The way that the stats were calculated involved setting the background area to the
         #spot area.
+        #basically, there's not enough information to make an informed call on statistics
+        #calculations for a single channel as SpotFinder doesn't provide enough
+        #raw data.
         background_pixels = spot_pixels = spot_pixels*the_spot['saturation factor']
+
+
         for the_channel in the_channel_ids:
             #THE P-values should be recalculated here because the ones
             #presented in spotfinder are not accurate.
@@ -183,9 +189,16 @@ def parse_mev_data(file_data, the_channel_ids,  calculate_p_values=True,
             else:
                 #Since the background area is adjusted to match the signal area
                 #we can change the t-statistic to the one for equal variance
-                pooled_std_dev = ((the_std_dev**2 + background_std_dev**2)/2.)**0.5
-                the_t = (the_mean - background_mean)/(pooled_std_dev*(2/spot_pixels) **0.5)
-                the_p = 1 - t.cdf(the_t, background_pixels + spot_pixels - 2)
+                #pooled_std_dev = ((the_std_dev**2 + background_std_dev**2)/2.)**0.5
+                #the_t = (the_mean - background_mean)/(pooled_std_dev*(2/spot_pixels) **0.5)
+                #degrees_of_freedom = background_pixels + spot_pixels - 2
+                warn("Doing unequal variance test")
+                deviation_estimate = (the_std_dev**2/spot_pixels + background_std_dev**2/background_pixels)**0.5
+                the_t = (the_mean - background_mean) / deviation_estimate
+                degrees_of_freedom = (the_std_dev**2/spot_pixels + background_std_dev**2/background_pixels)**2/\
+                                     ((the_std_dev**2/spot_pixels)**2/(spot_pixels-1) +\
+                                      (background_std_dev**2/background_pixels)**2/background_pixels-1)
+                the_p = 1 - t.cdf(the_t, degrees_of_freedom)
             the_measurement['p'] = the_p
             the_spot[the_channel] = the_measurement
         the_uid = int(the_line[the_header.index('UID')])
