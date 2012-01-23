@@ -1,16 +1,22 @@
 from os.path import isfile
-from csv import reader, writer
-from re import compile, findall
+import csv
+import re
 from warnings import warn
 try:
     from cPickle import load, dump
 except ImportError:
     from pickle import load, dump
-
+# Because OrderedDict is not implemented on all systems
+try:
+    from collections import OrderedDict as _dicttype
+except ImportError:
+    _dicttype = dict
+from numpy import array as _array, object as _object
+from scipy.io import loadmat as _loadmat, savemat as _savemat
+from scipy.sparse import coo_matrix as _coo_matrix
 import cobra
 from cobra.io.sbml import create_cobra_model_from_sbml_file as _sbml_import
-from scipy.io import loadmat, savemat
-from numpy import array as _array, object as _object
+
 
 # function to help translate an array to a MATLAB cell array
 _cell = lambda x: _array(x, dtype=_object)
@@ -50,7 +56,7 @@ def export_flux_distribution(model, filepath):
     """
     from simphenyMapping import mapping
     outfile = open(filepath, "w")
-    outcsv = writer(outfile, delimiter="\t", lineterminator="\n")
+    outcsv = csv.writer(outfile, delimiter="\t", lineterminator="\n")
     outcsv.writerow(["Reaction Number", "Flux Value",
                      "Lower Bound", "Upper Bound"])
     for reaction_name, reaction_flux in model.solution.x_dict.iteritems():
@@ -63,10 +69,73 @@ def export_flux_distribution(model, filepath):
     outfile.close()
 
 
+def load_matlab_model(infile_path, variable_name=None):
+    """Load a cobra model stored as a .mat file
+    NOTE: INCOMPLETE, does not load GPR's
+
+    Parameters
+    ----------
+    infile_path : str
+    variable_name : str, optional
+        The variable name of the model in the .mat file. If this is not
+        specified, then the first MATLAB variable which looks like a COBRA
+        model will be used
+
+    """
+    data = _loadmat(infile_path)
+    if variable_name is not None:
+        possible_names = [variable_name]
+    else:
+        # will try all of the variables in the dict
+        possible_names = {}
+        for key in data.keys():
+            possible_names[key] = None
+        # skip meta variables
+        to_remove = ["__globals__", "__header__", "__version__"]
+        to_pop = []
+        for name in possible_names:
+            if name in to_remove:
+                to_pop.append(name)
+        for i in to_pop:
+            possible_names.pop(i)
+        possible_names = possible_names.keys()
+    for possible_name in possible_names:
+        m = data[possible_name]  # TODO: generalize
+        if not set(["rxns", "mets", "S", "lb", "ub"]) \
+                <= set(m.dtype.names):
+            continue
+        model = cobra.Model()
+        model.id = m["description"][0, 0][0]
+        model.description = model.id
+        for i, name in enumerate(m["mets"][0, 0]):
+            new_metabolite = cobra.Metabolite()
+            new_metabolite.id = name[0][0]
+            new_metabolite.name = m["metNames"][0, 0][i][0][0]
+            new_metabolite.formula = m["metFormulas"][0][0][i][0][0]
+            model.metabolites.append(new_metabolite)
+        for i, name in enumerate(m["rxns"][0, 0]):
+            new_reaction = cobra.Reaction()
+            new_reaction.id = name[0][0]
+            new_reaction.name = m["rxnNames"][0, 0][i][0][0]
+            new_reaction.lower_bound = m["lb"][0, 0][i][0]
+            new_reaction.upper_bound = m["ub"][0, 0][i][0]
+            new_reaction.objective_coefficient = m["c"][0, 0][i][0]
+            model.reactions.append(new_reaction)
+        coo = _coo_matrix(m["S"][0, 0])
+        for i, j, v in zip(coo.row, coo.col, coo.data):
+            model.reactions[j].add_metabolites({model.metabolites[i]: v})
+        # TODO finish adding GPR's
+        # model.update()
+        return model
+    # If code here is executed, then no model was found.
+    raise Exception("no COBRA model found")
+
+
 def save_matlab_model(model, outfile_path):
     """Save the cobra model as a .mat file.
 
-    This .mat file can be used directly in the MATLAB version of COBRA
+    This .mat file can be used directly in the MATLAB version of COBRA.
+    NOTE: using this function requires a patched version of cobra.io.savemat
 
     Parameters
     ----------
@@ -77,7 +146,7 @@ def save_matlab_model(model, outfile_path):
     model.update()
     rxns = model.reactions
     mets = model.metabolites
-    mat = {}
+    mat = _dicttype()
     csense = ""
     for m in mets:
         csense += m._constraint_sense
@@ -97,7 +166,7 @@ def save_matlab_model(model, outfile_path):
     mat["c"] = _array(rxns.list_attr("objective_coefficient"))
     mat["rev"] = _array(rxns.list_attr("reversibility"))
     mat["description"] = str(model.description)
-    savemat(outfile_path, {str(model.description): mat},
+    _savemat(outfile_path, {str(model.description): mat},
              appendmat=True, oned_as="column")
 
 
@@ -154,13 +223,13 @@ def _open_and_skip_header(filename):
     file = open(filename, "r")
     for i in range(count):
         file.readline()
-    return reader(file, delimiter="\t")
+    return csv.reader(file, delimiter="\t")
 
 
 def _find_metabolites_by_base(base, metabolites):
     """search for all metabolites in the list which match the base name.
     For example, "h2o" will identify both "h2o(c)" and "h2o(e)" """
-    search = compile(base + "\([a-z]\)")
+    search = re.compile(base + "\([a-z]\)")
     found = []
     for the_metabolite in metabolites:
         if search.match(the_metabolite.id) is not None:
@@ -215,7 +284,7 @@ def read_simpheny(baseName, min_lower_bound=-1000, max_upper_bound=1000,
         metabolite = cobra.Metabolite(id=line[1], name=line[2],
             compartment=line[3])
         if maximize_info:
-            compartment_search = findall("\([a-z]\)$", metabolite.id)
+            compartment_search = re.findall("\([a-z]\)$", metabolite.id)
             if compartment_search != []:
                 metabolite.compartment = compartment_search[0][1]
                 model.compartments[metabolite.compartment] = line[3]
@@ -257,7 +326,7 @@ def read_simpheny(baseName, min_lower_bound=-1000, max_upper_bound=1000,
     if maximize_info and isfile(infofilepath):
         infofile = open(infofilepath, "r")
         infofile.readline()  # skip the header
-        infocsv = reader(infofile)
+        infocsv = csv.reader(infofile)
         for row in infocsv:
             found = _find_metabolites_by_base(row[0], model.metabolites)
             for found_metabolite in found:
@@ -275,11 +344,18 @@ def read_simpheny(baseName, min_lower_bound=-1000, max_upper_bound=1000,
         # Using this may be risky
         gpr_file = open(gpr_filepath, "r")
         gpr_file.readline()  # skip the header
-        gpr_csv = reader(gpr_file)
+        gpr_csv = csv.reader(gpr_file)
         for row in gpr_csv:
             the_reaction = model.reactions[model.reactions.index(row[0])]
             the_reaction.gene_reaction_rule = row[5]
             the_reaction.parse_gene_association()
         gpr_file.close()
-    model.update()
+    # model.update()
     return model
+
+if __name__ == "__main__":
+    model = load_matlab_model(r"C:\Users\aebrahim\Documents\MATLAB\iJO1366")
+    model.update()
+    # from cobra.test import ecoli_pickle
+    # model = load_pickle(ecoli_pickle)
+    # save_matlab_model(model, r"C:\Users\aebrahim\Documents\Matlab\test.mat")

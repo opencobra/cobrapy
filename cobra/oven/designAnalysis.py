@@ -2,7 +2,7 @@ import numpy
 import pylab
 
 
-def plot_production_envelope(model, target_id, n_points=50, plot=True):
+def plot_production_envelope(model, target_id, n_points=20, plot=True):
     target_id = str(target_id)
     target_reaction = model.reactions.get_by_id(target_id)
     original_target_bounds = (target_reaction.lower_bound,
@@ -22,9 +22,12 @@ def plot_production_envelope(model, target_id, n_points=50, plot=True):
             reaction.objective_coefficient = 0
     # calculate the maximum possible production rate
     target_reaction.objective_coefficient = 1
-    model.optimize()
+    model.optimize(objective_sense="minimize")
+    min_production_rate = model.solution.f
+    model.optimize(objective_sense="maximize")
     max_production_rate = model.solution.f
-    production_rates = numpy.linspace(0, max_production_rate, n_points)
+    production_rates = numpy.linspace(min_production_rate,
+        max_production_rate, n_points)
     # ensure the point of production at maximum growth is included
     production_rates[
         numpy.abs(production_rates - max_growth_production).argmin()] = \
@@ -50,7 +53,6 @@ def plot_production_envelope(model, target_id, n_points=50, plot=True):
         pylab.ylabel("Production rate")
         pylab.xlim(xmin=0)
         pylab.ylim(ymin=0)
-        pylab.show()
     return (growth_rates, production_rates)
 
 
@@ -58,9 +60,15 @@ if __name__ == "__main__":
     from cobra.oven.legacyIO import load_pickle
     from cobra.test import ecoli_pickle
     from time import time
+    import pylab
     model = load_pickle(ecoli_pickle)
     model.reactions.get_by_id("EX_o2(e)").lower_bound = 0
+    for i in ["ABTA", "ACALD", "ACKr", "ATPS4rpp", "F6PA",
+              "GLUDy", "LDH_D", "MGSA", "PFL", "TPI"]:
+        model.reactions.get_by_id(i).lower_bound = 0
+        model.reactions.get_by_id(i).upper_bound = 0
     start = time()
     plot_production_envelope(model, "EX_etoh(e)")
     print "ran in %.2f seconds" % (time() - start)
+    pylab.show()
     # calculates in approx 1.2 seconds on 3.4 GHz i7

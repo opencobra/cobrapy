@@ -6,6 +6,7 @@ import sys
 import cobra
 from cobra.test import data_directory, salmonella_sbml, salmonella_pickle
 
+
 # libraries which may or may not be installed
 libraries = ["libsbml", "glpk", "gurobipy", "cplex"]
 for library in libraries:
@@ -20,6 +21,37 @@ class CobraTestCase(unittest.TestCase):
         infile = open(salmonella_pickle, "rb")
         self.model = load(infile)
         infile.close()
+
+
+def test_optimizer(FluxTest, solver):
+    old_solution = FluxTest.model.solution.f
+    opt_function = cobra.flux_analysis.solvers.__getattribute__(
+        "optimize_%s" % (solver))
+    # test a feasible model
+    # using model.optimize
+    FluxTest.model.optimize(solver=solver)
+    FluxTest.assertEqual(FluxTest.model.solution.status, "optimal")
+    FluxTest.assertAlmostEqual(FluxTest.model.solution.f,
+        old_solution, places=5)
+    # using the optimization function directly
+    solution = opt_function(FluxTest.model)["the_solution"]
+    FluxTest.assertEqual(solution.status, "optimal")
+    FluxTest.assertAlmostEqual(solution.f, old_solution, places=5)
+    # test an infeasible model
+    # using model.optimize
+    FluxTest.infeasible_problem.optimize(solver=solver)
+    FluxTest.assertEqual(FluxTest.infeasible_problem.solution.status,
+        "infeasible")
+    # using the optimization function directly
+    solution = opt_function(FluxTest.infeasible_problem)["the_solution"]
+    FluxTest.assertEqual(solution.status, "infeasible")
+
+    # ensure a copied model can also be solved
+    model_copy = FluxTest.model.copy()
+    model_copy.optimize(solver=solver)
+    FluxTest.assertAlmostEqual(model_copy.solution.f, old_solution, places=5)
+    solution = opt_function(model_copy)["the_solution"]
+    FluxTest.assertAlmostEqual(solution.f, old_solution, places=5)
 
 
 class TestCobraCore(CobraTestCase):
@@ -67,24 +99,28 @@ class TestCobraFlux_analysis(CobraTestCase):
     def setUp(self):
         CobraTestCase.setUp(self)
         self.old_solution = self.model.solution.f
+        self.infeasible_problem = cobra.Model()
+        metabolite_1 = cobra.Metabolite("met1")
+        metabolite_2 = cobra.Metabolite("met2")
+        reaction_1 = cobra.Reaction("rxn1")
+        reaction_2 = cobra.Reaction("rxn2")
+        reaction_1.add_metabolites({metabolite_1: 1})
+        reaction_2.add_metabolites({metabolite_2: 1})
+        reaction_1.lower_bound = 1
+        reaction_2.upper_bound = 2
+        self.infeasible_problem.add_reactions([reaction_1, reaction_2])
 
     @unittest.skipIf(glpk is None, "glpk is required")
     def test_glpk_optimization(self):
-        old_solution = self.model.solution.f
-        self.model.optimize(solver="glpk")
-        self.assertAlmostEqual(self.model.solution.f, old_solution, places=5)
+        test_optimizer(self, "glpk")
 
     @unittest.skipIf(gurobipy is None, "gurobipy is required")
     def test_gurobi_optimization(self):
-        old_solution = self.model.solution.f
-        self.model.optimize(solver="gurobi")
-        self.assertAlmostEqual(self.model.solution.f, old_solution, places=5)
+        test_optimizer(self, "gurobi")
 
     @unittest.skipIf(cplex is None, "cplex is required")
     def test_cplex_optimization(self):
-        old_solution = self.model.solution.f
-        self.model.optimize(solver="cplex")
-        self.assertAlmostEqual(self.model.solution.f, old_solution, places=5)
+        test_optimizer(self, "gurobi")
 
 
 class TestCobraIO(CobraTestCase):

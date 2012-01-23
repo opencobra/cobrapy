@@ -41,10 +41,10 @@ class phenotypePhasePlaneData:
 
     def plot(self):
         """plot the phenotype phase plane in 3D using any available backend"""
-        if mlab is not None:
-            self.plot_mayavi()
-        elif pyplot is not None:
+        if pyplot is not None:
             self.plot_matplotlib()
+        elif mlab is not None:
+            self.plot_mayavi()
         else:
             raise (ImportError, "No suitable 3D plotting package found")
 
@@ -157,10 +157,13 @@ def _calculate_subset(arguments):
             reaction2.lower_bound = -1 * flux2 - tolerance
             reaction2.upper_bound = -1 * flux2 + tolerance
             hot_start = model.optimize(the_problem=hot_start, solver=solver)
-            if model.solution.status == "optimal":
-                results.append((i, j, model.solution.f,
-                    model.solution.y_dict[metabolite1_name],
-                    model.solution.y_dict[metabolite2_name]))
+            if model.solution is not None:
+                if model.solution.status == "optimal":
+                    results.append((i, j, model.solution.f,
+                        model.solution.y_dict[metabolite1_name],
+                        model.solution.y_dict[metabolite2_name]))
+                else:
+                    results.append((i, j, 0, 0, 0))
             else:
                 results.append((i, j, 0, 0, 0))
     return results
@@ -186,8 +189,8 @@ def calculate_phenotype_phase_plane(model,
             reaction1_range_max, reaction2_range_max,
             reaction1_npoints, reaction2_npoints)
     # find the objects for the reactions and metabolites
-    index1 = model.reactions.index(data.reaction1_name)
-    index2 = model.reactions.index(data.reaction2_name)
+    index1 = model.reactions.index(model.reactions.get_by_id(data.reaction1_name))
+    index2 = model.reactions.index(model.reactions.get_by_id(data.reaction2_name))
     metabolite1_name = str(model.reactions.get_by_id( \
         reaction1_name)._metabolites.keys()[0])
     metabolite2_name = str(model.reactions.get_by_id( \
