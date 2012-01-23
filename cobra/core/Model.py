@@ -459,7 +459,7 @@ class Model(Object):
             self._S = self._S.todok()
         self._S.update(coefficient_dictionary)
         self._S = self._S.tolil()
-
+        self._update_metabolite_vectors()
     def update(self):
         """Regenerates the stoichiometric matrix and vectors
         

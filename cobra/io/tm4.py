@@ -78,10 +78,15 @@ from numpy import array
 from math import pi
 from cobra.tools import log_function, exp_function
 from time import time
+from warnings import warn
 try:
-    from cobra.db_tools.tm4 import mev_uid_pid_to_dbid, mev_pid_to_locus_id
+    from cobra.db_tools.tm4 import mev_pid_to_locus_id, mev_uid_to_locus_id, \
+         mev_uid_to_dbid
+         
+    #Note the dictionaries for this conversion should be supplied to the function
+    #instead of calling the database here.
 except:
-    "WARNING cobra.io.tm4 is not yet ready for usage."
+    warn("cobra.io.tm4 is not yet ready for usage.")
 def parse_mev_file(file_name, file_data, file_name_delimiter='_', file_suffix='mev',
                    calculate_p_values=True, qc_threshold=0.0, maximum_radius=10.0, db_cursor=None):
     """Returns a dict of a parsed mev file.  file_name is the name of the file, excluding the directory;
@@ -121,9 +126,9 @@ def parse_mev_file(file_name, file_data, file_name_delimiter='_', file_suffix='m
     #TODO:  The remainder can be moved to a separate function that can be used with any
     #mev file
     file_dict['Data'] = parse_mev_data(file_data, the_channel_ids,
-                                       calculate_p_values = calculate_p_values,
-                                       qc_threshold = qc_threshold, maximum_radius = maximum_radius,
-                                       db_cursor = db_cursor)
+                                       calculate_p_values=calculate_p_values,
+                                       qc_threshold=qc_threshold, maximum_radius=maximum_radius,
+                                       db_cursor=db_cursor)
     return(file_dict)
 
 def parse_mev_data(file_data, the_channel_ids,  calculate_p_values=True,
@@ -145,10 +150,14 @@ def parse_mev_data(file_data, the_channel_ids,  calculate_p_values=True,
         pid_type = 'oligo'
         if 'Locus' in the_header:
             the_header[the_header.index('Locus')] = 'Gene Name'
-        the_header[the_header.index('OligoID')] = 'Locus'
-    else:
+        probe_index = the_header.index('OligoID')
+    elif 'Locus' in the_header:
         pid_type = 'locus'
-    probe_index = the_header.index('Locus')
+        probe_index = the_header.index('Locus')
+    else:
+        pid_type = 'uid'
+        probe_index = the_header.index('UID')
+
     cell_area = pi * (maximum_radius)**2
     the_data = {}
     the_pids = []
@@ -192,7 +201,10 @@ def parse_mev_data(file_data, the_channel_ids,  calculate_p_values=True,
                 #pooled_std_dev = ((the_std_dev**2 + background_std_dev**2)/2.)**0.5
                 #the_t = (the_mean - background_mean)/(pooled_std_dev*(2/spot_pixels) **0.5)
                 #degrees_of_freedom = background_pixels + spot_pixels - 2
-                warn("Doing unequal variance test")
+                #warn("Doing unequal variance test")
+                #However, I don't really know if we can assume that the signal and
+                #background should have equal variances as background should be dominated
+                #by nonbiological.
                 deviation_estimate = (the_std_dev**2/spot_pixels + background_std_dev**2/background_pixels)**0.5
                 the_t = (the_mean - background_mean) / deviation_estimate
                 degrees_of_freedom = (the_std_dev**2/spot_pixels + background_std_dev**2/background_pixels)**2/\
@@ -212,16 +224,22 @@ def parse_mev_data(file_data, the_channel_ids,  calculate_p_values=True,
         #Only convert the pid if it is an oligo id.
          if pid_type == 'oligo': 
              pid_to_locus = mev_pid_to_locus_id(db_cursor, set(the_pids))
-             [v.update({'locus': pid_to_locus[v['pid']]}) for v in the_data.values()]
+             [v.update({'locus': pid_to_locus[v['pid']]})
+              for v in the_data.itervalues()]
+         elif pid_type == 'locus':
+             [v.update({'locus': v['pid']}) for v in the_data.itervalues()]
+         elif pid_type == 'uid':
+             uid_to_locus = mev_uid_to_locus_id(db_cursor, set(map(int, the_pids)))
+             [v.update({'locus': uid_to_locus[int(v['pid'])]})
+              for v in the_data.itervalues()]
          else:
-             [v.update({'locus': v['pid']}) for v in the_data.values()]
+             raise Exception("Unkown pid_type %s"%repr(pid_type))
          #Get the database unique id for the spot to aid in loading.
          #TODO: The repeated calls makes this slow.  Change this to a single
          #call and allow mev_uid_pid_to_dbid to use prepared statements
-         uid_pid_list = [(k, v['pid']) for k, v in the_data.items()]
-         uid_pid_to_dbid = mev_uid_pid_to_dbid(db_cursor, uid_pid_list)
-         [v.update({'id': uid_pid_to_dbid[(k, v['pid'])]})
-          for k, v in the_data.items()]
+         uid_to_dbid = mev_uid_to_dbid(db_cursor, the_data.keys())
+         [v.update({'id': uid_to_dbid[k]})
+          for k,v in the_data.iteritems()]
          #[v.update({'id': mev_uid_pid_to_dbid(k, v['pid'], db_cursor)})
          #for k, v in the_data.items()]
     if print_time:
