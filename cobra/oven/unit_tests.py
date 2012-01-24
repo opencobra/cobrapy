@@ -16,42 +16,54 @@ for library in libraries:
         exec("%s = None" % library)
 
 
+class TestDictList(unittest.TestCase):
+    def setUp(self):
+        self.obj = cobra.Object.Object("test1")
+        self.list = cobra.collections.DictList.DictList()
+        self.list.append(self.obj)
+
+    def testAppend(self):
+        obj2 = cobra.Object.Object("test2")
+        self.list.append(obj2)
+        self.assertRaises(ValueError, self.list.append,
+            cobra.Object.Object("test1"))
+        self.assertEqual(self.list.index(obj2), 1)
+        self.assertEqual(self.list[1], obj2)
+        self.assertEqual(self.list.get_by_id("test2"), obj2)
+        self.assertEqual(len(self.list), 2)
+
+    def testExtend(self):
+        obj_list = [cobra.Object.Object("test%d" % (i)) for i in range(2, 10)]
+        self.list.extend(obj_list)
+        self.assertEqual(self.list[1].id, "test2")
+        self.assertEqual(self.list.get_by_id("test2"), obj_list[0])
+        self.assertEqual(self.list[8].id, "test9")
+        self.assertEqual(len(self.list), 9)
+
+    def testIadd(self):
+        obj_list = [cobra.Object.Object("test%d" % (i)) for i in range(2, 10)]
+        self.list += obj_list
+        self.assertEqual(self.list[1].id, "test2")
+        self.assertEqual(self.list.get_by_id("test2"), obj_list[0])
+        self.assertEqual(self.list[8].id, "test9")
+        self.assertEqual(len(self.list), 9)
+
+    def testAdd(self):
+        obj_list = [cobra.Object.Object("test%d" % (i)) for i in range(2, 10)]
+        sum = self.list + obj_list
+        self.assertEqual(self.list[0].id, "test1")
+        self.assertEqual(sum[1].id, "test2")
+        self.assertEqual(sum.get_by_id("test2"), obj_list[0])
+        self.assertEqual(sum[8].id, "test9")
+        self.assertEqual(len(self.list), 1)
+        self.assertEqual(len(sum), 9)
+
+
 class CobraTestCase(unittest.TestCase):
     def setUp(self):
         infile = open(salmonella_pickle, "rb")
         self.model = load(infile)
         infile.close()
-
-
-def test_optimizer(FluxTest, solver):
-    old_solution = FluxTest.model.solution.f
-    opt_function = cobra.flux_analysis.solvers.__getattribute__(
-        "optimize_%s" % (solver))
-    # test a feasible model
-    # using model.optimize
-    FluxTest.model.optimize(solver=solver)
-    FluxTest.assertEqual(FluxTest.model.solution.status, "optimal")
-    FluxTest.assertAlmostEqual(FluxTest.model.solution.f,
-        old_solution, places=5)
-    # using the optimization function directly
-    solution = opt_function(FluxTest.model)["the_solution"]
-    FluxTest.assertEqual(solution.status, "optimal")
-    FluxTest.assertAlmostEqual(solution.f, old_solution, places=5)
-    # test an infeasible model
-    # using model.optimize
-    FluxTest.infeasible_problem.optimize(solver=solver)
-    FluxTest.assertEqual(FluxTest.infeasible_problem.solution.status,
-        "infeasible")
-    # using the optimization function directly
-    solution = opt_function(FluxTest.infeasible_problem)["the_solution"]
-    FluxTest.assertEqual(solution.status, "infeasible")
-
-    # ensure a copied model can also be solved
-    model_copy = FluxTest.model.copy()
-    model_copy.optimize(solver=solver)
-    FluxTest.assertAlmostEqual(model_copy.solution.f, old_solution, places=5)
-    solution = opt_function(model_copy)["the_solution"]
-    FluxTest.assertAlmostEqual(solution.f, old_solution, places=5)
 
 
 class TestCobraCore(CobraTestCase):
@@ -92,6 +104,38 @@ class TestCobraCore(CobraTestCase):
         self.assertEqual(old_reaction_count, len(self.model.reactions))
         self.assertNotEqual(len(self.model.reactions),
             len(model_copy.reactions))
+
+
+def test_optimizer(FluxTest, solver):
+    """function to perform unittests on a generic solver"""
+    old_solution = FluxTest.model.solution.f
+    opt_function = cobra.flux_analysis.solvers.__getattribute__(
+        "optimize_%s" % (solver))
+    # test a feasible model
+    # using model.optimize
+    FluxTest.model.optimize(solver=solver)
+    FluxTest.assertEqual(FluxTest.model.solution.status, "optimal")
+    FluxTest.assertAlmostEqual(FluxTest.model.solution.f,
+        old_solution, places=5)
+    # using the optimization function directly
+    solution = opt_function(FluxTest.model)["the_solution"]
+    FluxTest.assertEqual(solution.status, "optimal")
+    FluxTest.assertAlmostEqual(solution.f, old_solution, places=5)
+    # test an infeasible model
+    # using model.optimize
+    FluxTest.infeasible_problem.optimize(solver=solver)
+    FluxTest.assertEqual(FluxTest.infeasible_problem.solution.status,
+        "infeasible")
+    # using the optimization function directly
+    solution = opt_function(FluxTest.infeasible_problem)["the_solution"]
+    FluxTest.assertEqual(solution.status, "infeasible")
+
+    # ensure a copied model can also be solved
+    model_copy = FluxTest.model.copy()
+    model_copy.optimize(solver=solver)
+    FluxTest.assertAlmostEqual(model_copy.solution.f, old_solution, places=5)
+    solution = opt_function(model_copy)["the_solution"]
+    FluxTest.assertAlmostEqual(solution.f, old_solution, places=5)
 
 
 class TestCobraFlux_analysis(CobraTestCase):
