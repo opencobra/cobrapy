@@ -106,8 +106,8 @@ class DictList(list):
     def append(self, the_object):
         the_id = get_id(the_object)
         self._check(the_id)
-        super(DictList, self).append(the_object)
         self._dict[the_id] = len(self)
+        super(DictList, self).append(the_object)
         self._object_dict[the_id] = the_object
     
     def union(self, iterable):
@@ -121,27 +121,26 @@ class DictList(list):
         [self.append(i) for i in iterable]
 
             
-    def __add__(self, other, deepcopy=True):
+    def __add__(self, other, should_deepcopy=True):
         """
         other: an DictList
 
-        deepcopy: Boolean.  Allow for shallow copying, however,
+        should_deepcopy: Boolean.  Allow for shallow copying, however,
         this can cause problems if one doesn't know that the
         items are referenceable from different id
 
         
         """
-        if deepcopy:
-            sum = deepcopy(other) # should this be deepcopy or shallow?
+        if should_deepcopy:
+            sum = deepcopy(self) # should this be deepcopy or shallow?
         else:
-            sum = other
+            sum = self
         sum.extend(other)
         sum._generate_index()
         return sum
     
     def __iadd__(self, other):
         self.extend(other)
-        self._generate_index()
         return self
     
     
