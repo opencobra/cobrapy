@@ -51,11 +51,10 @@ def combine_p_values(the_p_values, method='z', default_quantile=7.):
         #values replace 
         the_quantiles = []
         for the_p in the_p_values:
-            p_sign = sign(the_p)
             the_quantile = norm.ppf(1.-the_p)
             if isinf(the_quantile):
-                the_quantile = p_sign*default_quantile
-            the_quantiles.append(the_p)
+                the_quantile = default_quantile
+            the_quantiles.append(the_quantile)
         combined_p_value = norm.sf(sum(the_quantiles) / len(the_quantiles)**0.5)
     elif method.lower() == 'fisher':
         combined_p_value = 1-chi2.cdf(-2*sum(map(log,
