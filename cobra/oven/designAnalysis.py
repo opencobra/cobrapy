@@ -8,9 +8,10 @@ def plot_production_envelope(model, target_id, n_points=20, plot=True):
     original_target_bounds = (target_reaction.lower_bound,
                               target_reaction.upper_bound)
     hot_start = model.optimize()
+    if model.solution.status != "optimal":
+        return ([0], [0])
     max_growth_rate = model.solution.f
-    max_growth_production = target_reaction.x
-    # TODO - ensure the model solves
+    max_growth_production = model.solution.x_dict[target_reaction.id]
     growth_coupled = False
     if max_growth_production > 0:
         growth_coupled = True
@@ -32,6 +33,10 @@ def plot_production_envelope(model, target_id, n_points=20, plot=True):
     production_rates[
         numpy.abs(production_rates - max_growth_production).argmin()] = \
         max_growth_production
+    # if the 0 point was overwritten in the last operation
+    if production_rates[0] != 0:
+        production_rates[1] = production_rates[0]
+        production_rates[0] = 0
     growth_rates = production_rates * 0
     # make the objective coefficient what it was before
     target_reaction.objective_coefficient = 0
@@ -42,7 +47,10 @@ def plot_production_envelope(model, target_id, n_points=20, plot=True):
         target_reaction.lower_bound = production_rates[i]
         target_reaction.upper_bound = production_rates[i]
         hot_start = model.optimize(the_problem=hot_start)
-        growth_rates[i] = model.solution.f
+        if model.solution.status == "optimal":
+            growth_rates[i] = model.solution.f
+        else:
+            growth_rates[i] = 0
     # reset the bounds on the target reaction
     target_reaction.lower_bound = original_target_bounds[0]
     target_reaction.upper_bound = original_target_bounds[1]

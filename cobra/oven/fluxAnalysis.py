@@ -41,8 +41,9 @@ def optimize_minimal_flux(model, already_irreversible=False,
                 reaction.objective_coefficient
             old_lower_bounds[reaction] = reaction.lower_bound
             old_upper_bounds[reaction] = reaction.upper_bound
-            reaction.lower_bound = reaction.x
-            reaction.upper_bound = reaction.x
+            x = model.solution.x_dict[reaction.id]
+            reaction.lower_bound = x
+            reaction.upper_bound = x
             reaction.objective_coefficient = 0
         else:
             reaction.objective_coefficient = 1

@@ -39,9 +39,8 @@ def load_pickle(pickle_file):
     if not isfile(pickle_file) and not pickle_file.endswith(".pickle") \
             and isfile("pickle_file" + ".pickle"):
         pickle_file += ".pickle"
-    infile = open(pickle_file, "rb")
-    contents = load(infile)
-    infile.close()
+    with open(pickle_file, "rb") as infile:
+        contents = load(infile)
     return contents
 
 

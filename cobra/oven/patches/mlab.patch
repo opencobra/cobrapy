@@ -1,7 +1,7 @@
-Index: mlab/__init__.py
+Index: __init__.py
 ===================================================================
---- mlab/__init__.py	(revision 179)
-+++ mlab/__init__.py	(working copy)
+--- __init__.py	(revision 235)
++++ __init__.py	(working copy)
 @@ -1 +1,7 @@
  from mlab import *
 +__doc__ = """
@@ -10,11 +10,11 @@ Index: mlab/__init__.py
 +
 +To use MATLAB functions directly, see cobra.matlab
 +"""
-Index: mlab/mlab.py
+Index: mlab.py
 ===================================================================
---- mlab/mlab.py	(revision 179)
-+++ mlab/mlab.py	(working copy)
-@@ -1,13 +1,77 @@
+--- mlab.py	(revision 235)
++++ mlab.py	(working copy)
+@@ -1,13 +1,75 @@
  #cobra.mlab.py
  #System modules
 -import cPickle,numpy, os, cobra
@@ -49,13 +49,11 @@ Index: mlab/mlab.py
 +    into mlab's namespace (very useful for ipython tab completion)
 +
 +    matlab_cobra_path: the path to the directory containing the MATLAB
-+    cobra installation. Using the default None will attempt to use
-+    ~/Documents/MATLAB/cobra/"""
-+    home = os.getenv('USERPROFILE') or os.getenv('HOME')
-+    matlab_home = os.path.join(home, "Documents", "MATLAB")
++    cobra installation. Using the default None will attempt to find the
++    toolbox in the MATLAB path"""
 +    if matlab_cobra_path is None:
-+        home = os.getenv('USERPROFILE') or os.getenv('HOME')
-+        matlab_cobra_path = os.path.join(matlab_home, "cobra")
++        matlab_cobra_path, tmp = os.path.split(
++            cobra.matlab.which('initCobraToolbox'))
 +    if not os.path.isfile(os.path.join(matlab_cobra_path, "initCobraToolbox.m")):
 +        print "initCobraToolbox not found in given path"
 +        return
@@ -94,7 +92,7 @@ Index: mlab/mlab.py
  #Project defined modules
  def matlab_cell_to_python_list(the_cell):
      try:
-@@ -330,5 +394,3 @@
+@@ -330,5 +392,3 @@
      else:
          print 'FAILURE: pyCOBRA and COBRA Toolbox do not match: %s !~ %s'%(py_cobra_solution,
                                                                                         matlab_solution)
