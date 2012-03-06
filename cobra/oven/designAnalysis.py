@@ -3,6 +3,28 @@ import pylab
 
 
 def plot_production_envelope(model, target_id, n_points=20, plot=True):
+    """Plot the production envelope for the model given a target
+
+    Parameters
+    ----------
+    model : cobra model
+        The cobra model should already have the uptake rates se
+    target_id : str
+        The id of the exchange reaction for the target compound
+    n_points : int
+        The number of points to calculate for the production envolope
+    plot : bool, optional
+        Whether or not a plot should be made of the production envelope
+
+    Returns
+    -------
+    growth_rates : :class:`numpy.ndarray`
+        An array of growth rates
+    production_rates : :class:`numpy.ndarray`
+        An array of the corresponding maximum production rate at the
+        given growth rate.
+
+    """
     target_id = str(target_id)
     target_reaction = model.reactions.get_by_id(target_id)
     original_target_bounds = (target_reaction.lower_bound,
