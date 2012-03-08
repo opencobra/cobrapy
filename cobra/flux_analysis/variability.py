@@ -177,7 +177,6 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
                                                    error_reporting=error_reporting)
                 tmp_dict[the_description] = cobra_model.solution.f
             variability_dict[the_reaction] = tmp_dict
-            set_trace()
     return variability_dict
 
 

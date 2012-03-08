@@ -187,12 +187,12 @@ def parse_annotation(annotation_file, key_type='PrimaryAccession',
     return annotation_dict
 
 
-def collapse_fields(data_dict, quantitative_fields=['intensity_1',
-                                                    'intensity_2'],
-                    log_fields=['log_ratio', 'log_error'],
-                    p_fields=['p_value'], log_base=10, error_weighting=True):
-    raise Exception("cobra.io.feature_extraction.collapse_fields has moved to " +\
-                    "cobra.stats.tools.collapse_fields")
+## def collapse_fields(data_dict, quantitative_fields=['intensity_1',
+##                                                     'intensity_2'],
+##                     log_fields=['log_ratio', 'log_error'],
+##                     p_fields=['p_value'], log_base=10, error_weighting=True):
+##     raise Exception("cobra.io.feature_extraction.collapse_fields has moved to " +\
+##                     "cobra.stats.tools.collapse_fields")
 
 
 
@@ -224,6 +224,9 @@ def combine_files(file_list, annotation_file=None, polarity_list=None,
     """
     if print_time:
         start_time = time()
+    parse_file_return_id = 'accession'
+    if return_id.lower() == 'probe':
+        parse_file_return_id = return_id.lower()
     if return_id.lower() == 'entrez':
         if annotation_file is None:
             raise Exception("An annotation file must be supplied if you want " +\
@@ -243,10 +246,12 @@ def combine_files(file_list, annotation_file=None, polarity_list=None,
         else:
             polarity_list = list(polarity_list)
     #Extract the values to load into the database
+    
     [parsed_files.append(parse_file(the_file,
                                      the_polarity,
                                       quality_control=quality_control,
-                                    normalization=normalization))
+                                    normalization=normalization,
+                                    return_id=parse_file_return_id))
      for the_file, the_polarity in zip(file_list,
                                        polarity_list)]
     if print_time:

@@ -1,3 +1,4 @@
+from copy import deepcopy
 from numpy import mean, array,std, log10
 from cobra.tools import log_function
 from cobra.stats.stats import combine_p_values, error_weighted

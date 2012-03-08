@@ -11,6 +11,7 @@ from cobra.core.Reaction import Reaction
 from cobra.core.Metabolite import Metabolite
 from cobra.flux_analysis.solvers import optimize_quadratic_program
 from cobra.manipulation import initialize_growth_medium, delete_model_genes
+from warnings import warn
 #TODO: Add in an option for using matrices instead of objects because it
 #appears that there might be a performance penalty (especially for repetitions)
 #when using objects.
@@ -72,7 +73,7 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver='gurobi',
     for the mutant or wild-type.  This saves 0.2 seconds in stacking matrices.
 
     """
-    #print 'MOMA is currently non-functional.  check back later'
+    warn('MOMA is currently non-functional.  check back later')
     if solver.lower() == 'cplex' and lp_method == 0:
         #print 'for moma, solver method 0 is very slow for cplex. changing to method 1'
         lp_method = 1
