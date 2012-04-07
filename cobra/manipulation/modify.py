@@ -137,6 +137,7 @@ def convert_to_irreversible(cobra_model):
     cobra_model: A Model object which will be modified in place.
 
     
+    TODO: Can we just use a -1*guided_copy or something else?
     """
     reactions_to_add = []
     for reaction in cobra_model.reactions:
@@ -155,6 +156,9 @@ def convert_to_irreversible(cobra_model):
             reaction_dict = dict([(k, v*-1)
                                   for k, v in reaction._metabolites.items()])
             reverse_reaction.add_metabolites(reaction_dict)
+            reverse_reaction._model = reaction._model
+            reverse_reaction._genes = reaction._genes
+            reverse_reaction.gene_reaction_rule = reaction.gene_reaction_rule
             reactions_to_add.append(reverse_reaction)
     cobra_model.add_reactions(reactions_to_add)
  

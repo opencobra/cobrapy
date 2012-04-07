@@ -3,6 +3,7 @@
 from copy import deepcopy
 from time import time
 from math import ceil, floor
+from pdb import set_trace
 from numpy import array, zeros, ones, hstack, vstack, matrix, sum
 from scipy.sparse import eye, lil_matrix, dok_matrix
 from scipy.sparse import hstack as s_hstack
@@ -88,12 +89,14 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver='gurobi',
                                                                                         norm_type)
         print 'Defaulting to user-specified norm_type'
         combined_model = None
-    #If the ids in the mutant model are the same as the wt model then they need to be reassigned
-    if wt_model.metabolites[0] in mutant_model.metabolites:
-        [setattr(x, 'id', 'mt_%s'%x.id)
-         for x in mutant_model.metabolites]
-        [setattr(x, 'id', 'mt_%s'%x.id)
-         for x in mutant_model.reactions]
+    #Add a prefix in front of the mutant_model metabolites and reactions to prevent
+    #name collisions in DictList
+    for the_dict_list in [mutant_model.metabolites,
+                          mutant_model.reactions]:
+        [setattr(x, 'id', 'mutant_%s'%x.id)
+         for x in the_dict_list]
+        the_dict_list._generate_index() #Update the DictList.dicts
+
 
     wt_model.optimize(solver=solver)
     wt_solution = deepcopy(wt_model.solution)
@@ -139,27 +142,28 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver='gurobi',
              for x in combined_model.reactions]
             #Add in the difference reactions.  The mutant reactions and metabolites are already added.
             #This must be a list to maintain the correct order when adding the difference_metabolites
+
             difference_reactions = [Reaction('difference_%i'%i)
                                         for i in range(reaction_coefficient*number_of_reactions)]
             [setattr(x, 'lower_bound', -1000)
              for x in difference_reactions]
             combined_model.add_reactions(difference_reactions)
-            index_to_reaction = dict(zip(range(len(combined_model.reactions)),
-                                         combined_model.reactions))
-            id_to_reaction = dict([(x.id, x)
-                                   for x in combined_model.reactions])
+            index_to_reaction = combined_model.reactions
+            id_to_reaction = combined_model.reactions._object_dict
             #This is slow
             #Add in difference metabolites
-            for i in xrange(number_of_reactions):
-                tmp_metabolite = Metabolite('difference_%i'%i)
+            difference_metabolite_dict = dict([(i, Metabolite('difference_%i'%i))
+                                           for i in xrange(number_of_reactions)])
+            combined_model.add_metabolites(difference_metabolite_dict.values())
+            for i, tmp_metabolite in difference_metabolite_dict.iteritems():
                 if norm_type == 'linear':
                     tmp_metabolite._constraint_sense = 'G'
-                index_to_reaction[i].add_metabolites({tmp_metabolite: -1.})
-                index_to_reaction[i+number_of_reactions].add_metabolites({tmp_metabolite: 1.})
-                index_to_reaction[i+2*number_of_reactions].add_metabolites({tmp_metabolite: 1.})
+                index_to_reaction[i].add_metabolites({tmp_metabolite: -1.},
+                                                     add_to_container_model=False)
+                index_to_reaction[i+number_of_reactions].add_metabolites({tmp_metabolite: 1.}, add_to_container_model=False)
+                index_to_reaction[i+2*number_of_reactions].add_metabolites({tmp_metabolite: 1.}, add_to_container_model=False)
 
             #Add in the virtual objective metabolite
-
             objective_metabolite = Metabolite('wt_optimal')
             objective_metabolite._bound = wt_optimal
             if objective_sense == 'maximize':
@@ -190,13 +194,13 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver='gurobi',
     if print_time:
         print 'Took %f seconds to update combined model'%(time()-start_time)
         start_time = time()
-        
-    the_result = optimize_quadratic_program(cobra_model,objective_sense='minimize',
-                                              quadratic_component=quadratic_component,
-                                              the_problem=the_problem, solver=solver,
-                                              tolerance_optimality=tolerance_optimality,
-                                              tolerance_feasibility=tolerance_feasibility,
-                                              lp_method=lp_method, reuse_basis=reuse_basis)
+    the_result = combined_model.optimize(cobra_model,objective_sense='minimize',
+                                         quadratic_component=quadratic_component,
+                                         the_problem=the_problem, solver=solver,
+                                         tolerance_optimality=tolerance_optimality,
+                                         tolerance_feasibility=tolerance_feasibility,
+                                         lp_method=lp_method, reuse_basis=reuse_basis)
+    set_trace()
     the_problem = the_result['the_problem']
     the_solution = the_result['the_problem']
 
@@ -345,227 +349,5 @@ if __name__ == '__main__':
                 print 'Passed MOMA double_deletion with tpiA & metN deletion in %1.4f seconds'%(time() - start_time)
             else:
                 print 'failed double deletion'
-
-
-
-#######
-#cobra.flux_analysis.moma.py: Runs the minimization of metabolic
-#adjustment method described in Segre et al 2002 PNAS 99(23): 15112-7
-#
-#NOTE: If copy performance cannot be enhanced for the new cobra objects then reinstate
-#the matrix method below to be used with repeated simulations
-
-## def moma_matrix(wt_model, mutant_model, objective_sense='maximize', solver='gurobi',
-##          tolerance_optimality=1e-8, tolerance_feasibility=1e-8,
-##          minimize_norm=False, the_problem='return', lp_method=0,
-##          combined_model=None, norm_type='euclidean', print_time=False):
-##     """Runs the minimization of metabolic adjustment method described in
-##     Segre et al 2002 PNAS 99(23): 15112-7.
-
-##     wt_model: A cobra.Model object
-
-##     mutant_model: A cobra.Model object with different reaction bounds vs wt_model.
-##     To simulate deletions
-
-##     objective_sense: 'maximize' or 'minimize'
-
-##     solver: 'gurobi', 'cplex', or 'glpk'.  Note: glpk cannot be used with
-##     norm_type 'euclidean'
-
-##     tolerance_optimality: Solver tolerance for optimality.
-
-##     tolerance_feasibility: Solver tolerance for feasibility.
-
-##     the_problem: None or a problem object for the specific solver that can be
-##     used to hot start the next solution.
-
-##     lp_method: The method to use for solving the problem.  Depends on the solver.  See
-##     the cobra.flux_analysis.solvers.py file for more info.
-##         For norm_type == 'euclidean':
-##             the primal simplex works best for the test model (gurobi: lp_method=0, cplex: lp_method=1)
-    
-##     combined_model: an output from moma that represents the combined optimization
-##     to be solved.  when this is not none.  only assume that bounds have changed
-##     for the mutant or wild-type.  This saves 0.2 seconds in stacking matrices.
-
-##     """
-##     if solver.lower() == 'cplex' and lp_method == 0:
-##         #print 'for moma, solver method 0 is very slow for cplex. changing to method 1'
-##         lp_method = 1
-##     if solver.lower() == 'glpk' and norm_type == 'euclidean':
-##         print "GLPK can't solve quadratic problems like MOMA.  Switching to linear MOMA"
-
-##     if norm_type == 'euclidean':
-##         #Reusing the basis can get the solver stuck.
-##         reuse_basis = False
-##     if combined_model and combined_model.norm_type != norm_type:
-##         print 'Cannot use combined_model.norm_type = %s with user-specified norm type'%(combined_model.norm_type,
-##                                                                                         norm_type)
-##         print 'Defaulting to user-specified norm_type'
-##         combined_model = None
-    
-##     wt_model.optimize(solver=solver)
-##     wt_solution = deepcopy(wt_model.solution)
-##     if objective_sense == 'maximize':
-##         wt_optimal = floor(wt_solution.f/tolerance_optimality)*tolerance_optimality
-##     else:
-##         wt_optimal = ceil(wt_solution.f/tolerance_optimality)*tolerance_optimality
-##     if norm_type == 'euclidean':
-##         quadratic_component = eye(wt_solution.x.shape[0],wt_solution.x.shape[0])
-##     elif norm_type == 'linear':
-##         quadratic_component = None
-##     if minimize_norm:
-##         #just worry about the flux distribution and not the objective from the wt
-##         combined_model = mutant_model.copy()
-##         combined_model._objective_coefficients = -wt_solution.x
-##     else:
-##         #Construct a problem that attempts to maximize the objective in the WT model while
-##         #solving the quadratic problem.  This new problem is constructed to try to find
-##         #a solution for the WT model that lies close to the mutant model.  There are
-##         #often multiple equivalent solutions with M matrices and the one returned
-##         #by a simple cobra_model.optimize call may be too far from the mutant.
-##         #This only needs to be adjusted if we update mutant_model._S after deleting reactions
-##         if print_time:
-##             start_time = time()
-##         number_of_reactions = len(mutant_model.reactions)
-##         if norm_type == 'euclidean':
-##             reaction_coefficient = 1
-##         elif norm_type == 'linear':
-##             reaction_coefficient = 2
-##         if not combined_model:
-##             combined_model = mutant_model.copy()
-##             combined_model.id = ''
-##             if wt_model.id:
-##                 combined_model.id = wt_model.id
-##             if mutant_model.id:
-##                 combined_model.id += "_" + repr(mutant_model.id)
-##             difference_matrix = s_hstack((-eye(number_of_reactions,number_of_reactions),
-##                                           eye(number_of_reactions,number_of_reactions),
-##                                           eye(number_of_reactions,number_of_reactions)))
-##             if norm_type == 'linear':
-##                 difference_matrix = s_hstack((difference_matrix,
-##                                               lil_matrix((number_of_reactions,number_of_reactions))))
-##                 tmp_difference_matrix = s_hstack((eye(number_of_reactions,number_of_reactions),
-##                                                   -eye(number_of_reactions,number_of_reactions),
-##                                                   lil_matrix((number_of_reactions, number_of_reactions)),
-##                                                   eye(number_of_reactions,number_of_reactions)))
-##                 difference_matrix = s_vstack((difference_matrix,
-##                                               tmp_difference_matrix))
-##             difference_matrix = difference_matrix.tolil()
-                
-##             tmp_1 = s_hstack((wt_model._S,
-##                               lil_matrix((wt_model._S.shape[0], (1 + reaction_coefficient)*number_of_reactions))))
-##             tmp_2 = s_hstack((lil_matrix((mutant_model._S.shape[0], number_of_reactions)),
-##                               mutant_model._S,
-##                               lil_matrix((mutant_model._S.shape[0], reaction_coefficient*number_of_reactions))))
-##             tmp_4 = s_hstack((lil_matrix(wt_model._objective_coefficients.T),
-##                                   lil_matrix((1, (1 + reaction_coefficient)*number_of_reactions))))
-##             tmp_S = s_vstack((tmp_1, tmp_2, difference_matrix, tmp_4))
-
-                
-##             combined_model._S = tmp_S
-##             if isinstance(combined_model.reactions[0], Reaction):
-##                 [combined_model.reactions.append(Reaction('mt_%s'%x)) for x in mutant_model.reactions]
-##                 [combined_model.reactions.append(Reaction('difference_%i'%i))
-##                  for i in range(reaction_coefficient*number_of_reactions)]
-##                 [combined_model.metabolites.append(Metabolite('mt_%s'%x)) for x in mutant_model.metabolites]
-##                 [combined_model.metabolites.append(Metabolite('difference_%i'%i))
-##                  for i in range(reaction_coefficient*number_of_reactions)]
-##                 combined_model.metabolites.append(Metabolite('wt_optimal'))
-                
-##             else:
-##                 [combined_model.reactions.append('mt_%s'%x) for x in mutant_model.reactions]
-##                 [combined_model.reactions.append('difference_%i'%i)
-##                  for i in range(reaction_coefficient*number_of_reactions)]
-##                 [combined_model.metabolites.append('mt_%s'%x) for x in mutant_model.metabolites]
-##                 [combined_model.metabolites.append('difference_%i'%i)
-##                  for i in range(reaction_coefficient*number_of_reactions)]
-##                 combined_model.metabolites.append('wt_optimal')
-##             if print_time:
-##                 print 'Took %f seconds to construct combined model'%(time()-start_time)
-##                 start_time = time()
-
-
-##         tmp_b = hstack((deepcopy(wt_model._b),
-##                         deepcopy(mutant_model._b),
-##                         zeros((reaction_coefficient*number_of_reactions,)),
-##                         deepcopy(wt_optimal)))
-##         #Set the linear objectives to 0
-##         if norm_type == 'euclidean':
-##             tmp_objective_coefficients = zeros(((2 + reaction_coefficient)*number_of_reactions,))
-##         elif norm_type == 'linear':
-##             tmp_objective_coefficients = hstack((zeros((2*number_of_reactions,1)),
-##                                                  ones((reaction_coefficient*number_of_reactions, ))))
-##         #
-##         lower_coefficient = -10000.
-##         upper_coefficient = 10000.
-##         if norm_type == 'linear':
-##             lower_coefficient = 0.
-##         tmp_lower_bounds = hstack((deepcopy(wt_model._lower_bounds),
-##                                    deepcopy(mutant_model._lower_bounds),
-##                                    lower_coefficient*ones((reaction_coefficient*number_of_reactions,))))
-##         tmp_upper_bounds = hstack((deepcopy(wt_model._upper_bounds),
-##                                    deepcopy(mutant_model._upper_bounds),
-##                                    upper_coefficient*ones((reaction_coefficient*number_of_reactions,))))
-        
-##         tmp_constraint_sense = ['E']*(wt_model._S.shape[0] + mutant_model._S.shape[0])
-##         if norm_type == 'euclidean':
-##             tmp_constraint_sense += ['E']*(reaction_coefficient*number_of_reactions)
-##         elif norm_type == 'linear':
-##             tmp_constraint_sense += ['G']*(reaction_coefficient*number_of_reactions)
-##         if objective_sense == 'maximize':
-##             tmp_constraint_sense.append('G')
-##         else:
-##             tmp_constraint_sense.append('L')
-##         if norm_type == 'euclidean':
-##             quadratic_component = s_vstack((lil_matrix((2*number_of_reactions, 3*number_of_reactions)),
-##                                             s_hstack((lil_matrix((number_of_reactions, 2*number_of_reactions)),
-##                                                       quadratic_component))))
-##         elif norm_type == 'linear':
-##             quadratic_component = None
-##         #combined_model = wt_model.copy()
-##         combined_model._objective_coefficients = tmp_objective_coefficients
-
-##         combined_model._lower_bounds = tmp_lower_bounds
-##         combined_model._upper_bounds = tmp_upper_bounds
-##         combined_model._constraint_sense = tmp_constraint_sense
-##         combined_model._b = tmp_b
-##     combined_model.norm_type = norm_type
-##     cobra_model = combined_model
-
-##     if print_time:
-##         print 'Took %f seconds to update combined model'%(time()-start_time)
-##         start_time = time()
-        
-##     the_solution = optimize_quadratic_program(cobra_model,objective_sense='minimize',
-##                                               quadratic_component=quadratic_component,
-##                                               the_problem=the_problem, solver=solver,
-##                                               tolerance_optimality=tolerance_optimality,
-##                                               tolerance_feasibility=tolerance_feasibility,
-##                                               lp_method=lp_method, reuse_basis=reuse_basis)
-
-##     if print_time:
-##         print 'Took %f seconds to solve problem'%(time()-start_time)
-##         start_time = time()
-##     mutant_dict = {}
-##     x_vector = the_solution.pop('x')
-##     if hasattr(x_vector, 'flatten'):
-##         x_vector = x_vector.flatten()
-##     mutant_dict['x'] = mutant_fluxes = array(x_vector[1*number_of_reactions:2*number_of_reactions])
-##     #Need to use the new solution as there are multiple ways to achieve an optimal solution in
-##     #simulations with M matrices.
-##     wt_model.solution.x = array(x_vector[:number_of_reactions])
-##     mutant_dict['objective_value'] = mutant_f = float(matrix(mutant_fluxes)*matrix(mutant_model._objective_coefficients).T)
-##     mutant_dict['status'] = the_solution.pop('status')
-##     mutant_dict['flux_difference'] = flux_difference = sum((wt_model.solution.x - mutant_fluxes)**2)
-##     mutant_dict['the_problem'] = the_solution.pop('the_problem')
-##     mutant_dict['combined_model'] = combined_model
-##     if print_time:
-##         print 'Took %f seconds to assemble solution'%(time()-start_time)
-    
-##     del wt_model, mutant_model, quadratic_component, the_solution
-##     return(mutant_dict)
-
-
 
 

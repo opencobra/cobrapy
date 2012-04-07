@@ -4,6 +4,7 @@
 #TODO: Speed up problem construction for each of the optimize routines.
 from cobra.core.Solution import Solution
 from time import time
+from pdb import set_trace
 #This centralizes some of the common elements that are differently named across solvers.
 #These are stored as strings here to prevent problems associated with calling
 #solver objects for solver packages that aren't available
@@ -30,12 +31,14 @@ def update_objective(cobra_model, the_objectives):
     for the_objective in the_objectives:
         if hasattr(the_objective,'id'):
             #TODO: Allow for variable contributions to the objective function
-            the_index = cobra_model.reactions.index(the_objective.id)
-        elif isinstance(the_objective, str):
-            the_index = cobra_model.reactions.index(the_objective)
-        elif isinstance(the_objective, int):
-            the_index = the_objective
-        cobra_model.reactions[the_index].objective_coefficient = 1.
+
+            the_objective.objective_coefficient = 1.
+        else:
+            if isinstance(the_objective, str):
+                the_index = cobra_model.reactions.get_by_id(the_objective)
+            elif isinstance(the_objective, int):
+                the_index = the_objective
+            cobra_model.reactions[the_index].objective_coefficient = 1.
     #NOTE: _objective_coefficients is deprecated
     cobra_model._objective_coefficients = array([x.objective_coefficient
                                                  for x in cobra_model.reactions])
@@ -45,7 +48,8 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
                    tolerance_optimality=1e-6, tolerance_feasibility=1e-6, tolerance_integer=1e-9,
                    tolerance_barrier=1e-8,error_reporting=None, 
                    print_solver_time=False, lp_method=1, lp_parallel=0, copy_problem=False,
-                   relax_b=None, quadratic_component=None, reuse_basis=True):
+                   relax_b=None, quadratic_component=None, reuse_basis=True,
+                   update_problem_reaction_bounds=True):
     """Uses the ILOG/CPLEX (www.ibm.com/software/integration/optimization/cplex-optimizer/)
     optimizer to perform an optimization on cobra_model for the objective_coefficients in
     cobra_model._objective_coefficients based on the objective sense.
@@ -84,6 +88,11 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
             
     reuse_basis: Boolean.  If True and the_problem is a model object for the solver,
     attempt to hot start the solution.
+
+
+    update_problem_reaction_bounds: Boolean.  Set to True if you're providing the_problem
+    and you've modified reaction bounds on your cobra_model since creating the_problem.  Only
+    necessary for CPLEX
 
     method for linear optimization: 0 = automatic
     1 = primal simplex, 2 = dual simplex, 3 = network simplex,
@@ -214,10 +223,11 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
                 print 'set lp objective: ' + repr(time()-start_time)
                 start_time = time()
         #SPEED THIS UP
-        lp.variables.set_upper_bounds([(x.id, float(x.upper_bound))
-                                        for x in cobra_model.reactions])
-        lp.variables.set_lower_bounds([(x.id, float(x.lower_bound))
-                                        for x in cobra_model.reactions])
+        if update__problem_reaction_bounds:
+            lp.variables.set_upper_bounds([(x.id, float(x.upper_bound))
+                                            for x in cobra_model.reactions])
+            lp.variables.set_lower_bounds([(x.id, float(x.lower_bound))
+                                            for x in cobra_model.reactions])
 
         if error_reporting == 'time':
             print 'changed all bounds: ' + repr(time()-start_time)
@@ -340,7 +350,7 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
                     tolerance_barrier=None, tolerance_integer=1e-9, error_reporting=None,
                     print_solver_time=False, copy_problem=False, lp_method=0,
                     relax_b=None, quad_precision=False, quadratic_component=None,
-                    reuse_basis=True, lp_parallel=None):
+                    reuse_basis=True, lp_parallel=None, update_problem_reaction_bounds=True):
     """Uses the gurobi (http://gurobi.com) optimizer to perform an optimization on cobra_model
     for the objective_coefficients in cobra_model._objective_coefficients based
     on objective sense.
@@ -386,6 +396,10 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
     reuse_basis: Boolean.  If True and the_problem is a model object for the solver,
     attempt to hot start the solution.
 
+    update_problem_reaction_bounds: Boolean.  Set to True if you're providing the_problem
+    and you've modified reaction bounds on your cobra_model since creating the_problem.  Only
+    necessary for CPLEX
+    
     lp_parallel: Not implemented
 
     lp.optimize() with Salmonella model:
@@ -581,7 +595,7 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
                   reuse_basis=True,
                   #Not implemented
                   tolerance_barrier=None, lp_parallel=None,
-                  copy_problem=None, relax_b=None):
+                  copy_problem=None, relax_b=None,update_problem_reaction_bounds=True):
     """Uses the GLPK (www.gnu.org/software/glpk/) optimizer via pyglpk
     (http://www.tfinley.net/software/pyglpk/release.html) to perform an optimization
     on cobra_model for the objective_coefficients in cobra_model._objective_coefficients
@@ -614,6 +628,11 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
 
     reuse_basis: Boolean.  If True and the_problem is a model object for the solver,
     attempt to hot start the solution.  Currently, only True is available for GLPK
+
+    
+    update_problem_reaction_bounds: Boolean.  Set to True if you're providing the_problem
+    and you've modified reaction bounds on your cobra_model since creating the_problem.  Only
+    necessary for CPLEX
     
     lp.simplex() with Salmonella model:
          cold start: 0.42 seconds

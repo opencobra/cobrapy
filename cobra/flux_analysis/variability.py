@@ -162,8 +162,11 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
         variability_dict = {}
         the_sense_dict = {'maximize': 'maximum',
                           'minimize': 'minimum'}
+        basic_problem = the_problem
+        #Adding in solver-specific code could improve the speed substantially.
         for the_reaction in the_reactions:
             tmp_dict = {}
+            the_problem = basic_problem
             for the_sense, the_description in the_sense_dict.iteritems():
                 the_problem = cobra_model.optimize(solver=solver,
                                                    new_objective=the_reaction,
@@ -174,7 +177,8 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
                                                    lp_method=lp_method,
                                                    lp_parallel=lp_parallel,
                                                    the_problem=the_problem,
-                                                   error_reporting=error_reporting)
+                                                   error_reporting=error_reporting,
+                                                   update_problem_reaction_bounds=False)
                 tmp_dict[the_description] = cobra_model.solution.f
             variability_dict[the_reaction] = tmp_dict
     return variability_dict
@@ -215,6 +219,18 @@ def find_blocked_reactions(cobra_model, the_reactions=None, allow_loops=True,
     return(blocked_reactions)
 
 
+def run_fva(solver='cplex'):
+    """
+    For debugging purposes only
+    
+    """
+    test_directory = '../test/data/'
+    from cPickle import load
+    with open(test_directory + 'salmonella.pickle') as in_file:
+        cobra_model = load(in_file)
+    fva_out =  flux_variability_analysis(cobra_model,
+                                         the_reactions=cobra_model.reactions,#[100:140],
+                                         solver=solver,number_of_processes=1)
 
                              
 
@@ -241,7 +257,10 @@ if __name__ == '__main__':
         from cplex import Cplex
     except:
         solver_dict['cplex'] = False
-    for solver in solver_dict:
+    #The next two lines are used when profiling / debugging
+    #from cProfile import run
+    #for solver in solver_dict.items()[:0]:
+    for solver in solver_dict.items():
         if solver_dict[solver]:
             print '\ntesting %s:'%solver
             print '\tFlux Variability: '

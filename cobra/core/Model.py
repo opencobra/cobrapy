@@ -459,19 +459,20 @@ class Model(Object):
             self._S = self._S.todok()
         self._S.update(coefficient_dictionary)
         self._S = self._S.tolil()
-        self._update_metabolite_vectors()
+
     def update(self):
         """Regenerates the stoichiometric matrix and vectors
         
         """
         self._update_matrices()
+        self._update_metabolite_vectors()
 
     def optimize(self, new_objective=None, objective_sense='maximize',
                  min_norm=0, the_problem=None, solver='glpk', 
                  error_reporting=None, tolerance_optimality=1e-6,
                  tolerance_feasibility=1e-6, tolerance_barrier=1e-10,
                  lp_method=0, lp_parallel=-1, copy_problem=False, relax_b=None,
-                 quadratic_component=None):
+                 quadratic_component=None, reuse_basis=False, update_problem_reaction_bounds=True):
         """Optimize self for self._objective_coefficients or new_objective.
 
         new_objective: Reaction, String, or Integer referring to a reaction in
@@ -535,7 +536,9 @@ class Model(Object):
                                    tolerance_barrier=tolerance_barrier,
                                    lp_method=lp_method, lp_parallel=lp_parallel,
                                    copy_problem=copy_problem, relax_b=relax_b,
-                                   quadratic_component=quadratic_component)
+                                   quadratic_component=quadratic_component,
+                                   reuse_basis=reuse_basis,
+                                   update_problem_reaction_bounds=update_problem_reaction_bounds)
 
         solver_function = solver_dict.pop(solver)
         the_solution = None
