@@ -108,23 +108,23 @@ def load_matlab_model(infile_path, variable_name=None):
         model.description = model.id
         for i, name in enumerate(m["mets"][0, 0]):
             new_metabolite = cobra.Metabolite()
-            new_metabolite.id = name[0][0]
+            new_metabolite.id = name[0][0]#.encode("ascii", "replace")
             new_metabolite.name = m["metNames"][0, 0][i][0][0]
             new_metabolite.formula = m["metFormulas"][0][0][i][0][0]
-            model.metabolites.append(new_metabolite)
+            model.add_metabolites([new_metabolite])
         for i, name in enumerate(m["rxns"][0, 0]):
             new_reaction = cobra.Reaction()
-            new_reaction.id = name[0][0]
+            new_reaction.id = name[0][0]#.encode("ascii", "replace")
             new_reaction.name = m["rxnNames"][0, 0][i][0][0]
             new_reaction.lower_bound = m["lb"][0, 0][i][0]
             new_reaction.upper_bound = m["ub"][0, 0][i][0]
             new_reaction.objective_coefficient = m["c"][0, 0][i][0]
-            model.reactions.append(new_reaction)
+            model.add_reactions(new_reaction)
         coo = _coo_matrix(m["S"][0, 0])
         for i, j, v in zip(coo.row, coo.col, coo.data):
             model.reactions[j].add_metabolites({model.metabolites[i]: v})
         # TODO finish adding GPR's
-        # model.update()
+        model.update()
         return model
     # If code here is executed, then no model was found.
     raise Exception("no COBRA model found")
