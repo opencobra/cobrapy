@@ -1,8 +1,9 @@
+DictList_tab_complete
+Allows tab completion on a DictList, such as model.reactions.PG<TAB> will
+autocomplete to model.reactions.PGI
+
 convert_back_to_reversible
 Adds a function to cobra.manipulation.modify which can undo the changes made by convert_to_irreversible.
-
-DictList_index_bug
-DictList.index will only take the string representation of the object, not the object itself
 
 mlab
 Make improvements to the mlab module. MATLAB commands can be called using cobra.matlab Creates a function init_matlab_toolbox, which calls the initCobraToolbox function in MATLAB and scans through the cobra matlab functions for faster use.
