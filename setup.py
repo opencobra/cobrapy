@@ -11,7 +11,11 @@ setup(
                         'rpy2>=2.2.2',
                       'libsbml>=5.1.0_b0',
                       'pp>=1.6.0'],
-    install_requires = setup_requires,
+    install_requires = ['numpy>=1.6.1',
+                        'scipy>=0.10.1',
+                        'rpy2>=2.2.2',
+                      'libsbml>=5.1.0_b0',
+                      'pp>=1.6.0'],
     extras_require = {
         'matlab': ["mlabwrap>=1.1"]
         },

@@ -1,11 +1,6 @@
 #cobra/sbml.py: Tools for reading / writing SBML now contained in
 #this module
 #System modules
-from warnings import warn
-try:
-    from libsbml import *
-except:
-    warn ('Unable to import libsbml cannot use cobra.io.sbml.  Perhaps your external sbml libraries are not installed?')
 from cobra import Model, Reaction, Metabolite, Formula
 from os.path import isfile
 from copy import deepcopy
