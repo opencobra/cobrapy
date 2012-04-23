@@ -25,6 +25,7 @@ r( '''
    redblue  <- function(n) colorpanel(n, "red","white","blue")
    whitered  <- function(n) colorpanel(n, "white","red")
    whiteblack  <- function(n) colorpanel(n, "white","black")
+   whiteblue  <- function(n) colorpanel(n, "white","blue")
    blackred  <- function(n) colorpanel(n, "black", "red")
    greenblack  <- function(n) colorpanel(n, "green", "black")
    update_names <- function( the_vector, the_names) {
