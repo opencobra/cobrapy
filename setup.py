@@ -4,20 +4,19 @@ from setuptools import setup, find_packages
 setup(
     name = "cobra",
     version = '0.01a.dev',
-    packages = find_packages(exclude=['internal', 'oven', 'db_tools', 'omics', 'general','mlab']),
+    packages = find_packages(exclude=['internal', 'oven', 'db_tools', 'omics', 'general*',]),
     #scripts = [''],
-    setup_requires = ['numpy>=1.6.1',
-                        'scipy>=0.10.1',
-                        'rpy2>=2.2.2',
-                      'libsbml>=5.1.0_b0',
-                      'pp>=1.6.0'],
-    install_requires = ['numpy>=1.6.1',
-                        'scipy>=0.10.1',
-                        'rpy2>=2.2.2',
-                      'libsbml>=5.1.0_b0',
-                      'pp>=1.6.0'],
+    ## setup_requires = ['ipython>=0.10.0',
+    ##                   'numpy>=1.6.1',
+    ##                     'scipy>=0.10.0',
+    ##                   'pp>=1.6.0'],
+    ## install_requires = ['ipython>=0.10.0',
+    ##                     'numpy>=1.6.1',
+    ##                     'scipy>=0.10.0',
+    ##                   'pp>=1.6.0'],
     extras_require = {
-        'matlab': ["mlabwrap>=1.1"]
+        'matlab': ["mlabwrap>=1.1"],
+        'R': ["rpy2>=2.2.2"]
         },
 
     ## package_data = {
