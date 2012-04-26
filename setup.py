@@ -13,7 +13,7 @@ setup(
         'R': ["rpy2>=2.2.2"]
         },
 
-    ## package_data = {
+    package_data = {
          '': ['*.txt', '*.html','gpl-3.0','README','*pickle','*xml']},
 
     author = "Daniel Robert Hyduke",

@@ -21,7 +21,7 @@ print '%s is still under development.'%argv[0]
 if len(argv) < 4:
     print 'Script must be called with the number of processes, a cobra.Model pickle,' +\
           '\nand the output file name.  An optional parameter is the number of genes. e.g., ' +\
-          'python 03_double_deletion_parallel.py 12 ../test/data/salmonella.pickle' +\
+          'python 03_double_deletion_parallel.py 12 files/salmonella.pickle' +\
           ' salmonella_double.pickle 100 \n will split a double deletion study of' + \
           '\nthe first 100 genes in the genes attribute of the cobra.Model in'+\
           '\n in salmonella.pickle.  If you want to run for all genes then do not' +\
