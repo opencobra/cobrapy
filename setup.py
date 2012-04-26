@@ -14,7 +14,7 @@ setup(
         },
 
     ## package_data = {
-    ##     '': ['*.txt', '*.html','gpl-3.0','README']},
+         '': ['*.txt', '*.html','gpl-3.0','README','*pickle','*xml']},
 
     author = "Daniel Robert Hyduke",
     author_email = "danielhyduke@gmail.com",
