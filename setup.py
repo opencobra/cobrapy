@@ -6,6 +6,7 @@ setup(
     version = '0.01a.dev',
     packages = find_packages(exclude=['internal', 'oven', 'db_tools', 'omics', 'general',]),
     #scripts = [''],
+    #put in numpy, scipy, libsbml, and pyglpk
     setup_requires = ['pp>=1.6.0'],
     install_requires = ['pp>=1.6.0'],
     extras_require = {
