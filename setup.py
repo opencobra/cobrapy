@@ -6,14 +6,8 @@ setup(
     version = '0.01a.dev',
     packages = find_packages(exclude=['internal', 'oven', 'db_tools', 'omics', 'general*',]),
     #scripts = [''],
-    ## setup_requires = ['ipython>=0.10.0',
-    ##                   'numpy>=1.6.1',
-    ##                     'scipy>=0.10.0',
-    ##                   'pp>=1.6.0'],
-    ## install_requires = ['ipython>=0.10.0',
-    ##                     'numpy>=1.6.1',
-    ##                     'scipy>=0.10.0',
-    ##                   'pp>=1.6.0'],
+    setup_requires = ['pp>=1.6.0'],
+    install_requires = ['pp>=1.6.0'],
     extras_require = {
         'matlab': ["mlabwrap>=1.1"],
         'R': ["rpy2>=2.2.2"]
