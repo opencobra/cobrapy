@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 setup(
     name = "cobra",
     version = '0.01a.dev',
-    packages = find_packages(exclude=['internal', 'oven', 'db_tools', 'omics', 'general*',]),
+    packages = find_packages(exclude=['internal', 'oven', 'db_tools', 'omics', 'general',]),
     #scripts = [''],
     setup_requires = ['pp>=1.6.0'],
     install_requires = ['pp>=1.6.0'],
@@ -14,7 +14,9 @@ setup(
         },
 
     package_data = {
-         '': ['*.txt', '*.html','gpl-3.0','README','*pickle','*xml']},
+
+         '': ['*.txt', '*.html','LICENSE','README','test/data/*','documentation/html/*',
+              'examples/*py', 'examples/files/*']},
 
     author = "Daniel Robert Hyduke",
     author_email = "danielhyduke@gmail.com",
