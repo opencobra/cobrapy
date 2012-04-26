@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>cobra.topology.reporter_metabolites</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="cobra-module.html">Package&nbsp;cobra</a> ::
+        <a href="cobra.topology-module.html">Package&nbsp;topology</a> ::
+        Module&nbsp;reporter_metabolites
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="cobra.topology.reporter_metabolites-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="cobra.topology.reporter_metabolites-module.html">Module cobra.topology.reporter_metabolites</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment">#cobra.topology.reporter_metabolites.py: Module for topological analysis of cobra_models</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment">#Based on Patil et al 2005 PNAS 102:2685-9</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment">#TODO: Validate cobra.core compliance</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">pdb</tt> <tt class="py-keyword">import</tt> <tt class="py-name">set_trace</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-0" class="py-name" targets="Method cobra.core.Metabolite'.Metabolite.copy()=cobra.core.Metabolite%27.Metabolite-class.html#copy,Method cobra.core.Model'.Model.copy()=cobra.core.Model%27.Model-class.html#copy,Method cobra.core.Reaction'.Reaction.copy()=cobra.core.Reaction%27.Reaction-class.html#copy"><a title="cobra.core.Metabolite'.Metabolite.copy
+cobra.core.Model'.Model.copy
+cobra.core.Reaction'.Reaction.copy" class="py-name" href="#" onclick="return doclink('link-0', 'copy', 'link-0');">copy</a></tt> <tt class="py-keyword">import</tt> <tt class="py-name">deepcopy</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">numpy</tt> <tt class="py-keyword">import</tt> <tt class="py-name">array</tt><tt class="py-op">,</tt> <tt class="py-name">corrcoef</tt><tt class="py-op">,</tt> <tt class="py-name">mean</tt><tt class="py-op">,</tt> <tt class="py-name">std</tt><tt class="py-op">,</tt> <tt class="py-name">tril</tt><tt class="py-op">,</tt> <tt class="py-name">where</tt><tt class="py-op">,</tt> <tt class="py-name">unique</tt><tt class="py-op">,</tt> <tt class="py-name">zeros</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">scipy</tt><tt class="py-op">.</tt><tt id="link-1" class="py-name" targets="Package cobra.stats=cobra.stats-module.html,Module cobra.stats.stats=cobra.stats.stats-module.html"><a title="cobra.stats
+cobra.stats.stats" class="py-name" href="#" onclick="return doclink('link-1', 'stats', 'link-1');">stats</a></tt> <tt class="py-keyword">import</tt> <tt class="py-name">norm</tt><tt class="py-op">,</tt> <tt class="py-name">randint</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-2" class="py-name" targets="Package cobra.collections=cobra.collections-module.html"><a title="cobra.collections" class="py-name" href="#" onclick="return doclink('link-2', 'collections', 'link-2');">collections</a></tt> <tt class="py-keyword">import</tt> <tt class="py-name">defaultdict</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">warnings</tt> <tt class="py-keyword">import</tt> <tt class="py-name">warn</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"> </tt>
+<a name="identify_reporter_metabolites"></a><div id="identify_reporter_metabolites-def"><a name="L11"></a><tt class="py-lineno"> 11</tt> <a class="py-toggle" href="#" id="identify_reporter_metabolites-toggle" onclick="return toggle('identify_reporter_metabolites');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.topology.reporter_metabolites-module.html#identify_reporter_metabolites">identify_reporter_metabolites</a><tt class="py-op">(</tt><tt class="py-param">cobra_model</tt><tt class="py-op">,</tt> <tt class="py-param">reaction_scores_dict</tt><tt class="py-op">,</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line">                                  <tt class="py-param">number_of_randomizations</tt><tt class="py-op">=</tt><tt class="py-number">1000</tt><tt class="py-op">,</tt> <tt class="py-param">number_of_layers</tt><tt class="py-op">=</tt><tt class="py-number">1</tt><tt class="py-op">,</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line">                                  <tt class="py-param">scoring_metric</tt><tt class="py-op">=</tt><tt class="py-string">'default'</tt><tt class="py-op">,</tt> <tt class="py-param">score_type</tt><tt class="py-op">=</tt><tt class="py-string">'p'</tt><tt class="py-op">,</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line">                                  <tt class="py-param">entire_network</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">,</tt> <tt class="py-param">background_correction</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">,</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line">                                  <tt class="py-param">ignore_external_boundary_reactions</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="identify_reporter_metabolites-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="identify_reporter_metabolites-expanded"><a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line">    <tt class="py-docstring">"""Calculate the aggregate Z-score for the metabolites in the model.</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-docstring">    Ignore reactions that are solely spontaneous or orphan. Allow the scores to</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-docstring">    have multiple columns / experiments.   This will change the way the output</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-docstring">    is represented.</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-docstring">    cobra_model: A cobra.Model object</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-docstring">    TODO: CHANGE TO USING DICTIONARIES for the_reactions: the_scores</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-docstring">    reaction_scores_dict:  A dictionary where the keys are reactions in cobra_model.reactions</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-docstring">    and the values are the scores.  Currently, only supports a single numeric value as</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-docstring">    the value; however, this will be updated to allow for lists</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"><tt class="py-docstring">    number_of_randomizations: Integer.  Number of random shuffles of the</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"><tt class="py-docstring">    scores to assess which are significant.</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"><tt class="py-docstring">    number_of_layers: 1 is the only option supported</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt class="py-docstring">    </tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"><tt class="py-docstring">    scoring_metric:  default means divide by k**0.5</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line"><tt class="py-docstring">    score_type: 'p' Is the only option at the moment and indicates p-value.</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line"><tt class="py-docstring">    entire_network: Boolean.  Currently, only compares scores calculated from the_reactions</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"><tt class="py-docstring">    background_correction: Boolean.  If True apply background correction to the aggreagate</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line"><tt class="py-docstring">    Z-score</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line"><tt class="py-docstring">    ignore_external_boundary_reactions: Not yet implemented. Boolean.  If True do not count exchange reactions when</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line"><tt class="py-docstring">    calculating the score.</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line"><tt class="py-docstring">    </tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line"><tt class="py-docstring">    </tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">    <tt class="py-comment">#Add in a function to calculate based on correlation coefficients and to</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">    <tt class="py-comment">#deal with other multidimensional data. </tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">    <tt class="py-name">the_reactions</tt> <tt class="py-op">=</tt> <tt class="py-name">reaction_scores_dict</tt><tt class="py-op">.</tt><tt class="py-name">keys</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">    <tt class="py-name">the_scores</tt> <tt class="py-op">=</tt> <tt class="py-name">reaction_scores_dict</tt><tt class="py-op">.</tt><tt class="py-name">values</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">score_type</tt> <tt class="py-op">==</tt> <tt class="py-string">'p'</tt> <tt class="py-keyword">and</tt> <tt class="py-keyword">not</tt> <tt class="py-name">hasattr</tt><tt class="py-op">(</tt><tt class="py-name">the_scores</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-string">'__iter__'</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">        <tt class="py-comment">#minimum and maximum p-values are used to prevent numerical problems.</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line">        <tt class="py-comment">#haven't decided whether an arbitrary min / max 1e-15 is preferred to</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">        <tt class="py-comment">#blunting the ends based on the values closest to 0 or 1.</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line">        <tt class="py-name">the_reactions</tt> <tt class="py-op">=</tt> <tt class="py-name">reaction_scores_dict</tt><tt class="py-op">.</tt><tt class="py-name">keys</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">        <tt class="py-name">the_scores</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-name">reaction_scores_dict</tt><tt class="py-op">.</tt><tt class="py-name">values</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line">        <tt class="py-name">minimum_p</tt> <tt class="py-op">=</tt> <tt class="py-name">min</tt><tt class="py-op">(</tt><tt class="py-name">the_scores</tt><tt class="py-op">[</tt><tt class="py-name">the_scores</tt><tt class="py-op">.</tt><tt class="py-name">nonzero</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">        <tt class="py-name">maximum_p</tt> <tt class="py-op">=</tt> <tt class="py-name">max</tt><tt class="py-op">(</tt><tt class="py-name">the_scores</tt><tt class="py-op">[</tt><tt class="py-name">where</tt><tt class="py-op">(</tt><tt class="py-name">the_scores</tt> <tt class="py-op">&lt;</tt> <tt class="py-number">1</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">        <tt class="py-name">the_scores</tt><tt class="py-op">[</tt><tt class="py-name">where</tt><tt class="py-op">(</tt><tt class="py-name">the_scores</tt> <tt class="py-op">&lt;</tt> <tt class="py-name">minimum_p</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">minimum_p</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">        <tt class="py-name">the_scores</tt><tt class="py-op">[</tt><tt class="py-name">where</tt><tt class="py-op">(</tt><tt class="py-name">the_scores</tt> <tt class="py-op">&gt;</tt> <tt class="py-name">maximum_p</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">maximum_p</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">        <tt class="py-name">the_scores</tt> <tt class="py-op">=</tt> <tt class="py-op">-</tt><tt class="py-name">norm</tt><tt class="py-op">.</tt><tt class="py-name">ppf</tt><tt class="py-op">(</tt><tt class="py-name">the_scores</tt><tt class="py-op">)</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">        <tt class="py-comment">#update the dictionary with the new scores</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line">        <tt class="py-name">reaction_scores_dict</tt> <tt class="py-op">=</tt> <tt class="py-name">dict</tt><tt class="py-op">(</tt><tt class="py-name">zip</tt><tt class="py-op">(</tt><tt class="py-name">the_reactions</tt><tt class="py-op">,</tt> <tt class="py-name">the_scores</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line">    <tt class="py-keyword">elif</tt> <tt class="py-name">hasattr</tt><tt class="py-op">(</tt><tt class="py-name">the_scores</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-string">'__iter__'</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">        <tt class="py-comment">#In the case that the_scores is a list of lists, assume that each list is</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">        <tt class="py-comment">#the score for each reaction in the_reactions across all reactions.  Then</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">        <tt class="py-comment">#for each metabolite, calculate the invnorm(|Pearson Correlation</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">        <tt class="py-comment">#Coefficient| for each reaction pair that it links.</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">        <tt class="py-keyword">raise</tt> <tt class="py-name">Exception</tt><tt class="py-op">(</tt><tt class="py-string">"This isn't implemented yet"</tt><tt class="py-op">)</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">     </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">    <tt class="py-comment">#Get the connectivity for each metabolite</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">    <tt class="py-name">the_metabolites</tt> <tt class="py-op">=</tt> <tt class="py-name">set</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">    <tt class="py-op">[</tt><tt class="py-name">the_metabolites</tt><tt class="py-op">.</tt><tt id="link-3" class="py-name" targets="Method cobra.core.Model'.Model.update()=cobra.core.Model%27.Model-class.html#update"><a title="cobra.core.Model'.Model.update" class="py-name" href="#" onclick="return doclink('link-3', 'update', 'link-3');">update</a></tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">.</tt><tt class="py-name">_metabolites</tt><tt class="py-op">)</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">     <tt class="py-keyword">for</tt> <tt class="py-name">x</tt> <tt class="py-keyword">in</tt> <tt class="py-name">reaction_scores_dict</tt><tt class="py-op">]</tt><tt class="py-op">;</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line"> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">    <tt class="py-name">metabolite_scores</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">    <tt class="py-name">metabolite_connections</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">    <tt class="py-comment">#Calculate the score for each metabolite</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">the_metabolite</tt> <tt class="py-keyword">in</tt> <tt class="py-name">the_metabolites</tt><tt class="py-op">:</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">        <tt class="py-name">nonspontaneous_connections</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">x</tt> <tt class="py-keyword">for</tt> <tt class="py-name">x</tt> <tt class="py-keyword">in</tt> <tt class="py-name">the_metabolite</tt><tt class="py-op">.</tt><tt class="py-name">_reaction</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">                                      <tt class="py-keyword">if</tt> <tt class="py-name">x</tt><tt class="py-op">.</tt><tt class="py-name">gene_reaction_rule</tt><tt class="py-op">.</tt><tt class="py-name">lower</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-keyword">not</tt> <tt class="py-keyword">in</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">                                      <tt class="py-op">[</tt><tt class="py-string">'s0001'</tt><tt class="py-op">,</tt> <tt class="py-string">''</tt><tt class="py-op">]</tt><tt class="py-op">]</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">        <tt class="py-name">tmp_score</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">        <tt class="py-name">number_of_connections</tt> <tt class="py-op">=</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">nonspontaneous_connections</tt><tt class="py-op">)</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">the_reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">nonspontaneous_connections</tt><tt class="py-op">:</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">the_reaction</tt> <tt class="py-keyword">not</tt> <tt class="py-keyword">in</tt> <tt class="py-name">reaction_scores_dict</tt><tt class="py-op">:</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">entire_network</tt><tt class="py-op">:</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">                    <tt class="py-name">number_of_connections</tt> <tt class="py-op">-=</tt> <tt class="py-number">1</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">                <tt class="py-keyword">continue</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">                <tt class="py-name">tmp_score</tt> <tt class="py-op">+=</tt> <tt class="py-name">reaction_scores_dict</tt><tt class="py-op">[</tt><tt class="py-name">the_reaction</tt><tt class="py-op">]</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">        <tt class="py-name">metabolite_scores</tt><tt class="py-op">[</tt><tt class="py-name">the_metabolite</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">tmp_score</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">        <tt class="py-name">metabolite_connections</tt><tt class="py-op">[</tt><tt class="py-name">the_metabolite</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">number_of_connections</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line"> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">    <tt class="py-comment">#NOTE: Doing the corrections based only on the significantly perturbed scores</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">    <tt class="py-comment">#is probably going to underestimate the significance.</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">background_correction</tt><tt class="py-op">:</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">        <tt class="py-name">correction_dict</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-name">set</tt><tt class="py-op">(</tt><tt class="py-name">metabolite_connections</tt><tt class="py-op">.</tt><tt class="py-name">values</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">            <tt class="py-comment">#if entire_network # add in a section to deal with the situation where</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">            <tt class="py-comment">#the entire network structure is considered by only have p-values for</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">            <tt class="py-comment">#a limited subset.</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">            <tt class="py-comment">#</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">            <tt class="py-comment">#Basically, what we're doing here is that for each i we select i</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">            <tt class="py-comment">#scores number_of_randomizations times</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">            <tt class="py-name">the_random_indices</tt> <tt class="py-op">=</tt> <tt class="py-name">randint</tt><tt class="py-op">.</tt><tt class="py-name">rvs</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">the_scores</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">size</tt><tt class="py-op">=</tt><tt class="py-op">(</tt><tt class="py-name">number_of_randomizations</tt><tt class="py-op">,</tt> <tt class="py-name">i</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">            <tt class="py-name">random_score_distribution</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-name">sum</tt><tt class="py-op">(</tt><tt class="py-name">the_scores</tt><tt class="py-op">[</tt><tt class="py-name">x</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> <tt class="py-keyword">for</tt> <tt class="py-name">x</tt> <tt class="py-keyword">in</tt> <tt class="py-name">list</tt><tt class="py-op">(</tt><tt class="py-name">the_random_indices</tt><tt class="py-op">)</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> <tt class="py-op">/</tt><tt class="py-name">i</tt><tt class="py-op">**</tt><tt class="py-number">0.5</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">            <tt class="py-name">correction_dict</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">mean</tt><tt class="py-op">(</tt><tt class="py-name">random_score_distribution</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">                                      <tt class="py-name">std</tt><tt class="py-op">(</tt><tt class="py-name">random_score_distribution</tt><tt class="py-op">)</tt><tt class="py-op">]</tt>  </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line"> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">the_metabolite</tt><tt class="py-op">,</tt> <tt class="py-name">the_score</tt> <tt class="py-keyword">in</tt> <tt class="py-name">metabolite_scores</tt><tt class="py-op">.</tt><tt class="py-name">iteritems</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">        <tt class="py-name">number_of_connections</tt> <tt class="py-op">=</tt> <tt class="py-name">metabolite_connections</tt><tt class="py-op">[</tt><tt class="py-name">the_metabolite</tt><tt class="py-op">]</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">number_of_connections</tt> <tt class="py-op">&gt;</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">            <tt class="py-comment">#Correct based on background distribution</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">background_correction</tt><tt class="py-op">:</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">                <tt class="py-comment">#if the list of scores is only for significant perturbations then the</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">                <tt class="py-comment">#background correction shouldn't be applied because the current sampling</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">                <tt class="py-comment">#method only takes into account the_scores not the entire network.</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">                <tt class="py-comment">#It'd be more accurate to assign unscored reactions a default score.</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">                <tt class="py-name">the_score</tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">the_score</tt> <tt class="py-op">/</tt> <tt class="py-name">number_of_connections</tt><tt class="py-op">**</tt><tt class="py-number">.5</tt><tt class="py-op">)</tt> <tt class="py-op">-</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">                             <tt class="py-name">correction_dict</tt><tt class="py-op">[</tt><tt class="py-name">number_of_connections</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> <tt class="py-op">/</tt> \ </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line">                             <tt class="py-name">correction_dict</tt><tt class="py-op">[</tt><tt class="py-name">number_of_connections</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line">                <tt class="py-name">the_score</tt> <tt class="py-op">=</tt> <tt class="py-name">the_score</tt> <tt class="py-op">/</tt> <tt class="py-name">number_of_connections</tt><tt class="py-op">**</tt><tt class="py-number">.5</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line">            <tt class="py-comment">#Update the score</tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line">            <tt class="py-name">metabolite_scores</tt><tt class="py-op">[</tt><tt class="py-name">the_metabolite</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">the_score</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line"> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line"> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line"> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">    <tt class="py-name">return_dictionary</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-string">'scores'</tt><tt class="py-op">:</tt> <tt class="py-name">metabolite_scores</tt><tt class="py-op">,</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line">                         <tt class="py-string">'connections'</tt><tt class="py-op">:</tt> <tt class="py-name">metabolite_connections</tt><tt class="py-op">}</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">background_correction</tt><tt class="py-op">:</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line">        <tt class="py-name">return_dictionary</tt><tt class="py-op">[</tt><tt class="py-string">'corrections'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">correction_dict</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line"> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt><tt class="py-op">(</tt><tt class="py-name">return_dictionary</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line">     </tt>
+<a name="ppmap_identify_reporter_metabolites"></a><div id="ppmap_identify_reporter_metabolites-def"><a name="L140"></a><tt class="py-lineno">140</tt> <a class="py-toggle" href="#" id="ppmap_identify_reporter_metabolites-toggle" onclick="return toggle('ppmap_identify_reporter_metabolites');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.topology.reporter_metabolites-module.html#ppmap_identify_reporter_metabolites">ppmap_identify_reporter_metabolites</a><tt class="py-op">(</tt><tt class="py-param">keywords</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ppmap_identify_reporter_metabolites-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="ppmap_identify_reporter_metabolites-expanded"><a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line"><tt class="py-docstring">    A function that receives a dict with all of the parameters for identify_reporter_metabolites</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line"><tt class="py-docstring">    Serves to make it possible to call the reporter metabolites function from ppmap.</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line"><tt class="py-docstring">    It only will be useful for parallel experiments not for breaking up a single experiment.</tt> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line"><tt class="py-docstring">    </tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">    <tt class="py-name">the_results</tt> <tt class="py-op">=</tt> <tt id="link-4" class="py-name" targets="Function cobra.topology.reporter_metabolites.identify_reporter_metabolites()=cobra.topology.reporter_metabolites-module.html#identify_reporter_metabolites"><a title="cobra.topology.reporter_metabolites.identify_reporter_metabolites" class="py-name" href="#" onclick="return doclink('link-4', 'identify_reporter_metabolites', 'link-4');">identify_reporter_metabolites</a></tt><tt class="py-op">(</tt><tt class="py-op">**</tt><tt class="py-name">keywords</tt><tt class="py-op">)</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt><tt class="py-op">(</tt><tt class="py-op">{</tt><tt class="py-string">'id'</tt><tt class="py-op">:</tt> <tt class="py-name">the_id</tt><tt class="py-op">,</tt> <tt class="py-string">'results'</tt><tt class="py-op">:</tt> <tt class="py-name">the_results</tt> <tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line"> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line"><tt class="py-keyword">if</tt> <tt class="py-name">__name__</tt> <tt class="py-op">==</tt> <tt class="py-string">'__main__'</tt><tt class="py-op">:</tt> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line">    <tt class="py-keyword">from</tt> <tt class="py-name">cPickle</tt> <tt class="py-keyword">import</tt> <tt class="py-name">load</tt> </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line">    <tt class="py-keyword">from</tt> <tt class="py-name">time</tt> <tt class="py-keyword">import</tt> <tt class="py-name">time</tt> </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">    <tt class="py-name">solver</tt> <tt class="py-op">=</tt> <tt class="py-string">'glpk'</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line">    <tt class="py-name">test_directory</tt> <tt class="py-op">=</tt> <tt class="py-string">'../test/data/'</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line">    <tt class="py-keyword">with</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">test_directory</tt> <tt class="py-op">+</tt> <tt class="py-string">'salmonella.pickle'</tt><tt class="py-op">)</tt> <tt class="py-keyword">as</tt> <tt class="py-name">in_file</tt><tt class="py-op">:</tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line">        <tt class="py-name">cobra_model</tt> <tt class="py-op">=</tt> <tt class="py-name">load</tt><tt class="py-op">(</tt><tt class="py-name">in_file</tt><tt class="py-op">)</tt> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line">    <tt class="py-keyword">with</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">test_directory</tt> <tt class="py-op">+</tt> <tt class="py-string">'reaction_p_values.pickle'</tt><tt class="py-op">)</tt> <tt class="py-keyword">as</tt> <tt class="py-name">in_file</tt><tt class="py-op">:</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line">        <tt class="py-name">reaction_p</tt> <tt class="py-op">=</tt> <tt class="py-name">load</tt><tt class="py-op">(</tt><tt class="py-name">in_file</tt><tt class="py-op">)</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line"> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line">    <tt class="py-name">the_reactions</tt> <tt class="py-op">=</tt> <tt class="py-name">map</tt><tt class="py-op">(</tt><tt class="py-name">cobra_model</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">.</tt><tt id="link-5" class="py-name" targets="Method cobra.collections.DictList.DictList.get_by_id()=cobra.collections.DictList.DictList-class.html#get_by_id"><a title="cobra.collections.DictList.DictList.get_by_id" class="py-name" href="#" onclick="return doclink('link-5', 'get_by_id', 'link-5');">get_by_id</a></tt><tt class="py-op">,</tt> <tt class="py-name">reaction_p</tt><tt class="py-op">.</tt><tt class="py-name">keys</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line">    <tt class="py-name">the_scores</tt> <tt class="py-op">=</tt> <tt class="py-name">reaction_p</tt><tt class="py-op">.</tt><tt class="py-name">values</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line">    <tt class="py-name">reaction_scores_dict</tt> <tt class="py-op">=</tt> <tt class="py-name">dict</tt><tt class="py-op">(</tt><tt class="py-name">zip</tt><tt class="py-op">(</tt><tt class="py-name">the_reactions</tt><tt class="py-op">,</tt> <tt class="py-name">the_scores</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line">     </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line">    <tt class="py-name">tmp_reps</tt> <tt class="py-op">=</tt> <tt id="link-6" class="py-name"><a title="cobra.topology.reporter_metabolites.identify_reporter_metabolites" class="py-name" href="#" onclick="return doclink('link-6', 'identify_reporter_metabolites', 'link-4');">identify_reporter_metabolites</a></tt><tt class="py-op">(</tt><tt class="py-name">cobra_model</tt><tt class="py-op">,</tt> <tt class="py-name">reaction_scores_dict</tt><tt class="py-op">,</tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line">                                             <tt class="py-name">background_correction</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line"> </tt>
+<a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-string">'Need to add in validation for the test'</tt> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Thu Apr 26 12:50:37 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

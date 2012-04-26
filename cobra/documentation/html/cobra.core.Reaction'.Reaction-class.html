@@ -1,0 +1,1072 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>cobra.core.Reaction'.Reaction</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="cobra-module.html">Package&nbsp;cobra</a> ::
+        <a href="cobra.core-module.html">Package&nbsp;core</a> ::
+        <a href="cobra.core.Reaction%27-module.html">Module&nbsp;Reaction'</a> ::
+        Class&nbsp;Reaction
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="cobra.core.Reaction%27.Reaction-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class Reaction</h1><p class="nomargin-top"><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction">source&nbsp;code</a></span></p>
+<pre class="base-tree">
+   object --+    
+            |    
+<a href="cobra.core.Object.Object-class.html">Object.Object</a> --+
+                |
+               <strong class="uidshort">Reaction</strong>
+</pre>
+
+<hr />
+<p>Reaction is a class for holding information regarding a biochemical 
+  reaction in a cobra.Model object</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#__add__" class="summary-sig-name">__add__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">other_reaction</span>)</span><br />
+      Adds two reactions to each other.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.__add__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="__imul__"></a><span class="summary-sig-name">__imul__</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">the_coefficient</span>)</span><br />
+      Allows the reaction coefficients to be rapidly scaled.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.__imul__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>=<span class="summary-sig-default">None</span>)</span><br />
+      An object for housing reactions and associated information for cobra 
+      modeling..</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#__mul__" class="summary-sig-name">__mul__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">the_coefficient</span>)</span><br />
+      Allows a reaction to be multipled by a coeffient.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.__mul__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#__setstate__" class="summary-sig-name">__setstate__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">state</span>)</span><br />
+      Probably not necessary to set _model as the cobra.Model that contains
+      self sets the _model attribute for all metabolites and genes in the 
+      reaction.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.__setstate__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#__sub__" class="summary-sig-name">__sub__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">other_reaction</span>)</span><br />
+      Subtracts two reactions.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.__sub__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#_parse_reaction" class="summary-sig-name" onclick="show_private();">_parse_reaction</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      This is necessary when parsing text files.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction._parse_reaction">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_update_awareness"></a><span class="summary-sig-name">_update_awareness</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Make sure all metabolites and genes that are associated with this 
+      reaction are aware of it.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction._update_awareness">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#add_metabolites" class="summary-sig-name">add_metabolites</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">the_metabolites</span>,
+        <span class="summary-sig-arg">combine</span>=<span class="summary-sig-default">True</span>,
+        <span class="summary-sig-arg">add_to_container_model</span>=<span class="summary-sig-default">True</span>)</span><br />
+      Add metabolites and stoichiometric coefficients to the reaction.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.add_metabolites">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="build_reaction_string"></a><span class="summary-sig-name">build_reaction_string</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">use_metabolite_names</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Generate a human readable reaction string.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.build_reaction_string">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="check_mass_balance"></a><span class="summary-sig-name">check_mass_balance</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Makes sure that the reaction is elementally-balanced.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.check_mass_balance">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#copy" class="summary-sig-name">copy</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      When copying a reaction, it is necessary to deepcopy the components 
+      so the list references aren't carried over.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.copy">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#delete" class="summary-sig-name">delete</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Removes all associations between a reaction and its container _model 
+      and metabolites and genes.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.delete">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#get_coefficient" class="summary-sig-name">get_coefficient</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">the_metabolite</span>)</span><br />
+      Return the stoichiometric coefficient for a metabolite in the 
+      reaction.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.get_coefficient">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#get_coefficients" class="summary-sig-name">get_coefficients</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">the_metabolites</span>)</span><br />
+      Return the stoichiometric coefficients for a list of metabolites in 
+      the reaction.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.get_coefficients">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_products"></a><span class="summary-sig-name">get_products</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return a list of products for the reaction</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.get_products">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_reactants"></a><span class="summary-sig-name">get_reactants</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return a list of reactants for the reaction.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.get_reactants">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#guided_copy" class="summary-sig-name">guided_copy</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">the_model</span>,
+        <span class="summary-sig-arg">metabolite_dict</span>,
+        <span class="summary-sig-arg">gene_dict</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Trying to make a faster copy procedure for cases where large numbers 
+      of metabolites might be copied.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.guided_copy">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#parse_gene_association" class="summary-sig-name">parse_gene_association</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">the_type</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">gene</code><code class="variable-quote">'</code></span>)</span><br />
+      Extract all genes from the Boolean Gene_Association string.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.parse_gene_association">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#pop" class="summary-sig-name">pop</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">the_metabolite</span>)</span><br />
+      Remove a metabolite from the reaction and return the stoichiometric 
+      coefficient.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.pop">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="print_values"></a><span class="summary-sig-name">print_values</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Prints most of the contents of a reaction as a series of strings.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.print_values">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#process_prefixed_reaction" class="summary-sig-name">process_prefixed_reaction</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Deal with reaction names that have a prefix.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.process_prefixed_reaction">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="reconstruct_reaction"></a><span class="summary-sig-name">reconstruct_reaction</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Generate a human readable reaction string.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.reconstruct_reaction">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#remove_from_model" class="summary-sig-name">remove_from_model</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">the_model</span>)</span><br />
+      Removes the association</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.remove_from_model">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.core.Reaction%27.Reaction-class.html#subtract_metabolites" class="summary-sig-name">subtract_metabolites</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">the_metabolites</span>)</span><br />
+      This function will 'subtract' cobra.metabolites from a reaction, 
+      which means add the metabolites with -1*coefficient.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.subtract_metabolites">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="cobra.core.Object.Object-class.html">Object.Object</a></code></b>:
+      <code><a href="cobra.core.Object.Object-class.html#__contains__">__contains__</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#__eq__">__eq__</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#__ge__">__ge__</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#__getitem__">__getitem__</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#__getslice__">__getslice__</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#__getstate__">__getstate__</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#__gt__">__gt__</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#__iter__">__iter__</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#__le__">__le__</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#__lt__">__lt__</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#__ne__">__ne__</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#__repr__">__repr__</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#__str__">__str__</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#endswith">endswith</a></code>,
+      <code><a href="cobra.core.Object.Object-class.html#startswith">startswith</a></code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__add__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__add__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">other_reaction</span>)</span>
+    <br /><em class="fname">(Addition operator)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.__add__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Adds two reactions to each other.  Default behavior is to combine the 
+  metabolites but only use the remaining parameters from the first 
+  object.</p>
+  <p>TODO: Deal with gene association logic from adding reactions.</p>
+  <p>TODO: Simplify and add in an __iadd__</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">name</span>=<span class="sig-default">None</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>An object for housing reactions and associated information for cobra 
+  modeling..</p>
+  <p>boundary: Boolean.  Indicates whether the reaction is at a boundary, 
+  i.e., a source or a sink.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        object.__init__
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="__mul__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__mul__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">the_coefficient</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.__mul__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Allows a reaction to be multipled by a coeffient.</p>
+  <p>Should this return a new reaction?</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="__setstate__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__setstate__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">state</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.__setstate__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Probably not necessary to set _model as the cobra.Model that contains 
+  self sets the _model attribute for all metabolites and genes in the 
+  reaction.</p>
+  <p>However, to increase performance speed we do want to let the 
+  metabolite and gene know that they are employed in this reaction</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="__sub__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__sub__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">other_reaction</span>)</span>
+    <br /><em class="fname">(Subtraction operator)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.__sub__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Subtracts two reactions.  Default behavior is to combine the 
+  metabolites but only use the remaining parameters from the first 
+  object.</p>
+  <p>Note: This is equivalent to adding reactions after changing the sign 
+  of the metabolites in other_reaction</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_parse_reaction"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_parse_reaction</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction._parse_reaction">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>This is necessary when parsing text files.  It is better to get the 
+  reactions from SBML files.</p>
+  <p>WARNING: this needs to be updated to deal with non-palssonesqe 
+  reactions.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="add_metabolites"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">add_metabolites</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">the_metabolites</span>,
+        <span class="sig-arg">combine</span>=<span class="sig-default">True</span>,
+        <span class="sig-arg">add_to_container_model</span>=<span class="sig-default">True</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.add_metabolites">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Add metabolites and stoichiometric coefficients to the reaction. If 
+  the final coefficient for a metabolite is 0 then it is removed from the 
+  reaction.</p>
+  <p>the_metabolites: A dict of cobra.Metabolites and their coefficient</p>
+  <p>combine: Boolean. If True and a metabolite already exists in the 
+  reaction then the coefficients will be added.  If False the old 
+  metabolite will be discarded and the new one added.</p>
+  <p>add_to_container_model: Boolean.  If True and this reaction is 
+  contained within a cobra.Model (i.e., self._model is a cobra.Model) then 
+  add the metabolite to the model.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="copy"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">copy</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.copy">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>When copying a reaction, it is necessary to deepcopy the components so
+  the list references aren't carried over.</p>
+  <p>Additionally, a copy of a reaction is no longer in a cobra.Model.</p>
+  <p>This should be fixed with self.__deecopy__ if possible</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="delete"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">delete</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.delete">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Removes all associations between a reaction and its container _model 
+  and metabolites and genes.</p>
+  <p>TODO: Decide whether orphan metabolites should automatically be 
+  removed from the model.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_coefficient"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_coefficient</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">the_metabolite</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.get_coefficient">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Return the stoichiometric coefficient for a metabolite in the 
+  reaction.</p>
+  <p>the_metabolite: A metabolite Id.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_coefficients"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_coefficients</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">the_metabolites</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.get_coefficients">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Return the stoichiometric coefficients for a list of metabolites in 
+  the reaction.</p>
+  <p>the_metabolites:  A list of metabolite Ids.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="guided_copy"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">guided_copy</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">the_model</span>,
+        <span class="sig-arg">metabolite_dict</span>,
+        <span class="sig-arg">gene_dict</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.guided_copy">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Trying to make a faster copy procedure for cases where large numbers 
+  of metabolites might be copied.  Such as when copying reactions.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="cobra.core.Object.Object-class.html#guided_copy">Object.Object.guided_copy</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="parse_gene_association"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_gene_association</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">the_type</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">gene</code><code class="variable-quote">'</code></span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.parse_gene_association">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Extract all genes from the Boolean Gene_Association string.</p>
+  <p>#Formerly, update_names</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="pop"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">pop</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">the_metabolite</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.pop">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Remove a metabolite from the reaction and return the stoichiometric 
+  coefficient.</p>
+  <p>the_metabolite: A cobra.Metabolite that is in the reaction</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="process_prefixed_reaction"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">process_prefixed_reaction</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.process_prefixed_reaction">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Deal with reaction names that have a prefix.</p>
+  <p>DEPRECATED This is necessary when parsing text files.  It is better to
+  get the reactions from SBML files.</p>
+  <p>This can be moved to a tools section</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="remove_from_model"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">remove_from_model</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">the_model</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.remove_from_model">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Removes the association</p>
+  <p>the_model: cobra.Model object.  remove the reaction from this 
+  model.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="subtract_metabolites"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">subtract_metabolites</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">the_metabolites</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.core.Reaction%27-pysrc.html#Reaction.subtract_metabolites">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>This function will 'subtract' cobra.metabolites from a reaction, which
+  means add the metabolites with -1*coefficient.  If the final coefficient 
+  for a metabolite is 0 then the metabolite is removed from the 
+  reaction.</p>
+  <p>NOTE: That a final coefficient &lt; 0 implies a reactant.</p>
+  <p>the_metabolites: A dictionary of cobra.Metabolites, coefficients to 
+  add to the reaction</p>
+  <p>NOTE: This function uses deepcopy in case the reaction is being 
+  subtracted from itself.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Thu Apr 26 12:50:36 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

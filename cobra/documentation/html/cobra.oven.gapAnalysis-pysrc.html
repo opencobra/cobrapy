@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>cobra.oven.gapAnalysis</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="cobra-module.html">Package&nbsp;cobra</a> ::
+        <a href="cobra.oven-module.html">Package&nbsp;oven</a> ::
+        Module&nbsp;gapAnalysis
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="cobra.oven.gapAnalysis-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="cobra.oven.gapAnalysis-module.html">Module cobra.oven.gapAnalysis</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt id="link-0" class="py-name" targets="Package cobra=cobra-module.html"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-0', 'cobra', 'link-0');">cobra</a></tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-1" class="py-name" targets="Module cobra.oven.keggIO=cobra.oven.keggIO-module.html"><a title="cobra.oven.keggIO" class="py-name" href="#" onclick="return doclink('link-1', 'keggIO', 'link-1');">keggIO</a></tt> <tt class="py-keyword">import</tt> <tt id="link-2" class="py-name" targets="Function cobra.oven.keggIO.import_kegg_reactions()=cobra.oven.keggIO-module.html#import_kegg_reactions"><a title="cobra.oven.keggIO.import_kegg_reactions" class="py-name" href="#" onclick="return doclink('link-2', 'import_kegg_reactions', 'link-2');">import_kegg_reactions</a></tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"> </tt>
+<a name="SUXModelMILP"></a><div id="SUXModelMILP-def"><a name="L5"></a><tt class="py-lineno">  5</tt> <a class="py-toggle" href="#" id="SUXModelMILP-toggle" onclick="return toggle('SUXModelMILP');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="cobra.oven.gapAnalysis.SUXModelMILP-class.html">SUXModelMILP</a><tt class="py-op">(</tt><tt class="py-base-class">cobra</tt><tt class="py-op">.</tt><tt class="py-base-class">Model</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="SUXModelMILP-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="SUXModelMILP-expanded"><a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line">    <tt class="py-docstring">"""Model with additional Universal and Exchange reactions.</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-docstring">    Adds corresponding dummy reactions and dummy metabolites for each added</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-docstring">    reaction which are used to impose MILP constraints to minimize the</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-docstring">    total number of added reactions. See the figure for more</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-docstring">    information on the structure of the matrix.</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="SUXModelMILP.__init__"></a><div id="SUXModelMILP.__init__-def"><a name="L12"></a><tt class="py-lineno"> 12</tt> <a class="py-toggle" href="#" id="SUXModelMILP.__init__-toggle" onclick="return toggle('SUXModelMILP.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.oven.gapAnalysis.SUXModelMILP-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">model</tt><tt class="py-op">,</tt> <tt class="py-param">Universal</tt><tt class="py-op">,</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line">            <tt class="py-param">threshold</tt><tt class="py-op">=</tt><tt class="py-number">0.05</tt><tt class="py-op">,</tt> <tt class="py-param">penalties</tt><tt class="py-op">=</tt><tt class="py-op">{</tt><tt class="py-string">"Universal"</tt><tt class="py-op">:</tt> <tt class="py-number">1</tt><tt class="py-op">}</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="SUXModelMILP.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="SUXModelMILP.__init__-expanded"><a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line">        <tt id="link-3" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-3', 'cobra', 'link-0');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-4" class="py-name" targets="Class cobra.core.Model'.Model=cobra.core.Model%27.Model-class.html"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-4', 'Model', 'link-4');">Model</a></tt><tt class="py-op">.</tt><tt id="link-5" class="py-name" targets="Method cobra.collections.DictList.DictList.__init__()=cobra.collections.DictList.DictList-class.html#__init__,Method cobra.core.Formula'.Formula.__init__()=cobra.core.Formula%27.Formula-class.html#__init__,Method cobra.core.Gene'.Gene.__init__()=cobra.core.Gene%27.Gene-class.html#__init__,Method cobra.core.Metabolite'.Metabolite.__init__()=cobra.core.Metabolite%27.Metabolite-class.html#__init__,Method cobra.core.Model'.Model.__init__()=cobra.core.Model%27.Model-class.html#__init__,Method cobra.core.Object.Object.__init__()=cobra.core.Object.Object-class.html#__init__,Method cobra.core.Reaction'.Reaction.__init__()=cobra.core.Reaction%27.Reaction-class.html#__init__,Method cobra.core.Solution'.Solution.__init__()=cobra.core.Solution%27.Solution-class.html#__init__,Method cobra.general.arrays.ResultsArray.__init__()=cobra.general.arrays.ResultsArray-class.html#__init__,Method cobra.oven.gapAnalysis.SUXModelMILP.__init__()=cobra.oven.gapAnalysis.SUXModelMILP-class.html#__init__,Method cobra.oven.phenotypePhasePlane.phenotypePhasePlaneData.__init__()=cobra.oven.phenotypePhasePlane.phenotypePhasePlaneData-class.html#__init__"><a title="cobra.collections.DictList.DictList.__init__
+cobra.core.Formula'.Formula.__init__
+cobra.core.Gene'.Gene.__init__
+cobra.core.Metabolite'.Metabolite.__init__
+cobra.core.Model'.Model.__init__
+cobra.core.Object.Object.__init__
+cobra.core.Reaction'.Reaction.__init__
+cobra.core.Solution'.Solution.__init__
+cobra.general.arrays.ResultsArray.__init__
+cobra.oven.gapAnalysis.SUXModelMILP.__init__
+cobra.oven.phenotypePhasePlane.phenotypePhasePlaneData.__init__" class="py-name" href="#" onclick="return doclink('link-5', '__init__', 'link-5');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-string">""</tt><tt class="py-op">)</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line">        <tt class="py-comment"># store parameters</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">threshold</tt> <tt class="py-op">=</tt> <tt class="py-name">threshold</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">penalties</tt> <tt class="py-op">=</tt> <tt class="py-name">penalties</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line">        <tt class="py-comment"># want to only operate on a copy of Universal</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line">        <tt class="py-name">Universal</tt> <tt class="py-op">=</tt> <tt class="py-name">Universal</tt><tt class="py-op">.</tt><tt id="link-6" class="py-name" targets="Method cobra.core.Metabolite'.Metabolite.copy()=cobra.core.Metabolite%27.Metabolite-class.html#copy,Method cobra.core.Model'.Model.copy()=cobra.core.Model%27.Model-class.html#copy,Method cobra.core.Reaction'.Reaction.copy()=cobra.core.Reaction%27.Reaction-class.html#copy"><a title="cobra.core.Metabolite'.Metabolite.copy
+cobra.core.Model'.Model.copy
+cobra.core.Reaction'.Reaction.copy" class="py-name" href="#" onclick="return doclink('link-6', 'copy', 'link-6');">copy</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line">        <tt id="link-7" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-7', 'cobra', 'link-0');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-8" class="py-name" targets="Package cobra.manipulation=cobra.manipulation-module.html"><a title="cobra.manipulation" class="py-name" href="#" onclick="return doclink('link-8', 'manipulation', 'link-8');">manipulation</a></tt><tt class="py-op">.</tt><tt id="link-9" class="py-name" targets="Module cobra.manipulation.modify=cobra.manipulation.modify-module.html"><a title="cobra.manipulation.modify" class="py-name" href="#" onclick="return doclink('link-9', 'modify', 'link-9');">modify</a></tt><tt class="py-op">.</tt><tt id="link-10" class="py-name" targets="Function cobra.manipulation.modify.convert_to_irreversible()=cobra.manipulation.modify-module.html#convert_to_irreversible"><a title="cobra.manipulation.modify.convert_to_irreversible" class="py-name" href="#" onclick="return doclink('link-10', 'convert_to_irreversible', 'link-10');">convert_to_irreversible</a></tt><tt class="py-op">(</tt><tt class="py-name">Universal</tt><tt class="py-op">)</tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">rxn</tt> <tt class="py-keyword">in</tt> <tt class="py-name">Universal</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">:</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line">            <tt class="py-name">rxn</tt><tt class="py-op">.</tt><tt class="py-name">notes</tt><tt class="py-op">[</tt><tt class="py-string">"gapfilling_type"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-string">"Universal"</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line">        <tt class="py-name">self</tt> <tt class="py-op">+=</tt> <tt class="py-name">model</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line">        <tt class="py-name">self</tt> <tt class="py-op">+=</tt> <tt class="py-name">Universal</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line">        <tt class="py-comment"># TODO: generate exchagne reactions</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line">        <tt class="py-comment"># SUX += Exchange (when exchange generator has been written)</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line">        <tt class="py-comment"># Add MILP dummy reactions</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line">        <tt class="py-name">v</tt> <tt class="py-op">=</tt> <tt class="py-number">1000</tt>  <tt class="py-comment"># maximum flux in a reaction</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line">        <tt class="py-name">threshold</tt> <tt class="py-op">=</tt> <tt class="py-number">0.05</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line">        <tt class="py-name">dummy_reactions</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line">        <tt class="py-comment"># all reactions with an index &lt; len(model.reactions) were original</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">original_reactions</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">added_reactions</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">[</tt><tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">)</tt><tt class="py-op">:</tt><tt class="py-op">]</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">        <tt class="py-comment"># add in the dummy reactions for each added reaction</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line">        <tt class="py-comment"># a dict will map from each added reaction (the key) to</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line">        <tt class="py-comment"># the dummy reaction (the value)</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_dummy_reaction_map</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">added_reactions</tt><tt class="py-op">:</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line">            <tt class="py-name">dummy_metabolite</tt> <tt class="py-op">=</tt> <tt id="link-11" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-11', 'cobra', 'link-0');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Class cobra.core.Metabolite'.Metabolite=cobra.core.Metabolite%27.Metabolite-class.html"><a title="cobra.core.Metabolite'.Metabolite" class="py-name" href="#" onclick="return doclink('link-12', 'Metabolite', 'link-12');">Metabolite</a></tt><tt class="py-op">(</tt><tt class="py-string">"dummy_met_"</tt> <tt class="py-op">+</tt> <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">id</tt><tt class="py-op">)</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">            <tt class="py-name">dummy_metabolite</tt><tt class="py-op">.</tt><tt class="py-name">_constraint_sense</tt> <tt class="py-op">=</tt> <tt class="py-string">"L"</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">            <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name" targets="Method cobra.core.Model'.Model.add_metabolites()=cobra.core.Model%27.Model-class.html#add_metabolites,Method cobra.core.Reaction'.Reaction.add_metabolites()=cobra.core.Reaction%27.Reaction-class.html#add_metabolites"><a title="cobra.core.Model'.Model.add_metabolites
+cobra.core.Reaction'.Reaction.add_metabolites" class="py-name" href="#" onclick="return doclink('link-13', 'add_metabolites', 'link-13');">add_metabolites</a></tt><tt class="py-op">(</tt><tt class="py-op">{</tt><tt class="py-name">dummy_metabolite</tt><tt class="py-op">:</tt> <tt class="py-number">1</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">            <tt class="py-name">the_dummy_reaction</tt> <tt class="py-op">=</tt> <tt id="link-14" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-14', 'cobra', 'link-0');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-15" class="py-name" targets="Class cobra.core.Reaction'.Reaction=cobra.core.Reaction%27.Reaction-class.html"><a title="cobra.core.Reaction'.Reaction" class="py-name" href="#" onclick="return doclink('link-15', 'Reaction', 'link-15');">Reaction</a></tt><tt class="py-op">(</tt><tt class="py-string">"dummy_rxn_"</tt> <tt class="py-op">+</tt> <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">id</tt><tt class="py-op">)</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">            <tt class="py-name">the_dummy_reaction</tt><tt class="py-op">.</tt><tt id="link-16" class="py-name"><a title="cobra.core.Model'.Model.add_metabolites
+cobra.core.Reaction'.Reaction.add_metabolites" class="py-name" href="#" onclick="return doclink('link-16', 'add_metabolites', 'link-13');">add_metabolites</a></tt><tt class="py-op">(</tt><tt class="py-op">{</tt><tt class="py-name">dummy_metabolite</tt><tt class="py-op">:</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt> <tt class="py-op">*</tt> <tt class="py-name">v</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">            <tt class="py-name">the_dummy_reaction</tt><tt class="py-op">.</tt><tt class="py-name">lower_bound</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">            <tt class="py-name">the_dummy_reaction</tt><tt class="py-op">.</tt><tt class="py-name">upper_bound</tt> <tt class="py-op">=</tt> <tt class="py-number">1</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">            <tt class="py-name">the_dummy_reaction</tt><tt class="py-op">.</tt><tt class="py-name">variable_kind</tt> <tt class="py-op">=</tt> <tt class="py-string">"integer"</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">            <tt class="py-name">dummy_reactions</tt><tt class="py-op">.</tt><tt id="link-17" class="py-name" targets="Method cobra.collections.DictList.DictList.append()=cobra.collections.DictList.DictList-class.html#append"><a title="cobra.collections.DictList.DictList.append" class="py-name" href="#" onclick="return doclink('link-17', 'append', 'link-17');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">the_dummy_reaction</tt><tt class="py-op">)</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_dummy_reaction_map</tt><tt class="py-op">[</tt><tt class="py-name">reaction</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">the_dummy_reaction</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-18" class="py-name" targets="Method cobra.core.Model'.Model.add_reactions()=cobra.core.Model%27.Model-class.html#add_reactions"><a title="cobra.core.Model'.Model.add_reactions" class="py-name" href="#" onclick="return doclink('link-18', 'add_reactions', 'link-18');">add_reactions</a></tt><tt class="py-op">(</tt><tt class="py-name">dummy_reactions</tt><tt class="py-op">)</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">        <tt class="py-comment"># add in the dummy metabolite for the actual objective function</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">objective_metabolite</tt> <tt class="py-op">=</tt> <tt id="link-19" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-19', 'cobra', 'link-0');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-20" class="py-name"><a title="cobra.core.Metabolite'.Metabolite" class="py-name" href="#" onclick="return doclink('link-20', 'Metabolite', 'link-12');">Metabolite</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">            <tt class="py-string">"dummy_metabolite_objective_function"</tt><tt class="py-op">)</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">objective_metabolite</tt><tt class="py-op">.</tt><tt class="py-name">_constraint_sense</tt> <tt class="py-op">=</tt> <tt class="py-string">"G"</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">objective_metabolite</tt><tt class="py-op">.</tt><tt class="py-name">_bound</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">threshold</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-21" class="py-name" targets="Method cobra.oven.gapAnalysis.SUXModelMILP._update_objectives()=cobra.oven.gapAnalysis.SUXModelMILP-class.html#_update_objectives"><a title="cobra.oven.gapAnalysis.SUXModelMILP._update_objectives" class="py-name" href="#" onclick="return doclink('link-21', '_update_objectives', 'link-21');">_update_objectives</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line">        <tt class="py-comment"># make .add_reaction(s) call the ._add_reaction(s) functions</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">add_reation</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-22" class="py-name" targets="Method cobra.oven.gapAnalysis.SUXModelMILP._add_reaction()=cobra.oven.gapAnalysis.SUXModelMILP-class.html#_add_reaction"><a title="cobra.oven.gapAnalysis.SUXModelMILP._add_reaction" class="py-name" href="#" onclick="return doclink('link-22', '_add_reaction', 'link-22');">_add_reaction</a></tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">add_reations</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-23" class="py-name" targets="Method cobra.oven.gapAnalysis.SUXModelMILP._add_reactions()=cobra.oven.gapAnalysis.SUXModelMILP-class.html#_add_reactions"><a title="cobra.oven.gapAnalysis.SUXModelMILP._add_reactions" class="py-name" href="#" onclick="return doclink('link-23', '_add_reactions', 'link-23');">_add_reactions</a></tt> </tt>
+</div><a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line"> </tt>
+<a name="SUXModelMILP._update_objectives"></a><div id="SUXModelMILP._update_objectives-def"><a name="L62"></a><tt class="py-lineno"> 62</tt> <a class="py-toggle" href="#" id="SUXModelMILP._update_objectives-toggle" onclick="return toggle('SUXModelMILP._update_objectives');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.oven.gapAnalysis.SUXModelMILP-class.html#_update_objectives">_update_objectives</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="SUXModelMILP._update_objectives-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="SUXModelMILP._update_objectives-expanded"><a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">        <tt class="py-docstring">"""Update the metabolite which encodes the objective function</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line"><tt class="py-docstring">        with the objective coefficients for the reaction, and impose</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line"><tt class="py-docstring">        penalties for added reactions.</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">original_reactions</tt><tt class="py-op">:</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">            <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt id="link-24" class="py-name"><a title="cobra.core.Model'.Model.add_metabolites
+cobra.core.Reaction'.Reaction.add_metabolites" class="py-name" href="#" onclick="return doclink('link-24', 'add_metabolites', 'link-13');">add_metabolites</a></tt><tt class="py-op">(</tt><tt class="py-op">{</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">objective_metabolite</tt><tt class="py-op">:</tt> \ </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">                                    <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">            <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">        <tt class="py-comment"># now make the objective coefficient the penalty</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">added_reactions</tt><tt class="py-op">:</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">            <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">penalties</tt><tt class="py-op">[</tt><tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">notes</tt><tt class="py-op">[</tt><tt class="py-string">"gapfilling_type"</tt><tt class="py-op">]</tt><tt class="py-op">]</tt> </tt>
+</div><a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line"> </tt>
+<a name="SUXModelMILP._add_reaction"></a><div id="SUXModelMILP._add_reaction-def"><a name="L76"></a><tt class="py-lineno"> 76</tt> <a class="py-toggle" href="#" id="SUXModelMILP._add_reaction-toggle" onclick="return toggle('SUXModelMILP._add_reaction');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.oven.gapAnalysis.SUXModelMILP-class.html#_add_reaction">_add_reaction</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">reaction</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="SUXModelMILP._add_reaction-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="SUXModelMILP._add_reaction-expanded"><a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">        <tt id="link-25" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-25', 'cobra', 'link-0');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-26" class="py-name"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-26', 'Model', 'link-4');">Model</a></tt><tt class="py-op">.</tt><tt id="link-27" class="py-name" targets="Method cobra.core.Model'.Model.add_reaction()=cobra.core.Model%27.Model-class.html#add_reaction"><a title="cobra.core.Model'.Model.add_reaction" class="py-name" href="#" onclick="return doclink('link-27', 'add_reaction', 'link-27');">add_reaction</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-name">reaction</tt><tt class="py-op">)</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">original_reactions</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name"><a title="cobra.collections.DictList.DictList.append" class="py-name" href="#" onclick="return doclink('link-28', 'append', 'link-17');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">reaction</tt><tt class="py-op">)</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-29" class="py-name"><a title="cobra.oven.gapAnalysis.SUXModelMILP._update_objectives" class="py-name" href="#" onclick="return doclink('link-29', '_update_objectives', 'link-21');">_update_objectives</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line"> </tt>
+<a name="SUXModelMILP._add_reactions"></a><div id="SUXModelMILP._add_reactions-def"><a name="L81"></a><tt class="py-lineno"> 81</tt> <a class="py-toggle" href="#" id="SUXModelMILP._add_reactions-toggle" onclick="return toggle('SUXModelMILP._add_reactions');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.oven.gapAnalysis.SUXModelMILP-class.html#_add_reactions">_add_reactions</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">reactions</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="SUXModelMILP._add_reactions-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="SUXModelMILP._add_reactions-expanded"><a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">        <tt id="link-30" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-30', 'cobra', 'link-0');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-31" class="py-name"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-31', 'Model', 'link-4');">Model</a></tt><tt class="py-op">.</tt><tt id="link-32" class="py-name"><a title="cobra.core.Model'.Model.add_reactions" class="py-name" href="#" onclick="return doclink('link-32', 'add_reactions', 'link-18');">add_reactions</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-name">reactions</tt><tt class="py-op">)</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">original_reactions</tt><tt class="py-op">.</tt><tt id="link-33" class="py-name" targets="Method cobra.collections.DictList.DictList.extend()=cobra.collections.DictList.DictList-class.html#extend"><a title="cobra.collections.DictList.DictList.extend" class="py-name" href="#" onclick="return doclink('link-33', 'extend', 'link-33');">extend</a></tt><tt class="py-op">(</tt><tt class="py-name">reaction</tt><tt class="py-op">)</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-34" class="py-name"><a title="cobra.oven.gapAnalysis.SUXModelMILP._update_objectives" class="py-name" href="#" onclick="return doclink('link-34', '_update_objectives', 'link-21');">_update_objectives</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line"> </tt>
+<a name="SUXModelMILP.solve"></a><div id="SUXModelMILP.solve-def"><a name="L86"></a><tt class="py-lineno"> 86</tt> <a class="py-toggle" href="#" id="SUXModelMILP.solve-toggle" onclick="return toggle('SUXModelMILP.solve');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.oven.gapAnalysis.SUXModelMILP-class.html#solve">solve</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">iterations</tt><tt class="py-op">=</tt><tt class="py-number">5</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="SUXModelMILP.solve-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="SUXModelMILP.solve-expanded"><a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">        <tt class="py-docstring">"""solve the MILP problem"""</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">        <tt class="py-name">used_reactions</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">        <tt class="py-name">numeric_error_cutoff</tt> <tt class="py-op">=</tt> <tt class="py-number">0.0001</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-35" class="py-name"><a title="cobra.oven.gapAnalysis.SUXModelMILP._update_objectives" class="py-name" href="#" onclick="return doclink('link-35', '_update_objectives', 'link-21');">_update_objectives</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">        <tt class="py-comment"># TODO implement iterations part of the algorithm</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-name">range</tt><tt class="py-op">(</tt><tt class="py-number">1</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-36" class="py-name" targets="Method cobra.core.Model'.Model.optimize()=cobra.core.Model%27.Model-class.html#optimize"><a title="cobra.core.Model'.Model.optimize" class="py-name" href="#" onclick="return doclink('link-36', 'optimize', 'link-36');">optimize</a></tt><tt class="py-op">(</tt><tt class="py-name">objective_sense</tt><tt class="py-op">=</tt><tt class="py-string">"minimize"</tt><tt class="py-op">)</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">solution</tt><tt class="py-op">.</tt><tt class="py-name">f</tt> <tt class="py-op">!=</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">added_reactions</tt><tt class="py-op">:</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">            <tt class="py-comment"># The dummy reaction should have a flux of either 0 or 1.</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">            <tt class="py-comment"># If it is 1 (nonzero), then the reaction was used in</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">            <tt class="py-comment"># the solution.</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">solution</tt><tt class="py-op">.</tt><tt class="py-name">x_dict</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_dummy_reaction_map</tt><tt class="py-op">[</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">                    <tt class="py-name">reaction</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">id</tt><tt class="py-op">]</tt> <tt class="py-op">&gt;</tt> <tt class="py-name">numeric_error_cutoff</tt><tt class="py-op">:</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">                <tt class="py-name">used_reactions</tt><tt class="py-op">.</tt><tt id="link-37" class="py-name"><a title="cobra.collections.DictList.DictList.append" class="py-name" href="#" onclick="return doclink('link-37', 'append', 'link-17');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">reaction</tt><tt class="py-op">)</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">used_reactions</tt> </tt>
+</div></div><a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line"> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line"> </tt>
+<a name="growMatch"></a><div id="growMatch-def"><a name="L106"></a><tt class="py-lineno">106</tt> <a class="py-toggle" href="#" id="growMatch-toggle" onclick="return toggle('growMatch');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.oven.gapAnalysis-module.html#growMatch">growMatch</a><tt class="py-op">(</tt><tt class="py-param">model</tt><tt class="py-op">,</tt> <tt class="py-param">Universal</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="growMatch-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="growMatch-expanded"><a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">    <tt class="py-docstring">"""runs growMatch"""</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">Universal</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">        <tt class="py-name">Universal</tt> <tt class="py-op">=</tt> <tt id="link-38" class="py-name"><a title="cobra.oven.keggIO.import_kegg_reactions" class="py-name" href="#" onclick="return doclink('link-38', 'import_kegg_reactions', 'link-2');">import_kegg_reactions</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">    <tt class="py-name">SUX</tt> <tt class="py-op">=</tt> <tt id="link-39" class="py-name" targets="Class cobra.oven.gapAnalysis.SUXModelMILP=cobra.oven.gapAnalysis.SUXModelMILP-class.html"><a title="cobra.oven.gapAnalysis.SUXModelMILP" class="py-name" href="#" onclick="return doclink('link-39', 'SUXModelMILP', 'link-39');">SUXModelMILP</a></tt><tt class="py-op">(</tt><tt class="py-name">model</tt><tt class="py-op">,</tt> <tt class="py-name">Universal</tt><tt class="py-op">)</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">    <tt class="py-name">used_reactions</tt> <tt class="py-op">=</tt> <tt class="py-name">SUX</tt><tt class="py-op">.</tt><tt id="link-40" class="py-name" targets="Method cobra.oven.gapAnalysis.SUXModelMILP.solve()=cobra.oven.gapAnalysis.SUXModelMILP-class.html#solve"><a title="cobra.oven.gapAnalysis.SUXModelMILP.solve" class="py-name" href="#" onclick="return doclink('link-40', 'solve', 'link-40');">solve</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">used_reactions</tt><tt class="py-op">:</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-name">reaction</tt><tt class="py-op">,</tt> <tt class="py-name">SUX</tt><tt class="py-op">.</tt><tt class="py-name">solution</tt><tt class="py-op">.</tt><tt class="py-name">x_dict</tt><tt class="py-op">[</tt><tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">id</tt><tt class="py-op">]</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">used_reactions</tt> </tt>
+</div><a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line"> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line"> </tt>
+<a name="SMILEY"></a><div id="SMILEY-def"><a name="L117"></a><tt class="py-lineno">117</tt> <a class="py-toggle" href="#" id="SMILEY-toggle" onclick="return toggle('SMILEY');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.oven.gapAnalysis-module.html#SMILEY">SMILEY</a><tt class="py-op">(</tt><tt class="py-param">model</tt><tt class="py-op">,</tt> <tt class="py-param">metabolite_id</tt><tt class="py-op">,</tt> <tt class="py-param">Universal</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="SMILEY-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="SMILEY-expanded"><a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line"><tt class="py-docstring">    runs the SMILEY algorithm to determine which gaps should be</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line"><tt class="py-docstring">    filled in order for the model to create the metabolite with the</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line"><tt class="py-docstring">    given metabolite_id.</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line"><tt class="py-docstring">    This function is good for running the algorithm once. For more fine-</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line"><tt class="py-docstring">    grained control, create a SUXModelMILP object, add a demand reaction</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line"><tt class="py-docstring">    for the given metabolite_id, and call the solve function on the</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line"><tt class="py-docstring">    SUXModelMILP object.</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">Universal</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line">        <tt class="py-name">Universal</tt> <tt class="py-op">=</tt> <tt id="link-41" class="py-name"><a title="cobra.oven.keggIO.import_kegg_reactions" class="py-name" href="#" onclick="return doclink('link-41', 'import_kegg_reactions', 'link-2');">import_kegg_reactions</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line">    <tt class="py-name">SUX</tt> <tt class="py-op">=</tt> <tt id="link-42" class="py-name"><a title="cobra.oven.gapAnalysis.SUXModelMILP" class="py-name" href="#" onclick="return doclink('link-42', 'SUXModelMILP', 'link-39');">SUXModelMILP</a></tt><tt class="py-op">(</tt><tt class="py-name">model</tt><tt class="py-op">,</tt> <tt class="py-name">Universal</tt><tt class="py-op">)</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line">    <tt class="py-comment"># change the objective to be the metabolite</tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">SUX</tt><tt class="py-op">.</tt><tt class="py-name">original_reactions</tt><tt class="py-op">:</tt> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">        <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line">    <tt class="py-name">demand_reaction</tt> <tt class="py-op">=</tt> <tt id="link-43" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-43', 'cobra', 'link-0');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-44" class="py-name"><a title="cobra.core.Reaction'.Reaction" class="py-name" href="#" onclick="return doclink('link-44', 'Reaction', 'link-15');">Reaction</a></tt><tt class="py-op">(</tt><tt class="py-string">"SMILEY_DEMAND_RXN_%s"</tt> <tt class="py-op">%</tt> <tt class="py-name">metabolite_id</tt><tt class="py-op">)</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line">    <tt class="py-name">demand_reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> <tt class="py-op">=</tt> <tt class="py-number">1</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line">    <tt class="py-name">demand_reaction</tt><tt class="py-op">.</tt><tt id="link-45" class="py-name"><a title="cobra.core.Model'.Model.add_metabolites
+cobra.core.Reaction'.Reaction.add_metabolites" class="py-name" href="#" onclick="return doclink('link-45', 'add_metabolites', 'link-13');">add_metabolites</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line">        <tt class="py-op">{</tt><tt class="py-name">SUX</tt><tt class="py-op">.</tt><tt class="py-name">metabolites</tt><tt class="py-op">[</tt><tt class="py-name">SUX</tt><tt class="py-op">.</tt><tt class="py-name">metabolites</tt><tt class="py-op">.</tt><tt id="link-46" class="py-name" targets="Method cobra.collections.DictList.DictList.index()=cobra.collections.DictList.DictList-class.html#index"><a title="cobra.collections.DictList.DictList.index" class="py-name" href="#" onclick="return doclink('link-46', 'index', 'link-46');">index</a></tt><tt class="py-op">(</tt><tt class="py-name">metabolite_id</tt><tt class="py-op">)</tt><tt class="py-op">]</tt><tt class="py-op">:</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">    <tt class="py-name">SUX</tt><tt class="py-op">.</tt><tt id="link-47" class="py-name"><a title="cobra.core.Model'.Model.add_reaction" class="py-name" href="#" onclick="return doclink('link-47', 'add_reaction', 'link-27');">add_reaction</a></tt><tt class="py-op">(</tt><tt class="py-name">demand_reaction</tt><tt class="py-op">)</tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line">    <tt class="py-name">used_reactions</tt> <tt class="py-op">=</tt> <tt class="py-name">SUX</tt><tt class="py-op">.</tt><tt id="link-48" class="py-name"><a title="cobra.oven.gapAnalysis.SUXModelMILP.solve" class="py-name" href="#" onclick="return doclink('link-48', 'solve', 'link-40');">solve</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">used_reactions</tt><tt class="py-op">:</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-name">reaction</tt><tt class="py-op">,</tt> <tt class="py-name">SUX</tt><tt class="py-op">.</tt><tt class="py-name">solution</tt><tt class="py-op">.</tt><tt class="py-name">x_dict</tt><tt class="py-op">[</tt><tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">id</tt><tt class="py-op">]</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">used_reactions</tt> </tt>
+</div><a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line"> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line"><tt class="py-keyword">if</tt> <tt class="py-name">__name__</tt> <tt class="py-op">==</tt> <tt class="py-string">"__main__"</tt><tt class="py-op">:</tt> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">    <tt class="py-keyword">from</tt> <tt class="py-name">cPickle</tt> <tt class="py-keyword">import</tt> <tt class="py-name">load</tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line">    <tt class="py-keyword">from</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt> <tt class="py-keyword">import</tt> <tt class="py-name">join</tt><tt class="py-op">,</tt> <tt class="py-name">abspath</tt><tt class="py-op">,</tt> <tt class="py-name">dirname</tt> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">    <tt class="py-keyword">from</tt> <tt class="py-name">time</tt> <tt class="py-keyword">import</tt> <tt class="py-name">time</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line"> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line">    <tt class="py-keyword">import</tt> <tt id="link-49" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-49', 'cobra', 'link-0');">cobra</a></tt> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line"> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line">    <tt class="py-name">test_file_path</tt> <tt class="py-op">=</tt> <tt class="py-name">join</tt><tt class="py-op">(</tt><tt class="py-name">dirname</tt><tt class="py-op">(</tt><tt id="link-50" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-50', 'cobra', 'link-0');">cobra</a></tt><tt class="py-op">.</tt><tt class="py-name">__file__</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-string">"test"</tt><tt class="py-op">,</tt> <tt class="py-string">"data"</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line">                          <tt class="py-string">"salmonella.pickle"</tt><tt class="py-op">)</tt> </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">    <tt class="py-name">test_file</tt> <tt class="py-op">=</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">test_file_path</tt><tt class="py-op">,</tt> <tt class="py-string">"rb"</tt><tt class="py-op">)</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line">    <tt class="py-name">model</tt> <tt class="py-op">=</tt> <tt class="py-name">load</tt><tt class="py-op">(</tt><tt class="py-name">test_file</tt><tt class="py-op">)</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line">    <tt class="py-name">test_file</tt><tt class="py-op">.</tt><tt class="py-name">close</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line"> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line">    <tt class="py-name">tic</tt> <tt class="py-op">=</tt> <tt class="py-name">time</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line">    <tt class="py-name">Universal</tt> <tt class="py-op">=</tt> <tt id="link-51" class="py-name"><a title="cobra.oven.keggIO.import_kegg_reactions" class="py-name" href="#" onclick="return doclink('link-51', 'import_kegg_reactions', 'link-2');">import_kegg_reactions</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line">    <tt class="py-name">toc</tt> <tt class="py-op">=</tt> <tt class="py-name">time</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-string">"%.2f sec to import kegg reactions"</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">toc</tt> <tt class="py-op">-</tt> <tt class="py-name">tic</tt><tt class="py-op">)</tt> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line">    <tt class="py-name">tic</tt> <tt class="py-op">=</tt> <tt class="py-name">toc</tt> </tt>
+<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-string">"growMatch: "</tt> </tt>
+<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line">    <tt id="link-52" class="py-name" targets="Function cobra.oven.gapAnalysis.growMatch()=cobra.oven.gapAnalysis-module.html#growMatch"><a title="cobra.oven.gapAnalysis.growMatch" class="py-name" href="#" onclick="return doclink('link-52', 'growMatch', 'link-52');">growMatch</a></tt><tt class="py-op">(</tt><tt class="py-name">model</tt><tt class="py-op">,</tt> <tt class="py-name">Universal</tt><tt class="py-op">)</tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line">    <tt class="py-name">toc</tt> <tt class="py-op">=</tt> <tt class="py-name">time</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-string">"%.2f sec for growmatch"</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">toc</tt> <tt class="py-op">-</tt> <tt class="py-name">tic</tt><tt class="py-op">)</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line">    <tt class="py-name">tic</tt> <tt class="py-op">=</tt> <tt class="py-name">toc</tt> </tt>
+<a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-string">"SMILEY results"</tt> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line">    <tt id="link-53" class="py-name" targets="Function cobra.oven.gapAnalysis.SMILEY()=cobra.oven.gapAnalysis-module.html#SMILEY"><a title="cobra.oven.gapAnalysis.SMILEY" class="py-name" href="#" onclick="return doclink('link-53', 'SMILEY', 'link-53');">SMILEY</a></tt><tt class="py-op">(</tt><tt class="py-name">model</tt><tt class="py-op">,</tt> <tt class="py-string">"atp_c"</tt><tt class="py-op">,</tt> <tt class="py-name">Universal</tt><tt class="py-op">)</tt> </tt>
+<a name="L169"></a><tt class="py-lineno">169</tt>  <tt class="py-line">    <tt class="py-name">toc</tt> <tt class="py-op">=</tt> <tt class="py-name">time</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-string">"%.2f sec for smiley"</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">toc</tt> <tt class="py-op">-</tt> <tt class="py-name">tic</tt><tt class="py-op">)</tt> </tt>
+<a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Thu Apr 26 12:50:36 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

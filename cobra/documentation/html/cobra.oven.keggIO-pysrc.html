@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>cobra.oven.keggIO</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="cobra-module.html">Package&nbsp;cobra</a> ::
+        <a href="cobra.oven-module.html">Package&nbsp;oven</a> ::
+        Module&nbsp;keggIO
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="cobra.oven.keggIO-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="cobra.oven.keggIO-module.html">Module cobra.oven.keggIO</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">csv</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">re</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt id="link-0" class="py-name" targets="Method cobra.core.Metabolite'.Metabolite.copy()=cobra.core.Metabolite%27.Metabolite-class.html#copy,Method cobra.core.Model'.Model.copy()=cobra.core.Model%27.Model-class.html#copy,Method cobra.core.Reaction'.Reaction.copy()=cobra.core.Reaction%27.Reaction-class.html#copy"><a title="cobra.core.Metabolite'.Metabolite.copy
+cobra.core.Model'.Model.copy
+cobra.core.Reaction'.Reaction.copy" class="py-name" href="#" onclick="return doclink('link-0', 'copy', 'link-0');">copy</a></tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt> <tt class="py-keyword">import</tt> <tt class="py-name">join</tt><tt class="py-op">,</tt> <tt class="py-name">abspath</tt><tt class="py-op">,</tt> <tt class="py-name">split</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt id="link-1" class="py-name" targets="Package cobra=cobra-module.html"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-1', 'cobra', 'link-1');">cobra</a></tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-comment"># the default file locations</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt id="link-2" class="py-name" targets="Variable cobra.oven.keggIO.kegg_directory=cobra.oven.keggIO-module.html#kegg_directory"><a title="cobra.oven.keggIO.kegg_directory" class="py-name" href="#" onclick="return doclink('link-2', 'kegg_directory', 'link-2');">kegg_directory</a></tt> <tt class="py-op">=</tt> <tt class="py-name">join</tt><tt class="py-op">(</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-name">abspath</tt><tt class="py-op">(</tt><tt class="py-name">__file__</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-string">"kegg_files"</tt><tt class="py-op">)</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt id="link-3" class="py-name" targets="Variable cobra.oven.keggIO.keggdictpath_default=cobra.oven.keggIO-module.html#keggdictpath_default"><a title="cobra.oven.keggIO.keggdictpath_default" class="py-name" href="#" onclick="return doclink('link-3', 'keggdictpath_default', 'link-3');">keggdictpath_default</a></tt> <tt class="py-op">=</tt> <tt class="py-name">join</tt><tt class="py-op">(</tt><tt id="link-4" class="py-name"><a title="cobra.oven.keggIO.kegg_directory" class="py-name" href="#" onclick="return doclink('link-4', 'kegg_directory', 'link-2');">kegg_directory</a></tt><tt class="py-op">,</tt> <tt class="py-string">"kegg_dict.csv"</tt><tt class="py-op">)</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt id="link-5" class="py-name" targets="Variable cobra.oven.keggIO.reactionlst_default=cobra.oven.keggIO-module.html#reactionlst_default"><a title="cobra.oven.keggIO.reactionlst_default" class="py-name" href="#" onclick="return doclink('link-5', 'reactionlst_default', 'link-5');">reactionlst_default</a></tt> <tt class="py-op">=</tt> <tt class="py-name">join</tt><tt class="py-op">(</tt><tt id="link-6" class="py-name"><a title="cobra.oven.keggIO.kegg_directory" class="py-name" href="#" onclick="return doclink('link-6', 'kegg_directory', 'link-2');">kegg_directory</a></tt><tt class="py-op">,</tt> <tt class="py-string">"reaction.lst"</tt><tt class="py-op">)</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt id="link-7" class="py-name" targets="Variable cobra.oven.keggIO.blacklistpath_default=cobra.oven.keggIO-module.html#blacklistpath_default"><a title="cobra.oven.keggIO.blacklistpath_default" class="py-name" href="#" onclick="return doclink('link-7', 'blacklistpath_default', 'link-7');">blacklistpath_default</a></tt> <tt class="py-op">=</tt> <tt class="py-name">join</tt><tt class="py-op">(</tt><tt id="link-8" class="py-name"><a title="cobra.oven.keggIO.kegg_directory" class="py-name" href="#" onclick="return doclink('link-8', 'kegg_directory', 'link-2');">kegg_directory</a></tt><tt class="py-op">,</tt> <tt class="py-string">"kegg_blacklist.csv"</tt><tt class="py-op">)</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"> </tt>
+<a name="_intify"></a><div id="_intify-def"><a name="L15"></a><tt class="py-lineno"> 15</tt> <a class="py-toggle" href="#" id="_intify-toggle" onclick="return toggle('_intify');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.oven.keggIO-module.html#_intify">_intify</a><tt class="py-op">(</tt><tt class="py-param">string</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="_intify-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="_intify-expanded"><a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line">    <tt class="py-docstring">"""returns integer representation of the str</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-docstring">    If str is a single letter, it will return 1"""</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">string</tt><tt class="py-op">.</tt><tt class="py-name">isdigit</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">int</tt><tt class="py-op">(</tt><tt class="py-name">string</tt><tt class="py-op">)</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line">    <tt class="py-comment"># if the expression contains n, the default value is 2</tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line">    <tt class="py-name">n</tt> <tt class="py-op">=</tt> <tt class="py-number">2</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">string</tt> <tt class="py-op">==</tt> <tt class="py-string">"2n"</tt><tt class="py-op">:</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-number">2</tt> <tt class="py-op">*</tt> <tt class="py-name">n</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line">    <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">eval</tt><tt class="py-op">(</tt><tt class="py-name">string</tt><tt class="py-op">)</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line">    <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line">        <tt class="py-keyword">raise</tt> <tt class="py-name">ValueError</tt><tt class="py-op">(</tt><tt class="py-name">string</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"> </tt>
+<a name="_parse_split_array"></a><div id="_parse_split_array-def"><a name="L30"></a><tt class="py-lineno"> 30</tt> <a class="py-toggle" href="#" id="_parse_split_array-toggle" onclick="return toggle('_parse_split_array');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.oven.keggIO-module.html#_parse_split_array">_parse_split_array</a><tt class="py-op">(</tt><tt class="py-param">str_array</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="_parse_split_array-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="_parse_split_array-expanded"><a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line">    <tt class="py-docstring">"""takes in an array of strings, each of which is either</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"><tt class="py-docstring">    - a compound OR</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt class="py-docstring">    - a number followed by a compound</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"><tt class="py-docstring">    returns [array_of_metabolites, corresponding_coefficient]"""</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line">    <tt class="py-name">metabolites</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">    <tt class="py-name">coefficients</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">string</tt> <tt class="py-keyword">in</tt> <tt class="py-name">str_array</tt><tt class="py-op">:</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line">        <tt class="py-name">string</tt> <tt class="py-op">=</tt> <tt class="py-name">string</tt><tt class="py-op">.</tt><tt class="py-name">strip</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">string</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">isupper</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt>  <tt class="py-comment"># starts with an uppercase letter</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line">            <tt class="py-comment"># there is no number associated, so it should be 1</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line">            <tt class="py-name">metabolites</tt><tt class="py-op">.</tt><tt id="link-9" class="py-name" targets="Method cobra.collections.DictList.DictList.append()=cobra.collections.DictList.DictList-class.html#append"><a title="cobra.collections.DictList.DictList.append" class="py-name" href="#" onclick="return doclink('link-9', 'append', 'link-9');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">string</tt><tt class="py-op">)</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">            <tt class="py-name">coefficients</tt><tt class="py-op">.</tt><tt id="link-10" class="py-name"><a title="cobra.collections.DictList.DictList.append" class="py-name" href="#" onclick="return doclink('link-10', 'append', 'link-9');">append</a></tt><tt class="py-op">(</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">            <tt class="py-name">the_coefficient</tt><tt class="py-op">,</tt> <tt class="py-name">the_metabolite</tt> <tt class="py-op">=</tt> <tt class="py-name">string</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">            <tt class="py-name">metabolites</tt><tt class="py-op">.</tt><tt id="link-11" class="py-name"><a title="cobra.collections.DictList.DictList.append" class="py-name" href="#" onclick="return doclink('link-11', 'append', 'link-9');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">the_metabolite</tt><tt class="py-op">)</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">            <tt class="py-name">coefficients</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name"><a title="cobra.collections.DictList.DictList.append" class="py-name" href="#" onclick="return doclink('link-12', 'append', 'link-9');">append</a></tt><tt class="py-op">(</tt><tt id="link-13" class="py-name" targets="Function cobra.oven.keggIO._intify()=cobra.oven.keggIO-module.html#_intify"><a title="cobra.oven.keggIO._intify" class="py-name" href="#" onclick="return doclink('link-13', '_intify', 'link-13');">_intify</a></tt><tt class="py-op">(</tt><tt class="py-name">the_coefficient</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-op">[</tt><tt class="py-name">metabolites</tt><tt class="py-op">,</tt> <tt class="py-name">coefficients</tt><tt class="py-op">]</tt> </tt>
+</div><a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line"> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line"> </tt>
+<a name="import_kegg_reactions"></a><div id="import_kegg_reactions-def"><a name="L50"></a><tt class="py-lineno"> 50</tt> <a class="py-toggle" href="#" id="import_kegg_reactions-toggle" onclick="return toggle('import_kegg_reactions');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.oven.keggIO-module.html#import_kegg_reactions">import_kegg_reactions</a><tt class="py-op">(</tt><tt class="py-param">compartment</tt><tt class="py-op">=</tt><tt class="py-string">"c"</tt><tt class="py-op">,</tt> <tt class="py-param">reactionlstpath</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">                        <tt class="py-param">keggdictpath</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">blacklistpath</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="import_kegg_reactions-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="import_kegg_reactions-expanded"><a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">    <tt class="py-docstring">"""reads in kegg reactions from the three given files</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line"><tt class="py-docstring">    compartment: the compartment to which each reaction will be added</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line"><tt class="py-docstring">    If no file is specified for any of these, a default file will be used:</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line"><tt class="py-docstring">    reactionlstpath: path to path of kegg reactions</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line"><tt class="py-docstring">    the format should be</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"><tt class="py-docstring">    reactionid: Met1 + 2 Met2 &lt;=&gt; Met3 + 2 Met4</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"><tt class="py-docstring">    keggdictpath: The path to a csv file translating between kegg and cobra</tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line"><tt class="py-docstring">    metabolite ID's, where the first column contains the kegg ID, and the</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line"><tt class="py-docstring">    second contains cobra id</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line"><tt class="py-docstring">    blacklistpath: path to a file listing the blacklisted reactions, with</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line"><tt class="py-docstring">    one per line</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line"><tt class="py-docstring">    returns: cobra model with all of the included reactions</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line"> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">reactionlstpath</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">        <tt class="py-name">reactionlstpath</tt> <tt class="py-op">=</tt> <tt id="link-14" class="py-name"><a title="cobra.oven.keggIO.reactionlst_default" class="py-name" href="#" onclick="return doclink('link-14', 'reactionlst_default', 'link-5');">reactionlst_default</a></tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">keggdictpath</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">        <tt class="py-name">keggdictpath</tt> <tt class="py-op">=</tt> <tt id="link-15" class="py-name"><a title="cobra.oven.keggIO.keggdictpath_default" class="py-name" href="#" onclick="return doclink('link-15', 'keggdictpath_default', 'link-3');">keggdictpath_default</a></tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">blacklistpath</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">        <tt class="py-name">blacklistpath</tt> <tt class="py-op">=</tt> <tt id="link-16" class="py-name"><a title="cobra.oven.keggIO.blacklistpath_default" class="py-name" href="#" onclick="return doclink('link-16', 'blacklistpath_default', 'link-7');">blacklistpath_default</a></tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line"> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">    <tt class="py-comment"># read in kegg dictionary to translate between kegg and cobra id's</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">    <tt class="py-name">keggdictfile</tt> <tt class="py-op">=</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">keggdictpath</tt><tt class="py-op">,</tt> <tt class="py-string">"r"</tt><tt class="py-op">)</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">    <tt class="py-name">keggdictcsv</tt> <tt class="py-op">=</tt> <tt class="py-name">csv</tt><tt class="py-op">.</tt><tt class="py-name">reader</tt><tt class="py-op">(</tt><tt class="py-name">keggdictfile</tt><tt class="py-op">)</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">    <tt class="py-name">keggdict</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">line</tt> <tt class="py-keyword">in</tt> <tt class="py-name">keggdictcsv</tt><tt class="py-op">:</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">        <tt class="py-name">keggdict</tt><tt class="py-op">[</tt><tt class="py-name">line</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">line</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">    <tt class="py-name">keggdictfile</tt><tt class="py-op">.</tt><tt class="py-name">close</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">    <tt class="py-comment"># read in the kegg blacklist</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">    <tt class="py-name">keggblacklistfile</tt> <tt class="py-op">=</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">blacklistpath</tt><tt class="py-op">,</tt> <tt class="py-string">"r"</tt><tt class="py-op">)</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">    <tt class="py-name">keggblacklistcsv</tt> <tt class="py-op">=</tt> <tt class="py-name">csv</tt><tt class="py-op">.</tt><tt class="py-name">reader</tt><tt class="py-op">(</tt><tt class="py-name">keggblacklistfile</tt><tt class="py-op">)</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">    <tt class="py-name">keggblacklist</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">line</tt> <tt class="py-keyword">in</tt> <tt class="py-name">keggblacklistcsv</tt><tt class="py-op">:</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">        <tt class="py-name">keggblacklist</tt><tt class="py-op">.</tt><tt id="link-17" class="py-name"><a title="cobra.collections.DictList.DictList.append" class="py-name" href="#" onclick="return doclink('link-17', 'append', 'link-9');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">line</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">    <tt class="py-name">keggblacklistfile</tt><tt class="py-op">.</tt><tt class="py-name">close</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line"> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">    <tt class="py-comment"># parse the file of kegg reactions</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">    <tt class="py-name">keggfile</tt> <tt class="py-op">=</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">reactionlstpath</tt><tt class="py-op">,</tt> <tt class="py-string">"r"</tt><tt class="py-op">)</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">    <tt class="py-comment"># regular expressions to split strings</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">    <tt class="py-name">colon_sep</tt> <tt class="py-op">=</tt> <tt class="py-name">re</tt><tt class="py-op">.</tt><tt class="py-name">compile</tt><tt class="py-op">(</tt><tt class="py-string">":"</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">split</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">    <tt class="py-name">arrow_sep</tt> <tt class="py-op">=</tt> <tt class="py-name">re</tt><tt class="py-op">.</tt><tt class="py-name">compile</tt><tt class="py-op">(</tt><tt class="py-string">"&lt;=&gt;"</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">split</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">    <tt class="py-name">plus_sep</tt> <tt class="py-op">=</tt> <tt class="py-name">re</tt><tt class="py-op">.</tt><tt class="py-name">compile</tt><tt class="py-op">(</tt><tt class="py-string">" \+ "</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">split</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">    <tt class="py-name">keggreactions</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">    <tt class="py-name">cobra_reactions</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">    <tt class="py-name">used_metabolites</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">line</tt> <tt class="py-keyword">in</tt> <tt class="py-name">keggfile</tt><tt class="py-op">:</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">        <tt class="py-op">[</tt><tt class="py-name">id</tt><tt class="py-op">,</tt> <tt class="py-name">reactionstr</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">colon_sep</tt><tt class="py-op">(</tt><tt class="py-name">line</tt><tt class="py-op">,</tt> <tt class="py-name">maxsplit</tt><tt class="py-op">=</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">        <tt class="py-comment"># remove whitespace</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">        <tt class="py-name">id</tt> <tt class="py-op">=</tt> <tt class="py-name">id</tt><tt class="py-op">.</tt><tt class="py-name">strip</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">        <tt class="py-comment"># if the id is in the blacklist, no need to proceed</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">id</tt> <tt class="py-keyword">in</tt> <tt class="py-name">keggblacklist</tt><tt class="py-op">:</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">            <tt class="py-keyword">continue</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">        <tt class="py-comment"># split into reactants and products</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">        <tt class="py-name">reactants_str</tt><tt class="py-op">,</tt> <tt class="py-name">products_str</tt> <tt class="py-op">=</tt> <tt class="py-name">arrow_sep</tt><tt class="py-op">(</tt><tt class="py-name">reactionstr</tt><tt class="py-op">,</tt> <tt class="py-name">maxsplit</tt><tt class="py-op">=</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">        <tt class="py-comment"># break up reactant and product strings into arrays of</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">        <tt class="py-comment"># metabolites and coefficients</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">        <tt class="py-name">reactant_metabolites</tt><tt class="py-op">,</tt> <tt class="py-name">reactant_coefficients</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">            <tt id="link-18" class="py-name" targets="Function cobra.oven.keggIO._parse_split_array()=cobra.oven.keggIO-module.html#_parse_split_array"><a title="cobra.oven.keggIO._parse_split_array" class="py-name" href="#" onclick="return doclink('link-18', '_parse_split_array', 'link-18');">_parse_split_array</a></tt><tt class="py-op">(</tt><tt class="py-name">plus_sep</tt><tt class="py-op">(</tt><tt class="py-name">reactants_str</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">        <tt class="py-name">product_metabolites</tt><tt class="py-op">,</tt> <tt class="py-name">product_coefficients</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">            <tt id="link-19" class="py-name"><a title="cobra.oven.keggIO._parse_split_array" class="py-name" href="#" onclick="return doclink('link-19', '_parse_split_array', 'link-18');">_parse_split_array</a></tt><tt class="py-op">(</tt><tt class="py-name">plus_sep</tt><tt class="py-op">(</tt><tt class="py-name">products_str</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">        <tt class="py-comment"># reactant coefficients all need to be multiplied by -1</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt><tt class="py-op">,</tt> <tt class="py-name">coeff</tt> <tt class="py-keyword">in</tt> <tt class="py-name">enumerate</tt><tt class="py-op">(</tt><tt class="py-name">reactant_coefficients</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">            <tt class="py-name">reactant_coefficients</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">coeff</tt> <tt class="py-op">*</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">        <tt class="py-comment"># make one array for all compoenents</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">        <tt class="py-name">kegg_metabolites</tt> <tt class="py-op">=</tt> <tt class="py-name">reactant_metabolites</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">        <tt class="py-name">coefficients</tt> <tt class="py-op">=</tt> <tt class="py-name">reactant_coefficients</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">        <tt class="py-name">kegg_metabolites</tt><tt class="py-op">.</tt><tt id="link-20" class="py-name" targets="Method cobra.collections.DictList.DictList.extend()=cobra.collections.DictList.DictList-class.html#extend"><a title="cobra.collections.DictList.DictList.extend" class="py-name" href="#" onclick="return doclink('link-20', 'extend', 'link-20');">extend</a></tt><tt class="py-op">(</tt><tt class="py-name">product_metabolites</tt><tt class="py-op">)</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">        <tt class="py-name">coefficients</tt><tt class="py-op">.</tt><tt id="link-21" class="py-name"><a title="cobra.collections.DictList.DictList.extend" class="py-name" href="#" onclick="return doclink('link-21', 'extend', 'link-20');">extend</a></tt><tt class="py-op">(</tt><tt class="py-name">product_coefficients</tt><tt class="py-op">)</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">        <tt class="py-comment"># translate the metabolites from kegg to cobra</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line">        <tt class="py-name">metabolites</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt class="py-name">the_kegg_metabolite</tt> <tt class="py-keyword">in</tt> <tt class="py-name">kegg_metabolites</tt><tt class="py-op">:</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line">                <tt class="py-name">metabolites</tt><tt class="py-op">.</tt><tt id="link-22" class="py-name"><a title="cobra.collections.DictList.DictList.append" class="py-name" href="#" onclick="return doclink('link-22', 'append', 'link-9');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">keggdict</tt><tt class="py-op">[</tt><tt class="py-name">the_kegg_metabolite</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line">        <tt class="py-comment"># if one of the metabolites is not found, skip to the next line</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">KeyError</tt><tt class="py-op">:</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line">            <tt class="py-keyword">continue</tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line"> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">        <tt class="py-comment"># make a Kegg reaction</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line">        <tt class="py-name">reaction</tt> <tt class="py-op">=</tt> <tt id="link-23" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-23', 'cobra', 'link-1');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-24" class="py-name" targets="Class cobra.core.Reaction'.Reaction=cobra.core.Reaction%27.Reaction-class.html"><a title="cobra.core.Reaction'.Reaction" class="py-name" href="#" onclick="return doclink('link-24', 'Reaction', 'link-24');">Reaction</a></tt><tt class="py-op">(</tt><tt class="py-name">id</tt><tt class="py-op">)</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line">        <tt class="py-name">metabolite_dict</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt>  <tt class="py-comment"># dict of {metabolite : coefficient}</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt><tt class="py-op">,</tt> <tt class="py-name">the_metabolite</tt> <tt class="py-keyword">in</tt> <tt class="py-name">enumerate</tt><tt class="py-op">(</tt><tt class="py-name">metabolites</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line">            <tt class="py-name">metabolite_id</tt> <tt class="py-op">=</tt> <tt class="py-name">the_metabolite</tt> <tt class="py-op">+</tt> <tt class="py-string">"_"</tt> <tt class="py-op">+</tt> <tt class="py-name">compartment</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">            <tt class="py-comment"># if the metabolite already exists</tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">metabolite_id</tt> <tt class="py-keyword">in</tt> <tt class="py-name">used_metabolites</tt><tt class="py-op">:</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line">                <tt class="py-name">used_metabolites</tt><tt class="py-op">[</tt><tt class="py-name">metabolite_id</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">coefficients</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">                <tt class="py-comment"># use a new metabolite</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line">                <tt class="py-name">new_metabolite</tt> <tt class="py-op">=</tt> <tt id="link-25" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-25', 'cobra', 'link-1');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-26" class="py-name" targets="Class cobra.core.Metabolite'.Metabolite=cobra.core.Metabolite%27.Metabolite-class.html"><a title="cobra.core.Metabolite'.Metabolite" class="py-name" href="#" onclick="return doclink('link-26', 'Metabolite', 'link-26');">Metabolite</a></tt><tt class="py-op">(</tt><tt class="py-name">metabolite_id</tt><tt class="py-op">)</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line">                <tt class="py-name">used_metabolites</tt><tt class="py-op">[</tt><tt class="py-name">metabolite_id</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">new_metabolite</tt> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">                <tt class="py-name">metabolite_dict</tt><tt class="py-op">[</tt><tt id="link-27" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-27', 'cobra', 'link-1');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-28" class="py-name"><a title="cobra.core.Metabolite'.Metabolite" class="py-name" href="#" onclick="return doclink('link-28', 'Metabolite', 'link-26');">Metabolite</a></tt><tt class="py-op">(</tt><tt class="py-name">metabolite_id</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line">                    <tt class="py-name">coefficients</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">        <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt id="link-29" class="py-name" targets="Method cobra.core.Model'.Model.add_metabolites()=cobra.core.Model%27.Model-class.html#add_metabolites,Method cobra.core.Reaction'.Reaction.add_metabolites()=cobra.core.Reaction%27.Reaction-class.html#add_metabolites"><a title="cobra.core.Model'.Model.add_metabolites
+cobra.core.Reaction'.Reaction.add_metabolites" class="py-name" href="#" onclick="return doclink('link-29', 'add_metabolites', 'link-29');">add_metabolites</a></tt><tt class="py-op">(</tt><tt class="py-name">metabolite_dict</tt><tt class="py-op">)</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line">        <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">notes</tt><tt class="py-op">[</tt><tt class="py-string">"temporary_gapfilling_type"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-string">"Universal"</tt> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line">        <tt class="py-comment"># because the model will be converted to irreversible</tt> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line">        <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">lower_bound</tt> <tt class="py-op">=</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt> <tt class="py-op">*</tt> <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">upper_bound</tt> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line">        <tt class="py-name">cobra_reactions</tt><tt class="py-op">.</tt><tt id="link-30" class="py-name"><a title="cobra.collections.DictList.DictList.append" class="py-name" href="#" onclick="return doclink('link-30', 'append', 'link-9');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">reaction</tt><tt class="py-op">)</tt> </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line">    <tt class="py-name">keggfile</tt><tt class="py-op">.</tt><tt class="py-name">close</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">    <tt class="py-comment"># add all of the reactions to a cobra model</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line">    <tt class="py-name">Universal</tt> <tt class="py-op">=</tt> <tt id="link-31" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-31', 'cobra', 'link-1');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-32" class="py-name" targets="Class cobra.core.Model'.Model=cobra.core.Model%27.Model-class.html"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-32', 'Model', 'link-32');">Model</a></tt><tt class="py-op">(</tt><tt class="py-string">"Kegg_Universal_Reactions"</tt><tt class="py-op">)</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line">    <tt class="py-name">Universal</tt><tt class="py-op">.</tt><tt id="link-33" class="py-name" targets="Method cobra.core.Model'.Model.add_reactions()=cobra.core.Model%27.Model-class.html#add_reactions"><a title="cobra.core.Model'.Model.add_reactions" class="py-name" href="#" onclick="return doclink('link-33', 'add_reactions', 'link-33');">add_reactions</a></tt><tt class="py-op">(</tt><tt class="py-name">cobra_reactions</tt><tt class="py-op">)</tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">Universal</tt> </tt>
+</div><a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line"><tt class="py-keyword">if</tt> <tt class="py-name">__name__</tt> <tt class="py-op">==</tt> <tt class="py-string">"__main__"</tt><tt class="py-op">:</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line">    <tt class="py-keyword">from</tt> <tt class="py-name">time</tt> <tt class="py-keyword">import</tt> <tt class="py-name">time</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line">    <tt class="py-name">start_time</tt> <tt class="py-op">=</tt> <tt class="py-name">time</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line">    <tt class="py-name">test_import</tt> <tt class="py-op">=</tt> <tt id="link-34" class="py-name" targets="Function cobra.oven.keggIO.import_kegg_reactions()=cobra.oven.keggIO-module.html#import_kegg_reactions"><a title="cobra.oven.keggIO.import_kegg_reactions" class="py-name" href="#" onclick="return doclink('link-34', 'import_kegg_reactions', 'link-34');">import_kegg_reactions</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line">    <tt class="py-name">duration</tt> <tt class="py-op">=</tt> <tt class="py-name">time</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-op">-</tt> <tt class="py-name">start_time</tt> </tt>
+<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-string">"imported %d reactions in %.2f sec"</tt> <tt class="py-op">%</tt> \ </tt>
+<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">test_import</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">duration</tt><tt class="py-op">)</tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Thu Apr 26 12:50:37 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

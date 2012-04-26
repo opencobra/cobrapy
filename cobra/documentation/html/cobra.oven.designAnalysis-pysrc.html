@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>cobra.oven.designAnalysis</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="cobra-module.html">Package&nbsp;cobra</a> ::
+        <a href="cobra.oven-module.html">Package&nbsp;oven</a> ::
+        Module&nbsp;designAnalysis
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="cobra.oven.designAnalysis-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="cobra.oven.designAnalysis-module.html">Module cobra.oven.designAnalysis</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">numpy</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">pylab</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"> </tt>
+<a name="plot_production_envelope"></a><div id="plot_production_envelope-def"><a name="L5"></a><tt class="py-lineno">  5</tt> <a class="py-toggle" href="#" id="plot_production_envelope-toggle" onclick="return toggle('plot_production_envelope');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.oven.designAnalysis-module.html#plot_production_envelope">plot_production_envelope</a><tt class="py-op">(</tt><tt class="py-param">model</tt><tt class="py-op">,</tt> <tt class="py-param">target_id</tt><tt class="py-op">,</tt> <tt class="py-param">n_points</tt><tt class="py-op">=</tt><tt class="py-number">20</tt><tt class="py-op">,</tt> <tt class="py-param">plot</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="plot_production_envelope-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="plot_production_envelope-expanded"><a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line">    <tt class="py-docstring">"""Plot the production envelope for the model given a target</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-docstring">    Parameters</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-docstring">    ----------</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-docstring">    model : cobra model</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-docstring">        The cobra model should already have the uptake rates se</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-docstring">    target_id : str</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-docstring">        The id of the exchange reaction for the target compound</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-docstring">    n_points : int</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-docstring">        The number of points to calculate for the production envolope</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-docstring">    plot : bool, optional</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-docstring">        Whether or not a plot should be made of the production envelope</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-docstring">    Returns</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-docstring">    -------</tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-docstring">    growth_rates : :class:`numpy.ndarray`</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-docstring">        An array of growth rates</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-docstring">    production_rates : :class:`numpy.ndarray`</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-docstring">        An array of the corresponding maximum production rate at the</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-docstring">        given growth rate.</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line">    <tt class="py-name">target_id</tt> <tt class="py-op">=</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">target_id</tt><tt class="py-op">)</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line">    <tt class="py-name">target_reaction</tt> <tt class="py-op">=</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">.</tt><tt id="link-0" class="py-name" targets="Method cobra.collections.DictList.DictList.get_by_id()=cobra.collections.DictList.DictList-class.html#get_by_id"><a title="cobra.collections.DictList.DictList.get_by_id" class="py-name" href="#" onclick="return doclink('link-0', 'get_by_id', 'link-0');">get_by_id</a></tt><tt class="py-op">(</tt><tt class="py-name">target_id</tt><tt class="py-op">)</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line">    <tt class="py-name">original_target_bounds</tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt class="py-name">target_reaction</tt><tt class="py-op">.</tt><tt class="py-name">lower_bound</tt><tt class="py-op">,</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line">                              <tt class="py-name">target_reaction</tt><tt class="py-op">.</tt><tt class="py-name">upper_bound</tt><tt class="py-op">)</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line">    <tt class="py-name">hot_start</tt> <tt class="py-op">=</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt id="link-1" class="py-name" targets="Method cobra.core.Model'.Model.optimize()=cobra.core.Model%27.Model-class.html#optimize"><a title="cobra.core.Model'.Model.optimize" class="py-name" href="#" onclick="return doclink('link-1', 'optimize', 'link-1');">optimize</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">solution</tt><tt class="py-op">.</tt><tt class="py-name">status</tt> <tt class="py-op">!=</tt> <tt class="py-string">"optimal"</tt><tt class="py-op">:</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line">    <tt class="py-name">max_growth_rate</tt> <tt class="py-op">=</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">solution</tt><tt class="py-op">.</tt><tt class="py-name">f</tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">    <tt class="py-name">max_growth_production</tt> <tt class="py-op">=</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">solution</tt><tt class="py-op">.</tt><tt class="py-name">x_dict</tt><tt class="py-op">[</tt><tt class="py-name">target_reaction</tt><tt class="py-op">.</tt><tt class="py-name">id</tt><tt class="py-op">]</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line">    <tt class="py-name">growth_coupled</tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">max_growth_production</tt> <tt class="py-op">&gt;</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">        <tt class="py-name">growth_coupled</tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line">    <tt class="py-comment"># extract the current objective so it can be changed</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line">    <tt class="py-name">original_objectives</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">:</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> <tt class="py-op">!=</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">            <tt class="py-name">original_objectives</tt><tt class="py-op">[</tt><tt class="py-name">reaction</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">            <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">    <tt class="py-comment"># calculate the maximum possible production rate</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">    <tt class="py-name">target_reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> <tt class="py-op">=</tt> <tt class="py-number">1</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">    <tt class="py-name">model</tt><tt class="py-op">.</tt><tt id="link-2" class="py-name"><a title="cobra.core.Model'.Model.optimize" class="py-name" href="#" onclick="return doclink('link-2', 'optimize', 'link-1');">optimize</a></tt><tt class="py-op">(</tt><tt class="py-name">objective_sense</tt><tt class="py-op">=</tt><tt class="py-string">"minimize"</tt><tt class="py-op">)</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">    <tt class="py-name">min_production_rate</tt> <tt class="py-op">=</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">solution</tt><tt class="py-op">.</tt><tt class="py-name">f</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">    <tt class="py-name">model</tt><tt class="py-op">.</tt><tt id="link-3" class="py-name"><a title="cobra.core.Model'.Model.optimize" class="py-name" href="#" onclick="return doclink('link-3', 'optimize', 'link-1');">optimize</a></tt><tt class="py-op">(</tt><tt class="py-name">objective_sense</tt><tt class="py-op">=</tt><tt class="py-string">"maximize"</tt><tt class="py-op">)</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">    <tt class="py-name">max_production_rate</tt> <tt class="py-op">=</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">solution</tt><tt class="py-op">.</tt><tt class="py-name">f</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">    <tt class="py-name">production_rates</tt> <tt class="py-op">=</tt> <tt class="py-name">numpy</tt><tt class="py-op">.</tt><tt class="py-name">linspace</tt><tt class="py-op">(</tt><tt class="py-name">min_production_rate</tt><tt class="py-op">,</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">        <tt class="py-name">max_production_rate</tt><tt class="py-op">,</tt> <tt class="py-name">n_points</tt><tt class="py-op">)</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">    <tt class="py-comment"># ensure the point of production at maximum growth is included</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">    <tt class="py-name">production_rates</tt><tt class="py-op">[</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line">        <tt class="py-name">numpy</tt><tt class="py-op">.</tt><tt class="py-name">abs</tt><tt class="py-op">(</tt><tt class="py-name">production_rates</tt> <tt class="py-op">-</tt> <tt class="py-name">max_growth_production</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">argmin</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">        <tt class="py-name">max_growth_production</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line">    <tt class="py-comment"># if the 0 point was overwritten in the last operation</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">production_rates</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> <tt class="py-op">!=</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line">        <tt class="py-name">production_rates</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">production_rates</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">        <tt class="py-name">production_rates</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">    <tt class="py-name">growth_rates</tt> <tt class="py-op">=</tt> <tt class="py-name">production_rates</tt> <tt class="py-op">*</tt> <tt class="py-number">0</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">    <tt class="py-comment"># make the objective coefficient what it was before</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">    <tt class="py-name">target_reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">reaction</tt><tt class="py-op">,</tt> <tt class="py-name">coefficient</tt> <tt class="py-keyword">in</tt> <tt class="py-name">original_objectives</tt><tt class="py-op">.</tt><tt class="py-name">iteritems</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line">        <tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> <tt class="py-op">=</tt> <tt class="py-name">coefficient</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line">    <tt class="py-comment"># calculate the maximum growth rate at each production rate</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-name">range</tt><tt class="py-op">(</tt><tt class="py-name">n_points</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">        <tt class="py-name">target_reaction</tt><tt class="py-op">.</tt><tt class="py-name">lower_bound</tt> <tt class="py-op">=</tt> <tt class="py-name">production_rates</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">        <tt class="py-name">target_reaction</tt><tt class="py-op">.</tt><tt class="py-name">upper_bound</tt> <tt class="py-op">=</tt> <tt class="py-name">production_rates</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">        <tt class="py-name">hot_start</tt> <tt class="py-op">=</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt id="link-4" class="py-name"><a title="cobra.core.Model'.Model.optimize" class="py-name" href="#" onclick="return doclink('link-4', 'optimize', 'link-1');">optimize</a></tt><tt class="py-op">(</tt><tt class="py-name">the_problem</tt><tt class="py-op">=</tt><tt class="py-name">hot_start</tt><tt class="py-op">)</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">solution</tt><tt class="py-op">.</tt><tt class="py-name">status</tt> <tt class="py-op">==</tt> <tt class="py-string">"optimal"</tt><tt class="py-op">:</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">            <tt class="py-name">growth_rates</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">solution</tt><tt class="py-op">.</tt><tt class="py-name">f</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">            <tt class="py-name">growth_rates</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">    <tt class="py-comment"># reset the bounds on the target reaction</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">    <tt class="py-name">target_reaction</tt><tt class="py-op">.</tt><tt class="py-name">lower_bound</tt> <tt class="py-op">=</tt> <tt class="py-name">original_target_bounds</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">    <tt class="py-name">target_reaction</tt><tt class="py-op">.</tt><tt class="py-name">upper_bound</tt> <tt class="py-op">=</tt> <tt class="py-name">original_target_bounds</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt id="link-5" class="py-name" targets="Method cobra.oven.phenotypePhasePlane.phenotypePhasePlaneData.plot()=cobra.oven.phenotypePhasePlane.phenotypePhasePlaneData-class.html#plot"><a title="cobra.oven.phenotypePhasePlane.phenotypePhasePlaneData.plot" class="py-name" href="#" onclick="return doclink('link-5', 'plot', 'link-5');">plot</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">        <tt class="py-name">pylab</tt><tt class="py-op">.</tt><tt id="link-6" class="py-name"><a title="cobra.oven.phenotypePhasePlane.phenotypePhasePlaneData.plot" class="py-name" href="#" onclick="return doclink('link-6', 'plot', 'link-5');">plot</a></tt><tt class="py-op">(</tt><tt class="py-name">growth_rates</tt><tt class="py-op">,</tt> <tt class="py-name">production_rates</tt><tt class="py-op">)</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">        <tt class="py-name">pylab</tt><tt class="py-op">.</tt><tt class="py-name">title</tt><tt class="py-op">(</tt><tt class="py-string">"Production envelope for %s"</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">target_id</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">        <tt class="py-name">pylab</tt><tt class="py-op">.</tt><tt class="py-name">xlabel</tt><tt class="py-op">(</tt><tt class="py-string">"Growth rate"</tt><tt class="py-op">)</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">        <tt class="py-name">pylab</tt><tt class="py-op">.</tt><tt class="py-name">ylabel</tt><tt class="py-op">(</tt><tt class="py-string">"Production rate"</tt><tt class="py-op">)</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">        <tt class="py-name">pylab</tt><tt class="py-op">.</tt><tt class="py-name">xlim</tt><tt class="py-op">(</tt><tt class="py-name">xmin</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">        <tt class="py-name">pylab</tt><tt class="py-op">.</tt><tt class="py-name">ylim</tt><tt class="py-op">(</tt><tt class="py-name">ymin</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-op">(</tt><tt class="py-name">growth_rates</tt><tt class="py-op">,</tt> <tt class="py-name">production_rates</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line"> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line"> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line"><tt class="py-keyword">if</tt> <tt class="py-name">__name__</tt> <tt class="py-op">==</tt> <tt class="py-string">"__main__"</tt><tt class="py-op">:</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">    <tt class="py-keyword">from</tt> <tt id="link-7" class="py-name" targets="Package cobra=cobra-module.html"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-7', 'cobra', 'link-7');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-8" class="py-name" targets="Package cobra.oven=cobra.oven-module.html"><a title="cobra.oven" class="py-name" href="#" onclick="return doclink('link-8', 'oven', 'link-8');">oven</a></tt><tt class="py-op">.</tt><tt id="link-9" class="py-name" targets="Module cobra.oven.legacyIO=cobra.oven.legacyIO-module.html"><a title="cobra.oven.legacyIO" class="py-name" href="#" onclick="return doclink('link-9', 'legacyIO', 'link-9');">legacyIO</a></tt> <tt class="py-keyword">import</tt> <tt id="link-10" class="py-name" targets="Function cobra.oven.legacyIO.load_pickle()=cobra.oven.legacyIO-module.html#load_pickle"><a title="cobra.oven.legacyIO.load_pickle" class="py-name" href="#" onclick="return doclink('link-10', 'load_pickle', 'link-10');">load_pickle</a></tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">    <tt class="py-keyword">from</tt> <tt id="link-11" class="py-name"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-11', 'cobra', 'link-7');">cobra</a></tt><tt class="py-op">.</tt><tt class="py-name">test</tt> <tt class="py-keyword">import</tt> <tt class="py-name">ecoli_pickle</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">    <tt class="py-keyword">from</tt> <tt class="py-name">time</tt> <tt class="py-keyword">import</tt> <tt class="py-name">time</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">    <tt class="py-keyword">import</tt> <tt class="py-name">pylab</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">    <tt class="py-name">model</tt> <tt class="py-op">=</tt> <tt id="link-12" class="py-name"><a title="cobra.oven.legacyIO.load_pickle" class="py-name" href="#" onclick="return doclink('link-12', 'load_pickle', 'link-10');">load_pickle</a></tt><tt class="py-op">(</tt><tt class="py-name">ecoli_pickle</tt><tt class="py-op">)</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">    <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name"><a title="cobra.collections.DictList.DictList.get_by_id" class="py-name" href="#" onclick="return doclink('link-13', 'get_by_id', 'link-0');">get_by_id</a></tt><tt class="py-op">(</tt><tt class="py-string">"EX_o2(e)"</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">lower_bound</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-op">[</tt><tt class="py-string">"ABTA"</tt><tt class="py-op">,</tt> <tt class="py-string">"ACALD"</tt><tt class="py-op">,</tt> <tt class="py-string">"ACKr"</tt><tt class="py-op">,</tt> <tt class="py-string">"ATPS4rpp"</tt><tt class="py-op">,</tt> <tt class="py-string">"F6PA"</tt><tt class="py-op">,</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">              <tt class="py-string">"GLUDy"</tt><tt class="py-op">,</tt> <tt class="py-string">"LDH_D"</tt><tt class="py-op">,</tt> <tt class="py-string">"MGSA"</tt><tt class="py-op">,</tt> <tt class="py-string">"PFL"</tt><tt class="py-op">,</tt> <tt class="py-string">"TPI"</tt><tt class="py-op">]</tt><tt class="py-op">:</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">        <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name"><a title="cobra.collections.DictList.DictList.get_by_id" class="py-name" href="#" onclick="return doclink('link-14', 'get_by_id', 'link-0');">get_by_id</a></tt><tt class="py-op">(</tt><tt class="py-name">i</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">lower_bound</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">        <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">.</tt><tt id="link-15" class="py-name"><a title="cobra.collections.DictList.DictList.get_by_id" class="py-name" href="#" onclick="return doclink('link-15', 'get_by_id', 'link-0');">get_by_id</a></tt><tt class="py-op">(</tt><tt class="py-name">i</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">upper_bound</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">    <tt class="py-name">start</tt> <tt class="py-op">=</tt> <tt class="py-name">time</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">    <tt id="link-16" class="py-name" targets="Function cobra.oven.designAnalysis.plot_production_envelope()=cobra.oven.designAnalysis-module.html#plot_production_envelope"><a title="cobra.oven.designAnalysis.plot_production_envelope" class="py-name" href="#" onclick="return doclink('link-16', 'plot_production_envelope', 'link-16');">plot_production_envelope</a></tt><tt class="py-op">(</tt><tt class="py-name">model</tt><tt class="py-op">,</tt> <tt class="py-string">"EX_etoh(e)"</tt><tt class="py-op">)</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-string">"ran in %.2f seconds"</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">time</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-op">-</tt> <tt class="py-name">start</tt><tt class="py-op">)</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">    <tt class="py-name">pylab</tt><tt class="py-op">.</tt><tt class="py-name">show</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">    <tt class="py-comment"># calculates in approx 1.2 seconds on 3.4 GHz i7</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Thu Apr 26 12:50:37 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
