@@ -15,7 +15,10 @@ from numpy import array as _array, object as _object
 from scipy.io import loadmat as _loadmat, savemat as _savemat
 from scipy.sparse import coo_matrix as _coo_matrix
 import cobra
-from cobra.io.sbml import create_cobra_model_from_sbml_file as _sbml_import
+try:
+    from cobra.io.sbml import create_cobra_model_from_sbml_file as _sbml_import
+except ImportError:
+    _sbml_import = None
 
 
 # function to help translate an array to a MATLAB cell array
@@ -100,6 +103,8 @@ def load_matlab_model(infile_path, variable_name=None):
         possible_names = possible_names.keys()
     for possible_name in possible_names:
         m = data[possible_name]  # TODO: generalize
+        if m.dtype.names is None:
+            continue
         if not set(["rxns", "mets", "S", "lb", "ub"]) \
                 <= set(m.dtype.names):
             continue
@@ -110,7 +115,10 @@ def load_matlab_model(infile_path, variable_name=None):
             new_metabolite = cobra.Metabolite()
             new_metabolite.id = name[0][0]#.encode("ascii", "replace")
             new_metabolite.name = m["metNames"][0, 0][i][0][0]
-            new_metabolite.formula = m["metFormulas"][0][0][i][0][0]
+            try:
+                new_metabolite.formula = m["metFormulas"][0][0][i][0][0]
+            except:
+                pass
             model.add_metabolites([new_metabolite])
         for i, name in enumerate(m["rxns"][0, 0]):
             new_reaction = cobra.Reaction()
