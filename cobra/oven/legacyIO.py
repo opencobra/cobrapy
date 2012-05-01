@@ -114,8 +114,8 @@ def load_matlab_model(infile_path, variable_name=None):
         for i, name in enumerate(m["mets"][0, 0]):
             new_metabolite = cobra.Metabolite()
             new_metabolite.id = name[0][0]#.encode("ascii", "replace")
-            new_metabolite.name = m["metNames"][0, 0][i][0][0]
             try:
+                new_metabolite.name = m["metNames"][0, 0][i][0][0]
                 new_metabolite.formula = m["metFormulas"][0][0][i][0][0]
             except:
                 pass
@@ -123,10 +123,13 @@ def load_matlab_model(infile_path, variable_name=None):
         for i, name in enumerate(m["rxns"][0, 0]):
             new_reaction = cobra.Reaction()
             new_reaction.id = name[0][0]#.encode("ascii", "replace")
-            new_reaction.name = m["rxnNames"][0, 0][i][0][0]
             new_reaction.lower_bound = m["lb"][0, 0][i][0]
             new_reaction.upper_bound = m["ub"][0, 0][i][0]
             new_reaction.objective_coefficient = m["c"][0, 0][i][0]
+            try:
+                new_reaction.name = m["rxnNames"][0, 0][i][0][0]
+            except:
+                pass
             model.add_reactions(new_reaction)
         coo = _coo_matrix(m["S"][0, 0])
         for i, j, v in zip(coo.row, coo.col, coo.data):
