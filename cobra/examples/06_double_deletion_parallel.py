@@ -1,3 +1,7 @@
+#cobra/examples/06_double_deletion_parallel.py
+#
+#Advanced user example illustrating how to perform double deletion studies on a multicore system
+#
 from cobra.flux_analysis.essentiality import deletion_analysis
 from cPickle import load, dump
 from time import time
@@ -6,17 +10,8 @@ from sys import argv
 from os import listdir, getcwd, devnull
 from os.path import abspath
 from cobra.manipulation import initialize_growth_medium
-#Module illustrating how to perform double deletion studies on a multicore system
-#
-#Requires parallel python.  easy_install pp
-#
-#On Mac OS X the default numpy install may result in an error regarding version 6
-#versus version 4 or not being able to import numpy.core.multiarray.
-#If either of these errors are encountered then the easiest thing is to
-#make the numpy that ships with os x inaccessible:
-#sudo chmod -R 000 /System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/numpy*
-#It might be possible to alter the system or user PYTHONPATH to deal with the problem.
-#
+
+
 print '%s is still under development.'%argv[0]
 if len(argv) < 4:
     print 'Script must be called with the number of processes, a cobra.Model pickle,' +\

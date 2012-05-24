@@ -1,3 +1,8 @@
+#cobra/examples/07_ice_cream_milp.py
+#
+# Advanced user example showing how to set up and solve an MILP
+#
+
 from cobra import Model, Metabolite, Reaction
 try:
     import glpk
@@ -12,7 +17,6 @@ except:
             solver = 'gurobi'
         except:
             raise Exception("Couldn't import glpk, cplex, or gurobi")
-# simple MILP problem instance selling ice cream cones and popsicles in a COBRAesque way
 
 cone_selling_price = 7.
 cone_production_cost = 3.
