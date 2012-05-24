@@ -2,7 +2,7 @@
 
 -Improve parallel performance.
 
--Improve copy speed for Model, Reaction, Metabolite.
+-Add time out parameter to optimize function.
 
 -Create testing modules with unittest. 
 

@@ -9,7 +9,7 @@ from pdb import set_trace
 #These are stored as strings here to prevent problems associated with calling
 #solver objects for solver packages that aren't available
 
-status_dict = {'cplex': "{'MIP_infeasible': 'infeasible', 'MIP_optimal': 'optimal',  'MIP_unbounded': 'unbounded', 'infeasible': 'infeasible', 'optimal': 'optimal', 'unbounded': 'unbounded'}",
+status_dict = {'cplex': "{'MIP_infeasible': 'infeasible', 'MIP_optimal': 'optimal', 'MIP_optimal_tolerance': 'optimal',  'MIP_unbounded': 'unbounded', 'infeasible': 'infeasible', 'optimal': 'optimal', 'optimal_tolerance': 'optimal', 'unbounded': 'unbounded'}",
                'glpk': "{'opt': 'optimal', 'nofeas': 'infeasible', 'unbnd': 'unbounded'}",
                'gurobi': "{GRB.OPTIMAL: 'optimal', GRB.INFEASIBLE: 'infeasible', GRB.UNBOUNDED: 'unbounded'}"}
 variable_kind_dict = {'cplex': "{'continuous': Cplex.variables.type.continuous, 'integer': Cplex.variables.type.integer}",
@@ -29,16 +29,12 @@ def update_objective(cobra_model, the_objectives):
            not isinstance(the_objectives, tuple):
         the_objectives = [the_objectives]
     for the_objective in the_objectives:
-        if hasattr(the_objective,'id'):
-            #TODO: Allow for variable contributions to the objective function
-
-            the_objective.objective_coefficient = 1.
-        else:
+        if not hasattr(the_objective,'id'):
             if isinstance(the_objective, str):
-                the_index = cobra_model.reactions.get_by_id(the_objective)
+                the_objective = cobra_model.reactions.get_by_id(the_objective)
             elif isinstance(the_objective, int):
-                the_index = the_objective
-            cobra_model.reactions[the_index].objective_coefficient = 1.
+                the_objective = cobra_model.reactions[the_index]
+        the_objective.objective_coefficient = 1.
     #NOTE: _objective_coefficients is deprecated
     cobra_model._objective_coefficients = array([x.objective_coefficient
                                                  for x in cobra_model.reactions])
@@ -223,7 +219,7 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
                 print 'set lp objective: ' + repr(time()-start_time)
                 start_time = time()
         #SPEED THIS UP
-        if update__problem_reaction_bounds:
+        if update_problem_reaction_bounds:
             lp.variables.set_upper_bounds([(x.id, float(x.upper_bound))
                                             for x in cobra_model.reactions])
             lp.variables.set_lower_bounds([(x.id, float(x.lower_bound))
@@ -269,6 +265,10 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
         lp.solve()
         # Solve this LP with the simplex method.  Takes about 0.2 s without hot start
         lp.status = lp.solution.status[lp.solution.get_status()]
+        if lp.status in status_dict:
+            status = status_dict[lp.status]
+        else:
+            status = 'failed'
     else:
         if isinstance(the_problem, Cplex) and reuse_basis:
             try:
@@ -287,7 +287,11 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
         lp.solve() 
         #If the solver takes more than 0.1 s with a hot start it is likely stuck
         lp.status = lp.solution.status[lp.solution.get_status()]
-        if lp.status != 'optimal':
+        if lp.status in status_dict:
+            status = status_dict[lp.status]
+        else:
+            status = 'failed'
+        if status != 'optimal':
             #Cycle through the different solver options, if a solution is not found
             for lp_method in (1, 2, 3, 4, 5, 6):
                 lp = optimize_cplex(cobra_model, new_objective=new_objective,
@@ -299,7 +303,11 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
                                     lp_method=lp_method,
                                     quadratic_component=quadratic_component)['the_problem']
                 lp.status = lp.solution.status[lp.solution.get_status()]
-                if lp.status == 'optimal':
+                if lp.status in status_dict:
+                    status = status_dict[lp.status]
+                else:
+                    status = 'failed'
+                if status == 'optimal':
                     break
     if error_reporting == 'time':
         print 'solver time: ' + repr(time()-start_time) + ' with method ' + repr(lp_method)
@@ -309,9 +317,8 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
         print 'cplex time: %f'%(time() - start_time)
     x = []
     x_dict = {}
-    status = lp.status
     #TODO: It might be able to speed this up a little.
-    if status in ['optimal', 'MIP_optimal']:
+    if status == 'optimal':
         objective_value = lp.solution.get_objective_value()
         #This can be sped up a little
         x_dict = dict(zip(lp.variables.get_names(),
@@ -332,10 +339,7 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
         x = y = x_dict = y_dict = objective_value = None
         if error_reporting:
             print 'cplex failed: %s'%lp.status
-    if lp.status in status_dict:
-        status = status_dict[lp.status]
-    else:
-        status = "failed"
+
     the_solution = Solution(objective_value, x=x, x_dict=x_dict,
                             status=status, y=y, y_dict=y_dict)
     solution = {'the_problem': lp, 'the_solution': the_solution}
@@ -507,28 +511,36 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
         the_methods.remove(lp_method)
     if not isinstance(the_problem, Model):
         lp.optimize()
-        if lp.status != GRB.OPTIMAL:
+        if lp.status in status_dict:
+            status = status_dict[lp.status]
+        else:
+            status = 'failed'
+        if status != 'optimal':
             #Try to find a solution using a different method
             lp.setParam("MarkowitzTol", 1e-2)
             for lp_method in the_methods:
                 lp.setParam("Method", lp_method)
                 lp.optimize()
-                if lp.status == GRB.OPTIMAL:
+                if status_dict[lp.status] == 'optimal':
                     break
     else:
         lp.setParam("TimeLimit", 0.6)
         lp.optimize()
         lp.setParam("TimeLimit", "default")
-        if lp.status != GRB.OPTIMAL:
+        if lp.status in status_dict:
+            status = status_dict[lp.status]
+        else:
+            status = 'failed'
+        if status != 'optimal':
             lp.setParam("MarkowitzTol", 1e-2)
             #Try to find a solution using a different method
             for lp_method in the_methods:
                 lp.setParam("Method", lp_method)
                 lp.optimize()
-                if lp.status == GRB.OPTIMAL:
+                if status_dict[lp.status] == 'optimal':
                     break
                 
-            if lp.status != GRB.OPTIMAL:
+            if status_dict[lp.status] != 'optimal':
                 lp = optimize_gurobi(cobra_model, new_objective=new_objective, objective_sense=objective_sense,
                                      min_norm=min_norm, the_problem=None, 
                                      print_solver_time=print_solver_time)['the_problem']
@@ -539,7 +551,11 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
     x_dict = {}
     y_dict = {}
     y = None
-    if lp.status == GRB.OPTIMAL:
+    if lp.status in status_dict:
+        status = status_dict[lp.status]
+    else:
+        status = 'failed'
+    if status == 'optimal':
         objective_value = objective_sense*lp.ObjVal
         [x_dict.update({v.VarName: v.X}) for v in lp.getVars()]
         x = array([x_dict[v.id] for v in cobra_model.reactions])
@@ -554,10 +570,6 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
         objective_value = None
         if error_reporting:
             print 'gurobi failed: %s'%lp.status  
-    if lp.status in status_dict:
-        status = status_dict[lp.status]
-    else:
-        status = "failed"
     the_solution = Solution(objective_value, x=x, x_dict=x_dict,
                             y=y, y_dict=y_dict,
                             status=status)
@@ -737,8 +749,11 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
        else:
            lp.simplex(tol_bnd=tolerance_optimality, tol_dj=tolerance_optimality, meth=lp_method)
        # Solve this LP or MIP with the simplex (depending on if integer variables exist).  Takes about 0.35 s without hot start
-    
-       if lp.status != 'opt':
+       if lp.status in status_dict:
+           status = status_dict[lp.status]
+       else:
+           status = 'failed'
+       if status != 'optimal':
            for lp_method in the_methods:
                lp.simplex(tol_bnd=tolerance_optimality, tol_dj=tolerance_optimality, meth=lp_method)
                if lp.status == 'opt':
@@ -753,7 +768,11 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
             lp.simplex(tol_bnd=tolerance_optimality, tol_dj=tolerance_optimality, meth=lp_method, tm_lim=100)
        
         #If the solver takes more than 0.1 s with a hot start it is likely stuck
-        if lp.status != 'opt':
+        if lp.status in status_dict:
+            status = status_dict[lp.status]
+        else:
+            status = 'failed'
+        if status != 'optimal':
             if lp.kind == int:
                lp.simplex(tol_bnd=tolerance_optimality, tol_dj=tolerance_optimality, meth=lp_method)  # we first have to solve the LP?
                lp.integer(tol_int=tolerance_integer)
@@ -764,8 +783,11 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
                        if lp.kind == int:
                            lp.integer(tol_int=tolerance_integer) 
                        break
-
-        if lp.status != 'opt':
+        if lp.status in status_dict:
+            status = status_dict[lp.status]
+        else:
+            status = 'failed'
+        if status != 'optimal':
             lp = optimize_glpk(cobra_model, new_objective=new_objective,
                                objective_sense=objective_sense,
                                min_norm=min_norm, the_problem=None,
@@ -776,7 +798,11 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
                 if lp.kind == int:
                     lp.integer(tol_int=tolerance_integer)
 
-        if lp.status != 'opt':
+        if lp.status in status_dict:
+            status = status_dict[lp.status]
+        else:
+            status = 'failed'
+        if status != 'optimal':
             lp.simplex(tol_bnd=tolerance_optimality, presolve=True, tm_lim=5000)
             if lp.kind == int:
                 lp.integer(tol_int=tolerance_integer)
@@ -787,7 +813,11 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
     y = []
     x_dict = {}
     y_dict = {}
-    if lp.status == 'opt':
+    if lp.status in status_dict:
+        status = status_dict[lp.status]
+    else:
+        status = 'failed'
+    if status == 'optimal':
         objective_value = lp.obj.value
         [(x.append(float(c.primal)),
           x_dict.update({c.name:c.primal}))
@@ -807,10 +837,6 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
         x = y = x_dict = y_dict = objective_value = None
         if error_reporting:
             print 'glpk failed: %s'%lp.status
-    if lp.status in status_dict:
-        status = status_dict[lp.status]
-    else:
-        status = "failed"
     the_solution = Solution(objective_value, x=x, x_dict=x_dict,
                             y=y, y_dict=y_dict,
                             status=status)
