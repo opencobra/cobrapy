@@ -14,10 +14,10 @@ with open(salmonella_pickle) as in_file:
 
 initialize_growth_medium(cobra_model, 'LB')
 #Expected growth rates for the salmonella model with deletions in LB medium
-the_names = ['tpiA', 'metN', 'atpA', 'eno']
 the_loci =  ['STM4081', 'STM0247', 'STM3867', 'STM2952']
 the_genes = tpiA, metN, atpA, eno = map(cobra_model.genes.get_by_id, the_loci)
-the_growth_rates = {tpiA:2.41, metN:2.43, atpA:1.87, eno:1.81} #expected growth rates after deletion
+id_to_name = dict([(x.id, x.name) for x in the_genes])
+the_growth_rates = {tpiA.id:2.41, metN.id:2.43, atpA.id:1.87, eno.id:1.81} #expected growth rates after deletion
 
 #Perform a single gene deletion
 the_results = single_deletion(cobra_model, [tpiA])
@@ -35,11 +35,11 @@ for the_gene, v in statuses.items():
 for the_gene, v in rates.items():
     v = floor(100*v)/100
     if v != the_growth_rates[the_gene]:
-        print '\t\tFAILED: %s simulation (%1.3f) != expectation (%1.2f)'%(the_gene.name,
+        print '\t\tFAILED: %s simulation (%1.3f) != expectation (%1.2f)'%(id_to_name[the_gene],
                                                                               v,
                                                                               the_growth_rates[the_gene])
     else:
-        print '\t\tPASSED: %s simulation (%1.3f) ~= expectation (%1.2f)'%(the_gene.name,
+        print '\t\tPASSED: %s simulation (%1.3f) ~= expectation (%1.2f)'%(id_to_name[the_gene],
                                                                               v,
                                                                               the_growth_rates[the_gene])
 

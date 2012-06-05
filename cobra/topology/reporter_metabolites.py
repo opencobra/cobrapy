@@ -151,10 +151,10 @@ if __name__ == '__main__':
     from cPickle import load
     from time import time
     solver = 'glpk'
-    test_directory = '../test/data/'
-    with open(test_directory + 'salmonella.pickle') as in_file:
+    from cobra.test import salmonella_pickle, salmonella_reaction_p_values_pickle
+    with open(salmonella_pickle) as in_file:
         cobra_model = load(in_file)
-    with open(test_directory + 'reaction_p_values.pickle') as in_file:
+    with open(salmonella_reaction_p_values_pickle) as in_file:
         reaction_p = load(in_file)
 
     the_reactions = map(cobra_model.reactions.get_by_id, reaction_p.keys())

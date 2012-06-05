@@ -8,6 +8,7 @@ if not data_directory.endswith(_sep):
     data_directory += _sep
 salmonella_sbml = _join(data_directory, "salmonella.xml")
 salmonella_pickle = _join(data_directory, "salmonella.pickle")
+salmonella_reaction_p_values_pickle = _join(data_directory, "salmonella_reaction_p_values.pickle")
 ecoli_sbml = _join(data_directory, "iJO1366.xml")
 
 

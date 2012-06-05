@@ -194,15 +194,14 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver='gurobi',
     if print_time:
         print 'Took %f seconds to update combined model'%(time()-start_time)
         start_time = time()
-    the_result = combined_model.optimize(cobra_model,objective_sense='minimize',
+    the_result = combined_model.optimize(objective_sense='minimize',
                                          quadratic_component=quadratic_component,
-                                         the_problem=the_problem, solver=solver,
+                                         solver=solver,
                                          tolerance_optimality=tolerance_optimality,
                                          tolerance_feasibility=tolerance_feasibility,
                                          lp_method=lp_method, reuse_basis=reuse_basis)
-    set_trace()
-    the_problem = the_result['the_problem']
-    the_solution = the_result['the_problem']
+    the_problem = the_result
+    the_solution = combined_model.solution
 
     if print_time:
         print 'Took %f seconds to solve problem'%(time()-start_time)
@@ -270,8 +269,10 @@ if __name__ == '__main__':
     with open(salmonella_pickle) as in_file:
         cobra_model = load(in_file)
     gene_list = ['tpiA', 'metN']
+    loci_list =  ['STM4081', 'STM0247']
     initialize_growth_medium(cobra_model, 'LB')
     wt_model = cobra_model
+    #gene_list = map(wt_model.genes.get_by_id, loci_list)
     wt_model.id = 'Wild-type'
     start_time = time()
     mutant_model = wt_model.copy()
@@ -305,7 +306,11 @@ if __name__ == '__main__':
             the_problem = the_solution['the_problem']
             tmp_result = floor(100*the_solution['objective_value'])/100
             if tmp_result == tpiA_result:
-                print 'Passed MOMA with tpiA deletion in %1.4f seconds'%(time() - start_time)
+                print 'Passed MOMA with tpiA deletion in %1.4f seconds'%(time() - start_time) +\
+                      '\n%1.2f == %1.2f simulated'%(tpiA_result,
+                                                  tmp_result)
+                
+                
             else:
                 print 'FAILED: tpiA deletion expected '+\
                       '%1.2f != %1.2f simulated'%(tpiA_result,
@@ -332,16 +337,17 @@ if __name__ == '__main__':
                     if tmp_result == tpiA_result:
                         print 'Passed MOMA reusing Model and model with tpiA deletion in %1.4f seconds'%(time() - start_time)
             start_time - time()
-            single_solution = single_deletion(wt_model, gene_list, method='moma', solver=solver)
-            the_status = single_solution[1]['tpiA']
-            if the_status == 'optimal':
-                tmp_result = floor(100*single_solution[0]['tpiA'])/100
+            single_solution = single_deletion(wt_model, loci_list, method='moma', solver=solver)
+            the_status = single_solution[1]
+            if the_status['STM4081'] == 'optimal':
+                tmp_result = single_solution[0]
+                tmp_result = floor(100*tmp_result['STM4081'])/100
                 if tmp_result == tpiA_result:
                     print 'Passed MOMA single_deletion with tpiA & metN deletion in %1.4f seconds'%(time() - start_time)
             else:
                 print 'failed single deletion'
             start_time - time()
-            double_solution = double_deletion(wt_model, gene_list, gene_list, method='moma', solver=solver)
+            double_solution = double_deletion(wt_model, loci_list, loci_list, method='moma', solver=solver)
             tmp_result = floor(100*double_solution['data'][1,0])/100
             tmp_tpiA_result = floor(100*double_solution['data'][0,0])/100
             if tmp_result == tpiA_metN_result and tmp_tpiA_result == tpiA_result:

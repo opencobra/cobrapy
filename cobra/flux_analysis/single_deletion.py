@@ -231,8 +231,8 @@ def single_gene_deletion(cobra_model, element_list=None,
                 the_problem = mutant_model.optimize(the_problem=wt_problem,
                                                     solver=solver,
                                                     error_reporting=error_reporting)
-                growth_rate_dict[the_element] = mutant_model.solution.f
-                solution_status_dict[the_element] = mutant_model.solution.status
+                growth_rate_dict[the_element.id] = mutant_model.solution.f
+                solution_status_dict[the_element.id] = mutant_model.solution.status
             elif method.lower() == 'moma':
                 try:
                     #TODO: Need to figure out why reusing the problem and the combined_model do not
@@ -240,18 +240,18 @@ def single_gene_deletion(cobra_model, element_list=None,
                     moma_solution = moma(wt_model, mutant_model, solver=solver, the_problem=the_problem,
                                          combined_model=combined_model)
                     the_problem = moma_solution.pop('the_problem')
-                    growth_rate_dict[the_element] = float(moma_solution.pop('objective_value'))
-                    solution_status_dict[the_element] = moma_solution.pop('status')
+                    growth_rate_dict[the_element.id] = float(moma_solution.pop('objective_value'))
+                    solution_status_dict[the_element.id] = moma_solution.pop('status')
                     combined_model = moma_solution.pop('combined_model')
                 except:
-                    growth_rate_dict[the_element] = nan
+                    growth_rate_dict[the_element.id] = nan
                     the_problem = None
-                    solution_status_dict[the_element] = 'failed'
+                    solution_status_dict[the_element.id] = 'failed'
 
             if discard_problems:
-                problem_dict[the_element] = 'discarded'
+                problem_dict[the_element.id] = 'discarded'
             else:
-                problem_dict[the_element] = the_problem
+                problem_dict[the_element.id] = the_problem
             if not the_problem:
                 the_problem = wt_problem
             #reset the model
@@ -259,11 +259,11 @@ def single_gene_deletion(cobra_model, element_list=None,
         #else just use the wt_f and x
         else:
             if discard_problems:
-                problem_dict[the_element] = 'discarded'
+                problem_dict[the_element.id] = 'discarded'
             else:
-                problem_dict[the_element] = wt_problem
-            growth_rate_dict[the_element] = wt_f
-            solution_status_dict[the_element] = wt_status
+                problem_dict[the_element.id] = wt_problem
+            growth_rate_dict[the_element.id] = wt_f
+            solution_status_dict[the_element.id] = wt_status
     
     
     return(growth_rate_dict, solution_status_dict, problem_dict)
@@ -284,11 +284,11 @@ if __name__ == '__main__':
 
     initialize_growth_medium(cobra_model, 'LB')
     #Expected growth rates for the salmonella model with deletions in LB medium
-    the_names = ['tpiA', 'metN', 'atpA', 'eno']
     the_loci =  ['STM4081', 'STM0247', 'STM3867', 'STM2952']
     the_genes = tpiA, metN, atpA, eno = map(cobra_model.genes.get_by_id, the_loci)
-    growth_dict = {'moma': {tpiA:1.61, metN:2.39, atpA:1.40, eno:0.33},
-                   'fba':{tpiA:2.41, metN:2.43, atpA:1.87, eno:1.81}}
+    id_to_name = dict([(x.id, x.name) for x in the_genes])
+    growth_dict = {'moma': {tpiA.id:1.61, metN.id:2.39, atpA.id:1.40, eno.id:0.33},
+                   'fba':{tpiA.id:2.41, metN.id:2.43, atpA.id:1.87, eno.id:1.81}}
 
     solver_list = ['glpk',
                    'gurobi',
@@ -328,11 +328,11 @@ if __name__ == '__main__':
             for the_gene, v in rates.items():
                 v = floor(100*v)/100
                 if v != the_growth_rates[the_gene]:
-                    print '\t\tFAILED: %s simulation (%1.3f) != expectation (%1.2f)'%(the_gene.name,
+                    print '\t\tFAILED: %s simulation (%1.3f) != expectation (%1.2f)'%(id_to_name[the_gene],
                                                                                      v,
                                                                                      the_growth_rates[the_gene])
                 else:
-                    print '\t\tPASSED: %s simulation (%1.3f) ~= expectation (%1.2f)'%(the_gene.name,
+                    print '\t\tPASSED: %s simulation (%1.3f) ~= expectation (%1.2f)'%(id_to_name[the_gene],
                                                                                      v,
                                                                                      the_growth_rates[the_gene])
 

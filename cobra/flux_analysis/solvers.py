@@ -200,7 +200,7 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
             else:
                 problem_type = Cplex.problem_type.MILP
         elif quadratic_component is not None:
-            problem_type = Cplex.problem_type.MIQP
+            problem_type = Cplex.problem_type.QP
         lp.set_problem_type(problem_type)
     else:
         if copy_problem:
@@ -243,10 +243,15 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
 
     lp.parameters.simplex.tolerances.optimality.set(tolerance_optimality)
     lp.parameters.simplex.tolerances.feasibility.set(tolerance_feasibility)
-    if lp.get_problem_type() == Cplex.problem_type.LP:
+
+
+    if lp.get_problem_type() in [Cplex.problem_type.LP,
+                                 Cplex.problem_type.MILP]:
         lp.parameters.lpmethod.set(lp_method)
-    if lp.get_problem_type() == Cplex.problem_type.QP:
+    elif lp.get_problem_type() in [Cplex.problem_type.QP,
+                                 Cplex.problem_type.MIQP]:
         lp.parameters.qpmethod.set(lp_method)
+
 
     if lp_parallel > 1:
         lp.parameters.threads.set(lp_parallel)

@@ -218,19 +218,19 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
         #in numpy
         #Populate the diagonal from the single deletion lists
         for i, the_gene in enumerate(gene_list_1):
-            deletion_array[i, i] = single_deletion_growth_dict[the_gene]
+            deletion_array[i, i] = single_deletion_growth_dict[the_gene.id]
         for i in range(len(gene_list_1)-1):
             gene_1 = gene_list_1[i]
             #TODO: Since there cannot be synthetic rescues we can assume
             #that the whole row for a lethal deletion
             #will be equal to that deletion.
-            if single_deletion_growth_dict[gene_1] <= 0:
+            if single_deletion_growth_dict[gene_1.id] <= 0:
                 for j in range(i+1, len(gene_list_1)):
-                     deletion_array[j, i] = deletion_array[i, j] = single_deletion_growth_dict[gene_2]
+                     deletion_array[j, i] = deletion_array[i, j] = single_deletion_growth_dict[gene_2.id]
             else:
                 for j in range(i+1, len(gene_list_1)):
-                    if single_deletion_growth_dict[gene_1] <= 0:
-                        tmp_solution = single_deletion_growth_dict[gene_1]
+                    if single_deletion_growth_dict[gene_1.id] <= 0:
+                        tmp_solution = single_deletion_growth_dict[gene_1.id]
                     else:
                         gene_2 = gene_list_1[j]
                         delete_model_genes(cobra_model, [gene_1, gene_2])
@@ -269,14 +269,14 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
         deletion_array = zeros([len(gene_list_1), len(gene_list_2)])
         #Now deal with the case where the gene lists are different
         for i, gene_1 in enumerate(gene_list_1):
-            if single_deletion_growth_dict[gene_1] <= 0:
+            if single_deletion_growth_dict[gene_1.id] <= 0:
                 for j in range(len(gene_list_2)):
                     deletion_array[i, j] = 0.
             else:
                 for j, gene_2 in enumerate(gene_list_2):
                     #Assume no such thing as a synthetic rescue
-                    if single_deletion_growth_dict[gene_2] <= 0:
-                        tmp_solution = single_deletion_growth_dict[gene_2]
+                    if single_deletion_growth_dict[gene_2.id] <= 0:
+                        tmp_solution = single_deletion_growth_dict[gene_2.id]
                     else:
                         delete_model_genes(cobra_model, [gene_1, gene_2])
                         if cobra_model._trimmed:
