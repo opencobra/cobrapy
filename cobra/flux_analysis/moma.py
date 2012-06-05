@@ -235,7 +235,7 @@ if __name__ == '__main__':
     from numpy import round
     from single_deletion import single_deletion
     from double_deletion import double_deletion
-
+    from cobra.test import salmonella_pickle
     objective_sense='minimize'
     tolerance_optimality=1e-8
     tolerance_feasibility=1e-8
@@ -267,8 +267,7 @@ if __name__ == '__main__':
                 
     tpiA_result = 1.61
     tpiA_metN_result = 1.60
-    test_directory = '../test/data/'
-    with open(test_directory + 'salmonella.pickle') as in_file:
+    with open(salmonella_pickle) as in_file:
         cobra_model = load(in_file)
     gene_list = ['tpiA', 'metN']
     initialize_growth_medium(cobra_model, 'LB')

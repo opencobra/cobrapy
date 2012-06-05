@@ -10,15 +10,13 @@
 #
 from cobra.io.sbml import create_cobra_model_from_sbml_file
 from cobra.io.sbml import write_cobra_model_to_sbml_file
-
+from cobra.test import salmonella_sbml
 solver = 'glpk' #Change to 'gurobi' or 'cplex' if you have that solver installed instead.
-test_directory = 'files/'
-sbml_file = test_directory + 'salmonella.xml'
-sbml_out_file = test_directory + 'salmonella.out.xml'
+sbml_out_file = 'salmonella.out.xml'
 sbml_level = 2
 sbml_version = 1 #Writing version 4 is not completely supported.
 #Read in the sbml file.
-cobra_model = create_cobra_model_from_sbml_file(sbml_file, print_time=True)
+cobra_model = create_cobra_model_from_sbml_file(salmonella_sbml, print_time=True)
 #Run the optimization for the objective reaction and medium composition
 #set in the file.
 cobra_model.optimize(solver=solver)

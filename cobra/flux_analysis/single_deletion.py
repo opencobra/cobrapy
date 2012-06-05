@@ -272,13 +272,13 @@ if __name__ == '__main__':
     from cPickle import load
     from time import time
     from math import floor
+    from cobra.test import salmonella_pickle
     method='moma'
     the_problem='return'
     element_type='gene'
     error_reporting=None
-    test_directory = '../test/data/'
     from cobra.manipulation import initialize_growth_medium
-    with open(test_directory + 'salmonella.pickle') as in_file:
+    with open(salmonella_pickle) as in_file:
         cobra_model = load(in_file)
 
 

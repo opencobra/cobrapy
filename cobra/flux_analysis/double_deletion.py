@@ -427,9 +427,9 @@ if __name__ == '__main__':
     the_problem='return'
     element_type='gene'
     error_reporting=None
-    test_directory = '../test/data/'
     from cobra.manipulation import initialize_growth_medium
-    with open(test_directory + 'salmonella.pickle') as in_file:
+    from cobra.test import salmonella_pickle
+    with open(salmonella_pickle) as in_file:
         cobra_model = load(in_file)
     initialize_growth_medium(cobra_model, 'LB')
     the_names = ['tpiA', 'metN', 'atpA', 'eno']

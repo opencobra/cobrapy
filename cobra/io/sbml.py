@@ -496,10 +496,10 @@ if __name__ == '__main__':
     from os.path import lexists
     from os import getcwd, unlink
     from cobra.manipulation import initialize_growth_medium
+    from cobra.test import salmonella_sbml, salmonella_pickle
     solver = 'glpk'
-    test_directory = '../test/data/'
-    sbml_filename = test_directory + 'salmonella.xml'
-    test_filename = test_directory + 'salmonella.pickle'
+    sbml_filename = salmonella_sbml
+    test_filename = salmonella_pickle
     if not lexists(test_filename):
         print "Cannot get to test_filename %s from current location %s"%(test_filename,
                                                                      getcwd())
@@ -510,7 +510,7 @@ if __name__ == '__main__':
         sbml_level = 2
         sbml_version = 1
 
-        with open(test_directory + 'salmonella.pickle') as in_file:
+        with open(test_filename) as in_file:
             old_model = cobra_model = load(in_file)
         initialize_growth_medium(cobra_model, 'M9')
         cobra_model.optimize(solver=solver)

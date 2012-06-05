@@ -237,8 +237,8 @@ def run_fva(solver='cplex'):
 if __name__ == '__main__':
     from cPickle import load
     from time import time
-    test_directory = '../test/data/'
-    with open(test_directory + 'salmonella.pickle') as in_file:
+    from cobra.test import salmonella_pickle
+    with open(salmonella_pickle) as in_file:
         cobra_model = load(in_file)
 
 
@@ -260,8 +260,8 @@ if __name__ == '__main__':
     #The next two lines are used when profiling / debugging
     #from cProfile import run
     #for solver in solver_dict.items()[:0]:
-    for solver in solver_dict.items():
-        if solver_dict[solver]:
+    for solver, solver_status in solver_dict.items():
+        if solver_status:
             print '\ntesting %s:'%solver
             print '\tFlux Variability: '
             the_problem = cobra_model.optimize(the_problem='return', solver=solver)

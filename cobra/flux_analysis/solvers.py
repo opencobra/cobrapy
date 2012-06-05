@@ -851,8 +851,8 @@ if __name__ == '__main__':
     from time import time
     from numpy import round
     from cobra.manipulation import initialize_growth_medium
-    test_directory = '../test/data/'
-    with open(test_directory + 'salmonella.pickle') as in_file:
+    from cobra.test import salmonella_pickle
+    with open(salmonella_pickle) as in_file:
         cobra_model = load(in_file)
     initialize_growth_medium(cobra_model, 'M9')
     from cobra.manipulation import initialize_growth_medium

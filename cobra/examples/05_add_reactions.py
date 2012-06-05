@@ -12,9 +12,9 @@ from cobra.flux_analysis import single_deletion
 from cPickle import load, dump
 from time import time
 from math import floor
-test_directory = 'files/'
 from cobra.manipulation import initialize_growth_medium
-with open(test_directory + 'salmonella.pickle') as in_file:
+from cobra.test import salmonella_pickle #This is the name of the test file
+with open(salmonella_pickle) as in_file:
     cobra_model = load(in_file)
     
 from cobra import Reaction    
