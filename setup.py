@@ -7,9 +7,10 @@ setup(
     packages = find_packages(exclude=['internal', 'oven', 'db_tools', 'omics', 'general',]),
     #scripts = [''],
     #put in numpy, scipy, libsbml, and pyglpk
-    setup_requires = ['pp>=1.6.0'],
-    install_requires = ['pp>=1.6.0'],
+    setup_requires = [],
+    install_requires = [],
     extras_require = {
+        'parallel': ['pp>=1.6.0'],
         'matlab': ["mlabwrap>=1.1"],
         'R': ["rpy2>=2.2.2"]
         },

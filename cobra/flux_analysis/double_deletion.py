@@ -9,9 +9,10 @@ from cobra.flux_analysis.moma import moma
 from warnings import warn
 try:
     from cobra.external.ppmap import ppmap
+    __parallel_mode_available = True
 except:
-    ppmap = False
-    print 'Parallel mode is not available.  Is Parallel Python installed?'
+    __parallel_mode_available = False
+
 from cPickle import dump
 #from double_deletion import double_deletion
 from cobra.manipulation import initialize_growth_medium
@@ -59,10 +60,9 @@ def double_deletion_parallel(cobra_model, n_processes=4,
     dimension (y), and the growth simulation data (data).
 
     """
-    if not ppmap:
-        if not ppmap:
-           print  'Parallel mode not available is Parallel Python installed?'
-           return
+    if not __parallel_mode_available:
+        print  'Parallel mode not available is Parallel Python installed?'
+        return
     if the_problem:
         #The solver model objects are not thread safe so change the_problem
         #to 'return' if one is provided.
@@ -358,7 +358,7 @@ def double_gene_deletion_parallel(cobra_model, n_processes=4,
     from warnings import warn
 
     warn("Need to use more of cobra.Gene and less of strs in gene_list")
-    if not ppmap:
+    if not __parallel_mode_available:
         print  'Parallel mode not available is Parallel Python installed'
         return
     if the_problem:

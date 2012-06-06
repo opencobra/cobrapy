@@ -3,5 +3,5 @@ __doc__ = """
 Provides python functions which are useful for interacting with MATLAB
 by using the mlabwrap library.
 
-To use MATLAB functions directly, see cobra.matlab
+To use MATLAB functions directly, see cobra.mlab
 """

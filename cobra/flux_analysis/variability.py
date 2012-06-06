@@ -6,7 +6,11 @@ from numpy import hstack,zeros
 from scipy import sparse
 from copy import deepcopy
 from cobra.core.Metabolite import Metabolite
-from cobra.external.ppmap import ppmap
+try:
+    from cobra.external.ppmap import ppmap
+    __parallel_mode_available = True
+except:
+    __parallel_mode_available = False
 #TODO: Add in a ppmap section for running in parallel
 def flux_variability_analysis_wrapper(keywords):
     """Provides an interface to call flux_variability_analysis from ppmap
@@ -98,7 +102,7 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
         #
         the_reactions = map(cobra_model.reactions.get_by_id, the_reactions)
     #If parallel mode is called for then give it a try
-    if number_of_processes > 1:
+    if number_of_processes > 1 and __parallel_mode_available:
         print 'running in parallel. currently needs some speed optimizations'
         the_problem = wt_solution #Solver objects are not thread safe
         the_reactions = [x.id for x in the_reactions]
@@ -272,11 +276,12 @@ if __name__ == '__main__':
                                                 solver=solver,number_of_processes=1)
             print '\thot start: %f'%(time() - start_time)
             start_time = time()
+            number_of_processes = 5
             pfva_out = flux_variability_analysis(cobra_model,
                                                 the_problem=the_problem,
                                                 the_reactions=cobra_model.reactions,#[100:140],
-                                                solver=solver,number_of_processes=5)
-            print '\t2 processes hot start: %f'%(time() - start_time)
+                                                solver=solver,number_of_processes=number_of_processes)
+            print '\t%i processes hot start: %f'%(number_of_processes, time() - start_time)
             print '\n\tFind Blocked Reactions:'
             start_time = time()
             blocked_reactions = find_blocked_reactions(cobra_model,

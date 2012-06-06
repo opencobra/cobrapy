@@ -164,7 +164,7 @@ class TestCobraFlux_analysis(CobraTestCase):
 
     @unittest.skipIf(cplex is None, "cplex is required")
     def test_cplex_optimization(self):
-        test_optimizer(self, "gurobi")
+        test_optimizer(self, "cplex")
 
 
 class TestCobraIO(CobraTestCase):

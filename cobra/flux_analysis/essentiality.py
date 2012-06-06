@@ -10,10 +10,11 @@ from os import path, mkdir
 try:
     #Allow for parallel simulations if ppmap is available
     from cobra.external import ppmap
-    from double_deletion import double_deletion_parallel    
+    from double_deletion import double_deletion_parallel
+    __parallel_mode_available = True
 except:
+    __parallel_mode_available = False
     from double_deletion import double_deletion
-    ppmap = False
 from cobra.flux_analysis.moma import moma
 from single_deletion import single_deletion
 from cobra.manipulation import initialize_growth_medium
@@ -174,7 +175,7 @@ def deletion_analysis(cobra_model, the_medium=None, deletion_type='single',
             the_problem='return'
         cobra_model.double_deletion_growth_medium = the_medium 
         cobra_model.double_deletion_growth_wt = cobra_model.solution.f
-        if not ppmap:
+        if not __parallel_mode_available:
             if n_processes > 0:
                 print "Couldn't import ppmap from cobra.external is parallel python installed?"
                 return
