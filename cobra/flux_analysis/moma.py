@@ -10,7 +10,6 @@ from scipy.sparse import hstack as s_hstack
 from scipy.sparse import vstack as s_vstack
 from cobra.core.Reaction import Reaction
 from cobra.core.Metabolite import Metabolite
-from cobra.flux_analysis.solvers import optimize_quadratic_program
 from cobra.manipulation import initialize_growth_medium, delete_model_genes
 from warnings import warn
 #TODO: Add in an option for using matrices instead of objects because it
