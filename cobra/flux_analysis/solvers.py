@@ -33,7 +33,7 @@ def update_objective(cobra_model, the_objectives):
             if isinstance(the_objective, str):
                 the_objective = cobra_model.reactions.get_by_id(the_objective)
             elif isinstance(the_objective, int):
-                the_objective = cobra_model.reactions[the_index]
+                the_objective = cobra_model.reactions[the_objective]
         the_objective.objective_coefficient = 1.
     #NOTE: _objective_coefficients is deprecated
     cobra_model._objective_coefficients = array([x.objective_coefficient
