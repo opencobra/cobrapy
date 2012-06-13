@@ -3,13 +3,7 @@
 #BEGIN Class Reaction
 #
 from collections import defaultdict
-import re,sys
-from numpy import array
-if sys.maxsize > 2**32:
-    from numpy import int64, int32
-else:
-    int32 = int
-    int64 = int32
+import re
 from copy import deepcopy
 from .Object import Object
 from .Metabolite import Metabolite

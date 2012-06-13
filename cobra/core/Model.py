@@ -577,6 +577,7 @@ class Model(Object):
         TODO:  This can be moved to a tools module
 
         """
+        warn("Model.identify_blocked_metabolites is scheduled to be moved")
         dead_end_metabolites = {}
         for the_metabolite in self.metabolites:
             #Metabolites that freely diffuse out of the system
