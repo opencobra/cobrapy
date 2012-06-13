@@ -109,9 +109,10 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver='gurobi',
         raise Exception('linear MOMA is not currently implmented')
         quadratic_component = None
     if minimize_norm:
+        raise Exception('minimize_norm is not currently implemented')
         #just worry about the flux distribution and not the objective from the wt
         combined_model = mutant_model.copy()
-        combined_model._objective_coefficients = -wt_solution.x
+        #implement this: combined_model.reactions[:].objective_coefficients = -wt_solution.x_dict
     else:
         #Construct a problem that attempts to maximize the objective in the WT model while
         #solving the quadratic problem.  This new problem is constructed to try to find

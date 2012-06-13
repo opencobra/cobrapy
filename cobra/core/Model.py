@@ -49,20 +49,23 @@ class Model(Object):
          for y in ['reactions', 'genes', 'metabolites']]
 
     def __init__(self, description=None):
-        Object.__init__(self, description)
-        self.description = self.id
-        self._trimmed = False #This might get changed to a dict of 
-        #gene:[reactions in which the gene participates]
-        self._trimmed_genes = None #This will be integrated with _trimmed
-        self._trimmed_reactions = None #as will this
-        self.legacy_format = False #DEPRECATED
-        #Allow the creation of an empty object which will facilitate development
-        #of SBML parsers and other development issues.
-        self.genes = DictList()
-        self.reactions = DictList() #A list of cobra.Reactions
-        self.metabolites = DictList() #A list of cobra.Metabolites
-        #genes based on their ids {Gene.id: Gene}
-        self.compartments = {}
+        if isinstance(description, Model):
+            self.__dict__ = description.__dict__
+        else:
+            Object.__init__(self, description)
+            self.description = self.id
+            self._trimmed = False #This might get changed to a dict of 
+            #gene:[reactions in which the gene participates]
+            self._trimmed_genes = None #This will be integrated with _trimmed
+            self._trimmed_reactions = None #as will this
+            self.legacy_format = False #DEPRECATED
+            #Allow the creation of an empty object which will facilitate development
+            #of SBML parsers and other development issues.
+            self.genes = DictList()
+            self.reactions = DictList() #A list of cobra.Reactions
+            self.metabolites = DictList() #A list of cobra.Metabolites
+            #genes based on their ids {Gene.id: Gene}
+            self.compartments = {}
 
 
 

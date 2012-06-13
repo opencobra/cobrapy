@@ -52,14 +52,14 @@ def single_reaction_deletion(cobra_model, element_list=None,
                              solver='glpk', error_reporting=None,
                              discard_problems=True):
     """Performs optimization simulations to realize the objective defined
-    from cobra_model._objective_coefficients after deleting each reaction
+    from cobra_model.reactions[:].objective_coefficients after deleting each reaction
     from the model.
     
     cobra_model: a cobra.Model object
 
     element_list: Is None or a list of cobra.Reactions in cobra_model to disable.
     If None then disable each reaction in cobra_model.reactions and optimize for the
-    objective function defined from cobra_model._objective_coefficients.
+    objective function defined from cobra_model.reactions[:].objective_coefficients.
 
     method: 'fba' is the only option at the moment.
 
@@ -165,7 +165,7 @@ def single_gene_deletion(cobra_model, element_list=None,
                          method='fba', the_problem='reuse', solver='glpk',
                          error_reporting=None):
     """Performs optimization simulations to realize the objective defined
-    from cobra_model._objective_coefficients after deleting each gene in
+    from cobra_model.reactions[:].objective_coefficients after deleting each gene in
     gene_list from the model.
     
     cobra_model: a cobra.Model object

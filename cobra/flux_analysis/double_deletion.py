@@ -125,7 +125,7 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
     """This will disable reactions for all gene pairs from gene_list_1 and
     gene_list_2 and then run simulations to optimize for the objective
     function.  The contribution of each reaction to the objective function
-    is indicated in cobra_model._objective_coefficients vector.
+    is indicated in cobra_model.reactions[:].objective_coefficient vector.
 
     cobra_model: a cobra.Model object
 

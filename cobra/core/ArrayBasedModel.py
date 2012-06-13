@@ -39,17 +39,9 @@ class ArrayBasedModel(Model):
         creating the ArrayBasedModel.
         
         """
-        if  isinstance(description, 'Model'):
-            warn("please update")
-            if deepcopy_model:
-                description = description.copy()
-            
-        
-        else:
-            Model.__init__(self, description)
-
-
-            
+        if deepcopy_model and isinstance(description, Model):
+            description = description.copy()
+        Model.__init__(self, description)
         self.S = None
         self.lower_bounds = None
         self.upper_bounds = None

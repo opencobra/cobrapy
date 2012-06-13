@@ -78,5 +78,6 @@ def update_objective(cobra_model, the_objectives):
                 the_objective = cobra_model.reactions[the_objective]
         the_objective.objective_coefficient = 1.
     #NOTE: _objective_coefficients is deprecated
-    cobra_model._objective_coefficients = array([x.objective_coefficient
-                                                 for x in cobra_model.reactions])
+    if hasattr(cobra_model, '_objective_coefficients'):
+        cobra_model._objective_coefficients = array([x.objective_coefficient
+                                                     for x in cobra_model.reactions])

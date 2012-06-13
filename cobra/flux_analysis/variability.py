@@ -69,8 +69,6 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
     number_of_processes: If greater than 1 then this function will attempt
     to parallelize the problem.  NOTE: Currently slow
 
-    TODO: Configure to run if there isn't an objective reactions set in
-    cobra_model._objective_coefficients
 
     TODO: update how Metabolite._bound is handled so we can set a range instead
     of just a single value.  This will be done in cobra.flux_analysis.solvers.
