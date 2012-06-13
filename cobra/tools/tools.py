@@ -4,7 +4,7 @@ import numpy, os, re, scipy, sys
 from copy import deepcopy
 from cPickle import dump
 from numpy import apply_along_axis,array, corrcoef, diag, hstack, isnan, isinf
-from numpy import  log, mean, std, tril, vstack, where, unique, zeros
+from numpy import  log, mean, std, tril, vstack, where, unique, zeros, sign
 from scipy.stats import norm, randint
 from collections import defaultdict
 #TODO: Move application specific funtions to their own
@@ -338,3 +338,81 @@ def exp_function(x, base = 2.):
     return base**x
 
 
+def check_reaction_mass_balance(cobra_model, reaction_id_list=None,
+                                ignore_boundary_reactions=True):
+    """Check the mass balance for reactions.
+
+    reaction_id_list: None or a list of Ids from self.reactions.  If None
+    then check all of the reactions in self.reactions
+
+    ignore_boundary_reactions:  Boolean.  If True then ignore reactions
+    starting with EX_ or DM_
+
+    TODO: Eventually plug in functions from oven.hyduke.construction.balance
+
+    """
+    if not reaction_id_list:
+        the_reactions = cobra_model.reactions
+    else:
+        if not hasattr(reaction_id_list, '__iter__'):
+            reaction_id_list = [reaction_id_list]
+        reaction_indices = map(cobra_model.reactions.index,
+                               reaction_id_list)
+        the_reactions = [cobra_model.reactionx[x]
+                         for x in reaction_indices]
+    unbalanced_reactions = []
+    for the_reaction in the_reactions:
+        if ignore_boundary_reactions and \
+               the_reaction.boundary:
+            continue
+        the_balance = the_reaction.check_mass_balance()
+        if len(the_balance) > 0:
+            unbalanced_reactions.append(the_balance)
+        return unbalanced_reactions
+
+def identify_blocked_metabolites(cobra_model, account_for_bounds=False):
+    """Identify metabolites that cannot be produced or consumed from other
+    metabolites in the model. This will only identify root blocked metabolites,
+    i.e. if the metabolite has at least one input and one output
+    then assume that it is not blocked even the input or output are blocked.
+
+
+    account_for_bounds: Boolean.  Not currently implemented.
+
+    NOTE: To determine if a metabolite is unproducible under any conditions
+    look at cobra.flux_analysis.variablity.find_blocked_reactions
+
+    NOTE: Reversible reactions count as an input and output, but this can
+    be problematic if one of the reaction points cannot be reached
+    from the outside by any path
+
+    TODO:  This can be moved to a tools module
+
+    """
+    warn("Model.identify_blocked_metabolites is scheduled to be moved")
+    dead_end_metabolites = {}
+    for the_metabolite in cobra_model.metabolites:
+        #Metabolites that freely diffuse out of the system
+        #are not dead ends.
+        crosses_boundary_or_reversible = False
+        the_coefficients = []
+        for the_reaction in the_metabolite._reaction:
+            if the_reaction.boundary or the_reaction.reversibility:
+                crosses_boundary_or_reversible=True
+                break
+            else:
+                the_coefficients.append(the_reaction._metabolites[the_metabolite])
+        if crosses_boundary_or_reversible:
+            continue
+        #Reactions that are not both produced and consumed
+        the_sign = sign(min(the_coefficients)) + sign(max(the_coefficients))
+        if the_sign != 0:
+            dead_end_metabolites[the_metabolite] = the_sign
+    unconsumed_metabolites = [k for k, v in dead_end_metabolites.items()
+                              if v > 0]
+    unproduced_metabolites = [k for k, v in dead_end_metabolites.items()
+                              if v < 0]
+
+    return {'all': dead_end_metabolites.keys(),
+             'unconsumed': unconsumed_metabolites,
+                 'unproduced': unproduced_metabolites}

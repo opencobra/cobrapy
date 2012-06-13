@@ -84,17 +84,12 @@ class TestCobraCore(CobraTestCase):
         dummy_reaction.add_metabolites({dummy_metabolite_1: -1,
                                         dummy_metabolite_2: 1})
         self.model.add_reaction(dummy_reaction)
-        self.model.update()
-        self.assertEqual(len(self.model.reactions), self.model._S.shape[1])
-        self.assertEqual(len(self.model.metabolites), self.model._S.shape[0])
-        self.assertEqual(len(self.model.reactions), old_reaction_count + 1)
-        self.assertEqual(len(self.model.metabolites),
-            old_metabolite_count + 2)
-        self.model.remove_reactions(dummy_reaction)
-        self.assertEqual(len(self.model.reactions), old_reaction_count)
-        self.model.update()
-        self.assertEqual(len(self.model.reactions), self.model._S.shape[1])
-        self.assertEqual(len(self.model.metabolites), self.model._S.shape[0])
+        self.assertEqual(self.model.reactions._object_dict[dummy_reaction.id],
+                         dummy_reaction)
+        for x in [dummy_metabolite_1, dummy_metabolite_2]:
+            self.assertEqual(self.model.metabolites._object_dict[x.id],
+                             x)
+            
 
     def test_copy(self):
         """modifying copy should not modify the original"""

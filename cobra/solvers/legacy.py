@@ -5,7 +5,6 @@
 from cobra.core.Solution import Solution
 from cobra.flux_analysis.objective import update_objective
 from time import time
-from pdb import set_trace
 #This centralizes some of the common elements that are differently named across solvers.
 #These are stored as strings here to prevent problems associated with calling
 #solver objects for solver packages that aren't available
