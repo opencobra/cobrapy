@@ -21,7 +21,8 @@ else:
 from warnings import warn
 from copy import deepcopy
 #from cobra.query import *
-from ..flux_analysis import optimize_cplex, optimize_glpk, optimize_gurobi
+#from ..flux_analysis import optimize_cplex, optimize_glpk, optimize_gurobi
+from ..solvers import optimize
 #from ..solvers import optimize
 from .Object import Object
 from .Reaction import Reaction
@@ -522,49 +523,21 @@ class Model(Object):
             cobra_model._S * x (cobra_model._constraint_sense) cobra_model._b
         
         """
-        #TODO: change solver if other ones fail
-        solver_dict = {'glpk': optimize_glpk,
-                       'gurobi': optimize_gurobi,
-                       'cplex': optimize_cplex}
-        def solve_problem(solver_function):
-            return solver_function(self, new_objective=new_objective,
-                                   objective_sense=objective_sense,
-                                   min_norm=min_norm,
-                                   the_problem=the_problem,
-                                   error_reporting=error_reporting,
-                                   tolerance_optimality=tolerance_optimality,
-                                   tolerance_feasibility=tolerance_feasibility,
-                                   tolerance_barrier=tolerance_barrier,
-                                   lp_method=lp_method, lp_parallel=lp_parallel,
-                                   copy_problem=copy_problem, relax_b=relax_b,
-                                   quadratic_component=quadratic_component,
-                                   reuse_basis=reuse_basis,
-                                   update_problem_reaction_bounds=update_problem_reaction_bounds)
-
-        solver_function = solver_dict.pop(solver)
-        the_solution = None
-        #the_solution = solve_problem(solver_function)
-        try:
-            the_solution = solve_problem(solver_function)
-        except Exception, e:
-            print e
-            print '%s did not work'%solver
-            for solver, solver_function in solver_dict.items():
-                try:
-                    print "now trying %s"%solver
-                    the_solution = solve_problem(solver_function)
-                    break
-                except Exception, e:
-                    print e
-                    print '%s did not work'%solver
-                    continue
-
-        if the_solution is None:
-            self.solution = None
-            return(the_solution)
-        else:
-            self.solution = the_solution['the_solution']
-            return(the_solution['the_problem'])
+        the_solution = optimize(self, solver=solver, new_objective=new_objective,
+                                objective_sense=objective_sense,
+                                min_norm=min_norm,
+                                the_problem=the_problem,
+                                
+                                error_reporting=error_reporting,
+                                tolerance_optimality=tolerance_optimality,
+                                tolerance_feasibility=tolerance_feasibility,
+                                tolerance_barrier=tolerance_barrier,
+                                lp_method=lp_method, lp_parallel=lp_parallel,
+                                copy_problem=copy_problem, relax_b=relax_b,
+                                quadratic_component=quadratic_component,
+                                reuse_basis=reuse_basis,
+                                update_problem_reaction_bounds=update_problem_reaction_bounds)
+        return the_solution
 
     def get_active_genes(self):
         """

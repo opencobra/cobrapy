@@ -19,7 +19,7 @@ variable_kind_dict = {'cplex': "{'continuous': Cplex.variables.type.continuous, 
 
 
             
-def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
+def _optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
                    min_norm=0, the_problem=None, 
                    tolerance_optimality=1e-6, tolerance_feasibility=1e-6, tolerance_integer=1e-9,
                    tolerance_barrier=1e-8,error_reporting=None, 
@@ -82,8 +82,8 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
     if relax_b is not None:
         raise Exception('Need to reimplement constraint relaxation')
     from numpy import array, nan, zeros
-    from cobra.flux_analysis.solvers import update_objective, status_dict, \
-         variable_kind_dict
+    from cobra.flux_analysis.objective import update_objective
+    from cobra.solvers.legacy import status_dict, variable_kind_dict
 
     if error_reporting == 'time' or print_solver_time:
         from time import time
@@ -333,7 +333,7 @@ def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
 
 
 
-def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
+def _optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
                     min_norm=0, the_problem=None,
                     tolerance_optimality=1e-6, tolerance_feasibility=1e-6,
                     tolerance_barrier=None, tolerance_integer=1e-9, error_reporting=None,
@@ -409,8 +409,9 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
     sense_dict = {'E': GRB.EQUAL,
                   'L': GRB.LESS_EQUAL,
                   'G': GRB.GREATER_EQUAL}
-    from cobra.flux_analysis.solvers import update_objective, status_dict, \
-         variable_kind_dict
+    from cobra.flux_analysis.objective import update_objective
+    from cobra.solvers.legacy import status_dict, variable_kind_dict
+
     variable_kind_dict = eval(variable_kind_dict['gurobi'])
     status_dict = eval(status_dict['gurobi'])
 
@@ -562,29 +563,7 @@ def optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize',
     return solution
 
 
-def optimize_quadratic_program(cobra_model, quadratic_component,
-                               objective_sense='minimize', the_problem=None, solver='gurobi', 
-                               tolerance_optimality=1e-6, tolerance_feasibility=1e-6,
-                               tolerance_barrier=1e-8, error_reporting=None,
-                               print_solver_time=False, copy_problem=False, lp_method=None,
-                               reuse_basis=False):
-    """Wrapper for solving quadratic programming problems for cobra_models of the form:
-    minimize: 0.5 * x' * quadratic_component * x + cobra_model._objective_coefficients' * x
-    such that,
-    cobra_model._lower_bounds <= x <= cobra_model._upper_bounds
-    cobra_model._S * x (cobra_model._constraint_sense) cobra_model._b
-
-    quadratic_component: Int / Float or 
-    scipy.sparse.dok of dim(len(cobra_model.reactions),len(cobra_model.reactions))
-
-    DEPRECATED:  quadratic_component will be integrated with the standard optimize_solver
-    calls
-
-    """
-    raise Exception('optimize_quadratic_component is deprecated.  just pass an hessian\n'+\
-                    'to the specific optimize_* call')
- 
-def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
+def _optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
                   min_norm=0, the_problem=None, 
                   tolerance_optimality=1e-6, tolerance_feasibility=1e-6, tolerance_integer=1e-9,
                   error_reporting=None, print_solver_time=False,
@@ -643,8 +622,8 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
                         'try using the gurobi or cplex solvers')
 
     from glpk import LPX
-    from cobra.flux_analysis.solvers import update_objective, status_dict, \
-         variable_kind_dict
+    from cobra.flux_analysis.objective import update_objective
+    from cobra.solvers.legacy import status_dict, variable_kind_dict
     status_dict = eval(status_dict['glpk'])
     variable_kind_dict = eval(variable_kind_dict['glpk'])
 
@@ -831,7 +810,7 @@ def optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
 
 
 
-if __name__ == '__main__':
+def test_solvers():
     from cPickle import load
     from time import time
     from numpy import round
@@ -842,9 +821,9 @@ if __name__ == '__main__':
     initialize_growth_medium(cobra_model, 'M9')
     from cobra.manipulation import initialize_growth_medium
     the_growth_rate = 0.48
-    solver_dict = {'glpk': optimize_glpk,
-                   'gurobi': optimize_gurobi,
-                   'cplex': optimize_cplex}
+    solver_dict = {'glpk': _optimize_glpk,
+                   'gurobi': _optimize_gurobi,
+                   'cplex': _optimize_cplex}
     try:
         import glpk
     except:
@@ -857,7 +836,6 @@ if __name__ == '__main__':
         from cplex import Cplex
     except:
         solver_dict.pop('cplex')
- 
     for the_solver, the_function in solver_dict.items():
         print 'testing ' + the_solver
         start_time = time()

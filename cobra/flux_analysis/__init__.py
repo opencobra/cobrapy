@@ -1,4 +1,4 @@
-from solvers import *
+from ..solvers import *
 from essentiality import *
 from variability import *
 from single_deletion import single_deletion
