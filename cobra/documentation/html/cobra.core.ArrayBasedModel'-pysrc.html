@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>cobra.core.ArrayBasedModel'</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="cobra-module.html">Package&nbsp;cobra</a> ::
+        <a href="cobra.core-module.html">Package&nbsp;core</a> ::
+        Module&nbsp;ArrayBasedModel'
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="cobra.core.ArrayBasedModel%27-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="cobra.core.ArrayBasedModel%27-module.html">Module cobra.core.ArrayBasedModel'</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment">#cobra.core.ArrayBasedModel.py</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment">#Dresses a cobra.Model with arrays and vectors so that linear algebra operations</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment">#can be carried out on </tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">numpy</tt> <tt class="py-keyword">import</tt> <tt class="py-name">array</tt><tt class="py-op">,</tt> <tt class="py-name">empty</tt><tt class="py-op">,</tt> <tt id="link-0" class="py-name" targets="Variable cobra.core.ArrayBasedModel'.sign=cobra.core.ArrayBasedModel%27-module.html#sign"><a title="cobra.core.ArrayBasedModel'.sign" class="py-name" href="#" onclick="return doclink('link-0', 'sign', 'link-0');">sign</a></tt><tt class="py-op">,</tt> <tt class="py-name">repeat</tt><tt class="py-op">,</tt> <tt class="py-name">vstack</tt><tt class="py-op">,</tt> <tt class="py-name">hstack</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">numpy</tt> <tt class="py-keyword">import</tt> <tt class="py-name">ones</tt><tt class="py-op">,</tt> <tt class="py-name">nonzero</tt><tt class="py-op">,</tt> <tt class="py-name">zeros</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">scipy</tt> <tt class="py-keyword">import</tt> <tt class="py-name">sparse</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">scipy</tt><tt class="py-op">.</tt><tt class="py-name">sparse</tt> <tt class="py-keyword">import</tt> <tt class="py-name">lil_matrix</tt><tt class="py-op">,</tt> <tt class="py-name">dok_matrix</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-1" class="py-name" targets="Method cobra.core.ArrayBasedModel'.ArrayBasedModel.copy()=cobra.core.ArrayBasedModel%27.ArrayBasedModel-class.html#copy,Method cobra.core.Metabolite'.Metabolite.copy()=cobra.core.Metabolite%27.Metabolite-class.html#copy,Method cobra.core.Model'.Model.copy()=cobra.core.Model%27.Model-class.html#copy,Method cobra.core.Reaction'.Reaction.copy()=cobra.core.Reaction%27.Reaction-class.html#copy"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.copy
+cobra.core.Metabolite'.Metabolite.copy
+cobra.core.Model'.Model.copy
+cobra.core.Reaction'.Reaction.copy" class="py-name" href="#" onclick="return doclink('link-1', 'copy', 'link-1');">copy</a></tt> <tt class="py-keyword">import</tt> <tt class="py-name">deepcopy</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-op">.</tt><tt id="link-2" class="py-name" targets="Class cobra.core.Model'.Model=cobra.core.Model%27.Model-class.html"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-2', 'Model', 'link-2');">Model</a></tt> <tt class="py-keyword">import</tt> <tt id="link-3" class="py-name"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-3', 'Model', 'link-2');">Model</a></tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">warnings</tt> <tt class="py-keyword">import</tt> <tt class="py-name">warn</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment">#######################</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment">#BEGIN Class ArrayBasedModel</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="ArrayBasedModel"></a><div id="ArrayBasedModel-def"><a name="L14"></a><tt class="py-lineno"> 14</tt> <a class="py-toggle" href="#" id="ArrayBasedModel-toggle" onclick="return toggle('ArrayBasedModel');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html">ArrayBasedModel</a><tt class="py-op">(</tt><tt class="py-base-class">Model</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="ArrayBasedModel-expanded"><a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line">    <tt class="py-docstring">"""ArrayBasedModel is a class that adds arrays and vectors to</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-docstring">    a cobra.Model to make it easier to perform linear algebra operations.</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-docstring">    </tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="ArrayBasedModel.__setstate__"></a><div id="ArrayBasedModel.__setstate__-def"><a name="L20"></a><tt class="py-lineno"> 20</tt> <a class="py-toggle" href="#" id="ArrayBasedModel.__setstate__-toggle" onclick="return toggle('ArrayBasedModel.__setstate__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html#__setstate__">__setstate__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">state</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel.__setstate__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ArrayBasedModel.__setstate__-expanded"><a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line">        <tt class="py-docstring">"""Make sure all cobra.Objects in the model point to the model</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-docstring">        TODO: Make sure that the genes and metabolites referenced by</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-docstring">        the reactions.(genes|metabolites) point to the model's genes</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-docstring">        and metabolites.</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">__dict__</tt><tt class="py-op">.</tt><tt id="link-4" class="py-name" targets="Method cobra.core.ArrayBasedModel'.ArrayBasedModel.update()=cobra.core.ArrayBasedModel%27.ArrayBasedModel-class.html#update,Method cobra.core.Model'.Model.update()=cobra.core.Model%27.Model-class.html#update"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.update
+cobra.core.Model'.Model.update" class="py-name" href="#" onclick="return doclink('link-4', 'update', 'link-4');">update</a></tt><tt class="py-op">(</tt><tt class="py-name">state</tt><tt class="py-op">)</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line">        <tt class="py-op">[</tt><tt class="py-op">[</tt><tt class="py-name">setattr</tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">,</tt> <tt class="py-string">'_model'</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">)</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line">          <tt class="py-keyword">for</tt> <tt class="py-name">x</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">__dict__</tt><tt class="py-op">[</tt><tt class="py-name">y</tt><tt class="py-op">]</tt><tt class="py-op">]</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line">         <tt class="py-keyword">for</tt> <tt class="py-name">y</tt> <tt class="py-keyword">in</tt> <tt class="py-op">[</tt><tt class="py-string">'reactions'</tt><tt class="py-op">,</tt> <tt class="py-string">'genes'</tt><tt class="py-op">,</tt> <tt class="py-string">'metabolites'</tt><tt class="py-op">]</tt><tt class="py-op">]</tt> </tt>
+</div><a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"> </tt>
+<a name="ArrayBasedModel.__init__"></a><div id="ArrayBasedModel.__init__-def"><a name="L33"></a><tt class="py-lineno"> 33</tt> <a class="py-toggle" href="#" id="ArrayBasedModel.__init__-toggle" onclick="return toggle('ArrayBasedModel.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">description</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">deepcopy_model</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ArrayBasedModel.__init__-expanded"><a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"><tt class="py-docstring">        description: None | String | cobra.Model</tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"><tt class="py-docstring">        deepcopy_model: Boolean.  If True and description is</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line"><tt class="py-docstring">        a cobra.Model then make a deepcopy of the Model before</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line"><tt class="py-docstring">        creating the ArrayBasedModel.</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">deepcopy_model</tt> <tt class="py-keyword">and</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">description</tt><tt class="py-op">,</tt> <tt id="link-5" class="py-name"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-5', 'Model', 'link-2');">Model</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">            <tt class="py-name">description</tt> <tt class="py-op">=</tt> <tt class="py-name">description</tt><tt class="py-op">.</tt><tt id="link-6" class="py-name"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.copy
+cobra.core.Metabolite'.Metabolite.copy
+cobra.core.Model'.Model.copy
+cobra.core.Reaction'.Reaction.copy" class="py-name" href="#" onclick="return doclink('link-6', 'copy', 'link-1');">copy</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">        <tt id="link-7" class="py-name"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-7', 'Model', 'link-2');">Model</a></tt><tt class="py-op">.</tt><tt id="link-8" class="py-name" targets="Method cobra.core.ArrayBasedModel'.ArrayBasedModel.__init__()=cobra.core.ArrayBasedModel%27.ArrayBasedModel-class.html#__init__,Method cobra.core.DictList'.DictList.__init__()=cobra.core.DictList%27.DictList-class.html#__init__,Method cobra.core.Formula'.Formula.__init__()=cobra.core.Formula%27.Formula-class.html#__init__,Method cobra.core.Gene'.Gene.__init__()=cobra.core.Gene%27.Gene-class.html#__init__,Method cobra.core.Metabolite'.Metabolite.__init__()=cobra.core.Metabolite%27.Metabolite-class.html#__init__,Method cobra.core.Model'.Model.__init__()=cobra.core.Model%27.Model-class.html#__init__,Method cobra.core.Object'.Object.__init__()=cobra.core.Object%27.Object-class.html#__init__,Method cobra.core.Reaction'.Reaction.__init__()=cobra.core.Reaction%27.Reaction-class.html#__init__,Method cobra.core.Solution'.Solution.__init__()=cobra.core.Solution%27.Solution-class.html#__init__"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.__init__
+cobra.core.DictList'.DictList.__init__
+cobra.core.Formula'.Formula.__init__
+cobra.core.Gene'.Gene.__init__
+cobra.core.Metabolite'.Metabolite.__init__
+cobra.core.Model'.Model.__init__
+cobra.core.Object'.Object.__init__
+cobra.core.Reaction'.Reaction.__init__
+cobra.core.Solution'.Solution.__init__" class="py-name" href="#" onclick="return doclink('link-8', '__init__', 'link-8');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-name">description</tt><tt class="py-op">)</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">lower_bounds</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">upper_bounds</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficients</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">b</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">constraint_sense</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-9" class="py-name"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.update
+cobra.core.Model'.Model.update" class="py-name" href="#" onclick="return doclink('link-9', 'update', 'link-4');">update</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">             </tt>
+<a name="ArrayBasedModel.__add__"></a><div id="ArrayBasedModel.__add__-def"><a name="L53"></a><tt class="py-lineno"> 53</tt> <a class="py-toggle" href="#" id="ArrayBasedModel.__add__-toggle" onclick="return toggle('ArrayBasedModel.__add__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html#__add__">__add__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">other_model</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel.__add__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ArrayBasedModel.__add__-expanded"><a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">        <tt class="py-docstring">"""Adds two models. +</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line"><tt class="py-docstring">        The issue of reactions being able to exists in multiple Models now arises, the same</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line"><tt class="py-docstring">        for metabolites and such.  This might be a little difficult as a reaction with the</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"><tt class="py-docstring">        same name / id in two models might have different coefficients for their metabolites</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line"><tt class="py-docstring">        due to pH and whatnot making them different reactions.</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">        <tt class="py-name">new_model</tt> <tt class="py-op">=</tt> <tt id="link-10" class="py-name"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-10', 'Model', 'link-2');">Model</a></tt><tt class="py-op">.</tt><tt id="link-11" class="py-name" targets="Method cobra.core.ArrayBasedModel'.ArrayBasedModel.__add__()=cobra.core.ArrayBasedModel%27.ArrayBasedModel-class.html#__add__,Method cobra.core.DictList'.DictList.__add__()=cobra.core.DictList%27.DictList-class.html#__add__,Method cobra.core.Formula'.Formula.__add__()=cobra.core.Formula%27.Formula-class.html#__add__,Method cobra.core.Model'.Model.__add__()=cobra.core.Model%27.Model-class.html#__add__,Method cobra.core.Reaction'.Reaction.__add__()=cobra.core.Reaction%27.Reaction-class.html#__add__"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.__add__
+cobra.core.DictList'.DictList.__add__
+cobra.core.Formula'.Formula.__add__
+cobra.core.Model'.Model.__add__
+cobra.core.Reaction'.Reaction.__add__" class="py-name" href="#" onclick="return doclink('link-11', '__add__', 'link-11');">__add__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-name">other_model</tt><tt class="py-op">)</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">new_model</tt> </tt>
+</div><a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line"> </tt>
+<a name="ArrayBasedModel.__iadd__"></a><div id="ArrayBasedModel.__iadd__-def"><a name="L65"></a><tt class="py-lineno"> 65</tt> <a class="py-toggle" href="#" id="ArrayBasedModel.__iadd__-toggle" onclick="return toggle('ArrayBasedModel.__iadd__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html#__iadd__">__iadd__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">other_model</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel.__iadd__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ArrayBasedModel.__iadd__-expanded"><a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line">        <tt class="py-docstring">"""Adds a Model to this model +=</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line"><tt class="py-docstring">        The issue of reactions being able to exists in multiple Models now arises, the same</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line"><tt class="py-docstring">        for metabolites and such.  This might be a little difficult as a reaction with the</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line"><tt class="py-docstring">        same name / id in two models might have different coefficients for their metabolites</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line"><tt class="py-docstring">        due to pH and whatnot making them different reactions.</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">        <tt id="link-12" class="py-name"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-12', 'Model', 'link-2');">Model</a></tt><tt class="py-op">.</tt><tt id="link-13" class="py-name" targets="Method cobra.core.ArrayBasedModel'.ArrayBasedModel.__iadd__()=cobra.core.ArrayBasedModel%27.ArrayBasedModel-class.html#__iadd__,Method cobra.core.DictList'.DictList.__iadd__()=cobra.core.DictList%27.DictList-class.html#__iadd__,Method cobra.core.Model'.Model.__iadd__()=cobra.core.Model%27.Model-class.html#__iadd__"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.__iadd__
+cobra.core.DictList'.DictList.__iadd__
+cobra.core.Model'.Model.__iadd__" class="py-name" href="#" onclick="return doclink('link-13', '__iadd__', 'link-13');">__iadd__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-name">other_model</tt><tt class="py-op">)</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt> </tt>
+</div><a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line"> </tt>
+<a name="ArrayBasedModel.copy"></a><div id="ArrayBasedModel.copy-def"><a name="L77"></a><tt class="py-lineno"> 77</tt> <a class="py-toggle" href="#" id="ArrayBasedModel.copy-toggle" onclick="return toggle('ArrayBasedModel.copy');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html#copy">copy</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">print_time</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel.copy-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ArrayBasedModel.copy-expanded"><a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">        <tt class="py-docstring">"""Provides a partial 'deepcopy' of the Model.  All of the Metabolite, Gene,</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line"><tt class="py-docstring">        and Reaction objects are created anew but in a faster fashion than deepcopy</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line"><tt class="py-docstring">        print_time: Boolean used for debugging</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">        <tt class="py-name">the_copy</tt> <tt class="py-op">=</tt> <tt id="link-14" class="py-name"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-14', 'Model', 'link-2');">Model</a></tt><tt class="py-op">.</tt><tt id="link-15" class="py-name"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.copy
+cobra.core.Metabolite'.Metabolite.copy
+cobra.core.Model'.Model.copy
+cobra.core.Reaction'.Reaction.copy" class="py-name" href="#" onclick="return doclink('link-15', 'copy', 'link-1');">copy</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-name">print_time</tt><tt class="py-op">)</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">        <tt class="py-name">the_copy</tt><tt class="py-op">.</tt><tt id="link-16" class="py-name"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.update
+cobra.core.Model'.Model.update" class="py-name" href="#" onclick="return doclink('link-16', 'update', 'link-4');">update</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">the_copy</tt> </tt>
+</div><a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">         </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line"> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">         </tt>
+<a name="ArrayBasedModel.add_metabolites"></a><div id="ArrayBasedModel.add_metabolites-def"><a name="L90"></a><tt class="py-lineno"> 90</tt> <a class="py-toggle" href="#" id="ArrayBasedModel.add_metabolites-toggle" onclick="return toggle('ArrayBasedModel.add_metabolites');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html#add_metabolites">add_metabolites</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">metabolite_list</tt><tt class="py-op">,</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">                        <tt class="py-param">expand_stoichiometric_matrix</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel.add_metabolites-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ArrayBasedModel.add_metabolites-expanded"><a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">        <tt class="py-docstring">"""Will add a list of metabolites to the the object, if they do not</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line"><tt class="py-docstring">        exist and then expand the stochiometric matrix</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line"><tt class="py-docstring">        metabolite_list: A list of cobra.Metabolite objects</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line"><tt class="py-docstring">        expand_stoichimetric_matrix: Boolean.  If True and self.S is</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line"><tt class="py-docstring">        not None then it will add rows to self.S.  self.S must be</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line"><tt class="py-docstring">        created after adding reactions and metabolites to self before</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line"><tt class="py-docstring">        it can be expanded.  Trying to expand self.S when self only</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line"><tt class="py-docstring">        contains metabolites is ludacris.</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">        <tt id="link-17" class="py-name"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-17', 'Model', 'link-2');">Model</a></tt><tt class="py-op">.</tt><tt id="link-18" class="py-name" targets="Method cobra.core.ArrayBasedModel'.ArrayBasedModel.add_metabolites()=cobra.core.ArrayBasedModel%27.ArrayBasedModel-class.html#add_metabolites,Method cobra.core.Model'.Model.add_metabolites()=cobra.core.Model%27.Model-class.html#add_metabolites,Method cobra.core.Reaction'.Reaction.add_metabolites()=cobra.core.Reaction%27.Reaction-class.html#add_metabolites"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.add_metabolites
+cobra.core.Model'.Model.add_metabolites
+cobra.core.Reaction'.Reaction.add_metabolites" class="py-name" href="#" onclick="return doclink('link-18', 'add_metabolites', 'link-18');">add_metabolites</a></tt><tt class="py-op">(</tt><tt class="py-name">metabolite_list</tt><tt class="py-op">)</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt> <tt class="py-keyword">and</tt> <tt class="py-name">expand_stoichiometric_matrix</tt><tt class="py-op">:</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">            <tt class="py-name">s_expansion</tt> <tt class="py-op">=</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">metabolites</tt><tt class="py-op">)</tt> <tt class="py-op">-</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">.</tt><tt class="py-name">shape</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">s_expansion</tt> <tt class="py-op">&gt;</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">.</tt><tt class="py-name">todok</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">.</tt><tt class="py-name">resize</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">.</tt><tt class="py-name">shape</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> <tt class="py-op">+</tt> <tt class="py-name">s_expansion</tt><tt class="py-op">,</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">                               <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">.</tt><tt class="py-name">shape</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">.</tt><tt class="py-name">tolil</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line"> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line"> </tt>
+<a name="ArrayBasedModel._update_reaction"></a><div id="ArrayBasedModel._update_reaction-def"><a name="L114"></a><tt class="py-lineno">114</tt> <a class="py-toggle" href="#" id="ArrayBasedModel._update_reaction-toggle" onclick="return toggle('ArrayBasedModel._update_reaction');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html#_update_reaction">_update_reaction</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">reaction</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel._update_reaction-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ArrayBasedModel._update_reaction-expanded"><a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">        <tt class="py-docstring">"""Updates everything associated with the reaction.id of reaction.</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line"><tt class="py-docstring">        reaction: A cobra.Reaction object, or a list of these objects.</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line"><tt class="py-docstring">        WARNING: This function is only used after the Model has been</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line"><tt class="py-docstring">        converted to matrices.  It is typically faster to access the objects</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line"><tt class="py-docstring">        in the Model directly.  This function will eventually moved to another</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line"><tt class="py-docstring">        module for advanced users due to the potential for mistakes.</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line"><tt class="py-docstring">    </tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">hasattr</tt><tt class="py-op">(</tt><tt class="py-name">reaction</tt><tt class="py-op">,</tt> <tt class="py-string">'__iter__'</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line">            <tt class="py-name">reaction</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">reaction</tt><tt class="py-op">]</tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line">        <tt id="link-19" class="py-name"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-19', 'Model', 'link-2');">Model</a></tt><tt class="py-op">.</tt><tt id="link-20" class="py-name" targets="Method cobra.core.ArrayBasedModel'.ArrayBasedModel._update_reaction()=cobra.core.ArrayBasedModel%27.ArrayBasedModel-class.html#_update_reaction,Method cobra.core.Model'.Model._update_reaction()=cobra.core.Model%27.Model-class.html#_update_reaction"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel._update_reaction
+cobra.core.Model'.Model._update_reaction" class="py-name" href="#" onclick="return doclink('link-20', '_update_reaction', 'link-20');">_update_reaction</a></tt><tt class="py-op">(</tt><tt class="py-name">reaction</tt><tt class="py-op">)</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">the_reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">reaction</tt><tt class="py-op">:</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">the_reaction</tt><tt class="py-op">.</tt><tt class="py-name">id</tt> <tt class="py-keyword">not</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">:</tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line">                <tt class="py-keyword">print</tt> <tt class="py-name">the_reaction</tt><tt class="py-op">.</tt><tt class="py-name">id</tt> <tt class="py-op">+</tt> <tt class="py-string">' is not in the model\n'</tt> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">                <tt class="py-keyword">continue</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line">            <tt class="py-comment">#zero reaction stoichiometry column</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line">            <tt class="py-name">the_column</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-op">,</tt> <tt class="py-name">reaction_index</tt><tt class="py-op">]</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt class="py-name">nonzero_index</tt> <tt class="py-keyword">in</tt> <tt class="py-name">the_column</tt><tt class="py-op">.</tt><tt class="py-name">nonzero</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">:</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line">                <tt class="py-name">the_column</tt><tt class="py-op">[</tt><tt class="py-name">nonzero_index</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">lower_bounds</tt><tt class="py-op">[</tt><tt class="py-name">reaction_index</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">the_reaction</tt><tt class="py-op">.</tt><tt class="py-name">lower_bound</tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">upper_bounds</tt><tt class="py-op">[</tt><tt class="py-name">reaction_index</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">the_reaction</tt><tt class="py-op">.</tt><tt class="py-name">upper_bound</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficients</tt><tt class="py-op">[</tt><tt class="py-name">reaction_index</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">the_reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-21" class="py-name"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.add_metabolites
+cobra.core.Model'.Model.add_metabolites
+cobra.core.Reaction'.Reaction.add_metabolites" class="py-name" href="#" onclick="return doclink('link-21', 'add_metabolites', 'link-18');">add_metabolites</a></tt><tt class="py-op">(</tt><tt class="py-name">the_reaction</tt><tt class="py-op">.</tt><tt class="py-name">_metabolites</tt><tt class="py-op">)</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">            <tt class="py-comment">#Make sure that the metabolites are the ones contained in the model</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line">            <tt class="py-name">the_reaction</tt><tt class="py-op">.</tt><tt class="py-name">_metabolites</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">metabolite</tt><tt class="py-op">.</tt><tt id="link-22" class="py-name" targets="Method cobra.core.DictList'.DictList.get_by_id()=cobra.core.DictList%27.DictList-class.html#get_by_id"><a title="cobra.core.DictList'.DictList.get_by_id" class="py-name" href="#" onclick="return doclink('link-22', 'get_by_id', 'link-22');">get_by_id</a></tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">.</tt><tt class="py-name">id</tt><tt class="py-op">)</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line">                                        <tt class="py-keyword">for</tt> <tt class="py-name">x</tt> <tt class="py-keyword">in</tt> <tt class="py-name">the_reaction</tt><tt class="py-op">.</tt><tt class="py-name">_metabolites</tt><tt class="py-op">]</tt> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">            <tt class="py-comment">#Update the stoichiometric matrix</tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line">            <tt class="py-name">metabolite_indices</tt> <tt class="py-op">=</tt> <tt class="py-name">map</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">metabolites</tt><tt class="py-op">.</tt><tt id="link-23" class="py-name" targets="Method cobra.core.DictList'.DictList.index()=cobra.core.DictList%27.DictList-class.html#index"><a title="cobra.core.DictList'.DictList.index" class="py-name" href="#" onclick="return doclink('link-23', 'index', 'link-23');">index</a></tt><tt class="py-op">,</tt> <tt class="py-name">the_reaction</tt><tt class="py-op">.</tt><tt class="py-name">_metabolites</tt><tt class="py-op">)</tt> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt class="py-op">(</tt><tt id="link-24" class="py-name"><a title="cobra.core.DictList'.DictList.index" class="py-name" href="#" onclick="return doclink('link-24', 'index', 'link-23');">index</a></tt><tt class="py-op">,</tt> <tt class="py-name">metabolite_index</tt><tt class="py-op">)</tt> <tt class="py-keyword">in</tt> <tt class="py-name">enumerate</tt><tt class="py-op">(</tt><tt class="py-name">metabolite_indices</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">[</tt><tt class="py-name">metabolite_index</tt><tt class="py-op">,</tt> <tt class="py-name">reaction_index</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">the_reaction</tt><tt class="py-op">.</tt><tt class="py-name">stoichiometric_coefficients</tt><tt class="py-op">[</tt><tt id="link-25" class="py-name"><a title="cobra.core.DictList'.DictList.index" class="py-name" href="#" onclick="return doclink('link-25', 'index', 'link-23');">index</a></tt><tt class="py-op">]</tt> </tt>
+</div><a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line">                      </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line"> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line">         </tt>
+<a name="ArrayBasedModel.add_reactions"></a><div id="ArrayBasedModel.add_reactions-def"><a name="L152"></a><tt class="py-lineno">152</tt> <a class="py-toggle" href="#" id="ArrayBasedModel.add_reactions-toggle" onclick="return toggle('ArrayBasedModel.add_reactions');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html#add_reactions">add_reactions</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">reaction_list</tt><tt class="py-op">,</tt> <tt class="py-param">update_matrices</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel.add_reactions-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ArrayBasedModel.add_reactions-expanded"><a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">        <tt class="py-docstring">"""Will add a cobra.Reaction object to the model, if</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line"><tt class="py-docstring">        reaction.id is not in self.reactions.</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line"><tt class="py-docstring">        reaction_list: A cobra.Reaction object or a list of them</tt> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line"><tt class="py-docstring">        update_matrices:  Boolean.  If true populate / update matrices</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line"><tt class="py-docstring">        S, lower_bounds, upper_bounds, .... Note this is slow to run</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line"><tt class="py-docstring">        for very large models and using this option with repeated calls</tt> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line"><tt class="py-docstring">        will degrade performance.  Better to call self.update() after</tt> </tt>
+<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line"><tt class="py-docstring">        adding all reactions.</tt> </tt>
+<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line"><tt class="py-docstring">         If the stoichiometric matrix is initially empty then initialize a 1x1</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line"><tt class="py-docstring">         sparse matrix and add more rows as needed in the self.add_metabolites</tt> </tt>
+<a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line"><tt class="py-docstring">         function</tt> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L169"></a><tt class="py-lineno">169</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line">        <tt id="link-26" class="py-name"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-26', 'Model', 'link-2');">Model</a></tt><tt class="py-op">.</tt><tt id="link-27" class="py-name" targets="Method cobra.core.ArrayBasedModel'.ArrayBasedModel.add_reactions()=cobra.core.ArrayBasedModel%27.ArrayBasedModel-class.html#add_reactions,Method cobra.core.Model'.Model.add_reactions()=cobra.core.Model%27.Model-class.html#add_reactions"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.add_reactions
+cobra.core.Model'.Model.add_reactions" class="py-name" href="#" onclick="return doclink('link-27', 'add_reactions', 'link-27');">add_reactions</a></tt><tt class="py-op">(</tt><tt class="py-name">reaction_list</tt><tt class="py-op">)</tt> </tt>
+<a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">update_matrices</tt><tt class="py-op">:</tt> </tt>
+<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name" targets="Method cobra.core.ArrayBasedModel'.ArrayBasedModel._update_matrices()=cobra.core.ArrayBasedModel%27.ArrayBasedModel-class.html#_update_matrices"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel._update_matrices" class="py-name" href="#" onclick="return doclink('link-28', '_update_matrices', 'link-28');">_update_matrices</a></tt><tt class="py-op">(</tt><tt class="py-name">reaction_list</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line"> </tt>
+<a name="ArrayBasedModel._construct_matrices"></a><div id="ArrayBasedModel._construct_matrices-def"><a name="L174"></a><tt class="py-lineno">174</tt> <a class="py-toggle" href="#" id="ArrayBasedModel._construct_matrices-toggle" onclick="return toggle('ArrayBasedModel._construct_matrices');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html#_construct_matrices">_construct_matrices</a><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel._construct_matrices-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ArrayBasedModel._construct_matrices-expanded"><a name="L175"></a><tt class="py-lineno">175</tt>  <tt class="py-line">        <tt class="py-docstring">"""Large sparse matrices take time to construct and to read / write.</tt> </tt>
+<a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line"><tt class="py-docstring">        This function allows one to let the model exists without cobra_model.S</tt> </tt>
+<a name="L177"></a><tt class="py-lineno">177</tt>  <tt class="py-line"><tt class="py-docstring">        and then generate it at needed.</tt> </tt>
+<a name="L178"></a><tt class="py-lineno">178</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-29" class="py-name"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel._update_matrices" class="py-name" href="#" onclick="return doclink('link-29', '_update_matrices', 'link-28');">_update_matrices</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-comment">#This does basic construction as well.</tt> </tt>
+</div><a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line"> </tt>
+<a name="ArrayBasedModel._update_reaction_vectors"></a><div id="ArrayBasedModel._update_reaction_vectors-def"><a name="L182"></a><tt class="py-lineno">182</tt> <a class="py-toggle" href="#" id="ArrayBasedModel._update_reaction_vectors-toggle" onclick="return toggle('ArrayBasedModel._update_reaction_vectors');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html#_update_reaction_vectors">_update_reaction_vectors</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel._update_reaction_vectors-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ArrayBasedModel._update_reaction_vectors-expanded"><a name="L183"></a><tt class="py-lineno">183</tt>  <tt class="py-line">        <tt class="py-docstring">"""regenerates the lower_bounds, upper_bounds,</tt> </tt>
+<a name="L184"></a><tt class="py-lineno">184</tt>  <tt class="py-line"><tt class="py-docstring">        and objective_coefficients vectors.</tt> </tt>
+<a name="L185"></a><tt class="py-lineno">185</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line"><tt class="py-docstring">        WARNING: This function is only used after the Model has been</tt> </tt>
+<a name="L187"></a><tt class="py-lineno">187</tt>  <tt class="py-line"><tt class="py-docstring">        converted to matrices.  It is typically faster to access the objects</tt> </tt>
+<a name="L188"></a><tt class="py-lineno">188</tt>  <tt class="py-line"><tt class="py-docstring">        in the Model directly.  This function will eventually moved to another</tt> </tt>
+<a name="L189"></a><tt class="py-lineno">189</tt>  <tt class="py-line"><tt class="py-docstring">        module for advanced users due to the potential for mistakes.</tt> </tt>
+<a name="L190"></a><tt class="py-lineno">190</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L193"></a><tt class="py-lineno">193</tt>  <tt class="py-line">        <tt class="py-name">lower_bounds</tt><tt class="py-op">,</tt> <tt class="py-name">upper_bounds</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L194"></a><tt class="py-lineno">194</tt>  <tt class="py-line">        <tt class="py-name">objective_coefficients</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L195"></a><tt class="py-lineno">195</tt>  <tt class="py-line">        <tt class="py-op">[</tt><tt class="py-op">(</tt><tt class="py-name">lower_bounds</tt><tt class="py-op">.</tt><tt id="link-30" class="py-name" targets="Method cobra.core.DictList'.DictList.append()=cobra.core.DictList%27.DictList-class.html#append"><a title="cobra.core.DictList'.DictList.append" class="py-name" href="#" onclick="return doclink('link-30', 'append', 'link-30');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">.</tt><tt class="py-name">lower_bound</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L196"></a><tt class="py-lineno">196</tt>  <tt class="py-line">          <tt class="py-name">upper_bounds</tt><tt class="py-op">.</tt><tt id="link-31" class="py-name"><a title="cobra.core.DictList'.DictList.append" class="py-name" href="#" onclick="return doclink('link-31', 'append', 'link-30');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">.</tt><tt class="py-name">upper_bound</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L197"></a><tt class="py-lineno">197</tt>  <tt class="py-line">          <tt class="py-name">objective_coefficients</tt><tt class="py-op">.</tt><tt id="link-32" class="py-name"><a title="cobra.core.DictList'.DictList.append" class="py-name" href="#" onclick="return doclink('link-32', 'append', 'link-30');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line">         <tt class="py-keyword">for</tt> <tt class="py-name">x</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">]</tt> </tt>
+<a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">lower_bounds</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-name">lower_bounds</tt><tt class="py-op">)</tt> </tt>
+<a name="L200"></a><tt class="py-lineno">200</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">upper_bounds</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-name">upper_bounds</tt><tt class="py-op">)</tt> </tt>
+<a name="L201"></a><tt class="py-lineno">201</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficients</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-name">objective_coefficients</tt><tt class="py-op">)</tt> </tt>
+</div><a name="ArrayBasedModel._update_metabolite_vectors"></a><div id="ArrayBasedModel._update_metabolite_vectors-def"><a name="L202"></a><tt class="py-lineno">202</tt> <a class="py-toggle" href="#" id="ArrayBasedModel._update_metabolite_vectors-toggle" onclick="return toggle('ArrayBasedModel._update_metabolite_vectors');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html#_update_metabolite_vectors">_update_metabolite_vectors</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel._update_metabolite_vectors-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ArrayBasedModel._update_metabolite_vectors-expanded"><a name="L203"></a><tt class="py-lineno">203</tt>  <tt class="py-line">        <tt class="py-docstring">"""regenerates _b and _constraint_sense</tt> </tt>
+<a name="L204"></a><tt class="py-lineno">204</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L205"></a><tt class="py-lineno">205</tt>  <tt class="py-line"><tt class="py-docstring">        WARNING: This function is only used after the Model has been</tt> </tt>
+<a name="L206"></a><tt class="py-lineno">206</tt>  <tt class="py-line"><tt class="py-docstring">        converted to matrices.  It is typically faster to access the objects</tt> </tt>
+<a name="L207"></a><tt class="py-lineno">207</tt>  <tt class="py-line"><tt class="py-docstring">        in the Model directly.  This function will eventually moved to another</tt> </tt>
+<a name="L208"></a><tt class="py-lineno">208</tt>  <tt class="py-line"><tt class="py-docstring">        module for advanced users due to the potential for mistakes.</tt> </tt>
+<a name="L209"></a><tt class="py-lineno">209</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L210"></a><tt class="py-lineno">210</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L211"></a><tt class="py-lineno">211</tt>  <tt class="py-line">        <tt class="py-name">_b</tt><tt class="py-op">,</tt> <tt class="py-name">_constraint_sense</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L212"></a><tt class="py-lineno">212</tt>  <tt class="py-line">        <tt class="py-op">[</tt><tt class="py-op">(</tt><tt class="py-name">_b</tt><tt class="py-op">.</tt><tt id="link-33" class="py-name"><a title="cobra.core.DictList'.DictList.append" class="py-name" href="#" onclick="return doclink('link-33', 'append', 'link-30');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">.</tt><tt class="py-name">_bound</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L213"></a><tt class="py-lineno">213</tt>  <tt class="py-line">          <tt class="py-name">_constraint_sense</tt><tt class="py-op">.</tt><tt id="link-34" class="py-name"><a title="cobra.core.DictList'.DictList.append" class="py-name" href="#" onclick="return doclink('link-34', 'append', 'link-30');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">.</tt><tt class="py-name">_constraint_sense</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L214"></a><tt class="py-lineno">214</tt>  <tt class="py-line">         <tt class="py-keyword">for</tt> <tt class="py-name">x</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">metabolites</tt><tt class="py-op">]</tt> </tt>
+<a name="L215"></a><tt class="py-lineno">215</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_b</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-name">_b</tt><tt class="py-op">)</tt> </tt>
+<a name="L216"></a><tt class="py-lineno">216</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_constraint_sense</tt> <tt class="py-op">=</tt> <tt class="py-name">_constraint_sense</tt> </tt>
+</div><a name="L217"></a><tt class="py-lineno">217</tt>  <tt class="py-line">          </tt>
+<a name="L218"></a><tt class="py-lineno">218</tt>  <tt class="py-line"> </tt>
+<a name="ArrayBasedModel._update_matrices"></a><div id="ArrayBasedModel._update_matrices-def"><a name="L219"></a><tt class="py-lineno">219</tt> <a class="py-toggle" href="#" id="ArrayBasedModel._update_matrices-toggle" onclick="return toggle('ArrayBasedModel._update_matrices');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html#_update_matrices">_update_matrices</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">reaction_list</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel._update_matrices-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ArrayBasedModel._update_matrices-expanded"><a name="L220"></a><tt class="py-lineno">220</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L221"></a><tt class="py-lineno">221</tt>  <tt class="py-line"><tt class="py-docstring">        reaction_list: None or a list of cobra.Reaction objects that are in</tt> </tt>
+<a name="L222"></a><tt class="py-lineno">222</tt>  <tt class="py-line"><tt class="py-docstring">        self.reactions.  If None then reconstruct the whole matrix.</tt> </tt>
+<a name="L223"></a><tt class="py-lineno">223</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L224"></a><tt class="py-lineno">224</tt>  <tt class="py-line"><tt class="py-docstring">        NOTE: reaction_list is assumed to be at the end of self.reactions.</tt> </tt>
+<a name="L225"></a><tt class="py-lineno">225</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L226"></a><tt class="py-lineno">226</tt>  <tt class="py-line"><tt class="py-docstring">        In the future, we'll be able to use reactions from anywhere in the</tt> </tt>
+<a name="L227"></a><tt class="py-lineno">227</tt>  <tt class="py-line"><tt class="py-docstring">        list</tt> </tt>
+<a name="L228"></a><tt class="py-lineno">228</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L229"></a><tt class="py-lineno">229</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L230"></a><tt class="py-lineno">230</tt>  <tt class="py-line"><tt class="py-docstring">        WARNING: This function is only used after the Model has been</tt> </tt>
+<a name="L231"></a><tt class="py-lineno">231</tt>  <tt class="py-line"><tt class="py-docstring">        converted to matrices.  It is typically faster to access the objects</tt> </tt>
+<a name="L232"></a><tt class="py-lineno">232</tt>  <tt class="py-line"><tt class="py-docstring">        in the Model directly.  This function will eventually moved to another</tt> </tt>
+<a name="L233"></a><tt class="py-lineno">233</tt>  <tt class="py-line"><tt class="py-docstring">        module for advanced users due to the potential for mistakes.</tt> </tt>
+<a name="L234"></a><tt class="py-lineno">234</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L235"></a><tt class="py-lineno">235</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L236"></a><tt class="py-lineno">236</tt>  <tt class="py-line">        <tt class="py-comment">#Pretty much all of these things are unnecessary to use the objects and</tt> </tt>
+<a name="L237"></a><tt class="py-lineno">237</tt>  <tt class="py-line">        <tt class="py-comment">#interact with the optimization solvers.  It might be best to move them</tt> </tt>
+<a name="L238"></a><tt class="py-lineno">238</tt>  <tt class="py-line">        <tt class="py-comment">#to linear algebra modules.</tt> </tt>
+<a name="L239"></a><tt class="py-lineno">239</tt>  <tt class="py-line">        <tt class="py-comment">#If no reactions are present in the Model, initialize the arrays</tt> </tt>
+<a name="L240"></a><tt class="py-lineno">240</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt> <tt class="py-keyword">or</tt> <tt class="py-name">reaction_list</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L241"></a><tt class="py-lineno">241</tt>  <tt class="py-line">            <tt class="py-name">reaction_list</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt> </tt>
+<a name="L242"></a><tt class="py-lineno">242</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt> <tt class="py-op">=</tt> <tt class="py-name">dok_matrix</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">metabolites</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L243"></a><tt class="py-lineno">243</tt>  <tt class="py-line">                                         <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt>  </tt>
+<a name="L244"></a><tt class="py-lineno">244</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">lower_bounds</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">lower_bound</tt> </tt>
+<a name="L245"></a><tt class="py-lineno">245</tt>  <tt class="py-line">                                       <tt class="py-keyword">for</tt> <tt class="py-name">reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">reaction_list</tt><tt class="py-op">]</tt><tt class="py-op">)</tt>  </tt>
+<a name="L246"></a><tt class="py-lineno">246</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">upper_bounds</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">upper_bound</tt> </tt>
+<a name="L247"></a><tt class="py-lineno">247</tt>  <tt class="py-line">                                       <tt class="py-keyword">for</tt> <tt class="py-name">reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">reaction_list</tt><tt class="py-op">]</tt><tt class="py-op">)</tt>  </tt>
+<a name="L248"></a><tt class="py-lineno">248</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficients</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-name">reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> </tt>
+<a name="L249"></a><tt class="py-lineno">249</tt>  <tt class="py-line">                                                 <tt class="py-keyword">for</tt> <tt class="py-name">reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">reaction_list</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L250"></a><tt class="py-lineno">250</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> <tt class="py-comment">#Expand the arrays to accomodate the new reaction</tt> </tt>
+<a name="L251"></a><tt class="py-lineno">251</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">.</tt><tt class="py-name">todok</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L252"></a><tt class="py-lineno">252</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">.</tt><tt class="py-name">resize</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">metabolites</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L253"></a><tt class="py-lineno">253</tt>  <tt class="py-line">                           <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L254"></a><tt class="py-lineno">254</tt>  <tt class="py-line">            <tt class="py-name">lower_bounds</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-name">x</tt><tt class="py-op">.</tt><tt class="py-name">lower_bound</tt> </tt>
+<a name="L255"></a><tt class="py-lineno">255</tt>  <tt class="py-line">                                  <tt class="py-keyword">for</tt> <tt class="py-name">x</tt> <tt class="py-keyword">in</tt> <tt class="py-name">reaction_list</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L256"></a><tt class="py-lineno">256</tt>  <tt class="py-line">            <tt class="py-name">upper_bounds</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-name">x</tt><tt class="py-op">.</tt><tt class="py-name">upper_bound</tt> </tt>
+<a name="L257"></a><tt class="py-lineno">257</tt>  <tt class="py-line">                                  <tt class="py-keyword">for</tt> <tt class="py-name">x</tt> <tt class="py-keyword">in</tt> <tt class="py-name">reaction_list</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L258"></a><tt class="py-lineno">258</tt>  <tt class="py-line">            <tt class="py-name">objective_coefficients</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-name">x</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> </tt>
+<a name="L259"></a><tt class="py-lineno">259</tt>  <tt class="py-line">                                            <tt class="py-keyword">for</tt> <tt class="py-name">x</tt> <tt class="py-keyword">in</tt> <tt class="py-name">reaction_list</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L260"></a><tt class="py-lineno">260</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">lower_bounds</tt> <tt class="py-op">=</tt> <tt class="py-name">hstack</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">lower_bounds</tt><tt class="py-op">,</tt> </tt>
+<a name="L261"></a><tt class="py-lineno">261</tt>  <tt class="py-line">                                        <tt class="py-name">lower_bounds</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L262"></a><tt class="py-lineno">262</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">upper_bounds</tt> <tt class="py-op">=</tt> <tt class="py-name">hstack</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">upper_bounds</tt><tt class="py-op">,</tt> </tt>
+<a name="L263"></a><tt class="py-lineno">263</tt>  <tt class="py-line">                                        <tt class="py-name">upper_bounds</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L264"></a><tt class="py-lineno">264</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficients</tt> <tt class="py-op">=</tt> <tt class="py-name">hstack</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficients</tt><tt class="py-op">,</tt> </tt>
+<a name="L265"></a><tt class="py-lineno">265</tt>  <tt class="py-line">                                                  <tt class="py-name">objective_coefficients</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L266"></a><tt class="py-lineno">266</tt>  <tt class="py-line">         </tt>
+<a name="L267"></a><tt class="py-lineno">267</tt>  <tt class="py-line">        <tt class="py-comment">#Use dok format to speed up additions.</tt> </tt>
+<a name="L268"></a><tt class="py-lineno">268</tt>  <tt class="py-line">        <tt class="py-name">coefficient_dictionary</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L269"></a><tt class="py-lineno">269</tt>  <tt class="py-line">        <tt class="py-comment">#SPEED this up. This is the slow part.  Can probably use a dict to index.</tt> </tt>
+<a name="L270"></a><tt class="py-lineno">270</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">the_reaction</tt> <tt class="py-keyword">in</tt> <tt class="py-name">reaction_list</tt><tt class="py-op">:</tt> </tt>
+<a name="L271"></a><tt class="py-lineno">271</tt>  <tt class="py-line">            <tt class="py-name">reaction_index</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">.</tt><tt id="link-35" class="py-name"><a title="cobra.core.DictList'.DictList.index" class="py-name" href="#" onclick="return doclink('link-35', 'index', 'link-23');">index</a></tt><tt class="py-op">(</tt><tt class="py-name">the_reaction</tt><tt class="py-op">.</tt><tt class="py-name">id</tt><tt class="py-op">)</tt> </tt>
+<a name="L272"></a><tt class="py-lineno">272</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt class="py-name">the_key</tt><tt class="py-op">,</tt> <tt class="py-name">the_value</tt> <tt class="py-keyword">in</tt> <tt class="py-name">the_reaction</tt><tt class="py-op">.</tt><tt class="py-name">_metabolites</tt><tt class="py-op">.</tt><tt class="py-name">items</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L273"></a><tt class="py-lineno">273</tt>  <tt class="py-line">                <tt class="py-name">coefficient_dictionary</tt><tt class="py-op">[</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">metabolites</tt><tt class="py-op">.</tt><tt id="link-36" class="py-name"><a title="cobra.core.DictList'.DictList.index" class="py-name" href="#" onclick="return doclink('link-36', 'index', 'link-23');">index</a></tt><tt class="py-op">(</tt><tt class="py-name">the_key</tt><tt class="py-op">.</tt><tt class="py-name">id</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L274"></a><tt class="py-lineno">274</tt>  <tt class="py-line">                                        <tt class="py-name">reaction_index</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">the_value</tt> </tt>
+<a name="L275"></a><tt class="py-lineno">275</tt>  <tt class="py-line"> </tt>
+<a name="L276"></a><tt class="py-lineno">276</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">.</tt><tt class="py-name">getformat</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-string">'dok'</tt><tt class="py-op">:</tt> </tt>
+<a name="L277"></a><tt class="py-lineno">277</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">.</tt><tt class="py-name">todok</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L278"></a><tt class="py-lineno">278</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">.</tt><tt id="link-37" class="py-name"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.update
+cobra.core.Model'.Model.update" class="py-name" href="#" onclick="return doclink('link-37', 'update', 'link-4');">update</a></tt><tt class="py-op">(</tt><tt class="py-name">coefficient_dictionary</tt><tt class="py-op">)</tt> </tt>
+<a name="L279"></a><tt class="py-lineno">279</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">S</tt><tt class="py-op">.</tt><tt class="py-name">tolil</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L280"></a><tt class="py-lineno">280</tt>  <tt class="py-line"> </tt>
+<a name="ArrayBasedModel.update"></a><div id="ArrayBasedModel.update-def"><a name="L281"></a><tt class="py-lineno">281</tt> <a class="py-toggle" href="#" id="ArrayBasedModel.update-toggle" onclick="return toggle('ArrayBasedModel.update');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.core.ArrayBasedModel'.ArrayBasedModel-class.html#update">update</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ArrayBasedModel.update-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ArrayBasedModel.update-expanded"><a name="L282"></a><tt class="py-lineno">282</tt>  <tt class="py-line">        <tt class="py-docstring">"""Regenerates the stoichiometric matrix and vectors</tt> </tt>
+<a name="L283"></a><tt class="py-lineno">283</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L284"></a><tt class="py-lineno">284</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L285"></a><tt class="py-lineno">285</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-38" class="py-name"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel._update_matrices" class="py-name" href="#" onclick="return doclink('link-38', '_update_matrices', 'link-28');">_update_matrices</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L286"></a><tt class="py-lineno">286</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-39" class="py-name" targets="Method cobra.core.ArrayBasedModel'.ArrayBasedModel._update_metabolite_vectors()=cobra.core.ArrayBasedModel%27.ArrayBasedModel-class.html#_update_metabolite_vectors"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel._update_metabolite_vectors" class="py-name" href="#" onclick="return doclink('link-39', '_update_metabolite_vectors', 'link-39');">_update_metabolite_vectors</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L287"></a><tt class="py-lineno">287</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L288"></a><tt class="py-lineno">288</tt>  <tt class="py-line"><tt class="py-comment">#END Class ArrayBasedModel</tt> </tt>
+<a name="L289"></a><tt class="py-lineno">289</tt>  <tt class="py-line"><tt class="py-comment">#####################</tt> </tt>
+<a name="L290"></a><tt class="py-lineno">290</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Wed Jun 13 15:52:01 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

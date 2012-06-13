@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>cobra.flux_analysis.double_deletion'</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="cobra-module.html">Package&nbsp;cobra</a> ::
+        <a href="cobra.flux_analysis-module.html">Package&nbsp;flux_analysis</a> ::
+        Module&nbsp;double_deletion'
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="cobra.flux_analysis.double_deletion%27-module.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== MODULE DESCRIPTION ==================== -->
+<h1 class="epydoc">Module double_deletion'</h1><p class="nomargin-top"><span class="codelink"><a href="cobra.flux_analysis.double_deletion%27-pysrc.html">source&nbsp;code</a></span></p>
+<!-- ==================== FUNCTIONS ==================== -->
+<a name="section-Functions"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Functions</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Functions"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.flux_analysis.double_deletion%27-module.html#double_deletion" class="summary-sig-name">double_deletion</a>(<span class="summary-sig-arg">cobra_model</span>,
+        <span class="summary-sig-arg">element_list_1</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">element_list_2</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">method</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">fba</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">single_deletion_growth_dict</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">the_problem</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">return</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">element_type</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">gene</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">solver</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">glpk</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">error_reporting</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Wrapper for double_gene_deletion and the currently unimplemented 
+      double_reaction_deletion functions</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.flux_analysis.double_deletion%27-pysrc.html#double_deletion">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.flux_analysis.double_deletion%27-module.html#double_deletion_parallel" class="summary-sig-name">double_deletion_parallel</a>(<span class="summary-sig-arg">cobra_model</span>,
+        <span class="summary-sig-arg">n_processes</span>=<span class="summary-sig-default">4</span>,
+        <span class="summary-sig-arg">genes_of_interest</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">method</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">fba</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">the_medium</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">the_problem</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">return</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">element_type</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">gene</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">solver</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">glpk</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">error_reporting</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Wrapper for double_gene_deletion_parallel and the currently 
+      unimplemented double_reaction_deletion_parallel functions</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.flux_analysis.double_deletion%27-pysrc.html#double_deletion_parallel">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.flux_analysis.double_deletion%27-module.html#double_gene_deletion" class="summary-sig-name">double_gene_deletion</a>(<span class="summary-sig-arg">cobra_model</span>,
+        <span class="summary-sig-arg">gene_list_1</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">gene_list_2</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">method</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">fba</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">single_deletion_growth_dict</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">the_problem</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">return</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">solver</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">glpk</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">error_reporting</span>=<span class="summary-sig-default">None</span>)</span><br />
+      This will disable reactions for all gene pairs from gene_list_1 and 
+      gene_list_2 and then run simulations to optimize for the objective 
+      function.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.flux_analysis.double_deletion%27-pysrc.html#double_gene_deletion">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.flux_analysis.double_deletion%27-module.html#double_gene_deletion_parallel" class="summary-sig-name">double_gene_deletion_parallel</a>(<span class="summary-sig-arg">cobra_model</span>,
+        <span class="summary-sig-arg">n_processes</span>=<span class="summary-sig-default">4</span>,
+        <span class="summary-sig-arg">genes_of_interest</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">method</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">fba</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">the_medium</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">the_problem</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">return</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">solver</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">glpk</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">error_reporting</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Provides a wrapper to run the double_deletion function on
+multicore systems.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.flux_analysis.double_deletion%27-pysrc.html#double_gene_deletion_parallel">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== VARIABLES ==================== -->
+<a name="section-Variables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Variables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__package__"></a><span class="summary-name">__package__</span> = <code title="'cobra.flux_analysis'"><code class="variable-quote">'</code><code class="variable-string">cobra.flux_analysis</code><code class="variable-quote">'</code></code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__parallel_mode_available"></a><span class="summary-name">__parallel_mode_available</span> = <code title="True">True</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="nan"></a><span class="summary-name">nan</span> = <code title="nan">nan</code>
+    </td>
+  </tr>
+</table>
+<!-- ==================== FUNCTION DETAILS ==================== -->
+<a name="section-FunctionDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Function Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-FunctionDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="double_deletion"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">double_deletion</span>(<span class="sig-arg">cobra_model</span>,
+        <span class="sig-arg">element_list_1</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">element_list_2</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">method</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">fba</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">single_deletion_growth_dict</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">the_problem</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">return</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">element_type</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">gene</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">solver</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">glpk</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">error_reporting</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.flux_analysis.double_deletion%27-pysrc.html#double_deletion">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Wrapper for double_gene_deletion and the currently unimplemented 
+  double_reaction_deletion functions</p>
+  <p>cobra_model: a cobra.Model object</p>
+  <p>element_list_1: Is None or a list of elements (genes or reactions)</p>
+  <p>element_list_2: Is None or a list of elements (genes or reactions)</p>
+  <p>method: 'fba' or 'moma' to run flux balance analysis or minimization 
+  of metabolic adjustments.</p>
+  <p>single_deletion_growth_dict: A dictionary that provides the growth 
+  rate information for single gene knock outs.  This can speed up 
+  simulations because nonviable single deletion strains imply that all 
+  double deletion strains will also be nonviable.</p>
+  <p>the_problem: Is None or 'reuse'</p>
+  <p>element_type: 'gene' or 'reaction'</p>
+  <p>solver: 'glpk', 'gurobi', or 'cplex'.</p>
+  <p>error_reporting: None or True</p>
+  <p>Returns a dictionary of the elements in the x dimension (x), the y 
+  dimension (y), and the growth simulation data (data).</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="double_deletion_parallel"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">double_deletion_parallel</span>(<span class="sig-arg">cobra_model</span>,
+        <span class="sig-arg">n_processes</span>=<span class="sig-default">4</span>,
+        <span class="sig-arg">genes_of_interest</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">method</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">fba</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">the_medium</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">the_problem</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">return</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">element_type</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">gene</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">solver</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">glpk</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">error_reporting</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.flux_analysis.double_deletion%27-pysrc.html#double_deletion_parallel">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Wrapper for double_gene_deletion_parallel and the currently 
+  unimplemented double_reaction_deletion_parallel functions</p>
+  <p>cobra_model: a cobra.Model object</p>
+  <p>n_processes: is the number of parallel processes to start</p>
+  <p>genes_of_interest: Is None, a list of genes, or a list of two lists of
+  genes.  If None then double_deletion is run on all genes in 
+  the_model.genes.  If a list of genes then double_deletion is run for all 
+  combinations of genes in double_deletion.  If a list of of two lists of 
+  genes then double_deletion is run for each member of one list vs. each 
+  member of the second list.</p>
+  <p>method: 'fba' or 'moma' to run flux balance analysis or minimization 
+  of metabolic adjustments.</p>
+  <p>the_medium: Is None, a string, or a dictionary.  If a string then the 
+  initialize_growth_medium function expects that the_model has an attribute
+  dictionary called media_compositions, which is a dictionary of 
+  dictionaries for various medium compositions.  Where a medium composition
+  is a dictionary of exchange reaction ids for the medium components and 
+  the exchange fluxes for each medium component; note that these fluxes 
+  must be negative because they are being exchanged into the system.</p>
+  <p>the_problem: Is None or 'reuse'</p>
+  <p>element_type: 'gene' or 'reaction'</p>
+  <p>solver: 'glpk', 'gurobi', or 'cplex'.</p>
+  <p>error_reporting: None or True.</p>
+  <p>Returns a dictionary of the genes in the x dimension (x), the y 
+  dimension (y), and the growth simulation data (data).</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="double_gene_deletion"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">double_gene_deletion</span>(<span class="sig-arg">cobra_model</span>,
+        <span class="sig-arg">gene_list_1</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">gene_list_2</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">method</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">fba</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">single_deletion_growth_dict</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">the_problem</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">return</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">solver</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">glpk</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">error_reporting</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.flux_analysis.double_deletion%27-pysrc.html#double_gene_deletion">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>This will disable reactions for all gene pairs from gene_list_1 and 
+  gene_list_2 and then run simulations to optimize for the objective 
+  function.  The contribution of each reaction to the objective function is
+  indicated in cobra_model.reactions[:].objective_coefficient vector.</p>
+  <p>cobra_model: a cobra.Model object</p>
+  <p>gene_list_1: Is None or a list of genes.  If None then both 
+  gene_list_1 and gene_list_2 are assumed to correspond to 
+  cobra_model.genes.</p>
+  <p>gene_list_2: Is None or a list of genes.  If None then gene_list_2 is 
+  assumed to correspond to gene_list_1.</p>
+  <p>method: 'fba' or 'moma' to run flux balance analysis or minimization 
+  of metabolic adjustments.</p>
+  <p>single_deletion_growth_dict: A dictionary that provides the growth 
+  rate information for single gene knock outs.  This can speed up 
+  simulations because nonviable single deletion strains imply that all 
+  double deletion strains will also be nonviable.</p>
+  <p>the_problem: Is None, 'return', or an LP model object for the 
+  solver.</p>
+  <p>solver: 'glpk', 'gurobi', or 'cplex'.</p>
+  <p>error_reporting: None or True</p>
+  <p>Returns a dictionary of the genes in the x dimension (x), the y 
+  dimension (y), and the growth simulation data (data).</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="double_gene_deletion_parallel"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">double_gene_deletion_parallel</span>(<span class="sig-arg">cobra_model</span>,
+        <span class="sig-arg">n_processes</span>=<span class="sig-default">4</span>,
+        <span class="sig-arg">genes_of_interest</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">method</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">fba</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">the_medium</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">the_problem</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">return</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">solver</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">glpk</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">error_reporting</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.flux_analysis.double_deletion%27-pysrc.html#double_gene_deletion_parallel">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Provides a wrapper to run the double_deletion function on
+multicore systems.
+
+cobra_model: a Model object
+
+n_processes: is the number of parallel processes to start
+
+genes_of_interest: Is None, a list of genes, or a list of two lists of
+genes.  If None then double_deletion is run on all genes in
+cobra_model.genes.  If a list of genes then double_deletion is run for all
+combinations of genes in double_deletion.  If a list of of two lists of
+genes then double_deletion is run for each member of one list vs. each
+member of the second list.
+
+method: 'fba' or 'moma' to run flux balance analysis or minimization
+of metabolic adjustments.
+
+the_medium: Is None, a string, or a dictionary.  If a string then the
+initialize_growth_medium function expects that cobra_model has an
+attribute dictionary called media_compositions, which is a dictionary of
+dictionaries for various medium compositions.  Where a medium
+composition is a dictionary of exchange reaction ids for the medium
+components and the exchange fluxes for each medium component; note that
+these fluxes must be negative because they are being exchanged into the
+system.
+
+the_problem: Is None or 'reuse'
+
+solver: 'glpk', 'gurobi', or 'cplex'.
+
+error_reporting: None or True
+
+Adds the following attributes to the cobra_model:
+      double_deletion_growth_rate: A numpy array of the simulation results
+      double_deletion_genes_x: A list of the genes for the x dimension of
+      double_deletion_growth_rate.
+      double_deletion_genes_y: A list of the genes for the y dimension of
+      double_deletion_growth_rate.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Wed Jun 13 15:51:59 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>cobra.test</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="cobra-module.html">Package&nbsp;cobra</a> ::
+        Package&nbsp;test
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="cobra.test-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="cobra.test-module.html">Package cobra.test</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno"> 1</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt> <tt class="py-keyword">import</tt> <tt class="py-name">abspath</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_abspath</tt> </tt>
+<a name="L2"></a><tt class="py-lineno"> 2</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt> <tt class="py-keyword">import</tt> <tt class="py-name">join</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_join</tt> </tt>
+<a name="L3"></a><tt class="py-lineno"> 3</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt> <tt class="py-keyword">import</tt> <tt class="py-name">split</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_split</tt> </tt>
+<a name="L4"></a><tt class="py-lineno"> 4</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt> <tt class="py-keyword">import</tt> <tt class="py-name">sep</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_sep</tt> </tt>
+<a name="L5"></a><tt class="py-lineno"> 5</tt>  <tt class="py-line"> </tt>
+<a name="L6"></a><tt class="py-lineno"> 6</tt>  <tt class="py-line"><tt id="link-0" class="py-name" targets="Variable cobra.test.data_directory=cobra.test-module.html#data_directory"><a title="cobra.test.data_directory" class="py-name" href="#" onclick="return doclink('link-0', 'data_directory', 'link-0');">data_directory</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_join</tt><tt class="py-op">(</tt><tt class="py-name">_split</tt><tt class="py-op">(</tt><tt class="py-name">_abspath</tt><tt class="py-op">(</tt><tt class="py-name">__file__</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-string">"data"</tt><tt class="py-op">)</tt> </tt>
+<a name="L7"></a><tt class="py-lineno"> 7</tt>  <tt class="py-line"><tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt id="link-1" class="py-name"><a title="cobra.test.data_directory" class="py-name" href="#" onclick="return doclink('link-1', 'data_directory', 'link-0');">data_directory</a></tt><tt class="py-op">.</tt><tt id="link-2" class="py-name" targets="Method cobra.core.Object'.Object.endswith()=cobra.core.Object%27.Object-class.html#endswith"><a title="cobra.core.Object'.Object.endswith" class="py-name" href="#" onclick="return doclink('link-2', 'endswith', 'link-2');">endswith</a></tt><tt class="py-op">(</tt><tt class="py-name">_sep</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L8"></a><tt class="py-lineno"> 8</tt>  <tt class="py-line">    <tt id="link-3" class="py-name"><a title="cobra.test.data_directory" class="py-name" href="#" onclick="return doclink('link-3', 'data_directory', 'link-0');">data_directory</a></tt> <tt class="py-op">+=</tt> <tt class="py-name">_sep</tt> </tt>
+<a name="L9"></a><tt class="py-lineno"> 9</tt>  <tt class="py-line"> </tt>
+<a name="L10"></a><tt class="py-lineno">10</tt>  <tt class="py-line"><tt id="link-4" class="py-name" targets="Variable cobra.test.salmonella_sbml=cobra.test-module.html#salmonella_sbml"><a title="cobra.test.salmonella_sbml" class="py-name" href="#" onclick="return doclink('link-4', 'salmonella_sbml', 'link-4');">salmonella_sbml</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_join</tt><tt class="py-op">(</tt><tt id="link-5" class="py-name"><a title="cobra.test.data_directory" class="py-name" href="#" onclick="return doclink('link-5', 'data_directory', 'link-0');">data_directory</a></tt><tt class="py-op">,</tt> <tt class="py-string">"salmonella.xml"</tt><tt class="py-op">)</tt> </tt>
+<a name="L11"></a><tt class="py-lineno">11</tt>  <tt class="py-line"><tt id="link-6" class="py-name" targets="Variable cobra.test.salmonella_pickle=cobra.test-module.html#salmonella_pickle"><a title="cobra.test.salmonella_pickle" class="py-name" href="#" onclick="return doclink('link-6', 'salmonella_pickle', 'link-6');">salmonella_pickle</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_join</tt><tt class="py-op">(</tt><tt id="link-7" class="py-name"><a title="cobra.test.data_directory" class="py-name" href="#" onclick="return doclink('link-7', 'data_directory', 'link-0');">data_directory</a></tt><tt class="py-op">,</tt> <tt class="py-string">"salmonella.pickle"</tt><tt class="py-op">)</tt> </tt>
+<a name="L12"></a><tt class="py-lineno">12</tt>  <tt class="py-line"><tt id="link-8" class="py-name" targets="Variable cobra.test.salmonella_reaction_p_values_pickle=cobra.test-module.html#salmonella_reaction_p_values_pickle"><a title="cobra.test.salmonella_reaction_p_values_pickle" class="py-name" href="#" onclick="return doclink('link-8', 'salmonella_reaction_p_values_pickle', 'link-8');">salmonella_reaction_p_values_pickle</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_join</tt><tt class="py-op">(</tt><tt id="link-9" class="py-name"><a title="cobra.test.data_directory" class="py-name" href="#" onclick="return doclink('link-9', 'data_directory', 'link-0');">data_directory</a></tt><tt class="py-op">,</tt> <tt class="py-string">"salmonella_reaction_p_values.pickle"</tt><tt class="py-op">)</tt> </tt>
+<a name="L13"></a><tt class="py-lineno">13</tt>  <tt class="py-line"><tt id="link-10" class="py-name" targets="Variable cobra.test.ecoli_sbml=cobra.test-module.html#ecoli_sbml"><a title="cobra.test.ecoli_sbml" class="py-name" href="#" onclick="return doclink('link-10', 'ecoli_sbml', 'link-10');">ecoli_sbml</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_join</tt><tt class="py-op">(</tt><tt id="link-11" class="py-name"><a title="cobra.test.data_directory" class="py-name" href="#" onclick="return doclink('link-11', 'data_directory', 'link-0');">data_directory</a></tt><tt class="py-op">,</tt> <tt class="py-string">"iJO1366.xml"</tt><tt class="py-op">)</tt> </tt>
+<a name="L14"></a><tt class="py-lineno">14</tt>  <tt class="py-line"><tt id="link-12" class="py-name" targets="Variable cobra.test.ecoli_pickle=cobra.test-module.html#ecoli_pickle"><a title="cobra.test.ecoli_pickle" class="py-name" href="#" onclick="return doclink('link-12', 'ecoli_pickle', 'link-12');">ecoli_pickle</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_join</tt><tt class="py-op">(</tt><tt id="link-13" class="py-name"><a title="cobra.test.data_directory" class="py-name" href="#" onclick="return doclink('link-13', 'data_directory', 'link-0');">data_directory</a></tt><tt class="py-op">,</tt> <tt class="py-string">"iJO1366.pickle"</tt><tt class="py-op">)</tt> </tt>
+<a name="L15"></a><tt class="py-lineno">15</tt>  <tt class="py-line"><tt id="link-14" class="py-name" targets="Variable cobra.test.ecoli_mat=cobra.test-module.html#ecoli_mat"><a title="cobra.test.ecoli_mat" class="py-name" href="#" onclick="return doclink('link-14', 'ecoli_mat', 'link-14');">ecoli_mat</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_join</tt><tt class="py-op">(</tt><tt id="link-15" class="py-name"><a title="cobra.test.data_directory" class="py-name" href="#" onclick="return doclink('link-15', 'data_directory', 'link-0');">data_directory</a></tt><tt class="py-op">,</tt> <tt class="py-string">"iJO1366.mat"</tt><tt class="py-op">)</tt> </tt>
+<a name="L16"></a><tt class="py-lineno">16</tt>  <tt class="py-line"> </tt>
+<a name="create_test_model"></a><div id="create_test_model-def"><a name="L17"></a><tt class="py-lineno">17</tt> <a class="py-toggle" href="#" id="create_test_model-toggle" onclick="return toggle('create_test_model');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.test-module.html#create_test_model">create_test_model</a><tt class="py-op">(</tt><tt class="py-param">test_pickle</tt><tt class="py-op">=</tt><tt id="link-16" class="py-name"><a title="cobra.test.salmonella_pickle" class="py-name" href="#" onclick="return doclink('link-16', 'salmonella_pickle', 'link-6');">salmonella_pickle</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="create_test_model-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="create_test_model-expanded"><a name="L18"></a><tt class="py-lineno">18</tt>  <tt class="py-line">    <tt class="py-docstring">"""returns the salmonella model for testing"""</tt> </tt>
+<a name="L19"></a><tt class="py-lineno">19</tt>  <tt class="py-line">    <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L20"></a><tt class="py-lineno">20</tt>  <tt class="py-line">        <tt class="py-keyword">from</tt> <tt class="py-name">cPickle</tt> <tt class="py-keyword">import</tt> <tt class="py-name">load</tt> </tt>
+<a name="L21"></a><tt class="py-lineno">21</tt>  <tt class="py-line">    <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L22"></a><tt class="py-lineno">22</tt>  <tt class="py-line">        <tt class="py-keyword">from</tt> <tt class="py-name">pickle</tt> <tt class="py-keyword">import</tt> <tt class="py-name">load</tt> </tt>
+<a name="L23"></a><tt class="py-lineno">23</tt>  <tt class="py-line">    <tt class="py-keyword">with</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">test_pickle</tt><tt class="py-op">,</tt> <tt class="py-string">"rb"</tt><tt class="py-op">)</tt> <tt class="py-keyword">as</tt> <tt class="py-name">infile</tt><tt class="py-op">:</tt> </tt>
+<a name="L24"></a><tt class="py-lineno">24</tt>  <tt class="py-line">        <tt class="py-name">model</tt> <tt class="py-op">=</tt> <tt class="py-name">load</tt><tt class="py-op">(</tt><tt class="py-name">infile</tt><tt class="py-op">)</tt> </tt>
+<a name="L25"></a><tt class="py-lineno">25</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">model</tt> </tt>
+</div><a name="L26"></a><tt class="py-lineno">26</tt>  <tt class="py-line"> </tt>
+<a name="L27"></a><tt class="py-lineno">27</tt>  <tt class="py-line"> </tt>
+<a name="test_all"></a><div id="test_all-def"><a name="L28"></a><tt class="py-lineno">28</tt> <a class="py-toggle" href="#" id="test_all-toggle" onclick="return toggle('test_all');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.test-module.html#test_all">test_all</a><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="test_all-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="test_all-expanded"><a name="L29"></a><tt class="py-lineno">29</tt>  <tt class="py-line">    <tt class="py-docstring">"""run unittests on the cobra toolbox"""</tt> </tt>
+<a name="L30"></a><tt class="py-lineno">30</tt>  <tt class="py-line">    <tt class="py-keyword">import</tt> <tt class="py-name">unittest</tt> </tt>
+<a name="L31"></a><tt class="py-lineno">31</tt>  <tt class="py-line">    <tt class="py-keyword">from</tt> <tt id="link-17" class="py-name" targets="Package cobra=cobra-module.html"><a title="cobra" class="py-name" href="#" onclick="return doclink('link-17', 'cobra', 'link-17');">cobra</a></tt><tt class="py-op">.</tt><tt id="link-18" class="py-name" targets="Package cobra.test=cobra.test-module.html"><a title="cobra.test" class="py-name" href="#" onclick="return doclink('link-18', 'test', 'link-18');">test</a></tt><tt class="py-op">.</tt><tt id="link-19" class="py-name" targets="Module cobra.test.unit_tests=cobra.test.unit_tests-module.html"><a title="cobra.test.unit_tests" class="py-name" href="#" onclick="return doclink('link-19', 'unit_tests', 'link-19');">unit_tests</a></tt> <tt class="py-keyword">import</tt> <tt id="link-20" class="py-name" targets="Function cobra.test.flux_analysis.test_all()=cobra.test.flux_analysis-module.html#test_all,Function cobra.test.solvers.test_all()=cobra.test.solvers-module.html#test_all,Function cobra.test.test_all()=cobra.test-module.html#test_all,Function cobra.test.unit_tests.test_all()=cobra.test.unit_tests-module.html#test_all"><a title="cobra.test.flux_analysis.test_all
+cobra.test.solvers.test_all
+cobra.test.test_all
+cobra.test.unit_tests.test_all" class="py-name" href="#" onclick="return doclink('link-20', 'test_all', 'link-20');">test_all</a></tt> </tt>
+<a name="L32"></a><tt class="py-lineno">32</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-string">'running general unit_tests'</tt> </tt>
+<a name="L33"></a><tt class="py-lineno">33</tt>  <tt class="py-line">    <tt id="link-21" class="py-name"><a title="cobra.test.flux_analysis.test_all
+cobra.test.solvers.test_all
+cobra.test.test_all
+cobra.test.unit_tests.test_all" class="py-name" href="#" onclick="return doclink('link-21', 'test_all', 'link-20');">test_all</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L34"></a><tt class="py-lineno">34</tt>  <tt class="py-line"> </tt>
+<a name="L35"></a><tt class="py-lineno">35</tt>  <tt class="py-line">    <tt class="py-comment">#print 'running new solver unit tests'</tt> </tt>
+<a name="L36"></a><tt class="py-lineno">36</tt>  <tt class="py-line">    <tt class="py-comment">#from cobra.test.solvers import test_all</tt> </tt>
+<a name="L37"></a><tt class="py-lineno">37</tt>  <tt class="py-line">    <tt class="py-comment">#test_all()</tt> </tt>
+<a name="L38"></a><tt class="py-lineno">38</tt>  <tt class="py-line"> </tt>
+<a name="L39"></a><tt class="py-lineno">39</tt>  <tt class="py-line"> </tt>
+<a name="L40"></a><tt class="py-lineno">40</tt>  <tt class="py-line"><tt class="py-keyword">del</tt> <tt class="py-name">_abspath</tt> </tt>
+<a name="L41"></a><tt class="py-lineno">41</tt>  <tt class="py-line"><tt class="py-keyword">del</tt> <tt class="py-name">_join</tt> </tt>
+<a name="L42"></a><tt class="py-lineno">42</tt>  <tt class="py-line"><tt class="py-keyword">del</tt> <tt class="py-name">_split</tt> </tt>
+<a name="L43"></a><tt class="py-lineno">43</tt>  <tt class="py-line"><tt class="py-keyword">del</tt> <tt class="py-name">_sep</tt> </tt>
+<a name="L44"></a><tt class="py-lineno">44</tt>  <tt class="py-line"> </tt>
+<a name="L45"></a><tt class="py-lineno">45</tt>  <tt class="py-line"><tt class="py-keyword">if</tt> <tt class="py-name">__name__</tt> <tt class="py-op">==</tt> <tt class="py-string">'__main__'</tt><tt class="py-op">:</tt> </tt>
+<a name="L46"></a><tt class="py-lineno">46</tt>  <tt class="py-line">    <tt id="link-22" class="py-name"><a title="cobra.test.flux_analysis.test_all
+cobra.test.solvers.test_all
+cobra.test.test_all
+cobra.test.unit_tests.test_all" class="py-name" href="#" onclick="return doclink('link-22', 'test_all', 'link-20');">test_all</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L47"></a><tt class="py-lineno">47</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Wed Jun 13 15:52:02 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

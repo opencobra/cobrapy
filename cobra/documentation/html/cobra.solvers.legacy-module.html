@@ -1,0 +1,646 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>cobra.solvers.legacy</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="cobra-module.html">Package&nbsp;cobra</a> ::
+        <a href="cobra.solvers-module.html">Package&nbsp;solvers</a> ::
+        Module&nbsp;legacy
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="cobra.solvers.legacy-module.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== MODULE DESCRIPTION ==================== -->
+<h1 class="epydoc">Module legacy</h1><p class="nomargin-top"><span class="codelink"><a href="cobra.solvers.legacy-pysrc.html">source&nbsp;code</a></span></p>
+<!-- ==================== FUNCTIONS ==================== -->
+<a name="section-Functions"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Functions</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Functions"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.solvers.legacy-module.html#_optimize_cplex" class="summary-sig-name" onclick="show_private();">_optimize_cplex</a>(<span class="summary-sig-arg">cobra_model</span>,
+        <span class="summary-sig-arg">new_objective</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">objective_sense</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">maximize</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">min_norm</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">the_problem</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">tolerance_optimality</span>=<span class="summary-sig-default">1e-06</span>,
+        <span class="summary-sig-arg">tolerance_feasibility</span>=<span class="summary-sig-default">1e-06</span>,
+        <span class="summary-sig-arg">tolerance_integer</span>=<span class="summary-sig-default">1e-09</span>,
+        <span class="summary-sig-arg">tolerance_barrier</span>=<span class="summary-sig-default">1e-08</span>,
+        <span class="summary-sig-arg">error_reporting</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">print_solver_time</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">lp_method</span>=<span class="summary-sig-default">1</span>,
+        <span class="summary-sig-arg">lp_parallel</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">copy_problem</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">relax_b</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">quadratic_component</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">reuse_basis</span>=<span class="summary-sig-default">True</span>,
+        <span class="summary-sig-arg">update_problem_reaction_bounds</span>=<span class="summary-sig-default">True</span>)</span><br />
+      Uses the ILOG/CPLEX (www.ibm.com/software/integration/optimization/cplex-optimizer/)
+optimizer to perform an optimization on cobra_model for the objective_coefficients in
+cobra_model._objective_coefficients based on the objective sense.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.solvers.legacy-pysrc.html#_optimize_cplex">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.solvers.legacy-module.html#_optimize_gurobi" class="summary-sig-name" onclick="show_private();">_optimize_gurobi</a>(<span class="summary-sig-arg">cobra_model</span>,
+        <span class="summary-sig-arg">new_objective</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">objective_sense</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">maximize</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">min_norm</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">the_problem</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">tolerance_optimality</span>=<span class="summary-sig-default">1e-06</span>,
+        <span class="summary-sig-arg">tolerance_feasibility</span>=<span class="summary-sig-default">1e-06</span>,
+        <span class="summary-sig-arg">tolerance_barrier</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">tolerance_integer</span>=<span class="summary-sig-default">1e-09</span>,
+        <span class="summary-sig-arg">error_reporting</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">print_solver_time</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">copy_problem</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">lp_method</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">relax_b</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">quad_precision</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">quadratic_component</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">reuse_basis</span>=<span class="summary-sig-default">True</span>,
+        <span class="summary-sig-arg">lp_parallel</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">update_problem_reaction_bounds</span>=<span class="summary-sig-default">True</span>)</span><br />
+      Uses the gurobi (http://gurobi.com) optimizer to perform an optimization on cobra_model
+for the objective_coefficients in cobra_model._objective_coefficients based
+on objective sense.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.solvers.legacy-pysrc.html#_optimize_gurobi">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="cobra.solvers.legacy-module.html#_optimize_glpk" class="summary-sig-name" onclick="show_private();">_optimize_glpk</a>(<span class="summary-sig-arg">cobra_model</span>,
+        <span class="summary-sig-arg">new_objective</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">objective_sense</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">maximize</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">min_norm</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">the_problem</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">tolerance_optimality</span>=<span class="summary-sig-default">1e-06</span>,
+        <span class="summary-sig-arg">tolerance_feasibility</span>=<span class="summary-sig-default">1e-06</span>,
+        <span class="summary-sig-arg">tolerance_integer</span>=<span class="summary-sig-default">1e-09</span>,
+        <span class="summary-sig-arg">error_reporting</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">print_solver_time</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">lp_method</span>=<span class="summary-sig-default">1</span>,
+        <span class="summary-sig-arg">quadratic_component</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">reuse_basis</span>=<span class="summary-sig-default">True</span>,
+        <span class="summary-sig-arg">tolerance_barrier</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">lp_parallel</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">copy_problem</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">relax_b</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">update_problem_reaction_bounds</span>=<span class="summary-sig-default">True</span>)</span><br />
+      Uses the GLPK (www.gnu.org/software/glpk/) optimizer via pyglpk
+(http://www.tfinley.net/software/pyglpk/release.html) to perform an optimization
+on cobra_model for the objective_coefficients in cobra_model._objective_coefficients
+based on the objective sense.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.solvers.legacy-pysrc.html#_optimize_glpk">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="test_solvers"></a><span class="summary-sig-name">test_solvers</span>()</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="cobra.solvers.legacy-pysrc.html#test_solvers">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== VARIABLES ==================== -->
+<a name="section-Variables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Variables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="cobra.solvers.legacy-module.html#status_dict" class="summary-name">status_dict</a> = <code title="{'cplex': '{\'MIP_infeasible\': \'infeasible\', \'MIP_optimal\': \'opt\
+imal\', \'MIP_optimal_tolerance\': \'optimal\',  \'MIP_unbounded\': \'\
+unbounded\', \'infeasible\': \'infeasible\', \'optimal\': \'optimal\',\
+ \'optimal_tolerance\': \'optimal\', \'unbounded\': \'unbounded\'}',
+ 'glpk': '{\'opt\': \'optimal\', \'nofeas\': \'infeasible\', \'unbnd\'\
+: \'unbounded\'}',
+ 'gurobi': '{GRB.OPTIMAL: \'optimal\', GRB.INFEASIBLE: \'infeasible\',\
+ GRB.UNBOUNDED: \'unbounded\'}'}"><code class="variable-group">{</code><code class="variable-quote">'</code><code class="variable-string">cplex</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string">{\'MIP_infeasible\': \'infeasible\', </code><code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="cobra.solvers.legacy-module.html#variable_kind_dict" class="summary-name">variable_kind_dict</a> = <code title="{'cplex': '{\'continuous\': Cplex.variables.type.continuous, \'integer\
+\': Cplex.variables.type.integer}',
+ 'glpk': '{\'continuous\': float, \'integer\': int}',
+ 'gurobi': '{\'continuous\': GRB.CONTINUOUS, \'integer\': GRB.INTEGER}\
+'}"><code class="variable-group">{</code><code class="variable-quote">'</code><code class="variable-string">cplex</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string">{\'continuous\': Cplex.variabl</code><code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__package__"></a><span class="summary-name">__package__</span> = <code title="'cobra.solvers'"><code class="variable-quote">'</code><code class="variable-string">cobra.solvers</code><code class="variable-quote">'</code></code>
+    </td>
+  </tr>
+</table>
+<!-- ==================== FUNCTION DETAILS ==================== -->
+<a name="section-FunctionDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Function Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-FunctionDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="_optimize_cplex"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_optimize_cplex</span>(<span class="sig-arg">cobra_model</span>,
+        <span class="sig-arg">new_objective</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">objective_sense</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">maximize</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">min_norm</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">the_problem</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">tolerance_optimality</span>=<span class="sig-default">1e-06</span>,
+        <span class="sig-arg">tolerance_feasibility</span>=<span class="sig-default">1e-06</span>,
+        <span class="sig-arg">tolerance_integer</span>=<span class="sig-default">1e-09</span>,
+        <span class="sig-arg">tolerance_barrier</span>=<span class="sig-default">1e-08</span>,
+        <span class="sig-arg">error_reporting</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">print_solver_time</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">lp_method</span>=<span class="sig-default">1</span>,
+        <span class="sig-arg">lp_parallel</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">copy_problem</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">relax_b</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">quadratic_component</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">reuse_basis</span>=<span class="sig-default">True</span>,
+        <span class="sig-arg">update_problem_reaction_bounds</span>=<span class="sig-default">True</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.solvers.legacy-pysrc.html#_optimize_cplex">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Uses the ILOG/CPLEX (www.ibm.com/software/integration/optimization/cplex-optimizer/)
+optimizer to perform an optimization on cobra_model for the objective_coefficients in
+cobra_model._objective_coefficients based on the objective sense.
+
+cobra_model: A cobra.Model object
+
+new_objective: Reaction, String, or Integer referring to a reaction in
+cobra_model.reactions to set as the objective.  Currently, only supports single
+objective coeffients.  Will expand to include mixed objectives.
+
+objective_sense: 'maximize' or 'minimize'
+
+min_norm: not implemented
+
+the_problem: None or a problem object for the specific solver that can be used to hot
+start the next solution.
+
+tolerance_optimality: Solver tolerance for optimality.
+
+tolerance_feasibility: Solver tolerance for feasibility.
+
+error_reporting: None or True to disable or enable printing errors encountered
+when trying to find the optimal solution.
+
+print_solver_time: False or True.  Indicates if the time to calculate the solution
+should be displayed.
+
+quadratic_component: None or 
+      scipy.sparse.dok of dim(len(cobra_model.reactions),len(cobra_model.reactions))
+     If not None:
+      Solves quadratic programming problems for cobra_models of the form:
+      minimize: 0.5 * x' * quadratic_component * x + cobra_model._objective_coefficients' * x
+      such that,
+        cobra_model._lower_bounds &lt;= x &lt;= cobra_model._upper_bounds
+        cobra_model._S * x (cobra_model._constraint_sense) cobra_model._b
+        
+reuse_basis: Boolean.  If True and the_problem is a model object for the solver,
+attempt to hot start the solution.
+
+
+update_problem_reaction_bounds: Boolean.  Set to True if you're providing the_problem
+and you've modified reaction bounds on your cobra_model since creating the_problem.  Only
+necessary for CPLEX
+
+method for linear optimization: 0 = automatic
+1 = primal simplex, 2 = dual simplex, 3 = network simplex,
+4 = barrier, 5 = sifting, 6 = concurrent dual, barrier, and primal
+
+lp.solve() with Salmonella model:
+     cold start: 0.05 seconds
+     hot start: 0.05 seconds (slow due to copying the LP)
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_optimize_gurobi"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_optimize_gurobi</span>(<span class="sig-arg">cobra_model</span>,
+        <span class="sig-arg">new_objective</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">objective_sense</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">maximize</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">min_norm</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">the_problem</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">tolerance_optimality</span>=<span class="sig-default">1e-06</span>,
+        <span class="sig-arg">tolerance_feasibility</span>=<span class="sig-default">1e-06</span>,
+        <span class="sig-arg">tolerance_barrier</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">tolerance_integer</span>=<span class="sig-default">1e-09</span>,
+        <span class="sig-arg">error_reporting</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">print_solver_time</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">copy_problem</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">lp_method</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">relax_b</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">quad_precision</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">quadratic_component</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">reuse_basis</span>=<span class="sig-default">True</span>,
+        <span class="sig-arg">lp_parallel</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">update_problem_reaction_bounds</span>=<span class="sig-default">True</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.solvers.legacy-pysrc.html#_optimize_gurobi">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Uses the gurobi (http://gurobi.com) optimizer to perform an optimization on cobra_model
+for the objective_coefficients in cobra_model._objective_coefficients based
+on objective sense.
+
+cobra_model: A cobra.Model object
+
+new_objective: Reaction, String, or Integer referring to a reaction in
+cobra_model.reactions to set as the objective.  Currently, only supports single
+objective coeffients.  Will expand to include mixed objectives.
+
+objective_sense: 'maximize' or 'minimize'
+
+min_norm: not implemented
+
+the_problem: None or a problem object for the specific solver that can be used to hot
+start the next solution.
+
+tolerance_optimality: Solver tolerance for optimality.
+
+tolerance_feasibility: Solver tolerance for feasibility.
+
+quad_precision: Boolean.  Whether or not to used quad precision in calculations
+
+error_reporting: None or True to disable or enable printing errors encountered
+when trying to find the optimal solution.
+
+print_solver_time: False or True.  Indicates if the time to calculate the solution
+should be displayed.
+
+
+quadratic_component: None or 
+      scipy.sparse.dok of dim(len(cobra_model.reactions),len(cobra_model.reactions))
+     If not None:
+      Solves quadratic programming problems for cobra_models of the form:
+      minimize: 0.5 * x' * quadratic_component * x + cobra_model._objective_coefficients' * x
+      such that,
+        cobra_model._lower_bounds &lt;= x &lt;= cobra_model._upper_bounds
+        cobra_model._S * x (cobra_model._constraint_sense) cobra_model._b
+
+        NOTE: When solving quadratic problems it may be necessary to disable quad_precision
+        and use lp_method = 0 for gurobi.
+
+reuse_basis: Boolean.  If True and the_problem is a model object for the solver,
+attempt to hot start the solution.
+
+update_problem_reaction_bounds: Boolean.  Set to True if you're providing the_problem
+and you've modified reaction bounds on your cobra_model since creating the_problem.  Only
+necessary for CPLEX
+
+lp_parallel: Not implemented
+
+lp.optimize() with Salmonella model:
+     cold start: 0.063 seconds
+     hot start: 0.057 seconds (Slow due to copying the LP)
+     
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_optimize_glpk"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_optimize_glpk</span>(<span class="sig-arg">cobra_model</span>,
+        <span class="sig-arg">new_objective</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">objective_sense</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">maximize</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">min_norm</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">the_problem</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">tolerance_optimality</span>=<span class="sig-default">1e-06</span>,
+        <span class="sig-arg">tolerance_feasibility</span>=<span class="sig-default">1e-06</span>,
+        <span class="sig-arg">tolerance_integer</span>=<span class="sig-default">1e-09</span>,
+        <span class="sig-arg">error_reporting</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">print_solver_time</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">lp_method</span>=<span class="sig-default">1</span>,
+        <span class="sig-arg">quadratic_component</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">reuse_basis</span>=<span class="sig-default">True</span>,
+        <span class="sig-arg">tolerance_barrier</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">lp_parallel</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">copy_problem</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">relax_b</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">update_problem_reaction_bounds</span>=<span class="sig-default">True</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="cobra.solvers.legacy-pysrc.html#_optimize_glpk">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Uses the GLPK (www.gnu.org/software/glpk/) optimizer via pyglpk
+(http://www.tfinley.net/software/pyglpk/release.html) to perform an optimization
+on cobra_model for the objective_coefficients in cobra_model._objective_coefficients
+based on the objective sense.
+
+cobra_model: A cobra.Model object
+
+new_objective: Reaction, String, or Integer referring to a reaction in
+cobra_model.reactions to set as the objective.  Currently, only supports single
+objective coeffients.  Will expand to include mixed objectives.
+
+objective_sense: 'maximize' or 'minimize'
+
+min_norm: not implemented
+
+the_problem: None or a problem object for the specific solver that can be used to hot
+start the next solution.
+
+tolerance_optimality: Solver tolerance for optimality.
+
+tolerance_feasibility: Solver tolerance for feasibility.
+
+error_reporting: None or True to disable or enable printing errors encountered
+when trying to find the optimal solution.
+
+print_solver_time: False or True.  Indicates if the time to calculate the solution
+should be displayed.
+
+quadratic_component: None.  GLPK cannot solve quadratic programs at the moment.
+
+reuse_basis: Boolean.  If True and the_problem is a model object for the solver,
+attempt to hot start the solution.  Currently, only True is available for GLPK
+
+
+update_problem_reaction_bounds: Boolean.  Set to True if you're providing the_problem
+and you've modified reaction bounds on your cobra_model since creating the_problem.  Only
+necessary for CPLEX
+
+lp.simplex() with Salmonella model:
+     cold start: 0.42 seconds
+     hot start: 0.0013 seconds
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== VARIABLES DETAILS ==================== -->
+<a name="section-VariablesDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-VariablesDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="status_dict"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">status_dict</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+<code class="variable-group">{</code><code class="variable-quote">'</code><code class="variable-string">cplex</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string">{\'MIP_infeasible\': \'infeasible\', \'MIP_optimal\': \'opt</code><span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+<code class="variable-string">imal\', \'MIP_optimal_tolerance\': \'optimal\',  \'MIP_unbounded\': \'</code><span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+<code class="variable-string">unbounded\', \'infeasible\': \'infeasible\', \'optimal\': \'optimal\',</code><span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+<code class="variable-string"> \'optimal_tolerance\': \'optimal\', \'unbounded\': \'unbounded\'}</code><code class="variable-quote">'</code><code class="variable-op">,</code>
+ <code class="variable-quote">'</code><code class="variable-string">glpk</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string">{\'opt\': \'optimal\', \'nofeas\': \'infeasible\', \'unbnd\'</code><span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+<code class="variable-string">: \'unbounded\'}</code><code class="variable-quote">'</code><code class="variable-op">,</code>
+ <code class="variable-quote">'</code><code class="variable-string">gurobi</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string">{GRB.OPTIMAL: \'optimal\', GRB.INFEASIBLE: \'infeasible\',</code><span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+<code class="variable-string"> GRB.UNBOUNDED: \'unbounded\'}</code><code class="variable-quote">'</code><code class="variable-group">}</code>
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="variable_kind_dict"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">variable_kind_dict</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+<code class="variable-group">{</code><code class="variable-quote">'</code><code class="variable-string">cplex</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string">{\'continuous\': Cplex.variables.type.continuous, \'integer</code><span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+<code class="variable-string">\': Cplex.variables.type.integer}</code><code class="variable-quote">'</code><code class="variable-op">,</code>
+ <code class="variable-quote">'</code><code class="variable-string">glpk</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string">{\'continuous\': float, \'integer\': int}</code><code class="variable-quote">'</code><code class="variable-op">,</code>
+ <code class="variable-quote">'</code><code class="variable-string">gurobi</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string">{\'continuous\': GRB.CONTINUOUS, \'integer\': GRB.INTEGER}</code><code class="variable-quote"></code><span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+<code class="variable-quote">'</code><code class="variable-group">}</code>
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Wed Jun 13 15:51:59 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>cobra.io.mat</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="cobra-module.html">Package&nbsp;cobra</a> ::
+        <a href="cobra.io-module.html">Package&nbsp;io</a> ::
+        Module&nbsp;mat
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="cobra.io.mat-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="cobra.io.mat-module.html">Module cobra.io.mat</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment"># try to use an ordered dict, which requires a patch cobra cobra.io</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment"># see http://projects.scipy.org/scipy/attachment/ticket/1566</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"># try:</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line">    <tt class="py-comment"># from collections import OrderedDict as dicttype</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment"># except ImportError:</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line">    <tt class="py-comment"># dicttype = dict</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-name">dicttype</tt> <tt class="py-op">=</tt> <tt class="py-name">dict</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">numpy</tt> <tt class="py-keyword">import</tt> <tt class="py-name">array</tt><tt class="py-op">,</tt> <tt class="py-name">object</tt> <tt class="py-keyword">as</tt> <tt class="py-name">np_object</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">scipy</tt><tt class="py-op">.</tt><tt id="link-0" class="py-name" targets="Package cobra.io=cobra.io-module.html"><a title="cobra.io" class="py-name" href="#" onclick="return doclink('link-0', 'io', 'link-0');">io</a></tt> <tt class="py-keyword">import</tt> <tt class="py-name">loadmat</tt><tt class="py-op">,</tt> <tt class="py-name">savemat</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">scipy</tt><tt class="py-op">.</tt><tt class="py-name">sparse</tt> <tt class="py-keyword">import</tt> <tt class="py-name">coo_matrix</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-op">.</tt><tt class="py-op">.</tt> <tt class="py-keyword">import</tt> <tt id="link-1" class="py-name" targets="Class cobra.core.Model'.Model=cobra.core.Model%27.Model-class.html"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-1', 'Model', 'link-1');">Model</a></tt><tt class="py-op">,</tt> <tt id="link-2" class="py-name" targets="Class cobra.core.Metabolite'.Metabolite=cobra.core.Metabolite%27.Metabolite-class.html"><a title="cobra.core.Metabolite'.Metabolite" class="py-name" href="#" onclick="return doclink('link-2', 'Metabolite', 'link-2');">Metabolite</a></tt><tt class="py-op">,</tt> <tt id="link-3" class="py-name" targets="Class cobra.core.Reaction'.Reaction=cobra.core.Reaction%27.Reaction-class.html"><a title="cobra.core.Reaction'.Reaction" class="py-name" href="#" onclick="return doclink('link-3', 'Reaction', 'link-3');">Reaction</a></tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"> </tt>
+<a name="cell"></a><div id="cell-def"><a name="L16"></a><tt class="py-lineno"> 16</tt> <a class="py-toggle" href="#" id="cell-toggle" onclick="return toggle('cell');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.io.mat-module.html#cell">cell</a><tt class="py-op">(</tt><tt class="py-param">x</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="cell-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="cell-expanded"><a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line">    <tt class="py-docstring">"""translate an array x into a MATLAB cell array"""</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">,</tt> <tt class="py-name">dtype</tt><tt class="py-op">=</tt><tt class="py-name">np_object</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"> </tt>
+<a name="load_matlab_model"></a><div id="load_matlab_model-def"><a name="L21"></a><tt class="py-lineno"> 21</tt> <a class="py-toggle" href="#" id="load_matlab_model-toggle" onclick="return toggle('load_matlab_model');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.io.mat-module.html#load_matlab_model">load_matlab_model</a><tt class="py-op">(</tt><tt class="py-param">infile_path</tt><tt class="py-op">,</tt> <tt class="py-param">variable_name</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="load_matlab_model-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="load_matlab_model-expanded"><a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line">    <tt class="py-docstring">"""Load a cobra model stored as a .mat file</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-docstring">    NOTE: INCOMPLETE, does not load GPR's</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-docstring">    Parameters</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-docstring">    ----------</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-docstring">    infile_path : str</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"><tt class="py-docstring">    variable_name : str, optional</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"><tt class="py-docstring">        The variable name of the model in the .mat file. If this is not</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"><tt class="py-docstring">        specified, then the first MATLAB variable which looks like a COBRA</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line"><tt class="py-docstring">        model will be used</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line">    <tt class="py-name">data</tt> <tt class="py-op">=</tt> <tt class="py-name">loadmat</tt><tt class="py-op">(</tt><tt class="py-name">infile_path</tt><tt class="py-op">)</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">variable_name</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">        <tt class="py-name">possible_names</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">variable_name</tt><tt class="py-op">]</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line">    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line">        <tt class="py-comment"># will try all of the variables in the dict</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">        <tt class="py-name">possible_names</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">key</tt> <tt class="py-keyword">in</tt> <tt class="py-name">data</tt><tt class="py-op">.</tt><tt class="py-name">keys</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line">            <tt class="py-name">possible_names</tt><tt class="py-op">[</tt><tt class="py-name">key</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">        <tt class="py-comment"># skip meta variables</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">        <tt class="py-name">to_remove</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-string">"__globals__"</tt><tt class="py-op">,</tt> <tt class="py-string">"__header__"</tt><tt class="py-op">,</tt> <tt class="py-string">"__version__"</tt><tt class="py-op">]</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">        <tt class="py-name">to_pop</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">name</tt> <tt class="py-keyword">in</tt> <tt class="py-name">possible_names</tt><tt class="py-op">:</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">name</tt> <tt class="py-keyword">in</tt> <tt class="py-name">to_remove</tt><tt class="py-op">:</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">                <tt class="py-name">to_pop</tt><tt class="py-op">.</tt><tt id="link-4" class="py-name" targets="Method cobra.core.DictList'.DictList.append()=cobra.core.DictList%27.DictList-class.html#append"><a title="cobra.core.DictList'.DictList.append" class="py-name" href="#" onclick="return doclink('link-4', 'append', 'link-4');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">name</tt><tt class="py-op">)</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-name">to_pop</tt><tt class="py-op">:</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">            <tt class="py-name">possible_names</tt><tt class="py-op">.</tt><tt id="link-5" class="py-name" targets="Method cobra.core.DictList'.DictList.pop()=cobra.core.DictList%27.DictList-class.html#pop,Method cobra.core.Reaction'.Reaction.pop()=cobra.core.Reaction%27.Reaction-class.html#pop"><a title="cobra.core.DictList'.DictList.pop
+cobra.core.Reaction'.Reaction.pop" class="py-name" href="#" onclick="return doclink('link-5', 'pop', 'link-5');">pop</a></tt><tt class="py-op">(</tt><tt class="py-name">i</tt><tt class="py-op">)</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">        <tt class="py-name">possible_names</tt> <tt class="py-op">=</tt> <tt class="py-name">possible_names</tt><tt class="py-op">.</tt><tt class="py-name">keys</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">possible_name</tt> <tt class="py-keyword">in</tt> <tt class="py-name">possible_names</tt><tt class="py-op">:</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">        <tt class="py-name">m</tt> <tt class="py-op">=</tt> <tt class="py-name">data</tt><tt class="py-op">[</tt><tt class="py-name">possible_name</tt><tt class="py-op">]</tt>  <tt class="py-comment"># TODO: generalize</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">m</tt><tt class="py-op">.</tt><tt class="py-name">dtype</tt><tt class="py-op">.</tt><tt class="py-name">names</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">            <tt class="py-keyword">continue</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">set</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-string">"rxns"</tt><tt class="py-op">,</tt> <tt class="py-string">"mets"</tt><tt class="py-op">,</tt> <tt class="py-string">"S"</tt><tt class="py-op">,</tt> <tt class="py-string">"lb"</tt><tt class="py-op">,</tt> <tt class="py-string">"ub"</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> \ </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line">                <tt class="py-op">&lt;=</tt> <tt class="py-name">set</tt><tt class="py-op">(</tt><tt class="py-name">m</tt><tt class="py-op">.</tt><tt class="py-name">dtype</tt><tt class="py-op">.</tt><tt class="py-name">names</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">            <tt class="py-keyword">continue</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line">        <tt class="py-name">model</tt> <tt class="py-op">=</tt> <tt id="link-6" class="py-name"><a title="cobra.core.Model'.Model" class="py-name" href="#" onclick="return doclink('link-6', 'Model', 'link-1');">Model</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">        <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">id</tt> <tt class="py-op">=</tt> <tt class="py-name">m</tt><tt class="py-op">[</tt><tt class="py-string">"description"</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line">        <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">description</tt> <tt class="py-op">=</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">id</tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt><tt class="py-op">,</tt> <tt class="py-name">name</tt> <tt class="py-keyword">in</tt> <tt class="py-name">enumerate</tt><tt class="py-op">(</tt><tt class="py-name">m</tt><tt class="py-op">[</tt><tt class="py-string">"mets"</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">            <tt class="py-name">new_metabolite</tt> <tt class="py-op">=</tt> <tt id="link-7" class="py-name"><a title="cobra.core.Metabolite'.Metabolite" class="py-name" href="#" onclick="return doclink('link-7', 'Metabolite', 'link-2');">Metabolite</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">            <tt class="py-name">new_metabolite</tt><tt class="py-op">.</tt><tt class="py-name">id</tt> <tt class="py-op">=</tt> <tt class="py-name">name</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">            <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">                <tt class="py-name">new_metabolite</tt><tt class="py-op">.</tt><tt class="py-name">name</tt> <tt class="py-op">=</tt> <tt class="py-name">m</tt><tt class="py-op">[</tt><tt class="py-string">"metNames"</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line">                <tt class="py-name">new_metabolite</tt><tt class="py-op">.</tt><tt class="py-name">formula</tt> <tt class="py-op">=</tt> <tt class="py-name">m</tt><tt class="py-op">[</tt><tt class="py-string">"metFormulas"</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line">            <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">            <tt class="py-name">model</tt><tt class="py-op">.</tt><tt id="link-8" class="py-name" targets="Method cobra.core.ArrayBasedModel'.ArrayBasedModel.add_metabolites()=cobra.core.ArrayBasedModel%27.ArrayBasedModel-class.html#add_metabolites,Method cobra.core.Model'.Model.add_metabolites()=cobra.core.Model%27.Model-class.html#add_metabolites,Method cobra.core.Reaction'.Reaction.add_metabolites()=cobra.core.Reaction%27.Reaction-class.html#add_metabolites"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.add_metabolites
+cobra.core.Model'.Model.add_metabolites
+cobra.core.Reaction'.Reaction.add_metabolites" class="py-name" href="#" onclick="return doclink('link-8', 'add_metabolites', 'link-8');">add_metabolites</a></tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-name">new_metabolite</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt><tt class="py-op">,</tt> <tt class="py-name">name</tt> <tt class="py-keyword">in</tt> <tt class="py-name">enumerate</tt><tt class="py-op">(</tt><tt class="py-name">m</tt><tt class="py-op">[</tt><tt class="py-string">"rxns"</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">            <tt class="py-name">new_reaction</tt> <tt class="py-op">=</tt> <tt id="link-9" class="py-name"><a title="cobra.core.Reaction'.Reaction" class="py-name" href="#" onclick="return doclink('link-9', 'Reaction', 'link-3');">Reaction</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">            <tt class="py-name">new_reaction</tt><tt class="py-op">.</tt><tt class="py-name">id</tt> <tt class="py-op">=</tt> <tt class="py-name">name</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">            <tt class="py-name">new_reaction</tt><tt class="py-op">.</tt><tt class="py-name">lower_bound</tt> <tt class="py-op">=</tt> <tt class="py-name">m</tt><tt class="py-op">[</tt><tt class="py-string">"lb"</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">            <tt class="py-name">new_reaction</tt><tt class="py-op">.</tt><tt class="py-name">upper_bound</tt> <tt class="py-op">=</tt> <tt class="py-name">m</tt><tt class="py-op">[</tt><tt class="py-string">"ub"</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">            <tt class="py-name">new_reaction</tt><tt class="py-op">.</tt><tt class="py-name">objective_coefficient</tt> <tt class="py-op">=</tt> <tt class="py-name">m</tt><tt class="py-op">[</tt><tt class="py-string">"c"</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">            <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">                <tt class="py-name">new_reaction</tt><tt class="py-op">.</tt><tt class="py-name">name</tt> <tt class="py-op">=</tt> <tt class="py-name">m</tt><tt class="py-op">[</tt><tt class="py-string">"rxnNames"</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">            <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">            <tt class="py-name">model</tt><tt class="py-op">.</tt><tt id="link-10" class="py-name" targets="Method cobra.core.ArrayBasedModel'.ArrayBasedModel.add_reactions()=cobra.core.ArrayBasedModel%27.ArrayBasedModel-class.html#add_reactions,Method cobra.core.Model'.Model.add_reactions()=cobra.core.Model%27.Model-class.html#add_reactions"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.add_reactions
+cobra.core.Model'.Model.add_reactions" class="py-name" href="#" onclick="return doclink('link-10', 'add_reactions', 'link-10');">add_reactions</a></tt><tt class="py-op">(</tt><tt class="py-name">new_reaction</tt><tt class="py-op">)</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">        <tt class="py-name">coo</tt> <tt class="py-op">=</tt> <tt class="py-name">coo_matrix</tt><tt class="py-op">(</tt><tt class="py-name">m</tt><tt class="py-op">[</tt><tt class="py-string">"S"</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt><tt class="py-op">,</tt> <tt class="py-name">j</tt><tt class="py-op">,</tt> <tt class="py-name">v</tt> <tt class="py-keyword">in</tt> <tt class="py-name">zip</tt><tt class="py-op">(</tt><tt class="py-name">coo</tt><tt class="py-op">.</tt><tt class="py-name">row</tt><tt class="py-op">,</tt> <tt class="py-name">coo</tt><tt class="py-op">.</tt><tt class="py-name">col</tt><tt class="py-op">,</tt> <tt class="py-name">coo</tt><tt class="py-op">.</tt><tt class="py-name">data</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">            <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt><tt class="py-op">[</tt><tt class="py-name">j</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt id="link-11" class="py-name"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.add_metabolites
+cobra.core.Model'.Model.add_metabolites
+cobra.core.Reaction'.Reaction.add_metabolites" class="py-name" href="#" onclick="return doclink('link-11', 'add_metabolites', 'link-8');">add_metabolites</a></tt><tt class="py-op">(</tt><tt class="py-op">{</tt><tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">metabolites</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt><tt class="py-op">:</tt> <tt class="py-name">v</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">        <tt class="py-comment"># TODO finish adding GPR's</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">        <tt class="py-name">model</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Method cobra.core.ArrayBasedModel'.ArrayBasedModel.update()=cobra.core.ArrayBasedModel%27.ArrayBasedModel-class.html#update,Method cobra.core.Model'.Model.update()=cobra.core.Model%27.Model-class.html#update"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.update
+cobra.core.Model'.Model.update" class="py-name" href="#" onclick="return doclink('link-12', 'update', 'link-12');">update</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">model</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">    <tt class="py-comment"># If code here is executed, then no model was found.</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">    <tt class="py-keyword">raise</tt> <tt class="py-name">Exception</tt><tt class="py-op">(</tt><tt class="py-string">"no COBRA model found"</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line"> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line"> </tt>
+<a name="save_matlab_model"></a><div id="save_matlab_model-def"><a name="L91"></a><tt class="py-lineno"> 91</tt> <a class="py-toggle" href="#" id="save_matlab_model-toggle" onclick="return toggle('save_matlab_model');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="cobra.io.mat-module.html#save_matlab_model">save_matlab_model</a><tt class="py-op">(</tt><tt class="py-param">model</tt><tt class="py-op">,</tt> <tt class="py-param">file_name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="save_matlab_model-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="save_matlab_model-expanded"><a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">    <tt class="py-docstring">"""Save the cobra model as a .mat file.</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line"><tt class="py-docstring">    This .mat file can be used directly in the MATLAB version of COBRA.</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line"><tt class="py-docstring">    NOTE: this function requires a patched version of scipy.io.savemat</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line"><tt class="py-docstring">    Parameters</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line"><tt class="py-docstring">    ----------</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line"><tt class="py-docstring">    model : cobra.Model</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line"><tt class="py-docstring">    file_name : str or file-like object</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">    <tt class="py-name">model</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name"><a title="cobra.core.ArrayBasedModel'.ArrayBasedModel.update
+cobra.core.Model'.Model.update" class="py-name" href="#" onclick="return doclink('link-13', 'update', 'link-12');">update</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">    <tt class="py-name">rxns</tt> <tt class="py-op">=</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">reactions</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">    <tt class="py-name">mets</tt> <tt class="py-op">=</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">metabolites</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">    <tt id="link-14" class="py-name" targets="Module cobra.io.mat=cobra.io.mat-module.html"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-14', 'mat', 'link-14');">mat</a></tt> <tt class="py-op">=</tt> <tt class="py-name">dicttype</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">    <tt class="py-name">csense</tt> <tt class="py-op">=</tt> <tt class="py-string">""</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">m</tt> <tt class="py-keyword">in</tt> <tt class="py-name">mets</tt><tt class="py-op">:</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">        <tt class="py-name">csense</tt> <tt class="py-op">+=</tt> <tt class="py-name">m</tt><tt class="py-op">.</tt><tt class="py-name">_constraint_sense</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">    <tt id="link-15" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-15', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"mets"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-16" class="py-name" targets="Function cobra.io.mat.cell()=cobra.io.mat-module.html#cell"><a title="cobra.io.mat.cell" class="py-name" href="#" onclick="return doclink('link-16', 'cell', 'link-16');">cell</a></tt><tt class="py-op">(</tt><tt class="py-name">mets</tt><tt class="py-op">.</tt><tt id="link-17" class="py-name" targets="Method cobra.core.DictList'.DictList.list_attr()=cobra.core.DictList%27.DictList-class.html#list_attr"><a title="cobra.core.DictList'.DictList.list_attr" class="py-name" href="#" onclick="return doclink('link-17', 'list_attr', 'link-17');">list_attr</a></tt><tt class="py-op">(</tt><tt class="py-string">"id"</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">    <tt id="link-18" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-18', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"metNames"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-19" class="py-name"><a title="cobra.io.mat.cell" class="py-name" href="#" onclick="return doclink('link-19', 'cell', 'link-16');">cell</a></tt><tt class="py-op">(</tt><tt class="py-name">mets</tt><tt class="py-op">.</tt><tt id="link-20" class="py-name"><a title="cobra.core.DictList'.DictList.list_attr" class="py-name" href="#" onclick="return doclink('link-20', 'list_attr', 'link-17');">list_attr</a></tt><tt class="py-op">(</tt><tt class="py-string">"name"</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">    <tt id="link-21" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-21', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"metFormulas"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-22" class="py-name"><a title="cobra.io.mat.cell" class="py-name" href="#" onclick="return doclink('link-22', 'cell', 'link-16');">cell</a></tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">m</tt><tt class="py-op">.</tt><tt class="py-name">formula</tt><tt class="py-op">)</tt> <tt class="py-keyword">for</tt> <tt class="py-name">m</tt> <tt class="py-keyword">in</tt> <tt class="py-name">mets</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">    <tt id="link-23" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-23', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"genes"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-24" class="py-name"><a title="cobra.io.mat.cell" class="py-name" href="#" onclick="return doclink('link-24', 'cell', 'link-16');">cell</a></tt><tt class="py-op">(</tt><tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">genes</tt><tt class="py-op">.</tt><tt id="link-25" class="py-name"><a title="cobra.core.DictList'.DictList.list_attr" class="py-name" href="#" onclick="return doclink('link-25', 'list_attr', 'link-17');">list_attr</a></tt><tt class="py-op">(</tt><tt class="py-string">"id"</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">    <tt id="link-26" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-26', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"grRules"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-27" class="py-name"><a title="cobra.io.mat.cell" class="py-name" href="#" onclick="return doclink('link-27', 'cell', 'link-16');">cell</a></tt><tt class="py-op">(</tt><tt class="py-name">rxns</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name"><a title="cobra.core.DictList'.DictList.list_attr" class="py-name" href="#" onclick="return doclink('link-28', 'list_attr', 'link-17');">list_attr</a></tt><tt class="py-op">(</tt><tt class="py-string">"gene_reaction_rule"</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">    <tt id="link-29" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-29', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"rxns"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-30" class="py-name"><a title="cobra.io.mat.cell" class="py-name" href="#" onclick="return doclink('link-30', 'cell', 'link-16');">cell</a></tt><tt class="py-op">(</tt><tt class="py-name">rxns</tt><tt class="py-op">.</tt><tt id="link-31" class="py-name"><a title="cobra.core.DictList'.DictList.list_attr" class="py-name" href="#" onclick="return doclink('link-31', 'list_attr', 'link-17');">list_attr</a></tt><tt class="py-op">(</tt><tt class="py-string">"id"</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">    <tt id="link-32" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-32', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"rxnNames"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-33" class="py-name"><a title="cobra.io.mat.cell" class="py-name" href="#" onclick="return doclink('link-33', 'cell', 'link-16');">cell</a></tt><tt class="py-op">(</tt><tt class="py-name">rxns</tt><tt class="py-op">.</tt><tt id="link-34" class="py-name"><a title="cobra.core.DictList'.DictList.list_attr" class="py-name" href="#" onclick="return doclink('link-34', 'list_attr', 'link-17');">list_attr</a></tt><tt class="py-op">(</tt><tt class="py-string">"name"</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">    <tt id="link-35" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-35', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"subSystems"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-36" class="py-name"><a title="cobra.io.mat.cell" class="py-name" href="#" onclick="return doclink('link-36', 'cell', 'link-16');">cell</a></tt><tt class="py-op">(</tt><tt class="py-name">rxns</tt><tt class="py-op">.</tt><tt id="link-37" class="py-name"><a title="cobra.core.DictList'.DictList.list_attr" class="py-name" href="#" onclick="return doclink('link-37', 'list_attr', 'link-17');">list_attr</a></tt><tt class="py-op">(</tt><tt class="py-string">"subsystem"</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">    <tt id="link-38" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-38', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"csense"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">csense</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">    <tt id="link-39" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-39', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"S"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">_S</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">    <tt id="link-40" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-40', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"lb"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-name">rxns</tt><tt class="py-op">.</tt><tt id="link-41" class="py-name"><a title="cobra.core.DictList'.DictList.list_attr" class="py-name" href="#" onclick="return doclink('link-41', 'list_attr', 'link-17');">list_attr</a></tt><tt class="py-op">(</tt><tt class="py-string">"lower_bound"</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">    <tt id="link-42" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-42', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"ub"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-name">rxns</tt><tt class="py-op">.</tt><tt id="link-43" class="py-name"><a title="cobra.core.DictList'.DictList.list_attr" class="py-name" href="#" onclick="return doclink('link-43', 'list_attr', 'link-17');">list_attr</a></tt><tt class="py-op">(</tt><tt class="py-string">"upper_bound"</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">    <tt id="link-44" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-44', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"b"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-name">mets</tt><tt class="py-op">.</tt><tt id="link-45" class="py-name"><a title="cobra.core.DictList'.DictList.list_attr" class="py-name" href="#" onclick="return doclink('link-45', 'list_attr', 'link-17');">list_attr</a></tt><tt class="py-op">(</tt><tt class="py-string">"_bound"</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">    <tt id="link-46" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-46', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"c"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-name">rxns</tt><tt class="py-op">.</tt><tt id="link-47" class="py-name"><a title="cobra.core.DictList'.DictList.list_attr" class="py-name" href="#" onclick="return doclink('link-47', 'list_attr', 'link-17');">list_attr</a></tt><tt class="py-op">(</tt><tt class="py-string">"objective_coefficient"</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">    <tt id="link-48" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-48', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"rev"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-name">rxns</tt><tt class="py-op">.</tt><tt id="link-49" class="py-name"><a title="cobra.core.DictList'.DictList.list_attr" class="py-name" href="#" onclick="return doclink('link-49', 'list_attr', 'link-17');">list_attr</a></tt><tt class="py-op">(</tt><tt class="py-string">"reversibility"</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line">    <tt id="link-50" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-50', 'mat', 'link-14');">mat</a></tt><tt class="py-op">[</tt><tt class="py-string">"description"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">description</tt><tt class="py-op">)</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">    <tt class="py-name">savemat</tt><tt class="py-op">(</tt><tt class="py-name">file_name</tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">description</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> <tt id="link-51" class="py-name"><a title="cobra.io.mat" class="py-name" href="#" onclick="return doclink('link-51', 'mat', 'link-14');">mat</a></tt><tt class="py-op">}</tt><tt class="py-op">,</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line">             <tt class="py-name">appendmat</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">,</tt> <tt class="py-name">oned_as</tt><tt class="py-op">=</tt><tt class="py-string">"column"</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cobra-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Wed Jun 13 15:52:01 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
