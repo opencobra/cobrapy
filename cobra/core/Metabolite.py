@@ -113,13 +113,3 @@ class Metabolite(Object):
 #
 #END Class Metabolite
 ########################
-#class MetaboliteReference(Object):
-#Make it access all attributes except the coefficient from the
-#cobra.Metabolite that it contains.
-if __name__ == '__main__':
-    from cPickle import load, dump
-    a = Metabolite('1','C')
-    with open('a.pickle','w') as out_file:
-        dump(a, out_file)
-    with open('a.pickle') as in_file:
-        a = load(in_file)

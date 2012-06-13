@@ -4,18 +4,12 @@
 #
 from collections import defaultdict
 import re,sys
-if hasattr(sys, 'JYTHON_JAR'):
-    raise Exception("Experimental modules of numpy/scipy for java that are" +\
-    "not yet ready for prime time.")
-    raise
-    from cobra.numpy import array, int64, int32
+from numpy import array
+if sys.maxsize > 2**32:
+    from numpy import int64, int32
 else:
-    from numpy import array
-    if sys.maxsize > 2**32:
-        from numpy import int64, int32
-    else:
-        int32 = int
-        int64 = int32
+    int32 = int
+    int64 = int32
 from copy import deepcopy
 from .Object import Object
 from .Metabolite import Metabolite
@@ -516,6 +510,8 @@ class Reaction(Object):
         This can be moved to a tools section
         
         """
+        from warnings import warn
+        warn('Reaction.process_prefixed_reaction is deprecated')
         the_compartment, the_reaction = self.reaction.split(':')
         the_compartment = the_compartment.rstrip(' ')
         the_reaction = the_reaction.lstrip(' ')

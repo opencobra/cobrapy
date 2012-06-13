@@ -3,13 +3,7 @@ from numpy import zeros, matrix, array
 from scipy.sparse import lil_matrix, dok_matrix
 from cPickle import load, dump
 from collections import defaultdict
-def remove_reactions(cobra_model, db_cursor):
-    """This function is only for ME matrix calculations and
-    internal use by the sybep group.
-    
-    """
-    pass
-
+from warnings import warn
 def create_element_matrix(cobra_model, db_cursor=None, me_matrix=False,
                           cas='sympy'):
     """Constructs a matrix of elements x metabolites for the metabolites

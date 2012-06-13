@@ -1,16 +1,6 @@
 #cobra.manipulation.modify.py
-import sys
-#Here we're dealing with the fact that numpy isn't supported in jythong
-#and we've made some numjy modules that use the cern.colt matrices to
-#mimic the used numpy behavior.
-if hasattr(sys, 'JYTHON_JAR'):
-    raise Exception("Experimental modules of numpy/scipy for java that are" +\
-    "not yet ready for prime time.")
-    from cobra.scipy import sparse
-    from cobra.numpy import where, array, ones
-else:
-    from scipy import sparse
-    from numpy import where, array, ones
+from scipy import sparse
+from numpy import where, array, ones
 import re
 from copy import deepcopy
 def prune_unused_metabolites(cobra_model):
@@ -153,13 +143,11 @@ def delete_model_genes(cobra_model, gene_list,
 
 
 if __name__ == '__main__':
-    from cPickle import load
     from time import time
-    solver = 'glpk'
-    test_directory = '../test/data/'
-    with open(test_directory + 'salmonella.pickle') as in_file:
-        cobra_model = load(in_file)
+    from cobra.test import create_test_model
+    cobra_model = create_test_model()
 
+    print "move to test"
     #TODO: Add in tests for each function
     cumulative_deletions=False
     disable_orphans=False

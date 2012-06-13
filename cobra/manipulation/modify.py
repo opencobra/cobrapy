@@ -1,25 +1,9 @@
 #cobra.manipulation.modify.py
-from pdb import set_trace
-import sys
 from copy import deepcopy
-from cobra.core.Metabolite import Metabolite
-from cobra.core.Gene import Gene
+
+from scipy import sparse
+from numpy import where, array, ones
 from cobra.core.Reaction import Reaction
-
-#TODO: Make sure these are compliant with cobra.Reaction
-
-#Here we're dealing with the fact that numpy isn't supported in jythong
-#and we've made some numjy modules that use the cern.colt matrices to
-#mimic the used numpy behavior.
-if hasattr(sys, 'JYTHON_JAR'):
-    raise Exception("Experimental modules of numpy/scipy for java that are" +\
-    "not yet ready for prime time.")
-    from cobra.scipy import sparse
-    from cobra.numpy import where, array, ones
-else:
-    from scipy import sparse
-    from numpy import where, array, ones
-
 def add_exchange_reaction(cobra_model, the_metabolites,
                           reaction_reversibility=False):
     """Adds exchange reactions to a model for a set of metabolites.
@@ -237,14 +221,12 @@ def convert_rule_to_boolean_rule(cobra_model, the_rule,
         return boolean_rule
 
 if __name__ == '__main__':
-    from cPickle import load
     from time import time
-    solver = 'glpk'
-    test_directory = '../test/data/'
-    with open(test_directory + 'salmonella.pickle') as in_file:
-        cobra_model = load(in_file)
+    from cobra.test import create_test_model
+    cobra_model = create_test_model()
 
-    print 'Need to add in tests'
+
+    print 'Move this to test'
     irreversible_model = deepcopy(cobra_model)
     start_time = time()
     convert_to_irreversible(irreversible_model)

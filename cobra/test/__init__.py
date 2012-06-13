@@ -41,3 +41,6 @@ del _abspath
 del _join
 del _split
 del _sep
+
+if __name__ == '__main__':
+    test_all()

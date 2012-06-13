@@ -4,26 +4,13 @@
 #Here we're dealing with the fact that numpy isn't supported in jython
 #and we've made some numjy modules that use the cern.colt matrices to
 #mimic the used numpy behavior.
-import sys
-if hasattr(sys, 'JYTHON_JAR'):
-    raise Exception("Experimental modules of numpy/scipy for java that are" +\
-    "not yet ready for prime time.")
-    from cobra.numpy import array, empty, sign, repeat, vstack, hstack
-    from cobra.numpy import ones, nonzero, zeros
-    from cobra.scipy import sparse
-    from cobra.scipy.sparse import lil_matrix, dok_matrix
-    from cobra.numpy import where, array, ones
-else:
-    from numpy import array, empty, sign, repeat, vstack, hstack
-    from numpy import ones, nonzero, zeros
-    from scipy import sparse
-    from scipy.sparse import lil_matrix, dok_matrix
+from numpy import array, empty, sign, repeat, vstack, hstack
+from numpy import ones, nonzero, zeros
+from scipy import sparse
+from scipy.sparse import lil_matrix, dok_matrix
 from warnings import warn
 from copy import deepcopy
-#from cobra.query import *
-#from ..flux_analysis import optimize_cplex, optimize_glpk, optimize_gurobi
 from ..solvers import optimize
-#from ..solvers import optimize
 from .Object import Object
 from .Reaction import Reaction
 from .Metabolite import Metabolite
@@ -432,22 +419,6 @@ class Model(Object):
             self._objective_coefficients = hstack((self._objective_coefficients,
                                                   objective_coefficients))
         
-
-        #Update the stoichiometric matrix
-        #Using this dictionary speeds up adding reactions by orders of magnitude
-        #because indexing lists is slow in python.
-        #Get stats to decide how to grow self._S
-        #NOTE: This was supplanted by the DictList self.reactions, however,
-        ##this may slow thigns down.
-        ## number_of_reactions = len(reaction_list)
-        ## number_of_reactions_in_model = len(self.reactions) - number_of_reactions
-        ## reaction_to_index_dict = dict(zip([x.id for x in reaction_list],
-        ##                                   range(number_of_reactions_in_model,
-        ##                                         number_of_reactions_in_model +\
-        ##                                         number_of_reactions)))
-
-
-
         #Use dok format to speed up additions.
         coefficient_dictionary = {}
         #SPEED this up. This is the slow part.  Can probably use a dict to index.
@@ -470,12 +441,15 @@ class Model(Object):
         self._update_metabolite_vectors()
 
     def optimize(self, new_objective=None, objective_sense='maximize',
-                 min_norm=0, the_problem=None, solver='glpk', 
-                 error_reporting=None, tolerance_optimality=1e-6,
-                 tolerance_feasibility=1e-6, tolerance_barrier=1e-10,
-                 lp_method=0, lp_parallel=-1, copy_problem=False, relax_b=None,
-                 quadratic_component=None, reuse_basis=False, update_problem_reaction_bounds=True):
+                 the_problem=None, solver='glpk', 
+                 error_reporting=None, quadratic_component=None,
+                 tolerance_optimality=1e-6, tolerance_feasibility=1e-6,
+                 tolerance_barrier=1e-10, lp_method=0,  **kwargs):
         """Optimize self for self._objective_coefficients or new_objective.
+
+        NOTE: Only the most commonly used parameters are presented here.  Additional
+        parameters for cobra.solvers may be available and specified with the
+        appropriate keyword=value.
 
         new_objective: Reaction, String, or Integer referring to a reaction in
         cobra_model.reactions to set as the objective.  Currently, only supports single
@@ -483,8 +457,6 @@ class Model(Object):
         
         objective_sense: 'maximize' or 'minimize'
         
-        min_norm: not implemented
-
         the_problem: None or a problem object for the specific solver that can be used to hot
         start the next solution.
 
@@ -492,7 +464,17 @@ class Model(Object):
         
         error_reporting: None or True to disable or enable printing errors encountered
         when trying to find the optimal solution.
-    
+
+        quadratic_component: None or 
+        scipy.sparse.dok of dim(len(cobra_model.reactions),len(cobra_model.reactions))
+        If not None:
+          Solves quadratic programming problems for cobra_models of the form:
+          minimize: 0.5 * x' * quadratic_component * x + cobra_model._objective_coefficients' * x
+          such that,
+            cobra_model._lower_bounds <= x <= cobra_model._upper_bounds
+            cobra_model._S * x (cobra_model._constraint_sense) cobra_model._b
+
+   
         #See cobra.flux_analysis.solvers for more info on the following parameters.  Also,
         refer to your solver's manual
         
@@ -504,47 +486,24 @@ class Model(Object):
 
         lp_method: Solver method to solve the problem
 
-        lp_parallel: Try multiple methods at once.  Supported for solver 'cplex'
-
         #End solver parameters
         
-        copy_problem: BooleanCreate a copy of the_problem before solving.
+        **kwargs: See additional parameters for your specific solver module in
+        cobra.solvers
 
-        relax_b: Float.  Allow for error in the linear equality constraints.  Only enable if
-        absolutely necessary, this can result in an inaccurate solution
-
-        quadratic_component: None or 
-        scipy.sparse.dok of dim(len(cobra_model.reactions),len(cobra_model.reactions))
-        If not None:
-          Solves quadratic programming problems for cobra_models of the form:
-          minimize: 0.5 * x' * quadratic_component * x + cobra_model._objective_coefficients' * x
-          such that,
-            cobra_model._lower_bounds <= x <= cobra_model._upper_bounds
-            cobra_model._S * x (cobra_model._constraint_sense) cobra_model._b
         
         """
         the_solution = optimize(self, solver=solver, new_objective=new_objective,
                                 objective_sense=objective_sense,
-                                min_norm=min_norm,
                                 the_problem=the_problem,
-                                
                                 error_reporting=error_reporting,
+                                quadratic_component=quadratic_component,
                                 tolerance_optimality=tolerance_optimality,
                                 tolerance_feasibility=tolerance_feasibility,
                                 tolerance_barrier=tolerance_barrier,
-                                lp_method=lp_method, lp_parallel=lp_parallel,
-                                copy_problem=copy_problem, relax_b=relax_b,
-                                quadratic_component=quadratic_component,
-                                reuse_basis=reuse_basis,
-                                update_problem_reaction_bounds=update_problem_reaction_bounds)
+                                lp_method=lp_method, 
+                                **kwargs)
         return the_solution
-
-    def get_active_genes(self):
-        """
-        TODO: Move to Solution
-        """
-        raise Exception('cobra.Model.get_active_genes() is no longer functional.  '+\
-                        'This will be associated with cobra.Model.Solution in the future.')
 
     
     def check_reaction_mass_balance(self, reaction_id_list=None,
@@ -556,6 +515,8 @@ class Model(Object):
 
         ignore_boundary_reactions:  Boolean.  If True then ignore reactions
         starting with EX_ or DM_
+
+        TODO: Eventually plug in functions from oven.hyduke.construction.balance
 
         """
         if not reaction_id_list:
@@ -661,33 +622,7 @@ class Model(Object):
             except:
                 print '%s not in %s'%(the_reaction, self)
         
-    #DEPRECATED def find_metabolites_without_formula(self):
-
-    
 #
 #END Class Model
 #####################
-#dead functions
 
-
-if __name__ == '__main__':
-    from cPickle import load
-    from time import time
-    solver = 'glpk'
-    test_directory = '../test/data/'
-    with open(test_directory + 'salmonella.pickle') as in_file:
-        cobra_model = load(in_file)
-    cobra_model.optimize(solver=solver)
-    new_objective=None
-    objective_sense='maximize'
-    min_norm=0
-    the_problem=None
-    solver='glpk'
-    error_reporting=None
-    tolerance_optimality=1e-6
-    tolerance_feasibility=1e-6
-    tolerance_barrier=1e-10
-    lp_method=0
-    lp_parallel=-1
-    copy_problem=False
-    relax_b=None

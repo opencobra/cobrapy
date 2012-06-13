@@ -23,18 +23,16 @@ else:
     del _path
     del _listdir
     del i
-def optimize(cobra_model, **kwargs):
-    if __legacy_solver:
-        #TODO: change solver if other ones fail
+def optimize(cobra_model, solver='glpk', **kwargs):
+    """Wrapper to optimization solvers
+    
 
+    """
+    solver_function = solver_dict[solver]
+    the_solution = None
+    if __legacy_solver:
         def solve_problem(solver_function, kwargs):
             return solver_function(cobra_model, **kwargs)
-
-        from pdb import set_trace
-        solver = kwargs.pop('solver')
-        solver_function = solver_dict[solver]
-        the_solution = None
-        #the_solution = solve_problem(solver_function)
         try:
             the_solution = solve_problem(solver_function, kwargs)
         except Exception, e:
@@ -53,11 +51,16 @@ def optimize(cobra_model, **kwargs):
                     print '%s did not work'%solver
                     continue
 
-        if the_solution is None:
-            cobra_model.solution = None
-            return(the_solution)
-        else:
-            cobra_model.solution = the_solution['the_solution']
-            return(the_solution['the_problem'])
     else:
         raise Exception("New style solvers not yet fully implemented")
+
+
+    #Add the solution to the model.
+    #Please note that it will be faster to dress the reactions and metabolites
+    #with their values within the new style solvers instead of here.
+    if the_solution is None:
+        cobra_model.solution = the_solution
+        return(the_solution)
+    else:
+        cobra_model.solution = the_solution['the_solution']
+        return(the_solution['the_problem'])

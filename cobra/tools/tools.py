@@ -1,6 +1,5 @@
 #cobra.tools.py
 #System modules
-from pdb import set_trace
 import numpy, os, re, scipy, sys
 from copy import deepcopy
 from cPickle import dump

@@ -343,3 +343,95 @@ if __name__ == '__main__':
                 print 'Passed MOMA double_deletion with tpiA & metN deletion in %1.4f seconds'%(time() - start_time)
             else:
                 print 'failed double deletion'
+
+
+#####
+#turn into a double deletion unit test
+if __name__ == '__main__':
+    from cPickle import load
+    from time import time
+    from math import floor
+    from numpy import array
+    the_problem='return'
+    element_type='gene'
+    error_reporting=None
+    from cobra.manipulation import initialize_growth_medium
+    from cobra.test import salmonella_pickle
+    with open(salmonella_pickle) as in_file:
+        cobra_model = load(in_file)
+    initialize_growth_medium(cobra_model, 'LB')
+    the_names = ['tpiA', 'metN', 'atpA', 'eno']
+    the_loci =  ['STM4081', 'STM0247', 'STM3867', 'STM2952']
+    the_genes = tpiA, metN, atpA, eno = map(cobra_model.genes.get_by_id, the_loci)
+    growth_dict = {'moma': {tpiA:1.61, metN:2.39, atpA:1.40, eno:0.33},
+                   'fba':{tpiA:2.41, metN:2.43, atpA:1.87, eno:1.81}}
+    growth_dict = {'moma':{'data': array([[1.61, 1.60, 0.95, 0.17],
+                                          [1.60, 2.39, 1.40, 0.30],
+                                          [0.95, 1.40, 1.40, 0.00],
+                                          [0.17, 0.30, 0.00, 0.33]]),
+                           'x': the_genes,
+                           'y': the_genes},
+                   'fba': {'data': array([[2.41, 2.38, 1.77, 1.81],
+                                          [2.38, 2.43, 1.86, 1.79],
+                                          [1.77, 1.86, 1.87, 1.32],
+                                          [1.81, 1.79, 1.32, 1.81]]),
+                           'x': the_genes,
+                           'y': the_genes}
+                   }
+    solver_list = ['glpk',
+                   'gurobi',
+                   'cplex']
+    try:
+        import glpk
+    except:
+        solver_list.remove('glpk')
+    try:
+        from gurobipy import Model
+    except:
+        solver_list.remove('gurobi')
+    try:
+        from cplex import Cplex
+    except:
+        solver_list.remove('cplex')
+ 
+    for solver in solver_list:
+        print 'testing solver: ' + solver
+        for method, the_growth_rates in growth_dict.items():
+            if method == 'moma':
+                print "MOMA isn't functional now, check back later"
+                continue
+            print '\twith method: ' + method 
+            element_list_1 = the_growth_rates['x']
+            element_list_2 = the_growth_rates['y']
+            data = the_growth_rates['data']
+            start_time = time()
+            the_solution = double_deletion(cobra_model, element_list_1=element_list_1,
+                                           element_list_2=element_list_2,
+                                           method=method,  the_problem=the_problem,
+                                           element_type=element_type,
+                                           solver=solver,
+                                           error_reporting=error_reporting)
+
+            s_data = the_solution['data']
+            print 'Double deletion simulation of %i genes ran in %1.3f seconds'%(s_data.size,
+                                                                                 time()-start_time)
+            s_x = the_solution['x']
+            s_y = the_solution['y']
+            for gene_x in element_list_1:
+                for gene_y in element_list_2:
+                    expected_value = data[element_list_1.index(gene_x),
+                                          element_list_2.index(gene_y)]
+                    simulated_value = floor(100*s_data[s_x.index(gene_x),
+                                                       s_y.index(gene_y)])/100
+                    if simulated_value != expected_value:
+                        print '\t\tFAILED: %s/%s simulation (%1.3f) != expectation (%1.3f)'%(gene_x.name,
+                                                                                             gene_y.name,
+                                                                                             simulated_value,
+                                                                                             expected_value)
+                    else:
+                        print '\t\tPASSED: %s/%s simulation (%1.3f) ~= expectation (%1.3f)'%(gene_x.name,
+                                                                                             gene_y.name,
+                                                                                             simulated_value,
+                                                                                         expected_value)
+
+            
