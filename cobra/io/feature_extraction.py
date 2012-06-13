@@ -9,7 +9,7 @@ import rpy2.robjects.numpy2ri
 robjects.numpy2ri.activate()
 from collections import defaultdict
 from warnings import warn
-from cobra.stats.tools import collapse_fields
+from ..stats.tools import collapse_fields
 warn("WARNING: cobra.io.feature_extraction is not ready for general use ")
 
 def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',

@@ -5,9 +5,9 @@ from math import floor,ceil
 from numpy import hstack,zeros
 from scipy import sparse
 from copy import deepcopy
-from cobra.core.Metabolite import Metabolite
+from ..core.Metabolite import Metabolite
 try:
-    from cobra.external.ppmap import ppmap
+    from ..external.ppmap import ppmap
     __parallel_mode_available = True
 except:
     __parallel_mode_available = False
@@ -17,7 +17,7 @@ def flux_variability_analysis_wrapper(keywords):
     
     """
     from cPickle import dump
-    from cobra.flux_analysis.variability import flux_variability_analysis
+    from .variability import flux_variability_analysis
     results_dict = {}
     new_objective = keywords.pop('new_objective')
     output_directory = None
@@ -228,9 +228,9 @@ def run_fva(solver='cplex'):
     For debugging purposes only
     
     """
-    test_directory = '../test/data/'
+    from test import salmonella_pickle
     from cPickle import load
-    with open(test_directory + 'salmonella.pickle') as in_file:
+    with open(salmonella_pickle) as in_file:
         cobra_model = load(in_file)
     fva_out =  flux_variability_analysis(cobra_model,
                                          the_reactions=cobra_model.reactions,#[100:140],
@@ -238,56 +238,3 @@ def run_fva(solver='cplex'):
 
                              
 
-if __name__ == '__main__':
-    from cPickle import load
-    from time import time
-    from cobra.test import salmonella_pickle
-    with open(salmonella_pickle) as in_file:
-        cobra_model = load(in_file)
-
-
-    solver_dict = {'glpk': True,
-                   'gurobi': True,
-                   'cplex': True}
-    try:
-        import glpk
-    except:
-        solver_dict['glpk'] = False
-    try:
-        from gurobipy import Model
-    except:
-        solver_dict['gurobi'] = False
-    try:
-        from cplex import Cplex
-    except:
-        solver_dict['cplex'] = False
-    #The next two lines are used when profiling / debugging
-    #from cProfile import run
-    #for solver in solver_dict.items()[:0]:
-    for solver, solver_status in solver_dict.items():
-        if solver_status:
-            print '\ntesting %s:'%solver
-            print '\tFlux Variability: '
-            the_problem = cobra_model.optimize(the_problem='return', solver=solver)
-            start_time = time()
-            fva_out = flux_variability_analysis(cobra_model,
-                                                the_problem=the_problem,
-                                                the_reactions=cobra_model.reactions,#[100:140],
-                                                solver=solver,number_of_processes=1)
-            print '\thot start: %f'%(time() - start_time)
-            start_time = time()
-            number_of_processes = 5
-            pfva_out = flux_variability_analysis(cobra_model,
-                                                the_problem=the_problem,
-                                                the_reactions=cobra_model.reactions,#[100:140],
-                                                solver=solver,number_of_processes=number_of_processes)
-            print '\t%i processes hot start: %f'%(number_of_processes, time() - start_time)
-            print '\n\tFind Blocked Reactions:'
-            start_time = time()
-            blocked_reactions = find_blocked_reactions(cobra_model,
-                                                       solver=solver)
-            print '\t\t:Basic Model: %f'%(time() - start_time)
-            start_time = time()
-            open_ex_blocked = find_blocked_reactions(cobra_model,
-                                                     open_exchanges=True)
-            print '\t\t:Opened Exchanges: %f'%(time() - start_time)

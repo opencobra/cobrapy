@@ -3,7 +3,7 @@
 #BEGIN Class Gene
 #
 import re
-from Metabolite import Metabolite
+from .Metabolite import Metabolite
 class Gene(Metabolite):
     """A Gene is a special class of metabolite.
     

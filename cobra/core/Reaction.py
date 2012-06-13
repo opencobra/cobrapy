@@ -17,9 +17,9 @@ else:
         int32 = int
         int64 = int32
 from copy import deepcopy
-from Object import Object
-from Metabolite import Metabolite
-from Gene import Gene
+from .Object import Object
+from .Metabolite import Metabolite
+from .Gene import Gene
 class Reaction(Object):
     """Reaction is a class for holding information regarding
     a biochemical reaction in a cobra.Model object 

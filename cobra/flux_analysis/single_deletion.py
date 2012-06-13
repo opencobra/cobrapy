@@ -3,9 +3,9 @@
 from numpy import nan
 from time import time
 from copy import deepcopy
-from cobra.manipulation import initialize_growth_medium
-from cobra.manipulation import delete_model_genes, undelete_model_genes
-from cobra.flux_analysis.moma import moma
+from ..manipulation import initialize_growth_medium
+from ..manipulation import delete_model_genes, undelete_model_genes
+from .moma import moma
 def single_deletion(cobra_model, element_list=None,
                     method='fba', the_problem='return',
                     element_type='gene', solver='glpk',
@@ -268,75 +268,6 @@ def single_gene_deletion(cobra_model, element_list=None,
     
     return(growth_rate_dict, solution_status_dict, problem_dict)
 
-if __name__ == '__main__':
-    from cPickle import load
-    from time import time
-    from math import floor
-    from cobra.test import salmonella_pickle
-    method='moma'
-    the_problem='return'
-    element_type='gene'
-    error_reporting=None
-    from cobra.manipulation import initialize_growth_medium
-    with open(salmonella_pickle) as in_file:
-        cobra_model = load(in_file)
 
-
-    initialize_growth_medium(cobra_model, 'LB')
-    #Expected growth rates for the salmonella model with deletions in LB medium
-    the_loci =  ['STM4081', 'STM0247', 'STM3867', 'STM2952']
-    the_genes = tpiA, metN, atpA, eno = map(cobra_model.genes.get_by_id, the_loci)
-    id_to_name = dict([(x.id, x.name) for x in the_genes])
-    growth_dict = {'moma': {tpiA.id:1.61, metN.id:2.39, atpA.id:1.40, eno.id:0.33},
-                   'fba':{tpiA.id:2.41, metN.id:2.43, atpA.id:1.87, eno.id:1.81}}
-
-    solver_list = ['glpk',
-                   'gurobi',
-                   'cplex']
-    try:
-        import glpk
-    except:
-        solver_list.remove('glpk')
-    try:
-        from gurobipy import Model
-    except:
-        solver_list.remove('gurobi')
-    try:
-        from cplex import Cplex
-    except:
-        solver_list.remove('cplex')
-
-    for solver in solver_list:
-        print 'testing solver: ' + solver
-        for method, the_growth_rates in growth_dict.items():
-            if method == 'moma':
-                print "Can't do MOMA now.  Try back later."
-                continue
-            print '\twith method: ' + method 
-            element_list = the_growth_rates.keys()
-            start_time = time()
-            rates, statuses, problems = single_deletion(cobra_model,
-                                                        element_list=element_list,
-                                                        method=method,
-                                                        the_problem=the_problem,
-                                                        element_type=element_type,
-                                                        solver=solver,
-                                                        error_reporting=error_reporting)
-            for the_gene, v in statuses.items():
-                if v != 'optimal':
-                    print '\t\tdeletion %s was not optimal'%the_gene
-            for the_gene, v in rates.items():
-                v = floor(100*v)/100
-                if v != the_growth_rates[the_gene]:
-                    print '\t\tFAILED: %s simulation (%1.3f) != expectation (%1.2f)'%(id_to_name[the_gene],
-                                                                                     v,
-                                                                                     the_growth_rates[the_gene])
-                else:
-                    print '\t\tPASSED: %s simulation (%1.3f) ~= expectation (%1.2f)'%(id_to_name[the_gene],
-                                                                                     v,
-                                                                                     the_growth_rates[the_gene])
-
-
-            print '\t\tsingle deletion time: %f seconds'%(time() - start_time)
 
  

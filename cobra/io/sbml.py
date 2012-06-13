@@ -1,7 +1,7 @@
 #cobra/sbml.py: Tools for reading / writing SBML now contained in
 #this module
 #System modules
-from cobra import Model, Reaction, Metabolite, Formula
+from .. import Model, Reaction, Metabolite, Formula
 from os.path import isfile
 from copy import deepcopy
 from numpy import zeros
@@ -489,49 +489,39 @@ def add_sbml_species(sbml_model, cobra_metabolite,                              
         sbml_species.setNotes(tmp_note + '</html>')
     return metabolite_id
 
-if __name__ == '__main__':
-    from cPickle import load
-    from time import time
-    from math import floor
-    from os.path import lexists
-    from os import getcwd, unlink
-    from cobra.manipulation import initialize_growth_medium
-    from cobra.test import salmonella_sbml, salmonella_pickle
-    solver = 'glpk'
-    sbml_filename = salmonella_sbml
-    test_filename = salmonella_pickle
-    if not lexists(test_filename):
-        print "Cannot get to test_filename %s from current location %s"%(test_filename,
-                                                                     getcwd())
-    else:
-        from time import time
-        legacy_metabolite = old_sbml = False
-        use_hyphens = print_time = False
-        sbml_level = 2
-        sbml_version = 1
 
-        with open(test_filename) as in_file:
-            old_model = cobra_model = load(in_file)
-        initialize_growth_medium(cobra_model, 'M9')
-        cobra_model.optimize(solver=solver)
-        growth_rate =  floor(1000*cobra_model.solution.f)/1000
-        print 'Writing SBML to %s'%sbml_filename
-        start_time = time()
-        write_cobra_model_to_sbml_file(cobra_model, sbml_filename, sbml_level,
-                                       sbml_version, print_time=print_time)
-        print 'Time to write SBML file: %1.2f seconds'%(time() - start_time)
-        print 'Reading SBML'
-        start_time = time()
-        cobra_model = create_cobra_model_from_sbml_file(sbml_filename, print_time=print_time,
-                                                        use_hyphens=use_hyphens)
-        print 'Time to load SBML file: %1.2f seconds'%(time() - start_time)
-        cobra_model.optimize(solver=solver)
-        tmp_result = floor(1000*cobra_model.solution.f)/1000
-        if tmp_result == growth_rate:
-            print "PASSED: Optimization for growth (%1.3f) ~= expectation (%1.3f)"%(tmp_result,
-                                                                                 growth_rate)
-        else:
-            print "FAILED: Optimization for growth (%1.3f) != expectation (%1.3f)"%(tmp_result,
-                                                                                       growth_rate)
-        print 'Deleting %s'%sbml_filename
-        unlink(sbml_filename)
+def fix_legacy_id(id, use_hyphens=False):
+    id = id.replace('_DASH_', '__')
+    id = id.replace('_FSLASH_', '/')
+    id = id.replace('_BSLASH_', "\\")
+    id = id.replace('_LPAREN_', '(')
+    id = id.replace('_LSQBKT_', '[')
+    id = id.replace('_RSQBKT_', ']')
+    id = id.replace('_RPAREN_', ')')
+    id = id.replace('_COMMA_', ',')
+    id = id.replace('_PERIOD_', '.')
+    id = id.replace('_APOS_', "'")
+    id = id.replace('&amp;', '&')
+    id = id.replace('&lt;', '<')
+    id = id.replace('&gt;', '>')
+    id = id.replace('&quot;', '"')
+    if use_hyphens:
+        id = id.replace('__', '-')
+    else:
+        id = id.replace("-", "__")
+    return id
+
+
+def read_legacy_sbml(filename, use_hyphens=False):
+    """read in an sbml file and fix the sbml id's"""
+    model = create_cobra_model_from_sbml_file(filename)
+    for metabolite in model.metabolites:
+        metabolite.id = fix_legacy_id(metabolite.id)
+    model.metabolites._generate_index()
+    for reaction in model.reactions:
+        reaction.id = fix_legacy_id(reaction.id)
+        if reaction.id.startswith("EX_") and reaction.id.endswith("(e)"):
+            reaction.id = reaction.id[:-3] + "_e"
+        reaction.reconstruct_reaction()
+    model.reactions._generate_index()
+    return model

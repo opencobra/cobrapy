@@ -4,8 +4,8 @@
 #
 from copy import deepcopy
 import re
-from Formula import Formula
-from Object import Object
+from .Formula import Formula
+from .Object import Object
 class Metabolite(Object):
     """Metabolite is a class for holding information regarding
     a metabolite in a cobra.Reaction object.

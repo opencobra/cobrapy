@@ -3,6 +3,7 @@
 
 #TODO: Speed up problem construction for each of the optimize routines.
 from cobra.core.Solution import Solution
+from cobra.flux_analysis.objective import update_objective
 from time import time
 from pdb import set_trace
 #This centralizes some of the common elements that are differently named across solvers.
@@ -16,28 +17,7 @@ variable_kind_dict = {'cplex': "{'continuous': Cplex.variables.type.continuous, 
                       'glpk': "{'continuous': float, 'integer': int}",
                       'gurobi': "{'continuous': GRB.CONTINUOUS, 'integer': GRB.INTEGER}"}
 
-def update_objective(cobra_model, the_objectives):
-    """Revised to take advantage of the new Reaction classes.
 
-    """
-    from numpy import array
-    #set the objective coefficients for each reaction to 0
-    [setattr(x, 'objective_coefficient', 0.)
-     for x in cobra_model.reactions]
-    #Allow for objectives to be constructed from multiple reactions
-    if not isinstance(the_objectives, list) and \
-           not isinstance(the_objectives, tuple):
-        the_objectives = [the_objectives]
-    for the_objective in the_objectives:
-        if not hasattr(the_objective,'id'):
-            if isinstance(the_objective, str):
-                the_objective = cobra_model.reactions.get_by_id(the_objective)
-            elif isinstance(the_objective, int):
-                the_objective = cobra_model.reactions[the_objective]
-        the_objective.objective_coefficient = 1.
-    #NOTE: _objective_coefficients is deprecated
-    cobra_model._objective_coefficients = array([x.objective_coefficient
-                                                 for x in cobra_model.reactions])
             
 def optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
                    min_norm=0, the_problem=None, 

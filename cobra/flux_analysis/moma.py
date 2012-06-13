@@ -8,9 +8,9 @@ from numpy import array, zeros, ones, hstack, vstack, matrix, sum
 from scipy.sparse import eye, lil_matrix, dok_matrix
 from scipy.sparse import hstack as s_hstack
 from scipy.sparse import vstack as s_vstack
-from cobra.core.Reaction import Reaction
-from cobra.core.Metabolite import Metabolite
-from cobra.manipulation import initialize_growth_medium, delete_model_genes
+from ..core import Reaction, Metabolite
+#from cobra.core.Metabolite import Metabolite
+from ..manipulation import initialize_growth_medium, delete_model_genes
 from warnings import warn
 #TODO: Add in an option for using matrices instead of objects because it
 #appears that there might be a performance penalty (especially for repetitions)
@@ -224,134 +224,5 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver='gurobi',
     
     del wt_model, mutant_model, quadratic_component, the_solution
     return(mutant_dict)
-
-
-if __name__ == '__main__':
-    from cPickle import load
-    from time import time
-    from math import floor
-    from numpy import round
-    from single_deletion import single_deletion
-    from double_deletion import double_deletion
-    from cobra.test import salmonella_pickle
-    objective_sense='minimize'
-    tolerance_optimality=1e-8
-    tolerance_feasibility=1e-8
-    minimize_norm=False
-    relax_b=False
-    print_time = True
-    the_problem='return'
-    combined_model=None
-    norm_type = 'euclidean'
-    try:
-        from gurobipy import Model
-        solver, lp_method = 'gurobi', 0
-        print "Using solver: %s with lp_method: %i"%(solver, lp_method)
-    except:
-        print "Gurobi isn't available trying cplex"
-        try:
-            from cplex import Cplex
-            solver, lp_method = 'cplex', 1
-            print "Using solver: %s with lp_method: %i"%(solver, lp_method)
-        except:
-            print "Couldn't load gurobi or cplex so can't run moma trying lmoma"
-            try:
-                from glpk import LPX
-                solver, lp_method = 'glpk', 1
-                norm_type = 'linear'
-                print "Using solver: %s with lp_method: %i"%(solver, lp_method)
-            except:
-                print "Couldn't load gurobi, cplex, or glpk"
-                
-    tpiA_result = 1.61
-    tpiA_metN_result = 1.60
-    with open(salmonella_pickle) as in_file:
-        cobra_model = load(in_file)
-    gene_list = ['tpiA', 'metN']
-    loci_list =  ['STM4081', 'STM0247']
-    initialize_growth_medium(cobra_model, 'LB')
-    wt_model = cobra_model
-    #gene_list = map(wt_model.genes.get_by_id, loci_list)
-    wt_model.id = 'Wild-type'
-    start_time = time()
-    mutant_model = wt_model.copy()
-    print 'copy time: %1.2f'%(time() - start_time)
-    mutant_model.id = 'mutant %s'%gene_list[0]
-    delete_model_genes(mutant_model, gene_list[:1])
-
-    if norm_type == 'linear':
-        start_time = time()
-        the_solution = moma(wt_model, mutant_model, solver=solver,
-                            lp_method=lp_method, norm_type=norm_type,
-                            print_time=print_time)
-        print time() - start_time
-        the_problem = the_solution['the_problem']
-        combined_model = the_solution['combined_model']
-        print 'tpiA: %1.2f'%the_solution['objective_value']
-        start_time = time()
-        the_solution = moma(wt_model, mutant_model, solver=solver,
-                            lp_method=lp_method, the_problem=the_problem,
-                            norm_type=norm_type, print_time=print_time,
-                            combined_model=combined_model)
-        print 'tpiA: %1.2f'%the_solution['objective_value']
-        print time() - start_time
-        
-    else:
-        start_time = time()
-        the_solution = moma(wt_model, mutant_model, solver=solver,
-                            lp_method=lp_method, norm_type=norm_type,
-                            print_time=print_time)
-        if the_solution['status'] in ['optimal']:
-            the_problem = the_solution['the_problem']
-            tmp_result = floor(100*the_solution['objective_value'])/100
-            if tmp_result == tpiA_result:
-                print 'Passed MOMA with tpiA deletion in %1.4f seconds'%(time() - start_time) +\
-                      '\n%1.2f == %1.2f simulated'%(tpiA_result,
-                                                  tmp_result)
-                
-                
-            else:
-                print 'FAILED: tpiA deletion expected '+\
-                      '%1.2f != %1.2f simulated'%(tpiA_result,
-                                                  tmp_result)
-
-                start_time = time()
-                the_solution = moma(wt_model, mutant_model,
-                                    the_problem=the_problem,
-                                    solver=solver, lp_method=lp_method,
-                                    norm_type=norm_type, print_time=print_time)
-                if the_solution['status'] in ['optimal']:
-                    the_problem = the_solution['the_problem']
-                    tmp_result = floor(100*the_solution['objective_value'])/100
-                    if tmp_result == tpiA_result:
-                        print 'Passed MOMA reusing Model with tpiA deletion in %1.4f seconds'%(time() - start_time)
-                start_time = time()
-                the_solution = moma(wt_model, mutant_model,
-                                    the_problem=the_problem,
-                                    combined_model=the_solution['combined_model'], lp_method=lp_method, solver=solver,
-                                    norm_type=norm_type, print_time=print_time)
-                if the_solution['status'] in ['optimal']:
-                    the_problem = the_solution['the_problem']
-                    tmp_result = floor(100*the_solution['objective_value'])/100
-                    if tmp_result == tpiA_result:
-                        print 'Passed MOMA reusing Model and model with tpiA deletion in %1.4f seconds'%(time() - start_time)
-            start_time - time()
-            single_solution = single_deletion(wt_model, loci_list, method='moma', solver=solver)
-            the_status = single_solution[1]
-            if the_status['STM4081'] == 'optimal':
-                tmp_result = single_solution[0]
-                tmp_result = floor(100*tmp_result['STM4081'])/100
-                if tmp_result == tpiA_result:
-                    print 'Passed MOMA single_deletion with tpiA & metN deletion in %1.4f seconds'%(time() - start_time)
-            else:
-                print 'failed single deletion'
-            start_time - time()
-            double_solution = double_deletion(wt_model, loci_list, loci_list, method='moma', solver=solver)
-            tmp_result = floor(100*double_solution['data'][1,0])/100
-            tmp_tpiA_result = floor(100*double_solution['data'][0,0])/100
-            if tmp_result == tpiA_metN_result and tmp_tpiA_result == tpiA_result:
-                print 'Passed MOMA double_deletion with tpiA & metN deletion in %1.4f seconds'%(time() - start_time)
-            else:
-                print 'failed double deletion'
 
 

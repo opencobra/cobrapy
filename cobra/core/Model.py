@@ -20,13 +20,14 @@ else:
     from scipy.sparse import lil_matrix, dok_matrix
 from warnings import warn
 from copy import deepcopy
-from cobra.query import *
-from cobra.flux_analysis import optimize_cplex, optimize_glpk, optimize_gurobi
-from Object import Object
-from Reaction import Reaction
-from Metabolite import Metabolite
-from Formula import Formula
-from cobra.collections.DictList import DictList
+#from cobra.query import *
+from ..flux_analysis import optimize_cplex, optimize_glpk, optimize_gurobi
+#from ..solvers import optimize
+from .Object import Object
+from .Reaction import Reaction
+from .Metabolite import Metabolite
+from .Formula import Formula
+from .DictList import DictList
 #*********************************************************************************
 #2011-10-11: danielhyduke@gmail.com
 #

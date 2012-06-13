@@ -5,7 +5,7 @@
 import re
 from warnings import warn
 from copy import deepcopy
-from Object import Object
+from .Object import Object
 class Formula(Object):
     """Formula is a class for holding information regarding
     a Metabolite formula.

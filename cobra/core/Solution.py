@@ -2,7 +2,7 @@
 ##########################
 #BEGIN Class Solution
 #
-from Object import Object
+from .Object import Object
 class Solution(Object):
     """Stores the solution from optimizing a cobra.Model.  This is
     used to provide a single interface to results from different
