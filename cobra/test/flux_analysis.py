@@ -6,7 +6,7 @@ try:
 except:
     from pickle import load
 import sys
-raise Exception("flux_analysis unit test has not been implemented")
+warnings.warn("flux_analysis unit test has not been implemented")
 
 # from . import data_directory, ecoli_sbml, ecoli_pickle, create_test_model
 from . import create_test_model
@@ -66,7 +66,7 @@ def add_test(TestCobraSolver, solver_name, solver):
     setattr(TestCobraSolver, "test_%s_independent_creation" % solver_name, \
         test_solve_infeasible)
 
-for solver_name, solver in solvers.solver_list.iteritems():
+for solver_name, solver in solvers.solver_dict.iteritems():
     add_test(TestCobraSolver, solver_name, solver)
 # make a test suite to run all of the tests
 loader = unittest.TestLoader()
