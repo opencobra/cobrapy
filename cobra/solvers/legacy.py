@@ -115,12 +115,20 @@ def _optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
           variable_names.append(x.id),
           variable_kinds.append(variable_kind_dict[x.variable_kind]))
          for x in cobra_model.reactions]
-        lp.variables.add(obj=objective_coefficients,
-                         lb=lower_bounds,
-                         ub=upper_bounds,
-                         names=variable_names,
-                         types=variable_kinds)
-        
+        #Cplex decides that the problem is a MIP if variable_kinds are supplied
+        #even if there aren't any integers.
+        if Cplex.variables.type.integer in variable_kinds:
+            lp.variables.add(obj=objective_coefficients,
+                             lb=lower_bounds,
+                             ub=upper_bounds,
+                             names=variable_names,
+                             types=variable_kinds)
+        else:
+            lp.variables.add(obj=objective_coefficients,
+                             lb=lower_bounds,
+                             ub=upper_bounds,
+                             names=variable_names)
+
         if relax_b:
             raise Exception('need to reimplement relax_b')
             ## range_values = zeros(len(cobra_model.metabolites))
@@ -171,6 +179,7 @@ def _optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
         if error_reporting == 'time':
             print 'setup new problem: ' + repr(time()-start_time)
             start_time = time()
+        
         #Set the problem type as cplex doesn't appear to do this correctly
         problem_type = Cplex.problem_type.LP
         if Cplex.variables.type.integer in variable_kinds:
@@ -181,6 +190,7 @@ def _optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
         elif quadratic_component is not None:
             problem_type = Cplex.problem_type.QP
         lp.set_problem_type(problem_type)
+
     else:
         if copy_problem:
             lp = Cplex(the_problem)
@@ -207,7 +217,6 @@ def _optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
         if error_reporting == 'time':
             print 'changed all bounds: ' + repr(time()-start_time)
             start_time = time()
-
 
     if objective_sense == 'maximize':
         lp.objective.set_sense(lp.objective.sense.maximize)
@@ -236,6 +245,7 @@ def _optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
         lp.parameters.threads.set(lp_parallel)
     #lp.parameters.parallel.set(lp_parallel)
     lp.parameters.barrier.convergetol.set(tolerance_barrier)
+
     if the_problem == 'setup':
         return lp
 
@@ -268,7 +278,7 @@ def _optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
                 print 'no basis in the_problem'
         #TODO: set tolerance and time limit
         #lp.parameters.timelimit.set()
-        lp.solve() 
+        lp.solve()
         #If the solver takes more than 0.1 s with a hot start it is likely stuck
         lp.status = lp.solution.status[lp.solution.get_status()]
         if lp.status in status_dict:
@@ -296,7 +306,7 @@ def _optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
     if error_reporting == 'time':
         print 'solver time: ' + repr(time()-start_time) + ' with method ' + repr(lp_method)
         start_time = time()
-    
+
     if print_solver_time:
         print 'cplex time: %f'%(time() - start_time)
     x = []
@@ -852,3 +862,7 @@ def test_solvers():
         if round(the_solution.f, 2) != the_growth_rate:
             print 'Simulation failed %f to match expectation %f'%(the_solution.f,
                                                                   the_growth_rate)                                                                 
+if __name__ == '__main__':
+    from cobra.test import create_test_model
+    cobra_model = create_test_model()
+    _optimize_cplex(cobra_model, error_reporting='time')

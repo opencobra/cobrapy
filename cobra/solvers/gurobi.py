@@ -1,7 +1,7 @@
 from gurobipy import GRB, Model, LinExpr, GRB, QuadExpr, Column
 from numpy import array
 
-from .. import Solution
+from ..core.Solution import Solution
 
 
 # mappers from cobra representation to gurobi
@@ -84,5 +84,5 @@ def solve_problem(lp):
     return solution
 
 
-def solve(cobra_model, objective_sense="maximize"):
+def solve(cobra_model, objective_sense="maximize", **kwargs):
     return solve_problem(create_problem(cobra_model, objective_sense))

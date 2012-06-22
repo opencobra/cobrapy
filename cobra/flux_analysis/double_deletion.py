@@ -1,6 +1,5 @@
 #cobra.flux_analysis.double_deletion.py
 #runs flux variablity analysis on a Model object.
-from pdb import set_trace
 from math import floor,ceil
 from numpy import vstack,zeros, nan
 from scipy import sparse

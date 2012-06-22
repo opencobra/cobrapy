@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 from glpk import LPX
 
-from .. import Solution
+from ..core.Solution import Solution
 
 
 # mappers from cobra representation to glpk
@@ -56,9 +56,8 @@ def create_problem(cobra_model, objective_sense="maximize", lp=None):
         lp.obj[i] = float(reaction.objective_coefficient)
 
     # create S matrix
-    # WARNING: this requires the model to be updated
     lp.matrix = [(int(i), int(j), c) \
-        for (i, j), c in cobra_model._S.todok().iteritems()]
+        for (i, j), c in cobra_model.to_array_based_model().S.todok().iteritems()]
     return lp
 
 
@@ -81,6 +80,5 @@ def solve_problem(lp):
     return solution
 
 
-def solve(cobra_model, objective_sense="maximize"):
-    cobra_model.update()
+def solve(cobra_model, objective_sense="maximize", **kwargs):
     return solve_problem(create_problem(cobra_model, objective_sense))

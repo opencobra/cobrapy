@@ -199,7 +199,7 @@ def single_gene_deletion(cobra_model, element_list=None,
     if the_problem:
         the_problem = 'return'
         discard_problems = True
-   
+    #
     the_problem = wt_model.optimize(the_problem=the_problem, solver=solver,
                                        error_reporting=error_reporting)
     wt_f = wt_model.solution.f
@@ -221,6 +221,7 @@ def single_gene_deletion(cobra_model, element_list=None,
     solution_status_dict = {}
     problem_dict = {}
     combined_model = None
+
     for the_element in element_list:
         #delete the gene
         #if the deletion alters the bounds then run simulation
@@ -268,6 +269,3 @@ def single_gene_deletion(cobra_model, element_list=None,
     
     return(growth_rate_dict, solution_status_dict, problem_dict)
 
-
-
- 

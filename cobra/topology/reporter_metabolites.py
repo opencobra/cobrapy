@@ -1,12 +1,10 @@
 #cobra.topology.reporter_metabolites.py: Module for topological analysis of cobra_models
 #Based on Patil et al 2005 PNAS 102:2685-9
 #TODO: Validate cobra.core compliance
-from pdb import set_trace
 from copy import deepcopy
 from numpy import array, corrcoef, mean, std, tril, where, unique, zeros
 from scipy.stats import norm, randint
 from collections import defaultdict
-from warnings import warn
 
 def identify_reporter_metabolites(cobra_model, reaction_scores_dict,
                                   number_of_randomizations=1000, number_of_layers=1,

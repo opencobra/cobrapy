@@ -6,6 +6,17 @@ if __legacy_solver:
     solver_dict = {'glpk': _optimize_glpk,
                    'gurobi': _optimize_gurobi,
                    'cplex': _optimize_cplex}
+    for solver_module in ['glpk', 'cplex']:
+        try:
+            exec('from %s import *'%solver_module)
+        except:
+            solver_dict.pop(solver_module)
+    try:
+        from gurobipy import *
+    except:
+        solver_dict.pop('gurobi')
+        
+        
 else:
     from os import listdir as _listdir
     from os import path as _path
@@ -15,15 +26,18 @@ else:
         if not i.endswith(".py"):
             continue
         try:
-            exec("import .%s" % i.strip(".py"))
-            solver_dict[i.strip(".py")] = eval(i.strip(".py"))
+            m = i.strip(".py")
+            exec("from . import %s" % m)
+            solver_dict[m] = eval(m)
         except Exception, e:
-            print Exception, e
             pass
     del _path
     del _listdir
     del i
-def optimize(cobra_model, solver='glpk', **kwargs):
+    m = None
+    del m
+
+def optimize(cobra_model, solver='glpk', error_reporting=False, **kwargs):
     """Wrapper to optimization solvers
     
 
@@ -36,23 +50,27 @@ def optimize(cobra_model, solver='glpk', **kwargs):
         try:
             the_solution = solve_problem(solver_function, kwargs)
         except Exception, e:
-            print e
-            print '%s did not work'%solver
+            if error_reporting:
+                print e
+                print '%s did not work'%solver
             solver_keys = solver_dict.keys()
             solver_keys.remove(solver)
             for solver in solver_keys:
                 solver_function = solver_dict[solver]
                 try:
-                    print "now trying %s"%solver
+                    if error_reporting:
+                        print "now trying %s"%solver
                     the_solution = solve_problem(solver_function, kwargs)
                     break
                 except Exception, e:
-                    print e
-                    print '%s did not work'%solver
+                    if error_reporting:
+                        print e
+                        print '%s did not work'%solver
                     continue
 
     else:
-        raise Exception("New style solvers not yet fully implemented")
+        the_solution = solver_function.solve(cobra_model, **kwargs)
+        #raise Exception("New style solvers not yet fully implemented")
 
 
     #Add the solution to the model.
@@ -62,5 +80,9 @@ def optimize(cobra_model, solver='glpk', **kwargs):
         cobra_model.solution = the_solution
         return(the_solution)
     else:
-        cobra_model.solution = the_solution['the_solution']
-        return(the_solution['the_problem'])
+        if __legacy_solver:
+            cobra_model.solution = the_solution['the_solution']
+            return(the_solution['the_problem'])
+        else:
+            cobra_model.solution = the_solution
+

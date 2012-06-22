@@ -1,6 +1,5 @@
 #cobra.flux_analysis.variablity.py
 #runs flux variablity analysis on a Model object.
-from pdb import set_trace
 from math import floor,ceil
 from numpy import hstack,zeros
 from scipy import sparse

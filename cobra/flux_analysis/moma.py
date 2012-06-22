@@ -3,7 +3,6 @@
 from copy import deepcopy
 from time import time
 from math import ceil, floor
-from pdb import set_trace
 from numpy import array, zeros, ones, hstack, vstack, matrix, sum
 from scipy.sparse import eye, lil_matrix, dok_matrix
 from scipy.sparse import hstack as s_hstack

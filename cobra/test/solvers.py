@@ -7,7 +7,7 @@ except:
     from pickle import load
 import sys
 
-
+from cobra.manipulation import initialize_growth_medium
 from cobra.test import create_test_model
 from cobra import Model, Reaction, Metabolite
 from cobra import solvers
@@ -16,7 +16,8 @@ from cobra.solvers import __legacy_solver
 class TestCobraSolver(unittest.TestCase):
     def setUp(self):
         self.model = create_test_model()
-        self.old_solution = 0.982371812727
+        initialize_growth_medium(self.model, 'MgM')
+        self.old_solution = 0.320064
         self.infeasible_problem = Model()
         metabolite_1 = Metabolite("met1")
         metabolite_2 = Metabolite("met2")
@@ -30,7 +31,12 @@ class TestCobraSolver(unittest.TestCase):
         #self.infeasible_problem.update()
 
 
-def add_test(TestCobraSolver, solver_name, solver):
+def add_new_test(TestCobraSolver, solver_name, solver):
+    """Creates a test set for each of the solvers that are installed
+    using the modular interface.
+
+    
+    """
     def test_attributes(self):
         self.assertTrue(hasattr(solver, "create_problem"))
         self.assertTrue(hasattr(solver, "solve_problem"))
@@ -64,9 +70,30 @@ def add_test(TestCobraSolver, solver_name, solver):
         test_solve_infeasible)
     setattr(TestCobraSolver, "test_%s_independent_creation" % solver_name, \
         test_solve_infeasible)
+
+def add_legacy_test(TestCobraSolver, solver_name, solver_function):
+    """Creates a test set for each of the installed solvers using the
+    legacy interface.
+
+    """
+    def test_solve_feasible(self):
+
+        the_solution = solver_function(self.model)['the_solution']
+        self.assertEqual(the_solution.status, 'optimal')
+        self.assertAlmostEqual(self.old_solution, the_solution.f, places=4)
+    setattr(TestCobraSolver, "test_%s_feasible_solve" % solver_name, \
+        test_solve_feasible)
+        
+
+
 if not __legacy_solver:
-    for solver_name, solver in solvers.solver_dict.iteritems():
-        add_test(TestCobraSolver, solver_name, solver)
+    add_test = add_new_test
+else:
+    add_test = add_legacy_test
+
+    
+for solver_name, solver in solvers.solver_dict.iteritems():
+    add_test(TestCobraSolver, solver_name, solver)
 # make a test suite to run all of the tests
 loader = unittest.TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])

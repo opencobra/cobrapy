@@ -3,7 +3,7 @@ ez_setup.use_setuptools()
 from setuptools import setup, find_packages
 setup(
     name = "cobra",
-    version = '0.01a.dev',
+    version = '0.1.0.b1',
     packages = find_packages(exclude=['internal', 'oven', 'db_tools', 'omics', 'general',]),
     #scripts = [''],
     #put in numpy, scipy, libsbml, and pyglpk
