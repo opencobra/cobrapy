@@ -1,14 +1,16 @@
 import ez_setup
 ez_setup.use_setuptools()
 from setuptools import setup, find_packages
+from pdb import set_trace
 setup(
     name = "cobra",
     version = '0.1.0.b1',
-    packages = find_packages(exclude=['internal', 'oven', 'db_tools', 'omics', 'general',]),
+    packages = find_packages(exclude=['cobra.internal', 'cobra.oven', 'cobra.db_tools',
+                                      'cobra.omics', 'cobra.general',]),
     #scripts = [''],
     #put in numpy, scipy, libsbml, and pyglpk
     setup_requires = [],
-    install_requires = [],
+    install_requires = ['numpy>=1.6.0', 'scipy>=0.10.1'],
     extras_require = {
         'parallel': ['pp>=1.6.0'],
         'matlab': ["mlabwrap>=1.1"],
@@ -17,8 +19,9 @@ setup(
 
     package_data = {
 
-         '': ['*.txt', '*.html','LICENSE','README','test/data/*','documentation/html/*',
-              'examples/*py', 'examples/files/*']},
+         '': ['*.txt', '*.html','LICENSE','README','test/data/*',
+              'documentation(/*)+[(html)|(txt)|(png)|(css)|(gif)|(js)]',
+              'examples/*py']},
 
     author = "Daniel Robert Hyduke",
     author_email = "danielhyduke@gmail.com",
