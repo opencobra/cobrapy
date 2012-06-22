@@ -1,1 +1,1 @@
-sphinx-apidoc -o . ../../cobra
+sphinx-apidoc -o . ../cobra
