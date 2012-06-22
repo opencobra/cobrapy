@@ -42,7 +42,15 @@ def optimize(cobra_model, solver='glpk', error_reporting=False, **kwargs):
     
 
     """
-    solver_function = solver_dict[solver]
+    #If the default solver is not installed then use one of the others
+    try:
+        solver_function = solver_dict[solver]
+    except:
+        try:
+            solver, solver_function = solver_dict.items()[0]
+        except:
+            raise Exception("It appears that you do not have one of the supported solvers "+\
+                            "(glpk, gurobi, or cplex) installed")
     the_solution = None
     if __legacy_solver:
         def solve_problem(solver_function, kwargs):
