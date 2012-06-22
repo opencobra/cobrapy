@@ -26,15 +26,17 @@ def create_test_model(test_pickle=salmonella_pickle):
 
 
 def test_all():
-    """run unittests on the cobra toolbox"""
+    """###running unit tests on cobra py###"""
     import unittest
     from cobra.test.unit_tests import test_all
-    print 'running general unit_tests'
+    print '###running general unit tests###'
     test_all()
-
-    #print 'running new solver unit tests'
-    #from cobra.test.solvers import test_all
-    #test_all()
+    from cobra.test.flux_analysis import test_all
+    print '\n###running flux_analysis unit tests###'
+    test_all()
+    print '\n###running solver unit tests###'
+    from cobra.test.solvers import test_all
+    test_all()
 
 
 del _abspath

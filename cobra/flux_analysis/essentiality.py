@@ -16,7 +16,7 @@ except:
     __parallel_mode_available = False
     from double_deletion import double_deletion
 from cobra.flux_analysis.moma import moma
-from single_deletion import single_deletion
+from cobra.flux_analysis.single_deletion import single_deletion
 from cobra.manipulation import initialize_growth_medium
 def assess_medium_component_essentiality(cobra_model, the_components=None,
                                          the_medium=None, solver='glpk',
@@ -44,17 +44,24 @@ def assess_medium_component_essentiality(cobra_model, the_components=None,
     the_problem: Is None, 'return', or an LP model object for the solver.
        
     the_condition: None or a String that provides a description of the medium
-    simulation 
+    simulation
+
+    returns:
+     essentiality_dict:  A dictionary providing the minimum lower bounds for
+     each component of the growth medium.
 
     """
+    warn("assess_medium_component_essentiality needs to be updated to " +\
+         "deal with new style reactions")
+    from cobra.core.ArrayBasedModel import ArrayBasedModel
     if method.lower() == 'moma':
-        wt_model = cobra_model.copy()
+        wt_model = ArrayBasedModel(cobra_model.copy())
     if isinstance(cobra_model, tuple):
         if len(cobra_model) == 3:
             the_condition = cobra_model[2]
         the_components = cobra_model[1]
         cobra_model = cobra_model[0]
-    cobra_model = cobra_model.copy()
+    cobra_model = ArrayBasedModel(cobra_model.copy())
     if not the_components:
         if the_medium:
             if hasattr(the_medium, 'keys') or \
@@ -69,15 +76,15 @@ def assess_medium_component_essentiality(cobra_model, the_components=None,
     essentiality_dict = {}
     for the_component in the_components:
         component_index = cobra_model.reactions.index(the_component)
-        tmp_lb = float(cobra_model._lower_bounds[component_index])
-        cobra_model.reactions[component_index].lower_bound = cobra_model._lower_bounds[component_index] = 0
+        tmp_lb = float(cobra_model.lower_bounds[component_index])
+        cobra_model.reactions[component_index].lower_bound = cobra_model.lower_bounds[component_index] = 0
         if method.lower() == 'fba':
             cobra_model.optimize(solver=solver, the_problem=the_problem)
             objective_value = cobra_model.solution.f
         elif method.lower() == 'moma':
            objective_value = moma(wt_model, cobra_model, solver=solver)['objective_value'] 
         essentiality_dict[the_component] = objective_value
-        cobra_model.reactions[component_index].lower_bound = cobra_model._lower_bounds[component_index] = tmp_lb
+        cobra_model.reactions[component_index].lower_bound = cobra_model.lower_bounds[component_index] = tmp_lb
     if the_condition:
         essentiality_dict['the_condition'] = the_condition
     return(essentiality_dict)

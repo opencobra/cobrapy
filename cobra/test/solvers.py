@@ -8,13 +8,10 @@ except:
 import sys
 
 
-# from . import data_directory, ecoli_sbml, ecoli_pickle, create_test_model
 from cobra.test import create_test_model
-from cobra.test import salmonella_sbml as test_sbml_file
-from cobra.test import salmonella_pickle as test_pickle
 from cobra import Model, Reaction, Metabolite
 from cobra import solvers
-
+from cobra.solvers import __legacy_solver
 
 class TestCobraSolver(unittest.TestCase):
     def setUp(self):
@@ -30,7 +27,7 @@ class TestCobraSolver(unittest.TestCase):
         reaction_1.lower_bound = 1
         reaction_2.upper_bound = 2
         self.infeasible_problem.add_reactions([reaction_1, reaction_2])
-        self.infeasible_problem.update()
+        #self.infeasible_problem.update()
 
 
 def add_test(TestCobraSolver, solver_name, solver):
@@ -67,9 +64,9 @@ def add_test(TestCobraSolver, solver_name, solver):
         test_solve_infeasible)
     setattr(TestCobraSolver, "test_%s_independent_creation" % solver_name, \
         test_solve_infeasible)
-
-for solver_name, solver in solvers.solver_dict.iteritems():
-    add_test(TestCobraSolver, solver_name, solver)
+if not __legacy_solver:
+    for solver_name, solver in solvers.solver_dict.iteritems():
+        add_test(TestCobraSolver, solver_name, solver)
 # make a test suite to run all of the tests
 loader = unittest.TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])
