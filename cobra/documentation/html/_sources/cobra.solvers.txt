@@ -1,0 +1,35 @@
+solvers Package
+===============
+
+:mod:`solvers` Package
+----------------------
+
+.. automodule:: cobra.solvers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`glpk` Module
+------------------
+
+.. automodule:: cobra.solvers.glpk
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`gurobi` Module
+--------------------
+
+.. automodule:: cobra.solvers.gurobi
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`legacy` Module
+--------------------
+
+.. automodule:: cobra.solvers.legacy
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

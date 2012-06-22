@@ -1,0 +1,172 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>solvers Package &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="index.html" />
+    <link rel="up" title="cobra Package" href="cobra.html" />
+    <link rel="next" title="stats Package" href="cobra.stats.html" />
+    <link rel="prev" title="mlab Package" href="cobra.mlab.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.stats.html" title="stats Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cobra.mlab.html" title="mlab Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" accesskey="U">cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="solvers-package">
+<h1>solvers Package<a class="headerlink" href="#solvers-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">solvers</span></tt> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-cobra.solvers"></span><dl class="function">
+<dt id="cobra.solvers.optimize">
+<tt class="descclassname">cobra.solvers.</tt><tt class="descname">optimize</tt><big>(</big><em>cobra_model</em>, <em>solver='glpk'</em>, <em>error_reporting=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers.html#optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.optimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper to optimization solvers</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cobra.solvers.glpk">
+<span id="glpk-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">glpk</span></tt> Module<a class="headerlink" href="#module-cobra.solvers.glpk" title="Permalink to this headline">¶</a></h2>
+<p>bindings to the glpk solver through pyglpk</p>
+<dl class="function">
+<dt id="cobra.solvers.glpk.create_problem">
+<tt class="descclassname">cobra.solvers.glpk.</tt><tt class="descname">create_problem</tt><big>(</big><em>cobra_model</em>, <em>objective_sense='maximize'</em>, <em>lp=None</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk.html#create_problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk.create_problem" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cobra.solvers.glpk.solve">
+<tt class="descclassname">cobra.solvers.glpk.</tt><tt class="descname">solve</tt><big>(</big><em>cobra_model</em>, <em>objective_sense='maximize'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk.html#solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk.solve" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cobra.solvers.glpk.solve_problem">
+<tt class="descclassname">cobra.solvers.glpk.</tt><tt class="descname">solve_problem</tt><big>(</big><em>lp</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk.html#solve_problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk.solve_problem" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="gurobi-module">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">gurobi</span></tt> Module<a class="headerlink" href="#gurobi-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-cobra.solvers.legacy">
+<span id="legacy-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">legacy</span></tt> Module<a class="headerlink" href="#module-cobra.solvers.legacy" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cobra.solvers.legacy.test_solvers">
+<tt class="descclassname">cobra.solvers.legacy.</tt><tt class="descname">test_solvers</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cobra/solvers/legacy.html#test_solvers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.legacy.test_solvers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">solvers Package</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">solvers</span></tt> Package</a></li>
+<li><a class="reference internal" href="#module-cobra.solvers.glpk"><tt class="docutils literal"><span class="pre">glpk</span></tt> Module</a></li>
+<li><a class="reference internal" href="#gurobi-module"><tt class="docutils literal"><span class="pre">gurobi</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-cobra.solvers.legacy"><tt class="docutils literal"><span class="pre">legacy</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cobra.mlab.html"
+                        title="previous chapter">mlab Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cobra.stats.html"
+                        title="next chapter">stats Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/cobra.solvers.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.stats.html" title="stats Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cobra.mlab.html" title="mlab Package"
+             >previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" >cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

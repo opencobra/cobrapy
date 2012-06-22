@@ -1,0 +1,158 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>external Package &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="index.html" />
+    <link rel="up" title="cobra Package" href="cobra.html" />
+    <link rel="next" title="flux_analysis Package" href="cobra.flux_analysis.html" />
+    <link rel="prev" title="core Package" href="cobra.core.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.flux_analysis.html" title="flux_analysis Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cobra.core.html" title="core Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" accesskey="U">cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="external-package">
+<h1>external Package<a class="headerlink" href="#external-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-cobra.external.ppmap">
+<span id="ppmap-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">ppmap</span></tt> Module<a class="headerlink" href="#module-cobra.external.ppmap" title="Permalink to this headline">¶</a></h2>
+<p>Very basic parallel processing support</p>
+<p>Implements a work-alike of the builtin map() function that distributes
+work across many processes.  As it uses Parallel Python to do the
+actual multi-processing, code using this must conform to the usual PP
+restrictions (arguments must be serializable, etc.)</p>
+<dl class="function">
+<dt id="cobra.external.ppmap.ppmap">
+<tt class="descclassname">cobra.external.ppmap.</tt><tt class="descname">ppmap</tt><big>(</big><em>processes</em>, <em>function</em>, <em>sequence</em>, <em>*sequences</em><big>)</big><a class="reference internal" href="_modules/cobra/external/ppmap.html#ppmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.external.ppmap.ppmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split the work of &#8216;function&#8217; across the given number of
+processes.  Set &#8216;processes&#8217; to None to let Parallel Python
+autodetect the number of children to use.</p>
+<p>Although the calling semantics should be identical to
+__builtin__.map (even using __builtin__.map to process
+arguments), it differs in that it returns a generator instead of a
+list.  This enables lazy evaluation of the results so that other
+work can be done while the subprocesses are still running.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">rangetotal</span><span class="p">(</span><span class="n">n</span><span class="p">):</span> <span class="k">return</span> <span class="n">n</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">rangetotal</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">)))</span>
+<span class="go">[(1, 0), (2, 1), (3, 3), (4, 6), (5, 10)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">ppmap</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">rangetotal</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">)))</span>
+<span class="go">[(1, 0), (2, 1), (3, 3), (4, 6), (5, 10)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">external Package</a><ul>
+<li><a class="reference internal" href="#module-cobra.external.ppmap"><tt class="docutils literal"><span class="pre">ppmap</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cobra.core.html"
+                        title="previous chapter">core Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cobra.flux_analysis.html"
+                        title="next chapter">flux_analysis Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/cobra.external.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.flux_analysis.html" title="flux_analysis Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cobra.core.html" title="core Package"
+             >previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" >cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

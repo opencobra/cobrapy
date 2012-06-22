@@ -1,0 +1,365 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cobra.flux_analysis.single_deletion &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cobra.flux_analysis.single_deletion</h1><div class="highlight"><pre>
+<span class="c">#cobra.flux_analysis.single_deletion.py</span>
+<span class="c">#run single gene or reaction deletions on the model</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">nan</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">..manipulation</span> <span class="kn">import</span> <span class="n">initialize_growth_medium</span>
+<span class="kn">from</span> <span class="nn">..manipulation</span> <span class="kn">import</span> <span class="n">delete_model_genes</span><span class="p">,</span> <span class="n">undelete_model_genes</span>
+<span class="kn">from</span> <span class="nn">.moma</span> <span class="kn">import</span> <span class="n">moma</span>
+<div class="viewcode-block" id="single_deletion"><a class="viewcode-back" href="../../../cobra.flux_analysis.html#cobra.flux_analysis.single_deletion.single_deletion">[docs]</a><span class="k">def</span> <span class="nf">single_deletion</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">element_list</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                    <span class="n">method</span><span class="o">=</span><span class="s">&#39;fba&#39;</span><span class="p">,</span> <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span><span class="p">,</span>
+                    <span class="n">element_type</span><span class="o">=</span><span class="s">&#39;gene&#39;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span>
+                    <span class="n">error_reporting</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for single_gene_deletion and the single_reaction_deletion</span>
+<span class="sd">    functions</span>
+
+<span class="sd">    </span>
+<span class="sd">    cobra_model: a cobra.Model object</span>
+
+<span class="sd">    element_list: Is None or a list of elements (genes or reactions) to</span>
+<span class="sd">    delete.</span>
+
+<span class="sd">    method: &#39;fba&#39; or &#39;moma&#39;</span>
+
+<span class="sd">    the_problem: Is None, &#39;return&#39;, or an LP model object for the solver.</span>
+
+<span class="sd">    element_type: &#39;gene&#39; or &#39;reaction&#39;</span>
+
+<span class="sd">    solver: &#39;glpk&#39;, &#39;gurobi&#39;, or &#39;cplex&#39;.</span>
+
+<span class="sd">    discard_problems: Boolean.  If True do not save problems.  This will</span>
+<span class="sd">    help with memory issues related to gurobi.</span>
+
+<span class="sd">    Returns a list of dictionaries: growth_rate_dict, solution_status_dict,</span>
+<span class="sd">    problem_dict where the key corresponds to each element in element_list.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">element_type</span> <span class="o">==</span> <span class="s">&#39;gene&#39;</span><span class="p">:</span>
+        <span class="n">the_solution</span> <span class="o">=</span> <span class="n">single_gene_deletion</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">element_list</span><span class="p">,</span>
+                                    <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span>
+                                    <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
+                                    <span class="n">error_reporting</span><span class="o">=</span><span class="n">error_reporting</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">the_solution</span> <span class="o">=</span> <span class="n">single_reaction_deletion</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">element_list</span><span class="p">,</span>
+                                        <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span>
+                                        <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
+                                                <span class="n">error_reporting</span><span class="o">=</span><span class="n">error_reporting</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">the_solution</span>
+</div>
+<div class="viewcode-block" id="single_reaction_deletion"><a class="viewcode-back" href="../../../cobra.flux_analysis.html#cobra.flux_analysis.single_deletion.single_reaction_deletion">[docs]</a><span class="k">def</span> <span class="nf">single_reaction_deletion</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">element_list</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                             <span class="n">method</span><span class="o">=</span><span class="s">&#39;fba&#39;</span><span class="p">,</span> <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span><span class="p">,</span>
+                             <span class="n">solver</span><span class="o">=</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span> <span class="n">error_reporting</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                             <span class="n">discard_problems</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Performs optimization simulations to realize the objective defined</span>
+<span class="sd">    from cobra_model.reactions[:].objective_coefficients after deleting each reaction</span>
+<span class="sd">    from the model.</span>
+<span class="sd">    </span>
+<span class="sd">    cobra_model: a cobra.Model object</span>
+
+<span class="sd">    element_list: Is None or a list of cobra.Reactions in cobra_model to disable.</span>
+<span class="sd">    If None then disable each reaction in cobra_model.reactions and optimize for the</span>
+<span class="sd">    objective function defined from cobra_model.reactions[:].objective_coefficients.</span>
+
+<span class="sd">    method: &#39;fba&#39; is the only option at the moment.</span>
+
+<span class="sd">    the_problem: Is None, &#39;reuse&#39;, or an LP model object for the solver.</span>
+
+<span class="sd">    solver: &#39;glpk&#39;, &#39;gurobi&#39;, or &#39;cplex&#39;.</span>
+
+<span class="sd">    discard_problems: Boolean.  If True do not save problems.  This will</span>
+<span class="sd">    help with memory issues related to gurobi.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns a list of dictionaries: growth_rate_dict, solution_status_dict,</span>
+<span class="sd">    problem_dict where the key corresponds to each reaction in reaction_list.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#element_list so we can merge single_reaction_deletion and single_gene_deletion</span>
+
+    <span class="n">wt_model</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c">#Original wild-type (wt) model.</span>
+    <span class="n">wt_model</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="s">&#39;Wild-Type&#39;</span>
+    <span class="c">#MOMA constructs combined quadratic models thus we cannot reuse a model</span>
+    <span class="c">#generated by the cobra_model.optimize call</span>
+    <span class="k">if</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;moma&#39;</span><span class="p">:</span>
+        <span class="n">the_problem</span> <span class="o">=</span> <span class="s">&#39;return&#39;</span>
+        <span class="n">mutant_model</span> <span class="o">=</span> <span class="n">wt_model</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c">#Need a second model for moma</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mutant_model</span> <span class="o">=</span> <span class="n">cobra_model</span>
+    <span class="n">discard_problems</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">the_problem</span><span class="p">:</span>
+        <span class="n">the_problem</span> <span class="o">=</span> <span class="s">&#39;return&#39;</span>
+        <span class="n">discard_problems</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">the_problem</span> <span class="o">=</span> <span class="n">wt_model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
+                                       <span class="n">error_reporting</span><span class="o">=</span><span class="n">error_reporting</span><span class="p">)</span>
+    <span class="n">wt_f</span> <span class="o">=</span> <span class="n">wt_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">f</span>
+    <span class="n">wt_status</span> <span class="o">=</span> <span class="n">wt_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">status</span>
+    <span class="n">wt_x</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">wt_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">wt_x_dict</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">wt_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">x_dict</span><span class="p">)</span>
+
+    <span class="n">wt_problem</span> <span class="o">=</span> <span class="n">the_problem</span>
+    <span class="k">if</span> <span class="n">element_list</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">element_list</span> <span class="o">=</span> <span class="n">mutant_model</span><span class="o">.</span><span class="n">reactions</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">element_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;id&#39;</span><span class="p">):</span>
+        <span class="n">element_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">mutant_model</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">,</span> <span class="n">element_list</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mutant_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">cobra_model</span><span class="p">:</span>
+            <span class="n">element_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">element_list</span><span class="p">]</span>
+            <span class="n">element_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">mutant_model</span><span class="o">.</span><span class="n">genes</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">,</span> <span class="n">element_list</span><span class="p">)</span>
+
+    <span class="n">growth_rate_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">solution_status_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">problem_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">combined_model</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">for</span> <span class="n">the_element</span> <span class="ow">in</span> <span class="n">element_list</span><span class="p">:</span>
+        <span class="c">#delete the gene</span>
+        <span class="c">#if the deletion alters the bounds then run simulation</span>
+        <span class="n">old_lower_bound</span><span class="p">,</span> <span class="n">old_upper_bound</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="p">[</span><span class="n">the_element</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">,</span>
+                                                       <span class="n">the_element</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">])</span>
+        <span class="n">mutant_model</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">the_element</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">if</span> <span class="n">old_lower_bound</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">old_upper_bound</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">the_element</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">the_element</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;fba&#39;</span><span class="p">:</span>
+                <span class="n">the_problem</span> <span class="o">=</span> <span class="n">mutant_model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">the_problem</span><span class="o">=</span><span class="n">wt_problem</span><span class="p">,</span>
+                                                    <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
+                                                    <span class="n">error_reporting</span><span class="o">=</span><span class="n">error_reporting</span><span class="p">)</span>
+                <span class="n">growth_rate_dict</span><span class="p">[</span><span class="n">the_element</span><span class="p">]</span> <span class="o">=</span> <span class="n">mutant_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">f</span>
+                <span class="n">solution_status_dict</span><span class="p">[</span><span class="n">the_element</span><span class="p">]</span> <span class="o">=</span> <span class="n">mutant_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">status</span>
+            <span class="k">elif</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;moma&#39;</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c">#TODO: Need to figure out why reusing the problem and the combined_model do not</span>
+                    <span class="c">#speed things up here.</span>
+                    <span class="n">moma_solution</span> <span class="o">=</span> <span class="n">moma</span><span class="p">(</span><span class="n">wt_model</span><span class="p">,</span> <span class="n">mutant_model</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span> <span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span>
+                                         <span class="n">combined_model</span><span class="o">=</span><span class="n">combined_model</span><span class="p">)</span>
+                    <span class="n">the_problem</span> <span class="o">=</span> <span class="n">moma_solution</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;the_problem&#39;</span><span class="p">)</span>
+                    <span class="n">growth_rate_dict</span><span class="p">[</span><span class="n">the_element</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">moma_solution</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;objective_value&#39;</span><span class="p">))</span>
+                    <span class="n">solution_status_dict</span><span class="p">[</span><span class="n">the_element</span><span class="p">]</span> <span class="o">=</span> <span class="n">moma_solution</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;status&#39;</span><span class="p">)</span>
+                    <span class="n">combined_model</span> <span class="o">=</span> <span class="n">moma_solution</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;combined_model&#39;</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">growth_rate_dict</span><span class="p">[</span><span class="n">the_element</span><span class="p">]</span> <span class="o">=</span> <span class="n">nan</span>
+                    <span class="n">the_problem</span> <span class="o">=</span> <span class="bp">None</span>
+                    <span class="n">solution_status_dict</span><span class="p">[</span><span class="n">the_element</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;failed&#39;</span>
+
+            <span class="k">if</span> <span class="n">discard_problems</span><span class="p">:</span>
+                <span class="n">problem_dict</span><span class="p">[</span><span class="n">the_element</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;discarded&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">problem_dict</span><span class="p">[</span><span class="n">the_element</span><span class="p">]</span> <span class="o">=</span> <span class="n">the_problem</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">the_problem</span><span class="p">:</span>
+                <span class="n">the_problem</span> <span class="o">=</span> <span class="n">wt_problem</span>
+            <span class="c">#reset the model</span>
+            <span class="n">the_element</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="n">old_lower_bound</span>
+            <span class="n">the_element</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="n">old_upper_bound</span>
+        <span class="c">#else just use the wt_f and x</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">discard_problems</span><span class="p">:</span>
+                <span class="n">problem_dict</span><span class="p">[</span><span class="n">the_element</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;discarded&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">problem_dict</span><span class="p">[</span><span class="n">the_element</span><span class="p">]</span> <span class="o">=</span> <span class="n">wt_problem</span>
+            <span class="n">growth_rate_dict</span><span class="p">[</span><span class="n">the_element</span><span class="p">]</span> <span class="o">=</span> <span class="n">wt_f</span>
+            <span class="n">solution_status_dict</span><span class="p">[</span><span class="n">the_element</span><span class="p">]</span> <span class="o">=</span> <span class="n">wt_status</span>
+    
+    
+    <span class="k">return</span><span class="p">(</span><span class="n">growth_rate_dict</span><span class="p">,</span> <span class="n">solution_status_dict</span><span class="p">,</span> <span class="n">problem_dict</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="single_gene_deletion"><a class="viewcode-back" href="../../../cobra.flux_analysis.html#cobra.flux_analysis.single_deletion.single_gene_deletion">[docs]</a><span class="k">def</span> <span class="nf">single_gene_deletion</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">element_list</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                         <span class="n">method</span><span class="o">=</span><span class="s">&#39;fba&#39;</span><span class="p">,</span> <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;reuse&#39;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span>
+                         <span class="n">error_reporting</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Performs optimization simulations to realize the objective defined</span>
+<span class="sd">    from cobra_model.reactions[:].objective_coefficients after deleting each gene in</span>
+<span class="sd">    gene_list from the model.</span>
+<span class="sd">    </span>
+<span class="sd">    cobra_model: a cobra.Model object</span>
+
+<span class="sd">    element_list: Is None or a list of genes to delete.  If None then</span>
+<span class="sd">    disable each reaction associated with each gene in cobra_model.genes.</span>
+
+<span class="sd">    method: &#39;fba&#39; or &#39;moma&#39;</span>
+
+<span class="sd">    the_problem: Is None or &#39;reuse&#39;.</span>
+
+<span class="sd">    solver: &#39;glpk&#39;, &#39;gurobi&#39;, or &#39;cplex&#39;.</span>
+
+<span class="sd">    Returns a list of dictionaries: growth_rate_dict, solution_status_dict,</span>
+<span class="sd">    problem_dict where the key corresponds to each reaction in reaction_list.</span>
+
+<span class="sd">    TODO: Add in a section that allows copying and collection of problem for</span>
+<span class="sd">    debugging purposes.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">wt_model</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c">#Original wild-type (wt) model.</span>
+    <span class="n">wt_model</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="s">&#39;Wild-Type&#39;</span>
+    <span class="c">#MOMA constructs combined quadratic models thus we cannot reuse a model</span>
+    <span class="c">#generated by the cobra_model.optimize call</span>
+    <span class="k">if</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;moma&#39;</span><span class="p">:</span>
+        <span class="n">the_problem</span> <span class="o">=</span> <span class="s">&#39;return&#39;</span>
+        <span class="n">mutant_model</span> <span class="o">=</span> <span class="n">wt_model</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c">#Need a second model for moma</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mutant_model</span> <span class="o">=</span> <span class="n">cobra_model</span>
+    <span class="n">discard_problems</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">the_problem</span><span class="p">:</span>
+        <span class="n">the_problem</span> <span class="o">=</span> <span class="s">&#39;return&#39;</span>
+        <span class="n">discard_problems</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="c">#</span>
+    <span class="n">the_problem</span> <span class="o">=</span> <span class="n">wt_model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
+                                       <span class="n">error_reporting</span><span class="o">=</span><span class="n">error_reporting</span><span class="p">)</span>
+    <span class="n">wt_f</span> <span class="o">=</span> <span class="n">wt_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">f</span>
+    <span class="n">wt_status</span> <span class="o">=</span> <span class="n">wt_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">status</span>
+    <span class="n">wt_x</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">wt_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">wt_x_dict</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">wt_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">x_dict</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">element_list</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">element_list</span> <span class="o">=</span> <span class="n">mutant_model</span><span class="o">.</span><span class="n">genes</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">element_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;id&#39;</span><span class="p">):</span>
+        <span class="n">element_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">mutant_model</span><span class="o">.</span><span class="n">genes</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">,</span> <span class="n">element_list</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mutant_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">cobra_model</span><span class="p">:</span>
+            <span class="n">element_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">element_list</span><span class="p">]</span>
+            <span class="n">element_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">mutant_model</span><span class="o">.</span><span class="n">genes</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">,</span> <span class="n">element_list</span><span class="p">)</span>
+    <span class="n">wt_problem</span> <span class="o">=</span> <span class="n">the_problem</span>
+
+    <span class="n">growth_rate_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">solution_status_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">problem_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">combined_model</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">for</span> <span class="n">the_element</span> <span class="ow">in</span> <span class="n">element_list</span><span class="p">:</span>
+        <span class="c">#delete the gene</span>
+        <span class="c">#if the deletion alters the bounds then run simulation</span>
+        <span class="n">delete_model_genes</span><span class="p">(</span><span class="n">mutant_model</span><span class="p">,</span> <span class="n">the_element</span><span class="p">)</span>
+        <span class="n">mutant_model</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">the_element</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">if</span> <span class="n">mutant_model</span><span class="o">.</span><span class="n">_trimmed</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;fba&#39;</span><span class="p">:</span>
+                <span class="n">the_problem</span> <span class="o">=</span> <span class="n">mutant_model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">the_problem</span><span class="o">=</span><span class="n">wt_problem</span><span class="p">,</span>
+                                                    <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
+                                                    <span class="n">error_reporting</span><span class="o">=</span><span class="n">error_reporting</span><span class="p">)</span>
+                <span class="n">growth_rate_dict</span><span class="p">[</span><span class="n">the_element</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">mutant_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">f</span>
+                <span class="n">solution_status_dict</span><span class="p">[</span><span class="n">the_element</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">mutant_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">status</span>
+            <span class="k">elif</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;moma&#39;</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c">#TODO: Need to figure out why reusing the problem and the combined_model do not</span>
+                    <span class="c">#speed things up here.</span>
+                    <span class="n">moma_solution</span> <span class="o">=</span> <span class="n">moma</span><span class="p">(</span><span class="n">wt_model</span><span class="p">,</span> <span class="n">mutant_model</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span> <span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span>
+                                         <span class="n">combined_model</span><span class="o">=</span><span class="n">combined_model</span><span class="p">)</span>
+                    <span class="n">the_problem</span> <span class="o">=</span> <span class="n">moma_solution</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;the_problem&#39;</span><span class="p">)</span>
+                    <span class="n">growth_rate_dict</span><span class="p">[</span><span class="n">the_element</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">moma_solution</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;objective_value&#39;</span><span class="p">))</span>
+                    <span class="n">solution_status_dict</span><span class="p">[</span><span class="n">the_element</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">moma_solution</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;status&#39;</span><span class="p">)</span>
+                    <span class="n">combined_model</span> <span class="o">=</span> <span class="n">moma_solution</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;combined_model&#39;</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">growth_rate_dict</span><span class="p">[</span><span class="n">the_element</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">nan</span>
+                    <span class="n">the_problem</span> <span class="o">=</span> <span class="bp">None</span>
+                    <span class="n">solution_status_dict</span><span class="p">[</span><span class="n">the_element</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;failed&#39;</span>
+
+            <span class="k">if</span> <span class="n">discard_problems</span><span class="p">:</span>
+                <span class="n">problem_dict</span><span class="p">[</span><span class="n">the_element</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;discarded&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">problem_dict</span><span class="p">[</span><span class="n">the_element</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">the_problem</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">the_problem</span><span class="p">:</span>
+                <span class="n">the_problem</span> <span class="o">=</span> <span class="n">wt_problem</span>
+            <span class="c">#reset the model</span>
+            <span class="n">undelete_model_genes</span><span class="p">(</span><span class="n">mutant_model</span><span class="p">)</span>
+        <span class="c">#else just use the wt_f and x</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">discard_problems</span><span class="p">:</span>
+                <span class="n">problem_dict</span><span class="p">[</span><span class="n">the_element</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;discarded&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">problem_dict</span><span class="p">[</span><span class="n">the_element</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">wt_problem</span>
+            <span class="n">growth_rate_dict</span><span class="p">[</span><span class="n">the_element</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">wt_f</span>
+            <span class="n">solution_status_dict</span><span class="p">[</span><span class="n">the_element</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">wt_status</span>
+    
+    
+    <span class="k">return</span><span class="p">(</span><span class="n">growth_rate_dict</span><span class="p">,</span> <span class="n">solution_status_dict</span><span class="p">,</span> <span class="n">problem_dict</span><span class="p">)</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

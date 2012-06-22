@@ -1,0 +1,239 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>io Package &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="index.html" />
+    <link rel="up" title="cobra Package" href="cobra.html" />
+    <link rel="next" title="manipulation Package" href="cobra.manipulation.html" />
+    <link rel="prev" title="flux_analysis Package" href="cobra.flux_analysis.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.manipulation.html" title="manipulation Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cobra.flux_analysis.html" title="flux_analysis Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" accesskey="U">cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="io-package">
+<h1>io Package<a class="headerlink" href="#io-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><a class="reference external" href="http://docs.python.org/library/io.html#io" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">io</span></tt></a> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-cobra.io"></span></div>
+<div class="section" id="module-cobra.io.mat">
+<span id="mat-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">mat</span></tt> Module<a class="headerlink" href="#module-cobra.io.mat" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cobra.io.mat.cell">
+<tt class="descclassname">cobra.io.mat.</tt><tt class="descname">cell</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/cobra/io/mat.html#cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.io.mat.cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>translate an array x into a MATLAB cell array</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.io.mat.load_matlab_model">
+<tt class="descclassname">cobra.io.mat.</tt><tt class="descname">load_matlab_model</tt><big>(</big><em>infile_path</em>, <em>variable_name=None</em><big>)</big><a class="reference internal" href="_modules/cobra/io/mat.html#load_matlab_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.io.mat.load_matlab_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a cobra model stored as a .mat file
+NOTE: INCOMPLETE, does not load GPR&#8217;s</p>
+<p>infile_path : str
+variable_name : str, optional</p>
+<blockquote>
+<div>The variable name of the model in the .mat file. If this is not
+specified, then the first MATLAB variable which looks like a COBRA
+model will be used</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.io.mat.save_matlab_model">
+<tt class="descclassname">cobra.io.mat.</tt><tt class="descname">save_matlab_model</tt><big>(</big><em>model</em>, <em>file_name</em><big>)</big><a class="reference internal" href="_modules/cobra/io/mat.html#save_matlab_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.io.mat.save_matlab_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the cobra model as a .mat file.</p>
+<p>This .mat file can be used directly in the MATLAB version of COBRA.
+NOTE: this function requires a patched version of scipy.io.savemat</p>
+<p>model : cobra.Model
+file_name : str or file-like object</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cobra.io.sbml">
+<span id="sbml-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">sbml</span></tt> Module<a class="headerlink" href="#module-cobra.io.sbml" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cobra.io.sbml.add_sbml_species">
+<tt class="descclassname">cobra.io.sbml.</tt><tt class="descname">add_sbml_species</tt><big>(</big><em>sbml_model</em>, <em>cobra_metabolite</em>, <em>note_start_tag</em>, <em>note_end_tag</em>, <em>boundary_metabolite=False</em><big>)</big><a class="reference internal" href="_modules/cobra/io/sbml.html#add_sbml_species"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.io.sbml.add_sbml_species" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function for adding cobra metabolites to an sbml model.</p>
+<p>sbml_model: sbml_model object</p>
+<p>cobra_metabolite: a cobra.Metabolite object</p>
+<p>note_start_tag: the start tag for parsing cobra notes. this will eventually
+be supplanted when COBRA is worked into sbml.</p>
+<p>note_end_tag: the end tag for parsing cobra notes. this will eventually
+be supplanted when COBRA is worked into sbml.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.io.sbml.create_cobra_model_from_sbml_file">
+<tt class="descclassname">cobra.io.sbml.</tt><tt class="descname">create_cobra_model_from_sbml_file</tt><big>(</big><em>sbml_filename</em>, <em>old_sbml=False</em>, <em>legacy_metabolite=False</em>, <em>print_time=False</em>, <em>use_hyphens=False</em><big>)</big><a class="reference internal" href="_modules/cobra/io/sbml.html#create_cobra_model_from_sbml_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.io.sbml.create_cobra_model_from_sbml_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert an SBML XML file into a cobra.Model object.  Supports
+SBML Level 2 Versions 1 and 4</p>
+<p>sbml_filename: String.</p>
+<p>old_sbml:  Boolean. Set to True if the XML file has metabolite
+formula appended to metabolite names.  This was a poorly designed
+artifact that persists in some models.</p>
+<p>legacy_metabolite: Boolean.  If True then assume that the metabolite id has
+the compartment id appended after an underscore (e.g. _c for cytosol).  This
+has not been implemented but will be soon.</p>
+<p>print_time:  Boolean.  Print the time requirements for different sections</p>
+<p>use_hyphens:   Boolean.  If True, double underscores (__) in an SBML ID will be converted to hyphens</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.io.sbml.fix_legacy_id">
+<tt class="descclassname">cobra.io.sbml.</tt><tt class="descname">fix_legacy_id</tt><big>(</big><em>id</em>, <em>use_hyphens=False</em><big>)</big><a class="reference internal" href="_modules/cobra/io/sbml.html#fix_legacy_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.io.sbml.fix_legacy_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cobra.io.sbml.parse_legacy_id">
+<tt class="descclassname">cobra.io.sbml.</tt><tt class="descname">parse_legacy_id</tt><big>(</big><em>the_id</em>, <em>the_compartment=None</em>, <em>the_type='metabolite'</em>, <em>use_hyphens=False</em><big>)</big><a class="reference internal" href="_modules/cobra/io/sbml.html#parse_legacy_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.io.sbml.parse_legacy_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deals with a bunch of problems due to bigg.ucsd.edu not following SBML standards</p>
+<p>the_id: String.</p>
+<p>the_compartment: String.</p>
+<p>the_type: String.  Currently only &#8216;metabolite&#8217; is supported</p>
+<p>use_hyphens:   Boolean.  If True, double underscores (__) in an SBML ID will be converted to hyphens</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.io.sbml.parse_legacy_sbml_notes">
+<tt class="descclassname">cobra.io.sbml.</tt><tt class="descname">parse_legacy_sbml_notes</tt><big>(</big><em>note_string</em>, <em>note_delimiter=':'</em><big>)</big><a class="reference internal" href="_modules/cobra/io/sbml.html#parse_legacy_sbml_notes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.io.sbml.parse_legacy_sbml_notes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deal with legacy SBML format issues arising from the
+COBRA Toolbox for MATLAB and BiGG.ucsd.edu developers.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.io.sbml.read_legacy_sbml">
+<tt class="descclassname">cobra.io.sbml.</tt><tt class="descname">read_legacy_sbml</tt><big>(</big><em>filename</em>, <em>use_hyphens=False</em><big>)</big><a class="reference internal" href="_modules/cobra/io/sbml.html#read_legacy_sbml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.io.sbml.read_legacy_sbml" title="Permalink to this definition">¶</a></dt>
+<dd><p>read in an sbml file and fix the sbml id&#8217;s</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.io.sbml.write_cobra_model_to_sbml_file">
+<tt class="descclassname">cobra.io.sbml.</tt><tt class="descname">write_cobra_model_to_sbml_file</tt><big>(</big><em>cobra_model</em>, <em>sbml_filename</em>, <em>sbml_level=2</em>, <em>sbml_version=1</em>, <em>print_time=False</em><big>)</big><a class="reference internal" href="_modules/cobra/io/sbml.html#write_cobra_model_to_sbml_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.io.sbml.write_cobra_model_to_sbml_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a cobra.Model object to an SBML XML file.</p>
+<p>cobra_model:  A cobra.Model object</p>
+<p>sbml_filename:  The file to write the SBML XML to.</p>
+<p>sbml_level:  2 is the only level supported at the moment.</p>
+<p>sbml_version: 1 is the only version supported at the moment.</p>
+<p>print_time:  Boolean.  Print the time requirements for different sections</p>
+<p>TODO: Update the NOTES to match the SBML standard and provide support for
+Level 2 Version 4</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">io Package</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">io</span></tt> Package</a></li>
+<li><a class="reference internal" href="#module-cobra.io.mat"><tt class="docutils literal"><span class="pre">mat</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-cobra.io.sbml"><tt class="docutils literal"><span class="pre">sbml</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cobra.flux_analysis.html"
+                        title="previous chapter">flux_analysis Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cobra.manipulation.html"
+                        title="next chapter">manipulation Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/cobra.io.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.manipulation.html" title="manipulation Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cobra.flux_analysis.html" title="flux_analysis Package"
+             >previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" >cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

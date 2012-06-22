@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tools Package &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="index.html" />
+    <link rel="up" title="cobra Package" href="cobra.html" />
+    <link rel="next" title="topology Package" href="cobra.topology.html" />
+    <link rel="prev" title="test Package" href="cobra.test.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.topology.html" title="topology Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cobra.test.html" title="test Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" accesskey="U">cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tools-package">
+<h1>tools Package<a class="headerlink" href="#tools-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">tools</span></tt> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-cobra.tools"></span></div>
+<div class="section" id="module-cobra.tools.tools">
+<span id="tools-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">tools</span></tt> Module<a class="headerlink" href="#module-cobra.tools.tools" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cobra.tools.tools.check_reaction_mass_balance">
+<tt class="descclassname">cobra.tools.tools.</tt><tt class="descname">check_reaction_mass_balance</tt><big>(</big><em>cobra_model</em>, <em>reaction_id_list=None</em>, <em>ignore_boundary_reactions=True</em><big>)</big><a class="reference internal" href="_modules/cobra/tools/tools.html#check_reaction_mass_balance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.tools.tools.check_reaction_mass_balance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the mass balance for reactions.</p>
+<p>reaction_id_list: None or a list of Ids from self.reactions.  If None
+then check all of the reactions in self.reactions</p>
+<p>ignore_boundary_reactions:  Boolean.  If True then ignore reactions
+starting with <a href="#id2"><span class="problematic" id="id3">EX_</span></a> or <a href="#id4"><span class="problematic" id="id5">DM_</span></a></p>
+<p>TODO: Eventually plug in functions from oven.hyduke.construction.balance</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.tools.tools.create_sif">
+<tt class="descclassname">cobra.tools.tools.</tt><tt class="descname">create_sif</tt><big>(</big><em>the_symmetric_array</em>, <em>the_elements</em>, <em>the_filename</em>, <em>the_interaction=1</em>, <em>interaction_type='syn_lethal'</em><big>)</big><a class="reference internal" href="_modules/cobra/tools/tools.html#create_sif"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.tools.tools.create_sif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a symmetric array into a SIF-formatted file that can
+be opened with Cytoscape.</p>
+<p>the_symmetric_array:  A symmetric numpy array.</p>
+<p>the_elements: Human understandable names for each row in the array</p>
+<p>the_filename: The file to save the SIF to.</p>
+<p>the_interaction: The value that must exist at a point in the array
+to indicate that row i interacts with column j.</p>
+<p>interaction_type: The name to call the interaction in the SIF file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.tools.tools.exp_function">
+<tt class="descclassname">cobra.tools.tools.</tt><tt class="descname">exp_function</tt><big>(</big><em>x</em>, <em>base=2.0</em><big>)</big><a class="reference internal" href="_modules/cobra/tools/tools.html#exp_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.tools.tools.exp_function" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cobra.tools.tools.gene_to_reaction_value">
+<tt class="descclassname">cobra.tools.tools.</tt><tt class="descname">gene_to_reaction_value</tt><big>(</big><em>cobra_model</em>, <em>gene_value_dict=None</em>, <em>value_type='gene_p'</em>, <em>gene_prefix='(STM|PSLT){1}'</em>, <em>default_value=1</em>, <em>complex_aggregate=&lt;built-in function min&gt;</em>, <em>return_id=None</em>, <em>spontaneous_value=0</em><big>)</big><a class="reference internal" href="_modules/cobra/tools/tools.html#gene_to_reaction_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.tools.tools.gene_to_reaction_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts gene associated values to reaction associated values
+based on gene_reaction_rules in cobra_model.reactions[:].gene_reaction_rule</p>
+<p>gene_value_dict: A dictionary where the keys are from cobra_model.genes
+and the values are some number such as the p value.</p>
+<p>value_type: &#8216;gene_p&#8217;, &#8216;gene_expression&#8217; indicate that these are
+p-values or expression intensities for genes.  &#8216;protein_p&#8217; and
+&#8216;protein_expression&#8217; are not yet implemented.</p>
+<p>gene_prefix: Text.  A regular expression that distinguishes gene ids from
+junk in cobra_model.gene_reaction_ruiles</p>
+<p>default_value: Float.  The value to assign to genes in a gene_reaction_rule
+that are not in gene_value_dict.</p>
+<p>complex_aggregate: Function that aggregates the values for an enzyme complex</p>
+<p>return_id: None or Identifier for the run to help maintain identity when
+running a large number of these functions in parallel.</p>
+<p>spontaneous_value: The value to assign to spontaneous reactions</p>
+<p>returns a dict {cobra_model.reaction[i]: score[i]}</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.tools.tools.get_druggable_targets_from_brenda">
+<tt class="descclassname">cobra.tools.tools.</tt><tt class="descname">get_druggable_targets_from_brenda</tt><big>(</big><em>organism_genus_species</em><big>)</big><a class="reference internal" href="_modules/cobra/tools/tools.html#get_druggable_targets_from_brenda"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.tools.tools.get_druggable_targets_from_brenda" title="Permalink to this definition">¶</a></dt>
+<dd><p>get_druggable_targets_from_brenda serves as a wrapper to BRENDAs SOAP
+getInhibitors.  That organizes the output and allows one to use paralell
+python. BRENDA is the enzyme database</p>
+<p>organism_genus_species: The organism_genus_species string from BRENDA for
+the organism of interest</p>
+<p>NOTE: This will sometimes fail due to the presence of non-unicode strings
+in BRENDA even though their web-service defines the encoding as unicode.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.tools.tools.get_inhibitors_from_brenda">
+<tt class="descclassname">cobra.tools.tools.</tt><tt class="descname">get_inhibitors_from_brenda</tt><big>(</big><em>brenda_dict</em><big>)</big><a class="reference internal" href="_modules/cobra/tools/tools.html#get_inhibitors_from_brenda"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.tools.tools.get_inhibitors_from_brenda" title="Permalink to this definition">¶</a></dt>
+<dd><p>get_inhibitors_from_brenda serves as a wrapper to BRENDAs SOAP
+getInhibitors.  That organizes the output and allows one to use
+paralell python.</p>
+<p>brenda_dict: The query parameters to feed to BRENDA&#8217;s function</p>
+<p>NOTE: This will sometimes fail due to the presence of non-unicode strings
+in BRENDA even though their web-service defines the encoding as unicode.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.tools.tools.identify_blocked_metabolites">
+<tt class="descclassname">cobra.tools.tools.</tt><tt class="descname">identify_blocked_metabolites</tt><big>(</big><em>cobra_model</em>, <em>account_for_bounds=False</em><big>)</big><a class="reference internal" href="_modules/cobra/tools/tools.html#identify_blocked_metabolites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.tools.tools.identify_blocked_metabolites" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identify metabolites that cannot be produced or consumed from other
+metabolites in the model. This will only identify root blocked metabolites,
+i.e. if the metabolite has at least one input and one output
+then assume that it is not blocked even the input or output are blocked.</p>
+<p>account_for_bounds: Boolean.  Not currently implemented.</p>
+<p>NOTE: To determine if a metabolite is unproducible under any conditions
+look at cobra.flux_analysis.variablity.find_blocked_reactions</p>
+<p>NOTE: Reversible reactions count as an input and output, but this can
+be problematic if one of the reaction points cannot be reached
+from the outside by any path</p>
+<p>TODO:  This can be moved to a tools module</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.tools.tools.log_function">
+<tt class="descclassname">cobra.tools.tools.</tt><tt class="descname">log_function</tt><big>(</big><em>x</em>, <em>base=2.0</em><big>)</big><a class="reference internal" href="_modules/cobra/tools/tools.html#log_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.tools.tools.log_function" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cobra.tools.tools.ordered_replace">
+<tt class="descclassname">cobra.tools.tools.</tt><tt class="descname">ordered_replace</tt><big>(</big><em>the_string</em>, <em>elements_to_replace</em>, <em>the_replacements</em><big>)</big><a class="reference internal" href="_modules/cobra/tools/tools.html#ordered_replace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.tools.tools.ordered_replace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Some times there are strings that need elements to be replaced,
+however, the elements may be substrings of other elements or even the
+replacement elements.  This function will replace each element in order.</p>
+<p>the_string: The string that needs to be modified.</p>
+<p>elements_to_replace:  A list of elements to replace in a string
+in order.  Only the first instance of an element will be replaced</p>
+<p>the_replacements: The corresponding list of replacements.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.tools.tools.remove_essential_elements">
+<tt class="descclassname">cobra.tools.tools.</tt><tt class="descname">remove_essential_elements</tt><big>(</big><em>the_symmetric_array</em>, <em>the_element_names=None</em><big>)</big><a class="reference internal" href="_modules/cobra/tools/tools.html#remove_essential_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.tools.tools.remove_essential_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to remove rows and columns from an array where the
+corresponding diagonal is not 0.  Typically used with analyzing
+output of cobra.flux_analysis.double_deletion</p>
+<p>the_symmetric_array: A symmetric numpy array</p>
+<p>the_element_names: None or a list of strings corresponding to the
+rows of the_symmetric_array.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.tools.tools.remove_nonsynthetic_lethal">
+<tt class="descclassname">cobra.tools.tools.</tt><tt class="descname">remove_nonsynthetic_lethal</tt><big>(</big><em>the_symmetric_array</em>, <em>the_element_names=None</em><big>)</big><a class="reference internal" href="_modules/cobra/tools/tools.html#remove_nonsynthetic_lethal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.tools.tools.remove_nonsynthetic_lethal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to remove rows and columns from an array where the corresponding
+rows and columns only contain values greater than 0.  Typically used
+with analyzing output of cobra.flux_analysis.double_deletion</p>
+<p>the_symmetric_array: A symmetric numpy array</p>
+<p>the_element_names: None or a list of strings corresponding to the
+rows of the_symmetric_array.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.tools.tools.select_rows_and_columns">
+<tt class="descclassname">cobra.tools.tools.</tt><tt class="descname">select_rows_and_columns</tt><big>(</big><em>the_symmetric_array</em>, <em>the_indices</em><big>)</big><a class="reference internal" href="_modules/cobra/tools/tools.html#select_rows_and_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.tools.tools.select_rows_and_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>select_rows_and_columns will select a set of rows and columns from a numpy
+array, and returns them as an array.</p>
+<p>the_symmetric_array: A symmetric numpy array</p>
+<p>the_indices: A list of indices.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.tools.tools.translate_entrez_via_homologene">
+<tt class="descclassname">cobra.tools.tools.</tt><tt class="descname">translate_entrez_via_homologene</tt><big>(</big><em>gene_list</em>, <em>source_taxa='Homo sapiens'</em>, <em>target_taxa='Mus musculus'</em>, <em>homologene_directory='/Users/danie/sysbep/Data/homologene/64/'</em>, <em>default_value='S0001'</em><big>)</big><a class="reference internal" href="_modules/cobra/tools/tools.html#translate_entrez_via_homologene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.tools.tools.translate_entrez_via_homologene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses the files in homologene_directory to map the entities in gene_list
+from source_taxa to target_taxa.  If there isn&#8217;t a homolog then the
+default_value is used for the mapping.</p>
+<p>Returns a list with the corresponding target_taxa genes.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">tools Package</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">tools</span></tt> Package</a></li>
+<li><a class="reference internal" href="#module-cobra.tools.tools"><tt class="docutils literal"><span class="pre">tools</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cobra.test.html"
+                        title="previous chapter">test Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cobra.topology.html"
+                        title="next chapter">topology Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/cobra.tools.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.topology.html" title="topology Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cobra.test.html" title="test Package"
+             >previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" >cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,467 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>flux_analysis Package &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="index.html" />
+    <link rel="up" title="cobra Package" href="cobra.html" />
+    <link rel="next" title="io Package" href="cobra.io.html" />
+    <link rel="prev" title="external Package" href="cobra.external.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.io.html" title="io Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cobra.external.html" title="external Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" accesskey="U">cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="flux-analysis-package">
+<h1>flux_analysis Package<a class="headerlink" href="#flux-analysis-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">flux_analysis</span></tt> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-cobra.flux_analysis"></span></div>
+<div class="section" id="module-cobra.flux_analysis.double_deletion">
+<span id="double-deletion-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">double_deletion</span></tt> Module<a class="headerlink" href="#module-cobra.flux_analysis.double_deletion" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cobra.flux_analysis.double_deletion.double_deletion">
+<tt class="descclassname">cobra.flux_analysis.double_deletion.</tt><tt class="descname">double_deletion</tt><big>(</big><em>cobra_model</em>, <em>element_list_1=None</em>, <em>element_list_2=None</em>, <em>method='fba'</em>, <em>single_deletion_growth_dict=None</em>, <em>the_problem='return'</em>, <em>element_type='gene'</em>, <em>solver='glpk'</em>, <em>error_reporting=None</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/double_deletion.html#double_deletion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.double_deletion.double_deletion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for double_gene_deletion and the currently unimplemented
+double_reaction_deletion functions</p>
+<p>cobra_model: a cobra.Model object</p>
+<p>element_list_1: Is None or a list of elements (genes or reactions)</p>
+<p>element_list_2: Is None or a list of elements (genes or reactions)</p>
+<p>method: &#8216;fba&#8217; or &#8216;moma&#8217; to run flux balance analysis or minimization
+of metabolic adjustments.</p>
+<p>single_deletion_growth_dict: A dictionary that provides the growth
+rate information for single gene knock outs.  This can speed up
+simulations because nonviable single deletion strains imply that all
+double deletion strains will also be nonviable.</p>
+<p>the_problem: Is None or &#8216;reuse&#8217;</p>
+<p>element_type: &#8216;gene&#8217; or &#8216;reaction&#8217;</p>
+<p>solver: &#8216;glpk&#8217;, &#8216;gurobi&#8217;, or &#8216;cplex&#8217;.</p>
+<p>error_reporting: None or True</p>
+<p>Returns a dictionary of the elements in the x dimension (x), the y
+dimension (y), and the growth simulation data (data).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.flux_analysis.double_deletion.double_deletion_parallel">
+<tt class="descclassname">cobra.flux_analysis.double_deletion.</tt><tt class="descname">double_deletion_parallel</tt><big>(</big><em>cobra_model</em>, <em>n_processes=4</em>, <em>genes_of_interest=None</em>, <em>method='fba'</em>, <em>the_medium=None</em>, <em>the_problem='return'</em>, <em>element_type='gene'</em>, <em>solver='glpk'</em>, <em>error_reporting=None</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/double_deletion.html#double_deletion_parallel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.double_deletion.double_deletion_parallel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for double_gene_deletion_parallel and the currently
+unimplemented double_reaction_deletion_parallel functions</p>
+<p>cobra_model: a cobra.Model object</p>
+<p>n_processes: is the number of parallel processes to start</p>
+<p>genes_of_interest: Is None, a list of genes, or a list of two lists of
+genes.  If None then double_deletion is run on all genes in
+the_model.genes.  If a list of genes then double_deletion is run for all
+combinations of genes in double_deletion.  If a list of of two lists of
+genes then double_deletion is run for each member of one list vs. each
+member of the second list.</p>
+<p>method: &#8216;fba&#8217; or &#8216;moma&#8217; to run flux balance analysis or minimization
+of metabolic adjustments.</p>
+<p>the_medium: Is None, a string, or a dictionary.  If a string then the
+initialize_growth_medium function expects that the_model has an
+attribute dictionary called media_compositions, which is a dictionary of
+dictionaries for various medium compositions.  Where a medium
+composition is a dictionary of exchange reaction ids for the medium
+components and the exchange fluxes for each medium component; note that
+these fluxes must be negative because they are being exchanged into the
+system.</p>
+<p>the_problem: Is None or &#8216;reuse&#8217;</p>
+<p>element_type: &#8216;gene&#8217; or &#8216;reaction&#8217;</p>
+<p>solver: &#8216;glpk&#8217;, &#8216;gurobi&#8217;, or &#8216;cplex&#8217;.</p>
+<p>error_reporting: None or True.</p>
+<p>Returns a dictionary of the genes in the x dimension (x), the y
+dimension (y), and the growth simulation data (data).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.flux_analysis.double_deletion.double_gene_deletion">
+<tt class="descclassname">cobra.flux_analysis.double_deletion.</tt><tt class="descname">double_gene_deletion</tt><big>(</big><em>cobra_model</em>, <em>gene_list_1=None</em>, <em>gene_list_2=None</em>, <em>method='fba'</em>, <em>single_deletion_growth_dict=None</em>, <em>the_problem='return'</em>, <em>solver='glpk'</em>, <em>error_reporting=None</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/double_deletion.html#double_gene_deletion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.double_deletion.double_gene_deletion" title="Permalink to this definition">¶</a></dt>
+<dd><p>This will disable reactions for all gene pairs from gene_list_1 and
+gene_list_2 and then run simulations to optimize for the objective
+function.  The contribution of each reaction to the objective function
+is indicated in cobra_model.reactions[:].objective_coefficient vector.</p>
+<p>cobra_model: a cobra.Model object</p>
+<p>gene_list_1: Is None or a list of genes.  If None then both gene_list_1
+and gene_list_2 are assumed to correspond to cobra_model.genes.</p>
+<p>gene_list_2: Is None or a list of genes.  If None then gene_list_2 is
+assumed to correspond to gene_list_1.</p>
+<p>method: &#8216;fba&#8217; or &#8216;moma&#8217; to run flux balance analysis or minimization
+of metabolic adjustments.</p>
+<p>single_deletion_growth_dict: A dictionary that provides the growth
+rate information for single gene knock outs.  This can speed up
+simulations because nonviable single deletion strains imply that all
+double deletion strains will also be nonviable.</p>
+<p>the_problem: Is None, &#8216;return&#8217;, or an LP model object for the solver.</p>
+<p>solver: &#8216;glpk&#8217;, &#8216;gurobi&#8217;, or &#8216;cplex&#8217;.</p>
+<p>error_reporting: None or True</p>
+<p>Returns a dictionary of the genes in the x dimension (x), the y
+dimension (y), and the growth simulation data (data).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.flux_analysis.double_deletion.double_gene_deletion_parallel">
+<tt class="descclassname">cobra.flux_analysis.double_deletion.</tt><tt class="descname">double_gene_deletion_parallel</tt><big>(</big><em>cobra_model</em>, <em>n_processes=4</em>, <em>genes_of_interest=None</em>, <em>method='fba'</em>, <em>the_medium=None</em>, <em>the_problem='return'</em>, <em>solver='glpk'</em>, <em>error_reporting=None</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/double_deletion.html#double_gene_deletion_parallel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.double_deletion.double_gene_deletion_parallel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides a wrapper to run the double_deletion function on
+multicore systems.</p>
+<p>cobra_model: a Model object</p>
+<p>n_processes: is the number of parallel processes to start</p>
+<p>genes_of_interest: Is None, a list of genes, or a list of two lists of
+genes.  If None then double_deletion is run on all genes in
+cobra_model.genes.  If a list of genes then double_deletion is run for all
+combinations of genes in double_deletion.  If a list of of two lists of
+genes then double_deletion is run for each member of one list vs. each
+member of the second list.</p>
+<p>method: &#8216;fba&#8217; or &#8216;moma&#8217; to run flux balance analysis or minimization
+of metabolic adjustments.</p>
+<p>the_medium: Is None, a string, or a dictionary.  If a string then the
+initialize_growth_medium function expects that cobra_model has an
+attribute dictionary called media_compositions, which is a dictionary of
+dictionaries for various medium compositions.  Where a medium
+composition is a dictionary of exchange reaction ids for the medium
+components and the exchange fluxes for each medium component; note that
+these fluxes must be negative because they are being exchanged into the
+system.</p>
+<p>the_problem: Is None or &#8216;reuse&#8217;</p>
+<p>solver: &#8216;glpk&#8217;, &#8216;gurobi&#8217;, or &#8216;cplex&#8217;.</p>
+<p>error_reporting: None or True</p>
+<dl class="docutils">
+<dt>Adds the following attributes to the cobra_model:</dt>
+<dd>double_deletion_growth_rate: A numpy array of the simulation results
+double_deletion_genes_x: A list of the genes for the x dimension of
+double_deletion_growth_rate.
+double_deletion_genes_y: A list of the genes for the y dimension of
+double_deletion_growth_rate.</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cobra.flux_analysis.essentiality">
+<span id="essentiality-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">essentiality</span></tt> Module<a class="headerlink" href="#module-cobra.flux_analysis.essentiality" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cobra.flux_analysis.essentiality.assess_medium_component_essentiality">
+<tt class="descclassname">cobra.flux_analysis.essentiality.</tt><tt class="descname">assess_medium_component_essentiality</tt><big>(</big><em>cobra_model</em>, <em>the_components=None</em>, <em>the_medium=None</em>, <em>solver='glpk'</em>, <em>the_problem='return'</em>, <em>the_condition=None</em>, <em>method='fba'</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/essentiality.html#assess_medium_component_essentiality"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.essentiality.assess_medium_component_essentiality" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deterimes which components in an in silico medium are essential for growth in the
+context of the remaining components.</p>
+<p>cobra_model: A Model object.</p>
+<p>the_components: None or a list of exchange reactions that will be sequentially
+disabled.</p>
+<p>the_medium: Is None, a string, or a dictionary.  If a string then the
+initialize_growth_medium function expects that the_model has an
+attribute dictionary called media_compositions, which is a dictionary of
+dictionaries for various medium compositions.  Where a medium
+composition is a dictionary of exchange reaction ids for the medium
+components and the exchange fluxes for each medium component; note that
+these fluxes must be negative because they are being exchanged into the
+system.</p>
+<p>solver: &#8216;glpk&#8217;, &#8216;gurobi&#8217;, or &#8216;cplex&#8217;</p>
+<p>the_problem: Is None, &#8216;return&#8217;, or an LP model object for the solver.</p>
+<p>the_condition: None or a String that provides a description of the medium
+simulation</p>
+<dl class="docutils">
+<dt>returns:</dt>
+<dd>essentiality_dict:  A dictionary providing the minimum lower bounds for
+each component of the growth medium.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.flux_analysis.essentiality.deletion_analysis">
+<tt class="descclassname">cobra.flux_analysis.essentiality.</tt><tt class="descname">deletion_analysis</tt><big>(</big><em>cobra_model</em>, <em>the_medium=None</em>, <em>deletion_type='single'</em>, <em>work_directory=None</em>, <em>growth_cutoff=0.001</em>, <em>the_problem='return'</em>, <em>n_processes=6</em>, <em>element_type='gene'</em>, <em>solver='glpk'</em>, <em>error_reporting=None</em>, <em>method='fba'</em>, <em>element_list=None</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/essentiality.html#deletion_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.essentiality.deletion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs single and/or double deletion analysis on all the genes in the model.  Provides
+an interface to parallelize the deletion studies.</p>
+<p>cobra_model: A Model object.</p>
+<p>the_medium: Is None, a string, or a dictionary.  If a string then the
+initialize_growth_medium function expects that cobra_model has an
+attribute dictionary called media_compositions, which is a dictionary of
+dictionaries for various medium compositions.  Where a medium
+composition is a dictionary of exchange reaction ids for the medium
+components and the exchange fluxes for each medium component; note that
+these fluxes must be negative because they are being exchanged into the
+system.</p>
+<p>deletion_type: &#8216;single&#8217;, &#8216;double&#8217;, or &#8216;double-only&#8217;</p>
+<p>work_directory: None or String indicating where to save the output from the simulations.</p>
+<p>growth_cutoff: Float.  Indiates the minimum growth rate that is considered viable.</p>
+<p>the_problem: Is None, &#8216;return&#8217;, or an LP model object for the solver.</p>
+<p>element_type: &#8216;gene&#8217; or &#8216;reaction&#8217;</p>
+<p>solver: &#8216;glpk&#8217;, &#8216;gurobi&#8217;, or &#8216;cplex&#8217;</p>
+<p>n_processes: number of parallel processes to break the double deletion simulations
+into.</p>
+<p>error_reporting: None or True</p>
+<p>element_list: None or a list of genes to delete from the model.</p>
+<p>Returns: Nothing.  However, the script will add attributes single_deletion_* and
+double_deletion_* to cobra_model containing the simulation results.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cobra.flux_analysis.moma">
+<span id="moma-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">moma</span></tt> Module<a class="headerlink" href="#module-cobra.flux_analysis.moma" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cobra.flux_analysis.moma.moma">
+<tt class="descclassname">cobra.flux_analysis.moma.</tt><tt class="descname">moma</tt><big>(</big><em>wt_model</em>, <em>mutant_model</em>, <em>objective_sense='maximize'</em>, <em>solver='gurobi'</em>, <em>tolerance_optimality=1e-08</em>, <em>tolerance_feasibility=1e-08</em>, <em>minimize_norm=False</em>, <em>the_problem='return'</em>, <em>lp_method=0</em>, <em>combined_model=None</em>, <em>norm_type='euclidean'</em>, <em>print_time=False</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/moma.html#moma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.moma.moma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the minimization of metabolic adjustment method described in
+Segre et al 2002 PNAS 99(23): 15112-7.</p>
+<p>wt_model: A cobra.Model object</p>
+<p>mutant_model: A cobra.Model object with different reaction bounds vs wt_model.
+To simulate deletions</p>
+<p>objective_sense: &#8216;maximize&#8217; or &#8216;minimize&#8217;</p>
+<p>solver: &#8216;gurobi&#8217;, &#8216;cplex&#8217;, or &#8216;glpk&#8217;.  Note: glpk cannot be used with
+norm_type &#8216;euclidean&#8217;</p>
+<p>tolerance_optimality: Solver tolerance for optimality.</p>
+<p>tolerance_feasibility: Solver tolerance for feasibility.</p>
+<p>the_problem: None or a problem object for the specific solver that can be
+used to hot start the next solution.</p>
+<p>lp_method: The method to use for solving the problem.  Depends on the solver.  See
+the cobra.flux_analysis.solvers.py file for more info.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>For norm_type == &#8216;euclidean&#8217;:</dt>
+<dd>the primal simplex works best for the test model (gurobi: lp_method=0, cplex: lp_method=1)</dd>
+</dl>
+</div></blockquote>
+<p>combined_model: an output from moma that represents the combined optimization
+to be solved.  when this is not none.  only assume that bounds have changed
+for the mutant or wild-type.  This saves 0.2 seconds in stacking matrices.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cobra.flux_analysis.objective">
+<span id="objective-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">objective</span></tt> Module<a class="headerlink" href="#module-cobra.flux_analysis.objective" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cobra.flux_analysis.objective.assess_objective">
+<tt class="descclassname">cobra.flux_analysis.objective.</tt><tt class="descname">assess_objective</tt><big>(</big><em>cobra_model</em>, <em>the_objective=None</em>, <em>objective_cutoff=0.001</em>, <em>growth_medium=None</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/objective.html#assess_objective"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.objective.assess_objective" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assesses the ability of the model to produce all reactants in the_objective on
+an individual basis.  Returns True if the_objective can be realized to exceed
+objective_cutoff.  Otherwise, determines which components of the_objective are
+lagging and returns a dict of the components and their required and realized values.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.flux_analysis.objective.update_objective">
+<tt class="descclassname">cobra.flux_analysis.objective.</tt><tt class="descname">update_objective</tt><big>(</big><em>cobra_model</em>, <em>the_objectives</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/objective.html#update_objective"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.objective.update_objective" title="Permalink to this definition">¶</a></dt>
+<dd><p>Revised to take advantage of the new Reaction classes.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cobra.flux_analysis.single_deletion">
+<span id="single-deletion-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">single_deletion</span></tt> Module<a class="headerlink" href="#module-cobra.flux_analysis.single_deletion" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cobra.flux_analysis.single_deletion.single_deletion">
+<tt class="descclassname">cobra.flux_analysis.single_deletion.</tt><tt class="descname">single_deletion</tt><big>(</big><em>cobra_model</em>, <em>element_list=None</em>, <em>method='fba'</em>, <em>the_problem='return'</em>, <em>element_type='gene'</em>, <em>solver='glpk'</em>, <em>error_reporting=None</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/single_deletion.html#single_deletion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.single_deletion.single_deletion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for single_gene_deletion and the single_reaction_deletion
+functions</p>
+<p>cobra_model: a cobra.Model object</p>
+<p>element_list: Is None or a list of elements (genes or reactions) to
+delete.</p>
+<p>method: &#8216;fba&#8217; or &#8216;moma&#8217;</p>
+<p>the_problem: Is None, &#8216;return&#8217;, or an LP model object for the solver.</p>
+<p>element_type: &#8216;gene&#8217; or &#8216;reaction&#8217;</p>
+<p>solver: &#8216;glpk&#8217;, &#8216;gurobi&#8217;, or &#8216;cplex&#8217;.</p>
+<p>discard_problems: Boolean.  If True do not save problems.  This will
+help with memory issues related to gurobi.</p>
+<p>Returns a list of dictionaries: growth_rate_dict, solution_status_dict,
+problem_dict where the key corresponds to each element in element_list.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.flux_analysis.single_deletion.single_gene_deletion">
+<tt class="descclassname">cobra.flux_analysis.single_deletion.</tt><tt class="descname">single_gene_deletion</tt><big>(</big><em>cobra_model</em>, <em>element_list=None</em>, <em>method='fba'</em>, <em>the_problem='reuse'</em>, <em>solver='glpk'</em>, <em>error_reporting=None</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/single_deletion.html#single_gene_deletion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.single_deletion.single_gene_deletion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs optimization simulations to realize the objective defined
+from cobra_model.reactions[:].objective_coefficients after deleting each gene in
+gene_list from the model.</p>
+<p>cobra_model: a cobra.Model object</p>
+<p>element_list: Is None or a list of genes to delete.  If None then
+disable each reaction associated with each gene in cobra_model.genes.</p>
+<p>method: &#8216;fba&#8217; or &#8216;moma&#8217;</p>
+<p>the_problem: Is None or &#8216;reuse&#8217;.</p>
+<p>solver: &#8216;glpk&#8217;, &#8216;gurobi&#8217;, or &#8216;cplex&#8217;.</p>
+<p>Returns a list of dictionaries: growth_rate_dict, solution_status_dict,
+problem_dict where the key corresponds to each reaction in reaction_list.</p>
+<p>TODO: Add in a section that allows copying and collection of problem for
+debugging purposes.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.flux_analysis.single_deletion.single_reaction_deletion">
+<tt class="descclassname">cobra.flux_analysis.single_deletion.</tt><tt class="descname">single_reaction_deletion</tt><big>(</big><em>cobra_model</em>, <em>element_list=None</em>, <em>method='fba'</em>, <em>the_problem='return'</em>, <em>solver='glpk'</em>, <em>error_reporting=None</em>, <em>discard_problems=True</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/single_deletion.html#single_reaction_deletion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.single_deletion.single_reaction_deletion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs optimization simulations to realize the objective defined
+from cobra_model.reactions[:].objective_coefficients after deleting each reaction
+from the model.</p>
+<p>cobra_model: a cobra.Model object</p>
+<p>element_list: Is None or a list of cobra.Reactions in cobra_model to disable.
+If None then disable each reaction in cobra_model.reactions and optimize for the
+objective function defined from cobra_model.reactions[:].objective_coefficients.</p>
+<p>method: &#8216;fba&#8217; is the only option at the moment.</p>
+<p>the_problem: Is None, &#8216;reuse&#8217;, or an LP model object for the solver.</p>
+<p>solver: &#8216;glpk&#8217;, &#8216;gurobi&#8217;, or &#8216;cplex&#8217;.</p>
+<p>discard_problems: Boolean.  If True do not save problems.  This will
+help with memory issues related to gurobi.</p>
+<p>Returns a list of dictionaries: growth_rate_dict, solution_status_dict,
+problem_dict where the key corresponds to each reaction in reaction_list.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cobra.flux_analysis.variability">
+<span id="variability-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">variability</span></tt> Module<a class="headerlink" href="#module-cobra.flux_analysis.variability" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cobra.flux_analysis.variability.find_blocked_reactions">
+<tt class="descclassname">cobra.flux_analysis.variability.</tt><tt class="descname">find_blocked_reactions</tt><big>(</big><em>cobra_model</em>, <em>the_reactions=None</em>, <em>allow_loops=True</em>, <em>solver='glpk'</em>, <em>the_problem='return'</em>, <em>tolerance_optimality=1e-09</em>, <em>open_exchanges=False</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/variability.html#find_blocked_reactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.variability.find_blocked_reactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds reactions that cannot carry a flux with the current
+exchange reaction settings for cobra_model, using flux variability
+analysis.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.flux_analysis.variability.flux_variability_analysis">
+<tt class="descclassname">cobra.flux_analysis.variability.</tt><tt class="descname">flux_variability_analysis</tt><big>(</big><em>cobra_model</em>, <em>fraction_of_optimum=1.0</em>, <em>objective_sense='maximize'</em>, <em>the_reactions=None</em>, <em>allow_loops=True</em>, <em>solver='glpk'</em>, <em>the_problem='return'</em>, <em>tolerance_optimality=1e-06</em>, <em>tolerance_feasibility=1e-06</em>, <em>tolerance_barrier=1e-08</em>, <em>lp_method=1</em>, <em>lp_parallel=0</em>, <em>new_objective=None</em>, <em>relax_b=None</em>, <em>error_reporting=None</em>, <em>number_of_processes=1</em>, <em>copy_model=True</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/variability.html#flux_variability_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.variability.flux_variability_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs flux variability analysis on a cobra.Model object</p>
+<p>cobra_model: a Model object</p>
+<p>fraction_of_optimum: fraction of the optimal solution that must be realized</p>
+<p>the_reactions: list of reactions to run FVA on.  if None then run on all
+reactions in the Model</p>
+<p>allow_loops:  Not Implemented.  If false then run the simulations with the
+loop law method to remove loops.</p>
+<p>the_problem: If &#8216;return&#8217; or an LP model object for the specified solver then
+the optimizations will be sped up by attempting to use a previous solution
+as a starting point to optimize the current problem.  Can reduce
+simulation time by over an order of magnitude.</p>
+<p>solver: &#8216;glpk&#8217;, &#8216;gurobi&#8217;, or &#8216;cplex&#8217;.</p>
+<p>the_problem: a problem object for the corresponding solver, &#8216;return&#8217;, or
+a float representing the wt_solution</p>
+<p>number_of_processes: If greater than 1 then this function will attempt
+to parallelize the problem.  NOTE: Currently slow</p>
+<p>TODO: update how Metabolite._bound is handled so we can set a range instead
+of just a single value.  This will be done in cobra.flux_analysis.solvers.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.flux_analysis.variability.flux_variability_analysis_wrapper">
+<tt class="descclassname">cobra.flux_analysis.variability.</tt><tt class="descname">flux_variability_analysis_wrapper</tt><big>(</big><em>keywords</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/variability.html#flux_variability_analysis_wrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.variability.flux_variability_analysis_wrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides an interface to call flux_variability_analysis from ppmap</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.flux_analysis.variability.run_fva">
+<tt class="descclassname">cobra.flux_analysis.variability.</tt><tt class="descname">run_fva</tt><big>(</big><em>solver='cplex'</em><big>)</big><a class="reference internal" href="_modules/cobra/flux_analysis/variability.html#run_fva"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.flux_analysis.variability.run_fva" title="Permalink to this definition">¶</a></dt>
+<dd><p>For debugging purposes only</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">flux_analysis Package</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">flux_analysis</span></tt> Package</a></li>
+<li><a class="reference internal" href="#module-cobra.flux_analysis.double_deletion"><tt class="docutils literal"><span class="pre">double_deletion</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-cobra.flux_analysis.essentiality"><tt class="docutils literal"><span class="pre">essentiality</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-cobra.flux_analysis.moma"><tt class="docutils literal"><span class="pre">moma</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-cobra.flux_analysis.objective"><tt class="docutils literal"><span class="pre">objective</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-cobra.flux_analysis.single_deletion"><tt class="docutils literal"><span class="pre">single_deletion</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-cobra.flux_analysis.variability"><tt class="docutils literal"><span class="pre">variability</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cobra.external.html"
+                        title="previous chapter">external Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cobra.io.html"
+                        title="next chapter">io Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/cobra.flux_analysis.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.io.html" title="io Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cobra.external.html" title="external Package"
+             >previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" >cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

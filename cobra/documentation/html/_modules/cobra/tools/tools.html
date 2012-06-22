@@ -1,0 +1,513 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cobra.tools.tools &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cobra.tools.tools</h1><div class="highlight"><pre>
+<span class="c">#cobra.tools.py</span>
+<span class="c">#System modules</span>
+<span class="kn">import</span> <span class="nn">numpy</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">re</span><span class="o">,</span> <span class="nn">scipy</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">cPickle</span> <span class="kn">import</span> <span class="n">dump</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">apply_along_axis</span><span class="p">,</span><span class="n">array</span><span class="p">,</span> <span class="n">corrcoef</span><span class="p">,</span> <span class="n">diag</span><span class="p">,</span> <span class="n">hstack</span><span class="p">,</span> <span class="n">isnan</span><span class="p">,</span> <span class="n">isinf</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span>  <span class="n">log</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">tril</span><span class="p">,</span> <span class="n">vstack</span><span class="p">,</span> <span class="n">where</span><span class="p">,</span> <span class="n">unique</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="n">sign</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span><span class="p">,</span> <span class="n">randint</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="c">#TODO: Move application specific funtions to their own</span>
+<span class="c">#files and split other functions out as well</span>
+<span class="k">print</span> <span class="s">&#39;WARNING: cobra.tools contains miscellaneous functions that are under development&#39;</span> <span class="o">+</span>\
+      <span class="s">&#39;use of this module IS NOT RECOMMENDED&#39;</span>
+<div class="viewcode-block" id="translate_entrez_via_homologene"><a class="viewcode-back" href="../../../cobra.tools.html#cobra.tools.tools.translate_entrez_via_homologene">[docs]</a><span class="k">def</span> <span class="nf">translate_entrez_via_homologene</span><span class="p">(</span><span class="n">gene_list</span><span class="p">,</span><span class="n">source_taxa</span><span class="o">=</span><span class="s">&#39;Homo sapiens&#39;</span><span class="p">,</span>
+                                    <span class="n">target_taxa</span><span class="o">=</span><span class="s">&#39;Mus musculus&#39;</span><span class="p">,</span>
+                                    <span class="n">homologene_directory</span><span class="o">=</span><span class="s">&#39;/Users/danie/sysbep/Data/homologene/64/&#39;</span><span class="p">,</span>
+                                     <span class="n">default_value</span><span class="o">=</span><span class="s">&#39;S0001&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Uses the files in homologene_directory to map the entities in gene_list</span>
+<span class="sd">    from source_taxa to target_taxa.  If there isn&#39;t a homolog then the</span>
+<span class="sd">    default_value is used for the mapping.</span>
+
+<span class="sd">    Returns a list with the corresponding target_taxa genes.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">taxa_map</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">homologene_directory</span> <span class="o">+</span> <span class="s">&#39;taxid_taxname.txt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
+        <span class="n">the_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\r\n</span><span class="s">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readlines</span><span class="p">()]</span>
+        <span class="p">[</span><span class="n">taxa_map</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">the_data</span><span class="p">]</span>
+
+    <span class="n">homologene_to_target_gi</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">source_gi_to_homologene</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">source_id</span> <span class="o">=</span> <span class="n">taxa_map</span><span class="p">[</span><span class="n">source_taxa</span><span class="p">]</span>
+    <span class="n">target_id</span> <span class="o">=</span> <span class="n">taxa_map</span><span class="p">[</span><span class="n">target_taxa</span><span class="p">]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">homologene_directory</span> <span class="o">+</span> <span class="s">&#39;homologene.data&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">the_line</span> <span class="ow">in</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+            <span class="n">the_line</span> <span class="o">=</span> <span class="n">the_line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">taxa_id</span> <span class="o">=</span> <span class="n">the_line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">taxa_id</span> <span class="o">==</span> <span class="n">source_id</span><span class="p">:</span>
+                <span class="n">source_gi_to_homologene</span><span class="p">[</span><span class="n">the_line</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span> <span class="o">=</span> <span class="n">the_line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">taxa_id</span> <span class="o">==</span> <span class="n">target_id</span><span class="p">:</span>
+                <span class="n">homologene_to_target_gi</span><span class="p">[</span><span class="n">the_line</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">the_line</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">target_gene_ids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">the_gene</span> <span class="ow">in</span> <span class="n">gene_list</span><span class="p">:</span>
+        <span class="n">gene_id</span> <span class="o">=</span> <span class="n">default_value</span>
+        <span class="k">if</span> <span class="n">the_gene</span> <span class="ow">in</span> <span class="n">source_gi_to_homologene</span><span class="p">:</span>
+            <span class="n">homologene</span> <span class="o">=</span> <span class="n">source_gi_to_homologene</span><span class="p">[</span><span class="n">the_gene</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">homologene</span> <span class="ow">in</span> <span class="n">homologene_to_target_gi</span><span class="p">:</span>
+                <span class="n">gene_id</span> <span class="o">=</span> <span class="n">homologene_to_target_gi</span><span class="p">[</span><span class="n">homologene</span><span class="p">]</span>
+        <span class="n">target_gene_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gene_id</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">target_gene_ids</span><span class="p">)</span>
+
+<span class="c">#Get enzyme inhibition data from BRENDA</span></div>
+<div class="viewcode-block" id="get_druggable_targets_from_brenda"><a class="viewcode-back" href="../../../cobra.tools.html#cobra.tools.tools.get_druggable_targets_from_brenda">[docs]</a><span class="k">def</span> <span class="nf">get_druggable_targets_from_brenda</span><span class="p">(</span><span class="n">organism_genus_species</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;get_druggable_targets_from_brenda serves as a wrapper to BRENDAs SOAP</span>
+<span class="sd">    getInhibitors.  That organizes the output and allows one to use paralell</span>
+<span class="sd">    python. BRENDA is the enzyme database</span>
+
+<span class="sd">    organism_genus_species: The organism_genus_species string from BRENDA for</span>
+<span class="sd">    the organism of interest</span>
+
+<span class="sd">    NOTE: This will sometimes fail due to the presence of non-unicode strings</span>
+<span class="sd">    in BRENDA even though their web-service defines the encoding as unicode.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">get_inhibitors_from_brenda</span><span class="p">({</span><span class="s">&#39;organism&#39;</span><span class="p">:</span> <span class="n">organism_genus_species</span><span class="p">}))</span>
+</div>
+<div class="viewcode-block" id="get_inhibitors_from_brenda"><a class="viewcode-back" href="../../../cobra.tools.html#cobra.tools.tools.get_inhibitors_from_brenda">[docs]</a><span class="k">def</span> <span class="nf">get_inhibitors_from_brenda</span><span class="p">(</span><span class="n">brenda_dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;get_inhibitors_from_brenda serves as a wrapper to BRENDAs SOAP</span>
+<span class="sd">    getInhibitors.  That organizes the output and allows one to use</span>
+<span class="sd">    paralell python.</span>
+
+<span class="sd">    brenda_dict: The query parameters to feed to BRENDA&#39;s function</span>
+<span class="sd">    </span>
+<span class="sd">    NOTE: This will sometimes fail due to the presence of non-unicode strings</span>
+<span class="sd">    in BRENDA even though their web-service defines the encoding as unicode.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">SOAPpy</span> <span class="kn">import</span> <span class="n">WSDL</span><span class="p">,</span> <span class="n">faultType</span>
+    <span class="kn">from</span> <span class="nn">xml.sax</span> <span class="kn">import</span> <span class="n">SAXParseException</span> <span class="k">as</span> <span class="n">SAXParseException</span>
+    <span class="n">wsdl</span> <span class="o">=</span> <span class="s">&#39;http://www.brenda-enzymes.org/soap/brenda.wsdl&#39;</span>
+    <span class="n">serv</span> <span class="o">=</span> <span class="n">WSDL</span><span class="o">.</span><span class="n">Proxy</span><span class="p">(</span><span class="n">wsdl</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tmp_inhibitors</span> <span class="o">=</span> <span class="n">serv</span><span class="o">.</span><span class="n">getInhibitors</span><span class="p">(</span><span class="n">brenda_dict</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">faultType</span> <span class="ow">or</span> <span class="n">SAXParseException</span><span class="p">:</span>
+        <span class="n">tmp_inhibitor_list</span> <span class="o">=</span> <span class="s">&#39;SOAP error: </span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">tmp_druggable_ec</span> <span class="o">=</span> <span class="n">brenda_dict</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">tmp_inhibitor_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">tmp_druggable_ec</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">tmp_inhibitor</span> <span class="ow">in</span> <span class="n">tmp_inhibitors</span><span class="p">:</span>
+            <span class="n">tmp_inhibitor</span> <span class="o">=</span> <span class="n">tmp_inhibitor</span><span class="p">[</span><span class="s">&#39;item&#39;</span><span class="p">]</span>
+            <span class="n">tmp_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">tmp_field</span> <span class="ow">in</span> <span class="n">tmp_inhibitor</span><span class="p">:</span>
+                <span class="n">tmp_dict</span><span class="p">[</span><span class="n">tmp_field</span><span class="p">[</span><span class="s">&#39;key&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">tmp_field</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">]</span>
+            <span class="n">tmp_inhibitor_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp_dict</span><span class="p">)</span>
+            <span class="n">tmp_druggable_ec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp_dict</span><span class="p">[</span><span class="s">&#39;ecNumber&#39;</span><span class="p">])</span>
+        <span class="n">tmp_druggable_ec</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">tmp_druggable_ec</span><span class="p">))</span>
+        <span class="n">tmp_druggable_ec</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp_druggable_ec</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">tmp_druggable_ec</span> <span class="o">=</span> <span class="n">tmp_druggable_ec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;list&#39;</span><span class="p">:</span> <span class="n">tmp_inhibitor_list</span><span class="p">,</span> <span class="s">&#39;ec&#39;</span><span class="p">:</span><span class="n">tmp_druggable_ec</span><span class="p">}</span>
+</div>
+<div class="viewcode-block" id="select_rows_and_columns"><a class="viewcode-back" href="../../../cobra.tools.html#cobra.tools.tools.select_rows_and_columns">[docs]</a><span class="k">def</span> <span class="nf">select_rows_and_columns</span><span class="p">(</span><span class="n">the_symmetric_array</span><span class="p">,</span> <span class="n">the_indices</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;select_rows_and_columns will select a set of rows and columns from a numpy</span>
+<span class="sd">    array, and returns them as an array.</span>
+
+<span class="sd">    the_symmetric_array: A symmetric numpy array</span>
+
+<span class="sd">    the_indices: A list of indices.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tmp_array</span> <span class="o">=</span> <span class="n">the_symmetric_array</span><span class="p">[</span><span class="n">the_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:]</span>
+    <span class="k">for</span> <span class="n">tmp_idx</span> <span class="ow">in</span> <span class="n">the_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="n">tmp_array</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">((</span><span class="n">tmp_array</span><span class="p">,</span> <span class="n">the_symmetric_array</span><span class="p">[</span><span class="n">tmp_idx</span><span class="p">,</span> <span class="p">:]))</span>
+    <span class="n">n_elements</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">the_indices</span><span class="p">)</span>
+    <span class="n">reduced_array</span> <span class="o">=</span> <span class="n">tmp_array</span><span class="p">[:,</span> <span class="n">the_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_elements</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">tmp_idx</span> <span class="ow">in</span> <span class="n">the_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="n">reduced_array</span> <span class="o">=</span> <span class="n">hstack</span><span class="p">((</span><span class="n">reduced_array</span><span class="p">,</span>
+                                <span class="n">tmp_array</span><span class="p">[:,</span> <span class="n">tmp_idx</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_elements</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">reduced_array</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="remove_essential_elements"><a class="viewcode-back" href="../../../cobra.tools.html#cobra.tools.tools.remove_essential_elements">[docs]</a><span class="k">def</span> <span class="nf">remove_essential_elements</span><span class="p">(</span><span class="n">the_symmetric_array</span><span class="p">,</span> <span class="n">the_element_names</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Used to remove rows and columns from an array where the</span>
+<span class="sd">    corresponding diagonal is not 0.  Typically used with analyzing</span>
+<span class="sd">    output of cobra.flux_analysis.double_deletion</span>
+
+<span class="sd">    the_symmetric_array: A symmetric numpy array</span>
+
+<span class="sd">    the_element_names: None or a list of strings corresponding to the</span>
+<span class="sd">    rows of the_symmetric_array.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nonessential_elements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">diag</span><span class="p">(</span><span class="n">the_symmetric_array</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">nonessential_array</span> <span class="o">=</span> <span class="n">select_rows_and_columns</span><span class="p">(</span><span class="n">the_symmetric_array</span><span class="p">,</span>
+                                                  <span class="n">nonessential_elements</span><span class="p">)</span>
+    <span class="n">elements_in_array</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">the_element_names</span><span class="p">:</span>
+        <span class="n">elements_in_array</span> <span class="o">=</span> <span class="n">nonessential_elements</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">elements_in_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">the_element_names</span><span class="p">[</span><span class="n">x</span><span class="p">]),</span>
+            <span class="n">nonessential_elements</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;array&#39;</span><span class="p">:</span> <span class="n">nonessential_array</span><span class="p">,</span>
+            <span class="s">&#39;elements&#39;</span><span class="p">:</span> <span class="n">elements_in_array</span><span class="p">}</span>
+</div>
+<div class="viewcode-block" id="remove_nonsynthetic_lethal"><a class="viewcode-back" href="../../../cobra.tools.html#cobra.tools.tools.remove_nonsynthetic_lethal">[docs]</a><span class="k">def</span> <span class="nf">remove_nonsynthetic_lethal</span><span class="p">(</span><span class="n">the_symmetric_array</span><span class="p">,</span> <span class="n">the_element_names</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Used to remove rows and columns from an array where the corresponding</span>
+<span class="sd">    rows and columns only contain values greater than 0.  Typically used</span>
+<span class="sd">    with analyzing output of cobra.flux_analysis.double_deletion</span>
+
+<span class="sd">    the_symmetric_array: A symmetric numpy array</span>
+
+<span class="sd">    the_element_names: None or a list of strings corresponding to the</span>
+<span class="sd">    rows of the_symmetric_array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">n_elements</span> <span class="o">=</span> <span class="n">the_symmetric_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">synthetic_lethal_indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="nb">sum</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>
+                                                           <span class="n">the_symmetric_array</span><span class="p">)</span>\
+                                          <span class="o">&lt;</span> <span class="n">n_elements</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">synthetic_lethal_array</span> <span class="o">=</span> <span class="n">select_rows_and_columns</span><span class="p">(</span><span class="n">the_symmetric_array</span><span class="p">,</span>
+                                                      <span class="n">synthetic_lethal_indices</span><span class="p">)</span>
+    <span class="n">elements_in_array</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">the_element_names</span> <span class="o">==</span> <span class="p">[]:</span>
+        <span class="n">elements_in_array</span> <span class="o">=</span> <span class="n">synthetic_lethal_indices</span> 
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">elements_in_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">the_element_names</span><span class="p">[</span><span class="n">x</span><span class="p">]),</span>
+             <span class="n">synthetic_lethal_indices</span> <span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;array&#39;</span><span class="p">:</span> <span class="n">synthetic_lethal_array</span><span class="p">,</span> <span class="s">&#39;elements&#39;</span><span class="p">:</span><span class="n">elements_in_array</span><span class="p">}</span>
+
+
+</div>
+<div class="viewcode-block" id="create_sif"><a class="viewcode-back" href="../../../cobra.tools.html#cobra.tools.tools.create_sif">[docs]</a><span class="k">def</span> <span class="nf">create_sif</span><span class="p">(</span><span class="n">the_symmetric_array</span><span class="p">,</span> <span class="n">the_elements</span><span class="p">,</span> <span class="n">the_filename</span><span class="p">,</span>
+                <span class="n">the_interaction</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">interaction_type</span><span class="o">=</span><span class="s">&#39;syn_lethal&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert a symmetric array into a SIF-formatted file that can</span>
+<span class="sd">    be opened with Cytoscape.</span>
+
+<span class="sd">    the_symmetric_array:  A symmetric numpy array.</span>
+
+<span class="sd">    the_elements: Human understandable names for each row in the array</span>
+
+<span class="sd">    the_filename: The file to save the SIF to.</span>
+
+<span class="sd">    the_interaction: The value that must exist at a point in the array</span>
+<span class="sd">    to indicate that row i interacts with column j.</span>
+
+<span class="sd">    interaction_type: The name to call the interaction in the SIF file.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">the_filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">the_row_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">the_symmetric_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">tmp_string</span> <span class="o">=</span> <span class="n">the_elements</span><span class="p">[</span><span class="n">the_row_idx</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span> <span class="o">+</span> <span class="n">interaction_type</span>
+        <span class="c">#use the_row_idx as an offset to deal with symmetry</span>
+        <span class="k">for</span> <span class="n">the_interactor</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">the_symmetric_array</span><span class="p">[</span><span class="n">the_row_idx</span><span class="p">,</span>
+                                                             <span class="n">the_row_idx</span><span class="p">:]</span> \
+                                         <span class="o">==</span> <span class="n">the_interaction</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">tmp_string</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="se">\t</span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="n">the_elements</span><span class="p">[</span><span class="n">the_row_idx</span> <span class="o">+</span> <span class="n">the_interactor</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tmp_string</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">interaction_type</span><span class="p">):</span>
+            <span class="n">out_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">tmp_string</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="gene_to_reaction_value"><a class="viewcode-back" href="../../../cobra.tools.html#cobra.tools.tools.gene_to_reaction_value">[docs]</a><span class="k">def</span> <span class="nf">gene_to_reaction_value</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">gene_value_dict</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                           <span class="n">value_type</span><span class="o">=</span><span class="s">&#39;gene_p&#39;</span><span class="p">,</span> <span class="n">gene_prefix</span><span class="o">=</span><span class="s">&#39;(STM|PSLT){1}&#39;</span><span class="p">,</span>
+                           <span class="n">default_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">complex_aggregate</span><span class="o">=</span><span class="nb">min</span><span class="p">,</span>
+                           <span class="n">return_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">spontaneous_value</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts gene associated values to reaction associated values</span>
+<span class="sd">    based on gene_reaction_rules in cobra_model.reactions[:].gene_reaction_rule</span>
+
+<span class="sd">    gene_value_dict: A dictionary where the keys are from cobra_model.genes</span>
+<span class="sd">    and the values are some number such as the p value.</span>
+
+<span class="sd">    value_type: &#39;gene_p&#39;, &#39;gene_expression&#39; indicate that these are</span>
+<span class="sd">    p-values or expression intensities for genes.  &#39;protein_p&#39; and</span>
+<span class="sd">    &#39;protein_expression&#39; are not yet implemented.</span>
+
+<span class="sd">    gene_prefix: Text.  A regular expression that distinguishes gene ids from</span>
+<span class="sd">    junk in cobra_model.gene_reaction_ruiles</span>
+
+<span class="sd">    default_value: Float.  The value to assign to genes in a gene_reaction_rule</span>
+<span class="sd">    that are not in gene_value_dict.</span>
+
+<span class="sd">    complex_aggregate: Function that aggregates the values for an enzyme complex</span>
+
+<span class="sd">    return_id: None or Identifier for the run to help maintain identity when</span>
+<span class="sd">    running a large number of these functions in parallel.</span>
+
+<span class="sd">    spontaneous_value: The value to assign to spontaneous reactions</span>
+
+<span class="sd">    returns a dict {cobra_model.reaction[i]: score[i]}</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gene_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">gene_prefix</span> <span class="o">+</span> <span class="s">&#39;(\w|\.)+&#39;</span><span class="p">)</span>
+    <span class="c">#2010-06-15: Cannot remember by the or was atomized, so deleted it</span>
+    <span class="c">#because of problems.  Potential BUG.</span>
+    <span class="c">#spontaneous_re = re.compile(&#39;[sS]0001( +or)?&#39;)</span>
+    <span class="n">spontaneous_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&#39;[sS]0001&#39;</span><span class="p">)</span>
+    <span class="n">spontaneous_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;s0001&#39;</span><span class="p">,</span> <span class="s">&#39;S0001&#39;</span><span class="p">]</span>
+    <span class="c">#If a gene value dict was not fed as a parameter</span>
+    <span class="c">#extract from the cobra_model</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">gene_value_dict</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value_type</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;_p&#39;</span><span class="p">):</span>
+            <span class="n">gene_value_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">genes</span><span class="p">,</span>
+                                       <span class="n">cobra_model</span><span class="o">.</span><span class="n">p_values</span><span class="p">[</span><span class="n">value_type</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span> <span class="s">&#39;_p &#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)]))</span>
+        <span class="k">elif</span> <span class="n">value_type</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;_expression&#39;</span><span class="p">):</span>
+            <span class="n">gene_value_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">genes</span><span class="p">,</span>
+                                       <span class="n">cobra_model</span><span class="o">.</span><span class="n">expression_values</span><span class="p">[</span>\
+                                           <span class="n">value_type</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;_expression&#39;</span><span class="p">,</span>
+                                                              <span class="s">&#39;&#39;</span><span class="p">)]))</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="s">&#39;cobra_model&#39;</span><span class="p">):</span>
+         <span class="n">cobra_model</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">cobra_model</span>
+    <span class="c">#First collect all the reactions that are in the gene list</span>
+    <span class="c">#Remove the spontaneous elements from the gene_value_dict because they</span>
+    <span class="c">#shouldn&#39;t have any values</span>
+    <span class="p">[</span><span class="n">gene_value_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">spontaneous_ids</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gene_value_dict</span><span class="p">]</span>
+    <span class="c">#remove the rows that have an NAN or inf value</span>
+    <span class="p">[</span><span class="n">gene_value_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+      <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">gene_value_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+     <span class="k">if</span> <span class="n">isnan</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="n">isinf</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()]</span>
+
+    <span class="n">gene_id_to_value</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">gene_value_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()])</span>
+    <span class="c">#Since reactions and genes point to each other we</span>
+    <span class="c">#can aggregate based on these</span>
+    <span class="n">the_reactions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="p">[</span><span class="n">the_reactions</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">_reaction</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gene_value_dict</span><span class="p">]</span>
+
+    <span class="c">#This deals with the fact that some genes have the same base but an additional suffix</span>
+    <span class="c">#HERE 2010-04-23: Dealing with ids being substrings of other ids.</span>
+    <span class="n">new_rules</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c">#Make copies of the gene_reaction_rules for the reactions and</span>
+    <span class="c">#substitute in the spontaneous value</span>
+
+    <span class="k">for</span> <span class="n">the_reaction</span> <span class="ow">in</span> <span class="n">the_reactions</span><span class="p">:</span>
+        <span class="n">the_rule</span> <span class="o">=</span>  <span class="n">deepcopy</span><span class="p">(</span><span class="n">the_reaction</span><span class="o">.</span><span class="n">gene_reaction_rule</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">the_rule</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">new_rules</span><span class="p">[</span><span class="n">the_reaction</span><span class="p">]</span> <span class="o">=</span> <span class="n">spontaneous_value</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">the_rule</span> <span class="o">=</span> <span class="n">spontaneous_re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">spontaneous_value</span><span class="p">),</span>
+                                          <span class="n">the_rule</span><span class="p">)</span>
+
+        <span class="n">the_rule</span> <span class="o">=</span> <span class="n">the_rule</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="s">&#39; and &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">,</span> <span class="s">&#39; or &#39;</span><span class="p">)</span>
+        <span class="n">the_gene_list</span> <span class="o">=</span> <span class="n">the_rule</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;(&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; and &#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span> <span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; or &#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span>
+
+        <span class="n">the_replacements</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">the_gene</span> <span class="ow">in</span> <span class="n">the_gene_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">the_gene</span> <span class="ow">in</span> <span class="n">gene_id_to_value</span><span class="p">:</span>
+                <span class="n">the_replacements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">gene_id_to_value</span><span class="p">[</span><span class="n">the_gene</span><span class="p">]))</span>
+            <span class="k">elif</span> <span class="n">the_gene</span> <span class="ow">in</span> <span class="n">spontaneous_ids</span><span class="p">:</span>
+                <span class="n">the_replacements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">spontaneous_value</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">the_replacements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">default_value</span><span class="p">))</span>
+        <span class="c">#ordered_replace is used to deal with some genes being substrings of other genes</span>
+        <span class="n">new_rules</span><span class="p">[</span><span class="n">the_reaction</span><span class="p">]</span> <span class="o">=</span> <span class="n">ordered_replace</span><span class="p">(</span><span class="n">the_rule</span><span class="p">,</span> <span class="n">the_gene_list</span><span class="p">,</span>
+                                                  <span class="n">the_replacements</span><span class="p">)</span>
+    <span class="c">#Now calculate the p value for the reaction based on the complex_aggregate</span>
+    <span class="c">#flag.</span>
+    <span class="c">#TODO:  This needs to be retooled to deal with enzyme complexes</span>
+    <span class="k">for</span> <span class="n">the_reaction</span><span class="p">,</span> <span class="n">the_rule</span> <span class="ow">in</span> <span class="n">new_rules</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">the_rule</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;(&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">the_rule</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#39;or&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span>
+                                           <span class="ow">or</span> <span class="n">the_rule</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#39;and&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">new_rules</span><span class="p">[</span><span class="n">the_reaction</span><span class="p">]</span> <span class="o">=</span> <span class="n">complex_aggregate</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="s">&#39;(</span><span class="si">%s</span><span class="s">)&#39;</span><span class="o">%</span><span class="n">the_rule</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;and&#39;</span><span class="p">,</span> <span class="s">&#39;,&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;or&#39;</span><span class="p">,</span> <span class="s">&#39;,&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;(&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_rules</span><span class="p">[</span><span class="n">the_reaction</span><span class="p">]</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">the_rule</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s">&#39;(&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;)&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">return_id</span><span class="p">:</span>
+        <span class="k">return</span><span class="p">([</span><span class="n">return_id</span><span class="p">,</span> <span class="n">new_rules</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span><span class="p">(</span><span class="n">new_rules</span><span class="p">)</span>
+
+
+</div>
+<div class="viewcode-block" id="ordered_replace"><a class="viewcode-back" href="../../../cobra.tools.html#cobra.tools.tools.ordered_replace">[docs]</a><span class="k">def</span> <span class="nf">ordered_replace</span><span class="p">(</span><span class="n">the_string</span><span class="p">,</span> <span class="n">elements_to_replace</span><span class="p">,</span> <span class="n">the_replacements</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Some times there are strings that need elements to be replaced,</span>
+<span class="sd">    however, the elements may be substrings of other elements or even the</span>
+<span class="sd">    replacement elements.  This function will replace each element in order.</span>
+
+<span class="sd">    the_string: The string that needs to be modified.</span>
+
+<span class="sd">    elements_to_replace:  A list of elements to replace in a string</span>
+<span class="sd">    in order.  Only the first instance of an element will be replaced</span>
+
+<span class="sd">    the_replacements: The corresponding list of replacements.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">new_string</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">elements_to_replace</span><span class="p">,</span> <span class="n">the_replacements</span><span class="p">):</span>
+        <span class="n">the_prefix</span><span class="p">,</span> <span class="n">the_string</span> <span class="o">=</span> <span class="n">the_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">new_string</span> <span class="o">+=</span> <span class="n">the_prefix</span> <span class="o">+</span> <span class="n">v</span>
+    <span class="n">the_string</span> <span class="o">=</span> <span class="n">new_string</span> <span class="o">+</span> <span class="n">the_string</span>
+    <span class="k">return</span> <span class="n">the_string</span>
+
+
+</div>
+<div class="viewcode-block" id="log_function"><a class="viewcode-back" href="../../../cobra.tools.html#cobra.tools.tools.log_function">[docs]</a><span class="k">def</span> <span class="nf">log_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="n">log</span><span class="p">(</span><span class="n">base</span><span class="p">)</span></div>
+<div class="viewcode-block" id="exp_function"><a class="viewcode-back" href="../../../cobra.tools.html#cobra.tools.tools.exp_function">[docs]</a><span class="k">def</span> <span class="nf">exp_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">base</span> <span class="o">=</span> <span class="mf">2.</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">base</span><span class="o">**</span><span class="n">x</span>
+
+</div>
+<div class="viewcode-block" id="check_reaction_mass_balance"><a class="viewcode-back" href="../../../cobra.tools.html#cobra.tools.tools.check_reaction_mass_balance">[docs]</a><span class="k">def</span> <span class="nf">check_reaction_mass_balance</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">reaction_id_list</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                <span class="n">ignore_boundary_reactions</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check the mass balance for reactions.</span>
+
+<span class="sd">    reaction_id_list: None or a list of Ids from self.reactions.  If None</span>
+<span class="sd">    then check all of the reactions in self.reactions</span>
+
+<span class="sd">    ignore_boundary_reactions:  Boolean.  If True then ignore reactions</span>
+<span class="sd">    starting with EX_ or DM_</span>
+
+<span class="sd">    TODO: Eventually plug in functions from oven.hyduke.construction.balance</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">reaction_id_list</span><span class="p">:</span>
+        <span class="n">the_reactions</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">reaction_id_list</span><span class="p">,</span> <span class="s">&#39;__iter__&#39;</span><span class="p">):</span>
+            <span class="n">reaction_id_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">reaction_id_list</span><span class="p">]</span>
+        <span class="n">reaction_indices</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                               <span class="n">reaction_id_list</span><span class="p">)</span>
+        <span class="n">the_reactions</span> <span class="o">=</span> <span class="p">[</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactionx</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+                         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">reaction_indices</span><span class="p">]</span>
+    <span class="n">unbalanced_reactions</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">the_reaction</span> <span class="ow">in</span> <span class="n">the_reactions</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ignore_boundary_reactions</span> <span class="ow">and</span> \
+               <span class="n">the_reaction</span><span class="o">.</span><span class="n">boundary</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">the_balance</span> <span class="o">=</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">check_mass_balance</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">the_balance</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">unbalanced_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">the_balance</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">unbalanced_reactions</span>
+</div>
+<div class="viewcode-block" id="identify_blocked_metabolites"><a class="viewcode-back" href="../../../cobra.tools.html#cobra.tools.tools.identify_blocked_metabolites">[docs]</a><span class="k">def</span> <span class="nf">identify_blocked_metabolites</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">account_for_bounds</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Identify metabolites that cannot be produced or consumed from other</span>
+<span class="sd">    metabolites in the model. This will only identify root blocked metabolites,</span>
+<span class="sd">    i.e. if the metabolite has at least one input and one output</span>
+<span class="sd">    then assume that it is not blocked even the input or output are blocked.</span>
+
+
+<span class="sd">    account_for_bounds: Boolean.  Not currently implemented.</span>
+
+<span class="sd">    NOTE: To determine if a metabolite is unproducible under any conditions</span>
+<span class="sd">    look at cobra.flux_analysis.variablity.find_blocked_reactions</span>
+
+<span class="sd">    NOTE: Reversible reactions count as an input and output, but this can</span>
+<span class="sd">    be problematic if one of the reaction points cannot be reached</span>
+<span class="sd">    from the outside by any path</span>
+
+<span class="sd">    TODO:  This can be moved to a tools module</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s">&quot;Model.identify_blocked_metabolites is scheduled to be moved&quot;</span><span class="p">)</span>
+    <span class="n">dead_end_metabolites</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">the_metabolite</span> <span class="ow">in</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">:</span>
+        <span class="c">#Metabolites that freely diffuse out of the system</span>
+        <span class="c">#are not dead ends.</span>
+        <span class="n">crosses_boundary_or_reversible</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">the_coefficients</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">the_reaction</span> <span class="ow">in</span> <span class="n">the_metabolite</span><span class="o">.</span><span class="n">_reaction</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">boundary</span> <span class="ow">or</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">reversibility</span><span class="p">:</span>
+                <span class="n">crosses_boundary_or_reversible</span><span class="o">=</span><span class="bp">True</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">the_coefficients</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">the_reaction</span><span class="o">.</span><span class="n">_metabolites</span><span class="p">[</span><span class="n">the_metabolite</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">crosses_boundary_or_reversible</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="c">#Reactions that are not both produced and consumed</span>
+        <span class="n">the_sign</span> <span class="o">=</span> <span class="n">sign</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">the_coefficients</span><span class="p">))</span> <span class="o">+</span> <span class="n">sign</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">the_coefficients</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">the_sign</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">dead_end_metabolites</span><span class="p">[</span><span class="n">the_metabolite</span><span class="p">]</span> <span class="o">=</span> <span class="n">the_sign</span>
+    <span class="n">unconsumed_metabolites</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">dead_end_metabolites</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                              <span class="k">if</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">unproduced_metabolites</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">dead_end_metabolites</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                              <span class="k">if</span> <span class="n">v</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;all&#39;</span><span class="p">:</span> <span class="n">dead_end_metabolites</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+             <span class="s">&#39;unconsumed&#39;</span><span class="p">:</span> <span class="n">unconsumed_metabolites</span><span class="p">,</span>
+                 <span class="s">&#39;unproduced&#39;</span><span class="p">:</span> <span class="n">unproduced_metabolites</span><span class="p">}</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

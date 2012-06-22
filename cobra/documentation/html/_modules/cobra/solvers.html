@@ -1,0 +1,190 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cobra.solvers &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cobra.solvers</h1><div class="highlight"><pre>
+<span class="c"># attempt to import all working solvers in this directory</span>
+<span class="n">__legacy_solver</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">solver_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">if</span> <span class="n">__legacy_solver</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">.legacy</span> <span class="kn">import</span> <span class="n">_optimize_glpk</span><span class="p">,</span> <span class="n">_optimize_gurobi</span><span class="p">,</span> <span class="n">_optimize_cplex</span>
+    <span class="n">solver_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;glpk&#39;</span><span class="p">:</span> <span class="n">_optimize_glpk</span><span class="p">,</span>
+                   <span class="s">&#39;gurobi&#39;</span><span class="p">:</span> <span class="n">_optimize_gurobi</span><span class="p">,</span>
+                   <span class="s">&#39;cplex&#39;</span><span class="p">:</span> <span class="n">_optimize_cplex</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">solver_module</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span> <span class="s">&#39;cplex&#39;</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">exec</span><span class="p">(</span><span class="s">&#39;from </span><span class="si">%s</span><span class="s"> import *&#39;</span><span class="o">%</span><span class="n">solver_module</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">solver_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">solver_module</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">gurobipy</span> <span class="kn">import</span> <span class="o">*</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">solver_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;gurobi&#39;</span><span class="p">)</span>
+        
+        
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">listdir</span> <span class="k">as</span> <span class="n">_listdir</span>
+    <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span> <span class="k">as</span> <span class="n">_path</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">_listdir</span><span class="p">(</span><span class="n">_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">_path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">i</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;.py&quot;</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s">&quot;.py&quot;</span><span class="p">)</span>
+            <span class="k">exec</span><span class="p">(</span><span class="s">&quot;from . import </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">m</span><span class="p">)</span>
+            <span class="n">solver_dict</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">del</span> <span class="n">_path</span>
+    <span class="k">del</span> <span class="n">_listdir</span>
+    <span class="k">del</span> <span class="n">i</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">del</span> <span class="n">m</span>
+
+<div class="viewcode-block" id="optimize"><a class="viewcode-back" href="../../cobra.solvers.html#cobra.solvers.optimize">[docs]</a><span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span> <span class="n">error_reporting</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper to optimization solvers</span>
+<span class="sd">    </span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#If the default solver is not installed then use one of the others</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">solver_function</span> <span class="o">=</span> <span class="n">solver_dict</span><span class="p">[</span><span class="n">solver</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">solver</span><span class="p">,</span> <span class="n">solver_function</span> <span class="o">=</span> <span class="n">solver_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;It appears that you do not have one of the supported solvers &quot;</span><span class="o">+</span>\
+                            <span class="s">&quot;(glpk, gurobi, or cplex) installed&quot;</span><span class="p">)</span>
+    <span class="n">the_solution</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">__legacy_solver</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">solve_problem</span><span class="p">(</span><span class="n">solver_function</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">solver_function</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">the_solution</span> <span class="o">=</span> <span class="n">solve_problem</span><span class="p">(</span><span class="n">solver_function</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">error_reporting</span><span class="p">:</span>
+                <span class="k">print</span> <span class="n">e</span>
+                <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> did not work&#39;</span><span class="o">%</span><span class="n">solver</span>
+            <span class="n">solver_keys</span> <span class="o">=</span> <span class="n">solver_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="n">solver_keys</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">solver</span> <span class="ow">in</span> <span class="n">solver_keys</span><span class="p">:</span>
+                <span class="n">solver_function</span> <span class="o">=</span> <span class="n">solver_dict</span><span class="p">[</span><span class="n">solver</span><span class="p">]</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">error_reporting</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="s">&quot;now trying </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">solver</span>
+                    <span class="n">the_solution</span> <span class="o">=</span> <span class="n">solve_problem</span><span class="p">(</span><span class="n">solver_function</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+                    <span class="k">break</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">error_reporting</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="n">e</span>
+                        <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> did not work&#39;</span><span class="o">%</span><span class="n">solver</span>
+                    <span class="k">continue</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">the_solution</span> <span class="o">=</span> <span class="n">solver_function</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c">#raise Exception(&quot;New style solvers not yet fully implemented&quot;)</span>
+
+
+    <span class="c">#Add the solution to the model.</span>
+    <span class="c">#Please note that it will be faster to dress the reactions and metabolites</span>
+    <span class="c">#with their values within the new style solvers instead of here.</span>
+    <span class="k">if</span> <span class="n">the_solution</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">solution</span> <span class="o">=</span> <span class="n">the_solution</span>
+        <span class="k">return</span><span class="p">(</span><span class="n">the_solution</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">__legacy_solver</span><span class="p">:</span>
+            <span class="n">cobra_model</span><span class="o">.</span><span class="n">solution</span> <span class="o">=</span> <span class="n">the_solution</span><span class="p">[</span><span class="s">&#39;the_solution&#39;</span><span class="p">]</span>
+            <span class="k">return</span><span class="p">(</span><span class="n">the_solution</span><span class="p">[</span><span class="s">&#39;the_problem&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cobra_model</span><span class="o">.</span><span class="n">solution</span> <span class="o">=</span> <span class="n">the_solution</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

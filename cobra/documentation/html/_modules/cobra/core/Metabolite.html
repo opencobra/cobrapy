@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cobra.core.Metabolite &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cobra.core.Metabolite</h1><div class="highlight"><pre>
+<span class="c">#cobra.core.Metabolite.py</span>
+<span class="c">#######################</span>
+<span class="c">#BEGIN Class Metabolite</span>
+<span class="c">#</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">.Formula</span> <span class="kn">import</span> <span class="n">Formula</span>
+<span class="kn">from</span> <span class="nn">.Object</span> <span class="kn">import</span> <span class="n">Object</span>
+<div class="viewcode-block" id="Metabolite"><a class="viewcode-back" href="../../../cobra.core.html#cobra.core.Metabolite.Metabolite">[docs]</a><span class="k">class</span> <span class="nc">Metabolite</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metabolite is a class for holding information regarding</span>
+<span class="sd">    a metabolite in a cobra.Reaction object.</span>
+
+<span class="sd">    TODO: Clean up.  Allow for creation of empty metabolite</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">## __slots__ = [&#39;id&#39;, &#39;formula&#39;, &#39;name&#39;, &#39;compartment&#39;,</span>
+    <span class="c">##              &#39;charge&#39;]</span>
+    <span class="c">##def __setstate__(self, the_dict):</span>
+    <span class="c">##    from cobra.core.Metabolite import Metabolite</span>
+    <span class="c">##    Object.__setstate__(self, the_dict)</span>
+    <span class="c">##    [self.__setattr__(k, v) for k, v in the_dict]</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">formula</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">compartment</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        id: A string.</span>
+
+<span class="sd">        formula: cobra.Formula or String  of a chemical formula.  Defaults to None</span>
+<span class="sd">        to save time in pickling and such.</span>
+<span class="sd">        </span>
+<span class="sd">        name: String.  A human readable name.</span>
+<span class="sd">        </span>
+<span class="sd">        compartment: None or a dictionary indicating the cellular location</span>
+<span class="sd">        of the metabolite.  Used when in a cobra.Reaction or Model</span>
+<span class="sd">        object</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Object</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">formula</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">formula</span> <span class="o">=</span> <span class="n">Formula</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">formula</span> <span class="o">=</span> <span class="n">formula</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_composition</span><span class="p">()</span>
+        <span class="c">#self.coefficient = coefficient #This is offloaded to a container Reaction</span>
+        <span class="c">#because in a Model a metabolite may participate in multiple Reactions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compartment</span> <span class="o">=</span> <span class="n">compartment</span>
+        <span class="c">#self.model is None or refers to the cobra.Model that</span>
+        <span class="c">#contains self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">charge</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reaction</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span> <span class="c">#references to reactions that employ this metabolite</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_constraint_sense</span> <span class="o">=</span> <span class="s">&#39;E&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bound</span> <span class="o">=</span> <span class="mf">0.</span>
+
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove the references to container reactions when serializing to avoid</span>
+<span class="sd">        problems associated with recursion.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">Object</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">state</span><span class="p">[</span><span class="s">&#39;_reaction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">state</span>
+<div class="viewcode-block" id="Metabolite.parse_composition"><a class="viewcode-back" href="../../../cobra.core.html#cobra.core.Metabolite.Metabolite.parse_composition">[docs]</a>    <span class="k">def</span> <span class="nf">parse_composition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Breaks the chemical formula down by element.</span>
+<span class="sd">        Useful for making sure Reactions are balanced.&#39;</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">formula</span><span class="p">,</span> <span class="n">Formula</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">formula</span><span class="o">.</span><span class="n">parse_composition</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">formula</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">formula</span> <span class="o">=</span> <span class="n">Formula</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">formula</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Metabolite.copy"><a class="viewcode-back" href="../../../cobra.core.html#cobra.core.Metabolite.Metabolite.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;When copying a reaction, it is necessary to deepcopy the</span>
+<span class="sd">        components so the list references aren&#39;t carried over.</span>
+
+<span class="sd">        Additionally, a copy of a reaction is no longer in a cobra.Model.</span>
+
+<span class="sd">        This should be fixed with self.__deecopy__ if possible</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_metabolite</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_metabolite</span></div>
+<div class="viewcode-block" id="Metabolite.guided_copy"><a class="viewcode-back" href="../../../cobra.core.html#cobra.core.Metabolite.Metabolite.guided_copy">[docs]</a>    <span class="k">def</span> <span class="nf">guided_copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">the_model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Trying to make a faster copy procedure for cases where large</span>
+<span class="sd">        numbers of metabolites might be copied.  Such as when copying reactions.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">the_copy</span> <span class="o">=</span> <span class="n">Object</span><span class="o">.</span><span class="n">guided_copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c">#Copy the more complex objects in a faster fashion</span>
+        <span class="n">the_copy</span><span class="o">.</span><span class="n">formula</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">formula</span><span class="p">)</span>
+        <span class="n">the_copy</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">the_model</span>
+        <span class="n">the_copy</span><span class="o">.</span><span class="n">_reaction</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">return</span><span class="p">(</span><span class="n">the_copy</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="Metabolite.remove_from_model"><a class="viewcode-back" href="../../../cobra.core.html#cobra.core.Metabolite.Metabolite.remove_from_model">[docs]</a>    <span class="k">def</span> <span class="nf">remove_from_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">the_model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Removes the association</span>
+
+<span class="sd">        the_model: cobra.Model object.  remove the reaction from this model.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">the_model</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> not in </span><span class="si">%s</span><span class="s"> ergo it cannot be removed. (</span><span class="si">%s</span><span class="s">)&#39;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                                                  <span class="n">the_model</span><span class="p">,</span>
+                                                                  <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">))</span>
+                                                            
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">metabolites</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">the_reaction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reaction</span><span class="p">:</span>
+            <span class="n">the_coefficient</span> <span class="o">=</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">_metabolites</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span>
+            <span class="n">the_reaction</span><span class="o">.</span><span class="n">subtract_metabolites</span><span class="p">({</span><span class="bp">self</span><span class="p">:</span> <span class="n">the_coefficient</span><span class="p">})</span>
+
+
+<span class="c">#</span>
+<span class="c">#END Class Metabolite</span>
+<span class="c">########################</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

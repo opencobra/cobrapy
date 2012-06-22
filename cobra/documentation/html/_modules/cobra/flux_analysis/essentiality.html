@@ -1,0 +1,300 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cobra.flux_analysis.essentiality &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cobra.flux_analysis.essentiality</h1><div class="highlight"><pre>
+<span class="c">#cobra.flux_analysis.essentiality.py</span>
+<span class="c">#runs flux variablity analysis on a Model object.</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span><span class="p">,</span><span class="n">ceil</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">vstack</span><span class="p">,</span><span class="n">zeros</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">sparse</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">cPickle</span> <span class="kn">import</span> <span class="n">dump</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">mkdir</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="c">#Allow for parallel simulations if ppmap is available</span>
+    <span class="kn">from</span> <span class="nn">cobra.external</span> <span class="kn">import</span> <span class="n">ppmap</span>
+    <span class="kn">from</span> <span class="nn">double_deletion</span> <span class="kn">import</span> <span class="n">double_deletion_parallel</span>
+    <span class="n">__parallel_mode_available</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">__parallel_mode_available</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="kn">from</span> <span class="nn">double_deletion</span> <span class="kn">import</span> <span class="n">double_deletion</span>
+<span class="kn">from</span> <span class="nn">cobra.flux_analysis.moma</span> <span class="kn">import</span> <span class="n">moma</span>
+<span class="kn">from</span> <span class="nn">cobra.flux_analysis.single_deletion</span> <span class="kn">import</span> <span class="n">single_deletion</span>
+<span class="kn">from</span> <span class="nn">cobra.manipulation</span> <span class="kn">import</span> <span class="n">initialize_growth_medium</span>
+<div class="viewcode-block" id="assess_medium_component_essentiality"><a class="viewcode-back" href="../../../cobra.flux_analysis.html#cobra.flux_analysis.essentiality.assess_medium_component_essentiality">[docs]</a><span class="k">def</span> <span class="nf">assess_medium_component_essentiality</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">the_components</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                         <span class="n">the_medium</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span>
+                                         <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span><span class="p">,</span>
+                                         <span class="n">the_condition</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;fba&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Deterimes which components in an in silico medium are essential for growth in the</span>
+<span class="sd">    context of the remaining components.</span>
+
+<span class="sd">    cobra_model: A Model object.</span>
+
+<span class="sd">    the_components: None or a list of exchange reactions that will be sequentially</span>
+<span class="sd">    disabled.</span>
+
+<span class="sd">    the_medium: Is None, a string, or a dictionary.  If a string then the</span>
+<span class="sd">    initialize_growth_medium function expects that the_model has an</span>
+<span class="sd">    attribute dictionary called media_compositions, which is a dictionary of</span>
+<span class="sd">    dictionaries for various medium compositions.  Where a medium</span>
+<span class="sd">    composition is a dictionary of exchange reaction ids for the medium</span>
+<span class="sd">    components and the exchange fluxes for each medium component; note that</span>
+<span class="sd">    these fluxes must be negative because they are being exchanged into the</span>
+<span class="sd">    system.</span>
+
+<span class="sd">    solver: &#39;glpk&#39;, &#39;gurobi&#39;, or &#39;cplex&#39;</span>
+
+<span class="sd">    the_problem: Is None, &#39;return&#39;, or an LP model object for the solver.</span>
+<span class="sd">       </span>
+<span class="sd">    the_condition: None or a String that provides a description of the medium</span>
+<span class="sd">    simulation</span>
+
+<span class="sd">    returns:</span>
+<span class="sd">     essentiality_dict:  A dictionary providing the minimum lower bounds for</span>
+<span class="sd">     each component of the growth medium.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s">&quot;assess_medium_component_essentiality needs to be updated to &quot;</span> <span class="o">+</span>\
+         <span class="s">&quot;deal with new style reactions&quot;</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">cobra.core.ArrayBasedModel</span> <span class="kn">import</span> <span class="n">ArrayBasedModel</span>
+    <span class="k">if</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;moma&#39;</span><span class="p">:</span>
+        <span class="n">wt_model</span> <span class="o">=</span> <span class="n">ArrayBasedModel</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">the_condition</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">the_components</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">cobra_model</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">cobra_model</span> <span class="o">=</span> <span class="n">ArrayBasedModel</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">the_components</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">the_medium</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">the_medium</span><span class="p">,</span> <span class="s">&#39;keys&#39;</span><span class="p">)</span> <span class="ow">or</span> \
+                   <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span><span class="s">&#39;media_compositions&#39;</span><span class="p">)</span> <span class="ow">and</span> \
+                    <span class="n">the_medium</span> <span class="ow">in</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">media_compositions</span><span class="p">):</span>
+                <span class="n">initialize_growth_medium</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">the_medium</span><span class="p">)</span>
+                <span class="n">the_components</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">media_compositions</span><span class="p">[</span><span class="n">the_medium</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a dict and not in the model&#39;s media list&quot;</span><span class="o">%</span><span class="n">the_medium</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;You need to specify the_components or the_medium&quot;</span><span class="p">)</span>
+    <span class="n">essentiality_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">the_component</span> <span class="ow">in</span> <span class="n">the_components</span><span class="p">:</span>
+        <span class="n">component_index</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">the_component</span><span class="p">)</span>
+        <span class="n">tmp_lb</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">lower_bounds</span><span class="p">[</span><span class="n">component_index</span><span class="p">])</span>
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">[</span><span class="n">component_index</span><span class="p">]</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">lower_bounds</span><span class="p">[</span><span class="n">component_index</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;fba&#39;</span><span class="p">:</span>
+            <span class="n">cobra_model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span> <span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">)</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">f</span>
+        <span class="k">elif</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;moma&#39;</span><span class="p">:</span>
+           <span class="n">objective_value</span> <span class="o">=</span> <span class="n">moma</span><span class="p">(</span><span class="n">wt_model</span><span class="p">,</span> <span class="n">cobra_model</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">)[</span><span class="s">&#39;objective_value&#39;</span><span class="p">]</span> 
+        <span class="n">essentiality_dict</span><span class="p">[</span><span class="n">the_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">objective_value</span>
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">[</span><span class="n">component_index</span><span class="p">]</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">lower_bounds</span><span class="p">[</span><span class="n">component_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp_lb</span>
+    <span class="k">if</span> <span class="n">the_condition</span><span class="p">:</span>
+        <span class="n">essentiality_dict</span><span class="p">[</span><span class="s">&#39;the_condition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">the_condition</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">essentiality_dict</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="deletion_analysis"><a class="viewcode-back" href="../../../cobra.flux_analysis.html#cobra.flux_analysis.essentiality.deletion_analysis">[docs]</a><span class="k">def</span> <span class="nf">deletion_analysis</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">the_medium</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">deletion_type</span><span class="o">=</span><span class="s">&#39;single&#39;</span><span class="p">,</span>
+                      <span class="n">work_directory</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">growth_cutoff</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+                      <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span><span class="p">,</span> <span class="n">n_processes</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">element_type</span><span class="o">=</span><span class="s">&#39;gene&#39;</span><span class="p">,</span>
+                      <span class="n">solver</span><span class="o">=</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span> <span class="n">error_reporting</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;fba&#39;</span><span class="p">,</span> <span class="n">element_list</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Performs single and/or double deletion analysis on all the genes in the model.  Provides</span>
+<span class="sd">    an interface to parallelize the deletion studies.</span>
+
+<span class="sd">    cobra_model: A Model object.</span>
+
+<span class="sd">    the_medium: Is None, a string, or a dictionary.  If a string then the</span>
+<span class="sd">    initialize_growth_medium function expects that cobra_model has an</span>
+<span class="sd">    attribute dictionary called media_compositions, which is a dictionary of</span>
+<span class="sd">    dictionaries for various medium compositions.  Where a medium</span>
+<span class="sd">    composition is a dictionary of exchange reaction ids for the medium</span>
+<span class="sd">    components and the exchange fluxes for each medium component; note that</span>
+<span class="sd">    these fluxes must be negative because they are being exchanged into the</span>
+<span class="sd">    system.</span>
+
+<span class="sd">    deletion_type: &#39;single&#39;, &#39;double&#39;, or &#39;double-only&#39;</span>
+
+<span class="sd">    work_directory: None or String indicating where to save the output from the simulations.</span>
+
+<span class="sd">    growth_cutoff: Float.  Indiates the minimum growth rate that is considered viable.</span>
+
+<span class="sd">    the_problem: Is None, &#39;return&#39;, or an LP model object for the solver.</span>
+<span class="sd">       </span>
+<span class="sd">    element_type: &#39;gene&#39; or &#39;reaction&#39;</span>
+
+<span class="sd">    solver: &#39;glpk&#39;, &#39;gurobi&#39;, or &#39;cplex&#39;</span>
+
+<span class="sd">    n_processes: number of parallel processes to break the double deletion simulations</span>
+<span class="sd">    into.</span>
+
+<span class="sd">    error_reporting: None or True</span>
+
+<span class="sd">    element_list: None or a list of genes to delete from the model.</span>
+
+<span class="sd">    Returns: Nothing.  However, the script will add attributes single_deletion_* and</span>
+<span class="sd">    double_deletion_* to cobra_model containing the simulation results.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">element_type</span> <span class="o">==</span> <span class="s">&#39;reaction&#39;</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s">&quot;deletion_analysis is not perfect for element_type = &#39;reaction&#39;&quot;</span><span class="p">)</span>
+    <span class="c">#When using ppmap, it&#39;s easier to feed in the parameters as a list,</span>
+    <span class="c">#if the defaults need to be changed</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">tmp_model</span> <span class="o">=</span> <span class="n">cobra_model</span>
+        <span class="n">cobra_model</span> <span class="o">=</span> <span class="n">tmp_model</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp_model</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">the_medium</span> <span class="o">=</span> <span class="n">tmp_model</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp_model</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">deletion_type</span> <span class="o">=</span> <span class="n">tmp_model</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp_model</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="n">work_directory</span> <span class="o">=</span> <span class="n">tmp_model</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp_model</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
+                        <span class="n">growth_cutoff</span> <span class="o">=</span> <span class="n">tmp_model</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">the_medium</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">initialize_growth_medium</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">the_medium</span><span class="p">)</span>
+    <span class="n">the_problem</span><span class="o">=</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">)</span>
+    <span class="c">#Store the basal model for the simulations</span>
+    <span class="k">if</span> <span class="n">element_list</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">element_list</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">element_type</span> <span class="o">+</span> <span class="s">&#39;s&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">deletion_type</span> <span class="o">!=</span> <span class="s">&#39;double_only&#39;</span><span class="p">:</span>
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">single_deletion_growth_wt</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">f</span>
+        <span class="n">growth_rate_dict</span><span class="p">,</span> <span class="n">growth_solution_status_dict</span><span class="p">,</span> <span class="n">problem_dict</span> <span class="o">=</span> <span class="n">single_deletion</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">),</span>
+                                                                                      <span class="n">element_list</span><span class="o">=</span><span class="n">element_list</span><span class="p">,</span>
+                                                                                      <span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span>
+                                                                                      <span class="n">element_type</span><span class="o">=</span><span class="n">element_type</span><span class="p">,</span>
+                                                                                      <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
+                                                                                      <span class="n">error_reporting</span><span class="o">=</span><span class="n">error_reporting</span><span class="p">,</span>
+                                                                                      <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">problem_dict</span>
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">single_deletion_growth_dict</span> <span class="o">=</span> <span class="n">growth_rate_dict</span>
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">single_deletion_solution_status_dict</span> <span class="o">=</span> <span class="n">growth_solution_status_dict</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="s">&#39;single_deletion_</span><span class="si">%s</span><span class="s">s&#39;</span><span class="o">%</span><span class="n">element_type</span><span class="p">,</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">growth_rate_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">single_deletion_lethal</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">growth_rate_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                                            <span class="k">if</span> <span class="n">growth_rate_dict</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">&lt;</span>  <span class="n">growth_cutoff</span><span class="p">]</span>
+
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">single_deletion_growth_medium</span> <span class="o">=</span> <span class="n">the_medium</span> 
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">single_deletion_nonlethal</span> <span class="o">=</span>  <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">growth_rate_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">single_deletion_lethal</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">work_directory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">lexists</span><span class="p">(</span><span class="n">work_directory</span><span class="p">):</span>
+                <span class="n">mkdir</span><span class="p">(</span><span class="n">work_directory</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">work_directory</span> <span class="o">+</span> <span class="n">the_medium</span> <span class="o">+</span> <span class="s">&#39;_single_&#39;</span> <span class="o">+</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out_file</span><span class="p">:</span>
+                <span class="n">dump</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">out_file</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">deletion_type</span> <span class="o">==</span> <span class="s">&#39;double&#39;</span> <span class="ow">or</span> <span class="n">deletion_type</span> <span class="o">==</span> <span class="s">&#39;double_only&#39;</span><span class="p">:</span>
+        <span class="c">#It appears that the glpk interface no longer works will with sending</span>
+        <span class="c">#a glpk.LPX object through ppmap, so just set the basis to return</span>
+        <span class="k">if</span> <span class="n">the_problem</span><span class="p">:</span>
+            <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span>
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">double_deletion_growth_medium</span> <span class="o">=</span> <span class="n">the_medium</span> 
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">double_deletion_growth_wt</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">f</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">__parallel_mode_available</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">n_processes</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;Couldn&#39;t import ppmap from cobra.external is parallel python installed?&quot;</span>
+                <span class="k">return</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cobra_model</span> <span class="o">=</span> <span class="n">double_deletion_parallel</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">),</span>
+                                                 <span class="n">genes_of_interest</span><span class="o">=</span><span class="n">element_list</span><span class="p">,</span>
+                                                 <span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span>
+                                                 <span class="n">n_processes</span><span class="o">=</span><span class="n">n_processes</span><span class="p">,</span>
+                                                 <span class="n">element_type</span><span class="o">=</span><span class="n">element_type</span><span class="p">,</span>
+                                                 <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
+                                                 <span class="n">error_reporting</span><span class="o">=</span><span class="n">error_reporting</span><span class="p">,</span>
+                                                 <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+        <span class="c">#This indicates the genes that were run through double deletion but</span>
+        <span class="c">#the x and y lists specify the order</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="s">&#39;double_deletion_</span><span class="si">%s</span><span class="s">s&#39;</span><span class="o">%</span><span class="n">element_type</span><span class="p">,</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">genes</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">work_directory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">work_directory</span> <span class="o">+</span> <span class="n">the_medium</span> <span class="o">+</span> <span class="s">&#39;_double_&#39;</span> <span class="o">+</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out_file</span><span class="p">:</span>
+                <span class="n">dump</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">out_file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cobra_model</span> </div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

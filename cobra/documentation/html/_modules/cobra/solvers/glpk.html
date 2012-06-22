@@ -1,0 +1,181 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cobra.solvers.glpk &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="up" title="cobra.solvers" href="../solvers.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../solvers.html" accesskey="U">cobra.solvers</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cobra.solvers.glpk</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;bindings to the glpk solver through pyglpk&quot;&quot;&quot;</span>
+<span class="c"># because both this module and the library are named glpk</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">glpk</span> <span class="kn">import</span> <span class="n">LPX</span>
+
+<span class="kn">from</span> <span class="nn">..core.Solution</span> <span class="kn">import</span> <span class="n">Solution</span>
+
+
+<span class="c"># mappers from cobra representation to glpk</span>
+<span class="n">variable_kind_dict</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;continuous&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="s">&#39;integer&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">}</span>
+<span class="c"># mappers from glpk representations to cobra</span>
+<span class="n">status_dict</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;opt&#39;</span><span class="p">:</span> <span class="s">&#39;optimal&#39;</span><span class="p">,</span>
+    <span class="s">&#39;nofeas&#39;</span><span class="p">:</span> <span class="s">&#39;infeasible&#39;</span><span class="p">,</span>
+    <span class="s">&#39;unbnd&#39;</span><span class="p">:</span> <span class="s">&#39;unbounded&#39;</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="create_problem"><a class="viewcode-back" href="../../../cobra.solvers.html#cobra.solvers.glpk.create_problem">[docs]</a><span class="k">def</span> <span class="nf">create_problem</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">objective_sense</span><span class="o">=</span><span class="s">&quot;maximize&quot;</span><span class="p">,</span> <span class="n">lp</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">lp</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">lp</span> <span class="o">=</span> <span class="n">LPX</span><span class="p">()</span>  <span class="c"># Create empty problem instance</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">rows</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">))</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">objective_sense</span> <span class="o">==</span> <span class="s">&#39;maximize&#39;</span><span class="p">:</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">maximize</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">elif</span> <span class="n">objective_sense</span> <span class="o">==</span> <span class="s">&#39;minimize&#39;</span><span class="p">:</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">maximize</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;objective_sense not &#39;maximize&#39; or &#39;minimize&#39;&quot;</span><span class="p">)</span>
+
+    <span class="c"># create metabolites/constraints as rows</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lp</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
+        <span class="n">metabolite</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">metabolite</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">metabolite</span><span class="o">.</span><span class="n">_bound</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">metabolite</span><span class="o">.</span><span class="n">_constraint_sense</span>
+        <span class="c"># constraint sense is set by changing the bounds</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s">&#39;E&#39;</span><span class="p">:</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s">&#39;L&#39;</span><span class="p">:</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s">&#39;G&#39;</span><span class="p">:</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a valid constraint_sense&quot;</span> <span class="o">%</span> <span class="n">c</span><span class="p">)</span>
+
+    <span class="c"># create reactions/variables as columns</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lp</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
+        <span class="n">reaction</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">variable_kind_dict</span><span class="p">[</span><span class="n">reaction</span><span class="o">.</span><span class="n">variable_kind</span><span class="p">]</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">,</span> <span class="n">reaction</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">)</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">obj</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">objective_coefficient</span><span class="p">)</span>
+
+    <span class="c"># create S matrix</span>
+    <span class="n">lp</span><span class="o">.</span><span class="n">matrix</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">),</span> <span class="n">c</span><span class="p">)</span> \
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">),</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">to_array_based_model</span><span class="p">()</span><span class="o">.</span><span class="n">S</span><span class="o">.</span><span class="n">todok</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()]</span>
+    <span class="k">return</span> <span class="n">lp</span>
+
+</div>
+<div class="viewcode-block" id="solve_problem"><a class="viewcode-back" href="../../../cobra.solvers.html#cobra.solvers.glpk.solve_problem">[docs]</a><span class="k">def</span> <span class="nf">solve_problem</span><span class="p">(</span><span class="n">lp</span><span class="p">):</span>
+    <span class="n">lp</span><span class="o">.</span><span class="n">simplex</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">status_dict</span><span class="p">[</span><span class="n">lp</span><span class="o">.</span><span class="n">status</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s">&quot;unknown error: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lp</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
+    <span class="n">solution</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+    <span class="n">solution</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status</span>
+    <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s">&#39;optimal&#39;</span><span class="p">:</span>
+        <span class="n">solution</span><span class="o">.</span><span class="n">objective_value</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">solution</span><span class="o">.</span><span class="n">x_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">primal</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">lp</span><span class="o">.</span><span class="n">cols</span><span class="p">)</span>
+        <span class="c"># return the duals as well as the primals for LPs</span>
+        <span class="k">if</span> <span class="n">lp</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&quot;float&quot;</span><span class="p">:</span>
+            <span class="n">solution</span><span class="o">.</span><span class="n">y_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">dual</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">lp</span><span class="o">.</span><span class="n">cols</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">solution</span><span class="o">.</span><span class="n">y_dict</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">return</span> <span class="n">solution</span>
+
+</div>
+<div class="viewcode-block" id="solve"><a class="viewcode-back" href="../../../cobra.solvers.html#cobra.solvers.glpk.solve">[docs]</a><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">objective_sense</span><span class="o">=</span><span class="s">&quot;maximize&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">solve_problem</span><span class="p">(</span><span class="n">create_problem</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">objective_sense</span><span class="p">))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../solvers.html" >cobra.solvers</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

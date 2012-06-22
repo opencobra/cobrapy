@@ -1,0 +1,159 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>topology Package &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="index.html" />
+    <link rel="up" title="cobra Package" href="cobra.html" />
+    <link rel="prev" title="tools Package" href="cobra.tools.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.tools.html" title="tools Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" accesskey="U">cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="topology-package">
+<h1>topology Package<a class="headerlink" href="#topology-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">topology</span></tt> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-cobra.topology"></span></div>
+<div class="section" id="module-cobra.topology.reporter_metabolites">
+<span id="reporter-metabolites-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">reporter_metabolites</span></tt> Module<a class="headerlink" href="#module-cobra.topology.reporter_metabolites" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cobra.topology.reporter_metabolites.identify_reporter_metabolites">
+<tt class="descclassname">cobra.topology.reporter_metabolites.</tt><tt class="descname">identify_reporter_metabolites</tt><big>(</big><em>cobra_model</em>, <em>reaction_scores_dict</em>, <em>number_of_randomizations=1000</em>, <em>number_of_layers=1</em>, <em>scoring_metric='default'</em>, <em>score_type='p'</em>, <em>entire_network=False</em>, <em>background_correction=True</em>, <em>ignore_external_boundary_reactions=False</em><big>)</big><a class="reference internal" href="_modules/cobra/topology/reporter_metabolites.html#identify_reporter_metabolites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.topology.reporter_metabolites.identify_reporter_metabolites" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the aggregate Z-score for the metabolites in the model.
+Ignore reactions that are solely spontaneous or orphan. Allow the scores to
+have multiple columns / experiments.   This will change the way the output
+is represented.</p>
+<p>cobra_model: A cobra.Model object</p>
+<p>TODO: CHANGE TO USING DICTIONARIES for the_reactions: the_scores</p>
+<p>reaction_scores_dict:  A dictionary where the keys are reactions in cobra_model.reactions
+and the values are the scores.  Currently, only supports a single numeric value as
+the value; however, this will be updated to allow for lists</p>
+<p>number_of_randomizations: Integer.  Number of random shuffles of the
+scores to assess which are significant.</p>
+<p>number_of_layers: 1 is the only option supported</p>
+<p>scoring_metric:  default means divide by k**0.5</p>
+<p>score_type: &#8216;p&#8217; Is the only option at the moment and indicates p-value.</p>
+<p>entire_network: Boolean.  Currently, only compares scores calculated from the_reactions</p>
+<p>background_correction: Boolean.  If True apply background correction to the aggreagate
+Z-score</p>
+<p>ignore_external_boundary_reactions: Not yet implemented. Boolean.  If True do not count exchange reactions when
+calculating the score.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.topology.reporter_metabolites.ppmap_identify_reporter_metabolites">
+<tt class="descclassname">cobra.topology.reporter_metabolites.</tt><tt class="descname">ppmap_identify_reporter_metabolites</tt><big>(</big><em>keywords</em><big>)</big><a class="reference internal" href="_modules/cobra/topology/reporter_metabolites.html#ppmap_identify_reporter_metabolites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.topology.reporter_metabolites.ppmap_identify_reporter_metabolites" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function that receives a dict with all of the parameters for identify_reporter_metabolites
+Serves to make it possible to call the reporter metabolites function from ppmap.
+It only will be useful for parallel experiments not for breaking up a single experiment.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">topology Package</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">topology</span></tt> Package</a></li>
+<li><a class="reference internal" href="#module-cobra.topology.reporter_metabolites"><tt class="docutils literal"><span class="pre">reporter_metabolites</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cobra.tools.html"
+                        title="previous chapter">tools Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/cobra.topology.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.tools.html" title="tools Package"
+             >previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" >cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

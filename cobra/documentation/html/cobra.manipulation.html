@@ -1,0 +1,251 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>manipulation Package &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="index.html" />
+    <link rel="up" title="cobra Package" href="cobra.html" />
+    <link rel="next" title="mlab Package" href="cobra.mlab.html" />
+    <link rel="prev" title="io Package" href="cobra.io.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.mlab.html" title="mlab Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cobra.io.html" title="io Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" accesskey="U">cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="manipulation-package">
+<h1>manipulation Package<a class="headerlink" href="#manipulation-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">manipulation</span></tt> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-cobra.manipulation"></span></div>
+<div class="section" id="module-cobra.manipulation.delete">
+<span id="delete-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">delete</span></tt> Module<a class="headerlink" href="#module-cobra.manipulation.delete" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cobra.manipulation.delete.delete_model_genes">
+<tt class="descclassname">cobra.manipulation.delete.</tt><tt class="descname">delete_model_genes</tt><big>(</big><em>cobra_model</em>, <em>gene_list</em>, <em>cumulative_deletions=False</em>, <em>disable_orphans=False</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/delete.html#delete_model_genes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.delete.delete_model_genes" title="Permalink to this definition">¶</a></dt>
+<dd><p>delete_model_genes will set the upper and lower bounds for reactions
+catalyzed by the genes in gene_list if deleting the genes means that
+the reaction cannot proceed according to
+cobra_model.reactions[:].gene_reaction_rule</p>
+<p>cumulative_deletions: False or True.  If True then any previous
+deletions will be maintained in the model.</p>
+<p>TODO: Rewrite to use dicts for _trimmed*</p>
+<p>TODO: All this will be replaced by Boolean logic associated with
+#the cobra.Gene.functional in cobra.Reaction.gene_reaction_rule</p>
+<p>TODO: Update this to refer to cobra.(Gene|Reaction) in the
+_trimmed_(genes|reactions) fields and remove _trimmed_indices</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.manipulation.delete.prune_unused_metabolites">
+<tt class="descclassname">cobra.manipulation.delete.</tt><tt class="descname">prune_unused_metabolites</tt><big>(</big><em>cobra_model</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/delete.html#prune_unused_metabolites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.delete.prune_unused_metabolites" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes metabolites that aren&#8217;t involved in any reactions in the model</p>
+<p>cobra_model: A Model object.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.manipulation.delete.prune_unused_reactions">
+<tt class="descclassname">cobra.manipulation.delete.</tt><tt class="descname">prune_unused_reactions</tt><big>(</big><em>cobra_model</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/delete.html#prune_unused_reactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.delete.prune_unused_reactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes reactions from cobra_model.</p>
+<p>cobra_model: A Model object.</p>
+<p>reactions_to_prune: None, a string matching a reaction.id, a cobra.Reaction, or
+as list of the ids / Reactions to remove from cobra_model.
+If None then the function will delete reactions that
+have no active metabolites in the model.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.manipulation.delete.undelete_model_genes">
+<tt class="descclassname">cobra.manipulation.delete.</tt><tt class="descname">undelete_model_genes</tt><big>(</big><em>cobra_model</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/delete.html#undelete_model_genes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.delete.undelete_model_genes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Undoes the effects of a call to delete_model_genes. Modifies cobra_model in place.</p>
+<p>cobra_model:  A cobra.Model object</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cobra.manipulation.modify">
+<span id="modify-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">modify</span></tt> Module<a class="headerlink" href="#module-cobra.manipulation.modify" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cobra.manipulation.modify.add_exchange_reaction">
+<tt class="descclassname">cobra.manipulation.modify.</tt><tt class="descname">add_exchange_reaction</tt><big>(</big><em>cobra_model</em>, <em>the_metabolites</em>, <em>reaction_reversibility=False</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/modify.html#add_exchange_reaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.modify.add_exchange_reaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds exchange reactions to a model for a set of metabolites.</p>
+<p>cobra_model: A Model object.</p>
+<p>the_metabolites: A cobra.Metabolite or list of cobra.Metabolites</p>
+<p>reaction_reversibility: True or False.  Indicates whether the reactions
+should be reversible.</p>
+<p>#TODO:  This is not compliant with current</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.manipulation.modify.convert_rule_to_boolean_rule">
+<tt class="descclassname">cobra.manipulation.modify.</tt><tt class="descname">convert_rule_to_boolean_rule</tt><big>(</big><em>cobra_model</em>, <em>the_rule</em>, <em>return_gene_indices=False</em>, <em>index_offset=0</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/modify.html#convert_rule_to_boolean_rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.modify.convert_rule_to_boolean_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to convert a text based gpr to an index based gpr.  This
+will also update the cobra_model.</p>
+<p>the_rule: A COBRA 2.0 compliant GPR string</p>
+<p>return_gene_indices: Boolean return the indices for the genes</p>
+<p>index_offset: Integer.  Set to 1 if the rules need to be generated for
+base 1 software like MATLAB.</p>
+<p>TODO: Test now that cobra.Gene is in use
+DEPRECATED:  This should be moved to the mlab module</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.manipulation.modify.convert_to_irreversible">
+<tt class="descclassname">cobra.manipulation.modify.</tt><tt class="descname">convert_to_irreversible</tt><big>(</big><em>cobra_model</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/modify.html#convert_to_irreversible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.modify.convert_to_irreversible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will break all of the reversible reactions into two separate irreversible reactions with
+different directions.  Useful for some modeling problems.</p>
+<p>cobra_model: A Model object which will be modified in place.</p>
+<p>TODO: Can we just use a -1*guided_copy or something else?</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.manipulation.modify.initialize_growth_medium">
+<tt class="descclassname">cobra.manipulation.modify.</tt><tt class="descname">initialize_growth_medium</tt><big>(</big><em>cobra_model</em>, <em>the_medium='MgM'</em>, <em>exchange_reactions=None</em>, <em>reactions_to_disable=None</em>, <em>exchange_lower_bound=0.0</em>, <em>exchange_upper_bound=1000.0</em>, <em>irreversible=False</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/modify.html#initialize_growth_medium"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.modify.initialize_growth_medium" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets all of the input fluxes to the model to zero and then will
+initialize the input fluxes to the values specified in the_medium if
+it is a dict or will see if the model has a composition dict and use
+that to do the initialization.</p>
+<p>cobra_model: A cobra.Model object.</p>
+<p>the_medium: Is a string, or a dictionary.  If a string then the
+initialize_growth_medium function expects that cobra_model has an
+attribute dictionary called media_compositions, which is a dictionary of
+dictionaries for various medium compositions.  Where a medium
+composition is a dictionary of exchange reaction ids for the medium
+components and the exchange fluxes for each medium component; note that
+these fluxes must be negative because they are being exchanged into the
+system</p>
+<p>exchange_reactions: None or a list of exchange reactions.  Because not all
+exchange reactions are required to start with <a href="#id2"><span class="problematic" id="id3">EX_</span></a> in all models allow
+the user to specify the reactions</p>
+<p>exchange_lower_bound: Float.  The default value to use for the lower
+bound for the exchange reactions.</p>
+<p>exchange_upper_bound: Float.  The default value to use for the upper
+bound for the exchange_reactions.</p>
+<p>irreversible: Boolean.  If the model is irreversible then the medium composition
+is taken as the upper bound</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.manipulation.modify.revert_to_reversible">
+<tt class="descclassname">cobra.manipulation.modify.</tt><tt class="descname">revert_to_reversible</tt><big>(</big><em>cobra_model</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/modify.html#revert_to_reversible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.modify.revert_to_reversible" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will convert a reversible model made by convert_to_irreversible
+into a reversible model.</p>
+<p>cobra_model:  A cobra.Model object which will be modified in place.</p>
+<p>NOTE: It might just be easiest to include this function in the Reaction class</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">manipulation Package</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">manipulation</span></tt> Package</a></li>
+<li><a class="reference internal" href="#module-cobra.manipulation.delete"><tt class="docutils literal"><span class="pre">delete</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-cobra.manipulation.modify"><tt class="docutils literal"><span class="pre">modify</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cobra.io.html"
+                        title="previous chapter">io Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cobra.mlab.html"
+                        title="next chapter">mlab Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/cobra.manipulation.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cobra.mlab.html" title="mlab Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cobra.io.html" title="io Package"
+             >previous</a> |</li>
+        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="cobra.html" >cobra Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

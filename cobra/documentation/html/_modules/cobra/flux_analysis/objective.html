@@ -1,0 +1,178 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cobra.flux_analysis.objective &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cobra.flux_analysis.objective</h1><div class="highlight"><pre>
+<span class="c">#cobra.flux_analysis.objective.py</span>
+<span class="c">#functions for analyzing / creating objective functions</span>
+<span class="kn">from</span> <span class="nn">..core.Reaction</span> <span class="kn">import</span> <span class="n">Reaction</span>
+<span class="kn">from</span> <span class="nn">..manipulation</span> <span class="kn">import</span> <span class="n">initialize_growth_medium</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">int64</span><span class="p">,</span> <span class="n">int32</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">int32</span> <span class="o">=</span> <span class="nb">int</span>
+    <span class="n">int64</span> <span class="o">=</span> <span class="nb">int</span>
+<div class="viewcode-block" id="assess_objective"><a class="viewcode-back" href="../../../cobra.flux_analysis.html#cobra.flux_analysis.objective.assess_objective">[docs]</a><span class="k">def</span> <span class="nf">assess_objective</span><span class="p">(</span> <span class="n">cobra_model</span><span class="p">,</span> <span class="n">the_objective</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+                      <span class="n">objective_cutoff</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span> <span class="n">growth_medium</span> <span class="o">=</span> <span class="bp">None</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Assesses the ability of the model to produce all reactants in the_objective on</span>
+<span class="sd">    an individual basis.  Returns True if the_objective can be realized to exceed</span>
+<span class="sd">    objective_cutoff.  Otherwise, determines which components of the_objective are</span>
+<span class="sd">    lagging and returns a dict of the components and their required and realized values.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;This needs to be cleaned up.&quot;</span><span class="p">)</span>
+    <span class="n">cobra_model</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">growth_medium</span><span class="p">:</span>
+        <span class="n">initialize_growth_medium</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">growth_medium</span><span class="p">)</span>
+
+    <span class="c">#If the model cannot achieve the objective then check each component for failure</span>
+    <span class="c">#to be produced.</span>
+    <span class="k">if</span> <span class="n">the_objective</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">objective_reaction</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">()</span>
+        <span class="n">objective_reaction</span><span class="o">.</span><span class="n">populate_from_cobra_model</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">_objective_coefficients</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">the_objective</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span>  <span class="nb">isinstance</span><span class="p">(</span><span class="n">the_objective</span><span class="p">,</span> <span class="n">int64</span><span class="p">)</span>
+           <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">the_objective</span><span class="p">,</span> <span class="n">int32</span><span class="p">)</span>  <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">the_objective</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+        <span class="c">#TODO: When Model is updated to contain  Objects just</span>
+        <span class="c">#copy from there</span>
+        <span class="c">#objective_reaction  = deepcopy( the_model.cobra.reaction[ the_objective ] )</span>
+        <span class="n">objective_reaction</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">()</span>
+        <span class="n">objective_reaction</span><span class="o">.</span><span class="n">populate_from_cobra_model</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">the_objective</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">the_objective</span><span class="p">,</span> <span class="s">&#39;id&#39;</span><span class="p">):</span>
+        <span class="n">objective_reaction</span> <span class="o">=</span> <span class="n">the_objective</span>
+    <span class="n">cobra_model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">new_objective</span> <span class="o">=</span> <span class="n">objective_reaction</span><span class="p">)</span>
+    <span class="c">#First see if the model can realize the objective</span>
+    <span class="k">if</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">f</span> <span class="o">&gt;=</span> <span class="n">objective_cutoff</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{}</span>
+    <span class="n">components</span> <span class="o">=</span> <span class="n">objective_reaction</span><span class="o">.</span><span class="n">get_reactants</span><span class="p">()</span>
+    <span class="n">component_indices</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">metabolites</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">components</span><span class="p">)</span>
+    <span class="n">simulation_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c">#TODO:  Speed this section up.  Possibly by modifying Model.optimize() to</span>
+    <span class="c">#use and updated S and reuse the basis.</span>
+    <span class="k">for</span> <span class="n">the_component</span><span class="p">,</span> <span class="n">the_index</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">component_indices</span><span class="p">):</span>
+        <span class="c">#add in a demand reaction for each component</span>
+        <span class="n">demand_reaction</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="s">&#39;test_demand_&#39;</span> <span class="o">+</span> <span class="n">the_component</span><span class="p">)</span>
+        <span class="c">#then simulate ability</span>
+        <span class="c">#then check it can exceed objective cutoff * component stoichiometric</span>
+        <span class="c">#coefficient.</span>
+        <span class="n">tmp_coeff</span> <span class="o">=</span> <span class="n">objective_reaction</span><span class="o">.</span><span class="n">get_coefficient</span><span class="p">(</span><span class="n">the_component</span><span class="p">)</span> 
+        <span class="n">demand_reaction</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">(</span><span class="n">the_component</span><span class="p">,</span> <span class="n">tmp_coeff</span><span class="p">)</span>
+        <span class="n">demand_reaction</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="mi">1000</span>
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">add_reaction</span><span class="p">(</span><span class="n">demand_reaction</span><span class="p">)</span>
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">new_objective</span> <span class="o">=</span> <span class="n">demand_reaction</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">objective_cutoff</span> <span class="o">&gt;</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">f</span><span class="p">:</span>
+            <span class="n">simulation_results</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">the_component</span><span class="p">:{</span><span class="s">&#39;required&#39;</span><span class="p">:</span><span class="nb">abs</span><span class="p">(</span><span class="n">tmp_coeff</span><span class="o">*</span><span class="n">objective_cutoff</span><span class="p">),</span> <span class="s">&#39;produced&#39;</span><span class="p">:</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">f</span><span class="p">}})</span>
+    <span class="k">return</span> <span class="n">simulation_results</span></div>
+<div class="viewcode-block" id="update_objective"><a class="viewcode-back" href="../../../cobra.flux_analysis.html#cobra.flux_analysis.objective.update_objective">[docs]</a><span class="k">def</span> <span class="nf">update_objective</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">the_objectives</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Revised to take advantage of the new Reaction classes.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>
+    <span class="c">#set the objective coefficients for each reaction to 0</span>
+    <span class="p">[</span><span class="nb">setattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s">&#39;objective_coefficient&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">]</span>
+    <span class="c">#Allow for objectives to be constructed from multiple reactions</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">the_objectives</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> \
+           <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">the_objectives</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">the_objectives</span> <span class="o">=</span> <span class="p">[</span><span class="n">the_objectives</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">the_objective</span> <span class="ow">in</span> <span class="n">the_objectives</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">the_objective</span><span class="p">,</span><span class="s">&#39;id&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">the_objective</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">the_objective</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span><span class="n">the_objective</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">the_objective</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">the_objective</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">[</span><span class="n">the_objective</span><span class="p">]</span>
+        <span class="n">the_objective</span><span class="o">.</span><span class="n">objective_coefficient</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="c">#NOTE: _objective_coefficients is deprecated</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="s">&#39;_objective_coefficients&#39;</span><span class="p">):</span>
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">_objective_coefficients</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">objective_coefficient</span>
+                                                     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">])</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,219 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cobra.test.flux_analysis &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="up" title="cobra.test" href="../test.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../test.html" accesskey="U">cobra.test</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cobra.test.flux_analysis</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">create_test_model</span>
+<span class="kn">from</span> <span class="nn">cobra</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">Metabolite</span>
+<span class="kn">from</span> <span class="nn">cobra.flux_analysis</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">cobra.manipulation</span> <span class="kn">import</span> <span class="n">initialize_growth_medium</span>
+
+
+<div class="viewcode-block" id="TestCobraFluxAnalysis"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.flux_analysis.TestCobraFluxAnalysis">[docs]</a><span class="k">class</span> <span class="nc">TestCobraFluxAnalysis</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test the simulation functions in cobra.flux_analysis</span>
+
+<span class="sd">    TODO: Add in tests for: MOMA</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="TestCobraFluxAnalysis.setUp"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.flux_analysis.TestCobraFluxAnalysis.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">create_test_model</span><span class="p">()</span>
+
+
+</div>
+<div class="viewcode-block" id="TestCobraFluxAnalysis.test_single_deletion"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.flux_analysis.TestCobraFluxAnalysis.test_single_deletion">[docs]</a>    <span class="k">def</span> <span class="nf">test_single_deletion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cobra_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">initialize_growth_medium</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="s">&#39;LB&#39;</span><span class="p">)</span>
+
+        <span class="c">#Expected growth rates for the salmonella model with deletions in LB medium</span>
+        <span class="n">the_loci</span> <span class="o">=</span>  <span class="p">[</span><span class="s">&#39;STM4081&#39;</span><span class="p">,</span> <span class="s">&#39;STM0247&#39;</span><span class="p">,</span> <span class="s">&#39;STM3867&#39;</span><span class="p">,</span> <span class="s">&#39;STM2952&#39;</span><span class="p">]</span>
+        <span class="n">the_genes</span> <span class="o">=</span> <span class="n">tpiA</span><span class="p">,</span> <span class="n">metN</span><span class="p">,</span> <span class="n">atpA</span><span class="p">,</span> <span class="n">eno</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">genes</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">,</span> <span class="n">the_loci</span><span class="p">)</span>
+        <span class="n">id_to_name</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">x</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">the_genes</span><span class="p">])</span>
+        <span class="n">growth_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;fba&#39;</span><span class="p">:{</span><span class="n">tpiA</span><span class="o">.</span><span class="n">id</span><span class="p">:</span><span class="mf">2.41</span><span class="p">,</span> <span class="n">metN</span><span class="o">.</span><span class="n">id</span><span class="p">:</span><span class="mf">2.44</span><span class="p">,</span> <span class="n">atpA</span><span class="o">.</span><span class="n">id</span><span class="p">:</span><span class="mf">1.87</span><span class="p">,</span> <span class="n">eno</span><span class="o">.</span><span class="n">id</span><span class="p">:</span><span class="mf">1.81</span><span class="p">}}</span>
+
+
+        <span class="k">for</span> <span class="n">method</span><span class="p">,</span> <span class="n">the_growth_rates</span> <span class="ow">in</span> <span class="n">growth_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">element_list</span> <span class="o">=</span> <span class="n">the_growth_rates</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="n">rates</span><span class="p">,</span> <span class="n">statuses</span><span class="p">,</span> <span class="n">problems</span> <span class="o">=</span> <span class="n">single_deletion</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span>
+                                                        <span class="n">element_list</span><span class="o">=</span><span class="n">element_list</span><span class="p">,</span>
+                                                        <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">the_gene</span> <span class="ow">in</span> <span class="n">element_list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">statuses</span><span class="p">[</span><span class="n">the_gene</span><span class="p">],</span> <span class="s">&#39;optimal&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">rates</span><span class="p">[</span><span class="n">the_gene</span><span class="p">],</span> <span class="n">the_growth_rates</span><span class="p">[</span><span class="n">the_gene</span><span class="p">],</span>
+                                       <span class="n">places</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="TestCobraFluxAnalysis.test_double_deletion"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.flux_analysis.TestCobraFluxAnalysis.test_double_deletion">[docs]</a>    <span class="k">def</span> <span class="nf">test_double_deletion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">cobra_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="c">#turn into a double deletion unit test</span>
+        <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span>
+        <span class="n">initialize_growth_medium</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="s">&#39;LB&#39;</span><span class="p">)</span>
+        <span class="c">#Expected growth rates for the salmonella model with deletions in LB medium</span>
+        <span class="n">the_loci</span> <span class="o">=</span>  <span class="p">[</span><span class="s">&#39;STM4081&#39;</span><span class="p">,</span> <span class="s">&#39;STM0247&#39;</span><span class="p">,</span> <span class="s">&#39;STM3867&#39;</span><span class="p">,</span> <span class="s">&#39;STM2952&#39;</span><span class="p">]</span>
+        <span class="n">the_genes</span> <span class="o">=</span> <span class="n">tpiA</span><span class="p">,</span> <span class="n">metN</span><span class="p">,</span> <span class="n">atpA</span><span class="p">,</span> <span class="n">eno</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">genes</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">,</span> <span class="n">the_loci</span><span class="p">)</span>
+        <span class="n">growth_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">growth_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">2.41</span><span class="p">,</span> <span class="mf">2.389</span><span class="p">,</span> <span class="mf">1.775</span><span class="p">,</span> <span class="mf">1.81</span><span class="p">],</span>
+                       <span class="p">[</span><span class="mf">2.389</span><span class="p">,</span> <span class="mf">2.437</span><span class="p">,</span> <span class="mf">1.86</span><span class="p">,</span> <span class="mf">1.79</span><span class="p">],</span>
+                       <span class="p">[</span><span class="mf">1.775</span><span class="p">,</span> <span class="mf">1.86</span><span class="p">,</span> <span class="mf">1.87</span><span class="p">,</span> <span class="mf">1.3269</span><span class="p">],</span>
+                       <span class="p">[</span><span class="mf">1.81</span><span class="p">,</span> <span class="mf">1.79</span><span class="p">,</span> <span class="mf">1.3269</span><span class="p">,</span> <span class="mf">1.81</span><span class="p">]]</span>
+        <span class="k">for</span> <span class="n">the_gene</span><span class="p">,</span> <span class="n">the_rates</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">the_genes</span><span class="p">,</span> <span class="n">growth_list</span><span class="p">):</span>
+            <span class="n">growth_dict</span><span class="p">[</span><span class="n">the_gene</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">the_genes</span><span class="p">,</span> <span class="n">the_rates</span><span class="p">))</span>
+
+
+        <span class="n">the_solution</span> <span class="o">=</span> <span class="n">double_deletion</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">element_list_1</span><span class="o">=</span><span class="n">the_genes</span><span class="p">,</span>
+                                       <span class="n">element_list_2</span><span class="o">=</span><span class="n">the_genes</span><span class="p">,</span>
+                                       <span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">)</span>
+        <span class="c">#Potential problem if the data object doesn&#39;t have a tolist function</span>
+        <span class="n">s_data</span> <span class="o">=</span> <span class="n">the_solution</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">s_x</span> <span class="o">=</span> <span class="n">the_solution</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">]</span>
+        <span class="n">s_y</span> <span class="o">=</span> <span class="n">the_solution</span><span class="p">[</span><span class="s">&#39;y&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">gene_x</span><span class="p">,</span> <span class="n">rates_x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">s_x</span><span class="p">,</span> <span class="n">s_data</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">gene_y</span><span class="p">,</span> <span class="n">the_rate</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">s_y</span><span class="p">,</span> <span class="n">rates_x</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">growth_dict</span><span class="p">[</span><span class="n">gene_x</span><span class="p">][</span><span class="n">gene_y</span><span class="p">],</span> <span class="n">the_rate</span><span class="p">,</span>
+                                       <span class="n">places</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="TestCobraFluxAnalysis.test_flux_variability"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.flux_analysis.TestCobraFluxAnalysis.test_flux_variability">[docs]</a>    <span class="k">def</span> <span class="nf">test_flux_variability</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fva_results</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;5DGLCNtex&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.9748300208638403e-05</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span> <span class="s">&#39;ABTA&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.00014811225541408996</span><span class="p">},</span> <span class="s">&#39;5DOAN&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">3.2227507421302166e-06</span><span class="p">},</span> <span class="s">&#39;A5PISO&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.006920856282000001</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.006922717378372606</span><span class="p">},</span> <span class="s">&#39;AACPS1&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">3.7028063376249126e-05</span><span class="p">},</span> <span class="s">&#39;AACPS2&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">3.7028063733878864e-05</span><span class="p">},</span> <span class="s">&#39;ACALDtex&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.00011848980305159615</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span> <span class="s">&#39;AACPS3&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">3.702806337623859e-05</span><span class="p">},</span> <span class="s">&#39;AACPS4&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">3.702806373387888e-05</span><span class="p">},</span> <span class="s">&#39;ABUTD&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.00014811225541406058</span><span class="p">},</span> <span class="s">&#39;AACPS5&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">2.8211857518389774e-05</span><span class="p">},</span> <span class="s">&#39;AACPS6&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">2.821185753295664e-05</span><span class="p">},</span> <span class="s">&#39;AACPS7&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">3.702806368868028e-05</span><span class="p">},</span> <span class="s">&#39;AACPS8&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">3.702806338788376e-05</span><span class="p">},</span> <span class="s">&#39;AACPS9&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">3.702806309933293e-05</span><span class="p">},</span> <span class="s">&#39;AACTOOR&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">1.5388286124597477e-05</span><span class="p">},</span> <span class="s">&#39;ABUTt2pp&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span> <span class="s">&#39;3OAS140&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.5041754136687804</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.5042009621703677</span><span class="p">},</span> <span class="s">&#39;3OAS141&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.037484893950000084</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.03750284695065363</span><span class="p">},</span> <span class="s">&#39;3OAS160&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.41767086529953557</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.41769641380045963</span><span class="p">},</span> <span class="s">&#39;3OAS161&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.03748489395</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.03750284695060761</span><span class="p">},</span> <span class="s">&#39;3OAS180&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.01069201669939239</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.010717565200387778</span><span class="p">},</span> <span class="s">&#39;3OAS181&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.01606495455</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.01608290755044158</span><span class="p">},</span> <span class="s">&#39;ABUTtex&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span> <span class="s">&#39;3OAS60&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.5439852127139995</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.5439896193596934</span><span class="p">},</span> <span class="s">&#39;3OAS80&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.5439852127140001</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.5439896193596934</span><span class="p">},</span> <span class="s">&#39;AAMYL&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span> <span class="s">&#39;3PEPTabcpp&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">5.808323730923103e-06</span><span class="p">},</span> <span class="s">&#39;3PEPTtex&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.4245609402880297e-06</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span> <span class="s">&#39;3UMPtex&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span> <span class="s">&#39;4HOXPACDtex&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span> <span class="s">&#39;ACACtex&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span> <span class="s">&#39;4PCP&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">6.171343917391756e-06</span><span class="p">},</span> <span class="s">&#39;4PCPpp&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">5.58914186256664e-06</span><span class="p">},</span> <span class="s">&#39;AAMYLpp&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span> <span class="s">&#39;4PEPTabcpp&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">5.696625084349692e-06</span><span class="p">},</span> <span class="s">&#39;4PEPTtex&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.2198316806921494e-06</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span> <span class="s">&#39;5DGLCNR&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.1942555793285538e-05</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span> <span class="s">&#39;5DGLCNt2rpp&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.9748300208638403e-05</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span> <span class="s">&#39;ACALD&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;minimum&#39;</span><span class="p">:</span> <span class="mf">3.356574143593833</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">:</span> <span class="mf">7.4971939913624155</span><span class="p">}}</span>
+
+
+        <span class="n">cobra_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span>
+        <span class="n">initialize_growth_medium</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="s">&#39;LB&#39;</span><span class="p">)</span>
+        <span class="n">the_problem</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">)</span>
+        <span class="n">fva_out</span> <span class="o">=</span> <span class="n">flux_variability_analysis</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span>
+                                            <span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span>
+                                            <span class="n">the_reactions</span><span class="o">=</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">[</span><span class="mi">100</span><span class="p">:</span><span class="mi">140</span><span class="p">])</span>
+        <span class="n">fva_out</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">fva_out</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+        <span class="k">for</span> <span class="n">the_reaction</span><span class="p">,</span> <span class="n">the_range</span> <span class="ow">in</span> <span class="n">fva_out</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">the_range</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">fva_results</span><span class="p">[</span><span class="n">the_reaction</span><span class="p">][</span><span class="n">k</span><span class="p">],</span> <span class="n">v</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="c">## blocked_reactions = find_blocked_reactions(cobra_model)</span>
+        <span class="c">## open_ex_blocked = find_blocked_reactions(cobra_model,</span>
+        <span class="c">##                                          open_exchanges=True)</span>
+</div>
+<div class="viewcode-block" id="TestCobraFluxAnalysis.test_assess_medium_component_essentiality"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.flux_analysis.TestCobraFluxAnalysis.test_assess_medium_component_essentiality">[docs]</a>    <span class="k">def</span> <span class="nf">test_assess_medium_component_essentiality</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        TODO: Add in a numerical value test</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">essentiality_results</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;EX_ser__L_e&#39;</span><span class="p">:</span> <span class="mf">0.28511251509333996</span><span class="p">,</span> <span class="s">&#39;EX_cobalt2_e&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;EX_glu__L_e&#39;</span><span class="p">:</span> <span class="mf">0.18551423955187463</span><span class="p">,</span> <span class="s">&#39;EX_glyc_e&#39;</span><span class="p">:</span> <span class="mf">0.02162967396132975</span><span class="p">,</span> <span class="s">&#39;EX_h_e&#39;</span><span class="p">:</span> <span class="mf">0.18551423955211313</span><span class="p">,</span> <span class="s">&#39;EX_mobd_e&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;EX_val__L_e&#39;</span><span class="p">:</span> <span class="mf">0.18004717981556367</span><span class="p">,</span> <span class="s">&#39;EX_so4_e&#39;</span><span class="p">:</span> <span class="mf">0.1800471798156284</span><span class="p">,</span> <span class="s">&#39;EX_co2_e&#39;</span><span class="p">:</span> <span class="mf">0.18004717981574314</span><span class="p">,</span> <span class="s">&#39;EX_k_e&#39;</span><span class="p">:</span> <span class="mf">5.048709793414476e-29</span><span class="p">,</span> <span class="s">&#39;EX_fe3_e&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.4331226595218434e-27</span><span class="p">,</span> <span class="s">&#39;EX_na1_e&#39;</span><span class="p">:</span> <span class="mf">0.18004717981556367</span><span class="p">,</span> <span class="s">&#39;EX_cl_e&#39;</span><span class="p">:</span> <span class="mf">1.7495455763604752e-28</span><span class="p">,</span> <span class="s">&#39;EX_leu__L_e&#39;</span><span class="p">:</span> <span class="mf">0.1762785172191746</span><span class="p">,</span> <span class="s">&#39;EX_arg__L_e&#39;</span><span class="p">:</span> <span class="mf">0.13025755872698241</span><span class="p">,</span> <span class="s">&#39;EX_nh4_e&#39;</span><span class="p">:</span> <span class="mf">0.09432269135782297</span><span class="p">,</span> <span class="s">&#39;EX_lys__L_e&#39;</span><span class="p">:</span> <span class="mf">0.43718843672718055</span><span class="p">,</span> <span class="s">&#39;EX_ala__L_e&#39;</span><span class="p">:</span> <span class="mf">0.4371884367334397</span><span class="p">,</span> <span class="s">&#39;EX_thr__L_e&#39;</span><span class="p">:</span> <span class="mf">0.43718843673877533</span><span class="p">,</span> <span class="s">&#39;EX_pi_e&#39;</span><span class="p">:</span> <span class="mf">4.1028325973665373e-13</span><span class="p">,</span> <span class="s">&#39;EX_mn2_e&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;EX_phe__L_e&#39;</span><span class="p">:</span> <span class="mf">0.380007972274807</span><span class="p">,</span> <span class="s">&#39;EX_h2o_e&#39;</span><span class="p">:</span> <span class="mf">0.38000797227380473</span><span class="p">,</span> <span class="s">&#39;EX_mg2_e&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;EX_his__L_e&#39;</span><span class="p">:</span> <span class="mf">0.38000797227522415</span><span class="p">,</span> <span class="s">&#39;EX_o2_e&#39;</span><span class="p">:</span> <span class="mf">0.3428169207281707</span><span class="p">,</span> <span class="s">&#39;EX_pro__L_e&#39;</span><span class="p">:</span> <span class="mf">0.271070547843646</span><span class="p">,</span> <span class="s">&#39;EX_asp__L_e&#39;</span><span class="p">:</span> <span class="mf">0.38000797227507915</span><span class="p">,</span> <span class="s">&#39;EX_gly_e&#39;</span><span class="p">:</span> <span class="mf">0.3800079722747013</span><span class="p">,</span> <span class="s">&#39;EX_cys__L_e&#39;</span><span class="p">:</span> <span class="mf">0.3800079722760569</span><span class="p">,</span> <span class="s">&#39;EX_cu2_e&#39;</span><span class="p">:</span> <span class="mf">9.244463733058732e-31</span><span class="p">,</span> <span class="s">&#39;EX_ca2_e&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;EX_tyr__L_e&#39;</span><span class="p">:</span> <span class="mf">0.38000797227331706</span><span class="p">,</span> <span class="s">&#39;EX_zn2_e&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s">&#39;EX_met__L_e&#39;</span><span class="p">:</span> <span class="mf">0.38000797227265026</span><span class="p">,</span> <span class="s">&#39;EX_ile__L_e&#39;</span><span class="p">:</span> <span class="mf">0.3800079722724871</span><span class="p">}</span>
+        <span class="n">cobra_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span>
+        <span class="kn">from</span> <span class="nn">cobra.flux_analysis</span> <span class="kn">import</span> <span class="n">assess_medium_component_essentiality</span>
+        <span class="n">essentiality_dict</span> <span class="o">=</span> <span class="n">assess_medium_component_essentiality</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;MgM&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">essentiality_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">essentiality_results</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">v</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+
+
+
+<span class="c"># make a test suite to run all of the tests</span></div></div>
+<span class="n">loader</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestLoader</span><span class="p">()</span>
+<span class="n">suite</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">loadTestsFromModule</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">__name__</span><span class="p">])</span>
+
+<div class="viewcode-block" id="test_all"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.flux_analysis.test_all">[docs]</a><span class="k">def</span> <span class="nf">test_all</span><span class="p">():</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">TextTestRunner</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">suite</span><span class="p">)</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">test_all</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../test.html" >cobra.test</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

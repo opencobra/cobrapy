@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cobra.topology.reporter_metabolites &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cobra.topology.reporter_metabolites</h1><div class="highlight"><pre>
+<span class="c">#cobra.topology.reporter_metabolites.py: Module for topological analysis of cobra_models</span>
+<span class="c">#Based on Patil et al 2005 PNAS 102:2685-9</span>
+<span class="c">#TODO: Validate cobra.core compliance</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span><span class="p">,</span> <span class="n">corrcoef</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">tril</span><span class="p">,</span> <span class="n">where</span><span class="p">,</span> <span class="n">unique</span><span class="p">,</span> <span class="n">zeros</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span><span class="p">,</span> <span class="n">randint</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<div class="viewcode-block" id="identify_reporter_metabolites"><a class="viewcode-back" href="../../../cobra.topology.html#cobra.topology.reporter_metabolites.identify_reporter_metabolites">[docs]</a><span class="k">def</span> <span class="nf">identify_reporter_metabolites</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">reaction_scores_dict</span><span class="p">,</span>
+                                  <span class="n">number_of_randomizations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">number_of_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">scoring_metric</span><span class="o">=</span><span class="s">&#39;default&#39;</span><span class="p">,</span> <span class="n">score_type</span><span class="o">=</span><span class="s">&#39;p&#39;</span><span class="p">,</span>
+                                  <span class="n">entire_network</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">background_correction</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                  <span class="n">ignore_external_boundary_reactions</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the aggregate Z-score for the metabolites in the model.</span>
+<span class="sd">    Ignore reactions that are solely spontaneous or orphan. Allow the scores to</span>
+<span class="sd">    have multiple columns / experiments.   This will change the way the output</span>
+<span class="sd">    is represented.</span>
+
+<span class="sd">    cobra_model: A cobra.Model object</span>
+
+<span class="sd">    TODO: CHANGE TO USING DICTIONARIES for the_reactions: the_scores</span>
+
+<span class="sd">    reaction_scores_dict:  A dictionary where the keys are reactions in cobra_model.reactions</span>
+<span class="sd">    and the values are the scores.  Currently, only supports a single numeric value as</span>
+<span class="sd">    the value; however, this will be updated to allow for lists</span>
+
+<span class="sd">    number_of_randomizations: Integer.  Number of random shuffles of the</span>
+<span class="sd">    scores to assess which are significant.</span>
+
+<span class="sd">    number_of_layers: 1 is the only option supported</span>
+<span class="sd">    </span>
+<span class="sd">    scoring_metric:  default means divide by k**0.5</span>
+
+<span class="sd">    score_type: &#39;p&#39; Is the only option at the moment and indicates p-value.</span>
+
+<span class="sd">    entire_network: Boolean.  Currently, only compares scores calculated from the_reactions</span>
+
+<span class="sd">    background_correction: Boolean.  If True apply background correction to the aggreagate</span>
+<span class="sd">    Z-score</span>
+
+<span class="sd">    ignore_external_boundary_reactions: Not yet implemented. Boolean.  If True do not count exchange reactions when</span>
+<span class="sd">    calculating the score.</span>
+
+<span class="sd">    </span>
+
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#Add in a function to calculate based on correlation coefficients and to</span>
+    <span class="c">#deal with other multidimensional data. </span>
+    <span class="n">the_reactions</span> <span class="o">=</span> <span class="n">reaction_scores_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="n">the_scores</span> <span class="o">=</span> <span class="n">reaction_scores_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">score_type</span> <span class="o">==</span> <span class="s">&#39;p&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">the_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;__iter__&#39;</span><span class="p">):</span>
+        <span class="c">#minimum and maximum p-values are used to prevent numerical problems.</span>
+        <span class="c">#haven&#39;t decided whether an arbitrary min / max 1e-15 is preferred to</span>
+        <span class="c">#blunting the ends based on the values closest to 0 or 1.</span>
+        <span class="n">the_reactions</span> <span class="o">=</span> <span class="n">reaction_scores_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">the_scores</span> <span class="o">=</span> <span class="n">array</span><span class="p">(</span><span class="n">reaction_scores_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">minimum_p</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">the_scores</span><span class="p">[</span><span class="n">the_scores</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="n">maximum_p</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">the_scores</span><span class="p">[</span><span class="n">where</span><span class="p">(</span><span class="n">the_scores</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="n">the_scores</span><span class="p">[</span><span class="n">where</span><span class="p">(</span><span class="n">the_scores</span> <span class="o">&lt;</span> <span class="n">minimum_p</span><span class="p">)]</span> <span class="o">=</span> <span class="n">minimum_p</span>
+        <span class="n">the_scores</span><span class="p">[</span><span class="n">where</span><span class="p">(</span><span class="n">the_scores</span> <span class="o">&gt;</span> <span class="n">maximum_p</span><span class="p">)]</span> <span class="o">=</span> <span class="n">maximum_p</span>
+        <span class="n">the_scores</span> <span class="o">=</span> <span class="o">-</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">the_scores</span><span class="p">)</span>
+        <span class="c">#update the dictionary with the new scores</span>
+        <span class="n">reaction_scores_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">the_reactions</span><span class="p">,</span> <span class="n">the_scores</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">the_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;__iter__&#39;</span><span class="p">):</span>
+        <span class="c">#In the case that the_scores is a list of lists, assume that each list is</span>
+        <span class="c">#the score for each reaction in the_reactions across all reactions.  Then</span>
+        <span class="c">#for each metabolite, calculate the invnorm(|Pearson Correlation</span>
+        <span class="c">#Coefficient| for each reaction pair that it links.</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;This isn&#39;t implemented yet&quot;</span><span class="p">)</span>
+    
+    <span class="c">#Get the connectivity for each metabolite</span>
+    <span class="n">the_metabolites</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="p">[</span><span class="n">the_metabolites</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">_metabolites</span><span class="p">)</span>
+     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">reaction_scores_dict</span><span class="p">];</span>
+
+    <span class="n">metabolite_scores</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">metabolite_connections</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c">#Calculate the score for each metabolite</span>
+    <span class="k">for</span> <span class="n">the_metabolite</span> <span class="ow">in</span> <span class="n">the_metabolites</span><span class="p">:</span>
+        <span class="n">nonspontaneous_connections</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">the_metabolite</span><span class="o">.</span><span class="n">_reaction</span>
+                                      <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">gene_reaction_rule</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span>
+                                      <span class="p">[</span><span class="s">&#39;s0001&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">]]</span>
+        <span class="n">tmp_score</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">number_of_connections</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nonspontaneous_connections</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">the_reaction</span> <span class="ow">in</span> <span class="n">nonspontaneous_connections</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">the_reaction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reaction_scores_dict</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">entire_network</span><span class="p">:</span>
+                    <span class="n">number_of_connections</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tmp_score</span> <span class="o">+=</span> <span class="n">reaction_scores_dict</span><span class="p">[</span><span class="n">the_reaction</span><span class="p">]</span>
+        <span class="n">metabolite_scores</span><span class="p">[</span><span class="n">the_metabolite</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp_score</span>
+        <span class="n">metabolite_connections</span><span class="p">[</span><span class="n">the_metabolite</span><span class="p">]</span> <span class="o">=</span> <span class="n">number_of_connections</span>
+
+    <span class="c">#NOTE: Doing the corrections based only on the significantly perturbed scores</span>
+    <span class="c">#is probably going to underestimate the significance.</span>
+    <span class="k">if</span> <span class="n">background_correction</span><span class="p">:</span>
+        <span class="n">correction_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">metabolite_connections</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="c">#if entire_network # add in a section to deal with the situation where</span>
+            <span class="c">#the entire network structure is considered by only have p-values for</span>
+            <span class="c">#a limited subset.</span>
+            <span class="c">#</span>
+            <span class="c">#Basically, what we&#39;re doing here is that for each i we select i</span>
+            <span class="c">#scores number_of_randomizations times</span>
+            <span class="n">the_random_indices</span> <span class="o">=</span> <span class="n">randint</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">the_scores</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">number_of_randomizations</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+            <span class="n">random_score_distribution</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="nb">sum</span><span class="p">(</span><span class="n">the_scores</span><span class="p">[</span><span class="n">x</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">the_random_indices</span><span class="p">)])</span> <span class="o">/</span><span class="n">i</span><span class="o">**</span><span class="mf">0.5</span>
+            <span class="n">correction_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">mean</span><span class="p">(</span><span class="n">random_score_distribution</span><span class="p">),</span>
+                                      <span class="n">std</span><span class="p">(</span><span class="n">random_score_distribution</span><span class="p">)]</span> 
+
+    <span class="k">for</span> <span class="n">the_metabolite</span><span class="p">,</span> <span class="n">the_score</span> <span class="ow">in</span> <span class="n">metabolite_scores</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">number_of_connections</span> <span class="o">=</span> <span class="n">metabolite_connections</span><span class="p">[</span><span class="n">the_metabolite</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">number_of_connections</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c">#Correct based on background distribution</span>
+            <span class="k">if</span> <span class="n">background_correction</span><span class="p">:</span>
+                <span class="c">#if the list of scores is only for significant perturbations then the</span>
+                <span class="c">#background correction shouldn&#39;t be applied because the current sampling</span>
+                <span class="c">#method only takes into account the_scores not the entire network.</span>
+                <span class="c">#It&#39;d be more accurate to assign unscored reactions a default score.</span>
+                <span class="n">the_score</span> <span class="o">=</span> <span class="p">((</span><span class="n">the_score</span> <span class="o">/</span> <span class="n">number_of_connections</span><span class="o">**.</span><span class="mi">5</span><span class="p">)</span> <span class="o">-</span>
+                             <span class="n">correction_dict</span><span class="p">[</span><span class="n">number_of_connections</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> \
+                             <span class="n">correction_dict</span><span class="p">[</span><span class="n">number_of_connections</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">the_score</span> <span class="o">=</span> <span class="n">the_score</span> <span class="o">/</span> <span class="n">number_of_connections</span><span class="o">**.</span><span class="mi">5</span>
+            <span class="c">#Update the score</span>
+            <span class="n">metabolite_scores</span><span class="p">[</span><span class="n">the_metabolite</span><span class="p">]</span> <span class="o">=</span> <span class="n">the_score</span>
+
+
+
+    <span class="n">return_dictionary</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;scores&#39;</span><span class="p">:</span> <span class="n">metabolite_scores</span><span class="p">,</span>
+                         <span class="s">&#39;connections&#39;</span><span class="p">:</span> <span class="n">metabolite_connections</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">background_correction</span><span class="p">:</span>
+        <span class="n">return_dictionary</span><span class="p">[</span><span class="s">&#39;corrections&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">correction_dict</span>
+
+    <span class="k">return</span><span class="p">(</span><span class="n">return_dictionary</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="ppmap_identify_reporter_metabolites"><a class="viewcode-back" href="../../../cobra.topology.html#cobra.topology.reporter_metabolites.ppmap_identify_reporter_metabolites">[docs]</a><span class="k">def</span> <span class="nf">ppmap_identify_reporter_metabolites</span><span class="p">(</span><span class="n">keywords</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A function that receives a dict with all of the parameters for identify_reporter_metabolites</span>
+<span class="sd">    Serves to make it possible to call the reporter metabolites function from ppmap.</span>
+<span class="sd">    It only will be useful for parallel experiments not for breaking up a single experiment.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">the_results</span> <span class="o">=</span> <span class="n">identify_reporter_metabolites</span><span class="p">(</span><span class="o">**</span><span class="n">keywords</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">({</span><span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="n">the_id</span><span class="p">,</span> <span class="s">&#39;results&#39;</span><span class="p">:</span> <span class="n">the_results</span> <span class="p">})</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cPickle</span> <span class="kn">import</span> <span class="n">load</span>
+    <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+    <span class="n">solver</span> <span class="o">=</span> <span class="s">&#39;glpk&#39;</span>
+    <span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">salmonella_pickle</span><span class="p">,</span> <span class="n">salmonella_reaction_p_values_pickle</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">salmonella_pickle</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
+        <span class="n">cobra_model</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">salmonella_reaction_p_values_pickle</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
+        <span class="n">reaction_p</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span>
+
+    <span class="n">the_reactions</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">,</span> <span class="n">reaction_p</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">the_scores</span> <span class="o">=</span> <span class="n">reaction_p</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="n">reaction_scores_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">the_reactions</span><span class="p">,</span> <span class="n">the_scores</span><span class="p">))</span>
+    
+    <span class="n">tmp_reps</span> <span class="o">=</span> <span class="n">identify_reporter_metabolites</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">reaction_scores_dict</span><span class="p">,</span>
+                                             <span class="n">background_correction</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">print</span> <span class="s">&#39;Need to add in validation for the test&#39;</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

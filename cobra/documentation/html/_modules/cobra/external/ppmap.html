@@ -1,0 +1,246 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cobra.external.ppmap &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cobra.external.ppmap</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+<span class="c"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c"># modification, are permitted provided that the following conditions</span>
+<span class="c"># are met:</span>
+<span class="c"># </span>
+<span class="c">#     * Redistributions of source code must retain the above copyright</span>
+<span class="c">#       notice, this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c">#     * Redistributions in binary form must reproduce the above</span>
+<span class="c">#       copyright notice, this list of conditions and the following</span>
+<span class="c">#       disclaimer in the documentation and/or other materials</span>
+<span class="c">#       provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c">#     * Neither the name of Kirk Strauser nor the names of other</span>
+<span class="c">#       contributors may be used to endorse or promote products</span>
+<span class="c">#       derived from this software without specific prior written</span>
+<span class="c">#       permission.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS</span>
+<span class="c"># &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT</span>
+<span class="c"># LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS</span>
+<span class="c"># FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE</span>
+<span class="c"># COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,</span>
+<span class="c"># INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,</span>
+<span class="c"># BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;</span>
+<span class="c"># LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT</span>
+<span class="c"># LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN</span>
+<span class="c"># ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</span>
+<span class="c"># POSSIBILITY OF SUCH DAMAGE.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Very basic parallel processing support</span>
+
+<span class="sd">Implements a work-alike of the builtin map() function that distributes</span>
+<span class="sd">work across many processes.  As it uses Parallel Python to do the</span>
+<span class="sd">actual multi-processing, code using this must conform to the usual PP</span>
+<span class="sd">restrictions (arguments must be serializable, etc.)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span>  <span class="o">=</span> <span class="s">&quot;Kirk Strauser &lt;kirk@strauser.com&gt;&quot;</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s">&quot;$Rev: 1139 $&quot;</span>
+<span class="n">__date__</span>    <span class="o">=</span> <span class="s">&quot;$Date: 2008-04-16 $&quot;</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">__builtin__</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pp</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Could not import pp&#39;</span><span class="p">)</span>
+<span class="n">__STATE</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;server&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
+
+<div class="viewcode-block" id="ppmap"><a class="viewcode-back" href="../../../cobra.external.html#cobra.external.ppmap.ppmap">[docs]</a><span class="k">def</span> <span class="nf">ppmap</span><span class="p">(</span><span class="n">processes</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="o">*</span><span class="n">sequences</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Split the work of &#39;function&#39; across the given number of</span>
+<span class="sd">    processes.  Set &#39;processes&#39; to None to let Parallel Python</span>
+<span class="sd">    autodetect the number of children to use.</span>
+
+<span class="sd">    Although the calling semantics should be identical to</span>
+<span class="sd">    __builtin__.map (even using __builtin__.map to process</span>
+<span class="sd">    arguments), it differs in that it returns a generator instead of a</span>
+<span class="sd">    list.  This enables lazy evaluation of the results so that other</span>
+<span class="sd">    work can be done while the subprocesses are still running.</span>
+
+<span class="sd">    &gt;&gt;&gt; def rangetotal(n): return n, sum(range(n))</span>
+<span class="sd">    &gt;&gt;&gt; list(map(rangetotal, range(1, 6)))</span>
+<span class="sd">    [(1, 0), (2, 1), (3, 3), (4, 6), (5, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; list(ppmap(1, rangetotal, range(1, 6)))</span>
+<span class="sd">    [(1, 0), (2, 1), (3, 3), (4, 6), (5, 10)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># Create a new server if one isn&#39;t already initialized</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">__STATE</span><span class="p">[</span><span class="s">&#39;server&#39;</span><span class="p">]:</span>
+        <span class="n">__STATE</span><span class="p">[</span><span class="s">&#39;server&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">Server</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">submit</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send a job to the server&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">__STATE</span><span class="p">[</span><span class="s">&#39;server&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="nb">globals</span><span class="o">=</span><span class="nb">globals</span><span class="p">())</span>
+
+    <span class="c"># Merge all the passed-in argument lists together.  This is done</span>
+    <span class="c"># that way because as with the map() function, at least one list</span>
+    <span class="c"># is required but the rest are optional.</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="n">sequence</span><span class="p">]</span>
+    <span class="n">a</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
+    <span class="n">available_processes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span> <span class="n">__STATE</span><span class="p">[</span><span class="s">&#39;server&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_active_nodes</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="c"># Set the requested level of multi-processing</span>
+    <span class="k">if</span> <span class="n">available_processes</span> <span class="o">&lt;</span> <span class="n">processes</span><span class="p">:</span>
+    	<span class="n">__STATE</span><span class="p">[</span><span class="s">&#39;server&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_ncpus</span><span class="p">(</span><span class="n">processes</span><span class="o">-</span><span class="n">available_processes</span> <span class="ow">or</span> <span class="s">&#39;autodetect&#39;</span><span class="p">)</span>
+
+    <span class="c"># First, submit all the jobs.  Then harvest the results as they</span>
+    <span class="c"># come available.</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">subproc</span><span class="p">()</span> <span class="k">for</span> <span class="n">subproc</span> <span class="ow">in</span> <span class="n">__builtin__</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">submit</span><span class="p">,</span> <span class="o">*</span><span class="n">a</span><span class="p">))</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add three values&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="n">z</span>
+
+    <span class="k">def</span> <span class="nf">busybeaver</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This can take a while&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000000</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">num</span>
+        <span class="k">return</span> <span class="n">x</span>
+    <span class="c"># Immediate evaluation example</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">ppmap</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">busybeaver</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+    <span class="k">print</span> <span class="s">&#39;Time to queue the jobs:&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="c"># Casting the ppmap generator to a list forces each result to be</span>
+    <span class="c"># evaluated.  When done immediately after the jobs are submitted,</span>
+    <span class="c"># our program twiddles its thumbs while the work is finished.</span>
+    <span class="k">print</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&#39;Time to get the results:&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+
+    <span class="c"># Delayed evaluation example</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">ppmap</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">busybeaver</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+    <span class="k">print</span> <span class="s">&#39;Time to queue the jobs:&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+    <span class="c"># In contrast with the above example, this time we&#39;re submitting a</span>
+    <span class="c"># batch of jobs then going off to do more work while they&#39;re</span>
+    <span class="c"># processing.  Maybe &quot;time.sleep&quot; isn&#39;t the most exciting example,</span>
+    <span class="c"># but it illustrates the point that our main program can do work</span>
+    <span class="c"># before ppmap() is finished.  Imagine that you&#39;re submitting some</span>
+    <span class="c"># heavyweight image processing jobs at the beginning of your</span>
+    <span class="c"># program, going on to do other stuff like fetching more work to</span>
+    <span class="c"># do from a remote server, then coming back later to handle the</span>
+    <span class="c"># results.</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">print</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&#39;Time to get the first results:&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+
+    <span class="c"># Built-in map example</span>
+    <span class="k">print</span> <span class="nb">map</span><span class="p">(</span><span class="n">add</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">])</span>
+
+    <span class="c"># Trivial ppmap tests</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">30</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="s">&#39;adders&#39;</span>
+        <span class="k">print</span> <span class="n">ppmap</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">add</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">])</span>
+        <span class="k">print</span> <span class="s">&#39;Iteration time:&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+
+    <span class="c"># Heavier ppmap tests</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">30</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="s">&#39;beavers&#39;</span>
+        <span class="k">print</span> <span class="n">ppmap</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">busybeaver</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+        <span class="k">print</span> <span class="s">&#39;Iteration time:&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

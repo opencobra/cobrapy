@@ -1,0 +1,19 @@
+tools Package
+=============
+
+:mod:`tools` Package
+--------------------
+
+.. automodule:: cobra.tools
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`tools` Module
+-------------------
+
+.. automodule:: cobra.tools.tools
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

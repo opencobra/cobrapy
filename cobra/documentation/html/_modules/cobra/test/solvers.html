@@ -1,0 +1,202 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cobra.test.solvers &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="up" title="cobra.test" href="../test.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../test.html" accesskey="U">cobra.test</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cobra.test.solvers</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cPickle</span> <span class="kn">import</span> <span class="n">load</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pickle</span> <span class="kn">import</span> <span class="n">load</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">cobra.manipulation</span> <span class="kn">import</span> <span class="n">initialize_growth_medium</span>
+<span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">create_test_model</span>
+<span class="kn">from</span> <span class="nn">cobra</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">Metabolite</span>
+<span class="kn">from</span> <span class="nn">cobra</span> <span class="kn">import</span> <span class="n">solvers</span>
+<span class="kn">from</span> <span class="nn">cobra.solvers</span> <span class="kn">import</span> <span class="n">__legacy_solver</span>
+
+<div class="viewcode-block" id="TestCobraSolver"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.solvers.TestCobraSolver">[docs]</a><span class="k">class</span> <span class="nc">TestCobraSolver</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestCobraSolver.setUp"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.solvers.TestCobraSolver.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">create_test_model</span><span class="p">()</span>
+        <span class="n">initialize_growth_medium</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s">&#39;MgM&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_solution</span> <span class="o">=</span> <span class="mf">0.320064</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infeasible_problem</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+        <span class="n">metabolite_1</span> <span class="o">=</span> <span class="n">Metabolite</span><span class="p">(</span><span class="s">&quot;met1&quot;</span><span class="p">)</span>
+        <span class="n">metabolite_2</span> <span class="o">=</span> <span class="n">Metabolite</span><span class="p">(</span><span class="s">&quot;met2&quot;</span><span class="p">)</span>
+        <span class="n">reaction_1</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="s">&quot;rxn1&quot;</span><span class="p">)</span>
+        <span class="n">reaction_2</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="s">&quot;rxn2&quot;</span><span class="p">)</span>
+        <span class="n">reaction_1</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">({</span><span class="n">metabolite_1</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="n">reaction_2</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">({</span><span class="n">metabolite_2</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="n">reaction_1</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">reaction_2</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infeasible_problem</span><span class="o">.</span><span class="n">add_reactions</span><span class="p">([</span><span class="n">reaction_1</span><span class="p">,</span> <span class="n">reaction_2</span><span class="p">])</span>
+        <span class="c">#self.infeasible_problem.update()</span>
+
+</div></div>
+<div class="viewcode-block" id="add_new_test"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.solvers.add_new_test">[docs]</a><span class="k">def</span> <span class="nf">add_new_test</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="n">solver_name</span><span class="p">,</span> <span class="n">solver</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a test set for each of the solvers that are installed</span>
+<span class="sd">    using the modular interface.</span>
+
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">test_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="s">&quot;create_problem&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="s">&quot;solve_problem&quot;</span><span class="p">))</span>
+        <span class="c"># self.assertTrue(hasattr(solver, &quot;update_problem&quot;))</span>
+    <span class="k">def</span> <span class="nf">test_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">create_problem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_solve_feasible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">solution</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="s">&quot;optimal&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">old_solution</span><span class="p">,</span> \
+            <span class="n">solution</span><span class="o">.</span><span class="n">objective_value</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_solve_infeasible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">solution</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">infeasible_problem</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="s">&quot;infeasible&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_independent_creation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">feasible_lp</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">create_problem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">infeasible_lp</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">create_problem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">infeasible_problem</span><span class="p">)</span>
+        <span class="n">feasible_solution</span> <span class="o">=</span> <span class="n">solve_problem</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
+        <span class="n">infeasible_solution</span> <span class="o">=</span> <span class="n">solve_problem</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">feasible_solution</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="s">&quot;optimal&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">old_solution</span><span class="p">,</span> \
+            <span class="n">feasible_solution</span><span class="o">.</span><span class="n">objective_value</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">infeasible_solution</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="s">&quot;infeasible&quot;</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="s">&quot;test_</span><span class="si">%s</span><span class="s">_create&quot;</span> <span class="o">%</span> <span class="n">solver_name</span><span class="p">,</span> \
+        <span class="n">test_setup</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="s">&quot;test_</span><span class="si">%s</span><span class="s">_attributes&quot;</span> <span class="o">%</span> <span class="n">solver_name</span><span class="p">,</span> \
+        <span class="n">test_attributes</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="s">&quot;test_</span><span class="si">%s</span><span class="s">_feasible_solve&quot;</span> <span class="o">%</span> <span class="n">solver_name</span><span class="p">,</span> \
+        <span class="n">test_solve_feasible</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="s">&quot;test_</span><span class="si">%s</span><span class="s">_infeasible_solve&quot;</span> <span class="o">%</span> <span class="n">solver_name</span><span class="p">,</span> \
+        <span class="n">test_solve_infeasible</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="s">&quot;test_</span><span class="si">%s</span><span class="s">_independent_creation&quot;</span> <span class="o">%</span> <span class="n">solver_name</span><span class="p">,</span> \
+        <span class="n">test_solve_infeasible</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="add_legacy_test"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.solvers.add_legacy_test">[docs]</a><span class="k">def</span> <span class="nf">add_legacy_test</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="n">solver_name</span><span class="p">,</span> <span class="n">solver_function</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a test set for each of the installed solvers using the</span>
+<span class="sd">    legacy interface.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">test_solve_feasible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">the_solution</span> <span class="o">=</span> <span class="n">solver_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)[</span><span class="s">&#39;the_solution&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">the_solution</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="s">&#39;optimal&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">old_solution</span><span class="p">,</span> <span class="n">the_solution</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="s">&quot;test_</span><span class="si">%s</span><span class="s">_feasible_solve&quot;</span> <span class="o">%</span> <span class="n">solver_name</span><span class="p">,</span> \
+        <span class="n">test_solve_feasible</span><span class="p">)</span>
+        
+
+</div>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">__legacy_solver</span><span class="p">:</span>
+    <span class="n">add_test</span> <span class="o">=</span> <span class="n">add_new_test</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">add_test</span> <span class="o">=</span> <span class="n">add_legacy_test</span>
+
+    
+<span class="k">for</span> <span class="n">solver_name</span><span class="p">,</span> <span class="n">solver</span> <span class="ow">in</span> <span class="n">solvers</span><span class="o">.</span><span class="n">solver_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="n">add_test</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="n">solver_name</span><span class="p">,</span> <span class="n">solver</span><span class="p">)</span>
+<span class="c"># make a test suite to run all of the tests</span>
+<span class="n">loader</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestLoader</span><span class="p">()</span>
+<span class="n">suite</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">loadTestsFromModule</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">__name__</span><span class="p">])</span>
+
+<div class="viewcode-block" id="test_all"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.solvers.test_all">[docs]</a><span class="k">def</span> <span class="nf">test_all</span><span class="p">():</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">TextTestRunner</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">suite</span><span class="p">)</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">test_all</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../test.html" >cobra.test</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>

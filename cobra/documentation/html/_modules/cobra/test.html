@@ -1,0 +1,143 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cobra.test &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cobra.test</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">abspath</span> <span class="k">as</span> <span class="n">_abspath</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">_join</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">split</span> <span class="k">as</span> <span class="n">_split</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">sep</span> <span class="k">as</span> <span class="n">_sep</span>
+
+<span class="n">data_directory</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">_split</span><span class="p">(</span><span class="n">_abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&quot;data&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">data_directory</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">_sep</span><span class="p">):</span>
+    <span class="n">data_directory</span> <span class="o">+=</span> <span class="n">_sep</span>
+
+<span class="n">salmonella_sbml</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;salmonella.xml&quot;</span><span class="p">)</span>
+<span class="n">salmonella_pickle</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;salmonella.pickle&quot;</span><span class="p">)</span>
+<span class="n">salmonella_reaction_p_values_pickle</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;salmonella_reaction_p_values.pickle&quot;</span><span class="p">)</span>
+<span class="n">ecoli_sbml</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;iJO1366.xml&quot;</span><span class="p">)</span>
+<span class="n">ecoli_pickle</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;iJO1366.pickle&quot;</span><span class="p">)</span>
+<span class="n">ecoli_mat</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;iJO1366.mat&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="create_test_model"><a class="viewcode-back" href="../../cobra.test.html#cobra.test.create_test_model">[docs]</a><span class="k">def</span> <span class="nf">create_test_model</span><span class="p">(</span><span class="n">test_pickle</span><span class="o">=</span><span class="n">salmonella_pickle</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;returns the salmonella model for testing&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">cPickle</span> <span class="kn">import</span> <span class="n">load</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">pickle</span> <span class="kn">import</span> <span class="n">load</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">test_pickle</span><span class="p">,</span> <span class="s">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
+
+</div>
+<div class="viewcode-block" id="test_all"><a class="viewcode-back" href="../../cobra.test.html#cobra.test.test_all">[docs]</a><span class="k">def</span> <span class="nf">test_all</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;###running unit tests on cobra py###&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">unittest</span>
+    <span class="kn">from</span> <span class="nn">cobra.test.unit_tests</span> <span class="kn">import</span> <span class="n">test_all</span>
+    <span class="k">print</span> <span class="s">&#39;###running general unit tests###&#39;</span>
+    <span class="n">test_all</span><span class="p">()</span>
+    <span class="kn">from</span> <span class="nn">cobra.test.flux_analysis</span> <span class="kn">import</span> <span class="n">test_all</span>
+    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">###running flux_analysis unit tests###&#39;</span>
+    <span class="n">test_all</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">###running solver unit tests###&#39;</span>
+    <span class="kn">from</span> <span class="nn">cobra.test.solvers</span> <span class="kn">import</span> <span class="n">test_all</span>
+    <span class="n">test_all</span><span class="p">()</span>
+
+</div>
+<span class="k">del</span> <span class="n">_abspath</span>
+<span class="k">del</span> <span class="n">_join</span>
+<span class="k">del</span> <span class="n">_split</span>
+<span class="k">del</span> <span class="n">_sep</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">test_all</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+    </div>
+  </body>
+</html>
