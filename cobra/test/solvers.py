@@ -1,19 +1,15 @@
-import unittest
-import warnings
-import os
-try:
-    from cPickle import load
-except:
-    from pickle import load
+from unittest import TestCase, TestLoader, TextTestRunner
 import sys
-
+# deal with absolute imports by adding the appropriate directory to the path
+sys.path.insert(0, "../..")
 from cobra.manipulation import initialize_growth_medium
 from cobra.test import create_test_model
 from cobra import Model, Reaction, Metabolite
 from cobra import solvers
 from cobra.solvers import __legacy_solver
+sys.path.pop(0)  # remove the added directory to the path
 
-class TestCobraSolver(unittest.TestCase):
+class TestCobraSolver(TestCase):
     def setUp(self):
         self.model = create_test_model()
         initialize_growth_medium(self.model, 'MgM')
@@ -35,7 +31,6 @@ def add_new_test(TestCobraSolver, solver_name, solver):
     """Creates a test set for each of the solvers that are installed
     using the modular interface.
 
-    
     """
     def test_attributes(self):
         self.assertTrue(hasattr(solver, "create_problem"))
@@ -95,11 +90,11 @@ else:
 for solver_name, solver in solvers.solver_dict.iteritems():
     add_test(TestCobraSolver, solver_name, solver)
 # make a test suite to run all of the tests
-loader = unittest.TestLoader()
+loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])
 
 def test_all():
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    TextTestRunner(verbosity=2).run(suite)
 
 if __name__ == "__main__":
     test_all()

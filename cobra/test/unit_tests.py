@@ -1,17 +1,12 @@
-import unittest
-import warnings
-import os
-try:
-    from cPickle import load
-except:
-    from pickle import load
-import sys
-
-
+from unittest import TestCase, TestLoader, TextTestRunner, skipIf
+from warnings import catch_warnings
+import os, sys
+sys.path.insert(0, "../..")
 from cobra.test import data_directory, create_test_model
 from cobra.test import salmonella_sbml as test_sbml_file
 from cobra.test import salmonella_pickle as test_pickle
 from cobra import Object, Model, Metabolite, Reaction, io, DictList
+sys.path.pop(0)
 #from .. import flux_analysis
 
 # libraries which may or may not be installed
@@ -23,7 +18,7 @@ for library in libraries:
         exec("%s = None" % library)
 
 
-class TestDictList(unittest.TestCase):
+class TestDictList(TestCase):
     def setUp(self):
         self.obj = Object("test1")
         self.list = DictList()
@@ -66,7 +61,7 @@ class TestDictList(unittest.TestCase):
         self.assertEqual(len(sum), 9)
 
 
-class CobraTestCase(unittest.TestCase):
+class CobraTestCase(TestCase):
     def setUp(self):
         self.model = create_test_model(test_pickle)
 
@@ -108,25 +103,25 @@ class TestCobraCore(CobraTestCase):
 
 class TestCobraIO(CobraTestCase):
 
-    @unittest.skipIf(libsbml is None, "libsbml is required")
+    @skipIf(libsbml is None, "libsbml is required")
     def test_sbml_read(self):
-        with warnings.catch_warnings(record=True) as w:
+        with catch_warnings(record=True) as w:
             model = io.read_sbml_model(test_sbml_file)
         self.assertEqual(len(model.reactions), len(self.model.reactions))
         # make sure that an error is raised when given a nonexistent file
         self.assertRaises(IOError, io.read_sbml_model,
             "fake_file_which_does_not_exist")
 
-    @unittest.skipIf(libsbml is None, "libsbml is required")
+    @skipIf(libsbml is None, "libsbml is required")
     def test_sbml_write(self):
         io.write_sbml_model(self.model, "test_sbml_write.xml")
 
 # make a test suite to run all of the tests
-loader = unittest.TestLoader()
+loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])
 
 def test_all():
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    TextTestRunner(verbosity=2).run(suite)
 
 if __name__ == "__main__":
     test_all()

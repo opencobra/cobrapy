@@ -27,6 +27,8 @@ def create_test_model(test_pickle=salmonella_pickle):
 
 def test_all():
     """###running unit tests on cobra py###"""
+    import sys
+    sys.path.insert(0, "../..")
     import unittest
     from cobra.test.unit_tests import test_all
     print '###running general unit tests###'
@@ -37,7 +39,7 @@ def test_all():
     print '\n###running solver unit tests###'
     from cobra.test.solvers import test_all
     test_all()
-
+    sys.path.pop(0)
 
 del _abspath
 del _join

@@ -1,12 +1,13 @@
-import unittest
+from unittest import TestCase, TestLoader, TextTestRunner
 import sys
+sys.path.insert(0, "../..")
 from cobra.test import create_test_model
 from cobra import Model, Reaction, Metabolite
 from cobra.flux_analysis import *
 from cobra.manipulation import initialize_growth_medium
+sys.path.pop(0)
 
-
-class TestCobraFluxAnalysis(unittest.TestCase):
+class TestCobraFluxAnalysis(TestCase):
     """Test the simulation functions in cobra.flux_analysis
 
     TODO: Add in tests for: MOMA
@@ -112,11 +113,11 @@ class TestCobraFluxAnalysis(unittest.TestCase):
 
 
 # make a test suite to run all of the tests
-loader = unittest.TestLoader()
+loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])
 
 def test_all():
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    TextTestRunner(verbosity=2).run(suite)
 
 if __name__ == "__main__":
     test_all()
