@@ -10,7 +10,10 @@ setup(
     #scripts = [''],
     #put in numpy, scipy, libsbml, and pyglpk
     setup_requires = [],
-    install_requires = ['numpy>=1.6.0', 'scipy>=0.10.1'],
+    #install_requires = ['numpy>=1.6', 'scipy>=0.10'],
+    #leave blank because it tries to build scipy/numpy on os x when they are
+    #installed by the superpack.  And these are not really essential for core functions.
+    install_requires = [],
     extras_require = {
         'parallel': ['pp>=1.6.0'],
         'matlab': ["mlabwrap>=1.1"],
