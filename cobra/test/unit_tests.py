@@ -1,4 +1,9 @@
-from unittest import TestCase, TestLoader, TextTestRunner, skipIf
+from unittest import TestCase, TestLoader, TextTestRunner
+#skipIf is not in python 2.6
+try:
+    from unittest import skipIf
+except:
+    skipIf = None
 from warnings import catch_warnings
 import os, sys
 sys.path.insert(0, "../..")
@@ -102,19 +107,19 @@ class TestCobraCore(CobraTestCase):
 
 
 class TestCobraIO(CobraTestCase):
-
-    @skipIf(libsbml is None, "libsbml is required")
-    def test_sbml_read(self):
-        with catch_warnings(record=True) as w:
-            model = io.read_sbml_model(test_sbml_file)
-        self.assertEqual(len(model.reactions), len(self.model.reactions))
-        # make sure that an error is raised when given a nonexistent file
-        self.assertRaises(IOError, io.read_sbml_model,
-            "fake_file_which_does_not_exist")
-
-    @skipIf(libsbml is None, "libsbml is required")
-    def test_sbml_write(self):
-        io.write_sbml_model(self.model, "test_sbml_write.xml")
+    if skipIf is not None:
+        @skipIf(libsbml is None, "libsbml is required")
+        def test_sbml_read(self):
+            with catch_warnings(record=True) as w:
+                model = io.read_sbml_model(test_sbml_file)
+            self.assertEqual(len(model.reactions), len(self.model.reactions))
+            # make sure that an error is raised when given a nonexistent file
+            self.assertRaises(IOError, io.read_sbml_model,
+                "fake_file_which_does_not_exist")
+    if skipIf is not None:
+        @skipIf(libsbml is None, "libsbml is required")
+        def test_sbml_write(self):
+            io.write_sbml_model(self.model, "test_sbml_write.xml")
 
 # make a test suite to run all of the tests
 loader = TestLoader()
