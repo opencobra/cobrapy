@@ -5,7 +5,8 @@ try:
 except:
     skipIf = None
 from warnings import catch_warnings
-import os, sys
+import sys
+from os import unlink
 sys.path.insert(0, "../..")
 from cobra.test import data_directory, create_test_model
 from cobra.test import salmonella_sbml as test_sbml_file
@@ -119,7 +120,10 @@ class TestCobraIO(CobraTestCase):
     if skipIf is not None:
         @skipIf(libsbml is None, "libsbml is required")
         def test_sbml_write(self):
-            io.write_sbml_model(self.model, "test_sbml_write.xml")
+            test_output_filename = 'test_sbml_write.xml'
+            io.write_sbml_model(self.model, test_output_filename)
+            #cleanup the test file
+            unlink(test_output_filename)
 
 # make a test suite to run all of the tests
 loader = TestLoader()
