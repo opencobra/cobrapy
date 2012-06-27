@@ -1,6 +1,9 @@
 This is the location for self-contained add-ons that are currently baking.  Please try to organize your buns into rational categories.  Occasionally, I will reorganize items in a logical fashion as the module set grows and my vision develops.
 
-For modifications to the pre-existing code, please continue to use the patch tracker. 
+If you want to contribute to the oven, please create a directory with your sourceforge username and put all files in it.
+
+
+For modifications to the pre-existing code, please continue to use the patch tracker or contact the sourceforge username associated with the files.
 
 Please follow the python style guide
  http://www.python.org/dev/peps/pep-0008/
