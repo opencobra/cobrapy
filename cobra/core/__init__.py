@@ -6,6 +6,8 @@ from .Metabolite import Metabolite
 from .Reaction import Reaction
 from .Solution import Solution
 from .Model import Model 
-from .ArrayBasedModel import ArrayBasedModel 
+from os import name as __name
+if __name != 'java':
+    from .ArrayBasedModel import ArrayBasedModel 
 
 

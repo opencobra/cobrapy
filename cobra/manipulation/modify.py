@@ -1,8 +1,5 @@
 #cobra.manipulation.modify.py
 from copy import deepcopy
-
-from scipy import sparse
-from numpy import where, array, ones
 from cobra.core.Reaction import Reaction
 def add_exchange_reaction(cobra_model, the_metabolites,
                           reaction_reversibility=False):

@@ -1,6 +1,4 @@
 #cobra.manipulation.modify.py
-from scipy import sparse
-from numpy import where, array, ones
 import re
 from copy import deepcopy
 def prune_unused_metabolites(cobra_model):

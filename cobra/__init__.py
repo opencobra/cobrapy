@@ -1,10 +1,14 @@
 import sys
 __version__ = '0.1.0.b1'
-if hasattr(sys, 'JYTHON_JAR'):
-    raise Exception("Experimental modules of numpy/scipy for java that are" +\
-    "not yet ready for prime time.")
-    import cobra.oven.hyduke.numpy as numpy
-    import cobra.oven.hyduke.scipy as scipy
-from core import *
+from os import name as __name
+if __name == 'java':
+    #raise Exception("Experimental modules of numpy/scipy for java that are" +\
+    #"not yet ready for prime time.")
+    import oven.danielhyduke.jython.numpy as numpy
+    import oven.danielhyduke.jython.scipy as scipy
+    from core import Object, Formula, Metabolite, Gene, Reaction, Model
+else:
+    from core import *
+del __name
 __doc__ = """
 """
