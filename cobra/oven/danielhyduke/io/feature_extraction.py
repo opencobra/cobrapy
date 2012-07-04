@@ -1,6 +1,7 @@
 #cobra.io.feature_extraction.py
 #Tools for parsing agilent feature extraction files.
 from numpy import array, log10
+from pdb import set_trace
 from scipy.stats import pearsonr
 from time import time
 from rpy2 import robjects
@@ -8,9 +9,7 @@ r = robjects.r
 import rpy2.robjects.numpy2ri
 robjects.numpy2ri.activate()
 from collections import defaultdict
-from warnings import warn
-from ..stats.tools import collapse_fields
-warn("WARNING: cobra.io.feature_extraction is not ready for general use ")
+from cobra.oven.danielhyduke.stats.tools import collapse_fields
 
 def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
                normalization=None, lowess_parameter=0.33, log_base=10, single_channel=False,
@@ -42,6 +41,7 @@ def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
     if single_channel:
         channel_prefixes = [x for x in channel_prefixes
                             if single_field.startswith(x)]
+
     with open(in_file) as in_file_handle:
         the_header = in_file_handle.readline().rstrip('\r\n').split('\t')
         while not the_header[0] == 'FEATURES':
