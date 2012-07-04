@@ -70,12 +70,21 @@
 <dd><p>Bases: <a class="reference internal" href="#cobra.core.Model.Model" title="cobra.core.Model.Model"><tt class="xref py py-class docutils literal"><span class="pre">cobra.core.Model.Model</span></tt></a></p>
 <p>ArrayBasedModel is a class that adds arrays and vectors to
 a cobra.Model to make it easier to perform linear algebra operations.</p>
+<dl class="docutils">
+<dt>S <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.lil_matrix.html#scipy.sparse.lil_matrix" title="(in SciPy v0.11.dev)"><tt class="xref py py-class docutils literal"><span class="pre">scipy.sparse.lil_matrix</span></tt></a> (in CPython)</span></dt>
+<dd>Stoichiometric matrix of the model</dd>
+</dl>
+<p>lower_bounds</p>
+<p>upper_bounds</p>
+<p>objective_coefficients</p>
+<p>b</p>
+<p>constraint_sense</p>
 <dl class="method">
 <dt id="cobra.core.ArrayBasedModel.ArrayBasedModel.add_metabolites">
 <tt class="descname">add_metabolites</tt><big>(</big><em>metabolite_list</em>, <em>expand_stoichiometric_matrix=True</em><big>)</big><a class="reference internal" href="_modules/cobra/core/ArrayBasedModel.html#ArrayBasedModel.add_metabolites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.ArrayBasedModel.ArrayBasedModel.add_metabolites" title="Permalink to this definition">¶</a></dt>
 <dd><p>Will add a list of metabolites to the the object, if they do not
 exist and then expand the stochiometric matrix</p>
-<p>metabolite_list: A list of cobra.Metabolite objects</p>
+<p>metabolite_list: A list of <a class="reference internal" href="#module-cobra.core.Metabolite" title="cobra.core.Metabolite"><tt class="xref py py-class docutils literal"><span class="pre">Metabolite</span></tt></a> objects</p>
 <p>expand_stoichimetric_matrix: Boolean.  If True and self.S is
 not None then it will add rows to self.S.  self.S must be
 created after adding reactions and metabolites to self before
@@ -88,7 +97,7 @@ contains metabolites is ludacris.</p>
 <tt class="descname">add_reactions</tt><big>(</big><em>reaction_list</em>, <em>update_matrices=False</em><big>)</big><a class="reference internal" href="_modules/cobra/core/ArrayBasedModel.html#ArrayBasedModel.add_reactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.ArrayBasedModel.ArrayBasedModel.add_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Will add a cobra.Reaction object to the model, if
 reaction.id is not in self.reactions.</p>
-<p>reaction_list: A cobra.Reaction object or a list of them</p>
+<p>reaction_list: A <a class="reference internal" href="#module-cobra.core.Reaction" title="cobra.core.Reaction"><tt class="xref py py-class docutils literal"><span class="pre">Reaction</span></tt></a> object or a list of them</p>
 <p>update_matrices:  Boolean.  If true populate / update matrices
 S, lower_bounds, upper_bounds, .... Note this is slow to run
 for very large models and using this option with repeated calls
@@ -132,7 +141,7 @@ that resulted in notable performance decays with COBRA for
 python.</p>
 <dl class="method">
 <dt id="cobra.core.DictList.DictList.append">
-<tt class="descname">append</tt><big>(</big><em>the_object</em><big>)</big><a class="reference internal" href="_modules/cobra/core/DictList.html#DictList.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.DictList.DictList.append" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">append</tt><big>(</big><em>object</em><big>)</big><a class="reference internal" href="_modules/cobra/core/DictList.html#DictList.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.DictList.DictList.append" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -142,14 +151,14 @@ python.</p>
 
 <dl class="method">
 <dt id="cobra.core.DictList.DictList.get_by_id">
-<tt class="descname">get_by_id</tt><big>(</big><em>the_id</em><big>)</big><a class="reference internal" href="_modules/cobra/core/DictList.html#DictList.get_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.DictList.DictList.get_by_id" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_by_id</tt><big>(</big><em>id</em><big>)</big><a class="reference internal" href="_modules/cobra/core/DictList.html#DictList.get_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.DictList.DictList.get_by_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>return the element with a matching id</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="cobra.core.DictList.DictList.index">
-<tt class="descname">index</tt><big>(</big><em>the_id</em><big>)</big><a class="reference internal" href="_modules/cobra/core/DictList.html#DictList.index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.DictList.DictList.index" title="Permalink to this definition">¶</a></dt>
-<dd><p>the_id: A string or a cobra.object.  If a cobra.object</p>
+<tt class="descname">index</tt><big>(</big><em>id</em><big>)</big><a class="reference internal" href="_modules/cobra/core/DictList.html#DictList.index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.DictList.DictList.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>id: A string or a <a class="reference internal" href="#module-cobra.core.Object" title="cobra.core.Object"><tt class="xref py py-class docutils literal"><span class="pre">Object</span></tt></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -272,7 +281,10 @@ numbers of metabolites might be copied.  Such as when copying reactions.</p>
 <dt id="cobra.core.Gene.Gene.remove_from_model">
 <tt class="descname">remove_from_model</tt><big>(</big><em>the_model</em>, <em>make_dependent_reactions_nonfunctional=True</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Gene.html#Gene.remove_from_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Gene.Gene.remove_from_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the association</p>
-<p>the_model: cobra.Model object.  remove the reaction from this model.</p>
+<dl class="docutils">
+<dt>the_model: <a class="reference internal" href="#module-cobra.core.Model" title="cobra.core.Model"><tt class="xref py py-class docutils literal"><span class="pre">Model</span></tt></a> object.</dt>
+<dd>Remove the reaction from this model.</dd>
+</dl>
 <p>make_dependent_reactions_nonfunctional: Boolean.  If True then replace
 the gene with &#8216;False&#8217; in the gene association, else replace the gene
 with &#8216;True&#8217;</p>
@@ -316,9 +328,12 @@ Useful for making sure Reactions are balanced.&#8217;</p>
 
 <dl class="method">
 <dt id="cobra.core.Metabolite.Metabolite.remove_from_model">
-<tt class="descname">remove_from_model</tt><big>(</big><em>the_model</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Metabolite.html#Metabolite.remove_from_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Metabolite.Metabolite.remove_from_model" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">remove_from_model</tt><big>(</big><em>model=None</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Metabolite.html#Metabolite.remove_from_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Metabolite.Metabolite.remove_from_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the association</p>
-<p>the_model: cobra.Model object.  remove the reaction from this model.</p>
+<dl class="docutils">
+<dt>model: <a class="reference internal" href="#module-cobra.core.Model" title="cobra.core.Model"><tt class="xref py py-class docutils literal"><span class="pre">Model</span></tt></a> object.</dt>
+<dd>Remove the reaction from this model.</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -338,7 +353,7 @@ all of the objects (Reaction, Metabolite, ...) to make OOP easier.</p>
 <tt class="descname">add_metabolites</tt><big>(</big><em>metabolite_list</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Model.html#Model.add_metabolites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Model.Model.add_metabolites" title="Permalink to this definition">¶</a></dt>
 <dd><p>Will add a list of metabolites to the the object, if they do not
 exist and then expand the stochiometric matrix</p>
-<p>metabolite_list: A list of cobra.Metabolite objects</p>
+<p>metabolite_list: A list of <a class="reference internal" href="#module-cobra.core.Metabolite" title="cobra.core.Metabolite"><tt class="xref py py-class docutils literal"><span class="pre">Metabolite</span></tt></a> objects</p>
 </dd></dl>
 
 <dl class="method">
@@ -346,9 +361,7 @@ exist and then expand the stochiometric matrix</p>
 <tt class="descname">add_reaction</tt><big>(</big><em>reaction</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Model.html#Model.add_reaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Model.Model.add_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Will add a cobra.Reaction object to the model, if
 reaction.id is not in self.reactions.</p>
-<p>reaction: A cobra.Reaction object</p>
-<p>Note: If you want to use the internal matrices/vectors immediately after
-adding a reaction you must call the update() function for the model.</p>
+<p>reaction: A <a class="reference internal" href="#module-cobra.core.Reaction" title="cobra.core.Reaction"><tt class="xref py py-class docutils literal"><span class="pre">Reaction</span></tt></a> object</p>
 </dd></dl>
 
 <dl class="method">
@@ -356,7 +369,7 @@ adding a reaction you must call the update() function for the model.</p>
 <tt class="descname">add_reactions</tt><big>(</big><em>reaction_list</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Model.html#Model.add_reactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Model.Model.add_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Will add a cobra.Reaction object to the model, if
 reaction.id is not in self.reactions.</p>
-<p>reaction_list: A cobra.Reaction object or a list of them</p>
+<p>reaction_list: A <a class="reference internal" href="#module-cobra.core.Reaction" title="cobra.core.Reaction"><tt class="xref py py-class docutils literal"><span class="pre">Reaction</span></tt></a> object or a list of them</p>
 </dd></dl>
 
 <dl class="method">
@@ -416,7 +429,7 @@ self.reactions[:].id.</p>
 <dl class="method">
 <dt id="cobra.core.Model.Model.to_array_based_model">
 <tt class="descname">to_array_based_model</tt><big>(</big><em>deepcopy_model=False</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Model.html#Model.to_array_based_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Model.Model.to_array_based_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes a cobra.ArrayBasedModel from a cobra.Model which
+<dd><p>Makes a <a class="reference internal" href="#module-cobra.core.ArrayBasedModel" title="cobra.core.ArrayBasedModel"><tt class="xref py py-class docutils literal"><span class="pre">ArrayBasedModel</span></tt></a> from a cobra.Model which
 may be used to perform linear algebra operations with the
 stoichiomatric matrix.</p>
 <p>deepcopy_model: Boolean.  If False then the ArrayBasedModel points
@@ -435,7 +448,7 @@ to the Model</p>
 <span id="object-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">Object</span></tt> Module<a class="headerlink" href="#module-cobra.core.Object" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="cobra.core.Object.Object">
-<em class="property">class </em><tt class="descclassname">cobra.core.Object.</tt><tt class="descname">Object</tt><big>(</big><em>the_id=None</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Object.html#Object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Object.Object" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">cobra.core.Object.</tt><tt class="descname">Object</tt><big>(</big><em>id=None</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Object.html#Object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Object.Object" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
 <dl class="method">
 <dt id="cobra.core.Object.Object.endswith">
@@ -585,22 +598,30 @@ to get the reactions from SBML files.</p>
 
 <dl class="method">
 <dt id="cobra.core.Reaction.Reaction.remove_from_model">
-<tt class="descname">remove_from_model</tt><big>(</big><em>the_model</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Reaction.html#Reaction.remove_from_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Reaction.Reaction.remove_from_model" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">remove_from_model</tt><big>(</big><em>model=None</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Reaction.html#Reaction.remove_from_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Reaction.Reaction.remove_from_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the association</p>
-<p>the_model: cobra.Model object.  remove the reaction from this model.</p>
+<p>model: cobra.Model object.  remove the reaction from this model.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="cobra.core.Reaction.Reaction.subtract_metabolites">
-<tt class="descname">subtract_metabolites</tt><big>(</big><em>the_metabolites</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Reaction.html#Reaction.subtract_metabolites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Reaction.Reaction.subtract_metabolites" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">subtract_metabolites</tt><big>(</big><em>metabolites</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Reaction.html#Reaction.subtract_metabolites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Reaction.Reaction.subtract_metabolites" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function will &#8216;subtract&#8217; cobra.metabolites from a reaction, which
 means add the metabolites with -1*coefficient.  If the final coefficient
 for a metabolite is 0 then the metabolite is removed from the reaction.</p>
-<p>NOTE: That a final coefficient &lt; 0 implies a reactant.</p>
-<p>the_metabolites: A dictionary of cobra.Metabolites, coefficients
-to add to the reaction</p>
-<p>NOTE: This function uses deepcopy in case the reaction is being
-subtracted from itself.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">That a final coefficient &lt; 0 implies a reactant.</p>
+</div>
+<dl class="docutils">
+<dt>metabolites: dict of {<a class="reference internal" href="#module-cobra.core.Metabolite" title="cobra.core.Metabolite"><tt class="xref py py-class docutils literal"><span class="pre">Metabolite</span></tt></a>: coefficient}</dt>
+<dd>These metabolites will be added to the reaction</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This function uses deepcopy in case the reaction is being</p>
+</div>
+<p>subtracted from itself.</p>
 </dd></dl>
 
 </dd></dl>
@@ -617,14 +638,14 @@ used to provide a single interface to results from different
 solvers that store their values in different ways.</p>
 <p>NOTE: This class might be deprecated in favor of associating the
 values with the Reactions and Metabolites in the cobra.Model.</p>
-<p>the_f: The objective value</p>
+<p>f: The objective value</p>
 <p>the_time: Float.  Sometimes indicates how long it took to solve a
-problem.  As this is typically negligible and not used un cobra pie,
+problem.  As this is typically negligible and not used in cobra pie,
 it might be deprecated.</p>
 <p>the_solver: A string indicating which solver package was used.</p>
-<p>the_x: List or Array of the values from the primal.</p>
+<p>x: List or Array of the values from the primal.</p>
 <p>x_dict: A dictionary of reaction ids that maps to the primal values.</p>
-<p>the_y: List or Array of the values from the dual.</p>
+<p>y: List or Array of the values from the dual.</p>
 <p>y_dict: A dictionary of reaction ids that maps to the dual values.</p>
 </dd></dl>
 

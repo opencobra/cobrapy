@@ -9,14 +9,6 @@ test Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`a` Module
----------------
-
-.. automodule:: cobra.test.a
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`flux_analysis` Module
 ---------------------------
 

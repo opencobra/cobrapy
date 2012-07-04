@@ -65,16 +65,10 @@
 <div class="section" id="module-cobra.io.mat">
 <span id="mat-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">mat</span></tt> Module<a class="headerlink" href="#module-cobra.io.mat" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="cobra.io.mat.cell">
-<tt class="descclassname">cobra.io.mat.</tt><tt class="descname">cell</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/cobra/io/mat.html#cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.io.mat.cell" title="Permalink to this definition">¶</a></dt>
-<dd><p>translate an array x into a MATLAB cell array</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="cobra.io.mat.load_matlab_model">
 <tt class="descclassname">cobra.io.mat.</tt><tt class="descname">load_matlab_model</tt><big>(</big><em>infile_path</em>, <em>variable_name=None</em><big>)</big><a class="reference internal" href="_modules/cobra/io/mat.html#load_matlab_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.io.mat.load_matlab_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a cobra model stored as a .mat file
-NOTE: INCOMPLETE, does not load GPR&#8217;s</p>
+.. warning:: INCOMPLETE, does not load GPR&#8217;s</p>
 <p>infile_path : str
 variable_name : str, optional</p>
 <blockquote>
@@ -88,7 +82,7 @@ model will be used</div></blockquote>
 <tt class="descclassname">cobra.io.mat.</tt><tt class="descname">save_matlab_model</tt><big>(</big><em>model</em>, <em>file_name</em><big>)</big><a class="reference internal" href="_modules/cobra/io/mat.html#save_matlab_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.io.mat.save_matlab_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the cobra model as a .mat file.</p>
 <p>This .mat file can be used directly in the MATLAB version of COBRA.
-NOTE: this function requires a patched version of scipy.io.savemat</p>
+.. note:: This function works best with scipy 0.11b1 or later</p>
 <p>model : cobra.Model
 file_name : str or file-like object</p>
 </dd></dl>

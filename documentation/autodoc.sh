@@ -1,2 +1,2 @@
 sphinx-apidoc -o . ../cobra
-rm cobra.oven.rst
+rm cobra.oven*.rst

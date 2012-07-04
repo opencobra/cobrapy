@@ -24,6 +24,5 @@ Subpackages
     cobra.solvers
     cobra.stats
     cobra.test
-    cobra.tools
     cobra.topology
 
