@@ -23,7 +23,12 @@ setup(
     package_data = {
 
          '': ['*.txt', '*.html','LICENSE','README','test/data/*',
-              'documentation(/*)+[(html)|(txt)|(png)|(css)|(gif)|(js)]',
+              'documentation/doctrees/*', 'documentation/html/*html',
+              'documentation/html/_static/*', 'documentation/html/_sources/*',
+              'documentation/html/_modules/*html',
+              'documentation/html/_modules/*html',
+              'documentation/html/_modules/*/*html',
+              'documentation/html/_modules/*/*/*html',
               'examples/*py']},
 
     author = "Daniel Robert Hyduke",

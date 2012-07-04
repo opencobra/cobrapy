@@ -1,5 +1,5 @@
 import sys
-__version__ = '0.1.0.b1'
+__version__ = '0.1.0'
 from os import name as __name
 if __name == 'java':
     #raise Exception("Experimental modules of numpy/scipy for java that are" +\
