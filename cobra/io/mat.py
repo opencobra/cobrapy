@@ -1,10 +1,17 @@
-# try to use an ordered dict, which requires a patch cobra cobra.io
-# see http://projects.scipy.org/scipy/attachment/ticket/1566
-# try:
-    # from collections import OrderedDict as dicttype
-# except ImportError:
-    # dicttype = dict
-dicttype = dict
+# try to use an ordered dict
+try:
+    from collections import OrderedDict as dicttype
+except ImportError:
+    dicttype = dict
+# if scipy version is earlier than 0.11, OrderedDict will not work, so use dict
+try:
+    from scipy.version import short_version
+    scipy_version = int(short_version.split(".")[1])
+except:
+    scipy_version = 0
+if scipy_version < 11:
+    dicttype = dict
+del short_version, scipy_version
 
 from numpy import array, object as np_object
 from scipy.io import loadmat, savemat
@@ -13,14 +20,14 @@ from scipy.sparse import coo_matrix
 from .. import Model, Metabolite, Reaction
 
 
-def cell(x):
+def _cell(x):
     """translate an array x into a MATLAB cell array"""
     return array(x, dtype=np_object)
 
 
 def load_matlab_model(infile_path, variable_name=None):
     """Load a cobra model stored as a .mat file
-    NOTE: INCOMPLETE, does not load GPR's
+    .. warning:: INCOMPLETE, does not load GPR's
 
     Parameters
     ----------
@@ -92,7 +99,7 @@ def save_matlab_model(model, file_name):
     """Save the cobra model as a .mat file.
 
     This .mat file can be used directly in the MATLAB version of COBRA.
-    NOTE: this function requires a patched version of scipy.io.savemat
+    .. note:: This function works best with scipy 0.11b1 or later
 
     Parameters
     ----------
@@ -100,23 +107,23 @@ def save_matlab_model(model, file_name):
     file_name : str or file-like object
 
     """
-    model.update()
+    model = model.to_array_based_model()
     rxns = model.reactions
     mets = model.metabolites
     mat = dicttype()
     csense = ""
     for m in mets:
         csense += m._constraint_sense
-    mat["mets"] = cell(mets.list_attr("id"))
-    mat["metNames"] = cell(mets.list_attr("name"))
-    mat["metFormulas"] = cell([str(m.formula) for m in mets])
-    mat["genes"] = cell(model.genes.list_attr("id"))
-    mat["grRules"] = cell(rxns.list_attr("gene_reaction_rule"))
-    mat["rxns"] = cell(rxns.list_attr("id"))
-    mat["rxnNames"] = cell(rxns.list_attr("name"))
-    mat["subSystems"] = cell(rxns.list_attr("subsystem"))
+    mat["mets"] = _cell(mets.list_attr("id"))
+    mat["metNames"] = _cell(mets.list_attr("name"))
+    mat["metFormulas"] = _cell([str(m.formula) for m in mets])
+    mat["genes"] = _cell(model.genes.list_attr("id"))
+    mat["grRules"] = _cell(rxns.list_attr("gene_reaction_rule"))
+    mat["rxns"] = _cell(rxns.list_attr("id"))
+    mat["rxnNames"] = _cell(rxns.list_attr("name"))
+    mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
     mat["csense"] = csense
-    mat["S"] = model._S
+    mat["S"] = model.S
     mat["lb"] = array(rxns.list_attr("lower_bound"))
     mat["ub"] = array(rxns.list_attr("upper_bound"))
     mat["b"] = array(mets.list_attr("_bound"))
