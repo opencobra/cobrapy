@@ -1,0 +1,521 @@
+Index: cobra/core/ArrayBasedModel.py
+===================================================================
+--- cobra/core/ArrayBasedModel.py	(revision 316)
++++ cobra/core/ArrayBasedModel.py	(working copy)
+@@ -14,8 +14,20 @@
+ class ArrayBasedModel(Model):
+     """ArrayBasedModel is a class that adds arrays and vectors to
+     a cobra.Model to make it easier to perform linear algebra operations.
++    
++    S : :class:`scipy.sparse.lil_matrix` (in CPython)
++        Stoichiometric matrix of the model
+ 
+-    
++    lower_bounds
++
++    upper_bounds
++
++    objective_coefficients
++
++    b
++
++    constraint_sense
++
+     """
+     def __setstate__(self, state):
+         """Make sure all cobra.Objects in the model point to the model
+@@ -49,7 +61,7 @@
+         self.b = None
+         self.constraint_sense = None
+         self.update()
+-            
++
+     def __add__(self, other_model):
+         """Adds two models. +
+ 
+@@ -92,7 +104,7 @@
+         """Will add a list of metabolites to the the object, if they do not
+         exist and then expand the stochiometric matrix
+ 
+-        metabolite_list: A list of cobra.Metabolite objects
++        metabolite_list: A list of :class:`~cobra.core.Metabolite` objects
+ 
+         expand_stoichimetric_matrix: Boolean.  If True and self.S is
+         not None then it will add rows to self.S.  self.S must be
+@@ -116,7 +128,6 @@
+ 
+         reaction: A cobra.Reaction object, or a list of these objects.
+ 
+-
+         WARNING: This function is only used after the Model has been
+         converted to matrices.  It is typically faster to access the objects
+         in the Model directly.  This function will eventually moved to another
+@@ -153,7 +164,7 @@
+         """Will add a cobra.Reaction object to the model, if
+         reaction.id is not in self.reactions.
+ 
+-        reaction_list: A cobra.Reaction object or a list of them
++        reaction_list: A :class:`~cobra.core.Reaction` object or a list of them
+ 
+         update_matrices:  Boolean.  If true populate / update matrices
+         S, lower_bounds, upper_bounds, .... Note this is slow to run
+Index: cobra/core/DictList.py
+===================================================================
+--- cobra/core/DictList.py	(revision 316)
++++ cobra/core/DictList.py	(working copy)
+@@ -27,13 +27,13 @@
+         self._object_dict = {}
+         self._generate_index()
+ 
+-    def _check(self, the_id):
++    def _check(self, id):
+         """make sure duplicate id's are not added.
+         This function is called before adding in elements.
+ 
+         """
+-        if the_id in self._dict:
+-            raise ValueError, "id %s is already present in list" % str(the_id)
++        if id in self._dict:
++            raise ValueError, "id %s is already present in list" % str(id)
+ 
+     def _generate_index(self):
+         """rebuild the _dict index
+@@ -45,11 +45,11 @@
+           self._object_dict.update({v.id: v}))
+          for k, v in enumerate(self)]
+ 
+-    def get_by_id(self, the_id):
++    def get_by_id(self, id):
+         """return the element with a matching id
+ 
+         """
+-        return self._object_dict[the_id]
++        return self._object_dict[id]
+ 
+     def list_attr(self, attribute):
+         """return a list of the given attribute for every object
+@@ -101,12 +101,12 @@
+         self._dict[the_id] = i
+         self._object_dict[the_id] = y
+ 
+-    def append(self, the_object):
+-        the_id = get_id(the_object)
++    def append(self, object):
++        the_id = get_id(object)
+         self._check(the_id)
+         self._dict[the_id] = len(self)
+-        super(DictList, self).append(the_object)
+-        self._object_dict[the_id] = the_object
++        super(DictList, self).append(object)
++        self._object_dict[the_id] = object
+ 
+     def union(self, iterable):
+         """adds elements with id's not already in the model"""
+@@ -138,21 +138,21 @@
+         self.extend(other)
+         return self
+ 
+-    def index(self, the_id):
++    def index(self, id):
+         """
+-        the_id: A string or a cobra.object.  If a cobra.object
++        id: A string or a :class:`~cobra.core.Object`
+         """
+         # because values are unique, start and stop are not relevant
+         try:
+-            the_object = self._dict[the_id]
++            the_object = self._dict[id]
+         except:
+-            the_object = self._dict[the_id.id]
+-            if self[the_object] is not the_id:
+-                raise Exception("The id for the cobra.object (%s) provided "%repr(the_id) +\
++            the_object = self._dict[id.id]
++            if self[the_object] is not id:
++                raise Exception("The id for the cobra.object (%s) provided "%repr(id) +\
+                                 "is in this dictionary but the_id is not the cobra.object")
+         return the_object
+ 
+-    def __contains__(self, the_object):
++    def __contains__(self, object):
+         """DictList.__contains__(object) <==> object in DictList
+         object can either be the object to search for itself, or 
+         simply the id
+@@ -162,7 +162,7 @@
+             the_id = get_id(object)
+         # allow to check with the object itself in addition to the id
+         else:
+-            the_id = the_object
++            the_id = object
+         return self._dict.has_key(the_id)
+ 
+     def __copy__(self):
+Index: cobra/core/Gene.py
+===================================================================
+--- cobra/core/Gene.py	(revision 316)
++++ cobra/core/Gene.py	(working copy)
+@@ -55,7 +55,8 @@
+                           make_dependent_reactions_nonfunctional=True):
+         """Removes the association
+ 
+-        the_model: cobra.Model object.  remove the reaction from this model.
++        the_model: :class:`~cobra.core.Model` object.
++            Remove the reaction from this model.
+ 
+         make_dependent_reactions_nonfunctional: Boolean.  If True then replace
+         the gene with 'False' in the gene association, else replace the gene
+Index: cobra/core/Metabolite.py
+===================================================================
+--- cobra/core/Metabolite.py	(revision 316)
++++ cobra/core/Metabolite.py	(working copy)
+@@ -92,15 +92,17 @@
+         the_copy._reaction = set()
+         return(the_copy)
+     
+-    def remove_from_model(self, the_model):
++    def remove_from_model(self, model=None):
+         """Removes the association
+ 
+-        the_model: cobra.Model object.  remove the reaction from this model.
++        model: :class:`~cobra.core.Model` object.
++            Remove the reaction from this model.
+         
+         """
+-        if the_model != self._model:
++        # why is model being taken in as a parameter?
++        if model != self._model and model is not None:
+             raise Exception('%s not in %s ergo it cannot be removed. (%s)'%(self,
+-                                                                  the_model,
++                                                                  model,
+                                                                   self._model))
+                                                             
+         self._model.metabolites.remove(self)
+Index: cobra/core/Model.py
+===================================================================
+--- cobra/core/Model.py	(revision 316)
++++ cobra/core/Model.py	(working copy)
+@@ -144,7 +144,7 @@
+         """Will add a list of metabolites to the the object, if they do not
+         exist and then expand the stochiometric matrix
+ 
+-        metabolite_list: A list of cobra.Metabolite objects
++        metabolite_list: A list of :class:`~cobra.core.Metabolite` objects
+ 
+         """
+         if not hasattr(metabolite_list, '__iter__'):
+@@ -189,11 +189,8 @@
+         """Will add a cobra.Reaction object to the model, if
+         reaction.id is not in self.reactions.
+ 
+-        reaction: A cobra.Reaction object
++        reaction: A :class:`~cobra.core.Reaction` object
+ 
+-        Note: If you want to use the internal matrices/vectors immediately after
+-        adding a reaction you must call the update() function for the model.
+-         
+         """
+         self.add_reactions(reaction)
+ 
+@@ -202,7 +199,7 @@
+         """Will add a cobra.Reaction object to the model, if
+         reaction.id is not in self.reactions.
+ 
+-        reaction_list: A cobra.Reaction object or a list of them
++        reaction_list: A :class:`~cobra.core.Reaction` object or a list of them
+       
+         """
+         #Only add the reaction if one with the same ID is not already
+@@ -254,7 +251,7 @@
+ 
+ 
+     def to_array_based_model(self, deepcopy_model=False):
+-        """Makes a cobra.ArrayBasedModel from a cobra.Model which
++        """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model which
+         may be used to perform linear algebra operations with the
+         stoichiomatric matrix.
+ 
+Index: cobra/core/Object.py
+===================================================================
+--- cobra/core/Object.py	(revision 316)
++++ cobra/core/Object.py	(working copy)
+@@ -3,12 +3,12 @@
+ #Defines common behavior of object in cobra.core
+ class Object(object):
+     #__slots__ = ['id']
+-    def __init__(self, the_id=None):
++    def __init__(self, id=None):
+         """
+-        the_id: None or a string
++        id: None or a string
+         
+         """
+-        self.id = the_id
++        self.id = id
+         #The following two fields will eventually
+         #be objects that enforce basic rules about
+         #formatting notes and annotation
+Index: cobra/core/Reaction.py
+===================================================================
+--- cobra/core/Reaction.py	(revision 316)
++++ cobra/core/Reaction.py	(working copy)
+@@ -51,7 +51,7 @@
+         self.upper_bound = 1000.
+         self.reflection = None #Either None or if this reaction is irreversible then
+         #a reaction in the model that is essentially self * -1
+-	self.variable_kind = 'continuous' #Used during optimization.  Indicates whether the
++        self.variable_kind = 'continuous' #Used during optimization.  Indicates whether the
+         #variable is modeled as continuous, integer, binary, semicontinous, or semiinteger.
+ 
+     def _update_awareness(self):
+@@ -62,16 +62,17 @@
+         [x._reaction.add(self) for x in self._metabolites]
+         [x._reaction.add(self) for x in self._genes]
+ 
+-    def remove_from_model(self, the_model):
++    def remove_from_model(self, model=None):
+         """Removes the association
+ 
+-        the_model: cobra.Model object.  remove the reaction from this model.
++        model: cobra.Model object.  remove the reaction from this model.
+         
+         """
+-        if the_model != self._model:
++        # why is model being taken in as a parameter?
++        if model != self._model and model is not None:
+             raise Exception('%s not in %s ergo it cannot be removed. (%s)'%(self,
+-                                                                  the_model,
++                                                                  model,
+                                                                   self._model))
+                                                             
+         new_metabolites = deepcopy(self._metabolites)
+ 
+@@ -328,24 +329,24 @@
+             self._model.add_metabolites(new_metabolites)
+             
+ 
+-    def subtract_metabolites(self, the_metabolites):
++    def subtract_metabolites(self, metabolites):
+         """This function will 'subtract' cobra.metabolites from a reaction, which
+         means add the metabolites with -1*coefficient.  If the final coefficient
+         for a metabolite is 0 then the metabolite is removed from the reaction.
+ 
+-        NOTE: That a final coefficient < 0 implies a reactant.
++        .. note:: That a final coefficient < 0 implies a reactant.
+ 
+-        the_metabolites: A dictionary of cobra.Metabolites, coefficients
+-        to add to the reaction
++        metabolites: dict of {:class:`~cobra.core.Metabolite`: coefficient}
++            These metabolites will be added to the reaction
+ 
+-        NOTE: This function uses deepcopy in case the reaction is being
++        .. note:: This function uses deepcopy in case the reaction is being
+         subtracted from itself.
+         
+         """
+-        the_metabolites = deepcopy(the_metabolites)
+-        the_metabolites = dict([(k, -v)
+-                                for k, v in the_metabolites.items()])
+-        self.add_metabolites(the_metabolites)
++        metabolites = deepcopy(metabolites)
++        metabolites = dict([(k, -v)
++                                for k, v in metabolites.items()])
++        self.add_metabolites(metabolites)
+ 
+         
+     def _parse_reaction(self):
+Index: cobra/core/Solution.py
+===================================================================
+--- cobra/core/Solution.py	(revision 316)
++++ cobra/core/Solution.py	(working copy)
+@@ -11,19 +11,19 @@
+     NOTE: This class might be deprecated in favor of associating the
+     values with the Reactions and Metabolites in the cobra.Model.
+ 
+-    the_f: The objective value
++    f: The objective value
+     
+     the_time: Float.  Sometimes indicates how long it took to solve a
+-    problem.  As this is typically negligible and not used un cobra pie,
++    problem.  As this is typically negligible and not used in cobra pie,
+     it might be deprecated.
+     
+     the_solver: A string indicating which solver package was used.
+ 
+-    the_x: List or Array of the values from the primal.
++    x: List or Array of the values from the primal.
+ 
+     x_dict: A dictionary of reaction ids that maps to the primal values.
+ 
+-    the_y: List or Array of the values from the dual.
++    y: List or Array of the values from the dual.
+ 
+     y_dict: A dictionary of reaction ids that maps to the dual values.
+     
+Index: cobra/io/mat.py
+===================================================================
+--- cobra/io/mat.py	(revision 316)
++++ cobra/io/mat.py	(working copy)
+@@ -1,10 +1,17 @@
+-# try to use an ordered dict, which requires a patch cobra cobra.io
+-# see http://projects.scipy.org/scipy/attachment/ticket/1566
+-# try:
+-    # from collections import OrderedDict as dicttype
+-# except ImportError:
+-    # dicttype = dict
+-dicttype = dict
++# try to use an ordered dict
++try:
++    from collections import OrderedDict as dicttype
++except ImportError:
++    dicttype = dict
++# if scipy version is earlier than 0.11, OrderedDict will not work, so use dict
++try:
++    from scipy.version import short_version
++    scipy_version = int(short_version.split(".")[1])
++except:
++    scipy_version = 0
++if scipy_version < 11:
++    dicttype = dict
++del short_version, scipy_version
+ 
+ from numpy import array, object as np_object
+ from scipy.io import loadmat, savemat
+@@ -13,18 +20,20 @@
+ from .. import Model, Metabolite, Reaction
+ 
+ 
+-def cell(x):
+-    """translate an array x into a MATLAB cell array"""
++def _cell(x):
++    """translate an array x into a MATLAB _cell array"""
+     return array(x, dtype=np_object)
+ 
+ 
+ def load_matlab_model(infile_path, variable_name=None):
+     """Load a cobra model stored as a .mat file
+-    NOTE: INCOMPLETE, does not load GPR's
+ 
++    .. warning:: INCOMPLETE, does not load GPR's
++
+     Parameters
+     ----------
+     infile_path : str
++
+     variable_name : str, optional
+         The variable name of the model in the .mat file. If this is not
+         specified, then the first MATLAB variable which looks like a COBRA
+@@ -82,7 +91,7 @@
+         for i, j, v in zip(coo.row, coo.col, coo.data):
+             model.reactions[j].add_metabolites({model.metabolites[i]: v})
+         # TODO finish adding GPR's
+-        model.update()
++        # model.update()
+         return model
+     # If code here is executed, then no model was found.
+     raise Exception("no COBRA model found")
+@@ -92,31 +101,32 @@
+     """Save the cobra model as a .mat file.
+ 
+     This .mat file can be used directly in the MATLAB version of COBRA.
+-    NOTE: this function requires a patched version of scipy.io.savemat
+ 
++    .. note:: This function works best with scipy 0.11b1 or later
++
+     Parameters
+     ----------
+-    model : cobra.Model
++    model : :class:`~cobra.core.Model`
+     file_name : str or file-like object
+ 
+     """
+-    model.update()
++    model = model.to_array_based_model()
+     rxns = model.reactions
+     mets = model.metabolites
+     mat = dicttype()
+     csense = ""
+     for m in mets:
+         csense += m._constraint_sense
+-    mat["mets"] = cell(mets.list_attr("id"))
+-    mat["metNames"] = cell(mets.list_attr("name"))
+-    mat["metFormulas"] = cell([str(m.formula) for m in mets])
+-    mat["genes"] = cell(model.genes.list_attr("id"))
+-    mat["grRules"] = cell(rxns.list_attr("gene_reaction_rule"))
+-    mat["rxns"] = cell(rxns.list_attr("id"))
+-    mat["rxnNames"] = cell(rxns.list_attr("name"))
+-    mat["subSystems"] = cell(rxns.list_attr("subsystem"))
++    mat["mets"] = _cell(mets.list_attr("id"))
++    mat["metNames"] = _cell(mets.list_attr("name"))
++    mat["metFormulas"] = _cell([str(m.formula) for m in mets])
++    mat["genes"] = _cell(model.genes.list_attr("id"))
++    mat["grRules"] = _cell(rxns.list_attr("gene_reaction_rule"))
++    mat["rxns"] = _cell(rxns.list_attr("id"))
++    mat["rxnNames"] = _cell(rxns.list_attr("name"))
++    mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
+     mat["csense"] = csense
+-    mat["S"] = model._S
++    mat["S"] = model.S
+     mat["lb"] = array(rxns.list_attr("lower_bound"))
+     mat["ub"] = array(rxns.list_attr("upper_bound"))
+     mat["b"] = array(mets.list_attr("_bound"))
+Index: cobra/test/unit_tests.py
+===================================================================
+--- cobra/test/unit_tests.py	(revision 316)
++++ cobra/test/unit_tests.py	(working copy)
+@@ -3,7 +3,10 @@
+ try:
+     from unittest import skipIf
+ except:
+-    skipIf = None
++    try:
++        from unittest2 import skipIf
++    except:
++        skipIf = None
+ from warnings import catch_warnings
+ import sys
+ from os import unlink
+@@ -124,6 +127,18 @@
+             io.write_sbml_model(self.model, test_output_filename)
+             #cleanup the test file
+             unlink(test_output_filename)
++    
++    def test_mat_read_write(self):
++        test_output_filename = "test_mat_write.mat"
++        io.save_matlab_model(self.model, test_output_filename)
++        reread = io.load_matlab_model(test_output_filename)
++        self.assertEqual(len(self.model.reactions), len(reread.reactions))
++        self.assertEqual(len(self.model.metabolites), len(reread.metabolites))
++        for i in range(len(self.model.reactions)):
++            self.assertEqual(len(self.model.reactions[i]._metabolites), \
++                len(reread.reactions[i]._metabolites))
++            self.assertEqual(self.model.reactions[i].id, reread.reactions[i].id)
++        unlink(test_output_filename)
+ 
+ # make a test suite to run all of the tests
+ loader = TestLoader()
+Index: documentation/autodoc.bat
+===================================================================
+--- documentation/autodoc.bat	(revision 316)
++++ documentation/autodoc.bat	(working copy)
+@@ -1 +1,2 @@
+-sphinx-apidoc -o . ..\..\cobra
+\ No newline at end of file
++sphinx-apidoc -o . ..\cobra
++del cobra.oven.rst
+Index: documentation/conf.py
+===================================================================
+--- documentation/conf.py	(revision 316)
++++ documentation/conf.py	(working copy)
+@@ -244,4 +244,12 @@
+ 
+ 
+ # Example configuration for intersphinx: refer to the Python standard library.
+-intersphinx_mapping = {'http://docs.python.org/': None}
++#intersphinx_mapping = {'http://docs.python.org/': None}
++# intersphinx_mapping = {'http://docs.python.org/dev': None,
++                       # 'http://docs.scipy.org/doc/numpy': None,
++                       # 'http://docs.scipy.org/doc/scipy/reference': None,
++                       # }
++intersphinx_mapping = {"http://docs.python.org/": None,
++                       'numpy': ("http://docs.scipy.org/doc/numpy/", None),
++                       'scipy': ('http://docs.scipy.org/doc/scipy/reference', None)}
++intersphinx_cache_limit = 10     # days to keep the cached inventories
