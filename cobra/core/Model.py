@@ -144,7 +144,7 @@ class Model(Object):
         """Will add a list of metabolites to the the object, if they do not
         exist and then expand the stochiometric matrix
 
-        metabolite_list: A list of cobra.Metabolite objects
+        metabolite_list: A list of :class:`~cobra.core.Metabolite` objects
 
         """
         if not hasattr(metabolite_list, '__iter__'):
@@ -189,11 +189,8 @@ class Model(Object):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
 
-        reaction: A cobra.Reaction object
+        reaction: A :class:`~cobra.core.Reaction` object
 
-        Note: If you want to use the internal matrices/vectors immediately after
-        adding a reaction you must call the update() function for the model.
-         
         """
         self.add_reactions(reaction)
 
@@ -202,7 +199,7 @@ class Model(Object):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
 
-        reaction_list: A cobra.Reaction object or a list of them
+        reaction_list: A :class:`~cobra.core.Reaction` object or a list of them
       
         """
         #Only add the reaction if one with the same ID is not already
@@ -254,7 +251,7 @@ class Model(Object):
 
 
     def to_array_based_model(self, deepcopy_model=False):
-        """Makes a cobra.ArrayBasedModel from a cobra.Model which
+        """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model which
         may be used to perform linear algebra operations with the
         stoichiomatric matrix.
 

@@ -51,7 +51,7 @@ class Reaction(Object):
         self.upper_bound = 1000.
         self.reflection = None #Either None or if this reaction is irreversible then
         #a reaction in the model that is essentially self * -1
-	self.variable_kind = 'continuous' #Used during optimization.  Indicates whether the
+        self.variable_kind = 'continuous' #Used during optimization.  Indicates whether the
         #variable is modeled as continuous, integer, binary, semicontinous, or semiinteger.
 
     def _update_awareness(self):
@@ -62,15 +62,16 @@ class Reaction(Object):
         [x._reaction.add(self) for x in self._metabolites]
         [x._reaction.add(self) for x in self._genes]
 
-    def remove_from_model(self, the_model):
+    def remove_from_model(self, model=None):
         """Removes the association
 
-        the_model: cobra.Model object.  remove the reaction from this model.
+        model: cobra.Model object.  remove the reaction from this model.
         
         """
-        if the_model != self._model:
+        # why is model being taken in as a parameter?
+        if model != self._model and model is not None:
             raise Exception('%s not in %s ergo it cannot be removed. (%s)'%(self,
-                                                                  the_model,
+                                                                  model,
                                                                   self._model))
                                                             
         new_metabolites = deepcopy(self._metabolites)
@@ -328,24 +329,24 @@ class Reaction(Object):
             self._model.add_metabolites(new_metabolites)
             
 
-    def subtract_metabolites(self, the_metabolites):
+    def subtract_metabolites(self, metabolites):
         """This function will 'subtract' cobra.metabolites from a reaction, which
         means add the metabolites with -1*coefficient.  If the final coefficient
         for a metabolite is 0 then the metabolite is removed from the reaction.
 
-        NOTE: That a final coefficient < 0 implies a reactant.
+        .. note:: That a final coefficient < 0 implies a reactant.
 
-        the_metabolites: A dictionary of cobra.Metabolites, coefficients
-        to add to the reaction
+        metabolites: dict of {:class:`~cobra.core.Metabolite`: coefficient}
+            These metabolites will be added to the reaction
 
-        NOTE: This function uses deepcopy in case the reaction is being
+        .. note:: This function uses deepcopy in case the reaction is being
         subtracted from itself.
         
         """
-        the_metabolites = deepcopy(the_metabolites)
-        the_metabolites = dict([(k, -v)
-                                for k, v in the_metabolites.items()])
-        self.add_metabolites(the_metabolites)
+        metabolites = deepcopy(metabolites)
+        metabolites = dict([(k, -v)
+                                for k, v in metabolites.items()])
+        self.add_metabolites(metabolites)
 
         
     def _parse_reaction(self):

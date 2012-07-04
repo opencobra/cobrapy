@@ -3,7 +3,10 @@ from unittest import TestCase, TestLoader, TextTestRunner
 try:
     from unittest import skipIf
 except:
-    skipIf = None
+    try:
+        from unittest2 import skipIf
+    except:
+        skipIf = None
 from warnings import catch_warnings
 import sys
 from os import unlink
@@ -124,6 +127,18 @@ class TestCobraIO(CobraTestCase):
             io.write_sbml_model(self.model, test_output_filename)
             #cleanup the test file
             unlink(test_output_filename)
+    
+    def test_mat_read_write(self):
+        test_output_filename = "test_mat_write.mat"
+        io.save_matlab_model(self.model, test_output_filename)
+        reread = io.load_matlab_model(test_output_filename)
+        self.assertEqual(len(self.model.reactions), len(reread.reactions))
+        self.assertEqual(len(self.model.metabolites), len(reread.metabolites))
+        for i in range(len(self.model.reactions)):
+            self.assertEqual(len(self.model.reactions[i]._metabolites), \
+                len(reread.reactions[i]._metabolites))
+            self.assertEqual(self.model.reactions[i].id, reread.reactions[i].id)
+        unlink(test_output_filename)
 
 # make a test suite to run all of the tests
 loader = TestLoader()

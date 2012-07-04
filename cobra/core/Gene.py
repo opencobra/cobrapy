@@ -55,7 +55,8 @@ class Gene(Metabolite):
                           make_dependent_reactions_nonfunctional=True):
         """Removes the association
 
-        the_model: cobra.Model object.  remove the reaction from this model.
+        the_model: :class:`~cobra.core.Model` object.
+            Remove the reaction from this model.
 
         make_dependent_reactions_nonfunctional: Boolean.  If True then replace
         the gene with 'False' in the gene association, else replace the gene

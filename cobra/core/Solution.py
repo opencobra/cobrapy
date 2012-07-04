@@ -11,19 +11,19 @@ class Solution(Object):
     NOTE: This class might be deprecated in favor of associating the
     values with the Reactions and Metabolites in the cobra.Model.
 
-    the_f: The objective value
+    f: The objective value
     
     the_time: Float.  Sometimes indicates how long it took to solve a
-    problem.  As this is typically negligible and not used un cobra pie,
+    problem.  As this is typically negligible and not used in cobra pie,
     it might be deprecated.
     
     the_solver: A string indicating which solver package was used.
 
-    the_x: List or Array of the values from the primal.
+    x: List or Array of the values from the primal.
 
     x_dict: A dictionary of reaction ids that maps to the primal values.
 
-    the_y: List or Array of the values from the dual.
+    y: List or Array of the values from the dual.
 
     y_dict: A dictionary of reaction ids that maps to the dual values.
     

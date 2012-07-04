@@ -27,13 +27,13 @@ class DictList(list):
         self._object_dict = {}
         self._generate_index()
 
-    def _check(self, the_id):
+    def _check(self, id):
         """make sure duplicate id's are not added.
         This function is called before adding in elements.
 
         """
-        if the_id in self._dict:
-            raise ValueError, "id %s is already present in list" % str(the_id)
+        if id in self._dict:
+            raise ValueError, "id %s is already present in list" % str(id)
 
     def _generate_index(self):
         """rebuild the _dict index
@@ -45,11 +45,11 @@ class DictList(list):
           self._object_dict.update({v.id: v}))
          for k, v in enumerate(self)]
 
-    def get_by_id(self, the_id):
+    def get_by_id(self, id):
         """return the element with a matching id
 
         """
-        return self._object_dict[the_id]
+        return self._object_dict[id]
 
     def list_attr(self, attribute):
         """return a list of the given attribute for every object
@@ -101,12 +101,12 @@ class DictList(list):
         self._dict[the_id] = i
         self._object_dict[the_id] = y
 
-    def append(self, the_object):
-        the_id = get_id(the_object)
+    def append(self, object):
+        the_id = get_id(object)
         self._check(the_id)
         self._dict[the_id] = len(self)
-        super(DictList, self).append(the_object)
-        self._object_dict[the_id] = the_object
+        super(DictList, self).append(object)
+        self._object_dict[the_id] = object
 
     def union(self, iterable):
         """adds elements with id's not already in the model"""
@@ -138,21 +138,21 @@ class DictList(list):
         self.extend(other)
         return self
 
-    def index(self, the_id):
+    def index(self, id):
         """
-        the_id: A string or a cobra.object.  If a cobra.object
+        id: A string or a :class:`~cobra.core.Object`
         """
         # because values are unique, start and stop are not relevant
         try:
-            the_object = self._dict[the_id]
+            the_object = self._dict[id]
         except:
-            the_object = self._dict[the_id.id]
-            if self[the_object] is not the_id:
-                raise Exception("The id for the cobra.object (%s) provided "%repr(the_id) +\
+            the_object = self._dict[id.id]
+            if self[the_object] is not id:
+                raise Exception("The id for the cobra.object (%s) provided "%repr(id) +\
                                 "is in this dictionary but the_id is not the cobra.object")
         return the_object
 
-    def __contains__(self, the_object):
+    def __contains__(self, object):
         """DictList.__contains__(object) <==> object in DictList
         object can either be the object to search for itself, or 
         simply the id
@@ -162,7 +162,7 @@ class DictList(list):
             the_id = get_id(object)
         # allow to check with the object itself in addition to the id
         else:
-            the_id = the_object
+            the_id = object
         return self._dict.has_key(the_id)
 
     def __copy__(self):

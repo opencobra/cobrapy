@@ -244,4 +244,12 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+#intersphinx_mapping = {'http://docs.python.org/': None}
+# intersphinx_mapping = {'http://docs.python.org/dev': None,
+                       # 'http://docs.scipy.org/doc/numpy': None,
+                       # 'http://docs.scipy.org/doc/scipy/reference': None,
+                       # }
+intersphinx_mapping = {"http://docs.python.org/": None,
+                       'numpy': ("http://docs.scipy.org/doc/numpy/", None),
+                       'scipy': ('http://docs.scipy.org/doc/scipy/reference', None)}
+intersphinx_cache_limit = 10     # days to keep the cached inventories

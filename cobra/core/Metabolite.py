@@ -92,15 +92,17 @@ class Metabolite(Object):
         the_copy._reaction = set()
         return(the_copy)
     
-    def remove_from_model(self, the_model):
+    def remove_from_model(self, model=None):
         """Removes the association
 
-        the_model: cobra.Model object.  remove the reaction from this model.
+        model: :class:`~cobra.core.Model` object.
+            Remove the reaction from this model.
         
         """
-        if the_model != self._model:
+        # why is model being taken in as a parameter?
+        if model != self._model and model is not None:
             raise Exception('%s not in %s ergo it cannot be removed. (%s)'%(self,
-                                                                  the_model,
+                                                                  model,
                                                                   self._model))
                                                             
         self._model.metabolites.remove(self)

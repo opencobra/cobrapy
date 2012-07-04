@@ -1,1 +1,2 @@
-sphinx-apidoc -o . ..\..\cobra
+sphinx-apidoc -o . ..\cobra
+del cobra.oven.rst

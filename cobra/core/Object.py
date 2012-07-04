@@ -3,12 +3,12 @@
 #Defines common behavior of object in cobra.core
 class Object(object):
     #__slots__ = ['id']
-    def __init__(self, the_id=None):
+    def __init__(self, id=None):
         """
-        the_id: None or a string
+        id: None or a string
         
         """
-        self.id = the_id
+        self.id = id
         #The following two fields will eventually
         #be objects that enforce basic rules about
         #formatting notes and annotation

@@ -14,8 +14,20 @@ from warnings import warn
 class ArrayBasedModel(Model):
     """ArrayBasedModel is a class that adds arrays and vectors to
     a cobra.Model to make it easier to perform linear algebra operations.
-
     
+    S : :class:`scipy.sparse.lil_matrix` (in CPython)
+        Stoichiometric matrix of the model
+
+    lower_bounds
+
+    upper_bounds
+
+    objective_coefficients
+
+    b
+
+    constraint_sense
+
     """
     def __setstate__(self, state):
         """Make sure all cobra.Objects in the model point to the model
@@ -49,7 +61,7 @@ class ArrayBasedModel(Model):
         self.b = None
         self.constraint_sense = None
         self.update()
-            
+
     def __add__(self, other_model):
         """Adds two models. +
 
@@ -92,7 +104,7 @@ class ArrayBasedModel(Model):
         """Will add a list of metabolites to the the object, if they do not
         exist and then expand the stochiometric matrix
 
-        metabolite_list: A list of cobra.Metabolite objects
+        metabolite_list: A list of :class:`~cobra.core.Metabolite` objects
 
         expand_stoichimetric_matrix: Boolean.  If True and self.S is
         not None then it will add rows to self.S.  self.S must be
@@ -115,7 +127,6 @@ class ArrayBasedModel(Model):
         """Updates everything associated with the reaction.id of reaction.
 
         reaction: A cobra.Reaction object, or a list of these objects.
-
 
         WARNING: This function is only used after the Model has been
         converted to matrices.  It is typically faster to access the objects
@@ -153,7 +164,7 @@ class ArrayBasedModel(Model):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
 
-        reaction_list: A cobra.Reaction object or a list of them
+        reaction_list: A :class:`~cobra.core.Reaction` object or a list of them
 
         update_matrices:  Boolean.  If true populate / update matrices
         S, lower_bounds, upper_bounds, .... Note this is slow to run
