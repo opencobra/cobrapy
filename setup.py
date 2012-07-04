@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 from pdb import set_trace
 setup(
     name = "cobra",
-    version = '0.1.0.b1',
+    version = '0.1.0',
     packages = find_packages(exclude=['cobra.internal', 'cobra.oven', 'cobra.db_tools',
                                       'cobra.omics', 'cobra.general',]),
     #scripts = [''],
