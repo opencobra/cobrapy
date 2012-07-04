@@ -89,7 +89,6 @@ def load_matlab_model(infile_path, variable_name=None):
         for i, j, v in zip(coo.row, coo.col, coo.data):
             model.reactions[j].add_metabolites({model.metabolites[i]: v})
         # TODO finish adding GPR's
-        model.update()
         return model
     # If code here is executed, then no model was found.
     raise Exception("no COBRA model found")
