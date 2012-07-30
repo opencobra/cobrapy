@@ -1,0 +1,682 @@
+Index: __init__.py
+===================================================================
+--- __init__.py	(revision 334)
++++ __init__.py	(working copy)
+@@ -9,6 +9,7 @@
+     from core import Object, Formula, Metabolite, Gene, Reaction, Model
+ else:
+     from core import *
++    import io
+ del __name
+ __doc__ = """
+ """ 
+Index: io/mat.py
+===================================================================
+--- io/mat.py	(revision 334)
++++ io/mat.py	(working copy)
+@@ -67,7 +67,7 @@
+         model.description = model.id
+         for i, name in enumerate(m["mets"][0, 0]):
+             new_metabolite = Metabolite()
+-            new_metabolite.id = name[0][0]
++            new_metabolite.id = str(name[0][0])
+             try:
+                 new_metabolite.name = m["metNames"][0, 0][i][0][0]
+                 new_metabolite.formula = m["metFormulas"][0][0][i][0][0]
+@@ -76,7 +76,7 @@
+             model.add_metabolites([new_metabolite])
+         for i, name in enumerate(m["rxns"][0, 0]):
+             new_reaction = Reaction()
+-            new_reaction.id = name[0][0]
++            new_reaction.id = str(name[0][0])
+             new_reaction.lower_bound = m["lb"][0, 0][i][0]
+             new_reaction.upper_bound = m["ub"][0, 0][i][0]
+             new_reaction.objective_coefficient = m["c"][0, 0][i][0]
+@@ -102,7 +102,7 @@
+ 
+     Parameters
+     ----------
+-    model : cobra.Model
++    model : :class:`~cobra.core.Model`
+     file_name : str or file-like object
+ 
+     """
+Index: solvers/__init__.py
+===================================================================
+--- solvers/__init__.py	(revision 334)
++++ solvers/__init__.py	(working copy)
+@@ -1,105 +1,126 @@
+ # attempt to import all working solvers in this directory
+ from os import name as __name
+ from sys import modules as __modules
+-from warnings import warn
+-if __name == 'java':
+-    #warn("%s is not yet supported on jython"%__modules[__name__])
+-    def optimize():
+-        print "No solvers for jython yet"
+-else:
+-    __legacy_solver = True
+-    solver_dict = {}
+-    if __legacy_solver:
+-        from .legacy import _optimize_glpk, _optimize_gurobi, _optimize_cplex
+-        solver_dict = {'glpk': _optimize_glpk,
+-                       'gurobi': _optimize_gurobi,
+-                       'cplex': _optimize_cplex}
+-        for solver_module in ['glpk', 'cplex']:
+-            try:
+-                exec('from %s import *'%solver_module)
+-            except:
+-                solver_dict.pop(solver_module)
+-        try:
+-            from gurobipy import *
+-        except:
+-            solver_dict.pop('gurobi')
++from warnings import warn as __warn
+ 
++__legacy_solver = True
++solver_dict = {}
+ 
+-    else:
+-        from os import listdir as _listdir
+-        from os import path as _path
+-        for i in _listdir(_path.split(_path.abspath(__file__))[0]):
+-            if i.startswith("_") or i.startswith("."):
+-                continue
+-            if not i.endswith(".py"):
+-                continue
+-            try:
+-                m = i.strip(".py")
+-                exec("from . import %s" % m)
+-                solver_dict[m] = eval(m)
+-            except Exception, e:
+-                pass
+-        del _path
+-        del _listdir
+-        del i
+-        m = None
+-        del m
++def _optimize_java():
++    print "No solvers for jython yet"
+ 
+-    def optimize(cobra_model, solver='glpk', error_reporting=False, **kwargs):
+-        """Wrapper to optimization solvers
++def _optimize_legacy(cobra_model, solver='glpk', error_reporting=False, **kwargs):
++    """Wrapper to legacy optimization solvers
+ 
+ 
+-        """
+-        #If the default solver is not installed then use one of the others
++    """
++    #If the default solver is not installed then use one of the others
++    try:
++        solver_function = solver_dict[solver]
++    except:
+         try:
++            solver, solver_function = solver_dict.items()[0]
++        except:
++            raise Exception("It appears that you do not have one of the supported solvers "+\
++                            "(glpk, gurobi, or cplex) installed")
++    the_solution = None
++    def solve_problem(solver_function, kwargs):
++        return solver_function(cobra_model, **kwargs)
++    try:
++        the_solution = solve_problem(solver_function, kwargs)
++    except Exception, e:
++        if error_reporting:
++            print e
++            print '%s did not work'%solver
++        solver_keys = solver_dict.keys()
++        solver_keys.remove(solver)
++        for solver in solver_keys:
+             solver_function = solver_dict[solver]
+-        except:
+             try:
+-                solver, solver_function = solver_dict.items()[0]
+-            except:
+-                raise Exception("It appears that you do not have one of the supported solvers "+\
+-                                "(glpk, gurobi, or cplex) installed")
+-        the_solution = None
+-        if __legacy_solver:
+-            def solve_problem(solver_function, kwargs):
+-                return solver_function(cobra_model, **kwargs)
+-            try:
++                if error_reporting:
++                    print "now trying %s"%solver
+                 the_solution = solve_problem(solver_function, kwargs)
++                break
+             except Exception, e:
+                 if error_reporting:
+                     print e
+                     print '%s did not work'%solver
+-                solver_keys = solver_dict.keys()
+-                solver_keys.remove(solver)
+-                for solver in solver_keys:
+-                    solver_function = solver_dict[solver]
+-                    try:
+-                        if error_reporting:
+-                            print "now trying %s"%solver
+-                        the_solution = solve_problem(solver_function, kwargs)
+-                        break
+-                    except Exception, e:
+-                        if error_reporting:
+-                            print e
+-                            print '%s did not work'%solver
+-                        continue
++                continue
+ 
+-        else:
+-            the_solution = solver_function.solve(cobra_model, **kwargs)
+-            #raise Exception("New style solvers not yet fully implemented")
+ 
++    #Add the solution to the model.
++    #Please note that it will be faster to dress the reactions and metabolites
++    #with their values within the new style solvers instead of here.
++    if the_solution is None:
++        cobra_model.solution = the_solution
++        return(the_solution)
++    else:
++        cobra_model.solution = the_solution['the_solution']
++        return(the_solution['the_problem'])
+ 
+-        #Add the solution to the model.
+-        #Please note that it will be faster to dress the reactions and metabolites
+-        #with their values within the new style solvers instead of here.
+-        if the_solution is None:
+-            cobra_model.solution = the_solution
+-            return(the_solution)
+-        else:
+-            if __legacy_solver:
+-                cobra_model.solution = the_solution['the_solution']
+-                return(the_solution['the_problem'])
+-            else:
+-                cobra_model.solution = the_solution
++def _optimize_new(cobra_model, solver=None, **kwargs):
++    """Wrapper to optimization solvers
+ 
++
++    """
++    if solver is None:
++        solver_function = None
++        for solver in ["glpk", "gurobi"]:
++            if solver in solver_dict:
++                solver_function = solver_dict[solver]
++                break
++        if solver_function is None:
++            solver, solver_function = solver_dict.items()[0]
++    else:
++        solver_function = solver_dict[solver]
++
++    the_solution = solver_function.solve(cobra_model, **kwargs)
++    cobra_model.solution = the_solution
++
++    # TODO - Add the solution to the model.
++    #Please note that it will be faster to dress the reactions and metabolites
++    #with their values within the new style solvers instead of here.
++
++if __name == 'java':
++    __warn("%s is not yet supported on jython" % __modules[__name__])
++    optimize = _optimize_java
++elif __legacy_solver:
++    optimize = _optimize_legacy
++    from .legacy import _optimize_glpk, _optimize_gurobi, _optimize_cplex
++    solver_dict = {'glpk': _optimize_glpk,
++                   'gurobi': _optimize_gurobi,
++                   'cplex': _optimize_cplex}
++    for solver_module in ['glpk', 'cplex']:
++        try:
++            exec('from %s import *'%solver_module)
++        except:
++            solver_dict.pop(solver_module)
++    try:
++        from gurobipy import *
++    except:
++        solver_dict.pop('gurobi')
++else:
++    #__warn("New style solvers not yet fully implemented")
++    optimize = _optimize_new
++    solver_dict = {}
++    # attempt to import all *.py files in the directory as solvers
++    from os import listdir as _listdir
++    from os import path as _path
++    for filename in _listdir(_path.split(_path.abspath(__file__))[0]):
++        if filename.startswith("_") or filename.startswith("."):
++            continue
++        if not filename.endswith(".py"):
++            continue
++        try:
++            module_name = filename.strip(".py")
++            exec("from . import %s" % module_name)
++            solver_dict[module_name] = eval(module_name)
++        except Exception, e:
++            pass
++    del _path
++    del _listdir
++    del filename
++    del module_name
++
++
+ del __name, __modules
+Index: solvers/cplex.py
+===================================================================
+--- solvers/cplex.py	(revision 0)
++++ solvers/cplex.py	(working copy)
+@@ -0,0 +1,272 @@
++# because both this module and the library are named cplex
++from __future__ import absolute_import
++
++from cplex import Cplex, SparsePair
++from ..core.Solution import Solution
++from scipy.sparse import dok_matrix
++from numpy import array
++from sys import stdout, stderr
++
++# sense_dict = {}
++variable_kind_dict = {
++    'continuous': Cplex.variables.type.continuous,
++    'integer': Cplex.variables.type.integer}
++parameter_dict = {## todo - find a way to use
++    "threads": "threads",
++    "timelimit": "timelimit",
++    "MIPGapAbs": "mip.tolerances.absmipgap",
++    "MIPGap": "mip.tolerances.mipgap"
++}
++default_parameters = { ## todo find a way to sue
++}
++
++status_dict = {
++    'MIP_infeasible': 'infeasible',
++    'MIP_optimal': 'optimal',
++    'MIP_optimal_tolerance': 'optimal',
++    'MIP_unbounded': 'unbounded',
++    'infeasible': 'infeasible',
++    'optimal': 'optimal',
++    'optimal_tolerance': 'optimal',
++    'integer optimal solution': 'optimal',
++    'unbounded': 'unbounded',
++    'integer optimal, tolerance': 'optimal',
++    'time limit exceeded': 'time_limit'}
++
++def create_problem(cobra_model, objective_sense="maximize",
++        quadratic_component=None):
++    """set up the CPLEX solver object
++    
++    Parameters
++    cobra_model: :class:`~cobra.core.Model`
++    objective_sense: either "maximize" or "minimize"
++    quadratic_component: matrix representing the quadratic objective function
++    """
++    # TODO - implement relax_b
++    lp = Cplex()
++    lp.set_results_stream(None)
++    lp.set_warning_stream(None)
++    objective_coefficients = []
++    lower_bounds = []
++    upper_bounds = []
++    variable_names = []
++    variable_kinds = []
++    for x in cobra_model.reactions:
++        objective_coefficients.append(float(x.objective_coefficient))
++        lower_bounds.append(float(x.lower_bound))
++        upper_bounds.append(float(x.upper_bound))
++        variable_names.append(str(x.id))
++        variable_kinds.append(variable_kind_dict[x.variable_kind])
++    #Cplex decides that the problem is a MIP if variable_kinds are supplied
++    #even if there aren't any integers.
++    # This can probably be skipped, because we manually set the problem kind later
++    if Cplex.variables.type.integer in variable_kinds:
++        lp.variables.add(obj=objective_coefficients,
++                         lb=lower_bounds,
++                         ub=upper_bounds,
++                         names=variable_names,
++                         types=variable_kinds)
++    else:
++        lp.variables.add(obj=objective_coefficients,
++                         lb=lower_bounds,
++                         ub=upper_bounds,
++                         names=variable_names)
++
++    constraint_sense = []
++    constraint_names = []
++    constraint_limits = []
++    for x in cobra_model.metabolites:
++        constraint_sense.append(str(x._constraint_sense))
++        constraint_names.append(str(x.id))
++        constraint_limits.append(float(x._bound))
++    
++    the_linear_expressions = []
++    #NOTE: This won't work with metabolites that aren't in any reaction
++    for the_metabolite in cobra_model.metabolites:
++        variable_list = []
++        coefficient_list = []
++        for the_reaction in the_metabolite._reaction:
++            variable_list.append(the_reaction.id)
++            coefficient_list.append(the_reaction._metabolites[the_metabolite])
++        the_linear_expressions.append(SparsePair(ind=variable_list,
++                                                 val=coefficient_list))
++    if quadratic_component is not None:
++        quadratic_component_scaled = dok_matrix(quadratic_component)
++        lp.parameters.emphasis.numerical.set(1)
++        for k, v in quadratic_component_scaled.items():
++            lp.objective.set_quadratic_coefficients(int(k[0]), int(k[1]), v)
++
++    lp.linear_constraints.add(lin_expr=the_linear_expressions,
++                              rhs=constraint_limits,
++                              senses=constraint_sense,
++                              names=constraint_names)
++
++    
++    #Set the problem type as cplex doesn't appear to do this correctly
++    problem_type = Cplex.problem_type.LP
++    if Cplex.variables.type.integer in variable_kinds:
++        if quadratic_component is not None:
++            problem_type = Cplex.problem_type.MIQP
++        else:
++            problem_type = Cplex.problem_type.MILP
++    elif quadratic_component is not None:
++        problem_type = Cplex.problem_type.QP
++    lp.set_problem_type(problem_type)
++    if objective_sense == 'maximize':
++        lp.objective.set_sense(lp.objective.sense.maximize)
++    elif objective_sense == 'minimize':
++        lp.objective.set_sense(lp.objective.sense.minimize)
++    else:
++        raise ValueError("objective_sense")
++    return lp
++
++def _set_parameter(lp, parameter_name, parameter_value):
++    parameter = lp.parameters
++    for attribute in parameter_name.split("."):
++        parameter = getattr(parameter, attribute)
++    parameter.set(parameter_value)
++
++
++def solve_problem(lp, **parameters):
++    """
++    Parameters
++    threads: number of threads to use
++    verbose: Boolean"""
++    if "verbose" in parameters:
++        if parameters["verbose"]:
++            lp.set_results_stream(stdout)
++            lp.set_warning_stream(stdout)
++        parameters.pop("verbose")
++    for key, value in parameters.iteritems():
++        if key in parameter_dict:
++            _set_parameter(lp, parameter_dict[key], value)
++        else:
++            raise Exception("parameter %s not understood" % key)
++    # if "threads" in parameters:
++        # lp.parameters.threads.set(parameters["threads"])
++    # if "timelimit" in parameters:
++        # lp.parameters.set(parameters["timelimit"])
++    lp.solve()
++    status = status_dict[lp.solution.get_status_string()]
++    solution = Solution(status)
++    solution.status = status
++    if status == "optimal" or status == "time_limit":
++        solution.objective_value = lp.solution.get_objective_value()
++        #This can be sped up a little
++        solution.x_dict = dict(zip(lp.variables.get_names(),
++                     lp.solution.get_values()))
++        # solution.x = array(lp.solution.get_values())
++        solution.x = lp.solution.get_values()
++        #MIP's don't have duals
++        if lp.get_problem_type() in (Cplex.problem_type.MIQP,
++                                     Cplex.problem_type.MILP):
++            solution.y = solution.y_dict = None
++        else:
++            solution.y_dict = dict(zip(lp.linear_constraints.get_names(),
++                              lp.solution.get_dual_values()))
++            y = array(lp.solution.get_dual_values())
++            solution.y = y.reshape(y.shape[0],1)
++    return solution
++
++
++def solve(cobra_model, objective_sense="maximize", **kwargs):
++    return solve_problem(create_problem(cobra_model, objective_sense=objective_sense), **kwargs)
++
++def _optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
++                   min_norm=0, the_problem=None, 
++                   tolerance_optimality=1e-6, tolerance_feasibility=1e-6, tolerance_integer=1e-9,
++                   tolerance_barrier=1e-8,error_reporting=None, 
++                   print_solver_time=False, lp_method=1, lp_parallel=0, copy_problem=False,
++                   relax_b=None, quadratic_component=None, reuse_basis=True,
++                   update_problem_reaction_bounds=True):
++   
++
++    if not error_reporting:
++        lp.set_results_stream(None)
++        lp.set_warning_stream(None)
++    if  print_solver_time:
++        start_time = time()
++    if not isinstance(the_problem, Cplex):
++        #TODO: set tolerance
++        lp.solve()
++        # Solve this LP with the simplex method.  Takes about 0.2 s without hot start
++        lp.status = lp.solution.status[lp.solution.get_status()]
++        if lp.status in status_dict:
++            status = status_dict[lp.status]
++        else:
++            status = 'failed'
++    else:
++        if isinstance(the_problem, Cplex) and reuse_basis:
++            try:
++                the_basis = the_problem.solution.basis.get_basis()
++                lp.start.set_basis(the_basis[0],the_basis[1])
++                #TODO: Determine whether the primal or dual works best for the
++                #problem of interest.  For the ME matrix the primal appears to
++                #work best
++                lp_method = 1
++                lp.parameters.preprocessing.presolve.set(0)
++                lp.parameters.lpmethod.set(lp_method) 
++            except:
++                print 'no basis in the_problem'
++        #TODO: set tolerance and time limit
++        #lp.parameters.timelimit.set()
++        lp.solve()
++        #If the solver takes more than 0.1 s with a hot start it is likely stuck
++        lp.status = lp.solution.status[lp.solution.get_status()]
++        if lp.status in status_dict:
++            status = status_dict[lp.status]
++        else:
++            status = 'failed'
++        if status != 'optimal':
++            #Cycle through the different solver options, if a solution is not found
++            for lp_method in (1, 2, 3, 4, 5, 6):
++                lp = optimize_cplex(cobra_model, new_objective=new_objective,
++                                    objective_sense=objective_sense,
++                                    min_norm=min_norm, the_problem=None,
++                                    print_solver_time=print_solver_time,
++                                    tolerance_optimality=tolerance_optimality,
++                                    tolerance_feasibility=tolerance_feasibility,
++                                    lp_method=lp_method,
++                                    quadratic_component=quadratic_component)['the_problem']
++                lp.status = lp.solution.status[lp.solution.get_status()]
++                if lp.status in status_dict:
++                    status = status_dict[lp.status]
++                else:
++                    status = 'failed'
++                if status == 'optimal':
++                    break
++    if error_reporting == 'time':
++        print 'solver time: ' + repr(time()-start_time) + ' with method ' + repr(lp_method)
++        start_time = time()
++
++    if print_solver_time:
++        print 'cplex time: %f'%(time() - start_time)
++    x = []
++    x_dict = {}
++    #TODO: It might be able to speed this up a little.
++    if status == 'optimal':
++        objective_value = lp.solution.get_objective_value()
++        #This can be sped up a little
++        x_dict = dict(zip(lp.variables.get_names(),
++                     lp.solution.get_values()))
++        x = array(lp.solution.get_values())
++        x = x.reshape(x.shape[0],1)
++        #MIP's don't have duals
++        if lp.get_problem_type() in (Cplex.problem_type.MIQP,
++                                     Cplex.problem_type.MILP):
++
++            y = y_dict = None
++        else:
++            y_dict = dict(zip(lp.linear_constraints.get_names(),
++                              lp.solution.get_dual_values()))
++            y = array(lp.solution.get_dual_values())
++            y = y.reshape(y.shape[0],1)
++    else:
++        x = y = x_dict = y_dict = objective_value = None
++        if error_reporting:
++            print 'cplex failed: %s'%lp.status
++
++    the_solution = Solution(objective_value, x=x, x_dict=x_dict,
++                            status=status, y=y, y_dict=y_dict)
++    solution = {'the_problem': lp, 'the_solution': the_solution}
++    return solution    
+\ No newline at end of file
+Index: solvers/glpk.py
+===================================================================
+--- solvers/glpk.py	(revision 334)
++++ solvers/glpk.py	(working copy)
+@@ -63,6 +63,8 @@
+ 
+ def solve_problem(lp):
+     lp.simplex()
++    if lp.kind == int:
++        lp.integer()
+     try:
+         status = status_dict[lp.status]
+     except:
+Index: solvers/gurobi.py
+===================================================================
+--- solvers/gurobi.py	(revision 334)
++++ solvers/gurobi.py	(working copy)
+@@ -1,5 +1,4 @@
+ from gurobipy import GRB, Model, LinExpr, GRB, QuadExpr, Column
+-from numpy import array
+ 
+ from ..core.Solution import Solution
+ 
+@@ -12,9 +11,12 @@
+ variable_kind_dict = {
+     'continuous': GRB.CONTINUOUS,
+     'integer': GRB.INTEGER}
+-parameter_dict = {  # TODO USE
+-    "tolerance_feasibility": "FeasibilityTol",
+-    "tolerance_optimality": "OptimalityTol"}
++parameter_dict = {
++    # "tolerance_feasibility": "FeasibilityTol",
++    # "tolerance_optimality": "OptimalityTol",
++    "verbose": "OutputFlag",
++    "timelimit": "TimeLimit",
++    "threads": "Threads"}
+ default_parameters = {
+ }
+ 
+@@ -22,10 +24,11 @@
+ status_dict = {
+     GRB.OPTIMAL: 'optimal',
+     GRB.INFEASIBLE: 'infeasible',
+-    GRB.UNBOUNDED: 'unbounded'}
++    GRB.UNBOUNDED: 'unbounded',
++    GRB.TIME_LIMIT: 'time_limit'}
+ 
+ 
+-def create_problem(cobra_model, objective_sense="maximize"):
++def create_problem(cobra_model, objective_sense="maximize", **parameters):
+     lp = Model("cobra")
+     lp.Params.OutputFlag = 0
+ 
+@@ -61,21 +64,32 @@
+ 
+ 
+ def update_problem(cobra_model, lp, objective_sense="maximize"):
+-    pass
++    for reaction in cobra_model.reactions:
++        pass
+     # TODO implement
+ 
+ 
+-def solve_problem(lp):
++def solve_problem(lp, **parameters):
++    for key, value in parameters.iteritems():
++        if key in parameter_dict:
++            lp.setParam(parameter_dict[key], value)
++        else:
++            lp.setParam(key, value)
+     lp.optimize()
+     try:
+         status = status_dict[lp.status]
+     except KeyError:
+-        status = "unkown error: " + lp.status
++        status = "unkown error: " + str(lp.status)
+     solution = Solution(status)
+     solution.status = status
+-    if status == "optimal":
++    if status in ("optimal", "time_limit"):
+         solution.objective_value = lp.ObjVal * -1  # TODO fix sign
+-        solution.x_dict = dict((v.VarName, v.X) for v in lp.getVars())
++        # solution.x = zeros((n,))
++        solution.x = []
++        solution.x_dict = {}
++        for v in lp.getVars():
++            solution.x.append(v.X)
++            solution.x_dict[v.VarName] = v.X
+         if lp.isMIP:
+             solution.y_dict = None  # MIP's don't have duals
+         else:
+@@ -85,4 +99,7 @@
+ 
+ 
+ def solve(cobra_model, objective_sense="maximize", **kwargs):
++    gurobi_args = kwargs
++    gurobi_object = create_problem(cobra_model, objective_sense, **gurobi_args)
++    solution = solve_problem(gurobi_object)
+     return solve_problem(create_problem(cobra_model, objective_sense))
+Index: test/solvers.py
+===================================================================
+--- test/solvers.py	(revision 334)
++++ test/solvers.py	(working copy)
+@@ -24,6 +24,18 @@
+         reaction_1.lower_bound = 1
+         reaction_2.upper_bound = 2
+         self.infeasible_problem.add_reactions([reaction_1, reaction_2])
++        self.milp = Model()
++        variable_1 = Reaction("x")
++        variable_2 = Reaction("y")
++        constraint = Metabolite("constraint")
++        constraint._bound = 11
++        variable_1.add_metabolites({constraint: 3})
++        variable_2.add_metabolites({constraint: 2})
++        variable_1.objective_coefficient = 2
++        variable_2.objective_coefficient = 1
++        variable_1.variable_kind = "integer"
++        variable_2.variable_kind = "integer"
++        self.milp.add_reactions((variable_1, variable_2))
+         #self.infeasible_problem.update()
+ 
+ 
+@@ -55,6 +67,12 @@
+         self.assertAlmostEqual(self.old_solution, \
+             feasible_solution.objective_value, places=4)
+         self.assertEqual(infeasible_solution.status, "infeasible")
++    def test_milp(self):
++        solution = solver.solve(self.milp)
++        self.assertEqual(solution.status, "optimal")
++        self.assertEqual(solution.objective_value, 7)
++        self.assertEqual(solution.x_dict["x"], 3)
++        self.assertEqual(solution.x_dict["y"], 1)
+     setattr(TestCobraSolver, "test_%s_create" % solver_name, \
+         test_setup)
+     setattr(TestCobraSolver, "test_%s_attributes" % solver_name, \
+@@ -65,7 +83,10 @@
+         test_solve_infeasible)
+     setattr(TestCobraSolver, "test_%s_independent_creation" % solver_name, \
+         test_solve_infeasible)
++    setattr(TestCobraSolver, "test_%s_milp" % solver_name, \
++        test_milp)
+ 
++
+ def add_legacy_test(TestCobraSolver, solver_name, solver_function):
+     """Creates a test set for each of the installed solvers using the
+     legacy interface.
