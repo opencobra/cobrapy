@@ -51,24 +51,31 @@
           <div class="body">
             
   <h1>Source code for cobra.test.unit_tests</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">with_statement</span>
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">TestCase</span><span class="p">,</span> <span class="n">TestLoader</span><span class="p">,</span> <span class="n">TextTestRunner</span>
+<span class="c">#skipIf is not in python 2.6 / 2.5</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">cPickle</span> <span class="kn">import</span> <span class="n">load</span>
+    <span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">skipIf</span>
+    <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">catch_warnings</span>
 <span class="k">except</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pickle</span> <span class="kn">import</span> <span class="n">load</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">unittest2</span> <span class="kn">import</span> <span class="n">skipIf</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">skipIf</span> <span class="o">=</span> <span class="bp">None</span>
+
 <span class="kn">import</span> <span class="nn">sys</span>
-
-
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">unlink</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;../..&quot;</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">data_directory</span><span class="p">,</span> <span class="n">create_test_model</span>
 <span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">salmonella_sbml</span> <span class="k">as</span> <span class="n">test_sbml_file</span>
 <span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">salmonella_pickle</span> <span class="k">as</span> <span class="n">test_pickle</span>
 <span class="kn">from</span> <span class="nn">cobra</span> <span class="kn">import</span> <span class="n">Object</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Metabolite</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">io</span><span class="p">,</span> <span class="n">DictList</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="c">#from .. import flux_analysis</span>
 
 <span class="c"># libraries which may or may not be installed</span>
-<span class="n">libraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;libsbml&quot;</span><span class="p">,</span> <span class="s">&quot;glpk&quot;</span><span class="p">,</span> <span class="s">&quot;gurobipy&quot;</span><span class="p">,</span> <span class="s">&quot;cplex&quot;</span><span class="p">]</span>
+<span class="n">libraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;glpk&quot;</span><span class="p">,</span> <span class="s">&quot;gurobipy&quot;</span><span class="p">,</span> <span class="s">&quot;cplex&quot;</span><span class="p">]</span>
 <span class="k">for</span> <span class="n">library</span> <span class="ow">in</span> <span class="n">libraries</span><span class="p">:</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">exec</span><span class="p">(</span><span class="s">&quot;import </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">library</span><span class="p">)</span>
@@ -76,7 +83,7 @@
         <span class="k">exec</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> = None&quot;</span> <span class="o">%</span> <span class="n">library</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="TestDictList"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.unit_tests.TestDictList">[docs]</a><span class="k">class</span> <span class="nc">TestDictList</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestDictList"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.unit_tests.TestDictList">[docs]</a><span class="k">class</span> <span class="nc">TestDictList</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
 <div class="viewcode-block" id="TestDictList.setUp"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.unit_tests.TestDictList.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="o">=</span> <span class="n">Object</span><span class="p">(</span><span class="s">&quot;test1&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">list</span> <span class="o">=</span> <span class="n">DictList</span><span class="p">()</span>
@@ -109,6 +116,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">list</span><span class="p">),</span> <span class="mi">9</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="TestDictList.testAdd"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.unit_tests.TestDictList.testAdd">[docs]</a>    <span class="k">def</span> <span class="nf">testAdd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">name</span> <span class="k">as</span> <span class="n">__name</span>
+        <span class="k">if</span> <span class="n">__name</span> <span class="o">==</span> <span class="s">&#39;java&#39;</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t\n</span><span class="s">**cobra.test.unit_tests.testAdd does not yet work with </span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="n">__name</span><span class="p">)</span>
+            <span class="k">return</span>
         <span class="n">obj_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">Object</span><span class="p">(</span><span class="s">&quot;test</span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
         <span class="nb">sum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">list</span> <span class="o">+</span> <span class="n">obj_list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s">&quot;test1&quot;</span><span class="p">)</span>
@@ -119,7 +130,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">sum</span><span class="p">),</span> <span class="mi">9</span><span class="p">)</span>
 
 </div></div>
-<div class="viewcode-block" id="CobraTestCase"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.unit_tests.CobraTestCase">[docs]</a><span class="k">class</span> <span class="nc">CobraTestCase</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="CobraTestCase"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.unit_tests.CobraTestCase">[docs]</a><span class="k">class</span> <span class="nc">CobraTestCase</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
 <div class="viewcode-block" id="CobraTestCase.setUp"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.unit_tests.CobraTestCase.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">create_test_model</span><span class="p">(</span><span class="n">test_pickle</span><span class="p">)</span>
 
@@ -160,26 +171,48 @@
 
 </div></div>
 <div class="viewcode-block" id="TestCobraIO"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.unit_tests.TestCobraIO">[docs]</a><span class="k">class</span> <span class="nc">TestCobraIO</span><span class="p">(</span><span class="n">CobraTestCase</span><span class="p">):</span>
-
-    <span class="nd">@unittest.skipIf</span><span class="p">(</span><span class="n">libsbml</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&quot;libsbml is required&quot;</span><span class="p">)</span>
-<div class="viewcode-block" id="TestCobraIO.test_sbml_read"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.unit_tests.TestCobraIO.test_sbml_read">[docs]</a>    <span class="k">def</span> <span class="nf">test_sbml_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">(</span><span class="n">record</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">cobra.io.sbml</span> <span class="kn">import</span> <span class="n">SBMLReader</span> <span class="k">as</span> <span class="n">__SBMLReader</span>
+        <span class="n">__test_sbml</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">__test_sbml</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">__test_sbml</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">test_sbml_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="c">## with catch_warnings(record=True) as w:</span>
             <span class="n">model</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">read_sbml_model</span><span class="p">(</span><span class="n">test_sbml_file</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">reactions</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">reactions</span><span class="p">))</span>
-        <span class="c"># make sure that an error is raised when given a nonexistent file</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">read_sbml_model</span><span class="p">,</span>
-            <span class="s">&quot;fake_file_which_does_not_exist&quot;</span><span class="p">)</span>
-</div>
-    <span class="nd">@unittest.skipIf</span><span class="p">(</span><span class="n">libsbml</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&quot;libsbml is required&quot;</span><span class="p">)</span>
-<div class="viewcode-block" id="TestCobraIO.test_sbml_write"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.unit_tests.TestCobraIO.test_sbml_write">[docs]</a>    <span class="k">def</span> <span class="nf">test_sbml_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">io</span><span class="o">.</span><span class="n">write_sbml_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s">&quot;test_sbml_write.xml&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">reactions</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">reactions</span><span class="p">))</span>
+            <span class="c"># make sure that an error is raised when given a nonexistent file</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">read_sbml_model</span><span class="p">,</span>
+                              <span class="s">&quot;fake_file_which_does_not_exist&quot;</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">test_sbml_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">test_output_filename</span> <span class="o">=</span> <span class="s">&#39;test_sbml_write.xml&#39;</span>
+            <span class="n">io</span><span class="o">.</span><span class="n">write_sbml_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">test_output_filename</span><span class="p">)</span>
+            <span class="c">#cleanup the test file</span>
+            <span class="n">unlink</span><span class="p">(</span><span class="n">test_output_filename</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">cobra.io</span> <span class="kn">import</span> <span class="n">save_matlab_model</span>
+        <span class="n">__test_matlab</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">__test_matlab</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">__test_matlab</span><span class="p">:</span>
+<div class="viewcode-block" id="TestCobraIO.test_mat_read_write"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.unit_tests.TestCobraIO.test_mat_read_write">[docs]</a>        <span class="k">def</span> <span class="nf">test_mat_read_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">test_output_filename</span> <span class="o">=</span> <span class="s">&quot;test_mat_write.mat&quot;</span>
+            <span class="n">io</span><span class="o">.</span><span class="n">save_matlab_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">test_output_filename</span><span class="p">)</span>
+            <span class="n">reread</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_matlab_model</span><span class="p">(</span><span class="n">test_output_filename</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">reactions</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">reread</span><span class="o">.</span><span class="n">reactions</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">reread</span><span class="o">.</span><span class="n">metabolites</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">reactions</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">reactions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_metabolites</span><span class="p">),</span> \
+                    <span class="nb">len</span><span class="p">(</span><span class="n">reread</span><span class="o">.</span><span class="n">reactions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_metabolites</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">reactions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">reread</span><span class="o">.</span><span class="n">reactions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="n">unlink</span><span class="p">(</span><span class="n">test_output_filename</span><span class="p">)</span>
 
 <span class="c"># make a test suite to run all of the tests</span></div></div>
-<span class="n">loader</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestLoader</span><span class="p">()</span>
+<span class="n">loader</span> <span class="o">=</span> <span class="n">TestLoader</span><span class="p">()</span>
 <span class="n">suite</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">loadTestsFromModule</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">__name__</span><span class="p">])</span>
 
 <div class="viewcode-block" id="test_all"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.unit_tests.test_all">[docs]</a><span class="k">def</span> <span class="nf">test_all</span><span class="p">():</span>
-    <span class="n">unittest</span><span class="o">.</span><span class="n">TextTestRunner</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">suite</span><span class="p">)</span>
+    <span class="n">TextTestRunner</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">suite</span><span class="p">)</span>
 </div>
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">test_all</span><span class="p">()</span>
@@ -223,7 +256,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2012, Daniel Robert Hyduke.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

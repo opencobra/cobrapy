@@ -302,7 +302,6 @@ with &#8216;True&#8217;</p>
 <dd><p>Bases: <a class="reference internal" href="#cobra.core.Object.Object" title="cobra.core.Object.Object"><tt class="xref py py-class docutils literal"><span class="pre">cobra.core.Object.Object</span></tt></a></p>
 <p>Metabolite is a class for holding information regarding
 a metabolite in a cobra.Reaction object.</p>
-<p>TODO: Clean up.  Allow for creation of empty metabolite</p>
 <dl class="method">
 <dt id="cobra.core.Metabolite.Metabolite.copy">
 <tt class="descname">copy</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cobra/core/Metabolite.html#Metabolite.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Metabolite.Metabolite.copy" title="Permalink to this definition">¶</a></dt>
@@ -310,6 +309,18 @@ a metabolite in a cobra.Reaction object.</p>
 components so the list references aren&#8217;t carried over.</p>
 <p>Additionally, a copy of a reaction is no longer in a cobra.Model.</p>
 <p>This should be fixed with self.__deecopy__ if possible</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cobra.core.Metabolite.Metabolite.get_model">
+<tt class="descname">get_model</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cobra/core/Metabolite.html#Metabolite.get_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Metabolite.Metabolite.get_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the Model object that contain this Object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cobra.core.Metabolite.Metabolite.get_reaction">
+<tt class="descname">get_reaction</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cobra/core/Metabolite.html#Metabolite.get_reaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Metabolite.Metabolite.get_reaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of Reactions that contain this Object</p>
 </dd></dl>
 
 <dl class="method">
@@ -328,12 +339,15 @@ Useful for making sure Reactions are balanced.&#8217;</p>
 
 <dl class="method">
 <dt id="cobra.core.Metabolite.Metabolite.remove_from_model">
-<tt class="descname">remove_from_model</tt><big>(</big><em>model=None</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Metabolite.html#Metabolite.remove_from_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Metabolite.Metabolite.remove_from_model" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">remove_from_model</tt><big>(</big><em>model=None</em>, <em>method='subtractive'</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Metabolite.html#Metabolite.remove_from_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Metabolite.Metabolite.remove_from_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the association</p>
 <dl class="docutils">
-<dt>model: <a class="reference internal" href="#module-cobra.core.Model" title="cobra.core.Model"><tt class="xref py py-class docutils literal"><span class="pre">Model</span></tt></a> object.</dt>
+<dt>model: None or <a class="reference internal" href="#module-cobra.core.Model" title="cobra.core.Model"><tt class="xref py py-class docutils literal"><span class="pre">Model</span></tt></a> object.</dt>
 <dd>Remove the reaction from this model.</dd>
 </dl>
+<p>method: &#8216;subtractive&#8217; or &#8216;destructive&#8217;.  If &#8216;subtractive&#8217; then
+the metabolite is removed from all associated reactions.  If
+&#8216;destructive&#8217; then all associated reactions are removed from the Model.</p>
 </dd></dl>
 
 </dd></dl>
@@ -439,7 +453,9 @@ to the Model</p>
 <dl class="method">
 <dt id="cobra.core.Model.Model.update">
 <tt class="descname">update</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cobra/core/Model.html#Model.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Model.Model.update" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Non functional.  Model.update is moved to ArrayBasedModel.  Please use
+the to_array_based_model property to create an ArrayBasedModel.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -479,6 +495,15 @@ numbers of metabolites might be copied.  Such as when copying reactions.</p>
 <dd><p>Bases: <a class="reference internal" href="#cobra.core.Object.Object" title="cobra.core.Object.Object"><tt class="xref py py-class docutils literal"><span class="pre">cobra.core.Object.Object</span></tt></a></p>
 <p>Reaction is a class for holding information regarding
 a biochemical reaction in a cobra.Model object</p>
+<dl class="method">
+<dt id="cobra.core.Reaction.Reaction.add_gene_reaction_rule">
+<tt class="descname">add_gene_reaction_rule</tt><big>(</big><em>the_rule</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Reaction.html#Reaction.add_gene_reaction_rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Reaction.Reaction.add_gene_reaction_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>This adds a gene reaction rule.</p>
+<p>the_rule:  A boolean representation of the gene requirements for this reaction
+to be active as described in Schellenberger et al 2011 Nature Protocols 6(9):1290-307.</p>
+<p>Note that this method currently replaces any pre-existing rules</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="cobra.core.Reaction.Reaction.add_metabolites">
 <tt class="descname">add_metabolites</tt><big>(</big><em>the_metabolites</em>, <em>combine=True</em>, <em>add_to_container_model=True</em><big>)</big><a class="reference internal" href="_modules/cobra/core/Reaction.html#Reaction.add_metabolites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Reaction.Reaction.add_metabolites" title="Permalink to this definition">¶</a></dt>
@@ -538,6 +563,23 @@ the reaction.</p>
 <dd><p>Return the stoichiometric coefficients for a list of
 metabolites in the reaction.</p>
 <p>the_metabolites:  A list of metabolite Ids.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cobra.core.Reaction.Reaction.get_compartments">
+<tt class="descname">get_compartments</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cobra/core/Reaction.html#Reaction.get_compartments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Reaction.Reaction.get_compartments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cobra.core.Reaction.Reaction.get_gene">
+<tt class="descname">get_gene</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cobra/core/Reaction.html#Reaction.get_gene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Reaction.Reaction.get_gene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of reactants for the reaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cobra.core.Reaction.Reaction.get_model">
+<tt class="descname">get_model</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cobra/core/Reaction.html#Reaction.get_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.core.Reaction.Reaction.get_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the Model object that this Reaction is associated with.</p>
 </dd></dl>
 
 <dl class="method">
@@ -724,7 +766,7 @@ it might be deprecated.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Daniel Robert Hyduke.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

@@ -50,14 +50,22 @@
           <div class="body">
             
   <h1>Source code for cobra.flux_analysis.single_deletion</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">with_statement</span>
 <span class="c">#cobra.flux_analysis.single_deletion.py</span>
 <span class="c">#run single gene or reaction deletions on the model</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">nan</span>
+<span class="n">nan</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;nan&#39;</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">..manipulation</span> <span class="kn">import</span> <span class="n">initialize_growth_medium</span>
 <span class="kn">from</span> <span class="nn">..manipulation</span> <span class="kn">import</span> <span class="n">delete_model_genes</span><span class="p">,</span> <span class="n">undelete_model_genes</span>
-<span class="kn">from</span> <span class="nn">.moma</span> <span class="kn">import</span> <span class="n">moma</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">name</span> <span class="k">as</span> <span class="n">__name</span>
+<span class="k">if</span> <span class="n">__name</span> <span class="o">==</span> <span class="s">&#39;java&#39;</span><span class="p">:</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s">&quot;moma is not supported on </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">__name</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">moma</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s">&quot;moma is not supported on </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">__name</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">.moma</span> <span class="kn">import</span> <span class="n">moma</span>    
 <div class="viewcode-block" id="single_deletion"><a class="viewcode-back" href="../../../cobra.flux_analysis.html#cobra.flux_analysis.single_deletion.single_deletion">[docs]</a><span class="k">def</span> <span class="nf">single_deletion</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">element_list</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                     <span class="n">method</span><span class="o">=</span><span class="s">&#39;fba&#39;</span><span class="p">,</span> <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span><span class="p">,</span>
                     <span class="n">element_type</span><span class="o">=</span><span class="s">&#39;gene&#39;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span>
@@ -359,7 +367,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2012, Daniel Robert Hyduke.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

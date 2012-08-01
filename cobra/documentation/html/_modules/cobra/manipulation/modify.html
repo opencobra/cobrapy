@@ -52,47 +52,12 @@
   <h1>Source code for cobra.manipulation.modify</h1><div class="highlight"><pre>
 <span class="c">#cobra.manipulation.modify.py</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
-
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">sparse</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">where</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">ones</span>
 <span class="kn">from</span> <span class="nn">cobra.core.Reaction</span> <span class="kn">import</span> <span class="n">Reaction</span>
-<div class="viewcode-block" id="add_exchange_reaction"><a class="viewcode-back" href="../../../cobra.manipulation.html#cobra.manipulation.modify.add_exchange_reaction">[docs]</a><span class="k">def</span> <span class="nf">add_exchange_reaction</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">the_metabolites</span><span class="p">,</span>
-                          <span class="n">reaction_reversibility</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Adds exchange reactions to a model for a set of metabolites.</span>
-
-<span class="sd">    cobra_model: A Model object.</span>
-
-<span class="sd">    the_metabolites: A cobra.Metabolite or list of cobra.Metabolites</span>
-
-<span class="sd">    reaction_reversibility: True or False.  Indicates whether the reactions</span>
-<span class="sd">    should be reversible.</span>
-
-
-<span class="sd">    #TODO:  This is not compliant with current </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">the_metabolites</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-        <span class="n">the_metabolites</span> <span class="o">=</span> <span class="p">[</span><span class="n">the_metabolites</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">reaction_reversibility</span><span class="p">:</span>
-        <span class="n">lower_bound</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1000</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">lower_bound</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">the_reactions</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">the_metabolite</span> <span class="ow">in</span> <span class="n">the_metabolites</span><span class="p">:</span>
-        <span class="n">the_reaction</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="s">&#39;EX_&#39;</span> <span class="o">+</span> <span class="n">the_metabolite</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-        <span class="n">the_reaction</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">the_metabolite</span> <span class="o">+</span> <span class="s">&#39; exchange reaction&#39;</span>
-        <span class="n">the_reaction</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">({</span><span class="n">the_metabolite</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">})</span>
-        <span class="n">the_reaction</span><span class="o">.</span><span class="n">reversibility</span> <span class="o">=</span> <span class="n">reaction_reversibility</span>
-        <span class="n">the_reaction</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="n">lower_bound</span>
-        <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="mi">1000</span>
-        <span class="n">the_reaction</span><span class="o">.</span><span class="n">objective_coefficient</span> <span class="o">=</span> <span class="mf">0.</span>
-        <span class="n">the_reaction</span><span class="o">.</span><span class="n">boundary</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="n">the_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">the_reaction</span><span class="p">)</span>
-    <span class="n">cobra_model</span><span class="o">.</span><span class="n">add_reactions</span><span class="p">(</span><span class="n">the_reactions</span><span class="p">)</span>
-    
-</div>
-<div class="viewcode-block" id="initialize_growth_medium"><a class="viewcode-back" href="../../../cobra.manipulation.html#cobra.manipulation.modify.initialize_growth_medium">[docs]</a><span class="k">def</span> <span class="nf">initialize_growth_medium</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">the_medium</span><span class="o">=</span><span class="s">&#39;MgM&#39;</span><span class="p">,</span> <span class="n">exchange_reactions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                             <span class="n">reactions_to_disable</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                             <span class="n">exchange_lower_bound</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">exchange_upper_bound</span><span class="o">=</span><span class="mf">1000.</span><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<div class="viewcode-block" id="initialize_growth_medium"><a class="viewcode-back" href="../../../cobra.manipulation.html#cobra.manipulation.modify.initialize_growth_medium">[docs]</a><span class="k">def</span> <span class="nf">initialize_growth_medium</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">the_medium</span><span class="o">=</span><span class="s">&#39;MgM&#39;</span><span class="p">,</span> 
+                             <span class="n">external_boundary_compartment</span><span class="o">=</span><span class="s">&#39;e&#39;</span><span class="p">,</span>
+                             <span class="n">external_boundary_reactions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                             <span class="n">reaction_lower_bound</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">reaction_upper_bound</span><span class="o">=</span><span class="mf">1000.</span><span class="p">,</span>
                              <span class="n">irreversible</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Sets all of the input fluxes to the model to zero and then will</span>
 <span class="sd">    initialize the input fluxes to the values specified in the_medium if</span>
@@ -100,25 +65,28 @@
 <span class="sd">    that to do the initialization.</span>
 
 <span class="sd">    cobra_model: A cobra.Model object.</span>
-<span class="sd">    </span>
-<span class="sd">    the_medium: Is a string, or a dictionary.  If a string then the</span>
-<span class="sd">    initialize_growth_medium function expects that cobra_model has an</span>
+
+
+<span class="sd">    the_medium: A string, or a dictionary.  If a string then the</span>
+<span class="sd">    initialize_growth_medium function expects that the_model has an</span>
 <span class="sd">    attribute dictionary called media_compositions, which is a dictionary of</span>
 <span class="sd">    dictionaries for various medium compositions.  Where a medium</span>
-<span class="sd">    composition is a dictionary of exchange reaction ids for the medium</span>
-<span class="sd">    components and the exchange fluxes for each medium component; note that</span>
-<span class="sd">    these fluxes must be negative because they are being exchanged into the</span>
-<span class="sd">    system</span>
+<span class="sd">    composition is a dictionary of external boundary reaction ids for the medium</span>
+<span class="sd">    components and the external boundary fluxes for each medium component.</span>
 
-<span class="sd">    exchange_reactions: None or a list of exchange reactions.  Because not all</span>
-<span class="sd">    exchange reactions are required to start with EX_ in all models allow</span>
-<span class="sd">    the user to specify the reactions</span>
 
-<span class="sd">    exchange_lower_bound: Float.  The default value to use for the lower</span>
-<span class="sd">    bound for the exchange reactions.</span>
+<span class="sd">    external_boundary_compartment:  None or a string.  If not None then it specifies</span>
+<span class="sd">    the compartment in which to disable all of the external systems boundaries.</span>
 
-<span class="sd">    exchange_upper_bound: Float.  The default value to use for the upper</span>
-<span class="sd">    bound for the exchange_reactions.</span>
+<span class="sd">    external_boundary_reactions: None or a list of external_boundaries that are to</span>
+<span class="sd">    have their bounds reset.  This acts in conjunction with external_boundary_compartment.</span>
+
+
+<span class="sd">    reaction_lower_bound: Float.  The default value to use for the lower</span>
+<span class="sd">    bound for the boundary reactions.</span>
+
+<span class="sd">    reaction_upper_bound: Float.  The default value to use for the upper</span>
+<span class="sd">    bound for the boundary.</span>
 
 <span class="sd">    irreversible: Boolean.  If the model is irreversible then the medium composition</span>
 <span class="sd">    is taken as the upper bound</span>
@@ -135,31 +103,32 @@
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not in the model&#39;s media list&quot;</span><span class="o">%</span><span class="n">the_medium</span><span class="p">)</span>     
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;the model doesn&#39;t have attribute media_compositions and the medium is not a dict&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">exchange_reactions</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="c">#NOTE this is a bad way to do things.  Should just find reactions that cross</span>
-        <span class="c">#whatever the external boundary</span>
-        <span class="n">exchange_reactions</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;EX_&#39;</span><span class="p">)]</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">exchange_reactions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;id&#39;</span><span class="p">):</span>
-        <span class="n">exchange_indices</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">exchange_reactions</span><span class="p">)</span>
-        <span class="c">#SPEED UP</span>
-        <span class="n">exchange_reactions</span> <span class="o">=</span> <span class="p">[</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
-                              <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">exchange_indices</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">the_reaction</span> <span class="ow">in</span> <span class="n">exchange_reactions</span><span class="p">:</span>
-        <span class="n">the_reaction</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="n">exchange_lower_bound</span>
-        <span class="k">if</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="n">exchange_upper_bound</span>
-    <span class="k">if</span> <span class="n">reactions_to_disable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">disabled_indices</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">reactions_to_disable</span><span class="p">)</span>
-        <span class="n">disabled_reactions</span> <span class="o">=</span> <span class="p">[</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
-                              <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">disabled_indices</span><span class="p">]</span>
-        <span class="p">[(</span><span class="nb">setattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s">&#39;lower_bound&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">),</span>
-          <span class="nb">setattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s">&#39;upper_bound&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">))</span>
-         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">disabled_reactions</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">external_boundary_reactions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">external_boundary_reactions</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">external_boundary_reactions</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">,</span> <span class="n">external_boundary_reactions</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">external_boundary_compartment</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s">&quot;We are initializing the medium without first adjusting all external boundary reactions&quot;</span><span class="p">)</span>
+        
+    <span class="c">#Select the system_boundary reactions to reset</span>
+    <span class="k">if</span> <span class="n">external_boundary_compartment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">_system_boundaries</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">get_compartments</span><span class="p">())</span>
+                                   <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span>
+                                   <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">boundary</span> <span class="o">==</span> <span class="s">&#39;system_boundary&#39;</span><span class="p">])</span>
+        <span class="p">[</span><span class="n">_system_boundaries</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">_system_boundaries</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">external_boundary_compartment</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">external_boundary_reactions</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">external_boundary_reactions</span> <span class="o">=</span> <span class="n">_system_boundaries</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">external_boundary_reactions</span> <span class="o">+=</span> <span class="n">_system_boundaries</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 
+
+    <span class="k">for</span> <span class="n">the_reaction</span> <span class="ow">in</span> <span class="n">external_boundary_reactions</span><span class="p">:</span>
+        <span class="n">the_reaction</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="n">reaction_lower_bound</span>
+        <span class="k">if</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="n">reaction_upper_bound</span>
     <span class="c">#Update the model inputs based on the_medium</span>
     <span class="k">for</span> <span class="n">the_component</span> <span class="ow">in</span> <span class="n">medium_composition</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-        <span class="n">the_index</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">the_component</span><span class="p">)</span>
-        <span class="n">the_reaction</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">[</span><span class="n">the_index</span><span class="p">]</span>
+        <span class="n">the_reaction</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span><span class="n">the_component</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">irreversible</span><span class="p">:</span>
             <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="n">medium_composition</span><span class="p">[</span><span class="n">the_component</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -270,24 +239,7 @@
     <span class="k">if</span> <span class="n">return_gene_indices</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">{</span><span class="s">&#39;boolean_rule&#39;</span><span class="p">:</span><span class="n">boolean_rule</span><span class="p">,</span> <span class="s">&#39;gene_indices&#39;</span><span class="p">:</span><span class="n">the_gene_indices</span><span class="p">}</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">boolean_rule</span>
-</div>
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
-    <span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">create_test_model</span>
-    <span class="n">cobra_model</span> <span class="o">=</span> <span class="n">create_test_model</span><span class="p">()</span>
-
-
-    <span class="k">print</span> <span class="s">&#39;Move this to test&#39;</span>
-    <span class="n">irreversible_model</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">)</span>
-    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
-    <span class="n">convert_to_irreversible</span><span class="p">(</span><span class="n">irreversible_model</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&#39;Convert to irreversible took </span><span class="si">%1.3f</span><span class="s"> seconds&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start_time</span><span class="p">)</span>
-
-    <span class="n">reverted_model</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">irreversible_model</span><span class="p">)</span>
-    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
-    <span class="n">revert_to_reversible</span><span class="p">(</span><span class="n">reverted_model</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&#39;Convert to reversible took </span><span class="si">%1.3f</span><span class="s"> seconds&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start_time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">boolean_rule</span></div>
 </pre></div>
 
           </div>
@@ -327,7 +279,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2012, Daniel Robert Hyduke.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

@@ -50,51 +50,83 @@
           <div class="body">
             
   <h1>Source code for cobra.test</h1><div class="highlight"><pre>
-<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">abspath</span> <span class="k">as</span> <span class="n">_abspath</span>
-<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">_join</span>
-<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">split</span> <span class="k">as</span> <span class="n">_split</span>
-<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">sep</span> <span class="k">as</span> <span class="n">_sep</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">with_statement</span><span class="p">,</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">name</span> <span class="k">as</span> <span class="n">__name</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="n">test_import_string</span> <span class="o">=</span> <span class="s">&#39;import cobra.test.</span><span class="si">%s</span><span class="s"> as </span><span class="si">%s</span><span class="s">&#39;</span>
+<span class="n">available_tests</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;unit_tests&#39;</span><span class="p">,</span> <span class="s">&#39;solvers&#39;</span><span class="p">,</span> <span class="s">&#39;flux_analysis&#39;</span><span class="p">]</span>
+<span class="c">#if not using jython then add the tests that don&#39;t currently run through jython</span>
+<span class="c">## if __name != &#39;java&#39;:</span>
+<span class="c">##      available_tests += [&#39;flux_analysis&#39;]</span>
+    
 
-<span class="n">data_directory</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">_split</span><span class="p">(</span><span class="n">_abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&quot;data&quot;</span><span class="p">)</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="n">data_directory</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">_sep</span><span class="p">):</span>
-    <span class="n">data_directory</span> <span class="o">+=</span> <span class="n">_sep</span>
+<span class="k">del</span> <span class="n">__name</span>
 
-<span class="n">salmonella_sbml</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;salmonella.xml&quot;</span><span class="p">)</span>
-<span class="n">salmonella_pickle</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;salmonella.pickle&quot;</span><span class="p">)</span>
-<span class="n">salmonella_reaction_p_values_pickle</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;salmonella_reaction_p_values.pickle&quot;</span><span class="p">)</span>
-<span class="n">ecoli_sbml</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;iJO1366.xml&quot;</span><span class="p">)</span>
-<span class="n">ecoli_pickle</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;iJO1366.pickle&quot;</span><span class="p">)</span>
-<span class="n">ecoli_mat</span> <span class="o">=</span> <span class="n">_join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;iJO1366.mat&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">abspath</span> <span class="k">as</span> <span class="n">__abspath</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">__join</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">split</span> <span class="k">as</span> <span class="n">__split</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">sep</span> <span class="k">as</span> <span class="n">__sep</span>
+
+<span class="n">data_directory</span> <span class="o">=</span> <span class="n">__join</span><span class="p">(</span><span class="n">__split</span><span class="p">(</span><span class="n">__abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&quot;data&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">data_directory</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">__sep</span><span class="p">):</span>
+    <span class="n">data_directory</span> <span class="o">+=</span> <span class="n">__sep</span>
+
+<span class="n">salmonella_sbml</span> <span class="o">=</span> <span class="n">__join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;salmonella.xml&quot;</span><span class="p">)</span>
+<span class="n">salmonella_pickle</span> <span class="o">=</span> <span class="n">__join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;salmonella.pickle&quot;</span><span class="p">)</span>
+<span class="n">salmonella_reaction_p_values_pickle</span> <span class="o">=</span> <span class="n">__join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;salmonella_reaction_p_values.pickle&quot;</span><span class="p">)</span>
+<span class="n">ecoli_sbml</span> <span class="o">=</span> <span class="n">__join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;iJO1366.xml&quot;</span><span class="p">)</span>
+<span class="n">ecoli_pickle</span> <span class="o">=</span> <span class="n">__join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;iJO1366.pickle&quot;</span><span class="p">)</span>
+<span class="n">ecoli_mat</span> <span class="o">=</span> <span class="n">__join</span><span class="p">(</span><span class="n">data_directory</span><span class="p">,</span> <span class="s">&quot;iJO1366.mat&quot;</span><span class="p">)</span>
+<span class="n">__test_pickles</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;Salmonella_enterica&#39;</span><span class="p">:</span> <span class="n">salmonella_pickle</span><span class="p">,</span>
+                  <span class="s">&#39;Escherichia_coli&#39;</span><span class="p">:</span> <span class="n">ecoli_pickle</span><span class="p">}</span>
+<span class="n">__test_xml</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;Salmonella_enterica&#39;</span><span class="p">:</span> <span class="n">salmonella_sbml</span><span class="p">,</span>
+              <span class="s">&#39;Escherichia_coli&#39;</span><span class="p">:</span> <span class="n">ecoli_sbml</span><span class="p">}</span>
+
 
 <div class="viewcode-block" id="create_test_model"><a class="viewcode-back" href="../../cobra.test.html#cobra.test.create_test_model">[docs]</a><span class="k">def</span> <span class="nf">create_test_model</span><span class="p">(</span><span class="n">test_pickle</span><span class="o">=</span><span class="n">salmonella_pickle</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;returns the salmonella model for testing&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Returns a cobra model for testing.  The default model is the up to date</span>
+<span class="sd">    version of the Salmonella enterica Typhimurium LT2 model published in</span>
+<span class="sd">    Thiele et al. 2011 BMC Sys Bio 5:8</span>
+
+<span class="sd">    test_pickle: The complete file name of a pickled cobra.Model or SBML XML</span>
+<span class="sd">    file to be read.  We currently provide Salmonella enterica Typhimurium</span>
+<span class="sd">    and Escherichia coli models whose paths are stored in cobra.test.salmonella_pickle</span>
+<span class="sd">    and cobra.test.ecoli_pickle, respectively.  The ecoli model is a variant of the</span>
+<span class="sd">    model published in Orth et al. 2011 Mol Syst Biol 7:535</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">name</span> <span class="k">as</span> <span class="n">__name</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">cPickle</span> <span class="kn">import</span> <span class="n">load</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">pickle</span> <span class="kn">import</span> <span class="n">load</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">test_pickle</span><span class="p">,</span> <span class="s">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span> 
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">test_pickle</span><span class="p">,</span> <span class="s">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="c">#if the pickle can&#39;t be loaded then load the sbml xml</span>
+        <span class="kn">import</span> <span class="nn">sys</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;../..&quot;</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">cobra.io</span> <span class="kn">import</span> <span class="n">read_sbml_model</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">read_sbml_model</span><span class="p">(</span><span class="n">salmonella_sbml</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">model</span>
 
 </div>
 <div class="viewcode-block" id="test_all"><a class="viewcode-back" href="../../cobra.test.html#cobra.test.test_all">[docs]</a><span class="k">def</span> <span class="nf">test_all</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;###running unit tests on cobra py###&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">sys</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;../..&quot;</span><span class="p">)</span>
     <span class="kn">import</span> <span class="nn">unittest</span>
-    <span class="kn">from</span> <span class="nn">cobra.test.unit_tests</span> <span class="kn">import</span> <span class="n">test_all</span>
-    <span class="k">print</span> <span class="s">&#39;###running general unit tests###&#39;</span>
-    <span class="n">test_all</span><span class="p">()</span>
-    <span class="kn">from</span> <span class="nn">cobra.test.flux_analysis</span> <span class="kn">import</span> <span class="n">test_all</span>
-    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">###running flux_analysis unit tests###&#39;</span>
-    <span class="n">test_all</span><span class="p">()</span>
-    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">###running solver unit tests###&#39;</span>
-    <span class="kn">from</span> <span class="nn">cobra.test.solvers</span> <span class="kn">import</span> <span class="n">test_all</span>
-    <span class="n">test_all</span><span class="p">()</span>
-
+    <span class="k">for</span> <span class="n">the_test</span> <span class="ow">in</span> <span class="n">available_tests</span><span class="p">:</span>
+        <span class="k">exec</span><span class="p">(</span><span class="n">test_import_string</span><span class="o">%</span><span class="p">(</span><span class="n">the_test</span><span class="p">,</span> <span class="n">the_test</span><span class="p">))</span>
+        <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n\n</span><span class="s">###running </span><span class="si">%s</span><span class="s"> tests###&#39;</span><span class="o">%</span><span class="n">the_test</span>
+        <span class="nb">eval</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">.test_all()&#39;</span><span class="o">%</span><span class="n">the_test</span><span class="p">)</span>
+        
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </div>
-<span class="k">del</span> <span class="n">_abspath</span>
-<span class="k">del</span> <span class="n">_join</span>
-<span class="k">del</span> <span class="n">_split</span>
-<span class="k">del</span> <span class="n">_sep</span>
+<span class="k">del</span> <span class="n">__abspath</span><span class="p">,</span> <span class="n">__join</span><span class="p">,</span> <span class="n">__split</span><span class="p">,</span> <span class="n">__sep</span>
 
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">test_all</span><span class="p">()</span>
@@ -137,7 +169,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2012, Daniel Robert Hyduke.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

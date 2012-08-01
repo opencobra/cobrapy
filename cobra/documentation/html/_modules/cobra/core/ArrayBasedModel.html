@@ -66,8 +66,20 @@
 <div class="viewcode-block" id="ArrayBasedModel"><a class="viewcode-back" href="../../../cobra.core.html#cobra.core.ArrayBasedModel.ArrayBasedModel">[docs]</a><span class="k">class</span> <span class="nc">ArrayBasedModel</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;ArrayBasedModel is a class that adds arrays and vectors to</span>
 <span class="sd">    a cobra.Model to make it easier to perform linear algebra operations.</span>
-
 <span class="sd">    </span>
+<span class="sd">    S : :class:`scipy.sparse.lil_matrix` (in CPython)</span>
+<span class="sd">        Stoichiometric matrix of the model</span>
+
+<span class="sd">    lower_bounds</span>
+
+<span class="sd">    upper_bounds</span>
+
+<span class="sd">    objective_coefficients</span>
+
+<span class="sd">    b</span>
+
+<span class="sd">    constraint_sense</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make sure all cobra.Objects in the model point to the model</span>
@@ -101,7 +113,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">constraint_sense</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
-            
+
     <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other_model</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Adds two models. +</span>
 
@@ -144,7 +156,7 @@
         <span class="sd">&quot;&quot;&quot;Will add a list of metabolites to the the object, if they do not</span>
 <span class="sd">        exist and then expand the stochiometric matrix</span>
 
-<span class="sd">        metabolite_list: A list of cobra.Metabolite objects</span>
+<span class="sd">        metabolite_list: A list of :class:`~cobra.core.Metabolite` objects</span>
 
 <span class="sd">        expand_stoichimetric_matrix: Boolean.  If True and self.S is</span>
 <span class="sd">        not None then it will add rows to self.S.  self.S must be</span>
@@ -154,6 +166,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">Model</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">(</span><span class="n">metabolite_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraint_sense</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">_constraint_sense</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metabolites</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">expand_stoichiometric_matrix</span><span class="p">:</span>
             <span class="n">s_expansion</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metabolites</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">s_expansion</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -167,7 +180,6 @@
         <span class="sd">&quot;&quot;&quot;Updates everything associated with the reaction.id of reaction.</span>
 
 <span class="sd">        reaction: A cobra.Reaction object, or a list of these objects.</span>
-
 
 <span class="sd">        WARNING: This function is only used after the Model has been</span>
 <span class="sd">        converted to matrices.  It is typically faster to access the objects</span>
@@ -205,7 +217,7 @@
         <span class="sd">&quot;&quot;&quot;Will add a cobra.Reaction object to the model, if</span>
 <span class="sd">        reaction.id is not in self.reactions.</span>
 
-<span class="sd">        reaction_list: A cobra.Reaction object or a list of them</span>
+<span class="sd">        reaction_list: A :class:`~cobra.core.Reaction` object or a list of them</span>
 
 <span class="sd">        update_matrices:  Boolean.  If true populate / update matrices</span>
 <span class="sd">        S, lower_bounds, upper_bounds, .... Note this is slow to run</span>
@@ -251,6 +263,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">lower_bounds</span> <span class="o">=</span> <span class="n">array</span><span class="p">(</span><span class="n">lower_bounds</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">upper_bounds</span> <span class="o">=</span> <span class="n">array</span><span class="p">(</span><span class="n">upper_bounds</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">objective_coefficients</span> <span class="o">=</span> <span class="n">array</span><span class="p">(</span><span class="n">objective_coefficients</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">_update_metabolite_vectors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;regenerates _b and _constraint_sense</span>
 
@@ -264,10 +277,9 @@
         <span class="p">[(</span><span class="n">_b</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">_bound</span><span class="p">),</span>
           <span class="n">_constraint_sense</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">_constraint_sense</span><span class="p">))</span>
          <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metabolites</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_b</span> <span class="o">=</span> <span class="n">array</span><span class="p">(</span><span class="n">_b</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_constraint_sense</span> <span class="o">=</span> <span class="n">_constraint_sense</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">array</span><span class="p">(</span><span class="n">_b</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraint_sense</span> <span class="o">=</span> <span class="n">_constraint_sense</span>
          
-
     <span class="k">def</span> <span class="nf">_update_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reaction_list</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        reaction_list: None or a list of cobra.Reaction objects that are in</span>
@@ -378,7 +390,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2012, Daniel Robert Hyduke.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

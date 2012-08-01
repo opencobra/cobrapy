@@ -63,32 +63,61 @@
 <h2><tt class="xref py py-mod docutils literal"><span class="pre">solvers</span></tt> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <span class="target" id="module-cobra.solvers"></span><dl class="function">
 <dt id="cobra.solvers.optimize">
-<tt class="descclassname">cobra.solvers.</tt><tt class="descname">optimize</tt><big>(</big><em>cobra_model</em>, <em>solver='glpk'</em>, <em>error_reporting=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers.html#optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.optimize" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">cobra.solvers.</tt><tt class="descname">optimize</tt><big>(</big><em>cobra_model</em>, <em>solver='glpk'</em>, <em>error_reporting=True</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers.html#optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.optimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper to optimization solvers</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-cobra.solvers.glpk">
-<span id="glpk-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">glpk</span></tt> Module<a class="headerlink" href="#module-cobra.solvers.glpk" title="Permalink to this headline">¶</a></h2>
-<p>bindings to the glpk solver through pyglpk</p>
+<div class="section" id="cplex-solver-module">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">cplex_solver</span></tt> Module<a class="headerlink" href="#cplex-solver-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-cobra.solvers.glpk_solver">
+<span id="glpk-solver-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">glpk_solver</span></tt> Module<a class="headerlink" href="#module-cobra.solvers.glpk_solver" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="cobra.solvers.glpk.create_problem">
-<tt class="descclassname">cobra.solvers.glpk.</tt><tt class="descname">create_problem</tt><big>(</big><em>cobra_model</em>, <em>objective_sense='maximize'</em>, <em>lp=None</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk.html#create_problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk.create_problem" title="Permalink to this definition">¶</a></dt>
+<dt id="cobra.solvers.glpk_solver.create_problem">
+<tt class="descclassname">cobra.solvers.glpk_solver.</tt><tt class="descname">create_problem</tt><big>(</big><em>cobra_model</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk_solver.html#create_problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk_solver.create_problem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solver-specific method for constructing a solver problem from
+a cobra.Model.  This can be tuned for performance using kwargs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.solvers.glpk_solver.format_solution">
+<tt class="descclassname">cobra.solvers.glpk_solver.</tt><tt class="descname">format_solution</tt><big>(</big><em>lp</em>, <em>cobra_model</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk_solver.html#format_solution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk_solver.format_solution" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="cobra.solvers.glpk.solve">
-<tt class="descclassname">cobra.solvers.glpk.</tt><tt class="descname">solve</tt><big>(</big><em>cobra_model</em>, <em>objective_sense='maximize'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk.html#solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk.solve" title="Permalink to this definition">¶</a></dt>
+<dt id="cobra.solvers.glpk_solver.get_status">
+<tt class="descclassname">cobra.solvers.glpk_solver.</tt><tt class="descname">get_status</tt><big>(</big><em>lp</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk_solver.html#get_status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk_solver.get_status" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="cobra.solvers.glpk.solve_problem">
-<tt class="descclassname">cobra.solvers.glpk.</tt><tt class="descname">solve_problem</tt><big>(</big><em>lp</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk.html#solve_problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk.solve_problem" title="Permalink to this definition">¶</a></dt>
+<dt id="cobra.solvers.glpk_solver.set_parameter">
+<tt class="descclassname">cobra.solvers.glpk_solver.</tt><tt class="descname">set_parameter</tt><big>(</big><em>lp</em>, <em>parameter_name</em>, <em>parameter_value</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk_solver.html#set_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk_solver.set_parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>with pyglpk the parameters are set during the solve phase</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.solvers.glpk_solver.solve">
+<tt class="descclassname">cobra.solvers.glpk_solver.</tt><tt class="descname">solve</tt><big>(</big><em>cobra_model</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk_solver.html#solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk_solver.solve" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="function">
+<dt id="cobra.solvers.glpk_solver.solve_problem">
+<tt class="descclassname">cobra.solvers.glpk_solver.</tt><tt class="descname">solve_problem</tt><big>(</big><em>lp</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk_solver.html#solve_problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk_solver.solve_problem" title="Permalink to this definition">¶</a></dt>
+<dd><p>A performance tunable method for updating a model problem file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cobra.solvers.glpk_solver.update_problem">
+<tt class="descclassname">cobra.solvers.glpk_solver.</tt><tt class="descname">update_problem</tt><big>(</big><em>lp</em>, <em>cobra_model</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk_solver.html#update_problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk_solver.update_problem" title="Permalink to this definition">¶</a></dt>
+<dd><p>A performance tunable method for updating a model problem file</p>
+<p>lp: A gurobi problem object</p>
+<p>cobra_model: the cobra.Model corresponding to &#8216;lp&#8217;</p>
+</dd></dl>
 
 </div>
-<div class="section" id="gurobi-module">
-<h2><tt class="xref py py-mod docutils literal"><span class="pre">gurobi</span></tt> Module<a class="headerlink" href="#gurobi-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="gurobi-solver-module">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">gurobi_solver</span></tt> Module<a class="headerlink" href="#gurobi-solver-module" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-cobra.solvers.legacy">
 <span id="legacy-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">legacy</span></tt> Module<a class="headerlink" href="#module-cobra.solvers.legacy" title="Permalink to this headline">¶</a></h2>
@@ -97,6 +126,9 @@
 <tt class="descclassname">cobra.solvers.legacy.</tt><tt class="descname">test_solvers</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cobra/solvers/legacy.html#test_solvers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.legacy.test_solvers" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</div>
+<div class="section" id="module-cobra.solvers.parameters">
+<span id="parameters-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">parameters</span></tt> Module<a class="headerlink" href="#module-cobra.solvers.parameters" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -110,9 +142,11 @@
   <ul>
 <li><a class="reference internal" href="#">solvers Package</a><ul>
 <li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">solvers</span></tt> Package</a></li>
-<li><a class="reference internal" href="#module-cobra.solvers.glpk"><tt class="docutils literal"><span class="pre">glpk</span></tt> Module</a></li>
-<li><a class="reference internal" href="#gurobi-module"><tt class="docutils literal"><span class="pre">gurobi</span></tt> Module</a></li>
+<li><a class="reference internal" href="#cplex-solver-module"><tt class="docutils literal"><span class="pre">cplex_solver</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-cobra.solvers.glpk_solver"><tt class="docutils literal"><span class="pre">glpk_solver</span></tt> Module</a></li>
+<li><a class="reference internal" href="#gurobi-solver-module"><tt class="docutils literal"><span class="pre">gurobi_solver</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-cobra.solvers.legacy"><tt class="docutils literal"><span class="pre">legacy</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-cobra.solvers.parameters"><tt class="docutils literal"><span class="pre">parameters</span></tt> Module</a></li>
 </ul>
 </li>
 </ul>
@@ -166,7 +200,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2012, Daniel Robert Hyduke.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

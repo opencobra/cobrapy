@@ -50,15 +50,28 @@
           <div class="body">
             
   <h1>Source code for cobra.flux_analysis.double_deletion</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">with_statement</span>
 <span class="c">#cobra.flux_analysis.double_deletion.py</span>
 <span class="c">#runs flux variablity analysis on a Model object.</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span><span class="p">,</span><span class="n">ceil</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">vstack</span><span class="p">,</span><span class="n">zeros</span><span class="p">,</span> <span class="n">nan</span>
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">sparse</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">zeros</span> <span class="c">#only item to replace to gain jython compatibility</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
-<span class="kn">from</span> <span class="nn">.moma</span> <span class="kn">import</span> <span class="n">moma</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
-<span class="kn">from</span> <span class="nn">cPickle</span> <span class="kn">import</span> <span class="n">dump</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">name</span> <span class="k">as</span> <span class="n">__name</span>
+<span class="n">nan</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;nan&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">modules</span> <span class="k">as</span> <span class="n">__modules</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="k">if</span> <span class="n">__name</span> <span class="o">==</span> <span class="s">&#39;java&#39;</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not yet supported on jython&quot;</span><span class="o">%</span><span class="n">__modules</span><span class="p">[</span><span class="n">__name__</span><span class="p">])</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s">&quot;moma is not supported on </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">__name</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">moma</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s">&quot;moma is not supported on </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">__name</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">.moma</span> <span class="kn">import</span> <span class="n">moma</span>    
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cPickle</span> <span class="kn">import</span> <span class="n">dump</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pickle</span> <span class="kn">import</span> <span class="n">dump</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">cobra.external.ppmap</span> <span class="kn">import</span> <span class="n">ppmap</span>
     <span class="n">__parallel_mode_available</span> <span class="o">=</span> <span class="bp">True</span>
@@ -68,8 +81,8 @@
 
 <span class="kn">from</span> <span class="nn">..manipulation</span> <span class="kn">import</span> <span class="n">initialize_growth_medium</span>
 <span class="kn">from</span> <span class="nn">..manipulation</span> <span class="kn">import</span> <span class="n">delete_model_genes</span><span class="p">,</span> <span class="n">undelete_model_genes</span>
-<div class="viewcode-block" id="double_deletion_parallel"><a class="viewcode-back" href="../../../cobra.flux_analysis.html#cobra.flux_analysis.double_deletion.double_deletion_parallel">[docs]</a><span class="k">def</span> <span class="nf">double_deletion_parallel</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">n_processes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-                             <span class="n">genes_of_interest</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;fba&#39;</span><span class="p">,</span> <span class="n">the_medium</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">__double_deletion_parallel</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">number_of_processes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                             <span class="n">elements_of_interest</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;fba&#39;</span><span class="p">,</span> 
                              <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span><span class="p">,</span> <span class="n">element_type</span><span class="o">=</span><span class="s">&#39;gene&#39;</span><span class="p">,</span>
                              <span class="n">solver</span><span class="o">=</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span>
                              <span class="n">error_reporting</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -78,9 +91,9 @@
 
 <span class="sd">    cobra_model: a cobra.Model object</span>
 
-<span class="sd">    n_processes: is the number of parallel processes to start</span>
+<span class="sd">    number_of_processes: is the number of parallel processes to start</span>
 
-<span class="sd">    genes_of_interest: Is None, a list of genes, or a list of two lists of</span>
+<span class="sd">    elements_of_interest: Is None, a list of genes, or a list of two lists of</span>
 <span class="sd">    genes.  If None then double_deletion is run on all genes in</span>
 <span class="sd">    the_model.genes.  If a list of genes then double_deletion is run for all</span>
 <span class="sd">    combinations of genes in double_deletion.  If a list of of two lists of</span>
@@ -90,14 +103,6 @@
 <span class="sd">    method: &#39;fba&#39; or &#39;moma&#39; to run flux balance analysis or minimization</span>
 <span class="sd">    of metabolic adjustments.</span>
 <span class="sd">    </span>
-<span class="sd">    the_medium: Is None, a string, or a dictionary.  If a string then the</span>
-<span class="sd">    initialize_growth_medium function expects that the_model has an</span>
-<span class="sd">    attribute dictionary called media_compositions, which is a dictionary of</span>
-<span class="sd">    dictionaries for various medium compositions.  Where a medium</span>
-<span class="sd">    composition is a dictionary of exchange reaction ids for the medium</span>
-<span class="sd">    components and the exchange fluxes for each medium component; note that</span>
-<span class="sd">    these fluxes must be negative because they are being exchanged into the</span>
-<span class="sd">    system.</span>
 
 <span class="sd">    the_problem: Is None or &#39;reuse&#39;</span>
 
@@ -119,18 +124,19 @@
         <span class="c">#to &#39;return&#39; if one is provided.</span>
         <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span>
     <span class="k">if</span> <span class="n">element_type</span> <span class="o">==</span> <span class="s">&#39;gene&#39;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">double_gene_deletion_parallel</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">n_processes</span><span class="o">=</span><span class="n">n_processes</span><span class="p">,</span>
-                                             <span class="n">genes_of_interest</span><span class="o">=</span><span class="n">genes_of_interest</span><span class="p">,</span>
-                                             <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">the_medium</span><span class="o">=</span><span class="n">the_medium</span><span class="p">,</span>
+        <span class="k">return</span> <span class="n">__double_gene_deletion_parallel</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">number_of_processes</span><span class="o">=</span><span class="n">number_of_processes</span><span class="p">,</span>
+                                             <span class="n">genes_of_interest</span><span class="o">=</span><span class="n">elements_of_interest</span><span class="p">,</span>
+                                             <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
                                              <span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
                                              <span class="n">error_reporting</span><span class="o">=</span><span class="n">error_reporting</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Double deletion not yet implemented for element_type = </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">element_type</span><span class="p">)</span>
 
-</div>
+
 <div class="viewcode-block" id="double_deletion"><a class="viewcode-back" href="../../../cobra.flux_analysis.html#cobra.flux_analysis.double_deletion.double_deletion">[docs]</a><span class="k">def</span> <span class="nf">double_deletion</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">element_list_1</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">element_list_2</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                     <span class="n">method</span><span class="o">=</span><span class="s">&#39;fba&#39;</span><span class="p">,</span> <span class="n">single_deletion_growth_dict</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span><span class="p">,</span>
-                    <span class="n">element_type</span><span class="o">=</span><span class="s">&#39;gene&#39;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span> <span class="n">error_reporting</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+                    <span class="n">element_type</span><span class="o">=</span><span class="s">&#39;gene&#39;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span> <span class="n">error_reporting</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                    <span class="n">number_of_processes</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Wrapper for double_gene_deletion and the currently unimplemented</span>
 <span class="sd">    double_reaction_deletion functions</span>
 
@@ -160,23 +166,37 @@
 <span class="sd">    dimension (y), and the growth simulation data (data).</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">element_type</span> <span class="o">==</span> <span class="s">&#39;gene&#39;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">double_gene_deletion</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">gene_list_1</span><span class="o">=</span><span class="n">element_list_1</span><span class="p">,</span>
-                                    <span class="n">gene_list_2</span><span class="o">=</span><span class="n">element_list_2</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
-                                    <span class="n">single_deletion_growth_dict</span><span class="o">=</span><span class="n">single_deletion_growth_dict</span><span class="p">,</span>
-                                    <span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
-                                    <span class="n">error_reporting</span><span class="o">=</span><span class="n">error_reporting</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">number_of_processes</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">elements_of_interest</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="n">element_list_1</span><span class="p">,</span>
+                                            <span class="n">element_list_2</span><span class="p">]</span>
+                                <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">elements_of_interest</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">elements_of_interest</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="n">__double_deletion_parallel</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">number_of_processes</span><span class="o">=</span><span class="n">number_of_processes</span><span class="p">,</span>
+                                         <span class="n">elements_of_interest</span><span class="o">=</span><span class="n">elements_of_interest</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+                                         <span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span> <span class="n">element_type</span><span class="o">=</span><span class="n">element_type</span><span class="p">,</span>
+                                         <span class="n">error_reporting</span><span class="o">=</span><span class="n">error_reporting</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Double deletion not yet implemented for element_type = </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">element_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">element_type</span> <span class="o">==</span> <span class="s">&#39;gene&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">double_gene_deletion</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">gene_list_1</span><span class="o">=</span><span class="n">element_list_1</span><span class="p">,</span>
+                                        <span class="n">gene_list_2</span><span class="o">=</span><span class="n">element_list_2</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+                                        <span class="n">single_deletion_growth_dict</span><span class="o">=</span><span class="n">single_deletion_growth_dict</span><span class="p">,</span>
+                                        <span class="n">the_problem</span><span class="o">=</span><span class="n">the_problem</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
+                                        <span class="n">error_reporting</span><span class="o">=</span><span class="n">error_reporting</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Double deletion not yet implemented for element_type = </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">element_type</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="double_gene_deletion"><a class="viewcode-back" href="../../../cobra.flux_analysis.html#cobra.flux_analysis.double_deletion.double_gene_deletion">[docs]</a><span class="k">def</span> <span class="nf">double_gene_deletion</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">gene_list_1</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">gene_list_2</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                          <span class="n">method</span><span class="o">=</span><span class="s">&#39;fba&#39;</span><span class="p">,</span> <span class="n">single_deletion_growth_dict</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                         <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span>
+                         <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span> <span class="n">growth_tolerance</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
                          <span class="n">error_reporting</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;This will disable reactions for all gene pairs from gene_list_1 and</span>
 <span class="sd">    gene_list_2 and then run simulations to optimize for the objective</span>
 <span class="sd">    function.  The contribution of each reaction to the objective function</span>
 <span class="sd">    is indicated in cobra_model.reactions[:].objective_coefficient vector.</span>
+
+<span class="sd">    NOTE:  We&#39;ve assumed that there is no such thing as a synthetic rescue with</span>
+<span class="sd">    this modeling framework.</span>
 
 <span class="sd">    cobra_model: a cobra.Model object</span>
 
@@ -200,13 +220,17 @@
 
 <span class="sd">    error_reporting: None or True</span>
 
-<span class="sd">    Returns a dictionary of the genes in the x dimension (x), the y</span>
+<span class="sd">    growth_tolerance: float.  The effective lower bound on the growth rate</span>
+<span class="sd">    for a single deletion that is still considered capable of growth.  </span>
+
+<span class="sd">    Returns a dictionary of the gene ids in the x dimension (x) and the y</span>
 <span class="sd">    dimension (y), and the growth simulation data (data).</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c">#BUG: Since this might be called from ppmap, the modules need to</span>
     <span class="c">#be imported.  Modify ppmap to take depfuncs</span>
-    <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">zeros</span><span class="p">,</span> <span class="n">nan</span>
+    <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">zeros</span>
+    <span class="n">nan</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;nan&#39;</span><span class="p">)</span>
     <span class="kn">from</span> <span class="nn">cobra.flux_analysis.single_deletion</span> <span class="kn">import</span> <span class="n">single_deletion</span>
     <span class="kn">from</span> <span class="nn">cobra.manipulation</span> <span class="kn">import</span> <span class="n">initialize_growth_medium</span>
     <span class="kn">from</span> <span class="nn">cobra.manipulation</span> <span class="kn">import</span> <span class="n">delete_model_genes</span><span class="p">,</span> <span class="n">undelete_model_genes</span>
@@ -245,7 +269,7 @@
         <span class="n">the_problem</span> <span class="o">=</span> <span class="s">&#39;return&#39;</span>
         <span class="n">combined_model</span> <span class="o">=</span> <span class="bp">None</span>
     <span class="n">single_gene_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">gene_list_1</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">gene_list_2</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">gene_list_2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">gene_list_2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;id&#39;</span><span class="p">):</span>
             <span class="n">gene_list_2</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">genes</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">,</span> <span class="n">gene_list_2</span><span class="p">)</span>
         <span class="n">single_gene_set</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">gene_list_2</span><span class="p">)</span>
@@ -259,7 +283,9 @@
                                                   <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
                                                   <span class="n">error_reporting</span><span class="o">=</span><span class="n">error_reporting</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">gene_list_2</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">gene_list_1</span> <span class="o">==</span> <span class="n">gene_list_2</span><span class="p">:</span>
-        <span class="n">deletion_array</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">gene_list_1</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">gene_list_1</span><span class="p">)])</span> 
+        <span class="n">number_of_genes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gene_list_1</span><span class="p">)</span>
+        <span class="n">gene_list_2</span> <span class="o">=</span> <span class="n">gene_list_1</span>
+        <span class="n">deletion_array</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">([</span><span class="n">number_of_genes</span><span class="p">,</span> <span class="n">number_of_genes</span><span class="p">])</span> 
         <span class="c">##TODO: Speed up this triangular process</span>
         <span class="c">#For the case where the contents of the lists are the same cut the work in half.</span>
         <span class="c">#There might be a faster way to do this by using a triangular array function</span>
@@ -267,20 +293,19 @@
         <span class="c">#Populate the diagonal from the single deletion lists</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">the_gene</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">gene_list_1</span><span class="p">):</span>
             <span class="n">deletion_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">single_deletion_growth_dict</span><span class="p">[</span><span class="n">the_gene</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gene_list_1</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">gene_1</span> <span class="o">=</span> <span class="n">gene_list_1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">gene_1</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">gene_list_1</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
             <span class="c">#TODO: Since there cannot be synthetic rescues we can assume</span>
             <span class="c">#that the whole row for a lethal deletion</span>
             <span class="c">#will be equal to that deletion.</span>
-            <span class="k">if</span> <span class="n">single_deletion_growth_dict</span><span class="p">[</span><span class="n">gene_1</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">gene_list_1</span><span class="p">)):</span>
-                     <span class="n">deletion_array</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">deletion_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">single_deletion_growth_dict</span><span class="p">[</span><span class="n">gene_2</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">single_deletion_growth_dict</span><span class="p">[</span><span class="n">gene_1</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">growth_tolerance</span><span class="p">:</span>
+                <span class="n">tmp_solution</span> <span class="o">=</span> <span class="n">single_deletion_growth_dict</span><span class="p">[</span><span class="n">gene_1</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">number_of_genes</span><span class="p">):</span>
+                    <span class="n">deletion_array</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">deletion_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp_solution</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">gene_list_1</span><span class="p">)):</span>
-                    <span class="k">if</span> <span class="n">single_deletion_growth_dict</span><span class="p">[</span><span class="n">gene_1</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="n">tmp_solution</span> <span class="o">=</span> <span class="n">single_deletion_growth_dict</span><span class="p">[</span><span class="n">gene_1</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">gene_2</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">gene_list_1</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:],</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">single_deletion_growth_dict</span><span class="p">[</span><span class="n">gene_2</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">growth_tolerance</span><span class="p">:</span>
+                        <span class="n">tmp_solution</span> <span class="o">=</span> <span class="n">single_deletion_growth_dict</span><span class="p">[</span><span class="n">gene_2</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">gene_2</span> <span class="o">=</span> <span class="n">gene_list_1</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
                         <span class="n">delete_model_genes</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="p">[</span><span class="n">gene_1</span><span class="p">,</span> <span class="n">gene_2</span><span class="p">])</span>
                         <span class="k">if</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">_trimmed</span><span class="p">:</span>
                             <span class="k">if</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;fba&#39;</span><span class="p">:</span>
@@ -323,7 +348,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">gene_2</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">gene_list_2</span><span class="p">):</span>
                     <span class="c">#Assume no such thing as a synthetic rescue</span>
-                    <span class="k">if</span> <span class="n">single_deletion_growth_dict</span><span class="p">[</span><span class="n">gene_2</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">single_deletion_growth_dict</span><span class="p">[</span><span class="n">gene_2</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">growth_tolerance</span><span class="p">:</span>
                         <span class="n">tmp_solution</span> <span class="o">=</span> <span class="n">single_deletion_growth_dict</span><span class="p">[</span><span class="n">gene_2</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">delete_model_genes</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="p">[</span><span class="n">gene_1</span><span class="p">,</span> <span class="n">gene_2</span><span class="p">])</span>
@@ -355,12 +380,16 @@
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">tmp_solution</span> <span class="o">=</span> <span class="n">basal_f</span>
                     <span class="n">deletion_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp_solution</span>
-
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">gene_list_1</span><span class="p">,</span> <span class="s">&#39;id&#39;</span><span class="p">):</span>
+        <span class="n">gene_list_1</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gene_list_1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">gene_list_2</span><span class="p">,</span> <span class="s">&#39;id&#39;</span><span class="p">):</span>
+        <span class="n">gene_list_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gene_list_2</span><span class="p">]</span>
+        
     <span class="k">return</span><span class="p">({</span><span class="s">&#39;x&#39;</span><span class="p">:</span> <span class="n">gene_list_1</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">:</span> <span class="n">gene_list_2</span><span class="p">,</span> <span class="s">&#39;data&#39;</span><span class="p">:</span> <span class="n">deletion_array</span><span class="p">})</span>
 
 </div>
-<div class="viewcode-block" id="double_gene_deletion_parallel"><a class="viewcode-back" href="../../../cobra.flux_analysis.html#cobra.flux_analysis.double_deletion.double_gene_deletion_parallel">[docs]</a><span class="k">def</span> <span class="nf">double_gene_deletion_parallel</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">n_processes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-                                  <span class="n">genes_of_interest</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s">&#39;fba&#39;</span><span class="p">,</span> <span class="n">the_medium</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">__double_gene_deletion_parallel</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">number_of_processes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                                  <span class="n">genes_of_interest</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s">&#39;fba&#39;</span><span class="p">,</span> 
                                   <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s">&#39;glpk&#39;</span><span class="p">,</span>
                                   <span class="n">error_reporting</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Provides a wrapper to run the double_deletion function on</span>
@@ -368,7 +397,7 @@
 
 <span class="sd">    cobra_model: a Model object</span>
 
-<span class="sd">    n_processes: is the number of parallel processes to start</span>
+<span class="sd">    number_of_processes: is the number of parallel processes to start</span>
 
 <span class="sd">    genes_of_interest: Is None, a list of genes, or a list of two lists of</span>
 <span class="sd">    genes.  If None then double_deletion is run on all genes in</span>
@@ -380,41 +409,32 @@
 <span class="sd">    method: &#39;fba&#39; or &#39;moma&#39; to run flux balance analysis or minimization</span>
 <span class="sd">    of metabolic adjustments.</span>
 
-<span class="sd">    the_medium: Is None, a string, or a dictionary.  If a string then the</span>
-<span class="sd">    initialize_growth_medium function expects that cobra_model has an</span>
-<span class="sd">    attribute dictionary called media_compositions, which is a dictionary of</span>
-<span class="sd">    dictionaries for various medium compositions.  Where a medium</span>
-<span class="sd">    composition is a dictionary of exchange reaction ids for the medium</span>
-<span class="sd">    components and the exchange fluxes for each medium component; note that</span>
-<span class="sd">    these fluxes must be negative because they are being exchanged into the</span>
-<span class="sd">    system.</span>
-
 <span class="sd">    the_problem: Is None or &#39;reuse&#39;</span>
 
 <span class="sd">    solver: &#39;glpk&#39;, &#39;gurobi&#39;, or &#39;cplex&#39;.</span>
 
 <span class="sd">    error_reporting: None or True</span>
 
-<span class="sd">    Adds the following attributes to the cobra_model:</span>
-<span class="sd">          double_deletion_growth_rate: A numpy array of the simulation results</span>
-<span class="sd">          double_deletion_genes_x: A list of the genes for the x dimension of</span>
-<span class="sd">          double_deletion_growth_rate.</span>
-<span class="sd">          double_deletion_genes_y: A list of the genes for the y dimension of</span>
-<span class="sd">          double_deletion_growth_rate.</span>
+<span class="sd">    returns a dictionary with the keys x, y, and data</span>
+<span class="sd">          data: A numpy array of the simulation results for the growth_rates</span>
+<span class="sd">          x: A list of the genes for the x dimension of data.</span>
+<span class="sd">          y: A list of the genes for the y dimension of y.</span>
+<span class="sd">          **NOTE: While the genes in x and y correspond to the content from the input gene_lists,</span>
+<span class="sd">          they are not guaranteed to be in the same order as the gene_lists because the subprocesses</span>
+<span class="sd">          may run at different speeds.</span>
+<span class="sd">          </span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">__parallel_mode_available</span><span class="p">:</span>
         <span class="k">print</span>  <span class="s">&#39;Parallel mode not available is Parallel Python installed&#39;</span>
         <span class="k">return</span>
+    <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">vstack</span>
     <span class="k">if</span> <span class="n">the_problem</span><span class="p">:</span>
         <span class="n">the_problem</span><span class="o">=</span><span class="s">&#39;return&#39;</span>
-    <span class="k">if</span> <span class="n">the_medium</span><span class="p">:</span>
-        <span class="n">initialize_growth_medium</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">the_medium</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">genes_of_interest</span><span class="p">:</span>
         <span class="c">#If no genes_of_interest are specified then assume we want to</span>
         <span class="c">#compare all genetic interactions in the network</span>
-        <span class="n">all_genes</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">genes</span><span class="p">]</span>
-        <span class="n">second_gene_list</span> <span class="o">=</span> <span class="n">all_genes</span>
+        <span class="n">second_gene_list</span> <span class="o">=</span> <span class="n">all_genes</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">genes</span><span class="p">]</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">genes_of_interest</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
         <span class="c">#If genes_of_interest is a list then assume the list be scanned</span>
         <span class="c">#for interactions with all genes in the network</span>
@@ -425,41 +445,55 @@
         <span class="c">#haven&#39;t audited this for thread safety</span>
         <span class="n">second_gene_list</span> <span class="o">=</span> <span class="n">all_genes</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">genes_of_interest</span><span class="p">]</span>
     <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">genes_of_interest</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;__iter__&#39;</span><span class="p">):</span>
-        <span class="n">all_genes</span> <span class="o">=</span> <span class="n">genes_of_interest</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">second_gene_list</span> <span class="o">=</span> <span class="n">all_genes</span> <span class="o">=</span> <span class="n">genes_of_interest</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">genes_of_interest</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">second_gene_list</span> <span class="o">=</span> <span class="n">genes_of_interest</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> 
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">second_gene_list</span> <span class="o">=</span> <span class="n">all_genes</span>
+            <span class="n">second_gene_list</span> <span class="o">=</span> <span class="n">genes_of_interest</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">all_genes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;id&#39;</span><span class="p">):</span>
+            <span class="n">all_genes</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">all_genes</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">second_gene_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;id&#39;</span><span class="p">):</span>
+            <span class="n">second_gene_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">second_gene_list</span><span class="p">]</span>
+
     <span class="c">#Get basic numbers to guide how the problem should be divided for parallel execution.</span>
+    <span class="n">transpose_results</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_genes</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">second_gene_list</span><span class="p">):</span>
+        <span class="n">all_genes</span><span class="p">,</span> <span class="n">second_gene_list</span> <span class="o">=</span> <span class="n">second_gene_list</span><span class="p">,</span> <span class="n">all_genes</span>
+        <span class="n">transpose_results</span> <span class="o">=</span> <span class="bp">True</span>
     <span class="n">total_gene_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_genes</span><span class="p">)</span>
-    <span class="n">division_count</span> <span class="o">=</span> <span class="n">total_gene_count</span> <span class="o">/</span> <span class="n">n_processes</span>
+    <span class="k">if</span> <span class="n">total_gene_count</span> <span class="o">&lt;</span> <span class="n">number_of_processes</span><span class="p">:</span>
+        <span class="n">number_of_processes</span> <span class="o">=</span> <span class="n">total_gene_count</span>
+    <span class="n">division_count</span> <span class="o">=</span> <span class="n">total_gene_count</span> <span class="o">/</span> <span class="n">number_of_processes</span>
     <span class="n">the_rows</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_processes</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_processes</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">the_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s">&#39;cobra_model&#39;</span><span class="p">:</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="n">method</span><span class="p">,</span>
                          <span class="s">&#39;gene_list_1&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">all_genes</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">division_count</span><span class="p">:</span><span class="n">division_count</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)]),</span>
                          <span class="s">&#39;gene_list_2&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">second_gene_list</span><span class="p">),</span> <span class="s">&#39;the_problem&#39;</span><span class="p">:</span> <span class="n">the_problem</span><span class="p">,</span>
                          <span class="s">&#39;solver&#39;</span><span class="p">:</span> <span class="n">solver</span><span class="p">,</span>
                          <span class="s">&#39;error_reporting&#39;</span><span class="p">:</span> <span class="n">error_reporting</span><span class="p">})</span>
     <span class="n">the_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s">&#39;cobra_model&#39;</span><span class="p">:</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="n">method</span><span class="p">,</span>
-                     <span class="s">&#39;gene_list_1&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">all_genes</span><span class="p">[(</span><span class="n">n_processes</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">division_count</span><span class="p">:]),</span>
+                     <span class="s">&#39;gene_list_1&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">all_genes</span><span class="p">[(</span><span class="n">number_of_processes</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">division_count</span><span class="p">:]),</span>
                      <span class="s">&#39;gene_list_2&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">second_gene_list</span><span class="p">),</span> <span class="s">&#39;the_problem&#39;</span><span class="p">:</span> <span class="n">the_problem</span><span class="p">,</span>
                      <span class="s">&#39;solver&#39;</span><span class="p">:</span> <span class="n">solver</span><span class="p">,</span>
                      <span class="s">&#39;error_reporting&#39;</span><span class="p">:</span> <span class="n">error_reporting</span><span class="p">})</span>
 
-    <span class="n">tmp_pp</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ppmap</span><span class="p">(</span><span class="n">n_processes</span><span class="p">,</span> <span class="n">double_gene_deletion</span><span class="p">,</span> <span class="n">the_rows</span><span class="p">))</span>
+    <span class="n">tmp_pp</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ppmap</span><span class="p">(</span><span class="n">number_of_processes</span><span class="p">,</span> <span class="n">double_gene_deletion</span><span class="p">,</span> <span class="n">the_rows</span><span class="p">))</span>
     <span class="n">gene_list_x</span> <span class="o">=</span> <span class="n">tmp_pp</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">]</span>
     <span class="n">gene_list_y</span> <span class="o">=</span> <span class="n">tmp_pp</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;y&#39;</span><span class="p">]</span>
     <span class="n">double_deletion_data</span> <span class="o">=</span> <span class="n">tmp_pp</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;data&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">transpose_results</span><span class="p">:</span>
+        <span class="n">gene_list_x</span><span class="p">,</span> <span class="n">gene_list_y</span> <span class="o">=</span> <span class="n">gene_list_y</span><span class="p">,</span> <span class="n">gene_list_x</span>
+        <span class="n">double_deletion_data</span> <span class="o">=</span> <span class="n">double_deletion_data</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+    
     <span class="k">for</span> <span class="n">the_result</span> <span class="ow">in</span> <span class="n">tmp_pp</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
         <span class="n">gene_list_x</span> <span class="o">+=</span> <span class="n">the_result</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">]</span>
         <span class="n">double_deletion_data</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">((</span><span class="n">double_deletion_data</span><span class="p">,</span> <span class="n">the_result</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">]))</span>
 
-    <span class="n">cobra_model</span><span class="o">.</span><span class="n">double_deletion_growth_rate</span> <span class="o">=</span> <span class="n">double_deletion_data</span> 
-    <span class="n">cobra_model</span><span class="o">.</span><span class="n">double_deletion_genes_x</span> <span class="o">=</span> <span class="n">gene_list_x</span>
-    <span class="n">cobra_model</span><span class="o">.</span><span class="n">double_deletion_genes_y</span> <span class="o">=</span> <span class="n">gene_list_y</span>
-    <span class="k">return</span> <span class="n">cobra_model</span>
-</pre></div></div>
+    <span class="c">#cobra_model.double_deletion_growth_rate = double_deletion_data </span>
+    <span class="c">#cobra_model.double_deletion_genes_x = gene_list_x</span>
+    <span class="c">#cobra_model.double_deletion_genes_y = gene_list_y</span>
+
+    <span class="k">return</span><span class="p">({</span><span class="s">&#39;x&#39;</span><span class="p">:</span> <span class="n">gene_list_x</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">:</span> <span class="n">gene_list_y</span><span class="p">,</span> <span class="s">&#39;data&#39;</span><span class="p">:</span> <span class="n">double_deletion_data</span><span class="p">})</span>
+</pre></div>
 
           </div>
         </div>
@@ -498,7 +532,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2012, Daniel Robert Hyduke.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

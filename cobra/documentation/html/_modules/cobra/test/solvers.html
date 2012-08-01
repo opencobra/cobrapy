@@ -51,27 +51,24 @@
           <div class="body">
             
   <h1>Source code for cobra.test.solvers</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">cPickle</span> <span class="kn">import</span> <span class="n">load</span>
-<span class="k">except</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pickle</span> <span class="kn">import</span> <span class="n">load</span>
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">TestCase</span><span class="p">,</span> <span class="n">TestLoader</span><span class="p">,</span> <span class="n">TextTestRunner</span>
 <span class="kn">import</span> <span class="nn">sys</span>
-
+<span class="kn">from</span> <span class="nn">pdb</span> <span class="kn">import</span> <span class="n">set_trace</span>
+<span class="c"># deal with absolute imports by adding the appropriate directory to the path</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;../..&quot;</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">cobra.manipulation</span> <span class="kn">import</span> <span class="n">initialize_growth_medium</span>
 <span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">create_test_model</span>
 <span class="kn">from</span> <span class="nn">cobra</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">Metabolite</span>
 <span class="kn">from</span> <span class="nn">cobra</span> <span class="kn">import</span> <span class="n">solvers</span>
 <span class="kn">from</span> <span class="nn">cobra.solvers</span> <span class="kn">import</span> <span class="n">__legacy_solver</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c"># remove the added directory to the path</span>
 
-<div class="viewcode-block" id="TestCobraSolver"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.solvers.TestCobraSolver">[docs]</a><span class="k">class</span> <span class="nc">TestCobraSolver</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestCobraSolver"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.solvers.TestCobraSolver">[docs]</a><span class="k">class</span> <span class="nc">TestCobraSolver</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
 <div class="viewcode-block" id="TestCobraSolver.setUp"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.solvers.TestCobraSolver.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">create_test_model</span><span class="p">()</span>
         <span class="n">initialize_growth_medium</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s">&#39;MgM&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">old_solution</span> <span class="o">=</span> <span class="mf">0.320064</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">infeasible_problem</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infeasible_model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
         <span class="n">metabolite_1</span> <span class="o">=</span> <span class="n">Metabolite</span><span class="p">(</span><span class="s">&quot;met1&quot;</span><span class="p">)</span>
         <span class="n">metabolite_2</span> <span class="o">=</span> <span class="n">Metabolite</span><span class="p">(</span><span class="s">&quot;met2&quot;</span><span class="p">)</span>
         <span class="n">reaction_1</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="s">&quot;rxn1&quot;</span><span class="p">)</span>
@@ -80,15 +77,14 @@
         <span class="n">reaction_2</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">({</span><span class="n">metabolite_2</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
         <span class="n">reaction_1</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">reaction_2</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">infeasible_problem</span><span class="o">.</span><span class="n">add_reactions</span><span class="p">([</span><span class="n">reaction_1</span><span class="p">,</span> <span class="n">reaction_2</span><span class="p">])</span>
-        <span class="c">#self.infeasible_problem.update()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infeasible_model</span><span class="o">.</span><span class="n">add_reactions</span><span class="p">([</span><span class="n">reaction_1</span><span class="p">,</span> <span class="n">reaction_2</span><span class="p">])</span>
+        <span class="c">#self.infeasible_model.update()</span>
 
 </div></div>
 <div class="viewcode-block" id="add_new_test"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.solvers.add_new_test">[docs]</a><span class="k">def</span> <span class="nf">add_new_test</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="n">solver_name</span><span class="p">,</span> <span class="n">solver</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Creates a test set for each of the solvers that are installed</span>
 <span class="sd">    using the modular interface.</span>
 
-<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">test_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="s">&quot;create_problem&quot;</span><span class="p">))</span>
@@ -97,22 +93,128 @@
     <span class="k">def</span> <span class="nf">test_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">solver</span><span class="o">.</span><span class="n">create_problem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">test_solve_feasible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">solution</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">solution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">solution</span>        
         <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="s">&quot;optimal&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">old_solution</span><span class="p">,</span> \
-            <span class="n">solution</span><span class="o">.</span><span class="n">objective_value</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+            <span class="n">solution</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_solve_minimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">objective_sense</span><span class="o">=</span><span class="s">&#39;minimize&#39;</span><span class="p">)</span>
+        <span class="n">solution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">solution</span>        
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="s">&quot;optimal&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> \
+            <span class="n">solution</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_solve_mip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cone_selling_price</span> <span class="o">=</span> <span class="mf">7.</span>
+        <span class="n">cone_production_cost</span> <span class="o">=</span> <span class="mf">3.</span>
+        <span class="n">popsicle_selling_price</span> <span class="o">=</span> <span class="mf">2.</span>
+        <span class="n">popsicle_production_cost</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="n">starting_budget</span> <span class="o">=</span> <span class="mf">100.</span>
+        <span class="n">cobra_model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="s">&#39;MILP_implementation_test&#39;</span><span class="p">)</span>
+        <span class="n">cone_out</span> <span class="o">=</span> <span class="n">Metabolite</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s">&#39;cone_out&#39;</span><span class="p">,</span> <span class="n">compartment</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">)</span>
+        <span class="n">cone_in</span> <span class="o">=</span> <span class="n">Metabolite</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s">&#39;cone_in&#39;</span><span class="p">,</span> <span class="n">compartment</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">)</span>
+        <span class="n">cone_consumed</span> <span class="o">=</span> <span class="n">Metabolite</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s">&#39;cone_consumed&#39;</span><span class="p">,</span> <span class="n">compartment</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">)</span>
+
+        <span class="n">popsicle_out</span> <span class="o">=</span> <span class="n">Metabolite</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s">&#39;popsicle_out&#39;</span><span class="p">,</span> <span class="n">compartment</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">)</span>
+        <span class="n">popsicle_in</span> <span class="o">=</span> <span class="n">Metabolite</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s">&#39;popsicle_in&#39;</span><span class="p">,</span> <span class="n">compartment</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">)</span>
+        <span class="n">popsicle_consumed</span> <span class="o">=</span> <span class="n">Metabolite</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s">&#39;popsicle_consumed&#39;</span><span class="p">,</span> <span class="n">compartment</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">)</span>
+
+        <span class="n">the_reactions</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c"># SOURCE</span>
+        <span class="n">Cone_source</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;Cone_source&#39;</span><span class="p">)</span>
+        <span class="n">temp_metabolite_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">cone_out</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+        <span class="n">Cone_source</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">(</span><span class="n">temp_metabolite_dict</span><span class="p">)</span>
+        <span class="n">the_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Cone_source</span><span class="p">)</span>
+
+        <span class="n">Popsicle_source</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;Popsicle_source&#39;</span><span class="p">)</span>
+        <span class="n">temp_metabolite_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">popsicle_out</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+        <span class="n">Popsicle_source</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">(</span><span class="n">temp_metabolite_dict</span><span class="p">)</span>
+        <span class="n">the_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Popsicle_source</span><span class="p">)</span>
+
+
+        <span class="c">## PRODUCTION</span>
+        <span class="n">Cone_production</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;Cone_production&#39;</span><span class="p">)</span>
+        <span class="n">temp_metabolite_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">cone_out</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                <span class="n">cone_in</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+        <span class="n">Cone_production</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">(</span><span class="n">temp_metabolite_dict</span><span class="p">)</span>
+        <span class="n">the_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Cone_production</span><span class="p">)</span>
+
+
+        <span class="n">Popsicle_production</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;Popsicle_production&#39;</span><span class="p">)</span>
+        <span class="n">temp_metabolite_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">popsicle_out</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                <span class="n">popsicle_in</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+        <span class="n">Popsicle_production</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">(</span><span class="n">temp_metabolite_dict</span><span class="p">)</span>
+        <span class="n">the_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Popsicle_production</span><span class="p">)</span>
+
+        <span class="c">## CONSUMPTION</span>
+        <span class="n">Cone_consumption</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;Cone_consumption&#39;</span><span class="p">)</span>
+        <span class="n">temp_metabolite_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">cone_in</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                <span class="n">cone_consumed</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+        <span class="n">Cone_consumption</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">(</span><span class="n">temp_metabolite_dict</span><span class="p">)</span>
+        <span class="n">the_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Cone_consumption</span><span class="p">)</span>
+
+        <span class="n">Popsicle_consumption</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;Popsicle_consumption&#39;</span><span class="p">)</span>
+        <span class="n">temp_metabolite_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">popsicle_in</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                <span class="n">popsicle_consumed</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+        <span class="n">Popsicle_consumption</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">(</span><span class="n">temp_metabolite_dict</span><span class="p">)</span>
+        <span class="n">the_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Popsicle_consumption</span><span class="p">)</span>
+
+        <span class="c"># SINK</span>
+        <span class="n">Cone_consumed_sink</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;Cone_consumed_sink&#39;</span><span class="p">)</span>
+        <span class="n">temp_metabolite_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">cone_consumed</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">}</span>
+        <span class="n">Cone_consumed_sink</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">(</span><span class="n">temp_metabolite_dict</span><span class="p">)</span>
+        <span class="n">the_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Cone_consumed_sink</span><span class="p">)</span>
+
+        <span class="n">Popsicle_consumed_sink</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;Popsicle_consumed_sink&#39;</span><span class="p">)</span>
+        <span class="n">temp_metabolite_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">popsicle_consumed</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">}</span>
+        <span class="n">Popsicle_consumed_sink</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">(</span><span class="n">temp_metabolite_dict</span><span class="p">)</span>
+        <span class="n">the_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Popsicle_consumed_sink</span><span class="p">)</span>
+
+        <span class="c">## add all reactions</span>
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">add_reactions</span><span class="p">(</span><span class="n">the_reactions</span><span class="p">)</span>
+
+        <span class="c"># set objective coefficients</span>
+        <span class="n">Cone_consumption</span><span class="o">.</span><span class="n">objective_coefficient</span> <span class="o">=</span> <span class="n">cone_selling_price</span>
+        <span class="n">Popsicle_consumption</span><span class="o">.</span><span class="n">objective_coefficient</span> <span class="o">=</span> <span class="n">popsicle_selling_price</span>
+
+        <span class="n">Cone_production</span><span class="o">.</span><span class="n">objective_coefficient</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">cone_production_cost</span>
+        <span class="n">Popsicle_production</span><span class="o">.</span><span class="n">objective_coefficient</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">popsicle_production_cost</span>
+        
+
+        <span class="c">#Make sure we produce whole cones</span>
+        <span class="n">Cone_production</span><span class="o">.</span><span class="n">variable_kind</span> <span class="o">=</span> <span class="s">&#39;integer&#39;</span>
+        <span class="n">Popsicle_production</span><span class="o">.</span><span class="n">variable_kind</span> <span class="o">=</span> <span class="s">&#39;integer&#39;</span>
+
+
+        <span class="n">production_capacity_constraint</span> <span class="o">=</span> <span class="n">Metabolite</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s">&#39;production_capacity_constraint&#39;</span><span class="p">)</span>
+        <span class="n">production_capacity_constraint</span><span class="o">.</span><span class="n">_constraint_sense</span> <span class="o">=</span> <span class="s">&#39;L&#39;</span>
+        <span class="n">production_capacity_constraint</span><span class="o">.</span><span class="n">_bound</span> <span class="o">=</span> <span class="n">starting_budget</span><span class="p">;</span>
+
+        <span class="n">Cone_production</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">({</span><span class="n">production_capacity_constraint</span><span class="p">:</span> <span class="n">cone_production_cost</span> <span class="p">})</span>
+
+        <span class="n">Popsicle_production</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">({</span><span class="n">production_capacity_constraint</span><span class="p">:</span> <span class="n">popsicle_production_cost</span> <span class="p">})</span>
+        <span class="n">cobra_model</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">133</span><span class="p">,</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
+
+        
     <span class="k">def</span> <span class="nf">test_solve_infeasible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">solution</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">infeasible_problem</span><span class="p">)</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">infeasible_model</span><span class="p">)</span>
+        <span class="n">solution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">infeasible_model</span><span class="o">.</span><span class="n">solution</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="s">&quot;infeasible&quot;</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">test_independent_creation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">feasible_lp</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">create_problem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
-        <span class="n">infeasible_lp</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">create_problem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">infeasible_problem</span><span class="p">)</span>
-        <span class="n">feasible_solution</span> <span class="o">=</span> <span class="n">solve_problem</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
-        <span class="n">infeasible_solution</span> <span class="o">=</span> <span class="n">solve_problem</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
+        <span class="n">infeasible_lp</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">create_problem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">infeasible_model</span><span class="p">)</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">solve_problem</span><span class="p">(</span><span class="n">feasible_lp</span><span class="p">)</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">solve_problem</span><span class="p">(</span><span class="n">infeasible_lp</span><span class="p">)</span>
+        <span class="n">feasible_solution</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">format_solution</span><span class="p">(</span><span class="n">feasible_lp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">infeasible_solution</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">format_solution</span><span class="p">(</span><span class="n">infeasible_lp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">infeasible_model</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">feasible_solution</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="s">&quot;optimal&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">old_solution</span><span class="p">,</span> \
-            <span class="n">feasible_solution</span><span class="o">.</span><span class="n">objective_value</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+            <span class="n">feasible_solution</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">infeasible_solution</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="s">&quot;infeasible&quot;</span><span class="p">)</span>
+
     <span class="nb">setattr</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="s">&quot;test_</span><span class="si">%s</span><span class="s">_create&quot;</span> <span class="o">%</span> <span class="n">solver_name</span><span class="p">,</span> \
         <span class="n">test_setup</span><span class="p">)</span>
     <span class="nb">setattr</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="s">&quot;test_</span><span class="si">%s</span><span class="s">_attributes&quot;</span> <span class="o">%</span> <span class="n">solver_name</span><span class="p">,</span> \
@@ -122,7 +224,11 @@
     <span class="nb">setattr</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="s">&quot;test_</span><span class="si">%s</span><span class="s">_infeasible_solve&quot;</span> <span class="o">%</span> <span class="n">solver_name</span><span class="p">,</span> \
         <span class="n">test_solve_infeasible</span><span class="p">)</span>
     <span class="nb">setattr</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="s">&quot;test_</span><span class="si">%s</span><span class="s">_independent_creation&quot;</span> <span class="o">%</span> <span class="n">solver_name</span><span class="p">,</span> \
-        <span class="n">test_solve_infeasible</span><span class="p">)</span>
+        <span class="n">test_independent_creation</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="s">&quot;test_</span><span class="si">%s</span><span class="s">_solve_minimize&quot;</span> <span class="o">%</span> <span class="n">solver_name</span><span class="p">,</span> \
+        <span class="n">test_solve_minimize</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="s">&quot;test_</span><span class="si">%s</span><span class="s">_solve_mip&quot;</span> <span class="o">%</span> <span class="n">solver_name</span><span class="p">,</span> \
+        <span class="n">test_solve_mip</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="add_legacy_test"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.solvers.add_legacy_test">[docs]</a><span class="k">def</span> <span class="nf">add_legacy_test</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="n">solver_name</span><span class="p">,</span> <span class="n">solver_function</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Creates a test set for each of the installed solvers using the</span>
@@ -148,11 +254,11 @@
 <span class="k">for</span> <span class="n">solver_name</span><span class="p">,</span> <span class="n">solver</span> <span class="ow">in</span> <span class="n">solvers</span><span class="o">.</span><span class="n">solver_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
     <span class="n">add_test</span><span class="p">(</span><span class="n">TestCobraSolver</span><span class="p">,</span> <span class="n">solver_name</span><span class="p">,</span> <span class="n">solver</span><span class="p">)</span>
 <span class="c"># make a test suite to run all of the tests</span>
-<span class="n">loader</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestLoader</span><span class="p">()</span>
+<span class="n">loader</span> <span class="o">=</span> <span class="n">TestLoader</span><span class="p">()</span>
 <span class="n">suite</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">loadTestsFromModule</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">__name__</span><span class="p">])</span>
 
 <div class="viewcode-block" id="test_all"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.solvers.test_all">[docs]</a><span class="k">def</span> <span class="nf">test_all</span><span class="p">():</span>
-    <span class="n">unittest</span><span class="o">.</span><span class="n">TextTestRunner</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">suite</span><span class="p">)</span>
+    <span class="n">TextTestRunner</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">suite</span><span class="p">)</span>
 </div>
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">test_all</span><span class="p">()</span>
@@ -196,7 +302,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2012, Daniel Robert Hyduke.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

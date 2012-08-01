@@ -109,17 +109,6 @@ have no active metabolites in the model.</p>
 <div class="section" id="module-cobra.manipulation.modify">
 <span id="modify-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">modify</span></tt> Module<a class="headerlink" href="#module-cobra.manipulation.modify" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="cobra.manipulation.modify.add_exchange_reaction">
-<tt class="descclassname">cobra.manipulation.modify.</tt><tt class="descname">add_exchange_reaction</tt><big>(</big><em>cobra_model</em>, <em>the_metabolites</em>, <em>reaction_reversibility=False</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/modify.html#add_exchange_reaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.modify.add_exchange_reaction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds exchange reactions to a model for a set of metabolites.</p>
-<p>cobra_model: A Model object.</p>
-<p>the_metabolites: A cobra.Metabolite or list of cobra.Metabolites</p>
-<p>reaction_reversibility: True or False.  Indicates whether the reactions
-should be reversible.</p>
-<p>#TODO:  This is not compliant with current</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="cobra.manipulation.modify.convert_rule_to_boolean_rule">
 <tt class="descclassname">cobra.manipulation.modify.</tt><tt class="descname">convert_rule_to_boolean_rule</tt><big>(</big><em>cobra_model</em>, <em>the_rule</em>, <em>return_gene_indices=False</em>, <em>index_offset=0</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/modify.html#convert_rule_to_boolean_rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.modify.convert_rule_to_boolean_rule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Used to convert a text based gpr to an index based gpr.  This
@@ -143,27 +132,26 @@ different directions.  Useful for some modeling problems.</p>
 
 <dl class="function">
 <dt id="cobra.manipulation.modify.initialize_growth_medium">
-<tt class="descclassname">cobra.manipulation.modify.</tt><tt class="descname">initialize_growth_medium</tt><big>(</big><em>cobra_model</em>, <em>the_medium='MgM'</em>, <em>exchange_reactions=None</em>, <em>reactions_to_disable=None</em>, <em>exchange_lower_bound=0.0</em>, <em>exchange_upper_bound=1000.0</em>, <em>irreversible=False</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/modify.html#initialize_growth_medium"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.modify.initialize_growth_medium" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">cobra.manipulation.modify.</tt><tt class="descname">initialize_growth_medium</tt><big>(</big><em>cobra_model</em>, <em>the_medium='MgM'</em>, <em>external_boundary_compartment='e'</em>, <em>external_boundary_reactions=None</em>, <em>reaction_lower_bound=0.0</em>, <em>reaction_upper_bound=1000.0</em>, <em>irreversible=False</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/modify.html#initialize_growth_medium"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.modify.initialize_growth_medium" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets all of the input fluxes to the model to zero and then will
 initialize the input fluxes to the values specified in the_medium if
 it is a dict or will see if the model has a composition dict and use
 that to do the initialization.</p>
 <p>cobra_model: A cobra.Model object.</p>
-<p>the_medium: Is a string, or a dictionary.  If a string then the
-initialize_growth_medium function expects that cobra_model has an
+<p>the_medium: A string, or a dictionary.  If a string then the
+initialize_growth_medium function expects that the_model has an
 attribute dictionary called media_compositions, which is a dictionary of
 dictionaries for various medium compositions.  Where a medium
-composition is a dictionary of exchange reaction ids for the medium
-components and the exchange fluxes for each medium component; note that
-these fluxes must be negative because they are being exchanged into the
-system</p>
-<p>exchange_reactions: None or a list of exchange reactions.  Because not all
-exchange reactions are required to start with <a href="#id2"><span class="problematic" id="id3">EX_</span></a> in all models allow
-the user to specify the reactions</p>
-<p>exchange_lower_bound: Float.  The default value to use for the lower
-bound for the exchange reactions.</p>
-<p>exchange_upper_bound: Float.  The default value to use for the upper
-bound for the exchange_reactions.</p>
+composition is a dictionary of external boundary reaction ids for the medium
+components and the external boundary fluxes for each medium component.</p>
+<p>external_boundary_compartment:  None or a string.  If not None then it specifies
+the compartment in which to disable all of the external systems boundaries.</p>
+<p>external_boundary_reactions: None or a list of external_boundaries that are to
+have their bounds reset.  This acts in conjunction with external_boundary_compartment.</p>
+<p>reaction_lower_bound: Float.  The default value to use for the lower
+bound for the boundary reactions.</p>
+<p>reaction_upper_bound: Float.  The default value to use for the upper
+bound for the boundary.</p>
 <p>irreversible: Boolean.  If the model is irreversible then the medium composition
 is taken as the upper bound</p>
 </dd></dl>
@@ -245,7 +233,7 @@ into a reversible model.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Daniel Robert Hyduke.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
