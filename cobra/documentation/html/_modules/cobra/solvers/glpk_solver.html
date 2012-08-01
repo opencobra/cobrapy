@@ -1,0 +1,652 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cobra.solvers.glpk_solver &mdash; cobra 0.1.0.b1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0.b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="up" title="cobra.solvers" href="../solvers.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../solvers.html" accesskey="U">cobra.solvers</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cobra.solvers.glpk_solver</h1><div class="highlight"><pre>
+<span class="c">##cobra.solvers.glpk_solver</span>
+<span class="c">#This script provides wrappers for libglpk-java 1.0.22 and pyglpk 0.3</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">name</span> <span class="k">as</span> <span class="n">__name</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="c">###solver specific parameters</span>
+<span class="kn">from</span> <span class="nn">.parameters</span> <span class="kn">import</span> <span class="n">status_dict</span><span class="p">,</span> <span class="n">variable_kind_dict</span><span class="p">,</span> \
+     <span class="n">sense_dict</span><span class="p">,</span> <span class="n">parameter_mappings</span><span class="p">,</span> <span class="n">parameter_defaults</span><span class="p">,</span> \
+     <span class="n">objective_senses</span><span class="p">,</span> <span class="n">default_objective_sense</span>
+
+<span class="kn">from</span> <span class="nn">..core.Solution</span> <span class="kn">import</span> <span class="n">Solution</span>
+<span class="kn">from</span> <span class="nn">..flux_analysis.objective</span> <span class="kn">import</span> <span class="n">update_objective</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="n">solver_name</span> <span class="o">=</span> <span class="s">&#39;glpk&#39;</span>
+<span class="n">sense_dict</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">sense_dict</span><span class="p">[</span><span class="n">solver_name</span><span class="p">])</span>
+<span class="c">#Functions that are different for java implementation of a solver</span>
+<span class="k">if</span> <span class="n">__name</span> <span class="o">==</span> <span class="s">&#39;java&#39;</span><span class="p">:</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s">&quot;cobra.solvers.glpk_solver isn&#39;t mature.  consider using gurobi or cplex&quot;</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">org.gnu.glpk</span> <span class="kn">import</span> <span class="n">GLPK</span><span class="p">,</span> <span class="n">GLPKConstants</span><span class="p">,</span> <span class="n">glp_smcp</span><span class="p">,</span> <span class="n">glp_iocp</span>
+    <span class="n">variable_kind_dict</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">variable_kind_dict</span><span class="p">[</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">_</span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">solver_name</span><span class="p">,</span>
+                                                <span class="n">__name</span><span class="p">)])</span>
+    <span class="n">status_dict</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">status_dict</span><span class="p">[</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">_</span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">solver_name</span><span class="p">,</span>
+                                                <span class="n">__name</span><span class="p">)])</span>
+    <span class="n">objective_senses</span> <span class="o">=</span> <span class="n">objective_senses</span><span class="p">[</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">_</span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">solver_name</span><span class="p">,</span>
+                                                <span class="n">__name</span><span class="p">)]</span>
+    <span class="n">parameter_mappings</span> <span class="o">=</span> <span class="n">parameter_mappings</span><span class="p">[</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">_</span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">solver_name</span><span class="p">,</span>
+                                                     <span class="n">__name</span><span class="p">)]</span>
+    <span class="n">parameter_defaults</span> <span class="o">=</span> <span class="n">parameter_defaults</span><span class="p">[</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">_</span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">solver_name</span><span class="p">,</span>
+                                                     <span class="n">__name</span><span class="p">)]</span>
+
+    <span class="k">class</span> <span class="nc">Problem</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;Create a more pythonesqe class to wrap the key</span>
+<span class="sd">        features of the libglpk-java functions.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;the attributes g, lp, mip should be made private</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_g</span> <span class="o">=</span> <span class="n">GLPK</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_lp</span><span class="o">=</span> <span class="n">GLPK</span><span class="o">.</span><span class="n">glp_create_prob</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_simplex_parameters</span> <span class="o">=</span> <span class="n">glp_smcp</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mip_parameters</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">glp_init_smcp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplex_parameters</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objective_value</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mip</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">def</span> <span class="nf">set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">glp_set_prob_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lp</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">glp_simplex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lp</span><span class="p">,</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">_simplex_parameters</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mip</span><span class="p">:</span>
+                    <span class="c">#perform the MIP</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mip_parameters</span><span class="p">,</span> <span class="s">&#39;msg_lev&#39;</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">_simplex_parameters</span><span class="o">.</span><span class="n">msg_lev</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">glp_intopt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mip_parameters</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">objective_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_objective_value</span><span class="p">()</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s">&#39;failed&#39;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span>
+
+        <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mip</span><span class="p">:</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">glp_mip_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lp</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">glp_get_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lp</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">status_dict</span><span class="p">[</span><span class="n">status</span><span class="p">]</span>
+        
+        <span class="k">def</span> <span class="nf">set_objective_sense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_value</span><span class="o">=</span><span class="s">&#39;maximize&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">glp_set_obj_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lp</span><span class="p">,</span>
+                                   <span class="nb">eval</span><span class="p">(</span><span class="n">objective_senses</span><span class="p">[</span><span class="n">parameter_value</span><span class="p">]))</span>
+
+        <span class="k">def</span> <span class="nf">set_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">,</span> <span class="n">parameter_value</span><span class="p">,</span> <span class="n">warning</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">parameter_name</span> <span class="o">==</span> <span class="s">&#39;objective_sense&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_objective_sense</span><span class="p">(</span><span class="n">parameter_value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">parameter_name</span> <span class="o">==</span> <span class="s">&#39;meth&#39;</span> <span class="ow">and</span> <span class="n">parameter_value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]:</span>
+                    <span class="n">parameter_value</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplex_parameters</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">,</span>
+                            <span class="n">parameter_value</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e1</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mip_parameters</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">,</span>
+                                <span class="n">parameter_value</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e2</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">warning</span><span class="p">:</span>
+                            <span class="k">print</span> <span class="s">&quot;Could not set simplex parameter &quot;</span> <span class="o">+</span>\
+                                  <span class="s">&quot;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">parameter_name</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e1</span><span class="p">))</span>
+                            
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mip_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                                <span class="k">print</span> <span class="s">&quot;Could not set mip parameter &quot;</span> <span class="o">+</span>\
+                                      <span class="s">&quot;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">parameter_name</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e2</span><span class="p">))</span>
+        <span class="k">def</span> <span class="nf">get_objective_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mip</span><span class="p">:</span>
+                <span class="n">tmp_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">glp_mip_obj_val</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lp</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tmp_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">glp_get_obj_val</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lp</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">tmp_value</span>
+
+        <span class="k">def</span> <span class="nf">create_problem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cobra_model</span><span class="p">):</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_g</span>
+            <span class="n">lp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lp</span>
+            <span class="n">number_of_reactions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">)</span>
+            <span class="n">number_of_metabolites</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">)</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">glp_add_cols</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">number_of_reactions</span><span class="p">)</span>
+            <span class="n">reaction_to_index</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">objective_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="c">#Add in the variables</span>
+            <span class="n">tmp_kinds</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">the_reaction</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">):</span>
+                <span class="n">i_offset</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">reaction_to_index</span><span class="p">[</span><span class="n">the_reaction</span><span class="p">]</span> <span class="o">=</span> <span class="n">i_offset</span>
+                <span class="k">if</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">objective_coefficient</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">objective_dict</span><span class="p">[</span><span class="n">i_offset</span><span class="p">]</span> <span class="o">=</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">objective_coefficient</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">glp_set_col_name</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">i_offset</span><span class="p">,</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+                <span class="n">tmp_kinds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">the_reaction</span><span class="o">.</span><span class="n">variable_kind</span><span class="p">)</span>
+                <span class="n">the_kind</span> <span class="o">=</span> <span class="n">variable_kind_dict</span><span class="p">[</span><span class="n">the_reaction</span><span class="o">.</span><span class="n">variable_kind</span><span class="p">]</span>
+                <span class="n">lower_bound</span> <span class="o">=</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">lower_bound</span>
+                <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span>
+                <span class="c">#Note. It is possible to have unbounded or one-bound variables</span>
+                <span class="k">if</span> <span class="n">lower_bound</span> <span class="o">==</span> <span class="n">upper_bound</span><span class="p">:</span>
+                    <span class="n">bound_kind</span> <span class="o">=</span> <span class="n">GLPKConstants</span><span class="o">.</span><span class="n">GLP_FX</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">bound_kind</span> <span class="o">=</span> <span class="n">GLPKConstants</span><span class="o">.</span><span class="n">GLP_DB</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">glp_set_col_kind</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">i_offset</span><span class="p">,</span> <span class="n">the_kind</span><span class="p">)</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">glp_set_col_bnds</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">i_offset</span><span class="p">,</span>
+                                   <span class="n">bound_kind</span><span class="p">,</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">,</span>
+                                   <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">)</span>
+            <span class="n">tmp_kinds</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">tmp_kinds</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s">&#39;integer&#39;</span> <span class="ow">in</span> <span class="n">tmp_kinds</span> <span class="ow">or</span> <span class="s">&#39;binary&#39;</span> <span class="ow">in</span> <span class="n">tmp_kinds</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mip</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mip_parameters</span> <span class="o">=</span> <span class="n">glp_iocp</span><span class="p">()</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">glp_init_iocp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mip_parameters</span><span class="p">)</span>
+            <span class="c">#create constraints</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">glp_add_rows</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">number_of_metabolites</span><span class="p">)</span>
+            <span class="n">row_indices</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">column_indices</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">constraint_values</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">the_metabolite</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">):</span>
+                <span class="n">i_offset</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">glp_set_row_name</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">i_offset</span><span class="p">,</span> <span class="n">the_metabolite</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+                <span class="n">lower_bound</span> <span class="o">=</span> <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">the_metabolite</span><span class="o">.</span><span class="n">_bound</span>
+                <span class="n">constraint_sense</span> <span class="o">=</span> <span class="n">sense_dict</span><span class="p">[</span><span class="n">the_metabolite</span><span class="o">.</span><span class="n">_constraint_sense</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">constraint_sense</span> <span class="o">==</span> <span class="s">&#39;E&#39;</span><span class="p">:</span>
+                    <span class="n">bound_type</span> <span class="o">=</span> <span class="n">GLPKConstants</span><span class="o">.</span><span class="n">GLP_FX</span>
+                <span class="k">elif</span> <span class="n">constraint_sense</span> <span class="o">==</span> <span class="s">&#39;L&#39;</span><span class="p">:</span>
+                    <span class="n">bound_type</span> <span class="o">=</span> <span class="n">GLPKConstants</span><span class="o">.</span><span class="n">GLP_UP</span>
+                <span class="k">elif</span> <span class="n">constraint_sense</span> <span class="o">==</span> <span class="s">&#39;G&#39;</span><span class="p">:</span>
+                    <span class="n">bound_type</span> <span class="o">=</span> <span class="n">GLPKConstants</span><span class="o">.</span><span class="n">GLP_LO</span>
+                <span class="k">elif</span> <span class="n">constraint_sense</span> <span class="o">==</span> <span class="s">&#39;U&#39;</span><span class="p">:</span>
+                    <span class="n">bound_type</span> <span class="o">=</span> <span class="n">GLPKConstants</span><span class="o">.</span><span class="n">GLP_FR</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">lower_bound</span><span class="p">,</span> <span class="s">&#39;__iter__&#39;</span><span class="p">):</span>
+                    <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">lower_bound</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">bound_type</span> <span class="o">=</span> <span class="n">GLPKConstants</span><span class="o">.</span><span class="n">GLP_DB</span>
+                    
+
+                <span class="n">g</span><span class="o">.</span><span class="n">glp_set_row_bnds</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">i_offset</span><span class="p">,</span> <span class="n">bound_type</span><span class="p">,</span>
+                                   <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">)</span>
+
+                <span class="p">[(</span><span class="n">row_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i_offset</span><span class="p">),</span>
+                  <span class="n">column_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reaction_to_index</span><span class="p">[</span><span class="n">k</span><span class="p">]),</span>
+                  <span class="n">constraint_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">_metabolites</span><span class="p">[</span><span class="n">the_metabolite</span><span class="p">]))</span>
+                 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">the_metabolite</span><span class="o">.</span><span class="n">_reaction</span><span class="p">]</span>
+
+            <span class="c">#Load the constraints into the lp.  Need to use</span>
+            <span class="c">#typed arrays.</span>
+            <span class="n">number_of_constraints</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_indices</span><span class="p">)</span>
+            <span class="n">i_array</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">new_intArray</span><span class="p">(</span><span class="n">number_of_constraints</span><span class="p">)</span>
+            <span class="n">j_array</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">new_intArray</span><span class="p">(</span><span class="n">number_of_constraints</span><span class="p">)</span>
+            <span class="n">v_array</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">new_doubleArray</span><span class="p">(</span><span class="n">number_of_constraints</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">row_indices</span><span class="p">,</span>
+                                              <span class="n">column_indices</span><span class="p">,</span>
+                                              <span class="n">constraint_values</span><span class="p">)):</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">intArray_setitem</span><span class="p">(</span><span class="n">i_array</span><span class="p">,</span> <span class="n">a</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">intArray_setitem</span><span class="p">(</span><span class="n">j_array</span><span class="p">,</span> <span class="n">a</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">doubleArray_setitem</span><span class="p">(</span><span class="n">v_array</span><span class="p">,</span> <span class="n">a</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">glp_load_matrix</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">number_of_constraints</span><span class="p">,</span> <span class="n">i_array</span><span class="p">,</span>
+                              <span class="n">j_array</span><span class="p">,</span> <span class="n">v_array</span><span class="p">)</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">delete_intArray</span><span class="p">(</span><span class="n">i_array</span><span class="p">)</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">delete_intArray</span><span class="p">(</span><span class="n">j_array</span><span class="p">)</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">delete_doubleArray</span><span class="p">(</span><span class="n">v_array</span><span class="p">)</span>
+            
+    
+            <span class="n">g</span><span class="o">.</span><span class="n">glp_set_obj_name</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="s">&quot;z&quot;</span><span class="p">)</span>
+            <span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">glp_set_obj_coef</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+              <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">objective_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()]</span>
+
+            
+
+
+
+
+    <span class="n">__solver_class</span> <span class="o">=</span> <span class="n">Problem</span>
+
+    <span class="k">def</span> <span class="nf">set_parameter</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">,</span> <span class="n">parameter_value</span><span class="p">):</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">set_parameter</span><span class="p">(</span><span class="n">parameter_name</span><span class="p">,</span> <span class="n">parameter_value</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="n">lp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lp</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">format_solution</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">cobra_model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">get_status</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">lp</span><span class="o">.</span><span class="n">_mip</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">lp</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">glp_get_col_prim</span><span class="p">(</span><span class="n">lp</span><span class="o">.</span><span class="n">_lp</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">))]</span>
+                <span class="n">x_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
+
+                <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">lp</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">glp_get_row_dual</span><span class="p">(</span><span class="n">lp</span><span class="o">.</span><span class="n">_lp</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">))]</span>
+                <span class="n">y_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+            
+                <span class="n">objective_value</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="n">objective_value</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">print</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">y_dict</span> <span class="o">=</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x_dict</span> <span class="o">=</span> <span class="n">objective_value</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="c">#print status</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">lp</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">glp_mip_col_val</span><span class="p">(</span><span class="n">lp</span><span class="o">.</span><span class="n">_lp</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">))]</span>
+                <span class="n">x_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">y_dict</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="n">objective_value</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="n">objective_value</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">y_dict</span> <span class="o">=</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x_dict</span> <span class="o">=</span> <span class="n">objective_value</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">return</span><span class="p">(</span><span class="n">Solution</span><span class="p">(</span><span class="n">objective_value</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">x_dict</span><span class="o">=</span><span class="n">x_dict</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+                        <span class="n">y_dict</span><span class="o">=</span><span class="n">y_dict</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">create_problem</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span>  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Solver-specific method for constructing a solver problem from</span>
+<span class="sd">        a cobra.Model.  This can be tuned for performance using kwargs</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">the_parameters</span> <span class="o">=</span> <span class="n">parameter_defaults</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">the_parameters</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">parameter_defaults</span><span class="p">)</span>
+            <span class="n">the_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">quadratic_component</span> <span class="o">=</span> <span class="n">the_parameters</span><span class="p">[</span><span class="s">&#39;quadratic_component&#39;</span><span class="p">]</span>
+        <span class="n">new_objective</span> <span class="o">=</span> <span class="n">the_parameters</span><span class="p">[</span><span class="s">&#39;new_objective&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">quadratic_component</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> cannot solve QPs, try a different solver&#39;</span><span class="o">%</span><span class="n">solver_name</span><span class="p">)</span>
+        <span class="n">lp</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">()</span>        <span class="c"># Create empty problem instance</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">create_problem</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">)</span>
+        <span class="p">[</span><span class="n">set_parameter</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">parameter_mappings</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span>
+         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">the_parameters</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">parameter_mappings</span><span class="p">]</span>
+        <span class="k">return</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">update_problem</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">cobra_model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Assumes that neither Metabolites nor Reaction have been</span>
+<span class="sd">        added or removed.</span>
+
+<span class="sd">        Currently only deals with reaction bounds and objective</span>
+<span class="sd">        coefficients.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="n">_g</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="n">_lp</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">the_reaction</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">):</span>
+            <span class="n">lower_bound</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">the_reaction</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">)</span>
+            <span class="n">upper_bound</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">)</span>
+            <span class="n">objective_coefficient</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">the_reaction</span><span class="o">.</span><span class="n">objective_coefficient</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">lower_bound</span> <span class="o">==</span> <span class="n">upper_bound</span><span class="p">:</span>
+                <span class="n">bound_type</span> <span class="o">=</span> <span class="n">GLPKConstants</span><span class="o">.</span><span class="n">GLP_FX</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bound_type</span> <span class="o">=</span> <span class="n">GLPKConstants</span><span class="o">.</span><span class="n">GLP_DB</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">glp_set_col_bnds</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bound_type</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">)</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">glp_set_obj_coef</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">objective_coefficient</span><span class="p">)</span>
+
+        
+    <span class="k">def</span> <span class="nf">solve_problem</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A performance tunable method for updating a model problem file</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#Update parameter settings if provided</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="p">[</span><span class="n">set_parameter</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">parameter_mappings</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span>
+             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">parameter_mappings</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">print_solver_time</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;print_solver_time&#39;</span><span class="p">]</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">print_solver_time</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">lp_method</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="n">_simplex_parameters</span><span class="o">.</span><span class="n">meth</span>
+        <span class="n">the_methods</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">lp_method</span> <span class="ow">in</span> <span class="n">the_methods</span><span class="p">:</span>
+            <span class="n">the_methods</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">lp_method</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lp_method</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">get_status</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="s">&#39;optimal&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">lp_method</span> <span class="ow">in</span> <span class="n">the_methods</span><span class="p">:</span>
+                <span class="n">set_parameter</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">parameter_mappings</span><span class="p">[</span><span class="s">&#39;lp_method&#39;</span><span class="p">],</span> <span class="n">lp_method</span><span class="p">)</span>
+                <span class="n">lp</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="n">get_status</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">print_solver_time</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;optimize time: </span><span class="si">%f</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c">##Interface to pyGLPK 0.3 </span>
+    <span class="kn">from</span> <span class="nn">glpk</span> <span class="kn">import</span> <span class="n">LPX</span> <span class="k">as</span> <span class="n">GLPK</span>
+    <span class="n">__solver_class</span> <span class="o">=</span> <span class="n">GLPK</span>
+    <span class="n">objective_senses</span> <span class="o">=</span> <span class="n">objective_senses</span><span class="p">[</span><span class="n">solver_name</span><span class="p">]</span>
+    <span class="n">variable_kind_dict</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">variable_kind_dict</span><span class="p">[</span><span class="n">solver_name</span><span class="p">])</span>
+    <span class="n">status_dict</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">status_dict</span><span class="p">[</span><span class="n">solver_name</span><span class="p">])</span>
+    <span class="n">parameter_mappings</span> <span class="o">=</span> <span class="n">parameter_mappings</span><span class="p">[</span><span class="n">solver_name</span><span class="p">]</span>
+    <span class="n">parameter_defaults</span> <span class="o">=</span> <span class="n">parameter_defaults</span><span class="p">[</span><span class="n">solver_name</span><span class="p">]</span>
+
+<div class="viewcode-block" id="get_status"><a class="viewcode-back" href="../../../cobra.solvers.html#cobra.solvers.glpk_solver.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="n">lp</span><span class="p">):</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="n">status</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="ow">in</span> <span class="n">status_dict</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">status_dict</span><span class="p">[</span><span class="n">status</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s">&#39;failed&#39;</span>
+        <span class="k">return</span> <span class="n">status</span>
+</div>
+<div class="viewcode-block" id="format_solution"><a class="viewcode-back" href="../../../cobra.solvers.html#cobra.solvers.glpk_solver.format_solution">[docs]</a>    <span class="k">def</span> <span class="nf">format_solution</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">cobra_model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">objective_sign</span> <span class="o">=</span> <span class="n">objective_senses</span><span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;objective_sense&#39;</span><span class="p">]]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">objective_sign</span> <span class="o">=</span> <span class="n">objective_senses</span><span class="p">[</span><span class="n">default_objective_sense</span><span class="p">]</span>
+            
+        <span class="n">status</span> <span class="o">=</span> <span class="n">get_status</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s">&#39;optimal&#39;</span><span class="p">:</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">x_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="p">[(</span><span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">primal</span><span class="p">)),</span>
+              <span class="n">x_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">:</span><span class="n">c</span><span class="o">.</span><span class="n">primal</span><span class="p">}))</span>
+              <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">lp</span><span class="o">.</span><span class="n">cols</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">lp</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">y_dict</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="c">#return the duals as well as the primals for LPs</span>
+                <span class="p">[(</span><span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">dual</span><span class="p">)),</span>
+                  <span class="n">y_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">:</span><span class="n">c</span><span class="o">.</span><span class="n">dual</span><span class="p">}))</span>
+                 <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">lp</span><span class="o">.</span><span class="n">rows</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c">#MIPs don&#39;t have duals</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">y_dict</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">the_solution</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="n">objective_value</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">x_dict</span><span class="o">=</span><span class="n">x_dict</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+                                    <span class="n">y_dict</span><span class="o">=</span><span class="n">y_dict</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">the_solution</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">)</span>
+        <span class="k">return</span><span class="p">(</span><span class="n">the_solution</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="set_parameter"><a class="viewcode-back" href="../../../cobra.solvers.html#cobra.solvers.glpk_solver.set_parameter">[docs]</a>    <span class="k">def</span> <span class="nf">set_parameter</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">,</span> <span class="n">parameter_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;with pyglpk the parameters are set during the solve phase</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s">&quot;py glpk solver parameters are set during solve_problem&quot;</span><span class="p">)</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="create_problem"><a class="viewcode-back" href="../../../cobra.solvers.html#cobra.solvers.glpk_solver.create_problem">[docs]</a>    <span class="k">def</span> <span class="nf">create_problem</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span>  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Solver-specific method for constructing a solver problem from</span>
+<span class="sd">        a cobra.Model.  This can be tuned for performance using kwargs</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">the_parameters</span> <span class="o">=</span> <span class="n">parameter_defaults</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">the_parameters</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">parameter_defaults</span><span class="p">)</span>
+            <span class="n">the_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">quadratic_component</span> <span class="o">=</span> <span class="n">the_parameters</span><span class="p">[</span><span class="s">&#39;quadratic_component&#39;</span><span class="p">]</span>
+        <span class="n">new_objective</span> <span class="o">=</span> <span class="n">the_parameters</span><span class="p">[</span><span class="s">&#39;new_objective&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">quadratic_component</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> cannot solve QPs, try a different solver&#39;</span><span class="o">%</span><span class="n">solver_name</span><span class="p">)</span>
+        <span class="c">#Faster to use these dicts than index lists</span>
+        <span class="n">index_to_metabolite</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">)),</span>
+                                       <span class="n">cobra_model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">))</span>
+        <span class="n">index_to_reaction</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">)),</span>
+                                     <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">))</span>
+        <span class="n">reaction_to_index</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">index_to_reaction</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span>
+                                     <span class="n">index_to_reaction</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+
+        <span class="n">lp</span> <span class="o">=</span> <span class="n">__solver_class</span><span class="p">()</span>        <span class="c"># Create empty problem instance</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;cobra&#39;</span>     <span class="c"># Assign symbolic name to problem</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">rows</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">))</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">))</span>
+        <span class="n">linear_constraints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">lp</span><span class="o">.</span><span class="n">rows</span><span class="p">:</span>
+            <span class="n">the_metabolite</span> <span class="o">=</span> <span class="n">index_to_metabolite</span><span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">the_metabolite</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">the_metabolite</span><span class="o">.</span><span class="n">_bound</span><span class="p">)</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">sense_dict</span><span class="p">[</span><span class="n">the_metabolite</span><span class="o">.</span><span class="n">_constraint_sense</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s">&#39;E&#39;</span><span class="p">:</span>
+                <span class="n">r</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">b</span>     <span class="c"># Set metabolite to steady state levels</span>
+            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s">&#39;L&#39;</span><span class="p">:</span>
+                <span class="n">r</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">b</span>
+            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s">&#39;G&#39;</span><span class="p">:</span>
+                <span class="n">r</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="bp">None</span>
+            <span class="c">#Add in the linear constraints</span>
+
+            <span class="k">for</span> <span class="n">the_reaction</span> <span class="ow">in</span> <span class="n">the_metabolite</span><span class="o">.</span><span class="n">_reaction</span><span class="p">:</span>
+                <span class="n">reaction_index</span> <span class="o">=</span> <span class="n">reaction_to_index</span><span class="p">[</span><span class="n">the_reaction</span><span class="p">]</span>
+                <span class="n">the_coefficient</span> <span class="o">=</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">_metabolites</span><span class="p">[</span><span class="n">the_metabolite</span><span class="p">]</span>
+                <span class="n">linear_constraints</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">r</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">reaction_index</span><span class="p">,</span>
+                                           <span class="n">the_coefficient</span><span class="p">))</span>
+        <span class="c">#Need to assign lp.matrix after constructing the whole list</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">matrix</span> <span class="o">=</span> <span class="n">linear_constraints</span>
+        <span class="n">objective_coefficients</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">lp</span><span class="o">.</span><span class="n">cols</span><span class="p">:</span>
+            <span class="n">the_reaction</span> <span class="o">=</span> <span class="n">index_to_reaction</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">id</span>           
+            <span class="n">the_reaction</span> <span class="o">=</span> <span class="n">index_to_reaction</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">variable_kind_dict</span><span class="p">[</span><span class="n">the_reaction</span><span class="o">.</span><span class="n">variable_kind</span><span class="p">]</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">,</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span>
+            <span class="n">objective_coefficients</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">the_reaction</span><span class="o">.</span><span class="n">objective_coefficient</span><span class="p">))</span>
+        <span class="c">#Add the new objective coefficients to the problem</span>
+        <span class="n">lp</span><span class="o">.</span><span class="n">obj</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">objective_coefficients</span>
+
+        <span class="k">return</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="update_problem"><a class="viewcode-back" href="../../../cobra.solvers.html#cobra.solvers.glpk_solver.update_problem">[docs]</a>    <span class="k">def</span> <span class="nf">update_problem</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">cobra_model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A performance tunable method for updating a model problem file</span>
+
+<span class="sd">        lp: A gurobi problem object</span>
+
+<span class="sd">        cobra_model: the cobra.Model corresponding to &#39;lp&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#When reusing the basis only assume that the objective coefficients or bounds can change</span>
+        <span class="c">#BUG with changing / unchanging the basis</span>
+        <span class="n">index_to_metabolite</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">)),</span>
+                                       <span class="n">cobra_model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">))</span>
+        <span class="n">index_to_reaction</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">)),</span>
+                                     <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="p">))</span>
+        <span class="n">reaction_to_index</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">index_to_reaction</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span>
+                                     <span class="n">index_to_reaction</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">new_objective</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;new_objective&#39;</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">new_objective</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">new_objective</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">objective_coefficients</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">lp</span><span class="o">.</span><span class="n">cols</span><span class="p">:</span>      <span class="c"># Iterate over all rows</span>
+                <span class="n">the_reaction</span> <span class="o">=</span> <span class="n">index_to_reaction</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">id</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">,</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span>
+                <span class="n">objective_coefficients</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">the_reaction</span><span class="o">.</span><span class="n">objective_coefficient</span><span class="p">))</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">variable_kind_dict</span><span class="p">[</span><span class="n">the_reaction</span><span class="o">.</span><span class="n">variable_kind</span><span class="p">]</span>
+            <span class="c">#Add the new objective coefficients to the problem</span>
+            <span class="n">lp</span><span class="o">.</span><span class="n">obj</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">objective_coefficients</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">lp</span><span class="o">.</span><span class="n">cols</span><span class="p">:</span>      <span class="c"># Iterate over all rows</span>
+                <span class="n">the_reaction</span> <span class="o">=</span> <span class="n">index_to_reaction</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">id</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">,</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">variable_kind_dict</span><span class="p">[</span><span class="n">the_reaction</span><span class="o">.</span><span class="n">variable_kind</span><span class="p">]</span>
+
+
+    <span class="c">###</span></div>
+<div class="viewcode-block" id="solve_problem"><a class="viewcode-back" href="../../../cobra.solvers.html#cobra.solvers.glpk_solver.solve_problem">[docs]</a>    <span class="k">def</span> <span class="nf">solve_problem</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A performance tunable method for updating a model problem file</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#Update parameter settings if provided</span>
+        <span class="n">the_parameters</span> <span class="o">=</span> <span class="n">parameter_defaults</span>
+
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">the_parameters</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">parameter_defaults</span><span class="p">)</span>
+            <span class="n">the_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">print_solver_time</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;print_solver_time&#39;</span><span class="p">]</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">print_solver_time</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">tolerance_optimality</span> <span class="o">=</span> <span class="n">the_parameters</span><span class="p">[</span><span class="s">&#39;tolerance_optimality&#39;</span><span class="p">]</span>
+        <span class="n">tolerance_integer</span> <span class="o">=</span> <span class="n">the_parameters</span><span class="p">[</span><span class="s">&#39;tolerance_integer&#39;</span><span class="p">]</span>
+        <span class="n">lp_method</span> <span class="o">=</span> <span class="n">the_parameters</span><span class="p">[</span><span class="s">&#39;lp_method&#39;</span><span class="p">]</span>
+        <span class="c">#[set_parameter(lp, parameter_mappings[k], v)</span>
+        <span class="c"># for k, v in kwargs.iteritems() if k in parameter_mappings]</span>
+
+        <span class="n">lp</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">maximize</span> <span class="o">=</span> <span class="n">objective_senses</span><span class="p">[</span><span class="n">the_parameters</span><span class="p">[</span><span class="s">&#39;objective_sense&#39;</span><span class="p">]]</span> 
+        <span class="n">the_methods</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">lp_method</span> <span class="ow">in</span> <span class="n">the_methods</span><span class="p">:</span>
+            <span class="n">the_methods</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">lp_method</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lp_method</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">lp</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+            <span class="c">#For MILPs, it is faster to solve LP then move to MILP</span>
+            <span class="n">lp</span><span class="o">.</span><span class="n">simplex</span><span class="p">(</span><span class="n">tol_bnd</span><span class="o">=</span><span class="n">tolerance_optimality</span><span class="p">,</span>
+                       <span class="n">tol_dj</span><span class="o">=</span><span class="n">tolerance_optimality</span><span class="p">,</span> <span class="n">meth</span><span class="o">=</span><span class="n">lp_method</span><span class="p">)</span>  
+            <span class="n">lp</span><span class="o">.</span><span class="n">integer</span><span class="p">(</span><span class="n">tol_int</span><span class="o">=</span><span class="n">tolerance_integer</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lp</span><span class="o">.</span><span class="n">simplex</span><span class="p">(</span><span class="n">tol_bnd</span><span class="o">=</span><span class="n">tolerance_optimality</span><span class="p">,</span> <span class="n">tol_dj</span><span class="o">=</span><span class="n">tolerance_optimality</span><span class="p">,</span>
+                       <span class="n">meth</span><span class="o">=</span><span class="n">lp_method</span><span class="p">)</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">get_status</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="s">&#39;optimal&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">lp_method</span> <span class="ow">in</span> <span class="n">the_methods</span><span class="p">:</span>
+                <span class="n">lp</span><span class="o">.</span><span class="n">simplex</span><span class="p">(</span><span class="n">tol_bnd</span><span class="o">=</span><span class="n">tolerance_optimality</span><span class="p">,</span>
+                           <span class="n">tol_dj</span><span class="o">=</span><span class="n">tolerance_optimality</span><span class="p">,</span> <span class="n">meth</span><span class="o">=</span><span class="n">lp_method</span><span class="p">)</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="n">get_status</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s">&#39;optimal&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">lp</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+                        <span class="n">lp</span><span class="o">.</span><span class="n">integer</span><span class="p">(</span><span class="n">tol_int</span><span class="o">=</span><span class="n">tolerance_integer</span><span class="p">)</span>
+                    <span class="k">break</span>
+        <span class="k">if</span> <span class="n">print_solver_time</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;optimize time: </span><span class="si">%f</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span>
+
+    </div>
+<div class="viewcode-block" id="solve"><a class="viewcode-back" href="../../../cobra.solvers.html#cobra.solvers.glpk_solver.solve">[docs]</a><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#Update objectives if they are new.</span>
+    <span class="k">if</span> <span class="s">&#39;new_objective&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> \
+           <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;new_objective&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;update problem&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">]:</span>
+       <span class="n">update_objective</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;new_objective&#39;</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="s">&#39;the_problem&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">the_problem</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;the_problem&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">the_problem</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="s">&#39;error_reporting&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">error_reporting</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;error_reporting&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">error_reporting</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">the_problem</span><span class="p">,</span> <span class="n">__solver_class</span><span class="p">):</span>
+        <span class="c">#Update the problem with the current cobra_model</span>
+        <span class="n">lp</span> <span class="o">=</span> <span class="n">the_problem</span>
+        <span class="n">update_problem</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">cobra_model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c">#Create a new problem</span>
+        <span class="n">lp</span> <span class="o">=</span> <span class="n">create_problem</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c">#Deprecated way for returning a solver problem created from a cobra_model</span>
+    <span class="c">#without performing optimization</span>
+    <span class="k">if</span> <span class="n">the_problem</span> <span class="o">==</span> <span class="s">&#39;setup&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">lp</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">solve_problem</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">the_solution</span> <span class="o">=</span> <span class="n">format_solution</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">cobra_model</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="s">&#39;optimal&#39;</span> <span class="ow">and</span> <span class="n">error_reporting</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> failed: </span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">solver_name</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span>
+    <span class="n">cobra_model</span><span class="o">.</span><span class="n">solution</span> <span class="o">=</span> <span class="n">the_solution</span>
+    <span class="n">solution</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;the_problem&#39;</span><span class="p">:</span> <span class="n">lp</span><span class="p">,</span> <span class="s">&#39;the_solution&#39;</span><span class="p">:</span> <span class="n">the_solution</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">solution</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../solvers.html" >cobra.solvers</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Daniel Robert Hyduke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
