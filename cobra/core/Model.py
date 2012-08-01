@@ -180,7 +180,9 @@ class Model(Object):
             self.reactions[reaction_index] = the_reaction
 
     def update(self):
-        """
+        """Non functional.  Model.update is moved to ArrayBasedModel.  Please use
+        the to_array_based_model property to create an ArrayBasedModel.
+        
         """
         raise Exception("Model.update is moved to ArrayBasedModel.  Please use \n"
                         "the to_array_based_model property to create an ArrayBasedModel.")

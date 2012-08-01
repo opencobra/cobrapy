@@ -1,13 +1,16 @@
+from __future__ import with_statement
 from unittest import TestCase, TestLoader, TextTestRunner
-#skipIf is not in python 2.6
+#skipIf is not in python 2.6 / 2.5
+from warnings import warn
 try:
     from unittest import skipIf
+    from warnings import catch_warnings
 except:
     try:
         from unittest2 import skipIf
     except:
         skipIf = None
-from warnings import catch_warnings
+
 import sys
 from os import unlink
 sys.path.insert(0, "../..")
@@ -19,7 +22,7 @@ sys.path.pop(0)
 #from .. import flux_analysis
 
 # libraries which may or may not be installed
-libraries = ["libsbml", "glpk", "gurobipy", "cplex"]
+libraries = ["glpk", "gurobipy", "cplex"]
 for library in libraries:
     try:
         exec("import %s" % library)
@@ -60,6 +63,10 @@ class TestDictList(TestCase):
         self.assertEqual(len(self.list), 9)
 
     def testAdd(self):
+        from os import name as __name
+        if __name == 'java':
+            warn('\t\n**cobra.test.unit_tests.testAdd does not yet work with %s'%__name)
+            return
         obj_list = [Object("test%d" % (i)) for i in range(2, 10)]
         sum = self.list + obj_list
         self.assertEqual(self.list[0].id, "test1")
@@ -111,34 +118,41 @@ class TestCobraCore(CobraTestCase):
 
 
 class TestCobraIO(CobraTestCase):
-    if skipIf is not None:
-        @skipIf(libsbml is None, "libsbml is required")
+    try:
+        from cobra.io.sbml import SBMLReader as __SBMLReader
+        __test_sbml = True
+    except:
+        __test_sbml = False
+    if __test_sbml:
         def test_sbml_read(self):
-            with catch_warnings(record=True) as w:
-                model = io.read_sbml_model(test_sbml_file)
+            ## with catch_warnings(record=True) as w:
+            model = io.read_sbml_model(test_sbml_file)
             self.assertEqual(len(model.reactions), len(self.model.reactions))
             # make sure that an error is raised when given a nonexistent file
             self.assertRaises(IOError, io.read_sbml_model,
-                "fake_file_which_does_not_exist")
-    if skipIf is not None:
-        @skipIf(libsbml is None, "libsbml is required")
+                              "fake_file_which_does_not_exist")
         def test_sbml_write(self):
             test_output_filename = 'test_sbml_write.xml'
             io.write_sbml_model(self.model, test_output_filename)
             #cleanup the test file
             unlink(test_output_filename)
-    
-    def test_mat_read_write(self):
-        test_output_filename = "test_mat_write.mat"
-        io.save_matlab_model(self.model, test_output_filename)
-        reread = io.load_matlab_model(test_output_filename)
-        self.assertEqual(len(self.model.reactions), len(reread.reactions))
-        self.assertEqual(len(self.model.metabolites), len(reread.metabolites))
-        for i in range(len(self.model.reactions)):
-            self.assertEqual(len(self.model.reactions[i]._metabolites), \
-                len(reread.reactions[i]._metabolites))
-            self.assertEqual(self.model.reactions[i].id, reread.reactions[i].id)
-        unlink(test_output_filename)
+    try:
+        from cobra.io import save_matlab_model
+        __test_matlab = True
+    except:
+        __test_matlab = False
+    if __test_matlab:
+        def test_mat_read_write(self):
+            test_output_filename = "test_mat_write.mat"
+            io.save_matlab_model(self.model, test_output_filename)
+            reread = io.load_matlab_model(test_output_filename)
+            self.assertEqual(len(self.model.reactions), len(reread.reactions))
+            self.assertEqual(len(self.model.metabolites), len(reread.metabolites))
+            for i in range(len(self.model.reactions)):
+                self.assertEqual(len(self.model.reactions[i]._metabolites), \
+                    len(reread.reactions[i]._metabolites))
+                self.assertEqual(self.model.reactions[i].id, reread.reactions[i].id)
+            unlink(test_output_filename)
 
 # make a test suite to run all of the tests
 loader = TestLoader()

@@ -2,21 +2,8 @@
 #
 # Advanced user example showing how to set up and solve an MILP
 #
-
 from cobra import Model, Metabolite, Reaction
-try:
-    import glpk
-    solver = 'glpk'
-except:
-    try:
-        from cplex import Cplex
-        solver = 'cplex'
-    except:
-        try:
-            from gurobipy import Model as gurobi_model
-            solver = 'gurobi'
-        except:
-            raise Exception("Couldn't import glpk, cplex, or gurobi")
+solver = 'cplex'  #With libglpk-java there is an untraced memory bug.
 
 cone_selling_price = 7.
 cone_production_cost = 3.
@@ -110,22 +97,18 @@ Popsicle_consumption.objective_coefficient = popsicle_selling_price
 Cone_production.objective_coefficient = -1*cone_production_cost
 Popsicle_production.objective_coefficient = -1*popsicle_production_cost
 
-reaction_dict = dict([(x.id, x) for x in cobra_model.reactions])
 
 production_capacity_constraint = Metabolite(id='production_capacity_constraint')
 production_capacity_constraint._constraint_sense = 'L'
 production_capacity_constraint._bound = starting_budget;
 
-the_reaction = reaction_dict['Cone_production']
-the_reaction.add_metabolites({production_capacity_constraint: cone_production_cost })
-
-the_reaction = reaction_dict['Popsicle_production']
-the_reaction.add_metabolites({production_capacity_constraint: popsicle_production_cost })
+Cone_production.add_metabolites({production_capacity_constraint: cone_production_cost })
+Popsicle_production.add_metabolites({production_capacity_constraint: popsicle_production_cost })
 
 print
 print('Here is what happens in the continuous (LP) case...')
 
-the_program = cobra_model.optimize(objective_sense='maximize',solver=solver)
+the_program = cobra_model.optimize(objective_sense='maximize', solver=solver)
 print
 print('Status is: %s'%cobra_model.solution.status)
 print('Objective value is: %1.2f'%cobra_model.solution.f)
@@ -142,9 +125,7 @@ for the_reaction, the_value in cobra_model.solution.x_dict.items():
 print
 print('Who wants 1/3 of a cone, WTF???  Cones and popsicles are units aka integers, reformulate as MILP')
 Cone_production.variable_kind = 'integer'
-Cone_production.upper_bound = 50000;
 Popsicle_production.variable_kind = 'integer'
-Popsicle_production.upper_bound = 50000;
 
 the_program = cobra_model.optimize(objective_sense='maximize', solver=solver)
 print

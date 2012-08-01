@@ -1,4 +1,6 @@
 from unittest import TestCase, TestLoader, TextTestRunner
+
+from warnings import warn
 import sys
 sys.path.insert(0, "../..")
 from cobra.test import create_test_model
@@ -44,7 +46,10 @@ class TestCobraFluxAnalysis(TestCase):
     def test_double_deletion(self):
         """
         """
-        
+        from os import name as __name
+        if __name == 'java':
+            warn("cobra.test.flux_analysis.test_double_deletion doesn't yet work with java")
+            return
         cobra_model = self.model
         #turn into a double deletion unit test
         the_problem='return'
@@ -88,28 +93,12 @@ class TestCobraFluxAnalysis(TestCase):
         fva_out = flux_variability_analysis(cobra_model,
                                             the_problem=the_problem,
                                             the_reactions=cobra_model.reactions[100:140])
-        fva_out = dict([(k.id, v) for k, v in fva_out.items()])
+        
         for the_reaction, the_range in fva_out.iteritems():
             for k, v in the_range.iteritems():
                 self.assertAlmostEqual(fva_results[the_reaction][k], v, places=3)
-        ## blocked_reactions = find_blocked_reactions(cobra_model)
-        ## open_ex_blocked = find_blocked_reactions(cobra_model,
-        ##                                          open_exchanges=True)
-
-    def test_assess_medium_component_essentiality(self):
-        """
-
-        TODO: Add in a numerical value test
-        """
-        essentiality_results = {'EX_ser__L_e': 0.28511251509333996, 'EX_cobalt2_e': 0.0, 'EX_glu__L_e': 0.18551423955187463, 'EX_glyc_e': 0.02162967396132975, 'EX_h_e': 0.18551423955211313, 'EX_mobd_e': 0.0, 'EX_val__L_e': 0.18004717981556367, 'EX_so4_e': 0.1800471798156284, 'EX_co2_e': 0.18004717981574314, 'EX_k_e': 5.048709793414476e-29, 'EX_fe3_e': -3.4331226595218434e-27, 'EX_na1_e': 0.18004717981556367, 'EX_cl_e': 1.7495455763604752e-28, 'EX_leu__L_e': 0.1762785172191746, 'EX_arg__L_e': 0.13025755872698241, 'EX_nh4_e': 0.09432269135782297, 'EX_lys__L_e': 0.43718843672718055, 'EX_ala__L_e': 0.4371884367334397, 'EX_thr__L_e': 0.43718843673877533, 'EX_pi_e': 4.1028325973665373e-13, 'EX_mn2_e': 0.0, 'EX_phe__L_e': 0.380007972274807, 'EX_h2o_e': 0.38000797227380473, 'EX_mg2_e': 0.0, 'EX_his__L_e': 0.38000797227522415, 'EX_o2_e': 0.3428169207281707, 'EX_pro__L_e': 0.271070547843646, 'EX_asp__L_e': 0.38000797227507915, 'EX_gly_e': 0.3800079722747013, 'EX_cys__L_e': 0.3800079722760569, 'EX_cu2_e': 9.244463733058732e-31, 'EX_ca2_e': 0.0, 'EX_tyr__L_e': 0.38000797227331706, 'EX_zn2_e': 0.0, 'EX_met__L_e': 0.38000797227265026, 'EX_ile__L_e': 0.3800079722724871}
-        cobra_model = self.model
-        the_problem='return'
-        from cobra.flux_analysis import assess_medium_component_essentiality
-        essentiality_dict = assess_medium_component_essentiality(cobra_model, None, 'MgM')
-        for k, v in essentiality_dict.iteritems():
-            self.assertAlmostEqual(essentiality_results[k], v, places=3)
-
-
+  
+  
 
 
 # make a test suite to run all of the tests

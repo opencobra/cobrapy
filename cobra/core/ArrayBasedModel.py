@@ -114,6 +114,7 @@ class ArrayBasedModel(Model):
 
         """
         Model.add_metabolites(metabolite_list)
+        self.constraint_sense = [x._constraint_sense for x in self.metabolites]
         if self.S is not None and expand_stoichiometric_matrix:
             s_expansion = len(self.metabolites) - self.S.shape[0]
             if s_expansion > 0:
@@ -210,6 +211,7 @@ class ArrayBasedModel(Model):
         self.lower_bounds = array(lower_bounds)
         self.upper_bounds = array(upper_bounds)
         self.objective_coefficients = array(objective_coefficients)
+
     def _update_metabolite_vectors(self):
         """regenerates _b and _constraint_sense
 
@@ -223,10 +225,9 @@ class ArrayBasedModel(Model):
         [(_b.append(x._bound),
           _constraint_sense.append(x._constraint_sense))
          for x in self.metabolites]
-        self._b = array(_b)
-        self._constraint_sense = _constraint_sense
+        self.b = array(_b)
+        self.constraint_sense = _constraint_sense
          
-
     def _update_matrices(self, reaction_list=None):
         """
         reaction_list: None or a list of cobra.Reaction objects that are in

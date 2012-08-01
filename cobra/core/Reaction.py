@@ -2,6 +2,9 @@
 #######################
 #BEGIN Class Reaction
 #
+#Is it better to restrict a Reaction to a single model or
+#should we allow a Reaction to be associated with multiple models?
+#
 from collections import defaultdict
 import re
 from copy import deepcopy
@@ -62,13 +65,22 @@ class Reaction(Object):
         [x._reaction.add(self) for x in self._metabolites]
         [x._reaction.add(self) for x in self._genes]
 
+    def get_model(self):
+        """Returns the Model object that this Reaction is associated with.
+
+        """
+        return self._model
+        
+
     def remove_from_model(self, model=None):
         """Removes the association
 
         model: cobra.Model object.  remove the reaction from this model.
         
         """
-        # why is model being taken in as a parameter?
+        # why is model being taken in as a parameter? This plays
+        #back to the question of allowing a Metabolite to be associated
+        #with multiple Models
         if model != self._model and model is not None:
             raise Exception('%s not in %s ergo it cannot be removed. (%s)'%(self,
                                                                   model,
@@ -133,6 +145,7 @@ class Reaction(Object):
         new_reaction = deepcopy(self)
         ## self._model = the_model
         return new_reaction
+
     def guided_copy(self, the_model, metabolite_dict, gene_dict=None):
         """Trying to make a faster copy procedure for cases where large
         numbers of metabolites might be copied.  Such as when copying reactions.
@@ -245,6 +258,19 @@ class Reaction(Object):
             #Make the gene aware that it is involved in this reaction
             [x._reaction.add(self) for x in self._genes]
 
+
+    def add_gene_reaction_rule(self, the_rule):
+        """This adds a gene reaction rule.
+
+        the_rule:  A boolean representation of the gene requirements for this reaction
+        to be active as described in Schellenberger et al 2011 Nature Protocols 6(9):1290-307.
+
+        Note that this method currently replaces any pre-existing rules
+        
+        """
+        self.gene_reaction_rule = the_rule
+        self.parse_gene_association()
+        
     def get_reactants(self):
         """Return a list of reactants for the reaction.
 
@@ -258,6 +284,12 @@ class Reaction(Object):
         """
         return [k for k, v in self._metabolites.items()
                 if v > 0]
+
+    def get_gene(self):
+        """Return a list of reactants for the reaction.
+
+        """
+        return self._genes.keys()
 
 
     def get_coefficient(self, the_metabolite):
@@ -493,6 +525,11 @@ class Reaction(Object):
                          self.gene_reaction_rule, [x.id for x in self._genes],
                          self._metabolites]:
             print repr(the_item)
+
+    def get_compartments(self):
+        """
+        """
+        return(list(set([x.compartment for x in self._metabolites])))
 
 #DEPRECATED SECTION
     def process_prefixed_reaction(self):

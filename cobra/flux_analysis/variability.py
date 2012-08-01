@@ -1,8 +1,7 @@
+from __future__ import with_statement
 #cobra.flux_analysis.variablity.py
 #runs flux variablity analysis on a Model object.
 from math import floor,ceil
-from numpy import hstack,zeros
-from scipy import sparse
 from copy import deepcopy
 from ..core.Metabolite import Metabolite
 try:
@@ -15,8 +14,15 @@ def flux_variability_analysis_wrapper(keywords):
     """Provides an interface to call flux_variability_analysis from ppmap
     
     """
-    from cPickle import dump
-    from .variability import flux_variability_analysis
+    try:
+        from cPickle import dump
+    except:
+        from pickle import dump
+    import sys
+    #Need to do a top level import because of how the parallel processes are called
+    sys.path.insert(0, "../..")
+    from cobra.flux_analysis.variability import flux_variability_analysis
+    sys.path.pop(0)
     results_dict = {}
     new_objective = keywords.pop('new_objective')
     output_directory = None
@@ -66,8 +72,10 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
     a float representing the wt_solution
 
     number_of_processes: If greater than 1 then this function will attempt
-    to parallelize the problem.  NOTE: Currently slow
+    to parallelize the problem.  NOTE: Currently not functional
 
+
+    returns a dictionary: {reaction.id: {'maximum': float, 'minimum': float}}
 
     TODO: update how Metabolite._bound is handled so we can set a range instead
     of just a single value.  This will be done in cobra.flux_analysis.solvers.
@@ -100,7 +108,6 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
         the_reactions = map(cobra_model.reactions.get_by_id, the_reactions)
     #If parallel mode is called for then give it a try
     if number_of_processes > 1 and __parallel_mode_available:
-        print 'running in parallel. currently needs some speed optimizations'
         the_problem = wt_solution #Solver objects are not thread safe
         the_reactions = [x.id for x in the_reactions]
         parameter_dict = dict([(x, eval(x))
@@ -121,7 +128,10 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
         parameter_dict['cobra_model'] = cobra_model.copy()
         parameter_dict['copy_model'] = False
         parameter_list = []
-        reactions_per_process = int(floor(len(the_reactions)/number_of_processes))
+        number_of_reactions = len(the_reactions)
+        if number_of_reactions < number_of_processes:
+            number_of_processes = number_of_reactions
+        reactions_per_process = int(floor(number_of_reactions/number_of_processes))
         for i in range(number_of_processes):
             tmp_parameters = deepcopy(parameter_dict)
             tmp_parameters['the_reactions'] = the_reactions[:reactions_per_process]
@@ -132,11 +142,16 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
         variability_dict = {}
         pp_pointer = ppmap(number_of_processes,
                            flux_variability_analysis_wrapper, parameter_list)
+
         [variability_dict.update(x) for x in list(pp_pointer)]
     else:
         #Basically, add a virtual metabolite that reflects the
         #objective coefficeints and the solution
         objective_metabolite = Metabolite('objective')
+        if not copy_model:
+            original_objectives = dict([(k, float(k.objective_coefficient))
+                                        for k in cobra_model.reactions])
+                                        
         [x.add_metabolites({objective_metabolite: x.objective_coefficient})
          for x in cobra_model.reactions if x.objective_coefficient != 0]
 
@@ -181,7 +196,11 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
                                                    error_reporting=error_reporting,
                                                    update_problem_reaction_bounds=False)
                 tmp_dict[the_description] = cobra_model.solution.f
-            variability_dict[the_reaction] = tmp_dict
+            variability_dict[the_reaction.id] = tmp_dict
+        if not copy_model:
+            [setattr(k, 'objective_coefficient', v)
+             for k, v in original_objectives.iteritems()]
+            objective_metabolite.remove_from_model()
     return variability_dict
 
 
@@ -226,7 +245,10 @@ def run_fva(solver='cplex'):
     
     """
     from test import salmonella_pickle
-    from cPickle import load
+    try:
+        from cPickle import load
+    except:
+        from pickle import load
     with open(salmonella_pickle) as in_file:
         cobra_model = load(in_file)
     fva_out =  flux_variability_analysis(cobra_model,

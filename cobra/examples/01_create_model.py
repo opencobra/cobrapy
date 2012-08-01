@@ -41,10 +41,13 @@ reaction.add_metabolites({malACP_c: -1.0,
 #Print the reaction to make sure it worked:
 print reaction.reaction
 
-reaction.gene_reaction_rule = '( STM2378  or  STM1197 )'
+#A boolean representation of the gene requirements for this reaction
+#to be active as described in Schellenberger et al 2011 Nature Protocols 6(9):1290-307.
+gene_reaction_rule = '( STM2378  or  STM1197 )'
+
 #The next step will create cobra.Gene objects from the gene reaction rule, which will
 #be used later by the cobra.Model to modulate reaction bounds after deleting genes.
-reaction.parse_gene_association()
+reaction.add_gene_reaction_rule(gene_reaction_rule)
 
 #The model's initially empty:
 print '%i reactions in model'%len(cobra_model.reactions)
@@ -66,5 +69,5 @@ for x in cobra_model.metabolites:
     print '%s has formula %s'%(x,x.formula)
 for x in cobra_model.genes:
     print 'gene %s is associated with reactions:'%x
-    for y in x._reaction:
+    for y in x.get_reaction():
         print '\t%s'%y

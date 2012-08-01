@@ -1,43 +1,11 @@
 #cobra.manipulation.modify.py
 from copy import deepcopy
 from cobra.core.Reaction import Reaction
-def add_exchange_reaction(cobra_model, the_metabolites,
-                          reaction_reversibility=False):
-    """Adds exchange reactions to a model for a set of metabolites.
-
-    cobra_model: A Model object.
-
-    the_metabolites: A cobra.Metabolite or list of cobra.Metabolites
-
-    reaction_reversibility: True or False.  Indicates whether the reactions
-    should be reversible.
-
-
-    #TODO:  This is not compliant with current 
-    """
-    if not isinstance(the_metabolites, list):
-        the_metabolites = [the_metabolites]
-    if reaction_reversibility:
-        lower_bound = -1000
-    else:
-        lower_bound = 0
-    the_reactions = []
-    for the_metabolite in the_metabolites:
-        the_reaction = Reaction('EX_' + the_metabolite.id)
-        the_reaction.name = the_metabolite + ' exchange reaction'
-        the_reaction.add_metabolites({the_metabolite: -1})
-        the_reaction.reversibility = reaction_reversibility
-        the_reaction.lower_bound = lower_bound
-        the_reaction.upper_bound = 1000
-        the_reaction.objective_coefficient = 0.
-        the_reaction.boundary = True
-        the_reactions.append(the_reaction)
-    cobra_model.add_reactions(the_reactions)
-    
-
-def initialize_growth_medium(cobra_model, the_medium='MgM', exchange_reactions=None,
-                             reactions_to_disable=None,
-                             exchange_lower_bound=0., exchange_upper_bound=1000.,
+from warnings import warn
+def initialize_growth_medium(cobra_model, the_medium='MgM', 
+                             external_boundary_compartment='e',
+                             external_boundary_reactions=None,
+                             reaction_lower_bound=0., reaction_upper_bound=1000.,
                              irreversible=False):
     """Sets all of the input fluxes to the model to zero and then will
     initialize the input fluxes to the values specified in the_medium if
@@ -45,25 +13,28 @@ def initialize_growth_medium(cobra_model, the_medium='MgM', exchange_reactions=N
     that to do the initialization.
 
     cobra_model: A cobra.Model object.
-    
-    the_medium: Is a string, or a dictionary.  If a string then the
-    initialize_growth_medium function expects that cobra_model has an
+
+
+    the_medium: A string, or a dictionary.  If a string then the
+    initialize_growth_medium function expects that the_model has an
     attribute dictionary called media_compositions, which is a dictionary of
     dictionaries for various medium compositions.  Where a medium
-    composition is a dictionary of exchange reaction ids for the medium
-    components and the exchange fluxes for each medium component; note that
-    these fluxes must be negative because they are being exchanged into the
-    system
+    composition is a dictionary of external boundary reaction ids for the medium
+    components and the external boundary fluxes for each medium component.
 
-    exchange_reactions: None or a list of exchange reactions.  Because not all
-    exchange reactions are required to start with EX_ in all models allow
-    the user to specify the reactions
 
-    exchange_lower_bound: Float.  The default value to use for the lower
-    bound for the exchange reactions.
+    external_boundary_compartment:  None or a string.  If not None then it specifies
+    the compartment in which to disable all of the external systems boundaries.
 
-    exchange_upper_bound: Float.  The default value to use for the upper
-    bound for the exchange_reactions.
+    external_boundary_reactions: None or a list of external_boundaries that are to
+    have their bounds reset.  This acts in conjunction with external_boundary_compartment.
+
+
+    reaction_lower_bound: Float.  The default value to use for the lower
+    bound for the boundary reactions.
+
+    reaction_upper_bound: Float.  The default value to use for the upper
+    bound for the boundary.
 
     irreversible: Boolean.  If the model is irreversible then the medium composition
     is taken as the upper bound
@@ -80,31 +51,32 @@ def initialize_growth_medium(cobra_model, the_medium='MgM', exchange_reactions=N
                 raise Exception("%s is not in the model's media list"%the_medium)     
         else:
             raise Exception("the model doesn't have attribute media_compositions and the medium is not a dict")
-    if exchange_reactions is None:
-        #NOTE this is a bad way to do things.  Should just find reactions that cross
-        #whatever the external boundary
-        exchange_reactions = [x for x in cobra_model.reactions if x.startswith('EX_')]
-    if not hasattr(exchange_reactions[0], 'id'):
-        exchange_indices = map(cobra_model.reactions.index, exchange_reactions)
-        #SPEED UP
-        exchange_reactions = [cobra_model.reactions[x]
-                              for x in exchange_indices]
-    for the_reaction in exchange_reactions:
-        the_reaction.lower_bound = exchange_lower_bound
-        if the_reaction.upper_bound == 0:
-            the_reaction.upper_bound = exchange_upper_bound
-    if reactions_to_disable is not None:
-        disabled_indices = map(cobra_model.reactions.index, reactions_to_disable)
-        disabled_reactions = [cobra_model.reactions[x]
-                              for x in disabled_indices]
-        [(setattr(x, 'lower_bound', 0.),
-          setattr(x, 'upper_bound', 0.))
-         for x in disabled_reactions]
+    if external_boundary_reactions is not None:
+        if isinstance(external_boundary_reactions, str):
+            external_boundary_reactions = map(cobra_model.reactions.get_by_id, external_boundary_reactions)
+    elif external_boundary_compartment is None:
+            warn("We are initializing the medium without first adjusting all external boundary reactions")
+        
+    #Select the system_boundary reactions to reset
+    if external_boundary_compartment is not None:
+        _system_boundaries = dict([(x, x.get_compartments())
+                                   for x in cobra_model.reactions
+                                   if x.boundary == 'system_boundary'])
+        [_system_boundaries.pop(k) for k, v in _system_boundaries.items()
+         if len(v) == 1 and external_boundary_compartment not in v]
+        if external_boundary_reactions is None:
+            external_boundary_reactions = _system_boundaries.keys()
+        else:
+            external_boundary_reactions += _system_boundaries.keys()
 
+
+    for the_reaction in external_boundary_reactions:
+        the_reaction.lower_bound = reaction_lower_bound
+        if the_reaction.upper_bound == 0:
+            the_reaction.upper_bound = reaction_upper_bound
     #Update the model inputs based on the_medium
     for the_component in medium_composition.keys():
-        the_index = cobra_model.reactions.index(the_component)
-        the_reaction = cobra_model.reactions[the_index]
+        the_reaction = cobra_model.reactions.get_by_id(the_component)
         if irreversible:
             the_reaction.upper_bound = medium_composition[the_component]
         else:
@@ -216,20 +188,3 @@ def convert_rule_to_boolean_rule(cobra_model, the_rule,
         return {'boolean_rule':boolean_rule, 'gene_indices':the_gene_indices}
     else:
         return boolean_rule
-
-if __name__ == '__main__':
-    from time import time
-    from cobra.test import create_test_model
-    cobra_model = create_test_model()
-
-
-    print 'Move this to test'
-    irreversible_model = deepcopy(cobra_model)
-    start_time = time()
-    convert_to_irreversible(irreversible_model)
-    print 'Convert to irreversible took %1.3f seconds'%(time()-start_time)
-
-    reverted_model = deepcopy(irreversible_model)
-    start_time = time()
-    revert_to_reversible(reverted_model)
-    print 'Convert to reversible took %1.3f seconds'%(time()-start_time)

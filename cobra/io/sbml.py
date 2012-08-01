@@ -3,15 +3,27 @@
 #System modules
 from .. import Model, Reaction, Metabolite, Formula
 from os.path import isfile
+from os import name as __name
 from copy import deepcopy
-from numpy import zeros
-from scipy.sparse import lil_matrix
 from time import time
 import re
-#Add in the switch for importing the java sbml if this is run in jython
-from libsbml import SBMLDocument, SpeciesReference, KineticLaw, Parameter
-from libsbml import readSBML, writeSBML
-from libsbml import UNIT_KIND_MOLE, UNIT_KIND_GRAM, UNIT_KIND_SECOND, UNIT_KIND_DIMENSIONLESS
+#
+if __name == 'java':
+    from org.sbml.jsbml import SBMLDocument, SpeciesReference, KineticLaw, Parameter
+    from org.sbml.jsbml import SBMLReader, SBMLWriter
+    __tmp_reader = SBMLReader()
+    __tmp_writer = SBMLWriter()
+    readSBML = __tmp_reader.readSBMLFromFile
+    writeSBML = __tmp_writer.writeSBMLToFile
+    from org.sbml.jsbml.Unit import Kind as __Kind
+    UNIT_KIND_MOLE = __Kind.MOLE
+    UNIT_KIND_GRAM = __Kind.GRAM
+    UNIT_KIND_SECOND = __Kind.SECOND
+    UNIT_KIND_DIMENSIONLESS = __Kind.DIMENSIONLESS
+else:
+    from libsbml import SBMLDocument, SpeciesReference, KineticLaw, Parameter
+    from libsbml import readSBML, writeSBML
+    from libsbml import UNIT_KIND_MOLE, UNIT_KIND_GRAM, UNIT_KIND_SECOND, UNIT_KIND_DIMENSIONLESS
 def parse_legacy_id(the_id, the_compartment=None, the_type='metabolite',
                     use_hyphens=False):
     """Deals with a bunch of problems due to bigg.ucsd.edu not following SBML standards
@@ -145,7 +157,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             #Just in case the SBML ids are ill-formed and use -
             reaction = Reaction(reaction_re.split(sbml_reaction.getId())[-1].replace('-','__'))
         cobra_reaction_list.append(reaction)
-        reaction.exchange_reaction = 0
+        #reaction.exchange_reaction = 0
         reaction.name = sbml_reaction.getName()
         cobra_metabolites = {}
         #Use the cobra.Metabolite class here
@@ -399,7 +411,8 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
             
         #Add in the kineticLaw
         sbml_law = KineticLaw(sbml_level, sbml_version)
-        sbml_law.setId('FLUX_VALUE')
+        if hasattr(sbml_law, 'setId'):
+            sbml_law.setId('FLUX_VALUE')
         sbml_law.setFormula('FLUX_VALUE')
         reaction_parameter_dict = {'LOWER_BOUND': [the_reaction.lower_bound, reaction_units],
                                    'UPPER_BOUND': [the_reaction.upper_bound, reaction_units],

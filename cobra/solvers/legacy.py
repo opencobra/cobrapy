@@ -309,8 +309,6 @@ def _optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
 
     if print_solver_time:
         print 'cplex time: %f'%(time() - start_time)
-    x = []
-    x_dict = {}
     #TODO: It might be able to speed this up a little.
     if status == 'optimal':
         objective_value = lp.solution.get_objective_value()
@@ -334,7 +332,7 @@ def _optimize_cplex(cobra_model, new_objective=None, objective_sense='maximize',
         if error_reporting:
             print 'cplex failed: %s'%lp.status
 
-    the_solution = Solution(objective_value, x=x, x_dict=x_dict,
+    cobra_model.solution = the_solution = Solution(objective_value, x=x, x_dict=x_dict,
                             status=status, y=y, y_dict=y_dict)
     solution = {'the_problem': lp, 'the_solution': the_solution}
     return solution    
@@ -565,7 +563,7 @@ def _optimize_gurobi(cobra_model, new_objective=None, objective_sense='maximize'
         objective_value = None
         if error_reporting:
             print 'gurobi failed: %s'%lp.status  
-    the_solution = Solution(objective_value, x=x, x_dict=x_dict,
+    cobra_model.solution = the_solution = Solution(objective_value, x=x, x_dict=x_dict,
                             y=y, y_dict=y_dict,
                             status=status)
     solution = {'the_problem': lp, 'the_solution': the_solution}
@@ -810,7 +808,7 @@ def _optimize_glpk(cobra_model, new_objective=None, objective_sense='maximize',
         x = y = x_dict = y_dict = objective_value = None
         if error_reporting:
             print 'glpk failed: %s'%lp.status
-    the_solution = Solution(objective_value, x=x, x_dict=x_dict,
+    cobra_model.solution = the_solution = Solution(objective_value, x=x, x_dict=x_dict,
                             y=y, y_dict=y_dict,
                             status=status)
     solution = {'the_problem': lp, 'the_solution': the_solution}

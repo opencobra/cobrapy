@@ -1,11 +1,19 @@
+from __future__ import with_statement
 #cobra.flux_analysis.single_deletion.py
 #run single gene or reaction deletions on the model
-from numpy import nan
+nan = float('nan')
 from time import time
+from warnings import warn
 from copy import deepcopy
 from ..manipulation import initialize_growth_medium
 from ..manipulation import delete_model_genes, undelete_model_genes
-from .moma import moma
+from os import name as __name
+if __name == 'java':
+    warn("moma is not supported on %s"%__name)
+    def moma(**kwargs):
+        warn("moma is not supported on %s"%__name)
+else:
+    from .moma import moma    
 def single_deletion(cobra_model, element_list=None,
                     method='fba', the_problem='return',
                     element_type='gene', solver='glpk',

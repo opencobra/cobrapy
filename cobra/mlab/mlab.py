@@ -3,7 +3,7 @@
 import cPickle, numpy, os, cobra, warnings
 from copy import deepcopy
 from scipy.sparse import dok_matrix
-from cobra import Model, Reaction, Metabolite, Formula
+from .. import Model, Reaction, Metabolite, Formula, ArrayBasedModel
 
 from mlabwrap import mlab as matlab
 
@@ -250,10 +250,10 @@ def matlab_cobra_struct_to_python_cobra_object(matlab_struct):
         the_metabolite.name = n
         the_metabolite._constraint_sense = c
         the_metabolite.formula = Formula(f)
-        the_metabolite.charge = int(ch)
+
         the_compartments[the_metabolite.compartment] = the_metabolite.compartment
         if ch is not None:
-            the_metabolite.notes['CHARGE'] = int(ch)
+            the_metabolite.charge = the_metabolite.notes['CHARGE'] = int(ch)
         if cas is not None and cas != '':
             the_metabolite.notes['CASID'] = cas
         if kegg is not None and kegg != '':
@@ -313,7 +313,7 @@ def matlab_cobra_struct_to_python_cobra_object(matlab_struct):
             the_compartments[the_key] = compartment_dict[the_key]
     the_model.add_reactions(cobra_reactions)
     the_model.compartments = the_compartments
-    the_model.update()
+    the_model.solution = None
     return the_model
 
 
@@ -328,7 +328,10 @@ def cobra_model_object_to_cobra_matlab_struct(cobra_model):
         raise Exception('mlabwrap and MATLAB are required to use these functions. '+\
                         'They only function on Mac OS X and GNU/Linux')
     from cobra.mlab import python_list_to_matlab_cell, scipy_sparse_to_mlab_sparse
-    cobra_model.update()
+    if hasattr(cobra_model, 'to_array_based_model'):
+        cobra_model = cobra_model.to_array_based_model()
+    else:
+        cobra_model.update()
     matlab_struct = matlab.struct()
     #Things that need a conversion:  S, rxnGeneMat,
     matlab_struct.mets = python_list_to_matlab_cell([x.id for x in cobra_model.metabolites],
@@ -351,16 +354,16 @@ def cobra_model_object_to_cobra_matlab_struct(cobra_model):
                                                            for x in cobra_model.reactions],
                                                            transpose=True)
 
-    if hasattr(cobra_model, '_constraint_sense'):
-        matlab_struct.csense = reduce(lambda x,y: x+y, cobra_model._constraint_sense)
+    if hasattr(cobra_model, 'constraint_sense'):
+        matlab_struct.csense = reduce(lambda x,y: x+y, cobra_model.constraint_sense)
     #matlab_struct.csense = python_list_to_matlab_cell(['E']*len(cobra_model.metabolites), transpose = True)
     #TODO: inefficient conversion but who cares? matlab's on its way out
-    matlab_struct.S = scipy_sparse_to_mlab_sparse(cobra_model._S)
+    matlab_struct.S = scipy_sparse_to_mlab_sparse(cobra_model.S)
     #Things that can be directly copied
-    matlab_struct.b = cobra_model._b
-    matlab_struct.c = cobra_model._objective_coefficients
-    matlab_struct.lb = cobra_model._lower_bounds
-    matlab_struct.ub = cobra_model._upper_bounds
+    matlab_struct.b = cobra_model.b
+    matlab_struct.c = cobra_model.objective_coefficients
+    matlab_struct.lb = cobra_model.lower_bounds
+    matlab_struct.ub = cobra_model.upper_bounds
     matlab_struct.rev = [x.reversibility for x in cobra_model.reactions]
     matlab_struct.description = cobra_model.description
     return(matlab_struct)

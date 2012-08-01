@@ -1,9 +1,16 @@
+from __future__ import with_statement
 #cobra.flux_analysis.moma.py: Runs the minimization of metabolic
 #adjustment method described in Segre et al 2002 PNAS 99(23): 15112-7
+from os import name as __name
+from sys import modules as __modules
+from warnings import warn
+if __name == 'java':
+    raise Exception("%s is not yet supported on jython"%__modules[__name__])
 from copy import deepcopy
 from time import time
 from math import ceil, floor
-from numpy import array, zeros, ones, hstack, vstack, matrix, sum
+#The next four imports need to be dealt with to obtain jython compatibilty
+from numpy import array, hstack, vstack, matrix, sum
 from scipy.sparse import eye, lil_matrix, dok_matrix
 from scipy.sparse import hstack as s_hstack
 from scipy.sparse import vstack as s_vstack

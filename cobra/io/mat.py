@@ -5,6 +5,11 @@ except ImportError:
     dicttype = dict
 # if scipy version is earlier than 0.11, OrderedDict will not work, so use dict
 try:
+    import scipy
+except ImportError, e:
+    raise e
+    
+try:
     from scipy.version import short_version
     scipy_version = int(short_version.split(".")[1])
 except:
