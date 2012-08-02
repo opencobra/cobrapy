@@ -1,0 +1,6 @@
+COBRA for Python 
+0.2.0b1: Beta version for the 0.2.0 release
+    -Migration to new style solvers
+    -Increased support for Jython
+       -JSBML for cobra.io.sbml
+       -cplex, gurobi, and glpk-java supported in solvers
