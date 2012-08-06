@@ -2,17 +2,16 @@
 #Interface to ilog/cplex 12.4 python / jython interfaces
 #QPs are not yet supported under jython
 from __future__ import absolute_import
-from pdb import set_trace
 from os import name as __name
 from copy import deepcopy
 from warnings import warn
 ###solver specific parameters
-from cobra.solvers.parameters import status_dict, variable_kind_dict, \
+from .parameters import status_dict, variable_kind_dict, \
      sense_dict, parameter_mappings, parameter_defaults, \
      objective_senses, default_objective_sense
 
-from cobra.core.Solution import Solution
-from cobra.flux_analysis.objective import update_objective
+from ..Solution import Solution
+from ..flux_analysis.objective import update_objective
 from time import time
 solver_name = 'cplex'
 parameter_defaults = parameter_defaults[solver_name]
