@@ -10,7 +10,7 @@ from .parameters import status_dict, variable_kind_dict, \
      sense_dict, parameter_mappings, parameter_defaults, \
      objective_senses, default_objective_sense
 
-from ..Solution import Solution
+from ..core.Solution import Solution
 from ..flux_analysis.objective import update_objective
 from time import time
 solver_name = 'cplex'
