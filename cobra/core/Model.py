@@ -269,7 +269,7 @@ class Model(Object):
                  the_problem=None, solver='glpk', 
                  error_reporting=None, quadratic_component=None,
                  tolerance_optimality=1e-6, tolerance_feasibility=1e-6,
-                 tolerance_barrier=1e-10, lp_method=0,  **kwargs):
+                 tolerance_barrier=1e-10,  **kwargs):
         """Optimize self for self._objective_coefficients or new_objective.
 
         NOTE: Only the most commonly used parameters are presented here.  Additional
@@ -327,7 +327,6 @@ class Model(Object):
                                 tolerance_optimality=tolerance_optimality,
                                 tolerance_feasibility=tolerance_feasibility,
                                 tolerance_barrier=tolerance_barrier,
-                                lp_method=lp_method, 
                                 **kwargs)
         return the_solution
 

@@ -478,15 +478,6 @@ def solve_problem(lp, **kwargs):
     lp.solve()
     #If the solver takes more than 0.1 s with a hot start it is likely stuck
     status = get_status(lp)
-    if status != 'optimal':
-        #Cycle through the different solver options, if a solution is not found
-        for lp_method in (1, 2, 3, 4, 5, 6):
-            set_parameter(lp, parameter_mappings['lp_method'], lp_method)
-            lp.solve()
-            status = get_status(lp)
-            if status == 'optimal':
-                break
-
     if print_solver_time:
         print 'optimize time: %f'%(time() - start_time)
     return status
@@ -496,31 +487,55 @@ def solve(cobra_model, **kwargs):
     """
 
     """
-        #Update objectives if they are new.
-    if 'new_objective' in kwargs and \
-           kwargs['new_objective'] not in ['update problem', None]:
-       update_objective(cobra_model, kwargs['new_objective'])
+    #Start out with default parameters and then modify if
+    #new onese are provided
+    the_parameters = deepcopy(parameter_defaults)
+    if kwargs:
+        the_parameters.update(kwargs)
+    #Update objectives if they are new.
+    if 'new_objective' in the_parameters and \
+           the_parameters['new_objective'] not in ['update problem', None]:
+       update_objective(cobra_model, the_parameters['new_objective'])
 
-    if 'the_problem' in kwargs:
-        the_problem = kwargs['the_problem']
+    if 'the_problem' in the_parameters:
+        the_problem = the_parameters['the_problem']
     else:
         the_problem = None
-    if 'error_reporting' in kwargs:
-        error_reporting = kwargs['error_reporting']
+    if 'error_reporting' in the_parameters:
+        error_reporting = the_parameters['error_reporting']
     else:
         error_reporting = False
     if isinstance(the_problem, __solver_class):
         #Update the problem with the current cobra_model
         lp = the_problem
-        update_problem(lp, cobra_model, **kwargs)
+        update_problem(lp, cobra_model, **the_parameters)
     else:
         #Create a new problem
-        lp = create_problem(cobra_model, **kwargs)
+        lp = create_problem(cobra_model, **the_parameters)
     #Deprecated way for returning a solver problem created from a cobra_model
     #without performing optimization
     if the_problem == 'setup':
         return lp
-    status = solve_problem(lp, **kwargs)
+
+    ###Try to solve the problem using other methods if the first method doesn't work
+    try:
+        lp_method = the_parameters['lp_method']
+    except:
+        lp_method = 1
+    the_methods = [1, 2, 3, 4, 5, 6]
+    if lp_method in the_methods:
+        the_methods.remove(lp_method)
+    #Start with the user specified method
+    the_methods.insert(0, lp_method)
+    for the_method in the_methods:
+        the_parameters['lp_method'] = the_method
+        try:
+            status = solve_problem(lp, **the_parameters)
+        except:
+            status = 'failed'
+        if status == 'optimal':
+            break
+
     the_solution = format_solution(lp, cobra_model)
     if status != 'optimal' and error_reporting:
         print '%s failed: %s'%(solver_name, status)

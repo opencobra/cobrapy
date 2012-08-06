@@ -1,4 +1,5 @@
 # attempt to import all working solvers in this directory
+from __future__ import absolute_import
 from os import name as __name
 from sys import modules as __modules
 from warnings import warn
@@ -27,6 +28,26 @@ if __legacy_solver:
             #print e
             solver_dict.pop(solver_name)
 else:
+    #TODO: Enforce the solver interface
+    ## create_problem: makes a solver problem object from a cobra.model and
+    ## sets parameters (if possible)
+
+    ## format_solution: Returns a cobra.Solution object.  This is where one
+    ## should dress the cobra.model with results if desired.
+
+    ## get_status: converts a solver specific status flag to a cobra pie flag.
+
+    ## set_parameter: takes solver specific parameter strings and sets them.
+
+    ## solve: solves the optimization problem.  this is where one should put
+    ## in logic on what to try if the problem
+    ## isn't optimal
+
+    ## solve_problem: dumb and fast which will set parameters, if provided
+    ##note that for some solvers
+
+    ## update_problem: changes bounds and linear objective coefficient of the
+    ## solver specific problem file, given the complementary cobra.mod
     from os import listdir as _listdir
     from os import path as _path
     for i in _listdir(_path.split(_path.abspath(__file__))[0]):

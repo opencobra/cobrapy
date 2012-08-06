@@ -293,19 +293,8 @@ if __name == 'java':
         except:
             print_solver_time = False
         lp_method = lp._simplex_parameters.meth
-        the_methods = [1, 2, 3]
-        if lp_method in the_methods:
-            the_methods.remove(lp_method)
-        else:
-            lp_method = 1
         lp.solve()
         status = get_status(lp)
-        if status != 'optimal':
-            for lp_method in the_methods:
-                set_parameter(lp, parameter_mappings['lp_method'], lp_method)
-                lp.solve()
-                status = get_status(lp)
-                break
         if print_solver_time:
             print 'optimize time: %f'%(time() - start_time)
         return status
@@ -470,15 +459,27 @@ else:
     def solve_problem(lp, **kwargs):
         """A performance tunable method for updating a model problem file
 
-        """
-        #Update parameter settings if provided
-        the_parameters = parameter_defaults
+        lp: a pyGLPK 0.3 problem
 
+        For pyGLPK it is necessary to provide the following parameters, if they
+        are not provided then the default settings will be used: tolerance_optimality,
+        tolerance_integer, lp_method, and objective_sense
+
+        """
         if kwargs:
-            the_parameters = deepcopy(parameter_defaults)
-            the_parameters.update(kwargs)
+            the_parameters = kwargs
+        else:
+            the_parameters = {}
+        #These need to be provided to solve_problem for pyGLPK because it's not possible
+        #AFAIK to set these during problem creation.
+        __function_parameters = ['tolerance_optimality', 'tolerance_integer', 'lp_method',
+                                 'objective_sense']
+        for the_parameter in __function_parameters:
+            if the_parameter not in the_parameters:
+                the_parameters.update({the_parameter: parameter_defaults[the_parameter]})
+               
         try:
-            print_solver_time = kwargs['print_solver_time']
+            print_solver_time = the_parameters['print_solver_time']
             start_time = time()
         except:
             print_solver_time = False
@@ -489,12 +490,6 @@ else:
         # for k, v in kwargs.iteritems() if k in parameter_mappings]
 
         lp.obj.maximize = objective_senses[the_parameters['objective_sense']] 
-        the_methods = [1, 2, 3]
-        if lp_method in the_methods:
-            the_methods.remove(lp_method)
-        else:
-            lp_method = 1
-
         if lp.kind == int:
             #For MILPs, it is faster to solve LP then move to MILP
             lp.simplex(tol_bnd=tolerance_optimality,
@@ -504,49 +499,65 @@ else:
             lp.simplex(tol_bnd=tolerance_optimality, tol_dj=tolerance_optimality,
                        meth=lp_method)
         status = get_status(lp)
-        if status != 'optimal':
-            for lp_method in the_methods:
-                lp.simplex(tol_bnd=tolerance_optimality,
-                           tol_dj=tolerance_optimality, meth=lp_method)
-                status = get_status(lp)
-                if status == 'optimal':
-                    if lp.kind == int:
-                        lp.integer(tol_int=tolerance_integer)
-                    break
         if print_solver_time:
             print 'optimize time: %f'%(time() - start_time)
         return status
 
     
 def solve(cobra_model, **kwargs):
-    """
+    """Smart interface to optimization solver functions that will convert
+    the cobra_model to a solver object, set the parameters, and try multiple
+    methods to get an optimal solution before returning the solver object and
+    a cobra.Solution (which is attached to cobra_model.solution)
+
+    cobra_model: a cobra.Model
+
+    returns a dict: {'the_problem': solver specific object, 'the_solution':
+    cobra.Solution for the optimization problem'}
+    
 
     """
+    #Start out with default parameters and then modify if
+    #new onese are provided
+    the_parameters = deepcopy(parameter_defaults)
+    if kwargs:
+        the_parameters.update(kwargs)
     #Update objectives if they are new.
-    if 'new_objective' in kwargs and \
-           kwargs['new_objective'] not in ['update problem', None]:
-       update_objective(cobra_model, kwargs['new_objective'])
-
-    if 'the_problem' in kwargs:
-        the_problem = kwargs['the_problem']
+    error_reporting = the_parameters['error_reporting']
+    if 'new_objective' in the_parameters and \
+           the_parameters['new_objective'] not in ['update problem', None]:
+       update_objective(cobra_model, the_parameters['new_objective'])
+    if 'the_problem' in the_parameters:
+        the_problem = the_parameters['the_problem']
     else:
         the_problem = None
-    if 'error_reporting' in kwargs:
-        error_reporting = kwargs['error_reporting']
-    else:
-        error_reporting = False
     if isinstance(the_problem, __solver_class):
         #Update the problem with the current cobra_model
         lp = the_problem
-        update_problem(lp, cobra_model, **kwargs)
+        update_problem(lp, cobra_model, **the_parameters)
     else:
         #Create a new problem
-        lp = create_problem(cobra_model, **kwargs)
+        lp = create_problem(cobra_model, **the_parameters)
     #Deprecated way for returning a solver problem created from a cobra_model
     #without performing optimization
     if the_problem == 'setup':
         return lp
-    status = solve_problem(lp, **kwargs)
+    ###Try to solve the problem using other methods if the first method doesn't work
+    lp_method = the_parameters['lp_method']
+    the_methods = [1, 2, 3]
+    if lp_method in the_methods:
+        the_methods.remove(lp_method)
+    #Start with the user specified method
+    the_methods.insert(0, lp_method)
+    for the_method in the_methods:
+        the_parameters['lp_method'] = the_method
+        try:
+            status = solve_problem(lp, **the_parameters)
+        except:
+            status = 'failed'
+        if status == 'optimal':
+            break
+    
     the_solution = format_solution(lp, cobra_model)
     if status != 'optimal' and error_reporting:
         print '%s failed: %s'%(solver_name, status)
