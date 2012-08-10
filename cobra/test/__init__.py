@@ -13,6 +13,8 @@ from os.path import join as __join
 from os.path import split as __split
 from os.path import sep as __sep
 
+cobra_directory = __abspath(__join(__split(__abspath(__file__))[0], ".."))
+cobra_location = __abspath(__join(cobra_directory, ".."))
 data_directory = __join(__split(__abspath(__file__))[0], "data")
 if not data_directory.endswith(__sep):
     data_directory += __sep
@@ -52,7 +54,7 @@ def create_test_model(test_pickle=salmonella_pickle):
             model = load(infile)
     except:
         #if the pickle can't be loaded then load the sbml xml
-        sys.path.insert(0, "../..")
+        sys.path.insert(0, cobra_location)
         from cobra.io import read_sbml_model
         model = read_sbml_model(salmonella_sbml)
         sys.path.pop(0)
@@ -64,9 +66,8 @@ def create_test_suite():
     loader = TestLoader()
     suite = TestSuite()
     for test_name in available_tests:
-        exec("import cobra.test." + test_name)
+        exec("from . import " + test_name)
         suite.addTests(loader.loadTestsFromModule(eval(test_name)))
-    test_modules = [eval(test_name) for test_name in available_tests]
     return suite
 
 suite = create_test_suite()
