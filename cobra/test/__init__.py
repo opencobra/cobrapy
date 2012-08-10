@@ -1,4 +1,5 @@
 from __future__ import with_statement, absolute_import
+import sys
 from os import name as __name
 available_tests = ['unit_tests', 'solvers', 'flux_analysis']
 #if not using jython then add the tests that don't currently run through jython
@@ -51,7 +52,6 @@ def create_test_model(test_pickle=salmonella_pickle):
             model = load(infile)
     except:
         #if the pickle can't be loaded then load the sbml xml
-        import sys
         sys.path.insert(0, "../..")
         from cobra.io import read_sbml_model
         model = read_sbml_model(salmonella_sbml)
@@ -63,10 +63,13 @@ def create_test_suite():
     from unittest import TestLoader, TestSuite
     loader = TestLoader()
     suite = TestSuite()
+    sys.path.insert(0, "../..")
+
     for test_name in available_tests:
         exec("import cobra.test." + test_name)
         suite.addTests(loader.loadTestsFromModule(eval(test_name)))
     test_modules = [eval(test_name) for test_name in available_tests]
+    sys.path.pop(0)
     return suite
 
 suite = create_test_suite()
