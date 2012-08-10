@@ -64,7 +64,6 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
 
     use_hyphens:   Boolean.  If True, double underscores (__) in an SBML ID will be converted to hyphens
 
-	
     """
      # Ensure that the file exists
     if not isfile(sbml_filename):

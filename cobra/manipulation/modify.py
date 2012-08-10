@@ -6,7 +6,8 @@ def initialize_growth_medium(cobra_model, the_medium='MgM',
                              external_boundary_compartment='e',
                              external_boundary_reactions=None,
                              reaction_lower_bound=0., reaction_upper_bound=1000.,
-                             irreversible=False):
+                             irreversible=False,
+                             reactions_to_disable=None):
     """Sets all of the input fluxes to the model to zero and then will
     initialize the input fluxes to the values specified in the_medium if
     it is a dict or will see if the model has a composition dict and use
@@ -38,6 +39,9 @@ def initialize_growth_medium(cobra_model, the_medium='MgM',
 
     irreversible: Boolean.  If the model is irreversible then the medium composition
     is taken as the upper bound
+
+    reactions_to_disable: List of reactions for which the upper and lower bounds
+    are disabled.  This is superceded by the contents of media_composition
   
     """
     #Zero all of the inputs to the model
@@ -52,7 +56,7 @@ def initialize_growth_medium(cobra_model, the_medium='MgM',
         else:
             raise Exception("the model doesn't have attribute media_compositions and the medium is not a dict")
     if external_boundary_reactions is not None:
-        if isinstance(external_boundary_reactions, str):
+        if isinstance(external_boundary_reactions[0], str):
             external_boundary_reactions = map(cobra_model.reactions.get_by_id, external_boundary_reactions)
     elif external_boundary_compartment is None:
             warn("We are initializing the medium without first adjusting all external boundary reactions")
@@ -74,6 +78,14 @@ def initialize_growth_medium(cobra_model, the_medium='MgM',
         the_reaction.lower_bound = reaction_lower_bound
         if the_reaction.upper_bound == 0:
             the_reaction.upper_bound = reaction_upper_bound
+    #Disable specified reactions
+    if reactions_to_disable is not None:
+        if isinstance(reactions_to_disable[0], str):
+            reactions_to_disable = map(cobra_model.reactions.get_by_id, reactions_to_disable)
+    for the_reaction in reactions_to_disable:
+        the_reaction.lower_bound = the_reaction.upper_bound = 0.
+
+
     #Update the model inputs based on the_medium
     for the_component in medium_composition.keys():
         the_reaction = cobra_model.reactions.get_by_id(the_component)
@@ -81,7 +93,6 @@ def initialize_growth_medium(cobra_model, the_medium='MgM',
             the_reaction.upper_bound = medium_composition[the_component]
         else:
             the_reaction.lower_bound = medium_composition[the_component]
-
 
 def convert_to_irreversible(cobra_model):
     """Will break all of the reversible reactions into two separate irreversible reactions with
