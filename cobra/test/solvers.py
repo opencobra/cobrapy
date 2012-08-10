@@ -1,14 +1,20 @@
 from unittest import TestCase, TestLoader, TextTestRunner
 import sys
-from pdb import set_trace
 # deal with absolute imports by adding the appropriate directory to the path
-sys.path.insert(0, "../..")
-from cobra.manipulation import initialize_growth_medium
-from cobra.test import create_test_model
-from cobra import Model, Reaction, Metabolite
-from cobra import solvers
-from cobra.solvers import __legacy_solver
-sys.path.pop(0)  # remove the added directory to the path
+if __name__ == "__main__":
+    sys.path.insert(0, "../..")
+    from cobra.manipulation import initialize_growth_medium
+    from cobra.test import create_test_model
+    from cobra import Model, Reaction, Metabolite
+    from cobra import solvers
+    from cobra.solvers import __legacy_solver
+    sys.path.pop(0)  # remove the added directory to the path
+else:
+    from ..manipulation import initialize_growth_medium
+    from . import create_test_model
+    from .. import Model, Reaction, Metabolite
+    from .. import solvers
+    __legacy_solver = solvers.__legacy_solver
 
 class TestCobraSolver(TestCase):
     def setUp(self):

@@ -1,25 +1,32 @@
 from __future__ import with_statement
+import sys
+from warnings import warn  # TODO - catch known warnings
 from unittest import TestCase, TestLoader, TextTestRunner
-#skipIf is not in python 2.6 / 2.5
-from warnings import warn
-try:
+from tempfile import gettempdir
+from os import unlink
+from os.path import join
+try:  #skipIf is not in python 2.6 / 2.5
     from unittest import skipIf
-    from warnings import catch_warnings
 except:
-    try:
+    try:  # should we make unittest2 an absolute requirement and use skipIf
         from unittest2 import skipIf
     except:
         skipIf = None
 
-import sys
-from os import unlink
-sys.path.insert(0, "../..")
-from cobra.test import data_directory, create_test_model
-from cobra.test import salmonella_sbml as test_sbml_file
-from cobra.test import salmonella_pickle as test_pickle
-from cobra import Object, Model, Metabolite, Reaction, io, DictList
-sys.path.pop(0)
-#from .. import flux_analysis
+# deal with absolute imports by adding the appropriate directory to the path
+if __name__ == "__main__":
+    sys.path.insert(0, "../..")
+    from cobra.test import data_directory, create_test_model
+    from cobra.test import salmonella_sbml as test_sbml_file
+    from cobra.test import salmonella_pickle as test_pickle
+    from cobra import Object, Model, Metabolite, Reaction, io, DictList
+    sys.path.pop(0)
+    assert 0
+else:
+    from . import data_directory, create_test_model
+    from . import salmonella_sbml as test_sbml_file
+    from . import salmonella_pickle as test_pickle
+    from .. import Object, Model, Metabolite, Reaction, io, DictList
 
 # libraries which may or may not be installed
 libraries = ["glpk", "gurobipy", "cplex"]
@@ -132,7 +139,7 @@ class TestCobraIO(CobraTestCase):
             self.assertRaises(IOError, io.read_sbml_model,
                               "fake_file_which_does_not_exist")
         def test_sbml_write(self):
-            test_output_filename = 'test_sbml_write.xml'
+            test_output_filename = join(gettempdir(), 'test_sbml_write.xml')
             io.write_sbml_model(self.model, test_output_filename)
             #cleanup the test file
             unlink(test_output_filename)
@@ -143,7 +150,7 @@ class TestCobraIO(CobraTestCase):
         __test_matlab = False
     if __test_matlab:
         def test_mat_read_write(self):
-            test_output_filename = "test_mat_write.mat"
+            test_output_filename = join(gettempdir(), "test_mat_write.mat")
             io.save_matlab_model(self.model, test_output_filename)
             reread = io.load_matlab_model(test_output_filename)
             self.assertEqual(len(self.model.reactions), len(reread.reactions))

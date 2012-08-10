@@ -36,6 +36,7 @@ setup(
     description = "COBRApy is a package for constraints-based modeling of biological networks",
     license = "GPL V3.0",
     keywords = "metabolism biology linear programming optimization flux balance analysis fba",
-    url = "http://opencobra.sourceforge.net"
+    url = "http://opencobra.sourceforge.net",
+    test_suite = "cobra.test.suite"
     )
     

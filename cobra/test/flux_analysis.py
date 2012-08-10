@@ -2,12 +2,18 @@ from unittest import TestCase, TestLoader, TextTestRunner
 
 from warnings import warn
 import sys
-sys.path.insert(0, "../..")
-from cobra.test import create_test_model
-from cobra import Model, Reaction, Metabolite
-from cobra.flux_analysis import *
-from cobra.manipulation import initialize_growth_medium
-sys.path.pop(0)
+if __name__ == "__main__":
+    sys.path.insert(0, "../..")
+    from cobra.test import create_test_model
+    from cobra import Model, Reaction, Metabolite
+    from cobra.flux_analysis import *
+    from cobra.manipulation import initialize_growth_medium
+    sys.path.pop(0)
+else:
+    from . import create_test_model
+    from .. import Model, Reaction, Metabolite
+    from ..flux_analysis import *
+    from ..manipulation import initialize_growth_medium
 
 class TestCobraFluxAnalysis(TestCase):
     """Test the simulation functions in cobra.flux_analysis

@@ -1,12 +1,9 @@
 from __future__ import with_statement, absolute_import
 from os import name as __name
-from warnings import warn
-test_import_string = 'import cobra.test.%s as %s'
 available_tests = ['unit_tests', 'solvers', 'flux_analysis']
 #if not using jython then add the tests that don't currently run through jython
 ## if __name != 'java':
 ##      available_tests += ['flux_analysis']
-    
 
 del __name
 
@@ -29,7 +26,7 @@ __test_pickles = {'Salmonella_enterica': salmonella_pickle,
                   'Escherichia_coli': ecoli_pickle}
 __test_xml = {'Salmonella_enterica': salmonella_sbml,
               'Escherichia_coli': ecoli_sbml}
-
+del __abspath, __join, __split, __sep
 
 def create_test_model(test_pickle=salmonella_pickle):
     """Returns a cobra model for testing.  The default model is the up to date
@@ -61,20 +58,20 @@ def create_test_model(test_pickle=salmonella_pickle):
         sys.path.pop(0)
     return model
 
+def create_test_suite():
+    """create a unittest.TestSuite with available tests"""
+    from unittest import TestLoader, TestSuite
+    loader = TestLoader()
+    suite = TestSuite()
+    for test_name in available_tests:
+        exec("import cobra.test." + test_name)
+        suite.addTests(loader.loadTestsFromModule(eval(test_name)))
+    test_modules = [eval(test_name) for test_name in available_tests]
+    return suite
+
+suite = create_test_suite()
 
 def test_all():
     """###running unit tests on cobra py###"""
-    import sys
-    sys.path.insert(0, "../..")
-    import unittest
-    for the_test in available_tests:
-        exec(test_import_string%(the_test, the_test))
-        print '\n\n###running %s tests###'%the_test
-        eval('%s.test_all()'%the_test)
-        
-    sys.path.pop(0)
-
-del __abspath, __join, __split, __sep
-
-if __name__ == '__main__':
-    test_all()
+    from unittest import TextTestRunner
+    TextTestRunner(verbosity=2).run(create_test_suite())
