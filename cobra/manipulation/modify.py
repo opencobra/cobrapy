@@ -82,8 +82,8 @@ def initialize_growth_medium(cobra_model, the_medium='MgM',
     if reactions_to_disable is not None:
         if isinstance(reactions_to_disable[0], str):
             reactions_to_disable = map(cobra_model.reactions.get_by_id, reactions_to_disable)
-    for the_reaction in reactions_to_disable:
-        the_reaction.lower_bound = the_reaction.upper_bound = 0.
+        for the_reaction in reactions_to_disable:
+            the_reaction.lower_bound = the_reaction.upper_bound = 0.
 
 
     #Update the model inputs based on the_medium
