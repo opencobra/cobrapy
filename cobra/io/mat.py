@@ -29,7 +29,7 @@ except ImportError:
     
 
 
-from .. import Model, Metabolite, Reaction
+from .. import Model, Metabolite, Reaction, Formula
 
 
 def _cell(x):
@@ -81,8 +81,8 @@ def load_matlab_model(infile_path, variable_name=None):
             new_metabolite = Metabolite()
             new_metabolite.id = str(name[0][0])
             try:
-                new_metabolite.name = m["metNames"][0, 0][i][0][0]
-                new_metabolite.formula = m["metFormulas"][0][0][i][0][0]
+                new_metabolite.name = str(m["metNames"][0, 0][i][0][0])
+                new_metabolite.formula = Formula(str(m["metFormulas"][0][0][i][0][0]))
             except:
                 pass
             model.add_metabolites([new_metabolite])
@@ -93,7 +93,7 @@ def load_matlab_model(infile_path, variable_name=None):
             new_reaction.upper_bound = float(m["ub"][0, 0][i][0])
             new_reaction.objective_coefficient = float(m["c"][0, 0][i][0])
             try:
-                new_reaction.name = m["rxnNames"][0, 0][i][0][0]
+                new_reaction.name = str(m["rxnNames"][0, 0][i][0][0])
             except:
                 pass
             model.add_reactions(new_reaction)
