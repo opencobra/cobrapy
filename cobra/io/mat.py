@@ -1,26 +1,33 @@
-# try to use an ordered dict
+#This section is used to load the appropriate package for writing mat files
+#from Python or Jython.  Currently, only the section for Python that depends
+#on scipy has been written.
 try:
-    from collections import OrderedDict as dicttype
-except ImportError:
-    dicttype = dict
-# if scipy version is earlier than 0.11, OrderedDict will not work, so use dict
-try:
-    import scipy
+    from numpy import array, object as np_object
+    from scipy.io import loadmat, savemat
+    from scipy.sparse import coo_matrix
+
+
 except ImportError, e:
     raise e
-    
+
+
+# try to use an ordered dict
 try:
     from scipy.version import short_version
     scipy_version = int(short_version.split(".")[1])
-except:
-    scipy_version = 0
-if scipy_version < 11:
+    # if scipy version is earlier than 0.11, OrderedDict will not work, so use dict
+    if scipy_version < 11:
+        dicttype = dict
+    else:
+        from collections import OrderedDict as dicttype
+    del short_version, scipy_version
+except ImportError:
     dicttype = dict
-del short_version, scipy_version
 
-from numpy import array, object as np_object
-from scipy.io import loadmat, savemat
-from scipy.sparse import coo_matrix
+
+
+    
+
 
 from .. import Model, Metabolite, Reaction
 
@@ -72,7 +79,7 @@ def load_matlab_model(infile_path, variable_name=None):
         model.description = model.id
         for i, name in enumerate(m["mets"][0, 0]):
             new_metabolite = Metabolite()
-            new_metabolite.id = name[0][0]
+            new_metabolite.id = str(name[0][0])
             try:
                 new_metabolite.name = m["metNames"][0, 0][i][0][0]
                 new_metabolite.formula = m["metFormulas"][0][0][i][0][0]
@@ -81,10 +88,10 @@ def load_matlab_model(infile_path, variable_name=None):
             model.add_metabolites([new_metabolite])
         for i, name in enumerate(m["rxns"][0, 0]):
             new_reaction = Reaction()
-            new_reaction.id = name[0][0]
-            new_reaction.lower_bound = m["lb"][0, 0][i][0]
-            new_reaction.upper_bound = m["ub"][0, 0][i][0]
-            new_reaction.objective_coefficient = m["c"][0, 0][i][0]
+            new_reaction.id = str(name[0][0])
+            new_reaction.lower_bound = float(m["lb"][0, 0][i][0])
+            new_reaction.upper_bound = float(m["ub"][0, 0][i][0])
+            new_reaction.objective_coefficient = float(m["c"][0, 0][i][0])
             try:
                 new_reaction.name = m["rxnNames"][0, 0][i][0][0]
             except:
