@@ -63,13 +63,10 @@ def create_test_suite():
     from unittest import TestLoader, TestSuite
     loader = TestLoader()
     suite = TestSuite()
-    sys.path.insert(0, "../..")
-
     for test_name in available_tests:
         exec("import cobra.test." + test_name)
         suite.addTests(loader.loadTestsFromModule(eval(test_name)))
     test_modules = [eval(test_name) for test_name in available_tests]
-    sys.path.pop(0)
     return suite
 
 suite = create_test_suite()
