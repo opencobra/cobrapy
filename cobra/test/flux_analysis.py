@@ -2,18 +2,31 @@ from unittest import TestCase, TestLoader, TextTestRunner
 
 from warnings import warn
 import sys
+__module_function_dict = {'double_deletion': 'double_deletion',
+                          'single_deletion': 'single_deletion',
+                          'variability': 'flux_variability_analysis'}
 if __name__ == "__main__":
     sys.path.insert(0, "../..")
     from cobra.test import create_test_model
     from cobra import Model, Reaction, Metabolite
-    from cobra.flux_analysis import *
-    from cobra.manipulation import initialize_growth_medium
+    for the_module, the_function in __module_function_dict.iteritems():
+        try:
+            exec('from cobra.flux_analysis.%s import %s'%(the_module, the_function))
+        except:
+            warn("%s test will not work with your current configuration"%the_function)
+
     sys.path.pop(0)
 else:
     from . import create_test_model
     from .. import Model, Reaction, Metabolite
-    from ..flux_analysis import *
     from ..manipulation import initialize_growth_medium
+    for the_module, the_function in __module_function_dict.iteritems():
+        try:
+            exec('from ..flux_analysis.%s import %s'%(the_module, the_function))
+        except:
+            warn("%s test will not work with your current configuration"%the_function)
+   
+
 
 class TestCobraFluxAnalysis(TestCase):
     """Test the simulation functions in cobra.flux_analysis
