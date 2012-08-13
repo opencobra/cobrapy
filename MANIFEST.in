@@ -1,0 +1,4 @@
+recursive-include cobra *.txt *.py *.html *.pickle *.mat *.xml *.doctree *.js *.png *.css *.gif
+prune cobra/oven
+prune build 
+prune dist

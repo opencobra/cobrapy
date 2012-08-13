@@ -1,6 +1,5 @@
 COBRA for Python
 0.2.1: TODO
-    -Move setup.py into toplevel
     -Improve jython compatibility
     -Improve performance using new style solvers for repetitive actions (e.g., deletion studies)
  
