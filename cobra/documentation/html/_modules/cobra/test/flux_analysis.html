@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>cobra.test.flux_analysis &mdash; cobra 0.1.0.b1 documentation</title>
+    <title>cobra.test.flux_analysis &mdash; cobra 0.2.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.1.0.b1',
+        VERSION:     '0.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="top" title="cobra 0.2.0 documentation" href="../../../index.html" />
     <link rel="up" title="cobra.test" href="../test.html" /> 
   </head>
   <body>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li>
           <li><a href="../test.html" accesskey="U">cobra.test</a> &raquo;</li> 
       </ul>
@@ -55,12 +55,31 @@
 
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;../..&quot;</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">create_test_model</span>
-<span class="kn">from</span> <span class="nn">cobra</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">Metabolite</span>
-<span class="kn">from</span> <span class="nn">cobra.flux_analysis</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">cobra.manipulation</span> <span class="kn">import</span> <span class="n">initialize_growth_medium</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">__module_function_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;double_deletion&#39;</span><span class="p">:</span> <span class="s">&#39;double_deletion&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;single_deletion&#39;</span><span class="p">:</span> <span class="s">&#39;single_deletion&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;variability&#39;</span><span class="p">:</span> <span class="s">&#39;flux_variability_analysis&#39;</span><span class="p">}</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;../..&quot;</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">create_test_model</span>
+    <span class="kn">from</span> <span class="nn">cobra</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">Metabolite</span>
+    <span class="k">for</span> <span class="n">the_module</span><span class="p">,</span> <span class="n">the_function</span> <span class="ow">in</span> <span class="n">__module_function_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">exec</span><span class="p">(</span><span class="s">&#39;from cobra.flux_analysis.</span><span class="si">%s</span><span class="s"> import </span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">the_module</span><span class="p">,</span> <span class="n">the_function</span><span class="p">))</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> test will not work with your current configuration&quot;</span><span class="o">%</span><span class="n">the_function</span><span class="p">)</span>
+
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">create_test_model</span>
+    <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">Metabolite</span>
+    <span class="kn">from</span> <span class="nn">..manipulation</span> <span class="kn">import</span> <span class="n">initialize_growth_medium</span>
+    <span class="k">for</span> <span class="n">the_module</span><span class="p">,</span> <span class="n">the_function</span> <span class="ow">in</span> <span class="n">__module_function_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">exec</span><span class="p">(</span><span class="s">&#39;from ..flux_analysis.</span><span class="si">%s</span><span class="s"> import </span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">the_module</span><span class="p">,</span> <span class="n">the_function</span><span class="p">))</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> test will not work with your current configuration&quot;</span><span class="o">%</span><span class="n">the_function</span><span class="p">)</span>
+   
+
 
 <div class="viewcode-block" id="TestCobraFluxAnalysis"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.flux_analysis.TestCobraFluxAnalysis">[docs]</a><span class="k">class</span> <span class="nc">TestCobraFluxAnalysis</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Test the simulation functions in cobra.flux_analysis</span>
@@ -196,7 +215,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li>
           <li><a href="../test.html" >cobra.test</a> &raquo;</li> 
       </ul>

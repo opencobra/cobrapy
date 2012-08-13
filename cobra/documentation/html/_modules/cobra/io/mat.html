@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>cobra.io.mat &mdash; cobra 0.1.0.b1 documentation</title>
+    <title>cobra.io.mat &mdash; cobra 0.2.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.1.0.b1',
+        VERSION:     '0.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="top" title="cobra 0.2.0 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -50,31 +50,38 @@
           <div class="body">
             
   <h1>Source code for cobra.io.mat</h1><div class="highlight"><pre>
-<span class="c"># try to use an ordered dict</span>
+<span class="c">#This section is used to load the appropriate package for writing mat files</span>
+<span class="c">#from Python or Jython.  Currently, only the section for Python that depends</span>
+<span class="c">#on scipy has been written.</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">dicttype</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="n">dicttype</span> <span class="o">=</span> <span class="nb">dict</span>
-<span class="c"># if scipy version is earlier than 0.11, OrderedDict will not work, so use dict</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">scipy</span>
+    <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span><span class="p">,</span> <span class="nb">object</span> <span class="k">as</span> <span class="n">np_object</span>
+    <span class="kn">from</span> <span class="nn">scipy.io</span> <span class="kn">import</span> <span class="n">loadmat</span><span class="p">,</span> <span class="n">savemat</span>
+    <span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">coo_matrix</span>
+
+
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
     <span class="k">raise</span> <span class="n">e</span>
-    
+
+
+<span class="c"># try to use an ordered dict</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">scipy.version</span> <span class="kn">import</span> <span class="n">short_version</span>
     <span class="n">scipy_version</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">short_version</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
-<span class="k">except</span><span class="p">:</span>
-    <span class="n">scipy_version</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">if</span> <span class="n">scipy_version</span> <span class="o">&lt;</span> <span class="mi">11</span><span class="p">:</span>
+    <span class="c"># if scipy version is earlier than 0.11, OrderedDict will not work, so use dict</span>
+    <span class="k">if</span> <span class="n">scipy_version</span> <span class="o">&lt;</span> <span class="mi">11</span><span class="p">:</span>
+        <span class="n">dicttype</span> <span class="o">=</span> <span class="nb">dict</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">dicttype</span>
+    <span class="k">del</span> <span class="n">short_version</span><span class="p">,</span> <span class="n">scipy_version</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">dicttype</span> <span class="o">=</span> <span class="nb">dict</span>
-<span class="k">del</span> <span class="n">short_version</span><span class="p">,</span> <span class="n">scipy_version</span>
 
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span><span class="p">,</span> <span class="nb">object</span> <span class="k">as</span> <span class="n">np_object</span>
-<span class="kn">from</span> <span class="nn">scipy.io</span> <span class="kn">import</span> <span class="n">loadmat</span><span class="p">,</span> <span class="n">savemat</span>
-<span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">coo_matrix</span>
 
-<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Metabolite</span><span class="p">,</span> <span class="n">Reaction</span>
+
+    
+
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Metabolite</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">Formula</span>
 
 
 <span class="k">def</span> <span class="nf">_cell</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -124,21 +131,21 @@
         <span class="n">model</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">id</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s">&quot;mets&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span>
             <span class="n">new_metabolite</span> <span class="o">=</span> <span class="n">Metabolite</span><span class="p">()</span>
-            <span class="n">new_metabolite</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">new_metabolite</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">new_metabolite</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s">&quot;metNames&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">new_metabolite</span><span class="o">.</span><span class="n">formula</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s">&quot;metFormulas&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">new_metabolite</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s">&quot;metNames&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">new_metabolite</span><span class="o">.</span><span class="n">formula</span> <span class="o">=</span> <span class="n">Formula</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s">&quot;metFormulas&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
             <span class="k">except</span><span class="p">:</span>
                 <span class="k">pass</span>
             <span class="n">model</span><span class="o">.</span><span class="n">add_metabolites</span><span class="p">([</span><span class="n">new_metabolite</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s">&quot;rxns&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span>
             <span class="n">new_reaction</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">()</span>
-            <span class="n">new_reaction</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">new_reaction</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s">&quot;lb&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">new_reaction</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s">&quot;ub&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">new_reaction</span><span class="o">.</span><span class="n">objective_coefficient</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s">&quot;c&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">new_reaction</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">new_reaction</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s">&quot;lb&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">new_reaction</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s">&quot;ub&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">new_reaction</span><span class="o">.</span><span class="n">objective_coefficient</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s">&quot;c&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">new_reaction</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s">&quot;rxnNames&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">new_reaction</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s">&quot;rxnNames&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
             <span class="k">except</span><span class="p">:</span>
                 <span class="k">pass</span>
             <span class="n">model</span><span class="o">.</span><span class="n">add_reactions</span><span class="p">(</span><span class="n">new_reaction</span><span class="p">)</span>
@@ -221,7 +228,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

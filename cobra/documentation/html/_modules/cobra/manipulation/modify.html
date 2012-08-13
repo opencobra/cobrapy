@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>cobra.manipulation.modify &mdash; cobra 0.1.0.b1 documentation</title>
+    <title>cobra.manipulation.modify &mdash; cobra 0.2.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.1.0.b1',
+        VERSION:     '0.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="top" title="cobra 0.2.0 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -58,7 +58,8 @@
                              <span class="n">external_boundary_compartment</span><span class="o">=</span><span class="s">&#39;e&#39;</span><span class="p">,</span>
                              <span class="n">external_boundary_reactions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                              <span class="n">reaction_lower_bound</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">reaction_upper_bound</span><span class="o">=</span><span class="mf">1000.</span><span class="p">,</span>
-                             <span class="n">irreversible</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+                             <span class="n">irreversible</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                             <span class="n">reactions_to_disable</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Sets all of the input fluxes to the model to zero and then will</span>
 <span class="sd">    initialize the input fluxes to the values specified in the_medium if</span>
 <span class="sd">    it is a dict or will see if the model has a composition dict and use</span>
@@ -90,6 +91,9 @@
 
 <span class="sd">    irreversible: Boolean.  If the model is irreversible then the medium composition</span>
 <span class="sd">    is taken as the upper bound</span>
+
+<span class="sd">    reactions_to_disable: List of reactions for which the upper and lower bounds</span>
+<span class="sd">    are disabled.  This is superceded by the contents of media_composition</span>
 <span class="sd">  </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c">#Zero all of the inputs to the model</span>
@@ -104,7 +108,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;the model doesn&#39;t have attribute media_compositions and the medium is not a dict&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">external_boundary_reactions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">external_boundary_reactions</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">external_boundary_reactions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">external_boundary_reactions</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">,</span> <span class="n">external_boundary_reactions</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">external_boundary_compartment</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s">&quot;We are initializing the medium without first adjusting all external boundary reactions&quot;</span><span class="p">)</span>
@@ -126,6 +130,14 @@
         <span class="n">the_reaction</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="n">reaction_lower_bound</span>
         <span class="k">if</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="n">reaction_upper_bound</span>
+    <span class="c">#Disable specified reactions</span>
+    <span class="k">if</span> <span class="n">reactions_to_disable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reactions_to_disable</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">reactions_to_disable</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">,</span> <span class="n">reactions_to_disable</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">the_reaction</span> <span class="ow">in</span> <span class="n">reactions_to_disable</span><span class="p">:</span>
+            <span class="n">the_reaction</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="mf">0.</span>
+
+
     <span class="c">#Update the model inputs based on the_medium</span>
     <span class="k">for</span> <span class="n">the_component</span> <span class="ow">in</span> <span class="n">medium_composition</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
         <span class="n">the_reaction</span> <span class="o">=</span> <span class="n">cobra_model</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span><span class="n">the_component</span><span class="p">)</span>
@@ -133,7 +145,6 @@
             <span class="n">the_reaction</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="n">medium_composition</span><span class="p">[</span><span class="n">the_component</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">the_reaction</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="n">medium_composition</span><span class="p">[</span><span class="n">the_component</span><span class="p">]</span>
-
 </div>
 <div class="viewcode-block" id="convert_to_irreversible"><a class="viewcode-back" href="../../../cobra.manipulation.html#cobra.manipulation.modify.convert_to_irreversible">[docs]</a><span class="k">def</span> <span class="nf">convert_to_irreversible</span><span class="p">(</span><span class="n">cobra_model</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Will break all of the reversible reactions into two separate irreversible reactions with</span>
@@ -273,7 +284,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>manipulation Package &mdash; cobra 0.1.0.b1 documentation</title>
+    <title>manipulation Package &mdash; cobra 0.2.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.1.0.b1',
+        VERSION:     '0.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="cobra 0.1.0.b1 documentation" href="index.html" />
+    <link rel="top" title="cobra 0.2.0 documentation" href="index.html" />
     <link rel="up" title="cobra Package" href="cobra.html" />
     <link rel="next" title="mlab Package" href="cobra.mlab.html" />
     <link rel="prev" title="io Package" href="cobra.io.html" /> 
@@ -47,7 +47,7 @@
         <li class="right" >
           <a href="cobra.io.html" title="io Package"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="cobra.html" accesskey="U">cobra Package</a> &raquo;</li> 
       </ul>
     </div>  
@@ -132,7 +132,7 @@ different directions.  Useful for some modeling problems.</p>
 
 <dl class="function">
 <dt id="cobra.manipulation.modify.initialize_growth_medium">
-<tt class="descclassname">cobra.manipulation.modify.</tt><tt class="descname">initialize_growth_medium</tt><big>(</big><em>cobra_model</em>, <em>the_medium='MgM'</em>, <em>external_boundary_compartment='e'</em>, <em>external_boundary_reactions=None</em>, <em>reaction_lower_bound=0.0</em>, <em>reaction_upper_bound=1000.0</em>, <em>irreversible=False</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/modify.html#initialize_growth_medium"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.modify.initialize_growth_medium" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">cobra.manipulation.modify.</tt><tt class="descname">initialize_growth_medium</tt><big>(</big><em>cobra_model</em>, <em>the_medium='MgM'</em>, <em>external_boundary_compartment='e'</em>, <em>external_boundary_reactions=None</em>, <em>reaction_lower_bound=0.0</em>, <em>reaction_upper_bound=1000.0</em>, <em>irreversible=False</em>, <em>reactions_to_disable=None</em><big>)</big><a class="reference internal" href="_modules/cobra/manipulation/modify.html#initialize_growth_medium"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.manipulation.modify.initialize_growth_medium" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets all of the input fluxes to the model to zero and then will
 initialize the input fluxes to the values specified in the_medium if
 it is a dict or will see if the model has a composition dict and use
@@ -154,6 +154,8 @@ bound for the boundary reactions.</p>
 bound for the boundary.</p>
 <p>irreversible: Boolean.  If the model is irreversible then the medium composition
 is taken as the upper bound</p>
+<p>reactions_to_disable: List of reactions for which the upper and lower bounds
+are disabled.  This is superceded by the contents of media_composition</p>
 </dd></dl>
 
 <dl class="function">
@@ -227,7 +229,7 @@ into a reversible model.</p>
         <li class="right" >
           <a href="cobra.io.html" title="io Package"
              >previous</a> |</li>
-        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="cobra.html" >cobra Package</a> &raquo;</li> 
       </ul>
     </div>

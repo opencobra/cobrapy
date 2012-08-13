@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>cobra.test &mdash; cobra 0.1.0.b1 documentation</title>
+    <title>cobra.test &mdash; cobra 0.2.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.0.b1',
+        VERSION:     '0.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../index.html" />
+    <link rel="top" title="cobra 0.2.0 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -51,14 +51,12 @@
             
   <h1>Source code for cobra.test</h1><div class="highlight"><pre>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">with_statement</span><span class="p">,</span> <span class="n">absolute_import</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">name</span> <span class="k">as</span> <span class="n">__name</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
-<span class="n">test_import_string</span> <span class="o">=</span> <span class="s">&#39;import cobra.test.</span><span class="si">%s</span><span class="s"> as </span><span class="si">%s</span><span class="s">&#39;</span>
 <span class="n">available_tests</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;unit_tests&#39;</span><span class="p">,</span> <span class="s">&#39;solvers&#39;</span><span class="p">,</span> <span class="s">&#39;flux_analysis&#39;</span><span class="p">]</span>
 <span class="c">#if not using jython then add the tests that don&#39;t currently run through jython</span>
 <span class="c">## if __name != &#39;java&#39;:</span>
 <span class="c">##      available_tests += [&#39;flux_analysis&#39;]</span>
-    
 
 <span class="k">del</span> <span class="n">__name</span>
 
@@ -67,6 +65,8 @@
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">split</span> <span class="k">as</span> <span class="n">__split</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">sep</span> <span class="k">as</span> <span class="n">__sep</span>
 
+<span class="n">cobra_directory</span> <span class="o">=</span> <span class="n">__abspath</span><span class="p">(</span><span class="n">__join</span><span class="p">(</span><span class="n">__split</span><span class="p">(</span><span class="n">__abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&quot;..&quot;</span><span class="p">))</span>
+<span class="n">cobra_location</span> <span class="o">=</span> <span class="n">__abspath</span><span class="p">(</span><span class="n">__join</span><span class="p">(</span><span class="n">cobra_directory</span><span class="p">,</span> <span class="s">&quot;..&quot;</span><span class="p">))</span>
 <span class="n">data_directory</span> <span class="o">=</span> <span class="n">__join</span><span class="p">(</span><span class="n">__split</span><span class="p">(</span><span class="n">__abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&quot;data&quot;</span><span class="p">)</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">data_directory</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">__sep</span><span class="p">):</span>
     <span class="n">data_directory</span> <span class="o">+=</span> <span class="n">__sep</span>
@@ -81,7 +81,7 @@
                   <span class="s">&#39;Escherichia_coli&#39;</span><span class="p">:</span> <span class="n">ecoli_pickle</span><span class="p">}</span>
 <span class="n">__test_xml</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;Salmonella_enterica&#39;</span><span class="p">:</span> <span class="n">salmonella_sbml</span><span class="p">,</span>
               <span class="s">&#39;Escherichia_coli&#39;</span><span class="p">:</span> <span class="n">ecoli_sbml</span><span class="p">}</span>
-
+<span class="k">del</span> <span class="n">__abspath</span><span class="p">,</span> <span class="n">__join</span><span class="p">,</span> <span class="n">__split</span><span class="p">,</span> <span class="n">__sep</span>
 
 <div class="viewcode-block" id="create_test_model"><a class="viewcode-back" href="../../cobra.test.html#cobra.test.create_test_model">[docs]</a><span class="k">def</span> <span class="nf">create_test_model</span><span class="p">(</span><span class="n">test_pickle</span><span class="o">=</span><span class="n">salmonella_pickle</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Returns a cobra model for testing.  The default model is the up to date</span>
@@ -106,30 +106,28 @@
             <span class="n">model</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="c">#if the pickle can&#39;t be loaded then load the sbml xml</span>
-        <span class="kn">import</span> <span class="nn">sys</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;../..&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cobra_location</span><span class="p">)</span>
         <span class="kn">from</span> <span class="nn">cobra.io</span> <span class="kn">import</span> <span class="n">read_sbml_model</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">read_sbml_model</span><span class="p">(</span><span class="n">salmonella_sbml</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">model</span>
-
 </div>
+<div class="viewcode-block" id="create_test_suite"><a class="viewcode-back" href="../../cobra.test.html#cobra.test.create_test_suite">[docs]</a><span class="k">def</span> <span class="nf">create_test_suite</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;create a unittest.TestSuite with available tests&quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">TestLoader</span><span class="p">,</span> <span class="n">TestSuite</span>
+    <span class="n">loader</span> <span class="o">=</span> <span class="n">TestLoader</span><span class="p">()</span>
+    <span class="n">suite</span> <span class="o">=</span> <span class="n">TestSuite</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">test_name</span> <span class="ow">in</span> <span class="n">available_tests</span><span class="p">:</span>
+        <span class="k">exec</span><span class="p">(</span><span class="s">&quot;from . import &quot;</span> <span class="o">+</span> <span class="n">test_name</span><span class="p">)</span>
+        <span class="n">suite</span><span class="o">.</span><span class="n">addTests</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">loadTestsFromModule</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">test_name</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">suite</span>
+</div>
+<span class="n">suite</span> <span class="o">=</span> <span class="n">create_test_suite</span><span class="p">()</span>
+
 <div class="viewcode-block" id="test_all"><a class="viewcode-back" href="../../cobra.test.html#cobra.test.test_all">[docs]</a><span class="k">def</span> <span class="nf">test_all</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;###running unit tests on cobra py###&quot;&quot;&quot;</span>
-    <span class="kn">import</span> <span class="nn">sys</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;../..&quot;</span><span class="p">)</span>
-    <span class="kn">import</span> <span class="nn">unittest</span>
-    <span class="k">for</span> <span class="n">the_test</span> <span class="ow">in</span> <span class="n">available_tests</span><span class="p">:</span>
-        <span class="k">exec</span><span class="p">(</span><span class="n">test_import_string</span><span class="o">%</span><span class="p">(</span><span class="n">the_test</span><span class="p">,</span> <span class="n">the_test</span><span class="p">))</span>
-        <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n\n</span><span class="s">###running </span><span class="si">%s</span><span class="s"> tests###&#39;</span><span class="o">%</span><span class="n">the_test</span>
-        <span class="nb">eval</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">.test_all()&#39;</span><span class="o">%</span><span class="n">the_test</span><span class="p">)</span>
-        
-    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-</div>
-<span class="k">del</span> <span class="n">__abspath</span><span class="p">,</span> <span class="n">__join</span><span class="p">,</span> <span class="n">__split</span><span class="p">,</span> <span class="n">__sep</span>
-
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">test_all</span><span class="p">()</span>
+    <span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">TextTestRunner</span>
+    <span class="n">TextTestRunner</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">create_test_suite</span><span class="p">())</span></div>
 </pre></div>
 
           </div>
@@ -163,7 +161,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

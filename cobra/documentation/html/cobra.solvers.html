@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>solvers Package &mdash; cobra 0.1.0.b1 documentation</title>
+    <title>solvers Package &mdash; cobra 0.2.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.1.0.b1',
+        VERSION:     '0.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="cobra 0.1.0.b1 documentation" href="index.html" />
+    <link rel="top" title="cobra 0.2.0 documentation" href="index.html" />
     <link rel="up" title="cobra Package" href="cobra.html" />
     <link rel="next" title="stats Package" href="cobra.stats.html" />
     <link rel="prev" title="mlab Package" href="cobra.mlab.html" /> 
@@ -47,7 +47,7 @@
         <li class="right" >
           <a href="cobra.mlab.html" title="mlab Package"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="cobra.html" accesskey="U">cobra Package</a> &raquo;</li> 
       </ul>
     </div>  
@@ -99,12 +99,23 @@ a cobra.Model.  This can be tuned for performance using kwargs</p>
 <dl class="function">
 <dt id="cobra.solvers.glpk_solver.solve">
 <tt class="descclassname">cobra.solvers.glpk_solver.</tt><tt class="descname">solve</tt><big>(</big><em>cobra_model</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk_solver.html#solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk_solver.solve" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Smart interface to optimization solver functions that will convert
+the cobra_model to a solver object, set the parameters, and try multiple
+methods to get an optimal solution before returning the solver object and
+a cobra.Solution (which is attached to cobra_model.solution)</p>
+<p>cobra_model: a cobra.Model</p>
+<p>returns a dict: {&#8216;the_problem&#8217;: solver specific object, &#8216;the_solution&#8217;:
+cobra.Solution for the optimization problem&#8217;}</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="cobra.solvers.glpk_solver.solve_problem">
 <tt class="descclassname">cobra.solvers.glpk_solver.</tt><tt class="descname">solve_problem</tt><big>(</big><em>lp</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cobra/solvers/glpk_solver.html#solve_problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cobra.solvers.glpk_solver.solve_problem" title="Permalink to this definition">¶</a></dt>
 <dd><p>A performance tunable method for updating a model problem file</p>
+<p>lp: a pyGLPK 0.3 problem</p>
+<p>For pyGLPK it is necessary to provide the following parameters, if they
+are not provided then the default settings will be used: tolerance_optimality,
+tolerance_integer, lp_method, and objective_sense</p>
 </dd></dl>
 
 <dl class="function">
@@ -194,7 +205,7 @@ a cobra.Model.  This can be tuned for performance using kwargs</p>
         <li class="right" >
           <a href="cobra.mlab.html" title="mlab Package"
              >previous</a> |</li>
-        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="cobra.html" >cobra Package</a> &raquo;</li> 
       </ul>
     </div>

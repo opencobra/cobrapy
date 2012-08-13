@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>cobra.test.unit_tests &mdash; cobra 0.1.0.b1 documentation</title>
+    <title>cobra.test.unit_tests &mdash; cobra 0.2.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.1.0.b1',
+        VERSION:     '0.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="cobra 0.1.0.b1 documentation" href="../../../index.html" />
+    <link rel="top" title="cobra 0.2.0 documentation" href="../../../index.html" />
     <link rel="up" title="cobra.test" href="../test.html" /> 
   </head>
   <body>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li>
           <li><a href="../test.html" accesskey="U">cobra.test</a> &raquo;</li> 
       </ul>
@@ -52,27 +52,34 @@
             
   <h1>Source code for cobra.test.unit_tests</h1><div class="highlight"><pre>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">with_statement</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>  <span class="c"># TODO - catch known warnings</span>
 <span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">TestCase</span><span class="p">,</span> <span class="n">TestLoader</span><span class="p">,</span> <span class="n">TextTestRunner</span>
-<span class="c">#skipIf is not in python 2.6 / 2.5</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
-<span class="k">try</span><span class="p">:</span>
+<span class="kn">from</span> <span class="nn">tempfile</span> <span class="kn">import</span> <span class="n">gettempdir</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">unlink</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span>
+<span class="k">try</span><span class="p">:</span>  <span class="c">#skipIf is not in python 2.6 / 2.5</span>
     <span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">skipIf</span>
-    <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">catch_warnings</span>
 <span class="k">except</span><span class="p">:</span>
-    <span class="k">try</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>  <span class="c"># should we make unittest2 an absolute requirement and use skipIf</span>
         <span class="kn">from</span> <span class="nn">unittest2</span> <span class="kn">import</span> <span class="n">skipIf</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="n">skipIf</span> <span class="o">=</span> <span class="bp">None</span>
 
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">unlink</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;../..&quot;</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">data_directory</span><span class="p">,</span> <span class="n">create_test_model</span>
-<span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">salmonella_sbml</span> <span class="k">as</span> <span class="n">test_sbml_file</span>
-<span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">salmonella_pickle</span> <span class="k">as</span> <span class="n">test_pickle</span>
-<span class="kn">from</span> <span class="nn">cobra</span> <span class="kn">import</span> <span class="n">Object</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Metabolite</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">io</span><span class="p">,</span> <span class="n">DictList</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="c">#from .. import flux_analysis</span>
+<span class="c"># deal with absolute imports by adding the appropriate directory to the path</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;../..&quot;</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">data_directory</span><span class="p">,</span> <span class="n">create_test_model</span>
+    <span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">salmonella_sbml</span> <span class="k">as</span> <span class="n">test_sbml_file</span>
+    <span class="kn">from</span> <span class="nn">cobra.test</span> <span class="kn">import</span> <span class="n">salmonella_pickle</span> <span class="k">as</span> <span class="n">test_pickle</span>
+    <span class="kn">from</span> <span class="nn">cobra</span> <span class="kn">import</span> <span class="n">Object</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Metabolite</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">io</span><span class="p">,</span> <span class="n">DictList</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="mi">0</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">data_directory</span><span class="p">,</span> <span class="n">create_test_model</span>
+    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">salmonella_sbml</span> <span class="k">as</span> <span class="n">test_sbml_file</span>
+    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">salmonella_pickle</span> <span class="k">as</span> <span class="n">test_pickle</span>
+    <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">Object</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Metabolite</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">io</span><span class="p">,</span> <span class="n">DictList</span>
 
 <span class="c"># libraries which may or may not be installed</span>
 <span class="n">libraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;glpk&quot;</span><span class="p">,</span> <span class="s">&quot;gurobipy&quot;</span><span class="p">,</span> <span class="s">&quot;cplex&quot;</span><span class="p">]</span>
@@ -185,7 +192,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">read_sbml_model</span><span class="p">,</span>
                               <span class="s">&quot;fake_file_which_does_not_exist&quot;</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">test_sbml_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="n">test_output_filename</span> <span class="o">=</span> <span class="s">&#39;test_sbml_write.xml&#39;</span>
+            <span class="n">test_output_filename</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="s">&#39;test_sbml_write.xml&#39;</span><span class="p">)</span>
             <span class="n">io</span><span class="o">.</span><span class="n">write_sbml_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">test_output_filename</span><span class="p">)</span>
             <span class="c">#cleanup the test file</span>
             <span class="n">unlink</span><span class="p">(</span><span class="n">test_output_filename</span><span class="p">)</span>
@@ -196,7 +203,7 @@
         <span class="n">__test_matlab</span> <span class="o">=</span> <span class="bp">False</span>
     <span class="k">if</span> <span class="n">__test_matlab</span><span class="p">:</span>
 <div class="viewcode-block" id="TestCobraIO.test_mat_read_write"><a class="viewcode-back" href="../../../cobra.test.html#cobra.test.unit_tests.TestCobraIO.test_mat_read_write">[docs]</a>        <span class="k">def</span> <span class="nf">test_mat_read_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="n">test_output_filename</span> <span class="o">=</span> <span class="s">&quot;test_mat_write.mat&quot;</span>
+            <span class="n">test_output_filename</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="s">&quot;test_mat_write.mat&quot;</span><span class="p">)</span>
             <span class="n">io</span><span class="o">.</span><span class="n">save_matlab_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">test_output_filename</span><span class="p">)</span>
             <span class="n">reread</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_matlab_model</span><span class="p">(</span><span class="n">test_output_filename</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">reactions</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">reread</span><span class="o">.</span><span class="n">reactions</span><span class="p">))</span>
@@ -249,7 +256,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">cobra 0.2.0 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li>
           <li><a href="../test.html" >cobra.test</a> &raquo;</li> 
       </ul>

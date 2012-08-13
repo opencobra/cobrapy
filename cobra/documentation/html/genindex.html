@@ -10,7 +10,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Index &mdash; cobra 0.1.0.b1 documentation</title>
+    <title>Index &mdash; cobra 0.2.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -18,7 +18,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.1.0.b1',
+        VERSION:     '0.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -28,7 +28,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="cobra 0.1.0.b1 documentation" href="index.html" /> 
+    <link rel="top" title="cobra 0.2.0 documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">cobra 0.2.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -63,6 +63,7 @@
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#Q"><strong>Q</strong></a>
@@ -254,8 +255,6 @@
   <dt><a href="cobra.io.html#module-cobra.io.sbml">cobra.io.sbml (module)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="cobra.manipulation.html#module-cobra.manipulation">cobra.manipulation (module)</a>
   </dt>
@@ -264,8 +263,18 @@
   <dt><a href="cobra.manipulation.html#module-cobra.manipulation.delete">cobra.manipulation.delete (module)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="cobra.manipulation.html#module-cobra.manipulation.modify">cobra.manipulation.modify (module)</a>
+  </dt>
+
+      
+  <dt><a href="cobra.mlab.html#module-cobra.mlab">cobra.mlab (module)</a>
+  </dt>
+
+      
+  <dt><a href="cobra.mlab.html#module-cobra.mlab.mlab">cobra.mlab.mlab (module)</a>
   </dt>
 
       
@@ -321,6 +330,10 @@
   </dt>
 
       
+  <dt><a href="cobra.mlab.html#cobra.mlab.mlab.cobra_model_object_to_cobra_matlab_struct">cobra_model_object_to_cobra_matlab_struct() (in module cobra.mlab.mlab)</a>
+  </dt>
+
+      
   <dt><a href="cobra.test.html#cobra.test.unit_tests.CobraTestCase">CobraTestCase (class in cobra.test.unit_tests)</a>
   </dt>
 
@@ -364,6 +377,10 @@
 
       
   <dt><a href="cobra.test.html#cobra.test.create_test_model">create_test_model() (in module cobra.test)</a>
+  </dt>
+
+      
+  <dt><a href="cobra.test.html#cobra.test.create_test_suite">create_test_suite() (in module cobra.test)</a>
   </dt>
 
   </dl></td>
@@ -544,6 +561,10 @@
   <dt><a href="cobra.core.html#cobra.core.DictList.DictList.index">index() (cobra.core.DictList.DictList method)</a>
   </dt>
 
+      
+  <dt><a href="cobra.mlab.html#cobra.mlab.mlab.init_matlab_toolbox">init_matlab_toolbox() (in module cobra.mlab.mlab)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
@@ -577,6 +598,28 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="cobra.mlab.html#cobra.mlab.mlab.matlab_cell_to_python_list">matlab_cell_to_python_list() (in module cobra.mlab.mlab)</a>
+  </dt>
+
+      
+  <dt><a href="cobra.mlab.html#cobra.mlab.mlab.matlab_cobra_struct_to_python_cobra_object">matlab_cobra_struct_to_python_cobra_object() (in module cobra.mlab.mlab)</a>
+  </dt>
+
+      
+  <dt><a href="cobra.mlab.html#cobra.mlab.mlab.matlab_logical_to_python_logical">matlab_logical_to_python_logical() (in module cobra.mlab.mlab)</a>
+  </dt>
+
+      
+  <dt><a href="cobra.mlab.html#cobra.mlab.mlab.matlab_sparse_to_numpy_array">matlab_sparse_to_numpy_array() (in module cobra.mlab.mlab)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="cobra.mlab.html#cobra.mlab.mlab.matlab_sparse_to_scipy_sparse">matlab_sparse_to_scipy_sparse() (in module cobra.mlab.mlab)</a>
+  </dt>
+
+      
   <dt><a href="cobra.core.html#cobra.core.Metabolite.Metabolite">Metabolite (class in cobra.core.Metabolite)</a>
   </dt>
 
@@ -584,10 +627,18 @@
   <dt><a href="cobra.core.html#cobra.core.Model.Model">Model (class in cobra.core.Model)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="cobra.flux_analysis.html#cobra.flux_analysis.moma.moma">moma() (in module cobra.flux_analysis.moma)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="cobra.mlab.html#cobra.mlab.mlab.numpy_array_to_mlab_sparse">numpy_array_to_mlab_sparse() (in module cobra.mlab.mlab)</a>
   </dt>
 
   </dl></td>
@@ -654,12 +705,12 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="cobra.external.html#cobra.external.ppmap.ppmap">ppmap() (in module cobra.external.ppmap)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="cobra.topology.html#cobra.topology.reporter_metabolites.ppmap_identify_reporter_metabolites">ppmap_identify_reporter_metabolites() (in module cobra.topology.reporter_metabolites)</a>
   </dt>
@@ -678,6 +729,10 @@
 
       
   <dt><a href="cobra.manipulation.html#cobra.manipulation.delete.prune_unused_reactions">prune_unused_reactions() (in module cobra.manipulation.delete)</a>
+  </dt>
+
+      
+  <dt><a href="cobra.mlab.html#cobra.mlab.mlab.python_list_to_matlab_cell">python_list_to_matlab_cell() (in module cobra.mlab.mlab)</a>
   </dt>
 
   </dl></td>
@@ -760,6 +815,10 @@
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="cobra.mlab.html#cobra.mlab.mlab.scipy_sparse_to_mlab_sparse">scipy_sparse_to_mlab_sparse() (in module cobra.mlab.mlab)</a>
+  </dt>
+
       
   <dt><a href="cobra.solvers.html#cobra.solvers.glpk_solver.set_parameter">set_parameter() (in module cobra.solvers.glpk_solver)</a>
   </dt>
@@ -1025,7 +1084,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="index.html">cobra 0.1.0.b1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">cobra 0.2.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
