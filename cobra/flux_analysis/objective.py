@@ -81,7 +81,7 @@ def update_objective(cobra_model, the_objectives):
                 if hasattr(the_reaction, 'id'):
                     the_reaction = the_reaction.id
                 the_reaction = cobra_model.reactions.get_by_id(the_reaction)
-            the_reaction.objective_coefficient = the_value
+            the_reaction.objective_coefficient = the_coefficient
     else:
         #Allow for objectives to be constructed from multiple reactions
         if not isinstance(the_objectives, list) and \

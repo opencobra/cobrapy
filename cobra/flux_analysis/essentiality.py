@@ -89,4 +89,4 @@ def deletion_analysis(cobra_model, the_medium=None, deletion_type='single',
     an interface to parallelize the deletion studies.
 
     """
-    raise exception("Deletion analysis has been dropped in favor of the single_deletion and double_deletion modules")
+    raise Exception("Deletion analysis has been dropped in favor of the single_deletion and double_deletion modules")

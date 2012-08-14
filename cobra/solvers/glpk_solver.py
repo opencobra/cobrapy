@@ -1,6 +1,5 @@
 ##cobra.solvers.glpk_solver
 #This script provides wrappers for libglpk-java 1.0.22 and pyglpk 0.3
-from __future__ import absolute_import
 from warnings import warn
 from os import name as __name
 from copy import deepcopy

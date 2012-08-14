@@ -183,7 +183,7 @@ class DictList(list):
 
     # these functions are slower because they rebuild the _dict every time
     # TODO: speed up
-    def insert(index, object):
+    def insert(self, index, object):
         self._check(get_id(object))
         super(DictList, self).insert(index, object)
         self._generate_index()

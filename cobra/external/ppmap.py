@@ -86,7 +86,7 @@ def ppmap(processes, function, sequence, *sequences):
     available_processes = sum( __STATE['server'].get_active_nodes().values())
     # Set the requested level of multi-processing
     if available_processes < processes:
-    	__STATE['server'].set_ncpus(processes-available_processes or 'autodetect')
+        __STATE['server'].set_ncpus(processes-available_processes or 'autodetect')
 
     # First, submit all the jobs.  Then harvest the results as they
     # come available.

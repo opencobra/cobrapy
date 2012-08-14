@@ -140,9 +140,12 @@ class ArrayBasedModel(Model):
             reaction = [reaction]
         Model._update_reaction(reaction)
         for the_reaction in reaction:
-            if the_reaction.id not in self.reactions:
-                print the_reaction.id + ' is not in the model\n'
+            try:
+                reaction_index = self.reactions.index(the_reaction.id)
+            except KeyError:
+                print the_reaction.id + ' is not in the model'
                 continue
+
             #zero reaction stoichiometry column
             the_column = self.S[:, reaction_index]
             for nonzero_index in the_column.nonzero()[0]:
@@ -183,7 +186,7 @@ class ArrayBasedModel(Model):
         if update_matrices:
             self._update_matrices(reaction_list)
 
-    def _construct_matrices():
+    def _construct_matrices(self):
         """Large sparse matrices take time to construct and to read / write.
         This function allows one to let the model exists without cobra_model.S
         and then generate it at needed.

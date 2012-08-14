@@ -344,11 +344,11 @@ class Model(Object):
         TODO:  This should be moved to a separate module
         
         """
-        if not isinstance(the_formula, Formula):
-            the_formula = Formula(the_formula)
+        if not isinstance(metabolite_formula, Formula):
+            metabolite_formula = Formula(metabolite_formula)
         for the_metabolite in self.metabolites:
             if the_metabolite.name == metabolite_name:
-                the_metabolite.formula = the_formula
+                the_metabolite.formula = metabolite_formula
 
 
     def remove_reactions(self, the_reactions):

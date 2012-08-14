@@ -1,7 +1,6 @@
 ##cobra.solvers.gurobi_solver
 #Interface to the gurobi 5.0.1 python and java solvers
 #QPs are not yet supported on java
-from __future__ import absolute_import
 from warnings import warn
 from os import name as __name
 from copy import deepcopy

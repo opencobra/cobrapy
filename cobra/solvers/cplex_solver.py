@@ -1,7 +1,6 @@
 #cobra.solvers.cplex_solver
 #Interface to ilog/cplex 12.4 python / jython interfaces
 #QPs are not yet supported under jython
-from __future__ import absolute_import
 from os import name as __name
 from copy import deepcopy
 from warnings import warn
@@ -186,10 +185,6 @@ if __name == 'java':
             lp.parameters.emphasis.numerical.set(1)
             for k, v in quadratic_component_scaled.items():
                 lp.objective.set_quadratic_coefficients(int(k[0]), int(k[1]), v)
-
-        if error_reporting == 'time':
-            print 'setup new problem: ' + repr(time()-start_time)
-            start_time = time()
 
         ## #Set the problem type as cplex doesn't appear to do this correctly
         ## problem_type = Cplex.problem_type.LP
@@ -450,19 +445,13 @@ else:
 
 ###
 def solve_problem(lp, **kwargs):
-    """A performance tunable method for updating a model problem file
+    """A performance tunable method for solving a problem
 
     """
     #Update parameter settings if provided
     if kwargs:
         [set_parameter(lp, parameter_mappings[k], v)
          for k, v in kwargs.iteritems() if k in parameter_mappings]
-    try:
-        print_solver_time = kwargs['print_solver_time']
-        start_time = time()
-    except:
-        print_solver_time = False
-
     try:
         the_problem = kwargs['the_problem']
     except:
@@ -478,8 +467,6 @@ def solve_problem(lp, **kwargs):
     lp.solve()
     #If the solver takes more than 0.1 s with a hot start it is likely stuck
     status = get_status(lp)
-    if print_solver_time:
-        print 'optimize time: %f'%(time() - start_time)
     return status
 
     
