@@ -82,6 +82,9 @@ if __name == 'java':
             lp.setParam(eval('%s.%s'%(parameter_type, parameter_name)),
                         parameter_value)
 
+    def get_objective_value(lp):
+        return lp.getObjValue()
+
     def format_solution(lp, cobra_model, **kwargs):
         """
         TODO
@@ -249,6 +252,9 @@ else:
         else:
             status = 'failed'
         return status
+
+    def get_objective_value(lp):
+        return lp.solution.get_objective_value()
 
     def format_solution(lp, cobra_model, **kwargs):
         status = get_status(lp)

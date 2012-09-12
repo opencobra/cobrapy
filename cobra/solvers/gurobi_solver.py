@@ -75,6 +75,9 @@ if __name == 'java':
         except Exception, e:
             warn("%s %s didn't work %s"%(parameter_name, parameter_value, e))
 
+    def get_objective_value(lp):
+        return lp.get(GRB.DoubleAttr.ObjVal)
+
     def format_solution(lp, cobra_model, **kwargs):
         """
         """
@@ -135,6 +138,9 @@ else:
         else:
             status = 'failed'
         return status
+
+    def get_objective_value(lp):
+        return lp.ObjVal
 
     def format_solution(lp, cobra_model, **kwargs):
         status = get_status(lp)

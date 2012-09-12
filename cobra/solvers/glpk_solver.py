@@ -315,6 +315,9 @@ else:
             status = 'failed'
         return status
 
+    def get_objective_value(lp):
+        return lp.obj.value
+
     def format_solution(lp, cobra_model, **kwargs):
         try:
             objective_sign = objective_senses[kwargs['objective_sense']]
