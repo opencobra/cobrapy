@@ -159,10 +159,11 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
         if objective_sense == 'maximize':
             objective_cutoff = floor(wt_solution/tolerance_optimality)*\
                                tolerance_optimality*fraction_of_optimum
+            objective_metabolite._constraint_sense = 'G'
         else:
             objective_cutoff = ceil(wt_solution/tolerance_optimality)*\
                                tolerance_optimality*fraction_of_optimum
-        objective_metabolite._constraint_sense = 'E'
+            objective_metabolite._constraint_sense = 'L'
         objective_metabolite._bound = objective_cutoff
         #If objective_metabolite._model is None then we should cycle through
         #each reaction as the initial objective.
