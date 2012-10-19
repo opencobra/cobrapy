@@ -1,8 +1,13 @@
 import numpy
 import pylab
 
+#from ... import solvers
+from cobra import solvers
+from itertools import combinations
 
-def plot_production_envelope(model, target_id, n_points=20, plot=True):
+
+def plot_production_envelope(model, target_id, n_points=20, plot=True,
+        solver_name="glpk"):
     """Plot the production envelope for the model given a target
 
     Parameters
@@ -25,18 +30,18 @@ def plot_production_envelope(model, target_id, n_points=20, plot=True):
         given growth rate.
 
     """
+    solver = solvers.solver_dict[solver_name]
     target_id = str(target_id)
     target_reaction = model.reactions.get_by_id(target_id)
     original_target_bounds = (target_reaction.lower_bound,
                               target_reaction.upper_bound)
-    hot_start = model.optimize()
-    if model.solution.status != "optimal":
+    lp = solver.create_problem(model)
+    if solver.solve_problem(lp) != "optimal":
         return ([0], [0])
-    max_growth_rate = model.solution.f
-    max_growth_production = model.solution.x_dict[target_reaction.id]
-    growth_coupled = False
-    if max_growth_production > 0:
-        growth_coupled = True
+    solution = solver.format_solution(lp, model)
+    max_growth_rate = solution.f
+    max_growth_production = solution.x_dict[target_reaction.id]
+    #growth_coupled = max_growth_production > 0
     # extract the current objective so it can be changed
     original_objectives = {}
     for reaction in model.reactions:
@@ -68,9 +73,9 @@ def plot_production_envelope(model, target_id, n_points=20, plot=True):
     for i in range(n_points):
         target_reaction.lower_bound = production_rates[i]
         target_reaction.upper_bound = production_rates[i]
-        hot_start = model.optimize(the_problem=hot_start)
-        if model.solution.status == "optimal":
-            growth_rates[i] = model.solution.f
+        solver.update_problem(lp, model)
+        if solver.solve_problem(lp) == "optimal":
+            growth_rates[i] = solver.get_objective_value(lp)
         else:
             growth_rates[i] = 0
     # reset the bounds on the target reaction
@@ -86,19 +91,56 @@ def plot_production_envelope(model, target_id, n_points=20, plot=True):
     return (growth_rates, production_rates)
 
 
+def analyze_growth_coupled_num_knockouts(model, knockout_reaction, target_name="EX_etoh_e"):
+    
+
+def analyze_growth_coupled_design_subset(model, knockout_reactions, knockout_count, target_name="EX_etoh_e"):
+    lp = model.optimize()
+    best_score = 0
+    best = []
+    lb = [None] * k  # store lower bounds when reactions are knocked out
+    ub = [None] * k  # store upper bounds when reactions are knocked out
+    for subset in combinations(knockout_reactions, knockout_reactions):
+        # knockout reactions
+        for i, reaction_name in enumerate(subset):
+            reaction = model.reactions.get_by_id(str(reaction_name))
+            (lb[i], ub[i]) = (reaction.lower_bound, reaction.upper_bound)
+            (reaction.lower_bound, reaction.upper_bound) = (0.0, 0.0)
+        model.optimize()
+        production = model.solution.x_dict[target_name]
+        # identical performance
+        if abs(production - best_score) < 0.001:
+            best.append(subset)
+        # better performance
+        elif production > best_score:
+            best_score = model.solution.x_dict[target_name]
+            best = [subset]
+        print model.solution.f, model.solution.x_dict[target_name]
+        # reset reactions
+        for i, reaction_name in enumerate(subset):
+            (reaction.lower_bound, reaction.upper_bound) = (lb[i], ub[i])
+    return best_score, best
+
 if __name__ == "__main__":
-    from cobra.oven.legacyIO import load_pickle
+    from cPickle import load
+    def load_pickle(filename):
+        with open(filename, "rb") as infile:
+            return load(infile)
     from cobra.test import ecoli_pickle
     from time import time
     import pylab
     model = load_pickle(ecoli_pickle)
-    model.reactions.get_by_id("EX_o2(e)").lower_bound = 0
+    #from IPython import embed; embed()
+    model.reactions.get_by_id("EX_o2_e").lower_bound = 0
+    analyze_strain_design(model, ["ABTA", "ACALD", "ACKr", "ATPS4rpp", "F6PA",
+              "GLUDy", "LDH_D", "MGSA", "PFL", "TPI"])
+    
     for i in ["ABTA", "ACALD", "ACKr", "ATPS4rpp", "F6PA",
               "GLUDy", "LDH_D", "MGSA", "PFL", "TPI"]:
         model.reactions.get_by_id(i).lower_bound = 0
         model.reactions.get_by_id(i).upper_bound = 0
     start = time()
-    plot_production_envelope(model, "EX_etoh(e)")
+    plot_production_envelope(model, "EX_etoh_e", solver_name="glpk", n_points=40, plot=True)
     print "ran in %.2f seconds" % (time() - start)
     pylab.show()
-    # calculates in approx 1.2 seconds on 3.4 GHz i7
+    # calculates in approx 1 seconds on 3.4 GHz i7
