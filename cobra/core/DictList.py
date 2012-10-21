@@ -174,12 +174,7 @@ class DictList(list):
         return the_copy
 
     def __deepcopy__(self, *args, **kwargs):
-        self._dict.clear()
-        self._object_dict.clear()
-        the_copy = deepcopy(super(DictList, self), *args, **kwargs)
-        self._generate_index()
-        the_copy._generate_index()
-        return the_copy
+        return DictList((deepcopy(i) for i in self))
 
     # these functions are slower because they rebuild the _dict every time
     # TODO: speed up

@@ -21,7 +21,7 @@ if __name__ == "__main__":
     from cobra.test import salmonella_pickle as test_pickle
     from cobra import Object, Model, Metabolite, Reaction, io, DictList
     sys.path.pop(0)
-    assert 0
+    #assert 0
 else:
     from . import data_directory, create_test_model
     from . import salmonella_sbml as test_sbml_file
@@ -83,6 +83,12 @@ class TestDictList(TestCase):
         self.assertEqual(len(self.list), 1)
         self.assertEqual(len(sum), 9)
 
+    def testDeepcopy(self):
+        from copy import deepcopy
+        copied = deepcopy(self.list)
+        for i, v in enumerate(self.list):
+            assert self.list[i].id == copied[i].id
+            assert self.list[i] is not copied[i]
 
 class CobraTestCase(TestCase):
     def setUp(self):
@@ -126,7 +132,7 @@ class TestCobraCore(CobraTestCase):
 
 class TestCobraIO(CobraTestCase):
     try:
-        from cobra.io.sbml import SBMLReader as __SBMLReader
+        from libsbml import SBMLReader as __SBMLReader
         __test_sbml = True
     except:
         __test_sbml = False
