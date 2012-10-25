@@ -2,6 +2,8 @@
 #
 # Advanced user example showing how to set up and solve an MILP
 #
+import sys
+sys.path.insert(0, "../..")
 from cobra import Model, Metabolite, Reaction
 solver = 'cplex'  #With libglpk-java there is an untraced memory bug.
 
@@ -117,8 +119,6 @@ print('Objective value is: %1.2f'%cobra_model.solution.f)
 
 for the_reaction, the_value in cobra_model.solution.x_dict.items():
     print '%s: %1.2f'%(the_reaction, the_value)
-
-
 
 
 

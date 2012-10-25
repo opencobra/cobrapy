@@ -180,6 +180,7 @@ if __name == 'java':
                 g.doubleArray_setitem(v_array, a+1, v)
             g.glp_load_matrix(lp, number_of_constraints, i_array,
                               j_array, v_array)
+            # the following lines often cause memory crashes
             g.delete_intArray(i_array)
             g.delete_intArray(j_array)
             g.delete_doubleArray(v_array)
