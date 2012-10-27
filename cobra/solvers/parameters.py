@@ -48,7 +48,7 @@ __status_glpk = """{
     'unbnd': 'unbounded'
 }"""
 __status_glpk_java = "{GLPKConstants.GLP_OPT: 'optimal', GLPKConstants.GLP_FEAS: 'feasible', GLPKConstants.GLP_INFEAS: 'infeasible', GLPKConstants.GLP_NOFEAS: 'infeasible', GLPKConstants.GLP_UNBND: 'unbounded', GLPKConstants.GLP_UNDEF: 'undefined'}"
-__status_gurobi = "{GRB.OPTIMAL: 'optimal', GRB.INFEASIBLE: 'infeasible', GRB.UNBOUNDED: 'unbounded'}"
+__status_gurobi = "{GRB.OPTIMAL: 'optimal', GRB.INFEASIBLE: 'infeasible', GRB.UNBOUNDED: 'unbounded', GRB.TIME_LIMIT: 'time_limit'}"
 
 status_dict = {'cplex': __status_cplex,
                'glpk': __status_glpk,

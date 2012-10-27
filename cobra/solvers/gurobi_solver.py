@@ -144,7 +144,7 @@ else:
 
     def format_solution(lp, cobra_model, **kwargs):
         status = get_status(lp)
-        if status != 'optimal':
+        if status not in ('optimal', 'time_limit'):
             the_solution = Solution(None, status=status)
         else:
             objective_value = lp.ObjVal            
