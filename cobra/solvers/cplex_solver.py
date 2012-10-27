@@ -259,7 +259,7 @@ else:
     def format_solution(lp, cobra_model, **kwargs):
         status = get_status(lp)
         #TODO: It might be able to speed this up a little.
-        if status == 'optimal':
+        if status in ('optimal', 'time_limit'):
             objective_value = lp.solution.get_objective_value()
             #This can be sped up a little
             x_dict = dict(zip(lp.variables.get_names(),

@@ -28,12 +28,25 @@ default_objective_sense = 'maximize'
 ##                  "Cplex.solution.status.optimal: 'optimal',  " +\
 ##                  "Cplex.solution.status.optimal_tolerance: 'optimal', " +\
 ##                  "Cplex.solution.status.unbounded: 'unbounded', }"
-__status_cplex = "{'MIP_infeasible': 'infeasible', 'integer optimal solution': 'optimal', " +\
-                  "'MIP_optimal_tolerance': 'optimal',  'MIP_unbounded':  'unbounded', "+\
-                  "'infeasible': 'infeasible', 'optimal': 'optimal',  " +\
-                  "'optimal_tolerance': 'optimal', 'unbounded': 'unbounded' }"
+__status_cplex = """{
+    'MIP_infeasible': 'infeasible',
+    'integer optimal solution': 'optimal',
+    'MIP_optimal': 'optimal',
+    'MIP_optimal_tolerance': 'optimal',
+    'MIP_unbounded':  'unbounded',
+    'infeasible': 'infeasible',
+    'optimal': 'optimal',
+    'optimal_tolerance': 'optimal',
+    'unbounded': 'unbounded',
+    'integer optimal, tolerance': 'optimal',
+    'time limit exceeded': 'time_limit'
+}"""
 
-__status_glpk = "{'opt': 'optimal', 'nofeas': 'infeasible', 'unbnd': 'unbounded'}"
+__status_glpk = """{
+    'opt': 'optimal',
+    'nofeas': 'infeasible',
+    'unbnd': 'unbounded'
+}"""
 __status_glpk_java = "{GLPKConstants.GLP_OPT: 'optimal', GLPKConstants.GLP_FEAS: 'feasible', GLPKConstants.GLP_INFEAS: 'infeasible', GLPKConstants.GLP_NOFEAS: 'infeasible', GLPKConstants.GLP_UNBND: 'unbounded', GLPKConstants.GLP_UNDEF: 'undefined'}"
 __status_gurobi = "{GRB.OPTIMAL: 'optimal', GRB.INFEASIBLE: 'infeasible', GRB.UNBOUNDED: 'unbounded'}"
 
@@ -64,12 +77,15 @@ sense_dict = {'cplex': "{'E': 'E', 'L': 'L', 'G': 'G'}",
 #Mappings from cobra pie parameters names to solver specific parameter names
 __mappings_cplex = {'lp_method': 'parameters.lpmethod.set',
                     'lp_parallel': 'parameters.threads.set',
+                    'threads': 'parameters.threads.set',
                     'objective_sense': 'objective.set_sense',
                     'time_limit': 'parameters.timelimit.set',
                     'tolerance_barrier': 'parameters.barrier.convergetol.set',
                     'tolerance_feasibility': 'parameters.simplex.tolerances.feasibility.set',
                     'tolerance_markowitz': 'parameters.simplex.tolerances.markowitz.set',
-                    'tolerance_optimality': 'parameters.simplex.tolerances.optimality.set'}
+                    'tolerance_optimality': 'parameters.simplex.tolerances.optimality.set',
+                    'MIP_gap_abs': 'parameters.mip.tolerances.absmipgap.set',
+                    'MIP_gap': 'parameters.mip.tolerances.mipgap.set'}
 __mappings_cplex_java = {'lp_method': 'RootAlg',
                          'lp_parallel': 'ParallelMode',
                          'objective_sense': 'objective_sense',
@@ -88,13 +104,16 @@ __mappings_glpk_java = {'objective_sense': 'objective_sense',
                         }
 __mappings_gurobi = {'log_file': 'LogFile',
                      'lp_method': 'Method',
+                     'threads': 'Threads',
                      'objective_sense': 'ModelSense',
                      'output_verbosity': 'OutputFlag',
                      'quadratic_precision': 'Quad',
                      'time_limit': 'TimeLimit',
                      'tolerance_feasibility': 'FeasibilityTol',
                      'tolerance_markowitz': 'MarkowitzTol',
-                     'tolerance_optimality': 'OptimalityTol' }
+                     'tolerance_optimality': 'OptimalityTol',
+                     'MIP_gap_abs': 'MIPGapAbs',
+                     'MIP_gap': 'MIPGap'}
 parameter_mappings = {'cplex': __mappings_cplex,
                       'cplex_java': __mappings_cplex_java,
                       'glpk': __mappings_glpk,
@@ -115,7 +134,7 @@ __common_defaults = {'new_objective': None, 'objective_sense': 'maximize',
 __parameters_cplex = deepcopy(__common_defaults)
 __parameters_cplex.update({'lp_method': 1,
                            'lp_parallel': 0,
-                           'tolerance_barrier': 1e-8})
+                           'tolerance_barrier': 1.e-8})
 __parameters_glpk = deepcopy(__common_defaults)
 __parameters_glpk.update({'lp_method': 1})
 __parameters_glpk_java = deepcopy(__common_defaults)

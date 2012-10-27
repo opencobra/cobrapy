@@ -82,7 +82,7 @@ if __name == 'java':
         """
         """
         status = get_status(lp)
-        if status != 'optimal':
+        if status not in ('optimal', 'time_limit'):
             the_solution = Solution(None, status=status)
         else:
             x_dict = dict(((v.get(GRB.StringAttr.VarName),
