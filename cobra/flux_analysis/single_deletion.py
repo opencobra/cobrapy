@@ -124,7 +124,7 @@ def single_reaction_deletion(cobra_model, element_list=None,
         old_lower_bound, old_upper_bound = map(float, [the_element.lower_bound,
                                                        the_element.upper_bound])
         mutant_model.id = the_element.id
-        if old_lower_bound != 0 and old_upper_bound != 0:
+        if old_lower_bound != 0 or old_upper_bound != 0:
             the_element.lower_bound = 0
             the_element.upper_bound = 0
             if method.lower() == 'fba':

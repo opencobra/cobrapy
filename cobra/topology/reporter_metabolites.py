@@ -107,7 +107,7 @@ def identify_reporter_metabolites(cobra_model, reaction_scores_dict,
             the_random_indices = randint.rvs(0,len(the_scores), size=(number_of_randomizations, i))
             random_score_distribution = array([sum(the_scores[x]) for x in list(the_random_indices)]) /i**0.5
             correction_dict[i] = [mean(random_score_distribution),
-                                      std(random_score_distribution)] 
+                                      std(random_score_distribution,ddof=1)] 
 
     for the_metabolite, the_score in metabolite_scores.iteritems():
         number_of_connections = metabolite_connections[the_metabolite]
