@@ -351,8 +351,17 @@ else:
         return(the_solution)
 
     def set_parameter(lp, parameter_name, parameter_value):
-        """with pyglpk the parameters are set during the solve phase
+        """with pyglpk the parameters are set during the solve phase, with
+        the exception of objective sense.
+        
         """
+        if parameter_name == 'objective_sense':
+            if parameter_value.lower() == 'maximize':
+                lp.obj.maximize = True
+            elif parameter_value.lower() == 'minimize':
+                lp.obj.maximize = False
+            else:
+                raise ValueError("objective_sense should be 'maximize' or 'minimize'")
         warn("py glpk solver parameters are set during solve_problem")
         pass
 
