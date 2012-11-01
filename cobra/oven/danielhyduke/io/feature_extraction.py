@@ -2,7 +2,7 @@
 #Tools for parsing agilent feature extraction files.
 from numpy import array, log10
 from pdb import set_trace
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, variation
 from time import time
 from rpy2 import robjects
 r = robjects.r
@@ -29,6 +29,8 @@ def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
 
     lowess_parameter: Float.  Smoothing parameter for lowess normalization
 
+    TODO: Add in a parameter to exclude based on coefficient of variation.
+    
     """
     ## in_file = '/Users/danie/tg/Work/Li_et_al/Data/Feature_Extraction/for GEO/Oxam+.txt'
     ## polarity = 1

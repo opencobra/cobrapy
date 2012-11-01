@@ -4,7 +4,7 @@ import numpy, os, re, scipy, sys
 from copy import deepcopy
 from cPickle import dump
 from numpy import apply_along_axis,array, corrcoef, diag, hstack, isnan, isinf
-from numpy import  log, mean, std, tril, vstack, where, unique, zeros, sign
+from numpy import  log, mean, tril, vstack, where, unique, zeros, sign
 from scipy.stats import norm, randint
 from collections import defaultdict
 #TODO: Move application specific funtions to their own
