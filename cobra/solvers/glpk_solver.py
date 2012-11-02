@@ -362,7 +362,8 @@ else:
                 lp.obj.maximize = False
             else:
                 raise ValueError("objective_sense should be 'maximize' or 'minimize'")
-        warn("py glpk solver parameters are set during solve_problem")
+        else:
+            warn("py glpk solver parameters are set during solve_problem")
         pass
 
     def create_problem(cobra_model,  **kwargs):
@@ -424,6 +425,10 @@ else:
             objective_coefficients.append(float(the_reaction.objective_coefficient))
         #Add the new objective coefficients to the problem
         lp.obj[:] = objective_coefficients
+
+        # make sure the objective sense is set in create_problem
+        if "objective_sense" in the_parameters:
+            set_parameter(lp, "objective_sense", the_parameters["objective_sense"])
 
         return(lp)
 
