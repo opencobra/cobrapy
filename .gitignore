@@ -1,0 +1,4 @@
+*.pyc
+gurobi.log
+*$py.class
+
