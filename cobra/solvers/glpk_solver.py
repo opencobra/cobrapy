@@ -489,8 +489,7 @@ else:
             the_parameters = {}
         #These need to be provided to solve_problem for pyGLPK because it's not possible
         #AFAIK to set these during problem creation.
-        __function_parameters = ['tolerance_optimality', 'tolerance_integer', 'lp_method',
-                                 'objective_sense']
+        __function_parameters = ['tolerance_optimality', 'tolerance_integer', 'lp_method']
         for the_parameter in __function_parameters:
             if the_parameter not in the_parameters:
                 the_parameters.update({the_parameter: parameter_defaults[the_parameter]})
@@ -505,8 +504,8 @@ else:
         lp_method = the_parameters['lp_method']
         #[set_parameter(lp, parameter_mappings[k], v)
         # for k, v in kwargs.iteritems() if k in parameter_mappings]
-
-        lp.obj.maximize = objective_senses[the_parameters['objective_sense']] 
+        if "objective_sense" in the_parameters:
+            set_parameter(lp, "objective_sense", the_parameters["objective_sense"])
         if lp.kind == int:
             #For MILPs, it is faster to solve LP then move to MILP
             lp.simplex(tol_bnd=tolerance_optimality,
