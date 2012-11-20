@@ -39,25 +39,43 @@ def add_new_test(TestCobraSolver, solver_name, solver):
     using the modular interface.
 
     """
-    def test_attributes(self):
+    def attributes(self):
         self.assertTrue(hasattr(solver, "create_problem"))
         self.assertTrue(hasattr(solver, "solve_problem"))
         # self.assertTrue(hasattr(solver, "update_problem"))
-    def test_setup(self):
+
+    def creation(self):
         solver.create_problem(self.model)
-    def test_solve_feasible(self):
+
+    def solve_feasible(self):
         solver.solve(self.model)
         solution = self.model.solution        
         self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(self.old_solution, \
             solution.f, places=4)
-    def test_solve_minimize(self):
+
+    def solve_minimize(self):
         solver.solve(self.model, objective_sense='minimize')
         solution = self.model.solution        
         self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(0, \
             solution.f, places=4)
-    def test_solve_mip(self):
+
+    def set_objective_sense(self):
+        maximize = solver.create_problem(self.model, objective_sense="maximize")
+        minimize = solver.create_problem(self.model, objective_sense="minimize")
+        solver.solve_problem(maximize)
+        solver.solve_problem(minimize)
+        max_solution = solver.format_solution(maximize, self.model)
+        min_solution = solver.format_solution(minimize, self.model)
+        self.assertAlmostEqual(0, min_solution.f, places=4)
+        self.assertAlmostEqual(self.old_solution, max_solution.f, places=4)
+        # if we set minimize at creation, can we override it at solve
+        solver.solve_problem(minimize, objective_sense="maximize")
+        override_minimize = solver.format_solution(minimize, self.model)
+        self.assertAlmostEqual(max_solution.f, override_minimize.f, places=4)
+
+    def solve_mip(self):
         cone_selling_price = 7.
         cone_production_cost = 3.
         popsicle_selling_price = 2.
@@ -150,13 +168,12 @@ def add_new_test(TestCobraSolver, solver_name, solver):
         cobra_model.optimize()
         self.assertEqual(133, cobra_model.solution.f)
 
-        
-    def test_solve_infeasible(self):
+    def solve_infeasible(self):
         solver.solve(self.infeasible_model)
         solution = self.infeasible_model.solution
         self.assertEqual(solution.status, "infeasible")
 
-    def test_independent_creation(self):
+    def independent_creation(self):
         feasible_lp = solver.create_problem(self.model)
         infeasible_lp = solver.create_problem(self.infeasible_model)
         solver.solve_problem(feasible_lp)
@@ -168,20 +185,12 @@ def add_new_test(TestCobraSolver, solver_name, solver):
             feasible_solution.f, places=4)
         self.assertEqual(infeasible_solution.status, "infeasible")
 
-    setattr(TestCobraSolver, "test_%s_create" % solver_name, \
-        test_setup)
-    setattr(TestCobraSolver, "test_%s_attributes" % solver_name, \
-        test_attributes)
-    setattr(TestCobraSolver, "test_%s_feasible_solve" % solver_name, \
-        test_solve_feasible)
-    setattr(TestCobraSolver, "test_%s_infeasible_solve" % solver_name, \
-        test_solve_infeasible)
-    setattr(TestCobraSolver, "test_%s_independent_creation" % solver_name, \
-        test_independent_creation)
-    setattr(TestCobraSolver, "test_%s_solve_minimize" % solver_name, \
-        test_solve_minimize)
-    setattr(TestCobraSolver, "test_%s_solve_mip" % solver_name, \
-        test_solve_mip)
+    for tester in [attributes, creation, solve_feasible, solve_minimize,
+                    set_objective_sense, solve_mip, solve_infeasible,
+                    independent_creation]:
+        setattr(TestCobraSolver, "test_%s_%s" %
+                (solver_name, tester.func_name), tester)
+
 
 def add_legacy_test(TestCobraSolver, solver_name, solver_function):
     """Creates a test set for each of the installed solvers using the
