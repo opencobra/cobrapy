@@ -22,53 +22,61 @@ Any MATLAB function can be called this way"""
 mlab_path = os.path.join(cobra.__path__[0], 'mlab', 'matlab_scripts')
 matlab.addpath(mlab_path)
 
-# functions which should get loaded into the matlab namespace
-_useful_matlab_functions = ["plot", "figure", "hist", "load", "find"]
+_possible_cobra_locations = ["~/MATLAB/cobra", "~/cobra",
+    "~/Documents/MATLAB/cobra", "~/Documents/opencobra/matlab/cobra"]
 
-def init_matlab_toolbox(matlab_cobra_path=None):
+def init_matlab_toolbox(matlab_cobra_path=None, discover_functions=True):
     """initialize the matlab cobra toolbox, and load its functions
     into mlab's namespace (very useful for ipython tab completion)
 
     matlab_cobra_path: the path to the directory containing the MATLAB
     cobra installation. Using the default None will attempt to find the
-    toolbox in the MATLAB path"""
+    toolbox in the MATLAB path
+    
+    discover_functions: Whether mlabwrap should autodiscover all cobra toolbox
+    functions in matlab. This is convenient for tab completion, but may take
+    some time."""
+    # find initCobraToolbox.m
     if matlab_cobra_path is None:
-        matlab_cobra_path, tmp = os.path.split(
-            cobra.matlab.which('initCobraToolbox'))
-    if not os.path.isfile(os.path.join(matlab_cobra_path, "initCobraToolbox.m")):
+        matlab_cobra_path = os.path.split(
+            cobra.matlab.which('initCobraToolbox'))[0]
+        if matlab_cobra_path == "":
+            for i in _possible_cobra_locations:
+                poss_path = os.path.expanduser(i)
+                if os.path.isfile(poss_path + "/initCobraToolbox.m"):
+                    matlab_cobra_path = poss_path
+                    break
+    if not os.path.isfile(os.path.join(matlab_cobra_path,
+                           "initCobraToolbox.m")):
         print "initCobraToolbox not found in given path"
         return
     # store the current directory so we can return to it
     curdir = os.path.abspath(os.curdir)
-    # if the user has a pathdef file, it will not get used by the MATLAB
-    # engine, so it needs to be called manually
-    try:
-        os.chdir(matlab_home)
-        matlab.path(matlab.pathdef())
-    except:
-        pass
     os.chdir(matlab_cobra_path)
     matlab.initCobraToolbox()
     os.chdir(curdir)
-    
     # discover MATLAB functions
+    for matlab_func in ["plot", "figure", "hist", "load", "find"]:
+        getattr(matlab, matlab_func)
+    for filename in os.listdir(mlab_path):
+        getattr(matlab, filename.replace(".m", ""))
+    if not discover_functions:
+        return  # done now, do not need to find matlab cobra functions
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        os.path.walk(matlab_cobra_path, _probe, None)
-        os.path.walk(mlab_path, _probe, None)
-        for function in _useful_matlab_functions:
-            exec("matlab.%s.__doc__" % function)
+        walker = os.walk(matlab_cobra_path)
+        # skip docs and external
+        dirpath, dirnames, filenames = walker.next()
+        dirnames.pop(dirnames.index("external"))
+        dirnames.pop(dirnames.index("docs"))
+        for root, dirs, files in walker:
+            for filename in files:
+                if filename.endswith(".m"):
+                    try:
+                        getattr(matlab, filename.replace(".m", ""))
+                    except:
+                        continue
 
-
-def _probe(arg, path, files):
-    """Given a list of files, call __doc__ on each MATLAB function
-    so that mlab discovers they are real functions"""
-    for file in files:
-        if file.endswith(".m"):
-            try:
-                exec("matlab.%s.__doc__" % file.replace(".m", ""))
-            except:
-                pass
 
 #Project defined modules
 def matlab_cell_to_python_list(the_cell):

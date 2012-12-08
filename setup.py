@@ -30,7 +30,7 @@ setup(
               'documentation/html/_modules/*html',
               'documentation/html/_modules/*/*html',
               'documentation/html/_modules/*/*/*html',
-              'examples/*py']},
+              'examples/*py', 'mlab/matlab_scripts/*m']},
 
     author = "Daniel Robert Hyduke",
     author_email = "danielhyduke@gmail.com",
