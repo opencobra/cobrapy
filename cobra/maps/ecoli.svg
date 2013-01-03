@@ -7,8 +7,10 @@
 <style id="document_styles" type="text/css">
 .inv {visibility:hidden}
 #Layer_label_rxn {font-size: 45px; fill: rgb(32, 32, 80); font-family: serif; font-style: italic; font-weight: bold; stroke: rgb(32, 32, 80); text-rendering: optimizelegibility;}
-#Layer_label_met {color-interpolation: auto; fill: black; fill-opacity: 1; font-family: sans-serif; font-style: normal; font-weight: normal; shape-rendering: auto; stroke: black; stroke-dasharray: none; stroke-dashoffset: 0pt; stroke-linecap: square; stroke-linejoin: miter; stroke-miterlimit: 10; stroke-opacity: 1; stroke-width: 1; text-rendering: auto; fill: rgb(96, 32, 32); font-weight: bold; font-size: 38px; stroke: rgb(96, 32, 32); text-rendering: optimizelegibility;}.end {marker-end: url(#Triangle);}
+#Layer_label_met {color-interpolation: auto; fill: black; fill-opacity: 1; font-family: sans-serif; font-style: normal; font-weight: normal; shape-rendering: auto; stroke: black; stroke-dasharray: none; stroke-dashoffset: 0pt; stroke-linecap: square; stroke-linejoin: miter; stroke-miterlimit: 10; stroke-opacity: 1; stroke-width: 1; text-rendering: auto; fill: rgb(96, 32, 32); font-weight: bold; font-size: 38px; stroke: rgb(96, 32, 32); text-rendering: optimizelegibility;}
+.end {marker-end: url(#Triangle);}
 .start {marker-start: url(#triangle);}
+.metabolite {fill: rgb(255, 160, 128); stroke: rgb(64, 0, 0); stroke-width: 1;}
 </style>
 <marker id="Triangle" markerHeight="2.1" markerUnits="strokeWidth" markerWidth="2.1" orient="auto" refX="0" refY="6" viewBox="0 0 12 12">
 <path d="M 0 0 L 12 6 L 0 12 z" fill="blue" stroke="deepskyblue"/>
@@ -2695,122 +2697,122 @@
 <g id="Layer_test">
 </g>
 <g id="Layer_met">
-<g id="nadph" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadph">
 <a>
 <circle cx="7376" cy="5374" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="4580" cy="1982" r="15"/>
 </a>
 </g>
-<g id="ac" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="ac">
 <a>
 <circle cx="2554" cy="5098" r="25"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="8454" cy="1177" r="15"/>
 </a>
 </g>
-<g id="dmso" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dmso">
 <a>
 <circle cx="7586" cy="5314" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="2739" cy="1536" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="3304" cy="4604" r="15"/>
 </a>
 </g>
-<g id="6pgl" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="6pgl">
 <a>
 <circle cx="2089" cy="1625" r="25"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="7938" cy="1867" r="15"/>
 </a>
 </g>
-<g id="adpglc" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adpglc">
 <a>
 <circle cx="968" cy="1625" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5809" cy="1723" r="15"/>
 </a>
 </g>
-<g id="o2s" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="o2s">
 <a>
 <circle cx="7700" cy="1890" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="1093" cy="2023" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="1695" cy="3894" r="15"/>
 </a>
 </g>
-<g id="o2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="o2">
 <a>
 <circle cx="5239" cy="5230" r="15"/>
 </a>
 </g>
-<g id="ppi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="ppi">
 <a>
 <circle cx="1064" cy="1731" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="4579" cy="1529" r="15"/>
 </a>
 </g>
-<g id="dsbaox" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dsbaox">
 <a>
 <circle cx="5609" cy="1577" r="25"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="1441" cy="2213" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1428" cy="2571" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="5204" cy="5901" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="6332" cy="5459" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="8208" cy="1107" r="15"/>
 </a>
 </g>
-<g id="nadp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadp">
 <a>
 <circle cx="6359" cy="1127" r="15"/>
 </a>
@@ -2820,87 +2822,87 @@
 <circle cx="256" cy="4312" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4633" cy="1737" r="15"/>
 </a>
 </g>
-<g id="tmao" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="tmao">
 <a>
 <circle cx="8461" cy="3667" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4970" cy="3013" r="15"/>
 </a>
 </g>
-<g id="pyr" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pyr">
 <a>
 <circle cx="903" cy="1962" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="3197" cy="3934" r="15"/>
 </a>
 </g>
-<g id="pyr" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pyr">
 <a>
 <circle cx="1379" cy="5675" r="25"/>
 </a>
 </g>
-<g id="f6p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="f6p">
 <a>
 <circle cx="458" cy="1764" r="25"/>
 </a>
 </g>
-<g id="lac-L" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="lac-L">
 <a>
 <circle cx="458" cy="4600" r="25"/>
 </a>
 </g>
-<g id="etoh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="etoh">
 <a>
 <circle cx="3854" cy="5684" r="25"/>
 </a>
 </g>
-<g id="o2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="o2">
 <a>
 <circle cx="7710" cy="1550" r="15"/>
 </a>
 </g>
-<g id="glyc3p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glyc3p">
 <a>
 <circle cx="7228" cy="1447" r="25"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="2637" cy="5001" r="15"/>
 </a>
 </g>
-<g id="q8h2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="q8h2">
 <a>
 <circle cx="3013" cy="4017" r="15"/>
 </a>
 </g>
-<g id="o2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="o2">
 <a>
 <circle cx="5719" cy="5207" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1774" cy="4794" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="6099" cy="967" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="6110" cy="3239" r="15"/>
 </a>
@@ -2910,207 +2912,207 @@
 <circle cx="5270" cy="3234" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="2744" cy="4983" r="15"/>
 </a>
 </g>
-<g id="dsbard" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dsbard">
 <a>
 <circle cx="5699" cy="3527" r="25"/>
 </a>
 </g>
-<g id="2ddg6p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="2ddg6p">
 <a>
 <circle cx="2301" cy="2563" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="899" cy="4667" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5367" cy="2266" r="15"/>
 </a>
 </g>
-<g id="no3" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="no3">
 <a>
 <circle cx="8461" cy="3097" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="8208" cy="1787" r="15"/>
 </a>
 </g>
-<g id="pyr" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pyr">
 <a>
 <circle cx="6835" cy="1137" r="25"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="3734" cy="4334" r="15"/>
 </a>
 </g>
-<g id="2dmmq8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="2dmmq8">
 <a>
 <circle cx="7157" cy="5852" r="15"/>
 </a>
 </g>
-<g id="dhap" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dhap">
 <a>
 <circle cx="6602" cy="3276" r="25"/>
 </a>
 </g>
-<g id="glc-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glc-D">
 <a>
 <circle cx="1743" cy="554" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="839" cy="3297" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="7978" cy="1207" r="15"/>
 </a>
 </g>
-<g id="lac-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="lac-D">
 <a>
 <circle cx="6835" cy="1437" r="25"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="1093" cy="3847" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="4576" cy="1872" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="5659" cy="4317" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="8481" cy="2937" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="4989" cy="1127" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="3064" cy="4953" r="15"/>
 </a>
 </g>
-<g id="for" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="for">
 <a>
 <circle cx="5869" cy="1533" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5829" cy="3330" r="15"/>
 </a>
 </g>
-<g id="3pg" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="3pg">
 <a>
 <circle cx="1750" cy="3243" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4609" cy="3266" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="8041" cy="3537" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="3582" cy="1545" r="15"/>
 </a>
 </g>
-<g id="nadp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadp">
 <a>
 <circle cx="4025" cy="4438" r="15"/>
 </a>
 </g>
-<g id="tmao" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="tmao">
 <a>
 <circle cx="7796" cy="4804" r="15"/>
 </a>
 </g>
-<g id="glyc3p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glyc3p">
 <a>
 <circle cx="1142" cy="2641" r="25"/>
 </a>
 </g>
-<g id="pyr" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pyr">
 <a>
 <circle cx="1665" cy="966" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4976" cy="2816" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="898" cy="1461" r="15"/>
 </a>
 </g>
-<g id="coa" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="coa">
 <a>
 <circle cx="3293" cy="3599" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="1943" cy="3893" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1703" cy="3965" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="3192" cy="3989" r="15"/>
 </a>
 </g>
-<g id="dms" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dms">
 <a>
 <circle cx="7232" cy="3496" r="15"/>
 </a>
 </g>
-<g id="pppi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pppi">
 <a>
 <circle cx="5659" cy="4247" r="15"/>
 </a>
 </g>
-<g id="12ppd-S" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="12ppd-S">
 <a>
 <circle cx="459" cy="4947" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="6612" cy="1742" r="15"/>
 </a>
@@ -3120,32 +3122,32 @@
 <circle cx="1377" cy="5894" r="25"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="1784" cy="5114" r="15"/>
 </a>
 </g>
-<g id="dms" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dms">
 <a>
 <circle cx="7586" cy="5534" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="1703" cy="4184" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="2754" cy="5188" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="8051" cy="3637" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="3304" cy="4654" r="15"/>
 </a>
@@ -3155,22 +3157,22 @@
 <circle cx="259" cy="4600" r="25"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="4053" cy="892" r="15"/>
 </a>
 </g>
-<g id="lac-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="lac-D">
 <a>
 <circle cx="455" cy="4312" r="25"/>
 </a>
 </g>
-<g id="q8h2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="q8h2">
 <a>
 <circle cx="7348" cy="713" r="15"/>
 </a>
 </g>
-<g id="lgt-S" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="lgt-S">
 <a>
 <circle cx="1303" cy="3575" r="25"/>
 </a>
@@ -3180,267 +3182,267 @@
 <circle cx="259" cy="4947" r="25"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="2700" cy="4776" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4183" cy="572" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="1298" cy="1681" r="15"/>
 </a>
 </g>
-<g id="glyc3p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glyc3p">
 <a>
 <circle cx="458" cy="3047" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="3416" cy="575" r="15"/>
 </a>
 </g>
-<g id="h2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2">
 <a>
 <circle cx="6351" cy="5054" r="15"/>
 </a>
 </g>
-<g id="lac-L" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="lac-L">
 <a>
 <circle cx="7638" cy="1477" r="25"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="1953" cy="3744" r="15"/>
 </a>
 </g>
-<g id="nadph" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadph">
 <a>
 <circle cx="1388" cy="2541" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="7042" cy="3389" r="15"/>
 </a>
 </g>
-<g id="ahcys" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="ahcys">
 <a>
 <circle cx="3639" cy="4847" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1703" cy="1514" r="15"/>
 </a>
 </g>
-<g id="xyl-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="xyl-D">
 <a>
 <circle cx="5013" cy="1582" r="25"/>
 </a>
 </g>
-<g id="glcn" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glcn">
 <a>
 <circle cx="5637" cy="957" r="15"/>
 </a>
 </g>
-<g id="h2o2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o2">
 <a>
 <circle cx="5689" cy="5137" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="6159" cy="1403" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="4614" cy="2036" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="6379" cy="1537" r="15"/>
 </a>
 </g>
-<g id="pyr" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pyr">
 <a>
 <circle cx="7628" cy="1147" r="25"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="3625" cy="1043" r="25"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="5360" cy="2471" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4647" cy="2480" r="15"/>
 </a>
 </g>
-<g id="cit" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="cit">
 <a>
 <circle cx="4981" cy="4596" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1073" cy="3271" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="2610" cy="3743" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="8106" cy="5264" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="8106" cy="5474" r="15"/>
 </a>
 </g>
-<g id="q8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="q8">
 <a>
 <circle cx="2289" cy="5197" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="2013" cy="3923" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="3902" cy="1984" r="15"/>
 </a>
 </g>
-<g id="pyr" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pyr">
 <a>
 <circle cx="7018" cy="1867" r="25"/>
 </a>
 </g>
-<g id="succ" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="succ">
 <a>
 <circle cx="3944" cy="3240" r="25"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="1833" cy="2886" r="15"/>
 </a>
 </g>
-<g id="mql8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="mql8">
 <a>
 <circle cx="3534" cy="3191" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="4402" cy="3931" r="15"/>
 </a>
 </g>
-<g id="dmso" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dmso">
 <a>
 <circle cx="7232" cy="3286" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="7968" cy="1547" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5259" cy="1127" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="819" cy="3853" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="1660" cy="3693" r="15"/>
 </a>
 </g>
-<g id="amp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="amp">
 <a>
 <circle cx="1564" cy="3834" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="7690" cy="1830" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4962" cy="3140" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="3624" cy="2006" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4923" cy="3264" r="15"/>
 </a>
 </g>
-<g id="mql8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="mql8">
 <a>
 <circle cx="1480" cy="4740" r="15"/>
 </a>
 </g>
-<g id="no2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="no2">
 <a>
 <circle cx="8051" cy="3327" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="6112" cy="3026" r="15"/>
 </a>
 </g>
-<g id="o2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="o2">
 <a>
 <circle cx="8051" cy="3437" r="15"/>
 </a>
 </g>
-<g id="nh4" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nh4">
 <a>
 <circle cx="8481" cy="3007" r="25"/>
 </a>
 </g>
-<g id="f1p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="f1p">
 <a>
 <circle cx="989" cy="2078" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1828" cy="2242" r="15"/>
 </a>
 </g>
-<g id="accoa" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="accoa">
 <a>
 <circle cx="3635" cy="3775" r="15"/>
 </a>
@@ -3450,62 +3452,62 @@
 <circle cx="3204" cy="5894" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1531" cy="3905" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="2060" cy="4223" r="15"/>
 </a>
 </g>
-<g id="glx" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glx">
 <a>
 <circle cx="6521" cy="4834" r="25"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="3245" cy="3294" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="8461" cy="3847" r="15"/>
 </a>
 </g>
-<g id="pep" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pep">
 <a>
 <circle cx="1815" cy="966" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="2360" cy="3883" r="15"/>
 </a>
 </g>
-<g id="o2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="o2">
 <a>
 <circle cx="5729" cy="5287" r="15"/>
 </a>
 </g>
-<g id="tma" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="tma">
 <a>
 <circle cx="8106" cy="5554" r="15"/>
 </a>
 </g>
-<g id="nadph" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadph">
 <a>
 <circle cx="6359" cy="1447" r="15"/>
 </a>
 </g>
-<g id="g1p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="g1p">
 <a>
 <circle cx="1009" cy="557" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="8471" cy="2737" r="15"/>
 </a>
@@ -3515,72 +3517,72 @@
 <circle cx="3854" cy="5894" r="25"/>
 </a>
 </g>
-<g id="2dmmql8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="2dmmql8">
 <a>
 <circle cx="7157" cy="4492" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="6806" cy="3246" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5809" cy="1403" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="8461" cy="3547" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="2300" cy="4223" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1361" cy="3900" r="15"/>
 </a>
 </g>
-<g id="for" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="for">
 <a>
 <circle cx="2156" cy="5684" r="25"/>
 </a>
 </g>
-<g id="q8h2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="q8h2">
 <a>
 <circle cx="2449" cy="5197" r="15"/>
 </a>
 </g>
-<g id="ppi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="ppi">
 <a>
 <circle cx="5289" cy="4597" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="829" cy="3067" r="15"/>
 </a>
 </g>
-<g id="mqn8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="mqn8">
 <a>
 <circle cx="3804" cy="3191" r="15"/>
 </a>
 </g>
-<g id="h2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2">
 <a>
 <circle cx="1704" cy="5234" r="25"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="809" cy="3337" r="15"/>
 </a>
 </g>
-<g id="pep" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pep">
 <a>
 <circle cx="1750" cy="3743" r="25"/>
 </a>
@@ -3590,22 +3592,22 @@
 <circle cx="5122" cy="4596" r="25"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="3149" cy="3650" r="15"/>
 </a>
 </g>
-<g id="nadp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadp">
 <a>
 <circle cx="1093" cy="3491" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="2499" cy="5147" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="7908" cy="1787" r="15"/>
 </a>
@@ -3615,177 +3617,177 @@
 <circle cx="1704" cy="5894" r="25"/>
 </a>
 </g>
-<g id="akg" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="akg">
 <a>
 <circle cx="4285" cy="4003" r="25"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="5216" cy="5709" r="15"/>
 </a>
 </g>
-<g id="o2s" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="o2s">
 <a>
 <circle cx="6962" cy="3339" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="3404" cy="4454" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="3374" cy="5204" r="15"/>
 </a>
 </g>
-<g id="glyc3p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glyc3p">
 <a>
 <circle cx="6602" cy="3586" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="7419" cy="3076" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="3868" cy="1533" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="5489" cy="687" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1377" cy="2169" r="15"/>
 </a>
 </g>
-<g id="succ" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="succ">
 <a>
 <circle cx="5071" cy="3234" r="25"/>
 </a>
 </g>
-<g id="fum" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="fum">
 <a>
 <circle cx="5050" cy="2959" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1000" cy="4720" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="7751" cy="3627" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="6092" cy="5376" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="2200" cy="3993" r="15"/>
 </a>
 </g>
-<g id="nadph" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadph">
 <a>
 <circle cx="2774" cy="5248" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="2684" cy="4394" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="3373" cy="3617" r="15"/>
 </a>
 </g>
-<g id="glyclt" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glyclt">
 <a>
 <circle cx="6432" cy="3276" r="25"/>
 </a>
 </g>
-<g id="nadp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadp">
 <a>
 <circle cx="7396" cy="5044" r="15"/>
 </a>
 </g>
-<g id="coa" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="coa">
 <a>
 <circle cx="4402" cy="3879" r="15"/>
 </a>
 </g>
-<g id="mqn8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="mqn8">
 <a>
 <circle cx="1280" cy="4740" r="15"/>
 </a>
 </g>
-<g id="no3" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="no3">
 <a>
 <circle cx="8051" cy="3097" r="15"/>
 </a>
 </g>
-<g id="ru5p-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="ru5p-D">
 <a>
 <circle cx="2864" cy="1625" r="25"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="1683" cy="1444" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="6351" cy="4974" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="5115" cy="2460" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="7031" cy="1788" r="15"/>
 </a>
 </g>
-<g id="succoa" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="succoa">
 <a>
 <circle cx="4265" cy="3568" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="3944" cy="5224" r="15"/>
 </a>
 </g>
-<g id="fum" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="fum">
 <a>
 <circle cx="4621" cy="3732" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="8461" cy="3597" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="979" cy="5047" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="6802" cy="3016" r="15"/>
 </a>
@@ -3795,137 +3797,137 @@
 <circle cx="259" cy="1764" r="25"/>
 </a>
 </g>
-<g id="ac" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="ac">
 <a>
 <circle cx="2554" cy="5684" r="25"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="1244" cy="2328" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="6991" cy="4864" r="15"/>
 </a>
 </g>
-<g id="rib-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="rib-D">
 <a>
 <circle cx="4044" cy="1930" r="25"/>
 </a>
 </g>
-<g id="no3" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="no3">
 <a>
 <circle cx="7958" cy="1707" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="889" cy="3037" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4577" cy="2685" r="15"/>
 </a>
 </g>
-<g id="no2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="no2">
 <a>
 <circle cx="8438" cy="1837" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="6089" cy="1313" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="8218" cy="1467" r="15"/>
 </a>
 </g>
-<g id="dmso" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dmso">
 <a>
 <circle cx="8431" cy="3357" r="15"/>
 </a>
 </g>
-<g id="cit" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="cit">
 <a>
 <circle cx="3486" cy="4389" r="25"/>
 </a>
 </g>
-<g id="q8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="q8">
 <a>
 <circle cx="3020" cy="3681" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="2259" cy="5147" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="1231" cy="2540" r="15"/>
 </a>
 </g>
-<g id="mal-L" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="mal-L">
 <a>
 <circle cx="5037" cy="2635" r="25"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="4103" cy="942" r="15"/>
 </a>
 </g>
-<g id="o2s" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="o2s">
 <a>
 <circle cx="5449" cy="5207" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5599" cy="1031" r="15"/>
 </a>
 </g>
-<g id="13dpg" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="13dpg">
 <a>
 <circle cx="1750" cy="2933" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4644" cy="4101" r="15"/>
 </a>
 </g>
-<g id="nadph" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadph">
 <a>
 <circle cx="2774" cy="1583" r="15"/>
 </a>
 </g>
-<g id="accoa" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="accoa">
 <a>
 <circle cx="2534" cy="4312" r="25"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="909" cy="3197" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4004" cy="5604" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4629" cy="3300" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="6159" cy="1723" r="15"/>
 </a>
@@ -3935,32 +3937,32 @@
 <circle cx="259" cy="2269" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1407" cy="944" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4601" cy="3137" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="4304" cy="3444" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="4350" cy="3606" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="1518" cy="4132" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="7071" cy="1568" r="15"/>
 </a>
@@ -3970,192 +3972,192 @@
 <circle cx="5142" cy="4001" r="25"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="879" cy="5047" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4568" cy="2901" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="5496" cy="5901" r="15"/>
 </a>
 </g>
-<g id="dms" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dms">
 <a>
 <circle cx="8101" cy="5073" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5832" cy="3026" r="15"/>
 </a>
 </g>
-<g id="no2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="no2">
 <a>
 <circle cx="8448" cy="867" r="15"/>
 </a>
 </g>
-<g id="glycogen" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glycogen">
 <a>
 <circle cx="968" cy="1341" r="25"/>
 </a>
 </g>
-<g id="12ppd-R" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="12ppd-R">
 <a>
 <circle cx="960" cy="3936" r="25"/>
 </a>
 </g>
-<g id="oaa" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="oaa">
 <a>
 <circle cx="3180" cy="4103" r="25"/>
 </a>
 </g>
-<g id="coa" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="coa">
 <a>
 <circle cx="2434" cy="4926" r="15"/>
 </a>
 </g>
-<g id="no2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="no2">
 <a>
 <circle cx="8471" cy="2677" r="25"/>
 </a>
 </g>
-<g id="glyclt" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glyclt">
 <a>
 <circle cx="7436" cy="1837" r="25"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="6593" cy="1817" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4904" cy="4121" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="5439" cy="2371" r="25"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="1099" cy="477" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="4989" cy="997" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="8241" cy="3517" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="1055" cy="2320" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="4402" cy="3658" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="5587" cy="1349" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="6091" cy="4974" r="15"/>
 </a>
 </g>
-<g id="bglycogen" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="bglycogen">
 <a>
 <circle cx="968" cy="1121" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4899" cy="3365" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4972" cy="2906" r="15"/>
 </a>
 </g>
-<g id="g3p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="g3p">
 <a>
 <circle cx="1749" cy="2642" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5799" cy="1037" r="15"/>
 </a>
 </g>
-<g id="nadp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadp">
 <a>
 <circle cx="1235" cy="2599" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="1557" cy="1524" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4183" cy="972" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="8241" cy="3147" r="15"/>
 </a>
 </g>
-<g id="actp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="actp">
 <a>
 <circle cx="2594" cy="4676" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="7918" cy="1467" r="15"/>
 </a>
 </g>
-<g id="succ" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="succ">
 <a>
 <circle cx="4922" cy="4517" r="15"/>
 </a>
 </g>
-<g id="pyr" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pyr">
 <a>
 <circle cx="1749" cy="4312" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="7001" cy="5134" r="15"/>
 </a>
 </g>
-<g id="2pg" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="2pg">
 <a>
 <circle cx="1750" cy="3493" r="25"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="1714" cy="2700" r="15"/>
 </a>
@@ -4165,332 +4167,332 @@
 <circle cx="259" cy="3047" r="25"/>
 </a>
 </g>
-<g id="succ" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="succ">
 <a>
 <circle cx="4941" cy="3747" r="15"/>
 </a>
 </g>
-<g id="glyc" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glyc">
 <a>
 <circle cx="1143" cy="2269" r="25"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="1000" cy="4820" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="4369" cy="5197" r="25"/>
 </a>
 </g>
-<g id="glx" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glx">
 <a>
 <circle cx="6432" cy="3006" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5639" cy="4677" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="3104" cy="4993" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="2168" cy="1679" r="15"/>
 </a>
 </g>
-<g id="pppi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pppi">
 <a>
 <circle cx="5639" cy="687" r="25"/>
 </a>
 </g>
-<g id="xylu-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="xylu-D">
 <a>
 <circle cx="4051" cy="1581" r="25"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="1000" cy="4870" r="15"/>
 </a>
 </g>
-<g id="tma" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="tma">
 <a>
 <circle cx="7419" cy="3296" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1246" cy="1731" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="5289" cy="4673" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="3700" cy="3853" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="520" cy="3199" r="15"/>
 </a>
 </g>
-<g id="no3" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="no3">
 <a>
 <circle cx="8428" cy="1547" r="15"/>
 </a>
 </g>
-<g id="pep" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pep">
 <a>
 <circle cx="908" cy="2025" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="1361" cy="3634" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="2794" cy="4151" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="2093" cy="914" r="15"/>
 </a>
 </g>
-<g id="succ" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="succ">
 <a>
 <circle cx="4621" cy="3541" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="2694" cy="5604" r="15"/>
 </a>
 </g>
-<g id="lald-L" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="lald-L">
 <a>
 <circle cx="1100" cy="4947" r="25"/>
 </a>
 </g>
-<g id="mthgxl" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="mthgxl">
 <a>
 <circle cx="1303" cy="3092" r="25"/>
 </a>
 </g>
-<g id="akg" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="akg">
 <a>
 <circle cx="4977" cy="4001" r="25"/>
 </a>
 </g>
-<g id="g6p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="g6p">
 <a>
 <circle cx="2003" cy="554" r="25"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="6112" cy="3586" r="15"/>
 </a>
 </g>
-<g id="mql8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="mql8">
 <a>
 <circle cx="7017" cy="2661" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="3295" cy="1093" r="25"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="2350" cy="4253" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="7232" cy="3576" r="15"/>
 </a>
 </g>
-<g id="12ppd-S" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="12ppd-S">
 <a>
 <circle cx="819" cy="4947" r="25"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="5050" cy="2371" r="25"/>
 </a>
 </g>
-<g id="q8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="q8">
 <a>
 <circle cx="7378" cy="2223" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="4304" cy="3494" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="2727" cy="3879" r="15"/>
 </a>
 </g>
-<g id="glc-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glc-D">
 <a>
 <circle cx="5637" cy="1397" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="6623" cy="1487" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="2590" cy="3793" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="1423" cy="1244" r="15"/>
 </a>
 </g>
-<g id="ac" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="ac">
 <a>
 <circle cx="3294" cy="4126" r="15"/>
 </a>
 </g>
-<g id="ac" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="ac">
 <a>
 <circle cx="7018" cy="1457" r="25"/>
 </a>
 </g>
-<g id="h2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2">
 <a>
 <circle cx="6099" cy="1853" r="25"/>
 </a>
 </g>
-<g id="2dmmql8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="2dmmql8">
 <a>
 <circle cx="3426" cy="3072" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="3064" cy="5268" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="8051" cy="3237" r="15"/>
 </a>
 </g>
-<g id="glyc" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glyc">
 <a>
 <circle cx="458" cy="2269" r="25"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="2464" cy="4986" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="6099" cy="1107" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5832" cy="3656" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5508" cy="5713" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="1093" cy="3697" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4939" cy="2651" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="8438" cy="937" r="15"/>
 </a>
 </g>
-<g id="nadp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadp">
 <a>
 <circle cx="7721" cy="3317" r="15"/>
 </a>
 </g>
-<g id="tmao" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="tmao">
 <a>
 <circle cx="8106" cy="5334" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="1651" cy="2207" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="1503" cy="3840" r="15"/>
 </a>
 </g>
-<g id="pyr" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pyr">
 <a>
 <circle cx="6262" cy="3366" r="25"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="3164" cy="4241" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="4369" cy="5687" r="25"/>
 </a>
 </g>
-<g id="coa" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="coa">
 <a>
 <circle cx="2700" cy="4638" r="15"/>
 </a>
 </g>
-<g id="ppi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="ppi">
 <a>
 <circle cx="5209" cy="687" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1073" cy="3647" r="15"/>
 </a>
 </g>
-<g id="nh4" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nh4">
 <a>
 <circle cx="8438" cy="1237" r="15"/>
 </a>
@@ -4500,157 +4502,157 @@
 <circle cx="5156" cy="1581" r="25"/>
 </a>
 </g>
-<g id="h2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2">
 <a>
 <circle cx="1704" cy="5684" r="25"/>
 </a>
 </g>
-<g id="dms" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dms">
 <a>
 <circle cx="8461" cy="3497" r="15"/>
 </a>
 </g>
-<g id="mal-L" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="mal-L">
 <a>
 <circle cx="3138" cy="3560" r="25"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="1299" cy="477" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="3415" cy="1043" r="15"/>
 </a>
 </g>
-<g id="dha" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dha">
 <a>
 <circle cx="1519" cy="2269" r="25"/>
 </a>
 </g>
-<g id="nadph" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadph">
 <a>
 <circle cx="1093" cy="3321" r="15"/>
 </a>
 </g>
-<g id="glyc3p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glyc3p">
 <a>
 <circle cx="6771" cy="5544" r="25"/>
 </a>
 </g>
-<g id="fru" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="fru">
 <a>
 <circle cx="458" cy="1991" r="25"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="7796" cy="5024" r="15"/>
 </a>
 </g>
-<g id="lac-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="lac-D">
 <a>
 <circle cx="1301" cy="4311" r="25"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="1826" cy="1975" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="2494" cy="4161" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="2341" cy="1694" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1417" cy="614" r="15"/>
 </a>
 </g>
-<g id="g1p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="g1p">
 <a>
 <circle cx="1397" cy="1625" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="6170" cy="1034" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="6380" cy="5378" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="6095" cy="3430" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="1840" cy="3173" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="6112" cy="3656" r="15"/>
 </a>
 </g>
-<g id="glyclt" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glyclt">
 <a>
 <circle cx="6521" cy="5094" r="25"/>
 </a>
 </g>
-<g id="aconm" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="aconm">
 <a>
 <circle cx="3739" cy="4897" r="25"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="1318" cy="4384" r="15"/>
 </a>
 </g>
-<g id="o2s" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="o2s">
 <a>
 <circle cx="5449" cy="5287" r="15"/>
 </a>
 </g>
-<g id="xu5p-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="xu5p-D">
 <a>
 <circle cx="2692" cy="1925" r="25"/>
 </a>
 </g>
-<g id="pep" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pep">
 <a>
 <circle cx="1470" cy="2348" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="869" cy="2827" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="890" cy="4391" r="15"/>
 </a>
 </g>
-<g id="amp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="amp">
 <a>
 <circle cx="2434" cy="4516" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="2804" cy="4933" r="15"/>
 </a>
@@ -4660,17 +4662,17 @@
 <circle cx="1009" cy="367" r="25"/>
 </a>
 </g>
-<g id="o2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="o2">
 <a>
 <circle cx="7022" cy="3039" r="15"/>
 </a>
 </g>
-<g id="nadph" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadph">
 <a>
 <circle cx="4324" cy="4100" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="1247" cy="2827" r="15"/>
 </a>
@@ -4680,72 +4682,72 @@
 <circle cx="5115" cy="1930" r="25"/>
 </a>
 </g>
-<g id="tmao" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="tmao">
 <a>
 <circle cx="7419" cy="3016" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="2310" cy="3843" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1992" cy="1734" r="15"/>
 </a>
 </g>
-<g id="o2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="o2">
 <a>
 <circle cx="7968" cy="1387" r="25"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="1563" cy="1214" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="6806" cy="3176" r="15"/>
 </a>
 </g>
-<g id="fum" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="fum">
 <a>
 <circle cx="4939" cy="3539" r="15"/>
 </a>
 </g>
-<g id="rib-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="rib-D">
 <a>
 <circle cx="4924" cy="1930" r="25"/>
 </a>
 </g>
-<g id="glx" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glx">
 <a>
 <circle cx="7446" cy="1517" r="25"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="8461" cy="3257" r="15"/>
 </a>
 </g>
-<g id="etoh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="etoh">
 <a>
 <circle cx="3854" cy="5104" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5489" cy="5147" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="4313" cy="902" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="2264" cy="4754" r="15"/>
 </a>
@@ -4755,107 +4757,107 @@
 <circle cx="259" cy="1991" r="25"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="1324" cy="2003" r="15"/>
 </a>
 </g>
-<g id="q8h2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="q8h2">
 <a>
 <circle cx="3480" cy="3381" r="15"/>
 </a>
 </g>
-<g id="nadph" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadph">
 <a>
 <circle cx="3535" cy="1093" r="25"/>
 </a>
 </g>
-<g id="acetol" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="acetol">
 <a>
 <circle cx="1023" cy="3571" r="25"/>
 </a>
 </g>
-<g id="nadph" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadph">
 <a>
 <circle cx="7741" cy="3547" r="15"/>
 </a>
 </g>
-<g id="xyl-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="xyl-D">
 <a>
 <circle cx="4353" cy="1582" r="25"/>
 </a>
 </g>
-<g id="tma" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="tma">
 <a>
 <circle cx="8461" cy="3907" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="1881" cy="2195" r="15"/>
 </a>
 </g>
-<g id="ppi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="ppi">
 <a>
 <circle cx="5219" cy="4247" r="15"/>
 </a>
 </g>
-<g id="pep" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pep">
 <a>
 <circle cx="897" cy="1847" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="co2">
 <a>
 <circle cx="4285" cy="4165" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="4092" cy="3401" r="15"/>
 </a>
 </g>
-<g id="dmso" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dmso">
 <a>
 <circle cx="8106" cy="4864" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="4263" cy="942" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="8051" cy="3167" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="4602" cy="1685" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="3301" cy="4938" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="829" cy="3477" r="15"/>
 </a>
 </g>
-<g id="ppi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="ppi">
 <a>
 <circle cx="2464" cy="4456" r="15"/>
 </a>
 </g>
-<g id="o2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="o2">
 <a>
 <circle cx="7978" cy="1037" r="25"/>
 </a>
 </g>
-<g id="lac-L" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="lac-L">
 <a>
 <circle cx="1100" cy="4600" r="25"/>
 </a>
@@ -4865,332 +4867,332 @@
 <circle cx="5237" cy="2750" r="25"/>
 </a>
 </g>
-<g id="mqn8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="mqn8">
 <a>
 <circle cx="7017" cy="4041" r="15"/>
 </a>
 </g>
-<g id="acald" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="acald">
 <a>
 <circle cx="3204" cy="5106" r="25"/>
 </a>
 </g>
-<g id="tma" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="tma">
 <a>
 <circle cx="7796" cy="5124" r="15"/>
 </a>
 </g>
-<g id="q8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="q8">
 <a>
 <circle cx="1280" cy="4410" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="2890" cy="3593" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="1840" cy="3003" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="3635" cy="1512" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4933" cy="1375" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="5489" cy="487" r="25"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="1181" cy="2195" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="3474" cy="5204" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="565" cy="1822" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1282" cy="5595" r="15"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="3754" cy="5204" r="15"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="5059" cy="447" r="25"/>
 </a>
 </g>
-<g id="glc-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glc-D">
 <a>
 <circle cx="1477" cy="1164" r="25"/>
 </a>
 </g>
-<g id="q8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="q8">
 <a>
 <circle cx="3858" cy="3394" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="7419" cy="3226" r="15"/>
 </a>
 </g>
-<g id="pyr" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pyr">
 <a>
 <circle cx="1571" cy="2541" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="819" cy="2797" r="15"/>
 </a>
 </g>
-<g id="for" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="for">
 <a>
 <circle cx="5872" cy="3756" r="15"/>
 </a>
 </g>
-<g id="fdp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="fdp">
 <a>
 <circle cx="1748" cy="2293" r="25"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="1613" cy="4371" r="15"/>
 </a>
 </g>
-<g id="dhap" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dhap">
 <a>
 <circle cx="1519" cy="2641" r="25"/>
 </a>
 </g>
-<g id="6pgc" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="6pgc">
 <a>
 <circle cx="2417" cy="1625" r="25"/>
 </a>
 </g>
-<g id="2dmmq8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="2dmmq8">
 <a>
 <circle cx="3944" cy="3071" r="15"/>
 </a>
 </g>
-<g id="ppi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="ppi">
 <a>
 <circle cx="5639" cy="457" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1833" cy="2836" r="15"/>
 </a>
 </g>
-<g id="h2o2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o2">
 <a>
 <circle cx="4969" cy="5230" r="15"/>
 </a>
 </g>
-<g id="nadph" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadph">
 <a>
 <circle cx="2616" cy="3901" r="15"/>
 </a>
 </g>
-<g id="for" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="for">
 <a>
 <circle cx="2154" cy="4474" r="25"/>
 </a>
 </g>
-<g id="gthrd" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="gthrd">
 <a>
 <circle cx="1189" cy="3576" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="799" cy="3683" r="15"/>
 </a>
 </g>
-<g id="acon-C" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="acon-C">
 <a>
 <circle cx="3739" cy="4447" r="25"/>
 </a>
 </g>
-<g id="atp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="atp">
 <a>
 <circle cx="1520" cy="4180" r="15"/>
 </a>
 </g>
-<g id="mqn8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="mqn8">
 <a>
 <circle cx="3280" cy="3693" r="15"/>
 </a>
 </g>
-<g id="h2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2">
 <a>
 <circle cx="6112" cy="3106" r="15"/>
 </a>
 </g>
-<g id="q8h2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="q8h2">
 <a>
 <circle cx="1480" cy="4410" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="3584" cy="1966" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="918" cy="1401" r="15"/>
 </a>
 </g>
-<g id="nadph" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadph">
 <a>
 <circle cx="2034" cy="1694" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="1065" cy="1061" r="15"/>
 </a>
 </g>
-<g id="succ" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="succ">
 <a>
 <circle cx="4629" cy="4515" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="4615" cy="1818" r="15"/>
 </a>
 </g>
-<g id="nadp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadp">
 <a>
 <circle cx="1854" cy="1714" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="2294" cy="5604" r="15"/>
 </a>
 </g>
-<g id="e4p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="e4p">
 <a>
 <circle cx="2699" cy="2487" r="25"/>
 </a>
 </g>
-<g id="coa" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="coa">
 <a>
 <circle cx="1878" cy="4424" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="8438" cy="1767" r="15"/>
 </a>
 </g>
-<g id="dhap" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dhap">
 <a>
 <circle cx="7233" cy="1107" r="25"/>
 </a>
 </g>
-<g id="lac-L" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="lac-L">
 <a>
 <circle cx="6262" cy="3536" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1386" cy="2035" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="1000" cy="4670" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1061" cy="2544" r="15"/>
 </a>
 </g>
-<g id="mqn8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="mqn8">
 <a>
 <circle cx="7017" cy="4041" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1285" cy="5134" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="8106" cy="5164" r="15"/>
 </a>
 </g>
-<g id="nadh" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadh">
 <a>
 <circle cx="7001" cy="5044" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4913" cy="2599" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="847" cy="1701" r="15"/>
 </a>
 </g>
-<g id="hco3" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="hco3">
 <a>
 <circle cx="5259" cy="997" r="15"/>
 </a>
 </g>
-<g id="coa" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="coa">
 <a>
 <circle cx="3301" cy="4988" r="15"/>
 </a>
 </g>
-<g id="coa" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="coa">
 <a>
 <circle cx="3344" cy="4404" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="5639" cy="4597" r="15"/>
 </a>
 </g>
-<g id="fum" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="fum">
 <a>
 <circle cx="3364" cy="3287" r="25"/>
 </a>
 </g>
-<g id="nad" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nad">
 <a>
 <circle cx="6331" cy="5292" r="15"/>
 </a>
@@ -5205,77 +5207,77 @@
 <circle cx="1743" cy="384" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5219" cy="4377" r="15"/>
 </a>
 </g>
-<g id="acon-T" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="acon-T">
 <a>
 <circle cx="3739" cy="4707" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="7928" cy="1107" r="15"/>
 </a>
 </g>
-<g id="acald" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="acald">
 <a>
 <circle cx="3204" cy="5684" r="25"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="5059" cy="647" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="5489" cy="5347" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="4579" cy="1640" r="15"/>
 </a>
 </g>
-<g id="no2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="no2">
 <a>
 <circle cx="7968" cy="1927" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="455" cy="4392" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="1629" cy="1980" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="2343" cy="2481" r="15"/>
 </a>
 </g>
-<g id="coa" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="coa">
 <a>
 <circle cx="4044" cy="3347" r="15"/>
 </a>
 </g>
-<g id="pyr" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pyr">
 <a>
 <circle cx="909" cy="2133" r="15"/>
 </a>
 </g>
-<g id="r5p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="r5p">
 <a>
 <circle cx="3035" cy="1929" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="6106" cy="3331" r="15"/>
 </a>
@@ -5285,57 +5287,57 @@
 <circle cx="2154" cy="5894" r="25"/>
 </a>
 </g>
-<g id="12ppd-R" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="12ppd-R">
 <a>
 <circle cx="453" cy="3936" r="25"/>
 </a>
 </g>
-<g id="dhap" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dhap">
 <a>
 <circle cx="6771" cy="5254" r="25"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="5199" cy="5147" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4553" cy="1387" r="15"/>
 </a>
 </g>
-<g id="no2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="no2">
 <a>
 <circle cx="8461" cy="3317" r="15"/>
 </a>
 </g>
-<g id="g6p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="g6p">
 <a>
 <circle cx="1746" cy="1625" r="25"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="5209" cy="447" r="25"/>
 </a>
 </g>
-<g id="nadp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadp">
 <a>
 <circle cx="2944" cy="3738" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="1824" cy="2699" r="15"/>
 </a>
 </g>
-<g id="dsbard" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dsbard">
 <a>
 <circle cx="5609" cy="1877" r="25"/>
 </a>
 </g>
-<g id="h2o2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o2">
 <a>
 <circle cx="5689" cy="5357" r="15"/>
 </a>
@@ -5350,87 +5352,87 @@
 <circle cx="253" cy="3936" r="25"/>
 </a>
 </g>
-<g id="s7p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="s7p">
 <a>
 <circle cx="2699" cy="2227" r="25"/>
 </a>
 </g>
-<g id="amet" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="amet">
 <a>
 <circle cx="3639" cy="4747" r="15"/>
 </a>
 </g>
-<g id="coa" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="coa">
 <a>
 <circle cx="2010" cy="4273" r="15"/>
 </a>
 </g>
-<g id="nh4" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nh4">
 <a>
 <circle cx="5144" cy="5801" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4576" cy="3020" r="15"/>
 </a>
 </g>
-<g id="dsbaox" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="dsbaox">
 <a>
 <circle cx="5689" cy="3177" r="25"/>
 </a>
 </g>
-<g id="nadp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadp">
 <a>
 <circle cx="3205" cy="1043" r="25"/>
 </a>
 </g>
-<g id="nadp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadp">
 <a>
 <circle cx="3084" cy="5188" r="15"/>
 </a>
 </g>
-<g id="glx" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="glx">
 <a>
 <circle cx="3710" cy="3943" r="25"/>
 </a>
 </g>
-<g id="f6p" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="f6p">
 <a>
 <circle cx="1746" cy="1913" r="25"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="919" cy="2857" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="499" cy="4681" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="5219" cy="4307" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1019" cy="4997" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="2609" cy="5217" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4570" cy="2821" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="4623" cy="1482" r="15"/>
 </a>
@@ -5440,7 +5442,7 @@
 <circle cx="5241" cy="2959" r="25"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="7586" cy="5594" r="15"/>
 </a>
@@ -5450,72 +5452,72 @@
 <circle cx="4369" cy="5887" r="25"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="1094" cy="1331" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="1611" cy="4258" r="15"/>
 </a>
 </g>
-<g id="nadp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="nadp">
 <a>
 <circle cx="2553" cy="1681" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h2o">
 <a>
 <circle cx="2023" cy="3764" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="4638" cy="2098" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="819" cy="3633" r="15"/>
 </a>
 </g>
-<g id="mql8" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="mql8">
 <a>
 <circle cx="3338" cy="4057" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="7796" cy="4884" r="15"/>
 </a>
 </g>
-<g id="icit" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="icit">
 <a>
 <circle cx="3944" cy="4361" r="25"/>
 </a>
 </g>
-<g id="lald-D" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="lald-D">
 <a>
 <circle cx="899" cy="3567" r="25"/>
 </a>
 </g>
-<g id="no2" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="no2">
 <a>
 <circle cx="5560" cy="5801" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="pi">
 <a>
 <circle cx="1913" cy="673" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="h">
 <a>
 <circle cx="7416" cy="5234" r="15"/>
 </a>
 </g>
-<g id="adp" style="fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="metabolite" id="adp">
 <a>
 <circle cx="1023" cy="2496" r="15"/>
 </a>

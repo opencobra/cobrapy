@@ -40,6 +40,13 @@ def import_raw_svg(raw_svg=maps_dir + "raw_svg/core.svg"):
             path["class"] = "start"
     for met_rxn in met_layer.findChildren(name="g", recursive=False):
         del(met_rxn.a["xlink:href"])
+        if met_rxn["style"].strip() == u'fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1;':
+            del met_rxn["style"]
+            met_rxn["class"] = "metabolite"
+    # add to the global style for default metabolites
+    svg.findChild(name="style", id="document_styles").string += \
+        u".metabolite {fill: rgb(255, 160, 128); stroke: rgb(64, 0, 0); stroke-width: 1;}\n"
+    # add a style tag for specific objects
     rxn_colors = _Tag(svg, name="style")
     rxn_colors["id"] = "object_styles"
     svg.defs.append(rxn_colors)
@@ -131,7 +138,11 @@ class Map:
             self.set_object_color(reaction, (0, 0, 0))
         self._update_svg()
         return self
-    
+
+    def save(self, outfile_path):
+        with open(outfile_path, "w") as outfile:
+            outfile.write(self.svg.prettify())
+
     def set_object_color(self, name, color):
         """set the color for an object with a given name.
         
