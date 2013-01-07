@@ -21,6 +21,9 @@ def default_color_map(value):
         rgb = (0.4, rgb[1], rgb[2])
     return (int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2]))
 
+DEFAULT_METABOLITE_STYLE = "fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1;"
+DEFAULT_EXTERNAL_METABOLITE_STYLE = "fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1;"
+
 def import_raw_svg(raw_svg=maps_dir + "raw_svg/core.svg"):
     """parse an svg from the patched version of bigg and save it in the
     maps directory"""
@@ -40,12 +43,16 @@ def import_raw_svg(raw_svg=maps_dir + "raw_svg/core.svg"):
             path["class"] = "start"
     for met_rxn in met_layer.findChildren(name="g", recursive=False):
         del(met_rxn.a["xlink:href"])
-        if met_rxn["style"].strip() == u'fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1;':
+        if met_rxn["style"].strip() == DEFAULT_METABOLITE_STYLE:
             del met_rxn["style"]
             met_rxn["class"] = "metabolite"
+        elif met_rxn["style"].strip() == DEFAULT_EXTERNAL_METABOLITE_STYLE:
+            del met_rxn["style"]
+            met_rxn["class"] = "external_metabolite"
     # add to the global style for default metabolites
-    svg.findChild(name="style", id="document_styles").string += \
-        u".metabolite {fill: rgb(255, 160, 128); stroke: rgb(64, 0, 0); stroke-width: 1;}\n"
+    document_styles = svg.findChild(name="style", id="document_styles")
+    document_styles.string += u".metabolite {%s}\n" % DEFAULT_METABOLITE_STYLE
+    document_styles.string += u".external_metabolite {%s}\n" % DEFAULT_EXTERNAL_METABOLITE_STYLE
     # add a style tag for specific objects
     rxn_colors = _Tag(svg, name="style")
     rxn_colors["id"] = "object_styles"
@@ -180,12 +187,16 @@ class Map:
 
 if __name__ == "__main__":
     import urllib2
-    for savename, map_id in [("core.svg", 1576807), ("ecoli.svg", 1555394)]:
+    maps_to_import = [
+        ("core.svg", 1576807),
+        ("ecoli.svg", 1555394),
+        ("RBC_Mass_model", 1902124)
+        ]
+    for savename, map_id in maps_to_import:
         response = urllib2.urlopen("http://localhost/bigg/showMap.pl?map=%d" % (map_id))
         with open(maps_dir + "raw_svg/" + savename, "w") as outfile:
             outfile.write(response.read())
-    import_raw_svg(maps_dir + "raw_svg/ecoli.svg")
-    import_raw_svg(maps_dir + "raw_svg/core.svg")
+        import_raw_svg(maps_dir + "raw_svg/" + savename)
     a = Map("core")
     #a["PGI"] = "red"
     #a.update()
