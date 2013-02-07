@@ -10,7 +10,8 @@
 #Layer_label_met {color-interpolation: auto; fill: black; fill-opacity: 1; font-family: sans-serif; font-style: normal; font-weight: normal; shape-rendering: auto; stroke: black; stroke-dasharray: none; stroke-dashoffset: 0pt; stroke-linecap: square; stroke-linejoin: miter; stroke-miterlimit: 10; stroke-opacity: 1; stroke-width: 1; text-rendering: auto; fill: rgb(96, 32, 32); font-weight: bold; font-size: 38px; stroke: rgb(96, 32, 32); text-rendering: optimizelegibility;}
 .end {marker-end: url(#Triangle);}
 .start {marker-start: url(#triangle);}
-.metabolite {fill: rgb(255, 160, 128); stroke: rgb(64, 0, 0); stroke-width: 1;}
+.metabolite {fill: rgb(255, 160, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1;}
+.external_metabolite {fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1;}
 </style>
 <marker id="Triangle" markerHeight="2.1" markerUnits="strokeWidth" markerWidth="2.1" orient="auto" refX="0" refY="6" viewBox="0 0 12 12">
 <path d="M 0 0 L 12 6 L 0 12 z" fill="blue" stroke="deepskyblue"/>
@@ -1141,7 +1142,7 @@
 <circle cx="1145" cy="2265" r="15"/>
 </a>
 </g>
-<g id="o2" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="o2">
 <a>
 <circle cx="4850" cy="1660" r="25"/>
 </a>
@@ -1156,7 +1157,7 @@
 <circle cx="2415" cy="2190" r="25"/>
 </a>
 </g>
-<g id="akg" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="akg">
 <a>
 <circle cx="4922" cy="3228" r="25"/>
 </a>
@@ -1171,7 +1172,7 @@
 <circle cx="2057" cy="1165" r="15"/>
 </a>
 </g>
-<g id="etoh" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="etoh">
 <a>
 <circle cx="2500" cy="4830" r="25"/>
 </a>
@@ -1211,7 +1212,7 @@
 <circle cx="710" cy="1450" r="15"/>
 </a>
 </g>
-<g id="nh4" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="nh4">
 <a>
 <circle cx="3989" cy="4757" r="25"/>
 </a>
@@ -1226,7 +1227,7 @@
 <circle cx="4285" cy="4258" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="2940" cy="700" r="15"/>
 </a>
@@ -1241,7 +1242,7 @@
 <circle cx="2843" cy="2920" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="4803" cy="2930" r="15"/>
 </a>
@@ -1311,7 +1312,7 @@
 <circle cx="965" cy="3555" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="3510" cy="650" r="15"/>
 </a>
@@ -1466,12 +1467,12 @@
 <circle cx="1507" cy="1265" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="4836" cy="3087" r="15"/>
 </a>
 </g>
-<g id="glc-D" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="glc-D">
 <a>
 <circle cx="1063" cy="705" r="25"/>
 </a>
@@ -1496,7 +1497,7 @@
 <circle cx="4492" cy="2770" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="2793" cy="4778" r="15"/>
 </a>
@@ -1551,7 +1552,7 @@
 <circle cx="1815" cy="4435" r="15"/>
 </a>
 </g>
-<g id="acald" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="acald">
 <a>
 <circle cx="2210" cy="4844" r="25"/>
 </a>
@@ -1646,7 +1647,7 @@
 <circle cx="2610" cy="3860" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="1815" cy="4775" r="15"/>
 </a>
@@ -1666,7 +1667,7 @@
 <circle cx="955" cy="4095" r="15"/>
 </a>
 </g>
-<g id="co2" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="co2">
 <a>
 <circle cx="3621" cy="4754" r="25"/>
 </a>
@@ -1676,7 +1677,7 @@
 <circle cx="1055" cy="3125" r="25"/>
 </a>
 </g>
-<g id="lac-D" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="lac-D">
 <a>
 <circle cx="1055" cy="4835" r="25"/>
 </a>
@@ -1751,7 +1752,7 @@
 <circle cx="4065" cy="1070" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="4865" cy="1150" r="15"/>
 </a>
@@ -1776,7 +1777,7 @@
 <circle cx="3510" cy="1040" r="15"/>
 </a>
 </g>
-<g id="ac" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="ac">
 <a>
 <circle cx="1715" cy="4845" r="25"/>
 </a>
@@ -1791,7 +1792,7 @@
 <circle cx="4465" cy="1030" r="15"/>
 </a>
 </g>
-<g id="fum" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="fum">
 <a>
 <circle cx="2840" cy="650" r="25"/>
 </a>
@@ -1831,17 +1832,17 @@
 <circle cx="4285" cy="1450" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="4834" cy="3321" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="955" cy="4765" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="4860" cy="1900" r="15"/>
 </a>
@@ -1871,7 +1872,7 @@
 <circle cx="1715" cy="4175" r="25"/>
 </a>
 </g>
-<g id="glu-L" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="glu-L">
 <a>
 <circle cx="4883" cy="3634" r="25"/>
 </a>
@@ -1886,7 +1887,7 @@
 <circle cx="1145" cy="2635" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="1270" cy="4770" r="15"/>
 </a>
@@ -1966,17 +1967,17 @@
 <circle cx="3620" cy="3710" r="15"/>
 </a>
 </g>
-<g id="mal-L" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="mal-L">
 <a>
 <circle cx="2610" cy="650" r="25"/>
 </a>
 </g>
-<g id="for" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="for">
 <a>
 <circle cx="1460" cy="4810" r="25"/>
 </a>
 </g>
-<g id="succ" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="succ">
 <a>
 <circle cx="4932" cy="2880" r="25"/>
 </a>
@@ -1986,17 +1987,17 @@
 <circle cx="2659" cy="3724" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="4825" cy="3703" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="2600" cy="4760" r="15"/>
 </a>
 </g>
-<g id="fru" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="fru">
 <a>
 <circle cx="300" cy="1360" r="25"/>
 </a>
@@ -2016,7 +2017,7 @@
 <circle cx="4029" cy="3982" r="15"/>
 </a>
 </g>
-<g id="pi" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="pi">
 <a>
 <circle cx="2880" cy="4839" r="25"/>
 </a>
@@ -2056,7 +2057,7 @@
 <circle cx="755" cy="1565" r="15"/>
 </a>
 </g>
-<g id="h2o" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h2o">
 <a>
 <circle cx="3257" cy="4754" r="25"/>
 </a>
@@ -2076,7 +2077,7 @@
 <circle cx="710" cy="1260" r="15"/>
 </a>
 </g>
-<g id="pyr" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="pyr">
 <a>
 <circle cx="275" cy="3945" r="25"/>
 </a>
@@ -2106,7 +2107,7 @@
 <circle cx="2333" cy="3935" r="15"/>
 </a>
 </g>
-<g id="gln-L" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="gln-L">
 <a>
 <circle cx="4882" cy="4158" r="25"/>
 </a>
@@ -2116,7 +2117,7 @@
 <circle cx="2670" cy="3310" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="4850" cy="2570" r="15"/>
 </a>
@@ -2151,12 +2152,12 @@
 <circle cx="3872" cy="3285" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="4850" cy="2229" r="25"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="2510" cy="700" r="15"/>
 </a>
@@ -2216,7 +2217,7 @@
 <circle cx="955" cy="4045" r="15"/>
 </a>
 </g>
-<g id="h" style="fill: rgb(240, 240, 128) ; stroke: rgb(64, 0, 0); stroke-width: 1; ">
+<g class="external_metabolite" id="h">
 <a>
 <circle cx="345" cy="4045" r="15"/>
 </a>
