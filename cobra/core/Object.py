@@ -34,6 +34,12 @@ class Object(object):
         [setattr(the_copy, k, v)
          for k, v in self.__dict__.iteritems()]
         return(the_copy)
+    def _copy_parent_attributes(self, gene_object):
+        """Helper function for shallow copying attributes from a parent object
+        into a new child object.
+
+        """
+        [setattr(self, k, v) for k, v in gene_object.__dict__.iteritems()]
 
     ## def __setstate__(self, state):
     ##     self.__dict__.update(state)

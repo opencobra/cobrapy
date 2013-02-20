@@ -8,8 +8,6 @@ from warnings import warn
 from copy import deepcopy
 from ..solvers import optimize
 from .Object import Object
-from .Reaction import Reaction
-from .Metabolite import Metabolite
 from .Formula import Formula
 from .DictList import DictList
 #*********************************************************************************
@@ -123,10 +121,10 @@ class Model(Object):
             print 'Gene guided copy: %1.4f'%(time() - start_time)
             start_time = time()
         #TODO: See if we can use the DictList objects instead
-        metabolite_dict = dict([(k.id, k)
-                                 for k in the_metabolites])
-        gene_dict = dict([(k.id, k)
-                                 for k in the_genes])
+        ## metabolite_dict = dict([(k.id, k)
+        ##                          for k in the_metabolites])
+        ## gene_dict = dict([(k.id, k)
+        ##                          for k in the_genes])
         the_reactions = DictList([x.guided_copy(the_copy, the_metabolites._object_dict,
                                                 the_genes._object_dict)
                                   for x in self.reactions])
@@ -242,9 +240,9 @@ class Model(Object):
         for the_reaction in reaction_list:
             the_reaction._model = self
             the_reaction._metabolites = dict([(self.metabolites.get_by_id(k.id), v)
-                                             for k, v in the_reaction._metabolites.items()])
+                                             for k, v in the_reaction._metabolites.iteritems()])
             the_reaction._genes = dict([(self.genes.get_by_id(k.id), v)
-                                             for k, v in the_reaction._genes.items()])
+                                             for k, v in the_reaction._genes.iteritems()])
             #Make sure the metabolites and genes are aware of the reaction
             the_reaction._update_awareness()
             
