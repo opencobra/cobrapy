@@ -101,6 +101,17 @@ class DictList(list):
         self._dict[the_id] = i
         self._object_dict[the_id] = y
 
+    def _replace_on_id(self, new_object):
+        """Allows one to replace an object by one with
+        the same id.
+        
+        """
+        the_id = get_id(new_object)
+        the_index = self._dict[the_id]
+        super(DictList, self).__setitem__(the_index, new_object)
+        self._object_dict[the_id] = new_object
+        
+
     def append(self, object):
         the_id = get_id(object)
         self._check(the_id)
@@ -174,7 +185,12 @@ class DictList(list):
         return the_copy
 
     def __deepcopy__(self, *args, **kwargs):
-        return DictList((deepcopy(i) for i in self))
+        self._dict.clear()
+        self._object_dict.clear()
+        the_copy = deepcopy(super(DictList, self), *args, **kwargs)
+        self._generate_index()
+        the_copy._generate_index()
+        return the_copy
 
     # these functions are slower because they rebuild the _dict every time
     # TODO: speed up

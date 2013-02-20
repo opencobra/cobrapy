@@ -156,11 +156,11 @@ class Reaction(Object):
         the_copy._model = the_model
         if gene_dict:
             the_copy._genes = dict([(gene_dict[k.id], v)
-                                for k, v in self._genes.items()])
+                                for k, v in self._genes.iteritems()])
         the_copy._metabolites = dict([(metabolite_dict[k.id], v)
-                                      for k, v in self._metabolites.items()])
+                                      for k, v in self._metabolites.iteritems()])
         the_copy._boundary_metabolites = dict([(metabolite_dict[k.id], v)
-                                               for k, v in self._boundary_metabolites.items()])
+                                               for k, v in self._boundary_metabolites.iteritems()])
 
         #make the metabolites and genes aware of the reaction
         [k._reaction.add(the_copy)

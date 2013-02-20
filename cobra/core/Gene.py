@@ -3,8 +3,8 @@
 #BEGIN Class Gene
 #
 import re
-from .Metabolite import Metabolite
-class Gene(Metabolite):
+from .Species import Species
+class Gene(Species):
     """A Gene is a special class of metabolite.
     
 
@@ -36,7 +36,7 @@ class Gene(Metabolite):
         can its products be used.
         
         """
-        Metabolite.__init__(self, id, formula=formula,
+        Species.__init__(self, id, formula=formula,
                             name=name, compartment=compartment)
         self.locus_start = locus_start
         self.locus_end = locus_end
@@ -45,10 +45,10 @@ class Gene(Metabolite):
 
     def guided_copy(self, the_model):
         """Trying to make a faster copy proceedure for cases where large
-        numbers of metabolites might be copied.  Such as when copying reactions.
+        numbers of genes might be copied.  Such as when copying reactions.
 
         """
-        the_copy = Metabolite.guided_copy(self, the_model)
+        the_copy = Species.guided_copy(self, the_model)
         return(the_copy)
 
     def remove_from_model(self, the_model,

@@ -1,11 +1,13 @@
 from copy import deepcopy
-from numpy import mean, array
+from numpy import mean
 from cobra.oven.danielhyduke.tools import log_function
 from cobra.stats.stats import combine_p_values, error_weighted
 def collapse_fields(data_dict, quantitative_fields=['intensity_1',
-                                                    'intensity_2'],
+                                                    'intensity_2',
+                                                    'intensity_1_error',
+                                                    'intensity_2_error'],
                     log_fields=['log_ratio', 'log_error'],
-                    p_fields=['p_value'], log_base=10, error_weighting=True):
+                    p_fields=['p_value'], log_base=10, error_weighting=False):
     """Collapses the rows for each field from a feature extraction element
     based on the data type.  Quantative fields are averaged, log_fields are
     converted to linear scale, averaged, and then log10 is taken. p-value
