@@ -1,4 +1,18 @@
-INSTALLATION
+Installation instructions for Python and Jython are detailed below.  For installation help, please see the
+sourceforge help install forum:
+    https://sourceforge.net/projects/opencobra/forums/forum/4194275
+
+Documentation is available here:
+    http://opencobra.sourceforge.net/openCOBRA/opencobra_documentation/cobra_py/index.html
+
+A tutorial is available here:
+
+
+Example codes are available here:
+
+------------------------------------------------------------------------------------------------------------------------
+
+INSTALLATION - Python
 All releases require Python 2.7 (or 2.6) to be installed before proceeding. Mac OS X (10.7+) ships with Python.
 LibSBML (4.0+) should be installed from sbml.org to read / write SBML files.
 
@@ -34,6 +48,7 @@ II. Development Code - Hosted on github
   willing to deal with headaches and heartaches it's better to install one of the releases.
   1. git pull https://github.com/opencobra/cobrapy.git
   2. Use python setup.py install, easy_install, or add the cobrapy directory to your python path.
+  3. Install a linear programming solver (Section III) and any additional packages
 
 III. Installation of linear programming solvers
   cobrapy currently supports three linear programming solvers: ILOG/CPLEX, Gurobi, and GLPK (through pyGLPK).
@@ -85,13 +100,51 @@ IV. Test your installation.
   C. Enter: test_all()
   NOTE: If you are using the GLPK Solver some tests may not work.
 
-  For installation help, please see the sourceforge help install forum:
-    https://sourceforge.net/projects/opencobra/forums/forum/4194275
 
-  Documentation is available here:
-    http://opencobra.sourceforge.net/openCOBRA/opencobra_documentation/cobra_py/index.html
+V. Optional Python packages for added features:
+  A. Numpy >= 1.6.1 & Scipy >= 0.10 (http://scipy.org) for ArrayBasedModel, MoMA, double_deletion analysis, and
+  saving to MAT formats.
+  B. Parallel Python (http://parallelpython.org) for parallel processing.
+  C. MATLAB (http://mathworks.com) and mlabwrap (http://mlabwrap.sourceforge.net) for connecting to the COBRA
+  Toolbox for MATLAB.
 
-  A tutorial is available here:
+------------------------------------------------------------------------------------------------------------------------
 
 
-  Example codes are available here:
+INSTALLATION - Jython
+All releases require Jython (2.5+).  JSBML (http://sbml.org) is required for reading / writing SBML files.
+NOTE: ArrayBasedModel, double_deletion analysis, saving to MAT formats, parallel processing,  and connecting to the
+COBRA Toolbox for MATLAB are currently unavailable when using Jython.
+
+I. Releases - Hosted on http://opencobra.sourceforge.net
+   A. Download the most recent bzipped archive.
+   B. Unzip the archive and make sure that the toplevel directory is in your Java CLASSPATH.
+   C. Install a linear programming solver (Section III).
+
+II. Development Code - Hosted on github
+  NOTE: Not intended for general users.  Some functions require advanced capabilities / settings.  Unless you're
+  willing to deal with headaches and heartaches it's better to install one of the releases.
+  1. git pull https://github.com/opencobra/cobrapy.git
+  2. Add the cobrapy directory to your Java CLASSPATH.
+  3. Install a linear programming solver (Section III).
+
+III. Installation of linear programming solvers
+    On Jython, cobrapy currently supports tw linear programming solvers: ILOG/CPLEX and Gurobi.
+
+    A. ILOG/CPLEX and Gurobi are commercial software packages that, currently, provide free licenses for academics and
+    support both linear and quadratic programming.
+      1. Please download the software from their respective sites, install according to their instructions, and make sure
+     that their Java jars are in your Java CLASSPATH.
+      2. Current links are listed below.  If they don't work then search using google.
+        ILOG/CPLEX Academic: https://www.ibm.com/developerworks/university/academicinitiative/
+        ILOG/CPLEX Commercial: http://www.ibm.com/software/integration/optimization/cplex-optimizer/
+        Gurobi Academic & Commercial: http://gurobi.com
+
+    B. GLPK:  We are exploring the possibility of using GLPK through GLPK for Java (http://glpk-java.sourceforge.net);
+    however, we've encountered irregular memory errors that we'll need to trace before listing it as a supported solver.
+    Advanced users may try http://glpk-java.sourceforge.net at their own risk.
+
+IV. Test your installation.
+  A. Start Python
+  B. Enter: from cobra.test import test_all
+  C. Enter: test_all()
