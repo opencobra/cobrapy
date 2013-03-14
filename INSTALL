@@ -145,6 +145,6 @@ III. Installation of linear programming solvers
     Advanced users may try http://glpk-java.sourceforge.net at their own risk.
 
 IV. Test your installation.
-  A. Start Python
+  A. Start Jython
   B. Enter: from cobra.test import test_all
   C. Enter: test_all()
