@@ -53,7 +53,8 @@ if __name__ == "__main__":
     maps_to_import = [
         ("core.svg", 1576807),
         ("ecoli.svg", 1555394),
-        ("RBC_Mass_model.svg", 1902124)
+        ("RBC_Mass_model.svg", 1902124),
+        ("rbc.svg", 2438817)
         ]
     for savename, map_id in maps_to_import:
         response = urllib2.urlopen("http://localhost/bigg/showMap.pl?map=%d" % (map_id))
