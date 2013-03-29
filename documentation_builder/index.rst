@@ -1,10 +1,13 @@
-Documentation for cobra
-=======================
-
+Documentation for COBRApy
+=========================
 .. toctree::
-   :maxdepth: 5
+    :numbered:
+    :maxdepth: 2
 
-   cobra
+    01_create_model
+    02_read_simulate_write
+    cobra
+
 
 
 
