@@ -1,11 +1,10 @@
-#cobra/examples/07_ice_cream_milp.py
+# cobra/examples/06_ice_cream_milp.py
 #
 # Advanced user example showing how to set up and solve an MILP
 #
-import sys
-sys.path.insert(0, "../..")
+
 from cobra import Model, Metabolite, Reaction
-solver = 'cplex'  #With libglpk-java there is an untraced memory bug.
+#solver = 'cplex'  #With libglpk-java there is an untraced memory bug.
 
 cone_selling_price = 7.
 cone_production_cost = 3.
@@ -26,7 +25,9 @@ print('My total budget was capped at $%1.2f today.'%(starting_budget))
 # cone_production_cost*cone_production + popsidle_production_cost*popsicle_production <= starting_budget
 # number of cones and popsicles has to be integer...
 
-# first, we'll solve the continuous case just to make sure everything is working (it should only make cones)...then we'll tighten the constraints to boolean... and it should make popsicles.
+# first, we'll solve the continuous case just to make sure everything is
+# working (it should only make cones)...then we'll tighten the constraints to
+# integer... and it should make popsicles.
 
 cobra_model = Model('MILP_implementation_test')
 cone_out = Metabolite(id='cone_out', compartment='c')
@@ -110,33 +111,26 @@ Popsicle_production.add_metabolites({production_capacity_constraint: popsicle_pr
 print
 print('Here is what happens in the continuous (LP) case...')
 
-the_program = cobra_model.optimize(objective_sense='maximize', solver=solver)
+the_program = cobra_model.optimize(objective_sense='maximize')
 print
 print('Status is: %s'%cobra_model.solution.status)
 print('Objective value is: %1.2f'%cobra_model.solution.f)
 
-
-
 for the_reaction, the_value in cobra_model.solution.x_dict.items():
     print '%s: %1.2f'%(the_reaction, the_value)
 
-
-
 print
-print('Who wants 1/3 of a cone, WTF???  Cones and popsicles are units aka integers, reformulate as MILP')
+print('Who wants 1/3 of a cone?  Cones and popsicles are units aka integers, reformulate as MILP')
 Cone_production.variable_kind = 'integer'
 Popsicle_production.variable_kind = 'integer'
 
-the_program = cobra_model.optimize(objective_sense='maximize', solver=solver)
+the_program = cobra_model.optimize(objective_sense='maximize')
 print
 print('Status is: %s'%cobra_model.solution.status)
 print('Objective value is: %1.2f'%cobra_model.solution.f)
 
-
-
 for the_reaction, the_value in cobra_model.solution.x_dict.items():
     print '%s: %1.2f'%(the_reaction, the_value)
 
-
 print
-print('We now make full items\n')
+print('We now make full items')
