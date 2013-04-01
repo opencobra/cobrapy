@@ -1,13 +1,12 @@
 import ez_setup
 ez_setup.use_setuptools()
 from setuptools import setup, find_packages
-from pdb import set_trace
 __version = '0.2.0'
+
 setup(
     name = "cobra",
     version = __version,
-    packages = find_packages(exclude=['cobra.internal', 'cobra.oven', 'cobra.db_tools',
-                                      'cobra.omics', 'cobra.oven*']),
+    packages = find_packages(exclude=['cobra.oven', 'cobra.oven*']),
     #scripts = [''],
     #put in numpy, scipy, libsbml, and pyglpk
     setup_requires = [],
@@ -22,22 +21,16 @@ setup(
         },
 
     package_data = {
-
-         '': ['*.txt', '*.html','LICENSE','README','test/data/*',
-              'documentation/doctrees/*', 'documentation/html/*html',
-              'documentation/html/_static/*', 'documentation/html/_sources/*',
-              'documentation/html/_modules/*html',
-              'documentation/html/_modules/*html',
-              'documentation/html/_modules/*/*html',
-              'documentation/html/_modules/*/*/*html',
-              'examples/*py', 'mlab/matlab_scripts/*m']},
+         '': ['test/data/*',
+              'examples/*py',
+              'mlab/matlab_scripts/*m']},
 
     author = "Daniel Robert Hyduke",
     author_email = "danielhyduke@gmail.com",
     description = "COBRApy is a package for constraints-based modeling of biological networks",
     license = "GPL V3.0",
     keywords = "metabolism biology linear programming optimization flux balance analysis fba",
-    url = "http://opencobra.sourceforge.net",
+    url = "https://github.com/opencobra/cobrapy",
     test_suite = "cobra.test.suite",
     long_description = "COnstraint-Based Reconstruction and Analysis (COBRA) methods are widely used for genome-scale modeling of metabolic networks in both prokaryotes and eukaryotes.  COBRApy is a constraint-based modeling package that is designed to accomodate the biological complexity of the next generation of COBRA models and provides access to commonly used COBRA methods, such as flux balance analysis, flux variability analysis, and gene deletion analyses.  Through the mlabwrap module it is possible to use COBRApy to call many additional COBRA methods present in the COBRA Toolbox for MATLAB.",
     download_url = 'http://sourceforge.net/projects/opencobra/files/python/cobra/' + __version,
