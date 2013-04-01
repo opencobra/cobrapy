@@ -70,7 +70,7 @@ following into the command line:
 #### MAC OS X Installation of pyGLPK in Python
 1. Install homebrew if you don't have it. This may require downloading Xcode 
 from the AppStore and Command Line Tools for XCode from 
-https://developer.apple.com/devcenter/mac/index.action). If you're already 
+https://developer.apple.com/devcenter/mac/index.action. If you're already 
 using macports then just use that to install glpk.
 ```
     brew install glpk
@@ -99,7 +99,8 @@ ArrayBasedModel, MoMA, double_deletion analysis, and saving to MAT formats.
 3. [Parallel Python](http://parallelpython.org) for parallel processing.
 4. [MATLAB](http://mathworks.com) and 
 [mlabwrap](http://mlabwrap.sourceforge.net) for connecting to the COBRA 
-Toolbox for MATLAB. * Installation is tricky on most platforms.
+Toolbox for MATLAB.
+  * Installation is tricky on most platforms.
 
 
 
