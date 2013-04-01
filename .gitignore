@@ -1,4 +1,4 @@
 *.pyc
 gurobi.log
 *$py.class
-cobra/documentation
+documentation
