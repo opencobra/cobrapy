@@ -53,7 +53,7 @@ class Mock(object):
 MOCK_MODULES = ['numpy',
     'scipy', 'scipy.sparse', 'scipy.io', 'scipy.stats',
     'glpk', 'gurobipy', 'gurobipy.GRB', 'cplex',
-    'mlabwrap', 'pp', 'sbml']
+    'mlabwrap', 'pp', 'libsbml']
 for mod_name in MOCK_MODULES:
     try:
         exec("import " + mod_name)
