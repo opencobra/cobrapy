@@ -16,7 +16,7 @@ website](http://www.python.org/download/releases/2.7.3/).
 
 Generally, installation should follow these steps:
 
-1. Install cobrapy (either the stable or the development version).
+1. Install cobrapy (either the stable, development, or hacking version).
 2. Install an appropriate solver
 3. Install optional dependencies
 4. Test your installation
@@ -36,6 +36,18 @@ bit](https://pypi.python.org/packages/2.7/c/cobra/cobra-0.2.0.win32.exe) or
 Use easy_install (or pip if you have it)
 
     sudo easy_install https://github.com/opencobra/cobrapy/archive/master.zip
+
+## Hacking version installation in Python
+This requires pip. First, clone the git repository using your preferred 
+mothod. Cloning from your own github fork is recommended! Afterwards, open a 
+terminal to the directory cobrapy was cloned into and run the following 
+command:
+
+    pip install --user -e cobrapy
+
+If you get an error about how --editable=cobrapy should be formatted a 
+certain way, you are likely in the cobrapy directory itself, and need to be 
+one level higher (```cd ..``` should fix it).
 
 ## Installation of a Solver in Python
 Currently cobrapy supports three linear programming solvers: ILOG/CPLEX, 
@@ -62,6 +74,7 @@ following into the command line:
 ```
     sudo apt-get install libglpk-dev libgmp-dev
 ```
+
 2. install pyglpk with easy_install using the following command in the terminal:
 ```
     sudo easy_install http://tfinley.net/software/pyglpk/pyglpk-0.3.tar.bz2
