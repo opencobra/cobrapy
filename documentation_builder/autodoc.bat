@@ -1,2 +1,4 @@
+del cobra.*.rst
 sphinx-apidoc -o . ..\cobra
-del cobra.oven.rst
+del *.oven*rst
+del modules.rst

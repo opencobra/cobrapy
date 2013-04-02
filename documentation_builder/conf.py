@@ -21,6 +21,45 @@ import subprocess
 #sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..'))
 
+# In order to build documentation that requires libraries to import
+class Mock2(object):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return Mock()
+
+    @classmethod
+    def __getattr__(cls, name):
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        else:
+            return Mock()
+
+class Mock(object):
+    def __init__(self, *args, **kwargs):
+        return
+
+    def __call__(self, *args, **kwargs):
+        return Mock()
+
+    @classmethod
+    def __getattr__(cls, name):
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        else:
+            return Mock()
+
+MOCK_MODULES = ['numpy',
+    'scipy', 'scipy.sparse', 'scipy.io', 'scipy.stats',
+    'glpk', 'gurobipy', 'gurobipy.GRB', 'cplex',
+    'mlabwrap', 'pp', 'libsbml']
+for mod_name in MOCK_MODULES:
+    try:
+        exec("import " + mod_name)
+    except ImportError:
+        sys.modules[mod_name] = Mock()
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
