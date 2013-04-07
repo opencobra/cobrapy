@@ -65,6 +65,9 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
     use_hyphens:   Boolean.  If True, double underscores (__) in an SBML ID will be converted to hyphens
 
     """
+    __default_lower_bound = -1000
+    __default_upper_bound = 1000
+    __default_objective_coefficient = 0
      # Ensure that the file exists
     if not isfile(sbml_filename):
         raise IOError('Your SBML file is not found: %s'%sbml_filename)
@@ -181,28 +184,34 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         parameter_dict = {}
         #            if isinstance(the_reaction.getKineticLaw(), NoneType):
         if not sbml_reaction.getKineticLaw():
-            parameter_dict['lower_bound'] = -1000 
-            parameter_dict['upper_bound'] = 1000 
-            parameter_dict['objective_coefficient'] = 0 
+            parameter_dict['lower_bound'] = __default_lower_bound
+            parameter_dict['upper_bound'] = __default_upper_bound
+            parameter_dict['objective_coefficient'] = __default_objective_coefficient
         else:
             for sbml_parameter in sbml_reaction.getKineticLaw().getListOfParameters():
                 parameter_dict[sbml_parameter.getId().lower()] = sbml_parameter.getValue()
 
         if 'lower_bound' in parameter_dict:
-            the_key = 'lower_bound'
+            reaction.lower_bound = parameter_dict['lower_bound']
         elif 'lower bound' in parameter_dict:
-            the_key = 'lower bound'
-        reaction.lower_bound = parameter_dict[the_key]
+            reaction.lower_bound = parameter_dict['lower bound']
+        else:
+            reaction.lower_bound = __default_lower_bound
+
         if 'upper_bound' in parameter_dict:
-            the_key = 'upper_bound'
+            reaction.upper_bound = parameter_dict['upper_bound']
         elif 'upper bound' in parameter_dict:
-            the_key = 'upper bound'
-        reaction.upper_bound = parameter_dict[the_key]
+            reaction.upper_bound = parameter_dict['upper bound']
+        else:
+            reaction.upper_bound = __default_upper_bound
+
         if 'objective_coefficient' in parameter_dict:
-            the_key = 'objective_coefficient'
+            reaction.objective_coefficient = parameter_dict['objective_coefficient']
         elif 'objective coefficient' in parameter_dict:
-            the_key = 'objective coefficient'
-        reaction.objective_coefficient = parameter_dict[the_key]
+            reaction.objective_coefficient = parameter_dict['objective coefficient']
+        else:
+            reaction.objective_coefficient = __default_objective_coefficient
+
         reaction_note_dict = parse_legacy_sbml_notes(sbml_reaction.getNotesString())
         #Parse the reaction notes.
         #POTENTIAL BUG: DEALING WITH LEGACY 'SBML' THAT IS NOT IN A
