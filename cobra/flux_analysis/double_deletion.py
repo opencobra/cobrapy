@@ -1,14 +1,12 @@
 from __future__ import with_statement
 #cobra.flux_analysis.double_deletion.py
 #runs flux variablity analysis on a Model object.
-from math import floor,ceil
-from numpy import zeros #only item to replace to gain jython compatibility
 from copy import deepcopy
 from warnings import warn
 from os import name as __name
 nan = float('nan')
 from sys import modules as __modules
-from warnings import warn
+
 if __name == 'java':
     raise Exception("%s is not yet supported on jython"%__modules[__name__])
     warn("moma is not supported on %s"%__name)
@@ -27,8 +25,6 @@ except:
     __parallel_mode_available = False
 
 
-from ..manipulation import initialize_growth_medium
-from ..manipulation import delete_model_genes, undelete_model_genes
 def __double_deletion_parallel(cobra_model, number_of_processes=4,
                              elements_of_interest=None, method='fba', 
                              the_problem='return', element_type='gene',
@@ -180,7 +176,6 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
     from numpy import zeros
     nan = float('nan')
     from cobra.flux_analysis.single_deletion import single_deletion
-    from cobra.manipulation import initialize_growth_medium
     from cobra.manipulation import delete_model_genes, undelete_model_genes
     ##TODO: Use keywords instead
     if isinstance(cobra_model, dict):
