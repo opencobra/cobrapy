@@ -147,7 +147,8 @@ class Formula(Object):
                                for the_element, the_count in self.elements.items()])
         except KeyError, e:
             self.weight = None
-            warn('The element %s is not in the weight_dict'%e)
+            warn('An element (%s) in one of your chemical formulas is not in the periodic table weight_dict. \n'%e +\
+                 'Thus we cannot calculate a formula weight for the metabolite.')
                 
             
 
