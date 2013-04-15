@@ -35,6 +35,9 @@ def single_deletion(cobra_model, element_list=None,
 
     solver: 'glpk', 'gurobi', or 'cplex'.
 
+    error_reporting: None or True to disable or enable printing errors encountered
+    when trying to find the optimal solution.
+
     discard_problems: Boolean.  If True do not save problems.  This will
     help with memory issues related to gurobi.
 
