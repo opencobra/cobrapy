@@ -28,9 +28,9 @@ the following command in a terminal.
 
     sudo easy_install cobrapy
 
-For Windows, download and install either the [32 
-bit](https://pypi.python.org/packages/2.7/c/cobra/cobra-0.2.0.win32.exe) or 
-64 bit installer.
+For Windows, download and install the appropriate 32 bit or 64 bit installer,
+both of which can be downloaded from the [python package
+index](https://pypi.python.org/pypi/cobra/).
 
 ## Development version installation in Python
 Use easy_install (or pip if you have it)
@@ -38,16 +38,15 @@ Use easy_install (or pip if you have it)
     sudo easy_install https://github.com/opencobra/cobrapy/archive/master.zip
 
 ## Hacking version installation in Python
-This requires pip. First, clone the git repository using your preferred 
-mothod. Cloning from your own github fork is recommended! Afterwards, open a 
-terminal to the directory cobrapy was cloned into and run the following 
-command:
+First, clone the git repository using your preferred mothod. Cloning from your
+own github fork is recommended! Afterwards, open a terminal, enter the cobrapy
+repository and run the following command:
 
-    pip install --user -e cobrapy
+    python setup.py develop --user
 
-If you get an error about how --editable=cobrapy should be formatted a 
-certain way, you are likely in the cobrapy directory itself, and need to be 
-one level higher (```cd ..``` should fix it).
+If the command fails with an error about the --user option not being recognized,
+it means setuptools is not installed. Either install setuptools before
+trying again, or instead run ```sudo python setup.py develop```
 
 ## Installation of a Solver in Python
 Currently cobrapy supports three linear programming solvers: ILOG/CPLEX, 
@@ -69,10 +68,11 @@ Please note that pyGLPK is not the same as python-glpk.
 
 #### GNU/Linux Installation of pyGLPK in Python
 1. Install the glpk and gmp library packages. You will need the development 
-versions if they are available. For example, Ubuntu users would type the 
-following into the command line:
+versions if they are available. You will also need development headers for 
+Python itself. For example, Ubuntu users would type the following into the 
+command line:
 ```
-    sudo apt-get install libglpk-dev libgmp-dev
+    sudo apt-get install libglpk-dev libgmp-dev python-dev
 ```
 
 2. install pyglpk with easy_install using the following command in the terminal:
