@@ -69,15 +69,16 @@ Please note that pyGLPK is not the same as python-glpk.
 #### GNU/Linux Installation of pyGLPK in Python
 1. Install the glpk and gmp library packages. You will need the development 
 versions if they are available. You will also need development headers for 
-Python itself. For example, Ubuntu users would type the following into the 
+Python itself. For example, Ubuntu and Debian Wheezy (7.0) users would type the following into the 
 command line:
 ```
-    sudo apt-get install libglpk-dev libgmp-dev python-dev
+    sudo apt-get install libglpk-dev libgmp-dev python-dev python-setuptools
 ```
+Debian Squeeze (6.0) users will need to build libgmp from source.
 
 2. install pyglpk with easy_install using the following command in the terminal:
 ```
-    sudo easy_install http://tfinley.net/software/pyglpk/pyglpk-0.3.tar.bz2
+    sudo easy_install glpk 
 ```
 
 #### MAC OS X Installation of pyGLPK in Python
@@ -91,7 +92,7 @@ using macports then just use that to install glpk.
 
 2. install pyglpk with easy_install using the following command in the terminal:
 ```
-    sudo easy_install http://tfinley.net/software/pyglpk/pyglpk-0.3.tar.bz2
+    sudo easy_install glpk
 ```
 
 #### Windows Installation of pyGLPK in Python
@@ -105,7 +106,7 @@ many can downloaded from [this site](http://www.lfd.uci.edu/~gohlke/pythonlibs/)
 1. [libsbml](http://sbml.org) >= 4.0 to read/write SBML files
   * [Windows installer](http://www.lfd.uci.edu/~gohlke/pythonlibs/#libsbml)
 2. [numpy](http://numpy.org) >= 1.6.1 and [scipy](http://scipy.org) >= 0.11 for 
-ArrayBasedModel, MoMA, double_deletion analysis, and saving to MAT formats.
+ArrayBasedModel, double_deletion analysis, and saving to MAT formats.
   * Windows installers for 
   [numpy](http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy) and 
   [scipy](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy)
