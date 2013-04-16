@@ -13,7 +13,11 @@ if __name == 'java':
     def moma(**kwargs):
         warn("moma is not supported on %s"%__name)
 else:
-    from .moma import moma    
+    try:
+        from .moma import moma
+    except Exception, e:
+        def moma(**kwargs):
+            warn("moma is currently not supported on %s: %s"%(__name, e))
 def single_deletion(cobra_model, element_list=None,
                     method='fba', the_problem='return',
                     element_type='gene', solver='glpk',
