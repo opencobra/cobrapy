@@ -9,7 +9,7 @@ For usage instructions, please see the
 --------------------------------------------------------------------------------
 
 # Python
-All releases require Python 2.7 (or 2.6) to be installed before proceeding. 
+All releases require Python 2.7 to be installed before proceeding. 
 Mac OS X (10.7+) and Ubuntu ship with Python. Windows users without python 
 can download and install python from the [python 
 website](http://www.python.org/download/releases/2.7.3/).
