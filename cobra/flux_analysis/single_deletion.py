@@ -13,7 +13,11 @@ if __name == 'java':
     def moma(**kwargs):
         warn("moma is not supported on %s"%__name)
 else:
-    from .moma import moma    
+    try:
+        from .moma import moma
+    except Exception, e:
+        def moma(**kwargs):
+            warn("moma is currently not supported on %s: %s"%(__name, e))
 def single_deletion(cobra_model, element_list=None,
                     method='fba', the_problem='return',
                     element_type='gene', solver='glpk',
@@ -34,6 +38,9 @@ def single_deletion(cobra_model, element_list=None,
     element_type: 'gene' or 'reaction'
 
     solver: 'glpk', 'gurobi', or 'cplex'.
+
+    error_reporting: None or True to disable or enable printing errors encountered
+    when trying to find the optimal solution.
 
     discard_problems: Boolean.  If True do not save problems.  This will
     help with memory issues related to gurobi.
