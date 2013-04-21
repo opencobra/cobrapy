@@ -8,7 +8,7 @@ r = robjects.r
 import cobra
 print "WARNING cobra.stats.r is experimental and it's use is strongly "+\
       "discouraged.  Use rpy2 instead."
-r_path = cobra.__path__[0] + '/stats/r_scripts/'
+r_path = cobra.__path__[0] + '/oven/danielhyduke/stats/r_scripts/'
 if 'tools.R' in listdir(r_path):
     r('''source("%stools.R")'''%r_path)
 

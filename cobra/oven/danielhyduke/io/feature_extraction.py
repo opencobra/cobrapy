@@ -1,10 +1,11 @@
 #cobra.io.feature_extraction.py
 #Tools for parsing agilent feature extraction files.
-from numpy import array, log10
-from pdb import set_trace
-from scipy.stats import pearsonr, variation
 from time import time
+
+from numpy import array, log10
+from scipy.stats import pearsonr
 from rpy2 import robjects
+
 r = robjects.r
 import rpy2.robjects.numpy2ri
 robjects.numpy2ri.activate()
@@ -13,7 +14,7 @@ from cobra.oven.danielhyduke.stats.tools import collapse_fields
 
 def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
                normalization=None, lowess_parameter=0.33, log_base=10, single_channel=False,
-               single_field='gProcessedSignal'):
+               single_field='gProcessedSignal', intensity_cutoff=0):
     """Extract data from feature extraction >=9.5 files.  Returns
     the average log ratios for each return_id.
 
@@ -62,6 +63,7 @@ def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
 
     
     if quality_control:
+        #TODO: Make this a separate function
         #Get the column indices for the quality control statistics and
         #assign the value that must be met to pass the test.
         quality_control_indices = {}
@@ -97,7 +99,9 @@ def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
                            'log_error': the_header.index('LogRatioError'),
                            'p_value': the_header.index('PValueLogRatio'),
                            'intensity_1': the_header.index('gProcessedSignal'),
+                           'intensity_1_error': the_header.index('gProcessedSigError'),
                            'intensity_2': the_header.index('rProcessedSignal'),
+                           'intensity_2_error': the_header.index('rProcessedSigError'),
                            #The last two are in case lowess normalization needs to be
                            #performed.
                            'background_subtracted_1': the_header.index('gBGSubSignal'),
@@ -107,7 +111,9 @@ def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
         if polarity == -1: #Change the polarity if requested.  Doing so here makes it easier
             #to run the calculations downstream.
             column_to_index.update({'intensity_1': the_header.index('rProcessedSignal'),
+                                    'intensity_1_error': the_header.index('rProcessedSigError'),
                                     'intensity_2': the_header.index('gProcessedSignal'),
+                                    'intensity_2_error': the_header.index('gProcessedSigError'),
                                     'background_subtracted_1': the_header.index('rBGSubSignal'),
                                     'background_subtracted_2': the_header.index('gBGSubSignal')})
 
@@ -153,10 +159,28 @@ def parse_file(in_file, polarity=1, quality_control=True, return_id='accession',
     #Make a dictionary to return the requested values
     gene_dict = dict([(x[gene_index], defaultdict(list))
                       for x in the_data])
-    for the_row in the_data:
-        the_dict = gene_dict[the_row[gene_index]]
-        [the_dict[k].append(float(the_row[v]))
-         for k, v in column_to_index.items()]
+    if intensity_cutoff > 0:
+        intensity_1_index = column_to_index['intensity_1']
+        try:
+            intensity_2_index = column_to_index['intensity_2']
+        except:
+            intensity_2_index = intensity_1_index
+        for the_row in the_data:
+            intensity_1 = float(the_row[intensity_1_index])
+            intensity_2 = float(the_row[intensity_2_index])
+            if intensity_1 < intensity_cutoff or intensity_2 < intensity_cutoff:
+                continue
+            the_dict = gene_dict[the_row[gene_index]]
+            [the_dict[k].append(float(the_row[v]))
+             for k, v in column_to_index.items()]
+        #recreate the gene set with the ones not meeting the cutoff excluded.
+        gene_dict = dict([(k, v) for k, v in gene_dict.iteritems()
+                          if len(v['intensity_1']) > 0])
+    else:
+        for the_row in the_data:
+            the_dict = gene_dict[the_row[gene_index]]
+            [the_dict[k].append(float(the_row[v]))
+             for k, v in column_to_index.items()]
     #Now combined the items       SPEED THIS UP 
     [collapse_fields(v) for v in gene_dict.values()]
     return gene_dict
@@ -197,11 +221,18 @@ def parse_annotation(annotation_file, key_type='PrimaryAccession',
 ##                     "cobra.stats.tools.collapse_fields")
 
 
-
+def create_scatter_plot(probe_values):
+    import matplotlib.pyplot as plot
+    the_figure = plot.figure(figsize=(6,6))
+    probe_r = pearsonr(probe_values[:, 0], probe_values[:, 1])
+    panel_1 = the_figure.add_subplot(1,1,1)
+    panel_1.scatter(probe_values[:,0], probe_values[:,1])
+    panel_1.set_title('Scatter plot: PCC = %1.3f'%probe_r[0])
+    return the_figure
 
 def combine_files(file_list, annotation_file=None, polarity_list=None,
                   print_time=False, quality_control=False, return_id='entrez',
-                  normalization=None):
+                  normalization=None, intensity_cutoff=0):
     """Parse feature extraction files.  This function
     combines multiple technical replicates at the RNA level into a single
     experiment.  Typically multiple replicates will be used when dye-swapping
@@ -253,7 +284,7 @@ def combine_files(file_list, annotation_file=None, polarity_list=None,
                                      the_polarity,
                                       quality_control=quality_control,
                                     normalization=normalization,
-                                    return_id=parse_file_return_id))
+                                    return_id=parse_file_return_id, intensity_cutoff=intensity_cutoff))
      for the_file, the_polarity in zip(file_list,
                                        polarity_list)]
     if print_time:
@@ -289,7 +320,15 @@ def combine_files(file_list, annotation_file=None, polarity_list=None,
                                if len(v['log_ratio']) ==2])
             the_correlation = pearsonr(tmp_array[:, 0], tmp_array[:, 1])
             print 'Correlation for combined channels: %1.2f'%round(the_correlation[0],
-                                                                   2)
+                                                                  2)
+            the_figure = create_scatter_plot(tmp_array)
+            out_file = the_file.split('.')[0] + '.pdf'
+            print 'Generating scatter plot: ' + out_file
+            from matplotlib.backends.backend_pdf import PdfPages
+            pdf_file = PdfPages(out_file)
+            the_figure.savefig(pdf_file, format='pdf')
+            pdf_file.close()
+            
             
             
         print '%s %f'%('combine time',
