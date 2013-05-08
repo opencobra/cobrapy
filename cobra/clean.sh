@@ -1,8 +1,2 @@
-rm *.pyc
-rm */*.pyc
-rm *.class
-rm */*.class
-rm */*/*.class
-rm */*/*/*.class
-rm */*/*/*/*.class
-rm */*/*/*/*/*.class
+find . -type f -regex '.*pyc' | xargs rm
+find . -type f -regex '.*class' | xargs rm

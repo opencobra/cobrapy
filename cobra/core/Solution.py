@@ -38,7 +38,19 @@ class Solution(Object):
         self.x_dict = x_dict
         self.status = status
         self.y = y
-        self.y_dict = y_dict 
+        self.y_dict = y_dict
+
+    def dress_results(self):
+        """Associates the results from the linear optimization with the model variables.
+
+        """
+        try:
+            [setattr(k, 'x', v) for k, v in zip(self.reactions, self.solution.x)];
+            [setattr(k, 'y', v) for k, v in zip(self.metabolites, self.solution.y)];
+        except Exception as e:
+            "Couldn't associate linear optimization results with variables: %s"%e
+
+
 #
 #END Class Solution
 #########################
