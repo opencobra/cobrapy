@@ -2,10 +2,12 @@
 gurobi.log
 *$py.class
 documentation
-core/me
+me
 cobra/db_tools
 cobra/internal
 cobra/omics
 cobra/salmonella
 jsbml.log
 build
+r_scripts
+cobra.egg-info/
