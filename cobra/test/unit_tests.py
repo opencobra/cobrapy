@@ -4,6 +4,7 @@ from warnings import warn  # TODO - catch known warnings
 from unittest import TestCase, TestLoader, TextTestRunner
 from tempfile import gettempdir
 from os import unlink
+from copy import deepcopy
 from os.path import join
 try:  #skipIf is not in python 2.6 / 2.5
     from unittest import skipIf
@@ -90,6 +91,8 @@ class TestDictList(TestCase):
             assert self.list[i].id == copied[i].id
             assert self.list[i] is not copied[i]
 
+            
+
 class CobraTestCase(TestCase):
     def setUp(self):
         self.model = create_test_model(test_pickle)
@@ -129,6 +132,28 @@ class TestCobraCore(CobraTestCase):
         self.assertNotEqual(len(self.model.reactions),
             len(model_copy.reactions))
 
+
+    def test_deepcopy(self):
+        """Verify that reference structures are maintained when deepcopying.
+        
+        """
+        model_copy = deepcopy(self.model)
+        for gene, gene_copy in zip(self.model.genes, model_copy.genes):
+            self.assertEqual(gene.id, gene_copy.id)
+            reactions = list(gene.get_reaction())
+            reactions.sort()
+            reactions_copy = list(gene_copy.get_reaction())
+            reactions_copy.sort()
+            self.assertEqual(reactions, reactions_copy)
+        for reaction, reaction_copy in zip(self.model.reactions, model_copy.reactions):
+            self.assertEqual(reaction.id, reaction_copy.id)
+            metabolites = reaction._metabolites.keys()
+            metabolites.sort()
+            metabolites_copy = reaction_copy._metabolites.keys()
+            metabolites_copy.sort()
+            self.assertEqual(metabolites, metabolites_copy)
+        
+        
 
 class TestCobraIO(CobraTestCase):
     try:
