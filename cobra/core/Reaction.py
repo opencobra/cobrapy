@@ -150,6 +150,14 @@ class Reaction(Object):
         """Trying to make a faster copy procedure for cases where large
         numbers of metabolites might be copied.  Such as when copying reactions.
 
+       the_model: The new container cobra.Model
+
+       metabolite_dict: A dictionary of the cobra.Metabolite objects that are in
+       the model (metabolite.id, metabolite)
+
+        gene_dict: A dictionary of the cobra.Gene objects that are in the model (gene.id, gene)
+
+
         """
         the_copy = Object.guided_copy(self)
         #Replace the complex items in a faster fashion
