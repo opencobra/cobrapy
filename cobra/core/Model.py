@@ -99,14 +99,11 @@ class Model(Object):
     def guided_copy(self):
         return self.copy()
 
-    def copy(self, print_time=False, _copy_reactions=True):
+    def copy(self, print_time=False):
         """Provides a partial 'deepcopy' of the Model.  All of the Metabolite, Gene,
         and Reaction objects are created anew but in a faster fashion than deepcopy
 
         print_time: Boolean used for debugging
-
-        _copy_reactions: Boolean helper variable that's being used to deal with
-        ME vs M models
 
         """
         the_copy = Object.guided_copy(self)
@@ -131,14 +128,13 @@ class Model(Object):
         ##                          for k in the_metabolites])
         ## gene_dict = dict([(k.id, k)
         ##                          for k in the_genes])
-        if _copy_reactions:
-            the_reactions = DictList([x.guided_copy(the_copy, the_metabolites._object_dict,
-                                                    the_genes._object_dict)
-                                      for x in self.reactions])
+        the_reactions = DictList([x.guided_copy(the_copy, the_metabolites._object_dict,
+                                                the_genes._object_dict)
+                                  for x in self.reactions])
 
-            if print_time:
-                print 'Reaction guided copy: %1.4f'%(time() - start_time)
-            the_copy.reactions = the_reactions
+        if print_time:
+            print 'Reaction guided copy: %1.4f'%(time() - start_time)
+        the_copy.reactions = the_reactions
         the_copy.genes = the_genes
         the_copy.metabolites = the_metabolites
         return the_copy
