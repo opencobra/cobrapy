@@ -109,11 +109,12 @@ class Reaction(Object):
         """
         self._model = None
         [x._reaction.remove(self)
-         for x in self._metabolites.keys()]
+         for x in self._metabolites.keys() if self in x._reaction]
         [x._reaction.remove(self)
-         for x in self._genes.keys()]
+         for x in self._genes.keys() if self in x._reaction]
         self._metabolites = {}
         self._genes = {}
+        
         
     def __setstate__(self, state):
         """Probably not necessary to set _model as the cobra.Model that
