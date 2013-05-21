@@ -244,8 +244,8 @@ class Model(Object):
             the_reaction._model = self
             the_reaction._metabolites = dict([(self.metabolites.get_by_id(k.id), v)
                                              for k, v in the_reaction._metabolites.iteritems()])
-            the_reaction._genes = dict([(self.genes.get_by_id(k.id), v)
-                                             for k, v in the_reaction._genes.iteritems()])
+            the_reaction._genes = set([self.genes.get_by_id(k.id)
+                                             for k in the_reaction._genes])
             #Make sure the metabolites and genes are aware of the reaction
             the_reaction._update_awareness()
             
