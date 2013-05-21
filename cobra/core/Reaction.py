@@ -34,7 +34,7 @@ class Reaction(Object):
         #and upper bound
         self.gene_reaction_rule = '' #Deprecated
         self.subsystem = ''
-        self._genes = {} #A gene and the number of copies required for the
+        self._genes = set() #The cobra.Genes that are used to catalyze the reaction
         #reaction.  _ Indicates that it is not preferred to add a gene to a reaction
         #directly.
         #A dictionary of metabolites and their stoichiometric coefficients in
@@ -95,7 +95,7 @@ class Reaction(Object):
         [x._reaction.remove(self)
          for x in self._metabolites.keys()]
         [x._reaction.remove(self)
-         for x in self._genes.keys()]
+         for x in self._genes]
         self.add_metabolites(new_metabolites)
         self._genes = new_genes
 
@@ -111,9 +111,9 @@ class Reaction(Object):
         [x._reaction.remove(self)
          for x in self._metabolites.keys() if self in x._reaction]
         [x._reaction.remove(self)
-         for x in self._genes.keys() if self in x._reaction]
+         for x in self._genes if self in x._reaction]
         self._metabolites = {}
-        self._genes = {}
+        self._genes = set()
         
         
     def __setstate__(self, state):
@@ -164,8 +164,8 @@ class Reaction(Object):
         #Replace the complex items in a faster fashion
         the_copy._model = the_model
         if gene_dict:
-            the_copy._genes = dict([(gene_dict[k.id], v)
-                                for k, v in self._genes.iteritems()])
+            the_copy._genes = set([gene_dict[k.id]
+                                for k in self._genes])
         the_copy._metabolites = dict([(metabolite_dict[k.id], v)
                                       for k, v in self._metabolites.iteritems()])
         the_copy._boundary_metabolites = dict([(metabolite_dict[k.id], v)
@@ -173,7 +173,7 @@ class Reaction(Object):
 
         #make the metabolites and genes aware of the reaction
         [k._reaction.add(the_copy)
-         for k in the_copy._genes.keys()]
+         for k in the_copy._genes]
         [k._reaction.add(the_copy)
          for k in the_copy._metabolites.keys()]
         [k._reaction.add(the_copy)
@@ -260,10 +260,9 @@ class Reaction(Object):
         #Formerly, update_names
         """
         if the_type == 'gene':
-            self._genes = map(Gene, list(set((re.compile(' {2,}').sub(' ', re.compile('\(| and| or|\+|\)').sub('', self.gene_reaction_rule))).split(' ' ))))
+            self._genes = set(map(Gene, list(set((re.compile(' {2,}').sub(' ', re.compile('\(| and| or|\+|\)').sub('', self.gene_reaction_rule))).split(' ' )))))
             if '' in self._genes:
                 self._genes.remove('')
-            self._genes = dict(zip(self._genes,[1.]*len(self._genes)))
             #Make the gene aware that it is involved in this reaction
             [x._reaction.add(self) for x in self._genes]
 
@@ -295,10 +294,10 @@ class Reaction(Object):
                 if v > 0]
 
     def get_gene(self):
-        """Return a list of reactants for the reaction.
+        """Return a list of genes for the reaction.
 
         """
-        return self._genes.keys()
+        return list(self._genes)
 
 
     def get_coefficient(self, the_metabolite):
