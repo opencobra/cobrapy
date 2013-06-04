@@ -60,7 +60,8 @@ def create_test_model(test_pickle=salmonella_pickle):
     except:
         #if the pickle can't be loaded then load the sbml xml
         from warnings import warn
-        warn("Couldn't load %s.  Loading the default model %s instead"%(test_pickle, salmonella_sbml)
+        warn("Couldn't load %s.  Loading the default model %s instead"%(test_pickle,
+                                                                        salmonella_sbml))
         sys.path.insert(0, cobra_location)
         from cobra.io import read_sbml_model
         model = read_sbml_model(salmonella_sbml)
