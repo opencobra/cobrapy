@@ -1,7 +1,7 @@
 import sys
 __version__ = '0.2.1'
 from os import name as __name
-from core import Object, Formula, Metabolite, Gene, Reaction, Model, DictList, Species
+from core import Object, Formula, Metabolite, Gene, Reaction, Model, DictList
 if __name == 'java':
     #raise Exception("Experimental modules of numpy/scipy for java that are" +\
     #"not yet ready for prime time.")
