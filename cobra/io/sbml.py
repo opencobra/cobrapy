@@ -407,7 +407,7 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
                                              note_start_tag=note_start_tag,
                                              note_end_tag=note_end_tag,
                                              boundary_metabolite=True)
-            the_coefficient *= -1
+            sbml_stoichiometry = -the_coefficient
             #Each SpeciesReference must have a unique id
             if sbml_stoichiometry < 0:
                 species_reference = sbml_reaction.createReactant()

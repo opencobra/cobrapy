@@ -1,6 +1,7 @@
 import sys
 __version__ = '0.2.1'
 from os import name as __name
+from core import Object, Formula, Metabolite, Gene, Reaction, Model, DictList
 if __name == 'java':
     #raise Exception("Experimental modules of numpy/scipy for java that are" +\
     #"not yet ready for prime time.")
@@ -8,9 +9,7 @@ if __name == 'java':
     #import oven.danielhyduke.jython.scipy as scipy
     from warnings import warn
     warn("COBRA for Python is not optimized for JAVA.  If it's slow or crashes consider increasing JVM memory")
-    from core import Object, Formula, Metabolite, Gene, Reaction, Model, DictList
 else:
-    from core import Object, Formula, Metabolite, Gene, Reaction, Model, DictList
     try:
         from core import ArrayBasedModel
     except Exception, e:

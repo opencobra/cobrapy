@@ -208,7 +208,7 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
 def find_blocked_reactions(cobra_model, the_reactions=None, allow_loops=True,
                             solver='glpk', the_problem='return',
                            tolerance_optimality=1e-9,
-                           open_exchanges=False):
+                           open_exchanges=False, **kwargs):
     """Finds reactions that cannot carry a flux with the current
     exchange reaction settings for cobra_model, using flux variability
     analysis.
@@ -234,7 +234,8 @@ def find_blocked_reactions(cobra_model, the_reactions=None, allow_loops=True,
                                                allow_loops = allow_loops,
                                                solver = solver,
                                                the_problem = the_problem,
-                                               tolerance_optimality = tolerance_optimality)
+                                               tolerance_optimality = tolerance_optimality,
+                                               **kwargs)
     blocked_reactions = [k for k, v in flux_span_dict.items()\
                           if max(map(abs,v.values())) < tolerance_optimality]
     return(blocked_reactions)
