@@ -1,7 +1,7 @@
 import ez_setup
 ez_setup.use_setuptools()
 from setuptools import setup, find_packages
-__version = '0.2.1'
+__version = '0.3.0-dev'
 
 setup(
     name = "cobra",

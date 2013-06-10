@@ -19,7 +19,7 @@ class Species(Object):
     ##    [self.__setattr__(k, v) for k, v in the_dict]
 
     def __init__(self, id=None, formula=None,
-                 name=None, compartment=None):
+                 name=None, compartment=None, mnx_id=None):
         """
         id: A string.
 
@@ -32,8 +32,10 @@ class Species(Object):
         of the metabolite.  Used when in a cobra.Reaction or Model
         object
         
+	mnx_id: None or a String of the MetaNetX.org ID for the object.
+
         """
-        Object.__init__(self, id)
+        Object.__init__(self, id, mnx_id=mnx_id)
         self.name = name
         if not name:
             self.name = self.id

@@ -1,5 +1,5 @@
 import sys
-__version__ = '0.2.1'
+__version__ = '0.3.0-dev'
 from os import name as __name
 from core import Object, Formula, Metabolite, Gene, Reaction, Model, DictList, Species
 if __name == 'java':
