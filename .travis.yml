@@ -12,6 +12,6 @@ before_install:
   - cd libsbml-5.6.0/; ./configure --with-python; sudo make install; cd ..
 install:
   - ln -s /usr/lib/python2.7/dist-packages/scipy ~/virtualenv/python2.7/lib/python2.7/site-packages/
-  - pip install http://clostridium.ucsd.edu/pyglpk-0.3_fix.tar.bz2
+  - pip install glpk 
 # # command to run tests
 script: python setup.py test
