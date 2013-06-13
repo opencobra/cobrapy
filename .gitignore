@@ -3,3 +3,4 @@ gurobi.log
 *$py.class
 documentation
 cobra.egg-info
+*.orig
