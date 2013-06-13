@@ -11,3 +11,4 @@ jsbml.log
 build
 r_scripts
 cobra.egg-info/
+*.orig
