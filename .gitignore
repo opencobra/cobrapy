@@ -2,5 +2,12 @@
 gurobi.log
 *$py.class
 documentation
-cobra.egg-info
-*.orig
+me
+cobra/db_tools
+cobra/internal
+cobra/omics
+cobra/salmonella
+jsbml.log
+build
+r_scripts
+cobra.egg-info/
