@@ -38,7 +38,16 @@ class Solution(Object):
         self.x_dict = x_dict
         self.status = status
         self.y = y
-        self.y_dict = y_dict 
+        self.y_dict = y_dict
+    def dress_results(self, model):
+        """Attaches results from FBA simulations to the Model's Reactions and
+        Metabolites.
+
+        model: The model that matches the Solution.
+
+        """
+        [setattr(k, 'x', v) for k, v in zip(model.reactions, self.x)];
+        [setattr(k, 'y', v) for k, v in zip(model.metabolites, self.y)];
 #
 #END Class Solution
 #########################
