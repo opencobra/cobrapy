@@ -1,7 +1,6 @@
 Installation instructions for Python and Jython are detailed below. The 
 Python instructions will be approrpriate for most users. For installation 
-help, please see the [sourceforge help install 
-forum](https://sourceforge.net/projects/opencobra/forums/forum/4194275)
+help, please use the [Google Group](http://groups.google.com/group/cobra-pie).
 
 For usage instructions, please see the 
 [documentation](https://cobrapy.readthedocs.org/en/latest/)
@@ -39,8 +38,8 @@ Use easy_install (or pip if you have it)
 
 ## Hacking version installation in Python
 First, clone the git repository using your preferred mothod. Cloning from your
-own github fork is recommended! Afterwards, open a terminal, enter the cobrapy
-repository and run the following command:
+own [github fork](https://help.github.com/articles/fork-a-repo) is recommended!
+Afterwards, open a terminal, enter the cobrapy repository and run the following command:
 
     python setup.py develop --user
 
