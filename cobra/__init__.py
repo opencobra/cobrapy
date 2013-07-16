@@ -1,5 +1,6 @@
 import sys
-__version__ = '0.3.0-dev'
+from version import get_git_version
+__version__ = get_git_version()
 from os import name as __name
 from core import Object, Formula, Metabolite, Gene, Reaction, Model, DictList
 if __name == 'java':
