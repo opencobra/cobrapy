@@ -21,7 +21,7 @@ version_file = path.join(current_dir, "RELEASE-VERSION")
 def call_git_describe(abbrev=4):
     try:
         return check_output(["git", "describe",  "--tags",
-            "--abbrev=%d" % abbrev], dir=current_dir).strip()
+            "--abbrev=%d" % abbrev], cwd=current_dir).strip()
     except:
         return None
 
