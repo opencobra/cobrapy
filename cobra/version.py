@@ -1,69 +1,45 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# Author: Douglas Creager <dcreager@dcreager.net>
-# This file is placed into the public domain.
 
-# Calculates the current version number.  If possible, this is the
-# output of “git describe”, modified to conform to the versioning
-# scheme that setuptools uses.  If “git describe” returns an error
-# (most likely because we're in an unpacked copy of a release tarball,
-# rather than in a git working copy), then we fall back on reading the
-# contents of the RELEASE-VERSION file.
-#
-# To use this script, simply import it your setup.py file, and use the
-# results of get_git_version() as your package version:
-#
-# from version import *
-#
-# setup(
-#     version=get_git_version(),
-#     .
-#     .
-#     .
-# )
-#
-# This will automatically update the RELEASE-VERSION file, if
-# necessary.  Note that the RELEASE-VERSION file should *not* be
-# checked into git; please add it to your top-level .gitignore file.
-#
-# You'll probably want to distribute the RELEASE-VERSION file in your
-# sdist tarballs; to do this, just create a MANIFEST.in file that
-# contains the following line:
-#
-#   include RELEASE-VERSION
+"""
+Tracks the version number. If git is installed and file script
+is located within a git repository, git describe is used to get
+the version information. This version string is sanitized to
+comply with PEP 386 and stored in the RELEASE-VERSION file.
+
+If git describe can not be run, the RELEASE-VERSION file is used
+for version information instead.
+
+"""
 
 __all__ = ("get_git_version")
 
 from subprocess import check_output
-
+from os import path
+current_dir = path.dirname(path.abspath(__file__))
+version_file = path.join(current_dir, "RELEASE-VERSION")
 
 def call_git_describe(abbrev=4):
     try:
         return check_output(["git", "describe",  "--tags",
-            "--abbrev=0"]).strip()
+            "--abbrev=%d" % abbrev], dir=current_dir).strip()
     except:
         return None
 
 
 def read_release_version():
     try:
-        f = open("RELEASE-VERSION", "r")
-
-        try:
-            version = f.readlines()[0]
-            return version.strip()
-
-        finally:
-            f.close()
-
+        with open(version_file, "r") as infile:
+            version = infile.read().strip()
+        if len(version) == 0:
+            version = None
+        return version
     except:
         return None
 
 
 def write_release_version(version):
-    f = open("RELEASE-VERSION", "w")
-    f.write("%s\n" % version)
-    f.close()
+    with open(version_file, "w") as outfile:
+        outfile.write("%s\n" % version)
 
 
 def get_git_version(abbrev=4):
@@ -71,7 +47,7 @@ def get_git_version(abbrev=4):
 
     release_version = read_release_version()
 
-    # First try to get the current version using “git describe”.
+    # First try to get the current version using "git describe".
 
     version = call_git_describe(abbrev)
 
@@ -101,7 +77,9 @@ def get_git_version(abbrev=4):
 
 
 def pep386adapt(version):
-    if version is not None and '-' in version:
+    if version is None:
+        return
+    if '-' in version:
         # adapt git-describe version to be in line with PEP 386
         parts = version.split('-')
         parts[-2] = 'post'+parts[-2]

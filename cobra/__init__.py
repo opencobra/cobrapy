@@ -17,6 +17,6 @@ else:
         from warnings import warn
         warn("cobra.ArrayBasedModel class is unavailable: %s"%repr(e))
 
-del __name
+del __name, get_git_version
 __doc__ = """
 """
