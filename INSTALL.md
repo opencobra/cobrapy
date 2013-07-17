@@ -25,7 +25,7 @@ Generally, installation should follow these steps:
 On Mac OS X or GNU/Linux, use easy_install (or pip if you have it) by running
 the following command in a terminal.
 
-    sudo easy_install cobrapy
+    sudo easy_install cobra
 
 For Windows, download and install the appropriate 32 bit or 64 bit installer,
 both of which can be downloaded from the [python package
