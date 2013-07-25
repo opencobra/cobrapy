@@ -30,13 +30,13 @@ class DictList(list):
         """rebuild the _dict index
 
         """
-        new_dict = {}
-        new_object_dict = {}
+        _dict = self._dict
+        object_dict = self._object_dict
+        _dict.clear()
+        object_dict.clear()
         for k, v in enumerate(self):
-            new_dict[v.id] = k
-            new_object_dict[v.id] = v
-        self._dict = new_dict
-        self._object_dict = new_object_dict
+            _dict[v.id] = k
+            object_dict[v.id] = v
 
     def get_by_id(self, id):
         """return the element with a matching id
@@ -72,18 +72,16 @@ class DictList(list):
             select_attribute = lambda x: getattr(the_object, attribute)
 
         # if the search_function is a regular expression
-        match_list = DictList()
         if isinstance(search_function, str):
             search_function = re.compile(search_function)
         if hasattr(search_function, "findall"):
-            for the_object in self:
-                if search_function.findall(select_attribute(the_object)) != []:
-                    match_list.append(the_object)
+            matches = [i for i in self
+                if search_function.findall(select_attribute(the_object)) != []]
         else:
-            for the_object in self:
-                if search_function(select_attribute(the_object)):
-                    match_list.append(the_object)
-        return match_list
+            matches = [i for i in self
+                if search_function(select_attribute(the_object))]
+        return DictList(matches)
+
 
     # overriding default list functions with new ones
     def __setitem__(self, i, y):
@@ -228,6 +226,7 @@ class DictList(list):
         self._generate_index()
 
     def __getattr__(self, attr):
+        # makes items attributes as well
         try:
             return super(DictList, self).__getattribute__(attr)
         except:
@@ -239,7 +238,7 @@ class DictList(list):
                     (attr))
 
     def __dir__(self):
+        # override this to allow tab complete of items by their id
         attributes = self.__class__.__dict__.keys()
         attributes.extend(self._dict.keys())
         return attributes
-
