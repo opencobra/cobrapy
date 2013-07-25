@@ -123,6 +123,8 @@ class Reaction(Object):
         know that they are employed in this reaction
 
         """
+        if "reaction" in state:
+            state.pop("reaction")
         self.__dict__.update(state)
         for x in state['_metabolites']:
             setattr(x, '_model', self._model)
@@ -383,9 +385,10 @@ class Reaction(Object):
     @property
     def reaction(self):
         return self.build_reaction_string()
-        
-    @reaction.setter
-    def reaction(self, reaction_string):
+
+
+    def _parse_reaction(self, reaction_string):
+        warn("deprecated")
         """
         This is necessary when parsing text files.  It is better
         to get the reactions from SBML files.
@@ -452,9 +455,6 @@ class Reaction(Object):
                                  for x, y in zip(tmp_metabolites, tmp_coefficients)])
         #Make the metabolites aware of participating in this reaction
         [x._reaction.add(self) for x in self._metabolites]
-
-    def _parse_reaction(self):
-        warn("deprecated")
 
 
     def build_reaction_string(self, use_metabolite_names=False):
