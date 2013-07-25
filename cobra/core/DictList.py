@@ -18,6 +18,10 @@ class DictList(list):
         self._object_dict = {}
         self._generate_index()
 
+
+    def has_id(self, id):
+        return self._dict.has_key(id)
+    
     def _check(self, id):
         """make sure duplicate id's are not added.
         This function is called before adding in elements.

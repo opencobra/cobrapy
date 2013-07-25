@@ -183,7 +183,6 @@ class Reaction(Object):
         """
         the_coefficient = self._metabolites.pop(the_metabolite)
         the_metabolite._reaction.remove(self)
-        self.reconstruct_reaction()
         return the_coefficient
     
     def __add__(self, other_reaction):
@@ -232,7 +231,6 @@ class Reaction(Object):
         """
         [self._metabolites.update({k: the_coefficient * v})
          for k, v in self._metabolites.items()]
-        self.reconstruct_reaction()
         return self
 
     def __mul__(self, the_coefficient):
@@ -243,7 +241,6 @@ class Reaction(Object):
         """
         [self._metabolites.update({k: the_coefficient * v})
          for k, v in self._metabolites.items()]
-        self.reconstruct_reaction()
         return self
         
 
@@ -356,7 +353,6 @@ class Reaction(Object):
                 #in this reaction
                 the_metabolite._reaction.remove(self)
                 self._metabolites.pop(the_metabolite)
-        self.reconstruct_reaction()
         _id_to_metabolites = dict([(x.id, x)
                                         for x in self._metabolites])
         if add_to_container_model and hasattr(self._model, 'add_metabolites'):
@@ -494,8 +490,8 @@ class Reaction(Object):
         """Generate a human readable reaction string.
         
         """
-        return
         warn("deprecated")
+        return
 
     def check_mass_balance(self):
         """Makes sure that the reaction is elementally-balanced.
