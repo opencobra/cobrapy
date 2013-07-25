@@ -1,15 +1,6 @@
 from copy import copy, deepcopy
 import re
 
-def get_id(object):
-    """return an id for the object
-
-    This allows the function to be generalize to non-cobra.core objects,
-    however, this added function call slows things down.
-
-    """
-    return object.id
-
 class DictList(list):
     """A combined dict and list that feels like a list, but has
     the speed benefits of a dict.  This may be eventually
@@ -96,7 +87,7 @@ class DictList(list):
 
     # overriding default list functions with new ones
     def __setitem__(self, i, y):
-        the_id = get_id(y)
+        the_id = y.id
         self._check(the_id)
         super(DictList, self).__setitem__(i, y)
         self._dict[the_id] = i
@@ -107,14 +98,14 @@ class DictList(list):
         the same id.
         
         """
-        the_id = get_id(new_object)
+        the_id = new_object.id
         the_index = self._dict[the_id]
         super(DictList, self).__setitem__(the_index, new_object)
         self._object_dict[the_id] = new_object
         
 
     def append(self, object):
-        the_id = get_id(object)
+        the_id = object.id
         self._check(the_id)
         self._dict[the_id] = len(self)
         super(DictList, self).append(object)
@@ -125,7 +116,7 @@ class DictList(list):
         _dict = self._dict
         append = self.append
         for i in iterable:
-            if get_id(i) not in _dict:
+            if i.id not in _dict:
                 append(i)
 
     def extend(self, iterable):
@@ -176,7 +167,7 @@ class DictList(list):
 
         """
         if hasattr(object, "id"):
-            the_id = get_id(object)
+            the_id = object.id
         # allow to check with the object itself in addition to the id
         else:
             the_id = object
@@ -201,7 +192,7 @@ class DictList(list):
     # these functions are slower because they rebuild the _dict every time
     # TODO: speed up
     def insert(self, index, object):
-        self._check(get_id(object))
+        self._check(object.id)
         super(DictList, self).insert(index, object)
         self._generate_index()
 
