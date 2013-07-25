@@ -39,11 +39,13 @@ class DictList(list):
         """rebuild the _dict index
 
         """
-        self._dict = {}
-        self._object_dict = {}
-        [(self._dict.update({v.id: k}),
-          self._object_dict.update({v.id: v}))
-         for k, v in enumerate(self)]
+        new_dict = {}
+        new_object_dict = {}
+        for k, v in enumerate(self):
+            new_dict[v.id] = k
+            new_object_dict[v.id] = v
+        self._dict = new_dict
+        self._object_dict = new_object_dict
 
     def get_by_id(self, id):
         """return the element with a matching id
@@ -55,8 +57,7 @@ class DictList(list):
         """return a list of the given attribute for every object
 
         """
-        return [getattr(i, attribute)
-                for i in self]
+        return [getattr(i, attribute) for i in self]
 
     def query(self, search_function, attribute="id"):
         """query the list
@@ -121,12 +122,16 @@ class DictList(list):
 
     def union(self, iterable):
         """adds elements with id's not already in the model"""
-        [self.append(i)
-         for i in iterable
-         if get_id(i) not in self._dict]
+        _dict = self._dict
+        append = self.append
+        for i in iterable:
+            if get_id(i) not in _dict:
+                append(i)
 
     def extend(self, iterable):
-        [self.append(i) for i in iterable]
+        append = self.append
+        for i in iterable:
+            append(i)
 
     def __add__(self, other, should_deepcopy=True):
         """
@@ -155,13 +160,14 @@ class DictList(list):
         """
         # because values are unique, start and stop are not relevant
         try:
-            the_object = self._dict[id]
+            return self._dict[id]
         except:
-            the_object = self._dict[id.id]
-            if self[the_object] is not id:
-                raise Exception("The id for the cobra.object (%s) provided "%repr(id) +\
-                                "is in this dictionary but the_id is not the cobra.object")
-        return the_object
+            i = self._dict[id.id]
+            if self[i] is not id:
+                raise Exception(
+                    "Another object with the identical id (%s) found" % id.id)
+            return i
+        raise Exception("%s not found" % str(i))
 
     def __contains__(self, object):
         """DictList.__contains__(object) <==> object in DictList
@@ -204,8 +210,10 @@ class DictList(list):
         self._generate_index()
         return value
 
-    def remove(self, *args, **kwargs):
-        super(DictList, self).remove(*args, **kwargs)
+    def remove(self, x):
+        # Each item is unique in the list which allows this
+        # It is much faster to do a dict lookup than n string comparisons
+        super(DictList, self).pop(self.index(x))
         self._generate_index()
 
     def reverse(self, *args, **kwargs):
