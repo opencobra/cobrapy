@@ -3,9 +3,9 @@ ez_setup.use_setuptools()
 from setuptools import setup, find_packages
 import sys
 import os
-from cobra.version import get_git_version
+from cobra.version import get_version
 
-__version = get_git_version()
+__version = get_version()
 
 setup(
     name = "cobra",
