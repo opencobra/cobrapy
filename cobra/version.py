@@ -1,22 +1,16 @@
 #!/usr/bin/env python
 
-"""
-Tracks the version number. If git is installed and file script
-is located within a git repository, git describe is used to get
-the version information. This version string is sanitized to
-comply with PEP 386 and stored in the RELEASE-VERSION file.
-
-If git describe can not be run, the RELEASE-VERSION file is used
-for version information instead.
-
-"""
-
-__all__ = ("get_git_version")
+__all__ = ("get_version")
 
 from subprocess import check_output
-from os import path
+from os import path, name
 current_dir = path.dirname(path.abspath(__file__))
 version_file = path.join(current_dir, "RELEASE-VERSION")
+
+git_command = "git"
+if name == "nt":
+    # TODO try to find better
+    None
 
 def call_git_describe(abbrev=4):
     try:
@@ -37,55 +31,29 @@ def read_release_version():
         return None
 
 
-def write_release_version(version):
-    with open(version_file, "w") as outfile:
-        outfile.write("%s\n" % version)
+def get_version():
+    """Tracks the version number.
 
+    The file RELEASE-VERSION will contain the version of the last release. If
+    this is not a git repository, it is safe to assume that the version is not
+    being  incremented and the version returned will be the release version as
+    read from the file.
 
-def get_git_version(abbrev=4):
-    # Read in the version that's currently in RELEASE-VERSION.
+    However, if the script is located within an active git repository,
+    git-describe is used to get the version information.
 
-    release_version = read_release_version()
+    The file RELEASE-VERSION will need to be changed by manually. This only
+    needs to occur twice per release:
+      - Once right before running git tag (set to the same as the version in
+        the tag).
+      - Once right after running git tag (set to next_version.dev)
+    """
 
-    # First try to get the current version using "git describe".
-
-    version = call_git_describe(abbrev)
-
-    #adapt to PEP 386 compatible versioning scheme
-    version = pep386adapt(version)
-
-    # If that doesn't work, fall back on the value that's in
-    # RELEASE-VERSION.
-
-    if version is None:
-        version = release_version
-
-    # If we still don't have anything, that's an error.
-
-    if version is None:
-        raise ValueError("Cannot find the version number!")
-
-    # If the current version is different from what's in the
-    # RELEASE-VERSION file, update the file to be current.
-
-    if version != release_version:
-        write_release_version(version)
-
-    # Finally, return the current version.
-
-    return version
-
-
-def pep386adapt(version):
-    if version is None:
-        return
-    if '-' in version:
-        # adapt git-describe version to be in line with PEP 386
-        parts = version.split('-')
-        parts[-2] = 'post'+parts[-2]
-        version = '.'.join(parts[:-1])
-    return version
+    git_version = call_git_describe()
+    if git_version is None:  # not a git repository
+        return read_release_version()
+    return git_version
 
 
 if __name__ == "__main__":
-    print get_git_version()
+    print get_version()

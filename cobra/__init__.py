@@ -1,6 +1,6 @@
 import sys
-from version import get_git_version
-__version__ = get_git_version()
+from version import get_version
+__version__ = get_version()
 from os import name as __name
 from core import Object, Formula, Metabolite, Gene, Reaction, Model, DictList
 if __name == 'java':
@@ -17,6 +17,6 @@ else:
         from warnings import warn
         warn("cobra.ArrayBasedModel class is unavailable: %s"%repr(e))
 
-del __name, get_git_version
+del __name, get_version
 __doc__ = """
 """
