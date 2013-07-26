@@ -5,7 +5,7 @@ __all__ = ("get_version")
 from subprocess import check_output
 from os import path, name
 current_dir = path.dirname(path.abspath(__file__))
-version_file = path.join(current_dir, "RELEASE-VERSION")
+version_file = path.join(current_dir, "VERSION")
 
 git_command = "git"
 if name == "nt":
@@ -34,15 +34,15 @@ def read_release_version():
 def get_version():
     """Tracks the version number.
 
-    The file RELEASE-VERSION will contain the version of the last release. If
-    this is not a git repository, it is safe to assume that the version is not
-    being  incremented and the version returned will be the release version as
+    The file VERSION holds the version information. If this is not a git
+    repository, then it is reasonable to assume that the version is not
+    being incremented and the version returned will be the release version as
     read from the file.
 
     However, if the script is located within an active git repository,
     git-describe is used to get the version information.
 
-    The file RELEASE-VERSION will need to be changed by manually. This only
+    The file VERSION will need to be changed by manually. This only
     needs to occur twice per release:
       - Once right before running git tag (set to the same as the version in
         the tag).
