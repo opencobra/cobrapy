@@ -86,6 +86,7 @@ def load_matlab_model(infile_path, variable_name=None):
             except:
                 pass
             model.add_metabolites([new_metabolite])
+        new_reactions = []
         for i, name in enumerate(m["rxns"][0, 0]):
             new_reaction = Reaction()
             new_reaction.id = str(name[0][0])
@@ -96,7 +97,8 @@ def load_matlab_model(infile_path, variable_name=None):
                 new_reaction.name = str(m["rxnNames"][0, 0][i][0][0])
             except:
                 pass
-            model.add_reactions(new_reaction)
+            new_reactions.append(new_reaction)
+        model.add_reactions(new_reactions)
         coo = coo_matrix(m["S"][0, 0])
         for i, j, v in zip(coo.row, coo.col, coo.data):
             model.reactions[j].add_metabolites({model.metabolites[i]: v})

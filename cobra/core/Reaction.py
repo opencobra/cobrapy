@@ -47,7 +47,7 @@ class Reaction(Object):
         self.name = name
         #self.model is None or refers to the cobra.Model that
         #contains self
-        self._model  = self.reaction = None
+        self._model = None
 
         self.boundary = None #None, 'system_boundary'
         self.objective_coefficient = self.lower_bound = 0.
@@ -123,6 +123,8 @@ class Reaction(Object):
         know that they are employed in this reaction
 
         """
+        if "reaction" in state:
+            state.pop("reaction")
         self.__dict__.update(state)
         for x in state['_metabolites']:
             setattr(x, '_model', self._model)
@@ -181,7 +183,6 @@ class Reaction(Object):
         """
         the_coefficient = self._metabolites.pop(the_metabolite)
         the_metabolite._reaction.remove(self)
-        self.reconstruct_reaction()
         return the_coefficient
     
     def __add__(self, other_reaction):
@@ -230,7 +231,6 @@ class Reaction(Object):
         """
         [self._metabolites.update({k: the_coefficient * v})
          for k, v in self._metabolites.items()]
-        self.reconstruct_reaction()
         return self
 
     def __mul__(self, the_coefficient):
@@ -241,7 +241,6 @@ class Reaction(Object):
         """
         [self._metabolites.update({k: the_coefficient * v})
          for k, v in self._metabolites.items()]
-        self.reconstruct_reaction()
         return self
         
 
@@ -354,7 +353,6 @@ class Reaction(Object):
                 #in this reaction
                 the_metabolite._reaction.remove(self)
                 self._metabolites.pop(the_metabolite)
-        self.reconstruct_reaction()
         _id_to_metabolites = dict([(x.id, x)
                                         for x in self._metabolites])
         if add_to_container_model and hasattr(self._model, 'add_metabolites'):
@@ -380,8 +378,13 @@ class Reaction(Object):
                                 for k, v in metabolites.items()])
         self.add_metabolites(metabolites)
 
-        
-    def _parse_reaction(self):
+    @property
+    def reaction(self):
+        return self.build_reaction_string()
+
+
+    def _parse_reaction(self, reaction_string):
+        warn("deprecated")
         """
         This is necessary when parsing text files.  It is better
         to get the reactions from SBML files.
@@ -395,37 +398,37 @@ class Reaction(Object):
         #remove parentheses around stoichiometric coefficients
         re_stoich_coeff = re.compile('\(\d+\.{0,1}\d{0,}\)')
         re_spaces = re.compile(' {2,} ')
-        the_reaction = re_spaces.subn(' ', self.reaction)[0]
+        the_reaction = re_spaces.subn(' ', reaction_string)[0]
         tmp_reaction = ''
         for the_atom in the_reaction.split(' '):
             tmp_reaction += ' '
             if re_stoich_coeff.match(the_atom) is not None:
                 the_atom = the_atom.lstrip('(').rstrip(')')
             tmp_reaction += the_atom
-        self.reaction = tmp_reaction[1:]
-        if self.reaction[0] == '[' and self.reaction[2] ==']':
-            self.process_prefixed_reaction()
+        reaction_string = tmp_reaction[1:]
+        if reaction_string[0] == '[' and reaction_string ==']':
+            reaction_string = process_prefixed_reaction()
         #Deal with scientific notation here
-        tmp_metabolites = re.compile('\d*\.?\d+(e-?\d)? +').sub('', self.reaction)
+        tmp_metabolites = re.compile('\d*\.?\d+(e-?\d)? +').sub('', reaction_string)
         tmp_metabolites = re.compile('( *\+ *)|( *<*(-+|=+)> *)').sub('\t', tmp_metabolites).split('\t')
       
         #TODO: Can the user specifying the reversibility override the reaction equation?
         #(i.e. If self.reversibility != '' then do the following? )
         #Change the reversible check to a regular expression
-        if ' <=> ' in self.reaction or ' <==> ' in self.reaction:
+        if ' <=> ' in reaction_string or ' <==> ' in reaction_string:
             self.reversibility = 1
             reaction_delimiter_re = re.compile(' +<=+> +')
-        elif ' <-> ' in self.reaction or ' <--> ' in self.reaction:
+        elif ' <-> ' in reaction_string or ' <--> ' in reaction_string:
             self.reversibility = 1
             reaction_delimiter_re = re.compile(' +<-+> +')
-        elif '-> ' in  self.reaction:
+        elif '-> ' in  reaction_string:
             self.reversibility = 0
             reaction_delimiter_re = re.compile(' +-+> +')
-        elif '<- ' in  self.reaction:
+        elif '<- ' in  reaction_string:
             self.reversibility = 0
             reaction_delimiter_re = re.compile(' +<-+ +')
 
-        [tmp_reactants, tmp_products] = reaction_delimiter_re.split(self.reaction)
+        [tmp_reactants, tmp_products] = reaction_delimiter_re.split(reaction_string)
         element_re = re.compile(' +\+ +')
         tmp_reactants = element_re.split(tmp_reactants)
         tmp_products = element_re.split(tmp_products)
@@ -448,6 +451,7 @@ class Reaction(Object):
                                  for x, y in zip(tmp_metabolites, tmp_coefficients)])
         #Make the metabolites aware of participating in this reaction
         [x._reaction.add(self) for x in self._metabolites]
+
 
     def build_reaction_string(self, use_metabolite_names=False):
         """Generate a human readable reaction string.
@@ -486,14 +490,8 @@ class Reaction(Object):
         """Generate a human readable reaction string.
         
         """
-        if not self.id:
-            print 'Reaction has not been populated.'
-            return
-
-        if len(self._metabolites) == 0:
-            self.reaction = None
-        else:
-            self.reaction = self.build_reaction_string()
+        warn("deprecated")
+        return
 
     def check_mass_balance(self):
         """Makes sure that the reaction is elementally-balanced.
@@ -515,16 +513,17 @@ class Reaction(Object):
         """Prints most of the contents of a reaction as a series of strings.
         
         """
-        if not self.id:
-            print 'Reaction has not been populated.'
-            return
-        for the_item in [self.reaction, [(k.id, v)
-                                         for k, v in self._metabolites.items()],
-                         self.reversibility, self.lower_bound, self.upper_bound,
-                         self.objective_coefficient, self.subsystem,
-                         self.gene_reaction_rule, [x.id for x in self._genes],
-                         self._metabolites]:
-            print repr(the_item)
+        
+        print "reaction:", self.id
+        print "subsystem", self.subsystem
+        print self.reaction
+        print "metabolites:"
+        print self._metabolites
+        print "bounds: (%.2f, %.2f)" % (self.lower_bound, self.upper_bound)
+        print "objective_coefficient", self.objective_coefficient
+        print "gene reaction rule:", self.gene_reaction_rule
+        print "all genes:", ", ".join(i.id for i in self._genes)
+
 
     def get_compartments(self):
         """
@@ -532,35 +531,31 @@ class Reaction(Object):
         return(list(set([x.compartment for x in self._metabolites])))
 
 #DEPRECATED SECTION
-    def process_prefixed_reaction(self):
-        """Deal with reaction names that have a prefix.
+def process_prefixed_reaction(self, reaction_string):
+    """Deal with reaction names that have a prefix.
 
-        DEPRECATED
-        This is necessary when parsing text files.  It is better
-        to get the reactions from SBML files.
+    DEPRECATED
+    This is necessary when parsing text files.  It is better
+    to get the reactions from SBML files.
 
-        This can be moved to a tools section
-        
-        """
-        from warnings import warn
-        warn('Reaction.process_prefixed_reaction is deprecated')
-        the_compartment, the_reaction = self.reaction.split(':')
-        the_compartment = the_compartment.rstrip(' ')
-        the_reaction = the_reaction.lstrip(' ')
-        re_spaces = re.compile(' {2,} ')
-        the_reaction = re_spaces.subn(' ', the_reaction)[0]
-        the_atoms = the_reaction.split(' ')
-        re_director = re.compile('( *<*(-+|=+)> *)')
-        re_stoich_coeff = re.compile('^\d+\.?\d*$')
-        new_reaction = ''
-        for the_atom in the_atoms:
-            new_reaction += ' '
-            if the_atom != '+' and re_director.match(the_atom) is None \
-                   and re_stoich_coeff.match(the_atom) is None:
-                the_atom += the_compartment
-            new_reaction += the_atom
-        self.reaction = new_reaction[1:]
-
-#
-#END Class Reaction
-########################
+    This can be moved to a tools section
+    
+    """
+    from warnings import warn
+    warn('Reaction.process_prefixed_reaction is deprecated')
+    the_compartment, the_reaction = reaction_string.split(':')
+    the_compartment = the_compartment.rstrip(' ')
+    the_reaction = the_reaction.lstrip(' ')
+    re_spaces = re.compile(' {2,} ')
+    the_reaction = re_spaces.subn(' ', the_reaction)[0]
+    the_atoms = the_reaction.split(' ')
+    re_director = re.compile('( *<*(-+|=+)> *)')
+    re_stoich_coeff = re.compile('^\d+\.?\d*$')
+    new_reaction = ''
+    for the_atom in the_atoms:
+        new_reaction += ' '
+        if the_atom != '+' and re_director.match(the_atom) is None \
+               and re_stoich_coeff.match(the_atom) is None:
+            the_atom += the_compartment
+        new_reaction += the_atom
+    return new_reaction[1:]
