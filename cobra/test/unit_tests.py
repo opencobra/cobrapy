@@ -86,6 +86,15 @@ class TestDictList(TestCase):
             assert self.list[i].id == copied[i].id
             assert self.list[i] is not copied[i]
 
+    def testQuery(self):
+        obj2 = Object("test2")
+        self.list.append(obj2)
+        result = self.list.query("test1")  # matches only test1
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], self.obj)
+        result = self.list.query("test")  # matches test1 and test2
+        self.assertEqual(len(result), 2)
+
             
 
 class CobraTestCase(TestCase):

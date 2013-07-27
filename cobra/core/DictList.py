@@ -73,17 +73,17 @@ class DictList(list):
         if attribute == None:
             select_attribute = lambda x : x
         else:
-            select_attribute = lambda x: getattr(the_object, attribute)
+            select_attribute = lambda x: getattr(x, attribute)
 
         # if the search_function is a regular expression
         if isinstance(search_function, str):
             search_function = re.compile(search_function)
         if hasattr(search_function, "findall"):
             matches = [i for i in self
-                if search_function.findall(select_attribute(the_object)) != []]
+                if search_function.findall(select_attribute(i)) != []]
         else:
             matches = [i for i in self
-                if search_function(select_attribute(the_object))]
+                if search_function(select_attribute(i))]
         return DictList(matches)
 
 
