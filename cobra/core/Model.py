@@ -253,7 +253,7 @@ class Model(Object):
         self.reactions += reaction_list
 
 
-    def to_array_based_model(self, deepcopy_model=False):
+    def to_array_based_model(self, deepcopy_model=False, convert_S_to_lil_matrix=True):
         """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model which
         may be used to perform linear algebra operations with the
         stoichiomatric matrix.
@@ -261,9 +261,15 @@ class Model(Object):
         deepcopy_model: Boolean.  If False then the ArrayBasedModel points
         to the Model
         
+        convert_S_to_lil_matrix: Boolean. If True then the ArrayBasedModel S is 
+        converted from scipy.sparse.dok_matrix to scipy.sparse.lil_matrix after
+        construction        
+        
         """
         from .ArrayBasedModel import ArrayBasedModel
-        return ArrayBasedModel(self, deepcopy_model=deepcopy_model)
+        return ArrayBasedModel(self, deepcopy_model=deepcopy_model, \
+            convert_S_to_lil_matrix=convert_S_to_lil_matrix)
+
 
 
     def optimize(self, new_objective=None, objective_sense='maximize',
