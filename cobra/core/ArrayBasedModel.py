@@ -42,13 +42,18 @@ class ArrayBasedModel(Model):
           for x in self.__dict__[y]]
          for y in ['reactions', 'genes', 'metabolites']]
 
-    def __init__(self, description=None, deepcopy_model=False):
+    def __init__(self, description=None, deepcopy_model=False, \
+        convert_S_to_lil_matrix=True):
         """
         description: None | String | cobra.Model
 
         deepcopy_model: Boolean.  If True and description is
         a cobra.Model then make a deepcopy of the Model before
         creating the ArrayBasedModel.
+        
+        convert_S_to_lil_matrix: Boolean. If True then the ArrayBasedModel S is 
+        converted from scipy.sparse.dok_matrix to scipy.sparse.lil_matrix after
+        construction
         
         """
         if deepcopy_model and isinstance(description, Model):
@@ -60,7 +65,7 @@ class ArrayBasedModel(Model):
         self.objective_coefficients = None
         self.b = None
         self.constraint_sense = None
-        self.update()
+        self.update(convert_S_to_lil_matrix=convert_S_to_lil_matrix)
 
     def __add__(self, other_model):
         """Adds two models. +
@@ -231,7 +236,7 @@ class ArrayBasedModel(Model):
         self.b = array(_b)
         self.constraint_sense = _constraint_sense
          
-    def _update_matrices(self, reaction_list=None):
+    def _update_matrices(self, reaction_list=None, convert_S_to_lil_matrix=True):
         """
         reaction_list: None or a list of cobra.Reaction objects that are in
         self.reactions.  If None then reconstruct the whole matrix.
@@ -240,6 +245,10 @@ class ArrayBasedModel(Model):
 
         In the future, we'll be able to use reactions from anywhere in the
         list
+
+        convert_S_to_lil_matrix: Boolean. If True then the ArrayBasedModel S is 
+        converted from scipy.sparse.dok_matrix to scipy.sparse.lil_matrix after
+        construction
 
         
         WARNING: This function is only used after the Model has been
@@ -291,13 +300,19 @@ class ArrayBasedModel(Model):
         if not self.S.getformat() == 'dok':
             self.S = self.S.todok()
         self.S.update(coefficient_dictionary)
-        self.S = self.S.tolil()
+        
+        if convert_S_to_lil_matrix:
+            self.S = self.S.tolil()
 
-    def update(self):
+    def update(self, convert_S_to_lil_matrix=True):
         """Regenerates the stoichiometric matrix and vectors
         
+        convert_S_to_lil_matrix: Boolean. If True then the ArrayBasedModel S is 
+        converted from scipy.sparse.dok_matrix to scipy.sparse.lil_matrix after
+        construction
+
         """
-        self._update_matrices()
+        self._update_matrices(convert_S_to_lil_matrix=convert_S_to_lil_matrix)
         self._update_metabolite_vectors()
 #
 #END Class ArrayBasedModel

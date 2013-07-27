@@ -194,47 +194,48 @@ class Model(Object):
         reaction: A :class:`~cobra.core.Reaction` object
 
         """
-        self.add_reactions(reaction)
+        self.add_reactions([reaction])
 
         
     def add_reactions(self, reaction_list):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
 
-        reaction_list: A :class:`~cobra.core.Reaction` object or a list of them
+        reaction_list: A list of :class:`~cobra.core.Reaction` objects
       
         """
         #Only add the reaction if one with the same ID is not already
         #present in the model.
-        if type(reaction_list) not in [tuple, list, set, DictList]:
-            reaction_list = [reaction_list]
-        #TODO: Use the DictList properties
-        reactions_in_model = set([x.id
-                                  for x in reaction_list]).intersection([x.id
-                                                                       for x in self.reactions])
-        if len(reactions_in_model) > 0:
-            print '%i of %i reaction(s) %s already in the model'%(len(reactions_in_model),
-                                                          len(reaction_list), repr(reactions_in_model))
-            return
-        #TODO: Consider using DictList's here, just make sure that the items get appended
-        #to self.metabolites, self.genes
-        metabolite_dict = {}
-        gene_dict = {}
-        [metabolite_dict.update(dict([(y.id, y) for y in x._metabolites]))
-         for x in reaction_list]
-        new_metabolites = [metabolite_dict[x]
-                           for x in set(metabolite_dict).difference(self.metabolites._dict)]
-        if new_metabolites:
-            self.add_metabolites(new_metabolites)
 
-        [gene_dict.update(dict([(y.id, y) for y in x._genes]))
-         for x in reaction_list]
-        new_genes = [gene_dict[x]
-                           for x in set(gene_dict).difference(self.genes._dict)]
-        if new_genes:
-            self.genes += DictList(new_genes)
-            [setattr(x, '_model', self)
-             for x in new_genes]
+        reaction_list = DictList(reaction_list)
+        reactions_in_model = [i.id for i in reaction_list if self.reactions.has_id(i.id)]
+        
+        if len(reactions_in_model) > 0:
+            raise Exception("Reactions already in the model: " + \
+                ", ".join(reactions_in_model))
+
+        # add new metabolites and genes
+        new_metabolites = {}        
+        new_genes = {}
+        for reaction in reaction_list:
+            for metabolite in reaction._metabolites:
+                if not self.metabolites.has_id(metabolite.id):
+                    new_metabolites[metabolite.id] = metabolite
+            for gene in reaction._genes:
+                if not self.genes.has_id(gene.id):
+                    new_genes[gene.id] = gene
+
+        if len(new_metabolites) > 0:
+            new_metabolites_list = DictList(new_metabolites.values())
+            self.metabolites += new_metabolites_list
+            for new_metabolite in new_metabolites_list:
+                new_metabolite._model = self
+            
+        if len(new_genes) > 0:
+            new_genes_list = DictList(new_genes.values())
+            self.genes += new_genes_list
+            for new_gene in new_genes_list:
+                new_gene._model = self
 
         #This might slow down performance
         #Make sure each reaction knows that it is now part of a Model and uses
@@ -252,7 +253,7 @@ class Model(Object):
         self.reactions += reaction_list
 
 
-    def to_array_based_model(self, deepcopy_model=False):
+    def to_array_based_model(self, deepcopy_model=False, convert_S_to_lil_matrix=True):
         """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model which
         may be used to perform linear algebra operations with the
         stoichiomatric matrix.
@@ -260,10 +261,14 @@ class Model(Object):
         deepcopy_model: Boolean.  If False then the ArrayBasedModel points
         to the Model
         
+        convert_S_to_lil_matrix: Boolean. If True then the ArrayBasedModel S is 
+        converted from scipy.sparse.dok_matrix to scipy.sparse.lil_matrix after
+        construction        
+        
         """
         from .ArrayBasedModel import ArrayBasedModel
-        return ArrayBasedModel(self, deepcopy_model=deepcopy_model)
-
+        return ArrayBasedModel(self, deepcopy_model=deepcopy_model, \
+            convert_S_to_lil_matrix=convert_S_to_lil_matrix)
 
     def optimize(self, new_objective=None, objective_sense='maximize',
                  the_problem=None, solver='glpk', 
