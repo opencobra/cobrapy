@@ -79,8 +79,8 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         start_time = time()
     model_doc = readSBML(sbml_filename)
     if print_time:
-       print 'Loading %s took %1.2f seconds'%(sbml_filename,
-                                              time()-start_time)
+       print('Loading %s took %1.2f seconds'%(sbml_filename,
+                                              time()-start_time))
                                              
      
     sbml_model = model_doc.getModel()
