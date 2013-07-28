@@ -1,4 +1,5 @@
 recursive-include cobra *.py *.pickle *.mat *.xml
+include RELEASE-VERSION
 prune cobra/oven
 prune build 
 prune dist
