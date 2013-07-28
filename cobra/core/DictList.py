@@ -1,15 +1,6 @@
 from copy import copy, deepcopy
 import re
 
-def get_id(object):
-    """return an id for the object
-
-    This allows the function to be generalize to non-cobra.core objects,
-    however, this added function call slows things down.
-
-    """
-    return object.id
-
 class DictList(list):
     """A combined dict and list that feels like a list, but has
     the speed benefits of a dict.  This may be eventually
@@ -27,6 +18,10 @@ class DictList(list):
         self._object_dict = {}
         self._generate_index()
 
+
+    def has_id(self, id):
+        return self._dict.has_key(id)
+    
     def _check(self, id):
         """make sure duplicate id's are not added.
         This function is called before adding in elements.
@@ -39,11 +34,13 @@ class DictList(list):
         """rebuild the _dict index
 
         """
-        self._dict = {}
-        self._object_dict = {}
-        [(self._dict.update({v.id: k}),
-          self._object_dict.update({v.id: v}))
-         for k, v in enumerate(self)]
+        _dict = self._dict
+        object_dict = self._object_dict
+        _dict.clear()
+        object_dict.clear()
+        for k, v in enumerate(self):
+            _dict[v.id] = k
+            object_dict[v.id] = v
 
     def get_by_id(self, id):
         """return the element with a matching id
@@ -55,8 +52,7 @@ class DictList(list):
         """return a list of the given attribute for every object
 
         """
-        return [getattr(i, attribute)
-                for i in self]
+        return [getattr(i, attribute) for i in self]
 
     def query(self, search_function, attribute="id"):
         """query the list
@@ -77,25 +73,23 @@ class DictList(list):
         if attribute == None:
             select_attribute = lambda x : x
         else:
-            select_attribute = lambda x: getattr(the_object, attribute)
+            select_attribute = lambda x: getattr(x, attribute)
 
         # if the search_function is a regular expression
-        match_list = DictList()
         if isinstance(search_function, str):
             search_function = re.compile(search_function)
         if hasattr(search_function, "findall"):
-            for the_object in self:
-                if search_function.findall(select_attribute(the_object)) != []:
-                    match_list.append(the_object)
+            matches = [i for i in self
+                if search_function.findall(select_attribute(i)) != []]
         else:
-            for the_object in self:
-                if search_function(select_attribute(the_object)):
-                    match_list.append(the_object)
-        return match_list
+            matches = [i for i in self
+                if search_function(select_attribute(i))]
+        return DictList(matches)
+
 
     # overriding default list functions with new ones
     def __setitem__(self, i, y):
-        the_id = get_id(y)
+        the_id = y.id
         self._check(the_id)
         super(DictList, self).__setitem__(i, y)
         self._dict[the_id] = i
@@ -106,14 +100,14 @@ class DictList(list):
         the same id.
         
         """
-        the_id = get_id(new_object)
+        the_id = new_object.id
         the_index = self._dict[the_id]
         super(DictList, self).__setitem__(the_index, new_object)
         self._object_dict[the_id] = new_object
         
 
     def append(self, object):
-        the_id = get_id(object)
+        the_id = object.id
         self._check(the_id)
         self._dict[the_id] = len(self)
         super(DictList, self).append(object)
@@ -121,12 +115,16 @@ class DictList(list):
 
     def union(self, iterable):
         """adds elements with id's not already in the model"""
-        [self.append(i)
-         for i in iterable
-         if get_id(i) not in self._dict]
+        _dict = self._dict
+        append = self.append
+        for i in iterable:
+            if i.id not in _dict:
+                append(i)
 
     def extend(self, iterable):
-        [self.append(i) for i in iterable]
+        append = self.append
+        for i in iterable:
+            append(i)
 
     def __add__(self, other, should_deepcopy=True):
         """
@@ -155,13 +153,14 @@ class DictList(list):
         """
         # because values are unique, start and stop are not relevant
         try:
-            the_object = self._dict[id]
+            return self._dict[id]
         except:
-            the_object = self._dict[id.id]
-            if self[the_object] is not id:
-                raise Exception("The id for the cobra.object (%s) provided "%repr(id) +\
-                                "is in this dictionary but the_id is not the cobra.object")
-        return the_object
+            i = self._dict[id.id]
+            if self[i] is not id:
+                raise Exception(
+                    "Another object with the identical id (%s) found" % id.id)
+            return i
+        raise Exception("%s not found" % str(i))
 
     def __contains__(self, object):
         """DictList.__contains__(object) <==> object in DictList
@@ -170,7 +169,7 @@ class DictList(list):
 
         """
         if hasattr(object, "id"):
-            the_id = get_id(object)
+            the_id = object.id
         # allow to check with the object itself in addition to the id
         else:
             the_id = object
@@ -195,7 +194,7 @@ class DictList(list):
     # these functions are slower because they rebuild the _dict every time
     # TODO: speed up
     def insert(self, index, object):
-        self._check(get_id(object))
+        self._check(object.id)
         super(DictList, self).insert(index, object)
         self._generate_index()
 
@@ -204,8 +203,10 @@ class DictList(list):
         self._generate_index()
         return value
 
-    def remove(self, *args, **kwargs):
-        super(DictList, self).remove(*args, **kwargs)
+    def remove(self, x):
+        # Each item is unique in the list which allows this
+        # It is much faster to do a dict lookup than n string comparisons
+        super(DictList, self).pop(self.index(x))
         self._generate_index()
 
     def reverse(self, *args, **kwargs):
@@ -229,6 +230,7 @@ class DictList(list):
         self._generate_index()
 
     def __getattr__(self, attr):
+        # makes items attributes as well
         try:
             return super(DictList, self).__getattribute__(attr)
         except:
@@ -240,7 +242,7 @@ class DictList(list):
                     (attr))
 
     def __dir__(self):
+        # override this to allow tab complete of items by their id
         attributes = self.__class__.__dict__.keys()
         attributes.extend(self._dict.keys())
         return attributes
-
