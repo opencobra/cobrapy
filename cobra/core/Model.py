@@ -206,6 +206,8 @@ class Model(Object):
         """
         #Only add the reaction if one with the same ID is not already
         #present in the model.
+        
+        assert len(reaction_list) > 0
 
         reaction_list = DictList(reaction_list)
         reactions_in_model = [i.id for i in reaction_list if self.reactions.has_id(i.id)]
@@ -214,43 +216,37 @@ class Model(Object):
             raise Exception("Reactions already in the model: " + \
                 ", ".join(reactions_in_model))
 
-        # add new metabolites and genes
-        new_metabolites = {}        
-        new_genes = {}
+        # Add reactions. Also take care of genes and metabolites in the loop
         for reaction in reaction_list:
-            for metabolite in reaction._metabolites:
+            self.reactions.append(reaction)
+            reaction._model = self  # the reaction now points to the model
+            # keys() is necessary because the dict will be modified during
+            # the loop
+            for metabolite in reaction._metabolites.keys():
+                # if the metabolite is not in the model, add it
                 if not self.metabolites.has_id(metabolite.id):
-                    new_metabolites[metabolite.id] = metabolite
-            for gene in reaction._genes:
+                    self.metabolites.append(metabolite)
+                    metabolite._model = self
+                    metabolite._reaction = set([reaction])
+                # A copy of the metabolite exists in the model, the reaction
+                # needs to point to the metabolite in the model.
+                else:
+                    stoichiometry = reaction._metabolites.pop(metabolite)
+                    model_metabolite = self.metabolites.get_by_id(metabolite.id)
+                    reaction._metabolites[model_metabolite] = stoichiometry
+                    model_metabolite._reaction.add(reaction)
+
+            for gene in reaction._genes.keys():
+                # If the gene is not in the model, add it
                 if not self.genes.has_id(gene.id):
-                    new_genes[gene.id] = gene
-
-        if len(new_metabolites) > 0:
-            new_metabolites_list = DictList(new_metabolites.values())
-            self.metabolites += new_metabolites_list
-            for new_metabolite in new_metabolites_list:
-                new_metabolite._model = self
-            
-        if len(new_genes) > 0:
-            new_genes_list = DictList(new_genes.values())
-            self.genes += new_genes_list
-            for new_gene in new_genes_list:
-                new_gene._model = self
-
-        #This might slow down performance
-        #Make sure each reaction knows that it is now part of a Model and uses
-        #metabolites in the Model and genes in the Model
-        for the_reaction in reaction_list:
-            the_reaction._model = self
-            the_reaction._metabolites = dict([(self.metabolites.get_by_id(k.id), v)
-                                             for k, v in the_reaction._metabolites.items()])
-            the_reaction._genes = dict([(self.genes.get_by_id(k.id), v)
-                                             for k, v in the_reaction._genes.items()])
-            #Make sure the metabolites and genes are aware of the reaction
-            the_reaction._update_awareness()
-            
-        #Add the reactions to the Model
-        self.reactions += reaction_list
+                    self.genes.append(gene)
+                    gene._model = self
+                    gene._reaction = set([reaction])
+                # Otherwise, make the gene point to the one in the model
+                else:
+                    model_gene = self.genes.get_by_id(gene.id)
+                    reaction._genes[model_gene] = reaction._genes.pop(gene)
+                    model_gene._reaction.add(reaction)
 
 
     def to_array_based_model(self, deepcopy_model=False):

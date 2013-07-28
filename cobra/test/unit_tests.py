@@ -110,16 +110,36 @@ class TestCobraCore(CobraTestCase):
         old_metabolite_count = len(self.model.metabolites)
         dummy_metabolite_1 = Metabolite("test_foo_1")
         dummy_metabolite_2 = Metabolite("test_foo_2")
+        actual_metabolite = self.model.metabolites[0]
+        copy_metabolite = self.model.metabolites[1].copy()
         dummy_reaction = Reaction("test_foo_reaction")
         dummy_reaction.add_metabolites({dummy_metabolite_1: -1,
-                                        dummy_metabolite_2: 1})
+                                        dummy_metabolite_2: 1,
+                                        copy_metabolite: -2,
+                                        actual_metabolite: 1})
         self.model.add_reaction(dummy_reaction)
         self.assertEqual(self.model.reactions.get_by_id(dummy_reaction.id),
                          dummy_reaction)
         for x in [dummy_metabolite_1, dummy_metabolite_2]:
             self.assertEqual(self.model.metabolites.get_by_id(x.id), x)
+        # should have added 1 reaction and 2 metabolites
         self.assertEqual(len(self.model.reactions), old_reaction_count + 1)
         self.assertEqual(len(self.model.metabolites), old_metabolite_count + 2)
+        # tests on theadded reaction
+        reaction_in_model = self.model.reactions.get_by_id(dummy_reaction.id)
+        self.assertIs(type(reaction_in_model), Reaction)
+        self.assertIs(reaction_in_model, dummy_reaction)
+        self.assertEqual(len(reaction_in_model._metabolites), 4)
+        for i in reaction_in_model._metabolites:
+            self.assertEqual(type(i), Metabolite)
+        # tests on the added metabolites
+        met1_in_model = self.model.metabolites.get_by_id(dummy_metabolite_1.id)
+        self.assertIs(met1_in_model, dummy_metabolite_1)
+        #assertIsNot is not in python 2.6
+        copy_in_model = self.model.metabolites.get_by_id(copy_metabolite.id)
+        self.assertTrue(copy_metabolite is not copy_in_model)
+        self.assertIs(type(copy_in_model), Metabolite)
+        self.assertTrue(dummy_reaction in actual_metabolite._reaction)
 
     def test_delete_reaction(self):
         old_reaction_count = len(self.model.reactions)
