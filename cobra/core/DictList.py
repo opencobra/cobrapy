@@ -157,10 +157,10 @@ class DictList(list):
         except:
             i = self._dict[id.id]
             if self[i] is not id:
-                raise Exception(
+                raise ValueError(
                     "Another object with the identical id (%s) found" % id.id)
             return i
-        raise Exception("%s not found" % str(i))
+        raise ValueError("%s not found" % str(i))
 
     def __contains__(self, object):
         """DictList.__contains__(object) <==> object in DictList
@@ -190,25 +190,54 @@ class DictList(list):
         self._generate_index()
         the_copy._generate_index()
         return the_copy
+    
+    # The following deepcopy function will be faster because it does not
+    # regenerate the index for the current object.
+    # TODO consider using
+    #def __deepcopy__(self, *args, **kwargs):
+    #    _dict = self._dict
+    #    _object_dict = self._object_dict
+    #    self._dict = {}
+    #    self._object_dict = {}
+    #    the_copy = deepcopy(super(DictList, self), *args, **kwargs)
+    #    self._dict = _dict
+    #    self._object_dict = _object_dict
+    #    the_copy._generate_index()
+    #    return the_copy
 
-    # these functions are slower because they rebuild the _dict every time
-    # TODO: speed up
     def insert(self, index, object):
         self._check(object.id)
         super(DictList, self).insert(index, object)
-        self._generate_index()
+        self._object_dict[object.id] = object
+        # all subsequent entries now have been shifted up by 1
+        _dict = self._dict
+        for i in _dict:
+            j = _dict[i]
+            if j >= index:
+                _dict[i] = j + 1
+        _dict[object.id] = index
 
-    def pop(self, *args, **kwargs):
-        value = super(DictList, self).pop(*args, **kwargs)
-        self._generate_index()
+    def pop(self, *args):
+        value = super(DictList, self).pop(*args)
+        index = self._dict.pop(value.id)
+        self._object_dict.pop(value.id)
+        # If the pop occured from a location other than the end of the list,
+        # we will need to subtract 1 from every entry afterwards
+        if len(args) == 0 or args == [-1]: # removing from the end of the list
+            return
+        _dict = self._dict
+        for i in _dict:
+            j = _dict[i]
+            if j > index:
+                _dict[i] = j - 1
         return value
 
     def remove(self, x):
         # Each item is unique in the list which allows this
         # It is much faster to do a dict lookup than n string comparisons
-        super(DictList, self).pop(self.index(x))
-        self._generate_index()
+        self.pop(self.index(x))
 
+    # these functions are slower because they rebuild the _dict every time
     def reverse(self, *args, **kwargs):
         super(DictList, self).reverse(*args, **kwargs)
         self._generate_index()
