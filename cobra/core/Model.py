@@ -242,6 +242,7 @@ class Model(Object):
         #metabolites in the Model and genes in the Model
         for the_reaction in reaction_list:
             the_reaction._model = self
+            #NOTE: Probably faster to use metabolite_dict and gene_dict
             the_reaction._metabolites = dict([(self.metabolites.get_by_id(k.id), v)
                                              for k, v in the_reaction._metabolites.iteritems()])
             the_reaction._genes = set([self.genes.get_by_id(k.id)
