@@ -1,7 +1,7 @@
 import ez_setup
 ez_setup.use_setuptools()
 from setuptools import setup, find_packages
-
+from cobra.version import get_version
 __version = get_version()
 
 setup(
