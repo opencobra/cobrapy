@@ -1,0 +1,26 @@
+#reaction-labels{ 
+    font-family: sans-serif; font-style: italic; font-weight: bold; fill: rgb(32, 32, 120);text-rendering: optimizelegibility;
+}
+#metabolite-labels{
+    font-family: sans-serif; font-style: italic; font-weight: bold;
+}
+#misc-labels{
+    font-family: sans-serif; font-weight: bold; fill: rgb(120,120,120); text-rendering: optimizelegibility;
+}
+.line-arrow{
+    fill: none; 
+}
+
+.membrane {
+    fill: none;
+    stroke: rgb(255, 187, 0);
+}
+
+.inner-membrane {
+    fill: white;   
+}
+
+.outer-membrane {
+    fill: rgb(255, 238, 135);
+    stroke: rgb(255, 187, 0);
+}

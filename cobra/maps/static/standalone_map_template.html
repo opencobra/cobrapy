@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <style>
+            .overlay {
+                fill: none;
+                pointer-events: all;
+                }
+        </style>
+        <script language="javascript" type="text/javascript" charset="utf-8">
+            __ALL_JAVASCRIPT__
+            window.onload = function() {
+                visBioMap.visualizeit(d3.select("#map"), map_data, style, flux, null, null, null);
+                svg = document.getElementsByTagName("svg")[0];
+            }
+
+            //window.onresize = function() {}
+        </script>
+        
+    </head>
+    <body>
+        <button onclick="download_map()">Download svg</button>
+        <div id="map"></div>
+    </body>
+</html>

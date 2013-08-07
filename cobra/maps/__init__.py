@@ -1,1 +1,1 @@
-from maps import Map, default_color_map, maps_dir
+from visbio import Map, maps_dir
