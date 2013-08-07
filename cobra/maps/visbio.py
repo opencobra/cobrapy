@@ -72,17 +72,28 @@ class Map(object):
             'var style = "%s";' % style])
         return javascript
 
-    def create_standalone_html(self, outfile=None):
+    def create_standalone_html(self, outfilepath=None):
+        """saves an html file containing the map"""
         with open(join(static_dir, "standalone_map_template.html")) as infile:
             template = infile.read()
         template = template.replace("__ALL_JAVASCRIPT__", self._assemble_javascript())
-        with open("/home/aebrahim/test2.html", "w") as outfile:
-            outfile.write(template)
+        if outfilepath is not None:
+            with open(outfilepath, "w") as outfile:
+                outfile.write(template)
+            return outfilepath
+        else:
+            from tempfile import mkstemp
+            from os import write, close
+            os_file, filename = mkstemp(suffix=".html")
+            write(os_file, template)
+            close(os_file)
+            return filename
     
     
     def view_browser(self):
+        """launches a webpage with the map open"""
         import webbrowser
-        # TODO finish
+        webbrowser.open("file://" + self.create_standalone_html())
 
 
     def run_server(self):
