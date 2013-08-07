@@ -465,7 +465,7 @@ function download_map() {
     a.download = 'map.svg'; // file name
     xml = (new XMLSerializer()).serializeToString(svg); // convert node to xml string
     a.setAttribute("href-lang", "image/svg+xml")
-    a.href = 'data:application/octet-stream;base64,' + btoa(xml); // create data uri
+    a.href = 'data:image/svg+xml;base64,' + btoa(xml); // create data uri
     // <a> constructed, simulate mouse click on it
     ev = document.createEvent("MouseEvents");
     ev.initMouseEvent("click", true, false, self, 0, 0, 0, 0, 0, false, false, false, false, 0, null);

@@ -51,13 +51,12 @@ class Map(object):
         self.flux = flux
 
     def _repr_html_(self):
-        from IPython.display import HTML
-        with open(html_filepath, 'r') as f:
-            html = f.read()
-        javascript = self._assemble_javascript()
-        javascript += """\nvisBioMap.visualizeit(d3.select("#map"), map_data, style, flux, null, null, null);"""
-        javascript += """\nsvg = document.getElementsByTagName("svg")[0];"""
-        return html + """<script type="text/Javascript">%s</script>""" % javascript
+        javascript = """<script type="text/Javascript">
+            %s
+            visBioMap.visualizeit(d3.select("#map"), map_data, style, flux, null, null, null);
+            svg = document.getElementsByTagName("svg")[0];
+        </script>""" % self._assemble_javascript()
+        return ipython_html + javascript
 
 
     def _assemble_javascript(self):
