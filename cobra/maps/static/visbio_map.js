@@ -79,6 +79,7 @@ var visBioMap = (function(d3) {
         // TODO: add correct svg attributes (see '/Users/zaking/Dropbox/lab/optSwap/paper-2-GAPD/old figs/fig5-theoretical-production/')
             .attr("width", width)
             .attr("height", height)
+            .attr("xmlns", "http://www.w3.org/2000/svg")
             .append("g")
             .call(d3.behavior.zoom().scaleExtent([1, 15]).on("zoom", zoom))
             .append("g");
