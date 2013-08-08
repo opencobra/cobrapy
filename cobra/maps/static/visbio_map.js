@@ -73,9 +73,7 @@ var visBioMap = (function(d3) {
             .domain([0, 1.2])
             .range(["#FEF0D9", "#B30000"]);
 
-        d3.select("#svg-container").remove();
-
-        var svg = selection.append("div").attr("id","svg-container")
+        var svg = selection
             .attr("style", "width:"+width+"px;height:"+height+"px;margin:0px auto")// ;border:3px solid black;")
             .append("svg")
         // TODO: add correct svg attributes (see '/Users/zaking/Dropbox/lab/optSwap/paper-2-GAPD/old figs/fig5-theoretical-production/')
@@ -460,7 +458,8 @@ var visBioMap = (function(d3) {
     return maps;
 }(d3));
 
-function download_map() {
+function download_map(div_name) {
+    svg = d3.select("#" + div_name)[0][0].getElementsByTagName("svg")[0]
     var a = document.createElement('a'), xml, ev;
     a.download = 'map.svg'; // file name
     xml = (new XMLSerializer()).serializeToString(svg); // convert node to xml string
