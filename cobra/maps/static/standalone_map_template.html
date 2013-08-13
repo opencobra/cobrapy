@@ -11,8 +11,10 @@
         <script language="javascript" type="text/javascript" charset="utf-8">
             __ALL_JAVASCRIPT__
             window.onload = function() {
+                selection = d3.select("#map")[0][0];
+                selection.style.width = (window.innerWidth - 20) + "px";
+                selection.style.height = (window.innerHeight - 30) + "px";
                 visBioMap.visualizeit(d3.select("#map"), map_data, style, flux, null, null, null);
-                svg = document.getElementsByTagName("svg")[0];
             }
 
             //window.onresize = function() {}

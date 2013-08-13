@@ -35,7 +35,7 @@ var visBioMap = (function(d3) {
 
         var map_w = data.max_map_w, map_h = data.max_map_h;
         var width = parseFloat(selection.style("width")) - 20;
-        var height = parseFloat(selection.style("width")) - 20;
+        var height = parseFloat(selection.style("height")) - 20;
         var factor = Math.min(width/map_w,height/map_h);
         console.log('map_w '+decimal_format(map_w));
         console.log('map_h '+decimal_format(map_h));
