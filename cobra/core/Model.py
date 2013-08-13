@@ -279,8 +279,10 @@ class Model(Object):
         appropriate keyword=value.
 
         new_objective: Reaction, String, or Integer referring to a reaction in
-        cobra_model.reactions to set as the objective.  Currently, only supports single
-        objective coeffients.  Will expand to include mixed objectives.
+        cobra_model.reactions to set as the objective.  In the case where the new_objective
+        is a linear combination of Reactions then new_objective should be a dictionary where
+        the key is the Reaction and the value is the objective coefficient
+        (e.g., 0.1 reaction_1 + 0.5 reaction_2 would be new_objective = {reaction_1: 0.1, reaction_2: 0.5})
         
         objective_sense: 'maximize' or 'minimize'
         
