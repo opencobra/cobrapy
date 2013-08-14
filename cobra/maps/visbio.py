@@ -6,7 +6,7 @@ import json
 maps_dir = join(abspath(dirname(__file__)), "")
 map_cache_dir = join(maps_dir, "map_cache", "")
 static_dir = join(maps_dir, "static", "")
-d3_filepath = join(static_dir, 'd3.v3.js')
+d3_filepath = join(static_dir, 'd3.v3.min.js')
 map_js_filepath = join(static_dir, 'visbio_map.js')
 with open(join(static_dir, 'map.css')) as infile:
     style = infile.read().replace("\n", " ")
