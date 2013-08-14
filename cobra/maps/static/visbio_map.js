@@ -86,6 +86,7 @@ var visBioMap = (function(d3) {
         maps.svg = svg;
 
         svg.append("style")
+            .attr("type", "text/css")
             .text(style);
 
         var g = svg.append('g')
