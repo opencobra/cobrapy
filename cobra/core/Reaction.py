@@ -263,7 +263,7 @@ class Reaction(Object):
             self._genes = set((re.compile(' {2,}').sub(' ', re.compile('\(| and| or|\+|\)').sub('', self.gene_reaction_rule))).split(' ' ))
             if '' in self._genes:
                 self._genes.remove('')
-            self._genes = map(Gene, self._genes)
+            self._genes = set(map(Gene, self._genes))
             #Make the gene aware that it is involved in this reaction
             [x._reaction.add(self) for x in self._genes]
 
