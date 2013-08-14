@@ -42,19 +42,23 @@ class ArrayBasedModel(Model):
           for x in self.__dict__[y]]
          for y in ['reactions', 'genes', 'metabolites']]
 
-    def __init__(self, description=None, deepcopy_model=False):
+    def __init__(self, description=None, deepcopy_model=False, matrix_type='scipy.lil_matrix'):
         """
         description: None | String | cobra.Model
 
         deepcopy_model: Boolean.  If True and description is
         a cobra.Model then make a deepcopy of the Model before
         creating the ArrayBasedModel.
+
+        matrix_type: String. Specifies which type of backend matrix to use for self.S.
+        Currently, 'scipy.lil_matrix' or 'scipy.dok_matrix'
         
         """
         if deepcopy_model and isinstance(description, Model):
             description = description.copy()
         Model.__init__(self, description)
         self.S = None
+        self.matrix_type = matrix_type
         self.lower_bounds = None
         self.upper_bounds = None
         self.objective_coefficients = None
@@ -291,7 +295,11 @@ class ArrayBasedModel(Model):
         if not self.S.getformat() == 'dok':
             self.S = self.S.todok()
         self.S.update(coefficient_dictionary)
-        self.S = self.S.tolil()
+        if self.matrix_type == 'scipy.lil_matrix':
+            try:
+                self.S = self.S.tolil()
+            except Exception, e:
+                warn('Unable to convert S to lil_matrix maintaining in dok_matrix format: %s'%e)
 
     def update(self):
         """Regenerates the stoichiometric matrix and vectors

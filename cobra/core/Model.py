@@ -8,8 +8,6 @@ from warnings import warn
 from copy import deepcopy
 from ..solvers import optimize
 from .Object import Object
-from .Reaction import Reaction
-from .Metabolite import Metabolite
 from .Formula import Formula
 from .DictList import DictList
 #*********************************************************************************
@@ -98,6 +96,9 @@ class Model(Object):
         self.id = self.id + '_' + other_model.id
         return self
 
+    def guided_copy(self):
+        return self.copy()
+
     def copy(self, print_time=False):
         """Provides a partial 'deepcopy' of the Model.  All of the Metabolite, Gene,
         and Reaction objects are created anew but in a faster fashion than deepcopy
@@ -122,11 +123,6 @@ class Model(Object):
         if print_time:
             print 'Gene guided copy: %1.4f'%(time() - start_time)
             start_time = time()
-        #TODO: See if we can use the DictList objects instead
-        metabolite_dict = dict([(k.id, k)
-                                 for k in the_metabolites])
-        gene_dict = dict([(k.id, k)
-                                 for k in the_genes])
         the_reactions = DictList([x.guided_copy(the_copy, the_metabolites._object_dict,
                                                 the_genes._object_dict)
                                   for x in self.reactions])
@@ -221,7 +217,6 @@ class Model(Object):
 
         # Add reactions. Also take care of genes and metabolites in the loop
         for reaction in reaction_list:
-            self.reactions.append(reaction)
             reaction._model = self  # the reaction now points to the model
             # keys() is necessary because the dict will be modified during
             # the loop
@@ -239,7 +234,7 @@ class Model(Object):
                     reaction._metabolites[model_metabolite] = stoichiometry
                     model_metabolite._reaction.add(reaction)
 
-            for gene in reaction._genes.keys():
+            for gene in reaction._genes:
                 # If the gene is not in the model, add it
                 if not self.genes.has_id(gene.id):
                     self.genes.append(gene)
@@ -248,8 +243,10 @@ class Model(Object):
                 # Otherwise, make the gene point to the one in the model
                 else:
                     model_gene = self.genes.get_by_id(gene.id)
-                    reaction._genes[model_gene] = reaction._genes.pop(gene)
+                    reaction._genes.remove(gene)
+                    reaction._genes.add(model_gene)
                     model_gene._reaction.add(reaction)
+        self.reactions += reaction_list
 
 
     def to_array_based_model(self, deepcopy_model=False):
@@ -277,8 +274,10 @@ class Model(Object):
         appropriate keyword=value.
 
         new_objective: Reaction, String, or Integer referring to a reaction in
-        cobra_model.reactions to set as the objective.  Currently, only supports single
-        objective coeffients.  Will expand to include mixed objectives.
+        cobra_model.reactions to set as the objective.  In the case where the new_objective
+        is a linear combination of Reactions then new_objective should be a dictionary where
+        the key is the Reaction and the value is the objective coefficient
+        (e.g., 0.1 reaction_1 + 0.5 reaction_2 would be new_objective = {reaction_1: 0.1, reaction_2: 0.5})
         
         objective_sense: 'maximize' or 'minimize'
         
