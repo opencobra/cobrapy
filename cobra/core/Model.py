@@ -8,8 +8,6 @@ from warnings import warn
 from copy import deepcopy
 from ..solvers import optimize
 from .Object import Object
-from .Reaction import Reaction
-from .Metabolite import Metabolite
 from .Formula import Formula
 from .DictList import DictList
 #*********************************************************************************
@@ -98,6 +96,9 @@ class Model(Object):
         self.id = self.id + '_' + other_model.id
         return self
 
+    def guided_copy(self):
+        return self.copy()
+
     def copy(self, print_time=False):
         """Provides a partial 'deepcopy' of the Model.  All of the Metabolite, Gene,
         and Reaction objects are created anew but in a faster fashion than deepcopy
@@ -122,11 +123,6 @@ class Model(Object):
         if print_time:
             print 'Gene guided copy: %1.4f'%(time() - start_time)
             start_time = time()
-        #TODO: See if we can use the DictList objects instead
-        metabolite_dict = dict([(k.id, k)
-                                 for k in the_metabolites])
-        gene_dict = dict([(k.id, k)
-                                 for k in the_genes])
         the_reactions = DictList([x.guided_copy(the_copy, the_metabolites._object_dict,
                                                 the_genes._object_dict)
                                   for x in self.reactions])
@@ -194,61 +190,62 @@ class Model(Object):
         reaction: A :class:`~cobra.core.Reaction` object
 
         """
-        self.add_reactions(reaction)
+        self.add_reactions([reaction])
 
         
     def add_reactions(self, reaction_list):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
 
-        reaction_list: A :class:`~cobra.core.Reaction` object or a list of them
+        reaction_list: A list of :class:`~cobra.core.Reaction` objects
       
         """
         #Only add the reaction if one with the same ID is not already
         #present in the model.
-        if type(reaction_list) not in [tuple, list, set, DictList]:
+        
+        # This function really should not used for single reactions
+        if not hasattr(reaction_list, "__len__"):
             reaction_list = [reaction_list]
-        #TODO: Use the DictList properties
-        reactions_in_model = set([x.id
-                                  for x in reaction_list]).intersection([x.id
-                                                                       for x in self.reactions])
+            warn("Use add_reaction for single reactions")
+
+        reaction_list = DictList(reaction_list)
+        reactions_in_model = [i.id for i in reaction_list if self.reactions.has_id(i.id)]
+        
         if len(reactions_in_model) > 0:
-            print '%i of %i reaction(s) %s already in the model'%(len(reactions_in_model),
-                                                          len(reaction_list), repr(reactions_in_model))
-            return
-        #TODO: Consider using DictList's here, just make sure that the items get appended
-        #to self.metabolites, self.genes
-        metabolite_dict = {}
-        gene_dict = {}
-        [metabolite_dict.update(dict([(y.id, y) for y in x._metabolites]))
-         for x in reaction_list]
-        new_metabolites = [metabolite_dict[x]
-                           for x in set(metabolite_dict).difference(self.metabolites._dict)]
-        if new_metabolites:
-            self.add_metabolites(new_metabolites)
+            raise Exception("Reactions already in the model: " + \
+                ", ".join(reactions_in_model))
 
-        [gene_dict.update(dict([(y.id, y) for y in x._genes]))
-         for x in reaction_list]
-        new_genes = [gene_dict[x]
-                           for x in set(gene_dict).difference(self.genes._dict)]
-        if new_genes:
-            self.genes += DictList(new_genes)
-            [setattr(x, '_model', self)
-             for x in new_genes]
+        # Add reactions. Also take care of genes and metabolites in the loop
+        for reaction in reaction_list:
+            reaction._model = self  # the reaction now points to the model
+            # keys() is necessary because the dict will be modified during
+            # the loop
+            for metabolite in reaction._metabolites.keys():
+                # if the metabolite is not in the model, add it
+                if not self.metabolites.has_id(metabolite.id):
+                    self.metabolites.append(metabolite)
+                    metabolite._model = self
+                    metabolite._reaction = set([reaction])
+                # A copy of the metabolite exists in the model, the reaction
+                # needs to point to the metabolite in the model.
+                else:
+                    stoichiometry = reaction._metabolites.pop(metabolite)
+                    model_metabolite = self.metabolites.get_by_id(metabolite.id)
+                    reaction._metabolites[model_metabolite] = stoichiometry
+                    model_metabolite._reaction.add(reaction)
 
-        #This might slow down performance
-        #Make sure each reaction knows that it is now part of a Model and uses
-        #metabolites in the Model and genes in the Model
-        for the_reaction in reaction_list:
-            the_reaction._model = self
-            the_reaction._metabolites = dict([(self.metabolites.get_by_id(k.id), v)
-                                             for k, v in the_reaction._metabolites.items()])
-            the_reaction._genes = dict([(self.genes.get_by_id(k.id), v)
-                                             for k, v in the_reaction._genes.items()])
-            #Make sure the metabolites and genes are aware of the reaction
-            the_reaction._update_awareness()
-            
-        #Add the reactions to the Model
+            for gene in reaction._genes:
+                # If the gene is not in the model, add it
+                if not self.genes.has_id(gene.id):
+                    self.genes.append(gene)
+                    gene._model = self
+                    gene._reaction = set([reaction])
+                # Otherwise, make the gene point to the one in the model
+                else:
+                    model_gene = self.genes.get_by_id(gene.id)
+                    reaction._genes.remove(gene)
+                    reaction._genes.add(model_gene)
+                    model_gene._reaction.add(reaction)
         self.reactions += reaction_list
 
 
@@ -277,8 +274,10 @@ class Model(Object):
         appropriate keyword=value.
 
         new_objective: Reaction, String, or Integer referring to a reaction in
-        cobra_model.reactions to set as the objective.  Currently, only supports single
-        objective coeffients.  Will expand to include mixed objectives.
+        cobra_model.reactions to set as the objective.  In the case where the new_objective
+        is a linear combination of Reactions then new_objective should be a dictionary where
+        the key is the Reaction and the value is the objective coefficient
+        (e.g., 0.1 reaction_1 + 0.5 reaction_2 would be new_objective = {reaction_1: 0.1, reaction_2: 0.5})
         
         objective_sense: 'maximize' or 'minimize'
         

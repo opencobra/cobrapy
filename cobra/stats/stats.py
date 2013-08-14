@@ -45,7 +45,8 @@ def combine_p_values(the_p_values, method='z', default_quantile=7.):
     use when the software's normal inverse cdf(p-value) is infinite
     """
     if len(the_p_values) == 1 or sum(the_p_values) == 0:
-        combined_p_value = the_p_values[0]
+        combined_p_value = sum(the_p_values)
+        
     elif method.lower() == 'z':
         #combine p-values using weighted z-score.  To not deal with inifinite
         #values replace 
