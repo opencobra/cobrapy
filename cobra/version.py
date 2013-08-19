@@ -4,8 +4,8 @@ __all__ = ("get_version")
 
 from subprocess import check_output
 from os import path, name
-current_dir = path.dirname(path.abspath(__file__))
-version_file = path.join(current_dir, "VERSION")
+current_directory = path.dirname(path.abspath(__file__))
+version_file = path.join(current_directory, "VERSION")
 
 git_command = "git"
 if name == "nt":
@@ -50,7 +50,7 @@ if name == "nt":
 def call_git_describe(abbrev=4):
     try:
         return check_output([git_command, "describe",  "--tags",
-            "--abbrev=%d" % abbrev], cwd=current_dir).strip()
+            "--abbrev=%d" % abbrev], cwd=current_directory).strip()
     except:
         return None
 

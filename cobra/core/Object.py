@@ -3,12 +3,14 @@
 #Defines common behavior of object in cobra.core
 class Object(object):
     #__slots__ = ['id']
-    def __init__(self, id=None):
+    def __init__(self, id=None, mnx_id=None):
         """
         id: None or a string
         
+        mnx_id: None or a String of the MetaNetX.org ID for the Object
         """
         self.id = id
+        self.mnx_id = mnx_id
         #The following two fields will eventually
         #be objects that enforce basic rules about
         #formatting notes and annotation
@@ -34,6 +36,12 @@ class Object(object):
         [setattr(the_copy, k, v)
          for k, v in self.__dict__.iteritems()]
         return(the_copy)
+    def _copy_parent_attributes(self, gene_object):
+        """Helper function for shallow copying attributes from a parent object
+        into a new child object.
+
+        """
+        [setattr(self, k, v) for k, v in gene_object.__dict__.iteritems()]
 
     ## def __setstate__(self, state):
     ##     self.__dict__.update(state)

@@ -25,10 +25,15 @@ salmonella_reaction_p_values_pickle = __join(data_directory, "salmonella_reactio
 ecoli_sbml = __join(data_directory, "iJO1366.xml")
 ecoli_pickle = __join(data_directory, "iJO1366.pickle")
 ecoli_mat = __join(data_directory, "iJO1366.mat")
+yersinia_sbml = __join(data_directory, 'Yersinia_pestis_CO92_iPC815.xml')
+yersinia_pickle = __join(data_directory, 'Yersinia_pestis_CO92_iPC815.pickle')
+
 __test_pickles = {'Salmonella_enterica': salmonella_pickle,
-                  'Escherichia_coli': ecoli_pickle}
+                  'Escherichia_coli': ecoli_pickle,
+                  'Yersinia_pestis': yersinia_pickle}
 __test_xml = {'Salmonella_enterica': salmonella_sbml,
-              'Escherichia_coli': ecoli_sbml}
+              'Escherichia_coli': ecoli_sbml,
+              'Yersinia_pestis': yersinia_sbml}
 del __abspath, __join, __split, __sep
 
 def create_test_model(test_pickle=salmonella_pickle):
@@ -54,6 +59,9 @@ def create_test_model(test_pickle=salmonella_pickle):
             model = load(infile)
     except:
         #if the pickle can't be loaded then load the sbml xml
+        from warnings import warn
+        warn("Couldn't load %s.  Loading the default model %s instead"%(test_pickle,
+                                                                        salmonella_sbml))
         sys.path.insert(0, cobra_location)
         from cobra.io import read_sbml_model
         model = read_sbml_model(salmonella_sbml)
