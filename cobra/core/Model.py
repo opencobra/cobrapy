@@ -233,7 +233,10 @@ class Model(Object):
                     model_metabolite = self.metabolites.get_by_id(metabolite.id)
                     reaction._metabolites[model_metabolite] = stoichiometry
                     model_metabolite._reaction.add(reaction)
-
+            
+            ## from pdb import set_trace
+            ## if reaction.id == '12PPDStex':
+            ##     set_trace()
             for gene in reaction.get_gene():
                 # If the gene is not in the model, add it
                 if not self.genes.has_id(gene.id):
@@ -243,8 +246,9 @@ class Model(Object):
                 # Otherwise, make the gene point to the one in the model
                 else:
                     model_gene = self.genes.get_by_id(gene.id)
-                    reaction.remove_gene(gene)
-                    reaction.add_gene(model_gene)
+                    if model_gene is not gene:
+                        reaction.remove_gene(gene)
+                        reaction.add_gene(model_gene)
 
         self.reactions += reaction_list
 
