@@ -543,7 +543,6 @@ def read_legacy_sbml(filename, use_hyphens=False):
         reaction.id = fix_legacy_id(reaction.id)
         if reaction.id.startswith("EX_") and reaction.id.endswith("(e)"):
             reaction.id = reaction.id[:-3] + "_e"
-        reaction.reconstruct_reaction()
     model.reactions._generate_index()
     # remove boundary metabolites (end in _b and only present in exchanges)
     for metabolite in model.metabolites:
