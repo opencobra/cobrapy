@@ -47,7 +47,7 @@ if name == "nt":
     git_command = find_git_on_windows()
 
 
-def call_git_describe(abbrev=4):
+def call_git_describe(abbrev=7):
     try:
         return check_output([git_command, "describe",  "--tags",
             "--abbrev=%d" % abbrev], cwd=current_directory).strip()
