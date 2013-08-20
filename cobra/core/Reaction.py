@@ -11,6 +11,9 @@ from copy import deepcopy
 from .Object import Object
 from .Metabolite import Metabolite
 from .Gene import Gene
+
+from warnings import warn
+
 class Reaction(Object):
     """Reaction is a class for holding information regarding
     a biochemical reaction in a cobra.Model object 
@@ -576,7 +579,6 @@ def process_prefixed_reaction(self, reaction_string):
     This can be moved to a tools section
     
     """
-    from warnings import warn
     warn('Reaction.process_prefixed_reaction is deprecated')
     the_compartment, the_reaction = reaction_string.split(':')
     the_compartment = the_compartment.rstrip(' ')
