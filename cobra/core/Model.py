@@ -234,7 +234,7 @@ class Model(Object):
                     reaction._metabolites[model_metabolite] = stoichiometry
                     model_metabolite._reaction.add(reaction)
 
-            for gene in reaction._genes:
+            for gene in reaction.get_gene():
                 # If the gene is not in the model, add it
                 if not self.genes.has_id(gene.id):
                     self.genes.append(gene)
@@ -243,9 +243,9 @@ class Model(Object):
                 # Otherwise, make the gene point to the one in the model
                 else:
                     model_gene = self.genes.get_by_id(gene.id)
-                    reaction._genes.remove(gene)
-                    reaction._genes.add(model_gene)
-                    model_gene._reaction.add(reaction)
+                    reaction.remove_gene(gene)
+                    reaction.add_gene(model_gene)
+
         self.reactions += reaction_list
 
 

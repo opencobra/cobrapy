@@ -539,6 +539,32 @@ class Reaction(Object):
         """
         return(list(set([x.compartment for x in self._metabolites])))
 
+
+    def remove_gene(self, cobra_gene):
+        """Removes the association between a gene and a reaction
+
+        cobra_gene: :class:`~cobra.core.Gene`. A gene that is associated with the reaction.
+        
+        """
+        try:
+            self._genes.remove(cobra_gene)
+            cobra_gene._reaction.remove(self)
+        except:
+            raise Exception('Unable to remove gene %s from reaction %s.'%(cobra_gene.id, self.id))
+
+    def add_gene(self, cobra_gene):
+        """Associates a cobra.Gene object with a cobra.Reaction.
+
+        cobra_gene: :class:`~cobra.core.Gene`. A gene to associate with the reaction.
+        """
+        try:
+            self._genes.add(cobra_gene)
+            cobra_gene._reaction.add(cobra_gene)
+            cobra_gene._model = self._model
+        except Exception, e:
+            raise Exception('Unable to add gene %s to reaction %s'%(cobra_gene.id, self.id))
+                            
+
 #DEPRECATED SECTION
 def process_prefixed_reaction(self, reaction_string):
     """Deal with reaction names that have a prefix.
