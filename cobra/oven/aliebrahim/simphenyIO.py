@@ -2,46 +2,8 @@ from os.path import isfile
 import csv
 import re
 from warnings import warn
-try:
-    from cPickle import load, dump
-except ImportError:
-    from pickle import load, dump
-# Because OrderedDict is not implemented on all systems
-try:
-    from collections import OrderedDict as _dicttype
-except ImportError:
-    _dicttype = dict
-from numpy import array as _array, object as _object
-from scipy.io import loadmat as _loadmat, savemat as _savemat
-from scipy.sparse import coo_matrix as _coo_matrix
+
 import cobra
-try:
-    from cobra.io.sbml import create_cobra_model_from_sbml_file as _sbml_import
-except ImportError:
-    _sbml_import = None
-
-
-
-def load_pickle(pickle_file):
-    """Read in a pickle file.
-
-    Parameters
-    ----------
-    pickle_file : str
-        The path to the pickle to load.
-
-    Returns
-    -------
-    contents : the contents of the pickle
-
-    """
-    # if the user does not add the .pickle extension
-    if not isfile(pickle_file) and not pickle_file.endswith(".pickle") \
-            and isfile("pickle_file" + ".pickle"):
-        pickle_file += ".pickle"
-    with open(pickle_file, "rb") as infile:
-        contents = load(infile)
-    return contents
 
 
 def export_flux_distribution(model, filepath):
@@ -66,44 +28,6 @@ def export_flux_distribution(model, filepath):
         except KeyError, e:
             print "Simpheny id number not found for", e
     outfile.close()
-
-
-
-
-
-
-
-
-def _fix_legacy_id(the_id):
-    the_id = the_id.replace('_DASH_', '__')
-    the_id = the_id.replace('_FSLASH_', '/')
-    the_id = the_id.replace('_BSLASH_', "\\")
-    the_id = the_id.replace('_LPAREN_', '(')
-    the_id = the_id.replace('_LSQBKT_', '[')
-    the_id = the_id.replace('_RSQBKT_', ']')
-    the_id = the_id.replace('_RPAREN_', ')')
-    the_id = the_id.replace('_COMMA_', ',')
-    the_id = the_id.replace('_PERIOD_', '.')
-    the_id = the_id.replace('_APOS_', "'")
-    the_id = the_id.replace('&amp;', '&')
-    the_id = the_id.replace('&lt;', '<')
-    the_id = the_id.replace('&gt;', '>')
-    the_id = the_id.replace('&quot;', '"')
-    the_id = the_id.replace('__', '-')
-    return the_id
-
-
-def read_legacy_sbml(filename):
-    """read in an sbml file and fix the sbml id's"""
-    model = _sbml_import(filename)
-    for metabolite in model.metabolites:
-        metabolite.id = _fix_legacy_id(metabolite.id)
-    model.metabolites._generate_index()
-    for reaction in model.reactions:
-        reaction.id = _fix_legacy_id(reaction.id)
-        reaction.reconstruct_reaction()
-    model.reactions._generate_index()
-    return model
 
 
 def _header_count(filename):
@@ -257,9 +181,4 @@ def read_simpheny(baseName, min_lower_bound=-1000, max_upper_bound=1000,
     # model.update()
     return model
 
-if __name__ == "__main__":
-    model = load_matlab_model(r"C:\Users\aebrahim\Documents\MATLAB\iJO1366")
-    model.update()
-    # from cobra.test import ecoli_pickle
-    # model = load_pickle(ecoli_pickle)
-    # save_matlab_model(model, r"C:\Users\aebrahim\Documents\Matlab\test.mat")
+
