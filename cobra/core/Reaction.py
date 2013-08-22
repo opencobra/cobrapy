@@ -552,8 +552,13 @@ class Reaction(Object):
         try:
             self._genes.remove(cobra_gene)
             cobra_gene._reaction.remove(self)
-        except:
-            raise Exception('Unable to remove gene %s from reaction %s.'%(cobra_gene.id, self.id))
+        except Exception, e:
+            try:
+                if hasattr(self._genes, 'keys'):
+                    self._genes = set(self._genes.keys())
+                    self.remove_gene(cobra_gene)
+            except:
+                raise Exception('Unable to remove gene %s from reaction %s: %s'%(cobra_gene.id, self.id, e))
 
     def add_gene(self, cobra_gene):
         """Associates a cobra.Gene object with a cobra.Reaction.
@@ -565,7 +570,12 @@ class Reaction(Object):
             cobra_gene._reaction.add(cobra_gene)
             cobra_gene._model = self._model
         except Exception, e:
-            raise Exception('Unable to add gene %s to reaction %s'%(cobra_gene.id, self.id))
+            try:
+                if hasattr(self._genes, 'keys'):
+                    self._genes = set(self._genes.keys())
+                    self.add_gene(cobra_gene)
+            except:
+                raise Exception('Unable to add gene %s to reaction %s: %s'%(cobra_gene.id, self.id, e))
                             
 
 #DEPRECATED SECTION
