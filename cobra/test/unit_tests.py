@@ -190,7 +190,7 @@ class TestCobraCore(CobraTestCase):
 
 class TestCobraIO(CobraTestCase):
     try:
-        from libsbml import SBMLReader
+        from cobra.io import sbml
         __test_sbml = True
     except:
         __test_sbml = False
