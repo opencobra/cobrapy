@@ -10,7 +10,7 @@ for model_name in model_names:
     model_pickle = model_name + '.pickle'
     old_model = create_test_model(model_pickle)
     new_model = read_sbml_model(model_name + '.xml')
-    [setattr(x, 'name', old_model.genes.get_by_id(x.id))
+    [setattr(x, 'name', old_model.genes.get_by_id(x.id).name)
      for x in new_model.genes];
     if hasattr(old_model, 'media_compositions'):
         new_model.media_compositions = old_model.media_compositions
