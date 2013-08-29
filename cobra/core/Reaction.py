@@ -99,8 +99,12 @@ class Reaction(Object):
          for x in self._metabolites.keys()]
         [x._reaction.remove(self)
          for x in self._genes]
+        #Replace the model-linked metabolites with the new independent metabolites
+        self._metabolites = {}
         self.add_metabolites(new_metabolites)
-        self._genes = new_genes
+        #Replace the model-linked genes with new indepenent genes
+        self._genes = set()
+        [self.add_gene(k) for k in new_genes]
 
     def delete(self):
         """Removes all associations between a reaction and its container
@@ -567,7 +571,7 @@ class Reaction(Object):
         """
         try:
             self._genes.add(cobra_gene)
-            cobra_gene._reaction.add(cobra_gene)
+            cobra_gene._reaction.add(self)
             cobra_gene._model = self._model
         except Exception, e:
             try:
