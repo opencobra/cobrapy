@@ -143,13 +143,22 @@ class TestCobraCore(CobraTestCase):
 
     def test_delete_reaction(self):
         old_reaction_count = len(self.model.reactions)
-        self.model.remove_reactions([self.model.reactions.get_by_id("PGI")])
+        reaction_to_remove = self.model.reactions.get_by_id("PGI")
+        old_stoichiometry = {}
+        for reaction, stoic in reaction_to_remove._metabolites.items():
+            old_stoichiometry[reaction.id] = stoic
+        self.model.remove_reactions([reaction_to_remove])
         self.assertEqual(len(self.model.reactions), old_reaction_count - 1)
         with self.assertRaises(KeyError):
             self.model.reactions.get_by_id("PGI")
+
+        # ensure old reaction stoichiometry is identical
+        for reaction, stoic in reaction_to_remove._metabolites.items():
+            self.assertEqual(old_stoichiometry[reaction.id], stoic)
+        self.assertEqual(len(reaction_to_remove._metabolites),
+                         len(old_stoichiometry))
         # TODO - delete by id - will this be supported?
         # TODO - delete orphan metabolites - will this be expected behavior?
-        
 
     def test_copy(self):
         """modifying copy should not modify the original"""
