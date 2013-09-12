@@ -75,10 +75,14 @@ class Reaction(Object):
         return self._model
         
 
-    def remove_from_model(self, model=None):
+    def remove_from_model(self, model=None, replace_metabolites=True):
         """Removes the association
 
         model: cobra.Model object.  remove the reaction from this model.
+
+        replace_metabolites: Updates model metabolites to be identical
+        metabolites not linked to the original model. Turning this
+        off is dangerous.
         
         """
         # why is model being taken in as a parameter? This plays
@@ -89,7 +93,6 @@ class Reaction(Object):
                                                                   model,
                                                                   self._model))
                                                             
-        new_metabolites = deepcopy(self._metabolites)
         new_genes = deepcopy(self._genes)
         self._model.reactions.remove(self)
         #Remove associations between the reaction and its container _model
@@ -100,8 +103,10 @@ class Reaction(Object):
         [x._reaction.remove(self)
          for x in self._genes]
         #Replace the model-linked metabolites with the new independent metabolites
-        self._metabolites = {}
-        self.add_metabolites(new_metabolites)
+        if replace_metabolites:
+            self._metabolites = {}
+            new_metabolites = deepcopy(self._metabolites)
+            self.add_metabolites(new_metabolites)
         #Replace the model-linked genes with new indepenent genes
         self._genes = set()
         [self.add_gene(k) for k in new_genes]
