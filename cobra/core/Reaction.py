@@ -104,8 +104,8 @@ class Reaction(Object):
          for x in self._genes]
         #Replace the model-linked metabolites with the new independent metabolites
         if replace_metabolites:
-            self._metabolites = {}
             new_metabolites = deepcopy(self._metabolites)
+            self._metabolites = {}
             self.add_metabolites(new_metabolites)
         #Replace the model-linked genes with new indepenent genes
         self._genes = set()
