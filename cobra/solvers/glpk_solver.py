@@ -164,7 +164,7 @@ if __name == 'java':
                 [(row_indices.append(i_offset),
                   column_indices.append(reaction_to_index[k]),
                   constraint_values.append(k._metabolites[the_metabolite]))
-                 for k in the_metabolite._reaction]
+                 for k in sorted(the_metabolite._reaction)]
 
             #Load the constraints into the lp.  Need to use
             #typed arrays.
@@ -407,7 +407,7 @@ else:
                 r.bounds = b, None
             #Add in the linear constraints
 
-            for the_reaction in the_metabolite._reaction:
+            for the_reaction in sorted(the_metabolite._reaction):
                 reaction_index = reaction_to_index[the_reaction]
                 the_coefficient = the_reaction._metabolites[the_metabolite]
                 linear_constraints.append((r.index, reaction_index,
