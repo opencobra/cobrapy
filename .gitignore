@@ -4,3 +4,6 @@ gurobi.log
 documentation
 cobra.egg-info
 build/
+.DS_Store
+setuptools-*egg
+setuptools-*.tar.gz
