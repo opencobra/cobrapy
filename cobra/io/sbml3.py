@@ -160,7 +160,7 @@ def write_sbml_model(cobra_model, filename):
         attributes["id"] = id
         attributes["name"] = reaction.name
         # Useless required SBML params
-        attributes["fast"] = "true"
+        attributes["fast"] = "false"
         attributes["reversible"] = str(reaction.lower_bound <= 0 and
                                        reaction.upper_bound >= 0).lower()
         # add in bounds
