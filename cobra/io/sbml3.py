@@ -10,16 +10,17 @@ try:
     from lxml.etree import parse
 except ImportError:
     from xml.etree.ElementTree import parse
-    # cElementTree does not take namespaces argument to .find()    
+    # cElementTree does not take namespaces argument to .find()
 
+ns = {"fbc": "http://www.sbml.org/sbml/level3/version1/fbc/version1",
+      "sbml": "http://www.sbml.org/sbml/level3/version1/core",
+      "cobra": "http://github.io/opencobra/cobra_sbml"}
 
 
 def strnum(number):
     """Utility function to convert a number to a string"""
     return str(int(number)) if number == int(number) else str(number)
 
-ns = {"fbc": "http://www.sbml.org/sbml/level3/version1/fbc/version1",
-      "sbml": "http://www.sbml.org/sbml/level3/version1/core"}
 
 def metabolite_from_species(species):
     """create a metabolite from an sbml species"""
@@ -30,11 +31,13 @@ def metabolite_from_species(species):
     met.formula = get_attribute(species, "fbc:chemicalFormula", Formula)
     return met
 
+
 def parse_xml_into_model(xml):
+    """create cobra model from xml etree"""
     xml_model = get_model(xml)
     metabolites = DictList(metabolite_from_species(i)
                            for i in list_metabolites(xml_model))
-    
+
     fbc_operation_mapping = {"lessEqual": "upper_bound", "greaterEqual": "lower_bound"}
     fbc_bounds = {}
     for fbc_bound in list_flux_bounds(xml_model):
@@ -43,7 +46,7 @@ def parse_xml_into_model(xml):
             fbc_bounds[reaction_id] = {}
         bound_type = fbc_operation_mapping[get_attribute(fbc_bound, "fbc:operation")]
         fbc_bounds[reaction_id][bound_type] = get_attribute(fbc_bound, "fbc:value", float)
-    
+
     reactions = []
     for sbml_reaction in list_reactions(xml_model):
         reaction = Reaction(get_attribute(sbml_reaction, "id", str).lstrip("_"))
@@ -55,20 +58,28 @@ def parse_xml_into_model(xml):
                 reaction.lower_bound = bounds["lower_bound"]
             if "upper_bound" in bounds:
                 reaction.upper_bound = bounds["upper_bound"]
+        # get annotation information
+        extra = "sbml:annotation/cobra:extension/"
+        subsystem = sbml_reaction.find(extra + "cobra:subsystem", namespaces=ns)
+        if subsystem is not None:
+            reaction.subsystem = subsystem.text
+        gpr = sbml_reaction.find(extra + "cobra:geneAssociation", namespaces=ns)
+        if gpr is not None:
+            reaction.gene_reaction_rule = gpr.text
         reactions.append(reaction)
-        
+
         stoichiometry = {}
         for species_reference in list_reactants(sbml_reaction):
             stoichiometry[get_attribute(species_reference, "species").lstrip("_")] = get_attribute(species_reference, "stoichiometry", float) * -1
         for species_reference in list_products(sbml_reaction):
             stoichiometry[get_attribute(species_reference, "species").lstrip("_")] = get_attribute(species_reference, "stoichiometry", float)
-        
+
         object_stoichiometry = {}  # needs to have keys of metabolite objects, not ids
         for met_id in stoichiometry:
             object_stoichiometry[metabolites.get_by_id(met_id)] = stoichiometry[met_id]
-        
+
         reaction.add_metabolites(object_stoichiometry)
-    
+
     model = Model()
     model.id = get_attribute(xml_model, "id")
     # objective coefficients
@@ -77,8 +88,9 @@ def parse_xml_into_model(xml):
         rxn_id = get_attribute(sbml_objective, "fbc:reaction").lstrip("_")
         model.reactions.get_by_id(rxn_id).objective_coefficient = \
             get_attribute(sbml_objective, "fbc:coefficient")
-    
+
     return model
+
 
 def get_attribute(tag, attribute, type=lambda x: x):
     if ":" in attribute:
@@ -86,11 +98,14 @@ def get_attribute(tag, attribute, type=lambda x: x):
         attribute = "{%s}%s" % (ns[split[0]], split[1])
     return type(tag.attrib[attribute]) if attribute in tag.attrib else None
 
+
 def get_model(xml):
     return xml.find("sbml:model", namespaces=ns)
 
+
 def list_metabolites(xml_model):
     return xml_model.findall("sbml:listOfSpecies/sbml:species", namespaces=ns)
+
 
 def list_objectives(xml_model):
     obj_list = xml_model.find("fbc:listOfObjectives", namespaces=ns)
@@ -98,26 +113,34 @@ def list_objectives(xml_model):
     all_objectives = [i for i in obj_list if get_attribute(i, "fbc:id") == target_objective]
     return all_objectives[0].findall("fbc:listOfFluxObjectives/fbc:fluxObjective", namespaces=ns)
 
+
 def list_flux_bounds(xml_model):
     return xml_model.findall("fbc:listOfFluxBounds/fbc:fluxBound", namespaces=ns)
+
 
 def list_reactions(xml_model):
     return xml_model.findall("sbml:listOfReactions/sbml:reaction", namespaces=ns)
 
+
 def list_reactants(sbml_reaction):
     return sbml_reaction.findall("sbml:listOfReactants/sbml:speciesReference", namespaces=ns)
 
+
 def list_products(sbml_reaction):
     return sbml_reaction.findall("sbml:listOfProducts/sbml:speciesReference", namespaces=ns)
+
 
 def read_sbml_model(filename):
     xmlfile = parse(filename)
     xml = xmlfile.getroot()
     return parse_xml_into_model(xml)
 
+
 def write_sbml_model(cobra_model, filename):
     xml = ET.Element("sbml", xmlns=ns["sbml"], level="3", version="1")
     xml.attrib["xmlns:fbc"] = ns["fbc"]
+    xml.attrib["xmlns:cobra"] = ns["cobra"]
+
     xml.attrib["fbc:required"] = "false"
     xml_model = ET.SubElement(xml, "model")
     if cobra_model.id is not None:
@@ -135,7 +158,7 @@ def write_sbml_model(cobra_model, filename):
     compartments = cobra_model.compartments
     for compartment, name in compartments.items():
         ET.SubElement(compartmenst_list, "compartment", id=compartment, name=name, constant="true")
-        
+
     # add in metabolites as species
     species_list = ET.SubElement(xml_model, "listOfSpecies")
     # Useless required SBML params
@@ -163,6 +186,18 @@ def write_sbml_model(cobra_model, filename):
         attributes["fast"] = "false"
         attributes["reversible"] = str(reaction.lower_bound <= 0 and
                                        reaction.upper_bound >= 0).lower()
+        # Add in annotation information (gpr and subsystem)
+        # prevent empty strings
+        strcheck = lambda x: None if x is None or len(x) == 0 else x
+        gpr = strcheck(reaction.gene_reaction_rule)
+        subsystem = strcheck(reaction.subsystem)
+        if gpr is not None or subsystem is not None:
+            annotation = ET.SubElement(sbml_reaction, "annotation")
+            annotation = ET.SubElement(annotation, "cobra:extension")
+        if gpr is not None:
+            ET.SubElement(annotation, "cobra:geneAssociation").text = gpr
+        if subsystem is not None:
+            ET.SubElement(annotation, "cobra:subsystem").text = subsystem
         # add in bounds
         lb = ET.SubElement(flux_bound_list, "fbc:fluxBound")
         lb.attrib["fbc:reaction"] = id
@@ -177,7 +212,7 @@ def write_sbml_model(cobra_model, filename):
             attr = {"fbc:reaction": id,
                     "fbc:coefficient": strnum(reaction.objective_coefficient)}
             ET.SubElement(flux_objectives_list, "fbc:fluxObjective").attrib.update(attr)
-        
+
         # stoichiometry
         reactants = {}
         products = {}
