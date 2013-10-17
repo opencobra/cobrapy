@@ -14,7 +14,7 @@ except ImportError:
 
 ns = {"fbc": "http://www.sbml.org/sbml/level3/version1/fbc/version1",
       "sbml": "http://www.sbml.org/sbml/level3/version1/core",
-      "cobra": "http://github.io/opencobra/cobra_sbml"}
+      "cobra": "http://opencobra.github.io/cobra_sbml"}
 
 
 def strnum(number):
