@@ -240,8 +240,10 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
                             raise e
                     tmp_locus_id = tmp_row_dict['LOCUS']
                     if 'TRANSCRIPT' in tmp_row_dict:
-                            tmp_locus_id = tmp_locus_id + '.' + tmp_row_dict['TRANSCRIPT']
-                    gene_id_to_object[tmp_locus_id].name = tmp_row_dict['ABBREVIATION']
+                        tmp_locus_id = tmp_locus_id + '.' + tmp_row_dict['TRANSCRIPT']
+                    
+                    if 'ABBREVIATION' in tmp_row_dict:
+                    	gene_id_to_object[tmp_locus_id].name = tmp_row_dict['ABBREVIATION']
 
         if reaction_note_dict.has_key('SUBSYSTEM'):
             reaction.subsystem = reaction_note_dict['SUBSYSTEM'][0]   
