@@ -6,6 +6,7 @@ from os.path import isfile
 from os import name as __name
 from copy import deepcopy
 from time import time
+from warnings import warn
 import re
 #
 if __name == 'java':
@@ -129,8 +130,25 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             tmp_metabolite.id = metabolite_re.split(tmp_metabolite.id)[-1].replace('-','__')
         tmp_metabolite.name = sbml_metabolite.getName()
         tmp_formula = ''
-        tmp_metabolite.charge = sbml_metabolite.getCharge()
         tmp_metabolite.notes = parse_legacy_sbml_notes(sbml_metabolite.getNotesString())
+        tmp_metabolite.charge = sbml_metabolite.getCharge()
+        if "CHARGE" in tmp_metabolite.notes:
+            note_charge = tmp_metabolite.notes["CHARGE"][0]
+            try:
+                note_charge = float(note_charge)
+                if note_charge == int(note_charge):
+                    note_charge = int(note_charge)
+            except:
+                warn("charge of %s is not a number (%s)" % (tmp_metabolite.id, str(note_charge)))
+                continue
+            if tmp_metabolite.charge == 0 or tmp_metabolite.charge == note_charge:  # get_charge() when unspecified is 0
+                tmp_metabolite.charge = note_charge
+                tmp_metabolite.notes.pop("CHARGE")
+            else:  # tmp_metabolite.charge != note_charge
+                msg = "different charges specified for %s (%d and %d)"
+                msg = msg % (tmp_metabolite.id, tmp_metabolite.charge, note_charge)
+                warn(msg)
+
         for the_key in tmp_metabolite.notes.keys():
             if the_key.lower() == 'formula':
                 tmp_formula = tmp_metabolite.notes.pop(the_key)[0]
@@ -141,7 +159,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         tmp_metabolite.formula = Formula(tmp_formula)
         metabolite_dict.update({metabolite_id: tmp_metabolite})
     if print_time:
-       print 'Parsing %s took %1.2f seconds'%('metabolites',
+        print 'Parsing %s took %1.2f seconds'%('metabolites',
                                               time()-start_time)
 
 
