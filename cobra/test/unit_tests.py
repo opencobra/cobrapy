@@ -206,6 +206,7 @@ class TestCobraIO(CobraTestCase):
         with catch_warnings(record=True) as w:
             model = io.read_sbml_model(test_sbml_file)
         self.assertEqual(len(model.reactions), len(self.model.reactions))
+        self.assertEqual(len(model.metabolites), len(self.model.metabolites))
         # make sure that an error is raised when given a nonexistent file
         self.assertRaises(IOError, io.read_sbml_model,
                           "fake_file_which_does_not_exist")
