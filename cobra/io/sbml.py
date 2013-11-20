@@ -200,10 +200,19 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
 
         #Parse the kinetic law info here.
         parameter_dict = {}
-        #            if isinstance(the_reaction.getKineticLaw(), NoneType):
+        #If lower and upper bounds are specified in the Kinetic Law then
+        #they override the sbml reversible attribute.  If they are not
+        #specified then the bounds are determined by getReversible.
         if not sbml_reaction.getKineticLaw():
-            parameter_dict['lower_bound'] = __default_lower_bound
-            parameter_dict['upper_bound'] = __default_upper_bound
+            
+            if sbml_reaction.getReversible():
+                parameter_dict['lower_bound'] = __default_lower_bound
+                parameter_dict['upper_bound'] = __default_upper_bound
+            else:
+                #Assume that irreversible reactions only proceed from left to right.
+                parameter_dict['lower_bound'] = 0
+                parameter_dict['upper_bound'] = __default_upper_bound
+                
             parameter_dict['objective_coefficient'] = __default_objective_coefficient
         else:
             for sbml_parameter in sbml_reaction.getKineticLaw().getListOfParameters():
@@ -213,8 +222,10 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             reaction.lower_bound = parameter_dict['lower_bound']
         elif 'lower bound' in parameter_dict:
             reaction.lower_bound = parameter_dict['lower bound']
-        else:
+        elif sbml_reaction.getReversible():
             reaction.lower_bound = __default_lower_bound
+        else:
+            reaction.lower_bound = 0
 
         if 'upper_bound' in parameter_dict:
             reaction.upper_bound = parameter_dict['upper_bound']
@@ -266,7 +277,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         if reaction_note_dict.has_key('SUBSYSTEM'):
             reaction.subsystem = reaction_note_dict['SUBSYSTEM'][0]   
 
-        reaction.reversibility = int(sbml_reaction.getReversible())
+
         #TODO: Use the cobra.metabolite objects here.
         reaction.add_metabolites(cobra_metabolites)
 
@@ -399,10 +410,7 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
         #Need to remove - for proper SBML.  Replace with __
         the_reaction_id = 'R_' + the_reaction.id.replace('-','__' )
         sbml_reaction.setId(the_reaction_id)
-        if the_reaction.reversibility == 1:
-            sbml_reaction.setReversible(True)
-        else:
-            sbml_reaction.setReversible(False)
+        sbml_reaction.setReversible(the_reaction.reversibility)
         if the_reaction.name:
             sbml_reaction.setName(the_reaction.name)
         else:
