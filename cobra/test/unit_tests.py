@@ -202,9 +202,11 @@ class TestCobraIO(CobraTestCase):
 
     @skipIf(not __test_sbml, "libsbml required")
     def test_sbml_read(self):
-        ## with catch_warnings(record=True) as w:
-        model = io.read_sbml_model(test_sbml_file)
+        from warnings import catch_warnings
+        with catch_warnings(record=True) as w:
+            model = io.read_sbml_model(test_sbml_file)
         self.assertEqual(len(model.reactions), len(self.model.reactions))
+        self.assertEqual(len(model.metabolites), len(self.model.metabolites))
         # make sure that an error is raised when given a nonexistent file
         self.assertRaises(IOError, io.read_sbml_model,
                           "fake_file_which_does_not_exist")
@@ -218,9 +220,11 @@ class TestCobraIO(CobraTestCase):
     
     @skipIf(not __test_matlab, "scipy.io.loadmat required")
     def test_mat_read_write(self):
+        from warnings import catch_warnings
         test_output_filename = join(gettempdir(), "test_mat_write.mat")
         io.save_matlab_model(self.model, test_output_filename)
-        reread = io.load_matlab_model(test_output_filename)
+        with catch_warnings(record=True) as w:
+            reread = io.load_matlab_model(test_output_filename)
         self.assertEqual(len(self.model.reactions), len(reread.reactions))
         self.assertEqual(len(self.model.metabolites), len(reread.metabolites))
         for i in range(len(self.model.reactions)):
