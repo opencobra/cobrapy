@@ -34,7 +34,8 @@ class Object(object):
         """
         the_copy = self.__class__(self.id)
         [setattr(the_copy, k, v)
-         for k, v in self.__dict__.iteritems()]
+         for k, v in self.__dict__.iteritems()
+         if not isinstance(getattr(type(self), k, None), property)] #Don't try to set properties.
         return(the_copy)
     def _copy_parent_attributes(self, gene_object):
         """Helper function for shallow copying attributes from a parent object
@@ -42,6 +43,7 @@ class Object(object):
 
         """
         [setattr(self, k, v) for k, v in gene_object.__dict__.iteritems()]
+
 
     ## def __setstate__(self, state):
     ##     self.__dict__.update(state)
