@@ -1,14 +1,9 @@
 #This section is used to load the appropriate package for writing mat files
 #from Python or Jython.  Currently, only the section for Python that depends
 #on scipy has been written.
-try:
-    from numpy import array, object as np_object
-    from scipy.io import loadmat, savemat
-    from scipy.sparse import coo_matrix
-
-
-except ImportError, e:
-    raise e
+from numpy import array, object as np_object
+from scipy.io import loadmat, savemat
+from scipy.sparse import coo_matrix
 
 
 # try to use an ordered dict
@@ -25,10 +20,6 @@ except ImportError:
     dicttype = dict
 
 
-
-    
-
-
 from .. import Model, Metabolite, Reaction, Formula
 
 
@@ -39,7 +30,6 @@ def _cell(x):
 
 def load_matlab_model(infile_path, variable_name=None):
     """Load a cobra model stored as a .mat file
-    .. warning:: INCOMPLETE, does not load GPR's
 
     Parameters
     ----------
@@ -94,6 +84,10 @@ def load_matlab_model(infile_path, variable_name=None):
             new_reaction.upper_bound = float(m["ub"][0, 0][i][0])
             new_reaction.objective_coefficient = float(m["c"][0, 0][i][0])
             try:
+                new_reaction.add_gene_reaction_rule(str(m['grRules'][0, 0][i][0][0]))
+            except IndexError:
+                None
+            try:
                 new_reaction.name = str(m["rxnNames"][0, 0][i][0][0])
             except:
                 pass
@@ -102,7 +96,6 @@ def load_matlab_model(infile_path, variable_name=None):
         coo = coo_matrix(m["S"][0, 0])
         for i, j, v in zip(coo.row, coo.col, coo.data):
             model.reactions[j].add_metabolites({model.metabolites[i]: v})
-        # TODO finish adding GPR's
         return model
     # If code here is executed, then no model was found.
     raise Exception("no COBRA model found")

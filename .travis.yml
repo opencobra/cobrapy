@@ -7,9 +7,12 @@ virtualenv:
   system_site_packages: true
 before_install:
   - sudo apt-get install libglpk-dev python-scipy libgmp-dev
-  - wget https://github.com/downloads/aebrahim/cobrapy/libsbml-5.6.0-src.tar.gz
-  - tar xzf libsbml-5.6.0-src.tar.gz
-  - cd libsbml-5.6.0/; ./configure --with-python; sudo make install; cd ..
+  - cd /home/travis
+  - wget http://clostridium.ucsd.edu/libsbml-5.6.0_built_with_py.tar.gz
+  - tar xzf libsbml-5.6.0_built_with_py.tar.gz
+  - cd libsbml-5.6.0/
+  - sudo make install
+  - cd $TRAVIS_BUILD_DIR
 install:
   - ln -s /usr/lib/python2.7/dist-packages/scipy ~/virtualenv/python2.7/lib/python2.7/site-packages/
   - pip install glpk 

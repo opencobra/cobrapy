@@ -6,6 +6,7 @@ from os.path import isfile
 from os import name as __name
 from copy import deepcopy
 from time import time
+from warnings import warn
 import re
 #
 if __name == 'java':
@@ -146,8 +147,25 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             tmp_metabolite.id = metabolite_re.split(tmp_metabolite.id)[-1].replace('-','__')
         tmp_metabolite.name = sbml_metabolite.getName()
         tmp_formula = ''
-        tmp_metabolite.charge = sbml_metabolite.getCharge()
         tmp_metabolite.notes = parse_legacy_sbml_notes(sbml_metabolite.getNotesString())
+        tmp_metabolite.charge = sbml_metabolite.getCharge()
+        if "CHARGE" in tmp_metabolite.notes:
+            note_charge = tmp_metabolite.notes["CHARGE"][0]
+            try:
+                note_charge = float(note_charge)
+                if note_charge == int(note_charge):
+                    note_charge = int(note_charge)
+            except:
+                warn("charge of %s is not a number (%s)" % (tmp_metabolite.id, str(note_charge)))
+            else:
+                if tmp_metabolite.charge == 0 or tmp_metabolite.charge == note_charge:  # get_charge() when unspecified is 0
+                    tmp_metabolite.charge = note_charge
+                    tmp_metabolite.notes.pop("CHARGE")
+                else:  # tmp_metabolite.charge != note_charge
+                    msg = "different charges specified for %s (%d and %d)"
+                    msg = msg % (tmp_metabolite.id, tmp_metabolite.charge, note_charge)
+                    warn(msg)
+
         for the_key in tmp_metabolite.notes.keys():
             if the_key.lower() == 'formula':
                 tmp_formula = tmp_metabolite.notes.pop(the_key)[0]
@@ -158,7 +176,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         tmp_metabolite.formula = Formula(tmp_formula)
         metabolite_dict.update({metabolite_id: tmp_metabolite})
     if print_time:
-       print 'Parsing %s took %1.2f seconds'%('metabolites',
+        print 'Parsing %s took %1.2f seconds'%('metabolites',
                                               time()-start_time)
 
 
@@ -186,23 +204,28 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             if tmp_metabolite_id in metabolite_dict:
                 tmp_metabolite = deepcopy(metabolite_dict[tmp_metabolite_id])
                 cobra_metabolites[tmp_metabolite] = -sbml_metabolite.getStoichiometry()
-            else:
-                reaction.boundary = 'system_boundary'
         for sbml_metabolite in sbml_reaction.getListOfProducts():
             tmp_metabolite_id = sbml_metabolite.getSpecies()
             #This deals with boundary metabolites
             if tmp_metabolite_id in metabolite_dict:
                 tmp_metabolite = deepcopy(metabolite_dict[tmp_metabolite_id])
                 cobra_metabolites[tmp_metabolite] = sbml_metabolite.getStoichiometry()
-            else:
-                reaction.boundary = 'system_boundary'
 
         #Parse the kinetic law info here.
         parameter_dict = {}
-        #            if isinstance(the_reaction.getKineticLaw(), NoneType):
+        #If lower and upper bounds are specified in the Kinetic Law then
+        #they override the sbml reversible attribute.  If they are not
+        #specified then the bounds are determined by getReversible.
         if not sbml_reaction.getKineticLaw():
-            parameter_dict['lower_bound'] = __default_lower_bound
-            parameter_dict['upper_bound'] = __default_upper_bound
+            
+            if sbml_reaction.getReversible():
+                parameter_dict['lower_bound'] = __default_lower_bound
+                parameter_dict['upper_bound'] = __default_upper_bound
+            else:
+                #Assume that irreversible reactions only proceed from left to right.
+                parameter_dict['lower_bound'] = 0
+                parameter_dict['upper_bound'] = __default_upper_bound
+                
             parameter_dict['objective_coefficient'] = __default_objective_coefficient
         else:
             for sbml_parameter in sbml_reaction.getKineticLaw().getListOfParameters():
@@ -212,8 +235,10 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             reaction.lower_bound = parameter_dict['lower_bound']
         elif 'lower bound' in parameter_dict:
             reaction.lower_bound = parameter_dict['lower bound']
-        else:
+        elif sbml_reaction.getReversible():
             reaction.lower_bound = __default_lower_bound
+        else:
+            reaction.lower_bound = 0
 
         if 'upper_bound' in parameter_dict:
             reaction.upper_bound = parameter_dict['upper_bound']
@@ -257,13 +282,15 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
                             raise e
                     tmp_locus_id = tmp_row_dict['LOCUS']
                     if 'TRANSCRIPT' in tmp_row_dict:
-                            tmp_locus_id = tmp_locus_id + '.' + tmp_row_dict['TRANSCRIPT']
-                    gene_id_to_object[tmp_locus_id].name = tmp_row_dict['ABBREVIATION']
+                        tmp_locus_id = tmp_locus_id + '.' + tmp_row_dict['TRANSCRIPT']
+                    
+                    if 'ABBREVIATION' in tmp_row_dict:
+                    	gene_id_to_object[tmp_locus_id].name = tmp_row_dict['ABBREVIATION']
 
         if reaction_note_dict.has_key('SUBSYSTEM'):
             reaction.subsystem = reaction_note_dict['SUBSYSTEM'][0]   
 
-        reaction.reversibility = int(sbml_reaction.getReversible())
+
         #TODO: Use the cobra.metabolite objects here.
         reaction.add_metabolites(cobra_metabolites)
 
@@ -400,10 +427,7 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
         #Need to remove - for proper SBML.  Replace with __
         the_reaction_id = 'R_' + the_reaction.id.replace('-','__' )
         sbml_reaction.setId(the_reaction_id)
-        if the_reaction.reversibility == 1:
-            sbml_reaction.setReversible(True)
-        else:
-            sbml_reaction.setReversible(False)
+        sbml_reaction.setReversible(the_reaction.reversibility)
         if the_reaction.name:
             sbml_reaction.setName(the_reaction.name)
         else:
