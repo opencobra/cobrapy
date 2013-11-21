@@ -11,7 +11,7 @@ For usage instructions, please see the
 All releases require Python 2.7 to be installed before proceeding. 
 Mac OS X (10.7+) and Ubuntu ship with Python. Windows users without python 
 can download and install python from the [python 
-website](http://www.python.org/download/releases/2.7.3/).
+website](http://www.python.org/download/releases/2.7.6/).
 
 Generally, installation should follow these steps:
 
