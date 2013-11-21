@@ -33,8 +33,6 @@ class Reaction(Object):
         
         """
         Object.__init__(self, name)
-        self.reversibility = 0 #Deprecated.  This is determined by the lower
-        #and upper bound
         self.gene_reaction_rule = '' #Deprecated
         self.subsystem = ''
         self._genes = set() #The cobra.Genes that are used to catalyze the reaction
@@ -59,6 +57,20 @@ class Reaction(Object):
         #a reaction in the model that is essentially self * -1
         self.variable_kind = 'continuous' #Used during optimization.  Indicates whether the
         #variable is modeled as continuous, integer, binary, semicontinous, or semiinteger.
+
+
+    @property
+    def reversibility(self):
+        """This property removes the independence of the reversibility attribute and the reaction's
+        current upper and lower bounds.
+
+        reversibility is defined in the context of the current instantiation.
+        
+        """
+        _reversible = False
+        if self.lower_bound < 0 and self.upper_bound > 0:
+            _reversible = True
+        return(_reversible)
 
     def _update_awareness(self):
         """Make sure all metabolites and genes that are associated with
