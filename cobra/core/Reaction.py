@@ -67,10 +67,7 @@ class Reaction(Object):
         reversibility is defined in the context of the current instantiation.
         
         """
-        _reversible = False
-        if self.lower_bound < 0 and self.upper_bound > 0:
-            _reversible = True
-        return(_reversible)
+        return self.lower_bound < 0 and self.upper_bound > 0
 
     def _update_awareness(self):
         """Make sure all metabolites and genes that are associated with
@@ -500,7 +497,7 @@ class Reaction(Object):
         for the_key in reactant_dict:
             reaction_string += ' + %s %s'%(reactant_dict[the_key],
                                          the_key)
-        if self.reversibility == 0:
+        if not self.reversibility:
             if self.lower_bound < 0 and self.upper_bound <=0:
                 reaction_string += ' <- '
             else:
