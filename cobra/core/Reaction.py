@@ -194,16 +194,13 @@ class Reaction(Object):
                                 for k in self._genes])
         the_copy._metabolites = dict([(metabolite_dict[k.id], v)
                                       for k, v in self._metabolites.iteritems()])
-        the_copy._boundary_metabolites = dict([(metabolite_dict[k.id], v)
-                                               for k, v in self._boundary_metabolites.iteritems()])
 
         #make the metabolites and genes aware of the reaction
         [k._reaction.add(the_copy)
          for k in the_copy._genes]
         [k._reaction.add(the_copy)
          for k in the_copy._metabolites.keys()]
-        [k._reaction.add(the_copy)
-         for k in the_copy._boundary_metabolites.keys()]
+
         return(the_copy)
 
     def pop(self, the_metabolite):
