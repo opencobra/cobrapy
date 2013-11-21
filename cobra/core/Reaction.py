@@ -42,15 +42,11 @@ class Reaction(Object):
         #this reaction  _ Indicates that it is not preferred to add a metabolite to a reaction
         #directly.
         self._metabolites = {}
-        self._boundary_metabolites = {} #Book keeping for boundary metabolites
-        #DEPRECATED: _id_to_metabolites = {} #Caution this may not always be up to date
-        #if self._metabolites is modified
         self.name = name
         #self.model is None or refers to the cobra.Model that
         #contains self
         self._model = None
 
-        self.boundary = None #None, 'system_boundary'
         self.objective_coefficient = self.lower_bound = 0.
         self.upper_bound = 1000.
         self.reflection = None #Either None or if this reaction is irreversible then
@@ -68,6 +64,18 @@ class Reaction(Object):
         
         """
         return self.lower_bound < 0 and self.upper_bound > 0
+    
+    @property
+    def boundary(self):
+        # single metabolite implies it must be a boundary
+        if len(self._metabolites) == 1:
+            return "system_boundary"
+        # if there is more than one metabolite, if it ONLY produces or ONLY
+        # consumes, it is also a boundary.
+        all_stoichiometry = self._metabolites.values()
+        if not min(all_stoichiometry) < 0 < max(all_stoichiometry):
+            return "system_boundary"
+        return None
 
     def _update_awareness(self):
         """Make sure all metabolites and genes that are associated with
