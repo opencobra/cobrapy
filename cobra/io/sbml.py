@@ -187,16 +187,12 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             if tmp_metabolite_id in metabolite_dict:
                 tmp_metabolite = deepcopy(metabolite_dict[tmp_metabolite_id])
                 cobra_metabolites[tmp_metabolite] = -sbml_metabolite.getStoichiometry()
-            else:
-                reaction.boundary = 'system_boundary'
         for sbml_metabolite in sbml_reaction.getListOfProducts():
             tmp_metabolite_id = sbml_metabolite.getSpecies()
             #This deals with boundary metabolites
             if tmp_metabolite_id in metabolite_dict:
                 tmp_metabolite = deepcopy(metabolite_dict[tmp_metabolite_id])
                 cobra_metabolites[tmp_metabolite] = sbml_metabolite.getStoichiometry()
-            else:
-                reaction.boundary = 'system_boundary'
 
         #Parse the kinetic law info here.
         parameter_dict = {}
