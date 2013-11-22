@@ -47,9 +47,10 @@ def parse_legacy_id(the_id, the_compartment=None, the_type='metabolite',
         the_id += '[%s]'%the_compartment
     return the_id
 def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_metabolite=False,
-                                      print_time=False, use_hyphens=False, _fbc=False):
+                                      print_time=False, use_hyphens=False):
     """convert an SBML XML file into a cobra.Model object.  Supports
-    SBML Level 2 Versions 1 and 4
+    SBML Level 2 Versions 1 and 4.  The function will detect if the SBML fbc package is used in the file
+    and run the converter if the fbc package is used.
 
     sbml_filename: String.
     
@@ -65,7 +66,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
 
     use_hyphens:   Boolean.  If True, double underscores (__) in an SBML ID will be converted to hyphens
 
-    _fbc: Boolean.  Temporary flag to convert fbc SBML models: http://sbml.org/Documents/Specifications/SBML_Level_3/Packages/Flux_Balance_Constraints_(flux)
+    
 
     """
     __default_lower_bound = -1000
@@ -81,19 +82,13 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
     if print_time:
         start_time = time()
     model_doc = readSBML(sbml_filename)
-    if _fbc:
-        from warnings import warn
-        warn("use of the fbc extension is at the experimental stage for cobra pie." +\
-             "which means that it may or may not work, has not been tested (thoroughly or at all, " +\
-             "the interface might change, and we probably won't respond to bugs / help postings related to " +\
-             "the fbc extension.  we hope to have full support for fbc by the 0.3.0 release of cobra pie.")
-             
+    if (model_doc.getPlugin("fbc") != None):
         from libsbml import ConversionProperties, LIBSBML_OPERATION_SUCCESS
         conversion_properties = ConversionProperties()
         conversion_properties.addOption("convert fbc to cobra", True, "Convert FBC model to Cobra model")
         result = model_doc.convert(conversion_properties)
         if result != LIBSBML_OPERATION_SUCCESS:
-            raise Exception("Conversion of SBML+fbc to COBRA failed")
+            raise(Exception("Conversion of SBML+fbc to COBRA failed"))
         
                                         
     if print_time:
@@ -348,7 +343,7 @@ def parse_legacy_sbml_notes(note_string, note_delimiter = ':'):
 def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
                                    sbml_level=2, sbml_version=1,
                                    print_time=False,
-                                   _fbc=False):
+                                   use_fbc_package=True):
     """Write a cobra.Model object to an SBML XML file.
 
     cobra_model:  A cobra.Model object
@@ -361,7 +356,8 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
 
     print_time:  Boolean.  Print the time requirements for different sections
 
-    _fbc: Boolean.  Temporary flag to convert fbc SBML models: http://sbml.org/Documents/Specifications/SBML_Level_3/Packages/Flux_Balance_Constraints_(flux)
+    use_fbc_package: Boolean.  Convert the model to the FBC package format to improve portability.
+    http://sbml.org/Documents/Specifications/SBML_Level_3/Packages/Flux_Balance_Constraints_(flux)
 
 
     TODO: Update the NOTES to match the SBML standard and provide support for
@@ -494,12 +490,7 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
                                              time()-start_time)
 
 
-    if _fbc:
-        from warnings import warn
-        warn("use of the fbc extension is at the experimental stage for cobra pie." +\
-             "which means that it may or may not work, has not been tested (thoroughly or at all, " +\
-             "the interface might change, and we probably won't respond to bugs / help postings related to " +\
-             "the fbc extension.  we hope to have full support for fbc by the 0.3.0 release of cobra pie.")
+    if use_fbc_package:
         from libsbml import ConversionProperties, LIBSBML_OPERATION_SUCCESS
         conversion_properties = ConversionProperties()
         conversion_properties.addOption("convert cobra", True, "Convert Cobra model")
