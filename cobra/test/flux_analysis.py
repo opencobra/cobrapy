@@ -51,7 +51,8 @@ class TestCobraFluxAnalysis(TestCase):
             the_loci =  ['STM4081', 'STM0247', 'STM3867', 'STM2952']
             the_genes = tpiA, metN, atpA, eno = map(cobra_model.genes.get_by_id, the_loci)
             id_to_name = dict([(x.id, x.name) for x in the_genes])
-            growth_dict = {'fba':{tpiA.id:2.41, metN.id:2.44, atpA.id:1.87, eno.id:1.81}}
+            growth_dict = {'fba':{tpiA.id:2.41, metN.id:2.44, atpA.id:1.87, eno.id:1.81},
+                           'moma':{ tpiA.id:1.62, metN.id:2.4, atpA.id:1.40, eno.id:0.33}}
 
 
             for method, the_growth_rates in growth_dict.items():
@@ -64,6 +65,7 @@ class TestCobraFluxAnalysis(TestCase):
                     self.assertEqual(statuses[the_gene], 'optimal')
                     self.assertAlmostEqual(rates[the_gene], the_growth_rates[the_gene],
                                            places=2)
+            
 
     if _module_function_dict['double_deletion']:
         def test_double_deletion(self):
