@@ -13,7 +13,7 @@ solver_name = 'glpk'
 
 from glpk import LPX as GLPK
 __solver_class = GLPK
-objective_senses = {'maximize': True, 'minimize': False}
+
 variable_kind_dict = {'continuous': float, 'integer': int}
 status_dict = {'opt': 'optimal', 'nofeas': 'infeasible', 'unbnd': 'unbounded'}
 sense_dict = {'E': 'E', 'L': 'L', 'G': 'G'}
@@ -34,28 +34,17 @@ def get_objective_value(lp):
 def format_solution(lp, cobra_model, **kwargs):
     status = get_status(lp)
     if status == 'optimal':
-        objective_value = lp.obj.value
-        x = []
-        x_dict = {}
-        [(x.append(float(c.primal)),
-          x_dict.update({c.name:c.primal}))
-          for c in lp.cols]
+        sol = Solution(lb.obj.value, status=status)
+        sol.x = [float(c.primal) for c in lp.cols]
+        sol.x_dict = {c.name: c.primal for c in lp.cols}
 
+        # return the duals as well as the primals for LPs
         if lp.kind == float:
-            y = []
-            y_dict = {}
-            #return the duals as well as the primals for LPs
-            [(y.append(float(c.dual)),
-              y_dict.update({c.name:c.dual}))
-             for c in lp.rows]
-        else:
-            #MIPs don't have duals
-            y = y_dict = None
-        the_solution = Solution(objective_value, x=x, x_dict=x_dict, y=y,
-                                y_dict=y_dict, status=status)
-    else:
-        the_solution = Solution(None, status=status)
-    return(the_solution)
+            sol.y = [float(c.dual) for c in lp.rows]
+            y_dict = {c.name: c.dual for c in lp.rows}
+        return sol
+
+    return Solution(None, status=status)
 
 def set_parameter(lp, parameter_name, parameter_value):
     """with pyglpk the parameters are set during the solve phase, with
@@ -71,7 +60,7 @@ def set_parameter(lp, parameter_name, parameter_value):
             raise ValueError("objective_sense should be 'maximize' or 'minimize'")
     else:
         warn("py glpk solver parameters are set during solve_problem")
-    pass
+
 
 def create_problem(cobra_model,  **kwargs):
     """Solver-specific method for constructing a solver problem from
