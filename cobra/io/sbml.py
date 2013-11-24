@@ -491,14 +491,30 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
 
 
     if use_fbc_package:
-        from libsbml import ConversionProperties, LIBSBML_OPERATION_SUCCESS
-        conversion_properties = ConversionProperties()
-        conversion_properties.addOption("convert cobra", True, "Convert Cobra model")
-        result = sbml_doc.convert(conversion_properties)
-        if result != LIBSBML_OPERATION_SUCCESS:
-            raise Exception("Conversion of SBML+fbc to COBRA failed")
+        try:
+            from libsbml import ConversionProperties, LIBSBML_OPERATION_SUCCESS
+            conversion_properties = ConversionProperties()
+            conversion_properties.addOption("convert cobra", True, "Convert Cobra model")
+            result = sbml_doc.convert(conversion_properties)
+            if result != LIBSBML_OPERATION_SUCCESS:
+                raise Exception("Conversion of SBML+fbc to COBRA failed")
+        except Exception,e:
+            error_string = 'Error saving as SBML+fbc. %s'
+            try:
+                #Check whether the FbcExtension is there
+                from libsbml import FbcExtension
+                error_string = error_string%e
+            except ImportError:
+                error_string = error_string%'FbcExtension not available in libsbml. ' +\
+                               'If use_fbc_package == True then libsbml must be compiled with ' +\
+                               'the fbc extension. '
+                from libsbml import getLibSBMLDottedVersion
+                _sbml_version = getLibSBMLDottedVersion()
+                _major, _minor, _patch = map(int, _sbml_version.split('.'))
+                if _major < 5 or (_major == 5 and _minor < 8):
+                    error_string += "You've got libsbml %s installed.   You need 5.8.0 or later with the fbc package"
 
-
+            raise(Exception(error_string))
     writeSBML(sbml_doc, sbml_filename)
 
 def add_sbml_species(sbml_model, cobra_metabolite,                                                                  note_start_tag, note_end_tag, boundary_metabolite=False):
@@ -604,3 +620,4 @@ def read_legacy_sbml(filename, use_hyphens=False):
                 metabolite.remove_from_model()
     model.metabolites._generate_index()
     return model
+

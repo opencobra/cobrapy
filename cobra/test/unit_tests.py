@@ -196,6 +196,11 @@ class TestCobraIO(CobraTestCase):
     except:
         __test_sbml = False
     try:
+        from libsbml import FbcExtension
+        __test_sbml_fbc = True
+    except:
+        __test_sbml_fbc = False
+    try:
         from scipy.io import loadmat
         __test_matlab = True
     except:
@@ -219,7 +224,7 @@ class TestCobraIO(CobraTestCase):
         #cleanup the test file
         unlink(test_output_filename)
 
-    @skipIf(not __test_sbml, "libsbml required")
+    @skipIf(not __test_sbml_fbc, "libsbml with fbc package required")
     def test_sbml_fbc(self):
         """This tests whether activating the fbc extensions affect simulation results.
         
