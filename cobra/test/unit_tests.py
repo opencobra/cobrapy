@@ -220,7 +220,7 @@ class TestCobraIO(CobraTestCase):
     @skipIf(not __test_sbml, "libsbml required")
     def test_sbml_write(self):
         test_output_filename = join(gettempdir(), 'test_sbml_write.xml')
-        io.write_sbml_model(self.model, test_output_filename)
+        io.write_sbml_model(self.model, test_output_filename, use_fbc_package=__test_sbml_fbc)
         #cleanup the test file
         unlink(test_output_filename)
 
