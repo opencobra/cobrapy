@@ -336,8 +336,10 @@ def parse_legacy_sbml_notes(note_string, note_delimiter = ':'):
                 note_dict[note_field] = [note_value]
         note_string = note_string[(note_end+len(end_tag)): ]
 
-    
-    return note_dict
+    if 'CHARGE' in note_dict and note_dict['CHARGE'][0].lower() in ['none', 'na', 'nan']:
+        note_dict.pop('CHARGE') #Remove non-numeric charges
+        
+    return(note_dict)
 
 
 def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
@@ -497,7 +499,7 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
             conversion_properties.addOption("convert cobra", True, "Convert Cobra model")
             result = sbml_doc.convert(conversion_properties)
             if result != LIBSBML_OPERATION_SUCCESS:
-                raise Exception("Conversion of SBML+fbc to COBRA failed")
+                raise Exception("Conversion of COBRA to SBML+fbc failed")
         except Exception,e:
             error_string = 'Error saving as SBML+fbc. %s'
             try:
@@ -554,7 +556,7 @@ def add_sbml_species(sbml_model, cobra_metabolite,                              
     except:
         print 'metabolite failed: %s'%the_id
         return cobra_metabolite
-    if cobra_metabolite.charge is not None:
+    if cobra_metabolite.charge is not None and str(cobra_metabolite.charge).lower() not in ['none', 'nan', 'na']:
         sbml_species.setCharge(cobra_metabolite.charge)
     if hasattr(cobra_metabolite.formula, 'id') or \
        hasattr(cobra_metabolite.notes, 'items'):
@@ -565,6 +567,8 @@ def add_sbml_species(sbml_model, cobra_metabolite,                              
                                               note_end_tag)
         if hasattr(cobra_metabolite.notes, 'items'):
             for the_id_type, the_id in cobra_metabolite.notes.items():
+                if the_id_type.lower() == 'charge':
+                    continue #Use of notes['CHARGE'] has been deprecated in favor of metabolite.charge
                 if not isinstance(the_id_type, str):
                     the_id_type = repr(the_id_type)
                 if hasattr(the_id, '__iter__') and len(the_id) == 1:
