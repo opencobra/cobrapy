@@ -10,6 +10,7 @@ if __name__ == "__main__":
     from cobra.test import create_test_model
     from cobra import Model, Reaction, Metabolite
     from cobra.manipulation import initialize_growth_medium
+    from cobra.solvers import solver_dict
     for the_module, the_function in _module_function_dict.iteritems():
         try:
             exec('from cobra.flux_analysis.%s import %s'%(the_module, the_function))
@@ -22,6 +23,7 @@ else:
     from . import create_test_model
     from .. import Model, Reaction, Metabolite
     from ..manipulation import initialize_growth_medium
+    from ..solvers import solver_dict
     for the_module, the_function in _module_function_dict.iteritems():
         try:
             exec('from ..flux_analysis.%s import %s'%(the_module, the_function))
@@ -34,7 +36,7 @@ else:
 class TestCobraFluxAnalysis(TestCase):
     """Test the simulation functions in cobra.flux_analysis
 
-    TODO: Add in tests for: MOMA
+
 
     """
     def setUp(self):
@@ -54,7 +56,9 @@ class TestCobraFluxAnalysis(TestCase):
             growth_dict = {'fba':{tpiA.id:2.41, metN.id:2.44, atpA.id:1.87, eno.id:1.81},
                            'moma':{ tpiA.id:1.62, metN.id:2.4, atpA.id:1.40, eno.id:0.33}}
 
-
+            #MOMA requires cplex or gurobi
+            if 'cplex' not in solver_dict and 'gurobi' not in solver_dict:
+                growth_dict.pop('moma')
             for method, the_growth_rates in growth_dict.items():
                 element_list = the_growth_rates.keys()
                 rates, statuses, problems = single_deletion(cobra_model,
