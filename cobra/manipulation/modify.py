@@ -116,7 +116,6 @@ def convert_to_irreversible(cobra_model):
             #Make the directions aware of each other
             reaction.reflection = reverse_reaction
             reverse_reaction.reflection = reaction
-            reaction.reversibility = reverse_reaction.reversibility = 0
             reaction_dict = dict([(k, v*-1)
                                   for k, v in reaction._metabolites.items()])
             reverse_reaction.add_metabolites(reaction_dict)
