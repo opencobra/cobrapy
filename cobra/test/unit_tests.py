@@ -102,6 +102,22 @@ class CobraTestCase(TestCase):
         self.model = create_test_model(test_pickle)
 
 
+class TestReactions(TestCase):
+    def testGPR(self):
+        model = Model()
+        reaction = Reaction("test")
+        # set a gpr to  reaction not in a model
+        reaction.gene_reaction_rule = "(g1 or g2) and g3"
+        self.assertEqual(reaction.gene_reaction_rule, "(g1 or g2) and g3")
+        self.assertEqual(len(reaction.genes), 3)
+        # adding reaction with a GPR propagates to the model
+        model.add_reaction(reaction)
+        self.assertEqual(len(model.genes), 3)
+        # ensure the reaction objects are the same
+        # TODO implement and make pass
+        # modify gpr of reaction already in the model
+        # TODO implement and make pass
+
 class TestCobraCore(CobraTestCase):
     """test core cobra functions"""
 
