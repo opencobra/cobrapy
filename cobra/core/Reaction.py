@@ -28,7 +28,7 @@ class Reaction(Object):
     a biochemical reaction in a cobra.Model object 
 
     """
-    ## __slots__ = ['id', 'reversibility', '_metabolites', '_gene_reaction_rule',
+    ## __slots__ = ['id', '_metabolites', '_gene_reaction_rule',
     ##              'subsystem', '_genes', '_model',
     ##              'name', 'lower_bound', 'upper_bound', 'objective_coefficient',
     ##              ]
