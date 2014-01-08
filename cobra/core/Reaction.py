@@ -9,6 +9,19 @@ from .Metabolite import Metabolite
 from .Gene import Gene
 
 from warnings import warn
+try:
+    from ctypes import pythonapi, py_object
+    from _ctypes import PyObj_FromPtr
+
+    PyDictProxy_New = pythonapi.PyDictProxy_New
+    PyDictProxy_New.argtypes = (py_object,)
+    PyDictProxy_New.rettype = py_object
+
+    def make_dictproxy(obj):
+        assert isinstance(obj,dict)
+        return PyObj_FromPtr(PyDictProxy_New(obj))
+except:
+    make_dictproxy = lambda x: x
 
 class Reaction(Object):
     """Reaction is a class for holding information regarding
@@ -53,11 +66,11 @@ class Reaction(Object):
     # read-only
     @property
     def metabolites(self):
-        return self._metabolites
+        return make_dictproxy(self._metabolites)
 
     @property
     def genes(self):
-        return self._genes
+        return frozenset(self._genes)
 
     @property
     def gene_reaction_rule(self):
