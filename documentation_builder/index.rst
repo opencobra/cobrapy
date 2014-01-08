@@ -5,6 +5,8 @@ Documentation for COBRApy
     :maxdepth: 2
 
     introduction
+    reactions
+    metabolites
     01_create_model
     02_read_simulate_write
     03_single_deletion
