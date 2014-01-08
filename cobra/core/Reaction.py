@@ -321,10 +321,12 @@ class Reaction(Object):
         """
         return [k for k, v in self._metabolites.items()
                 if v > 0]
+
     def get_gene(self):
         """Return a list of genes for the reaction.
 
         """
+        warn("depracated, use the genes property instead")
         return list(self._genes)
 
 
