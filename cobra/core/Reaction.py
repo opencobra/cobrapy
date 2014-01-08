@@ -329,7 +329,7 @@ class Reaction(Object):
         
         """
         self.gene_reaction_rule = the_rule
-        warn("depracated, assign to gene_reaction_rule directly")
+        warn("deprecated, assign to gene_reaction_rule directly")
 
 
 
@@ -353,7 +353,7 @@ class Reaction(Object):
         """Return a list of genes for the reaction.
 
         """
-        warn("depracated, use the genes property instead")
+        warn("deprecated, use the genes property instead")
         return list(self._genes)
 
 
@@ -526,7 +526,7 @@ class Reaction(Object):
         cobra_gene: :class:`~cobra.core.Gene`. A gene that is associated with the reaction.
         
         """
-        warn("deprecated: update the gene_reaction_rule instead")
+        #warn("deprecated: update the gene_reaction_rule instead")
         try:
             self._genes.remove(cobra_gene)
             cobra_gene._reaction.remove(self)
@@ -543,7 +543,7 @@ class Reaction(Object):
 
         cobra_gene: :class:`~cobra.core.Gene`. A gene to associate with the reaction.
         """
-        warn("deprecated: update the gene_reaction_rule instead")
+        #warn("deprecated: update the gene_reaction_rule instead")
         try:
             self._genes.add(cobra_gene)
             cobra_gene._reaction.add(self)
