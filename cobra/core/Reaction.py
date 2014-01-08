@@ -15,7 +15,7 @@ class Reaction(Object):
     a biochemical reaction in a cobra.Model object 
 
     """
-    ## __slots__ = ['id', 'reversibility', '_metabolites', 'gene_reaction_rule',
+    ## __slots__ = ['id', 'reversibility', '_metabolites', '_gene_reaction_rule',
     ##              'subsystem', '_genes', '_model',
     ##              'name', 'lower_bound', 'upper_bound', 'objective_coefficient',
     ##              ]
@@ -29,7 +29,7 @@ class Reaction(Object):
         
         """
         Object.__init__(self, name)
-        self.gene_reaction_rule = '' #Deprecated
+        self._gene_reaction_rule = ''
         self.subsystem = ''
         self._genes = set() #The cobra.Genes that are used to catalyze the reaction
         #reaction.  _ Indicates that it is not preferred to add a gene to a reaction
@@ -59,6 +59,14 @@ class Reaction(Object):
     def genes(self):
         return self._genes
 
+    @property
+    def gene_reaction_rule(self):
+        return self._gene_reaction_rule
+
+    @gene_reaction_rule.setter
+    def gene_reaction_rule(self, new_rule):
+        self._gene_reaction_rule = new_rule
+        self.parse_gene_association()
 
     @property
     def reversibility(self):
@@ -153,8 +161,13 @@ class Reaction(Object):
         know that they are employed in this reaction
 
         """
+        # These are necessary for old pickles which store attributes
+        # which have since been superceded by properties.
         if "reaction" in state:
             state.pop("reaction")
+        if "gene_reaction_rule" in state:
+            state["_gene_reaction_rule"] = state.pop("gene_reaction_rule")
+
         self.__dict__.update(state)
         for x in state['_metabolites']:
             setattr(x, '_model', self._model)
@@ -285,7 +298,7 @@ class Reaction(Object):
         #Formerly, update_names
         """
         if the_type == 'gene':
-            self._genes = set((re.compile(' {2,}').sub(' ', re.compile('\(| and| or|\+|\)').sub('', self.gene_reaction_rule))).split(' ' ))
+            self._genes = set((re.compile(' {2,}').sub(' ', re.compile('\(| and| or|\+|\)').sub('', self._gene_reaction_rule))).split(' ' ))
             if '' in self._genes:
                 self._genes.remove('')
             self._genes = set(map(Gene, self._genes))
@@ -303,7 +316,8 @@ class Reaction(Object):
         
         """
         self.gene_reaction_rule = the_rule
-        self.parse_gene_association()
+        warn("depracated, assign to gene_reaction_rule directly")
+
 
 
     @property
@@ -499,6 +513,7 @@ class Reaction(Object):
         cobra_gene: :class:`~cobra.core.Gene`. A gene that is associated with the reaction.
         
         """
+        warn("deprecated: update the gene_reaction_rule instead")
         try:
             self._genes.remove(cobra_gene)
             cobra_gene._reaction.remove(self)
@@ -515,6 +530,7 @@ class Reaction(Object):
 
         cobra_gene: :class:`~cobra.core.Gene`. A gene to associate with the reaction.
         """
+        warn("deprecated: update the gene_reaction_rule instead")
         try:
             self._genes.add(cobra_gene)
             cobra_gene._reaction.add(self)
