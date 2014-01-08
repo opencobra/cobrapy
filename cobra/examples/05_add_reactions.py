@@ -19,7 +19,6 @@ reaction.name = '3 oxoacyl acyl carrier protein synthase n C140'
 reaction.subsystem = 'Cell Envelope Biosynthesis'
 reaction.lower_bound = 0.  # This is the default
 reaction.upper_bound = 1000.  # This is the default
-reaction.reversibility = 0  # This is the default
 reaction.objective_coefficient = 0.  # This is the default
 
 # Adding metabolites to a reaction requires using a dictionary of the 
