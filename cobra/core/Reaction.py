@@ -304,21 +304,23 @@ class Reaction(Object):
         """
         self.gene_reaction_rule = the_rule
         self.parse_gene_association()
-        
-    def get_reactants(self):
+
+
+    @property
+    def reactants(self):
         """Return a list of reactants for the reaction.
 
         """
         return [k for k, v in self._metabolites.items()
                 if v < 0]
 
-    def get_products(self):
+    @property
+    def products(self):
         """Return a list of products for the reaction
         
         """
         return [k for k, v in self._metabolites.items()
                 if v > 0]
-
     def get_gene(self):
         """Return a list of genes for the reaction.
 
