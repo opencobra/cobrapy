@@ -1,7 +1,3 @@
-#cobra.core.Reaction.py
-#######################
-#BEGIN Class Reaction
-#
 #Is it better to restrict a Reaction to a single model or
 #should we allow a Reaction to be associated with multiple models?
 #
@@ -22,7 +18,7 @@ class Reaction(Object):
     ## __slots__ = ['id', 'reversibility', '_metabolites', 'gene_reaction_rule',
     ##              'subsystem', '_genes', '_model',
     ##              'name', 'lower_bound', 'upper_bound', 'objective_coefficient',
-    ##              'reaction', 'boundary']
+    ##              ]
 
     def __init__(self, name=None):
         """An object for housing reactions and associated information
@@ -53,6 +49,15 @@ class Reaction(Object):
         #a reaction in the model that is essentially self * -1
         self.variable_kind = 'continuous' #Used during optimization.  Indicates whether the
         #variable is modeled as continuous, integer, binary, semicontinous, or semiinteger.
+
+    # read-only
+    @property
+    def metabolites(self):
+        return self._metabolites
+
+    @property
+    def genes(self):
+        return self._genes
 
 
     @property
@@ -85,12 +90,12 @@ class Reaction(Object):
         [x._reaction.add(self) for x in self._metabolites]
         [x._reaction.add(self) for x in self._genes]
 
+
     def get_model(self):
         """Returns the Model object that this Reaction is associated with.
 
         """
         return self._model
-        
 
     def remove_from_model(self, model=None):
         """Removes the association
@@ -299,15 +304,18 @@ class Reaction(Object):
         """
         self.gene_reaction_rule = the_rule
         self.parse_gene_association()
-        
-    def get_reactants(self):
+
+
+    @property
+    def reactants(self):
         """Return a list of reactants for the reaction.
 
         """
         return [k for k, v in self._metabolites.items()
                 if v < 0]
 
-    def get_products(self):
+    @property
+    def products(self):
         """Return a list of products for the reaction
         
         """
@@ -318,6 +326,7 @@ class Reaction(Object):
         """Return a list of genes for the reaction.
 
         """
+        warn("depracated, use the genes property instead")
         return list(self._genes)
 
 
