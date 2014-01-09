@@ -1,12 +1,10 @@
 # cobra/examples/04_change_objective_example.py
 # This example changes the targeted objective for the optimization function.
 
-from cPickle import load
 #Load in the example model file
-from cobra.test import salmonella_pickle #This is the name of the test file
-with open(salmonella_pickle) as in_file:
-    cobra_model = load(in_file)
+from cobra.test import create_test_model, salmonella_pickle  # test filename
 
+cobra_model = create_test_model(salmonella_pickle)
 
 cobra_model.optimize()
 print 'solution for old objective (should be approximately 0.32):'

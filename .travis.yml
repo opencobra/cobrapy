@@ -8,9 +8,9 @@ virtualenv:
 before_install:
   - sudo apt-get install libglpk-dev python-scipy libgmp-dev
   - cd /home/travis
-  - wget http://clostridium.ucsd.edu/libsbml-5.6.0_built_with_py.tar.gz
-  - tar xzf libsbml-5.6.0_built_with_py.tar.gz
-  - cd libsbml-5.6.0/
+  - wget http://clostridium.ucsd.edu/libSBML-5.9.0_compiled.tar.gz
+  - tar xzf libSBML-5.9.0_compiled.tar.gz
+  - cd libSBML-5.9.0-Source
   - sudo make install
   - cd $TRAVIS_BUILD_DIR
 install:

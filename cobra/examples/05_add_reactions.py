@@ -5,21 +5,21 @@
 #  
 # 1.0 malACP[c] + 1.0 h[c] + 1.0 ddcaACP[c] -> 1.0 co2[c] + 1.0 ACP[c] + 1.0 3omrsACP[c]
 #
-from cobra.flux_analysis import single_deletion
-from cPickle import load, dump
+from cPickle import dump
 from time import time
+
+from cobra.flux_analysis import single_deletion
+from cobra import Reaction
 from cobra.manipulation import initialize_growth_medium
-from cobra.test import salmonella_pickle #This is the name of the test file
-with open(salmonella_pickle) as in_file:
-    cobra_model = load(in_file)
-    
-from cobra import Reaction    
+from cobra.test import create_test_model, salmonella_pickle  # test filename
+
+cobra_model = create_test_model(salmonella_pickle)
+
 reaction = Reaction('my_new_reaction')
 reaction.name = '3 oxoacyl acyl carrier protein synthase n C140'
 reaction.subsystem = 'Cell Envelope Biosynthesis'
 reaction.lower_bound = 0.  # This is the default
 reaction.upper_bound = 1000.  # This is the default
-reaction.reversibility = 0  # This is the default
 reaction.objective_coefficient = 0.  # This is the default
 
 # Adding metabolites to a reaction requires using a dictionary of the 

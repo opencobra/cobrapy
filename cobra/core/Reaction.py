@@ -1,7 +1,3 @@
-#cobra.core.Reaction.py
-#######################
-#BEGIN Class Reaction
-#
 #Is it better to restrict a Reaction to a single model or
 #should we allow a Reaction to be associated with multiple models?
 #
@@ -13,16 +9,29 @@ from .Metabolite import Metabolite
 from .Gene import Gene
 
 from warnings import warn
+try:
+    from ctypes import pythonapi, py_object
+    from _ctypes import PyObj_FromPtr
+
+    PyDictProxy_New = pythonapi.PyDictProxy_New
+    PyDictProxy_New.argtypes = (py_object,)
+    PyDictProxy_New.rettype = py_object
+
+    def make_dictproxy(obj):
+        assert isinstance(obj,dict)
+        return PyObj_FromPtr(PyDictProxy_New(obj))
+except:
+    make_dictproxy = lambda x: x
 
 class Reaction(Object):
     """Reaction is a class for holding information regarding
     a biochemical reaction in a cobra.Model object 
 
     """
-    ## __slots__ = ['id', 'reversibility', '_metabolites', 'gene_reaction_rule',
+    ## __slots__ = ['id', '_metabolites', '_gene_reaction_rule',
     ##              'subsystem', '_genes', '_model',
     ##              'name', 'lower_bound', 'upper_bound', 'objective_coefficient',
-    ##              'reaction', 'boundary']
+    ##              ]
 
     def __init__(self, name=None):
         """An object for housing reactions and associated information
@@ -33,7 +42,7 @@ class Reaction(Object):
         
         """
         Object.__init__(self, name)
-        self.gene_reaction_rule = '' #Deprecated
+        self._gene_reaction_rule = ''
         self.subsystem = ''
         self._genes = set() #The cobra.Genes that are used to catalyze the reaction
         #reaction.  _ Indicates that it is not preferred to add a gene to a reaction
@@ -54,6 +63,23 @@ class Reaction(Object):
         self.variable_kind = 'continuous' #Used during optimization.  Indicates whether the
         #variable is modeled as continuous, integer, binary, semicontinous, or semiinteger.
 
+    # read-only
+    @property
+    def metabolites(self):
+        return make_dictproxy(self._metabolites)
+
+    @property
+    def genes(self):
+        return frozenset(self._genes)
+
+    @property
+    def gene_reaction_rule(self):
+        return self._gene_reaction_rule
+
+    @gene_reaction_rule.setter
+    def gene_reaction_rule(self, new_rule):
+        self._gene_reaction_rule = new_rule
+        self.parse_gene_association()
 
     @property
     def reversibility(self):
@@ -85,12 +111,12 @@ class Reaction(Object):
         [x._reaction.add(self) for x in self._metabolites]
         [x._reaction.add(self) for x in self._genes]
 
+
     def get_model(self):
         """Returns the Model object that this Reaction is associated with.
 
         """
         return self._model
-        
 
     def remove_from_model(self, model=None):
         """Removes the association
@@ -148,8 +174,13 @@ class Reaction(Object):
         know that they are employed in this reaction
 
         """
+        # These are necessary for old pickles which store attributes
+        # which have since been superceded by properties.
         if "reaction" in state:
             state.pop("reaction")
+        if "gene_reaction_rule" in state:
+            state["_gene_reaction_rule"] = state.pop("gene_reaction_rule")
+
         self.__dict__.update(state)
         for x in state['_metabolites']:
             setattr(x, '_model', self._model)
@@ -280,7 +311,7 @@ class Reaction(Object):
         #Formerly, update_names
         """
         if the_type == 'gene':
-            self._genes = set((re.compile(' {2,}').sub(' ', re.compile('\(| and| or|\+|\)').sub('', self.gene_reaction_rule))).split(' ' ))
+            self._genes = set((re.compile(' {2,}').sub(' ', re.compile('\(| and| or|\+|\)').sub('', self._gene_reaction_rule))).split(' ' ))
             if '' in self._genes:
                 self._genes.remove('')
             self._genes = set(map(Gene, self._genes))
@@ -298,16 +329,20 @@ class Reaction(Object):
         
         """
         self.gene_reaction_rule = the_rule
-        self.parse_gene_association()
-        
-    def get_reactants(self):
+        warn("deprecated, assign to gene_reaction_rule directly")
+
+
+
+    @property
+    def reactants(self):
         """Return a list of reactants for the reaction.
 
         """
         return [k for k, v in self._metabolites.items()
                 if v < 0]
 
-    def get_products(self):
+    @property
+    def products(self):
         """Return a list of products for the reaction
         
         """
@@ -318,6 +353,7 @@ class Reaction(Object):
         """Return a list of genes for the reaction.
 
         """
+        warn("deprecated, use the genes property instead")
         return list(self._genes)
 
 
@@ -490,6 +526,7 @@ class Reaction(Object):
         cobra_gene: :class:`~cobra.core.Gene`. A gene that is associated with the reaction.
         
         """
+        #warn("deprecated: update the gene_reaction_rule instead")
         try:
             self._genes.remove(cobra_gene)
             cobra_gene._reaction.remove(self)
@@ -506,6 +543,7 @@ class Reaction(Object):
 
         cobra_gene: :class:`~cobra.core.Gene`. A gene to associate with the reaction.
         """
+        #warn("deprecated: update the gene_reaction_rule instead")
         try:
             self._genes.add(cobra_gene)
             cobra_gene._reaction.add(self)

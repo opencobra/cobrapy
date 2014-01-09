@@ -1,4 +1,3 @@
-#cobra.core.ArrayBasedModel.py
 #Dresses a cobra.Model with arrays and vectors so that linear algebra operations
 #can be carried out on 
 from numpy import array, empty, sign, repeat, vstack, hstack
@@ -8,9 +7,8 @@ from scipy.sparse import lil_matrix, dok_matrix
 from copy import deepcopy
 from .Model import Model
 from warnings import warn
-#######################
-#BEGIN Class ArrayBasedModel
-#
+
+
 class ArrayBasedModel(Model):
     """ArrayBasedModel is a class that adds arrays and vectors to
     a cobra.Model to make it easier to perform linear algebra operations.
@@ -42,7 +40,7 @@ class ArrayBasedModel(Model):
           for x in self.__dict__[y]]
          for y in ['reactions', 'genes', 'metabolites']]
 
-    def __init__(self, description=None, deepcopy_model=False, matrix_type='scipy.lil_matrix'):
+    def __init__(self, description=None, deepcopy_model=False, matrix_type='scipy.dok_matrix'):
         """
         description: None | String | cobra.Model
 
@@ -102,7 +100,6 @@ class ArrayBasedModel(Model):
         return the_copy
         
 
-        
     def add_metabolites(self, metabolite_list,
                         expand_stoichiometric_matrix=True):
         """Will add a list of metabolites to the the object, if they do not
@@ -165,7 +162,7 @@ class ArrayBasedModel(Model):
             metabolite_indices = map(self.metabolites.index, the_reaction._metabolites)
             for (index, metabolite_index) in enumerate(metabolite_indices):
                 self.S[metabolite_index, reaction_index] = the_reaction.stoichiometric_coefficients[index]
-                     
+
 
         
     def add_reactions(self, reaction_list, update_matrices=False):
@@ -219,6 +216,7 @@ class ArrayBasedModel(Model):
         self.upper_bounds = array(upper_bounds)
         self.objective_coefficients = array(objective_coefficients)
 
+    # TODO deprecate and use @property for _b and constraint sense
     def _update_metabolite_vectors(self):
         """regenerates _b and _constraint_sense
 
@@ -234,7 +232,8 @@ class ArrayBasedModel(Model):
          for x in self.metabolites]
         self.b = array(_b)
         self.constraint_sense = _constraint_sense
-         
+ 
+    # TODO deprecate and use @property
     def _update_matrices(self, reaction_list=None):
         """
         reaction_list: None or a list of cobra.Reaction objects that are in
@@ -258,8 +257,8 @@ class ArrayBasedModel(Model):
         #If no reactions are present in the Model, initialize the arrays
         if not self.S or reaction_list is None:
             reaction_list = self.reactions
-            self.S = dok_matrix((len(self.metabolites),
-                                         len(self.reactions))) 
+            self.S = SMatrix(self, (len(self.metabolites),
+                                    len(self.reactions))) 
             self.lower_bounds = array([reaction.lower_bound
                                        for reaction in reaction_list]) 
             self.upper_bounds = array([reaction.upper_bound
@@ -267,7 +266,6 @@ class ArrayBasedModel(Model):
             self.objective_coefficients = array([reaction.objective_coefficient
                                                  for reaction in reaction_list])
         else: #Expand the arrays to accomodate the new reaction
-            self.S = self.S.todok()
             self.S.resize((len(self.metabolites),
                            len(self.reactions)))
             lower_bounds = array([x.lower_bound
@@ -307,7 +305,22 @@ class ArrayBasedModel(Model):
         """
         self._update_matrices()
         self._update_metabolite_vectors()
-#
-#END Class ArrayBasedModel
-#####################
 
+
+class SMatrix(dok_matrix):
+    """A 2D sparse matrix which maintains links to a cobra Model"""
+    def __init__(self, model, *args):
+        dok_matrix.__init__(self, *args)
+        self.format = "dok"
+        self._model = model
+
+    def __setitem__(self, index, value):
+        dok_matrix.__setitem__(self, index, value)
+        if type(index[0]) is int and type(index[1]) is int:
+            reaction = self._model.reactions[index[1]]
+            if value != 0:
+                reaction.add_metabolites({self._model.metabolites[index[0]]: value}, combine=False)
+            else:  # setting 0 means metabolites should be removed
+                metabolite = self._model.metabolites[index[0]]
+                if metabolite in reaction._metabolites:
+                    reaction.pop(metabolite)
