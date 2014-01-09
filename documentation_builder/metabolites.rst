@@ -38,3 +38,7 @@ We can see the chemical formula for the metabolite as well.
 
 >>> atp.formula
     'C10H12N5O13P3'
+
+View the IPython notebook_.
+
+.. _notebook: http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/metabolites.ipynb

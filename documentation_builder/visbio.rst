@@ -3,13 +3,12 @@ Visbio and cobrapy
 
 cobrapy integrates well with the
 [visbio](https://github.com/zakandrewking/visbio) package. If it has been
-installed, viewing maps is extremely simple. The default map is the _E. coli_
+installed, viewing maps is extremely simple. The default map is the *E. coli*
 core map, but other maps can be viewed by passing the correct map_name. The
 maps are then downloaded from a map
 [repository](https://github.com/zakandrewking/visbio/tree/gh-pages/maps).
 
 .. code:: python
-
 >>> from visbio import Map
 >>> import cobra.test
 >>> model = cobra.test.create_test_model(cobra.test.ecoli_pickle)
@@ -25,5 +24,8 @@ maps are then downloaded from a map
 >>> wt_map.view_browser()  # opens in a browser
 >>> mutant_map.create_standalone_html("mutant.html")  # saves an html file
 
-Using maps is even nicer when using the [IPython](http://ipython.org/) notebook, as shown in this
-[example](http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/visbio.ipynb)
+Using maps is even nicer when using the IPython_ notebook, as shown in this
+example_.
+
+.. _IPython: http://ipython.org/
+.. _example: http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/visbio.ipynb
