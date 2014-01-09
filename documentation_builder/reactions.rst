@@ -73,3 +73,6 @@ again.
 >>> print pgi.check_mass_balance()
     []
 
+View the IPython notebook_.
+
+.. _notebook: http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/reactions.ipynb

@@ -2,9 +2,10 @@
 #
 #Advanced user example illustrating how to perform double deletion studies on a multicore system
 #
-from cobra.flux_analysis.double_deletion import double_deletion
-from cPickle import load, dump
+from cPickle import dump
 from time import time
+
+from cobra.flux_analysis.double_deletion import double_deletion
 from cobra.test import create_test_model
 
 number_of_processes = 4 #Number of parallel processes to start
