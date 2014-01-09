@@ -1,16 +1,15 @@
 # cobra/examples/03_single_deletion.py
 # This example demonstrates a single gene deletion simulation
-from cobra.flux_analysis import single_deletion
-from cPickle import load
 from time import time
-from cobra.manipulation import initialize_growth_medium
-from cobra.test import salmonella_pickle #This is the name of the test file
-with open(salmonella_pickle) as in_file:
-    cobra_model = load(in_file)
 
+from cobra.flux_analysis import single_deletion
+from cobra.manipulation import initialize_growth_medium
+from cobra.test import create_test_model, salmonella_pickle  # test filename
+
+cobra_model = create_test_model(salmonella_pickle)
 initialize_growth_medium(cobra_model, 'LB')
 
-target_genes =  ['STM4081', 'STM0247', 'STM3867', 'STM2952']
+target_genes = ['STM4081', 'STM0247', 'STM3867', 'STM2952']
 # Expected growth rates for the salmonella model after a deletions in LB medium
 expected_growth_rates = {
     "STM4081": 2.41,
