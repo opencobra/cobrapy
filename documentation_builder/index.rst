@@ -13,6 +13,7 @@ Documentation for COBRApy
     04_change_objective
     05_add_reactions
     06_ice_cream_milp
+    visbio
     cobra
 
 
