@@ -40,7 +40,7 @@ class ArrayBasedModel(Model):
           for x in self.__dict__[y]]
          for y in ['reactions', 'genes', 'metabolites']]
 
-    def __init__(self, description=None, deepcopy_model=False, matrix_type='scipy.dok_matrix'):
+    def __init__(self, description=None, deepcopy_model=False, matrix_type='scipy.lil_matrix'):
         """
         description: None | String | cobra.Model
 
