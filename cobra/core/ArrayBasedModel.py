@@ -257,8 +257,9 @@ class ArrayBasedModel(Model):
         #If no reactions are present in the Model, initialize the arrays
         if not self.S or reaction_list is None:
             reaction_list = self.reactions
-            self.S = SMatrix(self, (len(self.metabolites),
-                                    len(self.reactions))) 
+            SMatrix = SMatrix_classes[self.matrix_type]
+            self.S = SMatrix((len(self.metabolites),
+                              len(self.reactions)), model=self) 
             self.lower_bounds = array([reaction.lower_bound
                                        for reaction in reaction_list]) 
             self.upper_bounds = array([reaction.upper_bound
@@ -306,13 +307,23 @@ class ArrayBasedModel(Model):
         self._update_matrices()
         self._update_metabolite_vectors()
 
+class SMatrix_general(object):
+    def clear(self):
+        raise Exception("can not clear S Matrix")
 
-class SMatrix(dok_matrix):
-    """A 2D sparse matrix which maintains links to a cobra Model"""
-    def __init__(self, model, *args):
+    def expire(self):
+        """expires an SMatrix when another one has taken its place"""
+        #matrix_type.clear()
+        def new_getattr(x):
+            raise Exception("Expired matrix")
+        self.__getattr__ = new_getattr
+
+class SMatrix_dok(dok_matrix):
+    """A 2D sparse dok matrix which maintains links to a cobra Model"""
+    def __init__(self, *args, **kwargs):
         dok_matrix.__init__(self, *args)
         self.format = "dok"
-        self._model = model
+        self._model = kwargs["model"] if "model" in kwargs else None
 
     def __setitem__(self, index, value):
         dok_matrix.__setitem__(self, index, value)
@@ -324,3 +335,45 @@ class SMatrix(dok_matrix):
                 metabolite = self._model.metabolites[index[0]]
                 if metabolite in reaction._metabolites:
                     reaction.pop(metabolite)
+
+    def tolil(self):
+        new = SMatrix_lil(dok_matrix.tolil(self), model=self._model)
+        return new
+
+class SMatrix_lil(lil_matrix):
+    """A 2D sparse lil matrix which maintains links to a cobra Model"""
+    def __init__(self, *args, **kwargs):
+        lil_matrix.__init__(self, *args)
+        self.format = "lil"
+        self._model = kwargs["model"] if "model" in kwargs else None
+    
+    def __setitem__(self, index, value):
+        lil_matrix.__setitem__(self, index, value)
+        if isinstance(index[0], int):
+            metabolites = [self._model.metabolites[index[0]]]
+        else:
+            metabolites = self._model.metabolites[index[0]]
+        
+        if isinstance(index[1], int):
+            reactions = [self._model.reactions[index[1]]]
+        else:
+            reactions = self._model.reactions[index[1]]
+        
+        if value == 0:  # remove_metabolites
+            met_set = set(metabolites)
+            for reaction in reactions:
+                to_remove = met_set.intersection(reaction._metabolites)
+                for i in to_remove:
+                    reaction.pop(i)
+        else:  # add metabolites
+            met_dict = {met: value for met in metabolites}
+            for reaction in reactions:
+                reaction.add_metabolites(met_dict, combine=False)
+
+    def todok(self):
+        new = SMatrix_dok(lil_matrix.todok(self), model=self._model)
+        return new
+
+
+SMatrix_classes = {"scipy.dok_matrix": SMatrix_dok,
+                   "scipy.lil_matrix": SMatrix_lil}
