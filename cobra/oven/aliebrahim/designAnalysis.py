@@ -92,6 +92,7 @@ def plot_production_envelope(model, target_id, n_points=20, plot=True,
 
 
 def analyze_growth_coupled_num_knockouts(model, knockout_reaction, target_name="EX_etoh_e"):
+    None
     
 
 def analyze_growth_coupled_design_subset(model, knockout_reactions, knockout_count, target_name="EX_etoh_e"):
@@ -122,19 +123,15 @@ def analyze_growth_coupled_design_subset(model, knockout_reactions, knockout_cou
     return best_score, best
 
 if __name__ == "__main__":
-    from cPickle import load
-    def load_pickle(filename):
-        with open(filename, "rb") as infile:
-            return load(infile)
-    from cobra.test import ecoli_pickle
+    from cobra.test import ecoli_pickle, create_test_model
     from time import time
-    import pylab
-    model = load_pickle(ecoli_pickle)
+
+    model = create_test_model(ecoli_pickle)
     #from IPython import embed; embed()
     model.reactions.get_by_id("EX_o2_e").lower_bound = 0
-    analyze_strain_design(model, ["ABTA", "ACALD", "ACKr", "ATPS4rpp", "F6PA",
-              "GLUDy", "LDH_D", "MGSA", "PFL", "TPI"])
-    
+    #analyze_strain_design(model, ["ABTA", "ACALD", "ACKr", "ATPS4rpp", "F6PA",
+    #          "GLUDy", "LDH_D", "MGSA", "PFL", "TPI"])
+
     for i in ["ABTA", "ACALD", "ACKr", "ATPS4rpp", "F6PA",
               "GLUDy", "LDH_D", "MGSA", "PFL", "TPI"]:
         model.reactions.get_by_id(i).lower_bound = 0
