@@ -1,4 +1,4 @@
-import cobra
+from ..manipulation import modify
 
 def optimize_minimal_flux(model, already_irreversible=False,
         **optimize_kwargs):
@@ -22,7 +22,7 @@ def optimize_minimal_flux(model, already_irreversible=False,
     if "new_objective" in optimize_kwargs:
         raise ValueError("Not implemented yet, use objective coefficients")
     if not already_irreversible:
-        cobra.manipulation.modify.convert_to_irreversible(model)
+        modify.convert_to_irreversible(model)
     hot_start = model.optimize(**optimize_kwargs)
     # if the problem is infeasible
     if model.solution.f is None:
@@ -49,14 +49,17 @@ def optimize_minimal_flux(model, already_irreversible=False,
     optimize_kwargs["objective_sense"] = "minimize"
     model.optimize(**optimize_kwargs)
     # make the model back the way it was
-    for reaction in old_objective_coefficients:
-        reaction.objective_coefficient = old_objective_coefficients[reaction]
-        reaction.lower_bound = old_lower_bounds[reaction]
-        reaction.upper_bound = old_upper_bounds[reaction]
+    for reaction in model.reactions:
+        if reaction in old_objective_coefficients:
+            reaction.objective_coefficient = old_objective_coefficients[reaction]
+            reaction.lower_bound = old_lower_bounds[reaction]
+            reaction.upper_bound = old_upper_bounds[reaction]
+        else:
+            reaction.objective_coefficient = 0
     # if the minimization problem was successful
     if model.solution.f is not None:
         model.solution.f = old_f
-    cobra.manipulation.modify.revert_to_reversible(model)
+    modify.revert_to_reversible(model)
 
 
 if __name__ == "__main__":
