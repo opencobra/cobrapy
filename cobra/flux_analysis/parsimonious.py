@@ -12,7 +12,8 @@ def optimize_minimal_flux(model, already_irreversible=False,
 
     Parameters
     ----------
-    model : cobra model
+    model : :class:`~cobra.core.Model` object
+
     already_irreversible : bool, optional
         By default, the model is converted to an irreversible one.
         However, if the model is already irreversible, this step can be
