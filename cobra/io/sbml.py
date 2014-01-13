@@ -347,16 +347,10 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
     Level 2 Version 4
     
     """
-    #Add in the common compartment abbreviations.  If there are additional compartments
-    #they also need to be added.
     note_start_tag, note_end_tag = '<p>', '</p>'
     if sbml_level > 2 or (sbml_level == 2 and sbml_version == 4):
         note_start_tag, note_end_tag = '<html:p>', '</html:p>'
         
-    if not cobra_model.compartments:
-        cobra_model.compartments = {'c': 'cytosol',
-                                    'p': 'periplasm',
-                                    'e': 'extracellular'}
     
     sbml_doc = SBMLDocument(sbml_level, sbml_version)
     sbml_model = sbml_doc.createModel(cobra_model.description.split('.')[0])
@@ -375,7 +369,12 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
     sbml_unit.setMultiplier(1.0/60/60)
     sbml_unit.setExponent(-1)
 
-    
+    #Add in the common compartment abbreviations.  If there are additional compartments
+    #they also need to be added.
+    if not cobra_model.compartments:
+        cobra_model.compartments = {'c': 'cytosol',
+                                    'p': 'periplasm',
+                                    'e': 'extracellular'}    
     for the_key in cobra_model.compartments.keys():
         sbml_comp = sbml_model.createCompartment()
         sbml_comp.setId(the_key)
