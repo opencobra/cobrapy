@@ -353,7 +353,7 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
     if sbml_level > 2 or (sbml_level == 2 and sbml_version == 4):
         note_start_tag, note_end_tag = '<html:p>', '</html:p>'
         
-    if not hasattr(cobra_model, 'compartments'):
+    if not cobra_model.compartments:
         cobra_model.compartments = {'c': 'cytosol',
                                     'p': 'periplasm',
                                     'e': 'extracellular'}
