@@ -138,10 +138,10 @@ def revert_to_reversible(cobra_model):
                          if x.reflection is not None and
                          x.id.endswith('_reverse')]
 
-    for the_reaction in reverse_reactions:
-        the_reflection = the_reaction.reflection
-        the_reaction.lower_bound = -the_reflection.lower_bound
-        the_reaction.reflection = None
+    for reverse in reverse_reactions:
+        forward = reverse.reflection
+        forward.lower_bound = -reverse.upper_bound
+        forward.reflection = None
     #Since the metabolites and genes are all still in
     #use we can do this faster removal step.  We can
     #probably speed things up here.

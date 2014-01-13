@@ -49,10 +49,13 @@ def optimize_minimal_flux(model, already_irreversible=False,
     optimize_kwargs["objective_sense"] = "minimize"
     model.optimize(**optimize_kwargs)
     # make the model back the way it was
-    for reaction in old_objective_coefficients:
-        reaction.objective_coefficient = old_objective_coefficients[reaction]
-        reaction.lower_bound = old_lower_bounds[reaction]
-        reaction.upper_bound = old_upper_bounds[reaction]
+    for reaction in model.reactions:
+        if reaction in old_objective_coefficients:
+            reaction.objective_coefficient = old_objective_coefficients[reaction]
+            reaction.lower_bound = old_lower_bounds[reaction]
+            reaction.upper_bound = old_upper_bounds[reaction]
+        else:
+            reaction.objective_coefficient = 0
     # if the minimization problem was successful
     if model.solution.f is not None:
         model.solution.f = old_f
