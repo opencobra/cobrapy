@@ -1,19 +1,22 @@
-mlab Package
-============
+cobra.mlab package
+==================
 
-:mod:`mlab` Package
--------------------
+Submodules
+----------
 
-.. automodule:: cobra.mlab
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`mlab` Module
-------------------
+cobra.mlab.mlab module
+----------------------
 
 .. automodule:: cobra.mlab.mlab
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: cobra.mlab
+    :members:
+    :undoc-members:
+    :show-inheritance:

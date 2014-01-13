@@ -1,19 +1,22 @@
-topology Package
-================
+cobra.topology package
+======================
 
-:mod:`topology` Package
------------------------
+Submodules
+----------
 
-.. automodule:: cobra.topology
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`reporter_metabolites` Module
-----------------------------------
+cobra.topology.reporter_metabolites module
+------------------------------------------
 
 .. automodule:: cobra.topology.reporter_metabolites
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: cobra.topology
+    :members:
+    :undoc-members:
+    :show-inheritance:

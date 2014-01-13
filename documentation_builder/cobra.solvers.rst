@@ -1,51 +1,54 @@
-solvers Package
-===============
+cobra.solvers package
+=====================
 
-:mod:`solvers` Package
-----------------------
+Submodules
+----------
 
-.. automodule:: cobra.solvers
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`cplex_solver` Module
---------------------------
+cobra.solvers.cplex_solver module
+---------------------------------
 
 .. automodule:: cobra.solvers.cplex_solver
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`glpk_solver` Module
--------------------------
+cobra.solvers.glpk_solver module
+--------------------------------
 
 .. automodule:: cobra.solvers.glpk_solver
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`gurobi_solver` Module
----------------------------
+cobra.solvers.gurobi_solver module
+----------------------------------
 
 .. automodule:: cobra.solvers.gurobi_solver
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`legacy` Module
---------------------
+cobra.solvers.legacy module
+---------------------------
 
 .. automodule:: cobra.solvers.legacy
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`parameters` Module
-------------------------
+cobra.solvers.parameters module
+-------------------------------
 
 .. automodule:: cobra.solvers.parameters
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: cobra.solvers
+    :members:
+    :undoc-members:
+    :show-inheritance:

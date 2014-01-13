@@ -1,27 +1,30 @@
-manipulation Package
-====================
+cobra.manipulation package
+==========================
 
-:mod:`manipulation` Package
----------------------------
+Submodules
+----------
 
-.. automodule:: cobra.manipulation
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`delete` Module
---------------------
+cobra.manipulation.delete module
+--------------------------------
 
 .. automodule:: cobra.manipulation.delete
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`modify` Module
---------------------
+cobra.manipulation.modify module
+--------------------------------
 
 .. automodule:: cobra.manipulation.modify
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: cobra.manipulation
+    :members:
+    :undoc-members:
+    :show-inheritance:
