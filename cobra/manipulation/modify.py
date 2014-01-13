@@ -134,18 +134,18 @@ def revert_to_reversible(cobra_model):
     NOTE: It might just be easiest to include this function in the Reaction class
     
     """
-    reversible_reactions = [x for x in cobra_model.reactions
-                            if x.reflection is not None and
-                            not x.id.endswith('_reverse')]
+    reverse_reactions = [x for x in cobra_model.reactions
+                         if x.reflection is not None and
+                         x.id.endswith('_reverse')]
 
-    for the_reaction in reversible_reactions:
+    for the_reaction in reverse_reactions:
         the_reflection = the_reaction.reflection
         the_reaction.lower_bound = -the_reflection.lower_bound
         the_reaction.reflection = None
-        #Since the metabolites and genes are all still in
-        #use we can do this faster removal step.  We can
-        #probably speed things up here.
-        cobra_model.reactions.remove(the_reaction)
+    #Since the metabolites and genes are all still in
+    #use we can do this faster removal step.  We can
+    #probably speed things up here.
+    cobra_model.remove_reactions(reverse_reactions)
 
    
 def convert_rule_to_boolean_rule(cobra_model, the_rule,
