@@ -1,6 +1,4 @@
 import cobra
-from IPython import embed
-
 
 def optimize_minimal_flux(model, already_irreversible=False,
         **optimize_kwargs):
@@ -58,11 +56,10 @@ def optimize_minimal_flux(model, already_irreversible=False,
     # if the minimization problem was successful
     if model.solution.f is not None:
         model.solution.f = old_f
-    cobra.manipulation.modify.convert_back_to_reversible(model)
+    cobra.manipulation.modify.revert_to_reversible(model)
 
 
 if __name__ == "__main__":
     import cobra.test
-    import cobra.oven.legacyIO
-    model = cobra.oven.legacyIO.load_pickle(cobra.test.ecoli_pickle)
+    model = cobra.test.create_test_model(cobra.test.ecoli_pickle)
     optimize_minimal_flux(model)
