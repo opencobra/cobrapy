@@ -5,7 +5,6 @@ nan = float('nan')
 from time import time
 from warnings import warn
 from copy import deepcopy
-from ..manipulation import initialize_growth_medium
 from ..manipulation import delete_model_genes, undelete_model_genes
 from os import name as __name
 if __name == 'java':
@@ -18,6 +17,8 @@ else:
     except Exception, e:
         def moma(**kwargs):
             warn("moma is currently not supported on %s: %s"%(__name, e))
+
+
 def single_deletion(cobra_model, element_list=None,
                     method='fba', the_problem='return',
                     element_type='gene', solver='glpk',
@@ -61,6 +62,15 @@ def single_deletion(cobra_model, element_list=None,
                                         solver=solver,
                                                 error_reporting=error_reporting)
     return the_solution
+
+
+def single_reaction_deletion_fba(cobra_model, reaction_list=None, solver="glpk"):
+    solver = solver_dict[solver]
+    lp = solver.create_problem(cobra_model)
+    if reaction_list is None:
+        reaction_list = model.reactions
+    for reaction in reaction_list:
+        None
 
 def single_reaction_deletion(cobra_model, element_list=None,
                              method='fba', the_problem='return',

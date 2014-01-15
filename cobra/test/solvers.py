@@ -7,14 +7,14 @@ if __name__ == "__main__":
     from cobra.test import create_test_model
     from cobra import Model, Reaction, Metabolite
     from cobra import solvers
-    from cobra.solvers import __legacy_solver
     sys.path.pop(0)  # remove the added directory to the path
 else:
     from ..manipulation import initialize_growth_medium
     from . import create_test_model
     from .. import Model, Reaction, Metabolite
     from .. import solvers
-    __legacy_solver = solvers.__legacy_solver
+
+__legacy_solver = False
 
 class TestCobraSolver(TestCase):
     def setUp(self):

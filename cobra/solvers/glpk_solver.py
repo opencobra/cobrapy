@@ -17,7 +17,7 @@ __solver_class = GLPK
 variable_kind_dict = {'continuous': float, 'integer': int}
 status_dict = {'opt': 'optimal', 'nofeas': 'infeasible', 'unbnd': 'unbounded'}
 sense_dict = {'E': 'E', 'L': 'L', 'G': 'G'}
-parameter_mappings = parameter_mappings[solver_name]
+parameter_mappings = {}
 parameter_defaults = parameter_defaults[solver_name]
 
 def get_status(lp):
@@ -34,7 +34,7 @@ def get_objective_value(lp):
 def format_solution(lp, cobra_model, **kwargs):
     status = get_status(lp)
     if status == 'optimal':
-        sol = Solution(lb.obj.value, status=status)
+        sol = Solution(lp.obj.value, status=status)
         sol.x = [float(c.primal) for c in lp.cols]
         sol.x_dict = {c.name: c.primal for c in lp.cols}
 
@@ -127,6 +127,10 @@ def create_problem(cobra_model,  **kwargs):
         set_parameter(lp, "objective_sense", the_parameters["objective_sense"])
 
     return(lp)
+
+
+def change_variable_bounds(lp, index, lower_bound, upper_bound):
+    lp.cols[i].bounds = (lower_bound, upper_bound)
 
 
 def update_problem(lp, cobra_model, **kwargs):
