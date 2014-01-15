@@ -6,6 +6,7 @@ from time import time
 from warnings import warn
 from copy import deepcopy
 from ..manipulation import delete_model_genes, undelete_model_genes
+from ..solvers import solver_dict
 from os import name as __name
 if __name == 'java':
     warn("moma is not supported on %s"%__name)
@@ -67,10 +68,19 @@ def single_deletion(cobra_model, element_list=None,
 def single_reaction_deletion_fba(cobra_model, reaction_list=None, solver="glpk"):
     solver = solver_dict[solver]
     lp = solver.create_problem(cobra_model)
+    growth_rate_dict = {}
+    status_dict = {}
     if reaction_list is None:
-        reaction_list = model.reactions
+        reaction_list = cobra_model.reactions
     for reaction in reaction_list:
-        None
+        old_bounds = (reaction.lower_bound, reaction.upper_bound)
+        index = cobra_model.reactions.index(reaction)
+        solver.change_variable_bounds(lp, index, 0., 0.)
+        solver.solve_problem(lp)
+        status = solver.get_status(lp)
+        status_dict[reaction.id] = status
+        growth_rate_dict[reaction.id] = solver.get_objective_value(lp)# if status == "optimal" else 0.
+    return(growth_rate_dict, status_dict)
 
 def single_reaction_deletion(cobra_model, element_list=None,
                              method='fba', the_problem='return',
