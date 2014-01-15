@@ -4,6 +4,7 @@ from __future__ import with_statement
 from math import floor,ceil
 from copy import deepcopy
 from ..core.Metabolite import Metabolite
+from ..solvers import solver_dict
 try:
     from ..external.ppmap import ppmap
     __parallel_mode_available = True
@@ -40,6 +41,29 @@ def flux_variability_analysis_wrapper(keywords):
         return the_result
     else:
         return results_dict
+
+def flux_variability_analysis_fast(cobra_model, fraction_of_optimum=1., solver="glpk", objective_sense="maximize"):
+    # TODO allow subset of reactions
+    lp = cobra_model.optimize(solver=solver)
+    solver = solver_dict[solver]
+    f = cobra_model.solution.f
+    # set all objective coefficients to 0
+    for i, r in enumerate(cobra_model.reactions):
+        if r.objective_coefficient != 0:
+            new_bounds = (f * fraction_of_optimum * r.objective_coefficient, f * r.objective_coefficient)
+            solver.change_variable_bounds(lp, i, min(new_bounds), max(new_bounds))
+            solver.change_variable_objective(lp, i, 0.)
+    # perform fva
+    fva_results = {}
+    for i, r in enumerate(cobra_model.reactions):
+        fva_results[r.id] = {}
+        solver.change_variable_objective(lp, i, 1.)
+        solver.solve_problem(lp, objective_sense="maximize")
+        fva_results[r.id]["maximize"] = solver.get_objective_value(lp)
+        solver.solve_problem(lp, objective_sense="minimize")
+        fva_results[r.id]["minimize"] = solver.get_objective_value(lp)
+        solver.change_variable_objective(lp, i, 0.)
+    return fva_results
 
 def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
                               objective_sense='maximize', the_reactions=None,
