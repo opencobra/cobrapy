@@ -45,7 +45,7 @@ def flux_variability_analysis_wrapper(keywords):
     else:
         return results_dict
 
-def flux_variability_analysis_fast(cobra_model, fraction_of_optimum=0.9999.,
+def flux_variability_analysis_fast(cobra_model, fraction_of_optimum=0.999999,
                                    reaction_list=None, solver="glpk",
                                    objective_sense="maximize"):
     if reaction_list is None:
@@ -54,14 +54,14 @@ def flux_variability_analysis_fast(cobra_model, fraction_of_optimum=0.9999.,
         reaction_list = [cobra_model.reactions.get_by_id(i) for i in reaction_list]
     lp = cobra_model.optimize(solver=solver)
     solver = solver_dict[solver]
-    f = cobra_model.solution.f
     # set all objective coefficients to 0
     for i, r in enumerate(cobra_model.reactions):
         if r.objective_coefficient != 0:
             if fraction_of_optimum == 1:
                 # TODO fix this
                 warn("numerical problems possible with fraction of 1")
-            new_bounds = (f * fraction_of_optimum * r.objective_coefficient, f * r.objective_coefficient)
+            f = cobra_model.solution.x_dict[r.id]
+            new_bounds = (f * fraction_of_optimum, f)
             solver.change_variable_bounds(lp, i, min(new_bounds), max(new_bounds))
             solver.change_variable_objective(lp, i, 0.)
     # perform fva
