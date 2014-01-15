@@ -72,6 +72,8 @@ def single_reaction_deletion_fba(cobra_model, reaction_list=None, solver="glpk")
     status_dict = {}
     if reaction_list is None:
         reaction_list = cobra_model.reactions
+    else:
+        reaction_list = [cobra_model.reactions.get_by_id(i) for i in reaction_list]
     for reaction in reaction_list:
         old_bounds = (reaction.lower_bound, reaction.upper_bound)
         index = cobra_model.reactions.index(reaction)

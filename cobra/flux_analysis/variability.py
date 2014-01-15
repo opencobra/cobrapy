@@ -42,8 +42,13 @@ def flux_variability_analysis_wrapper(keywords):
     else:
         return results_dict
 
-def flux_variability_analysis_fast(cobra_model, fraction_of_optimum=1., solver="glpk", objective_sense="maximize"):
-    # TODO allow subset of reactions
+def flux_variability_analysis_fast(cobra_model, fraction_of_optimum=1.,
+                                   reaction_list=None, solver="glpk",
+                                   objective_sense="maximize"):
+    if reaction_list is None:
+        reaction_list = cobra_model.reactions
+    else:
+        reaction_list = [cobra_model.reactions.get_by_id(i) for i in reaction_list]
     lp = cobra_model.optimize(solver=solver)
     solver = solver_dict[solver]
     f = cobra_model.solution.f
@@ -55,13 +60,14 @@ def flux_variability_analysis_fast(cobra_model, fraction_of_optimum=1., solver="
             solver.change_variable_objective(lp, i, 0.)
     # perform fva
     fva_results = {}
-    for i, r in enumerate(cobra_model.reactions):
+    for r in reaction_list:
+        i = cobra_model.reactions.index(r)
         fva_results[r.id] = {}
         solver.change_variable_objective(lp, i, 1.)
         solver.solve_problem(lp, objective_sense="maximize")
-        fva_results[r.id]["maximize"] = solver.get_objective_value(lp)
+        fva_results[r.id]["maximum"] = solver.get_objective_value(lp)
         solver.solve_problem(lp, objective_sense="minimize")
-        fva_results[r.id]["minimize"] = solver.get_objective_value(lp)
+        fva_results[r.id]["minimum"] = solver.get_objective_value(lp)
         solver.change_variable_objective(lp, i, 0.)
     return fva_results
 
