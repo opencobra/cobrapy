@@ -125,6 +125,10 @@ def change_variable_bounds(lp, index, lower_bound, upper_bound):
     lp.cols[index].bounds = (lower_bound, upper_bound)
 
 
+def change_variable_objective(lp, index, objective):
+    lp.obj[index] = objective
+
+
 def update_problem(lp, cobra_model, **kwargs):
     """A performance tunable method for updating a model problem file
 
