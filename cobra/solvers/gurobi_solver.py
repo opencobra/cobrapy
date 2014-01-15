@@ -4,6 +4,7 @@
 from warnings import warn
 from os import name as __name
 from copy import deepcopy
+from itertools import izip
 ###solver specific parameters
 from .parameters import status_dict, variable_kind_dict, \
      sense_dict, parameter_mappings, parameter_defaults, \
@@ -38,16 +39,14 @@ def format_solution(lp, cobra_model, **kwargs):
     if status not in ('optimal', 'time_limit'):
         the_solution = Solution(None, status=status)
     else:
-        objective_value = lp.ObjVal            
-        x_dict = dict(((v.VarName, v.X)
-                       for v in lp.getVars()))
-        x = [x_dict[v.id] for v in cobra_model.reactions]
+        objective_value = lp.ObjVal
+        x = [v.X for v  in lp.getVars()]      
+        x_dict = {r.id: value for r, value in izip(cobra_model.reactions, x)}
         if lp.isMIP:
             y = y_dict = None #MIP's don't have duals
         else:
-            y_dict = dict(((c.ConstrName, c.Pi)
-                          for c in lp.getConstrs()))
-            y = list([y_dict[v.id] for v in cobra_model.metabolites])
+            y = [c.Pi for c in lp.getConstrs()]
+            y_dict = {m.id: value for m, value in izip(cobra_model.metabolites, y)}
         the_solution = Solution(objective_value, x=x, x_dict=x_dict, y=y,
                                 y_dict=y_dict, status=status)
     return(the_solution)
@@ -57,6 +56,11 @@ def set_parameter(lp, parameter_name, parameter_value):
         lp.setAttr(parameter_name, objective_senses[parameter_value])
     else:
         lp.setParam(parameter_name, parameter_value)
+
+def change_variable_bounds(lp, index, lower_bound, upper_bound):
+    variable = lp.getVarByName(str(index))
+    variable.lb = lower_bound
+    variable.ub = upper_bound
 
 def update_problem(lp, cobra_model, **kwargs):
     """A performance tunable method for updating a model problem file
@@ -113,8 +117,8 @@ def create_problem(cobra_model,  **kwargs):
                                float(x.upper_bound),
                                float(x.objective_coefficient),
                                variable_kind_dict[x.variable_kind],
-                               x.id)
-                     for x in cobra_model.reactions]
+                               str(i))
+                     for i, x in enumerate(cobra_model.reactions)]
     reaction_to_variable = dict(zip(cobra_model.reactions,
                                     variable_list))
     # Integrate new variables
