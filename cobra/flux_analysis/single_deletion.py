@@ -6,6 +6,7 @@ from time import time
 from warnings import warn
 from copy import deepcopy
 from ..manipulation import delete_model_genes, undelete_model_genes
+from ..manipulation.delete import find_gene_knockout_reactions
 from ..solvers import solver_dict
 from os import name as __name
 if __name == 'java':
@@ -73,7 +74,9 @@ def single_reaction_deletion_fba(cobra_model, reaction_list=None, solver="glpk")
     if reaction_list is None:
         reaction_list = cobra_model.reactions
     else:
-        reaction_list = [cobra_model.reactions.get_by_id(i) for i in reaction_list]
+        reaction_list = [cobra_model.reactions.get_by_id(i) \
+                         if isinstance(i, basestring) else i \
+                         for i in reaction_list]
     for reaction in reaction_list:
         old_bounds = (reaction.lower_bound, reaction.upper_bound)
         index = cobra_model.reactions.index(reaction)
@@ -82,6 +85,33 @@ def single_reaction_deletion_fba(cobra_model, reaction_list=None, solver="glpk")
         status = solver.get_status(lp)
         status_dict[reaction.id] = status
         growth_rate_dict[reaction.id] = solver.get_objective_value(lp)# if status == "optimal" else 0.
+        # reset the problem
+        solver.change_variable_bounds(lp, index, old_bounds[0], old_bounds[1])
+    return(growth_rate_dict, status_dict)
+
+def single_gene_deletion_fba(cobra_model, gene_list=None, solver="glpk"):
+    solver = solver_dict[solver]
+    lp = solver.create_problem(cobra_model)
+    growth_rate_dict = {}
+    status_dict = {}
+    if gene_list is None:
+        gene_list = cobra_model.genes
+    else:
+        gene_list = [cobra_model.genes.get_by_id(i) \
+                     if isinstance(i, basestring) else i for i in gene_list]
+    for gene in gene_list:
+        old_bounds = {}
+        for reaction in find_gene_knockout_reactions(cobra_model, [gene]):
+            index = cobra_model.reactions.index(reaction)
+            old_bounds[index] = (reaction.lower_bound, reaction.upper_bound)
+            solver.change_variable_bounds(lp, index, 0., 0.)
+        solver.solve_problem(lp)
+        status = solver.get_status(lp)
+        status_dict[gene.id] = status
+        growth_rate_dict[gene.id] = solver.get_objective_value(lp)# if status == "optimal" else 0.
+        # reset the problem
+        for index, bounds in old_bounds.iteritems():
+            solver.change_variable_bounds(lp, index, bounds[0], bounds[1])
     return(growth_rate_dict, status_dict)
 
 def single_reaction_deletion(cobra_model, element_list=None,
