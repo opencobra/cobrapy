@@ -2,6 +2,7 @@
 #This script provides wrappers for libglpk-java 1.0.22 and pyglpk 0.3
 from warnings import warn
 from copy import deepcopy
+from itertools import izip
 ###solver specific parameters
 from .parameters import parameter_mappings, parameter_defaults, \
      default_objective_sense
@@ -76,22 +77,15 @@ def create_problem(cobra_model,  **kwargs):
     new_objective = the_parameters['new_objective']
     if quadratic_component is not None:
         raise Exception('%s cannot solve QPs, try a different solver'%solver_name)
-    #Faster to use these dicts than index lists
-    index_to_metabolite = dict(zip(range(len(cobra_model.metabolites)),
-                                   cobra_model.metabolites))
-    index_to_reaction = dict(zip(range(len(cobra_model.reactions)),
-                                 cobra_model.reactions))
-    reaction_to_index = dict(zip(index_to_reaction.values(),
-                                 index_to_reaction.keys()))
 
+    reaction_to_index = {r: i for i, r in enumerate(cobra_model.reactions)}
 
     lp = __solver_class()        # Create empty problem instance
     lp.name = 'cobra'     # Assign symbolic name to problem
     lp.rows.add(len(cobra_model.metabolites))
     lp.cols.add(len(cobra_model.reactions))
     linear_constraints = []
-    for r in lp.rows:
-        the_metabolite = index_to_metabolite[r.index]
+    for r, the_metabolite in izip(lp.rows, cobra_model.metabolites):
         r.name = the_metabolite.id
         b = float(the_metabolite._bound)
         c = sense_dict[the_metabolite._constraint_sense]
@@ -112,10 +106,8 @@ def create_problem(cobra_model,  **kwargs):
     lp.matrix = linear_constraints
     objective_coefficients = []
 
-    for c in lp.cols:
-        the_reaction = index_to_reaction[c.index]
+    for c, the_reaction in izip(lp.cols, cobra_model.reactions):
         c.name = the_reaction.id           
-        the_reaction = index_to_reaction[c.index]
         c.kind = variable_kind_dict[the_reaction.variable_kind]
         c.bounds = the_reaction.lower_bound, the_reaction.upper_bound
         objective_coefficients.append(float(the_reaction.objective_coefficient))
