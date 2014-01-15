@@ -78,13 +78,13 @@ def create_problem(cobra_model,  **kwargs):
     if quadratic_component is not None:
         raise Exception('%s cannot solve QPs, try a different solver'%solver_name)
 
-    reaction_to_index = {r: i for i, r in enumerate(cobra_model.reactions)}
+    metabolite_to_index = {r: i for i, r in enumerate(cobra_model.metabolites)}
 
     lp = __solver_class()        # Create empty problem instance
     lp.name = 'cobra'     # Assign symbolic name to problem
     lp.rows.add(len(cobra_model.metabolites))
     lp.cols.add(len(cobra_model.reactions))
-    linear_constraints = []
+
     for r, the_metabolite in izip(lp.rows, cobra_model.metabolites):
         r.name = the_metabolite.id
         b = float(the_metabolite._bound)
@@ -95,24 +95,23 @@ def create_problem(cobra_model,  **kwargs):
             r.bounds = None, b
         elif c == 'G':
             r.bounds = b, None
-        #Add in the linear constraints
 
-        for the_reaction in the_metabolite._reaction:
-            reaction_index = reaction_to_index[the_reaction]
-            the_coefficient = the_reaction._metabolites[the_metabolite]
-            linear_constraints.append((r.index, reaction_index,
-                                       the_coefficient))
-    #Need to assign lp.matrix after constructing the whole list
-    lp.matrix = linear_constraints
     objective_coefficients = []
-
+    linear_constraints = []
     for c, the_reaction in izip(lp.cols, cobra_model.reactions):
         c.name = the_reaction.id           
         c.kind = variable_kind_dict[the_reaction.variable_kind]
         c.bounds = the_reaction.lower_bound, the_reaction.upper_bound
         objective_coefficients.append(float(the_reaction.objective_coefficient))
+        for metabolite, coefficient in the_reaction._metabolites.iteritems():
+            metabolite_index = metabolite_to_index[metabolite]
+            linear_constraints.append((metabolite_index, c.index, coefficient))
+
     #Add the new objective coefficients to the problem
     lp.obj[:] = objective_coefficients
+    #Need to assign lp.matrix after constructing the whole list
+    #linear_constraints.sort()  # if we wanted to be 100% deterministic
+    lp.matrix = linear_constraints
 
     # make sure the objective sense is set in create_problem
     if "objective_sense" in the_parameters:
