@@ -10,6 +10,9 @@ try:
     __parallel_mode_available = True
 except:
     __parallel_mode_available = False
+
+from warnings import warn
+
 #TODO: Add in a ppmap section for running in parallel
 def flux_variability_analysis_wrapper(keywords):
     """Provides an interface to call flux_variability_analysis from ppmap
@@ -42,7 +45,7 @@ def flux_variability_analysis_wrapper(keywords):
     else:
         return results_dict
 
-def flux_variability_analysis_fast(cobra_model, fraction_of_optimum=1.,
+def flux_variability_analysis_fast(cobra_model, fraction_of_optimum=0.9999.,
                                    reaction_list=None, solver="glpk",
                                    objective_sense="maximize"):
     if reaction_list is None:
@@ -55,6 +58,9 @@ def flux_variability_analysis_fast(cobra_model, fraction_of_optimum=1.,
     # set all objective coefficients to 0
     for i, r in enumerate(cobra_model.reactions):
         if r.objective_coefficient != 0:
+            if fraction_of_optimum == 1:
+                # TODO fix this
+                warn("numerical problems possible with fraction of 1")
             new_bounds = (f * fraction_of_optimum * r.objective_coefficient, f * r.objective_coefficient)
             solver.change_variable_bounds(lp, i, min(new_bounds), max(new_bounds))
             solver.change_variable_objective(lp, i, 0.)
@@ -68,6 +74,7 @@ def flux_variability_analysis_fast(cobra_model, fraction_of_optimum=1.,
         fva_results[r.id]["maximum"] = solver.get_objective_value(lp)
         solver.solve_problem(lp, objective_sense="minimize")
         fva_results[r.id]["minimum"] = solver.get_objective_value(lp)
+        # revert the problem to how it was before
         solver.change_variable_objective(lp, i, 0.)
     return fva_results
 
