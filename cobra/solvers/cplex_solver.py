@@ -192,12 +192,14 @@ def create_problem(cobra_model,  **kwargs):
     lp.set_problem_type(problem_type)
     return(lp)
 
-###
+def change_variable_bounds(lp, index, lower_bound, upper_bound):
+    lp.variables.set_lower_bounds(index, lower_bound)
+    lp.variables.set_upper_bounds(index, upper_bound)
 
 def update_problem(lp, cobra_model, **kwargs):
     """A performance tunable method for updating a model problem file
 
-    lp: A gurobi problem object
+    lp: A cplex problem object
 
     cobra_model: the cobra.Model corresponding to 'lp'
 
