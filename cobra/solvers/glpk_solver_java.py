@@ -14,6 +14,10 @@ solver_name = 'glpk'
 sense_dict = eval(sense_dict[solver_name])
 #Functions that are different for java implementation of a solver
 
+from os import name
+if name != "java":
+    raise Exception("jython only")
+
 warn("cobra.solvers.glpk_solver isn't mature.  consider using gurobi or cplex")
 from org.gnu.glpk import GLPK, GLPKConstants, glp_smcp, glp_iocp
 variable_kind_dict = eval(variable_kind_dict['%s_%s'%(solver_name,

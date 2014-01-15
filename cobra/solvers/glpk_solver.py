@@ -122,7 +122,7 @@ def create_problem(cobra_model,  **kwargs):
 
 
 def change_variable_bounds(lp, index, lower_bound, upper_bound):
-    lp.cols[i].bounds = (lower_bound, upper_bound)
+    lp.cols[index].bounds = (lower_bound, upper_bound)
 
 
 def update_problem(lp, cobra_model, **kwargs):
