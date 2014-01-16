@@ -1,43 +1,46 @@
-test Package
-============
+cobra.test package
+==================
 
-:mod:`test` Package
--------------------
+Submodules
+----------
 
-.. automodule:: cobra.test
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`flux_analysis` Module
----------------------------
+cobra.test.flux_analysis module
+-------------------------------
 
 .. automodule:: cobra.test.flux_analysis
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`parallel` Module
-----------------------
+cobra.test.parallel module
+--------------------------
 
 .. automodule:: cobra.test.parallel
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`solvers` Module
----------------------
+cobra.test.solvers module
+-------------------------
 
 .. automodule:: cobra.test.solvers
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`unit_tests` Module
-------------------------
+cobra.test.unit_tests module
+----------------------------
 
 .. automodule:: cobra.test.unit_tests
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: cobra.test
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,12 +1,10 @@
 Visbio and cobrapy
 ======================
 
-cobrapy integrates well with the
-[visbio](https://github.com/zakandrewking/visbio) package. If it has been
+cobrapy integrates well with the visbio_ package. If it has been
 installed, viewing maps is extremely simple. The default map is the *E. coli*
 core map, but other maps can be viewed by passing the correct map_name. The
-maps are then downloaded from a map
-[repository](https://github.com/zakandrewking/visbio/tree/gh-pages/maps).
+maps are then downloaded from a map repository_.
 
 .. code:: python
 >>> from visbio import Map
@@ -27,5 +25,7 @@ maps are then downloaded from a map
 Using maps is even nicer when using the IPython_ notebook, as shown in this
 example_.
 
+.. _visbio: https://github.com/zakandrewking/visbio
+.. _repository: https://github.com/zakandrewking/visbio/tree/gh-pages/maps
 .. _IPython: http://ipython.org/
 .. _example: http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/visbio.ipynb

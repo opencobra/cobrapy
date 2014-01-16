@@ -50,8 +50,7 @@ class phenotypePhasePlaneData:
 
     def plot_matplotlib(self):
         """Use matplotlib to plot a phenotype phase plane in 3D.
-        The resulting figure may be slow to interact with in real time,
-        but will be easy to save as a vector figure.
+
         returns: maptlotlib 3d subplot object"""
         if pyplot is None:
             raise (ImportError, "Error importing matplotlib 3D plotting")
@@ -83,7 +82,7 @@ class phenotypePhasePlaneData:
         returns: mlab figure object"""
         if mlab is None:
             raise (ImportError, "Error importing mayavi 3D plotting")
-        figure = mlab.figure(bgcolor=(1, 1, 1))
+        figure = mlab.figure(bgcolor=(1, 1, 1), fgcolor=(0, 0, 0))
         figure.name = "Phenotype Phase Plane"
         max = 10.0
         xmax = self.reaction1_fluxes.max()
@@ -237,22 +236,20 @@ if __name__ == "__main__":
     from os.path import join, split
 
     import cobra
-    from cobra.test import ecoli_pickle
-    from cobra.oven.legacyIO import load_pickle
+    from cobra.test import ecoli_pickle, create_test_model
 
     n1 = 20
     n2 = 20
 
-    model = cobra.oven.legacyIO.load_pickle(ecoli_pickle)
-    # model.reactions.get_by_id("EX_glyc_e").lower_bound = -10
+    model = create_test_model(ecoli_pickle)
     start_time = time()
-    data = calculate_phenotype_phase_plane(model, "EX_glc(e)",
-        'EX_o2(e)', reaction1_npoints=n1, reaction2_npoints=n2,
+    data = calculate_phenotype_phase_plane(model, "EX_glc_e",
+        'EX_o2_e', reaction1_npoints=n1, reaction2_npoints=n2,
         n_processes=1, solver="glpk")
     print "took %.2f seconds with 1 process" % (time() - start_time)
     start_time = time()
-    data = calculate_phenotype_phase_plane(model, 'EX_glc(e)',
-        'EX_o2(e)', reaction1_npoints=n1, reaction2_npoints=n2,
+    data = calculate_phenotype_phase_plane(model, 'EX_glc_e',
+        'EX_o2_e', reaction1_npoints=n1, reaction2_npoints=n2,
         n_processes=2, solver="glpk")
     print "took %.2f seconds with 2 processes" % (time() - start_time)
     data.plot()

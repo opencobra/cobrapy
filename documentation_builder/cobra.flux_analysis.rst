@@ -1,59 +1,78 @@
-flux_analysis Package
-=====================
+cobra.flux_analysis package
+===========================
 
-:mod:`flux_analysis` Package
-----------------------------
+Submodules
+----------
 
-.. automodule:: cobra.flux_analysis
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`double_deletion` Module
------------------------------
+cobra.flux_analysis.double_deletion module
+------------------------------------------
 
 .. automodule:: cobra.flux_analysis.double_deletion
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`essentiality` Module
---------------------------
+cobra.flux_analysis.essentiality module
+---------------------------------------
 
 .. automodule:: cobra.flux_analysis.essentiality
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`moma` Module
-------------------
+cobra.flux_analysis.moma module
+-------------------------------
 
 .. automodule:: cobra.flux_analysis.moma
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`objective` Module
------------------------
+cobra.flux_analysis.objective module
+------------------------------------
 
 .. automodule:: cobra.flux_analysis.objective
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`single_deletion` Module
------------------------------
+cobra.flux_analysis.parsimonious module
+---------------------------------------
+
+.. automodule:: cobra.flux_analysis.parsimonious
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cobra.flux_analysis.reaction module
+-----------------------------------
+
+.. automodule:: cobra.flux_analysis.reaction
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cobra.flux_analysis.single_deletion module
+------------------------------------------
 
 .. automodule:: cobra.flux_analysis.single_deletion
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`variability` Module
--------------------------
+cobra.flux_analysis.variability module
+--------------------------------------
 
 .. automodule:: cobra.flux_analysis.variability
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: cobra.flux_analysis
+    :members:
+    :undoc-members:
+    :show-inheritance:
