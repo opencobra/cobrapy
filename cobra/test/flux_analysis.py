@@ -11,6 +11,8 @@ if __name__ == "__main__":
     from cobra import Model, Reaction, Metabolite
     from cobra.manipulation import initialize_growth_medium
     from cobra.solvers import solver_dict
+    from cobra.manipulation import modify
+    from cobra.flux_analysis.parsimonious import optimize_minimal_flux
     for the_module, the_function in _module_function_dict.iteritems():
         try:
             exec('from cobra.flux_analysis.%s import %s'%(the_module, the_function))
@@ -24,6 +26,8 @@ else:
     from .. import Model, Reaction, Metabolite
     from ..manipulation import initialize_growth_medium
     from ..solvers import solver_dict
+    from ..manipulation import modify
+    from ..flux_analysis.parsimonious import optimize_minimal_flux
     for the_module, the_function in _module_function_dict.iteritems():
         try:
             exec('from ..flux_analysis.%s import %s'%(the_module, the_function))
@@ -41,6 +45,25 @@ class TestCobraFluxAnalysis(TestCase):
     """
     def setUp(self):
         self.model = create_test_model()
+
+    def test_pFBA(self):
+        model = self.model
+        for solver in solver_dict:
+            optimize_minimal_flux(model, solver=solver)
+            self.assertAlmostEqual(model.solution.f, 0.3800, places=3)
+            self.assertAlmostEqual(sum(model.solution.x), 343.021, places=3)
+            self.assertGreater(min(model.solution.x), -1e-7)
+
+    def test_modify_reversible(self):
+        model1 = self.model
+        model1.optimize()
+        model2 = create_test_model()
+        modify.convert_to_irreversible(model2)
+        model2.optimize()
+        self.assertAlmostEqual(model1.solution.f, model2.solution.f, places=3)
+        modify.revert_to_reversible(model2)
+        model2.optimize()
+        self.assertAlmostEqual(model1.solution.f, model2.solution.f, places=3)
 
 
     if _module_function_dict['single_deletion']:

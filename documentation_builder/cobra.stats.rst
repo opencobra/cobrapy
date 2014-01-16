@@ -1,19 +1,22 @@
-stats Package
-=============
+cobra.stats package
+===================
 
-:mod:`stats` Package
---------------------
+Submodules
+----------
 
-.. automodule:: cobra.stats
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`stats` Module
--------------------
+cobra.stats.stats module
+------------------------
 
 .. automodule:: cobra.stats.stats
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: cobra.stats
+    :members:
+    :undoc-members:
+    :show-inheritance:
