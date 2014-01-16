@@ -14,8 +14,6 @@ else:
     from .. import Model, Reaction, Metabolite
     from .. import solvers
 
-__legacy_solver = False
-
 class TestCobraSolver(TestCase):
     def setUp(self):
         self.model = create_test_model()
@@ -23,11 +21,11 @@ class TestCobraSolver(TestCase):
         self.old_solution = 0.320064
         self.infeasible_model = Model()
         metabolite_1 = Metabolite("met1")
-        metabolite_2 = Metabolite("met2")
+        #metabolite_2 = Metabolite("met2")
         reaction_1 = Reaction("rxn1")
         reaction_2 = Reaction("rxn2")
         reaction_1.add_metabolites({metabolite_1: 1})
-        reaction_2.add_metabolites({metabolite_2: 1})
+        reaction_2.add_metabolites({metabolite_1: 1})
         reaction_1.lower_bound = 1
         reaction_2.upper_bound = 2
         self.infeasible_model.add_reactions([reaction_1, reaction_2])
@@ -42,6 +40,13 @@ def add_new_test(TestCobraSolver, solver_name, solver):
     def attributes(self):
         self.assertTrue(hasattr(solver, "create_problem"))
         self.assertTrue(hasattr(solver, "solve_problem"))
+        self.assertTrue(hasattr(solver, "get_status"))
+        self.assertTrue(hasattr(solver, "get_objective_value"))
+        self.assertTrue(hasattr(solver, "format_solution"))
+        self.assertTrue(hasattr(solver, "change_variable_bounds"))
+        self.assertTrue(hasattr(solver, "change_variable_objective"))
+        self.assertTrue(hasattr(solver, "solve"))
+        self.assertTrue(hasattr(solver, "set_parameter"))
         # self.assertTrue(hasattr(solver, "update_problem"))
 
     def creation(self):
@@ -58,8 +63,37 @@ def add_new_test(TestCobraSolver, solver_name, solver):
         solver.solve(self.model, objective_sense='minimize')
         solution = self.model.solution        
         self.assertEqual(solution.status, "optimal")
-        self.assertAlmostEqual(0, \
-            solution.f, places=4)
+        self.assertAlmostEqual(0, solution.f, places=4)
+
+    def low_level_control(self):
+        lp = solver.create_problem(self.infeasible_model)
+        solver.solve_problem(lp)
+        self.assertEqual(solver.get_status(lp), "infeasible")
+        # going to make feasible
+        solver.change_variable_bounds(lp, 0, -2., 2.)
+        solver.change_variable_bounds(lp, 1, -2., 2.)
+        solver.solve_problem(lp)
+        # should now be feasible, but obj = 0
+        self.assertEqual(solver.get_status(lp), "optimal")
+        self.assertAlmostEqual(solver.get_objective_value(lp), 0, places=4)
+        # should now have obj = 2 (maximize should be the default)
+        solver.change_variable_objective(lp, 0, 1.)
+        solver.solve_problem(lp)
+        self.assertAlmostEqual(solver.get_objective_value(lp), 2, places=4)
+        # should now solve with obj = -2
+        solver.solve_problem(lp, objective_sense="minimize")
+        self.assertAlmostEqual(solver.get_objective_value(lp), -2, places=4)
+        # should now have obj = 4
+        solver.change_variable_objective(lp, 0, 2.)
+        solver.solve_problem(lp, objective_sense="maximize")
+        self.assertAlmostEqual(solver.get_objective_value(lp), 4, places=4)
+        # make sure the solution looks good still
+        solution = solver.format_solution(lp, self.infeasible_model)
+        self.assertAlmostEqual(solution.x[0], 2, places=4)
+        self.assertAlmostEqual(solution.x[1], -2, places=4)
+        self.assertAlmostEqual(solution.x_dict["rxn1"], 2, places=4)
+        self.assertAlmostEqual(solution.x_dict["rxn2"], -2, places=4)
+
 
     def set_objective_sense(self):
         maximize = solver.create_problem(self.model, objective_sense="maximize")
@@ -187,34 +221,13 @@ def add_new_test(TestCobraSolver, solver_name, solver):
 
     for tester in [attributes, creation, solve_feasible, solve_minimize,
                     set_objective_sense, solve_mip, solve_infeasible,
-                    independent_creation]:
+                    independent_creation, low_level_control]:
         setattr(TestCobraSolver, "test_%s_%s" %
                 (solver_name, tester.func_name), tester)
 
 
-def add_legacy_test(TestCobraSolver, solver_name, solver_function):
-    """Creates a test set for each of the installed solvers using the
-    legacy interface.
-
-    """
-    def test_solve_feasible(self):
-
-        the_solution = solver_function(self.model)['the_solution']
-        self.assertEqual(the_solution.status, 'optimal')
-        self.assertAlmostEqual(self.old_solution, the_solution.f, places=4)
-    setattr(TestCobraSolver, "test_%s_feasible_solve" % solver_name, \
-        test_solve_feasible)
-        
-
-
-if not __legacy_solver:
-    add_test = add_new_test
-else:
-    add_test = add_legacy_test
-
-    
 for solver_name, solver in solvers.solver_dict.iteritems():
-    add_test(TestCobraSolver, solver_name, solver)
+    add_new_test(TestCobraSolver, solver_name, solver)
 # make a test suite to run all of the tests
 loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])
