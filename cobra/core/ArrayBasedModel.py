@@ -1,12 +1,13 @@
 #Dresses a cobra.Model with arrays and vectors so that linear algebra operations
 #can be carried out on 
-from numpy import array, empty, sign, repeat, vstack, hstack
-from numpy import ones, nonzero, zeros
-from scipy import sparse
-from scipy.sparse import lil_matrix, dok_matrix
+from sys import maxint
 from copy import deepcopy
-from .Model import Model
 from warnings import warn
+
+from numpy import array, hstack, ndarray
+from scipy.sparse import lil_matrix, dok_matrix
+
+from .Model import Model
 
 
 class ArrayBasedModel(Model):
@@ -57,36 +58,22 @@ class ArrayBasedModel(Model):
         Model.__init__(self, description)
         self.S = None
         self.matrix_type = matrix_type
-        self.lower_bounds = None
-        self.upper_bounds = None
-        self.objective_coefficients = None
         self.b = None
         self.constraint_sense = None
         self.update()
 
-    def __add__(self, other_model):
-        """Adds two models. +
+    @property
+    def lower_bounds(self):
+        return self._lower_bounds
 
-        The issue of reactions being able to exists in multiple Models now arises, the same
-        for metabolites and such.  This might be a little difficult as a reaction with the
-        same name / id in two models might have different coefficients for their metabolites
-        due to pH and whatnot making them different reactions.
+    @property
+    def upper_bounds(self):
+        return self._upper_bounds
 
-        """
-        new_model = Model.__add__(self, other_model)
-        return new_model
+    @property
+    def objective_coefficients(self):
+        return self._objective_coefficients
 
-    def __iadd__(self, other_model):
-        """Adds a Model to this model +=
-
-        The issue of reactions being able to exists in multiple Models now arises, the same
-        for metabolites and such.  This might be a little difficult as a reaction with the
-        same name / id in two models might have different coefficients for their metabolites
-        due to pH and whatnot making them different reactions.
-
-        """
-        Model.__iadd__(self, other_model)
-        return self
 
     def copy(self, print_time=False):
         """Provides a partial 'deepcopy' of the Model.  All of the Metabolite, Gene,
@@ -151,8 +138,8 @@ class ArrayBasedModel(Model):
             the_column = self.S[:, reaction_index]
             for nonzero_index in the_column.nonzero()[0]:
                 the_column[nonzero_index, 0] = 0
-            self.lower_bounds[reaction_index] = the_reaction.lower_bound
-            self.upper_bounds[reaction_index] = the_reaction.upper_bound
+            self._lower_bounds[reaction_index] = the_reaction.lower_bound
+            self._upper_bounds[reaction_index] = the_reaction.upper_bound
             self.objective_coefficients[reaction_index] = the_reaction.objective_coefficient
             self.add_metabolites(the_reaction._metabolites)
             #Make sure that the metabolites are the ones contained in the model
@@ -206,15 +193,11 @@ class ArrayBasedModel(Model):
 
 
         """
-        lower_bounds, upper_bounds = [], []
-        objective_coefficients = []
-        [(lower_bounds.append(x.lower_bound),
-          upper_bounds.append(x.upper_bound),
-          objective_coefficients.append(x.objective_coefficient))
-         for x in self.reactions]
-        self.lower_bounds = array(lower_bounds)
-        self.upper_bounds = array(upper_bounds)
-        self.objective_coefficients = array(objective_coefficients)
+        self._lower_bounds = LinkedArray(self.reactions, "lower_bound")
+        self._upper_bounds = LinkedArray(self.reactions, "upper_bound")
+        self._objective_coefficients = LinkedArray(self.reactions,
+                                                   "objective_coefficient")
+
 
     # TODO deprecate and use @property for _b and constraint sense
     def _update_metabolite_vectors(self):
@@ -260,12 +243,7 @@ class ArrayBasedModel(Model):
             SMatrix = SMatrix_classes[self.matrix_type]
             self.S = SMatrix((len(self.metabolites),
                               len(self.reactions)), model=self) 
-            self.lower_bounds = array([reaction.lower_bound
-                                       for reaction in reaction_list]) 
-            self.upper_bounds = array([reaction.upper_bound
-                                       for reaction in reaction_list]) 
-            self.objective_coefficients = array([reaction.objective_coefficient
-                                                 for reaction in reaction_list])
+            self._update_reaction_vectors()
         else: #Expand the arrays to accomodate the new reaction
             self.S.resize((len(self.metabolites),
                            len(self.reactions)))
@@ -275,13 +253,15 @@ class ArrayBasedModel(Model):
                                   for x in reaction_list])
             objective_coefficients = array([x.objective_coefficient
                                             for x in reaction_list])
-            self.lower_bounds = hstack((self.lower_bounds,
-                                        lower_bounds))
-            self.upper_bounds = hstack((self.upper_bounds,
-                                        upper_bounds))
-            self.objective_coefficients = hstack((self.objective_coefficients,
+            self._lower_bounds = hstack((self._lower_bounds, lower_bounds)).view(LinkedArray)
+            self._lower_bounds.__init__(self.reactions, "lower_bound")
+            self._upper_bounds = hstack((self._upper_bounds, upper_bounds))
+            self._upper_bounds.__init__(self.reactions, "upper_bound")
+            self._objective_coefficients = hstack((self._objective_coefficients,
                                                   objective_coefficients))
-        
+            self._objective_coefficients.__init__(self.reactions,
+                                                  "objective_coefficient")
+
         #Use dok format to speed up additions.
         coefficient_dictionary = {}
         #SPEED this up. This is the slow part.  Can probably use a dict to index.
@@ -307,16 +287,32 @@ class ArrayBasedModel(Model):
         self._update_matrices()
         self._update_metabolite_vectors()
 
-class SMatrix_general(object):
-    def clear(self):
-        raise Exception("can not clear S Matrix")
 
-    def expire(self):
-        """expires an SMatrix when another one has taken its place"""
-        #matrix_type.clear()
-        def new_getattr(x):
-            raise Exception("Expired matrix")
-        self.__getattr__ = new_getattr
+class LinkedArray(ndarray):
+    """A ndarray which updates an attribute from a list"""
+    def __new__(cls, list, attribute):
+        # construct a new ndarray with the values from the list
+        # For example, if the list if model.reactions and the attribute is
+        # "lower_bound" create an array of [reaction.lower_bound for ... ]
+        return array([getattr(i, attribute) for i in list]).view(cls)
+    def __init__(self, list, attribute):
+        self._list = list
+        self._attr = attribute
+        
+    def __setitem__(self, index, value):
+        numpy.ndarray.__setitem__(self, index, value)
+        setattr(self._list[index], self._attr, value)
+    def __setslice__(self, i, j, value):
+        numpy.ndarray.__setslice__(self, i, j, value)
+        if j == maxint:
+            j = len(self)
+        if hasattr(value, "__getitem__"):  # setting to a list
+            for index in range(i, j):
+                setattr(self._list[index], self._attr, value[index])
+        else:
+            for index in range(i, j):
+                setattr(self._list[index], self._attr, value)
+
 
 class SMatrix_dok(dok_matrix):
     """A 2D sparse dok matrix which maintains links to a cobra Model"""
