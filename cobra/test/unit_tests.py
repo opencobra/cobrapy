@@ -205,25 +205,26 @@ class TestCobraCore(CobraTestCase):
 
     @skipIf(scipy is None, "scipy required for ArrayBasedModel")
     def test_array_based_model(self):
-        model = self.model.to_array_based_model()
-        self.assertEqual(model.S[0, 0], -1)
-        self.assertEqual(model.S[43, 0], 0)
-        model.S[43, 0] = 1
-        self.assertEqual(model.S[43, 0], 1)
-        self.assertEqual(model.reactions[0].metabolites[model.metabolites[43]], 1)
-        model.S[43, 0] = 0
-        self.assertEqual(model.lower_bounds[0], model.reactions[0].lower_bound)
-        self.assertEqual(model.lower_bounds[5], model.reactions[5].lower_bound)
-        self.assertEqual(model.upper_bounds[0], model.reactions[0].upper_bound)
-        self.assertEqual(model.upper_bounds[5], model.reactions[5].upper_bound)
-        model.lower_bounds[6] = 2
-        self.assertEqual(model.lower_bounds[6], 2)
-        self.assertEqual(model.reactions[6].lower_bound, 2)
-        # this should fail because it is the wrong size
-        with self.assertRaises(Exception):
-            model.upper_bounds = [0, 1]
-        model.upper_bounds = [0] * len(model.reactions)
-        self.assertEqual(max(model.upper_bounds), 0)
+        for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
+            model = self.model.to_array_based_model(matrix_type=matrix_type)
+            self.assertEqual(model.S[0, 0], -1)
+            self.assertEqual(model.S[43, 0], 0)
+            model.S[43, 0] = 1
+            self.assertEqual(model.S[43, 0], 1)
+            self.assertEqual(model.reactions[0].metabolites[model.metabolites[43]], 1)
+            model.S[43, 0] = 0
+            self.assertEqual(model.lower_bounds[0], model.reactions[0].lower_bound)
+            self.assertEqual(model.lower_bounds[5], model.reactions[5].lower_bound)
+            self.assertEqual(model.upper_bounds[0], model.reactions[0].upper_bound)
+            self.assertEqual(model.upper_bounds[5], model.reactions[5].upper_bound)
+            model.lower_bounds[6] = 2
+            self.assertEqual(model.lower_bounds[6], 2)
+            self.assertEqual(model.reactions[6].lower_bound, 2)
+            # this should fail because it is the wrong size
+            with self.assertRaises(Exception):
+                model.upper_bounds = [0, 1]
+            model.upper_bounds = [0] * len(model.reactions)
+            self.assertEqual(max(model.upper_bounds), 0)
 
 
 class TestCobraIO(CobraTestCase):

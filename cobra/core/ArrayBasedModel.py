@@ -127,10 +127,8 @@ class ArrayBasedModel(Model):
         if self._S is not None and expand_stoichiometric_matrix:
             s_expansion = len(self.metabolites) - self._S.shape[0]
             if s_expansion > 0:
-                self._S = self._S.todok()
                 self._S.resize((self._S.shape[0] + s_expansion,
                                 self._S.shape[1]))
-                self._S = self._S.tolil()
 
     def _update_from_vector(self, attribute, vector):
         """convert from model.reactions = v to model.reactions[:] = v"""
@@ -275,37 +273,22 @@ class ArrayBasedModel(Model):
                                   for x in reaction_list])
             objective_coefficients = array([x.objective_coefficient
                                             for x in reaction_list])
-            self._lower_bounds = hstack((self._lower_bounds, lower_bounds)).view(LinkedArray)
-            self._lower_bounds.__init__(self.reactions, "lower_bound")
-            self._upper_bounds = hstack((self._upper_bounds, upper_bounds))
-            self._upper_bounds.__init__(self.reactions, "upper_bound")
-            self._objective_coefficients = hstack((self._objective_coefficients,
-                                                  objective_coefficients))
-            self._objective_coefficients.__init__(self.reactions,
-                                                  "objective_coefficient")
+            self._lower_bounds.extend(lower_bounds)
+            self._upper_bounds.extend(upper_bounds)
+            self._objective_coefficients.extend(objective_coefficients)
 
-        #Use dok format to speed up additions.
         coefficient_dictionary = {}
-        #SPEED this up. This is the slow part.  Can probably use a dict to index.
         for the_reaction in reaction_list:
             reaction_index = self.reactions.index(the_reaction.id)
             for the_key, the_value in the_reaction._metabolites.items():
                 coefficient_dictionary[(self.metabolites.index(the_key.id),
                                         reaction_index)] = the_value
 
-        if not self._S.getformat() == 'dok':
-            self._S = self._S.todok()
         self._S.update(coefficient_dictionary)
-        if self.matrix_type == 'scipy.lil_matrix':
-            try:
-                self._S = self._S.tolil()
-            except Exception, e:
-                warn('Unable to convert S to lil_matrix maintaining in dok_matrix format: %s'%e)
+
 
     def update(self):
-        """Regenerates the stoichiometric matrix and vectors
-        
-        """
+        """Regenerates the stoichiometric matrix and vectors"""
         self._update_matrices()
         self._update_metabolite_vectors()
 
@@ -364,13 +347,14 @@ class SMatrix_dok(dok_matrix):
         new = SMatrix_lil(dok_matrix.tolil(self), model=self._model)
         return new
 
+
 class SMatrix_lil(lil_matrix):
     """A 2D sparse lil matrix which maintains links to a cobra Model"""
     def __init__(self, *args, **kwargs):
         lil_matrix.__init__(self, *args)
         self.format = "lil"
         self._model = kwargs["model"] if "model" in kwargs else None
-    
+
     def __setitem__(self, index, value):
         lil_matrix.__setitem__(self, index, value)
         if isinstance(index[0], int):
@@ -382,7 +366,7 @@ class SMatrix_lil(lil_matrix):
             reactions = [self._model.reactions[index[1]]]
         else:
             reactions = self._model.reactions[index[1]]
-        
+
         if value == 0:  # remove_metabolites
             met_set = set(metabolites)
             for reaction in reactions:
@@ -394,10 +378,22 @@ class SMatrix_lil(lil_matrix):
             for reaction in reactions:
                 reaction.add_metabolites(met_dict, combine=False)
 
+    def update(self, value_dict):
+        """update matrix without propagating to model"""
+        for index, value in value_dict.iteritems():
+            lil_matrix.__setitem__(self, index, value)
+
     def todok(self):
         new = SMatrix_dok(lil_matrix.todok(self), model=self._model)
         return new
 
+    # TODO: check if implemented before using own function
+    def resize(self, shape):
+        matrix = lil_matrix.todok(self)
+        matrix.resize(shape)
+        self = SMatrix_lil(matrix.tolil(), model=self._model)
+
 
 SMatrix_classes = {"scipy.dok_matrix": SMatrix_dok,
                    "scipy.lil_matrix": SMatrix_lil}
+
