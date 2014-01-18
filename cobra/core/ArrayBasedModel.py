@@ -184,7 +184,7 @@ class ArrayBasedModel(Model):
 
 
         
-    def add_reactions(self, reaction_list, update_matrices=False):
+    def add_reactions(self, reaction_list, update_matrices=True):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
 
@@ -202,7 +202,7 @@ class ArrayBasedModel(Model):
          function
 
         """
-        Model.add_reactions(reaction_list)
+        Model.add_reactions(self, reaction_list)
         if update_matrices:
             self._update_matrices(reaction_list)
 
@@ -280,9 +280,9 @@ class ArrayBasedModel(Model):
                                   for x in reaction_list])
             objective_coefficients = array([x.objective_coefficient
                                             for x in reaction_list])
-            self._lower_bounds.extend(lower_bounds)
-            self._upper_bounds.extend(upper_bounds)
-            self._objective_coefficients.extend(objective_coefficients)
+            self._lower_bounds._extend(lower_bounds)
+            self._upper_bounds._extend(upper_bounds)
+            self._objective_coefficients._extend(objective_coefficients)
 
         coefficient_dictionary = {}
         for the_reaction in reaction_list:
@@ -306,7 +306,8 @@ class LinkedArray(ndarray):
         # construct a new ndarray with the values from the list
         # For example, if the list if model.reactions and the attribute is
         # "lower_bound" create an array of [reaction.lower_bound for ... ]
-        return array([getattr(i, attribute) for i in list]).view(cls)
+        x = array([getattr(i, attribute) for i in list]).view(cls)
+        return x.copy()
     def __init__(self, list, attribute):
         self._list = list
         self._attr = attribute
@@ -327,9 +328,10 @@ class LinkedArray(ndarray):
                 setattr(self._list[index], self._attr, value)
 
     def _extend(self, other):
-        extended = hstack(self, other).view(LinkedArray)
-        extended.__init__(self._list, self._attr)
-        self = extended
+        old_size = len(self)
+        new_size = old_size + len(other)
+        self.resize(new_size, refcheck=False)
+        ndarray.__setslice__(self, old_size, new_size, other)
 
 
 class SMatrix_dok(dok_matrix):

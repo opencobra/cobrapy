@@ -206,7 +206,7 @@ class TestCobraCore(CobraTestCase):
     @skipIf(scipy is None, "scipy required for ArrayBasedModel")
     def test_array_based_model(self):
         for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
-            model = self.model.to_array_based_model(matrix_type=matrix_type)
+            model = create_test_model().to_array_based_model(matrix_type=matrix_type)
             self.assertEqual(model.S[0, 0], -1)
             self.assertEqual(model.S[43, 0], 0)
             model.S[43, 0] = 1
@@ -225,6 +225,22 @@ class TestCobraCore(CobraTestCase):
                 model.upper_bounds = [0, 1]
             model.upper_bounds = [0] * len(model.reactions)
             self.assertEqual(max(model.upper_bounds), 0)
+
+    @skipIf(scipy is None, "scipy required for ArrayBasedModel")
+    def test_array_based_model_add(self):
+        for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
+            model = create_test_model().to_array_based_model(matrix_type=matrix_type)
+            test_reaction = Reaction("test")
+            test_reaction.add_metabolites({model.metabolites[0]: 4})
+            test_reaction.lower_bound = -3.14
+            model.add_reaction(test_reaction)
+            self.assertEqual(len(model.reactions), 2547)
+            self.assertEqual(model.S.shape[1], 2547)
+            self.assertEqual(len(model.lower_bounds), 2547)
+            self.assertEqual(model.S[0, 2546], 4)
+            self.assertEqual(model.S[0, 0], -1)
+            self.assertEqual(model.lower_bounds[2546], -3.14)
+            
 
 
 class TestCobraIO(CobraTestCase):
