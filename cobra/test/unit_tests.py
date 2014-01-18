@@ -28,7 +28,7 @@ else:
     from .. import Object, Model, Metabolite, Reaction, io, DictList
 
 # libraries which may or may not be installed
-libraries = ["glpk", "gurobipy", "cplex"]
+libraries = ["glpk", "gurobipy", "cplex", "scipy"]
 for library in libraries:
     try:
         exec("import %s" % library)
@@ -95,7 +95,6 @@ class TestDictList(TestCase):
         result = self.list.query("test")  # matches test1 and test2
         self.assertEqual(len(result), 2)
 
-            
 
 class CobraTestCase(TestCase):
     def setUp(self):
@@ -203,8 +202,25 @@ class TestCobraCore(CobraTestCase):
             metabolites_copy = reaction_copy._metabolites.keys()
             metabolites_copy.sort()
             self.assertEqual(metabolites, metabolites_copy)
-        
-        
+
+    @skipIf(scipy is None, "scipy required for ArrayBasedModel")
+    def test_array_based_model(self):
+        model = self.model.to_array_based_model()
+        self.assertEqual(model.S[0, 0], -1)
+        self.assertEqual(model.S[0, 43], 0)
+        self.assertEqual(model.lower_bounds[0], model.reactions[0].lower_bound)
+        self.assertEqual(model.lower_bounds[5], model.reactions[5].lower_bound)
+        self.assertEqual(model.upper_bounds[0], model.reactions[0].upper_bound)
+        self.assertEqual(model.upper_bounds[5], model.reactions[5].upper_bound)
+        model.lower_bounds[6] = 2
+        self.assertEqual(model.lower_bounds[6], 2)
+        self.assertEqual(model.reactions[6].lower_bound, 2)
+        # this should fail because it is the wrong size
+        with self.assertRaises(Exception):
+            model.upper_bounds = [0, 1]
+        model.upper_bounds = [0] * len(model.reactions)
+        self.assertEqual(max(model.upper_bounds), 0)
+
 
 class TestCobraIO(CobraTestCase):
     try:
