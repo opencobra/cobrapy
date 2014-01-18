@@ -9,19 +9,20 @@ from .Metabolite import Metabolite
 from .Gene import Gene
 
 from warnings import warn
-try:
-    from ctypes import pythonapi, py_object
-    from _ctypes import PyObj_FromPtr
 
-    PyDictProxy_New = pythonapi.PyDictProxy_New
-    PyDictProxy_New.argtypes = (py_object,)
-    PyDictProxy_New.rettype = py_object
+class Frozendict(dict):
+    def __setitem__(self, key, value):
+        raise Exception("read-only")
 
-    def make_dictproxy(obj):
-        assert isinstance(obj,dict)
-        return PyObj_FromPtr(PyDictProxy_New(obj))
-except:
-    make_dictproxy = lambda x: x
+    def __delitem__(self, key):
+        raise Exception("read-only")
+    
+    def pop(self, key, value):
+        raise Exception("read-only")
+    
+    def popitem(self):
+        raise Exception("read-only")
+
 
 class Reaction(Object):
     """Reaction is a class for holding information regarding
@@ -67,7 +68,7 @@ class Reaction(Object):
     @property
     def metabolites(self):
         # TODO make read-only
-        return self._metabolites
+        return Frozendict(self._metabolites)
 
     @property
     def genes(self):
