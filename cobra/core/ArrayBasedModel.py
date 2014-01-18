@@ -58,9 +58,9 @@ class ArrayBasedModel(Model):
         Model.__init__(self, description)
         self._S = None
         self.matrix_type = matrix_type
-        self.constraint_sense = None
         self.update()
 
+    # no setter for S at the moment
     @property
     def S(self):
         return self._S
@@ -97,6 +97,14 @@ class ArrayBasedModel(Model):
     def b(self, b):
         self._update_from_vector("b", vector)
 
+    @property
+    def constraint_sense(self):
+        return self._constraint_sense
+
+    @constraint_sense.setter
+    def constraint_sense(self, vector):
+        self._update_from_vector("_constraint_sense", vector)
+
 
     def copy(self):
         """Provides a partial 'deepcopy' of the Model.  All of the Metabolite, Gene,
@@ -123,12 +131,12 @@ class ArrayBasedModel(Model):
 
         """
         Model.add_metabolites(metabolite_list)
-        self.constraint_sense = [x._constraint_sense for x in self.metabolites]
         if self._S is not None and expand_stoichiometric_matrix:
             s_expansion = len(self.metabolites) - self._S.shape[0]
             if s_expansion > 0:
                 self._S.resize((self._S.shape[0] + s_expansion,
                                 self._S.shape[1]))
+        self._update_metabolite_vectors()
 
     def _update_from_vector(self, attribute, vector):
         """convert from model.reactions = v to model.reactions[:] = v"""
@@ -223,7 +231,6 @@ class ArrayBasedModel(Model):
                                                    "objective_coefficient")
 
 
-    # TODO deprecate and use @property for _b and constraint sense
     def _update_metabolite_vectors(self):
         """regenerates _b and _constraint_sense
 
@@ -234,9 +241,9 @@ class ArrayBasedModel(Model):
 
         """
         self._b = LinkedArray(self.metabolites, "_bound")
-        self.constraint_sense = [x._constraint_sense for x in self.metabolites]
- 
-    # TODO deprecate and use @property
+        self._constraint_sense = LinkedArray(self.metabolites, "_constraint_sense")
+
+
     def _update_matrices(self, reaction_list=None):
         """
         reaction_list: None or a list of cobra.Reaction objects that are in
