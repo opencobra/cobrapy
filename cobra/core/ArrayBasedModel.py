@@ -74,15 +74,17 @@ class ArrayBasedModel(Model):
     def objective_coefficients(self):
         return self._objective_coefficients
 
+    @property
+    def b(self):
+        return self._b
 
-    def copy(self, print_time=False):
+
+    def copy(self):
         """Provides a partial 'deepcopy' of the Model.  All of the Metabolite, Gene,
         and Reaction objects are created anew but in a faster fashion than deepcopy
 
-        print_time: Boolean used for debugging
-
         """
-        the_copy = Model.copy(self, print_time)
+        the_copy = Model.copy(self)
         the_copy.update()
         return the_copy
         
@@ -209,12 +211,8 @@ class ArrayBasedModel(Model):
         module for advanced users due to the potential for mistakes.
 
         """
-        _b, _constraint_sense = [], []
-        [(_b.append(x._bound),
-          _constraint_sense.append(x._constraint_sense))
-         for x in self.metabolites]
-        self.b = array(_b)
-        self.constraint_sense = _constraint_sense
+        self._b = LinkedArray(self.metabolites, "_b")
+        self.constraint_sense = [x._constraint_sensense for x in self.metabolites]
  
     # TODO deprecate and use @property
     def _update_matrices(self, reaction_list=None):
@@ -298,10 +296,11 @@ class LinkedArray(ndarray):
     def __init__(self, list, attribute):
         self._list = list
         self._attr = attribute
-        
+
     def __setitem__(self, index, value):
         numpy.ndarray.__setitem__(self, index, value)
         setattr(self._list[index], self._attr, value)
+
     def __setslice__(self, i, j, value):
         numpy.ndarray.__setslice__(self, i, j, value)
         if j == maxint:
@@ -312,6 +311,11 @@ class LinkedArray(ndarray):
         else:
             for index in range(i, j):
                 setattr(self._list[index], self._attr, value)
+
+    def _extend(self, other):
+        extended = hstack(self, other).view(LinkedArray)
+        extended.__init__(self._list, self._attr)
+        self = extended
 
 
 class SMatrix_dok(dok_matrix):
