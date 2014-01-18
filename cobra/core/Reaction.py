@@ -12,16 +12,16 @@ from warnings import warn
 
 class Frozendict(dict):
     def __setitem__(self, key, value):
-        raise Exception("read-only")
+        raise NotImplementedError("read-only")
 
     def __delitem__(self, key):
-        raise Exception("read-only")
-    
+        raise NotImplementedError("read-only")
+
     def pop(self, key, value):
-        raise Exception("read-only")
-    
+        raise NotImplementedError("read-only")
+
     def popitem(self):
-        raise Exception("read-only")
+        raise NotImplementedError("read-only")
 
 
 class Reaction(Object):
