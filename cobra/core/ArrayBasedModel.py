@@ -58,7 +58,6 @@ class ArrayBasedModel(Model):
         Model.__init__(self, description)
         self.S = None
         self.matrix_type = matrix_type
-        self.b = None
         self.constraint_sense = None
         self.update()
 
@@ -66,17 +65,33 @@ class ArrayBasedModel(Model):
     def lower_bounds(self):
         return self._lower_bounds
 
+    @lower_bounds.setter
+    def lower_bounds(self, vector):
+        self._update_from_vector("lower_bounds", vector)
+
     @property
     def upper_bounds(self):
         return self._upper_bounds
+
+    @upper_bounds.setter
+    def upper_bounds(self, vector):
+        self._update_from_vector("upper_bounds", vector)
 
     @property
     def objective_coefficients(self):
         return self._objective_coefficients
 
+    @objective_coefficients.setter
+    def objective_coefficients(self, vector):
+        self._update_from_vector("objective_coefficients", vector)
+
     @property
     def b(self):
         return self._b
+
+    @b.setter
+    def b(self, b):
+        self._update_from_vector("b", vector)
 
 
     def copy(self):
@@ -112,6 +127,11 @@ class ArrayBasedModel(Model):
                 self.S.resize((self.S.shape[0] + s_expansion,
                                self.S.shape[1]))
                 self.S = self.S.tolil()
+
+    def _update_from_vector(self, attribute, vector):
+        """convert from model.reactions = v to model.reactions[:] = v"""
+        # this will fail if vector is the wrong length
+        getattr(self, attribute)[:] = vector
 
 
     def _update_reaction(self, reaction):
@@ -211,8 +231,8 @@ class ArrayBasedModel(Model):
         module for advanced users due to the potential for mistakes.
 
         """
-        self._b = LinkedArray(self.metabolites, "_b")
-        self.constraint_sense = [x._constraint_sensense for x in self.metabolites]
+        self._b = LinkedArray(self.metabolites, "_bound")
+        self.constraint_sense = [x._constraint_sense for x in self.metabolites]
  
     # TODO deprecate and use @property
     def _update_matrices(self, reaction_list=None):
@@ -298,11 +318,11 @@ class LinkedArray(ndarray):
         self._attr = attribute
 
     def __setitem__(self, index, value):
-        numpy.ndarray.__setitem__(self, index, value)
+        ndarray.__setitem__(self, index, value)
         setattr(self._list[index], self._attr, value)
 
     def __setslice__(self, i, j, value):
-        numpy.ndarray.__setslice__(self, i, j, value)
+        ndarray.__setslice__(self, i, j, value)
         if j == maxint:
             j = len(self)
         if hasattr(value, "__getitem__"):  # setting to a list
