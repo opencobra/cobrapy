@@ -56,10 +56,14 @@ class ArrayBasedModel(Model):
         if deepcopy_model and isinstance(description, Model):
             description = description.copy()
         Model.__init__(self, description)
-        self.S = None
+        self._S = None
         self.matrix_type = matrix_type
         self.constraint_sense = None
         self.update()
+
+    @property
+    def S(self):
+        return self._S
 
     @property
     def lower_bounds(self):
@@ -120,13 +124,13 @@ class ArrayBasedModel(Model):
         """
         Model.add_metabolites(metabolite_list)
         self.constraint_sense = [x._constraint_sense for x in self.metabolites]
-        if self.S is not None and expand_stoichiometric_matrix:
-            s_expansion = len(self.metabolites) - self.S.shape[0]
+        if self._S is not None and expand_stoichiometric_matrix:
+            s_expansion = len(self.metabolites) - self._S.shape[0]
             if s_expansion > 0:
-                self.S = self.S.todok()
-                self.S.resize((self.S.shape[0] + s_expansion,
-                               self.S.shape[1]))
-                self.S = self.S.tolil()
+                self._S = self._S.todok()
+                self._S.resize((self._S.shape[0] + s_expansion,
+                                self._S.shape[1]))
+                self._S = self._S.tolil()
 
     def _update_from_vector(self, attribute, vector):
         """convert from model.reactions = v to model.reactions[:] = v"""
@@ -157,7 +161,7 @@ class ArrayBasedModel(Model):
                 continue
 
             #zero reaction stoichiometry column
-            the_column = self.S[:, reaction_index]
+            the_column = self._S[:, reaction_index]
             for nonzero_index in the_column.nonzero()[0]:
                 the_column[nonzero_index, 0] = 0
             self._lower_bounds[reaction_index] = the_reaction.lower_bound
@@ -170,7 +174,7 @@ class ArrayBasedModel(Model):
             #Update the stoichiometric matrix
             metabolite_indices = map(self.metabolites.index, the_reaction._metabolites)
             for (index, metabolite_index) in enumerate(metabolite_indices):
-                self.S[metabolite_index, reaction_index] = the_reaction.stoichiometric_coefficients[index]
+                self._S[metabolite_index, reaction_index] = the_reaction.stoichiometric_coefficients[index]
 
 
         
@@ -256,14 +260,14 @@ class ArrayBasedModel(Model):
         #interact with the optimization solvers.  It might be best to move them
         #to linear algebra modules.
         #If no reactions are present in the Model, initialize the arrays
-        if not self.S or reaction_list is None:
+        if not self._S or reaction_list is None:
             reaction_list = self.reactions
             SMatrix = SMatrix_classes[self.matrix_type]
-            self.S = SMatrix((len(self.metabolites),
+            self._S = SMatrix((len(self.metabolites),
                               len(self.reactions)), model=self) 
             self._update_reaction_vectors()
         else: #Expand the arrays to accomodate the new reaction
-            self.S.resize((len(self.metabolites),
+            self._S.resize((len(self.metabolites),
                            len(self.reactions)))
             lower_bounds = array([x.lower_bound
                                   for x in reaction_list])
@@ -289,12 +293,12 @@ class ArrayBasedModel(Model):
                 coefficient_dictionary[(self.metabolites.index(the_key.id),
                                         reaction_index)] = the_value
 
-        if not self.S.getformat() == 'dok':
-            self.S = self.S.todok()
-        self.S.update(coefficient_dictionary)
+        if not self._S.getformat() == 'dok':
+            self._S = self._S.todok()
+        self._S.update(coefficient_dictionary)
         if self.matrix_type == 'scipy.lil_matrix':
             try:
-                self.S = self.S.tolil()
+                self._S = self._S.tolil()
             except Exception, e:
                 warn('Unable to convert S to lil_matrix maintaining in dok_matrix format: %s'%e)
 
