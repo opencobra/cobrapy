@@ -380,8 +380,14 @@ class SMatrix_lil(lil_matrix):
 
     def update(self, value_dict):
         """update matrix without propagating to model"""
-        for index, value in value_dict.iteritems():
-            lil_matrix.__setitem__(self, index, value)
+        if len(value_dict) < 100:  # TODO benchmark for heuristic
+            for index, value in value_dict.iteritems():
+                lil_matrix.__setitem__(self, index, value)
+        else:
+            matrix = lil_matrix.todok(self)
+            matrix.update(value_dict)
+            self = SMatrix_lil(matrix.tolil(), model=self._model)
+            self._model._S = self
 
     def todok(self):
         new = SMatrix_dok(lil_matrix.todok(self), model=self._model)
@@ -392,6 +398,7 @@ class SMatrix_lil(lil_matrix):
         matrix = lil_matrix.todok(self)
         matrix.resize(shape)
         self = SMatrix_lil(matrix.tolil(), model=self._model)
+        self._model._S = self
 
 
 SMatrix_classes = {"scipy.dok_matrix": SMatrix_dok,
