@@ -207,7 +207,11 @@ class TestCobraCore(CobraTestCase):
     def test_array_based_model(self):
         model = self.model.to_array_based_model()
         self.assertEqual(model.S[0, 0], -1)
-        self.assertEqual(model.S[0, 43], 0)
+        self.assertEqual(model.S[43, 0], 0)
+        model.S[43, 0] = 1
+        self.assertEqual(model.S[43, 0], 1)
+        self.assertEqual(model.reactions[0].metabolites[model.metabolites[43]], 1)
+        model.S[43, 0] = 0
         self.assertEqual(model.lower_bounds[0], model.reactions[0].lower_bound)
         self.assertEqual(model.lower_bounds[5], model.reactions[5].lower_bound)
         self.assertEqual(model.upper_bounds[0], model.reactions[0].upper_bound)
