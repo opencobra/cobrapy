@@ -95,6 +95,7 @@ class TestDictList(TestCase):
         result = self.list.query("test")  # matches test1 and test2
         self.assertEqual(len(result), 2)
 
+            
 
 class CobraTestCase(TestCase):
     def setUp(self):
@@ -202,6 +203,22 @@ class TestCobraCore(CobraTestCase):
             metabolites_copy = reaction_copy._metabolites.keys()
             metabolites_copy.sort()
             self.assertEqual(metabolites, metabolites_copy)
+        
+    def test_add_reaction(self):
+        """Verify that no orphan genes are metabolites are contained in reactions after
+        adding them to the model.
+        
+        """
+        _model = Model('test')
+        _model.add_reactions([x.copy() for x in self.model.reactions])
+        _genes = []
+        _metabolites = []
+        [(_genes.extend(x.genes), _metabolites.extend(x.metabolites))
+         for x in _model.reactions];
+        _orphan_genes = [x for x in _genes if x.model is not _model]
+        _orphan_metabolites = [x for x in _metabolites if x.model is not _model]
+        self.assertEqual(len(_orphan_genes), 0, msg='It looks like there are dangling genes when running Model.add_reactions')
+        self.assertEqual(len(_orphan_metabolites), 0, msg='It looks like there are dangling metabolites when running Model.add_reactions')
 
     @skipIf(scipy is None, "scipy required for ArrayBasedModel")
     def test_array_based_model(self):
@@ -240,8 +257,6 @@ class TestCobraCore(CobraTestCase):
             self.assertEqual(model.S[0, 2546], 4)
             self.assertEqual(model.S[0, 0], -1)
             self.assertEqual(model.lower_bounds[2546], -3.14)
-            
-
 
 class TestCobraIO(CobraTestCase):
     try:
