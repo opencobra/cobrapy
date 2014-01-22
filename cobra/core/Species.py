@@ -106,7 +106,11 @@ class Species(Object):
         """Returns the Model object that contain this Object
 
         """
+        print("get_model is deprecated. used model property instead")
         return self._model
+    @property
+    def model(self):
+        return(self._model)
 #
 #END Class Species
 ########################
