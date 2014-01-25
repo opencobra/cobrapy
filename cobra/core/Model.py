@@ -9,6 +9,7 @@ from copy import deepcopy
 from ..solvers import optimize
 from .Object import Object
 from .Formula import Formula
+from .Solution import Solution
 from .DictList import DictList
 #*********************************************************************************
 #
@@ -64,7 +65,7 @@ class Model(Object):
             self.metabolites = DictList() #A list of cobra.Metabolites
             #genes based on their ids {Gene.id: Gene}
             self.compartments = {}
-
+            self.solution = Solution(None)
 
 
     def __add__(self, other_model):
