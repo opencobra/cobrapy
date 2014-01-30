@@ -119,10 +119,10 @@ cdef class GLP:
         glp_set_col_bnds(self.glp, index + 1, bound_type, lower_bound, upper_bound)
 
 
-    def solve_problem(self, **parameters):
+    def solve_problem(self, **solver_parameters):
         cdef int result
 
-        for key, value in parameters.items():
+        for key, value in solver_parameters.items():
             self.set_parameter(key, value)
 
         # suspend the gil to allow multithreading
@@ -134,10 +134,10 @@ cdef class GLP:
             result = glp_simplex(self.glp, &self.parameters)
         assert result == 0
         if self.is_mip():
-            self.integer_parameters.tm_lim = self.paramters.tm_lim
-            self.integer_parameters.msg_lev = self.paramters.msg_lev
-            self.integer_parameters.tol_bnd = self.paramters.tol_bnd
-            self.integer_parameters.tol_piv = self.parameters.tol_piv
+            self.integer_parameters.tm_lim = self.parameters.tm_lim
+            self.integer_parameters.msg_lev = self.parameters.msg_lev
+            #self.integer_parameters.tol_bnd = self.parameters.tol_bnd
+            #self.integer_parameters.tol_piv = self.parameters.tol_piv
             
             with nogil:
                 result = glp_intopt(self.glp, &self.integer_parameters)
@@ -155,8 +155,7 @@ cdef class GLP:
 
 
     def get_status(self):
-        #cdef int result = glp_mip_status(self.glp) if self.is_mip() else glp_get_status(self.glp)
-        cdef int result = glp_get_status(self.glp)
+        cdef int result = glp_mip_status(self.glp) if self.is_mip() else glp_get_status(self.glp)
         if result == GLP_OPT:
             return "optimal"
         if result == GLP_FEAS:
@@ -208,6 +207,8 @@ cdef class GLP:
 
 
     cpdef get_objective_value(self):
+        if self.is_mip():
+            return glp_mip_obj_val(self.glp)
         return glp_get_obj_val(self.glp)
 
 
@@ -231,12 +232,18 @@ cdef class GLP:
         m = glp_get_num_rows(glp)
         n = glp_get_num_cols(glp)
         x = [0] * n
-        for i in range(1, n + 1):
-            x[i - 1] = glp_get_col_prim(glp, i)
-        #x = [glp_get_col_prim(glp, i) for i in range(1, n + 1)]
-        solution.x_dict = {rxn.id: x[i] for i, rxn in enumerate(cobra_model.reactions)}
-        solution.x = x
-        if not self.is_mip():
+        if self.is_mip():
+            for i in range(1, n + 1):
+                    x[i - 1] = glp_mip_col_val(glp, i)
+            #x = [glp_mip_col_val(glp, i) for i in range(1, n + 1)]
+            solution.x_dict = {rxn.id: x[i] for i, rxn in enumerate(cobra_model.reactions)}
+            solution.x = x
+        else:
+            for i in range(1, n + 1):
+                x[i - 1] = glp_get_col_prim(glp, i)
+            #x = [glp_get_col_prim(glp, i) for i in range(1, n + 1)]
+            solution.x_dict = {rxn.id: x[i] for i, rxn in enumerate(cobra_model.reactions)}
+            solution.x = x
             y = [0] * m
             for i in range(1, m + 1):
                 y[i - 1] = glp_get_row_dual(glp, i)
