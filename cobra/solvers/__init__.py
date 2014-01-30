@@ -55,6 +55,12 @@ for solver in possible_solvers:
     except Exception:
         pass
 
+try:
+    from .cglpk import GLP
+    solver_dict["cglpk"] = GLP
+except:
+    None
+
 del path
 del listdir
 del i

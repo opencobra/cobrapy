@@ -4,13 +4,20 @@ from setuptools import setup, find_packages
 from cobra.version import get_version
 __version = get_version()
 
+try:
+    from Cython.Build import cythonize
+    ext_modules = cythonize("cobra/solvers/*.pyx", libs=["glpk"])
+except:
+    ext_modules = None
+    
+
 setup(
     name = "cobra",
     version = __version,
     packages = find_packages(exclude=['cobra.oven', 'cobra.oven*']),
     #scripts = [''],
     #put in numpy, scipy, libsbml, and pyglpk
-    setup_requires = [],
+    setup_requires = ['cython'],
     #install_requires = ['numpy>=1.6', 'scipy>=0.10'],
     #leave blank because it tries to build scipy/numpy on os x when they are
     #installed by the superpack.  And these are not really essential for core functions.
@@ -20,6 +27,7 @@ setup(
         'matlab': ["mlabwrap>=1.1"],
         'R': ["rpy2>=2.2.2"]
         },
+    ext_modules = ext_modules,
 
     package_data = {
          '': ['test/data/*',
