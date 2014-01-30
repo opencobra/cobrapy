@@ -108,12 +108,10 @@ def optimize(cobra_model, solver=None, error_reporting=True, **kwargs):
     #If the default solver is not installed then use one of the others
     if solver is None:
         solver = get_solver_name()
-    try:
-        solver_function = solver_dict[solver]
-    except:
-        raise Exception("It appears that you do not have one of the supported solvers "+\
-                         "(glpk, gurobi, or cplex) installed")
+        if solver is None:
+            raise Exception("It appears that you do not have a supported solver")
 
+    solver_function = solver_dict[solver]
     the_solution = solver_function.solve(cobra_model, **kwargs)
 
 

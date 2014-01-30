@@ -7,6 +7,8 @@ from os import name as __name
 nan = float('nan')
 from sys import modules as __modules
 
+from ..solvers import get_solver_name
+
 if __name == 'java':
     raise Exception("%s is not yet supported on jython"%__modules[__name__])
     warn("moma is not supported on %s"%__name)
@@ -79,7 +81,7 @@ def __double_deletion_parallel(cobra_model, number_of_processes=4,
 
 def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
                     method='fba', single_deletion_growth_dict=None, the_problem='return',
-                    element_type='gene', solver='glpk', error_reporting=None,
+                    element_type='gene', solver=None, error_reporting=None,
                     number_of_processes=1):
     """Wrapper for double_gene_deletion and the currently unimplemented
     double_reaction_deletion functions
@@ -110,6 +112,8 @@ def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
     dimension (y), and the growth simulation data (data).
 
     """
+    if solver is None:
+        solver = get_solver_name()
     if number_of_processes > 1:
         elements_of_interest = [x for x in [element_list_1,
                                             element_list_2]
