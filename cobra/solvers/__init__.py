@@ -65,7 +65,7 @@ del path
 del listdir
 del i
 del solver
-del nicer_name
+del nicer_name, possible_solvers
 
 def get_solver_name(mip=False, qp=False):
     """returns a solver name"""
@@ -78,25 +78,24 @@ def get_solver_name(mip=False, qp=False):
     qp_incapable = ["cglpk", "glpk"]
     
     if mip is False and qp is False:
-        for solver in lp_order:
-            if solver in solver_dict:
-                return solver
+        for solver_name in lp_order:
+            if solver_name in solver_dict:
+                return solver_name
     elif qp:  # mip does not yet matter for this determination
-        for solver in qp_order:
-            if solver in solver_dict:
-                return solver
-        for solver in solver_dict:
-            if solver not in qp_incapable:
+        for solver_name in qp_order:
+            if solver_name in solver_dict:
+                return solver_name
+        for solver_name in solver_dict:
+            if solver_name not in qp_incapable:
                 print "could not verify if the solver supports qp"
-                return solver
+                return solver_name
         return None  # don't want to return glpk
     else:
-        for solver in mip_order:
-            if solver in solver_dict:
-                return solver
+        for solver_name in mip_order:
+            if solver_name in solver_dict:
+                return solver_name
     # return any solver at this point
     return solver_dict.keys()[0]
-
 
 def optimize(cobra_model, solver=None, error_reporting=True, **kwargs):
     """Wrapper to optimization solvers
@@ -123,5 +122,6 @@ def optimize(cobra_model, solver=None, error_reporting=True, **kwargs):
     #   return(the_solution)
     #else:
     return(the_solution['the_problem'])
+
 
 del __name
