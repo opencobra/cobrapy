@@ -81,11 +81,7 @@ def get_solver_name(mip=False, qp=False):
         for solver in lp_order:
             if solver in solver_dict:
                 return solver
-    elif mip:
-        for solver in mip_order:
-            if solver in solver_dict:
-                return solver
-    elif qp:
+    elif qp:  # mip does not yet matter for this determination
         for solver in qp_order:
             if solver in solver_dict:
                 return solver
@@ -94,7 +90,11 @@ def get_solver_name(mip=False, qp=False):
                 print "could not verify if the solver supports qp"
                 return solver
         return None  # don't want to return glpk
-    # return any solver
+    else:
+        for solver in mip_order:
+            if solver in solver_dict:
+                return solver
+    # return any solver at this point
     return solver_dict.keys()[0]
 
 
