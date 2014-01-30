@@ -199,8 +199,9 @@ def add_new_test(TestCobraSolver, solver_name, solver):
         Cone_production.add_metabolites({production_capacity_constraint: cone_production_cost })
 
         Popsicle_production.add_metabolites({production_capacity_constraint: popsicle_production_cost })
-        cobra_model.optimize()
+        cobra_model.optimize(solver=solver_name)
         self.assertEqual(133, cobra_model.solution.f)
+        self.assertEqual(33, cobra_model.solution.x_dict["Cone_consumption"])
 
     def solve_infeasible(self):
         solver.solve(self.infeasible_model)
