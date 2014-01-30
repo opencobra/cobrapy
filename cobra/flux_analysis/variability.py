@@ -11,8 +11,6 @@ try:
 except:
     __parallel_mode_available = False
 
-from warnings import warn
-
 #TODO: Add in a ppmap section for running in parallel
 def flux_variability_analysis_wrapper(keywords):
     """Provides an interface to call flux_variability_analysis from ppmap
@@ -59,9 +57,6 @@ def flux_variability_analysis_fast(cobra_model, reaction_list=None,
     # set all objective coefficients to 0
     for i, r in enumerate(cobra_model.reactions):
         if r.objective_coefficient != 0:
-            if fraction_of_optimum == 1:
-                # TODO fix this
-                warn("numerical problems possible with fraction of 1")
             f = solution.x_dict[r.id]
             new_bounds = (f * fraction_of_optimum, f)
             solver.change_variable_bounds(lp, i, min(new_bounds), max(new_bounds))
