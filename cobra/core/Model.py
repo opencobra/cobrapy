@@ -265,7 +265,7 @@ class Model(Object):
 
 
     def optimize(self, new_objective=None, objective_sense='maximize',
-                 the_problem=None, solver='glpk', 
+                 the_problem=None, solver=None, 
                  error_reporting=None, quadratic_component=None,
                  tolerance_optimality=1e-6, tolerance_feasibility=1e-6,
                  tolerance_barrier=1e-10,  **kwargs):

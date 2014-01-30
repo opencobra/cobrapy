@@ -7,7 +7,7 @@ from warnings import warn
 from copy import deepcopy
 from ..manipulation import delete_model_genes, undelete_model_genes
 from ..manipulation.delete import find_gene_knockout_reactions
-from ..solvers import solver_dict
+from ..solvers import solver_dict, get_solver_name
 from os import name as __name
 if __name == 'java':
     warn("moma is not supported on %s"%__name)
@@ -23,7 +23,7 @@ else:
 
 def single_deletion(cobra_model, element_list=None,
                     method='fba', the_problem='return',
-                    element_type='gene', solver='glpk',
+                    element_type='gene', solver=None,
                     error_reporting=None):
     """Wrapper for single_gene_deletion and the single_reaction_deletion
     functions
@@ -53,6 +53,8 @@ def single_deletion(cobra_model, element_list=None,
     problem_dict where the key corresponds to each element in element_list.
 
     """
+    if solver is None:
+        solver = get_solver_name() if method == "fba" else get_solver_name(qp=True)
     # fast versions of functions
     if method == "fba":
         if element_type == "gene":
@@ -75,8 +77,8 @@ def single_deletion(cobra_model, element_list=None,
     return the_solution
 
 
-def single_reaction_deletion_fba(cobra_model, reaction_list=None, solver="glpk"):
-    solver = solver_dict[solver]
+def single_reaction_deletion_fba(cobra_model, reaction_list=None, solver=None):
+    solver = solver_dict[get_solver_name() if solver is None else solver]
     lp = solver.create_problem(cobra_model)
     growth_rate_dict = {}
     status_dict = {}
@@ -98,8 +100,8 @@ def single_reaction_deletion_fba(cobra_model, reaction_list=None, solver="glpk")
         solver.change_variable_bounds(lp, index, old_bounds[0], old_bounds[1])
     return(growth_rate_dict, status_dict)
 
-def single_gene_deletion_fba(cobra_model, gene_list=None, solver="glpk"):
-    solver = solver_dict[solver]
+def single_gene_deletion_fba(cobra_model, gene_list=None, solver=None):
+    solver = solver_dict[get_solver_name() if solver is None else solver]
     lp = solver.create_problem(cobra_model)
     growth_rate_dict = {}
     status_dict = {}
@@ -125,7 +127,7 @@ def single_gene_deletion_fba(cobra_model, gene_list=None, solver="glpk"):
 
 def single_reaction_deletion(cobra_model, element_list=None,
                              method='fba', the_problem='return',
-                             solver='glpk', error_reporting=None,
+                             solver=None, error_reporting=None,
                              discard_problems=True):
     """Performs optimization simulations to realize the objective defined
     from cobra_model.reactions[:].objective_coefficients after deleting each reaction
@@ -150,6 +152,8 @@ def single_reaction_deletion(cobra_model, element_list=None,
     problem_dict where the key corresponds to each reaction in reaction_list.
 
     """
+    if solver is None:
+        solver = get_solver_name() if method == "fba" else get_solver_name(qp=True)
     #element_list so we can merge single_reaction_deletion and single_gene_deletion
 
     wt_model = cobra_model.copy() #Original wild-type (wt) model.
@@ -238,7 +242,7 @@ def single_reaction_deletion(cobra_model, element_list=None,
     return(growth_rate_dict, solution_status_dict, problem_dict)
 
 def single_gene_deletion(cobra_model, element_list=None,
-                         method='fba', the_problem='reuse', solver='glpk',
+                         method='fba', the_problem='reuse', solver=None,
                          error_reporting=None):
     """Performs optimization simulations to realize the objective defined
     from cobra_model.reactions[:].objective_coefficients after deleting each gene in
@@ -262,6 +266,8 @@ def single_gene_deletion(cobra_model, element_list=None,
     debugging purposes.
 
     """
+    if solver is None:
+        solver = get_solver_name() if method == "fba" else get_solver_name(qp=True)
     wt_model = cobra_model.copy() #Original wild-type (wt) model.
     wt_model.id = 'Wild-Type'
     #MOMA constructs combined quadratic models thus we cannot reuse a model
