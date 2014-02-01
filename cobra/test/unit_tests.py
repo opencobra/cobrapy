@@ -119,6 +119,11 @@ class TestReactions(TestCase):
         self.assertIs(reaction_gene, model_gene)
         # modify gpr of reaction already in the model
         # TODO implement and make pass
+        
+        # test remove gene
+        the_id = reaction_gene.id
+        model_gene.remove_from_model(model)
+        assert not model.genes.has_id(the_id)
 
 class TestCobraCore(CobraTestCase):
     """test core cobra functions"""
