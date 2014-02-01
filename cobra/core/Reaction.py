@@ -486,24 +486,28 @@ class Reaction(Object):
 
 
     def build_reaction_string(self, use_metabolite_names=False):
-        """Generate a human readable reaction string.
-        
-        """
+        """Generate a human readable reaction string"""
+        def format(number):
+            if number == 1:
+                return ""
+            if number == int(number):
+                return str(int(number)) + " "
+            return str(number) + " "
         reactant_dict = {}
         product_dict = {}
         id_type = 'id'
         if use_metabolite_names:
             id_type = 'name'
-        for the_metabolite, the_coefficient in self._metabolites.items():
-            the_key = str(getattr(the_metabolite, id_type))
-            if the_coefficient > 0:
-                product_dict[the_key] = repr(the_coefficient)
+        reactant_bits = []
+        product_bits = []
+        for the_metabolite, coefficient in self._metabolites.items():
+            name = str(getattr(the_metabolite, id_type))
+            if coefficient > 0:
+                product_bits.append(format(coefficient) + name)
             else:
-                reactant_dict[the_key] = repr(abs(the_coefficient))
-        reaction_string = ''
-        for the_key in reactant_dict:
-            reaction_string += ' + %s %s'%(reactant_dict[the_key],
-                                         the_key)
+                reactant_bits.append(format(abs(coefficient)) + name)
+
+        reaction_string = ' + '.join(reactant_bits)
         if not self.reversibility:
             if self.lower_bound < 0 and self.upper_bound <=0:
                 reaction_string += ' <- '
@@ -511,10 +515,7 @@ class Reaction(Object):
                 reaction_string += ' -> '                
         else:
             reaction_string += ' <=> '
-        for the_key in product_dict:
-            reaction_string += "%s %s + "%(product_dict[the_key],
-                                      the_key)
-        reaction_string = reaction_string.lstrip(' + ').rstrip(' + ')
+        reaction_string += ' + '.join(product_bits)
         return reaction_string
 
 
