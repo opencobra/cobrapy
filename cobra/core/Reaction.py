@@ -152,7 +152,7 @@ class Reaction(Object):
     def remove_from_model(self, model=None):
         """Removes the association
 
-        model: cobra.Model object.  remove the reaction from this model.
+        model: deprecated argument, should be None
         
         """
         # why is model being taken in as a parameter? This plays
@@ -162,7 +162,10 @@ class Reaction(Object):
             raise Exception('%s not in %s ergo it cannot be removed. (%s)'%(self,
                                                                   model,
                                                                   self._model))
-                                                            
+        if self._model is None:
+            raise Exception("Reaction %s not in a model" % self.id)
+        if model is not None:
+            warn("model does not need to be passed into remove_from_model")
         new_metabolites = deepcopy(self._metabolites)
         new_genes = deepcopy(self._genes)
         self._model.reactions.remove(self)
@@ -178,7 +181,8 @@ class Reaction(Object):
         self.add_metabolites(new_metabolites)
         #Replace the model-linked genes with new indepenent genes
         self._genes = set()
-        [self.add_gene(k) for k in new_genes]
+        for k in new_genes:
+            self._associate_gene(k)
 
     def delete(self):
         """Removes all associations between a reaction and its container
@@ -345,6 +349,8 @@ class Reaction(Object):
         .. warning :: deprecated function
         """
         warn("deprecated function")
+        # trigger the update if that was the desired behavior for some reason
+        self._gene_reaction_rule = self._gene_reaction_rule
 
 
     def add_gene_reaction_rule(self, the_rule):
@@ -586,4 +592,22 @@ class Reaction(Object):
                     self.add_gene(cobra_gene)
             except:
                 raise Exception('Unable to add gene %s to reaction %s: %s'%(cobra_gene.id, self.id, e))
-                            
+
+    def _associate_gene(self, cobra_gene):
+        """Associates a cobra.Gene object with a cobra.Reaction.
+
+        cobra_gene : :class:`~cobra.core.Gene`
+
+        """
+        self._genes.add(cobra_gene)
+        cobra_gene._reaction.add(self)
+        cobra_gene._model = self._model
+
+    def _dissociate_gene(self, cobra_gene):
+        """Dissociates a cobra.Gene object with a cobra.Reaction.
+
+        cobra_gene : :class:`~cobra.core.Gene`
+
+        """
+        self._genes.remove(cobra_gene)
+        cobra_gene._reaction.remove(self)

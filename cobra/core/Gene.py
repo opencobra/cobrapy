@@ -62,8 +62,12 @@ class Gene(Species):
         the gene with 'False' in the gene association, else replace the gene
         with 'True'
 
-        TODO:  Better handling of the gene association
-        
+        .. note :: Simulating gene knockouts is much better handled by 
+        cobra.manipulation.delete_model_genes
+
+        TODO: Either better handling of the gene association or function
+        deprecation
+
         """
         if make_dependent_reactions_nonfunctional:
             gene_state = 'False'

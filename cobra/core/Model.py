@@ -226,6 +226,7 @@ class Model(Object):
                 if not self.metabolites.has_id(metabolite.id):
                     self.metabolites.append(metabolite)
                     metabolite._model = self
+                    # this should already be the case. Is it necessary?
                     metabolite._reaction = set([reaction])
                 # A copy of the metabolite exists in the model, the reaction
                 # needs to point to the metabolite in the model.
@@ -240,13 +241,14 @@ class Model(Object):
                 if not self.genes.has_id(gene.id):
                     self.genes.append(gene)
                     gene._model = self
+                    # this should already be the case. Is it necessary?
                     gene._reaction = set([reaction])
                 # Otherwise, make the gene point to the one in the model
                 else:
                     model_gene = self.genes.get_by_id(gene.id)
                     if model_gene is not gene:
-                        reaction.remove_gene(gene)
-                        reaction.add_gene(model_gene)
+                        reaction._dissociate_gene(gene)
+                        reaction._associate_gene(model_gene)
 
         self.reactions += reaction_list
 
@@ -367,7 +369,7 @@ class Model(Object):
         for the_reaction in the_reactions:
             try:
                 the_reaction = self.reactions[self.reactions.index(the_reaction)]
-                the_reaction.remove_from_model(self)
+                the_reaction.remove_from_model()
             except:
                 print '%s not in %s'%(the_reaction, self)
         
