@@ -81,7 +81,7 @@ class Gene(Species):
         for the_reaction in self._reaction:
             the_reaction.gene_reaction_rule = the_gene_re.sub(gene_state,
                                                               the_reaction.gene_reaction_rule)
-            the_reaction._genes.pop(self)
+            the_reaction._genes.remove(self)
             #Now deactivate the reaction if its gene association evaluates to False
             the_gene_reaction_relation = the_reaction.gene_reaction_rule
             for other_gene in the_reaction._genes:
