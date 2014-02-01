@@ -99,7 +99,6 @@ class TestDictList(TestCase):
 class CobraTestCase(TestCase):
     def setUp(self):
         self.model = create_test_model(test_pickle)
-        self.model_class = Model
 
 
 class TestReactions(CobraTestCase):
@@ -150,7 +149,6 @@ class TestReactions(CobraTestCase):
         self.assertIn(fake_metabolite, reaction.metabolites)
         self.assertTrue(model.metabolites.has_id("fake"))
         self.assertIs(model.metabolites.get_by_id("fake"), fake_metabolite)
-
 
 class TestCobraModel(CobraTestCase):
     """test core cobra functions"""
@@ -253,7 +251,6 @@ class TestCobraModel(CobraTestCase):
         _orphan_metabolites = [x for x in _metabolites if x.model is not _model]
         self.assertEqual(len(_orphan_genes), 0, msg='It looks like there are dangling genes when running Model.add_reactions')
         self.assertEqual(len(_orphan_metabolites), 0, msg='It looks like there are dangling metabolites when running Model.add_reactions')
-
 
 @skipIf(scipy is None, "scipy required for ArrayBasedModel")
 class TestCobraArrayModel(TestCobraModel):
