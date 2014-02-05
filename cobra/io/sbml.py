@@ -554,9 +554,10 @@ def fix_legacy_id(id, use_hyphens=False, fix_compartments=False):
     else:
         id = id.replace("-", "__")
     if fix_compartments:
-        if (id[-3] == "(" and id[-1] == ")") or \
-           (id[-3] == "[" and id[-1] == "]"):
-            id = id[:-3] + "_" + id[-2]
+        if len(id) > 2:
+            if (id[-3] == "(" and id[-1] == ")") or \
+               (id[-3] == "[" and id[-1] == "]"):
+                id = id[:-3] + "_" + id[-2]
     return id
 
 
