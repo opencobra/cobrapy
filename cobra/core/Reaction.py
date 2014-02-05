@@ -510,9 +510,9 @@ class Reaction(Object):
         reaction_string = ' + '.join(reactant_bits)
         if not self.reversibility:
             if self.lower_bound < 0 and self.upper_bound <=0:
-                reaction_string += ' <- '
+                reaction_string += ' <-- '
             else:
-                reaction_string += ' -> '                
+                reaction_string += ' --> ' 
         else:
             reaction_string += ' <=> '
         reaction_string += ' + '.join(product_bits)
