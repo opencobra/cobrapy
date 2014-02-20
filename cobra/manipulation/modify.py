@@ -125,7 +125,7 @@ def convert_to_irreversible(cobra_model):
             reactions_to_add.append(reverse_reaction)
     cobra_model.add_reactions(reactions_to_add)
  
-def revert_to_reversible(cobra_model):
+def revert_to_reversible(cobra_model, update_solution=True):
     """This function will convert a reversible model made by convert_to_irreversible
     into a reversible model.
 
@@ -146,6 +146,13 @@ def revert_to_reversible(cobra_model):
     #use we can do this faster removal step.  We can
     #probably speed things up here.
     cobra_model.remove_reactions(reverse_reactions)
+    # fix the solution
+    if update_solution and cobra_model.solution is not None:
+        x_dict = cobra_model.solution.x_dict
+        for reverse in reverse_reactions:
+            forward = reverse.reflection
+            x_dict[forward.id] -= x_dict.pop(reverse.id)
+        cobra_model.solution.x = [x_dict[r.id] for r in cobra_model.reactions]
 
    
 def convert_rule_to_boolean_rule(cobra_model, the_rule,

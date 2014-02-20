@@ -50,9 +50,10 @@ class TestCobraFluxAnalysis(TestCase):
         model = self.model
         for solver in solver_dict:
             optimize_minimal_flux(model, solver=solver)
+            abs_x = [abs(i) for i in model.solution.x]
             self.assertAlmostEqual(model.solution.f, 0.3800, places=3)
-            self.assertAlmostEqual(sum(model.solution.x), 343.021, places=3)
-            self.assertGreater(min(model.solution.x), -1e-7)
+            self.assertAlmostEqual(sum(abs_x), 343.021, places=3)
+            self.assertGreater(min(abs_x), -1e-7)
 
     def test_modify_reversible(self):
         model1 = self.model
