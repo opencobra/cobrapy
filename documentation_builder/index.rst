@@ -14,6 +14,7 @@ Documentation for COBRApy
     05_add_reactions
     06_ice_cream_milp
     visbio
+    sampling
     cobra
 
 
