@@ -51,9 +51,10 @@ for i in listdir(path.dirname(path.abspath(__file__))):
 for solver in possible_solvers:
     nicer_name = solver[:-7] if solver.endswith("_solver") else solver
     try:
-        add_solver(solver, nicer_name)
+        add_solver(solver, nicer_name)  
     except Exception:
         pass
+    del solver, nicer_name
 
 try:
     from .cglpk import GLP
@@ -61,11 +62,8 @@ try:
 except:
     None
 
-del path
-del listdir
-del i
-del solver
-del nicer_name, possible_solvers
+del path, listdir
+del i, possible_solvers
 
 def get_solver_name(mip=False, qp=False):
     """returns a solver name"""

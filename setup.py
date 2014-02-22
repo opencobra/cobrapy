@@ -6,10 +6,21 @@ __version = get_version()
 
 try:
     from Cython.Build import cythonize
-    ext_modules = cythonize("cobra/solvers/*.pyx", libs=["glpk"])
-except:
+    from distutils.extension import Extension
+    from os.path import isfile, abspath, dirname
+    sources = ["cobra/solvers/cglpk.pyx"]
+    build_args = {}
+    build_args["libraries"] = ["glpk"]
+    if isfile("libglpk.a"):
+        build_args["library_dirs"] = [dirname(abspath("libglpk.a"))]
+    if isfile("glpk.h"):
+        build_args["include_dirs"] = [dirname(abspath("glpk.h"))]
+    ext_modules = cythonize([Extension("cobra.solvers.cglpk", sources,
+                                       **build_args)])
+except Exception, e:
     ext_modules = None
-    
+
+
 
 setup(
     name = "cobra",

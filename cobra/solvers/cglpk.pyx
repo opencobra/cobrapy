@@ -121,6 +121,10 @@ cdef class GLP:
 
     def solve_problem(self, **solver_parameters):
         cdef int result
+        cdef glp_smcp parameters = self.parameters
+        cdef glp_iocp integer_parameters = self.integer_parameters
+        cdef glp_prob *glp = self.glp
+
 
         for key, value in solver_parameters.items():
             self.set_parameter(key, value)
@@ -130,8 +134,9 @@ cdef class GLP:
         # calling solve_problem on the same object from 2 different
         # threads at the same time will probably cause problems
         # because glpk itself is not thread safe
+
         with nogil:
-            result = glp_simplex(self.glp, &self.parameters)
+            result = glp_simplex(glp, &parameters)
         assert result == 0
         if self.is_mip():
             self.integer_parameters.tm_lim = self.parameters.tm_lim
@@ -140,7 +145,7 @@ cdef class GLP:
             #self.integer_parameters.tol_piv = self.parameters.tol_piv
             
             with nogil:
-                result = glp_intopt(self.glp, &self.integer_parameters)
+                result = glp_intopt(glp, &integer_parameters)
             assert result == 0
         return self.get_status()
 
