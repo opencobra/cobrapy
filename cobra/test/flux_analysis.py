@@ -14,7 +14,6 @@ if __name__ == "__main__":
     from cobra.flux_analysis.parsimonious import optimize_minimal_flux
     from cobra.flux_analysis.single_deletion import single_deletion
     from cobra.flux_analysis.variability import flux_variability_analysis
-    from cobra.flux_analysis.variability import flux_variability_analysis_fast
     sys.path.pop(0)
 else:
     from . import create_test_model
@@ -26,7 +25,6 @@ else:
     from ..flux_analysis.single_deletion import single_deletion
     from ..flux_analysis.double_deletion import double_deletion
     from ..flux_analysis.variability import flux_variability_analysis
-    from ..flux_analysis.variability import flux_variability_analysis_fast
 
 
 class TestCobraFluxAnalysis(TestCase):
@@ -153,25 +151,16 @@ class TestCobraFluxAnalysis(TestCase):
             '4PEPTtex': {'minimum': -3.2198316806921494e-06, 'maximum': 0.0},
             '5DGLCNR': {'minimum': -2.1942555793285538e-05, 'maximum': 0.0},
             '5DGLCNt2rpp': {'minimum': -1.9748300208638403e-05, 'maximum': 0.0},
-            'ACALD': {'minimum': 3.356574143593833, 'maximum': 7.4971939913624155}}
+            'ACALD': {'minimum': 3.356574143593833, 'maximum': 7.4957163478682105}}
 
-        cobra_model = self.model
-        the_problem='return'
-        initialize_growth_medium(cobra_model, 'LB')
-        the_problem = cobra_model.optimize(the_problem=the_problem)
-        fva_out = flux_variability_analysis(cobra_model,
-                                            the_problem=the_problem,
-                                            the_reactions=cobra_model.reactions[100:140])
-        for the_reaction, the_range in fva_out.iteritems():
-            for k, v in the_range.iteritems():
-                self.assertAlmostEqual(fva_results[the_reaction][k], v, places=3)
-        # test fastfva - only works to 2 decimal places
-        fva_out = flux_variability_analysis_fast(cobra_model,
-                                                 cobra_model.reactions[100:140],
-                                                 fraction_of_optimum=1.)
-        for the_reaction, the_range in fva_out.iteritems():
-            for k, v in the_range.iteritems():
-                self.assertAlmostEqual(fva_results[the_reaction][k], v, places=2)
+        for solver in solver_dict:
+            cobra_model = create_test_model()
+            initialize_growth_medium(cobra_model, 'LB')
+            fva_out = flux_variability_analysis(cobra_model, solver=solver,
+                    reaction_list=cobra_model.reactions[100:140])
+            for the_reaction, the_range in fva_out.iteritems():
+                for k, v in the_range.iteritems():
+                    self.assertAlmostEqual(fva_results[the_reaction][k], v, places=3)
 
 # make a test suite to run all of the tests
 loader = TestLoader()
