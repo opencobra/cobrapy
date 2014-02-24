@@ -152,15 +152,19 @@ class DictList(list):
         id: A string or a :class:`~cobra.core.Object`
         """
         # because values are unique, start and stop are not relevant
+        if isinstance(id, basestring):
+            try:
+                return self._dict[id]
+            except KeyError:
+                raise ValueError("%s not found" % id)
         try:
-            return self._dict[id]
-        except:
             i = self._dict[id.id]
             if self[i] is not id:
                 raise ValueError(
                     "Another object with the identical id (%s) found" % id.id)
             return i
-        raise ValueError("%s not found" % str(i))
+        except KeyError:
+            raise ValueError("%s not found" % str(i))
 
     def __contains__(self, object):
         """DictList.__contains__(object) <==> object in DictList

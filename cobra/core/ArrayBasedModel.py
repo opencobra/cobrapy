@@ -206,6 +206,30 @@ class ArrayBasedModel(Model):
         if update_matrices:
             self._update_matrices(reaction_list)
 
+
+    def remove_reactions(self, reaction_list, update_matrices=True):
+        """Will add a cobra.Reaction object to the model, if
+        reaction.id is not in self.reactions.
+
+        reaction_list: A list or instance of :class:`~cobra.core.Reaction` or ids
+
+        update_matrices:  Boolean.  If true populate / update matrices
+        S, lower_bounds, upper_bounds, .... Note this is slow to run
+        for very large models and using this option with repeated calls
+        will degrade performance.  Better to call self.update() after
+        adding all reactions.
+
+        
+         If the stoichiometric matrix is initially empty then initialize a 1x1
+         sparse matrix and add more rows as needed in the self.add_metabolites
+         function
+
+        """
+        Model.remove_reactions(self, reaction_list)
+        if update_matrices:
+            self._update_matrices()
+
+
     def _construct_matrices(self):
         """Large sparse matrices take time to construct and to read / write.
         This function allows one to let the model exists without cobra_model.S
@@ -254,7 +278,6 @@ class ArrayBasedModel(Model):
         In the future, we'll be able to use reactions from anywhere in the
         list
 
-        
         WARNING: This function is only used after the Model has been
         converted to matrices.  It is typically faster to access the objects
         in the Model directly.  This function will eventually moved to another
@@ -265,13 +288,13 @@ class ArrayBasedModel(Model):
         #interact with the optimization solvers.  It might be best to move them
         #to linear algebra modules.
         #If no reactions are present in the Model, initialize the arrays
-        if not self._S or reaction_list is None:
+        if self._S is None or reaction_list is None:
             reaction_list = self.reactions
             SMatrix = SMatrix_classes[self.matrix_type]
             self._S = SMatrix((len(self.metabolites),
-                              len(self.reactions)), model=self) 
+                              len(self.reactions)), model=self)
             self._update_reaction_vectors()
-        else: #Expand the arrays to accomodate the new reaction
+        else:  # Expand the arrays to accomodate the new reaction
             self._S.resize((len(self.metabolites),
                            len(self.reactions)))
             lower_bounds = array([x.lower_bound
