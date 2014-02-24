@@ -65,7 +65,10 @@ def load_matlab_model(infile_path, variable_name=None):
                 <= set(m.dtype.names):
             continue
         model = Model()
-        model.id = m["description"][0, 0][0]
+        if "description" in m:
+            model.id = m["description"][0, 0][0]
+        else:
+            model.id = possible_name
         model.description = model.id
         for i, name in enumerate(m["mets"][0, 0]):
             new_metabolite = Metabolite()
