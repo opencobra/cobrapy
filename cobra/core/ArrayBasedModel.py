@@ -284,8 +284,14 @@ class ArrayBasedModel(Model):
         module for advanced users due to the potential for mistakes.
 
         """
-        # nothing to do if there are no reactions
-        if len(self.reactions) == 0:
+        # no need to create matrix if there are no reactions or metabolites
+        if len(self.reactions) == 0 and len(self.metabolites) == 0:
+            return
+        elif len(self.metabolites) == 0:
+            self._update_reaction_vectors()
+            return
+        elif len(self.reactions) == 0:
+            self._update_metabolite_vectors()
             return
         #Pretty much all of these things are unnecessary to use the objects and
         #interact with the optimization solvers.  It might be best to move them
