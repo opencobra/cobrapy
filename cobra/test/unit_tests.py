@@ -95,16 +95,18 @@ class TestDictList(TestCase):
         result = self.list.query("test")  # matches test1 and test2
         self.assertEqual(len(result), 2)
 
-            
 
 class CobraTestCase(TestCase):
     def setUp(self):
         self.model = create_test_model(test_pickle)
+        self.model_class = Model
 
 
-class TestReactions(TestCase):
+class TestCobraCore(CobraTestCase):
+    """test core cobra functions"""
+
     def testGPR(self):
-        model = Model()
+        model = self.model_class()
         reaction = Reaction("test")
         # set a gpr to  reaction not in a model
         reaction.gene_reaction_rule = "(g1 or g2) and g3"
@@ -119,9 +121,6 @@ class TestReactions(TestCase):
         self.assertIs(reaction_gene, model_gene)
         # modify gpr of reaction already in the model
         # TODO implement and make pass
-
-class TestCobraCore(CobraTestCase):
-    """test core cobra functions"""
 
     def test_add_reaction(self):
         old_reaction_count = len(self.model.reactions)
@@ -167,7 +166,6 @@ class TestCobraCore(CobraTestCase):
             self.model.reactions.get_by_id("PGI")
         # TODO - delete by id - will this be supported?
         # TODO - delete orphan metabolites - will this be expected behavior?
-        
 
     def test_copy(self):
         """modifying copy should not modify the original"""
@@ -183,11 +181,8 @@ class TestCobraCore(CobraTestCase):
         self.assertNotEqual(len(self.model.reactions),
             len(model_copy.reactions))
 
-
     def test_deepcopy(self):
-        """Verify that reference structures are maintained when deepcopying.
-        
-        """
+        """Verify that reference structures are maintained when deepcopying"""
         model_copy = deepcopy(self.model)
         for gene, gene_copy in zip(self.model.genes, model_copy.genes):
             self.assertEqual(gene.id, gene_copy.id)
@@ -203,13 +198,13 @@ class TestCobraCore(CobraTestCase):
             metabolites_copy = reaction_copy._metabolites.keys()
             metabolites_copy.sort()
             self.assertEqual(metabolites, metabolites_copy)
-        
+
     def test_add_reaction(self):
         """Verify that no orphan genes are metabolites are contained in reactions after
         adding them to the model.
         
         """
-        _model = Model('test')
+        _model = self.model_class('test')
         _model.add_reactions([x.copy() for x in self.model.reactions])
         _genes = []
         _metabolites = []
@@ -220,7 +215,14 @@ class TestCobraCore(CobraTestCase):
         self.assertEqual(len(_orphan_genes), 0, msg='It looks like there are dangling genes when running Model.add_reactions')
         self.assertEqual(len(_orphan_metabolites), 0, msg='It looks like there are dangling metabolites when running Model.add_reactions')
 
-    @skipIf(scipy is None, "scipy required for ArrayBasedModel")
+
+@skipIf(scipy is None, "scipy required for ArrayBasedModel")
+class TestCobraArrayModel(TestCobraCore):
+    def setUp(self):
+        model = create_test_model(test_pickle).to_array_based_model()
+        self.model_class = model.__class__
+        self.model = model
+
     def test_array_based_model(self):
         for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
             model = create_test_model().to_array_based_model(matrix_type=matrix_type)
@@ -243,7 +245,6 @@ class TestCobraCore(CobraTestCase):
             model.upper_bounds = [0] * len(model.reactions)
             self.assertEqual(max(model.upper_bounds), 0)
 
-    @skipIf(scipy is None, "scipy required for ArrayBasedModel")
     def test_array_based_model_add(self):
         for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
             model = create_test_model().to_array_based_model(matrix_type=matrix_type)
