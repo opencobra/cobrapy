@@ -284,6 +284,9 @@ class ArrayBasedModel(Model):
         module for advanced users due to the potential for mistakes.
 
         """
+        # nothing to do if there are no reactions
+        if len(self.reactions) == 0:
+            return
         #Pretty much all of these things are unnecessary to use the objects and
         #interact with the optimization solvers.  It might be best to move them
         #to linear algebra modules.
@@ -393,7 +396,7 @@ class SMatrix_lil(lil_matrix):
             metabolites = [self._model.metabolites[index[0]]]
         else:
             metabolites = self._model.metabolites[index[0]]
-        
+
         if isinstance(index[1], int):
             reactions = [self._model.reactions[index[1]]]
         else:
