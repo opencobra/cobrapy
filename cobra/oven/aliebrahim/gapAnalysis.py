@@ -1,5 +1,4 @@
 import cobra
-from keggIO import import_kegg_reactions
 from cobra import Model, Reaction, Metabolite
 
 
@@ -10,8 +9,9 @@ class SUXModelMILP(cobra.Model):
     total number of added reactions. See the figure for more
     information on the structure of the matrix.
     """
-    def __init__(self, model, Universal=None,
-            threshold=0.05, penalties={"Universal": 1, "Exchange": 1, "Demand": 1}, dm_rxns=0, ex_rxns=1):
+    def __init__(self, model, Universal=None, threshold=0.05,
+            penalties={"Universal": 1, "Exchange": 1, "Demand": 1},
+            dm_rxns=False, ex_rxns=True):
         cobra.Model.__init__(self, "")
         # store parameters
         self.threshold = threshold
@@ -25,7 +25,7 @@ class SUXModelMILP(cobra.Model):
 
         # SUX += Exchange (when exchange generator has been written)
         # For now, adding exchange reactions to Universal - could add to a new model called exchange and allow their addition or not....
-        if ex_rxns == 1:
+        if ex_rxns:
             ex_reactions = [x for x in model.reactions if x.startswith('EX_')]
         else:
             ex_reactions = []
@@ -34,12 +34,12 @@ class SUXModelMILP(cobra.Model):
         for r in ex_reactions:
             if r.lower_bound >= 0:
                 rxn = r.copy()
-                r.remove_from_model(model)
+                #model.remove_reaction(r)
+                rxn.id += "_gapfill"
                 rxn.lower_bound = -1000
-
                 Universal.add_reaction(rxn)
 
-        if dm_rxns == 1:
+        if dm_rxns:
             # ADD DEMAND REACTIONS FOR ALL METABOLITES TO UNIVERSAL MODEL
             for m in model.metabolites:
                 rxn = Reaction('DM_' + m.id)
@@ -116,19 +116,19 @@ class SUXModelMILP(cobra.Model):
 
     def _add_reactions(self, reactions):
         cobra.Model.add_reactions(self, reactions)
-        self.original_reactions.extend(reaction)
+        self.original_reactions.extend(reactions)
         self._update_objectives()
 
-    def solve(self, iterations=1, debug=False):
+    def solve(self, solver="glpk", iterations=1, debug=False, time_limit=100, **solver_parameters):
         """solve the MILP problem"""
         used_reactions = {}
         numeric_error_cutoff = 0.0001
         self._update_objectives()
         for i in range(iterations):
             used_reactions[i] = []
-            self.optimize(objective_sense="minimize")
-
-            if debug: print 'iteration', i
+            self.optimize(objective_sense="minimize", solver=solver, **solver_parameters)
+            if debug:
+                print "Iteration %d: Status is %s" % (i, self.solution.status)
             for reaction in self.added_reactions:
                 # The dummy reaction should have a flux of either 0 or 1.
                 # If it is 1 (nonzero), then the reaction was used in
@@ -138,22 +138,24 @@ class SUXModelMILP(cobra.Model):
                         reaction].id] > numeric_error_cutoff:
                     used_reactions[i].append(reaction)
                     reaction.objective_coefficient += self.penalties[reaction.notes["gapfilling_type"]]
-                    if debug: print '\t', reaction, reaction.objective_coefficient
+                    if debug:
+                        print '\t', reaction, reaction.objective_coefficient
 
         return used_reactions
 
 
-def growMatch(model, Universal=None, iterations=1, debug=0, dm_rxns=0, ex_rxns=1):
+def growMatch(model, Universal, iterations=1, debug=False,
+              dm_rxns=False, ex_rxns=False, solver="glpk", time_limit=60, **solver_parameters):
     """runs growMatch"""
-    if Universal is None:
-        Universal = import_kegg_reactions()
     model = model.copy()
     SUX = SUXModelMILP(model, Universal, dm_rxns=dm_rxns, ex_rxns=ex_rxns)
-    used_reactions = SUX.solve(iterations=iterations, debug=debug)
+    used_reactions = SUX.solve(iterations=iterations, debug=debug,
+        solver=solver, time_limit=time_limit, **solver_parameters)
     return used_reactions
 
 
-def SMILEY(model, metabolite_id, Universal=None):
+def SMILEY(model, metabolite_id, Universal, iterations=1, debug=False,
+           dm_rxns=False, ex_rxns=False, solver="glpk", time_limit=60, **solver_parameters):
     """
     runs the SMILEY algorithm to determine which gaps should be
     filled in order for the model to create the metabolite with the
@@ -164,9 +166,8 @@ def SMILEY(model, metabolite_id, Universal=None):
     for the given metabolite_id, and call the solve function on the
     SUXModelMILP object.
     """
-    if Universal is None:
-        Universal = import_kegg_reactions()
-    SUX = SUXModelMILP(model, Universal)
+    model = model.copy()
+    SUX = SUXModelMILP(model, Universal, dm_rxns=dm_rxns, ex_rxns=ex_rxns)
     # change the objective to be the metabolite
     for reaction in SUX.original_reactions:
         reaction.objective_coefficient = 0
@@ -175,37 +176,9 @@ def SMILEY(model, metabolite_id, Universal=None):
     demand_reaction.add_metabolites(
         {SUX.metabolites[SUX.metabolites.index(metabolite_id)]: -1})
     SUX.add_reaction(demand_reaction)
-    used_reactions = SUX.solve()
-    for reaction in used_reactions:
-        print reaction, SUX.solution.x_dict[reaction.id]
+    used_reactions = SUX.solve(iterations=iterations, debug=debug,
+        solver=solver, time_limit=time_limit, **solver_parameters)
     return used_reactions
-
-def add_gap_reactions(model, results):
-    for r in results:
-        reverse = 0
-        #determine if reaction should be reversible or not...
-        index = r.id.find('reverse') # =-1 if not found
-        if index >= 0:
-            rxn = r.id[:index-1]
-            reverse = 1 # need to add functionality here...
-        else:
-            rxn = r.id
-
-        # TO DO determine if reaction is already in model
-
-        #add reaction or adjust bounds
-        model.reactions[model.reactions.index(rxn)].lower_bound = -1
-
-    model.optimize()
-
-    try:
-        if model.solution.f < 0.00001:
-            model.solution.f = 0
-        print '\nNew model simulated growth rate is %1.3f' % model.solution.f
-    except:
-        print 'no growth'
-
-    return model
 
 
 if __name__ == "__main__":
@@ -215,30 +188,22 @@ if __name__ == "__main__":
 
     model = create_test_model()
 
-    model.optimize(solver='glpk')
+    # create a Universal model containing some removed reactions
+    Universal = cobra.Model("Universal_Reactions")
+    for i in [i.id for i in model.metabolites.f6p_c.reactions]:
+        reaction = model.reactions.get_by_id(i)
+        Universal.add_reaction(reaction.copy())
+        reaction.remove_from_model(model)
 
-    # from cobra.flux_analysis.single_deletion import *
-    # deletions = single_reaction_deletion(model)
-    # deletions show that SDPTA is essential to growth:
-    r = model.reactions[model.reactions.index('SDPTA')]
-    test = r.copy()
-    r.remove_from_model(model)
-
+    # run growMatch
+    print "growMatch"
     tic = time()
-    # Universal = import_kegg_reactions()
-    Universal = cobra.Model("Kegg_Universal_Reactions")
-
-    Universal.add_reaction(test)
-
+    results = growMatch(model, Universal, debug=True)
     toc = time()
-    print "%.2f sec to import kegg reactions" % (toc - tic)
-    tic = toc
-    print "growMatch: "
-    results = growMatch(model, Universal)
-    # toc = time()
-    # print "%.2f sec for growmatch" % (toc - tic)
-    # tic = toc
-    # print "SMILEY results"
-    # SMILEY(model, "atp_c", Universal)
-    # toc = time()
-    # print "%.2f sec for smiley" % (toc - tic)
+    print "%.2f sec for growmatch" % (toc - tic)
+    # run SMILEY
+    print "SMILEY"
+    tic = time()
+    SMILEY_results = SMILEY(model, "f6p_c", Universal, debug=True)
+    toc = time()
+    print "%.2f sec for smiley" % (toc - tic)
