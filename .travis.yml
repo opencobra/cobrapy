@@ -10,6 +10,6 @@ before_install:
 install:
   - ln -s /usr/lib/python2.7/dist-packages/scipy ~/virtualenv/python2.7/lib/python2.7/site-packages/
   - pip install glpk
-  - pip install http://clostridium.ucsd.edu/python_libsbml_experimental-5.9.2-py2.7-linux-x86_64.egg 
+  - pip install http://clostridium.ucsd.edu/python_libsbml_experimental-5.9.2-cp27-none-linux_x86_64.whl
 # # command to run tests
 script: python setup.py test
