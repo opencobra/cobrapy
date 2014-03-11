@@ -333,23 +333,25 @@ class Reaction(Object):
         self.gene_reaction_rule = the_rule
         warn("deprecated, assign to gene_reaction_rule directly")
 
+    def get_reactants(self):
+        warn("depreacated, use the reactants property instead")
+        return self.reactants
 
 
     @property
     def reactants(self):
-        """Return a list of reactants for the reaction.
+        """Return a list of reactants for the reaction."""
+        return [k for k, v in self._metabolites.items() if v < 0]
 
-        """
-        return [k for k, v in self._metabolites.items()
-                if v < 0]
+    def get_products(self):
+        warn("depreacated, use the products property instead")
+        return self.products
+
 
     @property
     def products(self):
-        """Return a list of products for the reaction
-        
-        """
-        return [k for k, v in self._metabolites.items()
-                if v > 0]
+        """Return a list of products for the reaction"""
+        return [k for k, v in self._metabolites.items() if v > 0]
 
     def get_gene(self):
         """Return a list of genes for the reaction.
