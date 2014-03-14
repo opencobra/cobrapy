@@ -568,7 +568,8 @@ def read_legacy_sbml(filename, use_hyphens=False):
             reaction.id = reaction.id[:-3] + "_e"
     model.reactions._generate_index()
     # remove boundary metabolites (end in _b and only present in exchanges)
-    for metabolite in model.metabolites:
+    for metabolite_id in [str(x) for x in model.metabolites]:
+        metabolite = model.metabolites.get_by_id(metabolite_id)
         if not metabolite.id.endswith("_b"):
             continue
         if len(metabolite._reaction) == 1:
