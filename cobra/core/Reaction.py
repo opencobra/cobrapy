@@ -23,7 +23,6 @@ class Frozendict(dict):
     def popitem(self):
         raise NotImplementedError("read-only")
 
-
 class Reaction(Object):
     """Reaction is a class for holding information regarding
     a biochemical reaction in a cobra.Model object 
@@ -67,7 +66,6 @@ class Reaction(Object):
     # read-only
     @property
     def metabolites(self):
-        # TODO make read-only
         return Frozendict(self._metabolites)
 
     @property
@@ -81,7 +79,38 @@ class Reaction(Object):
     @gene_reaction_rule.setter
     def gene_reaction_rule(self, new_rule):
         self._gene_reaction_rule = new_rule
-        self.parse_gene_association()
+        gene_names = set((re.compile(' {2,}').sub(' ', re.compile('\(| and| or|\+|\)').sub('', self._gene_reaction_rule))).split(' ' ))
+        if '' in self._genes:
+                gene_names.remove('')
+        old_genes = self._genes
+        if self._model is None:
+            self._genes = {Gene(i) for i in gene_names}
+        else:
+            model_genes = self._model.genes
+            self._genes = set()
+            for id in gene_names:
+                if model_genes.has_id(id):
+                    self._genes.add(model_genes.get_by_id(id))
+                else:
+                    new_gene = Gene(id)
+                    new_gene._model = self._model
+                    self._genes.add(new_gene)
+                    model_genes.append(new_gene)
+
+        # Make the genes aware that it is involved in this reaction
+        for g in self._genes:
+            g._reaction.add(self)
+
+        # make the old genes aware they are no longer involved in this reaction
+        for g in old_genes:
+            if g not in self._genes:  # if an old gene is not a new gene
+                try:
+                    g._reaction.remove(self)
+                except:
+                    warn("could not remove old gene %s from reaction %s" %
+                         (g.id, self.id))
+
+
 
     @property
     def reversibility(self):
@@ -123,7 +152,7 @@ class Reaction(Object):
     def remove_from_model(self, model=None):
         """Removes the association
 
-        model: cobra.Model object.  remove the reaction from this model.
+        model: deprecated argument, should be None
         
         """
         # why is model being taken in as a parameter? This plays
@@ -133,7 +162,10 @@ class Reaction(Object):
             raise Exception('%s not in %s ergo it cannot be removed. (%s)'%(self,
                                                                   model,
                                                                   self._model))
-                                                            
+        if self._model is None:
+            raise Exception("Reaction %s not in a model" % self.id)
+        if model is not None:
+            warn("model does not need to be passed into remove_from_model")
         new_metabolites = deepcopy(self._metabolites)
         new_genes = deepcopy(self._genes)
         self._model.reactions.remove(self)
@@ -149,7 +181,8 @@ class Reaction(Object):
         self.add_metabolites(new_metabolites)
         #Replace the model-linked genes with new indepenent genes
         self._genes = set()
-        [self.add_gene(k) for k in new_genes]
+        for k in new_genes:
+            self._associate_gene(k)
 
     def delete(self):
         """Removes all associations between a reaction and its container
@@ -252,6 +285,8 @@ class Reaction(Object):
         """Adds two reactions to each other.  Default behavior is
         to combine the metabolites but only use the remaining parameters
         from the first object.
+        
+        TODO: Either clean up metabolite associations or remove function
 
         TODO: Deal with gene association logic from adding reactions.
 
@@ -299,7 +334,7 @@ class Reaction(Object):
     def __mul__(self, the_coefficient):
         """Allows a reaction to be multipled by a coeffient.
         
-        Should this return a new reaction?
+        TODO: this should return a new reaction.
         
         """
         [self._metabolites.update({k: the_coefficient * v})
@@ -311,14 +346,11 @@ class Reaction(Object):
         """Extract all genes from the Boolean Gene_Association string.
 
         #Formerly, update_names
+        .. warning :: deprecated function
         """
-        if the_type == 'gene':
-            self._genes = set((re.compile(' {2,}').sub(' ', re.compile('\(| and| or|\+|\)').sub('', self._gene_reaction_rule))).split(' ' ))
-            if '' in self._genes:
-                self._genes.remove('')
-            self._genes = set(map(Gene, self._genes))
-            #Make the gene aware that it is involved in this reaction
-            [x._reaction.add(self) for x in self._genes]
+        warn("deprecated function")
+        # trigger the update if that was the desired behavior for some reason
+        self._gene_reaction_rule = self._gene_reaction_rule
 
 
     def add_gene_reaction_rule(self, the_rule):
@@ -328,7 +360,7 @@ class Reaction(Object):
         to be active as described in Schellenberger et al 2011 Nature Protocols 6(9):1290-307.
 
         Note that this method currently replaces any pre-existing rules
-        
+        .. warning :: deprecated function
         """
         self.gene_reaction_rule = the_rule
         warn("deprecated, assign to gene_reaction_rule directly")
@@ -454,35 +486,36 @@ class Reaction(Object):
 
 
     def build_reaction_string(self, use_metabolite_names=False):
-        """Generate a human readable reaction string.
-        
-        """
+        """Generate a human readable reaction string"""
+        def format(number):
+            if number == 1:
+                return ""
+            if number == int(number):
+                return str(int(number)) + " "
+            return str(number) + " "
         reactant_dict = {}
         product_dict = {}
         id_type = 'id'
         if use_metabolite_names:
             id_type = 'name'
-        for the_metabolite, the_coefficient in self._metabolites.items():
-            the_key = str(getattr(the_metabolite, id_type))
-            if the_coefficient > 0:
-                product_dict[the_key] = repr(the_coefficient)
+        reactant_bits = []
+        product_bits = []
+        for the_metabolite, coefficient in self._metabolites.items():
+            name = str(getattr(the_metabolite, id_type))
+            if coefficient > 0:
+                product_bits.append(format(coefficient) + name)
             else:
-                reactant_dict[the_key] = repr(abs(the_coefficient))
-        reaction_string = ''
-        for the_key in reactant_dict:
-            reaction_string += ' + %s %s'%(reactant_dict[the_key],
-                                         the_key)
+                reactant_bits.append(format(abs(coefficient)) + name)
+
+        reaction_string = ' + '.join(reactant_bits)
         if not self.reversibility:
             if self.lower_bound < 0 and self.upper_bound <=0:
-                reaction_string += ' <- '
+                reaction_string += ' <-- '
             else:
-                reaction_string += ' -> '                
+                reaction_string += ' --> ' 
         else:
             reaction_string += ' <=> '
-        for the_key in product_dict:
-            reaction_string += "%s %s + "%(product_dict[the_key],
-                                      the_key)
-        reaction_string = reaction_string.lstrip(' + ').rstrip(' + ')
+        reaction_string += ' + '.join(product_bits)
         return reaction_string
 
 
@@ -528,9 +561,9 @@ class Reaction(Object):
         """Removes the association between a gene and a reaction
 
         cobra_gene: :class:`~cobra.core.Gene`. A gene that is associated with the reaction.
-        
+        .. warning :: deprecated
         """
-        #warn("deprecated: update the gene_reaction_rule instead")
+        warn("deprecated: update the gene_reaction_rule instead")
         try:
             self._genes.remove(cobra_gene)
             cobra_gene._reaction.remove(self)
@@ -546,8 +579,9 @@ class Reaction(Object):
         """Associates a cobra.Gene object with a cobra.Reaction.
 
         cobra_gene: :class:`~cobra.core.Gene`. A gene to associate with the reaction.
+        .. warning :: deprecated
         """
-        #warn("deprecated: update the gene_reaction_rule instead")
+        warn("deprecated: update the gene_reaction_rule instead")
         try:
             self._genes.add(cobra_gene)
             cobra_gene._reaction.add(self)
@@ -559,4 +593,22 @@ class Reaction(Object):
                     self.add_gene(cobra_gene)
             except:
                 raise Exception('Unable to add gene %s to reaction %s: %s'%(cobra_gene.id, self.id, e))
-                            
+
+    def _associate_gene(self, cobra_gene):
+        """Associates a cobra.Gene object with a cobra.Reaction.
+
+        cobra_gene : :class:`~cobra.core.Gene`
+
+        """
+        self._genes.add(cobra_gene)
+        cobra_gene._reaction.add(self)
+        cobra_gene._model = self._model
+
+    def _dissociate_gene(self, cobra_gene):
+        """Dissociates a cobra.Gene object with a cobra.Reaction.
+
+        cobra_gene : :class:`~cobra.core.Gene`
+
+        """
+        self._genes.remove(cobra_gene)
+        cobra_gene._reaction.remove(self)

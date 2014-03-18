@@ -245,7 +245,6 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         #TODO: Make sure genes get added as objects
         if reaction_note_dict.has_key('GENE ASSOCIATION'):
             reaction.gene_reaction_rule = reaction_note_dict['GENE ASSOCIATION'][0]
-            reaction.parse_gene_association() 
             if reaction_note_dict.has_key('GENE LIST'):
                 reaction.systematic_names = reaction_note_dict['GENE LIST'][0]
             elif reaction_note_dict.has_key('GENES') and \
