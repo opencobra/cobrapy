@@ -250,7 +250,7 @@ class Model(Object):
         self.reactions += reaction_list
 
 
-    def to_array_based_model(self, deepcopy_model=False):
+    def to_array_based_model(self, deepcopy_model=False, **kwargs):
         """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model which
         may be used to perform linear algebra operations with the
         stoichiomatric matrix.
@@ -260,7 +260,7 @@ class Model(Object):
         
         """
         from .ArrayBasedModel import ArrayBasedModel
-        return ArrayBasedModel(self, deepcopy_model=deepcopy_model)
+        return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
 
 
     def optimize(self, new_objective=None, objective_sense='maximize',

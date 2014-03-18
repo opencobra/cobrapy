@@ -28,7 +28,7 @@ else:
     from .. import Object, Model, Metabolite, Reaction, io, DictList
 
 # libraries which may or may not be installed
-libraries = ["glpk", "gurobipy", "cplex"]
+libraries = ["glpk", "gurobipy", "cplex", "scipy"]
 for library in libraries:
     try:
         exec("import %s" % library)
@@ -95,16 +95,18 @@ class TestDictList(TestCase):
         result = self.list.query("test")  # matches test1 and test2
         self.assertEqual(len(result), 2)
 
-            
 
 class CobraTestCase(TestCase):
     def setUp(self):
         self.model = create_test_model(test_pickle)
+        self.model_class = Model
 
 
-class TestReactions(TestCase):
+class TestCobraCore(CobraTestCase):
+    """test core cobra functions"""
+
     def testGPR(self):
-        model = Model()
+        model = self.model_class()
         reaction = Reaction("test")
         # set a gpr to  reaction not in a model
         reaction.gene_reaction_rule = "(g1 or g2) and g3"
@@ -119,9 +121,6 @@ class TestReactions(TestCase):
         self.assertIs(reaction_gene, model_gene)
         # modify gpr of reaction already in the model
         # TODO implement and make pass
-
-class TestCobraCore(CobraTestCase):
-    """test core cobra functions"""
 
     def test_add_reaction(self):
         old_reaction_count = len(self.model.reactions)
@@ -167,7 +166,6 @@ class TestCobraCore(CobraTestCase):
             self.model.reactions.get_by_id("PGI")
         # TODO - delete by id - will this be supported?
         # TODO - delete orphan metabolites - will this be expected behavior?
-        
 
     def test_copy(self):
         """modifying copy should not modify the original"""
@@ -183,11 +181,8 @@ class TestCobraCore(CobraTestCase):
         self.assertNotEqual(len(self.model.reactions),
             len(model_copy.reactions))
 
-
     def test_deepcopy(self):
-        """Verify that reference structures are maintained when deepcopying.
-        
-        """
+        """Verify that reference structures are maintained when deepcopying"""
         model_copy = deepcopy(self.model)
         for gene, gene_copy in zip(self.model.genes, model_copy.genes):
             self.assertEqual(gene.id, gene_copy.id)
@@ -209,7 +204,7 @@ class TestCobraCore(CobraTestCase):
         adding them to the model.
         
         """
-        _model = Model('test')
+        _model = self.model_class('test')
         _model.add_reactions([x.copy() for x in self.model.reactions])
         _genes = []
         _metabolites = []
@@ -219,6 +214,50 @@ class TestCobraCore(CobraTestCase):
         _orphan_metabolites = [x for x in _metabolites if x.model is not _model]
         self.assertEqual(len(_orphan_genes), 0, msg='It looks like there are dangling genes when running Model.add_reactions')
         self.assertEqual(len(_orphan_metabolites), 0, msg='It looks like there are dangling metabolites when running Model.add_reactions')
+
+
+@skipIf(scipy is None, "scipy required for ArrayBasedModel")
+class TestCobraArrayModel(TestCobraCore):
+    def setUp(self):
+        model = create_test_model(test_pickle).to_array_based_model()
+        self.model_class = model.__class__
+        self.model = model
+
+    def test_array_based_model(self):
+        for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
+            model = create_test_model().to_array_based_model(matrix_type=matrix_type)
+            self.assertEqual(model.S[0, 0], -1)
+            self.assertEqual(model.S[43, 0], 0)
+            model.S[43, 0] = 1
+            self.assertEqual(model.S[43, 0], 1)
+            self.assertEqual(model.reactions[0].metabolites[model.metabolites[43]], 1)
+            model.S[43, 0] = 0
+            self.assertEqual(model.lower_bounds[0], model.reactions[0].lower_bound)
+            self.assertEqual(model.lower_bounds[5], model.reactions[5].lower_bound)
+            self.assertEqual(model.upper_bounds[0], model.reactions[0].upper_bound)
+            self.assertEqual(model.upper_bounds[5], model.reactions[5].upper_bound)
+            model.lower_bounds[6] = 2
+            self.assertEqual(model.lower_bounds[6], 2)
+            self.assertEqual(model.reactions[6].lower_bound, 2)
+            # this should fail because it is the wrong size
+            with self.assertRaises(Exception):
+                model.upper_bounds = [0, 1]
+            model.upper_bounds = [0] * len(model.reactions)
+            self.assertEqual(max(model.upper_bounds), 0)
+
+    def test_array_based_model_add(self):
+        for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
+            model = create_test_model().to_array_based_model(matrix_type=matrix_type)
+            test_reaction = Reaction("test")
+            test_reaction.add_metabolites({model.metabolites[0]: 4})
+            test_reaction.lower_bound = -3.14
+            model.add_reaction(test_reaction)
+            self.assertEqual(len(model.reactions), 2547)
+            self.assertEqual(model.S.shape[1], 2547)
+            self.assertEqual(len(model.lower_bounds), 2547)
+            self.assertEqual(model.S[0, 2546], 4)
+            self.assertEqual(model.S[0, 0], -1)
+            self.assertEqual(model.lower_bounds[2546], -3.14)
 
 class TestCobraIO(CobraTestCase):
     try:
