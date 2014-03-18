@@ -1,6 +1,6 @@
 ##cobra.solvers.gurobi_solver
-#Interface to the gurobi 5.0.1 python and java solvers
-#QPs are not yet supported on java
+#Interface to the gurobi 5.0.1 python solver
+
 from warnings import warn
 from os import name as __name
 from copy import deepcopy
@@ -11,7 +11,6 @@ from .parameters import status_dict, variable_kind_dict, \
      objective_senses, default_objective_sense
 
 from ..core.Solution import Solution
-from ..flux_analysis.objective import update_objective
 from time import time
 solver_name = 'gurobi'
 objective_senses = objective_senses[solver_name]
@@ -198,6 +197,7 @@ def solve(cobra_model, **kwargs):
     #Update objectives if they are new.
     if 'new_objective' in the_parameters and \
            the_parameters['new_objective'] not in ['update problem', None]:
+       from ..flux_analysis.objective import update_objective
        update_objective(cobra_model, the_parameters['new_objective'])
 
     if 'the_problem' in the_parameters:

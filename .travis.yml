@@ -15,6 +15,7 @@ before_install:
   - cd $TRAVIS_BUILD_DIR
 install:
   - ln -s /usr/lib/python2.7/dist-packages/scipy ~/virtualenv/python2.7/lib/python2.7/site-packages/
-  - pip install glpk 
+  - pip install glpk cython
+  - python setup.py develop
 # # command to run tests
 script: python setup.py test

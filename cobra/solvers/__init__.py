@@ -51,32 +51,65 @@ for i in listdir(path.dirname(path.abspath(__file__))):
 for solver in possible_solvers:
     nicer_name = solver[:-7] if solver.endswith("_solver") else solver
     try:
-        add_solver(solver, nicer_name)
+        add_solver(solver, nicer_name)  
     except Exception:
         pass
+    del solver, nicer_name
 
-del path
-del listdir
-del i
-del solver
-del nicer_name
+try:
+    from .cglpk import GLP
+    solver_dict["cglpk"] = GLP
+except:
+    None
 
+del path, listdir
+del i, possible_solvers
 
-def optimize(cobra_model, solver='glpk', error_reporting=True, **kwargs):
+def get_solver_name(mip=False, qp=False):
+    """returns a solver name"""
+    if len(solver_dict) == 0:
+        return None
+    # glpk only does lp, not qp. Gurobi and cplex are better at mip
+    mip_order = ["gurobi", "cplex", "glpk", "cglpk"]
+    lp_order = ["glpk", "cglpk", "gurobi", "cplex"]
+    qp_order = ["gurobi", "cplex"]
+    qp_incapable = ["cglpk", "glpk"]
+    
+    if mip is False and qp is False:
+        for solver_name in lp_order:
+            if solver_name in solver_dict:
+                return solver_name
+    elif qp:  # mip does not yet matter for this determination
+        for solver_name in qp_order:
+            if solver_name in solver_dict:
+                return solver_name
+        for solver_name in solver_dict:
+            if solver_name not in qp_incapable:
+                print "could not verify if the solver supports qp"
+                return solver_name
+        return None  # don't want to return glpk
+    else:
+        for solver_name in mip_order:
+            if solver_name in solver_dict:
+                return solver_name
+    # return any solver at this point
+    return solver_dict.keys()[0]
+
+def optimize(cobra_model, solver=None, error_reporting=True, **kwargs):
     """Wrapper to optimization solvers
 
+    solver : str
+        Name of the LP solver from solver_dict to use. If None is given, the
+        default one will be used
 
     """
     #If the default solver is not installed then use one of the others
-    try:
-        solver_function = solver_dict[solver]
-    except:
-        try:
-            solver, solver_function = solver_dict.items()[0]
-        except:
-            raise Exception("It appears that you do not have one of the supported solvers "+\
-                            "(glpk, gurobi, or cplex) installed")
+    if solver is None:
+        solver = get_solver_name()
+        if solver is None:
+            raise Exception("It appears that you do not have a supported solver")
 
+    solver_function = solver_dict[solver]
     the_solution = solver_function.solve(cobra_model, **kwargs)
 
 
@@ -85,5 +118,6 @@ def optimize(cobra_model, solver='glpk', error_reporting=True, **kwargs):
     #   return(the_solution)
     #else:
     return(the_solution['the_problem'])
+
 
 del __name

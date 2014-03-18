@@ -1,14 +1,13 @@
 ##cobra.solvers.glpk_solver
-#This script provides wrappers for libglpk-java 1.0.22 and pyglpk 0.3
+#This script provides wrappers for pyglpk 0.3
 from warnings import warn
 from copy import deepcopy
 from itertools import izip
 ###solver specific parameters
 from .parameters import parameter_mappings, parameter_defaults, \
      default_objective_sense
-
 from ..core.Solution import Solution
-from ..flux_analysis.objective import update_objective
+
 solver_name = 'glpk'
 
 
@@ -231,6 +230,7 @@ def solve(cobra_model, **kwargs):
     error_reporting = the_parameters['error_reporting']
     if 'new_objective' in the_parameters and \
            the_parameters['new_objective'] not in ['update problem', None]:
+       from ..flux_analysis.objective import update_objective
        update_objective(cobra_model, the_parameters['new_objective'])
     if 'the_problem' in the_parameters:
         the_problem = the_parameters['the_problem']

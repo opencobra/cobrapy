@@ -4,7 +4,7 @@ from __future__ import with_statement
 from math import floor,ceil
 from copy import deepcopy
 from ..core.Metabolite import Metabolite
-from ..solvers import solver_dict
+from ..solvers import solver_dict, get_solver_name
 try:
     from ..external.ppmap import ppmap
     __parallel_mode_available = True
@@ -44,13 +44,13 @@ def flux_variability_analysis_wrapper(keywords):
         return results_dict
 
 def flux_variability_analysis_fast(cobra_model, reaction_list=None,
-                                   fraction_of_optimum=0.999999999999, solver="glpk",
+                                   fraction_of_optimum=0.999999999999, solver=None,
                                    objective_sense="maximize", **solver_args):
     if reaction_list is None:
         reaction_list = cobra_model.reactions
     else:
         reaction_list = [cobra_model.reactions.get_by_id(i) if isinstance(i, basestring) else i for i in reaction_list]
-    solver = solver_dict[solver]
+    solver = solver_dict[get_solver_name() if solver is None else solver]
     lp = solver.create_problem(cobra_model)
     solver.solve_problem(lp, objective_sense=objective_sense)
     solution = solver.format_solution(lp, cobra_model)
@@ -77,7 +77,7 @@ def flux_variability_analysis_fast(cobra_model, reaction_list=None,
 
 def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
                               objective_sense='maximize', the_reactions=None,
-                              allow_loops=True, solver='glpk',
+                              allow_loops=True, solver=None,
                               the_problem='return', tolerance_optimality=1e-6,
                               tolerance_feasibility=1e-6, tolerance_barrier=1e-8,
                               lp_method=1, lp_parallel=0, new_objective=None,
@@ -115,6 +115,8 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
     of just a single value.  This will be done in cobra.flux_analysis.solvers.
     
     """
+    if solver is None:
+        solver = get_solver_name()
     #Need to copy the model because we're updating reactions.  However,
     #we can always just remove them.
     if isinstance(the_problem, float):
@@ -240,7 +242,7 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
 
 
 def find_blocked_reactions(cobra_model, the_reactions=None, allow_loops=True,
-                            solver='glpk', the_problem='return',
+                            solver=None, the_problem='return',
                            tolerance_optimality=1e-9,
                            open_exchanges=False, **kwargs):
     """Finds reactions that cannot carry a flux with the current
@@ -248,6 +250,8 @@ def find_blocked_reactions(cobra_model, the_reactions=None, allow_loops=True,
     analysis.
     
     """
+    if solver is None:
+        solver = get_solver_name()
     print 'This needs to be updated to deal with external boundaries'
     cobra_model = cobra_model.copy()
     blocked_reactions = []
@@ -274,22 +278,4 @@ def find_blocked_reactions(cobra_model, the_reactions=None, allow_loops=True,
                           if max(map(abs,v.values())) < tolerance_optimality]
     return(blocked_reactions)
 
-
-def run_fva(solver='cplex'):
-    """
-    For debugging purposes only
-    
-    """
-    from test import salmonella_pickle
-    try:
-        from cPickle import load
-    except:
-        from pickle import load
-    with open(salmonella_pickle) as in_file:
-        cobra_model = load(in_file)
-    fva_out =  flux_variability_analysis(cobra_model,
-                                         the_reactions=cobra_model.reactions,#[100:140],
-                                         solver=solver,number_of_processes=1)
-
-                             
 

@@ -9,7 +9,7 @@ if __name__ == "__main__":
     from cobra.test import create_test_model
     from cobra import Model, Reaction, Metabolite
     from cobra.manipulation import initialize_growth_medium
-    from cobra.solvers import solver_dict
+    from cobra.solvers import solver_dict, get_solver_name
     from cobra.manipulation import modify
     from cobra.flux_analysis.parsimonious import optimize_minimal_flux
     from cobra.flux_analysis.single_deletion import single_deletion
@@ -20,7 +20,7 @@ else:
     from . import create_test_model
     from .. import Model, Reaction, Metabolite
     from ..manipulation import initialize_growth_medium
-    from ..solvers import solver_dict
+    from ..solvers import solver_dict, get_solver_name
     from ..manipulation import modify
     from ..flux_analysis.parsimonious import optimize_minimal_flux
     from ..flux_analysis.single_deletion import single_deletion
@@ -68,7 +68,7 @@ class TestCobraFluxAnalysis(TestCase):
                        'moma':{ tpiA.id:1.62, metN.id:2.4, atpA.id:1.40, eno.id:0.33}}
 
         #MOMA requires cplex or gurobi
-        if 'cplex' not in solver_dict and 'gurobi' not in solver_dict:
+        if get_solver_name(qp=True) is None:
             growth_dict.pop('moma')
         for method, the_growth_rates in growth_dict.items():
             element_list = the_growth_rates.keys()
