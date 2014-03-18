@@ -5,10 +5,10 @@ try:
     from cobra.external.ppmap import ppmap
 except ImportError:
     ppmap = None
-try:
-    from mayavi import mlab
-except ImportError:
-    mlab = None
+#try:
+#    from mayavi import mlab
+#except ImportError:
+mlab = None
 try:
     from matplotlib import pyplot
     from mpl_toolkits.mplot3d import axes3d
