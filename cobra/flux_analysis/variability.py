@@ -1,51 +1,29 @@
-from __future__ import with_statement
-#cobra.flux_analysis.variablity.py
-#runs flux variablity analysis on a Model object.
-from math import floor,ceil
-from copy import deepcopy
 from ..core.Metabolite import Metabolite
 from ..solvers import solver_dict, get_solver_name
-try:
-    from ..external.ppmap import ppmap
-    __parallel_mode_available = True
-except:
-    __parallel_mode_available = False
 
-#TODO: Add in a ppmap section for running in parallel
-def flux_variability_analysis_wrapper(keywords):
-    """Provides an interface to call flux_variability_analysis from ppmap
-    
+def flux_variability_analysis(cobra_model, reaction_list=None,
+                              fraction_of_optimum=1.0, solver=None,
+                              objective_sense="maximize", **solver_args):
+    """Runs flux variability analysis to find max/min flux values
+
+    cobra_model : :class:`~cobra.core.Model`:
+
+    reaction_list : list of :class:`~cobra.core.Reaction`: or their id's
+        The id's for which FVA should be run. If this is None, the bounds
+        will be comptued for all reactions in the model.
+
+    fraction_of_optimum : fraction of optimum which must be maintained.
+        The original objective reaction is constrained to be greater than
+        maximal_value * fraction_of_optimum
+
+    solver : string of solver name
+        If None is given, the default solver will be used.
+
     """
-    try:
-        from cPickle import dump
-    except:
-        from pickle import dump
-    import sys
-    #Need to do a top level import because of how the parallel processes are called
-    sys.path.insert(0, "../..")
-    from cobra.flux_analysis.variability import flux_variability_analysis
-    sys.path.pop(0)
-    results_dict = {}
-    new_objective = keywords.pop('new_objective')
-    output_directory = None
-    if 'output_directory' in keywords:
-        output_directory = keywords.pop('output_directory')
-    if not hasattr(new_objective, '__iter__'):
-        new_objective = [new_objective]
-    for the_objective in new_objective:
-        the_result = results_dict[the_objective] = flux_variability_analysis(**keywords)
-        if output_directory:
-            with open('%s%s.pickle'%(output_directory,
-                                     the_objective), 'w') as out_file:
-                dump(the_result, out_file)
-    if len(new_objective) == 1:
-        return the_result
-    else:
-        return results_dict
-
-def flux_variability_analysis_fast(cobra_model, reaction_list=None,
-                                   fraction_of_optimum=0.999999999999, solver=None,
-                                   objective_sense="maximize", **solver_args):
+    if reaction_list is None and "the_reactions" in solver_args:
+        reaction_list = solver_args.pop("the_reactions")
+        from warnings import warn
+        warn("the_reactions is deprecated. Please use reaction_list=")
     if reaction_list is None:
         reaction_list = cobra_model.reactions
     else:
@@ -75,7 +53,7 @@ def flux_variability_analysis_fast(cobra_model, reaction_list=None,
         solver.change_variable_objective(lp, i, 0.)
     return fva_results
 
-def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
+def flux_variability_analysis_legacy(cobra_model, fraction_of_optimum=1.,
                               objective_sense='maximize', the_reactions=None,
                               allow_loops=True, solver=None,
                               the_problem='return', tolerance_optimality=1e-6,
@@ -115,6 +93,7 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
     of just a single value.  This will be done in cobra.flux_analysis.solvers.
     
     """
+    from math import floor,ceil
     if solver is None:
         solver = get_solver_name()
     #Need to copy the model because we're updating reactions.  However,
@@ -144,6 +123,7 @@ def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
         the_reactions = map(cobra_model.reactions.get_by_id, the_reactions)
     #If parallel mode is called for then give it a try
     if number_of_processes > 1 and __parallel_mode_available:
+        from copy import deepcopy
         the_problem = wt_solution #Solver objects are not thread safe
         the_reactions = [x.id for x in the_reactions]
         parameter_dict = dict([(x, eval(x))
