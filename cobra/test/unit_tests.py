@@ -99,6 +99,7 @@ class TestDictList(TestCase):
 class CobraTestCase(TestCase):
     def setUp(self):
         self.model = create_test_model(test_pickle)
+        self.model_class = Model
 
 
 class TestReactions(CobraTestCase):
