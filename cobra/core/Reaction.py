@@ -80,7 +80,7 @@ class Reaction(Object):
     def gene_reaction_rule(self, new_rule):
         self._gene_reaction_rule = new_rule
         gene_names = set((re.compile(' {2,}').sub(' ', re.compile('\(| and| or|\+|\)').sub('', self._gene_reaction_rule))).split(' ' ))
-        if '' in self._genes:
+        if '' in gene_names:
                 gene_names.remove('')
         old_genes = self._genes
         if self._model is None:
