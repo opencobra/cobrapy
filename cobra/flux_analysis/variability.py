@@ -4,11 +4,13 @@ from __future__ import with_statement
 from math import floor,ceil
 from copy import deepcopy
 from ..core.Metabolite import Metabolite
+from ..solvers import solver_dict
 try:
     from ..external.ppmap import ppmap
     __parallel_mode_available = True
 except:
     __parallel_mode_available = False
+
 #TODO: Add in a ppmap section for running in parallel
 def flux_variability_analysis_wrapper(keywords):
     """Provides an interface to call flux_variability_analysis from ppmap
@@ -40,6 +42,38 @@ def flux_variability_analysis_wrapper(keywords):
         return the_result
     else:
         return results_dict
+
+def flux_variability_analysis_fast(cobra_model, reaction_list=None,
+                                   fraction_of_optimum=0.999999999999, solver="glpk",
+                                   objective_sense="maximize", **solver_args):
+    if reaction_list is None:
+        reaction_list = cobra_model.reactions
+    else:
+        reaction_list = [cobra_model.reactions.get_by_id(i) if isinstance(i, basestring) else i for i in reaction_list]
+    solver = solver_dict[solver]
+    lp = solver.create_problem(cobra_model)
+    solver.solve_problem(lp, objective_sense=objective_sense)
+    solution = solver.format_solution(lp, cobra_model)
+    # set all objective coefficients to 0
+    for i, r in enumerate(cobra_model.reactions):
+        if r.objective_coefficient != 0:
+            f = solution.x_dict[r.id]
+            new_bounds = (f * fraction_of_optimum, f)
+            solver.change_variable_bounds(lp, i, min(new_bounds), max(new_bounds))
+            solver.change_variable_objective(lp, i, 0.)
+    # perform fva
+    fva_results = {}
+    for r in reaction_list:
+        i = cobra_model.reactions.index(r)
+        fva_results[r.id] = {}
+        solver.change_variable_objective(lp, i, 1.)
+        solver.solve_problem(lp, objective_sense="maximize", **solver_args)
+        fva_results[r.id]["maximum"] = solver.get_objective_value(lp)
+        solver.solve_problem(lp, objective_sense="minimize", **solver_args)
+        fva_results[r.id]["minimum"] = solver.get_objective_value(lp)
+        # revert the problem to how it was before
+        solver.change_variable_objective(lp, i, 0.)
+    return fva_results
 
 def flux_variability_analysis(cobra_model, fraction_of_optimum=1.,
                               objective_sense='maximize', the_reactions=None,

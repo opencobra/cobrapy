@@ -73,7 +73,29 @@ def undelete_model_genes(cobra_model):
         if hasattr(cobra_model, the_attribute):
             setattr(cobra_model, the_attribute, None)
 
-        
+
+def find_gene_knockout_reactions(cobra_model, gene_list):
+    """identify reactions which will be disabled when the genes are knocked out"""
+
+    potential_reactions = set()
+    for x in gene_list:
+        potential_reactions.update(x._reaction)
+
+    spontaneous_re = re.compile('(^|(?<=( |\()))s0001(?=( |\)|$))')
+    knocked_out_reactions = []
+    for the_reaction in potential_reactions:
+        the_gene_reaction_relation = deepcopy(the_reaction.gene_reaction_rule)
+        for the_gene in the_reaction._genes:
+            the_gene_re = re.compile('(^|(?<=( |\()))%s(?=( |\)|$))'%re.escape(the_gene.id))
+            if the_gene in gene_list:
+                the_gene_reaction_relation = the_gene_re.sub('False', the_gene_reaction_relation)
+            else:
+                the_gene_reaction_relation = the_gene_re.sub('True', the_gene_reaction_relation)
+        the_gene_reaction_relation = spontaneous_re.sub('True', the_gene_reaction_relation)
+        if not eval(the_gene_reaction_relation):
+            knocked_out_reactions.append(the_reaction)
+    return knocked_out_reactions
+
 
 def delete_model_genes(cobra_model, gene_list,
                        cumulative_deletions=False, disable_orphans=False):
@@ -113,28 +135,17 @@ def delete_model_genes(cobra_model, gene_list,
         gene_list = [tmp_gene_dict[x] for x in gene_list]
 
     #Make the genes non-functional
-    [setattr(x, 'functional', False)
-     for x in gene_list]
-    the_reactions = set()
-    [the_reactions.update(x._reaction)
-     for x in gene_list]
-    for the_reaction in the_reactions:
+    for x in gene_list:
+        x.functional = False
+
+    for the_reaction in find_gene_knockout_reactions(cobra_model, gene_list):
         old_lower_bound = the_reaction.lower_bound
         old_upper_bound = the_reaction.upper_bound
-        the_gene_reaction_relation = deepcopy(the_reaction.gene_reaction_rule)
-        for the_gene in the_reaction._genes:
-            the_gene_re = re.compile('(^|(?<=( |\()))%s(?=( |\)|$))'%re.escape(the_gene.id))
-            if the_gene in gene_list:
-                the_gene_reaction_relation = the_gene_re.sub('False', the_gene_reaction_relation)
-            else:
-                the_gene_reaction_relation = the_gene_re.sub('True', the_gene_reaction_relation)
-        the_gene_reaction_relation = spontaneous_re.sub('True', the_gene_reaction_relation)
-        if not eval(the_gene_reaction_relation):
-            cobra_model._trimmed_reactions[the_reaction] = (old_lower_bound,
-                                                            old_upper_bound)
-            the_reaction.lower_bound = 0.
-            the_reaction.upper_bound = 0.
-            cobra_model._trimmed = True
+        cobra_model._trimmed_reactions[the_reaction] = (old_lower_bound,
+                                                        old_upper_bound)
+        the_reaction.lower_bound = 0.
+        the_reaction.upper_bound = 0.
+        cobra_model._trimmed = True
 
     cobra_model._trimmed_genes =  list(set(cobra_model._trimmed_genes + gene_list))
 
