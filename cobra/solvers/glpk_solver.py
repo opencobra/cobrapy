@@ -41,7 +41,7 @@ def format_solution(lp, cobra_model, **kwargs):
         # return the duals as well as the primals for LPs
         if lp.kind == float:
             sol.y = [float(c.dual) for c in lp.rows]
-            y_dict = {c.name: c.dual for c in lp.rows}
+            sol.y_dict = {c.name: c.dual for c in lp.rows}
         return sol
 
     return Solution(None, status=status)
