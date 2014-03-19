@@ -244,17 +244,16 @@ class DictList(list):
         super(DictList, self).__delitem__(*args, **kwargs)
         self._generate_index()
 
-    #def __getattr__(self, attr):
-    #    # makes items attributes as well
-    #    # this runs after __getattribute__ has already run
-    #    try:
-    #        return self.get_by_id(attr)
-    #    except KeyError:
-    #        raise AttributeError("DictList has no attribute or key " + (attr))
+    def __getattr__(self, attr):
+        try:
+            return self[self.__dict__["_dict"][attr]]
+        except KeyError:
+            raise AttributeError("DictList has no attribute or entry %s" % \
+                (attr))
 
-    #def __dir__(self):
-    #    # override this to allow tab complete of items by their id
-    #    attributes = dir(self.__class__)
-    #    attributes.extend(self.__dict__.keys())
-    #    attributes.extend(self._dict.keys())
-    #    return attributes
+    def __dir__(self):
+        # override this to allow tab complete of items by their id
+        attributes = dir(self.__class__)
+        attributes.extend(self.__dict__.keys())
+        attributes.extend(self._dict.keys())
+        return attributes
