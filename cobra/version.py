@@ -53,8 +53,8 @@ def call_git_describe(abbrev=7):
         with open(devnull, "w") as fnull:
             arguments = [git_command, "describe", "--tags",
                          "--abbrev=%d" % abbrev]
-            return str(check_output(arguments, cwd=current_directory,
-                                stderr=fnull)).strip()
+            return check_output(arguments, cwd=current_directory,
+                                stderr=fnull).decode("ascii").strip()
     except:
         return None
 
