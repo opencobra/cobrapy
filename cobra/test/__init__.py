@@ -25,6 +25,7 @@ salmonella_reaction_p_values_pickle = __join(data_directory, "salmonella_reactio
 ecoli_sbml = __join(data_directory, "iJO1366.xml")
 ecoli_pickle = __join(data_directory, "iJO1366.pickle")
 ecoli_mat = __join(data_directory, "iJO1366.mat")
+ecoli_core_mat = __join(data_directory, "ecoli_core.mat")
 yersinia_sbml = __join(data_directory, 'Yersinia_pestis_CO92_iPC815.xml')
 yersinia_pickle = __join(data_directory, 'Yersinia_pestis_CO92_iPC815.pickle')
 
