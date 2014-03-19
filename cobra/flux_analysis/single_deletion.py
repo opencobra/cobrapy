@@ -1,24 +1,22 @@
-from __future__ import with_statement
-#cobra.flux_analysis.single_deletion.py
-#run single gene or reaction deletions on the model
-nan = float('nan')
 from time import time
 from warnings import warn
 from copy import deepcopy
+
+from ..external.six import string_types, iteritems
+
 from ..manipulation import delete_model_genes, undelete_model_genes
 from ..manipulation.delete import find_gene_knockout_reactions
 from ..solvers import solver_dict, get_solver_name
-from os import name as __name
-if __name == 'java':
-    warn("moma is not supported on %s"%__name)
+
+
+nan = float('nan')
+
+
+try:
+    from .moma import moma
+except Exception as e:
     def moma(**kwargs):
-        warn("moma is not supported on %s"%__name)
-else:
-    try:
-        from .moma import moma
-    except Exception, e:
-        def moma(**kwargs):
-            warn("moma is currently not supported on %s: %s"%(__name, e))
+        warn("moma is currently not functional")
 
 
 def single_deletion(cobra_model, element_list=None,
@@ -86,7 +84,7 @@ def single_reaction_deletion_fba(cobra_model, reaction_list=None, solver=None):
         reaction_list = cobra_model.reactions
     else:
         reaction_list = [cobra_model.reactions.get_by_id(i) \
-                         if isinstance(i, basestring) else i \
+                         if isinstance(i, string_types) else i \
                          for i in reaction_list]
     for reaction in reaction_list:
         old_bounds = (reaction.lower_bound, reaction.upper_bound)
@@ -109,7 +107,7 @@ def single_gene_deletion_fba(cobra_model, gene_list=None, solver=None):
         gene_list = cobra_model.genes
     else:
         gene_list = [cobra_model.genes.get_by_id(i) \
-                     if isinstance(i, basestring) else i for i in gene_list]
+                     if isinstance(i, string_types) else i for i in gene_list]
     for gene in gene_list:
         old_bounds = {}
         for reaction in find_gene_knockout_reactions(cobra_model, [gene]):
@@ -121,7 +119,7 @@ def single_gene_deletion_fba(cobra_model, gene_list=None, solver=None):
         status_dict[gene.id] = status
         growth_rate_dict[gene.id] = solver.get_objective_value(lp)# if status == "optimal" else 0.
         # reset the problem
-        for index, bounds in old_bounds.iteritems():
+        for index, bounds in iteritems(old_bounds):
             solver.change_variable_bounds(lp, index, bounds[0], bounds[1])
     return(growth_rate_dict, status_dict)
 

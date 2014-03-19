@@ -9,6 +9,6 @@ if __name == 'java':
 else:
     try:
         from .double_deletion import double_deletion
-    except Exception, e:
+    except Exception as e:
         from warnings import warn
         warn("double_deletion is not accessible: %s"%e)

@@ -1,3 +1,6 @@
+from warnings import warn
+
+from ..external.six import iteritems, string_types
 from ..core.Metabolite import Metabolite
 from ..solvers import solver_dict, get_solver_name
 
@@ -27,7 +30,7 @@ def flux_variability_analysis(cobra_model, reaction_list=None,
     if reaction_list is None:
         reaction_list = cobra_model.reactions
     else:
-        reaction_list = [cobra_model.reactions.get_by_id(i) if isinstance(i, basestring) else i for i in reaction_list]
+        reaction_list = [cobra_model.reactions.get_by_id(i) if isinstance(i, string_types) else i for i in reaction_list]
     solver = solver_dict[get_solver_name() if solver is None else solver]
     lp = solver.create_problem(cobra_model)
     solver.solve_problem(lp, objective_sense=objective_sense)
@@ -200,7 +203,7 @@ def flux_variability_analysis_legacy(cobra_model, fraction_of_optimum=1.,
         for the_reaction in the_reactions:
             tmp_dict = {}
             the_problem = basic_problem
-            for the_sense, the_description in the_sense_dict.iteritems():
+            for the_sense, the_description in iteritems(the_sense_dict):
                 the_problem = cobra_model.optimize(solver=solver,
                                                    new_objective=the_reaction,
                                                    objective_sense=the_sense,
@@ -215,8 +218,8 @@ def flux_variability_analysis_legacy(cobra_model, fraction_of_optimum=1.,
                 tmp_dict[the_description] = cobra_model.solution.f
             variability_dict[the_reaction.id] = tmp_dict
         if not copy_model:
-            [setattr(k, 'objective_coefficient', v)
-             for k, v in original_objectives.iteritems()]
+            for k, v in iteritems(original_objectives):
+                k.objective_coefficient = v
             objective_metabolite.remove_from_model()
     return variability_dict
 
@@ -232,13 +235,13 @@ def find_blocked_reactions(cobra_model, the_reactions=None, allow_loops=True,
     """
     if solver is None:
         solver = get_solver_name()
-    print 'This needs to be updated to deal with external boundaries'
+    warn('This needs to be updated to deal with external boundaries')
     cobra_model = cobra_model.copy()
     blocked_reactions = []
     if not the_reactions:
         the_reactions = cobra_model.reactions
     if open_exchanges:
-        print 'DEPRECATED: Move to using the Reaction.boundary attribute'
+        warn('DEPRECATED: Move to using the Reaction.boundary attribute')
         exchange_reactions = [x for x in cobra_model.reactions
                               if x.startswith('EX')]
         for the_reaction in exchange_reactions:

@@ -1,4 +1,4 @@
-from __future__ import with_statement
+from __future__ import with_statement, print_function
 #cobra.flux_analysis.double_deletion.py
 #runs flux variablity analysis on a Model object.
 from copy import deepcopy
@@ -63,7 +63,7 @@ def __double_deletion_parallel(cobra_model, number_of_processes=4,
 
     """
     if not __parallel_mode_available:
-        print  'Parallel mode not available is Parallel Python installed?'
+        warn('Parallel mode not available is Parallel Python installed?')
         return
     if the_problem:
         #The solver model objects are not thread safe so change the_problem
@@ -277,8 +277,8 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
                                     the_status = 'failed'
                             if the_status not in ['opt', 'optimal']  and \
                                    error_reporting:
-                                print '%s / %s: %s status: %s'%(gene_1, gene_2, solver,
-                                                                the_status)   
+                                print('%s / %s: %s status: %s'%(gene_1, gene_2, solver,
+                                                                the_status))
                             #Reset the model to orginial form.
                             undelete_model_genes(cobra_model)
                         else:
@@ -320,8 +320,8 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
                                     the_status = 'failed'
                             if the_status not in ['opt', 'optimal']  and \
                                    error_reporting:
-                                print '%s / %s: %s status: %s'%(repr(gene_1), repr(gene_2), solver,
-                                                            cobra_model.solution.status)
+                                print('%s / %s: %s status: %s'%(repr(gene_1), repr(gene_2), solver,
+                                                            cobra_model.solution.status))
                             #Reset the model to wt form
                             undelete_model_genes(cobra_model)
                         else:
@@ -373,7 +373,7 @@ def __double_gene_deletion_parallel(cobra_model, number_of_processes=4,
 
     """
     if not __parallel_mode_available:
-        print  'Parallel mode not available is Parallel Python installed'
+        warn('Parallel mode not available is Parallel Python installed')
         return
     from numpy import vstack
     if the_problem:

@@ -14,6 +14,8 @@ if __name__ == "__main__":
     from cobra.flux_analysis.parsimonious import optimize_minimal_flux
     from cobra.flux_analysis.single_deletion import single_deletion
     from cobra.flux_analysis.variability import flux_variability_analysis
+    from cobra.flux_analysis.variability import flux_variability_analysis_fast
+    from cobra.external.six import iteritems
     sys.path.pop(0)
 else:
     from . import create_test_model
@@ -23,8 +25,14 @@ else:
     from ..manipulation import modify
     from ..flux_analysis.parsimonious import optimize_minimal_flux
     from ..flux_analysis.single_deletion import single_deletion
-    from ..flux_analysis.double_deletion import double_deletion
+    from ..external.six import iteritems
+    try:
+        import scipy
+        from ..flux_analysis.double_deletion import double_deletion
+    except:
+        scipy = None
     from ..flux_analysis.variability import flux_variability_analysis
+
 
 
 class TestCobraFluxAnalysis(TestCase):
@@ -80,7 +88,7 @@ class TestCobraFluxAnalysis(TestCase):
                 self.assertAlmostEqual(rates[the_gene], the_growth_rates[the_gene],
                                        places=2)
 
-    @skipIf(name == "java", "cobra.test.flux_analysis.test_double_deletion doesn't yet work with java")
+    @skipIf(scipy is None, "cobra.test.flux_analysis.test_double_deletion requires scipy")
     def test_double_deletion(self):
         cobra_model = self.model
         #turn into a double deletion unit test
@@ -88,7 +96,7 @@ class TestCobraFluxAnalysis(TestCase):
         initialize_growth_medium(cobra_model, 'LB')
         #Expected growth rates for the salmonella model with deletions in LB medium
         the_loci =  ['STM4081', 'STM0247', 'STM3867', 'STM2952']
-        the_genes = tpiA, metN, atpA, eno = map(cobra_model.genes.get_by_id, the_loci)
+        the_genes = tpiA, metN, atpA, eno = list(map(cobra_model.genes.get_by_id, the_loci))
         growth_dict = {}
         growth_list = [[2.41, 2.389, 1.775, 1.81],
                        [2.389, 2.437, 1.86, 1.79],
@@ -158,8 +166,8 @@ class TestCobraFluxAnalysis(TestCase):
             initialize_growth_medium(cobra_model, 'LB')
             fva_out = flux_variability_analysis(cobra_model, solver=solver,
                     reaction_list=cobra_model.reactions[100:140])
-            for the_reaction, the_range in fva_out.iteritems():
-                for k, v in the_range.iteritems():
+            for the_reaction, the_range in iteritems(fva_out):
+                for k, v in iteritems(the_range):
                     self.assertAlmostEqual(fva_results[the_reaction][k], v, places=3)
 
 # make a test suite to run all of the tests

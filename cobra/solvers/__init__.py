@@ -1,5 +1,6 @@
 # attempt to import all working solvers in this directory
 from __future__ import absolute_import
+from warnings import warn
 from os import name as __name
 
 solver_dict = {}
@@ -85,7 +86,7 @@ def get_solver_name(mip=False, qp=False):
                 return solver_name
         for solver_name in solver_dict:
             if solver_name not in qp_incapable:
-                print "could not verify if the solver supports qp"
+                warn("could not verify if %s supports qp" % solver_name)
                 return solver_name
         return None  # don't want to return glpk
     else:

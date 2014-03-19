@@ -1,6 +1,6 @@
 #Dresses a cobra.Model with arrays and vectors so that linear algebra operations
 #can be carried out on 
-from sys import maxint
+from sys import maxsize
 from copy import deepcopy
 from warnings import warn
 
@@ -8,6 +8,7 @@ from numpy import array, hstack, ndarray
 from scipy.sparse import lil_matrix, dok_matrix
 
 from .Model import Model
+from ..external.six import iteritems
 
 
 class ArrayBasedModel(Model):
@@ -163,7 +164,7 @@ class ArrayBasedModel(Model):
             try:
                 reaction_index = self.reactions.index(the_reaction.id)
             except KeyError:
-                print the_reaction.id + ' is not in the model'
+                warn(the_reaction.id + ' is not in the model')
                 continue
 
             #zero reaction stoichiometry column
@@ -346,11 +347,15 @@ class LinkedArray(ndarray):
 
     def __setitem__(self, index, value):
         ndarray.__setitem__(self, index, value)
-        setattr(self._list[index], self._attr, value)
+        if isinstance(index, slice):
+            for i, entry in enumerate(self._list[index]):
+                setattr(entry, self._attr, value)
+        else:
+            setattr(self._list[index], self._attr, value)
 
     def __setslice__(self, i, j, value):
-        ndarray.__setslice__(self, i, j, value)
-        if j == maxint:
+        ndarray.__setitem__(self, slice(i, j), value)
+        if j == maxsize:
             j = len(self)
         if hasattr(value, "__getitem__"):  # setting to a list
             for index in range(i, j):
@@ -363,7 +368,7 @@ class LinkedArray(ndarray):
         old_size = len(self)
         new_size = old_size + len(other)
         self.resize(new_size, refcheck=False)
-        ndarray.__setslice__(self, old_size, new_size, other)
+        ndarray.__setitem__(self, slice(old_size, new_size), other)
 
 
 class SMatrix_dok(dok_matrix):
@@ -422,7 +427,7 @@ class SMatrix_lil(lil_matrix):
     def update(self, value_dict):
         """update matrix without propagating to model"""
         if len(value_dict) < 100:  # TODO benchmark for heuristic
-            for index, value in value_dict.iteritems():
+            for index, value in iteritems(value_dict):
                 lil_matrix.__setitem__(self, index, value)
         else:
             matrix = lil_matrix.todok(self)

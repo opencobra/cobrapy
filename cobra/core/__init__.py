@@ -13,7 +13,6 @@ from .Species import Species
 if __name != 'java':
     try:
         from .ArrayBasedModel import ArrayBasedModel 
-    except Exception, e:
+    except Exception as e:
         from warnings import warn
         warn("ArrayBasedModel is not accessible: %s"%e)
-

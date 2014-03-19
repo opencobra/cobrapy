@@ -223,11 +223,13 @@ def add_new_test(TestCobraSolver, solver_name, solver):
     for tester in [attributes, creation, solve_feasible, solve_minimize,
                     set_objective_sense, solve_mip, solve_infeasible,
                     independent_creation, low_level_control]:
+        test_name = tester.__name__ if hasattr(tester, "__name__") \
+            else tester.func_name
         setattr(TestCobraSolver, "test_%s_%s" %
-                (solver_name, tester.func_name), tester)
+                (solver_name, test_name), tester)
 
 
-for solver_name, solver in solvers.solver_dict.iteritems():
+for solver_name, solver in solvers.solver_dict.items():
     add_new_test(TestCobraSolver, solver_name, solver)
 # make a test suite to run all of the tests
 loader = TestLoader()

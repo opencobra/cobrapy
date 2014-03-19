@@ -1,47 +1,26 @@
-#cobra.core.Model.py
-#TODO: Improve copy time.  Perhaps use references for metabolites in
-#reactions.
-#Here we're dealing with the fact that numpy isn't supported in jython
-#and we've made some numjy modules that use the cern.colt matrices to
-#mimic the used numpy behavior.
 from warnings import warn
-from copy import deepcopy
+from copy import deepcopy, copy
+from ..external.six import iteritems
 from ..solvers import optimize
 from .Object import Object
 from .Formula import Formula
 from .Solution import Solution
 from .DictList import DictList
-#*********************************************************************************
-#
-#TODO: Implement self.reactions[:]._boundary and use
 
-# Note, there are some issues with using a gene as opposed to a protein in the
-#nomenclature; this will be addressed after the first iteration of cleaning.
-#
+
+
 # Note, when a reaction is added to the Model it will no longer keep personal
 #instances of it's Metabolites, it will reference Model.metabolites to improve
 #performance.  When doing this, take care to monitor the metabolite coefficients.
 #Do the same for Model.reactions[:].genes and Model.genes
-#
-#*********************************************************************************
 
-#######################
-#BEGIN Class Model
-#
 class Model(Object):
-    """Model is a class for analyzing metabolic models with
-    the COBRA toolbox developed in the Palsson Lab at UCSD. Make
-    all of the objects (Reaction, Metabolite, ...) to make OOP easier.
-    
+    """Metabolic Model
+
+    Refers to Metabolite, Reaction, and Gene Objects.
     """
     def __setstate__(self, state):
-        """Make sure all cobra.Objects in the model point to the model
-        
-        TODO: Make sure that the genes and metabolites referenced by
-        the reactions.(genes|metabolites) point to the model's genes
-        and metabolites.
-        
-        """
+        """Make sure all cobra.Objects in the model point to the model"""
         self.__dict__.update(state)
         [[setattr(x, '_model', self)
           for x in self.__dict__[y]]
@@ -103,9 +82,6 @@ class Model(Object):
     def copy(self, print_time=False):
         """Provides a partial 'deepcopy' of the Model.  All of the Metabolite, Gene,
         and Reaction objects are created anew but in a faster fashion than deepcopy
-
-        print_time: Boolean used for debugging
-
         """
         the_copy = Object.guided_copy(self)
         the_copy.metabolites = None
@@ -117,26 +93,20 @@ class Model(Object):
         the_metabolites = DictList([x.guided_copy(the_copy)
                                     for x in self.metabolites])
         if print_time:
-            print 'Metabolite guided copy: %1.4f'%(time() - start_time)
-            start_time = time()
+            warn("deprecated")
         the_genes = DictList([x.guided_copy(the_copy)
                               for x in self.genes])
-        if print_time:
-            print 'Gene guided copy: %1.4f'%(time() - start_time)
-            start_time = time()
+
         the_reactions = DictList([x.guided_copy(the_copy, the_metabolites._object_dict,
                                                 the_genes._object_dict)
                                   for x in self.reactions])
 
-        if print_time:
-            print 'Reaction guided copy: %1.4f'%(time() - start_time)
         the_copy.reactions = the_reactions
         the_copy.genes = the_genes
         the_copy.metabolites = the_metabolites
         return the_copy
-        
 
-        
+
     def add_metabolites(self, metabolite_list):
         """Will add a list of metabolites to the the object, if they do not
         exist and then expand the stochiometric matrix
@@ -151,7 +121,6 @@ class Model(Object):
                            if x.id not in self.metabolites]
         [setattr(x, '_model', self) for x in metabolite_list]
         self.metabolites += metabolite_list
-
 
 
     def _update_reaction(self, reaction):
@@ -171,7 +140,7 @@ class Model(Object):
             reaction = [reaction]
         for the_reaction in reaction:
             if the_reaction.id not in self.reactions:
-                print the_reaction.id + ' is not in the model\n'
+                warn(the_reaction.id + ' is not in the model')
                 continue
             reaction_index = self.reactions.index(the_reaction.id)
             self.reactions[reaction_index] = the_reaction
@@ -221,8 +190,9 @@ class Model(Object):
             reaction._model = self  # the reaction now points to the model
             # keys() is necessary because the dict will be modified during
             # the loop
-            for metabolite in reaction._metabolites.keys():
+            for metabolite in list(reaction._metabolites.keys()):
                 # if the metabolite is not in the model, add it
+                # should we be adding a copy instead.
                 if not self.metabolites.has_id(metabolite.id):
                     self.metabolites.append(metabolite)
                     metabolite._model = self
@@ -236,7 +206,7 @@ class Model(Object):
                     reaction._metabolites[model_metabolite] = stoichiometry
                     model_metabolite._reaction.add(reaction)
 
-            for gene in reaction.genes:
+            for gene in list(reaction._genes):
                 # If the gene is not in the model, add it
                 if not self.genes.has_id(gene.id):
                     self.genes.append(gene)
@@ -371,9 +341,5 @@ class Model(Object):
                 the_reaction = self.reactions[self.reactions.index(the_reaction)]
                 the_reaction.remove_from_model()
             except:
-                print '%s not in %s'%(the_reaction, self)
-        
-#
-#END Class Model
-#####################
+                warn('%s not in %s'%(the_reaction, self))
 

@@ -1,5 +1,6 @@
 from copy import copy, deepcopy
 import re
+from ..external.six import string_types
 
 class DictList(list):
     """A combined dict and list that feels like a list, but has
@@ -20,7 +21,7 @@ class DictList(list):
 
 
     def has_id(self, id):
-        return self._dict.has_key(id)
+        return id in self._dict
     
     def _check(self, id):
         """make sure duplicate id's are not added.
@@ -28,19 +29,13 @@ class DictList(list):
 
         """
         if id in self._dict:
-            raise ValueError, "id %s is already present in list" % str(id)
+            raise ValueError("id %s is already present in list" % str(id))
 
     def _generate_index(self):
-        """rebuild the _dict index
+        """rebuild the _dict index"""
+        self._dict = {v.id: k for k, v in enumerate(self)}
+        self._object_dict = {v.id: v for v in self}
 
-        """
-        _dict = self._dict
-        object_dict = self._object_dict
-        _dict.clear()
-        object_dict.clear()
-        for k, v in enumerate(self):
-            _dict[v.id] = k
-            object_dict[v.id] = v
 
     def get_by_id(self, id):
         """return the element with a matching id
@@ -104,7 +99,6 @@ class DictList(list):
         the_index = self._dict[the_id]
         super(DictList, self).__setitem__(the_index, new_object)
         self._object_dict[the_id] = new_object
-        
 
     def append(self, object):
         the_id = object.id
@@ -126,22 +120,21 @@ class DictList(list):
         for i in iterable:
             append(i)
 
-    def __add__(self, other, should_deepcopy=True):
+    def __add__(self, other, should_deepcopy=False):
         """
         other: an DictList
 
-        should_deepcopy: Boolean.  Allow for shallow copying, however,
-        this can cause problems if one doesn't know that the
-        items are referenceable from different id
+        should_deepcopy: Boolean. 
 
         """
         if should_deepcopy:
-            sum = deepcopy(self) # should this be deepcopy or shallow?
+            from copy import deepcopy
+            total = deepcopy(self)
         else:
-            sum = self
-        sum.extend(other)
-        sum._generate_index()
-        return sum
+            total = DictList()
+            total.extend(self)
+        total.extend(other)
+        return total
 
     def __iadd__(self, other):
         self.extend(other)
@@ -152,7 +145,7 @@ class DictList(list):
         id: A string or a :class:`~cobra.core.Object`
         """
         # because values are unique, start and stop are not relevant
-        if isinstance(id, basestring):
+        if isinstance(id, string_types):
             try:
                 return self._dict[id]
             except KeyError:
@@ -177,7 +170,7 @@ class DictList(list):
         # allow to check with the object itself in addition to the id
         else:
             the_id = object
-        return self._dict.has_key(the_id)
+        return the_id in self._dict
 
     def __copy__(self):
         self._dict.clear()
@@ -187,27 +180,16 @@ class DictList(list):
         the_copy._generate_index()
         return the_copy
 
+
     def __deepcopy__(self, *args, **kwargs):
-        self._dict.clear()
-        self._object_dict.clear()
-        the_copy = deepcopy(super(DictList, self), *args, **kwargs)
-        self._generate_index()
-        the_copy._generate_index()
-        return the_copy
-    
-    # The following deepcopy function will be faster because it does not
-    # regenerate the index for the current object.
-    # TODO consider using
-    #def __deepcopy__(self, *args, **kwargs):
-    #    _dict = self._dict
-    #    _object_dict = self._object_dict
-    #    self._dict = {}
-    #    self._object_dict = {}
-    #    the_copy = deepcopy(super(DictList, self), *args, **kwargs)
-    #    self._dict = _dict
-    #    self._object_dict = _object_dict
-    #    the_copy._generate_index()
-    #    return the_copy
+        _dict = self._dict
+        _object_dict = self._object_dict
+        self._dict = {}
+        self._object_dict = {}
+        new = deepcopy(super(DictList, self), *args, **kwargs)
+        self._dict = _dict
+        self._object_dict = _object_dict
+        return new
 
     def insert(self, index, object):
         self._check(object.id)
@@ -262,20 +244,17 @@ class DictList(list):
         super(DictList, self).__delitem__(*args, **kwargs)
         self._generate_index()
 
-    def __getattr__(self, attr):
-        # makes items attributes as well
-        try:
-            return super(DictList, self).__getattribute__(attr)
-        except:
-            try:
-                func = super(DictList, self).__getattribute__("get_by_id")
-                return func(attr)
-            except:
-                raise AttributeError("DictList has no attribute or entry %s" % \
-                    (attr))
+    #def __getattr__(self, attr):
+    #    # makes items attributes as well
+    #    # this runs after __getattribute__ has already run
+    #    try:
+    #        return self.get_by_id(attr)
+    #    except KeyError:
+    #        raise AttributeError("DictList has no attribute or key " + (attr))
 
-    def __dir__(self):
-        # override this to allow tab complete of items by their id
-        attributes = self.__class__.__dict__.keys()
-        attributes.extend(self._dict.keys())
-        return attributes
+    #def __dir__(self):
+    #    # override this to allow tab complete of items by their id
+    #    attributes = dir(self.__class__)
+    #    attributes.extend(self.__dict__.keys())
+    #    attributes.extend(self._dict.keys())
+    #    return attributes

@@ -2,6 +2,7 @@
 #######################
 #BEGIN Class Formula
 #
+from __future__ import print_function
 import re
 from warnings import warn
 from copy import deepcopy
@@ -89,8 +90,8 @@ class Formula(Object):
                     elements.pop()
                 element_counts = map(float, element_number_re.findall(self.formula))
                 if element_counts > elements:
-                    print 'Have more element counts than elements in formula: ' +\
-                          self.formula
+                    print('Have more element counts than elements in formula: ' +\
+                          self.formula)
                     #return
                 while len(element_counts) != len(elements):
                     element_counts.append(1.0)
@@ -145,7 +146,7 @@ class Formula(Object):
             self.weight = 0.
             self.weight = sum([the_count*weight_dict[the_element]
                                for the_element, the_count in self.elements.items()])
-        except KeyError, e:
+        except KeyError as e:
             self.weight = None
             warn('An element (%s) in one of your chemical formulas is not in the periodic table cobra.core.Formula.weight_dict. \n'%e +\
                  'Thus we cannot calculate a formula weight for the metabolite.')
