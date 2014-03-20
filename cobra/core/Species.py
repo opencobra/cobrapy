@@ -2,6 +2,7 @@
 #######################
 #BEGIN Class Species
 #
+from warnings import warn
 from copy import deepcopy
 from .Formula import Formula
 from .Object import Object
@@ -87,6 +88,7 @@ class Species(Object):
         numbers of metabolites might be copied.  Such as when copying reactions.
 
         """
+        warn("deprecated")
         the_copy = Object.guided_copy(self)
         #Copy the more complex objects in a faster fashion
         the_copy.formula = deepcopy(self.formula)
@@ -98,7 +100,6 @@ class Species(Object):
         """Returns a list of Reactions that contain this Species
 
         """
-        from warnings import warn
         warn("deprecated, used species.reactions instead")
         return list(self._reaction)
     

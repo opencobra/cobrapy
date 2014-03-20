@@ -257,6 +257,7 @@ class Reaction(Object):
 
 
         """
+        warn("deprecated")
         the_copy = Object.guided_copy(self)
         #Replace the complex items in a faster fashion
         the_copy._model = the_model
