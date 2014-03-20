@@ -10,8 +10,7 @@ else:
     try:
         from .core import ArrayBasedModel
     except Exception as e:
-        from warnings import warn
-        warn("cobra.ArrayBasedModel class is unavailable: %s"%repr(e))
+        None
 
 del __name, get_version
 __doc__ = """
