@@ -11,6 +11,7 @@ try:
     from distutils.extension import Extension
     from distutils.command.build_ext import build_ext
     from os.path import isfile, abspath, dirname
+    from platform import system
 
     class FailBuild(build_ext):
         """allow building of the C extension to fail"""
@@ -28,6 +29,8 @@ try:
 
     sources = ["cobra/solvers/cglpk.pyx"]
     build_args = {}
+    if system() == "Darwin":
+        build_args["extra_compile_args"] = ["-Qunused-arguments"]
     build_args["libraries"] = ["glpk"]
     setup_kwargs["cmdclass"] = {"build_ext": FailBuild}
     if isfile("libglpk.a"):
