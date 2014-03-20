@@ -1,6 +1,6 @@
 from copy import copy, deepcopy
 import re
-from ..external.six import string_types
+from ..external.six import string_types, iteritems
 
 class DictList(list):
     """A combined dict and list that feels like a list, but has
@@ -16,9 +16,7 @@ class DictList(list):
     def __init__(self, *args, **kwargs):
         list.__init__(self, *args, **kwargs)
         self._dict = {}
-        self._object_dict = {}
         self._generate_index()
-
 
     def has_id(self, id):
         return id in self._dict
@@ -34,14 +32,11 @@ class DictList(list):
     def _generate_index(self):
         """rebuild the _dict index"""
         self._dict = {v.id: k for k, v in enumerate(self)}
-        self._object_dict = {v.id: v for v in self}
 
 
     def get_by_id(self, id):
-        """return the element with a matching id
-
-        """
-        return self._object_dict[id]
+        """return the element with a matching id"""
+        return self[self._dict[id]]
 
     def list_attr(self, attribute):
         """return a list of the given attribute for every object
@@ -86,9 +81,8 @@ class DictList(list):
     def __setitem__(self, i, y):
         the_id = y.id
         self._check(the_id)
-        super(DictList, self).__setitem__(i, y)
+        list.__setitem__(self, i, y)
         self._dict[the_id] = i
-        self._object_dict[the_id] = y
 
     def _replace_on_id(self, new_object):
         """Allows one to replace an object by one with
@@ -97,15 +91,13 @@ class DictList(list):
         """
         the_id = new_object.id
         the_index = self._dict[the_id]
-        super(DictList, self).__setitem__(the_index, new_object)
-        self._object_dict[the_id] = new_object
+        list.__setitem__(self, the_index, new_object)
 
     def append(self, object):
         the_id = object.id
         self._check(the_id)
         self._dict[the_id] = len(self)
-        super(DictList, self).append(object)
-        self._object_dict[the_id] = object
+        list.append(self, object)
 
     def union(self, iterable):
         """adds elements with id's not already in the model"""
@@ -174,27 +166,21 @@ class DictList(list):
 
     def __copy__(self):
         self._dict.clear()
-        self._object_dict.clear()
         the_copy = copy(super(DictList, self))
         self._generate_index()
         the_copy._generate_index()
         return the_copy
 
-
     def __deepcopy__(self, *args, **kwargs):
         _dict = self._dict
-        _object_dict = self._object_dict
         self._dict = {}
-        self._object_dict = {}
         new = deepcopy(super(DictList, self), *args, **kwargs)
         self._dict = _dict
-        self._object_dict = _object_dict
         return new
 
     def insert(self, index, object):
         self._check(object.id)
-        super(DictList, self).insert(index, object)
-        self._object_dict[object.id] = object
+        list.insert(self, index, object)
         # all subsequent entries now have been shifted up by 1
         _dict = self._dict
         for i in _dict:
@@ -204,16 +190,14 @@ class DictList(list):
         _dict[object.id] = index
 
     def pop(self, *args):
-        value = super(DictList, self).pop(*args)
+        value = list.pop(self, *args)
         index = self._dict.pop(value.id)
-        self._object_dict.pop(value.id)
         # If the pop occured from a location other than the end of the list,
         # we will need to subtract 1 from every entry afterwards
         if len(args) == 0 or args == [-1]: # removing from the end of the list
             return
         _dict = self._dict
-        for i in _dict:
-            j = _dict[i]
+        for i, j in iteritems(_dict):
             if j > index:
                 _dict[i] = j - 1
         return value
@@ -225,24 +209,31 @@ class DictList(list):
 
     # these functions are slower because they rebuild the _dict every time
     def reverse(self, *args, **kwargs):
-        super(DictList, self).reverse(*args, **kwargs)
+        list.reverse(self, *args, **kwargs)
         self._generate_index()
 
-    def sort(self, *args, **kwargs):
-        super(DictList, self).sort(*args, **kwargs)
+    def sort(self, key=None, **kwargs):
+        if key is None:
+            key = lambda i: i.id
+        list.sort(self, key=key, **kwargs)
         self._generate_index()
 
     def __setslice__(self, *args, **kwargs):
-        super(DictList, self).__setslice__(*args, **kwargs)
+        list.__setslice__(self, *args, **kwargs)
         self._generate_index()
 
     def __delslice__(self, *args, **kwargs):
-        super(DictList, self).__delslice__(*args, **kwargs)
+        list.__delslice__(self, *args, **kwargs)
         self._generate_index()
 
-    def __delitem__(self, *args, **kwargs):
-        super(DictList, self).__delitem__(*args, **kwargs)
-        self._generate_index()
+    def __delitem__(self, index):
+        item_id = self[index].id
+        list.__delitem__(self, index)
+        _dict = self._dict
+        _dict.pop(item_id)
+        for i, j in iteritems(_dict):
+            if j > index:
+                _dict[i] = j - 1
 
     def __getattr__(self, attr):
         try:
