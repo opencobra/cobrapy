@@ -2,7 +2,42 @@ import ez_setup
 ez_setup.use_setuptools()
 from setuptools import setup, find_packages
 from cobra.version import get_version
+
 __version = get_version()
+setup_kwargs = {}
+
+try:
+    from Cython.Build import cythonize
+    from distutils.extension import Extension
+    from distutils.command.build_ext import build_ext
+    from os.path import isfile, abspath, dirname
+
+    class FailBuild(build_ext):
+        """allow building of the C extension to fail"""
+        def run(self):
+            try:
+                build_ext.run(self)
+            except:
+                None
+
+        def build_extension(self, ext):
+            try:
+                build_ext.build_extension(self, ext)
+            except:
+                None
+
+    sources = ["cobra/solvers/cglpk.pyx"]
+    build_args = {}
+    build_args["libraries"] = ["glpk"]
+    setup_kwargs["cmdclass"] = {"build_ext": FailBuild}
+    if isfile("libglpk.a"):
+        build_args["library_dirs"] = [dirname(abspath("libglpk.a"))]
+    if isfile("glpk.h"):
+        build_args["include_dirs"] = [dirname(abspath("glpk.h"))]
+    ext_modules = cythonize([Extension("cobra.solvers.cglpk", sources,
+                                       **build_args)])
+except:
+    ext_modules = None
 
 setup(
     name = "cobra",
@@ -10,7 +45,7 @@ setup(
     packages = find_packages(exclude=['cobra.oven', 'cobra.oven*']),
     #scripts = [''],
     #put in numpy, scipy, libsbml, and pyglpk
-    setup_requires = [],
+    setup_requires = ['cython'],
     #install_requires = ['numpy>=1.6', 'scipy>=0.10'],
     #leave blank because it tries to build scipy/numpy on os x when they are
     #installed by the superpack.  And these are not really essential for core functions.
@@ -20,6 +55,7 @@ setup(
         'matlab': ["mlabwrap>=1.1"],
         'R': ["rpy2>=2.2.2"]
         },
+    ext_modules = ext_modules,
 
     package_data = {
          '': ['test/data/*',
@@ -53,7 +89,7 @@ setup(
                    'Topic :: Scientific/Engineering',
                    'Topic :: Scientific/Engineering :: Bio-Informatics'
                    ],
-    platforms = "Python >= 2.6 on GNU/Linux, Mac OS X >= 10.7, Microsoft Windows >= 7. \n Jython >= 2.5 on Java >= 1.6"
-
+    platforms = "Python >= 2.6 on GNU/Linux, Mac OS X >= 10.7, Microsoft Windows >= 7. \n Jython >= 2.5 on Java >= 1.6",
+    **setup_kwargs
     )
     

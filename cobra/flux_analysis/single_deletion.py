@@ -5,8 +5,9 @@ nan = float('nan')
 from time import time
 from warnings import warn
 from copy import deepcopy
-from ..manipulation import initialize_growth_medium
 from ..manipulation import delete_model_genes, undelete_model_genes
+from ..manipulation.delete import find_gene_knockout_reactions
+from ..solvers import solver_dict, get_solver_name
 from os import name as __name
 if __name == 'java':
     warn("moma is not supported on %s"%__name)
@@ -18,9 +19,11 @@ else:
     except Exception, e:
         def moma(**kwargs):
             warn("moma is currently not supported on %s: %s"%(__name, e))
+
+
 def single_deletion(cobra_model, element_list=None,
                     method='fba', the_problem='return',
-                    element_type='gene', solver='glpk',
+                    element_type='gene', solver=None,
                     error_reporting=None):
     """Wrapper for single_gene_deletion and the single_reaction_deletion
     functions
@@ -44,11 +47,22 @@ def single_deletion(cobra_model, element_list=None,
 
     discard_problems: Boolean.  If True do not save problems.  This will
     help with memory issues related to gurobi.
+    .. warning:: This is deprecated.
 
     Returns a list of dictionaries: growth_rate_dict, solution_status_dict,
     problem_dict where the key corresponds to each element in element_list.
 
     """
+    if solver is None:
+        solver = get_solver_name() if method == "fba" else get_solver_name(qp=True)
+    # fast versions of functions
+    if method == "fba":
+        if element_type == "gene":
+            return single_gene_deletion_fba(cobra_model, element_list,
+                                             solver=solver)
+        elif elment_type == "reaction":
+            return single_reaction_deletion_fba(cobra_model, element_list,
+                                                 solver=solver)
     if element_type == 'gene':
         the_solution = single_gene_deletion(cobra_model, element_list,
                                     method=method, the_problem=the_problem,
@@ -62,9 +76,58 @@ def single_deletion(cobra_model, element_list=None,
                                                 error_reporting=error_reporting)
     return the_solution
 
+
+def single_reaction_deletion_fba(cobra_model, reaction_list=None, solver=None):
+    solver = solver_dict[get_solver_name() if solver is None else solver]
+    lp = solver.create_problem(cobra_model)
+    growth_rate_dict = {}
+    status_dict = {}
+    if reaction_list is None:
+        reaction_list = cobra_model.reactions
+    else:
+        reaction_list = [cobra_model.reactions.get_by_id(i) \
+                         if isinstance(i, basestring) else i \
+                         for i in reaction_list]
+    for reaction in reaction_list:
+        old_bounds = (reaction.lower_bound, reaction.upper_bound)
+        index = cobra_model.reactions.index(reaction)
+        solver.change_variable_bounds(lp, index, 0., 0.)
+        solver.solve_problem(lp)
+        status = solver.get_status(lp)
+        status_dict[reaction.id] = status
+        growth_rate_dict[reaction.id] = solver.get_objective_value(lp)# if status == "optimal" else 0.
+        # reset the problem
+        solver.change_variable_bounds(lp, index, old_bounds[0], old_bounds[1])
+    return(growth_rate_dict, status_dict)
+
+def single_gene_deletion_fba(cobra_model, gene_list=None, solver=None):
+    solver = solver_dict[get_solver_name() if solver is None else solver]
+    lp = solver.create_problem(cobra_model)
+    growth_rate_dict = {}
+    status_dict = {}
+    if gene_list is None:
+        gene_list = cobra_model.genes
+    else:
+        gene_list = [cobra_model.genes.get_by_id(i) \
+                     if isinstance(i, basestring) else i for i in gene_list]
+    for gene in gene_list:
+        old_bounds = {}
+        for reaction in find_gene_knockout_reactions(cobra_model, [gene]):
+            index = cobra_model.reactions.index(reaction)
+            old_bounds[index] = (reaction.lower_bound, reaction.upper_bound)
+            solver.change_variable_bounds(lp, index, 0., 0.)
+        solver.solve_problem(lp)
+        status = solver.get_status(lp)
+        status_dict[gene.id] = status
+        growth_rate_dict[gene.id] = solver.get_objective_value(lp)# if status == "optimal" else 0.
+        # reset the problem
+        for index, bounds in old_bounds.iteritems():
+            solver.change_variable_bounds(lp, index, bounds[0], bounds[1])
+    return(growth_rate_dict, status_dict)
+
 def single_reaction_deletion(cobra_model, element_list=None,
                              method='fba', the_problem='return',
-                             solver='glpk', error_reporting=None,
+                             solver=None, error_reporting=None,
                              discard_problems=True):
     """Performs optimization simulations to realize the objective defined
     from cobra_model.reactions[:].objective_coefficients after deleting each reaction
@@ -89,6 +152,8 @@ def single_reaction_deletion(cobra_model, element_list=None,
     problem_dict where the key corresponds to each reaction in reaction_list.
 
     """
+    if solver is None:
+        solver = get_solver_name() if method == "fba" else get_solver_name(qp=True)
     #element_list so we can merge single_reaction_deletion and single_gene_deletion
 
     wt_model = cobra_model.copy() #Original wild-type (wt) model.
@@ -177,7 +242,7 @@ def single_reaction_deletion(cobra_model, element_list=None,
     return(growth_rate_dict, solution_status_dict, problem_dict)
 
 def single_gene_deletion(cobra_model, element_list=None,
-                         method='fba', the_problem='reuse', solver='glpk',
+                         method='fba', the_problem='reuse', solver=None,
                          error_reporting=None):
     """Performs optimization simulations to realize the objective defined
     from cobra_model.reactions[:].objective_coefficients after deleting each gene in
@@ -201,6 +266,8 @@ def single_gene_deletion(cobra_model, element_list=None,
     debugging purposes.
 
     """
+    if solver is None:
+        solver = get_solver_name() if method == "fba" else get_solver_name(qp=True)
     wt_model = cobra_model.copy() #Original wild-type (wt) model.
     wt_model.id = 'Wild-Type'
     #MOMA constructs combined quadratic models thus we cannot reuse a model

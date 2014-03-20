@@ -1,10 +1,9 @@
 ##cobra.solvers.gurobi_solver
-#Interface to the gurobi 5.0.1 python solver
-
+#Interface to the gurobi 5.0.1 python and java solvers
+#QPs are not yet supported on java
 from warnings import warn
 from os import name as __name
 from copy import deepcopy
-from itertools import izip
 ###solver specific parameters
 from .parameters import status_dict, variable_kind_dict, \
      sense_dict, parameter_mappings, parameter_defaults, \
@@ -16,56 +15,88 @@ solver_name = 'gurobi'
 objective_senses = objective_senses[solver_name]
 parameter_mappings = parameter_mappings[solver_name]
 parameter_defaults = parameter_defaults[solver_name]
+#Functions that are different for java implementation of a solver
+## from jarray import array as j_array
+## def array(x, variable_type='d'):
+##     return j_array(x, variable_type)
 
-## from numpy import array
-from gurobipy import Model, LinExpr, GRB, QuadExpr
+from gurobi import GRB
 variable_kind_dict = eval(variable_kind_dict[solver_name])
 status_dict = eval(status_dict[solver_name])
-__solver_class = Model
+
+from gurobi import GRBModel, GRBEnv
+from gurobi import GRBLinExpr
+from gurobi import GRBQuadExpr as QuadExpr
+__solver_class = GRBModel
+#TODO: Create a pythonesqe class similar to in glpk_solver
+def Model(name=''):
+    grb_environment = GRBEnv(name)
+    tmp_model = GRBModel(grb_environment)
+    return tmp_model
+def LinExpr(coefficients, variables):
+    coefficients, variables = map(list, [coefficients, variables])
+    tmp_expression = GRBLinExpr()
+    tmp_expression.addTerms(coefficients, variables)
+    return tmp_expression
+
 def get_status(lp):
-    status = lp.status
+    status = lp.get(GRB.IntAttr.Status)
     if status in status_dict:
         status = status_dict[status]
     else:
         status = 'failed'
     return status
 
+def set_parameter(lp, parameter_name, parameter_value):
+    """Sets model parameters and attributes.
+    
+    """
+    grb_environment = lp.getEnv()
+    try:
+        if hasattr(GRB.DoubleParam, parameter_name):
+            grb_environment.set(eval('GRB.DoubleParam.%s'%parameter_name),
+                                     parameter_value)
+        elif hasattr(GRB.IntParam, parameter_name):
+            grb_environment.set(eval('GRB.IntParam.%s'%parameter_name),
+                                     parameter_value)
+        elif hasattr(GRB.StringParam, parameter_name):
+            grb_environment.set(eval('GRB.StringParam.%s'%parameter_name),
+                                parameter_value)
+        elif hasattr(GRB.IntAttr, parameter_name):
+            if parameter_name == 'ModelSense':
+                parameter_value = objective_senses[parameter_value]
+            lp.set(eval('GRB.IntAttr.%s'%parameter_name),
+                                parameter_value)
+        else:
+            warn("%s is not a DoubleParam, IntParam, StringParam, IntAttr"%parameter_name)
+            ## raise Exception("%s is not a DoubleParam, IntParam, StringParam, IntAttr"%parameter_name)
+    except Exception, e:
+        warn("%s %s didn't work %s"%(parameter_name, parameter_value, e))
+
 def get_objective_value(lp):
-    return lp.ObjVal
+    return lp.get(GRB.DoubleAttr.ObjVal)
 
 def format_solution(lp, cobra_model, **kwargs):
+    """
+    """
     status = get_status(lp)
     if status not in ('optimal', 'time_limit'):
         the_solution = Solution(None, status=status)
     else:
-        objective_value = lp.ObjVal
-        x = [v.X for v  in lp.getVars()]      
-        x_dict = {r.id: value for r, value in izip(cobra_model.reactions, x)}
-        if lp.isMIP:
+        x_dict = dict(((v.get(GRB.StringAttr.VarName),
+                        v.get(GRB.DoubleAttr.X))
+                       for v in lp.getVars()))
+        x = [x_dict[v.id] for v in cobra_model.reactions]
+        objective_value = lp.get(GRB.DoubleAttr.ObjVal)
+        if lp.get(GRB.IntAttr.IsMIP) != 0:
             y = y_dict = None #MIP's don't have duals
         else:
-            y = [c.Pi for c in lp.getConstrs()]
-            y_dict = {m.id: value for m, value in izip(cobra_model.metabolites, y)}
+            y_dict = dict(((c.get(GRB.StringAttr.ConstrName), c.get(GRB.DoubleAttr.Pi))
+                          for c in lp.getConstrs()))
+            y = list([y_dict[v.id] for v in cobra_model.metabolites])
         the_solution = Solution(objective_value, x=x, x_dict=x_dict, y=y,
                                 y_dict=y_dict, status=status)
     return(the_solution)
-
-def set_parameter(lp, parameter_name, parameter_value):
-    if parameter_name == 'ModelSense':
-        lp.setAttr(parameter_name, objective_senses[parameter_value])
-    else:
-        lp.setParam(parameter_name, parameter_value)
-
-def change_variable_bounds(lp, index, lower_bound, upper_bound):
-    variable = lp.getVarByName(str(index))
-    variable.lb = lower_bound
-    variable.ub = upper_bound
-
-
-def change_variable_objective(lp, index, objective):
-    variable = lp.getVarByName(str(index))
-    variable.obj = objective
-
 
 def update_problem(lp, cobra_model, **kwargs):
     """A performance tunable method for updating a model problem file
@@ -83,15 +114,16 @@ def update_problem(lp, cobra_model, **kwargs):
     except:
         quadratic_component = None
 
-    if 'copy_problem' in kwargs and kwargs['copy_problem']:
-        lp = lp.copy()
     if 'reuse_basis' in kwargs and not kwargs['reuse_basis']:
         lp.reset()
     for the_variable, the_reaction in zip(lp.getVars(),
                                           cobra_model.reactions):
-        the_variable.lb = float(the_reaction.lower_bound)
-        the_variable.ub = float(the_reaction.upper_bound)
-        the_variable.obj = float(the_reaction.objective_coefficient)
+        the_variable.set(GRB.DoubleAttr.LB, float(the_reaction.lower_bound))
+        the_variable.set(GRB.DoubleAttr.UB, float(the_reaction.upper_bound))
+        the_variable.set(GRB.DoubleAttr.Obj, float(the_reaction.objective_coefficient))
+
+
+
 
 ###
 sense_dict = eval(sense_dict[solver_name])
@@ -122,8 +154,8 @@ def create_problem(cobra_model,  **kwargs):
                                float(x.upper_bound),
                                float(x.objective_coefficient),
                                variable_kind_dict[x.variable_kind],
-                               str(i))
-                     for i, x in enumerate(cobra_model.reactions)]
+                               x.id)
+                     for x in cobra_model.reactions]
     reaction_to_variable = dict(zip(cobra_model.reactions,
                                     variable_list))
     # Integrate new variables

@@ -20,7 +20,7 @@ from ..manipulation import initialize_growth_medium, delete_model_genes
 from ..manipulation.modify import convert_to_irreversible
 from warnings import warn
 
-def moma(wt_model, mutant_model, objective_sense='maximize', solver='gurobi',
+def moma(wt_model, mutant_model, objective_sense='maximize', solver=None,
          tolerance_optimality=1e-8, tolerance_feasibility=1e-8,
          minimize_norm=False, the_problem='return', lp_method=0,
          combined_model=None, norm_type='euclidean'):
@@ -58,6 +58,11 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver='gurobi',
 
 
     """
+    if solver is None:
+        if norm_type == "euclidiean":
+            solver = get_solver_name(qp=True)
+        else:
+            solver = get_solver_name()  # linear is not even implemented yet
     if combined_model is not None or the_problem not in ['return']:
         warn("moma currently does not support reusing models or problems. " +\
              "continuing without them")

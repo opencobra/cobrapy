@@ -9,6 +9,7 @@ from copy import deepcopy
 from ..solvers import optimize
 from .Object import Object
 from .Formula import Formula
+from .Solution import Solution
 from .DictList import DictList
 #*********************************************************************************
 #
@@ -64,7 +65,7 @@ class Model(Object):
             self.metabolites = DictList() #A list of cobra.Metabolites
             #genes based on their ids {Gene.id: Gene}
             self.compartments = {}
-
+            self.solution = Solution(None)
 
 
     def __add__(self, other_model):
@@ -225,6 +226,7 @@ class Model(Object):
                 if not self.metabolites.has_id(metabolite.id):
                     self.metabolites.append(metabolite)
                     metabolite._model = self
+                    # this should already be the case. Is it necessary?
                     metabolite._reaction = set([reaction])
                 # A copy of the metabolite exists in the model, the reaction
                 # needs to point to the metabolite in the model.
@@ -239,18 +241,19 @@ class Model(Object):
                 if not self.genes.has_id(gene.id):
                     self.genes.append(gene)
                     gene._model = self
+                    # this should already be the case. Is it necessary?
                     gene._reaction = set([reaction])
                 # Otherwise, make the gene point to the one in the model
                 else:
                     model_gene = self.genes.get_by_id(gene.id)
                     if model_gene is not gene:
-                        reaction.remove_gene(gene)
-                        reaction.add_gene(model_gene)
+                        reaction._dissociate_gene(gene)
+                        reaction._associate_gene(model_gene)
 
         self.reactions += reaction_list
 
 
-    def to_array_based_model(self, deepcopy_model=False):
+    def to_array_based_model(self, deepcopy_model=False, **kwargs):
         """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model which
         may be used to perform linear algebra operations with the
         stoichiomatric matrix.
@@ -260,11 +263,11 @@ class Model(Object):
         
         """
         from .ArrayBasedModel import ArrayBasedModel
-        return ArrayBasedModel(self, deepcopy_model=deepcopy_model)
+        return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
 
 
     def optimize(self, new_objective=None, objective_sense='maximize',
-                 the_problem=None, solver='glpk', 
+                 the_problem=None, solver=None, 
                  error_reporting=None, quadratic_component=None,
                  tolerance_optimality=1e-6, tolerance_feasibility=1e-6,
                  tolerance_barrier=1e-10,  **kwargs):
@@ -366,7 +369,7 @@ class Model(Object):
         for the_reaction in the_reactions:
             try:
                 the_reaction = self.reactions[self.reactions.index(the_reaction)]
-                the_reaction.remove_from_model(self)
+                the_reaction.remove_from_model()
             except:
                 print '%s not in %s'%(the_reaction, self)
         
