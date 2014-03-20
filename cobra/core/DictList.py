@@ -13,9 +13,9 @@ class DictList(list):
     python.
 
     """
+    _dict = {}
     def __init__(self, *args, **kwargs):
         list.__init__(self, *args, **kwargs)
-        self._dict = {}
         self._generate_index()
 
     def has_id(self, id):
@@ -79,6 +79,13 @@ class DictList(list):
 
     # overriding default list functions with new ones
     def __setitem__(self, i, y):
+        if isinstance(i, slice):
+            for obj in y:  # need to be setting to a list
+                self._check(obj.id)
+            list.__setitem__(self, i, y)
+            self._generate_index()
+            return
+        self._dict.pop(self[i].id)
         the_id = y.id
         self._check(the_id)
         list.__setitem__(self, i, y)
@@ -227,10 +234,13 @@ class DictList(list):
         self._generate_index()
 
     def __delitem__(self, index):
-        item_id = self[index].id
+        removed = self[index]
         list.__delitem__(self, index)
+        if isinstance(removed, list):
+            self._generate_index()
+            return
         _dict = self._dict
-        _dict.pop(item_id)
+        _dict.pop(removed.id)
         for i, j in iteritems(_dict):
             if j > index:
                 _dict[i] = j - 1
