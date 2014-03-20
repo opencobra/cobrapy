@@ -95,6 +95,30 @@ class TestDictList(TestCase):
         result = self.list.query("test")  # matches test1 and test2
         self.assertEqual(len(result), 2)
 
+    def testRemoval(self):
+        obj_list = DictList(Object("test%d" % (i)) for i in range(2, 10))
+        del obj_list[3]
+        self.assertNotIn("test5", obj_list)
+        self.assertEqual(obj_list.index(obj_list[-1]), len(obj_list) - 1)
+        del obj_list[3:5]
+        self.assertNotIn("test6", obj_list)
+        self.assertNotIn("test7", obj_list)
+        self.assertEqual(obj_list.index(obj_list[-1]), len(obj_list) - 1)
+        removed = obj_list.pop(1)
+        self.assertEqual(obj_list.index(obj_list[-1]), len(obj_list) - 1)
+        self.assertEqual(removed.id, "test3")
+        self.assertNotIn("test3", obj_list)
+
+    def testSet(self):
+        obj_list = DictList(Object("test%d" % (i)) for i in range(10))
+        obj_list[4] = Object("testa")
+        self.assertEqual(obj_list.index("testa"), 4)
+        self.assertEqual(obj_list[4].id, "testa")
+        obj_list[5:7] = [Object("testb"), Object("testc")]
+        self.assertEqual(obj_list.index("testb"), 5)
+        self.assertEqual(obj_list[5].id, "testb")
+        self.assertEqual(obj_list.index("testc"), 6)
+        self.assertEqual(obj_list[6].id, "testc")
 
 class CobraTestCase(TestCase):
     def setUp(self):
