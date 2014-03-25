@@ -42,6 +42,15 @@ class TestDictList(TestCase):
         self.list = DictList()
         self.list.append(self.obj)
 
+    def testIndependent(self):
+        a = DictList([Object("o1"), Object("o2")])
+        b = DictList()
+        self.assertIn("o1", a)
+        self.assertNotIn("o1", b)
+        b.append(Object("o3"))
+        self.assertNotIn("o3", a)
+        self.assertIn("o3", b)
+
     def testAppend(self):
         obj2 = Object("test2")
         self.list.append(obj2)
@@ -91,7 +100,7 @@ class TestDictList(TestCase):
         self.list.append(obj2)
         result = self.list.query("test1")  # matches only test1
         self.assertEqual(len(result), 1)
-        self.assertEqual(result[0], self.obj)
+        self.assertEqual(result[0], self.obj) 
         result = self.list.query("test")  # matches test1 and test2
         self.assertEqual(len(result), 2)
 
