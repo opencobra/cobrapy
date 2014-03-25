@@ -84,6 +84,8 @@ class Model(Object):
         """Provides a partial 'deepcopy' of the Model.  All of the Metabolite, Gene,
         and Reaction objects are created anew but in a faster fashion than deepcopy
         """
+        if print_time is not False:
+            warn("print_time is a deprecated option")
         new = self.__class__()
         do_not_copy = {"metabolites", "reactions", "genes"}
         for attr in self.__dict__:
@@ -338,7 +340,8 @@ class Model(Object):
         metabolite_name.
         
         TODO:  This should be moved to a separate module
-        
+
+        .. warning:: deprecated
         """
         if not isinstance(metabolite_formula, Formula):
             metabolite_formula = Formula(metabolite_formula)
@@ -366,3 +369,10 @@ class Model(Object):
             except:
                 warn('%s not in %s'%(the_reaction, self))
 
+    def repair(self):
+        """Update all indexes and pointers in a model"""
+        # DictList indexes
+        self.reactions._generate_index()
+        self.metabolites._generate_index()
+        self.genes._generate_index()
+        return  # TODO update the pointers as well
