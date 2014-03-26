@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from ..external.six import iteritems
+from ..external.six import string_types, iteritems
 
 
 #Is it better to restrict a Reaction to a single model or
@@ -279,10 +279,19 @@ class Reaction(Object):
         """Remove a metabolite from the reaction and return the
         stoichiometric coefficient.
 
-        the_metabolite: A cobra.Metabolite that is in the reaction
-    
-        
+        the_metabolite: A cobra.Metabolite that is in the reaction or its id
+
         """
+        if isinstance(the_metabolite, string_types):
+            found_match = None
+            for possible_match in self._metabolites:
+                if possible_match.id == the_metabolite:
+                    found_match = possible_match
+                    break
+            if found_match is None:
+                raise KeyError("No metabolite named %s in the reaction" % the_metabolite)
+            else:
+                the_metabolite = found_match
         the_coefficient = self._metabolites.pop(the_metabolite)
         the_metabolite._reaction.remove(self)
         return the_coefficient
