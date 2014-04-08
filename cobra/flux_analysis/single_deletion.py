@@ -58,7 +58,7 @@ def single_deletion(cobra_model, element_list=None,
         if element_type == "gene":
             return single_gene_deletion_fba(cobra_model, element_list,
                                              solver=solver)
-        elif elment_type == "reaction":
+        elif element_type == "reaction":
             return single_reaction_deletion_fba(cobra_model, element_list,
                                                  solver=solver)
     if element_type == 'gene':
