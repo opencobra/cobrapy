@@ -7,7 +7,13 @@ from os import name as __name
 nan = float('nan')
 from sys import modules as __modules
 
-from ..solvers import get_solver_name
+from itertools import chain, product
+import numpy
+
+from ..solvers import get_solver_name, solver_dict
+from ..external.six import iteritems, string_types
+from ..manipulation.delete import find_gene_knockout_reactions
+from .deletion_worker import CobraDeletionPool, CobraDeletionMockPool
 
 if __name == 'java':
     raise Exception("%s is not yet supported on jython"%__modules[__name__])
@@ -16,68 +22,148 @@ if __name == 'java':
         warn("moma is not supported on %s"%__name)
 else:
     from .moma import moma    
+
 try:
-    from cPickle import dump
+    from pandas import DataFrame
 except:
-    from pickle import dump
-try:
-    from cobra.external.ppmap import ppmap
-    __parallel_mode_available = True
-except:
-    __parallel_mode_available = False
+    DataFrame = None
 
-
-def __double_deletion_parallel(cobra_model, number_of_processes=4,
-                             elements_of_interest=None, method='fba', 
-                             the_problem='return', element_type='gene',
-                             solver='glpk',
-                             error_reporting=None):
-    """Wrapper for double_gene_deletion_parallel and the currently
-    unimplemented double_reaction_deletion_parallel functions
-
-    cobra_model: a cobra.Model object
-
-    number_of_processes: is the number of parallel processes to start
-
-    elements_of_interest: Is None, a list of genes, or a list of two lists of
-    genes.  If None then double_deletion is run on all genes in
-    the_model.genes.  If a list of genes then double_deletion is run for all
-    combinations of genes in double_deletion.  If a list of of two lists of
-    genes then double_deletion is run for each member of one list vs. each
-    member of the second list.
-
-    method: 'fba' or 'moma' to run flux balance analysis or minimization
-    of metabolic adjustments.
-    
-
-    the_problem: Is None or 'reuse'
-
-    element_type: 'gene' or 'reaction'
-
-    solver: 'glpk', 'gurobi', or 'cplex'.
-
-    error_reporting: None or True.
-
-    Returns a dictionary of the genes in the x dimension (x), the y
-    dimension (y), and the growth simulation data (data).
-
-    """
-    if not __parallel_mode_available:
-        warn('Parallel mode not available is Parallel Python installed?')
-        return
-    if the_problem:
-        #The solver model objects are not thread safe so change the_problem
-        #to 'return' if one is provided.
-        the_problem='return'
-    if element_type == 'gene':
-        return __double_gene_deletion_parallel(cobra_model, number_of_processes=number_of_processes,
-                                             genes_of_interest=elements_of_interest,
-                                             method=method,
-                                             the_problem=the_problem, solver=solver,
-                                             error_reporting=error_reporting)
+def double_reaction_deletion_fba(cobra_model, reaction_list1=None,
+                                 reaction_list2=None, solver=None,
+                                 n_processes=None, return_frame=True):
+    """setting n_processes=1 explicitly disables multiprocessing"""
+    if reaction_list1 is None:
+        reaction_indexes1 = range(len(cobra_model.reactions))
     else:
-        raise Exception("Double deletion not yet implemented for element_type = %s"%element_type)
+        reaction_indexes1 = [cobra_model.reactions.index(r) for r in reaction_list1]
+    if reaction_list2 is None:
+        reaction_indexes2 = reaction_indexes1
+    else:
+        reaction_indexes2 = [cobra_model.reactions.index(r) for r in reaction_list2]
 
+    reaction_indexes = list(set(chain(reaction_indexes1, reaction_indexes2)))
+    reaction_to_result = {reaction_index: result_index
+                          for result_index, reaction_index in enumerate(reaction_indexes)}
+    row_indexes = [reaction_to_result[i] for i in reaction_indexes1]
+    row_index_set = set(row_indexes)
+    row_names = [cobra_model.reactions[i].id for i in reaction_indexes1]
+    column_indexes = [reaction_to_result[i] for i in reaction_indexes2]
+    column_index_set = set(column_indexes)
+    column_names = [cobra_model.reactions[i].id for i in reaction_indexes2]
+
+    n_results = len(reaction_to_result)
+    results = numpy.empty((n_results, n_results))
+    results.fill(numpy.nan)
+
+    if n_processes == 1:  # explicitly disable multiprocessing
+        pool = CobraDeletionMockPool(cobra_model, n_processes=n_processes, solver=solver)
+    else:
+        pool = CobraDeletionPool(cobra_model, n_processes=n_processes, solver=solver)
+    # submit jobs
+    
+    for r1_index, r2_index in product(reaction_indexes1, reaction_indexes2):
+        r1_result_index = reaction_to_result[r1_index]
+        r2_result_index = reaction_to_result[r2_index]
+        if r2_result_index >= r1_result_index:  # upper triangle only
+            pool.submit((r1_index, r2_index), label=(r1_result_index, r2_result_index))
+        # if it's a point only in the lower triangle, compute it
+        # and put it in the upper triangle
+        elif r1_result_index not in column_index_set or r2_result_index not in row_index_set:
+            pool.submit((r1_index, r2_index), label=(r2_result_index, r1_result_index))
+
+    # get results
+    for result in pool.receive_all():
+        results[result[0]] = result[1]
+
+    del pool
+
+    # reflect results
+    triu1, triu2 = numpy.triu_indices(n_results)
+    results[triu2, triu1] = results[triu1, triu2]
+
+    results = results[row_indexes, :][:, column_indexes]
+
+    if return_frame and DataFrame:
+        return DataFrame(data=results, index=row_names, columns=column_names)
+
+    elif return_frame and not DataFrame:
+        warn("could not import pandas.DataFrame")
+
+    return {"x": row_names, "y": column_names, "data": results}
+
+def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
+                             solver=None, n_processes=None, return_frame=True):
+    if gene_list1 is None:
+        gene_list1 = cobra_model.genes
+    else:
+        gene_list1 = [cobra_model.genes.get_by_id(i)
+                      if isinstance(i, string_types) else i
+                      for i in gene_list1]
+    if gene_list2 is None:
+        gene_list2 = gene_list1
+    else:
+        gene_list2 = [cobra_model.genes.get_by_id(i)
+                      if isinstance(i, string_types) else i
+                      for i in gene_list2]
+    gene_ids1 = [i.id for i in gene_list1]
+    gene_ids2 = [i.id for i in gene_list2]
+    gene_id_to_result = {}
+    n = 0
+    for i in gene_ids1:
+        if i not in gene_id_to_result:
+            gene_id_to_result[i] = n
+            n += 1
+    for i in gene_ids2:
+        if i not in gene_id_to_result:
+            gene_id_to_result[i] = n
+            n += 1
+
+    row_indexes = [gene_id_to_result[id] for id in gene_ids1]
+    row_index_set = set(row_indexes)
+    column_indexes = [gene_id_to_result[id] for id in gene_ids2]
+    column_index_set = set(column_indexes)
+
+    n_results = len(gene_id_to_result)
+    results = numpy.empty((n_results, n_results))
+    results.fill(numpy.nan)
+
+    if n_processes == 1:  # explicitly disable multiprocessing
+        pool = CobraDeletionMockPool(cobra_model, n_processes=n_processes, solver=solver)
+    else:
+        pool = CobraDeletionPool(cobra_model, n_processes=n_processes, solver=solver)
+
+    for gene1, gene2 in product(gene_list1, gene_list2):
+        g1_result_index = gene_id_to_result[gene1.id]
+        g2_result_index = gene_id_to_result[gene2.id]
+        if g2_result_index >= g1_result_index:  # upper triangle only
+            ko_reactions = find_gene_knockout_reactions(cobra_model, (gene1, gene2))
+            ko_indexes = [cobra_model.reactions.index(i) for i in ko_reactions]
+            pool.submit(ko_indexes, label=(g1_result_index, g2_result_index))
+        # if it's a point only in the lower triangle, compute it
+        # and put it in the upper triangle
+        elif g1_result_index not in column_index_set or g2_result_index not in row_index_set:
+            ko_reactions = find_gene_knockout_reactions(cobra_model, (gene1, gene2))
+            ko_indexes = [cobra_model.reactions.index(i) for i in ko_reactions]
+            pool.submit(ko_indexes, label=(g2_result_index, g1_result_index))
+
+    for result in pool.receive_all():
+        results[result[0]] = result[1]
+
+    del pool
+
+    # reflect results
+    triu1, triu2 = numpy.triu_indices(n_results)
+    results[triu2, triu1] = results[triu1, triu2]
+
+    results = results[row_indexes, :][:, column_indexes]
+
+    if return_frame and DataFrame:
+        return DataFrame(data=results, index=gene_ids1, columns=gene_ids2)
+
+    elif return_frame and not DataFrame:
+        warn("could not import pandas.DataFrame")
+
+    return {"x": gene_ids1, "y": gene_ids2, "data": results}
 
 def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
                     method='fba', single_deletion_growth_dict=None, the_problem='return',
