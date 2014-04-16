@@ -20,9 +20,7 @@ except Exception as e:
 
 
 def single_deletion(cobra_model, element_list=None,
-                    method='fba', the_problem='return',
-                    element_type='gene', solver=None,
-                    error_reporting=None):
+                    method='fba', element_type='gene', solver=None):
     """Wrapper for single_gene_deletion and the single_reaction_deletion
     functions
 
@@ -63,15 +61,11 @@ def single_deletion(cobra_model, element_list=None,
                                                  solver=solver)
     if element_type == 'gene':
         the_solution = single_gene_deletion(cobra_model, element_list,
-                                    method=method, the_problem=the_problem,
-                                    solver=solver,
-                                    error_reporting=error_reporting)
+                                    method=method, solver=solver)
 
     else:
         the_solution = single_reaction_deletion(cobra_model, element_list,
-                                        method=method, the_problem=the_problem,
-                                        solver=solver,
-                                                error_reporting=error_reporting)
+                                        method=method, solver=solver)
     return the_solution
 
 
@@ -93,7 +87,7 @@ def single_reaction_deletion_fba(cobra_model, reaction_list=None, solver=None):
         solver.solve_problem(lp)
         status = solver.get_status(lp)
         status_dict[reaction.id] = status
-        growth_rate_dict[reaction.id] = solver.get_objective_value(lp)# if status == "optimal" else 0.
+        growth_rate_dict[reaction.id] = solver.get_objective_value(lp) if status == "optimal" else 0.
         # reset the problem
         solver.change_variable_bounds(lp, index, old_bounds[0], old_bounds[1])
     return(growth_rate_dict, status_dict)
@@ -279,13 +273,15 @@ def single_gene_deletion(cobra_model, element_list=None,
     if the_problem:
         the_problem = 'return'
         discard_problems = True
-    #
-    the_problem = wt_model.optimize(the_problem=the_problem, solver=solver,
-                                       error_reporting=error_reporting)
-    wt_f = wt_model.solution.f
-    wt_status = wt_model.solution.status
-    wt_x = deepcopy(wt_model.solution.x)
-    wt_x_dict = deepcopy(wt_model.solution.x_dict)
+
+    solver_object = solver_dict[solver]
+    the_problem = solver_object.create_problem(wt_model)
+    solver_object.solve_problem(the_problem)
+    solution = solver_object.format_solution(the_problem, wt_model)
+    wt_f = solution.f
+    wt_status = solution.status
+    wt_x = deepcopy(solution.x)
+    wt_x_dict = deepcopy(solution.x_dict)
 
     if element_list is None:
         element_list = mutant_model.genes

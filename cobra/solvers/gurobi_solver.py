@@ -194,32 +194,15 @@ def solve(cobra_model, **kwargs):
     the_parameters = deepcopy(parameter_defaults)
     if kwargs:
         the_parameters.update(kwargs)
-    #Update objectives if they are new.
-    if 'new_objective' in the_parameters and \
-           the_parameters['new_objective'] not in ['update problem', None]:
-       from ..flux_analysis.objective import update_objective
-       update_objective(cobra_model, the_parameters['new_objective'])
-
-    if 'the_problem' in the_parameters:
-        the_problem = the_parameters['the_problem']
-    else:
-        the_problem = None
+    for i in ["new_objective", "update_problem", "the_problem"]:
+        if i in the_parameters:
+            raise Exception("Option %s removed" % i)
     if 'error_reporting' in the_parameters:
-        error_reporting = the_parameters['error_reporting']
-    else:
-        error_reporting = False
+        warn("error_reporting deprecated")
 
-    if isinstance(the_problem, __solver_class):
-        #Update the problem with the current cobra_model
-        lp = the_problem
-        update_problem(lp, cobra_model, **the_parameters)
-    else:
-        #Create a new problem
-        lp = create_problem(cobra_model, **the_parameters)
-    #Deprecated way for returning a solver problem created from a cobra_model
-    #without performing optimization
-    if the_problem == 'setup':
-            return lp
+    #Create a new problem
+    lp = create_problem(cobra_model, **the_parameters)
+
 
     ###Try to solve the problem using other methods if the first method doesn't work
     try:
@@ -241,8 +224,8 @@ def solve(cobra_model, **kwargs):
             break
     status = solve_problem(lp, **the_parameters)
     the_solution = format_solution(lp, cobra_model)
-    if status != 'optimal' and error_reporting:
-        print '%s failed: %s'%(solver_name, status)
-    cobra_model.solution = the_solution
-    solution = {'the_problem': lp, 'the_solution': the_solution}
-    return solution
+    #if status != 'optimal':
+    #    print '%s failed: %s'%(solver_name, status)
+    #cobra_model.solution = the_solution
+    #solution = {'the_problem': lp, 'the_solution': the_solution}
+    return the_solution

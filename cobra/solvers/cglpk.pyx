@@ -30,6 +30,7 @@ cdef class GLP:
         cdef int *c_rows
         cdef int *c_cols
         cdef double *c_values
+        glp_term_out(GLP_OFF)
         
         # initialize parameters
         self.parameters.msg_lev = GLP_MSG_ERR
@@ -135,17 +136,18 @@ cdef class GLP:
         # threads at the same time will probably cause problems
         # because glpk itself is not thread safe
 
-        with nogil:
-            result = glp_simplex(glp, &parameters)
+        #with nogil:  # we can use this if glpk ever gets thread-safe malloc
+        result = glp_simplex(glp, &parameters)
         assert result == 0
         if self.is_mip():
             self.integer_parameters.tm_lim = self.parameters.tm_lim
             self.integer_parameters.msg_lev = self.parameters.msg_lev
             #self.integer_parameters.tol_bnd = self.parameters.tol_bnd
             #self.integer_parameters.tol_piv = self.parameters.tol_piv
-            
-            with nogil:
-                result = glp_intopt(glp, &integer_parameters)
+            glp_term_out(GLP_OFF)  # prevent verborse MIP output
+            #with nogil:
+            result = glp_intopt(glp, &integer_parameters)
+            glp_term_out(GLP_ON)
             assert result == 0
         return self.get_status()
 
@@ -154,8 +156,9 @@ cdef class GLP:
         problem = cls.create_problem(cobra_model)
         problem.solve_problem(**kwargs)
         solution = problem.format_solution(cobra_model)
-        cobra_model.solution = solution
-        return {"the_problem": problem, "the_solution": solution}
+        #cobra_model.solution = solution
+        #return {"the_problem": problem, "the_solution": solution}
+        return solution
     solve = classmethod(solve)
 
 

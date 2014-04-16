@@ -53,15 +53,13 @@ def add_new_test(TestCobraSolver, solver_name, solver):
         solver.create_problem(self.model)
 
     def solve_feasible(self):
-        solver.solve(self.model)
-        solution = self.model.solution        
+        solution = solver.solve(self.model)
         self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(self.old_solution, \
             solution.f, places=4)
 
     def solve_minimize(self):
-        solver.solve(self.model, objective_sense='minimize')
-        solution = self.model.solution        
+        solution = solver.solve(self.model, objective_sense='minimize')
         self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(0, solution.f, places=4)
 
@@ -204,8 +202,7 @@ def add_new_test(TestCobraSolver, solver_name, solver):
         self.assertEqual(33, cobra_model.solution.x_dict["Cone_consumption"])
 
     def solve_infeasible(self):
-        solver.solve(self.infeasible_model)
-        solution = self.infeasible_model.solution
+        solution = solver.solve(self.infeasible_model)
         self.assertEqual(solution.status, "infeasible")
 
     def independent_creation(self):

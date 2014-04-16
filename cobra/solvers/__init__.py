@@ -96,7 +96,7 @@ def get_solver_name(mip=False, qp=False):
     # return any solver at this point
     return solver_dict.keys()[0]
 
-def optimize(cobra_model, solver=None, error_reporting=True, **kwargs):
+def optimize(cobra_model, solver=None, **kwargs):
     """Wrapper to optimization solvers
 
     solver : str
@@ -118,7 +118,7 @@ def optimize(cobra_model, solver=None, error_reporting=True, **kwargs):
     #if the_solution is None:
     #   return(the_solution)
     #else:
-    return(the_solution['the_problem'])
+    return(the_solution)
 
 
 del __name

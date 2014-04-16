@@ -261,8 +261,8 @@ class Model(Object):
         return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
 
 
-    def optimize(self, new_objective=None, objective_sense='maximize',
-                 the_problem=None, solver=None, 
+    def optimize(self, objective_sense='maximize',
+                 solver=None, 
                  error_reporting=None, quadratic_component=None,
                  tolerance_optimality=1e-6, tolerance_feasibility=1e-6,
                  tolerance_barrier=1e-10,  **kwargs):
@@ -284,9 +284,7 @@ class Model(Object):
         start the next solution.
 
         solver: 'glpk', 'gurobi', or 'cplex'
-        
-        error_reporting: None or True to disable or enable printing errors encountered
-        when trying to find the optimal solution.
+
 
         quadratic_component: None or 
         scipy.sparse.dok of dim(len(cobra_model.reactions),len(cobra_model.reactions))
@@ -317,15 +315,14 @@ class Model(Object):
 
         
         """
-        the_solution = optimize(self, solver=solver, new_objective=new_objective,
+        the_solution = optimize(self, solver=solver,
                                 objective_sense=objective_sense,
-                                the_problem=the_problem,
-                                error_reporting=error_reporting,
                                 quadratic_component=quadratic_component,
                                 tolerance_optimality=tolerance_optimality,
                                 tolerance_feasibility=tolerance_feasibility,
                                 tolerance_barrier=tolerance_barrier,
                                 **kwargs)
+        self.solution = the_solution
         return the_solution
 
     
