@@ -92,7 +92,6 @@ class TestCobraFluxAnalysis(TestCase):
     def test_double_deletion(self):
         cobra_model = self.model
         #turn into a double deletion unit test
-        the_problem='return'
         initialize_growth_medium(cobra_model, 'LB')
         #Expected growth rates for the salmonella model with deletions in LB medium
         the_loci =  ['STM4081', 'STM0247', 'STM3867', 'STM2952']
@@ -107,8 +106,7 @@ class TestCobraFluxAnalysis(TestCase):
 
 
         the_solution = double_deletion(cobra_model, element_list_1=the_genes,
-                                       element_list_2=the_genes,
-                                       the_problem=the_problem)
+                                       element_list_2=the_genes)
         #Potential problem if the data object doesn't have a tolist function
         s_data = the_solution['data'].tolist()
         s_x = the_solution['x']

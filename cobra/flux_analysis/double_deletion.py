@@ -166,7 +166,7 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
     return {"x": gene_ids1, "y": gene_ids2, "data": results}
 
 def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
-                    method='fba', single_deletion_growth_dict=None, the_problem='return',
+                    method='fba', single_deletion_growth_dict=None,
                     element_type='gene', solver=None, error_reporting=None,
                     number_of_processes=1):
     """Wrapper for double_gene_deletion and the currently unimplemented
@@ -185,8 +185,6 @@ def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
     rate information for single gene knock outs.  This can speed up
     simulations because nonviable single deletion strains imply that all
     double deletion strains will also be nonviable.
-
-    the_problem: Is None or 'reuse'
 
     element_type: 'gene' or 'reaction'
 
@@ -208,21 +206,21 @@ def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
             elements_of_interest = None
         return __double_deletion_parallel(cobra_model, number_of_processes=number_of_processes,
                                          elements_of_interest=elements_of_interest, method=method,
-                                         the_problem=the_problem, solver=solver, element_type=element_type,
+                                         solver=solver, element_type=element_type,
                                          error_reporting=error_reporting)
     else:
         if element_type == 'gene':
             return double_gene_deletion(cobra_model, gene_list_1=element_list_1,
                                         gene_list_2=element_list_2, method=method,
                                         single_deletion_growth_dict=single_deletion_growth_dict,
-                                        the_problem=the_problem, solver=solver,
+                                        solver=solver,
                                         error_reporting=error_reporting)
         else:
             raise Exception("Double deletion not yet implemented for element_type = %s"%element_type)
 
 def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
                          method='fba', single_deletion_growth_dict=None,
-                         the_problem='return', solver='glpk', growth_tolerance=1e-8,
+                         solver='glpk', growth_tolerance=1e-8,
                          error_reporting=None):
     """This will disable reactions for all gene pairs from gene_list_1 and
     gene_list_2 and then run simulations to optimize for the objective
@@ -247,8 +245,6 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
     rate information for single gene knock outs.  This can speed up
     simulations because nonviable single deletion strains imply that all
     double deletion strains will also be nonviable.
-
-    the_problem: Is None, 'return', or an LP model object for the solver.
 
     solver: 'glpk', 'gurobi', or 'cplex'.
 
@@ -277,8 +273,6 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
             gene_list_2 = tmp_dict['gene_list_2']
         if 'method' in tmp_dict:
             method = tmp_dict['method']
-        if 'the_problem' in tmp_dict:
-            the_problem = tmp_dict['the_problem']
         if 'single_deletion_growth_dict' in tmp_dict:
             single_deletion_growth_dict = tmp_dict['single_deletion_growth_dict']
         if 'solver' in tmp_dict:
@@ -295,11 +289,10 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
     elif not hasattr(gene_list_1[0], 'id'):
         gene_list_1 = map(cobra_model.genes.get_by_id, gene_list_1)
     #Get default values to use if the deletions do not alter any reactions
-    the_problem = cobra_model.optimize(the_problem=the_problem, solver=solver)
+    cobra_model.optimize(solver=solver)
     basal_f = cobra_model.solution.f
     if method.lower() == 'moma':
         wt_model = cobra_model.copy()
-        the_problem = 'return'
         combined_model = None
     single_gene_set = set(gene_list_1)
     if gene_list_2 is not None:
@@ -312,9 +305,7 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
     single_deletion_growth_dict = single_deletion(cobra_model,
                                                   list(single_gene_set),
                                                   method=method,
-                                                  the_problem=the_problem,
-                                                  solver=solver,
-                                                  error_reporting=error_reporting)[0]
+                                                  solver=solver)[0]
     if gene_list_2 is None or gene_list_1 == gene_list_2:
         number_of_genes = len(gene_list_1)
         gene_list_2 = gene_list_1
@@ -344,17 +335,15 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
                             if method.lower() == 'fba':
                                 #Assumes that the majority of perturbations don't change
                                 #reactions which is probably false
-                                cobra_model.optimize(the_problem = the_problem,
-                                                     solver=solver, error_reporting=error_reporting)
+                                cobra_model.optimize(solver=solver, error_reporting=error_reporting)
                                 the_status = cobra_model.solution.status
                                 tmp_solution = cobra_model.solution.f
                             elif method.lower() == 'moma':
                                 try:
                                     moma_solution = moma(wt_model, cobra_model,
                                                          combined_model=combined_model,
-                                                         solver=solver, the_problem=the_problem)
+                                                         solver=solver)
                                     tmp_solution = float(moma_solution.pop('objective_value'))
-                                    the_problem = moma_solution.pop('the_problem')
                                     the_status = moma_solution.pop('status')
                                     combined_model = moma_solution.pop('combined_model')
                                     del moma_solution
@@ -387,17 +376,15 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
                         delete_model_genes(cobra_model, [gene_1, gene_2])
                         if cobra_model._trimmed:
                             if method.lower() == 'fba':
-                                cobra_model.optimize(the_problem=the_problem,
-                                                     solver=solver, error_reporting=error_reporting)
+                                cobra_model.optimize(solver=solver)
                                 tmp_solution = cobra_model.solution.f
                                 the_status = cobra_model.solution.status
                             elif method.lower() == 'moma':
                                 try:
                                     moma_solution = moma(wt_model, cobra_model,
                                                          combined_model=combined_model,
-                                                         solver=solver, the_problem=the_problem)
+                                                         solver=solver)
                                     tmp_solution = float(moma_solution.pop('objective_value'))
-                                    the_problem = moma_solution.pop('the_problem')
                                     the_status = moma_solution.pop('status')
                                     combined_model = moma_solution.pop('combined_model')
                                     del moma_solution
