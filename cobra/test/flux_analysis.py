@@ -27,10 +27,10 @@ else:
     from ..flux_analysis.single_deletion import single_deletion
     from ..external.six import iteritems
     try:
-        import scipy
+        import numpy
         from ..flux_analysis.double_deletion import double_deletion
     except:
-        scipy = None
+        numpy = None
     from ..flux_analysis.variability import flux_variability_analysis
 
 
@@ -88,7 +88,7 @@ class TestCobraFluxAnalysis(TestCase):
                 self.assertAlmostEqual(rates[the_gene], the_growth_rates[the_gene],
                                        places=2)
 
-    @skipIf(scipy is None, "cobra.test.flux_analysis.test_double_deletion requires scipy")
+    @skipIf(numpy is None, "cobra.test.flux_analysis.test_double_deletion requires numpy")
     def test_double_deletion(self):
         cobra_model = self.model
         #turn into a double deletion unit test

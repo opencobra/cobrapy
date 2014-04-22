@@ -15,13 +15,11 @@ from ..external.six import iteritems, string_types
 from ..manipulation.delete import find_gene_knockout_reactions
 from .deletion_worker import CobraDeletionPool, CobraDeletionMockPool
 
-if __name == 'java':
-    raise Exception("%s is not yet supported on jython"%__modules[__name__])
-    warn("moma is not supported on %s"%__name)
-    def moma(**kwargs):
-        warn("moma is not supported on %s"%__name)
-else:
+try:
     from .moma import moma    
+except:
+    def moma(*args, **kwargs):
+        raise Exception("moma dependencies missing")
 
 try:
     from pandas import DataFrame
