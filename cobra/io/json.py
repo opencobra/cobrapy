@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import json
 from warnings import warn
 
@@ -46,26 +48,8 @@ def load_json_model(infile_path, variable_name=None):
         if k in ['id', 'description', 'notes']:
             setattr(model, k, v)
     return model
-    
-def save_json_model(model, file_name, exclude_attributes=None):
-    """Save the cobra model as a json file.
 
-    Parameters
-    ----------
-    model : cobra.Model
-    file_name : str or file-like object
-    exclude_attributes : A list of reaction or metabolite attributes to ignore.
-    Warning: ignoring attributes will make it impossible to reload the model with
-    cobra.io.json.load_json_model()
-
-    """
-    # open the file
-    if isinstance(file_name, str):
-        file_name = open(file_name, 'w')
-
-    # iterator
-    if exclude_attributes is None: exclude_attributes = []
-
+def _to_dict(model, exclude_attributes=[]):
     new_reactions = {}; new_metabolites = {}
     for reaction in model.reactions:
         new_reaction = {}
@@ -88,4 +72,26 @@ def save_json_model(model, file_name, exclude_attributes=None):
            'id': model.id,
            'description': model.description,
            'notes': model.notes}
-    json.dump(obj, file_name)
+    return obj
+
+def to_json(model, exclude_attributes=[]):
+    return json.dumps(_to_dict(model, exclude_attributes=exclude_attributes))
+
+def save_json_model(model, file_name, exclude_attributes=[]):
+    """Save the cobra model as a json file.
+
+    Parameters
+    ----------
+    model : cobra.Model
+    file_name : str or file-like object
+    exclude_attributes : A list of reaction or metabolite attributes to ignore.
+    Warning: ignoring attributes will make it impossible to reload the model with
+    cobra.io.json.load_json_model()
+
+    """
+    # open the file
+    if isinstance(file_name, str):
+        file_name = open(file_name, 'w')
+
+    # iterator
+    json.dump(_to_dict(model, exclude_attributes=exclude_attributes), file_name)
