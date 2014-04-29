@@ -24,7 +24,7 @@ for model_name in model_names:
         new_model = read_sbml_model(model_name + '.xml')
     # update other attributes
     if isfile(model_name + ".genes"):
-        with open(model_name + ".genes") as infile:
+        with open(model_name + ".genes", "rb") as infile:
             gene_names = load(infile)
         for gene in new_model.genes:
             gene.name = gene_names[gene.id]
