@@ -3,6 +3,8 @@ from __future__ import absolute_import
 import json
 from warnings import warn
 
+from collections import OrderedDict
+
 from .. import Model, Metabolite, Reaction, Formula
 
 def load_json_model(infile_path, variable_name=None):
@@ -21,9 +23,8 @@ def load_json_model(infile_path, variable_name=None):
         raise Exception('JSON object has no reactions attribute. Cannot load.')
     # add metabolites
     new_metabolites = []
-    for metabolite_id, metabolite in obj['metabolites'].iteritems():
+    for metabolite in obj['metabolites']:
         new_metabolite = Metabolite()
-        new_metabolite.id = metabolite_id
         for k, v in metabolite.iteritems():
             setattr(new_metabolite, k, v)
             # TODO test that these are the right attributes
@@ -31,17 +32,17 @@ def load_json_model(infile_path, variable_name=None):
     model.add_metabolites(new_metabolites)
     # add reactions
     new_reactions = []
-    for reaction_id, reaction in obj['reactions'].iteritems():
+    for reaction in obj['reactions']:
         new_reaction = Reaction()
-        new_reaction.id = reaction_id
         for k, v in reaction.iteritems():
-            if k=='reversibility': continue
+            if k == 'reversibility' or k == "reaction":
+                continue
             # TODO test that these are the right attributes
-            if k=='metabolites':
+            elif k=='metabolites':
                 for met, coeff in v.iteritems():
                     new_reaction.add_metabolites({model.metabolites.get_by_id(met): coeff})
-                continue
-            setattr(new_reaction, k, v)
+            else:
+                setattr(new_reaction, k, v)
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
     for k, v in obj.iteritems():
@@ -49,24 +50,30 @@ def load_json_model(infile_path, variable_name=None):
             setattr(model, k, v)
     return model
 
+_DEFAULT_REACTION_ATTRIBUTES = {
+    'id', 'name', 'reversibility', 'subsystem', 'lower_bound', 'upper_bound',
+    'objective_coefficient', 'notes', 'gene_reaction_rule', 'reaction'}
+
+_DEFAULT_METABOLITE_ATTRIBUTES = {
+    'id', 'annotation', 'charge', 'compartment', 'formula', 'name', 'notes'}
+
 def _to_dict(model, exclude_attributes=[]):
-    new_reactions = {}; new_metabolites = {}
+    exclude_attributes = set(exclude_attributes)
+    reaction_attributes = _DEFAULT_REACTION_ATTRIBUTES - exclude_attributes
+    metabolite_attributes = _DEFAULT_METABOLITE_ATTRIBUTES - exclude_attributes
+    new_reactions = []
+    new_metabolites = []
     for reaction in model.reactions:
-        new_reaction = {}
+        new_reaction = {key: getattr(reaction, key)
+                        for key in reaction_attributes}
         # set metabolites
         mets = {str(met): coeff for met, coeff in reaction._metabolites.iteritems()}
         new_reaction['metabolites'] = mets
-        for key in ['name', 'reversibility', 'subsystem', 'upper_bound', 'lower_bound',
-                    'objective_coefficient', 'notes']:
-            if key in exclude_attributes: continue
-            new_reaction[key] = getattr(reaction, key)
-        new_reactions[reaction.id] = new_reaction
+        new_reactions.append(new_reaction)
     for metabolite in model.metabolites:
-        new_metabolite = {}
-        for key in ['annotation', 'charge', 'compartment', 'formula', 'name', 'notes']:
-            if key in exclude_attributes: continue
-            new_metabolite[key] = str(getattr(metabolite, key))
-        new_metabolites[metabolite.id] = new_metabolite
+        new_metabolite = {key: str(getattr(metabolite, key))
+                          for key in metabolite_attributes}
+        new_metabolites.append(new_metabolite)
     obj = {'reactions': new_reactions,
            'metabolites': new_metabolites,
            'id': model.id,
