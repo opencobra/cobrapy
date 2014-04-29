@@ -18,5 +18,7 @@ if __name != 'java':
 
 del __name
 
+from .json import load_json_model
+from .json import save_json_model, to_json
 
 
