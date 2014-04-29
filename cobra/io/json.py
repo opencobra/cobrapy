@@ -3,9 +3,8 @@ from __future__ import absolute_import
 import json
 from warnings import warn
 
-from collections import OrderedDict
-
 from .. import Model, Metabolite, Reaction, Formula
+from ..external.six import iteritems
 
 def load_json_model(infile_path, variable_name=None):
     """Load a cobra model stored as a json file
@@ -25,7 +24,7 @@ def load_json_model(infile_path, variable_name=None):
     new_metabolites = []
     for metabolite in obj['metabolites']:
         new_metabolite = Metabolite()
-        for k, v in metabolite.iteritems():
+        for k, v in iteritems(metabolite):
             setattr(new_metabolite, k, v)
             # TODO test that these are the right attributes
         new_metabolites.append(new_metabolite)
@@ -34,18 +33,19 @@ def load_json_model(infile_path, variable_name=None):
     new_reactions = []
     for reaction in obj['reactions']:
         new_reaction = Reaction()
-        for k, v in reaction.iteritems():
+        for k, v in iteritems(reaction):
             if k == 'reversibility' or k == "reaction":
                 continue
             # TODO test that these are the right attributes
             elif k=='metabolites':
-                for met, coeff in v.iteritems():
-                    new_reaction.add_metabolites({model.metabolites.get_by_id(met): coeff})
+                new_reaction.add_metabolites(
+                    {model.metabolites.get_by_id(met): coeff
+                     for met, coeff in iteritems(v)})
             else:
                 setattr(new_reaction, k, v)
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
-    for k, v in obj.iteritems():
+    for k, v in iteritems(obj):
         if k in ['id', 'description', 'notes']:
             setattr(model, k, v)
     return model
@@ -67,7 +67,7 @@ def _to_dict(model, exclude_attributes=[]):
         new_reaction = {key: getattr(reaction, key)
                         for key in reaction_attributes}
         # set metabolites
-        mets = {str(met): coeff for met, coeff in reaction._metabolites.iteritems()}
+        mets = {str(met): coeff for met, coeff in iteritems(reaction._metabolites)}
         new_reaction['metabolites'] = mets
         new_reactions.append(new_reaction)
     for metabolite in model.metabolites:
@@ -97,8 +97,12 @@ def save_json_model(model, file_name, exclude_attributes=[]):
 
     """
     # open the file
+    should_close = False
     if isinstance(file_name, str):
         file_name = open(file_name, 'w')
+        should_close = True
 
-    # iterator
     json.dump(_to_dict(model, exclude_attributes=exclude_attributes), file_name)
+
+    if should_close:
+        file_name.close()
