@@ -373,3 +373,16 @@ class Model(Object):
         self.metabolites._generate_index()
         self.genes._generate_index()
         return  # TODO update the pointers as well
+
+    def change_objective(self, the_objectives):
+        """Change the objective in the cobrapy model.
+        
+        the_objectives: A list or a dictionary.  If a list then
+        a list of reactions for which the coefficient in the
+        linear objective is set as 1.  If a dictionary then the
+        key is the reaction and the value is the linear coefficient
+        for the respective reaction.
+
+        """
+        from ..flux_analysis.objective import update_objective
+        update_objective(self, the_objectives)
