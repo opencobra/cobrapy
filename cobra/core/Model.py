@@ -374,15 +374,44 @@ class Model(Object):
         self.genes._generate_index()
         return  # TODO update the pointers as well
 
-    def change_objective(self, the_objectives):
+    def change_objective(self, objectives):
         """Change the objective in the cobrapy model.
         
-        the_objectives: A list or a dictionary.  If a list then
+        objectives: A list or a dictionary.  If a list then
         a list of reactions for which the coefficient in the
         linear objective is set as 1.  If a dictionary then the
         key is the reaction and the value is the linear coefficient
         for the respective reaction.
 
         """
-        from ..flux_analysis.objective import update_objective
-        update_objective(self, the_objectives)
+        # I did not want to refactor code just to rename the variable, but this
+        # way the API uses the variable "objectives"
+        the_objectives = objectives
+        # set all objective coefficients to 0 initially
+        for x in cobra_model.reactions:
+            x.objective_coefficient = 0.
+        # update the objective coefficients if a dict is passed in
+        if hasattr(the_objectives, dict):
+            for the_reaction, the_coefficient in iteritems(the_objectives):
+                if isinstance(the_reaction, int):
+                    the_reaction = cobra_model.reactions[the_reaction]
+                else:
+                    if hasattr(the_reaction, 'id'):
+                        the_reaction = the_reaction.id
+                    the_reaction = cobra_model.reactions.get_by_id(the_reaction)
+                the_reaction.objective_coefficient = the_coefficient
+        # If a list (or a single reaction is passed in), each reaction gets
+        # 1 for the objective coefficent.
+        else:
+            # Allow for objectives to be constructed from multiple reactions
+            if not isinstance(the_objectives, list) and \
+                   not isinstance(the_objectives, tuple):
+                the_objectives = [the_objectives]
+            for the_reaction in the_objectives:
+                if isinstance(the_reaction, int):
+                    the_reaction = cobra_model.reactions[the_reaction]
+                else:
+                    if hasattr(the_reaction, 'id'):
+                        the_reaction = the_reaction.id
+                    the_reaction = cobra_model.reactions.get_by_id(the_reaction)
+                the_reaction.objective_coefficient = 1.
