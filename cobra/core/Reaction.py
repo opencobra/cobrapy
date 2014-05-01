@@ -624,3 +624,10 @@ class Reaction(Object):
         """
         self._genes.remove(cobra_gene)
         cobra_gene._reaction.remove(self)
+                
+    def knock_out(self):
+        """Change the upper and lower bounds of the reaction to 0.
+ 
+        """
+        self.lower_bound = 0
+        self.upper_bound = 0
