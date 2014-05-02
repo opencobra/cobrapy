@@ -66,9 +66,6 @@ class Object(object):
     def __contains__(self, x):
         return self.id.__contains__(x)
 
-    def __iter__(self):
-       return list(self.id).__iter__()
-
     def __getitem__(self, index):
         return self.id[index]
     
@@ -76,7 +73,7 @@ class Object(object):
         return self.id[i:j]
     
     def __repr__(self):
-        return repr(self.id)
+        return "<%s %s at 0x%x>" % (self.__class__.__name__, self.id, id(self))
 
     def __str__(self):
         return str(self.id)
