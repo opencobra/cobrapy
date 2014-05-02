@@ -388,30 +388,29 @@ class Model(Object):
         # way the API uses the variable "objectives"
         the_objectives = objectives
         # set all objective coefficients to 0 initially
-        for x in cobra_model.reactions:
+        for x in self.reactions:
             x.objective_coefficient = 0.
         # update the objective coefficients if a dict is passed in
-        if hasattr(the_objectives, dict):
+        if hasattr(the_objectives, "items"):
             for the_reaction, the_coefficient in iteritems(the_objectives):
                 if isinstance(the_reaction, int):
-                    the_reaction = cobra_model.reactions[the_reaction]
+                    the_reaction = self.reactions[the_reaction]
                 else:
                     if hasattr(the_reaction, 'id'):
                         the_reaction = the_reaction.id
-                    the_reaction = cobra_model.reactions.get_by_id(the_reaction)
+                    the_reaction = self.reactions.get_by_id(the_reaction)
                 the_reaction.objective_coefficient = the_coefficient
         # If a list (or a single reaction is passed in), each reaction gets
         # 1 for the objective coefficent.
         else:
             # Allow for objectives to be constructed from multiple reactions
-            if not isinstance(the_objectives, list) and \
-                   not isinstance(the_objectives, tuple):
+            if not hasattr(the_objectives, "__iter__"):
                 the_objectives = [the_objectives]
             for the_reaction in the_objectives:
                 if isinstance(the_reaction, int):
-                    the_reaction = cobra_model.reactions[the_reaction]
+                    the_reaction = self.reactions[the_reaction]
                 else:
                     if hasattr(the_reaction, 'id'):
                         the_reaction = the_reaction.id
-                    the_reaction = cobra_model.reactions.get_by_id(the_reaction)
+                    the_reaction = self.reactions.get_by_id(the_reaction)
                 the_reaction.objective_coefficient = 1.

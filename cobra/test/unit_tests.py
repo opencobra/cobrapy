@@ -270,7 +270,7 @@ class TestCobraModel(CobraTestCase):
             metabolites_copy = sorted(i.id for i in reaction_copy._metabolites)
             self.assertEqual(metabolites, metabolites_copy)
 
-    def test_add_reaction(self):
+    def test_add_reaction_orphans(self):
         """test reaction addition
 
         Need to verify that no orphan genes or metabolites are
@@ -282,11 +282,29 @@ class TestCobraModel(CobraTestCase):
         _metabolites = []
         [(_genes.extend(x.genes), _metabolites.extend(x.metabolites))
          for x in _model.reactions];
-        _orphan_genes = [x for x in _genes if x.model is not _model]
-        _orphan_metabolites = [x for x in _metabolites if x.model is not _model]
-        self.assertEqual(len(_orphan_genes), 0, msg='It looks like there are dangling genes when running Model.add_reactions')
-        self.assertEqual(len(_orphan_metabolites), 0, msg='It looks like there are dangling metabolites when running Model.add_reactions')
+        orphan_genes = [x for x in _genes if x.model is not _model]
+        orphan_metabolites = [x for x in _metabolites if x.model is not _model]
+        self.assertEqual(len(orphan_genes), 0, msg='It looks like there are dangling genes when running Model.add_reactions')
+        self.assertEqual(len(orphan_metabolites), 0, msg='It looks like there are dangling metabolites when running Model.add_reactions')
 
+    def test_change_objective(self):
+        biomass = self.model.reactions.get_by_id("biomass_iRR1083_metals")
+        atpm = self.model.reactions.get_by_id("ATPM")
+        self.model.change_objective(atpm.id)
+        self.assertEqual(atpm.objective_coefficient, 1.)
+        self.assertEqual(biomass.objective_coefficient, 0.)
+        # change it back using object itself
+        self.model.change_objective(biomass)
+        self.assertEqual(atpm.objective_coefficient, 0.)
+        self.assertEqual(biomass.objective_coefficient, 1.)
+        # set both to 1 with a list
+        self.model.change_objective([atpm, biomass])
+        self.assertEqual(atpm.objective_coefficient, 1.)
+        self.assertEqual(biomass.objective_coefficient, 1.)
+        # set both using a dict
+        self.model.change_objective({atpm: 0.2, biomass: 0.3})
+        self.assertEqual(atpm.objective_coefficient, 0.2)
+        self.assertEqual(biomass.objective_coefficient, 0.3)
 
 @skipIf(scipy is None, "scipy required for ArrayBasedModel")
 class TestCobraArrayModel(TestCobraModel):
