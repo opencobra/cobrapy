@@ -1,6 +1,6 @@
 from warnings import warn
 from copy import deepcopy, copy
-from ..external.six import iteritems
+from ..external.six import iteritems, string_types
 from ..solvers import optimize
 from .Object import Object
 from .Formula import Formula
@@ -404,7 +404,8 @@ class Model(Object):
         # 1 for the objective coefficent.
         else:
             # Allow for objectives to be constructed from multiple reactions
-            if not hasattr(the_objectives, "__iter__"):
+            if not hasattr(the_objectives, "__iter__") or \
+                    isinstance(the_objectives, string_types):
                 the_objectives = [the_objectives]
             for the_reaction in the_objectives:
                 if isinstance(the_reaction, int):
