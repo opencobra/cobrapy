@@ -48,7 +48,7 @@ setup(
     packages = find_packages(exclude=['cobra.oven', 'cobra.oven*']),
     #scripts = [''],
     #put in numpy, scipy, libsbml, and pyglpk
-    setup_requires = ['cython'],
+    setup_requires = [],
     #install_requires = ['numpy>=1.6', 'scipy>=0.10'],
     #leave blank because it tries to build scipy/numpy on os x when they are
     #installed by the superpack.  And these are not really essential for core functions.
