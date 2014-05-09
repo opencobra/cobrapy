@@ -1,5 +1,3 @@
-# cobra/examples/02_read_simulate_write.py
-#
 # This example demonstrates reading in a COBRA SBML model xml file
 # performing a simple optimization, and then saving the model as an SBML xml file.
 #

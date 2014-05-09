@@ -1,4 +1,3 @@
-# cobra/examples/03_single_deletion.py
 # This example demonstrates a single gene deletion simulation
 from time import time
 

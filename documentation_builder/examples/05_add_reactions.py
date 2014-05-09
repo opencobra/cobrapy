@@ -1,4 +1,3 @@
-# cobra/examples/05_create_model.py
 # This example shows how to modify an existing cobra model and change the
 # objective function. We'll use the '3 oxoacyl acyl carrier protein synthase n C140'
 # reaction from the STM_1.0 model which currently has the ID of 'my_new_reaction':

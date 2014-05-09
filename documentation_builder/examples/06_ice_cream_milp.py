@@ -1,5 +1,3 @@
-# cobra/examples/06_ice_cream_milp.py
-#
 # Advanced user example showing how to set up and solve an MILP
 #
 

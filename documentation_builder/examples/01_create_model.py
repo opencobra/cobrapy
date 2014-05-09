@@ -1,4 +1,3 @@
-# cobra/examples/01_create_model.py
 # This simple example demonstrates how to create a model, create a reaction, and
 # then add the reaction to the model.
 #

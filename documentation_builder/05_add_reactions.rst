@@ -1,4 +1,4 @@
 Adding reactions
 ================
 
-.. literalinclude:: ../cobra/examples/05_add_reactions.py
+.. literalinclude:: examples/05_add_reactions.py

@@ -1,4 +1,3 @@
-# cobra/examples/04_change_objective_example.py
 # This example changes the targeted objective for the optimization function.
 
 #Load in the example model file
