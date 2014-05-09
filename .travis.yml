@@ -2,11 +2,13 @@ language: python
 python:
  - "2.7"
  - "3.3"
+ - "3.4"
 # command to install dependencies
 before_install:
   - sudo apt-get install libglpk-dev libgmp-dev
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install glpk -f http://clostridium.ucsd.edu/wheelhouse; fi
-  - pip install python-libsbml-experimental cython numpy scipy -f http://clostridium.ucsd.edu/wheelhouse
+  - export PIP_OPTS="-f https://pypi.drosophi.la --no-index"
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install glpk $PIP_OPTS; fi
+  - pip install python-libsbml-experimental cython numpy scipy $PIP_OPTS
 install:
   - python setup.py develop
 # # command to run tests
