@@ -6,6 +6,13 @@ from cobra.version import get_version
 __version = get_version()
 setup_kwargs = {}
 
+# for running parallel tests due to a bug in python 2.7.3
+# http://bugs.python.org/issue15881#msg170215
+try:
+    import multiprocessing
+except:
+    None
+
 try:
     from Cython.Build import cythonize
     from distutils.extension import Extension
@@ -62,7 +69,7 @@ setup(
 
     package_data = {
          '': ['test/data/*',
-              'examples/*py',
+              'VERSION',
               'mlab/matlab_scripts/*m']},
 
     author = "Daniel Robert Hyduke",
