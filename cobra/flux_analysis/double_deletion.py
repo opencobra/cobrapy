@@ -87,7 +87,9 @@ def double_reaction_deletion_fba(cobra_model, reaction_list1=None,
     elif return_frame and not DataFrame:
         warn("could not import pandas.DataFrame")
 
-    return {"x": row_names, "y": column_names, "data": results}
+    return {"x": [cobra_model.reactions.get_by_id(i) for i in row_names],
+             "y": [cobra_model.reactions.get_by_id(i) for i in column_names],
+             "data": results}
 
 def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
                              solver=None, n_processes=None, return_frame=True):
@@ -161,14 +163,15 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
     elif return_frame and not DataFrame:
         warn("could not import pandas.DataFrame")
 
-    return {"x": gene_ids1, "y": gene_ids2, "data": results}
+    return {"x": [cobra_model.genes.get_by_id(i) for i in gene_ids1],
+             "y": [cobra_model.genes.get_by_id(i) for i in gene_ids2],
+             "data": results}
 
 def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
                     method='fba', single_deletion_growth_dict=None,
                     element_type='gene', solver=None, error_reporting=None,
                     number_of_processes=1):
-    """Wrapper for double_gene_deletion and the currently unimplemented
-    double_reaction_deletion functions
+    """Wrapper for double_gene_deletion and double_reaction_deletion
 
     cobra_model: a cobra.Model object
 
@@ -194,32 +197,44 @@ def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
     dimension (y), and the growth simulation data (data).
 
     """
+    if method == "fba":
+        if element_type == "gene":
+            return double_gene_deletion_fba(cobra_model,
+                gene_list1=element_list_1,
+                gene_list2=element_list_2, solver=solver,
+                return_frame=False,
+                n_processes=number_of_processes)
+        elif element_type == "reaction":
+            return double_reaction_deletion_fba(cobra_model,
+                reaction_list1=element_list_1,
+                reaction_list2=element_list_2, solver=solver,
+                return_frame=False,
+                n_processes=number_of_processes)
+        else:
+            raise ValueError("element_type %s not gene or reaction" % element_type)
+
+    if method != "moma":
+        raise ValueError("method %s is not fba or moma" % method)
+
     if solver is None:
         solver = get_solver_name()
-    if number_of_processes > 1:
-        elements_of_interest = [x for x in [element_list_1,
-                                            element_list_2]
-                                if x is not None]
-        if len(elements_of_interest) == 0:
-            elements_of_interest = None
-        return __double_deletion_parallel(cobra_model, number_of_processes=number_of_processes,
-                                         elements_of_interest=elements_of_interest, method=method,
-                                         solver=solver, element_type=element_type,
-                                         error_reporting=error_reporting)
-    else:
-        if element_type == 'gene':
-            return double_gene_deletion(cobra_model, gene_list_1=element_list_1,
-                                        gene_list_2=element_list_2, method=method,
-                                        single_deletion_growth_dict=single_deletion_growth_dict,
-                                        solver=solver,
-                                        error_reporting=error_reporting)
-        else:
-            raise Exception("Double deletion not yet implemented for element_type = %s"%element_type)
 
-def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
-                         method='fba', single_deletion_growth_dict=None,
-                         solver='glpk', growth_tolerance=1e-8,
-                         error_reporting=None):
+    if number_of_processes > 1:
+        warn("parallel moma double deletion not implemented")
+
+    if element_type == 'gene':
+        return double_gene_deletion_moma(cobra_model, gene_list_1=element_list_1,
+                                    gene_list_2=element_list_2, method=method,
+                                    single_deletion_growth_dict=single_deletion_growth_dict,
+                                    solver=solver,
+                                    error_reporting=error_reporting)
+    else:
+        raise Exception("Double reaction deletion with moma not yet implemented")
+
+def double_gene_deletion_moma(cobra_model, gene_list_1=None, gene_list_2=None,
+                              method='moma', single_deletion_growth_dict=None,
+                              solver='glpk', growth_tolerance=1e-8,
+                              error_reporting=None):
     """This will disable reactions for all gene pairs from gene_list_1 and
     gene_list_2 and then run simulations to optimize for the objective
     function.  The contribution of each reaction to the objective function
@@ -404,112 +419,4 @@ def double_gene_deletion(cobra_model, gene_list_1=None, gene_list_2=None,
         gene_list_2 = [x.id for x in gene_list_2]
         
     return({'x': gene_list_1, 'y': gene_list_2, 'data': deletion_array})
-
-
-def __double_gene_deletion_parallel(cobra_model, number_of_processes=4,
-                                  genes_of_interest=None, method = 'fba', 
-                                  the_problem='return', solver='glpk',
-                                  error_reporting=None):
-    """Provides a wrapper to run the double_deletion function on
-    multicore systems.
-
-    cobra_model: a Model object
-
-    number_of_processes: is the number of parallel processes to start
-
-    genes_of_interest: Is None, a list of genes, or a list of two lists of
-    genes.  If None then double_deletion is run on all genes in
-    cobra_model.genes.  If a list of genes then double_deletion is run for all
-    combinations of genes in double_deletion.  If a list of of two lists of
-    genes then double_deletion is run for each member of one list vs. each
-    member of the second list.
-
-    method: 'fba' or 'moma' to run flux balance analysis or minimization
-    of metabolic adjustments.
-
-    the_problem: Is None or 'reuse'
-
-    solver: 'glpk', 'gurobi', or 'cplex'.
-
-    error_reporting: None or True
-
-    returns a dictionary with the keys x, y, and data
-          data: A numpy array of the simulation results for the growth_rates
-          x: A list of the genes for the x dimension of data.
-          y: A list of the genes for the y dimension of y.
-          **NOTE: While the genes in x and y correspond to the content from the input gene_lists,
-          they are not guaranteed to be in the same order as the gene_lists because the subprocesses
-          may run at different speeds.
-          
-
-    """
-    if not __parallel_mode_available:
-        warn('Parallel mode not available is Parallel Python installed')
-        return
-    from numpy import vstack
-    if the_problem:
-        the_problem='return'
-    if not genes_of_interest:
-        #If no genes_of_interest are specified then assume we want to
-        #compare all genetic interactions in the network
-        second_gene_list = all_genes = [x.id for x in cobra_model.genes]
-    elif isinstance(genes_of_interest[0], str):
-        #If genes_of_interest is a list then assume the list be scanned
-        #for interactions with all genes in the network
-        all_genes = genes_of_interest
-        second_gene_list = all_genes
-    elif hasattr(genes_of_interest[0], 'id'):
-        #Make sure we're dealing with strings instead of objects because we
-        #haven't audited this for thread safety
-        second_gene_list = all_genes = [x.id for x in genes_of_interest]
-    elif hasattr(genes_of_interest[0], '__iter__'):
-        second_gene_list = all_genes = genes_of_interest[0]
-        if len(genes_of_interest) == 2:
-            second_gene_list = genes_of_interest[1]
-        if hasattr(all_genes[0], 'id'):
-            all_genes = [x.id for x in all_genes]
-        if hasattr(second_gene_list[0], 'id'):
-            second_gene_list = [x.id for x in second_gene_list]
-
-    #Get basic numbers to guide how the problem should be divided for parallel execution.
-    transpose_results = False
-    if len(all_genes) < len(second_gene_list):
-        all_genes, second_gene_list = second_gene_list, all_genes
-        transpose_results = True
-    total_gene_count = len(all_genes)
-    if total_gene_count < number_of_processes:
-        number_of_processes = total_gene_count
-    division_count = total_gene_count / number_of_processes
-    the_rows = []
-
-    for i in range(number_of_processes-1):
-        the_rows.append({'cobra_model': cobra_model.copy(), 'method': method,
-                         'gene_list_1': deepcopy(all_genes[i*division_count:division_count*(i+1)]),
-                         'gene_list_2': deepcopy(second_gene_list), 'the_problem': the_problem,
-                         'solver': solver,
-                         'error_reporting': error_reporting})
-    the_rows.append({'cobra_model': cobra_model.copy(), 'method': method,
-                     'gene_list_1': deepcopy(all_genes[(number_of_processes-1)*division_count:]),
-                     'gene_list_2': deepcopy(second_gene_list), 'the_problem': the_problem,
-                     'solver': solver,
-                     'error_reporting': error_reporting})
-
-    tmp_pp = list(ppmap(number_of_processes, double_gene_deletion, the_rows))
-    gene_list_x = tmp_pp[0]['x']
-    gene_list_y = tmp_pp[0]['y']
-    double_deletion_data = tmp_pp[0]['data']
-    if transpose_results:
-        gene_list_x, gene_list_y = gene_list_y, gene_list_x
-        double_deletion_data = double_deletion_data.transpose()
-    
-    for the_result in tmp_pp[1:]:
-        gene_list_x += the_result['x']
-        double_deletion_data = vstack((double_deletion_data, the_result['data']))
-
-    #cobra_model.double_deletion_growth_rate = double_deletion_data 
-    #cobra_model.double_deletion_genes_x = gene_list_x
-    #cobra_model.double_deletion_genes_y = gene_list_y
-
-    return({'x': gene_list_x, 'y': gene_list_y, 'data': double_deletion_data})
-
 
