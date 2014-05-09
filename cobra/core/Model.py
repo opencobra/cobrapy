@@ -177,7 +177,8 @@ class Model(Object):
         """
         raise Exception("Model.update is moved to ArrayBasedModel.  Please use \n"
                         "the to_array_based_model property to create an ArrayBasedModel.")
-                     
+
+
     def add_reaction(self, reaction):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
@@ -187,7 +188,7 @@ class Model(Object):
         """
         self.add_reactions([reaction])
 
-        
+
     def add_reactions(self, reaction_list):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
@@ -296,7 +297,7 @@ class Model(Object):
             cobra_model._lower_bounds <= x <= cobra_model._upper_bounds
             cobra_model._S * x (cobra_model._constraint_sense) cobra_model._b
 
-   
+
         #See cobra.flux_analysis.solvers for more info on the following parameters.  Also,
         refer to your solver's manual
         
@@ -315,6 +316,9 @@ class Model(Object):
 
         
         """
+        if "new_objective" in kwargs:
+            warn("new_objective is deprecated. Use Model.change_objective")
+            self.change_objective(kwargs.pop("new_objective"))
         the_solution = optimize(self, solver=solver,
                                 objective_sense=objective_sense,
                                 quadratic_component=quadratic_component,
@@ -324,27 +328,6 @@ class Model(Object):
                                 **kwargs)
         self.solution = the_solution
         return the_solution
-
-    
-
-    def _update_metabolite_formula(self, metabolite_name, metabolite_formula):
-        """Associate metabolite_formula with all self.metabolite_names that
-        match metabolite_name.
-
-        metabolite_name: A string from self.metabolite_names
-
-        metabolite_formula: A string specifying the chemical formula for
-        metabolite_name.
-        
-        TODO:  This should be moved to a separate module
-
-        .. warning:: deprecated
-        """
-        if not isinstance(metabolite_formula, Formula):
-            metabolite_formula = Formula(metabolite_formula)
-        for the_metabolite in self.metabolites:
-            if the_metabolite.name == metabolite_name:
-                the_metabolite.formula = metabolite_formula
 
 
     def remove_reactions(self, the_reactions):
