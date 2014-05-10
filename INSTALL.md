@@ -1,6 +1,5 @@
-Installation instructions for Python and Jython are detailed below. The 
-Python instructions will be approrpriate for most users. For installation 
-help, please use the [Google Group](http://groups.google.com/group/cobra-pie).
+For installation help, please use the [Google Group]
+(http://groups.google.com/group/cobra-pie).
 
 For usage instructions, please see the 
 [documentation](https://cobrapy.readthedocs.org/en/latest/)
@@ -47,9 +46,9 @@ On windows, these can downloaded from [this site]
 (http://www.lfd.uci.edu/~gohlke/pythonlibs/). On Mac/Linux, they can be
 installed using pip, from binary installers, or from package managers.
 
-1. [libsbml](http://sbml.org) >= 4.0 to read/write SBML files
+1. [libsbml](http://sbml.org) >= 5.10 to read/write SBML files
   * [Windows installer](http://www.lfd.uci.edu/~gohlke/pythonlibs/#libsbml)
-  * Use ```pip install python-libsbml-experimental``` on Mac/Linux
+  * Use ```sudo pip install python-libsbml-experimental``` on Mac/Linux
 2. [numpy](http://numpy.org) >= 1.6.1 for double_deletion_analysis
   * [Windows installer](http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy)
 3. [scipy](http://scipy.org) >= 0.11 for ArrayBasedModel and saving to *.mat files.
