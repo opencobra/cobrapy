@@ -12,3 +12,4 @@ cobra/solvers/cglpk.c
 cobra/solvers/cglpk*so
 glpk.h
 libglpk.a
+.idea/
