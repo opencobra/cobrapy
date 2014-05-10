@@ -14,7 +14,7 @@ Documentation for COBRApy
     05_add_reactions
     06_ice_cream_milp
     07_double_deletion
-    visbio
+    escher
     cobra
 
 
