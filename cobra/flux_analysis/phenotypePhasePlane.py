@@ -2,7 +2,7 @@ from numpy import linspace, zeros, array, meshgrid, abs, empty, arange, \
     int32, unravel_index
 from multiprocessing import Pool
 
-from cobra.solvers import solver_dict, get_solver_name
+from ..solvers import solver_dict, get_solver_name
 
 # attempt to import plotting libraries
 try:
