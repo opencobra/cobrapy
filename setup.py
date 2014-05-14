@@ -72,7 +72,7 @@ setup(
               'VERSION',
               'mlab/matlab_scripts/*m']},
 
-    author = "Daniel Robert Hyduke",
+    author = "Daniel Robert Hyduke <danielhyduke@gmail.com>, Ali Ebrahim <aebrahim@ucsd.edu>",
     author_email = "danielhyduke@gmail.com",
     description = "COBRApy is a package for constraints-based modeling of biological networks",
     license = "GPL V3.0",
