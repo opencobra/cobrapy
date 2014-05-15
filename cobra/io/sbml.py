@@ -49,7 +49,8 @@ def parse_legacy_id(the_id, the_compartment=None, the_type='metabolite',
 def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_metabolite=False,
                                       print_time=False, use_hyphens=False):
     """convert an SBML XML file into a cobra.Model object.  Supports
-    SBML Level 2 Versions 1 and 4
+    SBML Level 2 Versions 1 and 4.  The function will detect if the SBML fbc package is used in the file
+    and run the converter if the fbc package is used.
 
     sbml_filename: String.
     
@@ -65,6 +66,8 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
 
     use_hyphens:   Boolean.  If True, double underscores (__) in an SBML ID will be converted to hyphens
 
+    
+
     """
     __default_lower_bound = -1000
     __default_upper_bound = 1000
@@ -79,6 +82,15 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
     if print_time:
         start_time = time()
     model_doc = readSBML(sbml_filename)
+    if (model_doc.getPlugin("fbc") != None):
+        from libsbml import ConversionProperties, LIBSBML_OPERATION_SUCCESS
+        conversion_properties = ConversionProperties()
+        conversion_properties.addOption("convert fbc to cobra", True, "Convert FBC model to Cobra model")
+        result = model_doc.convert(conversion_properties)
+        if result != LIBSBML_OPERATION_SUCCESS:
+            raise(Exception("Conversion of SBML+fbc to COBRA failed"))
+        
+                                        
     if print_time:
        print('Loading %s took %1.2f seconds'%(sbml_filename,
                                               time()-start_time))
@@ -323,13 +335,16 @@ def parse_legacy_sbml_notes(note_string, note_delimiter = ':'):
                 note_dict[note_field] = [note_value]
         note_string = note_string[(note_end+len(end_tag)): ]
 
-    
-    return note_dict
+    if 'CHARGE' in note_dict and note_dict['CHARGE'][0].lower() in ['none', 'na', 'nan']:
+        note_dict.pop('CHARGE') #Remove non-numeric charges
+        
+    return(note_dict)
 
 
 def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
                                    sbml_level=2, sbml_version=1,
-                                   print_time=False):
+                                   print_time=False,
+                                   use_fbc_package=True):
     """Write a cobra.Model object to an SBML XML file.
 
     cobra_model:  A cobra.Model object
@@ -341,6 +356,10 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
     sbml_version: 1 is the only version supported at the moment.
 
     print_time:  Boolean.  Print the time requirements for different sections
+
+    use_fbc_package: Boolean.  Convert the model to the FBC package format to improve portability.
+    http://sbml.org/Documents/Specifications/SBML_Level_3/Packages/Flux_Balance_Constraints_(flux)
+
 
     TODO: Update the NOTES to match the SBML standard and provide support for
     Level 2 Version 4
@@ -470,6 +489,32 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
        print 'Adding %s took %1.2f seconds'%('reactions',
                                              time()-start_time)
 
+
+    if use_fbc_package:
+        try:
+            from libsbml import ConversionProperties, LIBSBML_OPERATION_SUCCESS
+            conversion_properties = ConversionProperties()
+            conversion_properties.addOption("convert cobra", True, "Convert Cobra model")
+            result = sbml_doc.convert(conversion_properties)
+            if result != LIBSBML_OPERATION_SUCCESS:
+                raise Exception("Conversion of COBRA to SBML+fbc failed")
+        except Exception,e:
+            error_string = 'Error saving as SBML+fbc. %s'
+            try:
+                #Check whether the FbcExtension is there
+                from libsbml import FbcExtension
+                error_string = error_string%e
+            except ImportError:
+                error_string = error_string%'FbcExtension not available in libsbml. ' +\
+                               'If use_fbc_package == True then libsbml must be compiled with ' +\
+                               'the fbc extension. '
+                from libsbml import getLibSBMLDottedVersion
+                _sbml_version = getLibSBMLDottedVersion()
+                _major, _minor, _patch = map(int, _sbml_version.split('.'))
+                if _major < 5 or (_major == 5 and _minor < 8):
+                    error_string += "You've got libsbml %s installed.   You need 5.8.0 or later with the fbc package"
+
+            raise(Exception(error_string))
     writeSBML(sbml_doc, sbml_filename)
 
 def add_sbml_species(sbml_model, cobra_metabolite,                                                                  note_start_tag, note_end_tag, boundary_metabolite=False):
@@ -509,7 +554,7 @@ def add_sbml_species(sbml_model, cobra_metabolite,                              
     except:
         print 'metabolite failed: %s'%the_id
         return cobra_metabolite
-    if cobra_metabolite.charge is not None:
+    if cobra_metabolite.charge is not None and str(cobra_metabolite.charge).lower() not in ['none', 'nan', 'na']:
         sbml_species.setCharge(cobra_metabolite.charge)
     if hasattr(cobra_metabolite.formula, 'id') or \
        hasattr(cobra_metabolite.notes, 'items'):
@@ -520,6 +565,8 @@ def add_sbml_species(sbml_model, cobra_metabolite,                              
                                               note_end_tag)
         if hasattr(cobra_metabolite.notes, 'items'):
             for the_id_type, the_id in cobra_metabolite.notes.items():
+                if the_id_type.lower() == 'charge':
+                    continue #Use of notes['CHARGE'] has been deprecated in favor of metabolite.charge
                 if not isinstance(the_id_type, str):
                     the_id_type = repr(the_id_type)
                 if hasattr(the_id, '__iter__') and len(the_id) == 1:
@@ -575,3 +622,4 @@ def read_legacy_sbml(filename, use_hyphens=False):
                 metabolite.remove_from_model()
     model.metabolites._generate_index()
     return model
+

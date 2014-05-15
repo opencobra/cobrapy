@@ -19,6 +19,7 @@ if __name__ == "__main__":
     from cobra.test import salmonella_sbml as test_sbml_file
     from cobra.test import salmonella_pickle as test_pickle
     from cobra import Object, Model, Metabolite, Reaction, io, DictList
+    from cobra.flux_analysis import single_deletion
     sys.path.pop(0)
     #assert 0
 else:
@@ -26,7 +27,7 @@ else:
     from . import salmonella_sbml as test_sbml_file
     from . import salmonella_pickle as test_pickle
     from .. import Object, Model, Metabolite, Reaction, io, DictList
-
+    from ..flux_analysis import single_deletion
 # libraries which may or may not be installed
 libraries = ["glpk", "gurobipy", "cplex", "scipy"]
 for library in libraries:
@@ -303,6 +304,11 @@ class TestCobraIO(CobraTestCase):
     except:
         __test_sbml = False
     try:
+        from libsbml import FbcExtension
+        __test_sbml_fbc = True
+    except:
+        __test_sbml_fbc = False
+    try:
         from scipy.io import loadmat
         __test_matlab = True
     except:
@@ -322,9 +328,37 @@ class TestCobraIO(CobraTestCase):
     @skipIf(not __test_sbml, "libsbml required")
     def test_sbml_write(self):
         test_output_filename = join(gettempdir(), 'test_sbml_write.xml')
-        io.write_sbml_model(self.model, test_output_filename)
+        io.write_sbml_model(self.model, test_output_filename, use_fbc_package=False)
         #cleanup the test file
         unlink(test_output_filename)
+
+    @skipIf(not __test_sbml_fbc, "libsbml with fbc package required")
+    def test_sbml_fbc(self):
+        """This tests whether activating the fbc extensions affect simulation results.
+        
+        """
+        test_output_filename = join(gettempdir(), 'test_sbml_write.xml')
+        #Save the model in SBML+fbc
+        io.write_sbml_model(self.model, test_output_filename)
+        fbc_model = io.read_sbml_model(test_output_filename)
+        #cleanup the test file
+        unlink(test_output_filename)
+        #Compare initial optimizations
+        fbc_model.optimize()
+        self.model.optimize()
+        self.assertAlmostEqual(fbc_model.solution.f, self.model.solution.f, places=3)
+        
+        #Compare the single deletion results of the first 100 genes
+        gene_list = [x.id for x in self.model.genes[:100]]
+        
+        results = single_deletion(self.model, gene_list)[0]
+        fbc_results = single_deletion(fbc_model, gene_list)[0]
+        _tolerance = 1e-6
+        for gene in gene_list:
+            _result = max(_tolerance, results[gene])
+            _fbc_result = max(_tolerance, fbc_results[gene])
+            self.assertAlmostEqual(_result, _fbc_result, places=3)
+
     
     @skipIf(not __test_matlab, "scipy.io.loadmat required")
     def test_mat_read_write(self):
