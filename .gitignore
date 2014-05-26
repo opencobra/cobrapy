@@ -9,3 +9,4 @@ setuptools-*egg
 setuptools-*.tar.gz
 cobra/solvers/cglpk.c
 cobra/solvers/cglpk.so
+.coverage
