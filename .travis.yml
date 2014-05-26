@@ -11,7 +11,10 @@ before_install:
   - wget https://opencobra.github.io/pypi_cobrapy_travis/travis_test_dependencies.zip  # esolver, and glpk
   - unzip travis_test_dependencies.zip
   - export PATH=$PATH:$PWD
+  - pip install coveralls
 install:
   - python setup.py develop
 # # command to run tests
-script: python setup.py test
+script: coverage run --source=cobra setup.py test
+after_success:
+  - coveralls
