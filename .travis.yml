@@ -9,8 +9,10 @@ before_install:
   - sudo apt-get install libglpk-dev python-scipy libgmp-dev
 install:
   - ln -s /usr/lib/python2.7/dist-packages/scipy ~/virtualenv/python2.7/lib/python2.7/site-packages/
-  - pip install http://clostridium.ucsd.edu/python_libsbml_experimental-5.9.2-cp27-none-linux_x86_64.whl
-  - pip install glpk cython
-  - python setup.py develop
+  - pip install glpk
+  - pip install coverage
+  - pip install coveralls
 # # command to run tests
-script: python setup.py test
+script: coverage run --source=cobrapy setup.py test
+after_success:
+  - coveralls
