@@ -13,6 +13,6 @@ install:
   - pip install coverage
   - pip install coveralls
 # # command to run tests
-script: coverage run --source=cobrapy setup.py test
+script: coverage run --source=cobra setup.py test
 after_success:
   - coveralls
