@@ -3,13 +3,13 @@
 branch = True
 source = cobra
 omit =
-    cobra/.idea
-    cobra/examples
-    cobra/external
-    cobra/oven
-    cobra/mlab
-    cobra/stats
-    cobra/test
+    cobra/.idea/*
+    cobra/examples/*
+    cobra/external/*
+    cobra/oven/*
+    cobra/mlab/*
+    cobra/stats/*
+    cobra/test/*
 
 [report]
 # Regexes for lines to exclude from consideration
