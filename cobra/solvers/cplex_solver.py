@@ -76,7 +76,7 @@ def set_parameter(lp, parameter_name, parameter_value):
 
 
 
-def create_problem(cobra_model,  **kwargs):
+def create_problem(cobra_model, quadratic_component=None, **kwargs):
     """Solver-specific method for constructing a solver problem from
     a cobra.Model.  This can be tuned for performance using kwargs
 
@@ -93,7 +93,6 @@ def create_problem(cobra_model,  **kwargs):
         lp.set_warning_stream(None)
     [set_parameter(lp, parameter_mappings[k], v)
      for k, v in the_parameters.iteritems() if k in parameter_mappings]
-    quadratic_component = the_parameters['quadratic_component']
     if 'relax_b' in the_parameters:
         warn('need to reimplement relax_b')
         relax_b = False
@@ -151,15 +150,9 @@ def create_problem(cobra_model,  **kwargs):
             coefficient_list.append(the_reaction._metabolites[the_metabolite])
         the_linear_expressions.append(SparsePair(ind=variable_list,
                                                  val=coefficient_list))
+    # Set objective to quadratic program
     if quadratic_component is not None:
-        if not hasattr(quadratic_component, 'todok'):
-            raise Exception('quadratic component must have method todok')
-        quadratic_component_scaled = quadratic_component.todok()
-
-        lp.parameters.emphasis.numerical.set(1)
-        for k, v in quadratic_component_scaled.items():
-            lp.objective.set_quadratic_coefficients(int(k[0]), int(k[1]), v)
-
+        set_quadratic_objective(lp, quadratic_component)
 
     if relax_b:
         lp.linear_constraints.add(lin_expr=the_linear_expressions,
@@ -185,6 +178,22 @@ def create_problem(cobra_model,  **kwargs):
         problem_type = Cplex.problem_type.QP
     lp.set_problem_type(problem_type)
     return(lp)
+
+
+def set_quadratic_objective(lp, quadratic_objective):
+    if not hasattr(quadratic_objective, 'todok'):
+        raise Exception('quadratic component must have method todok')
+
+    # Reset the quadratic coefficient if it exists
+    if lp.objective.get_num_quadratic_nonzeros() > 0:
+        lp.objective.set_quadratic((0.,) * lp.variables.get_num())
+
+    # cplex divides by 2 for some reason
+    quadratic_component_scaled = quadratic_objective.todok() * 2
+
+    lp.parameters.emphasis.numerical.set(1)
+    for k, v in quadratic_component_scaled.items():
+        lp.objective.set_quadratic_coefficients(int(k[0]), int(k[1]), v)
 
 def change_variable_bounds(lp, index, lower_bound, upper_bound):
     lp.variables.set_lower_bounds(index, lower_bound)
