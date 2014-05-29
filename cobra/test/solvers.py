@@ -1,4 +1,4 @@
-from unittest import TestCase, TestLoader, TextTestRunner
+from unittest import TestCase, TestLoader, TextTestRunner, skipIf
 import sys
 # deal with absolute imports by adding the appropriate directory to the path
 if __name__ == "__main__":
@@ -14,16 +14,19 @@ else:
     from .. import Model, Reaction, Metabolite
     from .. import solvers
 
-solver_dict = solvers.solver_dict
+try:
+    import scipy
+except:
+    scipy = None
 
-class TestCobraSolver(TestCase):
+class TestCobraSolver(object):
     def setUp(self):
+        self.solver = solvers.solver_dict[self.solver_name]
         self.model = create_test_model()
         initialize_growth_medium(self.model, 'MgM')
         self.old_solution = 0.320064
         self.infeasible_model = Model()
         metabolite_1 = Metabolite("met1")
-        #metabolite_2 = Metabolite("met2")
         reaction_1 = Reaction("rxn1")
         reaction_2 = Reaction("rxn2")
         reaction_1.add_metabolites({metabolite_1: 1})
@@ -31,16 +34,9 @@ class TestCobraSolver(TestCase):
         reaction_1.lower_bound = 1
         reaction_2.upper_bound = 2
         self.infeasible_model.add_reactions([reaction_1, reaction_2])
-        #self.infeasible_model.update()
 
-
-def add_new_test(TestCobraSolver, solver_name, solver):
-    """Creates a test set for each of the solvers that are installed
-    using the modular interface.
-
-    """
-    def attributes(self):
-        solver = solver_dict[solver_name]
+    def test_attributes(self):
+        solver = self.solver
         self.assertTrue(hasattr(solver, "create_problem"))
         self.assertTrue(hasattr(solver, "solve_problem"))
         self.assertTrue(hasattr(solver, "get_status"))
@@ -52,25 +48,25 @@ def add_new_test(TestCobraSolver, solver_name, solver):
         self.assertTrue(hasattr(solver, "set_parameter"))
         # self.assertTrue(hasattr(solver, "update_problem"))
 
-    def creation(self):
-        solver = solver_dict[solver_name]
+    def test_creation(self):
+        solver = self.solver
         solver.create_problem(self.model)
 
-    def solve_feasible(self):
-        solver = solver_dict[solver_name]
+    def test_solve_feasible(self):
+        solver = self.solver
         solution = solver.solve(self.model)
         self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(self.old_solution, \
             solution.f, places=4)
 
-    def solve_minimize(self):
-        solver = solver_dict[solver_name]
+    def test_solve_minimize(self):
+        solver = self.solver
         solution = solver.solve(self.model, objective_sense='minimize')
         self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(0, solution.f, places=4)
 
-    def low_level_control(self):
-        solver = solver_dict[solver_name]
+    def test_low_level_control(self):
+        solver = self.solver
         lp = solver.create_problem(self.infeasible_model)
         solver.solve_problem(lp)
         self.assertEqual(solver.get_status(lp), "infeasible")
@@ -100,7 +96,8 @@ def add_new_test(TestCobraSolver, solver_name, solver):
         self.assertAlmostEqual(solution.x_dict["rxn2"], -2, places=4)
 
 
-    def set_objective_sense(self):
+    def test_set_objective_sense(self):
+        solver = self.solver
         maximize = solver.create_problem(self.model, objective_sense="maximize")
         minimize = solver.create_problem(self.model, objective_sense="minimize")
         solver.solve_problem(maximize)
@@ -114,8 +111,8 @@ def add_new_test(TestCobraSolver, solver_name, solver):
         override_minimize = solver.format_solution(minimize, self.model)
         self.assertAlmostEqual(max_solution.f, override_minimize.f, places=4)
 
-    def solve_mip(self):
-        solver = solver_dict[solver_name]
+    def test_solve_mip(self):
+        solver = self.solver
         cobra_model = Model('MILP_implementation_test')
         constraint = Metabolite("constraint")
         constraint._bound = 2.5
@@ -137,11 +134,13 @@ def add_new_test(TestCobraSolver, solver_name, solver):
         self.assertAlmostEqual(int_sol.f, 2.2)
         self.assertAlmostEqual(int_sol.x_dict["y"], 2.0)
 
-    def solve_infeasible(self):
+    def test_solve_infeasible(self):
+        solver = self.solver
         solution = solver.solve(self.infeasible_model)
         self.assertEqual(solution.status, "infeasible")
 
-    def independent_creation(self):
+    def test_independent_creation(self):
+        solver = self.solver
         feasible_lp = solver.create_problem(self.model)
         infeasible_lp = solver.create_problem(self.infeasible_model)
         solver.solve_problem(feasible_lp)
@@ -153,17 +152,60 @@ def add_new_test(TestCobraSolver, solver_name, solver):
             feasible_solution.f, places=4)
         self.assertEqual(infeasible_solution.status, "infeasible")
 
-    for tester in [attributes, creation, solve_feasible, solve_minimize,
-                    set_objective_sense, solve_mip, solve_infeasible,
-                    independent_creation, low_level_control]:
-        test_name = tester.__name__ if hasattr(tester, "__name__") \
-            else tester.func_name
-        setattr(TestCobraSolver, "test_%s_%s" %
-                (solver_name, test_name), tester)
+    @skipIf(scipy is None, "scipy required for quadratic objectives")
+    def test_quadratic(self):
+        solver = self.solver
+        if not hasattr(solver, "set_quadratic_objective"):
+            return
+        c = Metabolite("c")
+        c._bound = 2
+        x = Reaction("x")
+        x.objective_coefficient = -0.5
+        x.lower_bound = 0.
+        y = Reaction("y")
+        y.objective_coefficient = -0.5
+        y.lower_bound = 0.
+        x.add_metabolites({c: 1})
+        y.add_metabolites({c: 1})
+        m = Model()
+        m.add_reactions([x, y])
+        lp = self.solver.create_problem(m)
+        quadratic_obj = scipy.sparse.eye(2)
+        solver.set_quadratic_objective(lp, quadratic_obj)
+        solver.solve_problem(lp, objective_sense="minimize")
+        solution = solver.format_solution(lp, m)
+        # Respecting linear objectives also makes the objective value 1.
+        self.assertAlmostEqual(solution.f, 1.)
+        self.assertAlmostEqual(solution.x_dict["y"], 1.)
+        self.assertAlmostEqual(solution.x_dict["y"], 1.)
+        # When the linear objectives are removed the objective value is 2.
+        solver.change_variable_objective(lp, 0, 0.)
+        solver.change_variable_objective(lp, 1, 0.)
+        solver.solve_problem(lp, objective_sense="minimize")
+        solution = solver.format_solution(lp, m)
+        self.assertAlmostEqual(solution.f, 2.)
+        # test quadratic from solve function
+        solution = solver.solve(m, quadratic_component=quadratic_obj,
+                                objective_sense="minimize")
+        self.assertAlmostEqual(solution.f, 1.)
+        c._bound = 6
+        z = Reaction("z")
+        x.objective_coefficient = 0.
+        y.objective_coefficient = 0.
+        z.lower_bound = 0.
+        z.add_metabolites({c: 1})
+        m.add_reaction(z)
+        solution = solver.solve(m, quadratic_component=scipy.sparse.eye(3),
+                                objective_sense="minimize")
+        self.assertAlmostEqual(solution.f, 12)
+        self.assertAlmostEqual(solution.x_dict["x"], 2)
+        self.assertAlmostEqual(solution.x_dict["y"], 2)
+        self.assertAlmostEqual(solution.x_dict["z"], 2)
 
+for solver_name in solvers.solver_dict:
+    exec('class %sTester(TestCobraSolver, TestCase): None'% solver_name)
+    exec('%sTester.solver_name = "%s"'% (solver_name, solver_name))
 
-for solver_name, solver in solvers.solver_dict.items():
-    add_new_test(TestCobraSolver, solver_name, solver)
 # make a test suite to run all of the tests
 loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])
