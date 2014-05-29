@@ -1,17 +1,17 @@
-import sys
+# set the warning format to be on a single line
+import warnings as _warnings
+def _warn_format(message, category, filename, lineno, file=None, line=None):
+    return "%s:%s %s: %s\n" % (filename, lineno, category.__name__, message)
+_warnings.formatwarning = _warn_format
+
 from .version import get_version
 __version__ = get_version()
-from os import name as __name
 from .core import Object, Formula, Metabolite, Gene, Reaction, Model, DictList, Species
-if __name == 'java':
-    from warnings import warn
-    warn("COBRA for Python is not optimized for JAVA. If it's slow or crashes consider increasing JVM memory")
-else:
-    try:
-        from .core import ArrayBasedModel
-    except Exception as e:
-        None
+from . import io, flux_analysis
 
-del __name, get_version
-__doc__ = """
-"""
+try:
+    from .core import ArrayBasedModel
+except ImportError:
+    None
+
+del get_version
