@@ -1,34 +1,22 @@
-from __future__ import with_statement
 import sys
-from warnings import warn  # TODO - catch known warnings
-from unittest import TestCase, TestLoader, TextTestRunner
-from tempfile import gettempdir
-from os import unlink
+from unittest import TestCase, TestLoader, TextTestRunner, skipIf
 from copy import deepcopy
-from os.path import join
-try:  #skipIf is not in python 2.6 / 2.5, so use unittest2
-    from unittest import skipIf
-except:
-    from unittest2 import skipIf
 
-
-# deal with absolute imports by adding the appropriate directory to the path
 if __name__ == "__main__":
     sys.path.insert(0, "../..")
     from cobra.test import data_directory, create_test_model
-    from cobra.test import salmonella_sbml as test_sbml_file
-    from cobra.test import salmonella_pickle as test_pickle
-    from cobra import Object, Model, Metabolite, Reaction, io, DictList
+    from cobra.test import ecoli_mat, ecoli_pickle
+    from cobra.test import salmonella_sbml, salmonella_pickle
+    from cobra import Object, Model, Metabolite, Reaction, DictList
     sys.path.pop(0)
-    #assert 0
 else:
     from . import data_directory, create_test_model
-    from . import salmonella_sbml as test_sbml_file
-    from . import salmonella_pickle as test_pickle
-    from .. import Object, Model, Metabolite, Reaction, io, DictList
+    from . import ecoli_mat, ecoli_pickle
+    from . import salmonella_sbml, salmonella_pickle
+    from .. import Object, Model, Metabolite, Reaction, DictList
 
 # libraries which may or may not be installed
-libraries = ["glpk", "gurobipy", "cplex", "scipy"]
+libraries = ["scipy"]
 for library in libraries:
     try:
         exec("import %s" % library)
@@ -131,7 +119,7 @@ class TestDictList(TestCase):
 
 class CobraTestCase(TestCase):
     def setUp(self):
-        self.model = create_test_model(test_pickle)
+        self.model = create_test_model()
         self.model_class = Model
 
 
@@ -309,7 +297,7 @@ class TestCobraModel(CobraTestCase):
 @skipIf(scipy is None, "scipy required for ArrayBasedModel")
 class TestCobraArrayModel(TestCobraModel):
     def setUp(self):
-        model = create_test_model(test_pickle).to_array_based_model()
+        model = create_test_model().to_array_based_model()
         self.model_class = model.__class__
         self.model = model
 
@@ -349,51 +337,6 @@ class TestCobraArrayModel(TestCobraModel):
             self.assertEqual(model.S[0, 0], -1)
             self.assertEqual(model.lower_bounds[2546], -3.14)
 
-class TestCobraIO(CobraTestCase):
-    try:
-        from cobra.io import sbml
-        __test_sbml = True
-    except:
-        __test_sbml = False
-    try:
-        from scipy.io import loadmat
-        __test_matlab = True
-    except:
-        __test_matlab = False
-
-    @skipIf(not __test_sbml, "libsbml required")
-    def test_sbml_read(self):
-        from warnings import catch_warnings
-        with catch_warnings(record=True) as w:
-            model = io.read_sbml_model(test_sbml_file)
-        self.assertEqual(len(model.reactions), len(self.model.reactions))
-        self.assertEqual(len(model.metabolites), len(self.model.metabolites))
-        # make sure that an error is raised when given a nonexistent file
-        self.assertRaises(IOError, io.read_sbml_model,
-                          "fake_file_which_does_not_exist")
-
-    @skipIf(not __test_sbml, "libsbml required")
-    def test_sbml_write(self):
-        test_output_filename = join(gettempdir(), 'test_sbml_write.xml')
-        io.write_sbml_model(self.model, test_output_filename)
-        #cleanup the test file
-        unlink(test_output_filename)
-    
-    @skipIf(not __test_matlab, "scipy.io.loadmat required")
-    def test_mat_read_write(self):
-        """read and write COBRA toolbox models in .mat files"""
-        from warnings import catch_warnings
-        test_output_filename = join(gettempdir(), "test_mat_write.mat")
-        io.save_matlab_model(self.model, test_output_filename)
-        with catch_warnings(record=True) as w:
-            reread = io.load_matlab_model(test_output_filename)
-        self.assertEqual(len(self.model.reactions), len(reread.reactions))
-        self.assertEqual(len(self.model.metabolites), len(reread.metabolites))
-        for i in range(len(self.model.reactions)):
-            self.assertEqual(len(self.model.reactions[i]._metabolites), \
-                len(reread.reactions[i]._metabolites))
-            self.assertEqual(self.model.reactions[i].id, reread.reactions[i].id)
-        unlink(test_output_filename)
 
 # make a test suite to run all of the tests
 loader = TestLoader()
