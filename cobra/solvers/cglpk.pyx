@@ -145,6 +145,8 @@ cdef class GLP:
         indexes[col_length + 1] = met_index
         values[col_length + 1] = value
         glp_set_mat_col(self.glp, rxn_index, col_length + 1, indexes, values)
+        free(indexes)
+        free(values)
 
     def solve_problem(self, **solver_parameters):
         cdef int result
