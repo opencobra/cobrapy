@@ -459,7 +459,7 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
             result = sbml_doc.convert(conversion_properties)
             if result != LIBSBML_OPERATION_SUCCESS:
                 raise Exception("Conversion of COBRA to SBML+fbc failed")
-        except Exception,e:
+        except Exception as e:
             error_string = 'Error saving as SBML+fbc. %s'
             try:
                 #Check whether the FbcExtension is there
