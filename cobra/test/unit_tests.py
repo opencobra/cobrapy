@@ -304,7 +304,7 @@ class TestCobraArrayModel(TestCobraModel):
     def test_array_based_model(self):
         for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
             model = create_test_model().to_array_based_model(matrix_type=matrix_type)
-            self.assertEqual(model.S[0, 0], -1)
+            self.assertEqual(model.S[1605, 0], -1)
             self.assertEqual(model.S[43, 0], 0)
             model.S[43, 0] = 1
             self.assertEqual(model.S[43, 0], 1)
@@ -334,7 +334,7 @@ class TestCobraArrayModel(TestCobraModel):
             self.assertEqual(model.S.shape[1], 2547)
             self.assertEqual(len(model.lower_bounds), 2547)
             self.assertEqual(model.S[0, 2546], 4)
-            self.assertEqual(model.S[0, 0], -1)
+            self.assertEqual(model.S[1605, 0], -1)
             self.assertEqual(model.lower_bounds[2546], -3.14)
 
 

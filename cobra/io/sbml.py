@@ -106,6 +106,8 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         legacy_compartment_converter = dict([(v,k)
                                              for k, v in compartment_dict.items()])
 
+    cobra_model = Model(sbml_model_id)
+    metabolites = []
     metabolite_dict = {}
     #Convert sbml_metabolites to cobra.Metabolites
     for sbml_metabolite in sbml_species:
@@ -160,6 +162,8 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             tmp_metabolite.name = tmp_metabolite.name[:-len(tmp_formula)-1]
         tmp_metabolite.formula = Formula(tmp_formula)
         metabolite_dict.update({metabolite_id: tmp_metabolite})
+        metabolites.append(tmp_metabolite)
+    cobra_model.add_metabolites(metabolites)
 
     #Construct the vectors and matrices for holding connectivity and numerical info
     #to feed to the cobra toolbox.
@@ -189,7 +193,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             if tmp_metabolite_id in metabolite_dict:
                 tmp_metabolite = deepcopy(metabolite_dict[tmp_metabolite_id])
                 cobra_metabolites[tmp_metabolite] = sbml_metabolite.getStoichiometry()
-
+        reaction.add_metabolites(cobra_metabolites)
         #Parse the kinetic law info here.
         parameter_dict = {}
         #If lower and upper bounds are specified in the Kinetic Law then
@@ -265,11 +269,8 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             reaction.subsystem = reaction_note_dict['SUBSYSTEM'][0]   
 
 
-        #TODO: Use the cobra.metabolite objects here.
-        reaction.add_metabolites(cobra_metabolites)
 
     #Now, add all of the reactions to the model.
-    cobra_model = Model(sbml_model_id)
     cobra_model.description = sbml_model.getId()
     #Populate the compartment list - This will be done based on cobra.Metabolites
     #in cobra.Reactions in the future.

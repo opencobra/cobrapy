@@ -10,7 +10,7 @@ from os.path import isfile
 
 from cobra import Model
 from cobra.version import get_version
-from cobra.io import read_sbml_model, read_legacy_sbml
+from cobra.io import read_sbml_model, read_legacy_sbml, write_sbml_model
 from cobra.io import save_matlab_model, save_json_model
 from cobra.test import create_test_model
 
@@ -40,4 +40,5 @@ for model_name in model_names:
     if model_name == "iJO1366":
         save_matlab_model(new_model, model_name + ".mat")
         save_json_model(new_model, model_name + ".json")
-
+    if model_name == "salmonella":
+        write_sbml_model(new_model, model_name + "_fbc.xml")
