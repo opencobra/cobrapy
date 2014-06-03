@@ -1,19 +1,19 @@
 from warnings import catch_warnings
 from tempfile import gettempdir
 from os import unlink
-from os.path import join
+from os.path import join, split
 from unittest import TestCase, TestLoader, TextTestRunner, skipIf
 import sys
 
 if __name__ == "__main__":
     from cobra import io
     from cobra.test import data_directory, create_test_model
-    from cobra.test import ecoli_mat, ecoli_pickle
+    from cobra.test import ecoli_mat, ecoli_pickle, ecoli_json
     from cobra.test import salmonella_sbml, salmonella_pickle
 else:
     from .. import io
     from . import data_directory, create_test_model
-    from . import ecoli_mat, ecoli_pickle
+    from . import ecoli_mat, ecoli_pickle, ecoli_json
     from . import salmonella_sbml, salmonella_pickle
 
 libraries = ["scipy", "libsbml"]
@@ -38,11 +38,11 @@ class TestCobraIO(object):
             self.assertEqual(getattr(model1.reactions[-1], attr),
                              getattr(model2.reactions[-1], attr))
         self.assertEqual(len(model1.reactions[0].metabolites),
-                         len(model2.reactions[0].metabolties))
+                         len(model2.reactions[0].metabolites))
         self.assertEqual(len(model1.reactions[20].metabolites),
-                         len(model2.reactions[20].metabolties))
+                         len(model2.reactions[20].metabolites))
         self.assertEqual(len(model1.reactions[-1].metabolites),
-                         len(model2.reactions[-1].metabolties))
+                         len(model2.reactions[-1].metabolites))
     def test_read(self):
         #with catch_warnings(record=True) as w:
         read_model = self.read_function(self.test_file)
@@ -53,8 +53,8 @@ class TestCobraIO(object):
         self.assertRaises(IOError, self.read_function, "fake_file")
 
     def test_write_and_reread(self):
-        test_output_filename = join(gettempdir(), 'test_write')
-        self.write_function(self.model, test_output_filename)
+        test_output_filename = join(gettempdir(), split(self.test_file)[-1])
+        self.write_function(self.test_model, test_output_filename)
         #with catch_warnings(record=True) as w:
         reread_model = self.read_function(test_output_filename)
         self.compare_models(self.test_model, reread_model)
@@ -77,7 +77,6 @@ class TestCobraIOmat(TestCase, TestCobraIO):
         self.write_function = io.save_matlab_model
 
 
-@skipIf(True, "json test files not built yet")
 class TestCobraIOjson(TestCase, TestCobraIO):
     def setUp(self):
         self.test_model = create_test_model(ecoli_pickle)
