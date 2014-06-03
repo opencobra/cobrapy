@@ -3,6 +3,7 @@ from tempfile import gettempdir
 from os import unlink
 from os.path import join, split
 from unittest import TestCase, TestLoader, TextTestRunner, skipIf
+from functools import partial
 import sys
 
 if __name__ == "__main__":
@@ -10,11 +11,13 @@ if __name__ == "__main__":
     from cobra.test import data_directory, create_test_model
     from cobra.test import ecoli_mat, ecoli_pickle, ecoli_json
     from cobra.test import salmonella_sbml, salmonella_pickle
+    from cobra.test import salmonella_fbc_sbml
 else:
     from .. import io
     from . import data_directory, create_test_model
     from . import ecoli_mat, ecoli_pickle, ecoli_json
     from . import salmonella_sbml, salmonella_pickle
+    from . import salmonella_fbc_sbml
 
 libraries = ["scipy", "libsbml"]
 for library in libraries:
@@ -37,6 +40,13 @@ class TestCobraIO(object):
                              getattr(model2.reactions[10], attr))
             self.assertEqual(getattr(model1.reactions[-1], attr),
                              getattr(model2.reactions[-1], attr))
+        for attr in ("id", "name"):
+            self.assertEqual(getattr(model1.metabolites[0], attr),
+                             getattr(model2.metabolites[0], attr))
+            self.assertEqual(getattr(model1.metabolites[10], attr),
+                             getattr(model2.metabolites[10], attr))
+            self.assertEqual(getattr(model1.metabolites[-1], attr),
+                             getattr(model2.metabolites[-1], attr))
         self.assertEqual(len(model1.reactions[0].metabolites),
                          len(model2.reactions[0].metabolites))
         self.assertEqual(len(model1.reactions[20].metabolites),
@@ -67,6 +77,15 @@ class TestCobraIOSBML(TestCase, TestCobraIO):
         self.test_file = salmonella_sbml
         self.read_function = io.read_sbml_model
         self.write_function = io.write_sbml_model
+
+@skipIf(not libsbml, "libsbml required")
+class TestCobraIOSBMLfbc(TestCase, TestCobraIO):
+    def setUp(self):
+        self.test_model = create_test_model()
+        self.test_file = salmonella_fbc_sbml
+        self.read_function = io.read_sbml_model
+        self.write_function = partial(io.write_sbml_model,
+                                      use_fbc_package=True)
 
 @skipIf(not scipy, "scipy required")
 class TestCobraIOmat(TestCase, TestCobraIO):
