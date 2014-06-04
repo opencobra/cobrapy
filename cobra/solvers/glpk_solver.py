@@ -163,6 +163,18 @@ def update_problem(lp, cobra_model, **kwargs):
             c.bounds = the_reaction.lower_bound, the_reaction.upper_bound
             c.kind = variable_kind_dict[the_reaction.variable_kind]
 
+def change_coefficient(lp, met_index, rxn_index, value):
+    col = lp.cols[rxn_index]
+    mat = col.matrix
+    for i, entry in enumerate(mat):
+        if entry[0] == met_index:
+            mat[i] = (met_index, value)
+            col.matrix = mat
+            return
+    # need to append
+    mat.append((met_index, value))
+    col.matrix = mat
+
 
 def solve_problem(lp, **kwargs):
     """A performance tunable method for updating a model problem file

@@ -120,7 +120,7 @@ cdef class GLP:
         glp_set_col_bnds(self.glp, index + 1, bound_type, lower_bound, upper_bound)
 
 
-    def change_stoichiometry(self, int met_index, int rxn_index, double value):
+    def change_coefficient(self, int met_index, int rxn_index, double value):
         cdef int col_length, i
         cdef int *indexes
         cdef double *values

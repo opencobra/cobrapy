@@ -152,6 +152,40 @@ class TestCobraSolver(object):
             feasible_solution.f, places=4)
         self.assertEqual(infeasible_solution.status, "infeasible")
 
+
+    def test_change_coefficient(self):
+        solver = self.solver
+        c = Metabolite("c")
+        c._bound = 6
+        x = Reaction("x")
+        x.lower_bound = 1.
+        y = Reaction("y") 
+        y.lower_bound = 0.
+        x.add_metabolites({c: 1})
+        #y.add_metabolites({c: 1})
+        z = Reaction("z")
+        z.add_metabolites({c: 1})
+        z.objective_coefficient = 1
+        m = Model("test_model")
+        m.add_reactions([x, y, z])
+        # change an existing coefficient
+        lp = solver.create_problem(m)
+        solver.solve_problem(lp)
+        sol1 = solver.format_solution(lp, m)
+        solver.change_coefficient(lp, 0, 0, 2)
+        solver.solve_problem(lp)
+        sol2 = solver.format_solution(lp, m)
+        self.assertAlmostEqual(sol1.f, 5.0)
+        self.assertAlmostEqual(sol2.f, 4.0)
+        # change a new coefficient
+        z.objective_coefficient = 0.
+        y.objective_coefficient = 1.
+        lp = solver.create_problem(m)
+        solver.change_coefficient(lp, 0, 1, 2)
+        solver.solve_problem(lp)
+        solution = solver.format_solution(lp, m)
+        self.assertAlmostEqual(solution.x_dict["y"], 2.5)
+
     @skipIf(scipy is None, "scipy required for quadratic objectives")
     def test_quadratic(self):
         solver = self.solver

@@ -67,6 +67,12 @@ def change_variable_objective(lp, index, objective):
     variable.obj = objective
 
 
+def change_coefficient(lp, met_index, rxn_index, value):
+    met = lp.getConstrByName(str(met_index))
+    rxn = lp.getVarByName(str(rxn_index))
+    lp.chgCoeff(met, rxn, value)
+
+
 def update_problem(lp, cobra_model, **kwargs):
     """A performance tunable method for updating a model problem file
 
@@ -131,7 +137,7 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
     #Construct the lin expression lists and then add
     #TODO: Speed this up as it takes about .18 seconds
     #HERE
-    for the_metabolite in cobra_model.metabolites:
+    for i, the_metabolite in enumerate(cobra_model.metabolites):
         constraint_coefficients = []
         constraint_variables = []
         for the_reaction in the_metabolite._reaction:
@@ -141,12 +147,13 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
         lp.addConstr(LinExpr(constraint_coefficients, constraint_variables),
                      sense_dict[the_metabolite._constraint_sense.upper()],
                      the_metabolite._bound,
-                     the_metabolite.id)
+                     str(i))
 
     # Set objective to quadratic program
     if quadratic_component is not None:
         set_quadratic_objective(lp, quadratic_component)
 
+    lp.update()
     return(lp)
 
 
