@@ -539,11 +539,11 @@ def add_sbml_species(sbml_model, cobra_metabolite, note_start_tag,
                 if the_id_type.lower() == 'charge':
                     continue #Use of notes['CHARGE'] has been deprecated in favor of metabolite.charge
                 if not isinstance(the_id_type, str):
-                    the_id_type = repr(the_id_type)
+                    the_id_type = str(the_id_type)
                 if hasattr(the_id, '__iter__') and len(the_id) == 1:
                     the_id = the_id[0]
                 if not isinstance(the_id, str):
-                    the_id = repr(the_id)
+                    the_id = str(the_id)
                 tmp_note += '%s%s: %s%s'%(note_start_tag,
                                              the_id_type,
                                              the_id, note_end_tag)
@@ -585,7 +585,7 @@ def read_legacy_sbml(filename, use_hyphens=False):
             reaction.id = reaction.id[:-3] + "_e"
     model.reactions._generate_index()
     # remove boundary metabolites (end in _b and only present in exchanges)
-    for metabolite in model.metabolites:
+    for metabolite in list(model.metabolites):
         if not metabolite.id.endswith("_b"):
             continue
         if len(metabolite._reaction) == 1:
