@@ -58,6 +58,22 @@ def call_git_describe(abbrev=7):
     except:
         return None
 
+def get_version_git(pep440=False):
+    git_str = call_git_describe()
+    if git_str is None:
+        return None
+    git_split = git_str.split("-")
+    if "-" not in git_str:  # currently at a tag
+        return git_str
+    else:
+        # formatted as version-N-githash
+        # want to convert to version.postN-githash
+        git_str = git_str.replace("-", ".post", 1)
+        if pep440:  # does not allow git hash afterwards
+            return git_str.split("-")[0]
+        else:
+            return git_str
+
 
 def read_release_version():
     try:
@@ -81,14 +97,11 @@ def get_version():
     However, if the script is located within an active git repository,
     git-describe is used to get the version information.
 
-    The file VERSION will need to be changed by manually. This only
-    needs to occur twice per release:
-      - Once right before running git tag (set to the same as the version in
-        the tag).
-      - Once right after running git tag (set to next_version.dev)
+    The file VERSION will need to be changed by manually. This should be done
+    before running git tag (set to the same as the version in the tag).
     """
 
-    git_version = call_git_describe()
+    git_version = get_version_git()
     if git_version is None:  # not a git repository
         return read_release_version()
     return git_version
