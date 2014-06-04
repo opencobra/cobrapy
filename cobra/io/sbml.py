@@ -8,6 +8,8 @@ from copy import deepcopy
 from time import time
 from warnings import warn
 import re
+from math import isnan, isinf
+
 #
 if __name == 'java':
     from org.sbml.jsbml import SBMLDocument, SpeciesReference, KineticLaw, Parameter
@@ -236,6 +238,12 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             reaction.objective_coefficient = parameter_dict['objective coefficient']
         else:
             reaction.objective_coefficient = __default_objective_coefficient
+
+        # ensure values are not set to nan or inf
+        if isnan(reaction.lower_bound) or isinf(reaction.lower_bound):
+            reaction.lower_bound = __default_lower_bound
+        if isnan(reaction.upper_bound) or isinf(reaction.upper_bound):
+            reaction.upper_bound = __default_upper_bound
 
         reaction_note_dict = parse_legacy_sbml_notes(sbml_reaction.getNotesString())
         #Parse the reaction notes.

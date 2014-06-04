@@ -44,7 +44,9 @@ class Formula(Object):
             elif str.isdigit(count):
                 count = int(count)
             else:
-                raise ValueError("%s is not an integer (in formula %s)" % (count, formula))
+                warn("%s is not an integer (in formula %s)" % (count, self.formula))
+                self.elements = {}
+                return
             if element in composition:
                 composition[element] += count
             else:

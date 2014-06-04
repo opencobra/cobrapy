@@ -53,6 +53,11 @@ class TestCobraIO(object):
                          len(model2.reactions[20].metabolites))
         self.assertEqual(len(model1.reactions[-1].metabolites),
                          len(model2.reactions[-1].metabolites))
+        # ensure they have the same solution max
+        model1.optimize()
+        model2.optimize()
+        self.assertAlmostEqual(model1.solution.f, model2.solution.f,
+                places=3)
     def test_read(self):
         #with catch_warnings(record=True) as w:
         read_model = self.read_function(self.test_file)
