@@ -1,4 +1,5 @@
-# distutils: libraries = glpk
+# distutils: libraries=glpk
+# cython: embedsignature=True
 
 from glpk cimport *
 from libc.stdlib cimport malloc, free
