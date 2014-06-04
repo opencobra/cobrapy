@@ -1,8 +1,7 @@
-# cobra/examples/03_single_deletion.py
 # This example demonstrates a single gene deletion simulation
 from time import time
 
-from cobra.flux_analysis import single_deletion
+from cobra.flux_analysis.single_deletion import single_deletion
 from cobra.manipulation import initialize_growth_medium
 from cobra.test import create_test_model, salmonella_pickle  # test filename
 
@@ -20,7 +19,7 @@ expected_growth_rates = {
 start_time = time()  # start timer
 
 # Perform deletions for all genes in the list
-rates, statuses, problems = single_deletion(cobra_model, target_genes)
+rates, statuses = single_deletion(cobra_model, target_genes)
 
 total_time = time() - start_time  # stop timer
 
@@ -32,9 +31,9 @@ for gene_locus, rate in rates.items():
     name = cobra_model.genes.get_by_id(gene_locus).name
     # test if the simulation failed
     if statuses[gene_locus] != "optimal":
-        print "deletion failed for %s (%s)" % (name, gene_locus)
+        print("deletion failed for %s (%s)" % (name, gene_locus))
     if abs(rate - expected_growth_rates[gene_locus]) > 0.01:
-        print failed_string % (name, rate, expected_growth_rates[gene_locus])
+        print(failed_string % (name, rate, expected_growth_rates[gene_locus]))
     else:
-        print passed_string % (name, rate, expected_growth_rates[gene_locus])
-print 'single deletion time: %f seconds' % (total_time)
+        print(passed_string % (name, rate, expected_growth_rates[gene_locus]))
+print('single deletion time: %f seconds' % (total_time))

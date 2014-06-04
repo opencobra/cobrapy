@@ -76,7 +76,7 @@ def set_parameter(lp, parameter_name, parameter_value):
 
 
 
-def create_problem(cobra_model,  **kwargs):
+def create_problem(cobra_model, quadratic_component=None, **kwargs):
     """Solver-specific method for constructing a solver problem from
     a cobra.Model.  This can be tuned for performance using kwargs
 
@@ -93,9 +93,6 @@ def create_problem(cobra_model,  **kwargs):
         lp.set_warning_stream(None)
     [set_parameter(lp, parameter_mappings[k], v)
      for k, v in the_parameters.iteritems() if k in parameter_mappings]
-    quadratic_component = the_parameters['quadratic_component']
-    new_objective = the_parameters['new_objective']
-    error_reporting = the_parameters['error_reporting']
     if 'relax_b' in the_parameters:
         warn('need to reimplement relax_b')
         relax_b = False
@@ -153,15 +150,9 @@ def create_problem(cobra_model,  **kwargs):
             coefficient_list.append(the_reaction._metabolites[the_metabolite])
         the_linear_expressions.append(SparsePair(ind=variable_list,
                                                  val=coefficient_list))
+    # Set objective to quadratic program
     if quadratic_component is not None:
-        if not hasattr(quadratic_component, 'todok'):
-            raise Exception('quadratic component must have method todok')
-        quadratic_component_scaled = quadratic_component.todok()
-
-        lp.parameters.emphasis.numerical.set(1)
-        for k, v in quadratic_component_scaled.items():
-            lp.objective.set_quadratic_coefficients(int(k[0]), int(k[1]), v)
-
+        set_quadratic_objective(lp, quadratic_component)
 
     if relax_b:
         lp.linear_constraints.add(lin_expr=the_linear_expressions,
@@ -176,10 +167,6 @@ def create_problem(cobra_model,  **kwargs):
                                   senses=constraint_sense,
                                   names=constraint_names)
 
-    if error_reporting == 'time':
-        print 'setup new problem: ' + repr(time()-start_time)
-        start_time = time()
-
     #Set the problem type as cplex doesn't appear to do this correctly
     problem_type = Cplex.problem_type.LP
     if Cplex.variables.type.integer in variable_kinds:
@@ -192,6 +179,22 @@ def create_problem(cobra_model,  **kwargs):
     lp.set_problem_type(problem_type)
     return(lp)
 
+
+def set_quadratic_objective(lp, quadratic_objective):
+    if not hasattr(quadratic_objective, 'todok'):
+        raise Exception('quadratic component must have method todok')
+
+    # Reset the quadratic coefficient if it exists
+    if lp.objective.get_num_quadratic_nonzeros() > 0:
+        lp.objective.set_quadratic((0.,) * lp.variables.get_num())
+
+    # cplex divides by 2 for some reason
+    quadratic_component_scaled = quadratic_objective.todok() * 2
+
+    lp.parameters.emphasis.numerical.set(1)
+    for k, v in quadratic_component_scaled.items():
+        lp.objective.set_quadratic_coefficients(int(k[0]), int(k[1]), v)
+
 def change_variable_bounds(lp, index, lower_bound, upper_bound):
     lp.variables.set_lower_bounds(index, lower_bound)
     lp.variables.set_upper_bounds(index, upper_bound)
@@ -199,6 +202,9 @@ def change_variable_bounds(lp, index, lower_bound, upper_bound):
 def change_variable_objective(lp, index, objective):
     lp.objective.set_linear(index, objective)
 
+
+def change_coefficient(lp, met_index, rxn_index, value):
+    lp.linear_constraints.set_coefficients(met_index, rxn_index, value)
 
 def update_problem(lp, cobra_model, **kwargs):
     """A performance tunable method for updating a model problem file
@@ -210,10 +216,7 @@ def update_problem(lp, cobra_model, **kwargs):
     """
     #When reusing the basis only assume that the objective coefficients or bounds can change
     #BUG with changing / unchanging the basis
-    try:
-        new_objective = kwargs['new_objective']
-    except:
-        new_objective = None
+
     try:
         update_problem_reaction_bounds = kwargs['update_problem_reaction_bounds']
     except:
@@ -272,31 +275,14 @@ def solve(cobra_model, **kwargs):
     the_parameters = deepcopy(parameter_defaults)
     if kwargs:
         the_parameters.update(kwargs)
-    #Update objectives if they are new.
-    if 'new_objective' in the_parameters and \
-           the_parameters['new_objective'] not in ['update problem', None]:
-       from ..flux_analysis.objective import update_objective
-       update_objective(cobra_model, the_parameters['new_objective'])
-
-    if 'the_problem' in the_parameters:
-        the_problem = the_parameters['the_problem']
-    else:
-        the_problem = None
+    for i in ["new_objective", "update_problem", "the_problem"]:
+        if i in the_parameters:
+            raise Exception("Option %s removed" % i)
     if 'error_reporting' in the_parameters:
-        error_reporting = the_parameters['error_reporting']
-    else:
-        error_reporting = False
-    if isinstance(the_problem, __solver_class):
-        #Update the problem with the current cobra_model
-        lp = the_problem
-        update_problem(lp, cobra_model, **the_parameters)
-    else:
-        #Create a new problem
-        lp = create_problem(cobra_model, **the_parameters)
-    #Deprecated way for returning a solver problem created from a cobra_model
-    #without performing optimization
-    if the_problem == 'setup':
-        return lp
+        warn("error_reporting deprecated")
+
+
+    lp = create_problem(cobra_model, **the_parameters)
 
     ###Try to solve the problem using other methods if the first method doesn't work
     try:
@@ -318,8 +304,8 @@ def solve(cobra_model, **kwargs):
             break
 
     the_solution = format_solution(lp, cobra_model)
-    if status != 'optimal' and error_reporting:
-        print '%s failed: %s'%(solver_name, status)
-    cobra_model.solution = the_solution
-    solution = {'the_problem': lp, 'the_solution': the_solution}
-    return solution
+    #if status != 'optimal':
+    #    print '%s failed: %s'%(solver_name, status)
+    #cobra_model.solution = the_solution
+    #solution = {'the_problem': lp, 'the_solution': the_solution}
+    return the_solution

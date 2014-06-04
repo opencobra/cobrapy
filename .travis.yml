@@ -1,16 +1,15 @@
 language: python
-#python:
-# - "2.6"
-# - "2.7"
+python:
+ - "2.7"
+ - "3.3"
+ - "3.4"
 # command to install dependencies
-virtualenv:
-  system_site_packages: true
 before_install:
-  - sudo apt-get install libglpk-dev python-scipy libgmp-dev
+  - sudo apt-get install libglpk-dev libgmp-dev
+  - export PIP_OPTS="-f https://pypi.drosophi.la --no-index"
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install glpk $PIP_OPTS; fi
+  - pip install python-libsbml-experimental cython numpy scipy $PIP_OPTS
 install:
-  - ln -s /usr/lib/python2.7/dist-packages/scipy ~/virtualenv/python2.7/lib/python2.7/site-packages/
-  - pip install http://clostridium.ucsd.edu/python_libsbml_experimental-5.9.2-cp27-none-linux_x86_64.whl
-  - pip install glpk cython
   - python setup.py develop
 # # command to run tests
 script: python setup.py test

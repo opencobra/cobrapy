@@ -1,6 +1,9 @@
 #cobra.manipulation.modify.py
 import re
 from copy import deepcopy
+
+from warnings import warn
+
 def prune_unused_metabolites(cobra_model):
     """Removes metabolites that aren't involved in any reactions in the model
 
@@ -18,7 +21,7 @@ def prune_unused_metabolites(cobra_model):
     if inactive_metabolites:
         return inactive_metabolites
     else:
-        print 'All metabolites used in at least 1 reaction'
+        warn('All metabolites used in at least 1 reaction')
 
     
 def prune_unused_reactions(cobra_model):
@@ -40,10 +43,9 @@ def prune_unused_reactions(cobra_model):
             the_reaction.remove_from_model(cobra_model)
             pruned_reactions.append(the_reaction)
         except:
-            print '%s not in %s'%(the_reaction.id,
-                                      cobra_model.id)
+            warn('%s not in %s' % (the_reaction.id, cobra_model.id))
     if not pruned_reactions:
-        print 'All reactions have at least 1 metabolite'
+        warn('All reactions have at least 1 metabolite')
         return
 
 
@@ -156,7 +158,7 @@ if __name__ == '__main__':
     from cobra.test import create_test_model
     cobra_model = create_test_model()
 
-    print "move to test"
+
     #TODO: Add in tests for each function
     cumulative_deletions=False
     disable_orphans=False
@@ -178,9 +180,9 @@ if __name__ == '__main__':
     delete_model_genes(cobra_model, gene_list)
     symmetric_difference = dependent_reactions.symmetric_difference([x.id for x in cobra_model._trimmed_reactions])
     if len(symmetric_difference) == 0:
-        print 'Successful deletion of %s'%repr(gene_list)
+        'Successful deletion of %s'%repr(gene_list)
     else:
-        print 'Failed deletion of %s\n%s reactions did not match'%(repr(gene_list),
+        'Failed deletion of %s\n%s reactions did not match'%(repr(gene_list),
                                                                    repr(symmetric_difference))
 
 

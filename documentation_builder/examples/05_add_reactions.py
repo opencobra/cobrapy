@@ -1,11 +1,10 @@
-# cobra/examples/05_create_model.py
 # This example shows how to modify an existing cobra model and change the
 # objective function. We'll use the '3 oxoacyl acyl carrier protein synthase n C140'
 # reaction from the STM_1.0 model which currently has the ID of 'my_new_reaction':
 #  
 # 1.0 malACP[c] + 1.0 h[c] + 1.0 ddcaACP[c] -> 1.0 co2[c] + 1.0 ACP[c] + 1.0 3omrsACP[c]
 #
-from cPickle import dump
+
 from time import time
 
 from cobra.flux_analysis import single_deletion
@@ -50,18 +49,19 @@ reaction.add_metabolites({malACP_c: -1.0,
                           omrsACP_c: 1.0})
 
 #Print the reaction to make sure it worked:
-print reaction.reaction
+print((reaction.reaction))
 
-print '%i reactions in original model' % len(cobra_model.reactions)
+print('%i reactions in original model' % len(cobra_model.reactions))
 #Add the reaction to the model
-cobra_model.add_reactions(reaction)
-print '%i reaction in updated model' % len(cobra_model.reactions)
+cobra_model.add_reaction(reaction)
+print(('%i reaction in updated model' % len(cobra_model.reactions)))
 
 cobra_model.optimize()
-print 'solution for old objective (should be approximately 0.320):'
-print cobra_model.solution.f
+print('solution for old objective (should be approximately 0.380):')
+print((cobra_model.solution.f))
 
-print 'Changing objective to newly added reaction: %s' % reaction.id
-cobra_model.optimize(new_objective=reaction)
-print 'solution for %s (should be approximately 2.505):' % reaction.id
-print cobra_model.solution.f
+print(('Changing objective to newly added reaction: %s' % reaction.id))
+cobra_model.change_objective(reaction)
+cobra_model.optimize()
+print(('solution for %s (should be approximately 0.845):' % reaction.id))
+print((cobra_model.solution.f))

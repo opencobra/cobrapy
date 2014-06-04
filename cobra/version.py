@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
 __all__ = ("get_version")
 
@@ -53,7 +54,7 @@ def call_git_describe(abbrev=7):
             arguments = [git_command, "describe", "--tags",
                          "--abbrev=%d" % abbrev]
             return check_output(arguments, cwd=current_directory,
-                                stderr=fnull).strip()
+                                stderr=fnull).decode("ascii").strip()
     except:
         return None
 
@@ -61,7 +62,7 @@ def call_git_describe(abbrev=7):
 def read_release_version():
     try:
         with open(version_file, "r") as infile:
-            version = infile.read().strip()
+            version = str(infile.read().strip())
         if len(version) == 0:
             version = None
         return version
@@ -94,4 +95,4 @@ def get_version():
 
 
 if __name__ == "__main__":
-    print get_version()
+    print(get_version())

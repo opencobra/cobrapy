@@ -1,14 +1,16 @@
-#from .essentiality import assess_medium_component_essentiality
-#from .variability import flux_variability_analysis
-#from .single_deletion import single_deletion
+try:
+    import numpy
+except:
+    numpy = None
 
-from os import name as __name
-from warnings import warn
-if __name == 'java':
-    warn('double_deletion functions and moma are not yet supported on %s'%__name)
+from .essentiality import assess_medium_component_essentiality
+from .variability import flux_variability_analysis
+from .single_deletion import single_deletion
+
+if numpy:
+    from .double_deletion import double_deletion
 else:
-    try:
-        from .double_deletion import double_deletion
-    except Exception, e:
-        from warnings import warn
-        warn("double_deletion is not accessible: %s"%e)
+    from warnings import warn
+    warn("double_deletion requires numpy")
+    del warn
+del numpy

@@ -3,8 +3,8 @@
 from glpk cimport *
 from libc.stdlib cimport malloc, free
 
-from tempfile import NamedTemporaryFile  # for pickling
-from os import unlink
+from tempfile import NamedTemporaryFile as _NamedTemporaryFile  # for pickling
+from os import unlink as _unlink
 
 __glpk_version__ = glp_version()
 
@@ -30,10 +30,11 @@ cdef class GLP:
         cdef int *c_rows
         cdef int *c_cols
         cdef double *c_values
+        glp_term_out(GLP_OFF)
         
         # initialize parameters
         self.parameters.msg_lev = GLP_MSG_ERR
-        
+
         if cobra_model is None:
             return
         glp = self.glp
@@ -119,6 +120,34 @@ cdef class GLP:
         glp_set_col_bnds(self.glp, index + 1, bound_type, lower_bound, upper_bound)
 
 
+    def change_coefficient(self, int met_index, int rxn_index, double value):
+        cdef int col_length, i
+        cdef int *indexes
+        cdef double *values
+        # glpk uses 1 indexing
+        met_index += 1
+        rxn_index += 1
+        # we first have to get the old column
+        col_length = glp_get_mat_col(self.glp, rxn_index, NULL, NULL)
+        indexes = <int *> malloc((col_length + 2) * sizeof(int))
+        values = <double *> malloc((col_length + 2) * sizeof(double))
+        if indexes == NULL or values == NULL:
+            raise MemoryError()
+        glp_get_mat_col(self.glp, rxn_index, indexes, values)
+        # search for duplicate
+        for i in range(col_length):
+            # if a duplicate exists replace that value and exit
+            if indexes[i + 1] == met_index:
+                values[i + 1] = value
+                glp_set_mat_col(self.glp, rxn_index, col_length, indexes, values)
+                return
+        # need to add a new entry
+        indexes[col_length + 1] = met_index
+        values[col_length + 1] = value
+        glp_set_mat_col(self.glp, rxn_index, col_length + 1, indexes, values)
+        free(indexes)
+        free(values)
+
     def solve_problem(self, **solver_parameters):
         cdef int result
         cdef glp_smcp parameters = self.parameters
@@ -135,17 +164,18 @@ cdef class GLP:
         # threads at the same time will probably cause problems
         # because glpk itself is not thread safe
 
-        with nogil:
-            result = glp_simplex(glp, &parameters)
+        #with nogil:  # we can use this if glpk ever gets thread-safe malloc
+        result = glp_simplex(glp, &parameters)
         assert result == 0
         if self.is_mip():
             self.integer_parameters.tm_lim = self.parameters.tm_lim
             self.integer_parameters.msg_lev = self.parameters.msg_lev
             #self.integer_parameters.tol_bnd = self.parameters.tol_bnd
             #self.integer_parameters.tol_piv = self.parameters.tol_piv
-            
-            with nogil:
-                result = glp_intopt(glp, &integer_parameters)
+            glp_term_out(GLP_OFF)  # prevent verborse MIP output
+            #with nogil:
+            result = glp_intopt(glp, &integer_parameters)
+            glp_term_out(GLP_ON)
             assert result == 0
         return self.get_status()
 
@@ -154,8 +184,9 @@ cdef class GLP:
         problem = cls.create_problem(cobra_model)
         problem.solve_problem(**kwargs)
         solution = problem.format_solution(cobra_model)
-        cobra_model.solution = solution
-        return {"the_problem": problem, "the_solution": solution}
+        #cobra_model.solution = solution
+        #return {"the_problem": problem, "the_solution": solution}
+        return solution
     solve = classmethod(solve)
 
 
@@ -194,6 +225,7 @@ cdef class GLP:
             self.parameters.tm_lim = 1000 * int(value)
         elif parameter_name == "tolerance_feasibility":
             self.parameters.tol_bnd = float(value)
+            self.parameters.tol_dj = float(value)
         elif parameter_name == "tolerance_markowitz":
             self.parameters.tol_piv = float(value)
         elif parameter_name == "tolerance_integer":
@@ -261,14 +293,14 @@ cdef class GLP:
     def __getstate__(self):
         cdef int result
         cdef char *name
-        tempfile = NamedTemporaryFile(mode="r", delete=False)
+        tempfile = _NamedTemporaryFile(mode="r", delete=False)
         name = tempfile.name
         tempfile.close()
         result = glp_write_prob(self.glp, 0, name)
         assert result == 0
         with open(name, "r") as infile:
             state = infile.read()
-        unlink(name)
+        _unlink(name)
         return state
 
 
@@ -279,12 +311,12 @@ cdef class GLP:
     def __setstate__(self, state):
         cdef int result
         cdef char *name = NULL
-        with NamedTemporaryFile(mode="w", delete=False) as tempfile:
+        with _NamedTemporaryFile(mode="w", delete=False) as tempfile:
             name = tempfile.name
             tempfile.write(state)
         result = glp_read_prob(self.glp, 0, name)
         assert result == 0
-        unlink(name)
+        _unlink(name)
 
 
     def __copy__(self):

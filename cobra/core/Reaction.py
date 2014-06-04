@@ -1,3 +1,8 @@
+from __future__ import print_function
+
+from ..external.six import string_types, iteritems
+
+
 #Is it better to restrict a Reaction to a single model or
 #should we allow a Reaction to be associated with multiple models?
 #
@@ -22,6 +27,9 @@ class Frozendict(dict):
 
     def popitem(self):
         raise NotImplementedError("read-only")
+
+
+and_or_search = re.compile('\(| and| or|\+|\)', re.IGNORECASE)
 
 class Reaction(Object):
     """Reaction is a class for holding information regarding
@@ -79,7 +87,7 @@ class Reaction(Object):
     @gene_reaction_rule.setter
     def gene_reaction_rule(self, new_rule):
         self._gene_reaction_rule = new_rule
-        gene_names = set((re.compile(' {2,}').sub(' ', re.compile('\(| and| or|\+|\)').sub('', self._gene_reaction_rule))).split(' ' ))
+        gene_names = set((re.compile(' {2,}').sub(' ', and_or_search.sub('', self._gene_reaction_rule))).split(' ' ))
         if '' in gene_names:
                 gene_names.remove('')
         old_genes = self._genes
@@ -252,14 +260,15 @@ class Reaction(Object):
 
 
         """
+        warn("deprecated")
         the_copy = Object.guided_copy(self)
         #Replace the complex items in a faster fashion
         the_copy._model = the_model
         if gene_dict:
             the_copy._genes = set([gene_dict[k.id]
                                 for k in self._genes])
-        the_copy._metabolites = dict([(metabolite_dict[k.id], v)
-                                      for k, v in self._metabolites.iteritems()])
+        the_copy._metabolites = {metabolite_dict[k.id]: v
+                                 for k, v in iteritems(self._metabolites)}
 
         #make the metabolites and genes aware of the reaction
         [k._reaction.add(the_copy)
@@ -273,10 +282,19 @@ class Reaction(Object):
         """Remove a metabolite from the reaction and return the
         stoichiometric coefficient.
 
-        the_metabolite: A cobra.Metabolite that is in the reaction
-    
-        
+        the_metabolite: A cobra.Metabolite that is in the reaction or its id
+
         """
+        if isinstance(the_metabolite, string_types):
+            found_match = None
+            for possible_match in self._metabolites:
+                if possible_match.id == the_metabolite:
+                    found_match = possible_match
+                    break
+            if found_match is None:
+                raise KeyError("No metabolite named %s in the reaction" % the_metabolite)
+            else:
+                the_metabolite = found_match
         the_coefficient = self._metabolites.pop(the_metabolite)
         the_metabolite._reaction.remove(self)
         return the_coefficient
@@ -539,16 +557,13 @@ class Reaction(Object):
         """Prints most of the contents of a reaction as a series of strings.
         
         """
-        
-        print "reaction:", self.id
-        print "subsystem", self.subsystem
-        print self.reaction
-        print "metabolites:"
-        print self._metabolites
-        print "bounds: (%.2f, %.2f)" % (self.lower_bound, self.upper_bound)
-        print "objective_coefficient", self.objective_coefficient
-        print "gene reaction rule:", self.gene_reaction_rule
-        print "all genes:", ", ".join(i.id for i in self._genes)
+        warn("deprecated")
+        print("reaction:", self.id)
+        print("subsystem", self.subsystem)
+        print(self.reaction)
+        print("bounds: (%.2f, %.2f)" % (self.lower_bound, self.upper_bound))
+        print("objective_coefficient", self.objective_coefficient)
+        print("gene reaction rule:", self.gene_reaction_rule)
 
 
     def get_compartments(self):
@@ -567,7 +582,7 @@ class Reaction(Object):
         try:
             self._genes.remove(cobra_gene)
             cobra_gene._reaction.remove(self)
-        except Exception, e:
+        except Exception as e:
             try:
                 if hasattr(self._genes, 'keys'):
                     self._genes = set(self._genes.keys())
@@ -586,7 +601,7 @@ class Reaction(Object):
             self._genes.add(cobra_gene)
             cobra_gene._reaction.add(self)
             cobra_gene._model = self._model
-        except Exception, e:
+        except Exception as e:
             try:
                 if hasattr(self._genes, 'keys'):
                     self._genes = set(self._genes.keys())
@@ -612,3 +627,10 @@ class Reaction(Object):
         """
         self._genes.remove(cobra_gene)
         cobra_gene._reaction.remove(self)
+                
+    def knock_out(self):
+        """Change the upper and lower bounds of the reaction to 0.
+ 
+        """
+        self.lower_bound = 0
+        self.upper_bound = 0

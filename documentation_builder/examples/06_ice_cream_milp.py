@@ -1,5 +1,3 @@
-# cobra/examples/06_ice_cream_milp.py
-#
 # Advanced user example showing how to set up and solve an MILP
 #
 
@@ -12,12 +10,12 @@ popsicle_selling_price = 2.
 popsicle_production_cost = 1.
 starting_budget = 100.
 
-print
-print('I can sell cones for $%1.2f.'%(cone_selling_price))
-print('Cones cost me $%1.2f to produce.'%(cone_production_cost))
-print('I can sell popsicles for $%1.2f.'%(popsicle_selling_price))
-print('Popsicles cost me $%1.2f to produce.'%(popsicle_production_cost))
-print('My total budget was capped at $%1.2f today.'%(starting_budget))
+print()
+print(('I can sell cones for $%1.2f.'%(cone_selling_price)))
+print(('Cones cost me $%1.2f to produce.'%(cone_production_cost)))
+print(('I can sell popsicles for $%1.2f.'%(popsicle_selling_price)))
+print(('Popsicles cost me $%1.2f to produce.'%(popsicle_production_cost)))
+print(('My total budget was capped at $%1.2f today.'%(starting_budget)))
 
 # problem is:
 # max profit
@@ -108,29 +106,29 @@ production_capacity_constraint._bound = starting_budget;
 Cone_production.add_metabolites({production_capacity_constraint: cone_production_cost })
 Popsicle_production.add_metabolites({production_capacity_constraint: popsicle_production_cost })
 
-print
+print()
 print('Here is what happens in the continuous (LP) case...')
 
 the_program = cobra_model.optimize(objective_sense='maximize')
-print
-print('Status is: %s'%cobra_model.solution.status)
-print('Objective value is: %1.2f'%cobra_model.solution.f)
+print()
+print(('Status is: %s'%cobra_model.solution.status))
+print(('Objective value is: %1.2f'%cobra_model.solution.f))
 
 for the_reaction, the_value in cobra_model.solution.x_dict.items():
-    print '%s: %1.2f'%(the_reaction, the_value)
+    print('%s: %1.2f'%(the_reaction, the_value))
 
-print
+print()
 print('Who wants 1/3 of a cone?  Cones and popsicles are units aka integers, reformulate as MILP')
 Cone_production.variable_kind = 'integer'
 Popsicle_production.variable_kind = 'integer'
 
 the_program = cobra_model.optimize(objective_sense='maximize')
-print
-print('Status is: %s'%cobra_model.solution.status)
-print('Objective value is: %1.2f'%cobra_model.solution.f)
+print()
+print(('Status is: %s'%cobra_model.solution.status))
+print(('Objective value is: %1.2f'%cobra_model.solution.f))
 
 for the_reaction, the_value in cobra_model.solution.x_dict.items():
-    print '%s: %1.2f'%(the_reaction, the_value)
+    print('%s: %1.2f'%(the_reaction, the_value))
 
-print
+print()
 print('We now make full items')

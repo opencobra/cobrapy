@@ -72,9 +72,7 @@ def create_problem(cobra_model,  **kwargs):
     if kwargs:
         the_parameters = deepcopy(parameter_defaults)
         the_parameters.update(kwargs)
-    quadratic_component = the_parameters['quadratic_component']
-    new_objective = the_parameters['new_objective']
-    if quadratic_component is not None:
+    if the_parameters.get('quadratic_component') is not None:
         raise Exception('%s cannot solve QPs, try a different solver'%solver_name)
 
     metabolite_to_index = {r: i for i, r in enumerate(cobra_model.metabolites)}
@@ -165,6 +163,18 @@ def update_problem(lp, cobra_model, **kwargs):
             c.bounds = the_reaction.lower_bound, the_reaction.upper_bound
             c.kind = variable_kind_dict[the_reaction.variable_kind]
 
+def change_coefficient(lp, met_index, rxn_index, value):
+    col = lp.cols[rxn_index]
+    mat = col.matrix
+    for i, entry in enumerate(mat):
+        if entry[0] == met_index:
+            mat[i] = (met_index, value)
+            col.matrix = mat
+            return
+    # need to append
+    mat.append((met_index, value))
+    col.matrix = mat
+
 
 def solve_problem(lp, **kwargs):
     """A performance tunable method for updating a model problem file
@@ -226,23 +236,15 @@ def solve(cobra_model, **kwargs):
     the_parameters = deepcopy(parameter_defaults)
     if kwargs:
         the_parameters.update(kwargs)
-    #Update objectives if they are new.
-    error_reporting = the_parameters['error_reporting']
-    if 'new_objective' in the_parameters and \
-           the_parameters['new_objective'] not in ['update problem', None]:
-       from ..flux_analysis.objective import update_objective
-       update_objective(cobra_model, the_parameters['new_objective'])
-    if 'the_problem' in the_parameters:
-        the_problem = the_parameters['the_problem']
-    else:
-        the_problem = None
-    if isinstance(the_problem, __solver_class):
-        #Update the problem with the current cobra_model
-        lp = the_problem
-        update_problem(lp, cobra_model, **the_parameters)
-    else:
-        #Create a new problem
-        lp = create_problem(cobra_model, **the_parameters)
+
+    for i in ["new_objective", "update_problem", "the_problem"]:
+        if i in the_parameters:
+            raise Exception("Option %s removed" % i)
+    if 'error_reporting' in the_parameters:
+        warn("error_reporting deprecated")
+
+    #Create a new problem
+    lp = create_problem(cobra_model, **the_parameters)
 
     ###Try to solve the problem using other methods if the first method doesn't work
     lp_method = the_parameters['lp_method']
@@ -261,8 +263,8 @@ def solve(cobra_model, **kwargs):
             break
 
     the_solution = format_solution(lp, cobra_model)
-    if status != 'optimal' and error_reporting:
-        print '%s failed: %s'%(solver_name, status)
-    cobra_model.solution = the_solution
-    solution = {'the_problem': lp, 'the_solution': the_solution}
-    return solution
+    #if status != 'optimal':
+    #    print '%s failed: %s'%(solver_name, status)
+    # cobra_model.solution = the_solution
+
+    return the_solution

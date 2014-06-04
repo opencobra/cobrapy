@@ -122,11 +122,9 @@ parameter_mappings = {'cplex': __mappings_cplex,
 
 
 #Default solver parameters
-__common_defaults = {'new_objective': None, 'objective_sense': 'maximize',
-                      'min_norm': 0, 'the_problem': None, 
+__common_defaults = {'objective_sense': 'maximize',
                       'tolerance_optimality': 1e-6, 'tolerance_feasibility': 1e-6,
                       'tolerance_integer': 1e-9, 
-                      'error_reporting': None, 'print_solver_time': False,
                       'quadratic_component': None}
                       
 

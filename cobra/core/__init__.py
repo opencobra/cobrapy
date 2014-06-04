@@ -1,5 +1,3 @@
-from os import name as __name
-
 from .DictList import DictList
 from .Object import Object
 from .Formula import Formula
@@ -10,10 +8,15 @@ from .Solution import Solution
 from .Model import Model
 from .Species import Species
 
-if __name != 'java':
-    try:
-        from .ArrayBasedModel import ArrayBasedModel 
-    except Exception, e:
-        from warnings import warn
-        warn("ArrayBasedModel is not accessible: %s"%e)
+try:
+    import scipy
+except:
+    scipy = None
 
+if scipy:
+    from .ArrayBasedModel import ArrayBasedModel 
+else:
+    from warnings import warn
+    warn("ArrayBasedModel requires scipy")
+    del warn
+del scipy

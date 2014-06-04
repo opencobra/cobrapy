@@ -1,4 +1,4 @@
-from unittest import TestCase, TestLoader, TextTestRunner
+from unittest import TestCase, TestLoader, TextTestRunner, skipIf
 import sys
 # deal with absolute imports by adding the appropriate directory to the path
 if __name__ == "__main__":
@@ -14,14 +14,19 @@ else:
     from .. import Model, Reaction, Metabolite
     from .. import solvers
 
-class TestCobraSolver(TestCase):
+try:
+    import scipy
+except:
+    scipy = None
+
+class TestCobraSolver(object):
     def setUp(self):
+        self.solver = solvers.solver_dict[self.solver_name]
         self.model = create_test_model()
         initialize_growth_medium(self.model, 'MgM')
         self.old_solution = 0.320064
         self.infeasible_model = Model()
         metabolite_1 = Metabolite("met1")
-        #metabolite_2 = Metabolite("met2")
         reaction_1 = Reaction("rxn1")
         reaction_2 = Reaction("rxn2")
         reaction_1.add_metabolites({metabolite_1: 1})
@@ -29,15 +34,9 @@ class TestCobraSolver(TestCase):
         reaction_1.lower_bound = 1
         reaction_2.upper_bound = 2
         self.infeasible_model.add_reactions([reaction_1, reaction_2])
-        #self.infeasible_model.update()
 
-
-def add_new_test(TestCobraSolver, solver_name, solver):
-    """Creates a test set for each of the solvers that are installed
-    using the modular interface.
-
-    """
-    def attributes(self):
+    def test_attributes(self):
+        solver = self.solver
         self.assertTrue(hasattr(solver, "create_problem"))
         self.assertTrue(hasattr(solver, "solve_problem"))
         self.assertTrue(hasattr(solver, "get_status"))
@@ -49,23 +48,25 @@ def add_new_test(TestCobraSolver, solver_name, solver):
         self.assertTrue(hasattr(solver, "set_parameter"))
         # self.assertTrue(hasattr(solver, "update_problem"))
 
-    def creation(self):
+    def test_creation(self):
+        solver = self.solver
         solver.create_problem(self.model)
 
-    def solve_feasible(self):
-        solver.solve(self.model)
-        solution = self.model.solution        
+    def test_solve_feasible(self):
+        solver = self.solver
+        solution = solver.solve(self.model)
         self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(self.old_solution, \
             solution.f, places=4)
 
-    def solve_minimize(self):
-        solver.solve(self.model, objective_sense='minimize')
-        solution = self.model.solution        
+    def test_solve_minimize(self):
+        solver = self.solver
+        solution = solver.solve(self.model, objective_sense='minimize')
         self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(0, solution.f, places=4)
 
-    def low_level_control(self):
+    def test_low_level_control(self):
+        solver = self.solver
         lp = solver.create_problem(self.infeasible_model)
         solver.solve_problem(lp)
         self.assertEqual(solver.get_status(lp), "infeasible")
@@ -95,7 +96,8 @@ def add_new_test(TestCobraSolver, solver_name, solver):
         self.assertAlmostEqual(solution.x_dict["rxn2"], -2, places=4)
 
 
-    def set_objective_sense(self):
+    def test_set_objective_sense(self):
+        solver = self.solver
         maximize = solver.create_problem(self.model, objective_sense="maximize")
         minimize = solver.create_problem(self.model, objective_sense="minimize")
         solver.solve_problem(maximize)
@@ -109,106 +111,36 @@ def add_new_test(TestCobraSolver, solver_name, solver):
         override_minimize = solver.format_solution(minimize, self.model)
         self.assertAlmostEqual(max_solution.f, override_minimize.f, places=4)
 
-    def solve_mip(self):
-        cone_selling_price = 7.
-        cone_production_cost = 3.
-        popsicle_selling_price = 2.
-        popsicle_production_cost = 1.
-        starting_budget = 100.
+    def test_solve_mip(self):
+        solver = self.solver
         cobra_model = Model('MILP_implementation_test')
-        cone_out = Metabolite(id='cone_out', compartment='c')
-        cone_in = Metabolite(id='cone_in', compartment='c')
-        cone_consumed = Metabolite(id='cone_consumed', compartment='c')
+        constraint = Metabolite("constraint")
+        constraint._bound = 2.5
+        x = Reaction("x")
+        x.lower_bound = 0.
+        x.objective_coefficient = 1.
+        x.add_metabolites({constraint: 2.5})
+        y = Reaction("y")
+        y.lower_bound = 0.
+        y.objective_coefficient = 1.
+        y.add_metabolites({constraint: 1.})
+        cobra_model.add_reactions([x, y])
+        float_sol = solver.solve(cobra_model)
+        # add an integer constraint
+        y.variable_kind = "integer"
+        int_sol = solver.solve(cobra_model)
+        self.assertAlmostEqual(float_sol.f, 2.5)
+        self.assertAlmostEqual(float_sol.x_dict["y"], 2.5)
+        self.assertAlmostEqual(int_sol.f, 2.2)
+        self.assertAlmostEqual(int_sol.x_dict["y"], 2.0)
 
-        popsicle_out = Metabolite(id='popsicle_out', compartment='c')
-        popsicle_in = Metabolite(id='popsicle_in', compartment='c')
-        popsicle_consumed = Metabolite(id='popsicle_consumed', compartment='c')
-
-        the_reactions = []
-
-        # SOURCE
-        Cone_source = Reaction(name='Cone_source')
-        temp_metabolite_dict = {cone_out: 1}
-        Cone_source.add_metabolites(temp_metabolite_dict)
-        the_reactions.append(Cone_source)
-
-        Popsicle_source = Reaction(name='Popsicle_source')
-        temp_metabolite_dict = {popsicle_out: 1}
-        Popsicle_source.add_metabolites(temp_metabolite_dict)
-        the_reactions.append(Popsicle_source)
-
-
-        ## PRODUCTION
-        Cone_production = Reaction(name='Cone_production')
-        temp_metabolite_dict = {cone_out: -1,
-                                cone_in: 1}
-        Cone_production.add_metabolites(temp_metabolite_dict)
-        the_reactions.append(Cone_production)
-
-
-        Popsicle_production = Reaction(name='Popsicle_production')
-        temp_metabolite_dict = {popsicle_out: -1,
-                                popsicle_in: 1}
-        Popsicle_production.add_metabolites(temp_metabolite_dict)
-        the_reactions.append(Popsicle_production)
-
-        ## CONSUMPTION
-        Cone_consumption = Reaction(name='Cone_consumption')
-        temp_metabolite_dict = {cone_in: -1,
-                                cone_consumed: 1}
-        Cone_consumption.add_metabolites(temp_metabolite_dict)
-        the_reactions.append(Cone_consumption)
-
-        Popsicle_consumption = Reaction(name='Popsicle_consumption')
-        temp_metabolite_dict = {popsicle_in: -1,
-                                popsicle_consumed: 1}
-        Popsicle_consumption.add_metabolites(temp_metabolite_dict)
-        the_reactions.append(Popsicle_consumption)
-
-        # SINK
-        Cone_consumed_sink = Reaction(name='Cone_consumed_sink')
-        temp_metabolite_dict = {cone_consumed: -1}
-        Cone_consumed_sink.add_metabolites(temp_metabolite_dict)
-        the_reactions.append(Cone_consumed_sink)
-
-        Popsicle_consumed_sink = Reaction(name='Popsicle_consumed_sink')
-        temp_metabolite_dict = {popsicle_consumed: -1}
-        Popsicle_consumed_sink.add_metabolites(temp_metabolite_dict)
-        the_reactions.append(Popsicle_consumed_sink)
-
-        ## add all reactions
-        cobra_model.add_reactions(the_reactions)
-
-        # set objective coefficients
-        Cone_consumption.objective_coefficient = cone_selling_price
-        Popsicle_consumption.objective_coefficient = popsicle_selling_price
-
-        Cone_production.objective_coefficient = -1*cone_production_cost
-        Popsicle_production.objective_coefficient = -1*popsicle_production_cost
-        
-
-        #Make sure we produce whole cones
-        Cone_production.variable_kind = 'integer'
-        Popsicle_production.variable_kind = 'integer'
-
-
-        production_capacity_constraint = Metabolite(id='production_capacity_constraint')
-        production_capacity_constraint._constraint_sense = 'L'
-        production_capacity_constraint._bound = starting_budget;
-
-        Cone_production.add_metabolites({production_capacity_constraint: cone_production_cost })
-
-        Popsicle_production.add_metabolites({production_capacity_constraint: popsicle_production_cost })
-        cobra_model.optimize(solver=solver_name)
-        self.assertEqual(133, cobra_model.solution.f)
-        self.assertEqual(33, cobra_model.solution.x_dict["Cone_consumption"])
-
-    def solve_infeasible(self):
-        solver.solve(self.infeasible_model)
-        solution = self.infeasible_model.solution
+    def test_solve_infeasible(self):
+        solver = self.solver
+        solution = solver.solve(self.infeasible_model)
         self.assertEqual(solution.status, "infeasible")
 
-    def independent_creation(self):
+    def test_independent_creation(self):
+        solver = self.solver
         feasible_lp = solver.create_problem(self.model)
         infeasible_lp = solver.create_problem(self.infeasible_model)
         solver.solve_problem(feasible_lp)
@@ -220,15 +152,94 @@ def add_new_test(TestCobraSolver, solver_name, solver):
             feasible_solution.f, places=4)
         self.assertEqual(infeasible_solution.status, "infeasible")
 
-    for tester in [attributes, creation, solve_feasible, solve_minimize,
-                    set_objective_sense, solve_mip, solve_infeasible,
-                    independent_creation, low_level_control]:
-        setattr(TestCobraSolver, "test_%s_%s" %
-                (solver_name, tester.func_name), tester)
 
+    def test_change_coefficient(self):
+        solver = self.solver
+        c = Metabolite("c")
+        c._bound = 6
+        x = Reaction("x")
+        x.lower_bound = 1.
+        y = Reaction("y") 
+        y.lower_bound = 0.
+        x.add_metabolites({c: 1})
+        #y.add_metabolites({c: 1})
+        z = Reaction("z")
+        z.add_metabolites({c: 1})
+        z.objective_coefficient = 1
+        m = Model("test_model")
+        m.add_reactions([x, y, z])
+        # change an existing coefficient
+        lp = solver.create_problem(m)
+        solver.solve_problem(lp)
+        sol1 = solver.format_solution(lp, m)
+        solver.change_coefficient(lp, 0, 0, 2)
+        solver.solve_problem(lp)
+        sol2 = solver.format_solution(lp, m)
+        self.assertAlmostEqual(sol1.f, 5.0)
+        self.assertAlmostEqual(sol2.f, 4.0)
+        # change a new coefficient
+        z.objective_coefficient = 0.
+        y.objective_coefficient = 1.
+        lp = solver.create_problem(m)
+        solver.change_coefficient(lp, 0, 1, 2)
+        solver.solve_problem(lp)
+        solution = solver.format_solution(lp, m)
+        self.assertAlmostEqual(solution.x_dict["y"], 2.5)
 
-for solver_name, solver in solvers.solver_dict.iteritems():
-    add_new_test(TestCobraSolver, solver_name, solver)
+    @skipIf(scipy is None, "scipy required for quadratic objectives")
+    def test_quadratic(self):
+        solver = self.solver
+        if not hasattr(solver, "set_quadratic_objective"):
+            return
+        c = Metabolite("c")
+        c._bound = 2
+        x = Reaction("x")
+        x.objective_coefficient = -0.5
+        x.lower_bound = 0.
+        y = Reaction("y")
+        y.objective_coefficient = -0.5
+        y.lower_bound = 0.
+        x.add_metabolites({c: 1})
+        y.add_metabolites({c: 1})
+        m = Model()
+        m.add_reactions([x, y])
+        lp = self.solver.create_problem(m)
+        quadratic_obj = scipy.sparse.eye(2)
+        solver.set_quadratic_objective(lp, quadratic_obj)
+        solver.solve_problem(lp, objective_sense="minimize")
+        solution = solver.format_solution(lp, m)
+        # Respecting linear objectives also makes the objective value 1.
+        self.assertAlmostEqual(solution.f, 1.)
+        self.assertAlmostEqual(solution.x_dict["y"], 1.)
+        self.assertAlmostEqual(solution.x_dict["y"], 1.)
+        # When the linear objectives are removed the objective value is 2.
+        solver.change_variable_objective(lp, 0, 0.)
+        solver.change_variable_objective(lp, 1, 0.)
+        solver.solve_problem(lp, objective_sense="minimize")
+        solution = solver.format_solution(lp, m)
+        self.assertAlmostEqual(solution.f, 2.)
+        # test quadratic from solve function
+        solution = solver.solve(m, quadratic_component=quadratic_obj,
+                                objective_sense="minimize")
+        self.assertAlmostEqual(solution.f, 1.)
+        c._bound = 6
+        z = Reaction("z")
+        x.objective_coefficient = 0.
+        y.objective_coefficient = 0.
+        z.lower_bound = 0.
+        z.add_metabolites({c: 1})
+        m.add_reaction(z)
+        solution = solver.solve(m, quadratic_component=scipy.sparse.eye(3),
+                                objective_sense="minimize")
+        self.assertAlmostEqual(solution.f, 12)
+        self.assertAlmostEqual(solution.x_dict["x"], 2)
+        self.assertAlmostEqual(solution.x_dict["y"], 2)
+        self.assertAlmostEqual(solution.x_dict["z"], 2)
+
+for solver_name in solvers.solver_dict:
+    exec('class %sTester(TestCobraSolver, TestCase): None'% solver_name)
+    exec('%sTester.solver_name = "%s"'% (solver_name, solver_name))
+
 # make a test suite to run all of the tests
 loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])

@@ -1,47 +1,26 @@
-#cobra.core.Model.py
-#TODO: Improve copy time.  Perhaps use references for metabolites in
-#reactions.
-#Here we're dealing with the fact that numpy isn't supported in jython
-#and we've made some numjy modules that use the cern.colt matrices to
-#mimic the used numpy behavior.
 from warnings import warn
-from copy import deepcopy
+from copy import deepcopy, copy
+from ..external.six import iteritems, string_types
 from ..solvers import optimize
 from .Object import Object
 from .Formula import Formula
 from .Solution import Solution
 from .DictList import DictList
-#*********************************************************************************
-#
-#TODO: Implement self.reactions[:]._boundary and use
 
-# Note, there are some issues with using a gene as opposed to a protein in the
-#nomenclature; this will be addressed after the first iteration of cleaning.
-#
+
+
 # Note, when a reaction is added to the Model it will no longer keep personal
 #instances of it's Metabolites, it will reference Model.metabolites to improve
 #performance.  When doing this, take care to monitor the metabolite coefficients.
 #Do the same for Model.reactions[:].genes and Model.genes
-#
-#*********************************************************************************
 
-#######################
-#BEGIN Class Model
-#
 class Model(Object):
-    """Model is a class for analyzing metabolic models with
-    the COBRA toolbox developed in the Palsson Lab at UCSD. Make
-    all of the objects (Reaction, Metabolite, ...) to make OOP easier.
-    
+    """Metabolic Model
+
+    Refers to Metabolite, Reaction, and Gene Objects.
     """
     def __setstate__(self, state):
-        """Make sure all cobra.Objects in the model point to the model
-        
-        TODO: Make sure that the genes and metabolites referenced by
-        the reactions.(genes|metabolites) point to the model's genes
-        and metabolites.
-        
-        """
+        """Make sure all cobra.Objects in the model point to the model"""
         self.__dict__.update(state)
         [[setattr(x, '_model', self)
           for x in self.__dict__[y]]
@@ -98,45 +77,61 @@ class Model(Object):
         return self
 
     def guided_copy(self):
+        warn("deprecated")
         return self.copy()
 
     def copy(self, print_time=False):
         """Provides a partial 'deepcopy' of the Model.  All of the Metabolite, Gene,
         and Reaction objects are created anew but in a faster fashion than deepcopy
-
-        print_time: Boolean used for debugging
-
         """
-        the_copy = Object.guided_copy(self)
-        the_copy.metabolites = None
-        the_copy.reactions = None
-        the_copy.compartments = deepcopy(self.compartments)
-        if print_time:
-            from time import time
-            start_time = time()
-        the_metabolites = DictList([x.guided_copy(the_copy)
-                                    for x in self.metabolites])
-        if print_time:
-            print 'Metabolite guided copy: %1.4f'%(time() - start_time)
-            start_time = time()
-        the_genes = DictList([x.guided_copy(the_copy)
-                              for x in self.genes])
-        if print_time:
-            print 'Gene guided copy: %1.4f'%(time() - start_time)
-            start_time = time()
-        the_reactions = DictList([x.guided_copy(the_copy, the_metabolites._object_dict,
-                                                the_genes._object_dict)
-                                  for x in self.reactions])
+        if print_time is not False:
+            warn("print_time is a deprecated option")
+        new = self.__class__()
+        do_not_copy = {"metabolites", "reactions", "genes"}
+        for attr in self.__dict__:
+            if attr not in do_not_copy:
+                new.__dict__[attr] = self.__dict__[attr]
 
-        if print_time:
-            print 'Reaction guided copy: %1.4f'%(time() - start_time)
-        the_copy.reactions = the_reactions
-        the_copy.genes = the_genes
-        the_copy.metabolites = the_metabolites
-        return the_copy
-        
+        new.metabolites = DictList()
+        do_not_copy = {"_reaction", "_model"}
+        for metabolite in self.metabolites:
+            new_met = metabolite.__class__()
+            for attr, value in iteritems(metabolite.__dict__):
+                if attr not in do_not_copy:
+                    new_met.__dict__[attr] = copy(value) if attr == "formula" else value
+            new_met._model = new
+            new.metabolites.append(new_met)
 
-        
+        new.genes = DictList()
+        for gene in self.genes:
+            new_gene = gene.__class__(None)
+            for attr, value in iteritems(gene.__dict__):
+                if attr not in do_not_copy:
+                    new_gene.__dict__[attr] = copy(value) if attr == "formula" else value
+            new_gene._model = new
+            new.genes.append(new_gene)
+
+        new.reactions = DictList()
+        do_not_copy = {"_model", "_metabolites", "_genes"}
+        for reaction in self.reactions:
+            new_reaction = reaction.__class__()
+            for attr, value in iteritems(reaction.__dict__):
+                if attr not in do_not_copy:
+                    new_reaction.__dict__[attr] = value
+            new_reaction._model = new
+            new.reactions.append(new_reaction)
+            # update awareness
+            for metabolite, stoic in iteritems(reaction._metabolites):
+                new_met = new.metabolites.get_by_id(metabolite.id)
+                new_reaction._metabolites[new_met] = stoic
+                new_met._reaction.add(new_reaction)
+            for gene in reaction._genes:
+                new_gene = new.genes.get_by_id(gene.id)
+                new_reaction._genes.add(new_gene)
+                new_gene._reaction.add(new_reaction)
+        return new
+
+
     def add_metabolites(self, metabolite_list):
         """Will add a list of metabolites to the the object, if they do not
         exist and then expand the stochiometric matrix
@@ -151,7 +146,6 @@ class Model(Object):
                            if x.id not in self.metabolites]
         [setattr(x, '_model', self) for x in metabolite_list]
         self.metabolites += metabolite_list
-
 
 
     def _update_reaction(self, reaction):
@@ -171,7 +165,7 @@ class Model(Object):
             reaction = [reaction]
         for the_reaction in reaction:
             if the_reaction.id not in self.reactions:
-                print the_reaction.id + ' is not in the model\n'
+                warn(the_reaction.id + ' is not in the model')
                 continue
             reaction_index = self.reactions.index(the_reaction.id)
             self.reactions[reaction_index] = the_reaction
@@ -183,7 +177,8 @@ class Model(Object):
         """
         raise Exception("Model.update is moved to ArrayBasedModel.  Please use \n"
                         "the to_array_based_model property to create an ArrayBasedModel.")
-                     
+
+
     def add_reaction(self, reaction):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
@@ -193,7 +188,7 @@ class Model(Object):
         """
         self.add_reactions([reaction])
 
-        
+
     def add_reactions(self, reaction_list):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
@@ -221,8 +216,9 @@ class Model(Object):
             reaction._model = self  # the reaction now points to the model
             # keys() is necessary because the dict will be modified during
             # the loop
-            for metabolite in reaction._metabolites.keys():
+            for metabolite in list(reaction._metabolites.keys()):
                 # if the metabolite is not in the model, add it
+                # should we be adding a copy instead.
                 if not self.metabolites.has_id(metabolite.id):
                     self.metabolites.append(metabolite)
                     metabolite._model = self
@@ -236,7 +232,7 @@ class Model(Object):
                     reaction._metabolites[model_metabolite] = stoichiometry
                     model_metabolite._reaction.add(reaction)
 
-            for gene in reaction.genes:
+            for gene in list(reaction._genes):
                 # If the gene is not in the model, add it
                 if not self.genes.has_id(gene.id):
                     self.genes.append(gene)
@@ -266,8 +262,8 @@ class Model(Object):
         return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
 
 
-    def optimize(self, new_objective=None, objective_sense='maximize',
-                 the_problem=None, solver=None, 
+    def optimize(self, objective_sense='maximize',
+                 solver=None, 
                  error_reporting=None, quadratic_component=None,
                  tolerance_optimality=1e-6, tolerance_feasibility=1e-6,
                  tolerance_barrier=1e-10,  **kwargs):
@@ -289,9 +285,7 @@ class Model(Object):
         start the next solution.
 
         solver: 'glpk', 'gurobi', or 'cplex'
-        
-        error_reporting: None or True to disable or enable printing errors encountered
-        when trying to find the optimal solution.
+
 
         quadratic_component: None or 
         scipy.sparse.dok of dim(len(cobra_model.reactions),len(cobra_model.reactions))
@@ -303,7 +297,7 @@ class Model(Object):
             cobra_model._lower_bounds <= x <= cobra_model._upper_bounds
             cobra_model._S * x (cobra_model._constraint_sense) cobra_model._b
 
-   
+
         #See cobra.flux_analysis.solvers for more info on the following parameters.  Also,
         refer to your solver's manual
         
@@ -322,36 +316,18 @@ class Model(Object):
 
         
         """
-        the_solution = optimize(self, solver=solver, new_objective=new_objective,
+        if "new_objective" in kwargs:
+            warn("new_objective is deprecated. Use Model.change_objective")
+            self.change_objective(kwargs.pop("new_objective"))
+        the_solution = optimize(self, solver=solver,
                                 objective_sense=objective_sense,
-                                the_problem=the_problem,
-                                error_reporting=error_reporting,
                                 quadratic_component=quadratic_component,
                                 tolerance_optimality=tolerance_optimality,
                                 tolerance_feasibility=tolerance_feasibility,
                                 tolerance_barrier=tolerance_barrier,
                                 **kwargs)
+        self.solution = the_solution
         return the_solution
-
-    
-
-    def _update_metabolite_formula(self, metabolite_name, metabolite_formula):
-        """Associate metabolite_formula with all self.metabolite_names that
-        match metabolite_name.
-
-        metabolite_name: A string from self.metabolite_names
-
-        metabolite_formula: A string specifying the chemical formula for
-        metabolite_name.
-        
-        TODO:  This should be moved to a separate module
-        
-        """
-        if not isinstance(metabolite_formula, Formula):
-            metabolite_formula = Formula(metabolite_formula)
-        for the_metabolite in self.metabolites:
-            if the_metabolite.name == metabolite_name:
-                the_metabolite.formula = metabolite_formula
 
 
     def remove_reactions(self, the_reactions):
@@ -371,9 +347,54 @@ class Model(Object):
                 the_reaction = self.reactions[self.reactions.index(the_reaction)]
                 the_reaction.remove_from_model()
             except:
-                print '%s not in %s'%(the_reaction, self)
-        
-#
-#END Class Model
-#####################
+                warn('%s not in %s'%(the_reaction, self))
 
+    def repair(self):
+        """Update all indexes and pointers in a model"""
+        # DictList indexes
+        self.reactions._generate_index()
+        self.metabolites._generate_index()
+        self.genes._generate_index()
+        return  # TODO update the pointers as well
+
+    def change_objective(self, objectives):
+        """Change the objective in the cobrapy model.
+        
+        objectives: A list or a dictionary.  If a list then
+        a list of reactions for which the coefficient in the
+        linear objective is set as 1.  If a dictionary then the
+        key is the reaction and the value is the linear coefficient
+        for the respective reaction.
+
+        """
+        # I did not want to refactor code just to rename the variable, but this
+        # way the API uses the variable "objectives"
+        the_objectives = objectives
+        # set all objective coefficients to 0 initially
+        for x in self.reactions:
+            x.objective_coefficient = 0.
+        # update the objective coefficients if a dict is passed in
+        if hasattr(the_objectives, "items"):
+            for the_reaction, the_coefficient in iteritems(the_objectives):
+                if isinstance(the_reaction, int):
+                    the_reaction = self.reactions[the_reaction]
+                else:
+                    if hasattr(the_reaction, 'id'):
+                        the_reaction = the_reaction.id
+                    the_reaction = self.reactions.get_by_id(the_reaction)
+                the_reaction.objective_coefficient = the_coefficient
+        # If a list (or a single reaction is passed in), each reaction gets
+        # 1 for the objective coefficent.
+        else:
+            # Allow for objectives to be constructed from multiple reactions
+            if not hasattr(the_objectives, "__iter__") or \
+                    isinstance(the_objectives, string_types):
+                the_objectives = [the_objectives]
+            for the_reaction in the_objectives:
+                if isinstance(the_reaction, int):
+                    the_reaction = self.reactions[the_reaction]
+                else:
+                    if hasattr(the_reaction, 'id'):
+                        the_reaction = the_reaction.id
+                    the_reaction = self.reactions.get_by_id(the_reaction)
+                the_reaction.objective_coefficient = 1.

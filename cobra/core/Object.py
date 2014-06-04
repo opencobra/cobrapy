@@ -1,3 +1,5 @@
+from ..external.six import iteritems
+
 #cobra.core.Object.py
 #
 #Defines common behavior of object in cobra.core
@@ -34,7 +36,7 @@ class Object(object):
         """
         the_copy = self.__class__(self.id)
         [setattr(the_copy, k, v)
-         for k, v in self.__dict__.iteritems()
+         for k, v in iteritems(self.__dict__)
          if not isinstance(getattr(type(self), k, None), property)] #Don't try to set properties.
         return(the_copy)
     def _copy_parent_attributes(self, gene_object):
@@ -42,7 +44,8 @@ class Object(object):
         into a new child object.
 
         """
-        [setattr(self, k, v) for k, v in gene_object.__dict__.iteritems()]
+        for k, v in iteritems(gene_object.__dict__):
+            setattr(self, k, v)
 
 
     ## def __setstate__(self, state):
@@ -53,55 +56,6 @@ class Object(object):
     ##     return(the_dict)
     ## def __setstate__(self, the_dict):
     ##     self.id = the_dict.pop('id')
-    #Allows comparison of Objects based on ids and with ids
-    #
-    #Not the best idea.  This will be removed in the next major
-    #release
-    #
-
-    def __lt__(self, other):
-        if hasattr(other, 'id'):
-            x = self.id < other.id
-        elif type(other) == type(self.id):
-            x = self.id < other
-        return x
-    
-    def __le__(self, other):
-        if hasattr(other, 'id'):
-            x = self.id <= other.id
-        elif type(other) == type(self.id):
-            x = self.id <= other
-        return x
-    
-    def __gt__(self, other):
-        if hasattr(other, 'id'):
-            x = self.id > other.id
-        elif type(other) == type(self.id):
-            x = self.id > other
-        return x
-    
-    def __ge__(self, other):
-        if hasattr(other, 'id'):
-            x = self.id >= other.id
-        elif type(other) == type(self.id):
-            x = self.id >= other
-        return x
-    
-    def __ne__(self, other):
-        x = True
-        if hasattr(other, 'id'):
-            x = self.id != other.id
-        elif type(other) == type(self.id):
-            x = self.id != other
-        return x
-    
-    def __eq__(self, other):
-        x = False
-        if hasattr(other, 'id'):
-            x = self.id == other.id
-        elif type(other) == type(self.id):
-            x = self.id == other
-        return x
 
     def startswith(self, x):
         return self.id.startswith(x)
@@ -112,9 +66,6 @@ class Object(object):
     def __contains__(self, x):
         return self.id.__contains__(x)
 
-    def __iter__(self):
-       return list(self.id).__iter__()
-
     def __getitem__(self, index):
         return self.id[index]
     
@@ -122,7 +73,7 @@ class Object(object):
         return self.id[i:j]
     
     def __repr__(self):
-        return repr(self.id)
+        return "<%s %s at 0x%x>" % (self.__class__.__name__, self.id, id(self))
 
     def __str__(self):
         return str(self.id)

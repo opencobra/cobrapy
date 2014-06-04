@@ -1,4 +1,4 @@
-from __future__ import with_statement
+from __future__ import print_function
 #cobra.flux_analysis.moma.py: Runs the minimization of metabolic
 #adjustment method described in Segre et al 2002 PNAS 99(23): 15112-7
 from os import name as __name
@@ -75,17 +75,17 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver=None,
         try:
             from gurobipy import Model
             solver = 'gurobi'
-            print "GLPK can't solve quadratic problems like MOMA.  Switched solver to %s"%solver
+            warn("GLPK can't solve quadratic problems like MOMA.  Switched solver to %s"%solver)
         except:
-            print "GLPK can't solve quadratic problems like MOMA.  Switching to linear MOMA"
+            warn("GLPK can't solve quadratic problems like MOMA.  Switching to linear MOMA")
 
     if norm_type == 'euclidean':
         #Reusing the basis can get the solver stuck.
         reuse_basis = False
     if combined_model and combined_model.norm_type != norm_type:
-        print 'Cannot use combined_model.norm_type = %s with user-specified norm type'%(combined_model.norm_type,
-                                                                                        norm_type)
-        print 'Defaulting to user-specified norm_type'
+        print('Cannot use combined_model.norm_type = %s with user-specified norm type'%(combined_model.norm_type,
+                                                                                        norm_type))
+        print('Defaulting to user-specified norm_type')
         combined_model = None
 
 

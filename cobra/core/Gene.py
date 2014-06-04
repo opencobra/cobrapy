@@ -43,14 +43,6 @@ class Gene(Species):
         self.strand = strand
         self.functional = functional
 
-    def guided_copy(self, the_model):
-        """Trying to make a faster copy proceedure for cases where large
-        numbers of genes might be copied.  Such as when copying reactions.
-
-        """
-        the_copy = Species.guided_copy(self, the_model)
-        return(the_copy)
-
     def remove_from_model(self, the_model,
                           make_dependent_reactions_nonfunctional=True):
         """Removes the association

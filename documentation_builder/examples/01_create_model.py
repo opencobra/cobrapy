@@ -1,4 +1,3 @@
-# cobra/examples/01_create_model.py
 # This simple example demonstrates how to create a model, create a reaction, and
 # then add the reaction to the model.
 #
@@ -40,7 +39,7 @@ reaction.add_metabolites({malACP_c: -1.0,
                           omrsACP_c: 1.0})
 
 # A string representation of the reaction
-print reaction.reaction
+print(reaction.reaction)
 
 
 # A boolean representation of the gene requirements for this reaction to be
@@ -50,28 +49,28 @@ gene_reaction_rule = '( STM2378  or STM1197 )'
 # The next step will create cobra.Gene objects from the gene reaction rule,
 # which will be used later by the cobra.Model to modulate reaction bounds after
 # deleting genes.
-reaction.add_gene_reaction_rule(gene_reaction_rule)
+reaction.gene_reaction_rule = gene_reaction_rule
 
 # The model is initially empty:
-print '%i reactions in initial model' % len(cobra_model.reactions)
-print '%i metabolites in initial model' % len(cobra_model.metabolites)
-print '%i genes in initial model' % len(cobra_model.genes)
+print('%i reactions in initial model' % len(cobra_model.reactions))
+print('%i metabolites in initial model' % len(cobra_model.metabolites))
+print('%i genes in initial model' % len(cobra_model.genes))
 
 
 # Add the reaction to the model
-cobra_model.add_reactions(reaction)
+cobra_model.add_reaction(reaction)
 
 # Now there are things in the model
-print '%i reaction in model' % len(cobra_model.reactions)
-print '%i metabolites in model' % len(cobra_model.metabolites)
-print '%i genes in model' % len(cobra_model.genes)
+print('%i reaction in model' % len(cobra_model.reactions))
+print('%i metabolites in model' % len(cobra_model.metabolites))
+print('%i genes in model' % len(cobra_model.genes))
 
 # Iterate through the the objects in the model
 for x in cobra_model.reactions:
-    print x.reaction
+    print(x.reaction)
 for x in cobra_model.metabolites:
-    print '%s has formula %s' % (x,x.formula)
+    print('%s has formula %s' % (x,x.formula))
 for x in cobra_model.genes:
-    print 'gene %s is associated with reactions:' % x
-    for y in x.get_reaction():
-        print '\t%s' % y
+    print('gene %s is associated with reactions:' % x)
+    for y in x.reactions:
+        print('\t%s' % y)

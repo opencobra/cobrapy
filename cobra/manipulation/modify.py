@@ -1,7 +1,8 @@
 #cobra.manipulation.modify.py
 from copy import deepcopy
-from cobra.core.Reaction import Reaction
+from .. import Reaction
 from warnings import warn
+
 def initialize_growth_medium(cobra_model, the_medium='MgM', 
                              external_boundary_compartment='e',
                              external_boundary_reactions=None,
@@ -66,7 +67,7 @@ def initialize_growth_medium(cobra_model, the_medium='MgM',
         _system_boundaries = dict([(x, x.get_compartments())
                                    for x in cobra_model.reactions
                                    if x.boundary == 'system_boundary'])
-        [_system_boundaries.pop(k) for k, v in _system_boundaries.items()
+        [_system_boundaries.pop(k) for k, v in list(_system_boundaries.items())
          if len(v) == 1 and external_boundary_compartment not in v]
         if external_boundary_reactions is None:
             external_boundary_reactions = _system_boundaries.keys()

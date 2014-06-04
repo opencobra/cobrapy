@@ -6,6 +6,13 @@ from cobra.version import get_version
 __version = get_version()
 setup_kwargs = {}
 
+# for running parallel tests due to a bug in python 2.7.3
+# http://bugs.python.org/issue15881#msg170215
+try:
+    import multiprocessing
+except:
+    None
+
 try:
     from Cython.Build import cythonize
     from distutils.extension import Extension
@@ -48,7 +55,7 @@ setup(
     packages = find_packages(exclude=['cobra.oven', 'cobra.oven*']),
     #scripts = [''],
     #put in numpy, scipy, libsbml, and pyglpk
-    setup_requires = ['cython'],
+    setup_requires = [],
     #install_requires = ['numpy>=1.6', 'scipy>=0.10'],
     #leave blank because it tries to build scipy/numpy on os x when they are
     #installed by the superpack.  And these are not really essential for core functions.
@@ -62,10 +69,10 @@ setup(
 
     package_data = {
          '': ['test/data/*',
-              'examples/*py',
+              'VERSION',
               'mlab/matlab_scripts/*m']},
 
-    author = "Daniel Robert Hyduke",
+    author = "Daniel Robert Hyduke <danielhyduke@gmail.com>, Ali Ebrahim <aebrahim@ucsd.edu>",
     author_email = "danielhyduke@gmail.com",
     description = "COBRApy is a package for constraints-based modeling of biological networks",
     license = "GPL V3.0",

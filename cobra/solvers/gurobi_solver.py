@@ -67,6 +67,12 @@ def change_variable_objective(lp, index, objective):
     variable.obj = objective
 
 
+def change_coefficient(lp, met_index, rxn_index, value):
+    met = lp.getConstrByName(str(met_index))
+    rxn = lp.getVarByName(str(rxn_index))
+    lp.chgCoeff(met, rxn, value)
+
+
 def update_problem(lp, cobra_model, **kwargs):
     """A performance tunable method for updating a model problem file
 
@@ -93,9 +99,9 @@ def update_problem(lp, cobra_model, **kwargs):
         the_variable.ub = float(the_reaction.upper_bound)
         the_variable.obj = float(the_reaction.objective_coefficient)
 
-###
+
 sense_dict = eval(sense_dict[solver_name])
-def create_problem(cobra_model,  **kwargs):
+def create_problem(cobra_model, quadratic_component=None, **kwargs):
     """Solver-specific method for constructing a solver problem from
     a cobra.Model.  This can be tuned for performance using kwargs
 
@@ -112,8 +118,6 @@ def create_problem(cobra_model,  **kwargs):
 
     [set_parameter(lp, parameter_mappings[k], v)
          for k, v in the_parameters.iteritems() if k in parameter_mappings]
-    quadratic_component = the_parameters['quadratic_component']
-    objective_sense = objective_senses[the_parameters['objective_sense']]
 
 
     # Create variables
@@ -128,23 +132,12 @@ def create_problem(cobra_model,  **kwargs):
                                     variable_list))
     # Integrate new variables
     lp.update()
-    #Set objective to quadratic program
-    if quadratic_component is not None:
-        if not hasattr(quadratic_component, 'todok'):
-            raise Exception('quadratic component must have method todok')
 
-        quadratic_objective = QuadExpr()
-        for (index_0, index_1), the_value in quadratic_component.todok().items():
-            quadratic_objective.addTerms(the_value,
-                                   variable_list[index_0],
-                                   variable_list[index_1])
-        #Does this override the linear objective coefficients or integrate with them?
-        lp.setObjective(quadratic_objective, sense=objective_sense)
     #Constraints are based on mass balance
     #Construct the lin expression lists and then add
     #TODO: Speed this up as it takes about .18 seconds
     #HERE
-    for the_metabolite in cobra_model.metabolites:
+    for i, the_metabolite in enumerate(cobra_model.metabolites):
         constraint_coefficients = []
         constraint_variables = []
         for the_reaction in the_metabolite._reaction:
@@ -154,14 +147,33 @@ def create_problem(cobra_model,  **kwargs):
         lp.addConstr(LinExpr(constraint_coefficients, constraint_variables),
                      sense_dict[the_metabolite._constraint_sense.upper()],
                      the_metabolite._bound,
-                     the_metabolite.id)
+                     str(i))
 
+    # Set objective to quadratic program
+    if quadratic_component is not None:
+        set_quadratic_objective(lp, quadratic_component)
 
-
+    lp.update()
     return(lp)
-###
 
-###
+
+def set_quadratic_objective(lp, quadratic_objective):
+    if not hasattr(quadratic_objective, 'todok'):
+        raise Exception('quadratic component must have method todok')
+    variable_list = lp.getVars()
+    linear_objective = lp.getObjective()
+    # If there already was a quadratic expression set, this will be quadratic
+    # and we need to extract the linear component
+    if hasattr(linear_objective, "getLinExpr"):  # duck typing
+        linear_objective = linear_objective.getLinExpr()
+    gur_quadratic_objective = QuadExpr()
+    for (index_0, index_1), the_value in quadratic_objective.todok().items():
+        gur_quadratic_objective.addTerms(the_value,
+                                         variable_list[index_0],
+                                         variable_list[index_1])
+    # this adds to the existing quadratic objectives
+    lp.setObjective(gur_quadratic_objective + linear_objective)
+
 def solve_problem(lp, **kwargs):
     """A performance tunable method for updating a model problem file
 
@@ -171,17 +183,9 @@ def solve_problem(lp, **kwargs):
         [set_parameter(lp, parameter_mappings[k], v)
          for k, v in kwargs.iteritems() if k in parameter_mappings]
 
-    try:
-        print_solver_time = kwargs['print_solver_time']
-        start_time = time()
-    except:
-        print_solver_time = False
     lp.update()
-    #Different methods to try if lp_method fails
     lp.optimize()
     status = get_status(lp)
-    if print_solver_time:
-        print 'optimize time: %f'%(time() - start_time)
     return status
 
     
@@ -194,32 +198,15 @@ def solve(cobra_model, **kwargs):
     the_parameters = deepcopy(parameter_defaults)
     if kwargs:
         the_parameters.update(kwargs)
-    #Update objectives if they are new.
-    if 'new_objective' in the_parameters and \
-           the_parameters['new_objective'] not in ['update problem', None]:
-       from ..flux_analysis.objective import update_objective
-       update_objective(cobra_model, the_parameters['new_objective'])
-
-    if 'the_problem' in the_parameters:
-        the_problem = the_parameters['the_problem']
-    else:
-        the_problem = None
+    for i in ["new_objective", "update_problem", "the_problem"]:
+        if i in the_parameters:
+            raise Exception("Option %s removed" % i)
     if 'error_reporting' in the_parameters:
-        error_reporting = the_parameters['error_reporting']
-    else:
-        error_reporting = False
+        warn("error_reporting deprecated")
 
-    if isinstance(the_problem, __solver_class):
-        #Update the problem with the current cobra_model
-        lp = the_problem
-        update_problem(lp, cobra_model, **the_parameters)
-    else:
-        #Create a new problem
-        lp = create_problem(cobra_model, **the_parameters)
-    #Deprecated way for returning a solver problem created from a cobra_model
-    #without performing optimization
-    if the_problem == 'setup':
-            return lp
+    #Create a new problem
+    lp = create_problem(cobra_model, **the_parameters)
+
 
     ###Try to solve the problem using other methods if the first method doesn't work
     try:
@@ -239,10 +226,10 @@ def solve(cobra_model, **kwargs):
             status = 'failed'
         if status == 'optimal':
             break
-    status = solve_problem(lp, **the_parameters)
+
     the_solution = format_solution(lp, cobra_model)
-    if status != 'optimal' and error_reporting:
-        print '%s failed: %s'%(solver_name, status)
-    cobra_model.solution = the_solution
-    solution = {'the_problem': lp, 'the_solution': the_solution}
-    return solution
+    #if status != 'optimal':
+    #    print '%s failed: %s'%(solver_name, status)
+    #cobra_model.solution = the_solution
+    #solution = {'the_problem': lp, 'the_solution': the_solution}
+    return the_solution

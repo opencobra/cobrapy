@@ -1,4 +1,4 @@
 Changing Objective Functions
 ============================
 
-.. literalinclude:: ../cobra/examples/04_change_objective.py
+.. literalinclude:: examples/04_change_objective.py

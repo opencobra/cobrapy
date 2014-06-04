@@ -1,10 +1,7 @@
 from __future__ import with_statement, absolute_import
 import sys
 from os import name as __name
-available_tests = ['unit_tests', 'solvers', 'flux_analysis']
-#if not using jython then add the tests that don't currently run through jython
-## if __name != 'java':
-##      available_tests += ['flux_analysis']
+available_tests = ['unit_tests', 'solvers', 'flux_analysis', 'io_tests']
 
 del __name
 
@@ -20,11 +17,13 @@ if not data_directory.endswith(__sep):
     data_directory += __sep
 
 salmonella_sbml = __join(data_directory, "salmonella.xml")
+salmonella_fbc_sbml = __join(data_directory, "salmonella_fbc.xml")
 salmonella_pickle = __join(data_directory, "salmonella.pickle")
 salmonella_reaction_p_values_pickle = __join(data_directory, "salmonella_reaction_p_values.pickle")
 ecoli_sbml = __join(data_directory, "iJO1366.xml")
 ecoli_pickle = __join(data_directory, "iJO1366.pickle")
 ecoli_mat = __join(data_directory, "iJO1366.mat")
+ecoli_json = __join(data_directory, "iJO1366.json")
 yersinia_sbml = __join(data_directory, 'Yersinia_pestis_CO92_iPC815.xml')
 yersinia_pickle = __join(data_directory, 'Yersinia_pestis_CO92_iPC815.pickle')
 

@@ -8,4 +8,4 @@ The core classes of COBRApy are
 
 These objects can be used to create a model.
 
-.. literalinclude:: ../cobra/examples/01_create_model.py
+.. literalinclude:: examples/01_create_model.py
