@@ -70,7 +70,7 @@ class phenotypePhasePlaneData:
             warn("not enough colors to color all detected phases")
         if n_segments > 0 and n_segments <= len(color_list):
             for i in range(n_segments):
-                colors[data.segments == (i + 1)] = color_list[i]
+                colors[self.segments == (i + 1)] = color_list[i]
         else:
             colors[:, :] = 'b'
         if scale_grid:
@@ -89,7 +89,7 @@ class phenotypePhasePlaneData:
         axes.plot_wireframe(xgrid, ygrid, self.growth_rates, color="black", rstride=xgrid_scale, cstride=ygrid_scale)
         axes.set_xlabel(self.reaction1_name)
         axes.set_ylabel(self.reaction2_name)
-        axes.set_zlabel("Growth rates")
+        axes.set_zlabel("Growth rate")
         axes.view_init(elev=30, azim=-135)
         return axes
 
@@ -221,7 +221,7 @@ def calculate_phenotype_phase_plane(model,
     data.plot()
     """
     if solver is None:
-        get_solver_name()
+        solver = get_solver_name()
     data = phenotypePhasePlaneData(
             str(reaction1_name), str(reaction2_name),
             reaction1_range_max, reaction2_range_max,

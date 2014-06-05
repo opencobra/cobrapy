@@ -274,7 +274,7 @@ class Model(Object):
             The dimensions should be (n, n) where n is the number of reactions.
 
             This sets the quadratic component (Q) of the objective coefficient,
-            adding :math:`\frac{1}{2} v^T \cdot Q \cdot v` to the objective.
+            adding :math:`\\frac{1}{2} v^T \cdot Q \cdot v` to the objective.
 
         tolerance_optimality: Solver tolerance for optimality.
 

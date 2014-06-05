@@ -53,8 +53,8 @@ class ArrayBasedModel(Model):
     def S(self):
         """Stoichiometric matrix of the model
         
-        This will be formatted as either :class:`~scipy.sparse.lil_matrix` or
-        :class:`~scipy.sparse.lil_matrix`
+        This will be formatted as either :class:`~scipy.sparse.lil_matrix`
+        or :class:`~scipy.sparse.dok_matrix`
 
         """
         return self._S
@@ -328,7 +328,7 @@ class ArrayBasedModel(Model):
 
 
 class LinkedArray(ndarray):
-    """A ndarray which updates an attribute from a list"""
+    """A :class:`numpy.ndarray` which updates an attribute from a list"""
     def __new__(cls, list, attribute):
         # construct a new ndarray with the values from the list
         # For example, if the list if model.reactions and the attribute is

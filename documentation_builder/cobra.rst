@@ -12,7 +12,6 @@ Subpackages
     cobra.manipulation
     cobra.mlab
     cobra.solvers
-    cobra.stats
     cobra.topology
 
 Submodules

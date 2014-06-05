@@ -43,13 +43,14 @@ class DictList(list):
     def query(self, search_function, attribute="id"):
         """query the list
 
-        search_function: this will be used to select which objects to return
-        This can be:
-        * a string, in which case any object.attribute containing
-        the string will be returned
-        * a compiled regular expression
-        * a boolean function which takes one argument and returns True
-        for desired values
+        search_function: used to select which objects to return
+            * a string, in which case any object.attribute containing
+              the string will be returned
+
+            * a compiled regular expression
+
+            * a function which takes one argument and returns True
+              for desired values
 
         attribute: the attribute to be searched for (default is 'id').
                    If this is None, the object itself is used.
@@ -217,9 +218,9 @@ class DictList(list):
         self.pop(self.index(x))
 
     # these functions are slower because they rebuild the _dict every time
-    def reverse(self, *args, **kwargs):
+    def reverse(self):
         """reverse *IN PLACE*"""
-        list.reverse(self, *args, **kwargs)
+        list.reverse(self)
         self._generate_index()
 
     def sort(self, cmp=None, key=None, reverse=False):
