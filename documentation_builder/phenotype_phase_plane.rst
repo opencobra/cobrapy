@@ -3,7 +3,7 @@ Phenotype Phase Plane
 =====================
 
 This example is available as an IPython
-`notebook <http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder_phenotype_phase_plane.ipynb>`__.
+`notebook <http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/phenotype_phase_plane.ipynb>`__.
 
 Load iJO1366 as a test model and import cobra
 
@@ -17,6 +17,15 @@ Load iJO1366 as a test model and import cobra
     from cobra.flux_analysis.phenotype_phase_plane import calculate_phenotype_phase_plane
     
     model = create_test_model(ecoli_pickle)
+    model
+
+
+
+.. parsed-literal::
+
+    <Model iJO1366 at 0x677e610>
+
+
 
 We want to make a phenotype phase plane to evaluate uptakes of Glucose
 and Oxygen.
@@ -74,6 +83,6 @@ The code can also use multiple processes to speed up calculations
 
 .. parsed-literal::
 
-    took 6.11 seconds with 1 process
-    took 2.99 seconds with 4 process
+    took 5.97 seconds with 1 process
+    took 2.97 seconds with 4 process
 
