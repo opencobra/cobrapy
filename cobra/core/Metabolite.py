@@ -1,16 +1,11 @@
-#cobra.core.Metabolite.py
-#######################
-#BEGIN Class Metabolite
-#
-#Is it better to restrict a Metabolite to a single model or
-#should we allow a Metabolite to be associated with multiple models?
-#
+from warnings import warn
+
 from .Species import Species
+
 class Metabolite(Species):
     """Metabolite is a class for holding information regarding
     a metabolite in a cobra.Reaction object.
 
-        
     """
     ## __slots__ = ['id', 'formula', 'name', 'compartment',
     ##              'charge']
@@ -22,17 +17,17 @@ class Metabolite(Species):
     def __init__(self, id=None, formula=None,
                  name=None, compartment=None):
         """
-        id: A string.
+        id: str
 
-        formula: cobra.Formula or String  of a chemical formula.  Defaults to None
-        to save time in pickling and such.
+        formula: cobra.Formula or String  of a chemical formula.
         
-        name: String.  A human readable name.
+        name: str
+            A human readable name.
         
         compartment: None or a dictionary indicating the cellular location
         of the metabolite.  Used when in a cobra.Reaction or Model
         object
-        
+
         """
         Species.__init__(self, id, formula, name, compartment)
         self._constraint_sense = 'E'
@@ -40,27 +35,21 @@ class Metabolite(Species):
 
 
 
-    def remove_from_model(self, model=None, method='subtractive'):
-        """Removes the association
+    def remove_from_model(self, method='subtractive', **kwargs):
+        """Removes the association from self.model
 
-        model: None or :class:`~cobra.core.Model` object.
-            Remove the reaction from this model.
-
-        method: 'subtractive' or 'destructive'.  If 'subtractive' then
-        the metabolite is removed from all associated reactions.  If
-        'destructive' then all associated reactions are removed from the Model.
-
-    
-        
+        method: 'subtractive' or 'destructive'.
+            If 'subtractive' then the metabolite is removed from all
+            associated reactions.  If 'destructive' then all associated
+            reactions are removed from the Model.
+            
         """
         # why is model being taken in as a parameter? This plays
         #back to the question of allowing a Metabolite to be associated
         #with multiple Models
-        if model != self._model and model is not None:
-            raise Exception('%s not in %s ergo it cannot be removed. (%s)'%(self,
-                                                                  model,
-                                                                  self._model))
-                                                            
+        if "model" in kwargs:
+            warn("model argument deprecated")
+
         self._model.metabolites.remove(self)
         self._model = None
         if method.lower() == 'subtractive':
@@ -72,7 +61,3 @@ class Metabolite(Species):
         else:
             raise Exception("method for remove_from_model must be 'subtractive' " +\
                             "or 'destructive'.  You entered: '%s'"%method)
-
-#
-#END Class Metabolite
-########################

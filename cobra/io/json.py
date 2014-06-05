@@ -9,8 +9,6 @@ from ..external.six import iteritems
 def load_json_model(infile_path, variable_name=None):
     """Load a cobra model stored as a json file
 
-    Parameters
-    ----------
     infile_path : str
 
     """
@@ -87,13 +85,14 @@ def to_json(model, exclude_attributes=[]):
 def save_json_model(model, file_name, exclude_attributes=[]):
     """Save the cobra model as a json file.
 
-    Parameters
-    ----------
-    model : cobra.Model
+    model : :class:`~cobra.core.Model.Model` object
+
     file_name : str or file-like object
+
     exclude_attributes : A list of reaction or metabolite attributes to ignore.
-    Warning: ignoring attributes will make it impossible to reload the model with
-    cobra.io.json.load_json_model()
+
+    .. note :: ignoring attributes will make it impossible to reload the
+                  model with cobra.io.json.load_json_model()
 
     """
     # open the file

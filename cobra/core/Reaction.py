@@ -248,18 +248,7 @@ class Reaction(Object):
         return new_reaction
 
     def guided_copy(self, the_model, metabolite_dict, gene_dict=None):
-        """Trying to make a faster copy procedure for cases where large
-        numbers of metabolites might be copied.  Such as when copying reactions.
-
-       the_model: The new container cobra.Model
-
-       metabolite_dict: A dictionary of the cobra.Metabolite objects that are in
-       the model (metabolite.id, metabolite)
-
-        gene_dict: A dictionary of the cobra.Gene objects that are in the model (gene.id, gene)
-
-
-        """
+        """.. deprecated :: 0.3 use copy directly"""
         warn("deprecated")
         the_copy = Object.guided_copy(self)
         #Replace the complex items in a faster fashion
@@ -278,13 +267,14 @@ class Reaction(Object):
 
         return(the_copy)
 
-    def pop(self, the_metabolite):
+    def pop(self, metabolite_id):
         """Remove a metabolite from the reaction and return the
         stoichiometric coefficient.
 
-        the_metabolite: A cobra.Metabolite that is in the reaction or its id
+        metabolite_id: str or :class:`~cobra.core.Metabolite.Metabolite`
 
         """
+        the_metabolite = metabolite_id
         if isinstance(the_metabolite, string_types):
             found_match = None
             for possible_match in self._metabolites:
@@ -332,7 +322,7 @@ class Reaction(Object):
 
         Note: This is equivalent to adding reactions after changing the sign
         of the metabolites in other_reaction
-        
+
         """
         new_reaction = deepcopy(self)
         if self is other_reaction:
@@ -350,7 +340,7 @@ class Reaction(Object):
         return self
 
     def __mul__(self, the_coefficient):
-        """Allows a reaction to be multipled by a coeffient.
+        """Allows a reaction to be multiplied by a coefficient.
         
         TODO: this should return a new reaction.
         
@@ -361,30 +351,20 @@ class Reaction(Object):
         
 
     def parse_gene_association(self, the_type='gene'):
-        """Extract all genes from the Boolean Gene_Association string.
-
-        #Formerly, update_names
-        .. warning :: deprecated function
-        """
+        """.. deprecated :: 0.3 Set gene_reaction_rule directly"""
         warn("deprecated function")
         # trigger the update if that was the desired behavior for some reason
         self._gene_reaction_rule = self._gene_reaction_rule
 
 
     def add_gene_reaction_rule(self, the_rule):
-        """This adds a gene reaction rule.
-
-        the_rule:  A boolean representation of the gene requirements for this reaction
-        to be active as described in Schellenberger et al 2011 Nature Protocols 6(9):1290-307.
-
-        Note that this method currently replaces any pre-existing rules
-        .. warning :: deprecated function
-        """
+        """.. deprecated :: 0.3 Set gene_reaction_rule directly"""
         self.gene_reaction_rule = the_rule
         warn("deprecated, assign to gene_reaction_rule directly")
 
     def get_reactants(self):
-        warn("depreacated, use the reactants property instead")
+        """.. deprecated :: 0.3 use reactants property instead"""
+        warn("deprecated, use the reactants property instead")
         return self.reactants
 
 
@@ -394,6 +374,7 @@ class Reaction(Object):
         return [k for k, v in self._metabolites.items() if v < 0]
 
     def get_products(self):
+        """.. deprecated :: 0.3 use products property instead"""
         warn("depreacated, use the products property instead")
         return self.products
 
@@ -404,52 +385,55 @@ class Reaction(Object):
         return [k for k, v in self._metabolites.items() if v > 0]
 
     def get_gene(self):
-        """Return a list of genes for the reaction.
-
-        """
+        """.. deprecated :: 0.3 use genes property instead"""
         warn("deprecated, use the genes property instead")
         return list(self._genes)
 
 
-    def get_coefficient(self, the_metabolite):
+    def get_coefficient(self, metabolite_id):
         """Return the stoichiometric coefficient for a metabolite in
         the reaction.
 
-        the_metabolite: A metabolite Id.
+        metabolite_id: str or :class:`~cobra.core.Metabolite.Metabolite`
         
         """
         _id_to_metabolites = dict([(x.id, x)
                                         for x in self._metabolites])
 
-        if hasattr(the_metabolite, 'id'):
-            the_metabolite = the_metabolite.id
-        return self._metabolites[_id_to_metabolites[the_metabolite]]
+        if hasattr(metabolite_id, 'id'):
+            metabolite_id = metabolite_id.id
+        return self._metabolites[_id_to_metabolites[metabolite_id]]
     
-    def get_coefficients(self, the_metabolites):
+    def get_coefficients(self, metabolite_ids):
         """Return the stoichiometric coefficients for a list of
         metabolites in the reaction.
 
-        the_metabolites:  A list of metabolite Ids.
+        metabolite_ids: iterable
+            Containing str or :class:`~cobra.core.Metabolite.Metabolite`
         
         """
-        return map(self.get_coefficient, the_metabolites)
+        return map(self.get_coefficient, metabolite_ids)
     
-    def add_metabolites(self, the_metabolites, combine=True, add_to_container_model=True):
+    def add_metabolites(self, metabolites, combine=True, add_to_container_model=True):
         """Add metabolites and stoichiometric coefficients to the reaction.
         If the final coefficient for a metabolite is 0 then it is removed
         from the reaction.
 
-        the_metabolites: A dict of cobra.Metabolites and their coefficient
+        metabolites: dict
+            {:class:`~cobra.core.Metabolite.Metabolite`: coefficient}
 
-        combine: Boolean. If True and a metabolite already exists in the
-        reaction then the coefficients will be added.  If False the old
-        metabolite will be discarded and the new one added.
+        combine: Boolean.
+            Describes behavior a metabolite already exists in the reaction.
+            True causes the coefficients to be added.
+            False causes the coefficient to be replaced.
+            True and a metabolite already exists in the
 
-        add_to_container_model: Boolean.  If True and this reaction is
-        contained within a cobra.Model (i.e., self._model is a cobra.Model)
-        then add the metabolite to the model.
+        add_to_container_model: Boolean.
+            Add the metabolite to the :class:`~cobra.core.Model.Model`
+            the reaction is associated with (i.e. self.model)
 
         """
+        the_metabolites = metabolites
         _id_to_metabolites = dict([(x.id, x)
                                         for x in self._metabolites])
         new_metabolites = []
@@ -484,13 +468,13 @@ class Reaction(Object):
         means add the metabolites with -1*coefficient.  If the final coefficient
         for a metabolite is 0 then the metabolite is removed from the reaction.
 
-        .. note:: That a final coefficient < 0 implies a reactant.
-
         metabolites: dict of {:class:`~cobra.core.Metabolite`: coefficient}
             These metabolites will be added to the reaction
 
+        .. note:: A final coefficient < 0 implies a reactant.
+
         .. note:: This function uses deepcopy in case the reaction is being
-        subtracted from itself.
+                  subtracted from itself.
         
         """
         metabolites = deepcopy(metabolites)
@@ -500,6 +484,7 @@ class Reaction(Object):
 
     @property
     def reaction(self):
+        """Human readable reaction string"""
         return self.build_reaction_string()
 
 
@@ -538,9 +523,7 @@ class Reaction(Object):
 
 
     def check_mass_balance(self):
-        """Makes sure that the reaction is elementally-balanced.
-
-        """
+        """Makes sure that the reaction is elementally-balanced."""
         reaction_element_dict = defaultdict(list)
         for the_metabolite, the_coefficient in self._metabolites.items():
             if the_metabolite.formula is not None:
@@ -554,9 +537,7 @@ class Reaction(Object):
             return []
         
     def print_values(self):
-        """Prints most of the contents of a reaction as a series of strings.
-        
-        """
+        """.. deprecated :: 0.3"""
         warn("deprecated")
         print("reaction:", self.id)
         print("subsystem", self.subsystem)
@@ -573,11 +554,7 @@ class Reaction(Object):
 
 
     def remove_gene(self, cobra_gene):
-        """Removes the association between a gene and a reaction
-
-        cobra_gene: :class:`~cobra.core.Gene`. A gene that is associated with the reaction.
-        .. warning :: deprecated
-        """
+        """.. deprecated :: 0.3 update the gene_reaction_rule instead"""
         warn("deprecated: update the gene_reaction_rule instead")
         try:
             self._genes.remove(cobra_gene)
@@ -591,11 +568,7 @@ class Reaction(Object):
                 raise Exception('Unable to remove gene %s from reaction %s: %s'%(cobra_gene.id, self.id, e))
 
     def add_gene(self, cobra_gene):
-        """Associates a cobra.Gene object with a cobra.Reaction.
-
-        cobra_gene: :class:`~cobra.core.Gene`. A gene to associate with the reaction.
-        .. warning :: deprecated
-        """
+        """.. deprecated :: 0.3 update the gene_reaction_rule instead"""
         warn("deprecated: update the gene_reaction_rule instead")
         try:
             self._genes.add(cobra_gene)
@@ -612,7 +585,7 @@ class Reaction(Object):
     def _associate_gene(self, cobra_gene):
         """Associates a cobra.Gene object with a cobra.Reaction.
 
-        cobra_gene : :class:`~cobra.core.Gene`
+        cobra_gene : :class:`~cobra.core.Gene.Gene`
 
         """
         self._genes.add(cobra_gene)
@@ -622,15 +595,13 @@ class Reaction(Object):
     def _dissociate_gene(self, cobra_gene):
         """Dissociates a cobra.Gene object with a cobra.Reaction.
 
-        cobra_gene : :class:`~cobra.core.Gene`
+        cobra_gene : :class:`~cobra.core.Gene.Gene`
 
         """
         self._genes.remove(cobra_gene)
         cobra_gene._reaction.remove(self)
                 
     def knock_out(self):
-        """Change the upper and lower bounds of the reaction to 0.
- 
-        """
+        """Change the upper and lower bounds of the reaction to 0."""
         self.lower_bound = 0
         self.upper_bound = 0

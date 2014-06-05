@@ -3,14 +3,10 @@ import re
 from ..external.six import string_types, iteritems
 
 class DictList(list):
-    """A combined dict and list that feels like a list, but has
-    the speed benefits of a dict.  This may be eventually
-    replaced by collections.OrderedDict.
-
-    This was written to address the performance issues associated
-    with searching, accessing, or iterating over a list in python
-    that resulted in notable performance decays with COBRA for
-    python.
+    """A combined dict and list
+    
+    This object behaves like a list, but has the O(1) speed
+    benefits of a dict when looking up elements by their id.
 
     """
     _dict = {}
@@ -49,11 +45,11 @@ class DictList(list):
 
         search_function: this will be used to select which objects to return
         This can be:
-            - a string, in which case any object.attribute containing
-              the string will be returned
-            - a compiled regular expression
-            - a boolean function which takes one argument and returns True
-              for desired values
+        * a string, in which case any object.attribute containing
+        the string will be returned
+        * a compiled regular expression
+        * a boolean function which takes one argument and returns True
+        for desired values
 
         attribute: the attribute to be searched for (default is 'id').
                    If this is None, the object itself is used.
@@ -92,15 +88,13 @@ class DictList(list):
         self._dict[the_id] = i
 
     def _replace_on_id(self, new_object):
-        """Allows one to replace an object by one with
-        the same id.
-        
-        """
+        """Replace an object by another with the same id."""
         the_id = new_object.id
         the_index = self._dict[the_id]
         list.__setitem__(self, the_index, new_object)
 
     def append(self, object):
+        """append object to end"""
         the_id = object.id
         self._check(the_id)
         self._dict[the_id] = len(self)
@@ -115,13 +109,16 @@ class DictList(list):
                 append(i)
 
     def extend(self, iterable):
+        """extend list by appending elements from the iterable"""
         append = self.append
         for i in iterable:
             append(i)
 
     def __add__(self, other, should_deepcopy=False):
         """
-        other: an DictList
+        other: iterable
+            other must contain only unique id's which do not intersect
+            with self
 
         should_deepcopy: Boolean. 
 
@@ -139,9 +136,11 @@ class DictList(list):
         self.extend(other)
         return self
 
-    def index(self, id):
-        """
-        id: A string or a :class:`~cobra.core.Object`
+    def index(self, id, *args):
+        """Determine the position in the list
+
+        id: A string or a :class:`~cobra.core.Object.Object`
+
         """
         # because values are unique, start and stop are not relevant
         if isinstance(id, string_types):
@@ -160,8 +159,8 @@ class DictList(list):
 
     def __contains__(self, object):
         """DictList.__contains__(object) <==> object in DictList
-        object can either be the object to search for itself, or 
-        simply the id
+
+        object: str or :class:`~cobra.core.Object.Object`
 
         """
         if hasattr(object, "id"):
@@ -186,6 +185,7 @@ class DictList(list):
         return new
 
     def insert(self, index, object):
+        """insert object before index"""
         self._check(object.id)
         list.insert(self, index, object)
         # all subsequent entries now have been shifted up by 1
@@ -197,6 +197,7 @@ class DictList(list):
         _dict[object.id] = index
 
     def pop(self, *args):
+        """remove and return item at index (default last)."""
         value = list.pop(self, *args)
         index = self._dict.pop(value.id)
         # If the pop occured from a location other than the end of the list,
@@ -210,19 +211,26 @@ class DictList(list):
         return value
 
     def remove(self, x):
+        """remove first occurrence of value."""
         # Each item is unique in the list which allows this
         # It is much faster to do a dict lookup than n string comparisons
         self.pop(self.index(x))
 
     # these functions are slower because they rebuild the _dict every time
     def reverse(self, *args, **kwargs):
+        """reverse *IN PLACE*"""
         list.reverse(self, *args, **kwargs)
         self._generate_index()
 
-    def sort(self, key=None, **kwargs):
+    def sort(self, cmp=None, key=None, reverse=False):
+        """stable sort *IN PLACE*
+
+        cmp(x, y) -> -1, 0, 1
+
+        """
         if key is None:
             key = lambda i: i.id
-        list.sort(self, key=key, **kwargs)
+        list.sort(self, cmp=cmp, key=key, reverse=reverse)
         self._generate_index()
 
     def __setslice__(self, *args, **kwargs):

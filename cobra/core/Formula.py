@@ -6,13 +6,9 @@ from .Object import Object
 element_re = re.compile("[A-Z][a-z]?")
 
 class Formula(Object):
-    """Formula is a class for holding information regarding
-    a Metabolite formula.
+    """Describes a Chemical Formula
 
-    This will replace the current way of dealing with molecular
-    formulae in cobra.Metabolite objects
-
-    Legal formula string characters include letters, numbers, and *.
+    Legal formula string characters include letters, numbers, and "*".
     If a formula string starts with a number then it is assumed that
     all element counts are multiplied by this number.
 

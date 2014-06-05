@@ -31,9 +31,8 @@ def _cell(x):
 def load_matlab_model(infile_path, variable_name=None):
     """Load a cobra model stored as a .mat file
 
-    Parameters
-    ----------
     infile_path : str
+
     variable_name : str, optional
         The variable name of the model in the .mat file. If this is not
         specified, then the first MATLAB variable which looks like a COBRA
@@ -108,11 +107,9 @@ def save_matlab_model(model, file_name):
     """Save the cobra model as a .mat file.
 
     This .mat file can be used directly in the MATLAB version of COBRA.
-    .. note:: This function works best with scipy 0.11b1 or later
 
-    Parameters
-    ----------
-    model : cobra.Model
+    model : :class:`~cobra.core.Model.Model` object
+
     file_name : str or file-like object
 
     """

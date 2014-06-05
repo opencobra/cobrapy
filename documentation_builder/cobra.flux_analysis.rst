@@ -4,6 +4,14 @@ cobra.flux_analysis package
 Submodules
 ----------
 
+cobra.flux_analysis.deletion_worker module
+------------------------------------------
+
+.. automodule:: cobra.flux_analysis.deletion_worker
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 cobra.flux_analysis.double_deletion module
 ------------------------------------------
 
@@ -40,6 +48,14 @@ cobra.flux_analysis.parsimonious module
 ---------------------------------------
 
 .. automodule:: cobra.flux_analysis.parsimonious
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cobra.flux_analysis.phenotype_phase_plane module
+------------------------------------------------
+
+.. automodule:: cobra.flux_analysis.phenotype_phase_plane
     :members:
     :undoc-members:
     :show-inheritance:

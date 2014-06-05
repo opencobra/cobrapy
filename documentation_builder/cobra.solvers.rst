@@ -4,6 +4,14 @@ cobra.solvers package
 Submodules
 ----------
 
+cobra.solvers.cglpk module
+--------------------------
+
+.. automodule:: cobra.solvers.cglpk
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 cobra.solvers.cplex_solver module
 ---------------------------------
 

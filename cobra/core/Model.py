@@ -1,5 +1,6 @@
 from warnings import warn
 from copy import deepcopy, copy
+
 from ..external.six import iteritems, string_types
 from ..solvers import optimize
 from .Object import Object
@@ -77,6 +78,7 @@ class Model(Object):
         return self
 
     def guided_copy(self):
+        """.. warning :: deprecated"""
         warn("deprecated")
         return self.copy()
 
@@ -171,12 +173,8 @@ class Model(Object):
             self.reactions[reaction_index] = the_reaction
 
     def update(self):
-        """Non functional.  Model.update is moved to ArrayBasedModel.  Please use
-        the to_array_based_model property to create an ArrayBasedModel.
-        
-        """
-        raise Exception("Model.update is moved to ArrayBasedModel.  Please use \n"
-                        "the to_array_based_model property to create an ArrayBasedModel.")
+        """.. warning :: removed"""
+        raise Exception("Model.update is moved to ArrayBasedModel.")
 
 
     def add_reaction(self, reaction):
@@ -262,63 +260,38 @@ class Model(Object):
         return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
 
 
-    def optimize(self, objective_sense='maximize',
-                 solver=None, 
-                 error_reporting=None, quadratic_component=None,
+    def optimize(self, objective_sense='maximize', solver=None,
+                 quadratic_component=None,
                  tolerance_optimality=1e-6, tolerance_feasibility=1e-6,
-                 tolerance_barrier=1e-10,  **kwargs):
-        """Optimize self for self._objective_coefficients or new_objective.
+                 tolerance_barrier=1e-10, **kwargs):
+        """Optimize model using flux balance analysis
 
-        NOTE: Only the most commonly used parameters are presented here.  Additional
-        parameters for cobra.solvers may be available and specified with the
-        appropriate keyword=value.
-
-        new_objective: Reaction, String, or Integer referring to a reaction in
-        cobra_model.reactions to set as the objective.  In the case where the new_objective
-        is a linear combination of Reactions then new_objective should be a dictionary where
-        the key is the Reaction and the value is the objective coefficient
-        (e.g., 0.1 reaction_1 + 0.5 reaction_2 would be new_objective = {reaction_1: 0.1, reaction_2: 0.5})
-        
         objective_sense: 'maximize' or 'minimize'
-        
-        the_problem: None or a problem object for the specific solver that can be used to hot
-        start the next solution.
 
-        solver: 'glpk', 'gurobi', or 'cplex'
+        solver: 'glpk', 'cglpk', 'gurobi', 'cplex' or None
 
+        quadratic_component: None or :class:`scipy.sparse.dok_matrix`
+            The dimensions should be (n, n) where n is the number of reactions.
 
-        quadratic_component: None or 
-        scipy.sparse.dok of dim(len(cobra_model.reactions),len(cobra_model.reactions))
-        If not None:
-          Solves quadratic programming problems for cobra_models of the form:
-          cobra_model = ArrayBasedModel(cobra_model)
-          minimize: 0.5 * x' * quadratic_component * x + cobra_model._objective_coefficients' * x
-          such that,
-            cobra_model._lower_bounds <= x <= cobra_model._upper_bounds
-            cobra_model._S * x (cobra_model._constraint_sense) cobra_model._b
+            This sets the quadratic component (Q) of the objective coefficient,
+            adding :math:`v^T \cdot Q \cdot v` to the objective value.
 
-
-        #See cobra.flux_analysis.solvers for more info on the following parameters.  Also,
-        refer to your solver's manual
-        
         tolerance_optimality: Solver tolerance for optimality.
-            
+
         tolerance_feasibility: Solver tolerance for feasibility.
 
         tolerance_barrier: Solver tolerance for barrier method
 
-        lp_method: Solver method to solve the problem
+        .. NOTE :: Only the most commonly used parameters are presented here. 
+                   Additional parameters for cobra.solvers may be available and
+                   specified with the appropriate keyword argument.
 
-        #End solver parameters
-        
-        **kwargs: See additional parameters for your specific solver module in
-        cobra.solvers
-
-        
         """
         if "new_objective" in kwargs:
             warn("new_objective is deprecated. Use Model.change_objective")
             self.change_objective(kwargs.pop("new_objective"))
+        if "error_reporting" in kwargs:
+            warn("error_reporting deprecated")
         the_solution = optimize(self, solver=solver,
                                 objective_sense=objective_sense,
                                 quadratic_component=quadratic_component,

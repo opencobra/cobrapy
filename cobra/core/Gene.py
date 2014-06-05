@@ -1,9 +1,7 @@
-#cobra.Gene.py
-#######################
-#BEGIN Class Gene
-#
 import re
+
 from .Species import Species
+
 class Gene(Species):
     """A Gene is a special class of metabolite.
     
@@ -43,11 +41,11 @@ class Gene(Species):
         self.strand = strand
         self.functional = functional
 
-    def remove_from_model(self, the_model,
+    def remove_from_model(self, model,
                           make_dependent_reactions_nonfunctional=True):
         """Removes the association
 
-        the_model: :class:`~cobra.core.Model` object.
+        model: :class:`~cobra.core.Model` object.
             Remove the reaction from this model.
 
         make_dependent_reactions_nonfunctional: Boolean.  If True then replace
@@ -55,12 +53,10 @@ class Gene(Species):
         with 'True'
 
         .. note :: Simulating gene knockouts is much better handled by 
-        cobra.manipulation.delete_model_genes
-
-        TODO: Either better handling of the gene association or function
-        deprecation
+                   cobra.manipulation.delete_model_genes
 
         """
+        the_model = model
         if make_dependent_reactions_nonfunctional:
             gene_state = 'False'
         else:
@@ -87,7 +83,3 @@ class Gene(Species):
             if not eval(the_gene_reaction_relation):
                 the_reaction.lower_bound = 0
                 the_reaction.upper_bound = 0
-                                       
-#
-#END Class Gene
-########################

@@ -326,7 +326,7 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
                                    use_fbc_package=True):
     """Write a cobra.Model object to an SBML XML file.
 
-    cobra_model:  A cobra.Model object
+    cobra_model:  :class:`~cobra.core.Model.Model` object
 
     sbml_filename:  The file to write the SBML XML to.
 
@@ -334,15 +334,14 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
 
     sbml_version: 1 is the only version supported at the moment.
 
-    print_time:  Boolean.  Print the time requirements for different sections
-
-    use_fbc_package: Boolean.  Convert the model to the FBC package format to improve portability.
-    http://sbml.org/Documents/Specifications/SBML_Level_3/Packages/Flux_Balance_Constraints_(flux)
+    use_fbc_package: Boolean.
+        Convert the model to the FBC package format to improve portability.
+        http://sbml.org/Documents/Specifications/SBML_Level_3/Packages/Flux_Balance_Constraints_(flux)
 
 
     TODO: Update the NOTES to match the SBML standard and provide support for
     Level 2 Version 4
-    
+
     """
     note_start_tag, note_end_tag = '<p>', '</p>'
     if sbml_level > 2 or (sbml_level == 2 and sbml_version == 4):

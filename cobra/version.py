@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-__all__ = ("get_version")
+__all__ = ("get_version",)
 
 from subprocess import check_output
 from os import path, name, devnull

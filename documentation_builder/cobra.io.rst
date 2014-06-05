@@ -4,6 +4,14 @@ cobra.io package
 Submodules
 ----------
 
+cobra.io.json module
+--------------------
+
+.. automodule:: cobra.io.json
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 cobra.io.mat module
 -------------------
 

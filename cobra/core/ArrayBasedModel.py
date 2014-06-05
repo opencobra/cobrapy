@@ -14,19 +14,6 @@ from ..external.six import iteritems
 class ArrayBasedModel(Model):
     """ArrayBasedModel is a class that adds arrays and vectors to
     a cobra.Model to make it easier to perform linear algebra operations.
-    
-    S : :class:`scipy.sparse.lil_matrix` (in CPython)
-        Stoichiometric matrix of the model
-
-    lower_bounds
-
-    upper_bounds
-
-    objective_coefficients
-
-    b
-
-    constraint_sense
 
     """
     def __setstate__(self, state):
@@ -64,6 +51,12 @@ class ArrayBasedModel(Model):
     # no setter for S at the moment
     @property
     def S(self):
+        """Stoichiometric matrix of the model
+        
+        This will be formatted as either :class:`~scipy.sparse.lil_matrix` or
+        :class:`~scipy.sparse.lil_matrix`
+
+        """
         return self._S
 
     @property
@@ -92,6 +85,7 @@ class ArrayBasedModel(Model):
 
     @property
     def b(self):
+        """bounds for metabolites as :class:`numpy.ndarray`"""
         return self._b
 
     @b.setter
