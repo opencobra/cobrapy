@@ -204,7 +204,7 @@ class TestCobraSolver(object):
         m = Model()
         m.add_reactions([x, y])
         lp = self.solver.create_problem(m)
-        quadratic_obj = scipy.sparse.eye(2)
+        quadratic_obj = scipy.sparse.eye(2) * 2
         solver.set_quadratic_objective(lp, quadratic_obj)
         solver.solve_problem(lp, objective_sense="minimize")
         solution = solver.format_solution(lp, m)
@@ -231,7 +231,8 @@ class TestCobraSolver(object):
         m.add_reaction(z)
         solution = solver.solve(m, quadratic_component=scipy.sparse.eye(3),
                                 objective_sense="minimize")
-        self.assertAlmostEqual(solution.f, 12)
+        # should be 12 not 24 because 1/2 (V^T Q V)
+        self.assertAlmostEqual(solution.f, 6)
         self.assertAlmostEqual(solution.x_dict["x"], 2)
         self.assertAlmostEqual(solution.x_dict["y"], 2)
         self.assertAlmostEqual(solution.x_dict["z"], 2)

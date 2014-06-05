@@ -168,7 +168,8 @@ def set_quadratic_objective(lp, quadratic_objective):
         linear_objective = linear_objective.getLinExpr()
     gur_quadratic_objective = QuadExpr()
     for (index_0, index_1), the_value in quadratic_objective.todok().items():
-        gur_quadratic_objective.addTerms(the_value,
+        # gurobi does not multiply by 1/2 (only does v^T Q v)
+        gur_quadratic_objective.addTerms(the_value * 0.5,
                                          variable_list[index_0],
                                          variable_list[index_1])
     # this adds to the existing quadratic objectives

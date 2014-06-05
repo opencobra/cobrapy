@@ -188,8 +188,7 @@ def set_quadratic_objective(lp, quadratic_objective):
     if lp.objective.get_num_quadratic_nonzeros() > 0:
         lp.objective.set_quadratic((0.,) * lp.variables.get_num())
 
-    # cplex divides by 2 for some reason
-    quadratic_component_scaled = quadratic_objective.todok() * 2
+    quadratic_component_scaled = quadratic_objective.todok()
 
     lp.parameters.emphasis.numerical.set(1)
     for k, v in quadratic_component_scaled.items():
