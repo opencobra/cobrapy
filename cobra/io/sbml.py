@@ -550,7 +550,7 @@ def add_sbml_species(sbml_model, cobra_metabolite, note_start_tag,
     return metabolite_id
 
 
-def fix_legacy_id(id, use_hyphens=False):
+def fix_legacy_id(id, use_hyphens=False, fix_compartments=False):
     id = id.replace('_DASH_', '__')
     id = id.replace('_FSLASH_', '/')
     id = id.replace('_BSLASH_', "\\")
@@ -569,6 +569,11 @@ def fix_legacy_id(id, use_hyphens=False):
         id = id.replace('__', '-')
     else:
         id = id.replace("-", "__")
+    if fix_compartments:
+        if len(id) > 2:
+            if (id[-3] == "(" and id[-1] == ")") or \
+               (id[-3] == "[" and id[-1] == "]"):
+                id = id[:-3] + "_" + id[-2]
     return id
 
 
