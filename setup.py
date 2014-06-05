@@ -63,7 +63,6 @@ setup(
     extras_require = {
         'parallel': ['pp>=1.6.0'],
         'matlab': ["mlabwrap>=1.1"],
-        'R': ["rpy2>=2.2.2"]
         },
     ext_modules = ext_modules,
 
@@ -91,9 +90,9 @@ setup(
                    'Operating System :: Microsoft :: Windows :: Windows XP',
                    'Operating System :: POSIX',
                    'Operating System :: POSIX :: Linux',
-                   'Programming Language :: Python :: 2.5',
-                   'Programming Language :: Python :: 2.6',
                    'Programming Language :: Python :: 2.7',
+                   'Programming Language :: Python :: 3.3',
+                   'Programming Language :: Python :: 3.4',
                    'Programming Language :: Python :: Implementation :: CPython',
                    'Programming Language :: Python :: Implementation :: Jython',
                    'Topic :: Scientific/Engineering',
