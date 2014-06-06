@@ -9,20 +9,26 @@ For usage instructions, please see the
 All releases require Python 2.7 to be installed before proceeding.
 Mac OS X (10.7+) and Ubuntu ship with Python. Windows users without python 
 can download and install python from the [python 
-website](http://www.python.org/download/releases/2.7.6/).
+website](http://www.python.org/download/releases/2.7.7/).
 
 Python 3 support is still considered experimental.
 
 #Installation of cobrapy
 
 ## Stable version installation
-On Mac OS X or GNU/Linux, first [install pip]
-(http://pip.readthedocs.org/en/latest/installing.html).
-Afterwards, run this command in a terminal:
 
-    sudo pip install cobra
+### Mac OS X
+0. [install pip] (http://pip.readthedocs.org/en/latest/installing.html).
+1. In a terminal, run ```sudo pip install cobra --pre```
 
-For Windows, download and install the appropriate 32 bit or 64 bit installer,
+### GNU/Linux
+0. [install pip] (http://pip.readthedocs.org/en/latest/installing.html).
+1. Install the glpk library. On debian-based systems (including Ubuntu
+   and Mint), this can be done with ```sudo apt-get install libglpk-dev```
+3. In a terminal, run ```sudo pip install cobra --pre```
+
+### Microsoft Windows
+Download and install the appropriate 32 bit or 64 bit installer,
 both of which can be downloaded from the [python package
 index](https://pypi.python.org/pypi/cobra/).
 
@@ -81,3 +87,4 @@ commercial solvers when it comes to mixed-integer linear programming.
 from cobra.test import test_all
 test_all()
 ```
+
