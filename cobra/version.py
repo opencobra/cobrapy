@@ -86,7 +86,7 @@ def read_release_version():
         return None
 
 
-def get_version():
+def get_version(pep440=False):
     """Tracks the version number.
 
     The file VERSION holds the version information. If this is not a git
@@ -101,7 +101,7 @@ def get_version():
     before running git tag (set to the same as the version in the tag).
     """
 
-    git_version = get_version_git()
+    git_version = get_version_git(pep440=pep440)
     if git_version is None:  # not a git repository
         return read_release_version()
     return git_version

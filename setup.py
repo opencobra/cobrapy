@@ -11,7 +11,7 @@ from cobra.version import get_version
 import warnings
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    __version = get_version()
+    __version = get_version(pep440=True)
 setup_kwargs = {}
 
 # for running parallel tests due to a bug in python 2.7.3
