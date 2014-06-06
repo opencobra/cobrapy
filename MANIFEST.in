@@ -1,1 +1,2 @@
-include README.md INSTALL.md LICENSE
+include README.md INSTALL.md LICENSE ez_setup.py
+include cobra/solvers/cglpk.pyx

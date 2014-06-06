@@ -1,9 +1,17 @@
-import ez_setup
-ez_setup.use_setuptools()
+try:
+    import setuptools
+except ImportError:
+    import ez_setup
+    ez_setup.use_setuptools()
 from setuptools import setup, find_packages
+from sys import argv
+
 from cobra.version import get_version
 
-__version = get_version()
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    __version = get_version()
 setup_kwargs = {}
 
 # for running parallel tests due to a bug in python 2.7.3
@@ -13,8 +21,17 @@ try:
 except:
     None
 
+# cython is optional for building. The c file can be used directly. However,
+# to run sdist, the c file must be generated, which requires cython.
 try:
     from Cython.Build import cythonize
+except ImportError:
+    cythonize = None
+    if "sdist" in argv:
+        raise Exception("cython required for sdist")
+
+# for building the cglpk solver
+try:
     from distutils.extension import Extension
     from distutils.command.build_ext import build_ext
     from os.path import isfile, abspath, dirname
@@ -25,8 +42,8 @@ try:
         def run(self):
             try:
                 build_ext.run(self)
-            except:
-                None
+            except Exception as e:
+                warn(e)
 
         def build_extension(self, ext):
             try:
@@ -34,20 +51,41 @@ try:
             except:
                 None
 
-    sources = ["cobra/solvers/cglpk.pyx"]
     build_args = {}
-    if system() == "Darwin":
+    if system() == "Darwin":  # otherwise Mac Clang gives errors
         build_args["extra_compile_args"] = ["-Qunused-arguments"]
     build_args["libraries"] = ["glpk"]
     setup_kwargs["cmdclass"] = {"build_ext": FailBuild}
+    # To statically link libglpk to the built extension, add the glpk.h header
+    # and static library libglpk.a to the build directory. A static libglpk.a
+    # can be built by running configure with the export CLFAGS="-fPIC" and
+    # copying the file from src/.libs
     if isfile("libglpk.a"):
         build_args["library_dirs"] = [dirname(abspath("libglpk.a"))]
     if isfile("glpk.h"):
         build_args["include_dirs"] = [dirname(abspath("glpk.h"))]
-    ext_modules = cythonize([Extension("cobra.solvers.cglpk", sources,
-                                       **build_args)])
+    # use cython if present, otherwise use c file
+    if cythonize:
+        ext_modules = cythonize([Extension("cobra.solvers.cglpk",
+                ["cobra/solvers/cglpk.pyx"], **build_args)])
+    else:
+        ext_modules = [Extension("cobra.solvers.cglpk",
+                ["cobra/solvers/cglpk.c"], **build_args)]
 except:
     ext_modules = None
+
+extras = {
+    'parallel': ['pp>=1.6.0'],
+    'matlab': ["mlabwrap>=1.1"],
+    'sbml': ["python-libsbml-experimental"],
+    'array': ["numpy>=1.6", "scipy>=11.0"],
+    'display': ["matplotlib", "brewer2mpl", "pandas"]
+}
+
+all_extras = set()
+for extra in extras.values():
+    all_extras.update(extra)
+extras["all"] = list(all_extras)
 
 setup(
     name = "cobra",
@@ -60,10 +98,7 @@ setup(
     #leave blank because it tries to build scipy/numpy on os x when they are
     #installed by the superpack.  And these are not really essential for core functions.
     install_requires = [],
-    extras_require = {
-        'parallel': ['pp>=1.6.0'],
-        'matlab': ["mlabwrap>=1.1"],
-        },
+    extras_require = extras,
     ext_modules = ext_modules,
 
     package_data = {
@@ -79,7 +114,7 @@ setup(
     url = "https://github.com/opencobra/cobrapy",
     test_suite = "cobra.test.suite",
     long_description = "COnstraint-Based Reconstruction and Analysis (COBRA) methods are widely used for genome-scale modeling of metabolic networks in both prokaryotes and eukaryotes.  COBRApy is a constraint-based modeling package that is designed to accomodate the biological complexity of the next generation of COBRA models and provides access to commonly used COBRA methods, such as flux balance analysis, flux variability analysis, and gene deletion analyses.  Through the mlabwrap module it is possible to use COBRApy to call many additional COBRA methods present in the COBRA Toolbox for MATLAB.",
-    download_url = 'http://sourceforge.net/projects/opencobra/files/python/cobra/' + __version,
+    download_url = 'https://pypi.python.org/pypi/cobra',
     classifiers = ['Development Status :: 5 - Production/Stable',
                    'Environment :: Console',
                    'Intended Audience :: Science/Research',
@@ -101,4 +136,3 @@ setup(
     platforms = "Python >= 2.6 on GNU/Linux, Mac OS X >= 10.7, Microsoft Windows >= 7. \n Jython >= 2.5 on Java >= 1.6",
     **setup_kwargs
     )
-    
