@@ -186,6 +186,35 @@ class TestCobraSolver(object):
         solution = solver.format_solution(lp, m)
         self.assertAlmostEqual(solution.x_dict["y"], 2.5)
 
+    def test_inequality(self):
+        # The space enclosed by the constraints is a 2D triangle with
+        # vertexes as (3, 0), (1, 2), and (0, 1)
+        solver = self.solver
+        # c1 encodes y - x > 1 ==> y > x - 1
+        # c2 encodes y + x < 3 ==> y < 3 - x
+        c1 = Metabolite("c1")
+        c2 = Metabolite("c2")
+        x = Reaction("x")
+        x.lower_bound = 0
+        y = Reaction("y")
+        y.lower_bound = 0
+        x.add_metabolites({c1: -1, c2: 1})
+        y.add_metabolites({c1: 1, c2: 1})
+        c1._bound = 1
+        c1._constraint_sense = "G"
+        c2._bound = 3
+        c2._constraint_sense = "L"
+        m = Model()
+        m.add_reactions([x, y])
+        # test that optimal values are at the vertices
+        m.change_objective("x")
+        self.assertAlmostEqual(solver.solve(m).f, 1.0)
+        self.assertAlmostEqual(solver.solve(m).x_dict["y"], 2.0)
+        m.change_objective("y")
+        self.assertAlmostEqual(solver.solve(m).f, 3.0)
+        self.assertAlmostEqual(solver.solve(m, objective_sense="minimize").f,
+                              1.0)
+
     @skipIf(scipy is None, "scipy required for quadratic objectives")
     def test_quadratic(self):
         solver = self.solver
