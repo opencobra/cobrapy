@@ -167,7 +167,7 @@ class TestCobraFluxAnalysis(TestCase):
                     reaction_list=cobra_model.reactions[100:140])
             for the_reaction, the_range in iteritems(fva_out):
                 for k, v in iteritems(the_range):
-                    self.assertAlmostEqual(fva_results[the_reaction][k], v, places=3)
+                    self.assertAlmostEqual(fva_results[the_reaction][k], v, places=5)
 
 # make a test suite to run all of the tests
 loader = TestLoader()

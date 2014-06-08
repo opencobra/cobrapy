@@ -113,7 +113,7 @@ cdef class GLP:
     create_problem = classmethod(create_problem)
 
 
-    cpdef change_variable_bounds(self, int index, float lower_bound, float upper_bound):
+    cpdef change_variable_bounds(self, int index, double lower_bound, double upper_bound):
         cdef int bound_type = GLP_DB
         assert index >= 0
         if lower_bound == upper_bound:
@@ -250,7 +250,7 @@ cdef class GLP:
         return glp_get_obj_val(self.glp)
 
 
-    cpdef change_variable_objective(self, int index, float value):
+    cpdef change_variable_objective(self, int index, double value):
         assert index >= 0
         glp_set_obj_coef(self.glp, index + 1, value)
 
