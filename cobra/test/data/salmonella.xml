@@ -13139,14 +13139,14 @@
           </html>
         </notes>
       </species>
-      <species id="M_tcb_c" name="tcb_c" compartment="c" charge="0">
+      <species id="M_tcb_c" name="tricarballylate" compartment="c" charge="-3">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>FORMULA: </p>
-            <p>PUBCHEM: 3333</p>
+            <p>FORMULA: C6H5O6 </p>
+            <p>PUBCHEM: 135626273</p>
             <p>CHARGE: -3</p>
-            <p>CHEBI: 4167</p>
-            <p>KEGG: 0</p>
+            <p>CHEBI: 62517</p>
+            <p>KEGG: C19806</p>
           </html>
         </notes>
       </species>
@@ -13161,17 +13161,17 @@
           </html>
         </notes>
       </species>
-      <species id="M_tcb_e" name="tcb_e" compartment="e" charge="0">
+      <species id="M_tcb_e" name="tricarballylate" compartment="e" charge="-3">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>FORMULA: </p>
-            <p>PUBCHEM: 3333</p>
+            <p>FORMULA: C6H5O6 </p>
+            <p>PUBCHEM: 135626273</p>
             <p>CHARGE: -3</p>
-            <p>CHEBI: 4167</p>
-            <p>KEGG: 0</p>
+            <p>CHEBI: 62517</p>
+            <p>KEGG: C19806</p>
           </html>
         </notes>
-      </species>
+      </species>i
       <species id="M_thex2eACP_c" name="trans-Hex-2-enoyl-acyl-carrier-protein" compartment="c" charge="-1">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
@@ -13216,14 +13216,14 @@
           </html>
         </notes>
       </species>
-      <species id="M_tcb_p" name="tcb_p" compartment="p" charge="0">
+      <species id="M_tcb_p" name="tricarballylate" compartment="p" charge="-3">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>FORMULA: </p>
-            <p>PUBCHEM: 3333</p>
+            <p>FORMULA: C6H5O6 </p>
+            <p>PUBCHEM: 135626273</p>
             <p>CHARGE: -3</p>
-            <p>CHEBI: 4167</p>
-            <p>KEGG: 0</p>
+            <p>CHEBI: 62517</p>
+            <p>KEGG: C19806</p>
           </html>
         </notes>
       </species>
@@ -23545,14 +23545,14 @@
           </html>
         </notes>
       </species>
-      <species id="M_tcb_e_boundary" name="tcb_e" compartment="e" boundaryCondition="true" charge="0">
+      <species id="M_tcb_e_boundary" name="tricarballylate" compartment="e" boundaryCondition="true" charge="-3">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>FORMULA: </p>
-            <p>PUBCHEM: 3333</p>
+            <p>FORMULA: C6H5O6 </p>
+            <p>PUBCHEM: 135626273</p>
             <p>CHARGE: -3</p>
-            <p>CHEBI: 4167</p>
-            <p>KEGG: 0</p>
+            <p>CHEBI: 62517</p>
+            <p>KEGG: C19806</p>
           </html>
         </notes>
       </species>
@@ -36106,7 +36106,7 @@
       <reaction id="R_CYSTL" name="cystathionine b lyase" reversible="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: ( STM1464  or  STM3161 or STM1557 )</p>
+            <p>GENE_ASSOCIATION: ( STM3161 or STM1557 )</p>
             <p>SUBSYSTEM: Methionine Metabolism</p>
           </html>
         </notes>
@@ -50759,7 +50759,7 @@
       <reaction id="R_FUCtpp" name="L fucose transport via proton symport periplasm " reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: STM2975</p>
+            <p>GENE_ASSOCIATION: s0001</p>
             <p>SUBSYSTEM: Transport Inner Membrane</p>
           </html>
         </notes>
@@ -52799,7 +52799,7 @@
       <reaction id="R_GLCDpp" name="Glucose dehydrogenase ubiquinone 8 as acceptor  periplasm " reversible="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: ( STM0861  or  STM0169 )</p>
+            <p>GENE_ASSOCIATION: ( STM0169 )</p>
             <p>SUBSYSTEM: Oxidative Phosphorylation</p>
           </html>
         </notes>
@@ -53254,7 +53254,7 @@
       <reaction id="R_GLCptspp" name="D glucose transport via PEPPyr PTS periplasm " reversible="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: ( ( STM2433  and  STM1203  and  STM2431  and  STM2432 )  or  ( STM1830  and  STM1831  and  STM1832  and  STM2431  and  STM2432 )  or  ( STM2433  and  STM1465  and  STM2431  and  STM2432 ) )</p>
+            <p>GENE_ASSOCIATION: ( ( STM2433  and  STM1203  and  STM2431  and  STM2432 )  or  ( STM1830  and  STM1831  and  STM1832  and  STM2431  and  STM2432 )  or  ( STM2433  and   STM2431  and  STM2432 ) )</p>
             <p>SUBSYSTEM: Transport Inner Membrane</p>
           </html>
         </notes>
@@ -62068,7 +62068,7 @@
       <reaction id="R_MALTptspp" name="maltose transport via PEPPyr PTS periplasm " reversible="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: ( STM2433  and  STM1465  and  STM2431  and  STM2432 )</p>
+            <p>GENE_ASSOCIATION: ( STM2433  and  STM2431  and  STM2432 )</p>
             <p>SUBSYSTEM: Transport Inner Membrane</p>
           </html>
         </notes>
@@ -68586,7 +68586,7 @@
       <reaction id="R_P5CD" name="1 pyrroline 5 carboxylate dehydrogenase" reversible="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: STM1124</p>
+            <p>GENE_ASSOCIATION: s0001</p>
             <p>SUBSYSTEM: Arginine and Proline Metabolism</p>
           </html>
         </notes>
@@ -73618,7 +73618,7 @@
       <reaction id="R_PROD2" name="Proline dehydrogenase" reversible="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: STM1124</p>
+            <p>GENE_ASSOCIATION: s0001</p>
             <p>SUBSYSTEM: Arginine and Proline Metabolism</p>
           </html>
         </notes>
@@ -74709,7 +74709,7 @@
       <reaction id="R_PUNP4" name="purine nucleoside phosphorylase Deoxyguanosine " reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: ( STM2422  or  STM4570 )</p>
+            <p>GENE_ASSOCIATION: ( STM4570 )</p>
             <p>SUBSYSTEM: Nucleotide Salvage Pathway</p>
           </html>
         </notes>
@@ -74790,7 +74790,7 @@
       <reaction id="R_PUNP7" name="purine nucleoside phosphorylase Xanthosine " reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: STM2422</p>
+            <p>GENE_ASSOCIATION: s0001</p>
             <p>SUBSYSTEM: Nucleotide Salvage Pathway</p>
           </html>
         </notes>
@@ -78965,7 +78965,7 @@
       <reaction id="R_TREptspp" name="trehalose transport via PEPPyr PTS periplasm " reversible="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: ( STM2433  and  STM2431  and  STM2432  and  STM4454 )</p>
+            <p>GENE_ASSOCIATION: ( STM2433  and  STM2431  and  STM2432 )</p>
             <p>SUBSYSTEM: Transport Inner Membrane</p>
           </html>
         </notes>
