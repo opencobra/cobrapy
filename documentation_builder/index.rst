@@ -12,8 +12,8 @@ Documentation for COBRApy
     03_single_deletion
     04_change_objective
     05_add_reactions
-    06_ice_cream_milp
     07_double_deletion
+    milp
     phenotype_phase_plane
     escher
     cobra

@@ -4,4 +4,4 @@ sphinx-apidoc -o . ../cobra ../cobra/oven ../cobra/external \
 rm modules.rst
 
 ipython nbconvert --to=rst phenotype_phase_plane.ipynb reactions.ipynb \
-    metabolites.ipynb
+    metabolites.ipynb milp.ipynb
