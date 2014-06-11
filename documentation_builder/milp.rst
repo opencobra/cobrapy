@@ -11,11 +11,13 @@ profit, but is subject to a budget.
 
 We can write this problem as a linear program:
 
-    **max** cone ⋅ cone\_margin + popsicle ⋅ popsicle margin
+    **max** cone :math:`\cdot` cone\_margin + popsicle :math:`\cdot`
+    popsicle margin
 
     *subject to*
 
-    cone ⋅ cone\_cost + popsicle ⋅ popsicle\_cost ≤ budget
+    cone :math:`\cdot` cone\_cost + popsicle :math:`\cdot`
+    popsicle\_cost :math:`\le` budget
 
 .. code:: python
 
@@ -24,6 +26,7 @@ We can write this problem as a linear program:
     popsicle_selling_price = 2.
     popsicle_production_cost = 1.
     starting_budget = 100.
+
 This problem can be written as a cobra.Model
 
 .. code:: python
@@ -58,7 +61,7 @@ This problem can be written as a cobra.Model
 
 
 In reality, cones and popsicles can only be sold in integer amounts. We
-can force the variable type (a cobra.Reaction) to be an integer.
+can use the variable kind attribute of a cobra.Reaction to enforce this.
 
 .. code:: python
 
