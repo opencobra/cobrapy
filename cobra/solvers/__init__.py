@@ -57,12 +57,6 @@ for solver in possible_solvers:
         pass
     del solver, nicer_name
 
-try:
-    from .cglpk import GLP
-    solver_dict["cglpk"] = GLP
-except:
-    None
-
 del path, listdir
 del i, possible_solvers
 
