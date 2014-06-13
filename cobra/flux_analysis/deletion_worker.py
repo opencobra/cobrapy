@@ -55,8 +55,22 @@ class CobraDeletionPool(object):
         for i in range(n_processes):
             p =  Process(target=compute_fba_deletion_worker,
                          args=[cobra_model, solver, self.job_queue, self.output_queue])
-            p.start()
             self.processes.append(p)
+
+    def start(self):
+        for p in self.processes:
+            p.start()
+
+    def terminate(self):
+        for p in self.processes:
+            p.terminate()
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.terminate()
 
     def submit(self, indexes, label=None):
         self.job_queue.put((indexes, label))
@@ -72,6 +86,7 @@ class CobraDeletionPool(object):
         while self.n_complete < self.n_submitted:
             self.n_complete += 1
             yield self.output_queue.get()
+
 
     @property
     def pids(self):
@@ -106,4 +121,16 @@ class CobraDeletionMockPool(object):
         for i in range(len(self.job_queue)):
             indexes, label = self.job_queue.pop()
             yield (label, compute_fba_deletion(self.lp, self.solver, self.model, indexes))
+
+    def start(self):
+        None
+
+    def terminate(self):
+        None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        None
 
