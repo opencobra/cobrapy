@@ -1,6 +1,6 @@
 # attempt to import all working solvers in this directory
 from __future__ import absolute_import
-from warnings import warn
+from warnings import warn as _warn
 from os import name as __name
 
 solver_dict = {}
@@ -44,10 +44,9 @@ for i in listdir(path.dirname(path.abspath(__file__))):
         continue
     if i.startswith("parameters"):
         continue
-    if i.endswith(".py") or i.endswith(".so"):
-        possible_solvers.add(i[:-3])
-    if i.endswith(".pyc") or i.endswith(".pyd"):
-        possible_solvers.add(i[:-4])
+    if i.endswith(".py") or i.endswith(".so") or i.endswith(".pyc") \
+            or i.endswith(".pyd"):
+        possible_solvers.add(i.split(".")[0])
 
 for solver in possible_solvers:
     nicer_name = solver[:-7] if solver.endswith("_solver") else solver
@@ -57,14 +56,11 @@ for solver in possible_solvers:
         pass
     del solver, nicer_name
 
-try:
-    from .cglpk import GLP
-    solver_dict["cglpk"] = GLP
-except:
-    None
-
 del path, listdir
 del i, possible_solvers
+
+if len(solver_dict) == 0:
+    _warn("No LP solvers found")
 
 def get_solver_name(mip=False, qp=False):
     """returns a solver name"""
@@ -86,7 +82,7 @@ def get_solver_name(mip=False, qp=False):
                 return solver_name
         for solver_name in solver_dict:
             if solver_name not in qp_incapable:
-                warn("could not verify if %s supports qp" % solver_name)
+                _warn("could not verify if %s supports qp" % solver_name)
                 return solver_name
         return None  # don't want to return glpk
     else:

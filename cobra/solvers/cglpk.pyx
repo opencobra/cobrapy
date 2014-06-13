@@ -325,3 +325,24 @@ cdef class GLP:
         glp_copy_prob(other.glp, self.glp, GLP_ON)
         return other
 
+# wrappers for all the functions at the module level
+create_problem = GLP.create_problem
+def set_objective_sense(lp, objective_sense="maximize"):
+    return lp.set_objective_sense(lp, objective_sense=objective_sense)
+cpdef change_variable_bounds(lp, int index, double lower_bound, double upper_bound):
+    return lp.change_variable_bounds(index, lower_bound, upper_bound)
+cpdef change_variable_objective(lp, int index, double value):
+    return lp.change_variable_objective(index, value)
+cpdef change_coefficient(lp, int met_index, int rxn_index, double value):
+    return lp.change_coefficient(met_index, rxn_index, value)
+cpdef set_parameter(lp, parameter_name, value):
+    return lp.set_parameter(parameter_name, value)
+def solve_problem(lp, **kwargs):
+    return lp.solve_problem(**kwargs)
+cpdef get_status(lp):
+    return lp.get_status()
+cpdef get_objective_value(lp):
+    return lp.get_objective_value()
+cpdef format_solution(lp, cobra_model):
+    return lp.format_solution(cobra_model)
+solve = GLP.solve
