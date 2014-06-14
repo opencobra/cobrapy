@@ -75,7 +75,7 @@ def undelete_model_genes(cobra_model):
         if hasattr(cobra_model, the_attribute):
             setattr(cobra_model, the_attribute, None)
 
-
+spontaneous_re = re.compile('(^|(?<=( |\()))s0001(?=( |\)|$))')
 def find_gene_knockout_reactions(cobra_model, gene_list):
     """identify reactions which will be disabled when the genes are knocked out"""
 
@@ -83,18 +83,17 @@ def find_gene_knockout_reactions(cobra_model, gene_list):
     for x in gene_list:
         potential_reactions.update(x._reaction)
 
-    spontaneous_re = re.compile('(^|(?<=( |\()))s0001(?=( |\)|$))')
     knocked_out_reactions = []
     for the_reaction in potential_reactions:
-        the_gene_reaction_relation = deepcopy(the_reaction.gene_reaction_rule)
+        # operate on a copy
+        gene_reaction_rule = "" + the_reaction.gene_reaction_rule
         for the_gene in the_reaction._genes:
-            the_gene_re = re.compile('(^|(?<=( |\()))%s(?=( |\)|$))'%re.escape(the_gene.id))
             if the_gene in gene_list:
-                the_gene_reaction_relation = the_gene_re.sub('False', the_gene_reaction_relation)
+                gene_reaction_rule = gene_reaction_rule.replace(the_gene.id, 'False')
             else:
-                the_gene_reaction_relation = the_gene_re.sub('True', the_gene_reaction_relation)
-        the_gene_reaction_relation = spontaneous_re.sub('True', the_gene_reaction_relation)
-        if not eval(the_gene_reaction_relation):
+                gene_reaction_rule = gene_reaction_rule.replace(the_gene.id, 'True')
+        gene_reaction_rule = spontaneous_re.sub('True', gene_reaction_rule)
+        if not eval(gene_reaction_rule):
             knocked_out_reactions.append(the_reaction)
     return knocked_out_reactions
 

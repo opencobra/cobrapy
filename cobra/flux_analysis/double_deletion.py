@@ -1,3 +1,4 @@
+
 from __future__ import with_statement, print_function
 #cobra.flux_analysis.double_deletion.py
 #runs flux variablity analysis on a Model object.
@@ -28,7 +29,7 @@ except:
 
 def double_reaction_deletion_fba(cobra_model, reaction_list1=None,
                                  reaction_list2=None, solver=None,
-                                 n_processes=None, return_frame=True):
+                                 number_of_processes=None, return_frame=False):
     """setting n_processes=1 explicitly disables multiprocessing"""
     if reaction_list1 is None:
         reaction_indexes1 = range(len(cobra_model.reactions))
@@ -53,27 +54,28 @@ def double_reaction_deletion_fba(cobra_model, reaction_list1=None,
     results = numpy.empty((n_results, n_results))
     results.fill(numpy.nan)
 
-    if n_processes == 1:  # explicitly disable multiprocessing
-        pool = CobraDeletionMockPool(cobra_model, n_processes=n_processes, solver=solver)
+    if number_of_processes == 1:  # explicitly disable multiprocessing
+        PoolClass = CobraDeletionMockPool
     else:
-        pool = CobraDeletionPool(cobra_model, n_processes=n_processes, solver=solver)
-    # submit jobs
-    
-    for r1_index, r2_index in product(reaction_indexes1, reaction_indexes2):
-        r1_result_index = reaction_to_result[r1_index]
-        r2_result_index = reaction_to_result[r2_index]
-        if r2_result_index >= r1_result_index:  # upper triangle only
-            pool.submit((r1_index, r2_index), label=(r1_result_index, r2_result_index))
-        # if it's a point only in the lower triangle, compute it
-        # and put it in the upper triangle
-        elif r1_result_index not in column_index_set or r2_result_index not in row_index_set:
-            pool.submit((r1_index, r2_index), label=(r2_result_index, r1_result_index))
+        PoolClass = CobraDeletionPool
+    with PoolClass(cobra_model, n_processes=number_of_processes,
+                   solver=solver) as pool:
+        # submit jobs
+        
+        for r1_index, r2_index in product(reaction_indexes1, reaction_indexes2):
+            r1_result_index = reaction_to_result[r1_index]
+            r2_result_index = reaction_to_result[r2_index]
+            if r2_result_index >= r1_result_index:  # upper triangle only
+                pool.submit((r1_index, r2_index), label=(r1_result_index, r2_result_index))
+            # if it's a point only in the lower triangle, compute it
+            # and put it in the upper triangle
+            elif r1_result_index not in column_index_set or r2_result_index not in row_index_set:
+                pool.submit((r1_index, r2_index), label=(r2_result_index, r1_result_index))
 
-    # get results
-    for result in pool.receive_all():
-        results[result[0]] = result[1]
+        # get results
+        for result in pool.receive_all():
+            results[result[0]] = result[1]
 
-    del pool
 
     # reflect results
     triu1, triu2 = numpy.triu_indices(n_results)
@@ -92,7 +94,8 @@ def double_reaction_deletion_fba(cobra_model, reaction_list1=None,
              "data": results}
 
 def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
-                             solver=None, n_processes=None, return_frame=True):
+                             solver=None, number_of_processes=None,
+                             return_frame=False):
     if gene_list1 is None:
         gene_list1 = cobra_model.genes
     else:
@@ -127,27 +130,28 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
     results = numpy.empty((n_results, n_results))
     results.fill(numpy.nan)
 
-    if n_processes == 1:  # explicitly disable multiprocessing
-        pool = CobraDeletionMockPool(cobra_model, n_processes=n_processes, solver=solver)
+    if number_of_processes == 1:  # explicitly disable multiprocessing
+        PoolClass = CobraDeletionMockPool
     else:
-        pool = CobraDeletionPool(cobra_model, n_processes=n_processes, solver=solver)
+        PoolClass = CobraDeletionPool
+    with PoolClass(cobra_model, n_processes=number_of_processes,
+                   solver=solver) as pool:
+        for gene1, gene2 in product(gene_list1, gene_list2):
+            g1_result_index = gene_id_to_result[gene1.id]
+            g2_result_index = gene_id_to_result[gene2.id]
+            if g2_result_index >= g1_result_index:  # upper triangle only
+                ko_reactions = find_gene_knockout_reactions(cobra_model, (gene1, gene2))
+                ko_indexes = [cobra_model.reactions.index(i) for i in ko_reactions]
+                pool.submit(ko_indexes, label=(g1_result_index, g2_result_index))
+            # if it's a point only in the lower triangle, compute it
+            # and put it in the upper triangle
+            elif g1_result_index not in column_index_set or g2_result_index not in row_index_set:
+                ko_reactions = find_gene_knockout_reactions(cobra_model, (gene1, gene2))
+                ko_indexes = [cobra_model.reactions.index(i) for i in ko_reactions]
+                pool.submit(ko_indexes, label=(g2_result_index, g1_result_index))
 
-    for gene1, gene2 in product(gene_list1, gene_list2):
-        g1_result_index = gene_id_to_result[gene1.id]
-        g2_result_index = gene_id_to_result[gene2.id]
-        if g2_result_index >= g1_result_index:  # upper triangle only
-            ko_reactions = find_gene_knockout_reactions(cobra_model, (gene1, gene2))
-            ko_indexes = [cobra_model.reactions.index(i) for i in ko_reactions]
-            pool.submit(ko_indexes, label=(g1_result_index, g2_result_index))
-        # if it's a point only in the lower triangle, compute it
-        # and put it in the upper triangle
-        elif g1_result_index not in column_index_set or g2_result_index not in row_index_set:
-            ko_reactions = find_gene_knockout_reactions(cobra_model, (gene1, gene2))
-            ko_indexes = [cobra_model.reactions.index(i) for i in ko_reactions]
-            pool.submit(ko_indexes, label=(g2_result_index, g1_result_index))
-
-    for result in pool.receive_all():
-        results[result[0]] = result[1]
+        for result in pool.receive_all():
+            results[result[0]] = result[1]
 
     del pool
 
@@ -169,47 +173,58 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
 
 def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
                     method='fba', single_deletion_growth_dict=None,
-                    element_type='gene', solver=None, error_reporting=None,
-                    number_of_processes=1):
-    """Wrapper for double_gene_deletion and double_reaction_deletion
+                    element_type='gene', solver=None,
+                    number_of_processes=None,
+                    return_frame=False, **kwargs):
+    """Run double gene or reaction deletions
 
     cobra_model: a cobra.Model object
 
-    element_list_1: Is None or a list of elements (genes or reactions)
-    
-    element_list_2: Is None or a list of elements (genes or reactions)
+    element_list_1: None or a list of elements (genes or reactions)
 
-    method: 'fba' or 'moma' to run flux balance analysis or minimization
-    of metabolic adjustments.
+    element_list_2: None or a list of elements (genes or reactions)
 
-    single_deletion_growth_dict: A dictionary that provides the growth
-    rate information for single gene knock outs.  This can speed up
-    simulations because nonviable single deletion strains imply that all
-    double deletion strains will also be nonviable.
+    method: 'fba' or 'moma'
+        Whether to compute growth rates using flux balance analysis or
+        minimization of metabolic adjustments.
+
+    number_of_processes: None or int
+        The number of processor core to use. Setting 1 explicitly disables
+        use of the multiprocessing library. By default, up to 4 cores will be
+        used if available.
 
     element_type: 'gene' or 'reaction'
 
-    solver: 'glpk', 'gurobi', or 'cplex'.
+    solver: 'glpk', 'cglpk', 'gurobi', 'cplex' or None
 
-    error_reporting: None or True
+    return_frame: bool
+        If True, format data as a pandas Dataframe
 
     Returns a dictionary of the elements in the x dimension (x), the y
     dimension (y), and the growth simulation data (data).
 
     """
+
+    if "error_reporting" in kwargs:
+        warn("error_reporting option removed")
+        kwargs.pop("error_reporting")
+    if "single_deletion_growth_dict" in kwargs:
+        warn("single_deletion_growth_dict option removed")
+        kwargs.pop("single_deletion_growth_dict")
+
     if method == "fba":
         if element_type == "gene":
             return double_gene_deletion_fba(cobra_model,
                 gene_list1=element_list_1,
                 gene_list2=element_list_2, solver=solver,
-                return_frame=False,
-                n_processes=number_of_processes)
+                return_frame=return_frame,
+                number_of_processes=number_of_processes)
         elif element_type == "reaction":
             return double_reaction_deletion_fba(cobra_model,
                 reaction_list1=element_list_1,
                 reaction_list2=element_list_2, solver=solver,
-                return_frame=False,
-                n_processes=number_of_processes)
+                return_frame=return_frame,
+                number_of_processes=number_of_processes)
         else:
             raise ValueError("element_type %s not gene or reaction" % element_type)
 
