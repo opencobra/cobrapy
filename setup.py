@@ -111,7 +111,7 @@ setup(
     description = "COBRApy is a package for constraints-based modeling of biological networks",
     license = "GPL V3.0",
     keywords = "metabolism biology linear programming optimization flux balance analysis fba",
-    url = "https://github.com/opencobra/cobrapy",
+    url = "https://opencobra.github.io/cobrapy",
     test_suite = "cobra.test.suite",
     long_description = "COnstraint-Based Reconstruction and Analysis (COBRA) methods are widely used for genome-scale modeling of metabolic networks in both prokaryotes and eukaryotes.  COBRApy is a constraint-based modeling package that is designed to accomodate the biological complexity of the next generation of COBRA models and provides access to commonly used COBRA methods, such as flux balance analysis, flux variability analysis, and gene deletion analyses.  Through the mlabwrap module it is possible to use COBRApy to call many additional COBRA methods present in the COBRA Toolbox for MATLAB.",
     download_url = 'https://pypi.python.org/pypi/cobra',
