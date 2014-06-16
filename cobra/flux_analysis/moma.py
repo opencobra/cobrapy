@@ -9,15 +9,18 @@ if __name == 'java':
 from copy import deepcopy
 from time import time
 from math import ceil, floor
+
 #The next four imports need to be dealt with to obtain jython compatibilty
 from numpy import array, hstack, vstack, matrix, sum
 from scipy.sparse import eye, lil_matrix, dok_matrix
 from scipy.sparse import hstack as s_hstack
 from scipy.sparse import vstack as s_vstack
+
 from ..core import Reaction, Metabolite
-#from cobra.core.Metabolite import Metabolite
 from ..manipulation import initialize_growth_medium, delete_model_genes
 from ..manipulation.modify import convert_to_irreversible
+from ..external.six import iteritems
+
 from warnings import warn
 
 def moma(wt_model, mutant_model, objective_sense='maximize', solver=None,
@@ -223,7 +226,7 @@ def construct_difference_model(model_1, model_2, norm_type='euclidean'):
     #This must be a list to maintain the correct order when adding the difference_metabolites
     difference_reactions = [] #Add the difference reactions at the end to speed things up
     difference_metabolites = []
-    for reaction_1, reaction_2 in common_dict.iteritems():
+    for reaction_1, reaction_2 in iteritems(common_dict):
         reaction_1._difference_partner = reaction_2
         reaction_2._difference_partner = reaction_1
         difference_reaction = Reaction('difference_%s'%reaction_1.id)
