@@ -35,6 +35,9 @@ def flux_variability_analysis(cobra_model, reaction_list=None,
     lp = solver.create_problem(cobra_model)
     solver.solve_problem(lp, objective_sense=objective_sense)
     solution = solver.format_solution(lp, cobra_model)
+    if solution.status != "optimal":
+        raise ValueError("FVA requires the solution status to be optimal, not "
+                         + solution.status)
     # set all objective coefficients to 0
     for i, r in enumerate(cobra_model.reactions):
         if r.objective_coefficient != 0:

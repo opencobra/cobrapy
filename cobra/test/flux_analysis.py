@@ -160,6 +160,8 @@ class TestCobraFluxAnalysis(TestCase):
             '5DGLCNt2rpp': {'minimum': 0.0, 'maximum': 0.0},
             'ACALD': {'minimum': 3.35702, 'maximum': 7.49572}}
 
+        infeasible_model = create_test_model()
+        infeasible_model.reactions.get_by_id("EX_glyc_e").lower_bound = 0
         for solver in solver_dict:
             cobra_model = create_test_model()
             initialize_growth_medium(cobra_model, 'LB')
@@ -168,6 +170,9 @@ class TestCobraFluxAnalysis(TestCase):
             for the_reaction, the_range in iteritems(fva_out):
                 for k, v in iteritems(the_range):
                     self.assertAlmostEqual(fva_results[the_reaction][k], v, places=5)
+            # ensure that an infeasible model does not run FVA
+            self.assertRaises(ValueError, flux_variability_analysis,
+                              infeasible_model, solver=solver)
 
 # make a test suite to run all of the tests
 loader = TestLoader()
