@@ -12,9 +12,10 @@ Documentation for COBRApy
     04_change_objective
     05_add_reactions
     deletions
-    milp
     phenotype_phase_plane
     escher
+    milp
+    qp
     cobra
 
 
