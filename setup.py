@@ -34,7 +34,8 @@ except ImportError:
 try:
     from distutils.extension import Extension
     from distutils.command.build_ext import build_ext
-    from os.path import isfile, abspath, dirname
+    from os.path import isfile, abspath, dirname, join
+    from os import name
     from platform import system
 
     class FailBuild(build_ext):
@@ -60,10 +61,25 @@ try:
     # and static library libglpk.a to the build directory. A static libglpk.a
     # can be built by running configure with the export CLFAGS="-fPIC" and
     # copying the file from src/.libs
+    include_dirs = []
+    library_dirs = []
     if isfile("libglpk.a"):
-        build_args["library_dirs"] = [dirname(abspath("libglpk.a"))]
+        library_dirs.append(dirname(abspath("libglpk.a")))
     if isfile("glpk.h"):
-        build_args["include_dirs"] = [dirname(abspath("glpk.h"))]
+        include_dirs.append(dirname(abspath("glpk.h")))
+    if name == "posix":
+        from subprocess import check_output
+        try:
+            glpksol_path = check_output(["which", "glpsol"]).strip()
+            glpk_path = abspath(join(dirname(glpksol_path), ".."))
+            include_dirs.append(join(glpk_path, "include"))
+            library_dirs.append(join(glpk_path, "lib"))
+        except:
+            None
+    if len(include_dirs) > 0:
+        build_args["include_dirs"] = include_dirs
+    if len(library_dirs) > 0:
+        build_args["library_dirs"] = library_dirs
     # use cython if present, otherwise use c file
     if cythonize:
         ext_modules = cythonize([Extension("cobra.solvers.cglpk",
