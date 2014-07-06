@@ -9,7 +9,7 @@ For usage instructions, please see the
 All releases require Python 2.7 to be installed before proceeding.
 Mac OS X (10.7+) and Ubuntu ship with Python. Windows users without python 
 can download and install python from the [python 
-website](http://www.python.org/download/releases/2.7.7/).
+website](http://www.python.org/download/releases/2.7.8/).
 
 Python 3 support is still considered experimental.
 
@@ -63,8 +63,8 @@ installed using pip, from binary installers, or from package managers.
 ## Other solvers
 cobrapy comes with bindings to the GNU Linear Programming Kit ([glpk]
 (http://www.gnu.org/software/glpk/)) using its own bindings called "cglpk" in
-cobrapy. In addition, cobrapy currently cobrapy supports these linear
-programming solvers:
+cobrapy. In addition, cobrapy currently supports these linear programming
+solvers:
 
  * ILOG/CPLEX
   [Academic](https://www.ibm.com/developerworks/university/academicinitiative/)

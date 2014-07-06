@@ -38,8 +38,8 @@ sparse matrix.
 
 .. code:: python
 
-    quadratic_obj = scipy.sparse.eye(2).todok()
-    quadratic_obj
+    Q = scipy.sparse.eye(2).todok()
+    Q
 
 
 
@@ -54,7 +54,7 @@ In this case, the quadratic objective is simply the identity matrix
 
 .. code:: python
 
-    quadratic_obj.todense()
+    Q.todense()
 
 
 
@@ -66,12 +66,12 @@ In this case, the quadratic objective is simply the identity matrix
 
 
 We need to use a solver that supports quadratic programming, such as
-gurobi or cplex.
+gurobi or cplex. If a solver which supports quadratic programming is
+installed, this function will return its name.
 
 .. code:: python
 
-    solver = solvers.get_solver_name(qp=True)
-    print(solver)
+    print(solvers.get_solver_name(qp=True))
 
 .. parsed-literal::
 
@@ -88,7 +88,7 @@ gurobi or cplex.
     y.add_metabolites({c: 1})
     m = Model()
     m.add_reactions([x, y])
-    sol = m.optimize(quadratic_component=quadratic_obj, solver=solver, objective_sense="minimize")
+    sol = m.optimize(quadratic_component=Q, objective_sense="minimize")
     sol.x_dict
 
 
@@ -115,7 +115,7 @@ objective.
 .. code:: python
 
     y.objective_coefficient = -1
-    sol = m.optimize(quadratic_component=quadratic_obj, solver=solver, objective_sense="minimize")
+    sol = m.optimize(quadratic_component=Q, objective_sense="minimize")
     sol.x_dict
 
 

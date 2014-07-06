@@ -49,7 +49,8 @@ This problem can be written as a cobra.Model
     
     # objective coefficient is the profit to be made from each unit
     cone.objective_coefficient = cone_selling_price - cone_production_cost
-    popsicle.objective_coefficient = popsicle_selling_price - popsicle_production_cost
+    popsicle.objective_coefficient = popsicle_selling_price - \
+                                     popsicle_production_cost
     
     m = Model("lerman_ice_cream_co")
     m.add_reactions((cone, popsicle))
@@ -83,13 +84,96 @@ can use the variable kind attribute of a cobra.Reaction to enforce this.
 
 Now the model makes both popsicles and cones.
 
+Restaurant Order
+----------------
+
+To tackle the less immediately obvious problem from the following `XKCD
+comic <http://xkcd.com/287/>`__:
+
+.. code:: python
+
+    from IPython.display import Image
+    Image(url=r"http://imgs.xkcd.com/comics/np_complete.png")
+
+
+
+.. raw:: html
+
+    <img src="http://imgs.xkcd.com/comics/np_complete.png"/>
+
+
+
+We want a solution satisfying the following constraints:
+
+:math:`\left(\begin{matrix}2.15&2.75&3.35&3.55&4.20&5.80\end{matrix}\right) \cdot \vec v = 15.05`
+
+:math:`\vec v_i \ge 0`
+
+:math:`\vec v_i \in \mathbb{Z}`
+
+This problem can be written as a COBRA model as well.
+
+.. code:: python
+
+    total_cost = Metabolite("constraint")
+    total_cost._bound = 15.05
+    
+    costs = {"mixed_fruit": 2.15, "french_fries": 2.75, "side_salad": 3.35,
+             "hot_wings": 3.55, "mozarella_sticks": 4.20, "sampler_plate": 5.80}
+    
+    m = Model("appetizers")
+    
+    for item, cost in costs.items():
+        r = Reaction(item)
+        r.add_metabolites({total_cost: cost})
+        r.variable_kind = "integer"
+        m.add_reaction(r)
+    
+    # To add to the problem, suppose we don't want to eat all mixed fruit.
+    m.reactions.mixed_fruit.objective_coefficient = 1
+        
+    m.optimize(objective_sense="minimize").x_dict
+
+
+
+.. parsed-literal::
+
+    {'french_fries': 0.0,
+     'hot_wings': 2.0,
+     'mixed_fruit': 1.0,
+     'mozarella_sticks': 0.0,
+     'sampler_plate': 1.0,
+     'side_salad': 0.0}
+
+
+
+There is another solution to this problem, which would have been
+obtained if we had maximized for mixed fruit instead of minimizing.
+
+.. code:: python
+
+    m.optimize(objective_sense="maximize").x_dict
+
+
+
+.. parsed-literal::
+
+    {'french_fries': 0.0,
+     'hot_wings': 0.0,
+     'mixed_fruit': 7.0,
+     'mozarella_sticks': 0.0,
+     'sampler_plate': 0.0,
+     'side_salad': 0.0}
+
+
+
 Boolean Indicators
 ------------------
 
-As a more applied example, we can create boolean variables as integers,
-which can serve as indicators for a reaction being active in a model.
-For a reaction flux :math:`v` with lower bound -1000 and upper bound
-1000, we can create a binary variable :math:`b` with the following
+To give a COBRA-related example, we can create boolean variables as
+integers, which can serve as indicators for a reaction being active in a
+model. For a reaction flux :math:`v` with lower bound -1000 and upper
+bound 1000, we can create a binary variable :math:`b` with the following
 constraints:
 
 :math:`b \in \{0, 1\}`

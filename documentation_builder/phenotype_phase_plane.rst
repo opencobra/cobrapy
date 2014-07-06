@@ -14,7 +14,8 @@ Load iJO1366 as a test model and import cobra
     import cobra
     from cobra.test import ecoli_pickle, create_test_model
     
-    from cobra.flux_analysis.phenotype_phase_plane import calculate_phenotype_phase_plane
+    from cobra.flux_analysis.phenotype_phase_plane import \
+        calculate_phenotype_phase_plane
     
     model = create_test_model(ecoli_pickle)
     model
@@ -23,7 +24,7 @@ Load iJO1366 as a test model and import cobra
 
 .. parsed-literal::
 
-    <Model iJO1366 at 0x677e610>
+    <Model iJO1366 at 0x5b0abd0>
 
 
 
@@ -63,7 +64,8 @@ changed
 
 .. code:: python
 
-    calculate_phenotype_phase_plane(model, "EX_glc_e", "EX_o2_e", reaction1_npoints=20,
+    calculate_phenotype_phase_plane(model, "EX_glc_e", "EX_o2_e",
+                                    reaction1_npoints=20,
                                     reaction2_npoints=20).plot_matplotlib();
 
 

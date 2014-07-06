@@ -14,18 +14,6 @@ Subpackages
     cobra.solvers
     cobra.topology
 
-Submodules
-----------
-
-cobra.version module
---------------------
-
-.. automodule:: cobra.version
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 Module contents
 ---------------
 

@@ -36,14 +36,6 @@ cobra.solvers.gurobi_solver module
     :undoc-members:
     :show-inheritance:
 
-cobra.solvers.legacy module
----------------------------
-
-.. automodule:: cobra.solvers.legacy
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 cobra.solvers.parameters module
 -------------------------------
 

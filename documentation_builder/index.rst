@@ -4,21 +4,16 @@ Documentation for COBRApy
     :numbered:
     :maxdepth: 2
 
-    introduction
-    reactions
-    metabolites
-    01_create_model
-    02_read_simulate_write
-    04_change_objective
-    05_add_reactions
+    getting_started
+    building_model
+    io
+    simulating
     deletions
     phenotype_phase_plane
     escher
     milp
     qp
     cobra
-
-
 
 
 Indices and tables

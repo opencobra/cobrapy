@@ -26,11 +26,11 @@ Single Deletions
 
     start = time()  # start timer()
     growth_rates, statuses = single_deletion(cobra_model)
-    print("All single gene deletions completed in %.2f seconds" % (time() - start))
+    print("All single gene deletions completed in %.2f sec" % (time() - start))
 
 .. parsed-literal::
 
-    All single gene deletions completed in 4.15 seconds
+    All single gene deletions completed in 4.01 sec
 
 
 These can also be done for only a subset of genes
@@ -45,11 +45,11 @@ Single deletions can also be run on reactions
 
     start = time()  # start timer()
     growth_rates, statuses = single_deletion(cobra_model, element_type="reaction")
-    print("All single reaction deletions completed in %.2f seconds" % (time() - start))
+    print("All single reaction deletions completed in %.2f sec" % (time() - start))
 
 .. parsed-literal::
 
-    All single reaction deletions completed in 7.62 seconds
+    All single reaction deletions completed in 7.41 sec
 
 
 Double Deletions
@@ -61,33 +61,40 @@ Double deletions run in a similar way
 
     start = time()  # start timer()
     double_deletion(cobra_model, element_list_1=cobra_model.genes[:100])
-    print("Double gene deletions for 100 genes completed in %.2f seconds" % (time() - start))
+    print("Double gene deletions for 100 genes completed in %.2f sec" % (time() - start))
 
 .. parsed-literal::
 
-    Double gene deletions for 100 genes completed in 8.57 seconds
+    Double gene deletions for 100 genes completed in 4.94 sec
 
 
-By default, the double deletion function will use multiprocessing,
-splitting the task over up to 4 cores if they are available. The number
-of cores can be manually sepcified as well. Setting use of a single core
-will disable use of the multiprocessing library, which often aids
-debuggging.
+By default, the double deletion function will automatically use
+multiprocessing, splitting the task over up to 4 cores if they are
+available. The number of cores can be manually sepcified as well.
+Setting use of a single core will disable use of the multiprocessing
+library, which often aids debuggging.
 
 .. code:: python
 
     start = time()  # start timer()
-    double_deletion(cobra_model, element_list_1=cobra_model.genes[:100], number_of_processes=4)
-    print("Double gene deletions for 100 genes completed in %.2f seconds with 4 cores" % (time() - start))
+    double_deletion(cobra_model, element_list_1=cobra_model.genes[:100],
+                    number_of_processes=2)
+    t1 = time() - start
+    print("Double gene deletions for 100 genes completed in %.2f sec with 2 cores" % t1)
     
     start = time()  # start timer()
-    double_deletion(cobra_model, element_list_1=cobra_model.genes[:100], number_of_processes=1)
-    print("Double gene deletions for 100 genes completed in %.2f seconds with 1 core" % (time() - start))
+    double_deletion(cobra_model, element_list_1=cobra_model.genes[:100],
+                    number_of_processes=1)
+    t2 = time() - start
+    print("Double gene deletions for 100 genes completed in %.2f sec with 1 core" % t2)
+    
+    print("Speedup of %.2fx" % (t2/t1))
 
 .. parsed-literal::
 
-    Double gene deletions for 100 genes completed in 8.31 seconds with 4 cores
-    Double gene deletions for 100 genes completed in 21.53 seconds with 1 core
+    Double gene deletions for 100 genes completed in 4.02 sec with 2 cores
+    Double gene deletions for 100 genes completed in 6.77 sec with 1 core
+    Speedup of 1.69x
 
 
 Double deletions can also be run for reactions
@@ -95,12 +102,14 @@ Double deletions can also be run for reactions
 .. code:: python
 
     start = time()
-    double_deletion(cobra_model, element_list_1=cobra_model.reactions[:100], element_type="reaction")
-    print("Double reaction deletions for 100 reactions completed in %.2f seconds" % (time() - start))
+    double_deletion(cobra_model, element_list_1=cobra_model.reactions[:100],
+                    element_type="reaction")
+    t = time() - start
+    print("Double reaction deletions for 100 reactions completed in %.2f sec" % t)
 
 .. parsed-literal::
 
-    Double reaction deletions for 100 reactions completed in 7.26 seconds
+    Double reaction deletions for 100 reactions completed in 0.93 sec
 
 
 If pandas is installed, the results can be returned formatted as a
@@ -108,7 +117,8 @@ pandas.DataFrame
 
 .. code:: python
 
-    frame = double_deletion(cobra_model, element_list_1=cobra_model.reactions[300:308], element_type="reaction", return_frame=True)
+    frame = double_deletion(cobra_model, element_list_1=cobra_model.reactions[300:308],
+                            element_type="reaction", return_frame=True)
     frame[frame < 1e-9] = 0.  # round small values to 0
     frame
 

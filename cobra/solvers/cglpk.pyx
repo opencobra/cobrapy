@@ -9,6 +9,13 @@ from os import unlink as _unlink
 
 __glpk_version__ = glp_version()
 
+__doc__ = """Bindings to GLPK
+
+The GNU Linear Programming Kit (GLPK) is released under the GPL.
+The source can be downloaded from http://www.gnu.org/software/glpk/
+
+"""
+
 cdef class GLP:
     cdef glp_prob *glp
     cdef glp_smcp parameters
