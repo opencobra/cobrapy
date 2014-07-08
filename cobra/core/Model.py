@@ -33,10 +33,9 @@ class Model(Object):
         else:
             Object.__init__(self, description)
             self.description = self.id
-            self._trimmed = False #This might get changed to a dict of 
-            #gene:[reactions in which the gene participates]
-            self._trimmed_genes = None #This will be integrated with _trimmed
-            self._trimmed_reactions = None #as will this
+            self._trimmed = False
+            self._trimmed_genes = []
+            self._trimmed_reactions = {}
             self.legacy_format = False #DEPRECATED
             #Allow the creation of an empty object which will facilitate development
             #of SBML parsers and other development issues.
