@@ -2,12 +2,12 @@ from warnings import warn
 from copy import deepcopy, copy
 
 from ..external.six import iteritems, string_types
-from ..solvers import optimize
+from ..solvers import optimize,get_solver_name
 from .Object import Object
 from .Formula import Formula
 from .Solution import Solution
 from .DictList import DictList
-
+import scipy
 
 
 # Note, when a reaction is added to the Model it will no longer keep personal
@@ -285,6 +285,7 @@ class Model(Object):
         .. NOTE :: Only the most commonly used parameters are presented here. 
                    Additional parameters for cobra.solvers may be available and
                    specified with the appropriate keyword argument.
+        7/17/2014 - added checks for quadratic component + setting default solvers
 
         """
         if "new_objective" in kwargs:
@@ -292,6 +293,19 @@ class Model(Object):
             self.change_objective(kwargs.pop("new_objective"))
         if "error_reporting" in kwargs:
             warn("error_reporting deprecated")
+        if not(quadratic_component is None):
+            if type(quadratic_component) == scipy.sparse.dok_matrix:
+                if quadratic_component.shape[0] == quadratic_component.shape[1] == len(self.reactions):
+                    if solver is None:
+                        solver = get_solver_name(False, True)
+                        print 'Solver is : ',solver
+                        #get_solver_name should return the appropriate qp solver
+                        if solver is None: #because cplex and gurobi unavailable
+                            warn('gurobi and cplex are unavailable')                    
+                else:
+                    print 'Incorrect shape of quadratic component. Check if the dimensions are equal'                
+            else:
+                print 'Incorrect datatype of quadratic component. Should be of type scipy.sparse.dok_matrix'
         the_solution = optimize(self, solver=solver,
                                 objective_sense=objective_sense,
                                 quadratic_component=quadratic_component,
@@ -301,7 +315,7 @@ class Model(Object):
                                 **kwargs)
         self.solution = the_solution
         return the_solution
-
+        
 
     def remove_reactions(self, the_reactions):
         """
