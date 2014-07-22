@@ -70,7 +70,6 @@ def get_solver_name(mip=False, qp=False):
     mip_order = ["gurobi", "cplex", "glpk", "cglpk"]
     lp_order = ["glpk", "cglpk", "gurobi", "cplex"]
     qp_order = ["gurobi", "cplex"]
-    qp_incapable = ["cglpk", "glpk"]
     
     if mip is False and qp is False:
         for solver_name in lp_order:
@@ -80,9 +79,9 @@ def get_solver_name(mip=False, qp=False):
         for solver_name in qp_order:
             if solver_name in solver_dict:
                 return solver_name
+        # see if any solver defines set_quadratic_objective
         for solver_name in solver_dict:
-            if solver_name not in qp_incapable:
-                _warn("could not verify if %s supports qp" % solver_name)
+            if hasattr(solver_dict[solver_name], "set_quadratic_objective"):
                 return solver_name
         return None  # don't want to return glpk
     else:
@@ -102,7 +101,9 @@ def optimize(cobra_model, solver=None, **kwargs):
     """
     #If the default solver is not installed then use one of the others
     if solver is None:
-        solver = get_solver_name()
+        qp = "quadratic_component" in kwargs and \
+                kwargs["quadratic_component"] is not None
+        solver = get_solver_name(qp=qp)
         if solver is None:
             raise Exception("It appears that you do not have a supported solver")
 
