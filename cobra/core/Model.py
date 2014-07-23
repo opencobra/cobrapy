@@ -311,6 +311,8 @@ class Model(Object):
         if not hasattr(the_reactions, '__iter__') or \
                hasattr(the_reactions, 'id'):
             the_reactions = [the_reactions]
+        if len(the_reactions) == 0:
+            return
         if hasattr(the_reactions[0], 'id'):
             the_reactions = [x.id for x in the_reactions]
         reactions_to_delete = []
