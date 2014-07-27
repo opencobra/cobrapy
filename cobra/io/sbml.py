@@ -410,7 +410,17 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
         #Need to remove - for proper SBML.  Replace with __
         the_reaction_id = 'R_' + the_reaction.id.replace('-','__' )
         sbml_reaction.setId(the_reaction_id)
-        sbml_reaction.setReversible(the_reaction.reversibility)
+        # The reason we are not using the Reaction.reversibility property
+        # is because the SBML definition of reversibility does not quite
+        # match with the cobra definition. In cobra, reversibility implies
+        # that both positive and negative flux values are feasible. However,
+        # SBML requires negative-flux-only reactions to still be classified
+        # as reversible. To quote from the SBML Level 3 Version 1 Spec:
+        # > However, labeling a reaction as irreversible is interpreted as
+        # > an assertion that the rate expression will not have negative
+        # > values during a simulation.
+        # (Page 60 lines 44-45)
+        sbml_reaction.setReversible(the_reaction.lower_bound < 0)
         if the_reaction.name:
             sbml_reaction.setName(the_reaction.name)
         else:
