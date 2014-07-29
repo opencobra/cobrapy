@@ -52,7 +52,7 @@ cdef extern from "glpk.h":
     void glp_set_obj_coef(glp_prob *, int, double)
     void glp_load_matrix(glp_prob *, int, int *, int *, double *)
     int glp_simplex(glp_prob *, glp_smcp *)
-    #int glp_exact(glp_prob *, glp_smcp *)
+    #int glp_exact(glp_prob *, glp_smcp *)  # requires gmp
     int glp_intopt(glp_prob *, glp_iocp *)
     void glp_std_basis(glp_prob *)
     void glp_delete_prob(glp_prob *)
@@ -86,7 +86,10 @@ cdef extern from "glpk.h":
     void glp_set_col_lb(glp_prob *lp, int i, double value)
 
 
-    void glp_create_index(glp_prob *lp)
+    void glp_create_index(glp_prob *P)
+    int glp_find_row(glp_prob *P, const char *name)
+    int glp_find_col(glp_prob *P, const char *name)
+    void glp_delete_index(glp_prob *P)
 
     double glp_get_col_lb(glp_prob *lp, int i)
     double glp_get_col_ub(glp_prob *lp, int i)
@@ -164,8 +167,17 @@ cdef extern from "glpk.h":
     int GLP_EOBJUL
     int GLP_EITLIM
     int GLP_ETMLIM
-    int GLP_EOPFS
-    int GLP_EODFS
+    int GLP_ENOPFS
+    int GLP_ENODFS
+    int GLP_EROOT
+    int GLP_ESTOP
+    int GLP_EMIPGAP
+    int GLP_ENOFEAS
+    int GLP_ENOCVG
+    int GLP_EINSTAB
+    int GLP_EDATA
+    int GLP_ERANGE
+
 
     int GLP_UNDEF
     int GLP_OPT
@@ -190,5 +202,3 @@ cdef extern from "glpk.h":
     int GLP_MPS_FILE
 
     int GLP_MSG_DBG
-
-

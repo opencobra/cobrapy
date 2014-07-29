@@ -16,18 +16,71 @@ The source can be downloaded from http://www.gnu.org/software/glpk/
 
 """
 
+cdef dict ERROR_CODES = {
+    GLP_EBADB: "GLP_EBADB",
+    GLP_ESING: "GLP_ESING",
+    GLP_ECOND: "GLP_ECOND",
+    GLP_EBOUND: "GLP_EBOUND",
+    GLP_EFAIL: "GLP_EFAIL",
+    GLP_EOBJLL: "GLP_EOBJLL",
+    GLP_EOBJUL: "GLP_EOBJUL",
+    GLP_EITLIM: "GLP_EITLIM",
+    GLP_ETMLIM: "GLP_ETMLIM",
+    GLP_ENOPFS: "GLP_ENOPFS",
+    GLP_ENODFS: "GLP_ENODFS",
+    GLP_EROOT: "GLP_EROOT",
+    GLP_ESTOP: "GLP_ESTOP",
+    GLP_EMIPGAP: "GLP_EMIPGAP",
+    GLP_ENOFEAS: "GLP_ENOFEAS",
+    GLP_ENOCVG: "GLP_ENOCVG",
+    GLP_EINSTAB: "GLP_EINSTAB",
+    GLP_EDATA: "GLP_EDATA",
+    GLP_ERANGE: "GLP_ERANGE"
+}
+
+cdef dict ERROR_MESSAGES = {
+    GLP_EBADB: "invalid basis",
+    GLP_ESING: "singular matrix",
+    GLP_ECOND: "ill-conditioned matrix",
+    GLP_EBOUND: "invalid bounds",
+    GLP_EFAIL: "solver failed",
+    GLP_EOBJLL: "objective lower limit reached",
+    GLP_EOBJUL: "objective upper limit reached",
+    GLP_EITLIM: "iteration limit exceeded",
+    GLP_ETMLIM: "time limit exceeded",
+    GLP_ENOPFS: "no primal feasible solution",
+    GLP_ENODFS: "no dual feasible solution",
+    GLP_EROOT: "root LP optimum not provided",
+    GLP_ESTOP: "search terminated by application",
+    GLP_EMIPGAP: "relative mip gap tolerance reached",
+    GLP_ENOFEAS: "no primal/dual feasible solution",
+    GLP_ENOCVG: "no convergence",
+    GLP_EINSTAB: "numerical instability",
+    GLP_EDATA: "invalid data",
+    GLP_ERANGE: "result out of range"
+
+}
+
+cdef check_error(int result):
+    if result == 0:
+        return
+    if result not in ERROR_CODES:
+        raise RuntimeError("glp_simplex failed with unknown error code 0x%x" %
+                           result)
+    raise RuntimeError("glp_simplex failed with error code %s: %s" %
+                    (ERROR_CODES[result], ERROR_MESSAGES[result]))
+
 cdef class GLP:
     cdef glp_prob *glp
     cdef glp_smcp parameters
     cdef glp_iocp integer_parameters
 
-
+    # cython related allocation/dellocation functions
     def __cinit__(self):
         self.glp = glp_create_prob()
         glp_set_obj_dir(self.glp, GLP_MAX)  # default is maximize
         glp_init_smcp(&self.parameters)
         glp_init_iocp(&self.integer_parameters)
-
 
     def __dealloc__(self):
         glp_delete_prob(self.glp)
@@ -68,7 +121,7 @@ cdef class GLP:
             elif c == 'G':
                 bound_type = GLP_LO  # x > 2 <==> x has a lower bound of 2
             else:
-                raise Exception("unsupported bound type: %s" % c)
+                raise ValueError("unsupported bound type: %s" % c)
             glp_set_row_bnds(glp, index, bound_type, b, b)
         
         # set reaction/varaiable bounds
@@ -83,7 +136,8 @@ cdef class GLP:
             else:
                 bound_type = GLP_DB
             glp_set_col_bnds(glp, index, bound_type,
-                             float(reaction.lower_bound), float(reaction.upper_bound))
+                             float(reaction.lower_bound),
+                             float(reaction.upper_bound))
             glp_set_obj_coef(glp, index, float(reaction.objective_coefficient))
 
             for metabolite, coefficient in reaction._metabolites.iteritems():
@@ -111,14 +165,12 @@ cdef class GLP:
         free(c_cols)
         free(c_values)
 
-
-    #@classmethod  # decorator does not work 
+    # problem creation and modification
     def create_problem(cls, cobra_model, objective_sense="maximize"):
         problem = cls(cobra_model)
         problem.set_objective_sense(objective_sense)
         return problem
-    create_problem = classmethod(create_problem)
-
+    create_problem = classmethod(create_problem)  # decorator does not work
 
     cpdef change_variable_bounds(self, int index, double lower_bound, double upper_bound):
         cdef int bound_type = GLP_DB
@@ -126,7 +178,6 @@ cdef class GLP:
         if lower_bound == upper_bound:
             bound_type = GLP_FX
         glp_set_col_bnds(self.glp, index + 1, bound_type, lower_bound, upper_bound)
-
 
     def change_coefficient(self, int met_index, int rxn_index, double value):
         cdef int col_length, i
@@ -162,7 +213,6 @@ cdef class GLP:
         cdef glp_iocp integer_parameters = self.integer_parameters
         cdef glp_prob *glp = self.glp
 
-
         for key, value in solver_parameters.items():
             self.set_parameter(key, value)
 
@@ -173,8 +223,7 @@ cdef class GLP:
         # because glpk itself is not thread safe
 
         #with nogil:  # we can use this if glpk ever gets thread-safe malloc
-        result = glp_simplex(glp, &parameters)
-        assert result == 0
+        check_error(glp_simplex(glp, &parameters))
         if self.is_mip():
             self.integer_parameters.tm_lim = self.parameters.tm_lim
             self.integer_parameters.msg_lev = self.parameters.msg_lev
@@ -182,11 +231,9 @@ cdef class GLP:
             #self.integer_parameters.tol_piv = self.parameters.tol_piv
             glp_term_out(GLP_OFF)  # prevent verborse MIP output
             #with nogil:
-            result = glp_intopt(glp, &integer_parameters)
+            check_error(glp_intopt(glp, &integer_parameters))
             glp_term_out(GLP_ON)
-            assert result == 0
         return self.get_status()
-
 
     def solve(cls, cobra_model, **kwargs):
         problem = cls.create_problem(cobra_model)
@@ -196,7 +243,6 @@ cdef class GLP:
         #return {"the_problem": problem, "the_solution": solution}
         return solution
     solve = classmethod(solve)
-
 
     def get_status(self):
         cdef int result = glp_mip_status(self.glp) if self.is_mip() else glp_get_status(self.glp)
@@ -219,7 +265,7 @@ cdef class GLP:
         elif objective_sense == "minimize":
             glp_set_obj_dir(self.glp, GLP_MIN)
         else:
-            raise Exception("%s is not a valid objective sense" % objective_sense)
+            raise ValueError("%s is not a valid objective sense" % objective_sense)
 
     cpdef set_parameter(self, parameter_name, value):
         """set a solver parameter
@@ -230,7 +276,7 @@ cdef class GLP:
         if parameter_name == "objective_sense":
             self.set_objective_sense(value)
         elif parameter_name == "time_limit":
-            self.parameters.tm_lim = 1000 * int(value)
+            self.parameters.tm_lim = int(1000 * value)
         elif parameter_name == "tolerance_feasibility":
             self.parameters.tol_bnd = float(value)
             self.parameters.tol_dj = float(value)
@@ -239,7 +285,7 @@ cdef class GLP:
         elif parameter_name == "tolerance_integer":
             self.integer_parameters.tol_int = float(value)
         elif parameter_name == "mip_gap":
-            self.integer_parameters.mpi_gap = float(value)
+            self.integer_parameters.mip_gap = float(value)
         elif parameter_name == "output_verbosity":
             if value is False:
                 self.parameters.msg_lev = GLP_MSG_ERR
@@ -250,21 +296,17 @@ cdef class GLP:
             elif value == "normal":
                 self.parameters.msg_lev = GLP_MSG_ON
 
-
     cpdef get_objective_value(self):
         if self.is_mip():
             return glp_mip_obj_val(self.glp)
         return glp_get_obj_val(self.glp)
 
-
     cpdef change_variable_objective(self, int index, double value):
         assert index >= 0
         glp_set_obj_coef(self.glp, index + 1, value)
 
-
     cpdef is_mip(self):
         return glp_get_num_int(self.glp) > 0
-
 
     def format_solution(self, cobra_model):
         cdef int i, m, n
@@ -297,7 +339,7 @@ cdef class GLP:
             solution.y = y
         return solution
 
-
+    # make serializable and copyable
     def __getstate__(self):
         cdef int result
         cdef char *name
@@ -311,10 +353,8 @@ cdef class GLP:
         _unlink(name)
         return state
 
-
     def __reduce__(self):
         return (GLP, (), self.__getstate__())
-
 
     def __setstate__(self, state):
         cdef int result
@@ -325,7 +365,6 @@ cdef class GLP:
         result = glp_read_prob(self.glp, 0, name)
         assert result == 0
         _unlink(name)
-
 
     def __copy__(self):
         other = GLP()
