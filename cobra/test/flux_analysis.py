@@ -121,7 +121,9 @@ class TestCobraFluxAnalysis(TestCase):
                        'moma':{ tpiA.id:1.62, metN.id:2.4, atpA.id:1.40, eno.id:0.33}}
 
         #MOMA requires cplex or gurobi
-        if get_solver_name(qp=True) is None:
+        try:
+            get_solver_name(qp=True)
+        except:
             growth_dict.pop('moma')
         for method, the_growth_rates in growth_dict.items():
             element_list = the_growth_rates.keys()

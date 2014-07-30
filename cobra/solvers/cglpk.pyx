@@ -3,11 +3,14 @@
 
 from glpk cimport *
 from libc.stdlib cimport malloc, free
+from cpython cimport bool
 
 from tempfile import NamedTemporaryFile as _NamedTemporaryFile  # for pickling
 from os import unlink as _unlink
 
 __glpk_version__ = glp_version()
+_SUPPORTS_MILP = True
+solver_name = "cglpk"
 
 __doc__ = """Bindings to GLPK
 
@@ -74,6 +77,7 @@ cdef class GLP:
     cdef glp_prob *glp
     cdef glp_smcp parameters
     cdef glp_iocp integer_parameters
+    cdef readonly bool _SUPPORTS_MILP
 
     # cython related allocation/dellocation functions
     def __cinit__(self):
@@ -81,6 +85,7 @@ cdef class GLP:
         glp_set_obj_dir(self.glp, GLP_MAX)  # default is maximize
         glp_init_smcp(&self.parameters)
         glp_init_iocp(&self.integer_parameters)
+        self._SUPPORTS_MILP = True
 
     def __dealloc__(self):
         glp_delete_prob(self.glp)
@@ -213,6 +218,11 @@ cdef class GLP:
         cdef glp_iocp integer_parameters = self.integer_parameters
         cdef glp_prob *glp = self.glp
 
+        if "quadratic_component" in solver_parameters:
+            q = solver_parameters.pop("quadratic_component")
+            if q is not None:
+                raise ValueError("quadratic component must be None for glpk")
+
         for key, value in solver_parameters.items():
             self.set_parameter(key, value)
 
@@ -295,6 +305,10 @@ cdef class GLP:
                 self.parameters.msg_lev = GLP_MSG_ALL
             elif value == "normal":
                 self.parameters.msg_lev = GLP_MSG_ON
+        elif parameter_name == "iteration_limit":
+            self.parameters.it_lim = value
+        else:
+            raise ValueError("unknown parameter " + str(parameter_name))
 
     cpdef get_objective_value(self):
         if self.is_mip():

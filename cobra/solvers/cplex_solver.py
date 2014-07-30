@@ -13,6 +13,7 @@ from ..core.Solution import Solution
 
 from time import time
 solver_name = 'cplex'
+_SUPPORTS_MILP = True
 parameter_defaults = parameter_defaults[solver_name]
 sense_dict = eval(sense_dict[solver_name])
 
@@ -63,17 +64,19 @@ def format_solution(lp, cobra_model, **kwargs):
     return the_solution    
 
 def set_parameter(lp, parameter_name, parameter_value):
-    """
-    
-    """
-    if parameter_name == 'objective.set_sense':
-        if parameter_value in objective_senses:
-            parameter_value = eval(objective_senses[parameter_value])
+    if parameter_name == 'objective_sense':
+        parameter_value = getattr(lp.objective.sense, parameter_value)
+        lp.objective.set_sense(parameter_value)
+        return
     try:
-        eval('lp.%s(%s)'%(parameter_name, repr(parameter_value)))
+        parameter_name = parameter_mappings.get(parameter_name,
+                                                parameter_name)
+        param = lp.parameters
+        for i in parameter_name.split("."):
+            param = getattr(param, i)
+        param.set(parameter_value)
     except Exception, e:
-        print "Couldn't set parameter %s: %s"%(parameter_name, repr(e))
-
+        print "Couldn't set parameter %s: %s" % (parameter_name, repr(e))
 
 
 def create_problem(cobra_model, quadratic_component=None, **kwargs):
@@ -294,9 +297,8 @@ def solve(cobra_model, **kwargs):
     #Start with the user specified method
     the_methods.insert(0, lp_method)
     for the_method in the_methods:
-        the_parameters['lp_method'] = the_method
         try:
-            status = solve_problem(lp, **the_parameters)
+            status = solve_problem(lp, lp_method=the_method)
         except:
             status = 'failed'
         if status == 'optimal':

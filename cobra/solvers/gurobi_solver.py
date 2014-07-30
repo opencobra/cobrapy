@@ -13,6 +13,7 @@ from .parameters import status_dict, variable_kind_dict, \
 from ..core.Solution import Solution
 from time import time
 solver_name = 'gurobi'
+_SUPPORTS_MILP = True
 objective_senses = objective_senses[solver_name]
 parameter_mappings = parameter_mappings[solver_name]
 parameter_defaults = parameter_defaults[solver_name]
@@ -51,9 +52,10 @@ def format_solution(lp, cobra_model, **kwargs):
     return(the_solution)
 
 def set_parameter(lp, parameter_name, parameter_value):
-    if parameter_name == 'ModelSense':
+    if parameter_name == 'ModelSense' or parameter_name == "objective_sense":
         lp.setAttr(parameter_name, objective_senses[parameter_value])
     else:
+        parameter_name = parameter_mappings.get(parameter_name, parameter_name)
         lp.setParam(parameter_name, parameter_value)
 
 def change_variable_bounds(lp, index, lower_bound, upper_bound):

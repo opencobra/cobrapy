@@ -113,6 +113,8 @@ class TestCobraSolver(object):
 
     def test_solve_mip(self):
         solver = self.solver
+        if not hasattr(solver, "_SUPPORTS_MILP") or not solver._SUPPORTS_MILP:
+            self.skipTest("no milp support")
         cobra_model = Model('MILP_implementation_test')
         constraint = Metabolite("constraint")
         constraint._bound = 2.5
@@ -219,7 +221,7 @@ class TestCobraSolver(object):
     def test_quadratic(self):
         solver = self.solver
         if not hasattr(solver, "set_quadratic_objective"):
-            return
+            self.skipTest("no qp support")
         c = Metabolite("c")
         c._bound = 2
         x = Reaction("x")

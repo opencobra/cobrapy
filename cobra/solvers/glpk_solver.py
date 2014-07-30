@@ -9,6 +9,7 @@ from .parameters import parameter_mappings, parameter_defaults, \
 from ..core.Solution import Solution
 
 solver_name = 'glpk'
+_SUPPORTS_MILP = True
 
 
 from glpk import LPX as GLPK
@@ -190,6 +191,11 @@ def solve_problem(lp, **kwargs):
         the_parameters = kwargs
     else:
         the_parameters = {}
+    extra_args = {}
+    if "time_limit" in kwargs:
+        extra_args["tm_lim"] = int(kwargs["time_limit"] * 1000)
+    if "iteration_limit" in kwargs:
+        extra_args["it_lim"] = kwargs["iteration_limit"]
     #These need to be provided to solve_problem for pyGLPK because it's not possible
     #AFAIK to set these during problem creation.
     __function_parameters = ['tolerance_optimality', 'tolerance_integer', 'lp_method']
@@ -208,11 +214,11 @@ def solve_problem(lp, **kwargs):
     if lp.kind == int:
         #For MILPs, it is faster to solve LP then move to MILP
         lp.simplex(tol_bnd=tolerance_optimality,
-                   tol_dj=tolerance_optimality, meth=lp_method)  
-        lp.integer(tol_int=tolerance_integer)
+                   tol_dj=tolerance_optimality, meth=lp_method, **extra_args)  
+        lp.integer(tol_int=tolerance_integer, **extra_args)
     else:
         lp.simplex(tol_bnd=tolerance_optimality, tol_dj=tolerance_optimality,
-                   meth=lp_method)
+                   meth=lp_method, **extra_args)
     status = get_status(lp)
 
     return status
