@@ -3,23 +3,23 @@
 from warnings import warn
 from copy import deepcopy
 from itertools import izip
-###solver specific parameters
-from .parameters import parameter_mappings, parameter_defaults, \
-     default_objective_sense
+
+from glpk import LPX
+
 from ..core.Solution import Solution
 
 solver_name = 'glpk'
 _SUPPORTS_MILP = True
 
-
-from glpk import LPX as GLPK
-__solver_class = GLPK
-
+# solver specific parameters
 variable_kind_dict = {'continuous': float, 'integer': int}
 status_dict = {'opt': 'optimal', 'nofeas': 'infeasible', 'unbnd': 'unbounded'}
-sense_dict = {'E': 'E', 'L': 'L', 'G': 'G'}
-parameter_mappings = {}
-parameter_defaults = parameter_defaults[solver_name]
+parameter_defaults = {
+    'tolerance_feasibility': 1e-6,
+    'tolerance_optimality': 1e-6,  # should this be removed in favor of feas?
+    'tolerance_integer': 1e-9,
+    'lp_method': 1
+}
 
 def get_status(lp):
     status = lp.status
@@ -63,7 +63,7 @@ def set_parameter(lp, parameter_name, parameter_value):
         warn("py glpk solver parameters are set during solve_problem")
 
 
-def create_problem(cobra_model,  **kwargs):
+def create_problem(cobra_model, **kwargs):
     """Solver-specific method for constructing a solver problem from
     a cobra.Model.  This can be tuned for performance using kwargs
 
@@ -74,11 +74,11 @@ def create_problem(cobra_model,  **kwargs):
         the_parameters = deepcopy(parameter_defaults)
         the_parameters.update(kwargs)
     if the_parameters.get('quadratic_component') is not None:
-        raise Exception('%s cannot solve QPs, try a different solver'%solver_name)
+        raise Exception('glpk cannot solve QPs')
 
     metabolite_to_index = {r: i for i, r in enumerate(cobra_model.metabolites)}
 
-    lp = __solver_class()        # Create empty problem instance
+    lp = LPX()        # Create empty problem instance
     lp.name = 'cobra'     # Assign symbolic name to problem
     lp.rows.add(len(cobra_model.metabolites))
     lp.cols.add(len(cobra_model.reactions))
@@ -86,13 +86,15 @@ def create_problem(cobra_model,  **kwargs):
     for r, the_metabolite in izip(lp.rows, cobra_model.metabolites):
         r.name = the_metabolite.id
         b = float(the_metabolite._bound)
-        c = sense_dict[the_metabolite._constraint_sense]
+        c = the_metabolite._constraint_sense
         if c == 'E':
             r.bounds = b, b     # Set metabolite to steady state levels
         elif c == 'L':
             r.bounds = None, b
         elif c == 'G':
             r.bounds = b, None
+        else:
+            raise ValueError("invalid constraint sense")
 
     objective_coefficients = []
     linear_constraints = []
@@ -112,10 +114,10 @@ def create_problem(cobra_model,  **kwargs):
     lp.matrix = linear_constraints
 
     # make sure the objective sense is set in create_problem
-    if "objective_sense" in the_parameters:
-        set_parameter(lp, "objective_sense", the_parameters["objective_sense"])
+    objective_sense = the_parameters.get("objective_sense", "maximize")
+    set_parameter(lp, "objective_sense", objective_sense)
 
-    return(lp)
+    return lp
 
 
 def change_variable_bounds(lp, index, lower_bound, upper_bound):
@@ -187,41 +189,27 @@ def solve_problem(lp, **kwargs):
     tolerance_integer, lp_method, and objective_sense
 
     """
-    if kwargs:
-        the_parameters = kwargs
-    else:
-        the_parameters = {}
-    extra_args = {}
-    if "time_limit" in kwargs:
-        extra_args["tm_lim"] = int(kwargs["time_limit"] * 1000)
-    if "iteration_limit" in kwargs:
-        extra_args["it_lim"] = kwargs["iteration_limit"]
-    #These need to be provided to solve_problem for pyGLPK because it's not possible
-    #AFAIK to set these during problem creation.
-    __function_parameters = ['tolerance_optimality', 'tolerance_integer', 'lp_method']
-    for the_parameter in __function_parameters:
-        if the_parameter not in the_parameters:
-            the_parameters.update({the_parameter: parameter_defaults[the_parameter]})
-           
-    
-    tolerance_optimality = the_parameters['tolerance_optimality']
-    tolerance_integer = the_parameters['tolerance_integer']
-    lp_method = the_parameters['lp_method']
-    #[set_parameter(lp, parameter_mappings[k], v)
-    # for k, v in kwargs.iteritems() if k in parameter_mappings]
-    if "objective_sense" in the_parameters:
-        set_parameter(lp, "objective_sense", the_parameters["objective_sense"])
+    parameters = parameter_defaults.copy()
+    parameters.update(kwargs)
+    lp_args = {}  # only for lp
+    extra_args = {}  # added to both lp and milp
+    # Shouldn't these be tolerance_feasibility?
+    lp_args["tol_bnd"] = parameters["tolerance_optimality"]
+    lp_args["tol_dj"] = parameters["tolerance_optimality"]
+    lp_args["meth"] = parameters["lp_method"]
+    if "time_limit" in parameters:
+        extra_args["tm_lim"] = int(parameters["time_limit"] * 1000)
+    if "iteration_limit" in parameters:
+        extra_args["it_lim"] = parameters["iteration_limit"]
+    if "objective_sense" in parameters:
+        set_parameter(lp, "objective_sense", parameters["objective_sense"])
+    lp_args.update(extra_args)
+    # solve the problem
+    lp.simplex(**lp_args)
     if lp.kind == int:
-        #For MILPs, it is faster to solve LP then move to MILP
-        lp.simplex(tol_bnd=tolerance_optimality,
-                   tol_dj=tolerance_optimality, meth=lp_method, **extra_args)  
-        lp.integer(tol_int=tolerance_integer, **extra_args)
-    else:
-        lp.simplex(tol_bnd=tolerance_optimality, tol_dj=tolerance_optimality,
-                   meth=lp_method, **extra_args)
-    status = get_status(lp)
-
-    return status
+        # For MILPs, it is faster to solve LP then move to MILP
+        lp.integer(tol_int=parameters["tolerance_integer"], **extra_args)
+    return get_status(lp)
 
 
 def solve(cobra_model, **kwargs):
@@ -268,9 +256,4 @@ def solve(cobra_model, **kwargs):
         if status == 'optimal':
             break
 
-    the_solution = format_solution(lp, cobra_model)
-    #if status != 'optimal':
-    #    print '%s failed: %s'%(solver_name, status)
-    # cobra_model.solution = the_solution
-
-    return the_solution
+    return format_solution(lp, cobra_model)

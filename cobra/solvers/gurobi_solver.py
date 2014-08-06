@@ -1,28 +1,46 @@
-##cobra.solvers.gurobi_solver
-#Interface to the gurobi 5.0.1 python solver
+# Interface to gurobipy
 
 from warnings import warn
-from os import name as __name
 from copy import deepcopy
 from itertools import izip
-###solver specific parameters
-from .parameters import status_dict, variable_kind_dict, \
-     sense_dict, parameter_mappings, parameter_defaults, \
-     objective_senses, default_objective_sense
+
+from gurobipy import Model, LinExpr, GRB, QuadExpr
+
 
 from ..core.Solution import Solution
-from time import time
+
 solver_name = 'gurobi'
 _SUPPORTS_MILP = True
-objective_senses = objective_senses[solver_name]
-parameter_mappings = parameter_mappings[solver_name]
-parameter_defaults = parameter_defaults[solver_name]
 
-## from numpy import array
-from gurobipy import Model, LinExpr, GRB, QuadExpr
-variable_kind_dict = eval(variable_kind_dict[solver_name])
-status_dict = eval(status_dict[solver_name])
-__solver_class = Model
+
+# set solver-specific parameters
+parameter_defaults = {'objective_sense': 'maximize',
+                      'tolerance_optimality': 1e-6,
+                      'tolerance_feasibility': 1e-6,
+                      'tolerance_integer': 1e-9,
+                      # This is primal simplex, default is -1 (automatic)
+                      'lp_method': 0,
+                      'log_file': '',
+                      'tolerance_barrier': 1e-8}
+parameter_mappings = {'log_file': 'LogFile',
+                      'lp_method': 'Method',
+                      'threads': 'Threads',
+                      'objective_sense': 'ModelSense',
+                      'output_verbosity': 'OutputFlag',
+                      'quadratic_precision': 'Quad',
+                      'time_limit': 'TimeLimit',
+                      'tolerance_feasibility': 'FeasibilityTol',
+                      'tolerance_markowitz': 'MarkowitzTol',
+                      'tolerance_optimality': 'OptimalityTol',
+                      'iteration_limit': 'IterationLimit',
+                      'MIP_gap_abs': 'MIPGapAbs',
+                      'MIP_gap': 'MIPGap'}
+variable_kind_dict = {'continuous': GRB.CONTINUOUS, 'integer': GRB.INTEGER}
+sense_dict = {'E': GRB.EQUAL, 'L': GRB.LESS_EQUAL, 'G': GRB.GREATER_EQUAL}
+objective_senses = {'maximize': GRB.MAXIMIZE, 'minimize': GRB.MINIMIZE}
+status_dict = {GRB.OPTIMAL: 'optimal', GRB.INFEASIBLE: 'infeasible',
+               GRB.UNBOUNDED: 'unbounded', GRB.TIME_LIMIT: 'time_limit'}
+
 def get_status(lp):
     status = lp.status
     if status in status_dict:
@@ -102,7 +120,6 @@ def update_problem(lp, cobra_model, **kwargs):
         the_variable.obj = float(the_reaction.objective_coefficient)
 
 
-sense_dict = eval(sense_dict[solver_name])
 def create_problem(cobra_model, quadratic_component=None, **kwargs):
     """Solver-specific method for constructing a solver problem from
     a cobra.Model.  This can be tuned for performance using kwargs

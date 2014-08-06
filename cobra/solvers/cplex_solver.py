@@ -1,42 +1,57 @@
-#cobra.solvers.cplex_solver
-#Interface to ilog/cplex 12.4 python interface
+# Interface to ilog/cplex 12.4 python interface
 
-from os import name as __name
 from copy import deepcopy
 from warnings import warn
-###solver specific parameters
-from .parameters import status_dict, variable_kind_dict, \
-     sense_dict, parameter_mappings, parameter_defaults, \
-     objective_senses, default_objective_sense
+
+from cplex import Cplex, SparsePair
 
 from ..core.Solution import Solution
+from ..external.six.moves import zip
 
-from time import time
 solver_name = 'cplex'
 _SUPPORTS_MILP = True
-parameter_defaults = parameter_defaults[solver_name]
-sense_dict = eval(sense_dict[solver_name])
 
+# solver specific parameters
+parameter_defaults = {'objective_sense': 'maximize',
+                      'tolerance_optimality': 1e-6,
+                      'tolerance_feasibility': 1e-6,
+                      'tolerance_integer': 1e-9, 
+                      'lp_method': 1,
+                      'tolerance_barrier': 1e-8}
+parameter_mappings = {'lp_method': 'lpmethod',
+                      'lp_parallel': 'threads',
+                      'threads': 'threads',
+                      'objective_sense': 'objective_sense',
+                      'time_limit': 'timelimit',
+                      'iteration_limit': 'simplex.limits.iterations',
+                      'tolerance_barrier': 'barrier.convergetol',
+                      'tolerance_feasibility': 'simplex.tolerances.feasibility',
+                      'tolerance_markowitz': 'simplex.tolerances.markowitz',
+                      'tolerance_optimality': 'simplex.tolerances.optimality',
+                      'MIP_gap_abs': 'mip.tolerances.absmipgap',
+                      'MIP_gap': 'mip.tolerances.mipgap'}
+variable_kind_dict = {'continuous': Cplex.variables.type.continuous,
+                      'integer': Cplex.variables.type.integer}
+status_dict = {'MIP_infeasible': 'infeasible',
+               'integer optimal solution': 'optimal',
+               'MIP_optimal': 'optimal',
+               'MIP_optimal_tolerance': 'optimal',
+               'MIP_unbounded':  'unbounded',
+               'infeasible': 'infeasible',
+               'optimal': 'optimal',
+               'optimal_tolerance': 'optimal',
+               'unbounded': 'unbounded',
+               'integer optimal, tolerance': 'optimal',
+               'time limit exceeded': 'time_limit'}
 
-parameter_mappings = parameter_mappings[solver_name]
-objective_senses = objective_senses[solver_name]
-from cplex import Cplex, SparsePair
-class Problem(Cplex):
-    def __init__(self):
-        Cplex.__init__(self)
-__solver_class = Problem
-variable_kind_dict = eval(variable_kind_dict[solver_name])
-status_dict = eval(status_dict[solver_name])
 def get_status(lp):
     status = lp.solution.get_status_string().lower()
-    if status in status_dict:
-        status = status_dict[status]
-    else:
-        status = 'failed'
-    return status
+    return status_dict[status] if status in status_dict else 'failed'
+
 
 def get_objective_value(lp):
     return lp.solution.get_objective_value()
+
 
 def format_solution(lp, cobra_model, **kwargs):
     status = get_status(lp)
@@ -45,7 +60,7 @@ def format_solution(lp, cobra_model, **kwargs):
         objective_value = lp.solution.get_objective_value()
         #This can be sped up a little
         x_dict = dict(zip(lp.variables.get_names(),
-                     lp.solution.get_values()))
+                          lp.solution.get_values()))
         x = lp.solution.get_values()
         #MIP's don't have duals
         if lp.get_problem_type() in (Cplex.problem_type.MIQP,
@@ -90,7 +105,7 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
         the_parameters = deepcopy(parameter_defaults)
         the_parameters.update(kwargs)
 
-    lp = __solver_class()
+    lp = Cplex()
     if 'log_file' not in the_parameters:
         lp.set_results_stream(None)
         lp.set_warning_stream(None)
@@ -104,17 +119,13 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
 
     #Using the new objects
     #NOTE: This might be slow
-    objective_coefficients = []
-    lower_bounds = []
-    upper_bounds = []
-    variable_names = []
-    variable_kinds = []
-    [(objective_coefficients.append(x.objective_coefficient),
-      lower_bounds.append(x.lower_bound),
-      upper_bounds.append(x.upper_bound),
-      variable_names.append(x.id),
-      variable_kinds.append(variable_kind_dict[x.variable_kind]))
-     for x in cobra_model.reactions]
+    objective_coefficients = cobra_model.reactions.list_attr(
+        'objective_coefficient')
+    lower_bounds = cobra_model.reactions.list_attr("lower_bound")
+    upper_bounds = cobra_model.reactions.list_attr("upper_bound")
+    variable_names = cobra_model.reactions.list_attr("id")
+    variable_kinds = [variable_kind_dict[x.variable_kind] for x
+                      in cobra_model.reactions]
     #Cplex decides that the problem is a MIP if variable_kinds are supplied
     #even if there aren't any integers.
     if variable_kind_dict['integer'] in variable_kinds:
@@ -240,32 +251,16 @@ def update_problem(lp, cobra_model, **kwargs):
                                         for x in cobra_model.reactions])
 
 
-
-###
 def solve_problem(lp, **kwargs):
-    """A performance tunable method for solving a problem
-
-    """
-    #Update parameter settings if provided
-    if kwargs:
-        [set_parameter(lp, parameter_mappings[k], v)
-         for k, v in kwargs.iteritems() if k in parameter_mappings]
-    try:
-        the_problem = kwargs['the_problem']
-    except:
-        the_problem = False
-    if isinstance(the_problem, __solver_class):
-        try:
-            the_basis = the_problem.solution.basis.get_basis()
-            lp.start.set_basis(the_basis[0],the_basis[1])
-            lp.parameters.preprocessing.presolve.set(0)
-        except:
-            warn("cplex_java isn't yet configured to reuse the basis")
-    
+    # Update parameter settings if provided
+    for k, v in kwargs.iteritems():
+        if k in parameter_mappings:
+            set_parameter(lp, parameter_mappings[k], v)
+    if 'the_problem' in kwargs:
+        warn('option the_problem removed')
     lp.solve()
-    #If the solver takes more than 0.1 s with a hot start it is likely stuck
-    status = get_status(lp)
-    return status
+    # If the solver takes more than 0.1 s with a hot start it is likely stuck
+    return get_status(lp)
 
     
 def solve(cobra_model, **kwargs):
@@ -282,7 +277,6 @@ def solve(cobra_model, **kwargs):
             raise Exception("Option %s removed" % i)
     if 'error_reporting' in the_parameters:
         warn("error_reporting deprecated")
-
 
     lp = create_problem(cobra_model, **the_parameters)
 
@@ -303,10 +297,4 @@ def solve(cobra_model, **kwargs):
             status = 'failed'
         if status == 'optimal':
             break
-
-    the_solution = format_solution(lp, cobra_model)
-    #if status != 'optimal':
-    #    print '%s failed: %s'%(solver_name, status)
-    #cobra_model.solution = the_solution
-    #solution = {'the_problem': lp, 'the_solution': the_solution}
-    return the_solution
+    return format_solution(lp, cobra_model)
