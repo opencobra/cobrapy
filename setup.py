@@ -22,13 +22,14 @@ except:
     None
 
 # cython is optional for building. The c file can be used directly. However,
-# to run sdist, the c file must be generated, which requires cython.
+# for certain functions, the c file must be generated, which requires cython.
 try:
     from Cython.Build import cythonize
 except ImportError:
     cythonize = None
-    if "sdist" in argv:
-        raise Exception("cython required for sdist")
+    for k in ["sdist", "develop"]:
+        if k in argv:
+            raise Exception("cython required for " + k)
 
 # for building the cglpk solver
 try:
@@ -83,10 +84,12 @@ try:
     # use cython if present, otherwise use c file
     if cythonize:
         ext_modules = cythonize([Extension("cobra.solvers.cglpk",
-                ["cobra/solvers/cglpk.pyx"], **build_args)])
+                                           ["cobra/solvers/cglpk.pyx"],
+                                           **build_args)],
+                                force=True)
     else:
         ext_modules = [Extension("cobra.solvers.cglpk",
-                ["cobra/solvers/cglpk.c"], **build_args)]
+                                 ["cobra/solvers/cglpk.c"], **build_args)]
 except:
     ext_modules = None
 
@@ -104,51 +107,50 @@ for extra in extras.values():
 extras["all"] = list(all_extras)
 
 setup(
-    name = "cobra",
-    version = __version,
-    packages = find_packages(exclude=['cobra.oven', 'cobra.oven*']),
-    #scripts = [''],
-    #put in numpy, scipy, libsbml, and pyglpk
-    setup_requires = [],
-    #install_requires = ['numpy>=1.6', 'scipy>=0.10'],
-    #leave blank because it tries to build scipy/numpy on os x when they are
-    #installed by the superpack.  And these are not really essential for core functions.
-    install_requires = [],
-    extras_require = extras,
-    ext_modules = ext_modules,
+    name="cobra",
+    version=__version,
+    packages=find_packages(exclude=['cobra.oven', 'cobra.oven*']),
+    setup_requires=[],
+    install_requires=[],
+    extras_require=extras,
+    ext_modules=ext_modules,
 
-    package_data = {
+    package_data={
          '': ['test/data/*',
               'VERSION',
               'mlab/matlab_scripts/*m']},
 
-    author = "Daniel Robert Hyduke <danielhyduke@gmail.com>, Ali Ebrahim <aebrahim@ucsd.edu>",
-    author_email = "danielhyduke@gmail.com",
-    description = "COBRApy is a package for constraints-based modeling of biological networks",
-    license = "GPL V3.0",
-    keywords = "metabolism biology linear programming optimization flux balance analysis fba",
-    url = "https://opencobra.github.io/cobrapy",
-    test_suite = "cobra.test.suite",
-    long_description = "COnstraint-Based Reconstruction and Analysis (COBRA) methods are widely used for genome-scale modeling of metabolic networks in both prokaryotes and eukaryotes.  COBRApy is a constraint-based modeling package that is designed to accomodate the biological complexity of the next generation of COBRA models and provides access to commonly used COBRA methods, such as flux balance analysis, flux variability analysis, and gene deletion analyses.  Through the mlabwrap module it is possible to use COBRApy to call many additional COBRA methods present in the COBRA Toolbox for MATLAB.",
-    download_url = 'https://pypi.python.org/pypi/cobra',
-    classifiers = ['Development Status :: 5 - Production/Stable',
-                   'Environment :: Console',
-                   'Intended Audience :: Science/Research',
-                   'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-                   'Operating System :: MacOS :: MacOS X',
-                   'Operating System :: Microsoft :: Windows :: Windows 7',
-                   'Operating System :: Microsoft :: Windows :: Windows Vista',
-                   'Operating System :: Microsoft :: Windows :: Windows XP',
-                   'Operating System :: POSIX',
-                   'Operating System :: POSIX :: Linux',
-                   'Programming Language :: Python :: 2.7',
-                   'Programming Language :: Python :: 3.3',
-                   'Programming Language :: Python :: 3.4',
-                   'Programming Language :: Python :: Implementation :: CPython',
-                   'Programming Language :: Python :: Implementation :: Jython',
-                   'Topic :: Scientific/Engineering',
-                   'Topic :: Scientific/Engineering :: Bio-Informatics'
-                   ],
-    platforms = "Python >= 2.6 on GNU/Linux, Mac OS X >= 10.7, Microsoft Windows >= 7. \n Jython >= 2.5 on Java >= 1.6",
-    **setup_kwargs
-    )
+    author="Daniel Robert Hyduke <danielhyduke@gmail.com>, "
+    "Ali Ebrahim <aebrahim@ucsd.edu>",
+    author_email="danielhyduke@gmail.com",
+    description="COBRApy is a package for constraints-based modeling of "
+    "biological networks",
+    license="GPL V3.0",
+    keywords="metabolism biology linear programming optimization flux"
+    " balance analysis fba",
+    url="https://opencobra.github.io/cobrapy",
+    test_suite="cobra.test.suite",
+    long_description="COnstraint-Based Reconstruction and Analysis (COBRA) "
+    "methods are widely used for genome-scale modeling of metabolic networks "
+    "in both prokaryotes and eukaryotes. COBRApy is a constraint-based "
+    "modeling package that is designed to accomodate the biological "
+    "complexity of the next generation of COBRA models and provides access to "
+    "commonly used COBRA methods, such as flux balance analysis, flux "
+    "variability analysis, and gene deletion analyses.",
+    download_url='https://pypi.python.org/pypi/cobra',
+    classifiers=['Development Status :: 5 - Production/Stable',
+                 'Environment :: Console',
+                 'Intended Audience :: Science/Research',
+                 'License :: OSI Approved :: GNU General Public License v3'
+                 ' or later (GPLv3+)',
+                 'Operating System :: OS Independent',
+                 'Programming Language :: Python :: 2.7',
+                 'Programming Language :: Python :: 3.3',
+                 'Programming Language :: Python :: 3.4',
+                 'Programming Language :: Python :: Implementation :: CPython',
+                 'Programming Language :: Python :: Implementation :: Jython',
+                 'Topic :: Scientific/Engineering',
+                 'Topic :: Scientific/Engineering :: Bio-Informatics'
+                 ],
+    platforms="GNU/Linux, Mac OS X >= 10.7, Microsoft Windows >= 7",
+    **setup_kwargs)
