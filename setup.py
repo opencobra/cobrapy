@@ -4,15 +4,14 @@ except ImportError:
     import ez_setup
     ez_setup.use_setuptools()
 from setuptools import setup, find_packages
-from sys import argv
+from sys import argv, path
+from os.path import isfile, abspath, dirname, join
 
-import warnings
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    from cobra.version import get_version
-
+# import version to get the version string
+path.insert(0, abspath(join(dirname(__file__), "cobra")))
+from version import get_version
+path.pop(0)
 __version = get_version(pep440=True)
-setup_kwargs = {}
 
 # for running parallel tests due to a bug in python 2.7.3
 # http://bugs.python.org/issue15881#msg170215
@@ -31,11 +30,13 @@ except ImportError:
         if k in argv:
             raise Exception("cython required for " + k)
 
+# Begin constructing arguments for building
+setup_kwargs = {}
+
 # for building the cglpk solver
 try:
     from distutils.extension import Extension
     from distutils.command.build_ext import build_ext
-    from os.path import isfile, abspath, dirname, join
     from os import name
     from platform import system
 
