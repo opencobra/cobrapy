@@ -68,9 +68,11 @@ class DictList(list):
         returns: a list of objects which match the query
         """
         if attribute is None:
-            select_attribute = lambda x: x
+            def select_attribute(x):
+                return x
         else:
-            select_attribute = lambda x: getattr(x, attribute)
+            def select_attribute(x):
+                return getattr(x, attribute)
 
         # if the search_function is a regular expression
         if isinstance(search_function, str):
@@ -181,7 +183,7 @@ class DictList(list):
 
     def __getstate__(self):
         """gets internal state
-        
+
         This is only provided for backwards compatibilty so older
         versions of cobrapy can load pickles generated with cobrapy. In
         reality, the "_dict" state is ignored when loading a pickle"""
@@ -189,7 +191,7 @@ class DictList(list):
 
     def __setstate__(self, state):
         """sets internal state
-        
+
         Ignore the passed in state and recalculate it. This is only for
         compatibility with older pickles which did not correctly specify
         the initialization class"""
@@ -279,7 +281,8 @@ class DictList(list):
 
         """
         if key is None:
-            key = lambda i: i.id
+            def key(i):
+                return i.id
         list.sort(self, cmp=cmp, key=key, reverse=reverse)
         self._generate_index()
 

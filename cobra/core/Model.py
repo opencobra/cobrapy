@@ -4,22 +4,21 @@ from copy import deepcopy, copy
 from ..external.six import iteritems, string_types
 from ..solvers import optimize
 from .Object import Object
-from .Formula import Formula
 from .Solution import Solution
 from .DictList import DictList
 
 
-
 # Note, when a reaction is added to the Model it will no longer keep personal
-#instances of it's Metabolites, it will reference Model.metabolites to improve
-#performance.  When doing this, take care to monitor the metabolite coefficients.
-#Do the same for Model.reactions[:].genes and Model.genes
+# instances of its Metabolites, it will reference Model.metabolites to improve
+# performance.  When doing this, take care to monitor metabolite coefficients.
+# Do the same for Model.reactions[:].genes and Model.genes
 
 class Model(Object):
     """Metabolic Model
 
     Refers to Metabolite, Reaction, and Gene Objects.
     """
+
     def __setstate__(self, state):
         """Make sure all cobra.Objects in the model point to the model"""
         self.__dict__.update(state)
@@ -36,24 +35,22 @@ class Model(Object):
             self._trimmed = False
             self._trimmed_genes = []
             self._trimmed_reactions = {}
-            self.legacy_format = False #DEPRECATED
-            #Allow the creation of an empty object which will facilitate development
-            #of SBML parsers and other development issues.
+            self.legacy_format = False  # DEPRECATED
             self.genes = DictList()
-            self.reactions = DictList() #A list of cobra.Reactions
-            self.metabolites = DictList() #A list of cobra.Metabolites
-            #genes based on their ids {Gene.id: Gene}
+            self.reactions = DictList()  # A list of cobra.Reactions
+            self.metabolites = DictList()  # A list of cobra.Metabolites
+            # genes based on their ids {Gene.id: Gene}
             self.compartments = {}
             self.solution = Solution(None)
-
 
     def __add__(self, other_model):
         """Adds two models. +
 
-        The issue of reactions being able to exists in multiple Models now arises, the same
-        for metabolites and such.  This might be a little difficult as a reaction with the
-        same name / id in two models might have different coefficients for their metabolites
-        due to pH and whatnot making them different reactions.
+        The issue of reactions being able to exists in multiple Models now
+        arises, the same for metabolites and such.  This might be a little
+        difficult as a reaction with the same name / id in two models might
+        have different coefficients for their metabolites due to pH and whatnot
+        making them different reactions.
 
         """
         new_model = self.copy()
@@ -65,10 +62,11 @@ class Model(Object):
     def __iadd__(self, other_model):
         """Adds a Model to this model +=
 
-        The issue of reactions being able to exists in multiple Models now arises, the same
-        for metabolites and such.  This might be a little difficult as a reaction with the
-        same name / id in two models might have different coefficients for their metabolites
-        due to pH and whatnot making them different reactions.
+        The issue of reactions being able to exists in multiple Models now
+        arises, the same for metabolites and such.  This might be a little
+        difficult as a reaction with the same name / id in two models might
+        have different coefficients for their metabolites due to pH and whatnot
+        making them different reactions.
 
         """
         new_reactions = deepcopy(other_model.reactions)
@@ -82,8 +80,9 @@ class Model(Object):
         return self.copy()
 
     def copy(self, print_time=False):
-        """Provides a partial 'deepcopy' of the Model.  All of the Metabolite, Gene,
-        and Reaction objects are created anew but in a faster fashion than deepcopy
+        """Provides a partial 'deepcopy' of the Model.  All of the Metabolite,
+        Gene, and Reaction objects are created anew but in a faster fashion
+        than deepcopy
         """
         if print_time is not False:
             warn("print_time is a deprecated option")
@@ -99,7 +98,8 @@ class Model(Object):
             new_met = metabolite.__class__()
             for attr, value in iteritems(metabolite.__dict__):
                 if attr not in do_not_copy:
-                    new_met.__dict__[attr] = copy(value) if attr == "formula" else value
+                    new_met.__dict__[attr] = copy(
+                        value) if attr == "formula" else value
             new_met._model = new
             new.metabolites.append(new_met)
 
@@ -108,7 +108,8 @@ class Model(Object):
             new_gene = gene.__class__(None)
             for attr, value in iteritems(gene.__dict__):
                 if attr not in do_not_copy:
-                    new_gene.__dict__[attr] = copy(value) if attr == "formula" else value
+                    new_gene.__dict__[attr] = copy(
+                        value) if attr == "formula" else value
             new_gene._model = new
             new.genes.append(new_gene)
 
@@ -132,7 +133,6 @@ class Model(Object):
                 new_gene._reaction.add(new_reaction)
         return new
 
-
     def add_metabolites(self, metabolite_list):
         """Will add a list of metabolites to the the object, if they do not
         exist and then expand the stochiometric matrix
@@ -142,12 +142,12 @@ class Model(Object):
         """
         if not hasattr(metabolite_list, '__iter__'):
             metabolite_list = [metabolite_list]
-        #First check whether the metabolites exist in the model
+        # First check whether the metabolites exist in the model
         metabolite_list = [x for x in metabolite_list
                            if x.id not in self.metabolites]
-        [setattr(x, '_model', self) for x in metabolite_list]
+        for x in metabolite_list:
+            setattr(x, '_model', self)
         self.metabolites += metabolite_list
-
 
     def _update_reaction(self, reaction):
         """Updates everything associated with the reaction.id of reaction.
@@ -155,12 +155,7 @@ class Model(Object):
         reaction: A cobra.Reaction object, or a list of these objects.
 
         """
-        warn("WARNING: To be modified.  It will be faster to use properties of the DictList " +\
-             "self.reactions to find a reaction and update the matrices " +\
-             "This function is only used after the Model has been " +\
-             "converted to matrices.  It is typically faster to access the objects" +\
-             "in the Model directly.  This function will eventually moved to another" +\
-             "module for advanced users due to the potential for mistakes.")
+        warn("Deprecated")
 
         if not hasattr(reaction, '__iter__'):
             reaction = [reaction]
@@ -175,7 +170,6 @@ class Model(Object):
         """.. warning :: removed"""
         raise Exception("Model.update is moved to ArrayBasedModel.")
 
-
     def add_reaction(self, reaction):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
@@ -185,28 +179,29 @@ class Model(Object):
         """
         self.add_reactions([reaction])
 
-
     def add_reactions(self, reaction_list):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
 
         reaction_list: A list of :class:`~cobra.core.Reaction` objects
-      
+
         """
-        #Only add the reaction if one with the same ID is not already
-        #present in the model.
-        
+        # Only add the reaction if one with the same ID is not already
+        # present in the model.
+
         # This function really should not used for single reactions
         if not hasattr(reaction_list, "__len__"):
             reaction_list = [reaction_list]
             warn("Use add_reaction for single reactions")
 
         reaction_list = DictList(reaction_list)
-        reactions_in_model = [i.id for i in reaction_list if self.reactions.has_id(i.id)]
-        
+        reactions_in_model = [
+            i.id for i in reaction_list if self.reactions.has_id(
+                i.id)]
+
         if len(reactions_in_model) > 0:
-            raise Exception("Reactions already in the model: " + \
-                ", ".join(reactions_in_model))
+            raise Exception("Reactions already in the model: " +
+                            ", ".join(reactions_in_model))
 
         # Add reactions. Also take care of genes and metabolites in the loop
         for reaction in reaction_list:
@@ -225,7 +220,8 @@ class Model(Object):
                 # needs to point to the metabolite in the model.
                 else:
                     stoichiometry = reaction._metabolites.pop(metabolite)
-                    model_metabolite = self.metabolites.get_by_id(metabolite.id)
+                    model_metabolite = self.metabolites.get_by_id(
+                        metabolite.id)
                     reaction._metabolites[model_metabolite] = stoichiometry
                     model_metabolite._reaction.add(reaction)
 
@@ -245,7 +241,6 @@ class Model(Object):
 
         self.reactions += reaction_list
 
-
     def to_array_based_model(self, deepcopy_model=False, **kwargs):
         """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model which
         may be used to perform linear algebra operations with the
@@ -253,16 +248,15 @@ class Model(Object):
 
         deepcopy_model: Boolean.  If False then the ArrayBasedModel points
         to the Model
-        
+
         """
         from .ArrayBasedModel import ArrayBasedModel
         return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
 
-
     def optimize(self, objective_sense='maximize', solver=None,
                  quadratic_component=None,
                  **kwargs):
-        """Optimize model using flux balance analysis
+        r"""Optimize model using flux balance analysis
 
         objective_sense: 'maximize' or 'minimize'
 
@@ -280,7 +274,7 @@ class Model(Object):
 
         time_limit: Maximum solver time (in seconds)
 
-        .. NOTE :: Only the most commonly used parameters are presented here. 
+        .. NOTE :: Only the most commonly used parameters are presented here.
                    Additional parameters for cobra.solvers may be available and
                    specified with the appropriate keyword argument.
 
@@ -354,7 +348,7 @@ class Model(Object):
 
     def change_objective(self, objectives):
         """Change the objective in the cobrapy model.
-        
+
         objectives: A list or a dictionary.  If a list then
         a list of reactions for which the coefficient in the
         linear objective is set as 1.  If a dictionary then the

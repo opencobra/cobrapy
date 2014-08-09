@@ -14,7 +14,7 @@ except:
     scipy = None
 
 if scipy:
-    from .ArrayBasedModel import ArrayBasedModel 
+    from .ArrayBasedModel import ArrayBasedModel
 else:
     from warnings import warn
     warn("ArrayBasedModel requires scipy")
