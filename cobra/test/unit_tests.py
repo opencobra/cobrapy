@@ -229,6 +229,17 @@ class TestCobraModel(CobraTestCase):
         # TODO - delete by id - will this be supported?
         # TODO - delete orphan metabolites - will this be expected behavior?
 
+    def test_remove_gene(self):
+        target_gene = self.model.genes[0]
+        gene_reactions = list(target_gene.reactions)
+        target_gene.remove_from_model()
+        self.assertEqual(target_gene.model, None)
+        # make sure the reaction was removed from the model
+        self.assertNotIn(target_gene, self.model.genes)
+        # ensure the old reactions no longer have a record of the gene
+        for reaction in gene_reactions:
+            self.assertNotIn(target_gene, reaction.genes)
+
     def test_copy(self):
         """modifying copy should not modify the original"""
         # test that deleting reactions in the copy does not change the
