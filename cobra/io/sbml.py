@@ -4,8 +4,6 @@
 from .. import Model, Reaction, Metabolite, Formula
 from os.path import isfile
 from os import name as __name
-from copy import deepcopy
-from time import time
 from warnings import warn
 import re
 from math import isnan, isinf
@@ -187,13 +185,13 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             tmp_metabolite_id = sbml_metabolite.getSpecies()
             #This deals with boundary metabolites
             if tmp_metabolite_id in metabolite_dict:
-                tmp_metabolite = deepcopy(metabolite_dict[tmp_metabolite_id])
+                tmp_metabolite = metabolite_dict[tmp_metabolite_id]
                 cobra_metabolites[tmp_metabolite] = -sbml_metabolite.getStoichiometry()
         for sbml_metabolite in sbml_reaction.getListOfProducts():
             tmp_metabolite_id = sbml_metabolite.getSpecies()
             #This deals with boundary metabolites
             if tmp_metabolite_id in metabolite_dict:
-                tmp_metabolite = deepcopy(metabolite_dict[tmp_metabolite_id])
+                tmp_metabolite = metabolite_dict[tmp_metabolite_id]
                 cobra_metabolites[tmp_metabolite] = sbml_metabolite.getStoichiometry()
         reaction.add_metabolites(cobra_metabolites)
         #Parse the kinetic law info here.
@@ -416,7 +414,6 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
         #Deal with the case where the reaction is a boundary reaction
         if len(the_reaction._metabolites) == 1:
             the_metabolite, the_coefficient = list(the_reaction._metabolites.items())[0]
-            the_metabolite = the_metabolite.copy()
             metabolite_id = add_sbml_species(sbml_model, the_metabolite,
                                              note_start_tag=note_start_tag,
                                              note_end_tag=note_end_tag,
