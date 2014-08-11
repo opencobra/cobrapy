@@ -1,6 +1,7 @@
 import sys
 from unittest import TestCase, TestLoader, TextTestRunner, skipIf
-from copy import deepcopy
+from copy import copy, deepcopy
+from pickle import loads, dumps, HIGHEST_PROTOCOL
 
 if __name__ == "__main__":
     sys.path.insert(0, "../..")
@@ -30,6 +31,18 @@ class TestDictList(TestCase):
         self.list = DictList()
         self.list.append(self.obj)
 
+    def testContains(self):
+        self.assertIn(self.obj, self.list)
+        self.assertIn(self.obj.id, self.list)
+        self.assertNotIn(Object("not_in"), self.list)
+        self.assertNotIn('not_in', self.list)
+
+    def testIndex(self):
+        self.assertEqual(self.list.index("test1"), 0)
+        self.assertEqual(self.list.index(self.obj), 0)
+        self.assertRaises(ValueError, self.list.index, "f")
+        self.assertRaises(ValueError, self.list.index, Object("f"))
+
     def testIndependent(self):
         a = DictList([Object("o1"), Object("o2")])
         b = DictList()
@@ -42,8 +55,7 @@ class TestDictList(TestCase):
     def testAppend(self):
         obj2 = Object("test2")
         self.list.append(obj2)
-        self.assertRaises(ValueError, self.list.append,
-            Object("test1"))
+        self.assertRaises(ValueError, self.list.append, Object("test1"))
         self.assertEqual(self.list.index(obj2), 1)
         self.assertEqual(self.list[1], obj2)
         self.assertEqual(self.list.get_by_id("test2"), obj2)
@@ -56,6 +68,11 @@ class TestDictList(TestCase):
         self.assertEqual(self.list.get_by_id("test2"), obj_list[0])
         self.assertEqual(self.list[8].id, "test9")
         self.assertEqual(len(self.list), 9)
+        self.assertRaises(ValueError, self.list.extend, [Object("test1")])
+        # Even if the object is unique, if it is present twice in the new
+        # list, it should still raise an exception
+        self.assertRaises(ValueError, self.list.extend,
+                          [Object("testd"), Object("testd")])
 
     def testIadd(self):
         obj_list = [Object("test%d" % (i)) for i in range(2, 10)]
@@ -65,10 +82,11 @@ class TestDictList(TestCase):
         self.assertEqual(self.list[8].id, "test9")
         self.assertEqual(len(self.list), 9)
 
-
     def testAdd(self):
         obj_list = [Object("test%d" % (i)) for i in range(2, 10)]
         sum = self.list + obj_list
+        self.assertIsNot(sum, self.list)
+        self.assertIsNot(sum, obj_list)
         self.assertEqual(self.list[0].id, "test1")
         self.assertEqual(sum[1].id, "test2")
         self.assertEqual(sum.get_by_id("test2"), obj_list[0])
@@ -76,19 +94,75 @@ class TestDictList(TestCase):
         self.assertEqual(len(self.list), 1)
         self.assertEqual(len(sum), 9)
 
-    def testDeepcopy(self):
-        from copy import deepcopy
-        copied = deepcopy(self.list)
+    def testInitCopy(self):
+        self.list.append(Object("test2"))
+        copied = DictList(self.list)
+        self.assertIsNot(self.list, copied)
+        self.assertIsInstance(copied, self.list.__class__)
+        self.assertEqual(len(self.list), len(copied))
         for i, v in enumerate(self.list):
             self.assertEqual(self.list[i].id, copied[i].id)
+            self.assertEqual(i, copied.index(v.id))
+            self.assertIs(self.list[i], copied[i])
+            self.assertIs(v, copied.get_by_id(v.id))
+
+    def testSlice(self):
+        self.list.append(Object("test2"))
+        self.list.append(Object("test3"))
+        sliced = self.list[:-1]
+        self.assertIsNot(self.list, sliced)
+        self.assertIsInstance(sliced, self.list.__class__)
+        self.assertEqual(len(self.list), len(sliced) + 1)
+        for i, v in enumerate(sliced):
+            self.assertEqual(self.list[i].id, sliced[i].id)
+            self.assertEqual(i, sliced.index(v.id))
+            self.assertIs(self.list[i], sliced[i])
+            self.assertIs(self.list[i], sliced.get_by_id(v.id))
+
+    def testCopy(self):
+        self.list.append(Object("test2"))
+        copied = copy(self.list)
+        self.assertIsNot(self.list, copied)
+        self.assertIsInstance(copied, self.list.__class__)
+        self.assertEqual(len(self.list), len(copied))
+        for i, v in enumerate(self.list):
+            self.assertEqual(self.list[i].id, copied[i].id)
+            self.assertEqual(i, copied.index(v.id))
+            self.assertIs(self.list[i], copied[i])
+            self.assertIs(v, copied.get_by_id(v.id))
+
+    def testDeepcopy(self):
+        self.list.append(Object("test2"))
+        copied = deepcopy(self.list)
+        self.assertIsNot(self.list, copied)
+        self.assertIsInstance(copied, self.list.__class__)
+        self.assertEqual(len(self.list), len(copied))
+        for i, v in enumerate(self.list):
+            self.assertEqual(self.list[i].id, copied[i].id)
+            self.assertEqual(i, copied.index(v.id))
             self.assertIsNot(self.list[i], copied[i])
+            self.assertIsNot(v, copied.get_by_id(v.id))
+
+    def testPickle(self):
+        self.list.append(Object("test2"))
+        for protocol in range(HIGHEST_PROTOCOL):
+            pickle_str = dumps(self.list, protocol=protocol)
+            copied = loads(pickle_str)
+            self.assertIsNot(self.list, copied)
+            self.assertIsInstance(copied, self.list.__class__)
+            self.assertEqual(len(self.list), len(copied))
+            for i, v in enumerate(self.list):
+                self.assertEqual(self.list[i].id, copied[i].id)
+                self.assertEqual(i, copied.index(v.id))
+                self.assertIsNot(self.list[i], copied[i])
+                self.assertIsNot(v, copied.get_by_id(v.id))
 
     def testQuery(self):
         obj2 = Object("test2")
         self.list.append(obj2)
         result = self.list.query("test1")  # matches only test1
         self.assertEqual(len(result), 1)
-        self.assertEqual(result[0], self.obj) 
+        self.assertEqual(result[0], self.obj)
         result = self.list.query("test")  # matches test1 and test2
         self.assertEqual(len(result), 2)
 
@@ -116,6 +190,11 @@ class TestDictList(TestCase):
         self.assertEqual(obj_list[5].id, "testb")
         self.assertEqual(obj_list.index("testc"), 6)
         self.assertEqual(obj_list[6].id, "testc")
+        # Even if the object is unique, if it is present twice in the new
+        # list, it should still raise an exception
+        self.assertRaises(ValueError, obj_list.__setitem__, slice(5, 7),
+                          [Object("testd"), Object("testd")])
+
 
 class CobraTestCase(TestCase):
     def setUp(self):
@@ -304,6 +383,7 @@ class TestCobraModel(CobraTestCase):
         self.model.change_objective({atpm: 0.2, biomass: 0.3})
         self.assertEqual(atpm.objective_coefficient, 0.2)
         self.assertEqual(biomass.objective_coefficient, 0.3)
+
 
 @skipIf(scipy is None, "scipy required for ArrayBasedModel")
 class TestCobraArrayModel(TestCobraModel):

@@ -4,6 +4,7 @@ from os import unlink
 from os.path import join, split
 from unittest import TestCase, TestLoader, TextTestRunner, skipIf
 from functools import partial
+from pickle import load, dump
 import sys
 
 if __name__ == "__main__":
@@ -19,7 +20,7 @@ else:
     from . import salmonella_sbml, salmonella_pickle
     from . import salmonella_fbc_sbml
 
-libraries = ["scipy", "libsbml"]
+libraries = ["scipy", "libsbml", "cPickle"]
 for library in libraries:
     try:
         exec("import %s" % library)
@@ -57,12 +58,12 @@ class TestCobraIO(object):
         model1.optimize()
         model2.optimize()
         self.assertAlmostEqual(model1.solution.f, model2.solution.f,
-                places=3)
+                               places=3)
+
     def test_read(self):
-        #with catch_warnings(record=True) as w:
         read_model = self.read_function(self.test_file)
         self.compare_models(self.test_model, read_model)
-   
+
     def test_read_nonexistent(self):
         # make sure that an error is raised when given a nonexistent file
         self.assertRaises(IOError, self.read_function, "fake_file")
@@ -70,10 +71,10 @@ class TestCobraIO(object):
     def test_write_and_reread(self):
         test_output_filename = join(gettempdir(), split(self.test_file)[-1])
         self.write_function(self.test_model, test_output_filename)
-        #with catch_warnings(record=True) as w:
         reread_model = self.read_function(test_output_filename)
         self.compare_models(self.test_model, reread_model)
         unlink(test_output_filename)
+
 
 @skipIf(not libsbml, "libsbml required")
 class TestCobraIOSBML(TestCase, TestCobraIO):
@@ -83,6 +84,7 @@ class TestCobraIOSBML(TestCase, TestCobraIO):
         self.read_function = io.read_sbml_model
         self.write_function = io.write_sbml_model
 
+
 @skipIf(not libsbml, "libsbml required")
 class TestCobraIOSBMLfbc(TestCase, TestCobraIO):
     def setUp(self):
@@ -91,6 +93,7 @@ class TestCobraIOSBMLfbc(TestCase, TestCobraIO):
         self.read_function = io.read_sbml_model
         self.write_function = partial(io.write_sbml_model,
                                       use_fbc_package=True)
+
 
 @skipIf(not scipy, "scipy required")
 class TestCobraIOmat(TestCase, TestCobraIO):
@@ -108,9 +111,38 @@ class TestCobraIOjson(TestCase, TestCobraIO):
         self.read_function = io.load_json_model
         self.write_function = io.save_json_model
 
+
+class TestCobraIOPickle(TestCase, TestCobraIO):
+    def setUp(self):
+        self.test_model = create_test_model()
+        self.test_file = salmonella_pickle
+        self.load = load
+        self.dump = dump
+
+        def read_function(filename):
+            with open(filename, "rb") as infile:
+                return self.load(infile)
+
+        def write_function(model, filename):
+            with open(filename, "wb") as outfile:
+                self.dump(model, outfile)
+
+        self.read_function = read_function
+        self.write_function = write_function
+
+
+@skipIf(not cPickle, "cPickle required")
+class TestCobraIOcPickle(TestCobraIOPickle):
+    def setUp(self):
+        TestCobraIOPickle.setUp(self)
+        self.load = cPickle.load
+        self.dump = cPickle.dump
+
+
 # make a test suite to run all of the tests
 loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])
+
 
 def test_all():
     TextTestRunner(verbosity=2).run(suite)
