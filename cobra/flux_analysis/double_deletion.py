@@ -30,9 +30,11 @@ except:
 def double_reaction_deletion_fba(cobra_model, reaction_list1=None,
                                  reaction_list2=None, solver=None,
                                  number_of_processes=None,
-                                 return_frame=False, zero_cutoff=1e-12,
+                                 return_frame=False, zero_cutoff=1e-15,
                                  **kwargs):
     """setting n_processes=1 explicitly disables multiprocessing"""
+    if solver is None:
+        solver = get_solver_name()
     if reaction_list1 is None:
         reaction_indexes1 = range(len(cobra_model.reactions))
     else:
@@ -56,6 +58,14 @@ def double_reaction_deletion_fba(cobra_model, reaction_list1=None,
     n_results = len(reaction_to_result)
     results = numpy.empty((n_results, n_results))
     results.fill(numpy.nan)
+
+    wt_solution = solver_dict[solver].solve(cobra_model)
+    # Determine 0 flux reactions. If an optimal solution passes no flux
+    # through the deleted reactions, then we know removing them will
+    # not change the solution.
+    wt_flux = wt_solution.f
+    no_flux_reaction_indexes = {i for i, v in enumerate(wt_solution.x)
+                                if abs(v) < zero_cutoff}
 
     if number_of_processes == 1:  # explicitly disable multiprocessing
         PoolClass = CobraDeletionMockPool
@@ -85,11 +95,19 @@ def double_reaction_deletion_fba(cobra_model, reaction_list1=None,
                 if results[r1_result_index, r1_result_index] == 0 or \
                         results[r2_result_index, r2_result_index] == 0:
                     continue
-                pool.submit((r1_index, r2_index), label=(r1_result_index, r2_result_index))
+                # reactions removed carry no flux
+                if r1_index in no_flux_reaction_indexes and \
+                        r2_index in no_flux_reaction_indexes:
+                    results[r1_result_index, r2_result_index] = wt_flux
+                    continue
+                pool.submit((r1_index, r2_index),
+                            label=(r1_result_index, r2_result_index))
             # if it's a point only in the lower triangle, compute it
             # and put it in the upper triangle
-            elif r1_result_index not in column_index_set or r2_result_index not in row_index_set:
-                pool.submit((r1_index, r2_index), label=(r2_result_index, r1_result_index))
+            elif r1_result_index not in column_index_set or \
+                    r2_result_index not in row_index_set:
+                pool.submit((r1_index, r2_index),
+                            label=(r2_result_index, r1_result_index))
 
         # get results
         for result in pool.receive_all():
@@ -115,6 +133,8 @@ def double_reaction_deletion_fba(cobra_model, reaction_list1=None,
 def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
                              solver=None, number_of_processes=None,
                              return_frame=False, zero_cutoff=1e-12, **kwargs):
+    if solver is None:
+        solver = get_solver_name()
     if gene_list1 is None:
         gene_list1 = cobra_model.genes
     else:
@@ -151,6 +171,14 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
     results = numpy.empty((n_results, n_results))
     results.fill(numpy.nan)
 
+    wt_solution = solver_dict[solver].solve(cobra_model)
+    # Determine 0 flux reactions. If an optimal solution passes no flux
+    # through the deleted reactions, then we know removing them will
+    # not change the solution.
+    wt_flux = wt_solution.f
+    no_flux_reaction_indexes = {i for i, v in enumerate(wt_solution.x)
+                                if abs(v) < zero_cutoff}
+
     if number_of_processes == 1:  # explicitly disable multiprocessing
         PoolClass = CobraDeletionMockPool
     else:
@@ -160,8 +188,8 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
         # precompute all single deletions in the pool and store them along
         # the diagonal
         for gene_id, gene_result_index in iteritems(gene_id_to_result):
-            ko_reactions = find_gene_knockout_reactions(cobra_model,
-                (cobra_model.genes.get_by_id(gene_id),))
+            ko_reactions = find_gene_knockout_reactions(
+                cobra_model, (cobra_model.genes.get_by_id(gene_id),))
             ko_indexes = [cobra_model.reactions.index(i) for i in ko_reactions]
             pool.submit(ko_indexes, label=gene_result_index)
         for result_index, value in pool.receive_all():
@@ -172,6 +200,7 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
                 results[:, result_index] = 0.
             else:  # only the diagonal needs to be set
                 results[result_index, result_index] = value
+        # double deletions
         for gene1, gene2 in product(gene_list1, gene_list2):
             g1_result_index = gene_id_to_result[gene1.id]
             g2_result_index = gene_id_to_result[gene2.id]
@@ -180,15 +209,26 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
                 if results[g1_result_index, g1_result_index] == 0 or \
                         results[g2_result_index, g2_result_index] == 0:
                     continue
-                ko_reactions = find_gene_knockout_reactions(cobra_model, (gene1, gene2))
-                ko_indexes = [cobra_model.reactions.index(i) for i in ko_reactions]
-                pool.submit(ko_indexes, label=(g1_result_index, g2_result_index))
+                ko_reactions = find_gene_knockout_reactions(cobra_model,
+                                                            (gene1, gene2))
+                ko_indexes = [cobra_model.reactions.index(i)
+                              for i in ko_reactions]
+                # if all removed gene indexes carry no flux
+                if len(set(ko_indexes) - no_flux_reaction_indexes) == 0:
+                    results[g1_result_index, g2_result_index] = wt_flux
+                    continue
+                pool.submit(ko_indexes,
+                            label=(g1_result_index, g2_result_index))
             # if it's a point only in the lower triangle, compute it
             # and put it in the upper triangle
-            elif g1_result_index not in column_index_set or g2_result_index not in row_index_set:
-                ko_reactions = find_gene_knockout_reactions(cobra_model, (gene1, gene2))
-                ko_indexes = [cobra_model.reactions.index(i) for i in ko_reactions]
-                pool.submit(ko_indexes, label=(g2_result_index, g1_result_index))
+            elif g1_result_index not in column_index_set or \
+                    g2_result_index not in row_index_set:
+                ko_reactions = find_gene_knockout_reactions(
+                    cobra_model, (gene1, gene2))
+                ko_indexes = [cobra_model.reactions.index(i)
+                              for i in ko_reactions]
+                pool.submit(ko_indexes,
+                            label=(g2_result_index, g1_result_index))
 
         for result in pool.receive_all():
             value = result[1]
@@ -211,8 +251,9 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
         warn("could not import pandas.DataFrame")
 
     return {"x": [cobra_model.genes.get_by_id(i) for i in gene_ids1],
-             "y": [cobra_model.genes.get_by_id(i) for i in gene_ids2],
-             "data": results}
+            "y": [cobra_model.genes.get_by_id(i) for i in gene_ids2],
+            "data": results}
+
 
 def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
                     method='fba', single_deletion_growth_dict=None,
@@ -240,11 +281,11 @@ def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
     element_type: 'gene' or 'reaction'
 
     zero_cutoff: float
-        For single deletions which are assumed to be lethal, any double 
-        deletion will also be assumed to be lethal. This parameter sets 
-        behavior, set this value to a negative number. the abslolute value 
-        cutoff for considering a deletion to be lethal. To disable this
-        behavior, set this to a negative value.
+        For single deletions which are assumed to be lethal, any double
+        deletion will also be assumed to be lethal. Additionally, removing only
+        reactions with no flux will assume the result is the same as wild-type.
+        This parameter sets the cutoff for the absolute value to determine if a
+        flux is 0. To disable this optimization, set this to a negative value.
 
     solver: 'glpk', 'cglpk', 'gurobi', 'cplex' or None
 
@@ -265,23 +306,28 @@ def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
 
     if method == "fba":
         if element_type == "gene":
-            return double_gene_deletion_fba(cobra_model,
+            return double_gene_deletion_fba(
+                cobra_model,
                 gene_list1=element_list_1,
-                gene_list2=element_list_2, solver=solver,
+                gene_list2=element_list_2,
+                solver=solver,
                 return_frame=return_frame,
                 zero_cutoff=zero_cutoff,
                 number_of_processes=number_of_processes,
                 **kwargs)
         elif element_type == "reaction":
-            return double_reaction_deletion_fba(cobra_model,
+            return double_reaction_deletion_fba(
+                cobra_model,
                 reaction_list1=element_list_1,
-                reaction_list2=element_list_2, solver=solver,
+                reaction_list2=element_list_2,
+                solver=solver,
                 zero_cutoff=zero_cutoff,
                 return_frame=return_frame,
                 number_of_processes=number_of_processes,
                 **kwargs)
         else:
-            raise ValueError("element_type %s not gene or reaction" % element_type)
+            raise ValueError("element_type %s not gene or reaction" %
+                             element_type)
 
     if method != "moma":
         raise ValueError("method %s is not fba or moma" % method)
@@ -293,11 +339,12 @@ def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
         warn("parallel moma double deletion not implemented")
 
     if element_type == 'gene':
-        return double_gene_deletion_moma(cobra_model, gene_list_1=element_list_1,
-                                    gene_list_2=element_list_2, method=method,
-                                    single_deletion_growth_dict=single_deletion_growth_dict,
-                                    solver=solver,
-                                    error_reporting=error_reporting)
+        return double_gene_deletion_moma(
+            cobra_model, gene_list_1=element_list_1,
+            gene_list_2=element_list_2, method=method,
+            single_deletion_growth_dict=single_deletion_growth_dict,
+            solver=solver,
+            error_reporting=error_reporting)
     else:
         raise Exception("Double reaction deletion with moma not yet implemented")
 
