@@ -33,7 +33,26 @@ class Metabolite(Species):
         self._constraint_sense = 'E'
         self._bound = 0.
 
+    @property
+    def y(self):
+        """The shadow price for the metabolite in the most recent solution
 
+        Shadow prices are computed from the dual values of the bounds in
+        the solution.
+
+        """
+        try:
+            return self._model.solution.y_dict[self.id]
+        except Exception as e:
+            if self._model is None:
+                raise Exception("not part of a model")
+            if not hasattr(self._model, "solution") or \
+                    self._model.solution is None or \
+                    self._model.solution.status == "NA":
+                raise Exception("model has not been solved")
+            if self._model.solution.status != "optimal":
+                raise Exception("model solution was not optimal")
+            raise e  # Not sure what the exact problem was
 
     def remove_from_model(self, method='subtractive', **kwargs):
         """Removes the association from self.model

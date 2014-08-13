@@ -40,16 +40,9 @@ class Solution(Object):
         self.y_dict = y_dict
 
     def dress_results(self, model):
-        """Attaches results from FBA simulations to the Model's Reactions and
-        Metabolites.
-
-        model: The model that matches the Solution.
-
-        """
-        for k, v in zip(model.reactions, self.x):
-            k.x = v
-        for k, v in zip(model.metabolites, self.y):
-            k.y = v
+        """.. warning :: deprecated"""
+        from warning import warn
+        warn("unnecessary to call this deprecated function")
 
     def __repr__(self):
         if self.status == "NA" or self.status is None:

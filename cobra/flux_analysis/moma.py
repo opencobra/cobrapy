@@ -169,7 +169,6 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver=None,
              ' returning the problem, the_combined model, and the quadratic component for trouble shooting')
         return(the_problem, combined_model, quadratic_component)
              
-    combined_model.solution.dress_results(combined_model)
     solution = combined_model.solution
     mutant_dict = {}
     #Might be faster to quey based on mutant_model.reactions with the 'mutant_' prefix added
@@ -181,7 +180,6 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver=None,
     mutant_flux_total = sum(abs(x.x) for x in _reaction_list)
     #Need to use the new solution as there are multiple ways to achieve an optimal solution in
     #simulations with M matrices.
-    wt_model.solution.dress_results(wt_model)
     mutant_dict['status'] = solution.status
     #TODO: Deal with maximize / minimize issues for a reversible model that's been converted to irreversible
     mutant_dict['flux_difference'] = flux_difference = sum([(solution.x_dict[x.id[len('mutant_'):]]

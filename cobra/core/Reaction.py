@@ -118,7 +118,26 @@ class Reaction(Object):
                     warn("could not remove old gene %s from reaction %s" %
                          (g.id, self.id))
 
+    @property
+    def x(self):
+        """The flux through the reaction in the most recent solution
+        
+        Flux values are computed from the primal values of the variables in
+        the solution.
 
+        """
+        try:
+            return self._model.solution.x_dict[self.id]
+        except Exception as e:
+            if self._model is None:
+                raise Exception("not part of a model")
+            if not hasattr(self._model, "solution") or \
+                    self._model.solution is None or \
+                    self._model.solution.status == "NA":
+                raise Exception("model has not been solved")
+            if self._model.solution.status != "optimal":
+                raise Exception("model solution was not optimal")
+            raise e  # Not sure what the exact problem was
 
     @property
     def reversibility(self):
