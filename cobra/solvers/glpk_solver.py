@@ -16,10 +16,11 @@ variable_kind_dict = {'continuous': float, 'integer': int}
 status_dict = {'opt': 'optimal', 'nofeas': 'infeasible', 'unbnd': 'unbounded'}
 parameter_defaults = {
     'tolerance_feasibility': 1e-6,
-    'tolerance_optimality': 1e-6,  # should this be removed in favor of feas?
     'tolerance_integer': 1e-9,
     'lp_method': 1
 }
+
+METHOD_TYPES = {"auto": 2, "primal": 1, "dual": 3}
 
 def get_status(lp):
     status = lp.status
@@ -50,7 +51,7 @@ def format_solution(lp, cobra_model, **kwargs):
 def set_parameter(lp, parameter_name, parameter_value):
     """with pyglpk the parameters are set during the solve phase, with
     the exception of objective sense.
-    
+
     """
     if parameter_name == 'objective_sense':
         if parameter_value.lower() == 'maximize':
@@ -58,24 +59,19 @@ def set_parameter(lp, parameter_name, parameter_value):
         elif parameter_value.lower() == 'minimize':
             lp.obj.maximize = False
         else:
-            raise ValueError("objective_sense should be 'maximize' or 'minimize'")
+            raise ValueError("objective_sense should be "
+                             "'maximize' or 'minimize'")
     else:
-        warn("py glpk solver parameters are set during solve_problem")
+        # This will be made into an exception in the future
+        warn("pyglpk parameters (other than objective_sense) are set "
+             "during solve_problem")
 
 
 def create_problem(cobra_model, **kwargs):
     """Solver-specific method for constructing a solver problem from
     a cobra.Model.  This can be tuned for performance using kwargs
 
-
     """
-    the_parameters = parameter_defaults
-    if kwargs:
-        the_parameters = deepcopy(parameter_defaults)
-        the_parameters.update(kwargs)
-    if the_parameters.get('quadratic_component') is not None:
-        raise Exception('glpk cannot solve QPs')
-
     metabolite_to_index = {r: i for i, r in enumerate(cobra_model.metabolites)}
 
     lp = LPX()        # Create empty problem instance
@@ -99,7 +95,7 @@ def create_problem(cobra_model, **kwargs):
     objective_coefficients = []
     linear_constraints = []
     for c, the_reaction in izip(lp.cols, cobra_model.reactions):
-        c.name = the_reaction.id           
+        c.name = the_reaction.id
         c.kind = variable_kind_dict[the_reaction.variable_kind]
         c.bounds = the_reaction.lower_bound, the_reaction.upper_bound
         objective_coefficients.append(float(the_reaction.objective_coefficient))
@@ -114,7 +110,7 @@ def create_problem(cobra_model, **kwargs):
     lp.matrix = linear_constraints
 
     # make sure the objective sense is set in create_problem
-    objective_sense = the_parameters.get("objective_sense", "maximize")
+    objective_sense = kwargs.get("objective_sense", "maximize")
     set_parameter(lp, "objective_sense", objective_sense)
 
     return lp
@@ -185,30 +181,39 @@ def solve_problem(lp, **kwargs):
     lp: a pyGLPK 0.3 problem
 
     For pyGLPK it is necessary to provide the following parameters, if they
-    are not provided then the default settings will be used: tolerance_optimality,
+    are not provided then the default settings will be used: tolerance_feasibility,
     tolerance_integer, lp_method, and objective_sense
 
     """
     parameters = parameter_defaults.copy()
     parameters.update(kwargs)
+    if "quadratic_component" in parameters:
+        if parameters.pop('quadratic_component') is not None:
+            raise Exception('glpk cannot solve QPs')
     lp_args = {}  # only for lp
     extra_args = {}  # added to both lp and milp
-    # Shouldn't these be tolerance_feasibility?
-    lp_args["tol_bnd"] = parameters["tolerance_optimality"]
-    lp_args["tol_dj"] = parameters["tolerance_optimality"]
-    lp_args["meth"] = parameters["lp_method"]
+    lp_args["tol_bnd"] = parameters.pop("tolerance_feasibility")
+    lp_args["tol_dj"] = lp_args["tol_bnd"]
+    method = parameters.pop("lp_method")
+    if isinstance(method, int):
+        lp_args["meth"] = method
+    else:
+        lp_args["meth"] = METHOD_TYPES[method]
     if "time_limit" in parameters:
-        extra_args["tm_lim"] = int(parameters["time_limit"] * 1000)
+        extra_args["tm_lim"] = int(parameters.pop("time_limit") * 1000)
     if "iteration_limit" in parameters:
-        extra_args["it_lim"] = parameters["iteration_limit"]
+        extra_args["it_lim"] = parameters.pop("iteration_limit")
     if "objective_sense" in parameters:
-        set_parameter(lp, "objective_sense", parameters["objective_sense"])
+        set_parameter(lp, "objective_sense", parameters.pop("objective_sense"))
+    tol_int = parameters.pop("tolerance_integer")
+    if len(parameters) > 0:
+        raise ValueError("Unknown parameters: " + ", ".join(parameters))
     lp_args.update(extra_args)
     # solve the problem
     lp.simplex(**lp_args)
     if lp.kind == int:
         # For MILPs, it is faster to solve LP then move to MILP
-        lp.integer(tol_int=parameters["tolerance_integer"], **extra_args)
+        lp.integer(tol_int=tol_int, **extra_args)
     return get_status(lp)
 
 
@@ -251,7 +256,7 @@ def solve(cobra_model, **kwargs):
         the_parameters['lp_method'] = the_method
         try:
             status = solve_problem(lp, **the_parameters)
-        except:
+        except Exception as e:
             status = 'failed'
         if status == 'optimal':
             break
