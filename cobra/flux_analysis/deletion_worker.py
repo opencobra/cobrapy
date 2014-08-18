@@ -25,11 +25,22 @@ def compute_fba_deletion(lp, solver_object, model, indexes, **kwargs):
         reaction = model.reactions[i]
         old_bounds[i] = (reaction.lower_bound, reaction.upper_bound)
         s.change_variable_bounds(lp, i, 0., 0.)
-    s.solve_problem(lp, **kwargs)
+    try:
+        s.solve_problem(lp, **kwargs)
+    except Exception as e:
+        return RuntimeError("solver failure when deleting %s: %s" %
+                                (str(indexes), repr(e)))
     # reset the problem
     for index, bounds in iteritems(old_bounds):
         s.change_variable_bounds(lp, index, bounds[0], bounds[1])
-    return s.get_objective_value(lp) if s.get_status(lp) == "optimal" else 0.
+    status = s.get_status(lp)
+    if status == "infeasible":
+        return 0.
+    elif status == "optimal":
+        return s.get_objective_value(lp)
+    else:
+        return RuntimeError("solver failure (status %s) for when deleting %s" %
+                            (status, str(indexes)))
 
 
 class CobraDeletionPool(object):
@@ -85,12 +96,18 @@ class CobraDeletionPool(object):
     def receive_one(self):
         """This function blocks"""
         self.n_complete += 1
-        return self.output_queue.get()
+        result = self.output_queue.get()
+        if isinstance(result[1], Exception):
+            raise result[1]
+        return result
 
     def receive_all(self):
         while self.n_complete < self.n_submitted:
             self.n_complete += 1
-            yield self.output_queue.get()
+            result = self.output_queue.get()
+            if isinstance(result[1], Exception):
+                raise result[1]
+            yield result
 
     @property
     def pids(self):
@@ -121,15 +138,20 @@ class CobraDeletionMockPool(object):
 
     def receive_one(self):
         indexes, label = self.job_queue.pop()
-        return (label, compute_fba_deletion(self.lp, self.solver, self.model,
-                                            indexes, **self.solver_args))
+        result = compute_fba_deletion(self.lp, self.solver, self.model,
+                                      indexes, **self.solver_args)
+        if isinstance(result, Exception):
+            raise result
+        return (label, result)
 
     def receive_all(self):
         for i in range(len(self.job_queue)):
             indexes, label = self.job_queue.pop()
-            yield (label, compute_fba_deletion(self.lp, self.solver,
-                                               self.model, indexes,
-                                               **self.solver_args))
+            result = compute_fba_deletion(self.lp, self.solver, self.model,
+                                          indexes, **self.solver_args)
+            if isinstance(result, Exception):
+                raise result
+            yield (label, result)
 
     def start(self):
         None
