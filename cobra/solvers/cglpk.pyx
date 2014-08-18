@@ -77,7 +77,7 @@ cdef check_error(int result):
         raise RuntimeError("glp_simplex failed with unknown error code 0x%x" %
                            result)
     raise RuntimeError("glp_simplex failed with error code %s: %s" %
-                    (ERROR_CODES[result], ERROR_MESSAGES[result]))
+                       (ERROR_CODES[result], ERROR_MESSAGES[result]))
 
 
 # Do not want to print out to terminal. Even when not verbose, output
@@ -249,7 +249,10 @@ cdef class GLP:
         # because glpk itself is not thread safe
 
         #with nogil:  # we can use this if glpk ever gets thread-safe malloc
-        check_error(glp_simplex(glp, &parameters))
+        # try to solve the problem with the existing basis
+        if glp_simplex(glp, &parameters) != 0:
+            glp_adv_basis(glp, 0)
+            check_error(glp_simplex(glp, &parameters))
         if self.is_mip():
             self.integer_parameters.tm_lim = self.parameters.tm_lim
             self.integer_parameters.msg_lev = self.parameters.msg_lev

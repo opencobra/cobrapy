@@ -114,6 +114,9 @@ cdef extern from "glpk.h":
     int glp_term_out(int flag)
     void glp_term_hook(int (*func)(void *info, const char *s), void *info)
 
+    int glp_warm_up(glp_prob *P)
+    void glp_adv_basis(glp_prob *P, int flags)
+
     # constants
 
     # constants for smcp control
