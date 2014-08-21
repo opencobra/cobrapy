@@ -141,6 +141,10 @@ def revert_to_reversible(cobra_model, update_solution=True):
                          if x.reflection is not None and
                          x.id.endswith('_reverse')]
 
+    # If there are no reverse reactions, then there is nothing to do
+    if len(reverse_reactions) == 0:
+        return
+
     for reverse in reverse_reactions:
         forward = reverse.reflection
         forward.lower_bound = -reverse.upper_bound
@@ -150,8 +154,14 @@ def revert_to_reversible(cobra_model, update_solution=True):
     #probably speed things up here.
     cobra_model.remove_reactions(reverse_reactions)
     # fix the solution
-    if update_solution and cobra_model.solution is not None:
+    if update_solution and cobra_model.solution is not None and \
+            cobra_model.solution.status != "NA":
         x_dict = cobra_model.solution.x_dict
+        # Check if the model was optimized while it was still reversible. If so,
+        # then the solution does not need to be fixed.
+        if reverse_reactions[0].id not in x_dict:
+            return
+        # Update x and x_dict to correct for reverse flux.
         for reverse in reverse_reactions:
             forward = reverse.reflection
             x_dict[forward.id] -= x_dict.pop(reverse.id)

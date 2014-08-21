@@ -62,6 +62,17 @@ class TestCobraFluxAnalysis(TestCase):
         model2.optimize()
         self.assertAlmostEqual(model1.solution.f, model2.solution.f, places=3)
 
+        # Ensure revert_to_reversible is robust to solutions generated both
+        # before and after reversibility conversion, or not solved at all.
+        model3 = create_test_model()
+        model3.optimize()
+        modify.convert_to_irreversible(model3)
+        modify.revert_to_reversible(model3)
+        self.assertAlmostEqual(model1.solution.f, model3.solution.f, places=3)
+
+        model4 = create_test_model()
+        modify.convert_to_irreversible(model4)
+        modify.revert_to_reversible(model4)
 
     def test_gene_knockout_computation(self):
         cobra_model = self.model
