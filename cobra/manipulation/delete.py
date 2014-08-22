@@ -76,8 +76,48 @@ def undelete_model_genes(cobra_model):
     cobra_model._trimmed = False
 
 
-def find_gene_knockout_reactions(cobra_model, gene_list):
-    """identify reactions which will be disabled when genes are knocked out"""
+def get_compiled_gene_reaction_rules(cobra_model):
+    """Generates a dict of compiled gene_reaction_rules
+
+    Any gene_reaction_rule expressions which cannot be compiled or do not
+    evaluate after compiling will be excluded. The result can be used in the
+    find_gene_knockout_reactions function to speed up evaluation of these
+    rules.
+
+    """
+    rules = {}
+    # some gene names can not be put through eval
+    bad_genes = {g for g in cobra_model.genes if g.id[0].isdigit() or
+                 not g.id.isalnum()}
+    for reaction in cobra_model.reactions:
+        try:
+            if len(bad_genes.intersection(reaction.genes)) > 0:
+                continue
+            rules[reaction.id] = compile(reaction.gene_reaction_rule,
+                                         '<string>', 'eval')
+        except SyntaxError:
+            # This is necessary because some gene_reaction_rules do not
+            # compile.
+            None
+    return rules
+
+
+def find_gene_knockout_reactions(cobra_model, gene_list,
+                                 compiled_gene_reaction_rules={}):
+    """identify reactions which will be disabled when the genes are knocked out
+
+    cobra_model: :class:`~cobra.core.Model.Model`
+
+    gene_list: iterable of :class:`~cobra.core.Gene.Gene`
+
+    compiled_gene_reaction_rules: dict of {reaction_id: compiled_string}
+        If provided, this gives pre-compiled gene_reaction_rule strings.
+        The compiled rule strings can be evaluated much faster. If a rule
+        is not provided, the regular expression evaluation will be used.
+        Because not all gene_reaction_rule strings can be evaluated, this
+        dict must exclude any rules which can not be used with eval.
+
+    """
 
     potential_reactions = set()
     for x in gene_list:
@@ -85,6 +125,18 @@ def find_gene_knockout_reactions(cobra_model, gene_list):
 
     knocked_out_reactions = []
     for the_reaction in potential_reactions:
+        # Attempt to use the compiled gene reaction rule if provided
+        if the_reaction.id in compiled_gene_reaction_rules:
+            gene_state = {i.id: False if i in gene_list else True
+                          for i in the_reaction._genes}
+            result = eval(compiled_gene_reaction_rules[the_reaction.id],
+                          {}, gene_state)
+            if result is False:
+                knocked_out_reactions.append(the_reaction)
+                continue
+            elif result is True:
+                continue
+
         # operates on a copy
         gene_reaction_rule = and_re.sub("*", the_reaction.gene_reaction_rule)
         gene_reaction_rule = or_re.sub("+", gene_reaction_rule)

@@ -13,7 +13,8 @@ import numpy
 
 from ..solvers import get_solver_name, solver_dict
 from ..external.six import iteritems, string_types
-from ..manipulation.delete import find_gene_knockout_reactions
+from ..manipulation.delete import find_gene_knockout_reactions, \
+    get_compiled_gene_reaction_rules
 from .deletion_worker import CobraDeletionPool, CobraDeletionMockPool
 
 try:
@@ -147,6 +148,10 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
         gene_list2 = [cobra_model.genes.get_by_id(i)
                       if isinstance(i, string_types) else i
                       for i in gene_list2]
+    # Because each gene reaction rule will be evaluated multiple times
+    # the reaction has multiple associated genes being deleted, compiling
+    # the gene reaction rules ahead of time increases efficiency greatly.
+    compiled_rules = get_compiled_gene_reaction_rules(cobra_model)
     # Store results in a matrix. The gene_id_to_result dict will map each
     # gene id to the index in the result matrix
     gene_ids1 = [i.id for i in gene_list1]
@@ -209,8 +214,8 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
                 if results[g1_result_index, g1_result_index] == 0 or \
                         results[g2_result_index, g2_result_index] == 0:
                     continue
-                ko_reactions = find_gene_knockout_reactions(cobra_model,
-                                                            (gene1, gene2))
+                ko_reactions = find_gene_knockout_reactions(
+                    cobra_model, (gene1, gene2), compiled_rules)
                 ko_indexes = [cobra_model.reactions.index(i)
                               for i in ko_reactions]
                 # if all removed gene indexes carry no flux
@@ -224,7 +229,7 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
             elif g1_result_index not in column_index_set or \
                     g2_result_index not in row_index_set:
                 ko_reactions = find_gene_knockout_reactions(
-                    cobra_model, (gene1, gene2))
+                    cobra_model, (gene1, gene2), compiled_rules)
                 ko_indexes = [cobra_model.reactions.index(i)
                               for i in ko_reactions]
                 pool.submit(ko_indexes,

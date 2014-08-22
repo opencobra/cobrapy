@@ -78,21 +78,49 @@ class TestCobraFluxAnalysis(TestCase):
 
     def test_gene_knockout_computation(self):
         cobra_model = self.model
+
+        # helper functions for running tests
         delete_model_genes = delete.delete_model_genes
-        get_removed = lambda m: {x.id for x in m._trimmed_reactions}
+        find_gene_knockout_reactions = delete.find_gene_knockout_reactions
+
+        def find_gene_knockout_reactions_fast(cobra_model, gene_list):
+            compiled_rules = delete.get_compiled_gene_reaction_rules(
+                cobra_model)
+            return find_gene_knockout_reactions(
+                cobra_model, gene_list,
+                compiled_gene_reaction_rules=compiled_rules)
+
+        def get_removed(m): return {x.id for x in m._trimmed_reactions}
+
+        def test_computation(m, gene_ids, expected_reaction_ids):
+            genes = [m.genes.get_by_id(i) for i in gene_ids]
+            expected_reactions = {m.reactions.get_by_id(i)
+                                  for i in expected_reaction_ids}
+            removed1 = set(find_gene_knockout_reactions(m, genes))
+            removed2 = set(find_gene_knockout_reactions_fast(m, genes))
+            self.assertEqual(removed1, expected_reactions)
+            self.assertEqual(removed2, expected_reactions)
+            delete.delete_model_genes(m, gene_ids, cumulative_deletions=False)
+            self.assertEqual(get_removed(m), expected_reaction_ids)
+            delete.undelete_model_genes(m)
+
         gene_list = ['STM1067', 'STM0227']
         dependent_reactions = {'3HAD121', '3HAD160', '3HAD80', '3HAD140',
                                '3HAD180', '3HAD100', '3HAD181', '3HAD120',
                                '3HAD60', '3HAD141', '3HAD161', 'T2DECAI',
                                '3HAD40'}
-        delete_model_genes(cobra_model, gene_list)
-        self.assertEqual(get_removed(cobra_model), dependent_reactions)
-        # cumulative
+        test_computation(cobra_model, gene_list, dependent_reactions)
+        test_computation(cobra_model, ['STM4221'], {'PGI'})
+        test_computation(cobra_model, ['STM1746.S'], {'4PEPTabcpp'})
+        # test cumulative behavior
+        delete_model_genes(cobra_model, gene_list[:1])
+        delete_model_genes(cobra_model, gene_list[1:],
+                           cumulative_deletions=True)
         delete_model_genes(cobra_model, ["STM4221"],
                            cumulative_deletions=True)
         dependent_reactions.add('PGI')
         self.assertEqual(get_removed(cobra_model), dependent_reactions)
-        # non-cumulative
+        # non-cumulative following cumulative
         delete_model_genes(cobra_model, ["STM4221"],
                            cumulative_deletions=False)
         self.assertEqual(get_removed(cobra_model), {'PGI'})
@@ -104,23 +132,25 @@ class TestCobraFluxAnalysis(TestCase):
         test_reaction_1 = Reaction("test1")
         test_reaction_1.gene_reaction_rule = "eggs or (spam and eggspam)"
         test_model.add_reaction(test_reaction_1)
-        delete.delete_model_genes(test_model, ["eggs"])
-        self.assertEqual(get_removed(test_model), set())
-        delete_model_genes(test_model, ["spam"], cumulative_deletions=True)
-        self.assertEqual(get_removed(test_model), {'test1'})
+        test_computation(test_model, ["eggs"], set())
+        test_computation(test_model, ["eggs", "spam"], {'test1'})
         # test computation with nested boolean expression
-        delete.undelete_model_genes(test_model)
         test_reaction_1.gene_reaction_rule = \
             "g1 and g2 and (g3 or g4 or (g5 and g6))"
-        delete_model_genes(test_model, ["g3"], cumulative_deletions=False)
-        self.assertEqual(get_removed(test_model), set())
-        delete_model_genes(test_model, ["g1"], cumulative_deletions=False)
-        self.assertEqual(get_removed(test_model), {'test1'})
-        delete_model_genes(test_model, ["g5"], cumulative_deletions=False)
-        self.assertEqual(get_removed(test_model), set())
-        delete_model_genes(test_model, ["g3", "g4", "g5"],
-                           cumulative_deletions=False)
-        self.assertEqual(get_removed(test_model), {'test1'})
+        test_computation(test_model, ["g3"], set())
+        test_computation(test_model, ["g1"], {'test1'})
+        test_computation(test_model, ["g5"], set())
+        test_computation(test_model, ["g3", "g4", "g5"], {'test1'})
+        # test computation when gene names are python expressions
+        test_reaction_1.gene_reaction_rule = "g1 and (for or in)"
+        test_computation(test_model, ["for", "in"], {'test1'})
+        test_computation(test_model, ["for"], set())
+        test_reaction_1.gene_reaction_rule = "g1 and g2 and g2.conjugate"
+        test_computation(test_model, ["g2"], {"test1"})
+        test_computation(test_model, ["g2.conjugate"], {"test1"})
+        test_reaction_1.gene_reaction_rule = "g1 and (try:' or 'except:1)"
+        test_computation(test_model, ["try:'"], set())
+        test_computation(test_model, ["try:'", "'except:1"], {"test1"})
 
     def test_single_deletion(self):
         cobra_model = self.model
@@ -178,8 +208,11 @@ class TestCobraFluxAnalysis(TestCase):
         s_y = the_solution['y']
         for gene_x, rates_x in zip(s_x, s_data):
             for gene_y, the_rate in zip(s_y, rates_x):
-                self.assertAlmostEqual(growth_dict[gene_x][gene_y], the_rate,
-                                       places=2)
+                self.assertAlmostEqual(
+                    growth_dict[gene_x][gene_y], the_rate, places=2,
+                    msg="%.3f != %.3f for (%s, %s)" % 
+                    (growth_dict[gene_x][gene_y], the_rate,
+                     gene_x.id, gene_y.id))
 
     def test_flux_variability(self):
         fva_results = {
