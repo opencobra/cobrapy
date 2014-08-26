@@ -74,6 +74,14 @@ cdef dict METHODS = {
     "dual": GLP_DUAL
 }
 
+
+cdef int downcast_pos_size(Py_ssize_t size):
+    if size > INT_MAX:
+        raise ValueError("Integer overflow %d > %d" % (size, INT_MAX))
+    else:
+        return <int> size
+
+
 cdef check_error(int result):
     if result == 0:
         return
@@ -113,7 +121,7 @@ cdef class GLP:
         glp_delete_prob(self.glp)
 
     def __init__(self, cobra_model=None):
-        cdef int bound_type, index, m, n, n_values, i
+        cdef int bound_type, index, n, n_values
         cdef glp_prob *glp
         cdef int *c_rows
         cdef int *c_cols
@@ -126,12 +134,10 @@ cdef class GLP:
         if cobra_model is None:
             return
         glp = self.glp
-        m = len(cobra_model.metabolites)
-        n = len(cobra_model.reactions)
-        glp_add_rows(glp, m)
-        glp_add_cols(glp, n)
+        glp_add_rows(glp, downcast_pos_size(len(cobra_model.metabolites)))
+        glp_add_cols(glp, downcast_pos_size(len(cobra_model.reactions)))
 
-        metabolite_id_to_index = {r.id: i for i, r
+        metabolite_id_to_index = {r.id: index for index, r
                                   in enumerate(cobra_model.metabolites, 1)}
 
         linear_constraint_rows = []
@@ -176,16 +182,16 @@ cdef class GLP:
         
         # set constraint marix
         # first copy the python lists to c arrays
-        n_values = len(linear_constraint_rows)
+        n_values = downcast_pos_size(len(linear_constraint_rows))
         c_cols = <int *> malloc((n_values + 1) * sizeof(int))
         c_rows = <int *> malloc((n_values + 1) * sizeof(int))
         c_values = <double *> malloc((n_values + 1) * sizeof(double))
         if c_rows is NULL or c_rows is NULL or c_values is NULL:
             raise MemoryError()
-        for i in range(n_values):
-            c_rows[i + 1] = linear_constraint_rows[i]
-            c_cols[i + 1] = linear_constraint_cols[i]
-            c_values[i + 1] = float(linear_constraint_values[i])
+        for index in range(n_values):
+            c_rows[index + 1] = linear_constraint_rows[index]
+            c_cols[index + 1] = linear_constraint_cols[index]
+            c_values[index + 1] = float(linear_constraint_values[index])
         # actually set the values
         glp_load_matrix(glp, n_values, c_rows, c_cols, c_values)
         # free the c arrays
