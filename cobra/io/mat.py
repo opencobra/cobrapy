@@ -1,6 +1,9 @@
 #This section is used to load the appropriate package for writing mat files
 #from Python or Jython.  Currently, only the section for Python that depends
 #on scipy has been written.
+
+import re
+
 from numpy import array, object as np_object
 from scipy.io import loadmat, savemat
 from scipy.sparse import coo_matrix
@@ -21,6 +24,21 @@ except ImportError:
 
 
 from .. import Model, Metabolite, Reaction, Formula
+
+
+bracket_re = re.compile("r\[[a-z]\]$")
+underscore_re = re.compile(r"_[a-z]$")
+
+
+def get_id_comparment(id):
+    """extract the compartment from the id string"""
+    bracket_search = bracket_re.findall(id)
+    if len(bracket_search) == 1:
+        return bracket_search[0][1]
+    underscore_search = underscore_re.findall(id)
+    if len(underscore_search) == 1:
+        return underscore_search[0][1]
+    return None
 
 
 def _cell(x):
@@ -72,6 +90,7 @@ def load_matlab_model(infile_path, variable_name=None):
         for i, name in enumerate(m["mets"][0, 0]):
             new_metabolite = Metabolite()
             new_metabolite.id = str(name[0][0])
+            new_metabolite.compartment = get_id_comparment(new_metabolite.id)
             try:
                 new_metabolite.name = str(m["metNames"][0, 0][i][0][0])
                 new_metabolite.formula = Formula(str(m["metFormulas"][0][0][i][0][0]))

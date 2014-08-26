@@ -41,7 +41,7 @@ class TestCobraIO(object):
                              getattr(model2.reactions[10], attr))
             self.assertEqual(getattr(model1.reactions[-1], attr),
                              getattr(model2.reactions[-1], attr))
-        for attr in ("id", "name"):
+        for attr in ("id", "name", "compartment"):
             self.assertEqual(getattr(model1.metabolites[0], attr),
                              getattr(model2.metabolites[0], attr))
             self.assertEqual(getattr(model1.metabolites[10], attr),

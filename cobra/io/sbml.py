@@ -519,11 +519,12 @@ def add_sbml_species(sbml_model, cobra_metabolite, note_start_tag,
         sbml_species.setName(cobra_metabolite.name)
     else:
         sbml_species.setName(cobra_metabolite.id)
-    try:
-        sbml_species.setCompartment(the_compartment)
-    except:
-        warn('metabolite failed: ' + the_id)
-        return cobra_metabolite
+    if the_compartment is not None:
+        try:
+            sbml_species.setCompartment(the_compartment)
+        except:
+            warn('metabolite failed: ' + the_id)
+            return cobra_metabolite
     if cobra_metabolite.charge is not None:
         sbml_species.setCharge(cobra_metabolite.charge)
     if hasattr(cobra_metabolite.formula, 'id') or \
