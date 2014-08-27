@@ -1,17 +1,24 @@
 #!/usr/bin/env python
+"""Get version identification from git
+
+See the documentation of get_version for more information
+
+"""
 from __future__ import print_function
+
+from subprocess import check_output, CalledProcessError
+from os import path, name, devnull, environ, listdir
 
 __all__ = ("get_version",)
 
-from subprocess import check_output
-from os import path, name, devnull
-current_directory = path.dirname(path.abspath(__file__))
-version_file = path.join(current_directory, "VERSION")
+CURRENT_DIRECTORY = path.dirname(path.abspath(__file__))
+VERSION_FILE = path.join(CURRENT_DIRECTORY, "VERSION")
 
-git_command = "git"
+GIT_COMMAND = "git"
+
 if name == "nt":
     def find_git_on_windows():
-        from subprocess import CalledProcessError
+        """find the path to the git executable on windows"""
         # first see if git is in the path
         try:
             check_output(["where", "/Q", "git"])
@@ -19,17 +26,16 @@ if name == "nt":
             return "git"
         # catch the exception thrown if git was not found
         except CalledProcessError:
-            None
+            pass
         # There are several locations git.exe may be hiding
         possible_locations = []
-        from os import environ, listdir
         # look in program files for msysgit
         if "PROGRAMFILES(X86)" in environ:
-            possible_locations.append("%s/Git/cmd/git.exe" % \
-                environ["PROGRAMFILES(X86)"])
+            possible_locations.append("%s/Git/cmd/git.exe" %
+                                      environ["PROGRAMFILES(X86)"])
         if "PROGRAMFILES" in environ:
-            possible_locations.append("%s/Git/cmd/git.exe" % \
-                environ["PROGRAMFILES"])
+            possible_locations.append("%s/Git/cmd/git.exe" %
+                                      environ["PROGRAMFILES"])
         # look for the github version of git
         if "LOCALAPPDATA" in environ:
             github_dir = "%s/GitHub" % environ["LOCALAPPDATA"]
@@ -37,32 +43,33 @@ if name == "nt":
                 for subdir in listdir(github_dir):
                     if not subdir.startswith("PortableGit"):
                         continue
-                    possible_locations.append("%s/%s/bin/git.exe" % \
-                        (github_dir, subdir))
+                    possible_locations.append("%s/%s/bin/git.exe" %
+                                              (github_dir, subdir))
         for possible_location in possible_locations:
             if path.isfile(possible_location):
                 return possible_location
         # git was not found
         return "git"
 
-    git_command = find_git_on_windows()
+    GIT_COMMAND = find_git_on_windows()
 
 
 def call_git_describe(abbrev=7):
+    """return the string output of git desribe"""
     try:
         with open(devnull, "w") as fnull:
-            arguments = [git_command, "describe", "--tags",
+            arguments = [GIT_COMMAND, "describe", "--tags",
                          "--abbrev=%d" % abbrev]
-            return check_output(arguments, cwd=current_directory,
+            return check_output(arguments, cwd=CURRENT_DIRECTORY,
                                 stderr=fnull).decode("ascii").strip()
-    except:
+    except (OSError, CalledProcessError):
         return None
 
-def get_version_git(pep440=False):
-    git_str = call_git_describe()
+
+def format_git_describe(git_str, pep440=False):
+    """format the result of calling 'git describe' as a python version"""
     if git_str is None:
         return None
-    git_split = git_str.split("-")
     if "-" not in git_str:  # currently at a tag
         return git_str
     else:
@@ -72,22 +79,28 @@ def get_version_git(pep440=False):
         if pep440:  # does not allow git hash afterwards
             return git_str.split("-")[0]
         else:
-            return git_str
+            return git_str.replace("-g", "+git")
 
 
 def read_release_version():
+    """Read version information from VERSION file"""
     try:
-        with open(version_file, "r") as infile:
+        with open(VERSION_FILE, "r") as infile:
             version = str(infile.read().strip())
         if len(version) == 0:
             version = None
         return version
-    except:
+    except IOError:
         return None
 
 
 def get_version(pep440=False):
     """Tracks the version number.
+
+    pep440: bool
+        When True, this function returns a version string suitable for
+        a release as defined by PEP 440. When False, the githash (if
+        available) will be appended to the version string.
 
     The file VERSION holds the version information. If this is not a git
     repository, then it is reasonable to assume that the version is not
@@ -99,9 +112,10 @@ def get_version(pep440=False):
 
     The file VERSION will need to be changed by manually. This should be done
     before running git tag (set to the same as the version in the tag).
+
     """
 
-    git_version = get_version_git(pep440=pep440)
+    git_version = format_git_describe(call_git_describe(), pep440=pep440)
     if git_version is None:  # not a git repository
         return read_release_version()
     return git_version
