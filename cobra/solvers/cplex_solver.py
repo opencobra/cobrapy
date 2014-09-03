@@ -287,7 +287,7 @@ def update_problem(lp, cobra_model, **kwargs):
 def solve_problem(lp, **kwargs):
     # Update parameter settings if provided
     for k, v in kwargs.iteritems():
-        set_parameter(lp, parameter_mappings[k], v)
+        set_parameter(lp, k, v)
     lp.solve()
     # If the solver takes more than 0.1 s with a hot start it is likely stuck
     return get_status(lp)
