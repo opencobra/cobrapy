@@ -132,13 +132,16 @@ def save_matlab_model(model, file_name):
     file_name : str or file-like object
 
     """
+    mat = create_mat_dict(model)
+    savemat(file_name, {str(model.description): mat},
+             appendmat=True, oned_as="column")
+
+def create_mat_dict(model):
+    """create a dict mapping model attributes to arrays"""
     model = model.to_array_based_model()
     rxns = model.reactions
     mets = model.metabolites
     mat = dicttype()
-    csense = ""
-    for m in mets:
-        csense += m._constraint_sense
     mat["mets"] = _cell(mets.list_attr("id"))
     mat["metNames"] = _cell(mets.list_attr("name"))
     mat["metFormulas"] = _cell([str(m.formula) for m in mets])
@@ -147,7 +150,7 @@ def save_matlab_model(model, file_name):
     mat["rxns"] = _cell(rxns.list_attr("id"))
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
     mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
-    mat["csense"] = csense
+    mat["csense"] = "".join(model._constraint_sense)
     mat["S"] = model.S
     mat["lb"] = array(rxns.list_attr("lower_bound"))
     mat["ub"] = array(rxns.list_attr("upper_bound"))
@@ -155,5 +158,4 @@ def save_matlab_model(model, file_name):
     mat["c"] = array(rxns.list_attr("objective_coefficient"))
     mat["rev"] = array(rxns.list_attr("reversibility"))
     mat["description"] = str(model.description)
-    savemat(file_name, {str(model.description): mat},
-             appendmat=True, oned_as="column")
+    return mat
