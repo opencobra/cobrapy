@@ -112,6 +112,10 @@ def load_matlab_model(infile_path, variable_name=None):
                 new_reaction.name = str(m["rxnNames"][0, 0][i][0][0])
             except:
                 pass
+            try:
+                new_reaction.subsystem = str(m['subSystems'][0, 0][i][0][0])
+            except:
+                pass
             new_reactions.append(new_reaction)
         model.add_reactions(new_reactions)
         coo = coo_matrix(m["S"][0, 0])
