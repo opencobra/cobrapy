@@ -94,6 +94,14 @@ def read_release_version():
         return None
 
 
+def update_release_version():
+    """Update VERSION file"""
+    version = get_version(pep440=True)
+    with open(VERSION_FILE, "w") as outfile:
+        outfile.write(version)
+        outfile.write("\n")
+
+
 def get_version(pep440=False):
     """Tracks the version number.
 

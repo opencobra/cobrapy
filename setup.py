@@ -9,7 +9,7 @@ from os.path import isfile, abspath, dirname, join
 
 # import version to get the version string
 path.insert(0, abspath(join(dirname(__file__), "cobra")))
-from version import get_version
+from version import get_version, update_release_version
 path.pop(0)
 __version = get_version(pep440=True)
 
@@ -19,6 +19,11 @@ try:
     import multiprocessing
 except:
     None
+
+# If building something for distribution, ensure the VERSION
+# file is up to date
+if "sdist" in argv or "bdist_wheel" in argv:
+    update_release_version()
 
 # cython is optional for building. The c file can be used directly. However,
 # for certain functions, the c file must be generated, which requires cython.
