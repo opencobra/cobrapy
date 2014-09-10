@@ -131,7 +131,7 @@ class DictList(list):
                 # if the above succeeded, then the id must be present
                 # twice in the list being added
                 raise ValueError("id %s is non-unique. "
-                                 "Is it present twice?" % str(id))
+                                 "Is it present twice?" % str(the_id))
 
     def _extend_nocheck(self, iterable):
         """extends without checking for uniqueness
