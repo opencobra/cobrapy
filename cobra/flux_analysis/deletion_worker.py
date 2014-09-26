@@ -30,14 +30,15 @@ def compute_fba_deletion(lp, solver_object, model, indexes, **kwargs):
     except Exception as e:
         return RuntimeError("solver failure when deleting %s: %s" %
                                 (str(indexes), repr(e)))
-    # reset the problem
+    status = s.get_status(lp)
+    objective = s.get_objective_value(lp) if status == "optimal" else 0.
+
+    # reset the problem, which must be done after reading the solution
     for index, bounds in iteritems(old_bounds):
         s.change_variable_bounds(lp, index, bounds[0], bounds[1])
-    status = s.get_status(lp)
-    if status == "infeasible":
-        return 0.
-    elif status == "optimal":
-        return s.get_objective_value(lp)
+
+    if status == "infeasible" or status == "optimal":
+        return objective
     else:
         return RuntimeError("solver failure (status %s) for when deleting %s" %
                             (status, str(indexes)))
