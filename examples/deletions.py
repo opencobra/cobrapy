@@ -18,8 +18,8 @@ cobra_model = create_test_model(salmonella_pickle)
 
 ### Single Deletions
 
-                Perform all single gene deletions on a model
-                
+# Perform all single gene deletions on a model
+
 start = time()  # start timer()
 growth_rates, statuses = single_deletion(cobra_model)
 print("All single gene deletions completed in %.2f sec" % (time() - start))

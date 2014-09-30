@@ -14,3 +14,4 @@ glpk.h
 libglpk.a
 .idea/
 .ipynb_checkpoints
+examples/faq.py

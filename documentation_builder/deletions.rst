@@ -20,8 +20,8 @@ This example is available as an IPython
 Single Deletions
 ----------------
 
-                Perform all single gene deletions on a model
-                
+Perform all single gene deletions on a model
+
 .. code:: python
 
     start = time()  # start timer()

@@ -59,11 +59,11 @@ with open("test_output.pickle", "wb") as outfile:
 
 cobra.io.read_sbml_model(cobra.test.salmonella_sbml)
 # Output:
-# <Model Salmonella_consensus_build_1 at 0x3e24d90>
+# <Model Salmonella_consensus_build_1 at 0x4400990>
 
 cobra.io.read_sbml_model(cobra.test.salmonella_fbc_sbml)
 # Output:
-# <Model Salmonella_consensus_build_1 at 0xf9dda50>
+# <Model Salmonella_consensus_build_1 at 0xfe325d0>
 
 cobra.io.write_sbml_model(salmonella_model, "test.xml",
                           use_fbc_package=False)
@@ -84,15 +84,15 @@ cobra.io.write_sbml_model(salmonella_model, "test_fbc.xml",
 
 cobra.io.load_matlab_model(cobra.test.ecoli_mat, variable_name="iJO1366")
 # Output:
-# <Model iJO1366 at 0xf9dde90>
+# <Model iJO1366 at 0x132e9dd0>
 
 # If the mat file contains only a single model, cobra can figure out which
 # variable to read from, and the variable_name paramter is unnecessary.
 
 cobra.io.load_matlab_model(cobra.test.ecoli_mat)
 # Output:
-# <Model iJO1366 at 0xf9ddf90>
+# <Model iJO1366 at 0xd9e1c10>
 
 # Saving models to mat files is also relatively straightforward
 
-cobra.io.save_matlab_model(ecoli_model, "output_path.mat")
+cobra.io.save_matlab_model(ecoli_model, "test_ecoli_model.mat")

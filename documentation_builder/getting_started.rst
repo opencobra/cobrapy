@@ -44,13 +44,13 @@ because of
 
 .. parsed-literal::
 
-    <Reaction 2AGPA180tipp at 0x6613f90>
+    <Reaction 2AGPA180tipp at 0x5446f50>
 
 
 
 Addictionally, items can be retrived by their id using the get\_by\_id()
 function. For example, to get the cytosolic atp metabolite object (the
-id is “atp\_c”), we can do the following:
+id is "atp\_c"), we can do the following:
 
 .. code:: python
 
@@ -60,7 +60,7 @@ id is “atp\_c”), we can do the following:
 
 .. parsed-literal::
 
-    <Metabolite atp_c at 0x65a03d0>
+    <Metabolite atp_c at 0x543e390>
 
 
 
@@ -98,7 +98,7 @@ id for this reaction in our test model is PGI.
 
 .. parsed-literal::
 
-    <Reaction PGI at 0x783e350>
+    <Reaction PGI at 0x6711310>
 
 
 
@@ -205,7 +205,7 @@ atp\_c in our test model.
 
 .. parsed-literal::
 
-    <Metabolite atp_c at 0x65a03d0>
+    <Metabolite atp_c at 0x543e390>
 
 
 
@@ -275,16 +275,16 @@ reactions.
 
 .. parsed-literal::
 
-    frozenset({<Reaction G6PDH2r at 0x72c99d0>,
-               <Reaction G6PP at 0x72c9bd0>,
-               <Reaction G6Pt6_2pp at 0x72c9c90>,
-               <Reaction GLCptspp at 0x72e1890>,
-               <Reaction HEX1 at 0x74a9c10>,
-               <Reaction PGI at 0x783e350>,
-               <Reaction PGMT at 0x783e8d0>,
-               <Reaction TRE6PH at 0x7bc7290>,
-               <Reaction TRE6PS at 0x7bc7550>,
-               <Reaction AB6PGH at 0x7f79bd0>})
+    frozenset({<Reaction G6PDH2r at 0x61b6990>,
+               <Reaction G6PP at 0x61b6b90>,
+               <Reaction G6Pt6_2pp at 0x61b6c50>,
+               <Reaction GLCptspp at 0x61cc850>,
+               <Reaction HEX1 at 0x6375bd0>,
+               <Reaction PGI at 0x6711310>,
+               <Reaction PGMT at 0x6711890>,
+               <Reaction TRE6PH at 0x6a86250>,
+               <Reaction TRE6PS at 0x6a86510>,
+               <Reaction AB6PGH at 0x6e39b90>})
 
 
 
@@ -323,7 +323,7 @@ reactions itself, as well as by the model
 
 .. parsed-literal::
 
-    frozenset({<Gene STM4221 at 0x783e3d0>})
+    frozenset({<Gene STM4221 at 0x6711390>})
 
 
 
@@ -336,7 +336,7 @@ reactions itself, as well as by the model
 
 .. parsed-literal::
 
-    <Gene STM4221 at 0x783e3d0>
+    <Gene STM4221 at 0x6711390>
 
 
 
@@ -350,7 +350,7 @@ Each gene keeps track of the reactions it catalyzes
 
 .. parsed-literal::
 
-    frozenset({<Reaction PGI at 0x783e350>})
+    frozenset({<Reaction PGI at 0x6711310>})
 
 
 
@@ -366,7 +366,7 @@ necessary and update all relationships.
 
 .. parsed-literal::
 
-    frozenset({<Gene spam at 0x7f80b10>, <Gene eggs at 0x7f80cd0>})
+    frozenset({<Gene eggs at 0x32cf390>, <Gene spam at 0x6e40b90>})
 
 
 
@@ -392,7 +392,7 @@ Newly created genes are also added to the model
 
 .. parsed-literal::
 
-    <Gene spam at 0x7f80b10>
+    <Gene spam at 0x6e40b90>
 
 
 

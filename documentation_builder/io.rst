@@ -76,7 +76,7 @@ can be used.
 
 .. parsed-literal::
 
-    <Model Salmonella_consensus_build_1 at 0x3e24d90>
+    <Model Salmonella_consensus_build_1 at 0x4400990>
 
 
 
@@ -88,7 +88,7 @@ can be used.
 
 .. parsed-literal::
 
-    <Model Salmonella_consensus_build_1 at 0xf9dda50>
+    <Model Salmonella_consensus_build_1 at 0xfe325d0>
 
 
 
@@ -121,7 +121,7 @@ reading function:
 
 .. parsed-literal::
 
-    <Model iJO1366 at 0xf9dde90>
+    <Model iJO1366 at 0x132e9dd0>
 
 
 
@@ -136,7 +136,7 @@ variable to read from, and the variable\_name paramter is unnecessary.
 
 .. parsed-literal::
 
-    <Model iJO1366 at 0xf9ddf90>
+    <Model iJO1366 at 0xd9e1c10>
 
 
 
@@ -144,4 +144,4 @@ Saving models to mat files is also relatively straightforward
 
 .. code:: python
 
-    cobra.io.save_matlab_model(ecoli_model, "output_path.mat")
+    cobra.io.save_matlab_model(ecoli_model, "test_ecoli_model.mat")
