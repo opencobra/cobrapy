@@ -3,6 +3,11 @@ import re
 from ..external.six import string_types, iteritems
 from itertools import islice
 
+try:
+    from numpy import bool_
+except:
+    bool_ = bool
+
 
 class DictList(list):
     """A combined dict and list
@@ -291,6 +296,14 @@ class DictList(list):
             selection = self.__class__()
             selection._extend_nocheck(list.__getitem__(self, i))
             return selection
+        elif hasattr(i, "__len__"):
+            if len(i) == len(self) and isinstance(i[0], (bool, bool_)):
+                selection = self.__class__()
+                result = (o for j, o in enumerate(self) if i[j])
+                selection._extend_nocheck(result)
+                return selection
+            else:
+                return self.__class__(list.__getitem__(self, i))
         else:
             return list.__getitem__(self, i)
 

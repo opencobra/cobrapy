@@ -527,6 +527,17 @@ class TestCobraArrayModel(TestCobraModel):
             self.assertEqual(model.S[1605, 0], -1)
             self.assertEqual(model.lower_bounds[2546], -3.14)
 
+    def test_array_based_select(self):
+        model = self.model
+        atpm_select = model.reactions[model.lower_bounds > 0]
+        self.assertEqual(len(atpm_select), 1)
+        self.assertEqual(atpm_select[0].id, "ATPM")
+        self.assertEqual(len(model.reactions[model.lower_bounds <= 0]),
+                         len(model.reactions) - 1)
+        # mismatched dimensions should give an error
+        with self.assertRaises(TypeError):
+            model.reactions[[True, False]]
+
 
 # make a test suite to run all of the tests
 loader = TestLoader()
