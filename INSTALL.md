@@ -23,8 +23,9 @@ Python 3 support is still considered experimental.
 
 ### GNU/Linux
 0. [install pip] (http://pip.readthedocs.org/en/latest/installing.html).
-1. Install the glpk library. On debian-based systems (including Ubuntu
-   and Mint), this can be done with ```sudo apt-get install libglpk-dev```
+1. Install the glpk and gmp libraries. On debian-based systems (including
+   Ubuntu and Mint), this can be done with
+   ```sudo apt-get install libglpk-dev libgmp-dev```
 3. In a terminal, run ```sudo pip install cobra --pre```
 
 ### Microsoft Windows
@@ -34,10 +35,11 @@ index](https://pypi.python.org/pypi/cobra/).
 
 
 ## Hacking version installation
-Use pip to install [Cython](http://cython.org/). Install libglpk using your
-package manger. This would be ```brew install glpk``` on a Mac and
-```sudo apt-get install libglpk-dev``` on debian-based systems (including
-Ubuntu and Mint). This can also be installed by compiling GLPK from source.
+Use pip to install [Cython](http://cython.org/). Install libglpk and libgmp
+using your package manger. This would be ```brew install glpk gmp``` on a Mac
+and ```sudo apt-get install libglpk-dev libgmp-dev``` on debian-based systems
+(including Ubuntu and Mint). They can obviously also be compiled from the
+released source.
 
 Clone the git repository using your preferred mothod. Cloning from your
 own [github fork](https://help.github.com/articles/fork-a-repo) is recommended!

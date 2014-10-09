@@ -96,6 +96,7 @@ cdef class GLP:
     cdef glp_prob *glp
     cdef glp_smcp parameters
     cdef glp_iocp integer_parameters
+    cdef public bool exact
 
     # cython related allocation/dellocation functions
     def __cinit__(self):
@@ -103,6 +104,7 @@ cdef class GLP:
         glp_set_obj_dir(self.glp, GLP_MAX)  # default is maximize
         glp_init_smcp(&self.parameters)
         glp_init_iocp(&self.integer_parameters)
+        self.exact = False
 
     def __dealloc__(self):
         glp_delete_prob(self.glp)
@@ -254,6 +256,8 @@ cdef class GLP:
         if glp_simplex(glp, &parameters) != 0:
             glp_adv_basis(glp, 0)
             check_error(glp_simplex(glp, &parameters))
+        if self.exact:
+            check_error(glp_exact(glp, &parameters))
         if self.is_mip():
             self.integer_parameters.tm_lim = self.parameters.tm_lim
             self.integer_parameters.msg_lev = self.parameters.msg_lev
@@ -327,6 +331,8 @@ cdef class GLP:
             self.parameters.it_lim = value
         elif parameter_name == "lp_method":
             self.parameters.meth = METHODS[value]
+        elif parameter_name == "exact":
+            self.exact = value
         elif parameter_name == "threads":
             _warn("multiple threads not supported")
         elif parameter_name == "MIP_gap_abs":
@@ -409,6 +415,7 @@ cdef class GLP:
         glp_copy_prob(other.glp, self.glp, GLP_ON)
         other.parameters = self.parameters
         other.integer_parameters = self.integer_parameters
+        other.exact = self.exact
         return other
 
     def write_lp(self, filename):

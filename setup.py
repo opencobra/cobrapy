@@ -96,7 +96,7 @@ try:
         except ImportError:
             pass
 
-    build_args["libraries"] = ["glpk"]
+    build_args["libraries"] = ["glpk", "gmp"]
     # It is possible to statically link libglpk to the built extension. This
     # allows for simplified installation without the need to install libglpk to
     # the system, and is also usueful when installing a particular version of
@@ -107,8 +107,8 @@ try:
     # https://gist.github.com/aebrahim/94a2b231d86821f7f225
     include_dirs = []
     library_dirs = []
-    if isfile("libglpk.a"):
-        library_dirs.append(dirname(abspath("libglpk.a")))
+    if isfile("libglpk.a") or isfile ("libgmp.a"):
+        library_dirs.append(abspath("."))
     if isfile("glpk.h"):
         include_dirs.append(dirname(abspath("glpk.h")))
     if name == "posix":
