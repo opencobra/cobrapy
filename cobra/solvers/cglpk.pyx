@@ -410,6 +410,11 @@ cdef class GLP:
         other.integer_parameters = self.integer_parameters
         return other
 
+    def write_lp(self, filename):
+        cdef int res = glp_write_lp(self.glp, NULL, filename)
+        if res != 0:
+            raise IOError("failed to write LP to file %s" % str(filename))
+
 # wrappers for all the functions at the module level
 create_problem = GLP.create_problem
 def set_objective_sense(lp, objective_sense="maximize"):
