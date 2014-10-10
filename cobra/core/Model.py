@@ -290,9 +290,10 @@ class Model(Object):
             self.change_objective(kwargs.pop("new_objective"))
         if "error_reporting" in kwargs:
             warn("error_reporting deprecated")
+        if quadratic_component is not None:
+            kwargs["quadratic_component"] = quadratic_component
         the_solution = optimize(self, solver=solver,
                                 objective_sense=objective_sense,
-                                quadratic_component=quadratic_component,
                                 **kwargs)
         self.solution = the_solution
         return the_solution
