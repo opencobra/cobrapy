@@ -9,6 +9,11 @@ before_install:
   - export PIP_OPTS="-f https://pypi.drosophi.la --no-index"
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install glpk $PIP_OPTS; fi
   - pip install python-libsbml-experimental cython numpy scipy $PIP_OPTS
+  - wget http://drosophi.la/esolver.gz # install esolver
+  - gzip -d esolver.gz
+  - chmod +x esolver
+  - export PATH=$PATH:$PWD
+  - sudo ln -s /usr/lib/x86_64-linux-gnu/libgmp.so /usr/lib/x86_64-linux-gnu/libgmp.so.3
 install:
   - python setup.py develop
 # # command to run tests
