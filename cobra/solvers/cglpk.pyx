@@ -4,6 +4,7 @@
 from glpk cimport *
 from libc.stdlib cimport malloc, free
 from cpython cimport bool
+from cpython.version cimport PY_MAJOR_VERSION
 
 from tempfile import NamedTemporaryFile as _NamedTemporaryFile  # for pickling
 from os import unlink as _unlink
@@ -411,7 +412,14 @@ cdef class GLP:
         return other
 
     def write_lp(self, filename):
-        cdef int res = glp_write_lp(self.glp, NULL, filename)
+        if PY_MAJOR_VERSION == 2:
+            b_name = bytes(filename)
+        elif PY_MAJOR_VERSION == 3:
+            b_name = bytes(filename, "latin-1")
+        else:
+            raise RuntimeError("Unknown python version")
+        cdef char *c_name = <bytes> b_name
+        cdef int res = glp_write_lp(self.glp, NULL, c_name)
         if res != 0:
             raise IOError("failed to write LP to file %s" % str(filename))
 
