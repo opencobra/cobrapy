@@ -111,6 +111,18 @@ class TestCobraIOjson(TestCase, TestCobraIO):
         self.read_function = io.load_json_model
         self.write_function = io.save_json_model
 
+    def test_gene_names(self):
+        # write and reread
+        test_output_filename = join(gettempdir(), split(self.test_file)[-1])
+        gene_ids = [self.test_model.genes[n].id for n in (0, -1)]
+        self.test_model.genes.get_by_id(gene_ids[0]).name = 'new_name'
+        self.write_function(self.test_model, test_output_filename)
+        reread_model = self.read_function(test_output_filename)
+        # check gene names, ignoring order
+        for gene_id in gene_ids:
+            self.assertEqual(self.test_model.genes.get_by_id(gene_id).name,
+                             reread_model.genes.get_by_id(gene_id).name)
+        unlink(test_output_filename)
 
 class TestCobraIOPickle(TestCase, TestCobraIO):
     def setUp(self):

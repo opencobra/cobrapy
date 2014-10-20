@@ -24,6 +24,8 @@ _DEFAULT_METABOLITE_ATTRIBUTES = {
     'id', 'annotation', 'charge', 'compartment', 'formula', 'name', 'notes',
     '_bound', '_constraint_sense'}
 
+_DEFAULT_GENE_ATTRIBUTES = {
+    'id', 'name'}
 
 def _fix_type(value):
     """convert possible types to str, float, and bool"""
@@ -65,6 +67,14 @@ def _from_dict(obj):
                 setattr(new_reaction, k, _fix_type(v))
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
+    # add gene attributes
+    for gene in obj['genes']:
+        if gene['id'] in model.genes:
+            new_gene = model.genes.get_by_id(gene['id'])
+            for k, v in iteritems(gene):
+                # don't set the id
+                if k in ['id']: continue
+                setattr(new_gene, k, _fix_type(v))
     for k, v in iteritems(obj):
         if k in ['id', 'description', 'notes']:
             setattr(model, k, v)
@@ -75,8 +85,10 @@ def _to_dict(model):
     """convert the model to a dict"""
     reaction_attributes = _DEFAULT_REACTION_ATTRIBUTES
     metabolite_attributes = _DEFAULT_METABOLITE_ATTRIBUTES
+    gene_attributes = _DEFAULT_GENE_ATTRIBUTES
     new_reactions = []
     new_metabolites = []
+    new_genes = []
     for reaction in model.reactions:
         new_reaction = {key: _fix_type(getattr(reaction, key))
                         for key in reaction_attributes}
@@ -89,8 +101,13 @@ def _to_dict(model):
         new_metabolite = {key: str(getattr(metabolite, key))
                           for key in metabolite_attributes}
         new_metabolites.append(new_metabolite)
+    for gene in model.genes:
+        new_gene = {key: str(getattr(gene, key))
+                    for key in gene_attributes}
+        new_genes.append(new_gene)
     obj = {'reactions': new_reactions,
            'metabolites': new_metabolites,
+           'genes': new_genes,
            'id': model.id,
            'description': model.description,
            'notes': model.notes}
@@ -99,7 +116,7 @@ def _to_dict(model):
 
 def to_json(model):
     """Save the cobra model as a json string"""
-    return json.dumps(_to_dict(model))
+    return json.dumps(_to_dict(model), allow_nan=False)
 
 
 def from_json(jsons):
@@ -141,7 +158,7 @@ def save_json_model(model, file_name):
         file_name = open(file_name, 'w')
         should_close = True
 
-    json.dump(_to_dict(model), file_name)
+    json.dump(_to_dict(model), file_name, allow_nan=False)
 
     if should_close:
         file_name.close()
