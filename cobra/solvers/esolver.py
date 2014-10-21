@@ -77,7 +77,7 @@ class Esolver(object):
         self._clean(self.solution_filepath)
         with NamedTemporaryFile(suffix=".lp", delete=False) as f:
             lp_filepath = f.name
-        self.GLP.write_lp(lp_filepath)
+        self.GLP.write(lp_filepath)
         existing_basis = self.basis_filepath
         with NamedTemporaryFile(suffix=".bas", delete=False) as f:
             self.basis_filepath = f.name

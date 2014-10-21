@@ -418,7 +418,13 @@ cdef class GLP:
         other.exact = self.exact
         return other
 
-    def write_lp(self, filename):
+    def write(self, filename):
+        """Write the problem to a file
+
+        The format will be determined by the file extension.
+            .lp: LP file
+            .mps: MPS file
+        """
         if PY_MAJOR_VERSION == 2:
             b_name = bytes(filename)
         elif PY_MAJOR_VERSION == 3:
@@ -426,9 +432,16 @@ cdef class GLP:
         else:
             raise RuntimeError("Unknown python version")
         cdef char *c_name = <bytes> b_name
-        cdef int res = glp_write_lp(self.glp, NULL, c_name)
+        cdef int res
+        if b_name.endswith(".lp"):
+            res = glp_write_lp(self.glp, NULL, c_name)
+        elif b_name.endswith(".mps"):
+            res = glp_write_mps(self.glp, GLP_MPS_FILE, NULL, c_name)
+        else:
+            raise ValueError("Unknown file format for %s" % str(filename))
         if res != 0:
             raise IOError("failed to write LP to file %s" % str(filename))
+
 
 # wrappers for all the functions at the module level
 create_problem = GLP.create_problem
