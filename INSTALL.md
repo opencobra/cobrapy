@@ -68,17 +68,22 @@ cobrapy comes with bindings to the GNU Linear Programming Kit ([glpk]
 cobrapy. In addition, cobrapy currently supports these linear programming
 solvers:
 
- * ILOG/CPLEX
+ * ILOG/CPLEX (available with
   [Academic](https://www.ibm.com/developerworks/university/academicinitiative/)
+  and
   [Commercial](http://www.ibm.com/software/integration/optimization/cplex-optimizer/)
+  licenses).
  * [gurobi](http://gurobi.com)
- * GLPK through [pyGLPK](http://tfinley.net/software/pyglpk/)
+ * [QSopt_ex esolver](http://www.dii.uchile.cl/~daespino/ESolver_doc/main.html)
+ * [MOSEK](http://www.mosek.com/)
 
 ILOG/CPLEX and Gurobi are commercial software packages that, currently, 
 provide free licenses for academics and support both linear and quadratic 
 programming. GLPK is an opensource linear programming solver; however, it 
 does not support quadratic programming and is not as robust as the 
 commercial solvers when it comes to mixed-integer linear programming.
+QSopt_ex esolver is also open source, and can solve linear programs
+using rational operations, giving exact solutions.
 
 
 # Testing your installation
