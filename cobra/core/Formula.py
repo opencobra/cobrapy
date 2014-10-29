@@ -12,7 +12,7 @@ element_re = re.compile("([A-Z][a-z]?)([0-9.]+[0-9.]?|(?=[A-Z])?)")
 class Formula(Object):
     """Describes a Chemical Formula
 
-    Legal formula string characters include letters, numbers, and "*".
+    A legal formula string contains only letters and numbers.
 
     """
     def __init__(self, formula=None):
@@ -32,7 +32,14 @@ class Formula(Object):
 
     def parse_composition(self):
         """Breaks the chemical formula down by element."""
-        tmp_formula = self.formula.replace("*", "")
+        tmp_formula = self.formula
+        # commonly occuring characters in incorrectly constructed formulas
+        if "*" in tmp_formula:
+            warn("invalid character '*' found in formula '%s'" % self.formula)
+            tmp_formula = self.formula.replace("*", "")
+        if "(" in tmp_formula or ")" in tmp_formula:
+            warn("parenthesis found in formula '%s'" % self.formula)
+            return
         composition = {}
         parsed = element_re.findall(tmp_formula)
         for (element, count) in parsed:
