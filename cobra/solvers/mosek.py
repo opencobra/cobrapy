@@ -2,16 +2,20 @@ from __future__ import absolute_import
 
 import mosek
 
+from ..external.six.moves import zip
+from ..external.six import iteritems
+
 env = mosek.Env()
 
 solver_name = "mosek"
 __mosek_version__ = ".".join(str(i) for i in mosek.getversion())
-_SUPPORTS_MILP = False
+_SUPPORTS_MILP = True
 
 status_dict = {
     mosek.solsta.dual_infeas_cer: 'infeasible',
     mosek.solsta.prim_infeas_cer: 'infeasible',
-    mosek.solsta.optimal: 'optimal'}
+    mosek.solsta.optimal: 'optimal',
+    mosek.solsta.integer_optimal: 'optimal'}
 
 
 def verbose_printer(text):
@@ -37,8 +41,6 @@ def create_problem(cobra_model, objective_sense="maximize", verbose=False,
     lp.putdouparam(mosek.dparam.presolve_tol_x, 0.)
     lp.putintparam(mosek.iparam.concurrent_priority_intpnt, 0)
     lp.putintparam(mosek.iparam.concurrent_num_optimizers, 1)
-    for key, value in solver_parameters:
-        set_parameter(lp, key, value)
     # add reactions/variables
     lp.appendvars(len(cobra_model.reactions))
     lp.putvarboundlist(
@@ -49,6 +51,11 @@ def create_problem(cobra_model, objective_sense="maximize", verbose=False,
     )
     lp.putclist(rxn_indexes,
                 cobra_model.reactions.list_attr("objective_coefficient"))
+    integer_variables = [i for i, r in enumerate(cobra_model.reactions)
+                         if r.variable_kind == "integer"]
+    lp.putvartypelist(
+        integer_variables,
+        (mosek.variabletype.type_int,) * len(integer_variables))
 
     # add metabolites/constraints
     c_sense_dict = {"E": mosek.boundkey.fx, "L": mosek.boundkey.up,
@@ -61,10 +68,12 @@ def create_problem(cobra_model, objective_sense="maximize", verbose=False,
 
     # add in the S matrix
     for i, reaction in enumerate(cobra_model.reactions):
-        for metabolite, stoiciometry in reaction._metabolites.iteritems():
+        for metabolite, stoiciometry in iteritems(reaction._metabolites):
             lp.putaij(cobra_model.metabolites.index(metabolite),
                       i, stoiciometry)
-
+    # set user-supplied parameters
+    for key, value in iteritems(solver_parameters):
+        set_parameter(lp, key, value)
     return lp
 
 
@@ -85,6 +94,9 @@ def set_parameter(lp, parameter_name, parameter_value):
             lp.set_Stream(mosek.streamtype.log, lambda x: None)
     elif parameter_name == "objective_sense":
         set_objective_sense(lp, parameter_value)
+    elif parameter_name == "quadratic_component":
+        if parameter_value is not None:
+            set_quadratic_objective(lp, parameter_value)
     elif hasattr(mosek.dparam, parameter_name):
         lp.putdouparam(getattr(mosek.dparam, parameter_name), parameter_value)
     elif hasattr(mosek.iparam, parameter_name):
@@ -94,7 +106,7 @@ def set_parameter(lp, parameter_name, parameter_value):
 
 
 def solve_problem(lp, **solver_parameters):
-    for key, value in solver_parameters.items():
+    for key, value in iteritems(solver_parameters):
         set_parameter(lp, key, value)
     lp.optimize()
     return get_status(lp)
@@ -106,32 +118,47 @@ def solve(cobra_model, **solver_parameters):
     return format_solution(lp, cobra_model)
 
 
+def _get_soltype(lp):
+    """get the solution type
+
+    This is bas for LP and itg for MIP and QP
+
+    """
+    if lp.getnumintvar() > 0:
+        return mosek.soltype.itg
+    if lp.getnumqobjnz() > 0:
+        return mosek.soltype.itr
+    return mosek.soltype.bas
+
+
 def get_status(lp):
-    status = lp.getsolsta(mosek.soltype.bas)
-    return status_dict.get(status, str(status))
+    mosek_status = lp.getsolsta(_get_soltype(lp))
+    return status_dict.get(mosek_status, str(mosek_status))
 
 
 def get_objective_value(lp):
-    return lp.getprimalobj(mosek.soltype.bas)
+    return lp.getprimalobj(_get_soltype(lp))
 
 
 def format_solution(lp, cobra_model):
-    status = get_status(lp)
+    soltype = _get_soltype(lp)
+    mosek_status = lp.getsolsta(soltype)
+    status = status_dict.get(mosek_status, str(mosek_status))
     if status != "optimal":
         return cobra_model.solution.__class__(None, status=status)
     solution = cobra_model.solution.__class__(get_objective_value(lp))
     solution.status = status
     x = [0] * len(cobra_model.reactions)
-    y = [0] * len(cobra_model.metabolites)
-    lp.getxx(mosek.soltype.bas, x)
-    lp.gety(mosek.soltype.bas, y)
+    lp.getxx(soltype, x)
     solution.x = x
-    solution.y = y
-    # TODO: use izip instead of enumerate in dict comprehensions
-    solution.x_dict = {rxn.id: x[i] for i, rxn
-                       in enumerate(cobra_model.reactions)}
-    solution.y_dict = {met.id: y[i] for i, met
-                       in enumerate(cobra_model.metabolites)}
+    solution.x_dict = {rxn.id: value for rxn, value
+                       in zip(cobra_model.reactions, x)}
+    if soltype == mosek.soltype.bas:
+        y = [0] * len(cobra_model.metabolites)
+        lp.gety(mosek.soltype.bas, y)
+        solution.y = y
+        solution.y_dict = {met.id: value for met, value
+                           in zip(cobra_model.metabolites, y)}
     return solution
 
 
@@ -145,3 +172,18 @@ def change_variable_bounds(lp, index, lower_bound, upper_bound):
 
 def change_coefficient(lp, met_index, rxn_index, value):
     lp.putaij(met_index, rxn_index, value)
+
+
+def set_quadratic_objective(lp, quadratic_objective):
+    if not hasattr(quadratic_objective, 'todok'):
+        raise Exception('quadratic component must be a sparse matrix')
+    row_indexes = []
+    col_indexes = []
+    values = []
+    for (index_0, index_1), value in iteritems(quadratic_objective.todok()):
+        # specify lower triangular only
+        if index_0 >= index_1:
+            row_indexes.append(index_0)
+            col_indexes.append(index_1)
+            values.append(value)
+    lp.putqobj(row_indexes, col_indexes, values)

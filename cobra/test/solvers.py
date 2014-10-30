@@ -133,6 +133,7 @@ class TestCobraSolver(object):
         int_sol = solver.solve(cobra_model)
         self.assertAlmostEqual(float_sol.f, 2.5)
         self.assertAlmostEqual(float_sol.x_dict["y"], 2.5)
+        self.assertEqual(int_sol.status, "optimal")
         self.assertAlmostEqual(int_sol.f, 2.2)
         self.assertAlmostEqual(int_sol.x_dict["y"], 2.0)
 
