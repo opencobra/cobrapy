@@ -580,7 +580,7 @@ def fix_legacy_id(id, use_hyphens=False, fix_compartments=False):
 
 def read_legacy_sbml(filename, use_hyphens=False):
     """read in an sbml file and fix the sbml id's"""
-    model = create_cobra_model_from_sbml_file(filename)
+    model = create_cobra_model_from_sbml_file(filename, old_sbml=True)
     for metabolite in model.metabolites:
         metabolite.id = fix_legacy_id(metabolite.id)
     model.metabolites._generate_index()
