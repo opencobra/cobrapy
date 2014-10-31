@@ -510,11 +510,7 @@ class Reaction(Object):
     def build_reaction_string(self, use_metabolite_names=False):
         """Generate a human readable reaction string"""
         def format(number):
-            if number == 1:
-                return ""
-            if number == int(number):
-                return str(int(number)) + " "
-            return str(number) + " "
+            return "" if number == 1 else str(number).rstrip(".") + " "
         reactant_dict = {}
         product_dict = {}
         id_type = 'id'
