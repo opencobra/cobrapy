@@ -192,7 +192,17 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             #This deals with boundary metabolites
             if tmp_metabolite_id in metabolite_dict:
                 tmp_metabolite = metabolite_dict[tmp_metabolite_id]
-                cobra_metabolites[tmp_metabolite] = sbml_metabolite.getStoichiometry()
+                # Handle the case where the metabolite was specified both
+                # as a reactant and as a product.
+                if tmp_metabolite in cobra_metabolites:
+                    warn("%s appears as a reactant and product %s" %
+                         (tmp_metabolite_id, reaction.id))
+                    cobra_metabolites[tmp_metabolite] += sbml_metabolite.getStoichiometry()
+                    # if the combined stoichiometry is 0, remove the metabolite
+                    if cobra_metabolites[tmp_metabolite] == 0:
+                        cobra_metabolites.pop(tmp_metabolite)
+                else:
+                    cobra_metabolites[tmp_metabolite] = sbml_metabolite.getStoichiometry()
         reaction.add_metabolites(cobra_metabolites)
         #Parse the kinetic law info here.
         parameter_dict = {}
