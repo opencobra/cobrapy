@@ -31,10 +31,15 @@ Running FBA
 
 The Model.optimize() function will return a Solution object, which will
 also be stored at model.solution. A solution object has several
-attributes: - f: the objective value - status: the status from the
-linear programming solver - x\_dict: a dictionary of {reaction\_id:
-flux\_value} (also called "primal") - x: a list for x\_dict - y\_dict: a
-dictionary of {metabolite\_id: dual\_value}. - y: a list for y\_dict
+attributes:
+
+-  f: the objective value
+-  status: the status from the linear programming solver
+-  x\_dict: a dictionary of {reaction\_id: flux\_value} (also called
+   "primal")
+-  x: a list for x\_dict
+-  y\_dict: a dictionary of {metabolite\_id: dual\_value}.
+-  y: a list for y\_dict
 
 For example, after the last call to model.optimize(), the status should
 be 'optimal' if the solver returned no errors, and f should be the

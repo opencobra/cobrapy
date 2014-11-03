@@ -32,11 +32,11 @@ indexes based off of ID's, which can cause errors. For example:
     try:
         model.metabolites.get_by_id(model.metabolites[0].id)
     except KeyError as e:
-        print("KeyError:", e)
+        print(repr(e))
 
 .. parsed-literal::
 
-    KeyError: 'test_dcaACP_c'
+    KeyError('test_dcaACP_c',)
 
 
 The Model.repair function will rebuild the necessary indexes
@@ -50,7 +50,7 @@ The Model.repair function will rebuild the necessary indexes
 
 .. parsed-literal::
 
-    <Metabolite test_dcaACP_c at 0x5f68ed0>
+    <Metabolite test_dcaACP_c at 0x6ed5450>
 
 
 
@@ -80,3 +80,52 @@ function are reversed by cobra.manipulation.undelete\_model\_genes.
 If you want to actually remove all traces of a gene from a model, this
 is more difficult because this will require changing all the
 gene\_reaction\_rule strings for reactions involving the gene.
+
+How do I change the reversibility of a gene?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Reaction.reversibility is a property in cobra which is computed when it
+is requested from the lower and upper bounds.
+
+.. code:: python
+
+    model = cobra.test.create_test_model()
+    model.reactions.get_by_id("PGI").reversibility
+
+
+
+.. parsed-literal::
+
+    True
+
+
+
+Trying to set it directly will result in an error:
+
+.. code:: python
+
+    try:
+        model.reactions.get_by_id("PGI").reversibility = False
+    except Exception as e:
+        print(repr(e))
+
+.. parsed-literal::
+
+    AttributeError("can't set attribute",)
+
+
+The way to change the reversibility is to change the bounds to make the
+reaction irreversible.
+
+.. code:: python
+
+    model.reactions.get_by_id("PGI").lower_bound = 10
+    model.reactions.get_by_id("PGI").reversibility
+
+
+
+.. parsed-literal::
+
+    False
+
+

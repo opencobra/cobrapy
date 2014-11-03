@@ -22,6 +22,7 @@ model.optimize()
 
 # The Model.optimize() function will return a Solution object, which will also
 # be stored at model.solution. A solution object has several attributes:
+# 
 #  - f: the objective value
 #  - status: the status from the linear programming solver
 #  - x_dict: a dictionary of {reaction_id: flux_value} (also called "primal")
