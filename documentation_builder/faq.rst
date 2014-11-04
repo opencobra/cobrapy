@@ -12,6 +12,12 @@ Please see the
 `INSTALL.md <https://github.com/opencobra/cobrapy/blob/master/INSTALL.md>`__
 file.
 
+How do I cite cobrapy?
+~~~~~~~~~~~~~~~~~~~~~~
+
+Please cite the 2013 publication:
+`10.1186/1752-0509-7-74 <http://dx.doi.org/doi:10.1186/1752-0509-7-74>`__
+
 How do I rename reactions or metabolites?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -50,7 +56,7 @@ The Model.repair function will rebuild the necessary indexes
 
 .. parsed-literal::
 
-    <Metabolite test_dcaACP_c at 0x6ed5450>
+    <Metabolite test_dcaACP_c at 0x688b450>
 
 
 
@@ -81,8 +87,8 @@ If you want to actually remove all traces of a gene from a model, this
 is more difficult because this will require changing all the
 gene\_reaction\_rule strings for reactions involving the gene.
 
-How do I change the reversibility of a gene?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+How do I change the reversibility of a Reaction?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Reaction.reversibility is a property in cobra which is computed when it
 is requested from the lower and upper bounds.
@@ -129,3 +135,30 @@ reaction irreversible.
     False
 
 
+
+How do I generate an LP file from a COBRA model?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+While the cobrapy does not include python code to support this feature
+directly, many of the bundled solvers have this capability. Create the
+problem with one of these solvers, and use its appropriate function.
+
+Please note that unlike the LP file format, the MPS file format does not
+specify objective direction and is always a minimzation. Some (but not
+all) solvers will rewrite the maximization as a minimzation.
+
+.. code:: python
+
+    model = cobra.test.create_test_model()
+    # glpk through cglpk
+    glp = cobra.solvers.cglpk.create_problem(model)
+    glp.write("test.lp")
+    glp.write("test.mps")  # will not rewrite objective
+    # gurobi
+    gurobi_problem = cobra.solvers.gurobi_solver.create_problem(model)
+    gurobi_problem.write("test.lp")
+    gurobi_problem.write("test.mps")  # rewrites objective
+    # cplex
+    cplex_problem = cobra.solvers.cplex_solver.create_problem(model)
+    cplex_problem.write("test.lp")
+    cplex_problem.write("test.mps")  # rewrites objective
