@@ -38,7 +38,7 @@ def create_problem(cobra_model, objective_sense="maximize", verbose=False,
     lp.putdouparam(mosek.dparam.presolve_tol_aij, 1e-15)
     lp.putdouparam(mosek.dparam.presolve_tol_abs_lindep, 0.)
     lp.putdouparam(mosek.dparam.presolve_tol_s, 0.)
-    lp.putdouparam(mosek.dparam.presolve_tol_x, 0.)
+    lp.putdouparam(mosek.dparam.presolve_tol_x, 1e-15)
     lp.putintparam(mosek.iparam.concurrent_priority_intpnt, 0)
     lp.putintparam(mosek.iparam.concurrent_num_optimizers, 1)
     # add reactions/variables
