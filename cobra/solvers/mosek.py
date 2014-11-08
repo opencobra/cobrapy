@@ -46,11 +46,12 @@ def create_problem(cobra_model, objective_sense="maximize", verbose=False,
     lp.putvarboundlist(
         rxn_indexes,
         (mosek.boundkey.ra,) * n_rxns,
-        cobra_model.reactions.list_attr("lower_bound"),
-        cobra_model.reactions.list_attr("upper_bound"),
+        [float(i.lower_bound) for i in cobra_model.reactions],
+        [float(i.upper_bound) for i in cobra_model.reactions],
     )
-    lp.putclist(rxn_indexes,
-                cobra_model.reactions.list_attr("objective_coefficient"))
+    lp.putclist(
+        rxn_indexes,
+        [float(i.objective_coefficient) for i in cobra_model.reactions])
     integer_variables = [i for i, r in enumerate(cobra_model.reactions)
                          if r.variable_kind == "integer"]
     lp.putvartypelist(
@@ -68,9 +69,9 @@ def create_problem(cobra_model, objective_sense="maximize", verbose=False,
 
     # add in the S matrix
     for i, reaction in enumerate(cobra_model.reactions):
-        for metabolite, stoiciometry in iteritems(reaction._metabolites):
+        for metabolite, stoichiometry in iteritems(reaction._metabolites):
             lp.putaij(cobra_model.metabolites.index(metabolite),
-                      i, stoiciometry)
+                      i, stoichiometry)
     # set user-supplied parameters
     for key, value in iteritems(solver_parameters):
         set_parameter(lp, key, value)

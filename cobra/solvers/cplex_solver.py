@@ -152,10 +152,10 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
     lp = Cplex()
     for k, v in the_parameters.iteritems():
         set_parameter(lp, k, v)
-    objective_coefficients = cobra_model.reactions.list_attr(
-        'objective_coefficient')
-    lower_bounds = cobra_model.reactions.list_attr("lower_bound")
-    upper_bounds = cobra_model.reactions.list_attr("upper_bound")
+    objective_coefficients = [float(x.objective_coefficient)
+                              for x in cobra_model.reactions]
+    lower_bounds = [float(x.lower_bound) for x in cobra_model.reactions]
+    upper_bounds = [float(x.upper_bound) for x in cobra_model.reactions]
     variable_names = cobra_model.reactions.list_attr("id")
     variable_kinds = [variable_kind_dict[x.variable_kind] for x
                       in cobra_model.reactions]
@@ -194,7 +194,7 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
         coefficient_list = []
         for the_reaction in the_metabolite._reaction:
             variable_list.append(the_reaction.id)
-            coefficient_list.append(the_reaction._metabolites[the_metabolite])
+            coefficient_list.append(float(the_reaction._metabolites[the_metabolite]))
         the_linear_expressions.append(SparsePair(ind=variable_list,
                                                  val=coefficient_list))
     # Set objective to quadratic program
