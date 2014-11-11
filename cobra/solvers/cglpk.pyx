@@ -19,6 +19,9 @@ __doc__ = """Bindings to GLPK
 The GNU Linear Programming Kit (GLPK) is released under the GPL.
 The source can be downloaded from http://www.gnu.org/software/glpk/
 
+The GNU Multiple Precision Arithmetic Library (GMP) is released under the GPL.
+The source can be downloaded from https://gmplib.org/
+
 """
 
 cdef dict ERROR_CODES = {
