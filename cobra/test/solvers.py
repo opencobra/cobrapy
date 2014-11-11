@@ -19,6 +19,7 @@ try:
 except:
     scipy = None
 
+
 class TestCobraSolver(object):
     def setUp(self):
         self.solver = solvers.solver_dict[self.solver_name]
@@ -56,8 +57,8 @@ class TestCobraSolver(object):
         solver = self.solver
         solution = solver.solve(self.model)
         self.assertEqual(solution.status, "optimal")
-        self.assertAlmostEqual(self.old_solution, \
-            solution.f, places=4)
+        self.assertAlmostEqual(self.old_solution,
+                               solution.f, places=4)
 
     def test_solve_minimize(self):
         solver = self.solver
@@ -95,11 +96,12 @@ class TestCobraSolver(object):
         self.assertAlmostEqual(solution.x_dict["rxn1"], 2, places=4)
         self.assertAlmostEqual(solution.x_dict["rxn2"], -2, places=4)
 
-
     def test_set_objective_sense(self):
         solver = self.solver
-        maximize = solver.create_problem(self.model, objective_sense="maximize")
-        minimize = solver.create_problem(self.model, objective_sense="minimize")
+        maximize = solver.create_problem(self.model,
+                                         objective_sense="maximize")
+        minimize = solver.create_problem(self.model,
+                                         objective_sense="minimize")
         solver.solve_problem(maximize)
         solver.solve_problem(minimize)
         max_solution = solver.format_solution(maximize, self.model)
@@ -149,12 +151,12 @@ class TestCobraSolver(object):
         solver.solve_problem(feasible_lp)
         solver.solve_problem(infeasible_lp)
         feasible_solution = solver.format_solution(feasible_lp, self.model)
-        infeasible_solution = solver.format_solution(infeasible_lp, self.infeasible_model)
+        infeasible_solution = solver.format_solution(infeasible_lp,
+                                                     self.infeasible_model)
         self.assertEqual(feasible_solution.status, "optimal")
-        self.assertAlmostEqual(self.old_solution, \
-            feasible_solution.f, places=4)
+        self.assertAlmostEqual(self.old_solution,
+                               feasible_solution.f, places=4)
         self.assertEqual(infeasible_solution.status, "infeasible")
-
 
     def test_change_coefficient(self):
         solver = self.solver
@@ -162,10 +164,9 @@ class TestCobraSolver(object):
         c._bound = 6
         x = Reaction("x")
         x.lower_bound = 1.
-        y = Reaction("y") 
+        y = Reaction("y")
         y.lower_bound = 0.
         x.add_metabolites({c: 1})
-        #y.add_metabolites({c: 1})
         z = Reaction("z")
         z.add_metabolites({c: 1})
         z.objective_coefficient = 1
@@ -175,9 +176,11 @@ class TestCobraSolver(object):
         lp = solver.create_problem(m)
         solver.solve_problem(lp)
         sol1 = solver.format_solution(lp, m)
+        self.assertEqual(sol1.status, "optimal")
         solver.change_coefficient(lp, 0, 0, 2)
         solver.solve_problem(lp)
         sol2 = solver.format_solution(lp, m)
+        self.assertEqual(sol2.status, "optimal")
         self.assertAlmostEqual(sol1.f, 5.0)
         self.assertAlmostEqual(sol2.f, 4.0)
         # change a new coefficient
@@ -187,6 +190,7 @@ class TestCobraSolver(object):
         solver.change_coefficient(lp, 0, 1, 2)
         solver.solve_problem(lp)
         solution = solver.format_solution(lp, m)
+        self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(solution.x_dict["y"], 2.5)
 
     def test_inequality(self):
@@ -216,7 +220,7 @@ class TestCobraSolver(object):
         m.change_objective("y")
         self.assertAlmostEqual(solver.solve(m).f, 3.0)
         self.assertAlmostEqual(solver.solve(m, objective_sense="minimize").f,
-                              1.0)
+                               1.0)
 
     @skipIf(scipy is None, "scipy required for quadratic objectives")
     def test_quadratic(self):
@@ -270,12 +274,13 @@ class TestCobraSolver(object):
         self.assertAlmostEqual(solution.x_dict["z"], 2)
 
 for solver_name in solvers.solver_dict:
-    exec('class %sTester(TestCobraSolver, TestCase): None'% solver_name)
-    exec('%sTester.solver_name = "%s"'% (solver_name, solver_name))
+    exec('class %sTester(TestCobraSolver, TestCase): None' % solver_name)
+    exec('%sTester.solver_name = "%s"' % (solver_name, solver_name))
 
 # make a test suite to run all of the tests
 loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])
+
 
 def test_all():
     TextTestRunner(verbosity=2).run(suite)

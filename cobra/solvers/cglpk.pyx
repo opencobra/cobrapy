@@ -194,11 +194,11 @@ cdef class GLP:
         free(c_values)
 
     # problem creation and modification
+    @classmethod
     def create_problem(cls, cobra_model, objective_sense="maximize"):
         problem = cls(cobra_model)
         problem.set_objective_sense(objective_sense)
         return problem
-    create_problem = classmethod(create_problem)  # decorator does not work
 
     cpdef change_variable_bounds(self, int index, double lower_bound,
                                  double upper_bound):
@@ -270,14 +270,12 @@ cdef class GLP:
             check_error(glp_intopt(glp, &integer_parameters))
         return self.get_status()
 
+    @classmethod
     def solve(cls, cobra_model, **kwargs):
         problem = cls.create_problem(cobra_model)
         problem.solve_problem(**kwargs)
         solution = problem.format_solution(cobra_model)
-        #cobra_model.solution = solution
-        #return {"the_problem": problem, "the_solution": solution}
         return solution
-    solve = classmethod(solve)
 
     def get_status(self):
         cdef int result = glp_mip_status(self.glp) if self.is_mip() \
