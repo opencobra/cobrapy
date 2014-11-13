@@ -201,26 +201,18 @@ class ArrayBasedModel(Model):
         if update_matrices:
             self._update_matrices(reaction_list)
 
+    def remove_reactions(self, reactions, update_matrices=True, **kwargs):
+        """remove reactions from teh model
 
-    def remove_reactions(self, reaction_list, update_matrices=True):
-        """Will add a cobra.Reaction object to the model, if
-        reaction.id is not in self.reactions.
+        See :func:`cobra.core.Model.Model.remove_reactions`
 
-        reaction_list: A list or instance of :class:`~cobra.core.Reaction` or ids
-
-        update_matrices:  Boolean.  If true populate / update matrices
-        S, lower_bounds, upper_bounds, .... Note this is slow to run
-        for very large models and using this option with repeated calls
-        will degrade performance.  Better to call self.update() after
-        adding all reactions.
-
-        
-         If the stoichiometric matrix is initially empty then initialize a 1x1
-         sparse matrix and add more rows as needed in the self.add_metabolites
-         function
+        update_matrices:  Boolean
+            If true populate / update matrices S, lower_bounds, upper_bounds.
+            Note that this is slow to run for very large models, and using this
+            option with repeated calls will degrade performance.
 
         """
-        Model.remove_reactions(self, reaction_list)
+        Model.remove_reactions(self, reactions, **kwargs)
         if update_matrices:
             self._update_matrices()
 

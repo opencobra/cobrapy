@@ -8,7 +8,7 @@ from ..external.six import string_types, iteritems
 #
 from collections import defaultdict
 import re
-from copy import deepcopy
+from copy import copy, deepcopy
 from .Object import Object
 from .Metabolite import Metabolite
 from .Gene import Gene
@@ -176,59 +176,77 @@ class Reaction(Object):
         """
         return self._model
 
-    def remove_from_model(self, model=None):
-        """Removes the association
+    def remove_from_model(self, model=None, remove_orphans=False):
+        """Removes the reaction from the model while keeping it intact
 
-        model: deprecated argument, should be None
+        remove_orphans: Boolean
+            Remove orphaned genes and metabolites from the model as well
         
+        model: deprecated argument, must be None
+
         """
-        # why is model being taken in as a parameter? This plays
-        #back to the question of allowing a Metabolite to be associated
-        #with multiple Models
-        if model != self._model and model is not None:
-            raise Exception('%s not in %s ergo it cannot be removed. (%s)'%(self,
-                                                                  model,
-                                                                  self._model))
-        if self._model is None:
-            raise Exception("Reaction %s not in a model" % self.id)
         if model is not None:
             warn("model does not need to be passed into remove_from_model")
-        new_metabolites = deepcopy(self._metabolites)
-        new_genes = deepcopy(self._genes)
-        self._model.reactions.remove(self)
-        #Remove associations between the reaction and its container _model
-        #and elements in the model
+            if model != self._model:
+                raise Exception("Can not remove from a different model")
+        if self._model is None:
+            raise Exception("Reaction %s not in a model" % self.id)
+        # preserve the original attributes (but as copies)
+        model = self._model
+        new_metabolites = {copy(met): value
+                           for met, value in iteritems(self._metabolites)}
+        new_genes = {copy(i) for i in self._genes}
+        # Begin removing from the model
         self._model = None
-        [x._reaction.remove(self)
-         for x in self._metabolites.keys()]
-        [x._reaction.remove(self)
-         for x in self._genes]
-        #Replace the model-linked metabolites with the new independent metabolites
+        model.reactions.remove(self)
+        for x in self._metabolites:
+            x._reaction.remove(self)
+            if remove_orphans and len(x._reaction) == 0:
+                model.metabolites.remove(x)
+        for x in self._genes:
+            x._reaction.remove(self)
+            if remove_orphans and len(x._reaction) == 0:
+                model.genes.remove(x)
+        # Rebuild the model with the new independent genes/metabolites
         self._metabolites = {}
         self.add_metabolites(new_metabolites)
-        #Replace the model-linked genes with new indepenent genes
         self._genes = set()
         for k in new_genes:
             self._associate_gene(k)
 
-    def delete(self):
-        """Removes all associations between a reaction and its container
-        _model and metabolites and genes.
-        
-        TODO: Decide whether orphan metabolites should automatically be removed
-        from the model.
-        
+    def delete(self, remove_orphans=False):
+        """Completely delete a reaction
+
+        This removes all associations between a reaction the associated
+        model, metabolites and genes (unlike remove_from_model which only
+        dissociates the reaction from the model).
+
+        remove_orphans: Boolean
+            Remove orphaned genes and metabolites from the model as well
+
         """
+        model = self._model
+        if model is not None:
+            self._model.reactions.remove(self)
+        elif remove_orphans:
+            # can't remove orphans if not part of a model
+            remove_orphans = False
         self._model = None
-        [x._reaction.remove(self)
-         for x in self._metabolites.keys() if self in x._reaction]
-        [x._reaction.remove(self)
-         for x in self._genes if self in x._reaction]
+        for x in self._metabolites:
+            if self in x._reaction:
+                x._reaction.remove(self)
+                if remove_orphans and len(x._reaction) == 0:
+                    model.metabolites.remove(x)
+        for x in self._genes:
+            if self in x._reaction:
+                x._reaction.remove(self)
+                if remove_orphans and len(x._reaction) == 0:
+                    model.genes.remove(x)
         self._metabolites = {}
         self._genes = set()
-        
-        
+
     def __setstate__(self, state):
+
         """Probably not necessary to set _model as the cobra.Model that
         contains self sets the _model attribute for all metabolites and genes in the reaction.
 

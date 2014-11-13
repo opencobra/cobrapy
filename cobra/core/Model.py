@@ -298,27 +298,35 @@ class Model(Object):
         self.solution = the_solution
         return the_solution
 
+    def remove_reactions(self, reactions, delete=True,
+                         remove_orphans=False):
+        """remove reactions from the model
 
-    def remove_reactions(self, the_reactions):
-        """
-        the_reactions: instance or list of cobra.Reactions or strings of
-        self.reactions[:].id.
+        reactions: [:class:`~cobra.core.Reaction.Reaction`] or [str]
+            The reactions (or their id's) to remove
+
+        delete: Boolean
+            Whether or not the reactions should be deleted after removal.
+            If the reactions are not deleted, those objects will be
+            recreated with new metabolite and gene objects.
+
+        remove_orphans: Boolean
+            Remove orphaned genes and metabolites from the model as well
 
         """
-        if not hasattr(the_reactions, '__iter__') or \
-               hasattr(the_reactions, 'id'):
-            the_reactions = [the_reactions]
-        if len(the_reactions) == 0:
-            return
-        if hasattr(the_reactions[0], 'id'):
-            the_reactions = [x.id for x in the_reactions]
-        reactions_to_delete = []
-        for the_reaction in the_reactions:
+        if isinstance(reactions, string_types) or hasattr(reactions, "id"):
+            warn("need to pass in a list")
+            reactions = [reactions]
+        for reaction in reactions:
             try:
-                the_reaction = self.reactions[self.reactions.index(the_reaction)]
-                the_reaction.remove_from_model()
-            except:
-                warn('%s not in %s'%(the_reaction, self))
+                reaction = self.reactions[self.reactions.index(reaction)]
+            except ValueError:
+                warn('%s not in %s' % (reaction, self))
+            else:
+                if delete:
+                    reaction.delete(remove_orphans=remove_orphans)
+                else:
+                    reaction.remove_from_model(remove_orphans=remove_orphans)
 
     def repair(self, rebuild_index=True, rebuild_relationships=True):
         """Update all indexes and pointers in a model"""

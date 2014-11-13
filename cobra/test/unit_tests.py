@@ -299,14 +299,90 @@ class TestCobraModel(CobraTestCase):
         other.reactions._generate_index()
         model.add_reactions(other.reactions)
 
-    def test_delete_reaction(self):
+    def test_model_remove_reaction(self):
         old_reaction_count = len(self.model.reactions)
-        self.model.remove_reactions([self.model.reactions.get_by_id("PGI")])
+        self.model.remove_reactions(["PGI"])
         self.assertEqual(len(self.model.reactions), old_reaction_count - 1)
         with self.assertRaises(KeyError):
             self.model.reactions.get_by_id("PGI")
-        # TODO - delete by id - will this be supported?
-        # TODO - delete orphan metabolites - will this be expected behavior?
+        self.model.remove_reactions(self.model.reactions[:1])
+        self.assertEqual(len(self.model.reactions), old_reaction_count - 2)
+        tmp_metabolite = Metabolite("testing")
+        self.model.reactions[0].add_metabolites({tmp_metabolite: 1})
+        self.assertIn(tmp_metabolite, self.model.metabolites)
+        self.model.remove_reactions(self.model.reactions[:1],
+                                    remove_orphans=True)
+        self.assertNotIn(tmp_metabolite, self.model.metabolites)
+
+    def test_reaction_remove(self):
+        model = self.model
+        old_reaction_count = len(model.reactions)
+        tmp_metabolite = Metabolite("testing")
+        # Delete without removing orphan
+        model.reactions[0].add_metabolites({tmp_metabolite: 1})
+        self.assertEqual(len(tmp_metabolite.reactions), 1)
+        # esnsure the stoichiometry is still the same using different objects
+        removed_reaction = model.reactions[0]
+        original_stoich = {i.id: value for i, value
+                           in removed_reaction._metabolites.items()}
+        model.reactions[0].remove_from_model(remove_orphans=False)
+        self.assertEqual(len(original_stoich),
+                         len(removed_reaction._metabolites))
+        for met in removed_reaction._metabolites:
+            self.assertEqual(original_stoich[met.id],
+                             removed_reaction._metabolites[met])
+            self.assertIsNot(met, model.metabolites)
+        # make sure it's still in the model
+        self.assertIn(tmp_metabolite, model.metabolites)
+        self.assertEqual(len(tmp_metabolite.reactions), 0)
+        self.assertEqual(len(self.model.reactions), old_reaction_count - 1)
+
+        # Now try it with removing orphans
+        model.reactions[0].add_metabolites({tmp_metabolite: 1})
+        self.assertEqual(len(tmp_metabolite.reactions), 1)
+        model.reactions[0].remove_from_model(remove_orphans=True)
+        self.assertNotIn(tmp_metabolite, model.metabolites)
+        self.assertEqual(len(tmp_metabolite.reactions), 0)
+        self.assertEqual(len(self.model.reactions), old_reaction_count - 2)
+
+        # It shouldn't remove orphans if it's in 2 reactions however
+        model.reactions[0].add_metabolites({tmp_metabolite: 1})
+        model.reactions[1].add_metabolites({tmp_metabolite: 1})
+        self.assertEqual(len(tmp_metabolite.reactions), 2)
+        model.reactions[0].remove_from_model(remove_orphans=False)
+        self.assertIn(tmp_metabolite, model.metabolites)
+        self.assertEqual(len(tmp_metabolite.reactions), 1)
+        self.assertEqual(len(self.model.reactions), old_reaction_count - 3)
+
+    def test_reaction_delete(self):
+        model = self.model
+        old_reaction_count = len(model.reactions)
+        tmp_metabolite = Metabolite("testing")
+        # Delete without removing orphan
+        model.reactions[0].add_metabolites({tmp_metabolite: 1})
+        self.assertEqual(len(tmp_metabolite.reactions), 1)
+        model.reactions[0].delete(remove_orphans=False)
+        # make sure it's still in the model
+        self.assertIn(tmp_metabolite, model.metabolites)
+        self.assertEqual(len(tmp_metabolite.reactions), 0)
+        self.assertEqual(len(self.model.reactions), old_reaction_count - 1)
+
+        # Now try it with removing orphans
+        model.reactions[0].add_metabolites({tmp_metabolite: 1})
+        self.assertEqual(len(tmp_metabolite.reactions), 1)
+        model.reactions[0].delete(remove_orphans=True)
+        self.assertNotIn(tmp_metabolite, model.metabolites)
+        self.assertEqual(len(tmp_metabolite.reactions), 0)
+        self.assertEqual(len(self.model.reactions), old_reaction_count - 2)
+
+        # It shouldn't remove orphans if it's in 2 reactions however
+        model.reactions[0].add_metabolites({tmp_metabolite: 1})
+        model.reactions[1].add_metabolites({tmp_metabolite: 1})
+        self.assertEqual(len(tmp_metabolite.reactions), 2)
+        model.reactions[0].delete(remove_orphans=False)
+        self.assertIn(tmp_metabolite, model.metabolites)
+        self.assertEqual(len(tmp_metabolite.reactions), 1)
+        self.assertEqual(len(self.model.reactions), old_reaction_count - 3)
 
     def test_remove_gene(self):
         target_gene = self.model.genes[0]
