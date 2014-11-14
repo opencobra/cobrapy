@@ -1,18 +1,14 @@
 from __future__ import print_function
 
-from ..external.six import string_types, iteritems
-
-
-# Is it better to restrict a Reaction to a single model or
-# should we allow a Reaction to be associated with multiple models?
-#
 from collections import defaultdict
 import re
 from copy import copy, deepcopy
+from warnings import warn
+
+from ..external.six import string_types, iteritems
+
 from .Object import Object
 from .Gene import Gene
-
-from warnings import warn
 
 
 class Frozendict(dict):
@@ -39,11 +35,6 @@ class Reaction(Object):
     a biochemical reaction in a cobra.Model object
 
     """
-    # __slots__ = ['id', '_metabolites', '_gene_reaction_rule',
-    #              'subsystem', '_genes', '_model',
-    #              'name', 'lower_bound', 'upper_bound',
-    #              'objective_coefficient',
-    # ]
 
     def __init__(self, name=None):
         """An object for housing reactions and associated information

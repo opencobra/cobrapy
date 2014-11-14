@@ -3,7 +3,6 @@ from ..external.six import iteritems
 
 class Object(object):
     """Defines common behavior of object in cobra.core"""
-    # __slots__ = ['id']
 
     def __init__(self, id=None, mnx_id=None):
         """

@@ -15,24 +15,8 @@ class ArrayBasedModel(Model):
 
     """
 
-    def __setstate__(self, state):
-        """Make sure all cobra.Objects in the model point to the model
-
-        TODO: Make sure that the genes and metabolites referenced by
-        the reactions.(genes|metabolites) point to the model's genes
-        and metabolites.
-
-        """
-        self.__dict__.update(state)
-        [[setattr(x, '_model', self)
-          for x in self.__dict__[y]]
-         for y in ['reactions', 'genes', 'metabolites']]
-
-    def __init__(
-            self,
-            description=None,
-            deepcopy_model=False,
-            matrix_type='scipy.lil_matrix'):
+    def __init__(self, description=None, deepcopy_model=False,
+                 matrix_type='scipy.lil_matrix'):
         """
         description: None | String | cobra.Model
 

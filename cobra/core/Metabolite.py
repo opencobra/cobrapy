@@ -8,12 +8,6 @@ class Metabolite(Species):
     a metabolite in a cobra.Reaction object.
 
     """
-    # __slots__ = ['id', 'formula', 'name', 'compartment',
-    # 'charge']
-    # def __setstate__(self, the_dict):
-    #    from cobra.core.Metabolite import Metabolite
-    #    Species.__setstate__(self, the_dict)
-    #    [self.__setattr__(k, v) for k, v in the_dict]
 
     def __init__(self, id=None, formula=None,
                  name=None, compartment=None):

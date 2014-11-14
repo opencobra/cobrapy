@@ -22,9 +22,9 @@ class Model(Object):
     def __setstate__(self, state):
         """Make sure all cobra.Objects in the model point to the model"""
         self.__dict__.update(state)
-        [[setattr(x, '_model', self)
-          for x in self.__dict__[y]]
-         for y in ['reactions', 'genes', 'metabolites']]
+        for y in ['reactions', 'genes', 'metabolites']:
+            for x in getattr(self, y):
+                x._model = self
 
     def __init__(self, description=None):
         if isinstance(description, Model):
@@ -35,7 +35,6 @@ class Model(Object):
             self._trimmed = False
             self._trimmed_genes = []
             self._trimmed_reactions = {}
-            self.legacy_format = False  # DEPRECATED
             self.genes = DictList()
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
@@ -150,13 +149,8 @@ class Model(Object):
         self.metabolites += metabolite_list
 
     def _update_reaction(self, reaction):
-        """Updates everything associated with the reaction.id of reaction.
-
-        reaction: A cobra.Reaction object, or a list of these objects.
-
-        """
-        warn("Deprecated")
-
+        """.. warning :: deprecated"""
+        warn("deprecated function")
         if not hasattr(reaction, '__iter__'):
             reaction = [reaction]
         for the_reaction in reaction:

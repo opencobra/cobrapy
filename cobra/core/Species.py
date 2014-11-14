@@ -10,7 +10,6 @@ class Species(Object):
 
 
     """
-    # __slots__ = ['id', 'formula', 'name', 'compartment', 'charge']
 
     def __init__(self, id=None, formula=None,
                  name=None, compartment=None, mnx_id=None):
