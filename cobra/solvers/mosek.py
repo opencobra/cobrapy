@@ -1,9 +1,9 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import mosek
 
 from ..external.six.moves import zip
-from ..external.six import iteritems
+from ..external.six import iteritems, string_types
 
 env = mosek.Env()
 
@@ -17,12 +17,34 @@ status_dict = {
     mosek.solsta.optimal: 'optimal',
     mosek.solsta.integer_optimal: 'optimal'}
 
+param_enums = {
+    "bi_clean_optimizer": mosek.optimizertype,
+    "cache_license": mosek.onoffkey,
+    "check_convexity": mosek.checkconvexitytype,
+    "compress_statfile": mosek.onoffkey,
+    "feasrepair_optimize": mosek.feasrepairtype,
+    "infeas_generic_names": mosek.onoffkey,
+    "infeas_prefer_primal": mosek.onoffkey,
+    "infeas_report_auto": mosek.onoffkey,
+    "license_allow_overuse": mosek.onoffkey,
+    "license_wait": mosek.onoffkey,
+    "mio_branch_dir": mosek.branchdir,
+    "mio_branch_priorities_use": mosek.onoffkey,
+    "mio_construct_sol": mosek.onoffkey,
+    "mio_cont_sol": mosek.miocontsoltype,
+    "mio_use_multithreaded_optimizer": mosek.onoffkey,
+    "presolve_lindep_use": mosek.onoffkey,
+    "presolve_use": mosek.presolvemode,
+    "sim_basis_factor_use": mosek.onoffkey,
+    "sim_degen": mosek.simdegen
+}
 
-def verbose_printer(text):
-        print text
+
+def _verbose_printer(text):
+        print(text)
 
 
-def create_problem(cobra_model, objective_sense="maximize", verbose=False,
+def create_problem(cobra_model, objective_sense="maximize",
                    **solver_parameters):
     n_rxns = len(cobra_model.reactions)
     n_mets = len(cobra_model.metabolites)
@@ -38,7 +60,7 @@ def create_problem(cobra_model, objective_sense="maximize", verbose=False,
     lp.putdouparam(mosek.dparam.presolve_tol_aij, 1e-15)
     lp.putdouparam(mosek.dparam.presolve_tol_abs_lindep, 0.)
     lp.putdouparam(mosek.dparam.presolve_tol_s, 0.)
-    lp.putdouparam(mosek.dparam.presolve_tol_x, 1e-15)
+    lp.putdouparam(mosek.dparam.presolve_tol_x, 1e-10)
     lp.putintparam(mosek.iparam.concurrent_priority_intpnt, 0)
     lp.putintparam(mosek.iparam.concurrent_num_optimizers, 1)
     # add reactions/variables
@@ -90,9 +112,11 @@ def set_objective_sense(lp, objective_sense):
 def set_parameter(lp, parameter_name, parameter_value):
     if parameter_name == "verbose":
         if parameter_value:
-            lp.set_Stream(mosek.streamtype.log, verbose_printer)
+            for streamtype in mosek.streamtype.values:
+                lp.set_Stream(streamtype, _verbose_printer)
         else:
-            lp.set_Stream(mosek.streamtype.log, lambda x: None)
+            for streamtype in mosek.streamtype.values:
+                lp.set_Stream(streamtype, lambda x: None)
     elif parameter_name == "objective_sense":
         set_objective_sense(lp, parameter_value)
     elif parameter_name == "quadratic_component":
@@ -100,6 +124,18 @@ def set_parameter(lp, parameter_name, parameter_value):
             set_quadratic_objective(lp, parameter_value)
     elif hasattr(mosek.dparam, parameter_name):
         lp.putdouparam(getattr(mosek.dparam, parameter_name), parameter_value)
+    # Integer parameter section
+    # Many of these are enumerations. Therefore the value should be converted
+    # to the appropriate enum one.
+    elif isinstance(parameter_value, string_types) and \
+            parameter_name in param_enums:
+        lp.putintparam(getattr(mosek.iparam, parameter_name),
+                       getattr(param_enums[parameter_name], parameter_value))
+    elif isinstance(parameter_value, bool) and parameter_name in param_enums:
+        if parameter_value:
+            set_parameter(lp, parameter_name, "on")
+        else:
+            set_parameter(lp, parameter_name, "off")
     elif hasattr(mosek.iparam, parameter_name):
         lp.putintparam(getattr(mosek.iparam, parameter_name), parameter_value)
     else:
