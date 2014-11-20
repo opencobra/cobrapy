@@ -95,26 +95,29 @@ def initialize_growth_medium(cobra_model, the_medium='MgM',
         else:
             the_reaction.lower_bound = medium_composition[the_component]
 
+
 def convert_to_irreversible(cobra_model):
-    """Will break all of the reversible reactions into two separate irreversible reactions with
-    different directions.  Useful for some modeling problems.
+    """Split reversible reactions into two irreversible reactions
+
+    These two reactions will proceed in opposite directions. This
+    guarentees that all reactions in the model will only allow
+    positive flux values, which is useful for some modeling problems.
 
     cobra_model: A Model object which will be modified in place.
 
-    
-    TODO: Can we just use a -1*guided_copy or something else?
     """
     reactions_to_add = []
     for reaction in cobra_model.reactions:
-        #Potential bug because a reaction might run backwards naturally
-        #and this would result in adding an empty reaction to the
-        #model in addition to the reverse reaction.
+        # If a reaction is reverse only, the forward reaction (which
+        # will be constrained to 0) will be left in the model.
         if reaction.lower_bound < 0:
             reverse_reaction = Reaction(reaction.id + "_reverse")
             reverse_reaction.lower_bound = 0
             reverse_reaction.upper_bound = reaction.lower_bound * -1
+            reverse_reaction.objective_coefficient = \
+                reaction.objective_coefficient * -1
             reaction.lower_bound = 0
-            #Make the directions aware of each other
+            # Make the directions aware of each other
             reaction.reflection = reverse_reaction
             reverse_reaction.reflection = reaction
             reaction_dict = dict([(k, v*-1)
@@ -127,7 +130,7 @@ def convert_to_irreversible(cobra_model):
             reverse_reaction._gene_reaction_rule = reaction._gene_reaction_rule
             reactions_to_add.append(reverse_reaction)
     cobra_model.add_reactions(reactions_to_add)
- 
+
 def revert_to_reversible(cobra_model, update_solution=True):
     """This function will convert a reversible model made by convert_to_irreversible
     into a reversible model.
