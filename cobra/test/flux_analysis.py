@@ -19,6 +19,7 @@ if __name__ == "__main__":
     from cobra.flux_analysis.parsimonious import optimize_minimal_flux
     from cobra.flux_analysis.variability import flux_variability_analysis
     from cobra.flux_analysis.single_deletion import single_deletion
+    from cobra.flux_analysis.loopless import construct_loopless_model
     from cobra.external.six import iteritems
     if numpy:
         from cobra.flux_analysis.double_deletion import double_deletion
@@ -32,6 +33,7 @@ else:
     from ..flux_analysis.parsimonious import optimize_minimal_flux
     from ..flux_analysis.variability import flux_variability_analysis
     from ..flux_analysis.single_deletion import single_deletion
+    from ..flux_analysis.loopless import construct_loopless_model
     from ..external.six import iteritems
     if numpy:
         from ..flux_analysis.double_deletion import double_deletion
@@ -233,6 +235,35 @@ class TestCobraFluxAnalysis(TestCase):
             self.assertRaises(ValueError, flux_variability_analysis,
                               infeasible_model, solver=solver)
 
+    def test_loopless(self):
+        try:
+            solver = get_solver_name(mip=True)
+        except:
+            self.skip("no MILP solver found")
+        test_model = Model()
+        test_model.add_metabolites(Metabolite("A"))
+        test_model.add_metabolites(Metabolite("B"))
+        test_model.add_metabolites(Metabolite("C"))
+        EX_A = Reaction("EX_A")
+        EX_A.add_metabolites({test_model.metabolites.A: 1})
+        DM_C = Reaction("DM_C")
+        DM_C.add_metabolites({test_model.metabolites.C: -1})
+        v1 = Reaction("v1")
+        v1.add_metabolites({test_model.metabolites.A: -1,
+                            test_model.metabolites.B: 1})
+        v2 = Reaction("v2")
+        v2.add_metabolites({test_model.metabolites.B: -1,
+                            test_model.metabolites.C: 1})
+        v3 = Reaction("v3")
+        v3.add_metabolites({test_model.metabolites.C: -1,
+                            test_model.metabolites.A: 1})
+        DM_C.objective_coefficient = 1
+        test_model.add_reactions([EX_A, DM_C, v1, v2, v3])
+        feasible_sol = construct_loopless_model(test_model).optimize()
+        v3.lower_bound = 1
+        infeasible_sol = construct_loopless_model(test_model).optimize()
+        self.assertEqual(feasible_sol.status, "optimal")
+        self.assertEqual(infeasible_sol.status, "infeasible")
 
 # make a test suite to run all of the tests
 loader = TestLoader()
