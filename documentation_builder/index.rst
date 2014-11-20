@@ -16,6 +16,7 @@ For installation instructions, please see `INSTALL.md
     escher
     milp
     qp
+    loopless
     faq
     cobra
 

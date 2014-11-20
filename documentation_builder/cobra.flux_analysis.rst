@@ -28,6 +28,14 @@ cobra.flux_analysis.essentiality module
     :undoc-members:
     :show-inheritance:
 
+cobra.flux_analysis.loopless module
+-----------------------------------
+
+.. automodule:: cobra.flux_analysis.loopless
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 cobra.flux_analysis.moma module
 -------------------------------
 
