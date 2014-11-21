@@ -96,7 +96,10 @@ try:
         except ImportError:
             pass
 
-    build_args["libraries"] = ["glpk", "gmp"]
+    if system() == "Windows":
+        build_args["libraries"] = ["glpk"]
+    else:
+        build_args["libraries"] = ["glpk", "gmp"]
     # It is possible to statically link libglpk to the built extension. This
     # allows for simplified installation without the need to install libglpk to
     # the system, and is also usueful when installing a particular version of
