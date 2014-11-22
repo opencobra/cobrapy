@@ -1,6 +1,6 @@
 import re
 from uuid import uuid4
-
+from warnings import warn
 
 from numpy import array, object as np_object
 from scipy.io import loadmat, savemat
@@ -134,6 +134,11 @@ def from_mat_struct(mat_struct, model_id=None):
         raise ValueError("not a valid mat struct")
     if not set(["rxns", "mets", "S", "lb", "ub"]) <= set(m.dtype.names):
         raise ValueError("not a valid mat struct")
+    if "c" in m.dtype.names:
+        c_vec = m["c"][0, 0]
+    else:
+        c_vec = None
+        warn("objective vector 'c' not found")
     model = Model()
     if "description" in m:
         model.id = m["description"][0, 0][0]
@@ -161,7 +166,8 @@ def from_mat_struct(mat_struct, model_id=None):
         new_reaction.id = str(name[0][0])
         new_reaction.lower_bound = float(m["lb"][0, 0][i][0])
         new_reaction.upper_bound = float(m["ub"][0, 0][i][0])
-        new_reaction.objective_coefficient = float(m["c"][0, 0][i][0])
+        if c_vec is not None:
+            new_reaction.objective_coefficient = float(c_vec[i][0])
         try:
             new_reaction.gene_reaction_rule = str(m['grRules'][0, 0][i][0][0])
         except (IndexError, ValueError):
