@@ -2,6 +2,9 @@
 Loopless FBA
 ============
 
+This example is available as an IPython
+`notebook <http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/loopless.ipynb>`__.
+
 The goal of this procedure is identification of a thermodynamically
 consistent flux state without loops, as implied by the name.
 
@@ -44,7 +47,7 @@ We will construct an LP integrating both constraints.
    \begin{matrix}
    S & 0 & 0\\
    -I & \max(ub)I & 0 \\
-   0 & \max(ub)I & S^\mathsf T
+   0 & (\max(ub) + 1)I & S^\mathsf T
    \end{matrix}
    \right)
    \cdot
@@ -58,7 +61,7 @@ We will construct an LP integrating both constraints.
    \begin{matrix}
    &=& 0 \\
    &\ge& 0 \\
-   &\le& - 1
+   &\le& \max(ub)
    \end{matrix}
 
 Note that these extra constraints are not applied to boundary reactions
