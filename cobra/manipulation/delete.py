@@ -8,6 +8,7 @@ spontaneous_re = re.compile('(^|(?<=( |\()))s0001(?=( |\)|$))')
 and_re = re.compile(r'\band\b')
 or_re = re.compile(r'\bor\b')
 
+
 def prune_unused_metabolites(cobra_model):
     """Removes metabolites that aren't involved in any reactions in the model
 
@@ -27,16 +28,16 @@ def prune_unused_metabolites(cobra_model):
     else:
         warn('All metabolites used in at least 1 reaction')
 
-    
+
 def prune_unused_reactions(cobra_model):
-    """Removes reactions from cobra_model.  
+    """Removes reactions from cobra_model.
 
     cobra_model: A Model object.
 
-    reactions_to_prune: None, a string matching a reaction.id, a cobra.Reaction, or
-    as list of the ids / Reactions to remove from cobra_model.
-    If None then the function will delete reactions that
-    have no active metabolites in the model.
+    reactions_to_prune: None, a string matching a reaction.id, a
+    cobra.Reaction, or as list of the ids / Reactions to remove from
+    cobra_model.  If None then the function will delete reactions that have no
+    active metabolites in the model.
 
     """
     pruned_reactions = []
@@ -54,19 +55,19 @@ def prune_unused_reactions(cobra_model):
 
 
 def undelete_model_genes(cobra_model):
-    """Undoes the effects of a call to delete_model_genes. Modifies cobra_model in place.
+    """Undoes the effects of a call to delete_model_genes in place.
 
-    cobra_model:  A cobra.Model object
+    cobra_model:  A cobra.Model which will be modified in place
 
     """
 
     if cobra_model._trimmed_genes is not None:
-        [setattr(x, 'functional', True)
-         for x in cobra_model._trimmed_genes]
-    
+        for x in cobra_model._trimmed_genes:
+            x.functional = True
+
     if cobra_model._trimmed_reactions is not None:
-        for the_reaction, (lower_bound,
-                           upper_bound) in cobra_model._trimmed_reactions.items():
+        for the_reaction, (lower_bound, upper_bound) in \
+                cobra_model._trimmed_reactions.items():
             the_reaction.lower_bound = lower_bound
             the_reaction.upper_bound = upper_bound
 
@@ -76,7 +77,7 @@ def undelete_model_genes(cobra_model):
 
 
 def find_gene_knockout_reactions(cobra_model, gene_list):
-    """identify reactions which will be disabled when the genes are knocked out"""
+    """identify reactions which will be disabled when genes are knocked out"""
 
     potential_reactions = set()
     for x in gene_list:
@@ -114,33 +115,32 @@ def delete_model_genes(cobra_model, gene_list,
     cumulative_deletions: False or True.  If True then any previous
     deletions will be maintained in the model.
 
-    
     """
     if disable_orphans:
         raise NotImplementedError("disable_orphans not implemented")
     if not hasattr(cobra_model, '_trimmed'):
         cobra_model._trimmed = False
         cobra_model._trimmed_genes = []
-        cobra_model._trimmed_reactions = {} #Store the old bounds in here.
+        cobra_model._trimmed_reactions = {}  # Store the old bounds in here.
     # older models have this
     if cobra_model._trimmed_genes is None:
         cobra_model._trimmed_genes = []
     if cobra_model._trimmed_reactions is None:
         cobra_model._trimmed_reactions = {}
-    #Allow a single gene to be fed in as a string instead of a list.
+    # Allow a single gene to be fed in as a string instead of a list.
     if not hasattr(gene_list, '__iter__') or \
-           hasattr(gene_list, 'id'):  #cobra.Gene has __iter__
+            hasattr(gene_list, 'id'):  # cobra.Gene has __iter__
         gene_list = [gene_list]
 
     if not hasattr(gene_list[0], 'id'):
         if gene_list[0] in cobra_model.genes:
                 tmp_gene_dict = dict([(x.id, x) for x in cobra_model.genes])
         else:
-            #assume we're dealing with names if no match to an id
+            # assume we're dealing with names if no match to an id
             tmp_gene_dict = dict([(x.name, x) for x in cobra_model.genes])
         gene_list = [tmp_gene_dict[x] for x in gene_list]
 
-    #Make the genes non-functional
+    # Make the genes non-functional
     for x in gene_list:
         x.functional = False
 
@@ -162,5 +162,5 @@ def delete_model_genes(cobra_model, gene_list,
         the_reaction.upper_bound = 0.
         cobra_model._trimmed = True
 
-    cobra_model._trimmed_genes =  list(set(cobra_model._trimmed_genes + gene_list))
-
+    cobra_model._trimmed_genes = list(set(cobra_model._trimmed_genes +
+                                          gene_list))
