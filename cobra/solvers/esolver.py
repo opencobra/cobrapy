@@ -85,7 +85,7 @@ class Esolver(object):
             self.solution_filepath = f.name
         command = [ESOLVER_COMMAND, "-b", self.basis_filepath,
                    "-O", self.solution_filepath[:-4]]
-        if existing_basis is not None:
+        if existing_basis is not None and isfile(existing_basis):
             command.extend(["-B", existing_basis])
         command.extend(["-L", lp_filepath])
         command_kwargs = {}
@@ -108,7 +108,8 @@ class Esolver(object):
             if not isfile(self.solution_filepath):
                 with open(self.solution_filepath, "w") as outfile:
                     outfile.write("=infeasible\n")
-        else:
+        elif isfile(self.solution_filepath + ".gz"):
+            # the solution may be written out compressed
             check_call([GZIP_COMMAND, "-d", self.solution_filepath + ".gz"])
         if DEVNULL is not None:
             DEVNULL.close()
