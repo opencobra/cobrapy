@@ -13,7 +13,6 @@ if not data_directory.endswith(sep):
 salmonella_sbml = join(data_directory, "salmonella.xml")
 salmonella_fbc_sbml = join(data_directory, "salmonella_fbc.xml")
 salmonella_pickle = join(data_directory, "salmonella.pickle")
-salmonella_reaction_p_values_pickle = join(data_directory, "salmonella_reaction_p_values.pickle")
 ecoli_sbml = join(data_directory, "iJO1366.xml")
 ecoli_pickle = join(data_directory, "iJO1366.pickle")
 ecoli_mat = join(data_directory, "iJO1366.mat")
@@ -35,10 +34,10 @@ def create_test_model(test_pickle=salmonella_pickle):
     version of the Salmonella enterica Typhimurium LT2 model published in
     Thiele et al. 2011 BMC Sys Bio 5:8
 
-    test_pickle: The complete file name of a pickled cobra.Model or SBML XML
-    file to be read.  We currently provide Salmonella enterica Typhimurium
-    and Escherichia coli models whose paths are stored in cobra.test.salmonella_pickle
-    and cobra.test.ecoli_pickle, respectively.  The ecoli model is a variant of the
+    test_pickle: The filename of a pickled cobra.Model
+    We currently provide Salmonella enterica Typhimurium and Escherichia coli
+    models whose paths are stored in cobra.test.salmonella_pickle and
+    cobra.test.ecoli_pickle, respectively.  The ecoli model is a variant of the
     model published in Orth et al. 2011 Mol Syst Biol 7:535
 
     """
@@ -54,6 +53,7 @@ def create_test_model(test_pickle=salmonella_pickle):
     with open(test_pickle, "rb") as infile:
         return load(infile)
 
+
 def create_test_suite():
     """create a unittest.TestSuite with available tests"""
     from unittest import TestLoader, TestSuite
@@ -65,6 +65,7 @@ def create_test_suite():
     return suite
 
 suite = create_test_suite()
+
 
 def test_all():
     """###running unit tests on cobra py###"""

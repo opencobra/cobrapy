@@ -9,6 +9,8 @@ if _name == "posix":
     _warning_base = "%s:%s \x1b[1;31m%s\x1b[0m: %s\n"  # colors
 else:
     _warning_base = "%s:%s %s: %s\n"
+
+
 def _warn_format(message, category, filename, lineno, file=None, line=None):
     shortname = filename.replace(_cobra_path, "cobra", 1)
     return _warning_base % (shortname, lineno, category.__name__, message)
@@ -16,7 +18,8 @@ _warnings.formatwarning = _warn_format
 
 from .version import get_version
 __version__ = get_version()
-from .core import Object, Formula, Metabolite, Gene, Reaction, Model, DictList, Species
+from .core import Object, Formula, Metabolite, Gene, Reaction, Model, \
+    DictList, Species
 from . import io, flux_analysis
 
 try:

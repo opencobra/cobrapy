@@ -110,7 +110,7 @@ try:
     # https://gist.github.com/aebrahim/94a2b231d86821f7f225
     include_dirs = []
     library_dirs = []
-    if isfile("libglpk.a") or isfile ("libgmp.a"):
+    if isfile("libglpk.a") or isfile("libgmp.a"):
         library_dirs.append(abspath("."))
     if isfile("glpk.h"):
         include_dirs.append(dirname(abspath("glpk.h")))
