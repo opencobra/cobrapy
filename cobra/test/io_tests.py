@@ -124,6 +124,7 @@ class TestCobraIOjson(TestCase, TestCobraIO):
                              reread_model.genes.get_by_id(gene_id).name)
         unlink(test_output_filename)
 
+
 class TestCobraIOPickle(TestCase, TestCobraIO):
     def setUp(self):
         self.test_model = create_test_model()

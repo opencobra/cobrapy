@@ -218,7 +218,6 @@ class TestReactions(CobraTestCase):
         model_gene = model.genes.get_by_id(reaction_gene.id)
         self.assertIs(reaction_gene, model_gene)
 
-
     def testGPR_modification(self):
         model = self.model
         reaction = model.reactions.get_by_id("PGI")
@@ -285,9 +284,8 @@ class TestCobraModel(CobraTestCase):
         # tests on the added metabolites
         met1_in_model = self.model.metabolites.get_by_id(dummy_metabolite_1.id)
         self.assertIs(met1_in_model, dummy_metabolite_1)
-        #assertIsNot is not in python 2.6
         copy_in_model = self.model.metabolites.get_by_id(copy_metabolite.id)
-        self.assertTrue(copy_metabolite is not copy_in_model)
+        self.assertIsNot(copy_metabolite, copy_in_model)
         self.assertIs(type(copy_in_model), Metabolite)
         self.assertTrue(dummy_reaction in actual_metabolite._reaction)
 
@@ -403,12 +401,11 @@ class TestCobraModel(CobraTestCase):
         old_reaction_count = len(self.model.reactions)
         self.assertEqual(len(self.model.reactions), len(model_copy.reactions))
         self.assertEqual(len(self.model.metabolites),
-            len(model_copy.metabolites))
+                         len(model_copy.metabolites))
         model_copy.remove_reactions(model_copy.reactions[0:5])
         self.assertEqual(old_reaction_count, len(self.model.reactions))
         self.assertNotEqual(len(self.model.reactions),
-            len(model_copy.reactions))
-
+                            len(model_copy.reactions))
 
     def test_deepcopy(self):
         """Reference structures are maintained when deepcopying"""
@@ -418,7 +415,8 @@ class TestCobraModel(CobraTestCase):
             reactions = sorted(i.id for i in gene.reactions)
             reactions_copy = sorted(i.id for i in gene_copy.reactions)
             self.assertEqual(reactions, reactions_copy)
-        for reaction, reaction_copy in zip(self.model.reactions, model_copy.reactions):
+        for reaction, reaction_copy in zip(self.model.reactions,
+                                           model_copy.reactions):
             self.assertEqual(reaction.id, reaction_copy.id)
             metabolites = sorted(i.id for i in reaction._metabolites)
             metabolites_copy = sorted(i.id for i in reaction_copy._metabolites)
@@ -434,12 +432,18 @@ class TestCobraModel(CobraTestCase):
         _model.add_reactions([x.copy() for x in self.model.reactions])
         _genes = []
         _metabolites = []
-        [(_genes.extend(x.genes), _metabolites.extend(x.metabolites))
-         for x in _model.reactions];
+        for x in _model.reactions:
+            _genes.extend(x.genes)
+            _metabolites.extend(x.metabolites)
+
         orphan_genes = [x for x in _genes if x.model is not _model]
         orphan_metabolites = [x for x in _metabolites if x.model is not _model]
-        self.assertEqual(len(orphan_genes), 0, msg='It looks like there are dangling genes when running Model.add_reactions')
-        self.assertEqual(len(orphan_metabolites), 0, msg='It looks like there are dangling metabolites when running Model.add_reactions')
+        self.assertEqual(len(orphan_genes), 0,
+                         msg='It looks like there are dangling genes when '
+                         'running Model.add_reactions')
+        self.assertEqual(len(orphan_metabolites), 0,
+                         msg='It looks like there are dangling metabolites '
+                         'when running Model.add_reactions')
 
     def test_change_objective(self):
         biomass = self.model.reactions.get_by_id("biomass_iRR1083_metals")
@@ -469,18 +473,21 @@ class TestCobraArrayModel(TestCobraModel):
         self.model = model
 
     def test_array_based_model(self):
+        assertEqual = self.assertEqual  # alias
         for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
-            model = create_test_model().to_array_based_model(matrix_type=matrix_type)
+            model = create_test_model().\
+                to_array_based_model(matrix_type=matrix_type)
             self.assertEqual(model.S[1605, 0], -1)
             self.assertEqual(model.S[43, 0], 0)
             model.S[43, 0] = 1
             self.assertEqual(model.S[43, 0], 1)
-            self.assertEqual(model.reactions[0].metabolites[model.metabolites[43]], 1)
+            self.assertEqual(
+                model.reactions[0].metabolites[model.metabolites[43]], 1)
             model.S[43, 0] = 0
-            self.assertEqual(model.lower_bounds[0], model.reactions[0].lower_bound)
-            self.assertEqual(model.lower_bounds[5], model.reactions[5].lower_bound)
-            self.assertEqual(model.upper_bounds[0], model.reactions[0].upper_bound)
-            self.assertEqual(model.upper_bounds[5], model.reactions[5].upper_bound)
+            assertEqual(model.lower_bounds[0], model.reactions[0].lower_bound)
+            assertEqual(model.lower_bounds[5], model.reactions[5].lower_bound)
+            assertEqual(model.upper_bounds[0], model.reactions[0].upper_bound)
+            assertEqual(model.upper_bounds[5], model.reactions[5].upper_bound)
             model.lower_bounds[6] = 2
             self.assertEqual(model.lower_bounds[6], 2)
             self.assertEqual(model.reactions[6].lower_bound, 2)
@@ -492,7 +499,8 @@ class TestCobraArrayModel(TestCobraModel):
 
     def test_array_based_model_add(self):
         for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
-            model = create_test_model().to_array_based_model(matrix_type=matrix_type)
+            model = create_test_model().\
+                to_array_based_model(matrix_type=matrix_type)
             test_reaction = Reaction("test")
             test_reaction.add_metabolites({model.metabolites[0]: 4})
             test_reaction.lower_bound = -3.14
@@ -508,6 +516,7 @@ class TestCobraArrayModel(TestCobraModel):
 # make a test suite to run all of the tests
 loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])
+
 
 def test_all():
     TextTestRunner(verbosity=2).run(suite)

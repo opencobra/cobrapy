@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-#This script regenerates pickles of cobra Models.  Should be
-#performed after updating core classes to prevent subtle bugs.
+# This script regenerates pickles of cobra Models.  Should be
+# performed after updating core classes to prevent subtle bugs.
 try:
     from cPickle import load, dump
 except:

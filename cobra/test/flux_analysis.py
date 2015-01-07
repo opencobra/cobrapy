@@ -82,7 +82,7 @@ class TestCobraFluxAnalysis(TestCase):
         get_removed = lambda m: {x.id for x in m._trimmed_reactions}
         gene_list = ['STM1067', 'STM0227']
         dependent_reactions = {'3HAD121', '3HAD160', '3HAD80', '3HAD140',
-                               '3HAD180', '3HAD100', '3HAD181','3HAD120',
+                               '3HAD180', '3HAD100', '3HAD181', '3HAD120',
                                '3HAD60', '3HAD141', '3HAD161', 'T2DECAI',
                                '3HAD40'}
         delete_model_genes(cobra_model, gene_list)
@@ -126,14 +126,17 @@ class TestCobraFluxAnalysis(TestCase):
         cobra_model = self.model
         initialize_growth_medium(cobra_model, 'LB')
 
-        #Expected growth rates for the salmonella model with deletions in LB medium
-        the_loci =  ['STM4081', 'STM0247', 'STM3867', 'STM2952']
-        the_genes = tpiA, metN, atpA, eno = map(cobra_model.genes.get_by_id, the_loci)
+        # Expected growth rates for the salmonella model with deletions in LB
+        the_loci = ['STM4081', 'STM0247', 'STM3867', 'STM2952']
+        the_genes = tpiA, metN, atpA, eno = map(cobra_model.genes.get_by_id,
+                                                the_loci)
         id_to_name = dict([(x.id, x.name) for x in the_genes])
-        growth_dict = {'fba':{tpiA.id:2.41, metN.id:2.44, atpA.id:1.87, eno.id:1.81},
-                       'moma':{ tpiA.id:1.62, metN.id:2.4, atpA.id:1.40, eno.id:0.33}}
+        growth_dict = {'fba': {tpiA.id: 2.41, metN.id: 2.44,
+                               atpA.id: 1.87, eno.id: 1.81},
+                       'moma': {tpiA.id: 1.62, metN.id: 2.4,
+                                atpA.id: 1.40, eno.id: 0.33}}
 
-        #MOMA requires cplex or gurobi
+        # MOMA requires cplex or gurobi
         try:
             get_solver_name(qp=True)
         except:
@@ -147,17 +150,18 @@ class TestCobraFluxAnalysis(TestCase):
 
             for the_gene in element_list:
                 self.assertEqual(statuses[the_gene], 'optimal')
-                self.assertAlmostEqual(rates[the_gene], the_growth_rates[the_gene],
+                self.assertAlmostEqual(rates[the_gene],
+                                       the_growth_rates[the_gene],
                                        places=2)
 
     @skipIf(numpy is None, "double deletions require numpy")
     def test_double_deletion(self):
         cobra_model = self.model
-        #turn into a double deletion unit test
+        # turn into a double deletion unit test
         initialize_growth_medium(cobra_model, 'LB')
-        #Expected growth rates for the salmonella model with deletions in LB medium
-        the_loci =  ['STM4081', 'STM0247', 'STM3867', 'STM2952']
-        the_genes = tpiA, metN, atpA, eno = list(map(cobra_model.genes.get_by_id, the_loci))
+        # Expected growth rates for the salmonella model with deletions in LB
+        the_loci = ['STM4081', 'STM0247', 'STM3867', 'STM2952']
+        the_genes = list(map(cobra_model.genes.get_by_id, the_loci))
         growth_dict = {}
         growth_list = [[2.41, 2.389, 1.775, 1.81],
                        [2.389, 2.437, 1.86, 1.79],
@@ -166,10 +170,9 @@ class TestCobraFluxAnalysis(TestCase):
         for the_gene, the_rates in zip(the_genes, growth_list):
             growth_dict[the_gene] = dict(zip(the_genes, the_rates))
 
-
         the_solution = double_deletion(cobra_model, element_list_1=the_genes,
                                        element_list_2=the_genes)
-        #Potential problem if the data object doesn't have a tolist function
+        # Potential problem if the data object doesn't have a tolist function
         s_data = the_solution['data'].tolist()
         s_x = the_solution['x']
         s_y = the_solution['y']
@@ -226,11 +229,13 @@ class TestCobraFluxAnalysis(TestCase):
         for solver in solver_dict:
             cobra_model = create_test_model()
             initialize_growth_medium(cobra_model, 'LB')
-            fva_out = flux_variability_analysis(cobra_model, solver=solver,
-                    reaction_list=cobra_model.reactions[100:140])
+            fva_out = flux_variability_analysis(
+                cobra_model, solver=solver,
+                reaction_list=cobra_model.reactions[100:140])
             for the_reaction, the_range in iteritems(fva_out):
                 for k, v in iteritems(the_range):
-                    self.assertAlmostEqual(fva_results[the_reaction][k], v, places=5)
+                    self.assertAlmostEqual(fva_results[the_reaction][k], v,
+                                           places=5)
             # ensure that an infeasible model does not run FVA
             self.assertRaises(ValueError, flux_variability_analysis,
                               infeasible_model, solver=solver)
@@ -268,6 +273,7 @@ class TestCobraFluxAnalysis(TestCase):
 # make a test suite to run all of the tests
 loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])
+
 
 def test_all():
     TextTestRunner(verbosity=2).run(suite)
