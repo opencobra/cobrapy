@@ -23,9 +23,9 @@ Python 3 support is still considered experimental.
 
 ### GNU/Linux
 0. [install pip] (http://pip.readthedocs.org/en/latest/installing.html).
-1. Install the glpk and gmp libraries. On debian-based systems (including
-   Ubuntu and Mint), this can be done with
-   ```sudo apt-get install libglpk-dev libgmp-dev```
+1. Install the python, glpk and gmp libraries. On debian-based
+   systems (including Ubuntu and Mint), this can be done with
+   ```sudo apt-get install python-dev libglpk-dev libgmp-dev```
 3. In a terminal, run ```sudo pip install cobra --pre```
 
 ### Microsoft Windows
