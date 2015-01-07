@@ -4,7 +4,8 @@ from ..solvers import get_solver_name, solver_dict
 from ..external.six import iteritems
 
 
-def compute_fba_deletion_worker(cobra_model, solver, job_queue, output_queue, **kwargs):
+def compute_fba_deletion_worker(cobra_model, solver, job_queue, output_queue,
+                                **kwargs):
     solver = solver_dict[get_solver_name() if solver is None else solver]
     lp = solver.create_problem(cobra_model)
     solver_args = kwargs
@@ -12,7 +13,8 @@ def compute_fba_deletion_worker(cobra_model, solver, job_queue, output_queue, **
     while True:
         indexes, label = job_queue.get()
         label = indexes if label is None else label
-        result = compute_fba_deletion(lp, solver, cobra_model, indexes, **solver_args)
+        result = compute_fba_deletion(lp, solver, cobra_model, indexes,
+                                      **solver_args)
         output_queue.put((label, result))
 
 
@@ -35,14 +37,15 @@ class CobraDeletionPool(object):
 
     submit jobs to the pool using submit and recieve results using receive_all
     """
-    # Having an existing basis makes solving an existing LP much faster. The most
-    # efficient approach is to have a worker function which modifies an LP object
-    # and reverts it back after each calculation. Each lp object stores the basis
-    # so subsequent LP's are solved more quickely, and memory does not need to be
-    # re-allocated each time to create a new problem. Because state is being saved,
-    # the workers in the deletion pool are careful about reverting the object after
-    # simulating a deletion, and are written to be flexible enough so they can be used
-    # in most applications instead of writing a custom worker each time.
+    # Having an existing basis makes solving an existing LP much faster. The
+    # most efficient approach is to have a worker function which modifies an LP
+    # object and reverts it back after each calculation. Each lp object stores
+    # the basis so subsequent LP's are solved more quickely, and memory does
+    # not need to be re-allocated each time to create a new problem. Because
+    # state is being saved, the workers in the deletion pool are careful about
+    # reverting the object after simulating a deletion, and are written to be
+    # flexible enough so they can be used in most applications instead of
+    # writing a custom worker each time.
     def __init__(self, cobra_model, n_processes=None, solver=None, **kwargs):
         if n_processes is None:
             n_processes = min(cpu_count(), 4)
@@ -54,9 +57,10 @@ class CobraDeletionPool(object):
         # start processes
         self.processes = []
         for i in range(n_processes):
-            p =  Process(target=compute_fba_deletion_worker,
-                         args=[cobra_model, solver, self.job_queue, self.output_queue],
-                         kwargs=kwargs)
+            p = Process(target=compute_fba_deletion_worker,
+                        args=[cobra_model, solver,
+                              self.job_queue, self.output_queue],
+                        kwargs=kwargs)
             self.processes.append(p)
 
     def start(self):
@@ -78,7 +82,6 @@ class CobraDeletionPool(object):
         self.job_queue.put((indexes, label))
         self.n_submitted += 1
 
-
     def receive_one(self):
         """This function blocks"""
         self.n_complete += 1
@@ -89,16 +92,15 @@ class CobraDeletionPool(object):
             self.n_complete += 1
             yield self.output_queue.get()
 
-
     @property
     def pids(self):
         return [p.pid for p in self.processes]
-
 
     def __del__(self):
         for process in self.processes:
             process.terminate()
             process.join()
+
 
 class CobraDeletionMockPool(object):
     """Mock pool solves LP's in the same process"""
@@ -108,7 +110,8 @@ class CobraDeletionMockPool(object):
             warn("Mock Pool does not do multiprocessing")
         self.job_queue = []
         self.solver_args = kwargs
-        self.solver = solver_dict[get_solver_name() if solver is None else solver]
+        solver_name = get_solver_name() if solver is None else solver
+        self.solver = solver_dict[solver_name]
         self.lp = self.solver.create_problem(cobra_model)
         self.solver.solve_problem(self.lp)
         self.model = cobra_model
@@ -119,14 +122,14 @@ class CobraDeletionMockPool(object):
     def receive_one(self):
         indexes, label = self.job_queue.pop()
         return (label, compute_fba_deletion(self.lp, self.solver, self.model,
-                                             indexes, **self.solver_args))
+                                            indexes, **self.solver_args))
 
     def receive_all(self):
         for i in range(len(self.job_queue)):
             indexes, label = self.job_queue.pop()
             yield (label, compute_fba_deletion(self.lp, self.solver,
-                                                self.model, indexes,
-                                                **self.solver_args))
+                                               self.model, indexes,
+                                               **self.solver_args))
 
     def start(self):
         None
@@ -139,4 +142,3 @@ class CobraDeletionMockPool(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         None
-

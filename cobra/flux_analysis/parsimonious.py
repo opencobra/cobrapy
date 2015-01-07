@@ -1,7 +1,8 @@
 from ..manipulation import modify
 
+
 def optimize_minimal_flux(model, already_irreversible=False,
-        **optimize_kwargs):
+                          **optimize_kwargs):
     """Perform basic pFBA (parsimonius FBA) and minimize total flux.
 
     The function attempts to act as a drop-in replacement for optimize. It
@@ -50,7 +51,8 @@ def optimize_minimal_flux(model, already_irreversible=False,
     # make the model back the way it was
     for reaction in model.reactions:
         if reaction in old_objective_coefficients:
-            reaction.objective_coefficient = old_objective_coefficients[reaction]
+            reaction.objective_coefficient = \
+                old_objective_coefficients[reaction]
             reaction.lower_bound = old_lower_bounds[reaction]
             reaction.upper_bound = old_upper_bounds[reaction]
         else:
@@ -61,4 +63,3 @@ def optimize_minimal_flux(model, already_irreversible=False,
     if not already_irreversible:
         modify.revert_to_reversible(model)
     return model.solution
-

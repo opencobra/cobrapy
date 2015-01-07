@@ -17,12 +17,13 @@ try:  # for prettier colors
 except:
     get_map = None
 
+
 class phenotypePhasePlaneData:
     """class to hold results of a phenotype phase plane analysis"""
     def __init__(self,
-            reaction1_name, reaction2_name,
-            reaction1_range_max, reaction2_range_max,
-            reaction1_npoints, reaction2_npoints):
+                 reaction1_name, reaction2_name,
+                 reaction1_range_max, reaction2_range_max,
+                 reaction1_npoints, reaction2_npoints):
         self.reaction1_name = reaction1_name
         self.reaction2_name = reaction2_name
         self.reaction1_range_max = reaction1_range_max
@@ -30,9 +31,9 @@ class phenotypePhasePlaneData:
         self.reaction1_npoints = reaction1_npoints
         self.reaction2_npoints = reaction2_npoints
         self.reaction1_fluxes = linspace(0, reaction1_range_max,
-            reaction1_npoints)
+                                         reaction1_npoints)
         self.reaction2_fluxes = linspace(0, reaction2_range_max,
-            reaction2_npoints)
+                                         reaction2_npoints)
         self.growth_rates = zeros((reaction1_npoints, reaction2_npoints))
         self.shadow_prices1 = zeros((reaction1_npoints, reaction2_npoints))
         self.shadow_prices2 = zeros((reaction1_npoints, reaction2_npoints))
@@ -85,8 +86,10 @@ class phenotypePhasePlaneData:
         xgrid = xgrid.transpose()
         ygrid = ygrid.transpose()
         axes.plot_surface(xgrid, ygrid, self.growth_rates, rstride=1,
-            cstride=1, facecolors=colors, linewidth=0, antialiased=False)
-        axes.plot_wireframe(xgrid, ygrid, self.growth_rates, color="black", rstride=xgrid_scale, cstride=ygrid_scale)
+                          cstride=1, facecolors=colors, linewidth=0,
+                          antialiased=False)
+        axes.plot_wireframe(xgrid, ygrid, self.growth_rates, color="black",
+                            rstride=xgrid_scale, cstride=ygrid_scale)
         axes.set_xlabel(self.reaction1_name)
         axes.set_ylabel(self.reaction2_name)
         axes.set_zlabel("Growth rate")
@@ -112,10 +115,11 @@ class phenotypePhasePlaneData:
         yscale = max / ymax
         zscale = max / zmax
         mlab.surf(xgrid * xscale, ygrid * yscale, self.growth_rates * zscale,
-            representation="wireframe", color=(0, 0, 0), figure=figure)
+                  representation="wireframe", color=(0, 0, 0), figure=figure)
         mlab.mesh(xgrid * xscale, ygrid * yscale, self.growth_rates * zscale,
-            scalars=self.shadow_prices1 + self.shadow_prices2, resolution=1,
-            representation="surface", opacity=0.75, figure=figure)
+                  scalars=self.shadow_prices1 + self.shadow_prices2,
+                  resolution=1, representation="surface", opacity=0.75,
+                  figure=figure)
         # draw axes
         mlab.outline(extent=(0, max, 0, max, 0, max))
         mlab.axes(opacity=0, ranges=[0, xmax, 0, ymax, 0, zmax])
@@ -138,7 +142,7 @@ class phenotypePhasePlaneData:
             segment_id += 1
             # i and j are indices for a current point which has not been
             # assigned a segment yet
-            
+
             i, j = unravel_index(self.segments.argmin(), self.segments.shape)
             # update the segment id for any point with a similar shadow price
             # to the current point
@@ -181,32 +185,36 @@ def _calculate_subset(arguments):
         # float instead of numpy.float64
         flux1 = float(-1 * flux1)
         # change bounds on reaction 1
-        solver.change_variable_bounds(problem, index1, flux1 - tolerance, flux1 + tolerance)
+        solver.change_variable_bounds(problem, index1, flux1 - tolerance, flux1
+                                      + tolerance)
         for b, flux2 in enumerate(reaction2_fluxes):
             j = j_list[b]
             flux2 = float(-1 * flux2)  # same story as flux1
             # change bounds on reaction 2
-            solver.change_variable_bounds(problem, index2, flux2 - tolerance, flux2 + tolerance)
+            solver.change_variable_bounds(problem, index2, flux2 - tolerance,
+                                          flux2 + tolerance)
             # solve the problem and save results
             solver.solve_problem(problem)
             solution = solver.format_solution(problem, model)
             if solution is not None and solution.status == "optimal":
                 results.append((i, j, solution.f,
-                    solution.y_dict[metabolite1_name],
-                    solution.y_dict[metabolite2_name]))
+                                solution.y_dict[metabolite1_name],
+                                solution.y_dict[metabolite2_name]))
             else:
                 results.append((i, j, 0, 0, 0))
             # reset reaction 2 bounds
-            solver.change_variable_bounds(problem, index2, float(reaction2.lower_bound),
+            solver.change_variable_bounds(problem, index2,
+                                          float(reaction2.lower_bound),
                                           float(reaction2.upper_bound))
         # reset reaction 1 bounds
-        solver.change_variable_bounds(problem, index1, float(reaction1.lower_bound),
+        solver.change_variable_bounds(problem, index1,
+                                      float(reaction1.lower_bound),
                                       float(reaction1.upper_bound))
     return results
 
 
-def calculate_phenotype_phase_plane(model,
-        reaction1_name, reaction2_name,
+def calculate_phenotype_phase_plane(
+        model, reaction1_name, reaction2_name,
         reaction1_range_max=20, reaction2_range_max=20,
         reaction1_npoints=50, reaction2_npoints=50,
         solver=None, n_processes=1, tolerance=1e-6):
@@ -223,16 +231,18 @@ def calculate_phenotype_phase_plane(model,
     if solver is None:
         solver = get_solver_name()
     data = phenotypePhasePlaneData(
-            str(reaction1_name), str(reaction2_name),
-            reaction1_range_max, reaction2_range_max,
-            reaction1_npoints, reaction2_npoints)
+        str(reaction1_name), str(reaction2_name),
+        reaction1_range_max, reaction2_range_max,
+        reaction1_npoints, reaction2_npoints)
     # find the objects for the reactions and metabolites
-    index1 = model.reactions.index(model.reactions.get_by_id(data.reaction1_name))
-    index2 = model.reactions.index(model.reactions.get_by_id(data.reaction2_name))
-    metabolite1_name = str(model.reactions.get_by_id( \
-        reaction1_name)._metabolites.keys()[0])
-    metabolite2_name = str(model.reactions.get_by_id( \
-        reaction2_name)._metabolites.keys()[0])
+    index1 = model.reactions.index(
+        model.reactions.get_by_id(data.reaction1_name))
+    index2 = model.reactions.index(
+        model.reactions.get_by_id(data.reaction2_name))
+    metabolite1_name = \
+        str(model.reactions.get_by_id(reaction1_name)._metabolites.keys()[0])
+    metabolite2_name = \
+        str(model.reactions.get_by_id(reaction2_name)._metabolites.keys()[0])
     if n_processes > reaction1_npoints:  # limit the number of processes
         n_processes = reaction1_npoints
     range_add = reaction1_npoints / n_processes
@@ -248,7 +258,8 @@ def calculate_phenotype_phase_plane(model,
         else:
             r1_range = data.reaction1_fluxes[start:]
             i_list = i[start:]
-        arguments_list.append({"model": model,
+        arguments_list.append({
+            "model": model,
             "index1": index1, "index2": index2,
             "metabolite1_name": metabolite1_name,
             "metabolite2_name": metabolite2_name,
@@ -270,28 +281,3 @@ def calculate_phenotype_phase_plane(model,
             data.shadow_prices2[i, j] = result[4]
     data.segment()
     return data
-
-
-if __name__ == "__main__":
-    from time import time
-
-    import cobra
-    from cobra.test import ecoli_pickle, create_test_model
-
-    n1 = 40
-    n2 = 40
-
-    model = create_test_model(ecoli_pickle)
-    start_time = time()
-    data = calculate_phenotype_phase_plane(model, "EX_glc_e",
-        'EX_o2_e', reaction1_npoints=n1, reaction2_npoints=n2,
-        n_processes=1, solver="cglpk")
-    print "took %.2f seconds with 1 process" % (time() - start_time)
-    #start_time = time()
-    #data = calculate_phenotype_phase_plane(model, 'EX_glc_e',
-    #    'EX_o2_e', reaction1_npoints=n1, reaction2_npoints=n2,
-    #    n_processes=2, solver="cglpk")
-    #print "took %.2f seconds with 2 processes" % (time() - start_time)
-    #data.plot_matplotlib("Pastel1")
-    #data.plot_matplotlib("Dark2")
-    data.plot_matplotlib()
