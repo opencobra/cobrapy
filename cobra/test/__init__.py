@@ -17,15 +17,13 @@ ecoli_sbml = join(data_directory, "iJO1366.xml")
 ecoli_pickle = join(data_directory, "iJO1366.pickle")
 ecoli_mat = join(data_directory, "iJO1366.mat")
 ecoli_json = join(data_directory, "iJO1366.json")
-yersinia_sbml = join(data_directory, 'Yersinia_pestis_CO92_iPC815.xml')
-yersinia_pickle = join(data_directory, 'Yersinia_pestis_CO92_iPC815.pickle')
 
 __test_pickles = {'Salmonella_enterica': salmonella_pickle,
                   'Escherichia_coli': ecoli_pickle,
-                  'Yersinia_pestis': yersinia_pickle}
+                  }
 __test_xml = {'Salmonella_enterica': salmonella_sbml,
               'Escherichia_coli': ecoli_sbml,
-              'Yersinia_pestis': yersinia_sbml}
+              }
 del abspath, join, split, sep
 
 

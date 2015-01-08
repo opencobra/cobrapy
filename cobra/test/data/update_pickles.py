@@ -14,7 +14,7 @@ from cobra.io import read_sbml_model, read_legacy_sbml, write_sbml_model
 from cobra.io import save_matlab_model, save_json_model
 from cobra.test import create_test_model
 
-model_names = ['salmonella', 'iJO1366', 'Yersinia_pestis_CO92_iPC815']
+model_names = ['salmonella', 'iJO1366',]
 
 for model_name in model_names:
     # read in old pickle and model from sbml
