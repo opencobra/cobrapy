@@ -1,4 +1,10 @@
 from multiprocessing import Queue, Process, cpu_count
+from warnings import warn
+
+try:
+    import IProgress
+except:
+    IProgress = None
 
 from ..solvers import get_solver_name, solver_dict
 from six import iteritems
@@ -58,7 +64,8 @@ class CobraDeletionPool(object):
     # reverting the object after simulating a deletion, and are written to be
     # flexible enough so they can be used in most applications instead of
     # writing a custom worker each time.
-    def __init__(self, cobra_model, n_processes=None, solver=None, **kwargs):
+    def __init__(self, cobra_model, n_processes=None, solver=None,
+                 progressbar=False, **kwargs):
         if n_processes is None:
             n_processes = min(cpu_count(), 4)
         # start queues
@@ -74,14 +81,26 @@ class CobraDeletionPool(object):
                               self.job_queue, self.output_queue],
                         kwargs=kwargs)
             self.processes.append(p)
+        if progressbar and IProgress:
+            self.progress = IProgress.ProgressBar(
+                widgets=[IProgress.Percentage(), " ",
+                         IProgress.Bar(), " ", IProgress.ETA()])
+        else:
+            if progressbar:
+                warn("IProgress not found")
+            self.progress = False
 
     def start(self):
         for p in self.processes:
             p.start()
+        if self.progress:
+            self.progress.start()
 
     def terminate(self):
         for p in self.processes:
             p.terminate()
+        if self.progress:
+            self.progress.finish()
 
     def __enter__(self):
         self.start()
@@ -93,10 +112,15 @@ class CobraDeletionPool(object):
     def submit(self, indexes, label=None):
         self.job_queue.put((indexes, label))
         self.n_submitted += 1
+        if self.progress:
+            self.progress.maxval = self.n_submitted
 
     def receive_one(self):
         """This function blocks"""
         self.n_complete += 1
+        # update the progressbar (if necessary)
+        if self.progress:
+            self.progress.update(self.n_complete)
         result = self.output_queue.get()
         if isinstance(result[1], Exception):
             raise result[1]
@@ -105,6 +129,9 @@ class CobraDeletionPool(object):
     def receive_all(self):
         while self.n_complete < self.n_submitted:
             self.n_complete += 1
+            # update the progressbar (if necessary)
+            if self.progress:
+                self.progress.update(self.n_complete)
             result = self.output_queue.get()
             if isinstance(result[1], Exception):
                 raise result[1]
@@ -122,7 +149,8 @@ class CobraDeletionPool(object):
 
 class CobraDeletionMockPool(object):
     """Mock pool solves LP's in the same process"""
-    def __init__(self, cobra_model, n_processes=1, solver=None, **kwargs):
+    def __init__(self, cobra_model, n_processes=1, solver=None,
+                 progressbar=False, **kwargs):
         if n_processes != 1:
             from warnings import warn
             warn("Mock Pool does not do multiprocessing")
