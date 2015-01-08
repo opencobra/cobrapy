@@ -237,6 +237,7 @@ cdef class GLP:
     def solve_problem(self, **solver_parameters):
         cdef int result
         cdef glp_smcp parameters = self.parameters
+        cdef int time_limit = parameters.tm_lim
         cdef glp_iocp integer_parameters = self.integer_parameters
         cdef glp_prob *glp = self.glp
 
@@ -255,10 +256,15 @@ cdef class GLP:
         # because glpk itself is not thread safe
 
         #with nogil:  # we can use this if glpk ever gets thread-safe malloc
-        # try to solve the problem with the existing basis
+        # Try to solve the problem with the existing basis, but with
+        # a time limit in case it gets stuck.
+        if parameters.tm_lim > 500:
+            parameters.tm_lim = 500
         if glp_simplex(glp, &parameters) != 0:
             glp_adv_basis(glp, 0)
+            parameters.tm_lim = time_limit
             check_error(glp_simplex(glp, &parameters))
+        parameters.tm_lim = time_limit
         if self.exact:
             check_error(glp_exact(glp, &parameters))
         if self.is_mip():
