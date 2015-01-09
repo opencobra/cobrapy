@@ -29,6 +29,10 @@ if "sdist" in argv or "bdist_wheel" in argv:
 # for certain functions, the c file must be generated, which requires cython.
 try:
     from Cython.Build import cythonize
+    from distutils.version import StrictVersion
+    import Cython
+    if StrictVersion(Cython.__version__) < StrictVersion("0.18"):
+        raise ImportError("Cython version too old to use")
 except ImportError:
     cythonize = None
     for k in ["sdist", "develop"]:
