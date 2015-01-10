@@ -13,7 +13,6 @@ For installation instructions, please see `INSTALL.md
     simulating
     deletions
     phenotype_phase_plane
-    escher
     milp
     qp
     loopless

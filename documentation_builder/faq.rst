@@ -162,3 +162,10 @@ all) solvers will rewrite the maximization as a minimzation.
     cplex_problem = cobra.solvers.cplex_solver.create_problem(model)
     cplex_problem.write("test.lp")
     cplex_problem.write("test.mps")  # rewrites objective
+How do I visualize my flux solutions?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+cobrapy works well with the `escher <https://escher.github.io/>`__
+package, which is well suited to this purpose. Consult the `escher
+documentation <https://escher.readthedocs.org/en/latest/>`__ for
+examples.
