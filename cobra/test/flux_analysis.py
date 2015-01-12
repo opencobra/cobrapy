@@ -18,6 +18,7 @@ if __name__ == "__main__":
     from cobra.manipulation import modify, delete
     from cobra.flux_analysis.parsimonious import optimize_minimal_flux
     from cobra.flux_analysis.variability import flux_variability_analysis
+    from cobra.flux_analysis.variability import find_blocked_reactions
     from cobra.flux_analysis.single_deletion import single_deletion
     from cobra.flux_analysis.loopless import construct_loopless_model
     from cobra.external.six import iteritems
@@ -32,6 +33,7 @@ else:
     from ..manipulation import modify, delete
     from ..flux_analysis.parsimonious import optimize_minimal_flux
     from ..flux_analysis.variability import flux_variability_analysis
+    from ..flux_analysis.variability import find_blocked_reactions
     from ..flux_analysis.single_deletion import single_deletion
     from ..flux_analysis.loopless import construct_loopless_model
     from ..external.six import iteritems
@@ -90,7 +92,8 @@ class TestCobraFluxAnalysis(TestCase):
                 cobra_model, gene_list,
                 compiled_gene_reaction_rules=compiled_rules)
 
-        def get_removed(m): return {x.id for x in m._trimmed_reactions}
+        def get_removed(m):
+            return {x.id for x in m._trimmed_reactions}
 
         def test_computation(m, gene_ids, expected_reaction_ids):
             genes = [m.genes.get_by_id(i) for i in gene_ids]
@@ -210,7 +213,7 @@ class TestCobraFluxAnalysis(TestCase):
             for gene_y, the_rate in zip(s_y, rates_x):
                 self.assertAlmostEqual(
                     growth_dict[gene_x][gene_y], the_rate, places=2,
-                    msg="%.3f != %.3f for (%s, %s)" % 
+                    msg="%.3f != %.3f for (%s, %s)" %
                     (growth_dict[gene_x][gene_y], the_rate,
                      gene_x.id, gene_y.id))
 
@@ -272,6 +275,12 @@ class TestCobraFluxAnalysis(TestCase):
             # ensure that an infeasible model does not run FVA
             self.assertRaises(ValueError, flux_variability_analysis,
                               infeasible_model, solver=solver)
+
+    def test_find_blocked_reactions(self):
+        m = self.model
+        result = find_blocked_reactions(m, reaction_list=m.reactions[:10])
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], '12PPDStex')
 
     def test_loopless(self):
         try:

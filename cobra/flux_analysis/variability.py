@@ -65,21 +65,20 @@ def flux_variability_analysis(cobra_model, reaction_list=None,
 
 
 def find_blocked_reactions(cobra_model, reaction_list=None,
-                           solver=None,
-                           tolerance_optimality=1e-9,
+                           solver=None, zero_cutoff=1e-9,
                            open_exchanges=False, **kwargs):
     """Finds reactions that cannot carry a flux with the current
     exchange reaction settings for cobra_model, using flux variability
     analysis.
 
     """
+    from warnings import warn
     if solver is None:
         solver = get_solver_name()
-    warn('This needs to be updated to deal with external boundaries')
-    cobra_model = cobra_model.copy()
     blocked_reactions = []
-    if not the_reactions:
-        the_reactions = cobra_model.reactions
+    if reaction_list is None and "the_reactions" in solver_args:
+        reaction_list = solver_args.pop("the_reactions")
+        warn("the_reactions is deprecated. Please use reaction_list=")
     if open_exchanges:
         warn('DEPRECATED: Move to using the Reaction.boundary attribute')
         exchange_reactions = [x for x in cobra_model.reactions
@@ -91,8 +90,7 @@ def find_blocked_reactions(cobra_model, reaction_list=None,
                 the_reaction.upper_bound = 1000
     flux_span_dict = flux_variability_analysis(
         cobra_model, fraction_of_optimum=0., reaction_list=reaction_list,
-        solver=solver, tolerance_optimality=tolerance_optimality,
-        **kwargs)
+        solver=solver, **kwargs)
     blocked_reactions = [k for k, v in flux_span_dict.items()
-                         if max(map(abs, v.values())) < tolerance_optimality]
+                         if max(map(abs, v.values())) < zero_cutoff]
     return blocked_reactions
