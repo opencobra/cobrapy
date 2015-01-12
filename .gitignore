@@ -9,7 +9,7 @@ dist/
 setuptools-*egg
 setuptools-*.tar.gz
 cobra/solvers/cglpk.c
-cobra/solvers/cglpk*so
+cobra/solvers/*so
 glpk.h
 libglpk.a
 libgmp.a
