@@ -90,7 +90,9 @@ try:
                     tag = bdist_wheel.get_tag(self)
                     possible_tags = ("macosx_10_6_intel",
                                      "macosx_10_9_intel",
-                                     "macosx_10_9_x86_64")
+                                     "macosx_10_10_intel",
+                                     "macosx_10_9_x86_64",
+                                     "macosx_10_10_x86_64")
                     if tag[2] in possible_tags:
                         tag = (tag[0], tag[1], ".".join(possible_tags))
                     return tag
@@ -100,7 +102,7 @@ try:
         except ImportError:
             pass
 
-    if system() == "Windows":
+    if system() in {"Windows", "Darwin"}:
         build_args["libraries"] = ["glpk"]
     else:
         build_args["libraries"] = ["glpk", "gmp"]
