@@ -99,7 +99,8 @@ def _to_dict(model):
         new_reactions.append(new_reaction)
     for metabolite in model.metabolites:
         new_metabolite = {key: str(getattr(metabolite, key))
-                          for key in metabolite_attributes}
+                          for key in metabolite_attributes if key!='notes'}
+        new_metabolite['notes'] = getattr(metabolite, 'notes')
         new_metabolites.append(new_metabolite)
     for gene in model.genes:
         new_gene = {key: str(getattr(gene, key))
