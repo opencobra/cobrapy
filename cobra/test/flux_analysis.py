@@ -187,6 +187,21 @@ class TestCobraFluxAnalysis(TestCase):
                                        the_growth_rates[the_gene],
                                        places=2)
 
+    def test_single_reaction_deletion(self):
+        cobra_model = self.model
+        results, status = single_deletion(
+            cobra_model, element_list=cobra_model.reactions[100:110:2],
+            element_type="reaction")
+        self.assertEqual(len(results), 5)
+        self.assertEqual(len(status), 5)
+        for status_value in status.values():
+            self.assertEqual(status_value, "optimal")
+        expected_results = {'3OAS140': 0, '3OAS160': 0.38001,
+                            '3OAS180': 0.38001, '3OAS60': 0,
+                            '3PEPTabcpp': 0.38001}
+        for reaction, value in results.items():
+            self.assertAlmostEqual(value, expected_results[reaction], 5)
+
     @skipIf(numpy is None, "double deletions require numpy")
     def test_double_deletion(self):
         cobra_model = self.model
@@ -267,7 +282,7 @@ class TestCobraFluxAnalysis(TestCase):
             initialize_growth_medium(cobra_model, 'LB')
             fva_out = flux_variability_analysis(
                 cobra_model, solver=solver,
-                reaction_list=cobra_model.reactions[100:140])
+                reaction_list=cobra_model.reactions[100:140:2])
             for the_reaction, the_range in iteritems(fva_out):
                 for k, v in iteritems(the_range):
                     self.assertAlmostEqual(fva_results[the_reaction][k], v,

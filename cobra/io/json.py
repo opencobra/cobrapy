@@ -27,6 +27,7 @@ _DEFAULT_METABOLITE_ATTRIBUTES = {
 _DEFAULT_GENE_ATTRIBUTES = {
     'id', 'name'}
 
+
 def _fix_type(value):
     """convert possible types to str, float, and bool"""
     # Because numpy floats can not be pickled to json
@@ -36,6 +37,8 @@ def _fix_type(value):
         return float(value)
     if isinstance(value, bool_):
         return bool(value)
+    if isinstance(value, Formula):
+        return str(value)
     return value
 
 
@@ -50,6 +53,7 @@ def _from_dict(obj):
         new_metabolite = Metabolite()
         for k, v in iteritems(metabolite):
             setattr(new_metabolite, k, _fix_type(v))
+        new_metabolite.formula = Formula(new_metabolite.formula)
         new_metabolites.append(new_metabolite)
     model.add_metabolites(new_metabolites)
     # add reactions
@@ -73,7 +77,8 @@ def _from_dict(obj):
             new_gene = model.genes.get_by_id(gene['id'])
             for k, v in iteritems(gene):
                 # don't set the id
-                if k in ['id']: continue
+                if k == 'id':
+                    continue
                 setattr(new_gene, k, _fix_type(v))
     for k, v in iteritems(obj):
         if k in ['id', 'description', 'notes']:
@@ -98,9 +103,8 @@ def _to_dict(model):
         new_reaction['metabolites'] = mets
         new_reactions.append(new_reaction)
     for metabolite in model.metabolites:
-        new_metabolite = {key: str(getattr(metabolite, key))
-                          for key in metabolite_attributes if key!='notes'}
-        new_metabolite['notes'] = getattr(metabolite, 'notes')
+        new_metabolite = {key: _fix_type(getattr(metabolite, key))
+                          for key in metabolite_attributes}
         new_metabolites.append(new_metabolite)
     for gene in model.genes:
         new_gene = {key: str(getattr(gene, key))
