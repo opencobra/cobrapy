@@ -102,10 +102,7 @@ try:
         except ImportError:
             pass
 
-    if system() in {"Windows", "Darwin"}:
-        build_args["libraries"] = ["glpk"]
-    else:
-        build_args["libraries"] = ["glpk", "gmp"]
+    build_args["libraries"] = ["glpk"]
     # It is possible to statically link libglpk to the built extension. This
     # allows for simplified installation without the need to install libglpk to
     # the system, and is also usueful when installing a particular version of
@@ -116,10 +113,10 @@ try:
     # https://gist.github.com/aebrahim/94a2b231d86821f7f225
     include_dirs = []
     library_dirs = []
-    if isfile("libglpk.a") or isfile("libgmp.a"):
+    if isfile("libglpk.a"):
         library_dirs.append(abspath("."))
     if isfile("glpk.h"):
-        include_dirs.append(dirname(abspath("glpk.h")))
+        include_dirs.append(abspath("."))
     if name == "posix":
         from subprocess import check_output
         try:

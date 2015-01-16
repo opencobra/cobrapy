@@ -9,10 +9,9 @@ before_install:
   - export PIP_OPTS="-f https://pypi.drosophi.la --no-index"
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install glpk $PIP_OPTS; fi
   - pip install python-libsbml-experimental cython numpy scipy $PIP_OPTS
-  - wget http://drosophi.la/travis_test_dependencies.zip  # solver, glpk, and gmp
+  - wget http://drosophi.la/travis_test_dependencies.zip  # esolver, and glpk
   - unzip travis_test_dependencies.zip
   - export PATH=$PATH:$PWD
-  - export LDFLAGS="-Wl,-Bsymbolic-functions"
 install:
   - python setup.py develop
 # # command to run tests
