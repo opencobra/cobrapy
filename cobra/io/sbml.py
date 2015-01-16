@@ -262,6 +262,8 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         if 'GENE ASSOCIATION' in reaction_note_dict:
             try:
                 rule = reaction_note_dict['GENE ASSOCIATION'][0].encode('ascii')
+                if rule.startswith("&quot;") and rule.endswith("&quot;"):
+                    rule = rule[6:-6]
                 reaction.gene_reaction_rule = str(rule)
             except:
                 warn("gene_reaction_rule is not ascii compliant")
