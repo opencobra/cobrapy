@@ -7,17 +7,18 @@ from ..external.six.moves import zip
 
 from . import cglpk
 
-try:
-    ESOLVER_COMMAND = check_output(["which", "esolver"]).strip()
-    with open(devnull, "w") as DEVNULL:
+with open(devnull, "w") as DEVNULL:
+    try:
+        ESOLVER_COMMAND = check_output(["which", "esolver"],
+                                       stderr=DEVNULL).strip()
         __esolver_version__ = check_output(["esolver", "-v"], stderr=DEVNULL)
-    del DEVNULL
-except CalledProcessError:
-    raise RuntimeError("esolver command not found")
-try:
-    GZIP_COMMAND = check_output(["which", "gzip"]).strip()
-except CalledProcessError:
-    raise RuntimeError("gzip command not found")
+    except CalledProcessError:
+        raise RuntimeError("esolver command not found")
+    try:
+        GZIP_COMMAND = check_output(["which", "gzip"], stderr=DEVNULL).strip()
+    except CalledProcessError:
+        raise RuntimeError("gzip command not found")
+del DEVNULL
 
 solver_name = "esolver"
 
