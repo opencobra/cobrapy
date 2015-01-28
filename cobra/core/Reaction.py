@@ -164,6 +164,11 @@ class Reaction(Object):
             return "system_boundary"
         return None
 
+    @property
+    def model(self):
+        """returns the model the reaction is a part of"""
+        return self._model
+
     def _update_awareness(self):
         """Make sure all metabolites and genes that are associated with
         this reaction are aware of it.
@@ -175,9 +180,8 @@ class Reaction(Object):
             x._reaction.add(self)
 
     def get_model(self):
-        """Returns the Model object that this Reaction is associated with.
-
-        """
+        """.. deprecated :: 0.3.1 use model property instead"""
+        warn("deprecated, use the model property instead")
         return self._model
 
     def remove_from_model(self, model=None, remove_orphans=False):
