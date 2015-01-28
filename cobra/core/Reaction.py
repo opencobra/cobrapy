@@ -9,6 +9,7 @@ from ..external.six import string_types, iteritems
 
 from .Object import Object
 from .Gene import Gene
+from .Metabolite import Metabolite
 
 
 class Frozendict(dict):
@@ -27,7 +28,16 @@ class Frozendict(dict):
         raise NotImplementedError("read-only")
 
 
+# precompiled regular expressions
+# Matches and/or in a gene reaction rule
 and_or_search = re.compile(r'\(| and| or|\+|\)', re.IGNORECASE)
+# This regular expression finds any single letter compartment enclosed in
+# square brackets at the beginning of the string. For example [c] : foo --> bar
+compartment_finder = re.compile("^\s*(\[[A-Za-z]\])\s*:*")
+# Regular expressions to match the arrows
+reversible_arrow_finder = re.compile("<(-+|=+)>")
+forward_arrow_finder = re.compile("(-+|=+)>")
+reverse_arrow_finder = re.compile("<(-+|=+)")
 
 
 class Reaction(Object):
@@ -462,8 +472,7 @@ class Reaction(Object):
 
         """
         the_metabolites = metabolites
-        _id_to_metabolites = dict([(x.id, x)
-                                   for x in self._metabolites])
+        _id_to_metabolites = {x.id: x for x in self._metabolites}
         new_metabolites = []
         for the_metabolite, the_coefficient in iteritems(the_metabolites):
             # If a metabolite already exists in the reaction then
@@ -504,14 +513,22 @@ class Reaction(Object):
 
         """
         metabolites = deepcopy(metabolites)
-        metabolites = dict([(k, -v)
-                            for k, v in metabolites.items()])
+        metabolites = {k: -v for k, v in iteritems(metabolites)}
         self.add_metabolites(metabolites)
+
+    def clear_metabolites(self):
+        """Remove all metabolites from the reaction"""
+        for metabolite in list(self._metabolites.keys()):
+            self.pop(metabolite)
 
     @property
     def reaction(self):
         """Human readable reaction string"""
         return self.build_reaction_string()
+
+    @reaction.setter
+    def reaction(self, value):
+        return self.build_reaction_from_string(value)
 
     def build_reaction_string(self, use_metabolite_names=False):
         """Generate a human readable reaction string"""
@@ -524,7 +541,7 @@ class Reaction(Object):
             id_type = 'name'
         reactant_bits = []
         product_bits = []
-        for the_metabolite, coefficient in self._metabolites.items():
+        for the_metabolite, coefficient in iteritems(self._metabolites):
             name = str(getattr(the_metabolite, id_type))
             if coefficient > 0:
                 product_bits.append(format(coefficient) + name)
@@ -625,3 +642,64 @@ class Reaction(Object):
         """Change the upper and lower bounds of the reaction to 0."""
         self.lower_bound = 0
         self.upper_bound = 0
+
+    def build_reaction_from_string(self, reaction_str, verbose=True):
+        if self._model is None:
+            warn("no model found")
+            model = None
+        else:
+            model = self._model
+        original_str = "" + reaction_str  # copy
+        found_compartments = compartment_finder.findall(reaction_str)
+        if len(found_compartments) == 1:
+            compartment = found_compartments[0]
+            reaction_str = compartment_finder.sub("", reaction_str)
+        else:
+            compartment = ""
+
+        # reversible case
+        arrow_match = reversible_arrow_finder.search(reaction_str)
+        if arrow_match is not None:
+            self.lower_bound = -1000
+            self.upper_bound = 1000
+        else:  # irreversible
+            # try forward
+            arrow_match = forward_arrow_finder.search(reaction_str)
+            if arrow_match is not None:
+                self.upper_bound = 1000
+                self.lower_bound = 0
+            else:
+                # must be reverse
+                arrow_match = reverse_arrow_finder.search(reaction_str)
+                if arrow_match is None:
+                    raise ValueError("no suitable arrow found in '%s'" %
+                                     reaction_str)
+                else:
+                    self.upper_bound = 0
+                    self.lower_bound = -1000
+        reactant_str = reaction_str[:arrow_match.start()].strip()
+        product_str = reaction_str[arrow_match.end():].strip()
+
+        self.clear_metabolites()
+
+        for substr, factor in ((reactant_str, -1), (product_str, 1)):
+            if len(substr) == 0:
+                continue
+            for term in substr.split("+"):
+                term = term.strip()
+                if term.lower() == "nothing":
+                    continue
+                if " " in term:
+                    num_str, met_id = term.split()
+                    num = float(num_str.lstrip("(").rstrip(")")) * factor
+                else:
+                    met_id = term
+                    num = factor
+                met_id += compartment
+                try:
+                    met = model.metabolites.get_by_id(met_id)
+                except KeyError:
+                    if verbose:
+                        print("unknown metabolite '%s' created" % met_id)
+                    met = Metabolite(met_id)
+                self.add_metabolites({met: num})

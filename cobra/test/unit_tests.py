@@ -250,6 +250,21 @@ class TestReactions(CobraTestCase):
         self.assertTrue(model.metabolites.has_id("fake"))
         self.assertIs(model.metabolites.get_by_id("fake"), fake_metabolite)
 
+    def test_build_from_string(self):
+        model = self.model
+        pgi = model.reactions.get_by_id("PGI")
+        pgi.reaction = "g6p_c --> f6p_c"
+        self.assertEqual(pgi.lower_bound, 0)
+        pgi.reaction = "g6p_c <== f6p_c"
+        self.assertEqual(pgi.upper_bound, 0)
+        pgi.reaction = "g6p_c --> f6p_c + h2o_c"
+        self.assertIn(model.metabolites.h2o_c, pgi._metabolites)
+        pgi.build_reaction_from_string("g6p_c --> f6p_c + foo", verbose=False)
+        self.assertNotIn(model.metabolites.h2o_c, pgi._metabolites)
+        self.assertIn("foo", model.metabolites)
+        self.assertIn(model.metabolites.foo, pgi._metabolites)
+        self.assertEqual(len(model.metabolites), 1803)
+
 
 class TestCobraModel(CobraTestCase):
     """test core cobra functions"""
