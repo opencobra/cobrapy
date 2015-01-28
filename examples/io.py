@@ -16,30 +16,28 @@ print(", ".join([i for i in dir(cobra.test) if i.startswith("ecoli")]))
 print("")
 print("Salmonella test files: ")
 print(", ".join([i for i in dir(cobra.test) if i.startswith("salmonella")]))
+
+salmonella_model = cobra.test.create_test_model("salmonella")
 # Prints:
 # E. coli test files: 
 # ecoli_json, ecoli_mat, ecoli_pickle, ecoli_sbml
 # 
 # Salmonella test files: 
-# salmonella_fbc_sbml, salmonella_pickle, salmonella_reaction_p_values_pickle, salmonella_sbml
+# salmonella_fbc_sbml, salmonella_pickle, salmonella_sbml
 
-### Pickle
+### JSON
 
-# Cobra models can be serialized using the python serialization format,
-# [pickle](https://docs.python.org/2/library/pickle.html).
+# cobrapy has a [JSON](https://en.wikipedia.org/wiki/JSON) (JavaScript Object
+# Notation) representation. This is the ideal format for storing a cobra model
+# on a computer, or for interoperability with
+# [escher](https://escher.github.io). Additional fields, however, will not be
+# saved.
 
-from cPickle import load, dump
+cobra.io.load_json_model(cobra.test.ecoli_json)
+# Output:
+# <Model iJO1366 at 0x7f8d2fa20150>
 
-# read in the test models
-with open(cobra.test.ecoli_pickle, "rb") as infile:
-    ecoli_model = load(infile)
-with open(cobra.test.salmonella_pickle, "rb") as infile:
-    salmonella_model = load(infile)
-
-# output to a file
-with open("test_output.pickle", "wb") as outfile:
-    dump(salmonella_model, outfile)
-
+cobra.io.write_sbml_model(salmonella_model, "test.json")
 
 ### SBML
 
@@ -59,11 +57,11 @@ with open("test_output.pickle", "wb") as outfile:
 
 cobra.io.read_sbml_model(cobra.test.salmonella_sbml)
 # Output:
-# <Model Salmonella_consensus_build_1 at 0x4400990>
+# <Model Salmonella_consensus_build_1 at 0x7f8d480ad710>
 
 cobra.io.read_sbml_model(cobra.test.salmonella_fbc_sbml)
 # Output:
-# <Model Salmonella_consensus_build_1 at 0xfe325d0>
+# <Model Salmonella_consensus_build_1 at 0x7f8d480ad5d0>
 
 cobra.io.write_sbml_model(salmonella_model, "test.xml",
                           use_fbc_package=False)
@@ -84,15 +82,36 @@ cobra.io.write_sbml_model(salmonella_model, "test_fbc.xml",
 
 cobra.io.load_matlab_model(cobra.test.ecoli_mat, variable_name="iJO1366")
 # Output:
-# <Model iJO1366 at 0x132e9dd0>
+# <Model iJO1366 at 0x7f8d48090b50>
 
 # If the mat file contains only a single model, cobra can figure out which
 # variable to read from, and the variable_name paramter is unnecessary.
 
 cobra.io.load_matlab_model(cobra.test.ecoli_mat)
 # Output:
-# <Model iJO1366 at 0xd9e1c10>
+# <Model iJO1366 at 0x7f8d2d85af10>
 
 # Saving models to mat files is also relatively straightforward
 
 cobra.io.save_matlab_model(ecoli_model, "test_ecoli_model.mat")
+
+### Pickle
+
+# Cobra models can be serialized using the python serialization format,
+# [pickle](https://docs.python.org/2/library/pickle.html). While this will save
+# any extra fields which may have been created, it does not work with any other
+# tools and can break between cobrapy major versions. JSON is generally the
+# preferred format.
+
+from cPickle import load, dump
+
+# read in the test models
+with open(cobra.test.ecoli_pickle, "rb") as infile:
+    ecoli_model = load(infile)
+with open(cobra.test.salmonella_pickle, "rb") as infile:
+    salmonella_model = load(infile)
+
+# output to a file
+with open("test_output.pickle", "wb") as outfile:
+    dump(salmonella_model, outfile)
+

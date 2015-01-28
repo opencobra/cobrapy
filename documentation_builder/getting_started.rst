@@ -12,7 +12,7 @@ and *E. coli*. To load a test model, type
 
     from __future__ import print_function
     import cobra.test
-    model = cobra.test.create_test_model(cobra.test.salmonella_pickle)
+    model = cobra.test.create_test_model("salmonella")
 
 The reactions, metabolites, and genes attributes of the cobrapy model
 are are a special type of list called a DictList, and each one is made
@@ -44,7 +44,7 @@ because of
 
 .. parsed-literal::
 
-    <Reaction 2AGPA180tipp at 0x5446f50>
+    <Reaction 2AGPA180tipp at 0x7f227ada62d0>
 
 
 
@@ -60,7 +60,7 @@ id is "atp\_c"), we can do the following:
 
 .. parsed-literal::
 
-    <Metabolite atp_c at 0x543e390>
+    <Metabolite atp_c at 0x7f227adf56d0>
 
 
 
@@ -98,7 +98,7 @@ id for this reaction in our test model is PGI.
 
 .. parsed-literal::
 
-    <Reaction PGI at 0x6711310>
+    <Reaction PGI at 0x7f227a10b1d0>
 
 
 
@@ -190,6 +190,33 @@ again.
     []
 
 
+It is also possible to build the reaction from a string. However, care
+must be taken when doing this to ensure reaction id's match those in the
+model. The direction of the arrow is also used to update the upper and
+lower bounds.
+
+.. code:: python
+
+    pgi.reaction = "g6p_c --> f6p_c + h_c + green_eggs + ham"
+
+.. parsed-literal::
+
+    unknown metabolite 'green_eggs' created
+    unknown metabolite 'ham' created
+
+
+.. code:: python
+
+    pgi.reaction
+
+
+
+.. parsed-literal::
+
+    'g6p_c --> f6p_c + green_eggs + ham + h_c'
+
+
+
 Metabolites
 -----------
 
@@ -205,7 +232,7 @@ atp\_c in our test model.
 
 .. parsed-literal::
 
-    <Metabolite atp_c at 0x543e390>
+    <Metabolite atp_c at 0x7f227adf56d0>
 
 
 
@@ -275,16 +302,16 @@ reactions.
 
 .. parsed-literal::
 
-    frozenset({<Reaction G6PDH2r at 0x61b6990>,
-               <Reaction G6PP at 0x61b6b90>,
-               <Reaction G6Pt6_2pp at 0x61b6c50>,
-               <Reaction GLCptspp at 0x61cc850>,
-               <Reaction HEX1 at 0x6375bd0>,
-               <Reaction PGI at 0x6711310>,
-               <Reaction PGMT at 0x6711890>,
-               <Reaction TRE6PH at 0x6a86250>,
-               <Reaction TRE6PS at 0x6a86510>,
-               <Reaction AB6PGH at 0x6e39b90>})
+    frozenset({<Reaction AB6PGH at 0x7f2279de6a50>,
+               <Reaction TRE6PH at 0x7f2279fdb110>,
+               <Reaction TRE6PS at 0x7f2279fdb3d0>,
+               <Reaction PGI at 0x7f227a10b1d0>,
+               <Reaction PGMT at 0x7f227a10b750>,
+               <Reaction HEX1 at 0x7f227a368a90>,
+               <Reaction GLCptspp at 0x7f227a3d2710>,
+               <Reaction G6PDH2r at 0x7f227a3fd850>,
+               <Reaction G6PP at 0x7f227a3fda50>,
+               <Reaction G6Pt6_2pp at 0x7f227a3fdb10>})
 
 
 
@@ -323,7 +350,7 @@ reactions itself, as well as by the model
 
 .. parsed-literal::
 
-    frozenset({<Gene STM4221 at 0x6711390>})
+    frozenset({<Gene STM4221 at 0x7f227a10b250>})
 
 
 
@@ -336,7 +363,7 @@ reactions itself, as well as by the model
 
 .. parsed-literal::
 
-    <Gene STM4221 at 0x6711390>
+    <Gene STM4221 at 0x7f227a10b250>
 
 
 
@@ -350,7 +377,7 @@ Each gene keeps track of the reactions it catalyzes
 
 .. parsed-literal::
 
-    frozenset({<Reaction PGI at 0x6711310>})
+    frozenset({<Reaction PGI at 0x7f227a10b1d0>})
 
 
 
@@ -366,7 +393,7 @@ necessary and update all relationships.
 
 .. parsed-literal::
 
-    frozenset({<Gene eggs at 0x32cf390>, <Gene spam at 0x6e40b90>})
+    frozenset({<Gene eggs at 0x7f2279d7ec90>, <Gene spam at 0x7f2279d7edd0>})
 
 
 
@@ -392,7 +419,7 @@ Newly created genes are also added to the model
 
 .. parsed-literal::
 
-    <Gene spam at 0x6e40b90>
+    <Gene spam at 0x7f2279d7edd0>
 
 
 
@@ -410,7 +437,7 @@ cumulative\_deletions flag.
 
 .. parsed-literal::
 
-    -1000.0 < pgi < 1000.0
+    0 < pgi < 1000
     0.0 < pgi < 0.0
 
 
@@ -423,5 +450,5 @@ The undelete\_model\_genes can be used to reset a gene deletion
 
 .. parsed-literal::
 
-    -1000.0 < pgi < 1000.0
+    0 < pgi < 1000
 

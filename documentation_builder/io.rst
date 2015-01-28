@@ -20,6 +20,8 @@ various formats.
     print("")
     print("Salmonella test files: ")
     print(", ".join([i for i in dir(cobra.test) if i.startswith("salmonella")]))
+    
+    salmonella_model = cobra.test.create_test_model("salmonella")
 
 .. parsed-literal::
 
@@ -27,29 +29,33 @@ various formats.
     ecoli_json, ecoli_mat, ecoli_pickle, ecoli_sbml
     
     Salmonella test files: 
-    salmonella_fbc_sbml, salmonella_pickle, salmonella_reaction_p_values_pickle, salmonella_sbml
+    salmonella_fbc_sbml, salmonella_pickle, salmonella_sbml
 
 
-Pickle
-------
+JSON
+----
 
-Cobra models can be serialized using the python serialization format,
-`pickle <https://docs.python.org/2/library/pickle.html>`__.
+cobrapy has a `JSON <https://en.wikipedia.org/wiki/JSON>`__ (JavaScript
+Object Notation) representation. This is the ideal format for storing a
+cobra model on a computer, or for interoperability with
+`escher <https://escher.github.io>`__. Additional fields, however, will
+not be saved.
 
 .. code:: python
 
-    from cPickle import load, dump
-    
-    # read in the test models
-    with open(cobra.test.ecoli_pickle, "rb") as infile:
-        ecoli_model = load(infile)
-    with open(cobra.test.salmonella_pickle, "rb") as infile:
-        salmonella_model = load(infile)
-    
-    # output to a file
-    with open("test_output.pickle", "wb") as outfile:
-        dump(salmonella_model, outfile)
+    cobra.io.load_json_model(cobra.test.ecoli_json)
 
+
+
+.. parsed-literal::
+
+    <Model iJO1366 at 0x7f8d2fa20150>
+
+
+
+.. code:: python
+
+    cobra.io.write_sbml_model(salmonella_model, "test.json")
 SBML
 ----
 
@@ -76,7 +82,7 @@ can be used.
 
 .. parsed-literal::
 
-    <Model Salmonella_consensus_build_1 at 0x4400990>
+    <Model Salmonella_consensus_build_1 at 0x7f8d480ad710>
 
 
 
@@ -88,7 +94,7 @@ can be used.
 
 .. parsed-literal::
 
-    <Model Salmonella_consensus_build_1 at 0xfe325d0>
+    <Model Salmonella_consensus_build_1 at 0x7f8d480ad5d0>
 
 
 
@@ -121,7 +127,7 @@ reading function:
 
 .. parsed-literal::
 
-    <Model iJO1366 at 0x132e9dd0>
+    <Model iJO1366 at 0x7f8d48090b50>
 
 
 
@@ -136,7 +142,7 @@ variable to read from, and the variable\_name paramter is unnecessary.
 
 .. parsed-literal::
 
-    <Model iJO1366 at 0xd9e1c10>
+    <Model iJO1366 at 0x7f8d2d85af10>
 
 
 
@@ -145,3 +151,39 @@ Saving models to mat files is also relatively straightforward
 .. code:: python
 
     cobra.io.save_matlab_model(ecoli_model, "test_ecoli_model.mat")
+
+::
+
+
+    ---------------------------------------------------------------------------
+    NameError                                 Traceback (most recent call last)
+
+    <ipython-input-9-899c9ca38882> in <module>()
+    ----> 1 cobra.io.save_matlab_model(ecoli_model, "test_ecoli_model.mat")
+    
+
+    NameError: name 'ecoli_model' is not defined
+
+
+Pickle
+------
+
+Cobra models can be serialized using the python serialization format,
+`pickle <https://docs.python.org/2/library/pickle.html>`__. While this
+will save any extra fields which may have been created, it does not work
+with any other tools and can break between cobrapy major versions. JSON
+is generally the preferred format.
+
+.. code:: python
+
+    from cPickle import load, dump
+    
+    # read in the test models
+    with open(cobra.test.ecoli_pickle, "rb") as infile:
+        ecoli_model = load(infile)
+    with open(cobra.test.salmonella_pickle, "rb") as infile:
+        salmonella_model = load(infile)
+    
+    # output to a file
+    with open("test_output.pickle", "wb") as outfile:
+        dump(salmonella_model, outfile)

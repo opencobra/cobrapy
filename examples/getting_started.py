@@ -10,7 +10,7 @@
 
 from __future__ import print_function
 import cobra.test
-model = cobra.test.create_test_model(cobra.test.salmonella_pickle)
+model = cobra.test.create_test_model("salmonella")
 
 
 # The reactions, metabolites, and genes attributes of the cobrapy model are are
@@ -31,7 +31,7 @@ print(len(model.genes))
 
 model.reactions[29]
 # Output:
-# <Reaction 2AGPA180tipp at 0x5446f50>
+# <Reaction 2AGPA180tipp at 0x7f6d94afc210>
 
 # Addictionally, items can be retrived by their id using the get_by_id()
 # function. For example, to get the cytosolic atp metabolite object (the id is
@@ -39,7 +39,7 @@ model.reactions[29]
 
 model.metabolites.get_by_id("atp_c")
 # Output:
-# <Metabolite atp_c at 0x543e390>
+# <Metabolite atp_c at 0x7f6d94b4c610>
 
 # As an added bonus, users with an interactive shell such as IPython will be
 # able to tab-complete to list elements inside a list. While this is not
@@ -59,7 +59,7 @@ model.reactions.EX_glc__D_e.lower_bound
 pgi = model.reactions.get_by_id("PGI")
 pgi
 # Output:
-# <Reaction PGI at 0x6711310>
+# <Reaction PGI at 0x7f6d93e62110>
 
 # We can view the full name and reaction catalyzed as strings
 
@@ -109,6 +109,24 @@ print(pgi.check_mass_balance())
 # g6p_c <=> f6p_c
 # []
 
+# It is also possible to build the reaction from a string. However, care must
+# be taken when doing this to ensure reaction id's match those in the model.
+# The direction of the arrow is also used to update the upper and lower bounds.
+
+pgi.reaction = "g6p_c --> f6p_c + h_c + green_eggs + ham"
+# Prints:
+# unknown metabolite 'green_eggs' created
+# unknown metabolite 'ham' created
+
+pgi.reaction
+# Output:
+# 'g6p_c --> ham + green_eggs + f6p_c + h_c'
+
+pgi.reaction = "g6p_c <=> f6p_c"
+pgi.reaction
+# Output:
+# 'g6p_c <=> f6p_c'
+
 ### Metabolites
 
 # We will consider cytosolic atp as our metabolite, which has the id atp_c in
@@ -117,7 +135,7 @@ print(pgi.check_mass_balance())
 atp = model.metabolites.get_by_id("atp_c")
 atp
 # Output:
-# <Metabolite atp_c at 0x543e390>
+# <Metabolite atp_c at 0x7f6d94b4c610>
 
 # We can print out the metabolite name and compartment (cytosol in this case).
 
@@ -150,16 +168,16 @@ len(atp.reactions)
 
 model.metabolites.get_by_id("g6p_c").reactions
 # Output:
-# frozenset({<Reaction G6PDH2r at 0x61b6990>,
-#            <Reaction G6PP at 0x61b6b90>,
-#            <Reaction G6Pt6_2pp at 0x61b6c50>,
-#            <Reaction GLCptspp at 0x61cc850>,
-#            <Reaction HEX1 at 0x6375bd0>,
-#            <Reaction PGI at 0x6711310>,
-#            <Reaction PGMT at 0x6711890>,
-#            <Reaction TRE6PH at 0x6a86250>,
-#            <Reaction TRE6PS at 0x6a86510>,
-#            <Reaction AB6PGH at 0x6e39b90>})
+# frozenset({<Reaction AB6PGH at 0x7f6d93b3d990>,
+#            <Reaction TRE6PH at 0x7f6d93d32050>,
+#            <Reaction TRE6PS at 0x7f6d93d32310>,
+#            <Reaction PGI at 0x7f6d93e62110>,
+#            <Reaction PGMT at 0x7f6d93e62690>,
+#            <Reaction HEX1 at 0x7f6d940be9d0>,
+#            <Reaction GLCptspp at 0x7f6d9412a650>,
+#            <Reaction G6PDH2r at 0x7f6d94155790>,
+#            <Reaction G6PP at 0x7f6d94155990>,
+#            <Reaction G6Pt6_2pp at 0x7f6d94155a50>})
 
 ### Genes
 
@@ -181,18 +199,18 @@ gpr
 
 pgi.genes
 # Output:
-# frozenset({<Gene STM4221 at 0x6711390>})
+# frozenset({<Gene STM4221 at 0x7f6d93e62190>})
 
 pgi_gene = model.genes.get_by_id("STM4221")
 pgi_gene
 # Output:
-# <Gene STM4221 at 0x6711390>
+# <Gene STM4221 at 0x7f6d93e62190>
 
 # Each gene keeps track of the reactions it catalyzes
 
 pgi_gene.reactions
 # Output:
-# frozenset({<Reaction PGI at 0x6711310>})
+# frozenset({<Reaction PGI at 0x7f6d93e62110>})
 
 # Altering the gene_reaction_rule will create new gene objects if necessary and
 # update all relationships.
@@ -200,7 +218,7 @@ pgi_gene.reactions
 pgi.gene_reaction_rule = "(spam or eggs)"
 pgi.genes
 # Output:
-# frozenset({<Gene eggs at 0x32cf390>, <Gene spam at 0x6e40b90>})
+# frozenset({<Gene eggs at 0x7f6d93ad5ad0>, <Gene spam at 0x7f6d93ad5b10>})
 
 pgi_gene.reactions
 # Output:
@@ -210,7 +228,7 @@ pgi_gene.reactions
 
 model.genes.get_by_id("spam")
 # Output:
-# <Gene spam at 0x6e40b90>
+# <Gene spam at 0x7f6d93ad5b10>
 
 # The delete_model_genes function will evaluate the gpr and set the upper and
 # lower bounds to 0 if the reaction is knocked out. This function can preserve
@@ -221,7 +239,7 @@ print(pgi.lower_bound, "< pgi <", pgi.upper_bound)
 cobra.manipulation.delete_model_genes(model, ["eggs"], cumulative_deletions=True)
 print(pgi.lower_bound, "< pgi <", pgi.upper_bound)
 # Prints:
-# -1000.0 < pgi < 1000.0
+# -1000 < pgi < 1000
 # 0.0 < pgi < 0.0
 
 # The undelete_model_genes can be used to reset a gene deletion
@@ -229,4 +247,4 @@ print(pgi.lower_bound, "< pgi <", pgi.upper_bound)
 cobra.manipulation.undelete_model_genes(model)
 print(pgi.lower_bound, "< pgi <", pgi.upper_bound)
 # Prints:
-# -1000.0 < pgi < 1000.0
+# -1000 < pgi < 1000
