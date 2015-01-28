@@ -1,6 +1,5 @@
 from warnings import warn
 from copy import deepcopy
-from .Formula import Formula
 from .Object import Object
 
 
@@ -11,53 +10,24 @@ class Species(Object):
 
     """
 
-    def __init__(self, id=None, formula=None,
-                 name=None, compartment=None, mnx_id=None):
+    def __init__(self, id=None, name=None):
         """
         id: A string.
 
-        formula: cobra.Formula or str of a chemical formula.  Defaults to None
-        to save time in pickling and such.
-
         name: String.  A human readable name.
 
-        compartment: None or a dictionary indicating the cellular location
-        of the metabolite.  Used when in a cobra.Reaction or Model
-        object
-
-        mnx_id: None or a String of the MetaNetX.org ID for the object.
-
         """
-        Object.__init__(self, id, mnx_id=mnx_id)
+        Object.__init__(self, id)
         self.name = name
         if not name:
             self.name = self.id
-        if isinstance(formula, str):
-            formula = Formula(formula)
-
-        self.formula = formula
-        self.parse_composition()
-        # because in a Model a metabolite may participate in multiple Reactions
-        self.compartment = compartment
-        # self.model is None or refers to the cobra.Model that
-        # contains self
-        self._model = self.charge = None
+        self._model = None
         # references to reactions that operate on this species
         self._reaction = set()
 
     @property
     def reactions(self):
         return frozenset(self._reaction)
-
-    def parse_composition(self):
-        """Breaks the chemical formula down by element.
-        Useful for making sure Reactions are balanced.'
-
-        """
-        if isinstance(self.formula, Formula):
-            self.formula.parse_composition()
-        elif isinstance(self.formula, str):
-            self.formula = Formula(self.formula)
 
     def __getstate__(self):
         """Remove the references to container reactions when serializing to

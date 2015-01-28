@@ -1,7 +1,7 @@
 #cobra/sbml.py: Tools for reading / writing SBML now contained in
 #this module
 #System modules
-from .. import Model, Reaction, Metabolite, Formula
+from .. import Model, Reaction, Metabolite
 from os.path import isfile
 from os import name as __name
 from warnings import warn
@@ -160,7 +160,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         if tmp_formula == '' and old_sbml:
             tmp_formula = tmp_metabolite.name.split('_')[-1]
             tmp_metabolite.name = tmp_metabolite.name[:-len(tmp_formula)-1]
-        tmp_metabolite.formula = Formula(tmp_formula)
+        tmp_metabolite.formula = tmp_formula
         metabolite_dict.update({metabolite_id: tmp_metabolite})
         metabolites.append(tmp_metabolite)
     cobra_model.add_metabolites(metabolites)

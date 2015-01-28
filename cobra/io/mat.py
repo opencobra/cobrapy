@@ -4,7 +4,7 @@ from numpy import array, object as np_object
 from scipy.io import loadmat, savemat
 from scipy.sparse import coo_matrix
 
-from .. import Model, Metabolite, Reaction, Formula
+from .. import Model, Metabolite, Reaction
 
 # try to use an ordered dict
 try:
@@ -149,8 +149,7 @@ def from_mat_struct(mat_struct, model_id=None):
         except (IndexError, ValueError):
             pass
         try:
-            new_metabolite.formula = \
-                Formula(str(m["metFormulas"][0][0][i][0][0]))
+            new_metabolite.formula = str(m["metFormulas"][0][0][i][0][0])
         except (IndexError, ValueError):
             pass
         model.add_metabolites([new_metabolite])

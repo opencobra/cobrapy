@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import json
 from warnings import warn
 
-from .. import Model, Metabolite, Reaction, Formula
+from .. import Model, Metabolite, Reaction
 from ..external.six import iteritems, string_types
 
 # Detect numpy types to replace them.
@@ -37,7 +37,8 @@ def _fix_type(value):
         return float(value)
     if isinstance(value, bool_):
         return bool(value)
-    if isinstance(value, Formula):
+    # handle legacy Formula type
+    if value.__class__.__name__ == "Formula":
         return str(value)
     return value
 
@@ -53,7 +54,6 @@ def _from_dict(obj):
         new_metabolite = Metabolite()
         for k, v in iteritems(metabolite):
             setattr(new_metabolite, k, v)
-        new_metabolite.formula = Formula(new_metabolite.formula)
         new_metabolites.append(new_metabolite)
     model.add_metabolites(new_metabolites)
     # add reactions
