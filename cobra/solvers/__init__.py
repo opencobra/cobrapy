@@ -48,6 +48,9 @@ for i in listdir(path.dirname(path.abspath(__file__))):
             or i.endswith(".pyd"):
         possible_solvers.add(i.split(".")[0])
 
+if "wrappers" in possible_solvers:
+    possible_solvers.remove("wrappers")
+
 for solver in possible_solvers:
     try:
         add_solver(solver)

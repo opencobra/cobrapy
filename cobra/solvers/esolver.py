@@ -6,7 +6,9 @@ from fractions import Fraction
 from ..external.six.moves import zip
 
 from . import cglpk
+from .wrappers import *
 
+# detect paths to system calls for esolver and gzip
 with open(devnull, "w") as DEVNULL:
     try:
         ESOLVER_COMMAND = check_output(["which", "esolver"],
@@ -23,16 +25,16 @@ del DEVNULL
 solver_name = "esolver"
 
 
-class Esolver(object):
+class Esolver(cglpk.GLP):
     """contain an LP which will be solved through the QSopt_ex
 
     The LP is stored using a GLPK object, and written out to an
     LP file which is then solved by the esolver command."""
 
     def __init__(self, cobra_model=None):
+        cglpk.GLP.__init__(self, cobra_model)
         self.solution_filepath = None
         self.basis_filepath = None
-        self.GLP = cglpk.GLP(cobra_model)
         self.rational_solution = False
         self.verbose = False
         self.clean_up = True  # clean up files
@@ -41,24 +43,6 @@ class Esolver(object):
         """remove old files"""
         if self.clean_up and filename is not None and isfile(filename):
             unlink(filename)
-
-    @classmethod
-    def create_problem(cls, cobra_model, objective_sense="maximize"):
-        problem = cls(cobra_model)
-        problem.set_objective_sense(objective_sense)
-        return problem
-
-    def change_variable_bounds(self, *args):
-        self.GLP.change_variable_bounds(*args)
-
-    def change_variable_objective(self, *args):
-        self.GLP.change_variable_objective(*args)
-
-    def change_coefficient(self, *args):
-        self.GLP.change_coefficient(*args)
-
-    def set_objective_sense(self, objective_sense):
-        self.GLP.set_objective_sense(objective_sense)
 
     def set_parameter(self, parameter_name, value):
         if parameter_name == "GLP":
@@ -78,7 +62,7 @@ class Esolver(object):
         self._clean(self.solution_filepath)
         with NamedTemporaryFile(suffix=".lp", delete=False) as f:
             lp_filepath = f.name
-        self.GLP.write(lp_filepath)
+        self.write(lp_filepath)
         existing_basis = self.basis_filepath
         with NamedTemporaryFile(suffix=".bas", delete=False) as f:
             self.basis_filepath = f.name
@@ -165,31 +149,7 @@ class Esolver(object):
         solution.y_dict = {m.id: v for m, v in zip(m.metabolites, solution.y)}
         return solution
 
-    @classmethod
-    def solve(cls, cobra_model, **kwargs):
-        problem = cls.create_problem(cobra_model)
-        problem.solve_problem(**kwargs)
-        return problem.format_solution(cobra_model)
 
-
-# wrappers for all the functions at the module level
+# wrappers for the classmethods at the module level
 create_problem = Esolver.create_problem
-def set_objective_sense(lp, objective_sense="maximize"):
-    return lp.set_objective_sense(lp, objective_sense=objective_sense)
-def change_variable_bounds(lp, *args):
-    return lp.change_variable_bounds(*args)
-def change_variable_objective(lp, *args):
-    return lp.change_variable_objective(*args)
-def change_coefficient(lp, *args):
-    return lp.change_coefficient(*args)
-def set_parameter(lp, parameter_name, value):
-    return lp.change_parameter(parameter_name, value)
-def solve_problem(lp, **kwargs):
-    return lp.solve_problem(**kwargs)
-def get_status(lp):
-    return lp.get_status()
-def get_objective_value(lp):
-    return lp.get_objective_value()
-def format_solution(lp, cobra_model):
-    return lp.format_solution(cobra_model)
 solve = Esolver.solve
