@@ -35,9 +35,9 @@ and_or_search = re.compile(r'\(| and| or|\+|\)', re.IGNORECASE)
 # square brackets at the beginning of the string. For example [c] : foo --> bar
 compartment_finder = re.compile("^\s*(\[[A-Za-z]\])\s*:*")
 # Regular expressions to match the arrows
-reversible_arrow_finder = re.compile("<(-+|=+)>")
-forward_arrow_finder = re.compile("(-+|=+)>")
-reverse_arrow_finder = re.compile("<(-+|=+)")
+_reversible_arrow_finder = re.compile("<(-+|=+)>")
+_forward_arrow_finder = re.compile("(-+|=+)>")
+_reverse_arrow_finder = re.compile("<(-+|=+)")
 
 
 class Reaction(Object):
@@ -647,7 +647,17 @@ class Reaction(Object):
         self.lower_bound = 0
         self.upper_bound = 0
 
-    def build_reaction_from_string(self, reaction_str, verbose=True):
+    def build_reaction_from_string(self, reaction_str, verbose=True,
+                                   fwd_arrow=None, rev_arrow=None,
+                                   reversible_arrow=None):
+        # set the arrows
+        forward_arrow_finder = _forward_arrow_finder if fwd_arrow is None \
+            else re.compile(re.escape(fwd_arrow))
+        reverse_arrow_finder = _reverse_arrow_finder if rev_arrow is None \
+            else re.compile(re.escape(rev_arrow))
+        reversible_arrow_finder = _reversible_arrow_finder \
+            if reversible_arrow is None \
+            else re.compile(re.escape(reversible_arrow))
         if self._model is None:
             warn("no model found")
             model = None
