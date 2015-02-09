@@ -31,13 +31,13 @@ try:
     from Cython.Build import cythonize
     from distutils.version import StrictVersion
     import Cython
-    if StrictVersion(Cython.__version__) < StrictVersion("0.18"):
+    if StrictVersion(Cython.__version__) < StrictVersion("0.21"):
         raise ImportError("Cython version too old to use")
 except ImportError:
     cythonize = None
     for k in ["sdist", "develop"]:
         if k in argv:
-            raise Exception("cython required for " + k)
+            raise Exception("cython > 0.21 required for " + k)
 
 # Begin constructing arguments for building
 setup_kwargs = {}
@@ -66,41 +66,14 @@ try:
     build_args = {}
     setup_kwargs["cmdclass"] = {"build_ext": FailBuild}
     # MAC OS X needs some additional configuration tweaks
+    # Build should be run with the python.org python
+    # Cython will output C which could generate warnings in clang
+    # due to the addition of additional unneeded functions. Because
+    # this is a known phenomenon, these warnings are silenced to
+    # make other potential warnings which do signal errors stand
+    # out.
     if system() == "Darwin":
-        build_args["extra_compile_args"] = [
-            # Otherwise Clang gives errors on some versions
-            "-Qunused-arguments",
-            # Cython will output C which could generate warnings in clang
-            # due to the addition of additional unneeded functions. Because
-            # this is a known phenomenon, these warnings are silenced to
-            # make other potential warnings which do signal errors stand
-            # out.
-            "-Wno-unneeded-internal-declaration",
-            "-Wno-unused-function"]
-        # If making a wheel, the platform string needs to be modified to allow
-        # other possible platforms to install. For more information, see
-        # http://lepture.com/en/2014/python-on-a-hard-wheel
-        # This snippet is inspired by setup.py from mistune
-        # https://github.com/lepture/mistune/blob/3ae489a/setup.py
-        try:
-            from wheel.bdist_wheel import bdist_wheel
-
-            class _bdist_wheel(bdist_wheel):
-                def get_tag(self):
-                    tag = bdist_wheel.get_tag(self)
-                    possible_tags = ("macosx_10_6_intel",
-                                     "macosx_10_9_intel",
-                                     "macosx_10_10_intel",
-                                     "macosx_10_9_x86_64",
-                                     "macosx_10_10_x86_64")
-                    if tag[2] in possible_tags:
-                        tag = (tag[0], tag[1], ".".join(possible_tags))
-                    return tag
-
-            setup_kwargs["cmdclass"]["bdist_wheel"] = _bdist_wheel
-
-        except ImportError:
-            pass
+        build_args["extra_compile_args"] = ["-Wno-unused-function"]
 
     build_args["libraries"] = ["glpk"]
     # It is possible to statically link libglpk to the built extension. This
