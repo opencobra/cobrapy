@@ -184,7 +184,7 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
     constraint_limits = []
     [(constraint_sense.append(x._constraint_sense),
       constraint_names.append(x.id),
-      constraint_limits.append(x._bound))
+      constraint_limits.append(float(x._bound)))
      for x in cobra_model.metabolites]
 
     the_linear_expressions = []
