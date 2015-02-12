@@ -39,9 +39,17 @@ param_enums = {
     "sim_degen": mosek.simdegen
 }
 
+param_aliases = {
+    "tolerance_feasibility": "basis_tol_x",
+    "time_limit": "optimizer_max_time",
+    "mip_gap_abs": "mio_tol_abs_gap",
+    "mip_gap": "mio_tol_rel_gap",
+    "tolerance_integer": "mio_tol_abs_relax_int"
+    }
+
 
 def _verbose_printer(text):
-        print(text)
+    print(text)
 
 
 def create_problem(cobra_model, objective_sense="maximize",
@@ -110,6 +118,7 @@ def set_objective_sense(lp, objective_sense):
 
 
 def set_parameter(lp, parameter_name, parameter_value):
+    parameter_name = param_aliases.get(parameter_name, parameter_name)
     if parameter_name == "verbose":
         if parameter_value:
             for streamtype in mosek.streamtype.values:
