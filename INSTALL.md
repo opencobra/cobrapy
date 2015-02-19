@@ -10,6 +10,8 @@ All releases require Python 2.7+ or 3.4+ to be installed before proceeding.
 Mac OS X (10.7+) and Ubuntu ship with Python. Windows users without python 
 can download and install python from the [python 
 website](https://www.python.org/ftp/python/2.7.9/python-2.7.9.amd64.msi).
+Please note that though Anaconda and other python distributions may work with
+cobrapy, they are not explicitly supported at this time.
 
 
 #Installation of cobrapy
