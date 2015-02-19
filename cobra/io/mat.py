@@ -114,7 +114,9 @@ def create_mat_dict(model):
     mat["ub"] = array(rxns.list_attr("upper_bound"))
     mat["b"] = array(mets.list_attr("_bound"))
     mat["c"] = array(rxns.list_attr("objective_coefficient"))
-    mat["rev"] = array(rxns.list_attr("reversibility"))
+    # multiply by 1 to convert to float, working around scipy bug
+    # https://github.com/scipy/scipy/issues/4537
+    mat["rev"] = array(rxns.list_attr("reversibility")) * 1
     mat["description"] = str(model.description)
     return mat
 
