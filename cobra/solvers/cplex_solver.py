@@ -252,7 +252,7 @@ def change_variable_objective(lp, index, objective):
 def change_coefficient(lp, met_index, rxn_index, value):
     lp.linear_constraints.set_coefficients(met_index, rxn_index, value)
 
-def update_problem(lp, cobra_model, **kwargs):
+def update_problem(lp, cobra_model, new_objective=None, **kwargs):
     """A performance tunable method for updating a model problem file
 
     lp: A cplex problem object

@@ -152,6 +152,10 @@ class Reaction(Object):
         """
         return self.lower_bound < 0 and self.upper_bound > 0
 
+    @reversibility.setter
+    def reversibility(self, value):
+        warn("Setting reaction reversibility is ignored")
+
     @property
     def boundary(self):
         # single metabolite implies it must be a boundary
