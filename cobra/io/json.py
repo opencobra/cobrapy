@@ -52,7 +52,7 @@ def _from_dict(obj):
     for metabolite in obj['metabolites']:
         new_metabolite = Metabolite()
         for k, v in iteritems(metabolite):
-            setattr(new_metabolite, k, _fix_type(v))
+            setattr(new_metabolite, k, v)
         new_metabolite.formula = Formula(new_metabolite.formula)
         new_metabolites.append(new_metabolite)
     model.add_metabolites(new_metabolites)
