@@ -250,6 +250,12 @@ class TestReactions(CobraTestCase):
         self.assertTrue(model.metabolites.has_id("fake"))
         self.assertIs(model.metabolites.get_by_id("fake"), fake_metabolite)
 
+    def test_subtract_metabolite(self):
+        model = self.model
+        reaction = model.reactions.get_by_id("PGI")
+        reaction.subtract_metabolites(reaction.metabolites)
+        self.assertEqual(len(reaction.metabolites), 0)
+
     def test_build_from_string(self):
         model = self.model
         pgi = model.reactions.get_by_id("PGI")

@@ -521,13 +521,8 @@ class Reaction(Object):
 
         .. note:: A final coefficient < 0 implies a reactant.
 
-        .. note:: This function uses deepcopy in case the reaction is being
-                  subtracted from itself.
-
         """
-        metabolites = deepcopy(metabolites)
-        metabolites = {k: -v for k, v in iteritems(metabolites)}
-        self.add_metabolites(metabolites)
+        self.add_metabolites({k: -v for k, v in iteritems(metabolites)})
 
     def clear_metabolites(self):
         """Remove all metabolites from the reaction"""
