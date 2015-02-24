@@ -111,7 +111,7 @@ class ArrayBasedModel(Model):
         contains metabolites is ludacris.
 
         """
-        Model.add_metabolites(metabolite_list)
+        Model.add_metabolites(self, metabolite_list)
         if self._S is not None and expand_stoichiometric_matrix:
             s_expansion = len(self.metabolites) - self._S.shape[0]
             if s_expansion > 0:

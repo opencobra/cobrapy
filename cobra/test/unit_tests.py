@@ -303,6 +303,12 @@ class TestCobraModel(CobraTestCase):
         self.assertIsNot(copy_metabolite, copy_in_model)
         self.assertIs(type(copy_in_model), Metabolite)
         self.assertTrue(dummy_reaction in actual_metabolite._reaction)
+        # test adding a different metabolite with the same name as an
+        # existing one uses the metabolite in the model
+        r2 = Reaction("test_foo_reaction2")
+        self.model.add_reaction(r2)
+        r2.add_metabolites({Metabolite(self.model.metabolites[0].id): 1})
+        self.assertIs(self.model.metabolites[0], list(r2._metabolites)[0])
 
     def test_add_reaction_from_other_model(self):
         model = self.model

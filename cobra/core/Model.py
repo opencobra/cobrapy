@@ -145,7 +145,7 @@ class Model(Object):
         metabolite_list = [x for x in metabolite_list
                            if x.id not in self.metabolites]
         for x in metabolite_list:
-            setattr(x, '_model', self)
+            x._model = self
         self.metabolites += metabolite_list
 
     def _update_reaction(self, reaction):

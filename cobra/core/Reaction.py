@@ -479,30 +479,35 @@ class Reaction(Object):
             the reaction is associated with (i.e. self.model)
 
         """
-        the_metabolites = metabolites
         _id_to_metabolites = {x.id: x for x in self._metabolites}
         new_metabolites = []
-        for the_metabolite, the_coefficient in iteritems(the_metabolites):
+        for metabolite, coefficient in iteritems(metabolites):
             # If a metabolite already exists in the reaction then
             # just add them.
-            if the_metabolite.id in _id_to_metabolites:
-                reaction_metabolite = _id_to_metabolites[the_metabolite.id]
+            if metabolite.id in _id_to_metabolites:
+                reaction_metabolite = _id_to_metabolites[metabolite.id]
                 if combine:
-                    self._metabolites[reaction_metabolite] += the_coefficient
+                    self._metabolites[reaction_metabolite] += coefficient
                 else:
-                    self._metabolites[reaction_metabolite] = the_coefficient
+                    self._metabolites[reaction_metabolite] = coefficient
             else:
-                self._metabolites[the_metabolite] = the_coefficient
+                # If the reaction is in a model, ensure we aren't using
+                # a duplicate metabolite.
+                try:
+                    metabolite = \
+                        self._model.metabolites.get_by_id(metabolite.id)
+                except:
+                    new_metabolites.append(metabolite)
+                self._metabolites[metabolite] = coefficient
                 # make the metabolite aware that it is involved in this
                 # reaction
-                the_metabolite._reaction.add(self)
-                new_metabolites.append(the_metabolite)
-        for the_metabolite, the_coefficient in list(self._metabolites.items()):
+                metabolite._reaction.add(self)
+        for metabolite, the_coefficient in list(self._metabolites.items()):
             if the_coefficient == 0:
                 # make the metabolite aware that it no longer participates
                 # in this reaction
-                the_metabolite._reaction.remove(self)
-                self._metabolites.pop(the_metabolite)
+                metabolite._reaction.remove(self)
+                self._metabolites.pop(metabolite)
         if add_to_container_model and hasattr(self._model, 'add_metabolites'):
             self._model.add_metabolites(new_metabolites)
 
