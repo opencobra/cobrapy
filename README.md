@@ -9,6 +9,9 @@ and can also be [downloaded](https://readthedocs.org/projects/cobrapy/downloads/
 Please use the [Google Group](http://groups.google.com/group/cobra-pie) for help. More information about
 opencobra is available at the [website](http://opencobra.github.io/).
 
+If you use cobrapy in a scientific publication, please cite
+[doi:10.1186/1752-0509-7-74](http://dx.doi.org/doi:10.1186/1752-0509-7-74)
+
 License
 -------
 This program is free software: you can redistribute it and/or modify
