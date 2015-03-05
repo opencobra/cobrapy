@@ -110,13 +110,13 @@ def create_mat_dict(model):
     mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
     mat["csense"] = "".join(model._constraint_sense)
     mat["S"] = model.S
-    mat["lb"] = array(rxns.list_attr("lower_bound"))
-    mat["ub"] = array(rxns.list_attr("upper_bound"))
-    mat["b"] = array(mets.list_attr("_bound"))
-    mat["c"] = array(rxns.list_attr("objective_coefficient"))
     # multiply by 1 to convert to float, working around scipy bug
     # https://github.com/scipy/scipy/issues/4537
-    mat["rev"] = array(rxns.list_attr("reversibility")) * 1
+    mat["lb"] = array(rxns.list_attr("lower_bound")) * 1.
+    mat["ub"] = array(rxns.list_attr("upper_bound")) * 1.
+    mat["b"] = array(mets.list_attr("_bound")) * 1.
+    mat["c"] = array(rxns.list_attr("objective_coefficient")) * 1.
+    mat["rev"] = array(rxns.list_attr("reversibility"))
     mat["description"] = str(model.description)
     return mat
 
