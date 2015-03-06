@@ -47,7 +47,7 @@ class DictList(list):
 
     def get_by_id(self, id):
         """return the element with a matching id"""
-        return self[self._dict[id]]
+        return list.__getitem__(self, self._dict[id])
 
     def list_attr(self, attribute):
         """return a list of the given attribute for every object
@@ -292,7 +292,9 @@ class DictList(list):
         self._generate_index()
 
     def __getitem__(self, i):
-        if isinstance(i, slice):
+        if isinstance(i, int):
+            return list.__getitem__(self, i)
+        elif isinstance(i, slice):
             selection = self.__class__()
             selection._extend_nocheck(list.__getitem__(self, i))
             return selection
