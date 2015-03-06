@@ -1,21 +1,23 @@
 from collections import defaultdict
 from warnings import warn
+from decimal import Decimal
 
 import sympy
-from decimal import Decimal
+from sympy.parsing.sympy_parser import eval_expr
+from six import iteritems
 
 from .. import Metabolite, Reaction, Gene, Model
 
 # import xml parsing libraries
 from xml.dom import minidom  # only used for prettyprinting
+_with_lxml = False  # lxml also works, but is actually slower
 try:
-    from lxml.etree import parse, Element, SubElement, tostring, \
-        register_namespace
-    _with_lxml = True
+    from xml.etree.cElementTree import parse, Element, SubElement, \
+        tostring, register_namespace
 except ImportError:
-    from xml.etree.cElementTree import parse, Element, SubElement, tostring, \
-        register_namespace
-    _with_lxml = False
+    from xml.etree.ElementTree import parse, Element, SubElement, \
+        tostring, register_namespace
+
 
 # deal with namespaces
 namespaces = {"fbc": "http://www.sbml.org/sbml/level3/version1/fbc/version2",
@@ -27,6 +29,7 @@ for key in namespaces:
 fbc_prefix = "{" + namespaces["fbc"] + "}"
 sbml_prefix = "{" + namespaces["sbml"] + "}"
 
+SBML_DOT = "__SBML_DOT__"
 # FBC TAGS
 OR_TAG = "fbc:or"
 AND_TAG = "fbc:and"
@@ -35,6 +38,7 @@ GPR_TAG = "fbc:geneProductAssociation"
 GENELIST_TAG = "fbc:listOfGeneProducts"
 GENE_TAG = "fbc:geneProduct"
 # XPATHS
+BOUND_XPATH = "sbml:listOfParameters/sbml:parameter"  # TODO only get constant
 GENES_XPATH = GENELIST_TAG + "/" + GENE_TAG
 SPECIES_XPATH = "sbml:listOfSpecies/sbml:species[@boundaryCondition='%s']"
 OBJECTIVES_XPATH = ("fbc:objective[@fbc:id='%s']/"
@@ -92,8 +96,7 @@ def construct_gpr_xml(parent, expression):
             construct_gpr_xml(or_elem, arg)
     elif isinstance(expression, sympy.Symbol):
         gene_elem = SubElement(parent, ns(GENEREF_TAG))
-        set_attrib(gene_elem, "fbc:geneProduct",
-                   str(expression).replace(".", "__SBML_DOT__"))
+        set_attrib(gene_elem, "fbc:geneProduct", str(expression))
     else:
         raise Exception("unable to parse " + repr(expression))
 
@@ -119,7 +122,7 @@ def parse_xml_into_model(xml, number=float):
 
     # add genes
     for sbml_gene in xml_model.findall(ns(GENES_XPATH)):
-        gene_id = get_attrib(sbml_gene, "fbc:id").replace("__SBML_DOT__", ".")
+        gene_id = get_attrib(sbml_gene, "fbc:id").replace(SBML_DOT, ".")
         gene = Gene(gene_id)
         gene.name = get_attrib(sbml_gene, "fbc:name")
         model.genes.append(gene)
@@ -139,22 +142,21 @@ def parse_xml_into_model(xml, number=float):
         else:
             raise Exception("unsupported tag " + sub_xml.tag)
 
-    BOUND_XPATH = "sbml:listOfParameters/sbml:parameter[@id='%s']"
-    # add reactions
-    reactions = []
     # options for get_attrib for numbers
     opts = {"type": number, "require": True}
+    # TODO handle infinity
+    bounds = {bound.get("id"): get_attrib(bound, "value", **opts)
+              for bound in xml_model.findall(ns(BOUND_XPATH))}
+    # add reactions
+    reactions = []
     for sbml_reaction in xml_model.findall(
             ns("sbml:listOfReactions/sbml:reaction")):
         reaction = Reaction(clip(sbml_reaction.get("id"), "R_"))
         reaction.name = sbml_reaction.get("name")
-        # TODO handle infinity
-        lb_id = get_attrib(sbml_reaction, "fbc:lowerBound", require=True)
-        lb_param = xml_model.find(ns(BOUND_XPATH) % lb_id)
-        reaction.lower_bound = get_attrib(lb_param, "value", **opts)
-        ub_id = get_attrib(sbml_reaction, "fbc:upperBound", require=True)
-        ub_param = xml_model.find(ns(BOUND_XPATH) % ub_id)
-        reaction.upper_bound = get_attrib(ub_param, "value", **opts)
+        lb_id = get_attrib(sbml_reaction, "fbc:lowerFluxBound", require=True)
+        reaction.lower_bound = bounds[lb_id]
+        ub_id = get_attrib(sbml_reaction, "fbc:upperFluxBound", require=True)
+        reaction.upper_bound = bounds[ub_id]
         reactions.append(reaction)
 
         stoichiometry = defaultdict(lambda: 0)
@@ -190,7 +192,7 @@ def parse_xml_into_model(xml, number=float):
         # remove outside parenthesis, if any
         if gpr.startswith("(") and gpr.endswith(")"):
             gpr = gpr[1:-1].strip()
-        gpr = gpr.replace("__SBML_DOT__", ".")
+        gpr = gpr.replace(SBML_DOT, ".")
         reaction.gene_reaction_rule = gpr
     model.add_reactions(reactions)
 
@@ -223,82 +225,80 @@ def model_to_xml(cobra_model):
 
     # create the element for the flux bound parameters
     parameter_list = SubElement(xml_model, "listOfParameters")
-    minus_inf = SubElement(parameter_list, "parameter")
-    minus_inf.set("id", "cobra_default_lb")
-    minus_inf.set("value", "-1000")
-    minus_inf.set("constant", "true")
-    plus_inf = SubElement(parameter_list, "parameter")
-    plus_inf.set("id", "cobra_default_ub")
-    plus_inf.set("value", "1000")
-    plus_inf.set("constant", "true")
-    bound_0 = SubElement(parameter_list, "parameter")
-    bound_0.set("id", "cobra_0_bound")
-    bound_0.set("value", "0")
-    bound_0.set("constant", "true")
+    # the most common bounds are the minimum, maxmium, and 0
+    min_value = min(cobra_model.reactions.list_attr("lower_bound"))
+    max_value = max(cobra_model.reactions.list_attr("upper_bound"))
+    SubElement(parameter_list, "parameter", value=strnum(min_value),
+               id="cobra_default_lb", constant="true")
+    SubElement(parameter_list, "parameter", value=strnum(max_value),
+               id="cobra_default_ub", constant="true")
+    SubElement(parameter_list, "parameter", value="0",
+               id="cobra_0_bound", constant="true")
 
     def create_bound(reaction, bound_type):
         """returns the str id of the appropriate bound for the reaction
 
         The bound will also be created if necessary"""
         value = getattr(reaction, bound_type)
-        if value == -1000:
+        if value == min_value:
             return "cobra_default_lb"
         elif value == 0:
             return "cobra_0_bound"
-        elif value == 1000:
+        elif value == max_value:
             return "cobra_default_ub"
         else:
             param_id = "R_" + reaction.id + "_" + bound_type
-            param = SubElement(parameter_list, "parameter")
-            param.set("id", param_id)
-            param.set("value", strnum(value))
-            param.set("constant", "true")
+            SubElement(parameter_list, "parameter", id=param_id,
+                       value=strnum(value), constant="true")
             return param_id
 
     # add in compartments
     compartmenst_list = SubElement(xml_model, "listOfCompartments")
     compartments = cobra_model.compartments
-    for compartment, name in compartments.items():
+    for compartment, name in iteritems(compartments):
         SubElement(compartmenst_list, "compartment", id=compartment, name=name,
                    constant="true")
 
     # add in metabolites
     species_list = SubElement(xml_model, "listOfSpecies")
-    # Required SBML params not used by cobra
-    extra_attributes = {"constant": "false", "boundaryCondition": "false",
-                        "hasOnlySubstanceUnits": "false"}
     for met in cobra_model.metabolites:
-        species = SubElement(species_list, "species")
-        set_attrib(species, "id", "M_" + met.id)
+        species = SubElement(species_list, "species",
+                             id="M_" + met.id,
+                             compartment=str(met.compartment),
+                             # Useless required SBML parameters
+                             constant="false",
+                             boundaryCondition="false",
+                             hasOnlySubstanceUnits="false")
         set_attrib(species, "name", met.name)
-        set_attrib(species, "compartment", met.compartment)
         set_attrib(species, "fbc:charge", met.charge)
         set_attrib(species, "fbc:chemicalFormula", met.formula)
-        species.attrib.update(extra_attributes)
 
     # add in genes
     if len(cobra_model.genes) > 0:
         genes_list = SubElement(xml_model, ns(GENELIST_TAG))
+    gene_symbols = {}
     for gene in cobra_model.genes:
+        gene_id = gene.id.replace(".", SBML_DOT)
         sbml_gene = SubElement(genes_list, ns(GENE_TAG))
-        set_attrib(sbml_gene, "fbc:id", gene.id.replace(".", "__SBML_DOT__"))
+        set_attrib(sbml_gene, "fbc:id", gene_id)
         set_attrib(sbml_gene, "fbc:name", gene.name)
+        gene_symbols[gene_id] = sympy.Symbol(gene_id)
 
     # add in reactions
     reactions_list = SubElement(xml_model, "listOfReactions")
     for reaction in cobra_model.reactions:
-        sbml_reaction = SubElement(reactions_list, "reaction")
-        attributes = sbml_reaction.attrib
         id = "R_" + reaction.id
-        set_attrib(sbml_reaction, "id", id)
+        sbml_reaction = SubElement(
+            reactions_list, "reaction",
+            id=id,
+            # Useless required SBML parameters
+            fast="false",
+            reversible=str(reaction.lower_bound < 0).lower())
         set_attrib(sbml_reaction, "name", reaction.name)
-        # Useless required SBML params
-        attributes["fast"] = "false"
-        attributes["reversible"] = str(reaction.lower_bound <= 0).lower()
         # add in bounds
-        set_attrib(sbml_reaction, "fbc:upperBound",
+        set_attrib(sbml_reaction, "fbc:upperFluxBound",
                    create_bound(reaction, "upper_bound"))
-        set_attrib(sbml_reaction, "fbc:lowerBound",
+        set_attrib(sbml_reaction, "fbc:lowerFluxBound",
                    create_bound(reaction, "lower_bound"))
 
         # objective coefficient
@@ -312,7 +312,7 @@ def model_to_xml(cobra_model):
         # stoichiometry
         reactants = {}
         products = {}
-        for metabolite, stoichiomety in reaction._metabolites.items():
+        for metabolite, stoichiomety in iteritems(reaction._metabolites):
             met_id = "M_" + metabolite.id
             if stoichiomety > 0:
                 products[met_id] = strnum(stoichiomety)
@@ -320,12 +320,12 @@ def model_to_xml(cobra_model):
                 reactants[met_id] = strnum(-stoichiomety)
         if len(reactants) > 0:
             reactant_list = SubElement(sbml_reaction, "listOfReactants")
-            for met_id, stoichiomety in reactants.items():
+            for met_id, stoichiomety in iteritems(reactants):
                 SubElement(reactant_list, "speciesReference", species=met_id,
                            stoichiometry=stoichiomety, constant="true")
         if len(products) > 0:
             product_list = SubElement(sbml_reaction, "listOfProducts")
-            for met_id, stoichiomety in products.items():
+            for met_id, stoichiomety in iteritems(products):
                 SubElement(product_list, "speciesReference", species=met_id,
                            stoichiometry=stoichiomety, constant="true")
 
@@ -333,10 +333,12 @@ def model_to_xml(cobra_model):
         gpr = reaction.gene_reaction_rule
         if gpr is not None and len(gpr) > 0:
             gpr = gpr.replace(" and ", " & ").replace(" or ", " | ")
-            gpr = gpr.replace(".", "__SBML_DOT__")
+            gpr = gpr.replace(".", SBML_DOT)
             gpr_xml = SubElement(sbml_reaction, ns(GPR_TAG))
             try:
-                symbolic_gpr = sympy.sympify(gpr)
+                compiled = compile(gpr, "<string>", "eval")
+                symbolic_gpr = eval_expr(compiled, local_dict=gene_symbols,
+                                         global_dict={})
             except Exception as e:
                 print "failed on '%s' in %s" % \
                     (reaction.gene_reaction_rule, repr(reaction))
@@ -358,13 +360,15 @@ def read_sbml_model(filename, number=float):
     return parse_xml_into_model(xml, number=number)
 
 
-def write_sbml_model(cobra_model, filename):
+def write_sbml_model(cobra_model, filename, pretty_print=False):
     xml = model_to_xml(cobra_model)
     if _with_lxml:
-        xml_str = tostring(xml, pretty_print=True, encoding="UTF-8",
+        xml_str = tostring(xml, pretty_print=pretty_print, encoding="UTF-8",
                            xml_declaration=True)
     else:
-        minidom_xml = minidom.parseString(tostring(xml))
-        xml_str = minidom_xml.toprettyxml(indent="  ", encoding="UTF-8")
+        xml_str = tostring(xml)
+        if pretty_print:
+            minidom_xml = minidom.parseString(tostring(xml))
+            xml_str = minidom_xml.toprettyxml(indent="  ", encoding="UTF-8")
     with open(filename, "w") as outfile:
         outfile.write(xml_str)
