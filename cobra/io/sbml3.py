@@ -1,9 +1,8 @@
 from collections import defaultdict
 from warnings import warn
 from decimal import Decimal
+from ast import parse as ast_parse, Name, Or, And, BoolOp
 
-import sympy
-from sympy.parsing.sympy_parser import eval_expr
 from six import iteritems
 
 from .. import Metabolite, Reaction, Gene, Model
@@ -17,6 +16,12 @@ try:
 except ImportError:
     from xml.etree.ElementTree import parse, Element, SubElement, \
         tostring, register_namespace
+
+try:
+    from sympy import Basic
+except:
+    class Basic:
+        pass
 
 
 # deal with namespaces
@@ -78,7 +83,7 @@ def clip(string, prefix):
 
 def strnum(number):
     """Utility function to convert a number to a string"""
-    if isinstance(number, (Decimal, sympy.Basic, str)):
+    if isinstance(number, (Decimal, Basic, str)):
         return str(number)
     s = "%.15g" % number
     return s.rstrip(".")
@@ -86,19 +91,21 @@ def strnum(number):
 
 def construct_gpr_xml(parent, expression):
     """create gpr xml under parent node"""
-    if isinstance(expression, sympy.And):
-        and_elem = SubElement(parent, ns(AND_TAG))
-        for arg in expression.args:
-            construct_gpr_xml(and_elem, arg)
-    elif isinstance(expression, sympy.Or):
-        or_elem = SubElement(parent, ns(OR_TAG))
-        for arg in expression.args:
-            construct_gpr_xml(or_elem, arg)
-    elif isinstance(expression, sympy.Symbol):
+    if isinstance(expression, BoolOp):
+        op = expression.op
+        if isinstance(op, And):
+            new_parent = SubElement(parent, ns(AND_TAG))
+        elif isinstance(op, Or):
+            new_parent = SubElement(parent, ns(OR_TAG))
+        else:
+            raise Exception("unsupported operation " + op.__class__)
+        for arg in expression.values:
+            construct_gpr_xml(new_parent, arg)
+    elif isinstance(expression, Name):
         gene_elem = SubElement(parent, ns(GENEREF_TAG))
-        set_attrib(gene_elem, "fbc:geneProduct", str(expression))
+        set_attrib(gene_elem, "fbc:geneProduct", expression.id)
     else:
-        raise Exception("unable to parse " + repr(expression))
+        raise Exception("unsupported operation  " + repr(expression))
 
 
 def parse_xml_into_model(xml, number=float):
@@ -276,13 +283,11 @@ def model_to_xml(cobra_model):
     # add in genes
     if len(cobra_model.genes) > 0:
         genes_list = SubElement(xml_model, ns(GENELIST_TAG))
-    gene_symbols = {}
     for gene in cobra_model.genes:
         gene_id = gene.id.replace(".", SBML_DOT)
         sbml_gene = SubElement(genes_list, ns(GENE_TAG))
         set_attrib(sbml_gene, "fbc:id", gene_id)
         set_attrib(sbml_gene, "fbc:name", gene.name)
-        gene_symbols[gene_id] = sympy.Symbol(gene_id)
 
     # add in reactions
     reactions_list = SubElement(xml_model, "listOfReactions")
@@ -332,24 +337,15 @@ def model_to_xml(cobra_model):
         # gene reaction rule
         gpr = reaction.gene_reaction_rule
         if gpr is not None and len(gpr) > 0:
-            gpr = gpr.replace(" and ", " & ").replace(" or ", " | ")
             gpr = gpr.replace(".", SBML_DOT)
             gpr_xml = SubElement(sbml_reaction, ns(GPR_TAG))
             try:
-                compiled = compile(gpr, "<string>", "eval")
-                symbolic_gpr = eval_expr(compiled, local_dict=gene_symbols,
-                                         global_dict={})
+                parsed = ast_parse(gpr, filename="<string>", mode="eval")
+                construct_gpr_xml(gpr_xml, parsed.body)
             except Exception as e:
-                print "failed on '%s' in %s" % \
-                    (reaction.gene_reaction_rule, repr(reaction))
+                print("failed on '%s' in %s" %
+                      (reaction.gene_reaction_rule, repr(reaction)))
                 raise e
-            else:
-                try:
-                    construct_gpr_xml(gpr_xml, symbolic_gpr)
-                except Exception as e:
-                    print "failed on '%s' in %s" % \
-                        (reaction.gene_reaction_rule, repr(reaction))
-                    raise e
 
     return xml
 
