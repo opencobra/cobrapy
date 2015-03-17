@@ -10,6 +10,13 @@ from tempfile import NamedTemporaryFile as _NamedTemporaryFile  # for pickling
 from os import unlink as _unlink
 from warnings import warn as _warn
 
+try:
+    from sympy import Basic, Number
+except:
+    class Basic:
+        pass
+    Number = Basic
+
 __glpk_version__ = str(glp_version())
 _SUPPORTS_MILP = True
 solver_name = "cglpk"
@@ -102,6 +109,12 @@ cdef int hook(void *info, const char *s):
     print(s)
     return 1
 
+cdef double _to_double(value):
+    if isinstance(value, Basic) and not isinstance(value, Number):
+        return 0.
+    else:
+        return <double>value
+
 
 cdef class GLP:
     cdef glp_prob *glp
@@ -126,6 +139,7 @@ cdef class GLP:
         cdef int *c_rows
         cdef int *c_cols
         cdef double *c_values
+        cdef double b
         
         # initialize parameters
         self.parameters.msg_lev = GLP_MSG_OFF
@@ -146,7 +160,7 @@ cdef class GLP:
 
         # set metabolite/consraint bounds
         for index, metabolite in enumerate(cobra_model.metabolites, 1):
-            b = float(metabolite._bound)
+            b = _to_double(metabolite._bound)
             c = metabolite._constraint_sense
             if c == 'E':
                 bound_type = GLP_FX  # Set metabolite to steady state levels
@@ -170,13 +184,14 @@ cdef class GLP:
             else:
                 bound_type = GLP_DB
             glp_set_col_bnds(glp, index, bound_type,
-                             float(reaction.lower_bound),
-                             float(reaction.upper_bound))
-            glp_set_obj_coef(glp, index, float(reaction.objective_coefficient))
+                             _to_double(reaction.lower_bound),
+                             _to_double(reaction.upper_bound))
+            glp_set_obj_coef(glp, index,
+                             _to_double(reaction.objective_coefficient))
 
             for metabolite, coefficient in reaction._metabolites.iteritems():
-                metabolite_index = metabolite_id_to_index[metabolite.id]
-                linear_constraint_rows.append(metabolite_index)
+                linear_constraint_rows.append(
+                    metabolite_id_to_index[metabolite.id])
                 linear_constraint_cols.append(index)
                 linear_constraint_values.append(coefficient)
         
@@ -191,7 +206,7 @@ cdef class GLP:
         for index in range(n_values):
             c_rows[index + 1] = linear_constraint_rows[index]
             c_cols[index + 1] = linear_constraint_cols[index]
-            c_values[index + 1] = float(linear_constraint_values[index])
+            c_values[index + 1] = _to_double(linear_constraint_values[index])
         # actually set the values
         glp_load_matrix(glp, n_values, c_rows, c_cols, c_values)
         # free the c arrays
