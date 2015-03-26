@@ -16,6 +16,7 @@ For installation instructions, please see `INSTALL.md
     milp
     qp
     loopless
+    pymatbridge
     faq
     cobra
 
