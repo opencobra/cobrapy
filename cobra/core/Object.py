@@ -1,4 +1,4 @@
-from ..external.six import iteritems
+from six import iteritems
 
 
 class Object(object):

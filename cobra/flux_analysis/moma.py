@@ -19,7 +19,7 @@ from scipy.sparse import vstack as s_vstack
 from ..core import Reaction, Metabolite
 from ..manipulation import initialize_growth_medium, delete_model_genes
 from ..manipulation.modify import convert_to_irreversible
-from ..external.six import iteritems
+from six import iteritems
 
 from warnings import warn
 

@@ -1,7 +1,7 @@
 from multiprocessing import Queue, Process, cpu_count
 
 from ..solvers import get_solver_name, solver_dict
-from ..external.six import iteritems
+from six import iteritems
 
 
 def compute_fba_deletion_worker(cobra_model, solver, job_queue, output_queue,

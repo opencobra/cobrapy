@@ -1,6 +1,6 @@
 from copy import copy, deepcopy
 import re
-from ..external.six import string_types, iteritems
+from six import string_types, iteritems
 from itertools import islice
 
 try:

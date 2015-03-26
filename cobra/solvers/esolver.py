@@ -3,7 +3,7 @@ from os import unlink, devnull
 from os.path import isfile
 from tempfile import NamedTemporaryFile
 from fractions import Fraction
-from ..external.six.moves import zip
+from six.moves import zip
 
 from . import cglpk
 from .wrappers import *

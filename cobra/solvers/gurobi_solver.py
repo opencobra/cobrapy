@@ -7,7 +7,7 @@ from gurobipy import Model, LinExpr, GRB, QuadExpr
 
 
 from ..core.Solution import Solution
-from ..external.six import string_types
+from six import string_types
 
 solver_name = 'gurobi'
 _SUPPORTS_MILP = True

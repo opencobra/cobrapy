@@ -5,7 +5,7 @@ import re
 from copy import copy, deepcopy
 from warnings import warn
 
-from ..external.six import string_types, iteritems
+from six import string_types, iteritems
 
 from .Object import Object
 from .Gene import Gene

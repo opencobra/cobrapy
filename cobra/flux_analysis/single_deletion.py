@@ -2,7 +2,7 @@ from time import time
 from warnings import warn
 from copy import deepcopy
 
-from ..external.six import string_types, iteritems
+from six import string_types, iteritems
 
 from ..manipulation import delete_model_genes, undelete_model_genes
 from ..manipulation.delete import find_gene_knockout_reactions

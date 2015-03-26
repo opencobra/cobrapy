@@ -1,6 +1,6 @@
 from warnings import warn
 
-from ..external.six import iteritems, string_types
+from six import iteritems, string_types
 from ..core.Metabolite import Metabolite
 from ..solvers import solver_dict, get_solver_name
 

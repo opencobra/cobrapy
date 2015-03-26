@@ -2,8 +2,8 @@ from __future__ import absolute_import, print_function
 
 import mosek
 
-from ..external.six.moves import zip
-from ..external.six import iteritems, string_types
+from six.moves import zip
+from six import iteritems, string_types
 
 env = mosek.Env()
 

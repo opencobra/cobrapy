@@ -133,7 +133,7 @@ setup(
     version=__version,
     packages=find_packages(exclude=['cobra.oven', 'cobra.oven*']),
     setup_requires=[],
-    install_requires=[],
+    install_requires=["six"],
     extras_require=extras,
     ext_modules=ext_modules,
 

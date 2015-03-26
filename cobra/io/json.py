@@ -4,7 +4,7 @@ import json
 from warnings import warn
 
 from .. import Model, Metabolite, Reaction
-from ..external.six import iteritems, string_types
+from six import iteritems, string_types
 
 # Detect numpy types to replace them.
 try:

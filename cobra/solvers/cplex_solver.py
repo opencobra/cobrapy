@@ -8,8 +8,8 @@ from cplex import Cplex, SparsePair
 from cplex.exceptions import CplexError
 
 from ..core.Solution import Solution
-from ..external.six.moves import zip
-from ..external.six import string_types 
+from six.moves import zip
+from six import string_types 
 
 solver_name = 'cplex'
 _SUPPORTS_MILP = True

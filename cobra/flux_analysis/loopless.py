@@ -1,6 +1,6 @@
 from ..core import Reaction, Metabolite
 from ..manipulation.modify import convert_to_irreversible
-from ..external.six import iteritems
+from six import iteritems
 
 
 def construct_loopless_model(cobra_model):

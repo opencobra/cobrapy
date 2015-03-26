@@ -1,7 +1,7 @@
 from warnings import warn
 from copy import deepcopy, copy
 
-from ..external.six import iteritems, string_types
+from six import iteritems, string_types
 from ..solvers import optimize
 from .Object import Object
 from .Solution import Solution

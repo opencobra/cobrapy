@@ -6,7 +6,7 @@ from numpy import array, hstack, ndarray
 from scipy.sparse import lil_matrix, dok_matrix
 
 from .Model import Model
-from ..external.six import iteritems
+from six import iteritems
 
 
 class ArrayBasedModel(Model):

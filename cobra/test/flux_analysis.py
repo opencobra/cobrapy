@@ -4,6 +4,8 @@ from warnings import warn
 import sys
 from os import name
 
+from six import iteritems
+
 try:
     import numpy
 except:
@@ -21,7 +23,6 @@ if __name__ == "__main__":
     from cobra.flux_analysis.variability import find_blocked_reactions
     from cobra.flux_analysis.single_deletion import single_deletion
     from cobra.flux_analysis.loopless import construct_loopless_model
-    from cobra.external.six import iteritems
     if numpy:
         from cobra.flux_analysis.double_deletion import double_deletion
     sys.path.pop(0)
@@ -36,7 +37,6 @@ else:
     from ..flux_analysis.variability import find_blocked_reactions
     from ..flux_analysis.single_deletion import single_deletion
     from ..flux_analysis.loopless import construct_loopless_model
-    from ..external.six import iteritems
     if numpy:
         from ..flux_analysis.double_deletion import double_deletion
 
