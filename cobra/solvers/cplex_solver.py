@@ -52,7 +52,7 @@ status_dict = {'MIP_infeasible': 'infeasible',
 
 def get_status(lp):
     status = lp.solution.get_status_string().lower()
-    return status_dict[status] if status in status_dict else 'failed'
+    return status_dict.get(status, status)
 
 
 def get_objective_value(lp):
@@ -61,7 +61,7 @@ def get_objective_value(lp):
 
 def format_solution(lp, cobra_model, **kwargs):
     status = get_status(lp)
-    if status in ('optimal', 'time_limit'):
+    if status in ('optimal', 'time_limit', 'non-optimal'):
         objective_value = lp.solution.get_objective_value()
         x_dict = dict(zip(lp.variables.get_names(),
                           lp.solution.get_values()))
