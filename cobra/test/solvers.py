@@ -107,7 +107,9 @@ class TestCobraSolver(object):
         max_solution = solver.format_solution(maximize, self.model)
         min_solution = solver.format_solution(minimize, self.model)
         self.assertAlmostEqual(0, min_solution.f, places=4)
+        self.assertEqual(min_solution.status, "optimal")
         self.assertAlmostEqual(self.old_solution, max_solution.f, places=4)
+        self.assertEqual(max_solution.status, "optimal")
         # if we set minimize at creation, can we override it at solve
         solver.solve_problem(minimize, objective_sense="maximize")
         override_minimize = solver.format_solution(minimize, self.model)
@@ -244,6 +246,7 @@ class TestCobraSolver(object):
         solver.set_quadratic_objective(lp, quadratic_obj)
         solver.solve_problem(lp, objective_sense="minimize")
         solution = solver.format_solution(lp, m)
+        self.assertEqual(solution.status, "optimal")
         # Respecting linear objectives also makes the objective value 1.
         self.assertAlmostEqual(solution.f, 1.)
         self.assertAlmostEqual(solution.x_dict["y"], 1.)
@@ -253,10 +256,12 @@ class TestCobraSolver(object):
         solver.change_variable_objective(lp, 1, 0.)
         solver.solve_problem(lp, objective_sense="minimize")
         solution = solver.format_solution(lp, m)
+        self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(solution.f, 2.)
         # test quadratic from solve function
         solution = solver.solve(m, quadratic_component=quadratic_obj,
                                 objective_sense="minimize")
+        self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(solution.f, 1.)
         c._bound = 6
         z = Reaction("z")
@@ -268,6 +273,7 @@ class TestCobraSolver(object):
         solution = solver.solve(m, quadratic_component=scipy.sparse.eye(3),
                                 objective_sense="minimize")
         # should be 12 not 24 because 1/2 (V^T Q V)
+        self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(solution.f, 6)
         self.assertAlmostEqual(solution.x_dict["x"], 2)
         self.assertAlmostEqual(solution.x_dict["y"], 2)
