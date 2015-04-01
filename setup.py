@@ -31,8 +31,13 @@ try:
     from Cython.Build import cythonize
     from distutils.version import StrictVersion
     import Cython
-    if StrictVersion(Cython.__version__) < StrictVersion("0.21"):
-        raise ImportError("Cython version too old to use")
+    try:
+        cython_version = StrictVersion(Cython.__version__)
+    except ValueError:
+        raise ImportError("Cython version not parseable")
+    else:
+        if cython_version < StrictVersion("0.21"):
+            raise ImportError("Cython version too old to use")
 except ImportError:
     cythonize = None
     for k in ["sdist", "develop"]:
