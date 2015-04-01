@@ -21,7 +21,8 @@ parameter_defaults = {'objective_sense': 'maximize',
                       'tolerance_integer': 1e-9,
                       'lp_method': 1,
                       'tolerance_barrier': 1e-8,
-                      'verbose': False}
+                      'verbose': False,
+                      'qpmethod': 1}
 parameter_mappings = {'lp_method': 'lpmethod',
                       'lp_parallel': 'threads',
                       'threads': 'threads',
@@ -230,7 +231,10 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
 def set_quadratic_objective(lp, quadratic_objective):
     if not hasattr(quadratic_objective, 'todok'):
         raise Exception('quadratic component must have method todok')
-
+    # ensure the matrix is properly read in
+    nnz = quadratic_objective.nnz
+    if lp.parameters.read.qpnonzeros < nnz:
+        lp.parameters.read.qpnonzeros.set(nnz + 1)
     # Reset the quadratic coefficient if it exists
     if lp.objective.get_num_quadratic_nonzeros() > 0:
         lp.objective.set_quadratic((0.,) * lp.variables.get_num())

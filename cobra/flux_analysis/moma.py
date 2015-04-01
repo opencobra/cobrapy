@@ -69,8 +69,8 @@ def create_euclidian_distance_objective(n_moma_reactions):
 
 def create_euclidian_distance_lp(moma_model, solver):
     Q = create_euclidian_distance_objective(len(moma_model.reactions))
-    lp = solver.create_problem(moma_model, objective_sense="minimize")
-    solver.set_quadratic_objective(lp, Q)
+    lp = solver.create_problem(moma_model, objective_sense="minimize",
+                               quadratic_component=Q)
     return lp
 
 
