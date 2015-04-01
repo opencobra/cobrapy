@@ -9,7 +9,7 @@ from cplex.exceptions import CplexError
 
 from ..core.Solution import Solution
 from six.moves import zip
-from six import string_types 
+from six import string_types, iteritems
 
 solver_name = 'cplex'
 _SUPPORTS_MILP = True
@@ -151,7 +151,7 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
 
     # Begin problem creation
     lp = Cplex()
-    for k, v in the_parameters.iteritems():
+    for k, v in iteritems(the_parameters):
         set_parameter(lp, k, v)
     objective_coefficients = [float(x.objective_coefficient)
                               for x in cobra_model.reactions]
@@ -290,7 +290,7 @@ def update_problem(lp, cobra_model, new_objective=None, **kwargs):
 
 def solve_problem(lp, **kwargs):
     # Update parameter settings if provided
-    for k, v in kwargs.iteritems():
+    for k, v in iteritems(kwargs):
         set_parameter(lp, k, v)
     lp.solve()
     # If the solver takes more than 0.1 s with a hot start it is likely stuck
