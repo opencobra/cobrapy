@@ -49,7 +49,13 @@ def flux_variability_analysis(cobra_model, reaction_list=None,
             solver.change_variable_bounds(lp, i,
                                           min(new_bounds), max(new_bounds))
             solver.change_variable_objective(lp, i, 0.)
-    # perform fva
+    return calculate_lp_variability(lp, solver, cobra_model, reaction_list,
+                                    **solver_args)
+
+
+def calculate_lp_variability(lp, solver, cobra_model, reaction_list,
+                             **solver_args):
+    """calculate max and min of selected variables in an LP"""
     fva_results = {}
     for r in reaction_list:
         i = cobra_model.reactions.index(r)
