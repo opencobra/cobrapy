@@ -260,13 +260,14 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         #TODO: READ IN OTHER NOTES AND GIVE THEM A reaction_ prefix.
         #TODO: Make sure genes get added as objects
         if 'GENE ASSOCIATION' in reaction_note_dict:
+            rule = reaction_note_dict['GENE ASSOCIATION'][0]
             try:
-                rule = reaction_note_dict['GENE ASSOCIATION'][0].encode('ascii')
-                if rule.startswith("&quot;") and rule.endswith("&quot;"):
-                    rule = rule[6:-6]
-                reaction.gene_reaction_rule = str(rule)
-            except:
+                rule.encode('ascii')
+            except UnicodeEncodeError:
                 warn("gene_reaction_rule is not ascii compliant")
+            if rule.startswith("&quot;") and rule.endswith("&quot;"):
+                rule = rule[6:-6]
+            reaction.gene_reaction_rule = rule
             if 'GENE LIST' in reaction_note_dict:
                 reaction.systematic_names = reaction_note_dict['GENE LIST'][0]
             elif 'GENES' in reaction_note_dict and \
