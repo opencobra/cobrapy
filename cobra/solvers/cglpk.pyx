@@ -81,6 +81,16 @@ cdef dict METHODS = {
     "dual": GLP_DUAL
 }
 
+cdef dict PRICINGS = {
+    "std": GLP_PT_STD,
+    "pse": GLP_PT_PSE
+}
+
+cdef dict RATIOS = {
+    "std": GLP_RT_STD,
+    "har": GLP_RT_HAR
+}
+
 
 cdef int downcast_pos_size(Py_ssize_t size):
     if size > INT_MAX:
@@ -332,16 +342,16 @@ cdef class GLP:
         """set a solver parameter"""
         if parameter_name == "objective_sense":
             self.set_objective_sense(value)
-        elif parameter_name == "time_limit":
+        elif parameter_name in {"time_limit", "tm_lim"}:
             self.parameters.tm_lim = int(1000 * value)
-        elif parameter_name == "tolerance_feasibility":
+        elif parameter_name in {"tolerance_feasibility"}:
             self.parameters.tol_bnd = float(value)
             self.parameters.tol_dj = float(value)
-        elif parameter_name == "tolerance_markowitz":
+        elif parameter_name in {"tolerance_markowitz", "tol_piv"}:
             self.parameters.tol_piv = float(value)
         elif parameter_name == "tolerance_integer":
             self.integer_parameters.tol_int = float(value)
-        elif parameter_name == "mip_gap" or parameter_name == "MIP_gap":
+        elif parameter_name in {"mip_gap", "MIP_gap"}:
             self.integer_parameters.mip_gap = float(value)
         elif parameter_name == "verbose":
             if not value:  # suppress all output
@@ -365,6 +375,12 @@ cdef class GLP:
             _warn("multiple threads not supported")
         elif parameter_name == "MIP_gap_abs":
             _warn("setting aboslute mip gap not supported")
+        elif parameter_name == "presolve":
+            self.parameters.presolve = GLP_ON if value else GLP_OFF
+        elif parameter_name == "pricing":
+            self.parameters.pricing = PRICINGS[value]
+        elif parameter_name == "r_test":
+            self.parameters.r_test = RATIOS[value]
         else:
             raise ValueError("unknown parameter " + str(parameter_name))
 
