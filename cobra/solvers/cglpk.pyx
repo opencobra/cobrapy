@@ -91,6 +91,13 @@ cdef dict RATIOS = {
     "har": GLP_RT_HAR
 }
 
+cdef dict SCALINGS = {
+    "auto": GLP_SF_AUTO,
+    "gm": GLP_SF_GM,
+    "eq": GLP_SF_EQ,
+    "2n": GLP_SF_2N,
+    "skip": GLP_SF_SKIP
+}
 
 cdef int downcast_pos_size(Py_ssize_t size):
     if size > INT_MAX:
@@ -344,12 +351,16 @@ cdef class GLP:
             self.set_objective_sense(value)
         elif parameter_name in {"time_limit", "tm_lim"}:
             self.parameters.tm_lim = int(1000 * value)
-        elif parameter_name in {"tolerance_feasibility"}:
+        elif parameter_name == "tolerance_feasibility":
             self.parameters.tol_bnd = float(value)
+            self.parameters.tol_dj = float(value)
+        elif parameter_name == "tol_bnd":
+            self.parameters.tol_bnd = float(value)
+        elif parameter_name == "tol_dj":
             self.parameters.tol_dj = float(value)
         elif parameter_name in {"tolerance_markowitz", "tol_piv"}:
             self.parameters.tol_piv = float(value)
-        elif parameter_name == "tolerance_integer":
+        elif parameter_name in {"tolerance_integer", "tol_int"}:
             self.integer_parameters.tol_int = float(value)
         elif parameter_name in {"mip_gap", "MIP_gap"}:
             self.integer_parameters.mip_gap = float(value)
@@ -381,6 +392,14 @@ cdef class GLP:
             self.parameters.pricing = PRICINGS[value]
         elif parameter_name == "r_test":
             self.parameters.r_test = RATIOS[value]
+        elif parameter_name == "scale":
+            if value:
+                if isinstance(value, int):
+                    glp_scale_prob(self.glp, value)
+                else:
+                    glp_scale_prob(self.glp, SCALINGS[value])
+            else:
+                glp_unscale_prob(self.glp)
         else:
             raise ValueError("unknown parameter " + str(parameter_name))
 
