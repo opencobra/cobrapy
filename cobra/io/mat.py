@@ -118,7 +118,7 @@ def create_mat_dict(model):
     mat["ub"] = array(rxns.list_attr("upper_bound")) * 1.
     mat["b"] = array(mets.list_attr("_bound")) * 1.
     mat["c"] = array(rxns.list_attr("objective_coefficient")) * 1.
-    mat["rev"] = array(rxns.list_attr("reversibility"))
+    mat["rev"] = array(rxns.list_attr("reversibility")) * 1
     mat["description"] = str(model.description)
     return mat
 
