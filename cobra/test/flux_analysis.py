@@ -18,13 +18,7 @@ if __name__ == "__main__":
     from cobra.manipulation import initialize_growth_medium
     from cobra.solvers import solver_dict, get_solver_name
     from cobra.manipulation import modify, delete
-    from cobra.flux_analysis.parsimonious import optimize_minimal_flux
-    from cobra.flux_analysis.variability import flux_variability_analysis
-    from cobra.flux_analysis.variability import find_blocked_reactions
-    from cobra.flux_analysis.single_deletion import single_deletion
-    from cobra.flux_analysis.loopless import construct_loopless_model
-    if numpy:
-        from cobra.flux_analysis.double_deletion import double_deletion
+    from cobra.flux_analysis import *
     sys.path.pop(0)
 else:
     from . import create_test_model
@@ -32,13 +26,7 @@ else:
     from ..manipulation import initialize_growth_medium
     from ..solvers import solver_dict, get_solver_name
     from ..manipulation import modify, delete
-    from ..flux_analysis.parsimonious import optimize_minimal_flux
-    from ..flux_analysis.variability import flux_variability_analysis
-    from ..flux_analysis.variability import find_blocked_reactions
-    from ..flux_analysis.single_deletion import single_deletion
-    from ..flux_analysis.loopless import construct_loopless_model
-    if numpy:
-        from ..flux_analysis.double_deletion import double_deletion
+    from ..flux_analysis import *
 
 
 class TestCobraFluxAnalysis(TestCase):
@@ -155,7 +143,7 @@ class TestCobraFluxAnalysis(TestCase):
         test_computation(test_model, ["try:'"], set())
         test_computation(test_model, ["try:'", "'except:1"], {"test1"})
 
-    def test_single_deletion(self):
+    def test_single_gene_deletion(self):
         cobra_model = self.model
         initialize_growth_medium(cobra_model, 'LB')
 
@@ -174,31 +162,25 @@ class TestCobraFluxAnalysis(TestCase):
             get_solver_name(qp=True)
         except:
             growth_dict.pop('moma')
-        for method, the_growth_rates in growth_dict.items():
-            element_list = the_growth_rates.keys()
-            results = single_deletion(cobra_model, element_list=element_list,
-                                      method=method)
-            rates = results[0]
-            statuses = results[1]
-
-            for the_gene in element_list:
-                self.assertEqual(statuses[the_gene], 'optimal')
-                self.assertAlmostEqual(rates[the_gene],
-                                       the_growth_rates[the_gene],
-                                       places=2)
+        for method, expected in growth_dict.items():
+            rates, statuses = single_gene_deletion(cobra_model,
+                                                   gene_list=expected.keys(),
+                                                   method=method)
+            for gene, expected_value in iteritems(expected):
+                self.assertEqual(statuses[gene], 'optimal')
+                self.assertAlmostEqual(rates[gene], expected_value, places=2)
 
     def test_single_reaction_deletion(self):
         cobra_model = self.model
-        results, status = single_deletion(
-            cobra_model, element_list=cobra_model.reactions[100:110:2],
-            element_type="reaction")
+        expected_results = {'3OAS140': 0, '3OAS160': 0.38001,
+                            '3OAS180': 0.38001, '3OAS60': 0,
+                            '3PEPTabcpp': 0.38001}
+        results, status = single_reaction_deletion(
+            cobra_model, reaction_list=expected_results.keys())
         self.assertEqual(len(results), 5)
         self.assertEqual(len(status), 5)
         for status_value in status.values():
             self.assertEqual(status_value, "optimal")
-        expected_results = {'3OAS140': 0, '3OAS160': 0.38001,
-                            '3OAS180': 0.38001, '3OAS60': 0,
-                            '3PEPTabcpp': 0.38001}
         for reaction, value in results.items():
             self.assertAlmostEqual(value, expected_results[reaction], 5)
 
@@ -294,8 +276,15 @@ class TestCobraFluxAnalysis(TestCase):
     def test_find_blocked_reactions(self):
         m = self.model
         result = find_blocked_reactions(m, reaction_list=m.reactions[:10])
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0], '12PPDStex')
+        self.assertEqual(result, ['12PPDStex'])
+        result = find_blocked_reactions(m, reaction_list=m.reactions[60:70])
+        self.assertEqual(result,
+                         ['3AMPtex', '2DGULRy', '2DGULRx', '3GMPtex',
+                          '3CMPtex', '2DGLCNRy', '34dhpactex'])
+        result = find_blocked_reactions(m, reaction_list=m.reactions[60:70],
+                                        open_exchanges=True)
+        self.assertEqual(result,
+                         ['2DGULRy', '2DGULRx', '2DGLCNRy', '34dhpactex'])
 
     def test_loopless(self):
         try:
