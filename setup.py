@@ -1,17 +1,9 @@
 try:
-    import setuptools
+    from setuptools import setup
 except ImportError:
-    import ez_setup
-    ez_setup.use_setuptools()
-from setuptools import setup, find_packages
+    from distutils.core import setup
 from sys import argv, path
 from os.path import isfile, abspath, dirname, join
-
-# import version to get the version string
-path.insert(0, abspath(join(dirname(__file__), "cobra")))
-from version import get_version, update_release_version
-path.pop(0)
-__version = get_version(pep440=True)
 
 # for running parallel tests due to a bug in python 2.7.3
 # http://bugs.python.org/issue15881#msg170215
@@ -20,6 +12,11 @@ try:
 except:
     None
 
+# import version to get the version string
+path.insert(0, abspath(join(dirname(__file__), "cobra")))
+from version import get_version, update_release_version
+path.pop(0)
+version = get_version(pep440=True)
 # If building something for distribution, ensure the VERSION
 # file is up to date
 if "sdist" in argv or "bdist_wheel" in argv:
@@ -42,7 +39,7 @@ except ImportError:
     cythonize = None
     for k in ["sdist", "develop"]:
         if k in argv:
-            raise Exception("cython > 0.21 required for " + k)
+            raise Exception("Cython >= 0.21 required for " + k)
 
 # Begin constructing arguments for building
 setup_kwargs = {}
@@ -121,22 +118,24 @@ except:
     ext_modules = None
 
 extras = {
-    'parallel': ['pp>=1.6.0'],
-    'matlab': ["mlabwrap>=1.1"],
+    'matlab': ["pymatbridge"],
     'sbml': ["python-libsbml-experimental"],
     'array': ["numpy>=1.6", "scipy>=11.0"],
     'display': ["matplotlib", "brewer2mpl", "pandas"]
 }
 
-all_extras = set()
+all_extras = {'Cython>=0.21'}
 for extra in extras.values():
     all_extras.update(extra)
 extras["all"] = list(all_extras)
 
+with open("README.md", "r") as infile:
+    long_description = infile.read()
+
 setup(
     name="cobra",
-    version=__version,
-    packages=find_packages(exclude=['cobra.oven', 'cobra.oven*']),
+    version=version,
+    packages=["cobra"],
     setup_requires=[],
     install_requires=["six"],
     extras_require=extras,
@@ -152,32 +151,26 @@ setup(
     author_email="danielhyduke@gmail.com",
     description="COBRApy is a package for constraints-based modeling of "
     "biological networks",
-    license="GPL V3.0",
+    license="GPL v3.0#",
     keywords="metabolism biology linear programming optimization flux"
     " balance analysis fba",
     url="https://opencobra.github.io/cobrapy",
     test_suite="cobra.test.suite",
-    long_description="COnstraint-Based Reconstruction and Analysis (COBRA) "
-    "methods are widely used for genome-scale modeling of metabolic networks "
-    "in both prokaryotes and eukaryotes. COBRApy is a constraint-based "
-    "modeling package that is designed to accomodate the biological "
-    "complexity of the next generation of COBRA models and provides access to "
-    "commonly used COBRA methods, such as flux balance analysis, flux "
-    "variability analysis, and gene deletion analyses.",
+    long_description=long_description,
     download_url='https://pypi.python.org/pypi/cobra',
-    classifiers=['Development Status :: 5 - Production/Stable',
-                 'Environment :: Console',
-                 'Intended Audience :: Science/Research',
-                 'License :: OSI Approved :: GNU General Public License v3'
-                 ' or later (GPLv3+)',
-                 'Operating System :: OS Independent',
-                 'Programming Language :: Python :: 2.7',
-                 'Programming Language :: Python :: 3.3',
-                 'Programming Language :: Python :: 3.4',
-                 'Programming Language :: Python :: Implementation :: CPython',
-                 'Programming Language :: Python :: Implementation :: Jython',
-                 'Topic :: Scientific/Engineering',
-                 'Topic :: Scientific/Engineering :: Bio-Informatics'
-                 ],
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: GNU General Public License v3 or later '
+            '(GPLv3+)',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: Cython',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Bio-Informatics'
+    ],
     platforms="GNU/Linux, Mac OS X >= 10.7, Microsoft Windows >= 7",
     **setup_kwargs)
