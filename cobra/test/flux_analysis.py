@@ -278,13 +278,13 @@ class TestCobraFluxAnalysis(TestCase):
         result = find_blocked_reactions(m, reaction_list=m.reactions[:10])
         self.assertEqual(result, ['12PPDStex'])
         result = find_blocked_reactions(m, reaction_list=m.reactions[60:70])
-        self.assertEqual(result,
-                         ['3AMPtex', '2DGULRy', '2DGULRx', '3GMPtex',
-                          '3CMPtex', '2DGLCNRy', '34dhpactex'])
+        self.assertEqual(set(result),
+                         {'3AMPtex', '2DGULRy', '2DGULRx', '3GMPtex',
+                          '3CMPtex', '2DGLCNRy', '34dhpactex'})
         result = find_blocked_reactions(m, reaction_list=m.reactions[60:70],
                                         open_exchanges=True)
-        self.assertEqual(result,
-                         ['2DGULRy', '2DGULRx', '2DGLCNRy', '34dhpactex'])
+        self.assertEqual(set(result),
+                         {'2DGULRy', '2DGULRx', '2DGLCNRy', '34dhpactex'})
 
     def test_loopless(self):
         try:

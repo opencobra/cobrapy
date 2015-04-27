@@ -3,13 +3,11 @@ import sys
 # deal with absolute imports by adding the appropriate directory to the path
 if __name__ == "__main__":
     sys.path.insert(0, "../..")
-    from cobra.manipulation import initialize_growth_medium
     from cobra.test import create_test_model
     from cobra import Model, Reaction, Metabolite
     from cobra import solvers
     sys.path.pop(0)  # remove the added directory to the path
 else:
-    from ..manipulation import initialize_growth_medium
     from . import create_test_model
     from .. import Model, Reaction, Metabolite
     from .. import solvers
@@ -24,8 +22,7 @@ class TestCobraSolver(object):
     def setUp(self):
         self.solver = solvers.solver_dict[self.solver_name]
         self.model = create_test_model()
-        initialize_growth_medium(self.model, 'MgM')
-        self.old_solution = 0.320064
+        self.old_solution = 0.380008
         self.infeasible_model = Model()
         metabolite_1 = Metabolite("met1")
         reaction_1 = Reaction("rxn1")
