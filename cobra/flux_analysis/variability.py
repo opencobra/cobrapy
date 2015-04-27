@@ -26,14 +26,9 @@ def flux_variability_analysis(cobra_model, reaction_list=None,
     """
     if reaction_list is None and "the_reactions" in solver_args:
         reaction_list = solver_args.pop("the_reactions")
-        from warnings import warn
         warn("the_reactions is deprecated. Please use reaction_list=")
     if reaction_list is None:
         reaction_list = cobra_model.reactions
-    else:
-        reaction_list = [cobra_model.reactions.get_by_id(i)
-                         if isinstance(i, string_types) else i
-                         for i in reaction_list]
     solver = solver_dict[get_solver_name() if solver is None else solver]
     lp = solver.create_problem(cobra_model)
     solver.solve_problem(lp, objective_sense=objective_sense)
@@ -58,13 +53,14 @@ def calculate_lp_variability(lp, solver, cobra_model, reaction_list,
     """calculate max and min of selected variables in an LP"""
     fva_results = {}
     for r in reaction_list:
-        i = cobra_model.reactions.index(r)
-        fva_results[r.id] = {}
+        r_id = str(r)
+        i = cobra_model.reactions.index(r_id)
+        fva_results[r_id] = {}
         solver.change_variable_objective(lp, i, 1.)
         solver.solve_problem(lp, objective_sense="maximize", **solver_args)
-        fva_results[r.id]["maximum"] = solver.get_objective_value(lp)
+        fva_results[r_id]["maximum"] = solver.get_objective_value(lp)
         solver.solve_problem(lp, objective_sense="minimize", **solver_args)
-        fva_results[r.id]["minimum"] = solver.get_objective_value(lp)
+        fva_results[r_id]["minimum"] = solver.get_objective_value(lp)
         # revert the problem to how it was before
         solver.change_variable_objective(lp, i, 0.)
     return fva_results
@@ -72,31 +68,31 @@ def calculate_lp_variability(lp, solver, cobra_model, reaction_list,
 
 def find_blocked_reactions(cobra_model, reaction_list=None,
                            solver=None, zero_cutoff=1e-9,
-                           open_exchanges=False, **kwargs):
+                           open_exchanges=False, **solver_args):
     """Finds reactions that cannot carry a flux with the current
     exchange reaction settings for cobra_model, using flux variability
     analysis.
 
     """
-    from warnings import warn
     if solver is None:
         solver = get_solver_name()
-    blocked_reactions = []
-    if reaction_list is None and "the_reactions" in solver_args:
-        reaction_list = solver_args.pop("the_reactions")
-        warn("the_reactions is deprecated. Please use reaction_list=")
     if open_exchanges:
-        warn('DEPRECATED: Move to using the Reaction.boundary attribute')
-        exchange_reactions = [x for x in cobra_model.reactions
-                              if x.startswith('EX')]
-        for the_reaction in exchange_reactions:
-            if the_reaction.lower_bound >= 0:
-                the_reaction.lower_bound = -1000
-            if the_reaction.upper_bound >= 0:
-                the_reaction.upper_bound = 1000
+        # should not unnecessarily change model
+        cobra_model = cobra_model.copy()
+        for reaction in cobra_model.reactions:
+            if reaction.boundary:
+                reaction.lower_bound = min(reaction.lower_bound, -1000)
+                reaction.upper_bound = max(reaction.upper_bound, 1000)
+    if reaction_list is None:
+        reaction_list = cobra_model.reactions
+    # limit to reactions which are already 0. If the reactions alread
+    # carry flux in this solution, then they can not be blocked.
+    solution = solver_dict[solver].solve(cobra_model, **solver_args)
+    reaction_list = [i for i in reaction_list
+                     if abs(solution.x_dict[i.id]) < zero_cutoff]
+    # run fva to find reactions where both max and min are 0
     flux_span_dict = flux_variability_analysis(
         cobra_model, fraction_of_optimum=0., reaction_list=reaction_list,
-        solver=solver, **kwargs)
-    blocked_reactions = [k for k, v in flux_span_dict.items()
-                         if max(map(abs, v.values())) < zero_cutoff]
-    return blocked_reactions
+        solver=solver, **solver_args)
+    return [k for k, v in iteritems(flux_span_dict)
+            if max(map(abs, v.values())) < zero_cutoff]
