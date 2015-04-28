@@ -184,35 +184,51 @@ class TestCobraFluxAnalysis(TestCase):
         for reaction, value in results.items():
             self.assertAlmostEqual(value, expected_results[reaction], 5)
 
+    def compare_matrices(self, matrix1, matrix2, places=3):
+        nrows = len(matrix1)
+        ncols = len(matrix1[0])
+        self.assertEqual(nrows, len(matrix2))
+        self.assertEqual(ncols, len(matrix2[0]))
+        for i in range(nrows):
+            for j in range(ncols):
+                self.assertAlmostEqual(matrix1[i][j], matrix2[i][j],
+                                       places=places)
+
     @skipIf(numpy is None, "double deletions require numpy")
-    def test_double_deletion(self):
+    def test_double_gene_deletion(self):
         cobra_model = self.model
         # turn into a double deletion unit test
         initialize_growth_medium(cobra_model, 'LB')
         # Expected growth rates for the salmonella model with deletions in LB
-        the_loci = ['STM4081', 'STM0247', 'STM3867', 'STM2952']
-        the_genes = list(map(cobra_model.genes.get_by_id, the_loci))
-        growth_dict = {}
-        growth_list = [[2.41, 2.389, 1.775, 1.81],
-                       [2.389, 2.437, 1.86, 1.79],
-                       [1.775, 1.86, 1.87, 1.3269],
-                       [1.81, 1.79, 1.3269, 1.81]]
-        for the_gene, the_rates in zip(the_genes, growth_list):
-            growth_dict[the_gene] = dict(zip(the_genes, the_rates))
+        genes = ['STM4081', 'STM0247', 'STM3867', 'STM2952']
+        growth_list = [[2.414, 2.390, 1.775, 1.810],
+                       [2.390, 2.437, 1.863, 1.795],
+                       [1.775, 1.863, 1.875, 1.327],
+                       [1.810, 1.795, 1.327, 1.813]]
+        solution = double_gene_deletion(cobra_model, gene_list1=genes)
+        self.assertEqual(solution["x"], genes)
+        self.assertEqual(solution["y"], genes)
+        self.compare_matrices(growth_list, solution["data"])
+        # test when lists differ slightly
+        solution = double_gene_deletion(cobra_model, gene_list1=genes[:-1],
+                                        gene_list2=genes)
+        self.assertEqual(solution["x"], genes[:-1])
+        self.assertEqual(solution["y"], genes)
+        self.compare_matrices(growth_list[:-1], solution["data"])
 
-        the_solution = double_deletion(cobra_model, element_list_1=the_genes,
-                                       element_list_2=the_genes)
-        # Potential problem if the data object doesn't have a tolist function
-        s_data = the_solution['data'].tolist()
-        s_x = the_solution['x']
-        s_y = the_solution['y']
-        for gene_x, rates_x in zip(s_x, s_data):
-            for gene_y, the_rate in zip(s_y, rates_x):
-                self.assertAlmostEqual(
-                    growth_dict[gene_x][gene_y], the_rate, places=2,
-                    msg="%.3f != %.3f for (%s, %s)" %
-                    (growth_dict[gene_x][gene_y], the_rate,
-                     gene_x.id, gene_y.id))
+    @skipIf(numpy is None, "double deletions require numpy")
+    def test_double_reaction_deletion(self):
+        cobra_model = self.model
+        reactions = ["ENO", "ATPS4rpp", "TPI"]
+        growth_list = [[0.380, 0.109, 0.380],
+                       [0.109, 0.380, 0.101],
+                       [0.380, 0.101, 0.380]]
+        solution = double_reaction_deletion(cobra_model,
+                                            reaction_list1=reactions,
+                                            number_of_processes=1)
+        self.assertEqual(solution["x"], reactions)
+        self.assertEqual(solution["y"], reactions)
+        self.compare_matrices(growth_list, solution["data"])
 
     def test_flux_variability(self):
         fva_results = {
@@ -260,6 +276,9 @@ class TestCobraFluxAnalysis(TestCase):
         infeasible_model = create_test_model()
         infeasible_model.reactions.get_by_id("EX_glyc_e").lower_bound = 0
         for solver in solver_dict:
+            # esolver is really slow
+            if solver == "esolver":
+                continue
             cobra_model = create_test_model()
             initialize_growth_medium(cobra_model, 'LB')
             fva_out = flux_variability_analysis(

@@ -10,7 +10,7 @@ from .parsimonious import optimize_minimal_flux
 from .loopless import construct_loopless_model
 
 if numpy:
-    from .double_deletion import double_deletion
+    from .double_deletion import double_reaction_deletion, double_gene_deletion
 else:
     from warnings import warn
     warn("double_deletion requires numpy")

@@ -1,80 +1,337 @@
-
-from __future__ import with_statement, print_function
-#cobra.flux_analysis.double_deletion.py
-#runs flux variablity analysis on a Model object.
-from copy import deepcopy
 from warnings import warn
-from os import name as __name
-nan = float('nan')
-from sys import modules as __modules
-
 from itertools import chain, product
+
+from six import iteritems, string_types
 import numpy
 
 from ..solvers import get_solver_name, solver_dict
-from six import iteritems, string_types
 from ..manipulation.delete import find_gene_knockout_reactions, \
     get_compiled_gene_reaction_rules
 from .deletion_worker import CobraDeletionPool, CobraDeletionMockPool
 
 try:
-    from .moma import moma    
-except:
-    def moma(*args, **kwargs):
-        raise Exception("moma dependencies missing")
+    import scipy
+except ImportError:
+    moma = None
+else:
+    from . import moma
 
 try:
     from pandas import DataFrame
 except:
     DataFrame = None
 
-def double_reaction_deletion_fba(cobra_model, reaction_list1=None,
-                                 reaction_list2=None, solver=None,
-                                 number_of_processes=None,
-                                 return_frame=False, zero_cutoff=1e-15,
-                                 **kwargs):
-    """setting n_processes=1 explicitly disables multiprocessing"""
+
+# Utility functions
+def generate_matrix_indexes(ids1, ids2):
+    """map an identifier to an entry in the square result matrix"""
+    return {id: index for index, id in enumerate(set(chain(ids1, ids2)))}
+
+
+def yield_upper_tria_indexes(ids1, ids2, id_to_index):
+    """gives the necessary indexes in the upper triangle
+
+    ids1 and ids2 are lists of the identifiers i.e. gene id's or reaction
+    indexes to be knocked out. id_to_index maps each identifier to its index
+    in the result matrix.
+
+    Note that this does not return indexes for the diagonal. Those have
+    to be computed separately."""
+    # sets to check for inclusion in o(1)
+    id_set1 = set(ids1)
+    id_set2 = set(ids2)
+    for id1, id2 in product(ids1, ids2):
+        # indexes in the result matrix
+        index1 = id_to_index[id1]
+        index2 = id_to_index[id2]
+        # upper triangle
+        if index2 > index1:
+            yield ((index1, index2), (id1, id2))
+        # lower triangle but would be skipped, so return in upper triangle
+        elif id2 not in id_set1 or id1 not in id_set2:
+            yield((index2, index1), (id2, id1))  # note that order flipped
+
+
+def format_upper_triangular_matrix(row_indexes, column_indexes, matrix):
+    """reformat the square upper-triangular result matrix
+
+    For example, results may look like this
+    [[ A  B  C  D]
+     [ -  -  -  -]
+     [ -  -  E  F]
+     [ -  -  -  G]]
+    In this case, the second row was skipped. This means we have
+    row_indexes [0, 2, 3] and column_indexes [0, 1, 2, 3]
+
+    First, it will reflect the upper triangle into the lower triangle
+    [[ A  B  C  D]
+     [ B  -  -  -]
+     [ C  -  E  F]
+     [ D  -  F  G]]
+
+    Finally, it will remove the missing rows and return
+    [[ A  B  C  D]
+     [ C  -  E  F]
+     [ D  -  F  G]]
+    """
+    results = matrix.copy()
+    # Thse select the indexes for the upper triangle. However, switching
+    # the order selects the lower triangle.
+    triu1, triu2 = numpy.triu_indices(matrix.shape[0])
+    # This makes reflection pretty easy
+    results[triu2, triu1] = results[triu1, triu2]
+    # Remove the missing rows and  return.
+    return results[row_indexes, :][:, column_indexes]
+
+
+def format_results_frame(row_ids, column_ids, matrix, return_frame=False):
+    """format results as a pandas.DataFrame if desired/possible
+
+    Otherwise returns a dict of
+    {"x": row_ids, "y": column_ids", "data": result_matrx}"""
+    if return_frame and DataFrame:
+        return DataFrame(data=matrix, index=row_ids, columns=column_ids)
+    elif return_frame and not DataFrame:
+        warn("could not import pandas.DataFrame")
+    return {"x": row_ids, "y": column_ids, "data": matrix}
+
+
+def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
+                    element_type='gene', **kwargs):
+    """Wrapper for double_gene_deletion and double_reaction_deletion
+
+    .. deprecated :: 0.4
+        Use double_reaction_deletion and double_gene_deletion
+    """
+    warn("deprecated - use single_reaction_deletion and single_gene_deletion")
+    if element_type == "reaction":
+        return double_reaction_deletion(cobra_model, element_list_1,
+                                        element_list_2, **kwargs)
+    elif element_type == "gene":
+        return double_gene_deletion(cobra_model, element_list_1,
+                                    element_list_2, **kwargs)
+    else:
+        raise Exception("unknown element type")
+
+
+def double_reaction_deletion(cobra_model,
+                             reaction_list1=None, reaction_list2=None,
+                             method="fba", return_frame=False,
+                             solver=None, zero_cutoff=1e-12,
+                             **kwargs):
+    """sequentially knocks out pairs of reactions in a model
+
+    cobra_model : :class:`~cobra.core.Model.Model`
+        cobra model in which to perform deletions
+
+    reaction_list1 : [:class:`~cobra.core.Reaction.Reaction`:] (or their id's)
+        Reactions to be deleted. These will be the rows in the result.
+        If not provided, all reactions will be used.
+
+    reaction_list2 : [:class:`~cobra.core.Reaction`:] (or their id's)
+        Reactions to be deleted. These will be the rows in the result.
+        If not provided, reaction_list1 will be used.
+
+    method: "fba" or "moma"
+        Procedure used to predict the growth rate
+
+    solver: str for solver name
+        This must be a QP-capable solver for MOMA. If left unspecified,
+        a suitable solver will be automatically chosen.
+
+    zero_cutoff: float
+        When checking to see if a value is 0, this threshold is used.
+
+    return_frame: bool
+        If true, formats the results as a pandas.Dataframe. Otherwise
+        returns a dict of the form:
+        {"x": row_labels, "y": column_labels", "data": 2D matrix}
+    """
+    # handle arguments which need to be passed on
     if solver is None:
-        solver = get_solver_name()
+        solver = get_solver_name(qp=(method == "moma"))
+        kwargs["solver"] = solver
+    kwargs["zero_cutoff"] = zero_cutoff
+
+    # generate other arguments
+
+    # identifiers for reactions are their indexes
     if reaction_list1 is None:
         reaction_indexes1 = range(len(cobra_model.reactions))
     else:
-        reaction_indexes1 = [cobra_model.reactions.index(r) for r in reaction_list1]
+        reaction_indexes1 = [cobra_model.reactions.index(r)
+                             for r in reaction_list1]
     if reaction_list2 is None:
         reaction_indexes2 = reaction_indexes1
     else:
-        reaction_indexes2 = [cobra_model.reactions.index(r) for r in reaction_list2]
-    # results are stored in a matrix. reaction_to_result maps a reaction index
-    # to the index in the results matrix
-    reaction_indexes = list(set(chain(reaction_indexes1, reaction_indexes2)))
-    reaction_to_result = {reaction_index: result_index
-                          for result_index, reaction_index in enumerate(reaction_indexes)}
-    row_indexes = [reaction_to_result[i] for i in reaction_indexes1]
-    row_index_set = set(row_indexes)
-    row_names = [cobra_model.reactions[i].id for i in reaction_indexes1]
-    column_indexes = [reaction_to_result[i] for i in reaction_indexes2]
-    column_index_set = set(column_indexes)
-    column_names = [cobra_model.reactions[i].id for i in reaction_indexes2]
+        reaction_indexes2 = [cobra_model.reactions.index(r)
+                             for r in reaction_list2]
+    reaction_to_result = generate_matrix_indexes(reaction_indexes1,
+                                                 reaction_indexes2)
 
+    # Determine 0 flux reactions. If an optimal solution passes no flux
+    # through the deleted reactions, then we know removing them will
+    # not change the solution.
+    wt_solution = solver_dict[solver].solve(cobra_model)
+    if wt_solution.status == "optimal":
+        kwargs["wt_growth_rate"] = wt_solution.f
+        kwargs["no_flux_reaction_indexes"] = \
+            {i for i, v in enumerate(wt_solution.x) if abs(v) < zero_cutoff}
+    else:
+        warn("wild-type solution status is '%s'" % wt_solution.status)
+
+    # call the computing functions
+    if method == "fba":
+        results = _double_reaction_deletion_fba(
+            cobra_model, reaction_indexes1, reaction_indexes2,
+            reaction_to_result, **kwargs)
+    elif method == "moma":
+        results = _double_reaction_deletion_moma(
+            cobra_model, reaction_indexes1, reaction_indexes2,
+            reaction_to_result, **kwargs)
+    else:
+        raise ValueError("Unknown deletion method '%s'" % method)
+
+    # convert upper triangular matrix to full matrix
+    full_result = format_upper_triangular_matrix(
+        [reaction_to_result[i] for i in reaction_indexes1],  # row indexes
+        [reaction_to_result[i] for i in reaction_indexes2],  # col indexes
+        results)
+
+    # format appropriately with labels
+    row_ids = [cobra_model.reactions[i].id for i in reaction_indexes1]
+    column_ids = [cobra_model.reactions[i].id for i in reaction_indexes2]
+    return format_results_frame(row_ids, column_ids,
+                                full_result, return_frame)
+
+
+def double_gene_deletion(cobra_model,
+                         gene_list1=None, gene_list2=None,
+                         method="fba", return_frame=False,
+                         solver=None, zero_cutoff=1e-12,
+                         **kwargs):
+    """sequentially knocks out pairs of genes in a model
+
+    cobra_model : :class:`~cobra.core.Model.Model`
+        cobra model in which to perform deletions
+
+    gene_list1 : [:class:`~cobra.core.Gene.Gene`:] (or their id's)
+        Genes to be deleted. These will be the rows in the result.
+        If not provided, all reactions will be used.
+
+    gene_list1 : [:class:`~cobra.core.Gene.Gene`:] (or their id's)
+        Genes to be deleted. These will be the rows in the result.
+        If not provided, reaction_list1 will be used.
+
+    method: "fba" or "moma"
+        Procedure used to predict the growth rate
+
+    solver: str for solver name
+        This must be a QP-capable solver for MOMA. If left unspecified,
+        a suitable solver will be automatically chosen.
+
+    zero_cutoff: float
+        When checking to see if a value is 0, this threshold is used.
+
+    number_of_processes: int for number of processes to use.
+        If unspecified, the number of parallel processes to use will be
+        automatically determined. Setting this to 1 explicitly disables used
+        of the multiprocessing library.
+
+    .. note:: multiprocessing is not supported with method=moma
+
+    return_frame: bool
+        If true, formats the results as a pandas.Dataframe. Otherwise
+        returns a dict of the form:
+        {"x": row_labels, "y": column_labels", "data": 2D matrix}
+    """
+    # handle arguments which need to be passed on
+    if solver is None:
+        solver = get_solver_name(qp=(method == "moma"))
+        kwargs["solver"] = solver
+    kwargs["zero_cutoff"] = zero_cutoff
+
+    # generate other arguments
+
+    # identifiers for genes
+    if gene_list1 is None:
+        gene_ids1 = cobra_model.genes.list_attr("id")
+    else:
+        gene_ids1 = [str(i) for i in gene_list1]
+    if gene_list2 is None:
+        gene_ids2 = gene_ids1
+    else:
+        gene_ids2 = [str(i) for i in gene_list2]
+
+    # The gene_id_to_result dict will map each gene id to the index
+    # in the result matrix.
+    gene_id_to_result = generate_matrix_indexes(gene_ids1, gene_ids2)
+
+    # Determine 0 flux reactions. If an optimal solution passes no flux
+    # through the deleted reactions, then we know removing them will
+    # not change the solution.
+    wt_solution = solver_dict[solver].solve(cobra_model)
+    if wt_solution.status == "optimal":
+        kwargs["wt_growth_rate"] = wt_solution.f
+        kwargs["no_flux_reaction_indexes"] = \
+            {i for i, v in enumerate(wt_solution.x) if abs(v) < zero_cutoff}
+    else:
+        warn("wild-type solution status is '%s'" % wt_solution.status)
+
+    if method == "fba":
+        result = _double_gene_deletion_fba(cobra_model, gene_ids1, gene_ids2,
+                                           gene_id_to_result, **kwargs)
+    elif method == "moma":
+        result = _double_gene_deletion_moma(cobra_model, gene_ids1, gene_ids2,
+                                            gene_id_to_result, **kwargs)
+    else:
+        raise ValueError("Unknown deletion method '%s'" % method)
+
+    # convert upper triangular matrix to full matrix
+    full_result = format_upper_triangular_matrix(
+        [gene_id_to_result[id] for id in gene_ids1],  # row indexes
+        [gene_id_to_result[id] for id in gene_ids2],  # col indexes,
+        result)
+
+    # format as a Dataframe if required
+    return format_results_frame(gene_ids1, gene_ids2,
+                                full_result, return_frame)
+
+
+def _double_reaction_deletion_fba(cobra_model, reaction_indexes1,
+                                  reaction_indexes2, reaction_to_result,
+                                  solver, number_of_processes=None,
+                                  zero_cutoff=1e-15, wt_growth_rate=None,
+                                  no_flux_reaction_indexes=set(), **kwargs):
+    """compute double reaction deletions using fba
+
+    cobra_model: model
+
+    reaction_indexes1, reaction_indexes2: reaction indexes (used as unique
+        identifiers)
+
+    reaction_to_result: maps each reaction identifier to the entry in
+        the result matrix
+
+    no_flux_reaction_indexes: set of indexes for reactions in the model
+        which carry no flux in an optimal solution. For deletions only in
+        this set, the result will beset to wt_growth_rate.
+
+    returns an upper triangular square matrix
+    """
+    if solver is None:
+        solver = get_solver_name()
+
+    # generate the square result matrix
     n_results = len(reaction_to_result)
     results = numpy.empty((n_results, n_results))
     results.fill(numpy.nan)
 
-    wt_solution = solver_dict[solver].solve(cobra_model)
-    # Determine 0 flux reactions. If an optimal solution passes no flux
-    # through the deleted reactions, then we know removing them will
-    # not change the solution.
-    wt_flux = wt_solution.f
-    no_flux_reaction_indexes = {i for i, v in enumerate(wt_solution.x)
-                                if abs(v) < zero_cutoff}
+    PoolClass = CobraDeletionMockPool if number_of_processes == 1 \
+        else CobraDeletionPool  # explicitly disable multiprocessing
 
-    if number_of_processes == 1:  # explicitly disable multiprocessing
-        PoolClass = CobraDeletionMockPool
-    else:
-        PoolClass = CobraDeletionPool
     with PoolClass(cobra_model, n_processes=number_of_processes,
                    solver=solver, **kwargs) as pool:
-        # submit jobs
 
         # precompute all single deletions in the pool and store them along
         # the diagonal
@@ -89,100 +346,54 @@ def double_reaction_deletion_fba(cobra_model, reaction_list1=None,
             else:  # only the diagonal needs to be set
                 results[result_index, result_index] = value
 
-        for r1_index, r2_index in product(reaction_indexes1, reaction_indexes2):
-            r1_result_index = reaction_to_result[r1_index]
-            r2_result_index = reaction_to_result[r2_index]
-            if r2_result_index > r1_result_index:  # upper triangle only
-                if results[r1_result_index, r1_result_index] == 0 or \
-                        results[r2_result_index, r2_result_index] == 0:
-                    continue
-                # reactions removed carry no flux
-                if r1_index in no_flux_reaction_indexes and \
-                        r2_index in no_flux_reaction_indexes:
-                    results[r1_result_index, r2_result_index] = wt_flux
-                    continue
-                pool.submit((r1_index, r2_index),
-                            label=(r1_result_index, r2_result_index))
-            # if it's a point only in the lower triangle, compute it
-            # and put it in the upper triangle
-            elif r1_result_index not in column_index_set or \
-                    r2_result_index not in row_index_set:
-                pool.submit((r1_index, r2_index),
-                            label=(r2_result_index, r1_result_index))
-
+        # Run double knockouts in the upper triangle
+        index_selector = yield_upper_tria_indexes(
+            reaction_indexes1, reaction_indexes2, reaction_to_result)
+        for result_index, (r1_index, r2_index) in index_selector:
+            # skip if the result was already computed to be lethal
+            if results[result_index] == 0:
+                continue
+            # reactions removed carry no flux
+            if r1_index in no_flux_reaction_indexes and \
+                    r2_index in no_flux_reaction_indexes:
+                results[r1_result_index, r2_result_index] = wt_growth_rate
+                continue
+            pool.submit((r1_index, r2_index), label=result_index)
         # get results
         for result in pool.receive_all():
             results[result[0]] = result[1]
 
+    return results
 
-    # reflect results
-    triu1, triu2 = numpy.triu_indices(n_results)
-    results[triu2, triu1] = results[triu1, triu2]
 
-    results = results[row_indexes, :][:, column_indexes]
+def _double_gene_deletion_fba(cobra_model, gene_ids1, gene_ids2,
+                              gene_id_to_result, solver,
+                              number_of_processes=None, zero_cutoff=1e-12,
+                              wt_growth_rate=None,
+                              no_flux_reaction_indexes=set(), **kwargs):
+    """compute double gene deletions using fba
 
-    if return_frame and DataFrame:
-        return DataFrame(data=results, index=row_names, columns=column_names)
+    cobra_model: model
 
-    elif return_frame and not DataFrame:
-        warn("could not import pandas.DataFrame")
+    gene_ids1, gene_ids2: lists of id's to be knocked out
 
-    return {"x": [cobra_model.reactions.get_by_id(i) for i in row_names],
-             "y": [cobra_model.reactions.get_by_id(i) for i in column_names],
-             "data": results}
+    gene_id_to_result: maps each gene identifier to the entry in
+        the result matrix
 
-def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
-                             solver=None, number_of_processes=None,
-                             return_frame=False, zero_cutoff=1e-12, **kwargs):
-    if solver is None:
-        solver = get_solver_name()
-    if gene_list1 is None:
-        gene_list1 = cobra_model.genes
-    else:
-        gene_list1 = [cobra_model.genes.get_by_id(i)
-                      if isinstance(i, string_types) else i
-                      for i in gene_list1]
-    if gene_list2 is None:
-        gene_list2 = gene_list1
-    else:
-        gene_list2 = [cobra_model.genes.get_by_id(i)
-                      if isinstance(i, string_types) else i
-                      for i in gene_list2]
+    no_flux_reaction_indexes: set of indexes for reactions in the model
+        which carry no flux in an optimal solution. For deletions only in
+        this set, the result will beset to wt_growth_rate.
+
+    returns an upper triangular square matrix
+    """
     # Because each gene reaction rule will be evaluated multiple times
     # the reaction has multiple associated genes being deleted, compiling
     # the gene reaction rules ahead of time increases efficiency greatly.
     compiled_rules = get_compiled_gene_reaction_rules(cobra_model)
-    # Store results in a matrix. The gene_id_to_result dict will map each
-    # gene id to the index in the result matrix
-    gene_ids1 = [i.id for i in gene_list1]
-    gene_ids2 = [i.id for i in gene_list2]
-    gene_id_to_result = {}
-    n = 0
-    for i in gene_ids1:
-        if i not in gene_id_to_result:
-            gene_id_to_result[i] = n
-            n += 1
-    for i in gene_ids2:
-        if i not in gene_id_to_result:
-            gene_id_to_result[i] = n
-            n += 1
-
-    row_indexes = [gene_id_to_result[id] for id in gene_ids1]
-    row_index_set = set(row_indexes)
-    column_indexes = [gene_id_to_result[id] for id in gene_ids2]
-    column_index_set = set(column_indexes)
 
     n_results = len(gene_id_to_result)
     results = numpy.empty((n_results, n_results))
     results.fill(numpy.nan)
-
-    wt_solution = solver_dict[solver].solve(cobra_model)
-    # Determine 0 flux reactions. If an optimal solution passes no flux
-    # through the deleted reactions, then we know removing them will
-    # not change the solution.
-    wt_flux = wt_solution.f
-    no_flux_reaction_indexes = {i for i, v in enumerate(wt_solution.x)
-                                if abs(v) < zero_cutoff}
 
     if number_of_processes == 1:  # explicitly disable multiprocessing
         PoolClass = CobraDeletionMockPool
@@ -205,35 +416,24 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
                 results[:, result_index] = 0.
             else:  # only the diagonal needs to be set
                 results[result_index, result_index] = value
-        # double deletions
-        for gene1, gene2 in product(gene_list1, gene_list2):
-            g1_result_index = gene_id_to_result[gene1.id]
-            g2_result_index = gene_id_to_result[gene2.id]
-            if g2_result_index > g1_result_index:  # upper triangle only
-                # if singly lethal the results have already been set
-                if results[g1_result_index, g1_result_index] == 0 or \
-                        results[g2_result_index, g2_result_index] == 0:
-                    continue
-                ko_reactions = find_gene_knockout_reactions(
-                    cobra_model, (gene1, gene2), compiled_rules)
-                ko_indexes = [cobra_model.reactions.index(i)
-                              for i in ko_reactions]
-                # if all removed gene indexes carry no flux
-                if len(set(ko_indexes) - no_flux_reaction_indexes) == 0:
-                    results[g1_result_index, g2_result_index] = wt_flux
-                    continue
-                pool.submit(ko_indexes,
-                            label=(g1_result_index, g2_result_index))
-            # if it's a point only in the lower triangle, compute it
-            # and put it in the upper triangle
-            elif g1_result_index not in column_index_set or \
-                    g2_result_index not in row_index_set:
-                ko_reactions = find_gene_knockout_reactions(
-                    cobra_model, (gene1, gene2), compiled_rules)
-                ko_indexes = [cobra_model.reactions.index(i)
-                              for i in ko_reactions]
-                pool.submit(ko_indexes,
-                            label=(g2_result_index, g1_result_index))
+
+        # Run double knockouts in the upper triangle
+        index_selector = yield_upper_tria_indexes(gene_ids1, gene_ids2,
+                                                  gene_id_to_result)
+        for result_index, (gene1, gene2) in index_selector:
+
+            # if singly lethal the results have already been set
+            if results[result_index] == 0:
+                continue
+            ko_reactions = find_gene_knockout_reactions(
+                cobra_model, (gene1, gene2), compiled_rules)
+            ko_indexes = [cobra_model.reactions.index(i)
+                          for i in ko_reactions]
+            # if all removed gene indexes carry no flux
+            if len(set(ko_indexes) - no_flux_reaction_indexes) == 0:
+                results[result_index] = wt_flux
+                continue
+            pool.submit(ko_indexes, label=result_index)
 
         for result in pool.receive_all():
             value = result[1]
@@ -241,304 +441,140 @@ def double_gene_deletion_fba(cobra_model, gene_list1=None, gene_list2=None,
                 value = 0
             results[result[0]] = value
 
-    del pool
-
-    # reflect results
-    triu1, triu2 = numpy.triu_indices(n_results)
-    results[triu2, triu1] = results[triu1, triu2]
-
-    results = results[row_indexes, :][:, column_indexes]
-
-    if return_frame and DataFrame:
-        return DataFrame(data=results, index=gene_ids1, columns=gene_ids2)
-
-    elif return_frame and not DataFrame:
-        warn("could not import pandas.DataFrame")
-
-    return {"x": [cobra_model.genes.get_by_id(i) for i in gene_ids1],
-            "y": [cobra_model.genes.get_by_id(i) for i in gene_ids2],
-            "data": results}
+    return results
 
 
-def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
-                    method='fba', single_deletion_growth_dict=None,
-                    element_type='gene', solver=None,
-                    number_of_processes=None,
-                    return_frame=False, zero_cutoff=1e-12,
-                    **kwargs):
-    """Run double gene or reaction deletions
+def _double_reaction_deletion_moma(cobra_model, reaction_indexes1,
+                                   reaction_indexes2, reaction_to_result,
+                                   solver, number_of_processes=1,
+                                   zero_cutoff=1e-15, wt_growth_rate=None,
+                                   no_flux_reaction_indexes=set(), **kwargs):
+    """compute double reaction deletions using moma
 
-    cobra_model: a cobra.Model object
+    cobra_model: model
 
-    element_list_1: None or a list of elements (genes or reactions)
+    reaction_indexes1, reaction_indexes2: reaction indexes (used as unique
+        identifiers)
 
-    element_list_2: None or a list of elements (genes or reactions)
+    reaction_to_result: maps each reaction identifier to the entry in
+        the result matrix
 
-    method: 'fba' or 'moma'
-        Whether to compute growth rates using flux balance analysis or
-        minimization of metabolic adjustments.
+    no_flux_reaction_indexes: set of indexes for reactions in the model
+        which carry no flux in an optimal solution. For deletions only in
+        this set, the result will beset to wt_growth_rate.
 
-    number_of_processes: None or int
-        The number of processor core to use. Setting 1 explicitly disables
-        use of the multiprocessing library. By default, up to 4 cores will be
-        used if available.
+    number_of_processes: must be 1. Parallel MOMA not yet implmemented
 
-    element_type: 'gene' or 'reaction'
-
-    zero_cutoff: float
-        For single deletions which are assumed to be lethal, any double
-        deletion will also be assumed to be lethal. Additionally, removing only
-        reactions with no flux will assume the result is the same as wild-type.
-        This parameter sets the cutoff for the absolute value to determine if a
-        flux is 0. To disable this optimization, set this to a negative value.
-
-    solver: 'glpk', 'cglpk', 'gurobi', 'cplex' or None
-
-    return_frame: bool
-        If True, format data as a pandas Dataframe
-
-    Returns a dictionary of the elements in the x dimension (x), the y
-    dimension (y), and the growth simulation data (data).
-
+    returns an upper triangular square matrix
     """
-
-    if "error_reporting" in kwargs:
-        warn("error_reporting option removed")
-        kwargs.pop("error_reporting")
-    if "single_deletion_growth_dict" in kwargs:
-        warn("single_deletion_growth_dict option removed")
-        kwargs.pop("single_deletion_growth_dict")
-
-    if method == "fba":
-        if element_type == "gene":
-            return double_gene_deletion_fba(
-                cobra_model,
-                gene_list1=element_list_1,
-                gene_list2=element_list_2,
-                solver=solver,
-                return_frame=return_frame,
-                zero_cutoff=zero_cutoff,
-                number_of_processes=number_of_processes,
-                **kwargs)
-        elif element_type == "reaction":
-            return double_reaction_deletion_fba(
-                cobra_model,
-                reaction_list1=element_list_1,
-                reaction_list2=element_list_2,
-                solver=solver,
-                zero_cutoff=zero_cutoff,
-                return_frame=return_frame,
-                number_of_processes=number_of_processes,
-                **kwargs)
-        else:
-            raise ValueError("element_type %s not gene or reaction" %
-                             element_type)
-
-    if method != "moma":
-        raise ValueError("method %s is not fba or moma" % method)
-
-    if solver is None:
-        solver = get_solver_name()
-
     if number_of_processes > 1:
-        warn("parallel moma double deletion not implemented")
+        raise NotImplementedError("parallel MOMA not implemented")
+    if moma is None:
+        raise RuntimeError("scipy required for MOMA")
 
-    if element_type == 'gene':
-        return double_gene_deletion_moma(
-            cobra_model, gene_list_1=element_list_1,
-            gene_list_2=element_list_2, method=method,
-            single_deletion_growth_dict=single_deletion_growth_dict,
-            solver=solver,
-            error_reporting=error_reporting)
-    else:
-        raise Exception("Double reaction deletion with moma not yet implemented")
+    # generate the square result matrix
+    n_results = len(reaction_to_result)
+    results = numpy.empty((n_results, n_results))
+    results.fill(numpy.nan)
 
-def double_gene_deletion_moma(cobra_model, gene_list_1=None, gene_list_2=None,
-                              method='moma', single_deletion_growth_dict=None,
-                              solver='glpk', growth_tolerance=1e-8,
-                              error_reporting=None):
-    """This will disable reactions for all gene pairs from gene_list_1 and
-    gene_list_2 and then run simulations to optimize for the objective
-    function.  The contribution of each reaction to the objective function
-    is indicated in cobra_model.reactions[:].objective_coefficient vector.
+    # function to compute reaction knockouts with moma
+    moma_model, moma_obj = moma.create_euclidian_moma_model(cobra_model)
 
-    NOTE:  We've assumed that there is no such thing as a synthetic rescue with
-    this modeling framework.
+    def run(indexes):
+        # If all the reactions carry no flux, deletion will have no effect.
+        if no_flux_reaction_indexes.issuperset(indexes):
+            return wt_growth_rate
+        return moma.moma_knockout(moma_model, moma_obj, indexes,
+                                  solver=solver, **kwargs).f
 
-    cobra_model: a cobra.Model object
+    # precompute all single deletions and store them along the diagonal
+    for reaction_index, result_index in iteritems(reaction_to_result):
+        value = run((reaction_index,))
+        value = value if abs(value) > zero_cutoff else 0.
+        results[result_index, result_index] = value
+        # if singly lethal, the entire row and column are set to 0
+        if value == 0.:
+            results[result_index, :] = 0.
+            results[:, result_index] = 0.
 
-    gene_list_1: Is None or a list of genes.  If None then both gene_list_1
-    and gene_list_2 are assumed to correspond to cobra_model.genes.
-    
-    gene_list_2: Is None or a list of genes.  If None then gene_list_2 is
-    assumed to correspond to gene_list_1.
+    # Run double knockouts in the upper triangle
+    index_selector = yield_upper_tria_indexes(
+        reaction_indexes1, reaction_indexes2, reaction_to_result)
+    for result_index, (r1_index, r2_index) in index_selector:
+        # skip if the result was already computed to be lethal
+        if results[result_index] == 0:
+            continue
+        else:
+            results[result_index] = run((r1_index, r2_index))
 
-    method: 'fba' or 'moma' to run flux balance analysis or minimization
-    of metabolic adjustments.
-    
-    single_deletion_growth_dict: A dictionary that provides the growth
-    rate information for single gene knock outs.  This can speed up
-    simulations because nonviable single deletion strains imply that all
-    double deletion strains will also be nonviable.
+    return results
 
-    solver: 'glpk', 'gurobi', or 'cplex'.
 
-    error_reporting: None or True
+def _double_gene_deletion_moma(cobra_model, gene_ids1, gene_ids2,
+                               gene_id_to_result, solver,
+                               number_of_processes=1,
+                               zero_cutoff=1e-12, wt_growth_rate=None,
+                               no_flux_reaction_indexes=set(), **kwargs):
+    """compute double gene deletions using moma
 
-    growth_tolerance: float.  The effective lower bound on the growth rate
-    for a single deletion that is still considered capable of growth.  
+    cobra_model: model
 
-    Returns a dictionary of the gene ids in the x dimension (x) and the y
-    dimension (y), and the growth simulation data (data).
-    
+    gene_ids1, gene_ids2: lists of id's to be knocked out
+
+    gene_id_to_result: maps each gene identifier to the entry in
+        the result matrix
+
+    number_of_processes: must be 1. Parallel MOMA not yet implemented
+
+    no_flux_reaction_indexes: set of indexes for reactions in the model
+        which carry no flux in an optimal solution. For deletions only in
+        this set, the result will beset to wt_growth_rate.
+
+    returns an upper triangular square matrix
     """
-    #BUG: Since this might be called from ppmap, the modules need to
-    #be imported.  Modify ppmap to take depfuncs
-    from numpy import zeros
-    nan = float('nan')
-    from cobra.flux_analysis.single_deletion import single_deletion
-    from cobra.manipulation import delete_model_genes, undelete_model_genes
-    ##TODO: Use keywords instead
-    if isinstance(cobra_model, dict):
-        tmp_dict = cobra_model
-        cobra_model = tmp_dict['cobra_model']
-        if 'gene_list_1' in tmp_dict:
-            gene_list_1 = tmp_dict['gene_list_1']
-        if 'gene_list_2' in tmp_dict:
-            gene_list_2 = tmp_dict['gene_list_2']
-        if 'method' in tmp_dict:
-            method = tmp_dict['method']
-        if 'single_deletion_growth_dict' in tmp_dict:
-            single_deletion_growth_dict = tmp_dict['single_deletion_growth_dict']
-        if 'solver' in tmp_dict:
-            solver = tmp_dict['solver']
-        if 'error_reporting' in tmp_dict:
-            error_reporting = tmp_dict['error_reporting']
-    else:
-        cobra_model = cobra_model
-    #this is a slow way to revert models.
-    wt_model = cobra_model  #NOTE: It may no longer be necessary to use a wt_model
-    #due to undelete_model_genes
-    if gene_list_1 is None:
-        gene_list_1 = cobra_model.genes
-    elif not hasattr(gene_list_1[0], 'id'):
-        gene_list_1 = map(cobra_model.genes.get_by_id, gene_list_1)
-    #Get default values to use if the deletions do not alter any reactions
-    cobra_model.optimize(solver=solver)
-    basal_f = cobra_model.solution.f
-    if method.lower() == 'moma':
-        wt_model = cobra_model.copy()
-        combined_model = None
-    single_gene_set = set(gene_list_1)
-    if gene_list_2 is not None:
-        if not hasattr(gene_list_2[0], 'id'):
-            gene_list_2 = map(cobra_model.genes.get_by_id, gene_list_2)
-        single_gene_set.update(gene_list_2)
-    #Run the single deletion analysis to account for double deletions that
-    #target the same gene and lethal deletions.  We assume that there
-    #aren't synthetic rescues.
-    single_deletion_growth_dict = single_deletion(cobra_model,
-                                                  list(single_gene_set),
-                                                  method=method,
-                                                  solver=solver)[0]
-    if gene_list_2 is None or gene_list_1 == gene_list_2:
-        number_of_genes = len(gene_list_1)
-        gene_list_2 = gene_list_1
-        deletion_array = zeros([number_of_genes, number_of_genes]) 
-        ##TODO: Speed up this triangular process
-        #For the case where the contents of the lists are the same cut the work in half.
-        #There might be a faster way to do this by using a triangular array function
-        #in numpy
-        #Populate the diagonal from the single deletion lists
-        for i, the_gene in enumerate(gene_list_1):
-            deletion_array[i, i] = single_deletion_growth_dict[the_gene.id]
-        for i, gene_1 in enumerate(gene_list_1[:-1]):
-            #TODO: Since there cannot be synthetic rescues we can assume
-            #that the whole row for a lethal deletion
-            #will be equal to that deletion.
-            if single_deletion_growth_dict[gene_1.id] < growth_tolerance:
-                tmp_solution = single_deletion_growth_dict[gene_1.id]
-                for j in range(i+1, number_of_genes):
-                    deletion_array[j, i] = deletion_array[i, j] = tmp_solution
-            else:
-                for j, gene_2 in enumerate(gene_list_1[i+1:], i+1):
-                    if single_deletion_growth_dict[gene_2.id] < growth_tolerance:
-                        tmp_solution = single_deletion_growth_dict[gene_2.id]
-                    else:
-                        delete_model_genes(cobra_model, [gene_1, gene_2])
-                        if cobra_model._trimmed:
-                            if method.lower() == 'fba':
-                                #Assumes that the majority of perturbations don't change
-                                #reactions which is probably false
-                                cobra_model.optimize(solver=solver, error_reporting=error_reporting)
-                                the_status = cobra_model.solution.status
-                                tmp_solution = cobra_model.solution.f
-                            elif method.lower() == 'moma':
-                                try:
-                                    moma_solution = moma(wt_model, cobra_model,
-                                                         combined_model=combined_model,
-                                                         solver=solver)
-                                    tmp_solution = float(moma_solution.pop('objective_value'))
-                                    the_status = moma_solution.pop('status')
-                                    combined_model = moma_solution.pop('combined_model')
-                                    del moma_solution
-                                except:
-                                    tmp_solution = nan
-                                    the_status = 'failed'
-                            if the_status not in ['opt', 'optimal']  and \
-                                   error_reporting:
-                                print('%s / %s: %s status: %s'%(gene_1, gene_2, solver,
-                                                                the_status))
-                            #Reset the model to orginial form.
-                            undelete_model_genes(cobra_model)
-                        else:
-                            tmp_solution = basal_f
-                    deletion_array[j, i] = deletion_array[i, j] = tmp_solution
+    if number_of_processes > 1:
+        raise NotImplementedError("parallel MOMA not implemented")
+    if moma is None:
+        raise RuntimeError("scipy required for MOMA")
 
-    else:
-        deletion_array = zeros([len(gene_list_1), len(gene_list_2)])
-        #Now deal with the case where the gene lists are different
-        for i, gene_1 in enumerate(gene_list_1):
-            if single_deletion_growth_dict[gene_1.id] <= 0:
-                for j in range(len(gene_list_2)):
-                    deletion_array[i, j] = 0.
-            else:
-                for j, gene_2 in enumerate(gene_list_2):
-                    #Assume no such thing as a synthetic rescue
-                    if single_deletion_growth_dict[gene_2.id] <= growth_tolerance:
-                        tmp_solution = single_deletion_growth_dict[gene_2.id]
-                    else:
-                        delete_model_genes(cobra_model, [gene_1, gene_2])
-                        if cobra_model._trimmed:
-                            if method.lower() == 'fba':
-                                cobra_model.optimize(solver=solver)
-                                tmp_solution = cobra_model.solution.f
-                                the_status = cobra_model.solution.status
-                            elif method.lower() == 'moma':
-                                try:
-                                    moma_solution = moma(wt_model, cobra_model,
-                                                         combined_model=combined_model,
-                                                         solver=solver)
-                                    tmp_solution = float(moma_solution.pop('objective_value'))
-                                    the_status = moma_solution.pop('status')
-                                    combined_model = moma_solution.pop('combined_model')
-                                    del moma_solution
-                                except:
-                                    tmp_solution = nan
-                                    the_status = 'failed'
-                            if the_status not in ['opt', 'optimal']  and \
-                                   error_reporting:
-                                print('%s / %s: %s status: %s'%(repr(gene_1), repr(gene_2), solver,
-                                                            cobra_model.solution.status))
-                            #Reset the model to wt form
-                            undelete_model_genes(cobra_model)
-                        else:
-                            tmp_solution = basal_f
-                    deletion_array[i, j] = tmp_solution
-    if hasattr(gene_list_1, 'id'):
-        gene_list_1 = [x.id for x in gene_list_1]
-    if hasattr(gene_list_2, 'id'):
-        gene_list_2 = [x.id for x in gene_list_2]
-        
-    return({'x': gene_list_1, 'y': gene_list_2, 'data': deletion_array})
+    # Because each gene reaction rule will be evaluated multiple times
+    # the reaction has multiple associated genes being deleted, compiling
+    # the gene reaction rules ahead of time increases efficiency greatly.
+    compiled_rules = get_compiled_gene_reaction_rules(cobra_model)
 
+    # function to compute reaction knockouts with moma
+    moma_model, moma_obj = moma.create_euclidian_moma_model(cobra_model)
+
+    def run(gene_ids):
+        ko_reactions = find_gene_knockout_reactions(cobra_model, gene_ids)
+        ko_indexes = map(cobra_model.reactions.index, ko_reactions)
+        # If all the reactions carry no flux, deletion will have no effect.
+        if no_flux_reaction_indexes.issuperset(gene_ids):
+            return wt_growth_rate
+        return moma.moma_knockout(moma_model, moma_obj, ko_indexes,
+                                  solver=solver, **kwargs).f
+
+    n_results = len(gene_id_to_result)
+    results = numpy.empty((n_results, n_results))
+    results.fill(numpy.nan)
+
+    # precompute all single deletions and store them along the diagonal
+    for gene_id, result_index in iteritems(gene_id_to_result):
+        value = run((gene_id,))
+        value = value if abs(value) > zero_cutoff else 0.
+        results[result_index, result_index] = value
+        # If singly lethal, the entire row and column are set to 0.
+        if value == 0.:
+            results[result_index, :] = 0.
+            results[:, result_index] = 0.
+
+    # Run double knockouts in the upper triangle
+    index_selector = yield_upper_tria_indexes(gene_ids1, gene_ids2,
+                                              gene_id_to_result)
+    for result_index, (gene1, gene2) in index_selector:
+        # if singly lethal the results have already been set
+        if results[result_index] == 0:
+            continue
+        results[result_index] = run((gene1, gene2))
+
+    return results
