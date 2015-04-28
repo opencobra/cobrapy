@@ -224,9 +224,7 @@ class Model(Object):
         from .ArrayBasedModel import ArrayBasedModel
         return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
 
-    def optimize(self, objective_sense='maximize', solver=None,
-                 quadratic_component=None,
-                 **kwargs):
+    def optimize(self, objective_sense='maximize', **kwargs):
         r"""Optimize model using flux balance analysis
 
         objective_sense: 'maximize' or 'minimize'
@@ -250,18 +248,9 @@ class Model(Object):
                    specified with the appropriate keyword argument.
 
         """
-        if "new_objective" in kwargs:
-            warn("new_objective is deprecated. Use Model.change_objective")
-            self.change_objective(kwargs.pop("new_objective"))
-        if "error_reporting" in kwargs:
-            warn("error_reporting deprecated")
-        if quadratic_component is not None:
-            kwargs["quadratic_component"] = quadratic_component
-        the_solution = optimize(self, solver=solver,
-                                objective_sense=objective_sense,
-                                **kwargs)
-        self.solution = the_solution
-        return the_solution
+        solution = optimize(self, objective_sense=objective_sense, **kwargs)
+        self.solution = solution
+        return solution
 
     def remove_reactions(self, reactions, delete=True,
                          remove_orphans=False):

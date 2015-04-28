@@ -19,8 +19,6 @@ def optimize_minimal_flux(model, already_irreversible=False,
         skipped.
 
     """
-    if "new_objective" in optimize_kwargs:
-        raise ValueError("Use objective coefficients, not new_objective")
     if not already_irreversible:
         modify.convert_to_irreversible(model)
     model.optimize(**optimize_kwargs)
