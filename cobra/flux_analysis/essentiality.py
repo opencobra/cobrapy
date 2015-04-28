@@ -67,4 +67,3 @@ def assess_medium_component_essentiality(cobra_model, the_components=None,
         the_reaction.lower_bound = original_lower_bound
 
     return(essentiality_dict)
-

@@ -31,7 +31,7 @@ def single_deletion(cobra_model, element_list=None,
 
 def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
                              method="fba", **solver_args):
-    """sequentially knocks out each reaction in a model using FBA
+    """sequentially knocks out each reaction in a model
 
     reaction_list: list of reaction_ids or cobra.Reaction
 
@@ -86,7 +86,7 @@ def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
 
 def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
                                   **solver_args):
-    """sequentially knocks out each reaction in a model using FBA
+    """sequentially knocks out each reaction in a model using MOMA
 
     reaction_list: list of reaction_ids or cobra.Reaction
 

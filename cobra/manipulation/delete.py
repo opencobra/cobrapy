@@ -2,6 +2,7 @@ import re
 from copy import deepcopy
 from warnings import warn
 
+from six import string_types
 
 # compile regular expressions now instead of in every function call
 spontaneous_re = re.compile('(^|(?<=( |\()))s0001(?=( |\)|$))')
@@ -120,14 +121,17 @@ def find_gene_knockout_reactions(cobra_model, gene_list,
     """
 
     potential_reactions = set()
-    for x in gene_list:
-        potential_reactions.update(x._reaction)
+    for gene in gene_list:
+        if isinstance(gene, string_types):
+            gene = cobra_model.genes.get_by_id(gene)
+        potential_reactions.update(gene._reaction)
+    gene_list = {str(i) for i in gene_list}
 
     knocked_out_reactions = []
     for the_reaction in potential_reactions:
         # Attempt to use the compiled gene reaction rule if provided
         if the_reaction.id in compiled_gene_reaction_rules:
-            gene_state = {i.id: False if i in gene_list else True
+            gene_state = {i.id: False if i.id in gene_list else True
                           for i in the_reaction._genes}
             result = eval(compiled_gene_reaction_rules[the_reaction.id],
                           {}, gene_state)
@@ -147,7 +151,7 @@ def find_gene_knockout_reactions(cobra_model, gene_list,
         # Replace each gene in the gpr string with 1 if it is still
         # active, or 0 if it is being knocked out.
         for gene in reaction_genes:
-            if gene in gene_list:
+            if gene.id in gene_list:
                 gene_reaction_rule = gene_reaction_rule.replace(gene.id, '0')
             else:
                 gene_reaction_rule = gene_reaction_rule.replace(gene.id, '1')
