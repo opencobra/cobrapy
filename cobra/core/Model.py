@@ -73,18 +73,11 @@ class Model(Object):
         self.id = self.id + '_' + other_model.id
         return self
 
-    def guided_copy(self):
-        """.. warning :: deprecated"""
-        warn("deprecated")
-        return self.copy()
-
-    def copy(self, print_time=False):
+    def copy(self):
         """Provides a partial 'deepcopy' of the Model.  All of the Metabolite,
         Gene, and Reaction objects are created anew but in a faster fashion
         than deepcopy
         """
-        if print_time is not False:
-            warn("print_time is a deprecated option")
         new = self.__class__()
         do_not_copy = {"metabolites", "reactions", "genes"}
         for attr in self.__dict__:
@@ -147,22 +140,6 @@ class Model(Object):
         for x in metabolite_list:
             x._model = self
         self.metabolites += metabolite_list
-
-    def _update_reaction(self, reaction):
-        """.. warning :: deprecated"""
-        warn("deprecated function")
-        if not hasattr(reaction, '__iter__'):
-            reaction = [reaction]
-        for the_reaction in reaction:
-            if the_reaction.id not in self.reactions:
-                warn(the_reaction.id + ' is not in the model')
-                continue
-            reaction_index = self.reactions.index(the_reaction.id)
-            self.reactions[reaction_index] = the_reaction
-
-    def update(self):
-        """.. warning :: removed"""
-        raise Exception("Model.update is moved to ArrayBasedModel.")
 
     def add_reaction(self, reaction):
         """Will add a cobra.Reaction object to the model, if

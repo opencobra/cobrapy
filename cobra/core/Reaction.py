@@ -296,26 +296,6 @@ class Reaction(Object):
         # self._model = the_model
         return new_reaction
 
-    def guided_copy(self, the_model, metabolite_dict, gene_dict=None):
-        """.. deprecated :: 0.3 use copy directly"""
-        warn("deprecated")
-        the_copy = Object.guided_copy(self)
-        # Replace the complex items in a faster fashion
-        the_copy._model = the_model
-        if gene_dict:
-            the_copy._genes = set([gene_dict[k.id]
-                                   for k in self._genes])
-        the_copy._metabolites = {metabolite_dict[k.id]: v
-                                 for k, v in iteritems(self._metabolites)}
-
-        # make the metabolites and genes aware of the reaction
-        [k._reaction.add(the_copy)
-         for k in the_copy._genes]
-        [k._reaction.add(the_copy)
-         for k in the_copy._metabolites.keys()]
-
-        return(the_copy)
-
     def pop(self, metabolite_id):
         """Remove a metabolite from the reaction and return the
         stoichiometric coefficient.

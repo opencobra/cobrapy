@@ -190,7 +190,7 @@ class ArrayBasedModel(Model):
             self._update_matrices(reaction_list)
 
     def remove_reactions(self, reactions, update_matrices=True, **kwargs):
-        """remove reactions from teh model
+        """remove reactions from the model
 
         See :func:`cobra.core.Model.Model.remove_reactions`
 

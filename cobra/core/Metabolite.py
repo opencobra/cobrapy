@@ -42,13 +42,13 @@ class Metabolite(Species):
 
     @property
     def elements(self):
-        if value is None:
+        tmp_formula = self.formula
+        if tmp_formula is None:
             return {}
-        tmp_formula = value
         # commonly occuring characters in incorrectly constructed formulas
         if "*" in tmp_formula:
             warn("invalid character '*' found in formula '%s'" % self.formula)
-            tmp_formula = self.formula.replace("*", "")
+            tmp_formula = tmp_formula.replace("*", "")
         if "(" in tmp_formula or ")" in tmp_formula:
             warn("invalid formula (has parenthesis) in '%s'" % self.formula)
             return None

@@ -48,16 +48,6 @@ class Species(Object):
         """
         return deepcopy(self)
 
-    def guided_copy(self, the_model):
-        """.. deprecated :: 0.3 Use copy directly"""
-        warn("deprecated")
-        the_copy = Object.guided_copy(self)
-        # Copy the more complex objects in a faster fashion
-        the_copy.formula = deepcopy(self.formula)
-        the_copy._model = the_model
-        the_copy._reaction = set()
-        return(the_copy)
-
     def get_reaction(self):
         """Returns a list of Reactions that contain this Species"""
         warn("deprecated, used species.reactions instead")

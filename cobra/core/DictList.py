@@ -260,7 +260,7 @@ class DictList(list):
         # If the pop occured from a location other than the end of the list,
         # we will need to subtract 1 from every entry afterwards
         if len(args) == 0 or args == [-1]:  # removing from the end of the list
-            return
+            return value
         _dict = self._dict
         for i, j in iteritems(_dict):
             if j > index:

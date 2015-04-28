@@ -42,6 +42,9 @@ class TestDictList(TestCase):
         self.assertEqual(self.list.index(self.obj), 0)
         self.assertRaises(ValueError, self.list.index, "f")
         self.assertRaises(ValueError, self.list.index, Object("f"))
+        # ensure trying to index with an object that is a different object
+        # also raises an error
+        self.assertRaises(ValueError, self.list.index, Object("test1"))
 
     def testIndependent(self):
         a = DictList([Object("o1"), Object("o2")])
@@ -58,8 +61,17 @@ class TestDictList(TestCase):
         self.assertRaises(ValueError, self.list.append, Object("test1"))
         self.assertEqual(self.list.index(obj2), 1)
         self.assertEqual(self.list[1], obj2)
-        self.assertEqual(self.list.get_by_id("test2"), obj2)
+        self.assertIs(self.list.get_by_id("test2"), obj2)
         self.assertEqual(len(self.list), 2)
+
+    def testInsert(self):
+        obj2 = Object("a")
+        self.list.insert(0, obj2)
+        self.assertEqual(self.list.index(obj2), 0)
+        self.assertEqual(self.list.index("test1"), 1)
+        self.assertIs(self.list.get_by_id("a"), obj2)
+        self.assertEqual(len(self.list), 2)
+        self.assertRaises(ValueError, self.list.append, obj2)
 
     def testExtend(self):
         obj_list = [Object("test%d" % (i)) for i in range(2, 10)]
@@ -171,14 +183,21 @@ class TestDictList(TestCase):
         del obj_list[3]
         self.assertNotIn("test5", obj_list)
         self.assertEqual(obj_list.index(obj_list[-1]), len(obj_list) - 1)
+        self.assertEqual(len(obj_list), 7)
         del obj_list[3:5]
         self.assertNotIn("test6", obj_list)
         self.assertNotIn("test7", obj_list)
         self.assertEqual(obj_list.index(obj_list[-1]), len(obj_list) - 1)
+        self.assertEqual(len(obj_list), 5)
         removed = obj_list.pop(1)
         self.assertEqual(obj_list.index(obj_list[-1]), len(obj_list) - 1)
         self.assertEqual(removed.id, "test3")
         self.assertNotIn("test3", obj_list)
+        self.assertEqual(len(obj_list), 4)
+        removed = obj_list.pop()
+        self.assertEqual(removed.id, "test9")
+        self.assertNotIn(removed.id, obj_list)
+        self.assertEqual(len(obj_list), 3)
 
     def testSet(self):
         obj_list = DictList(Object("test%d" % (i)) for i in range(10))
@@ -271,6 +290,12 @@ class TestReactions(CobraTestCase):
         self.assertIn(model.metabolites.foo, pgi._metabolites)
         self.assertEqual(len(model.metabolites), 1803)
 
+class TestCobraMetabolites(CobraTestCase):
+    def test_metabolite_formula(self):
+        met = Metabolite("water")
+        met.formula = "H2O"
+        self.assertEqual(met.elements, {"H": 2, "O": 1})
+        self.assertEqual(met.formula_weight, 18.01528)
 
 class TestCobraModel(CobraTestCase):
     """test core cobra functions"""
@@ -523,6 +548,28 @@ class TestCobraArrayModel(TestCobraModel):
                 model.upper_bounds = [0, 1]
             model.upper_bounds = [0] * len(model.reactions)
             self.assertEqual(max(model.upper_bounds), 0)
+
+            # test something for all the attributes
+            model.lower_bounds[2] = -1
+            self.assertEqual(model.reactions[2].lower_bound, -1)
+            self.assertEqual(model.lower_bounds[2], -1)
+            model.objective_coefficients[2] = 1
+            self.assertEqual(model.reactions[2].objective_coefficient, 1)
+            self.assertEqual(model.objective_coefficients[2], 1)
+            model.b[2] = 1
+            self.assertEqual(model.metabolites[2]._bound, 1)
+            self.assertEqual(model.b[2], 1)
+            model.constraint_sense[2] = "L"
+            self.assertEqual(model.metabolites[2]._constraint_sense, "L")
+            self.assertEqual(model.constraint_sense[2], "L")
+
+            # test resize matrix on reaction removal
+            old_shape = model.S.shape
+            model.remove_reactions([model.reactions[2]], remove_orphans=False)
+            self.assertEqual(len(model.metabolites), model.S.shape[0])
+            self.assertEqual(model.S.shape[0], old_shape[0])
+            self.assertEqual(len(model.reactions), model.S.shape[1])
+            self.assertEqual(model.S.shape[1], old_shape[1] - 1)
 
     def test_array_based_model_add(self):
         for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
