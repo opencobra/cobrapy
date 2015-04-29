@@ -93,3 +93,20 @@ def moma(wt_model, mutant_model, solver=None, **solver_args):
                                                            wt_model)
     return solve_moma_model(moma_model, objective_id,
                             solver=solver, **solver_args)
+
+
+def moma_knockout(moma_model, moma_objective, reaction_indexes, **moma_args):
+    """computes result of reaction_knockouts using moma"""
+    n = len(moma_model.reactions) // 2
+    # knock out the reaction
+    for i in reaction_indexes:
+        mutant_reaction = moma_model.reactions[i]
+        mutant_reaction.lower_bound, mutant_reaction.upper_bound = (0., 0.)
+    result = solve_moma_model(moma_model, moma_objective, **moma_args)
+    # reset the knockouts
+    for i in reaction_indexes:
+        mutant_reaction = moma_model.reactions[i]
+        wt_reaction = moma_model.reactions[n + i]
+        mutant_reaction.lower_bound = wt_reaction.lower_bound
+        mutant_reaction.upper_bound = wt_reaction.upper_bound
+    return result

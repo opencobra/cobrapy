@@ -102,17 +102,11 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
     growth_rate_dict = {}
     status_dict = {}
     for reaction in reaction_list:
-        old_bounds = (reaction.lower_bound, reaction.upper_bound)
         index = cobra_model.reactions.index(reaction)
-        # knock out the reaction
-        moma_reaction = moma_model.reactions[index]
-        moma_reaction.lower_bound = 0.
-        moma_reaction.upper_bound = 0.
-        solution = moma.solve_moma_model(moma_model, moma_obj)
+        solution = moma.moma_knockout(moma_model, moma_objective, (index,),
+                                      solver=solver, **solver_args)
         status_dict[reaction.id] = solution.status
         growth_rate_dict[reaction.id] = solution.f
-        # reset the problem
-        moma_reaction.lower_bound, moma_reaction.upper_bound = old_bounds
     return (growth_rate_dict, status_dict)
 
 
