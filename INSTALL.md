@@ -30,8 +30,10 @@ cobrapy, they are not explicitly supported at this time.
 3. In a terminal, run ```sudo pip install cobra```
 
 ### Microsoft Windows
-Download and install the appropriate 32 bit or 64 bit installer,
-both of which can be downloaded from the [python package
+If you use pip in Windows, you can simply do ```pip install cobra```.
+
+To install without pip, you will need to download and use the appropriate
+installer for your version of python from the [python package
 index](https://pypi.python.org/pypi/cobra/).
 
 

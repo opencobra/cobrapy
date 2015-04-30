@@ -129,6 +129,15 @@ for extra in extras.values():
     all_extras.update(extra)
 extras["all"] = list(all_extras)
 
+# If using bdist_wininst, the installer will not get dependencies like
+# a setuptools installation does. Therefore, for the one external dependency,
+# which is six.py, we can just download it here and include it in the installer.
+
+# The file six.py will need to be manually downloaded and placed in the
+# same directory as setup.py.
+if "bdist_wininst" in argv:
+    setup_kwargs["py_modules"] = ["six"]
+
 with open("README.md", "r") as infile:
     long_description = infile.read()
 
@@ -151,7 +160,7 @@ setup(
     author_email="danielhyduke@gmail.com",
     description="COBRApy is a package for constraints-based modeling of "
     "biological networks",
-    license="GPL v3.0#",
+    license="GPL v3.0+",
     keywords="metabolism biology linear programming optimization flux"
     " balance analysis fba",
     url="https://opencobra.github.io/cobrapy",
@@ -167,7 +176,7 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: Cython',
+        'Programming Language :: Cython',
         'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Bio-Informatics'
