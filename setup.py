@@ -1,9 +1,18 @@
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-from sys import argv, path
 from os.path import isfile, abspath, dirname, join
+from sys import argv, path
+
+# To temporarily modify sys.path
+SETUP_DIR = abspath(dirname(__file__))
+
+try:
+    from setuptools import setup, find_packages
+except ImportError:
+    path.insert(0, SETUP_DIR)
+    import ez_setup
+    path.pop(0)
+    ez_setup.use_setuptools()
+    from setuptools import setup, find_packages
+
 
 # for running parallel tests due to a bug in python 2.7.3
 # http://bugs.python.org/issue15881#msg170215
@@ -13,10 +22,11 @@ except:
     None
 
 # import version to get the version string
-path.insert(0, abspath(join(dirname(__file__), "cobra")))
+path.insert(0, join(SETUP_DIR, "cobra"))
 from version import get_version, update_release_version
 path.pop(0)
 version = get_version(pep440=True)
+
 # If building something for distribution, ensure the VERSION
 # file is up to date
 if "sdist" in argv or "bdist_wheel" in argv:
@@ -131,7 +141,8 @@ extras["all"] = list(all_extras)
 
 # If using bdist_wininst, the installer will not get dependencies like
 # a setuptools installation does. Therefore, for the one external dependency,
-# which is six.py, we can just download it here and include it in the installer.
+# which is six.py, we can just download it here and include it in the
+# installer.
 
 # The file six.py will need to be manually downloaded and placed in the
 # same directory as setup.py.
@@ -139,12 +150,12 @@ if "bdist_wininst" in argv:
     setup_kwargs["py_modules"] = ["six"]
 
 with open("README.md", "r") as infile:
-    long_description = infile.read()
+    setup_kwargs["long_description"] = infile.read()
 
 setup(
     name="cobra",
     version=version,
-    packages=["cobra"],
+    packages=find_packages(exclude=['cobra.oven', 'cobra.oven*']),
     setup_requires=[],
     install_requires=["six"],
     extras_require=extras,
@@ -165,7 +176,6 @@ setup(
     " balance analysis fba",
     url="https://opencobra.github.io/cobrapy",
     test_suite="cobra.test.suite",
-    long_description=long_description,
     download_url='https://pypi.python.org/pypi/cobra',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
