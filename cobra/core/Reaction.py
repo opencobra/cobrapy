@@ -552,7 +552,12 @@ class Reaction(Object):
         reaction_element_dict = defaultdict(list)
         for the_metabolite, the_coefficient in self._metabolites.items():
             if the_metabolite.formula is not None:
-                for k, v in the_metabolite.formula.elements.items():
+                try:
+                    elements = the_metabolite.elements
+                except AttributeError:
+                    # This happens when loading from old pickles
+                    elements = the_metabolite.formula.elements
+                for k, v in iteritems(elements):
                     reaction_element_dict[k].append(the_coefficient * v)
         reaction_element_dict = {k: sum(v) for k, v
                                  in reaction_element_dict.items()}
