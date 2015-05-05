@@ -183,11 +183,6 @@ class Reaction(Object):
         for x in self._genes:
             x._reaction.add(self)
 
-    def get_model(self):
-        """.. deprecated :: 0.3.1 use model property instead"""
-        warn("deprecated, use the model property instead")
-        return self._model
-
     def remove_from_model(self, model=None, remove_orphans=False):
         """Removes the reaction from the model while keeping it intact
 
@@ -379,41 +374,15 @@ class Reaction(Object):
         self *= the_coefficient
         return self
 
-    def parse_gene_association(self, **kwargs):
-        """.. deprecated :: 0.3 Set gene_reaction_rule directly"""
-        warn("deprecated function")
-        # trigger the update if that was the desired behavior for some reason
-        self.gene_reaction_rule = self._gene_reaction_rule
-
-    def add_gene_reaction_rule(self, the_rule):
-        """.. deprecated :: 0.3 Set gene_reaction_rule directly"""
-        self.gene_reaction_rule = the_rule
-        warn("deprecated, assign to gene_reaction_rule directly")
-
-    def get_reactants(self):
-        """.. deprecated :: 0.3 use reactants property instead"""
-        warn("deprecated, use the reactants property instead")
-        return self.reactants
-
     @property
     def reactants(self):
         """Return a list of reactants for the reaction."""
         return [k for k, v in self._metabolites.items() if v < 0]
 
-    def get_products(self):
-        """.. deprecated :: 0.3 use products property instead"""
-        warn("depreacated, use the products property instead")
-        return self.products
-
     @property
     def products(self):
         """Return a list of products for the reaction"""
         return [k for k, v in self._metabolites.items() if v > 0]
-
-    def get_gene(self):
-        """.. deprecated :: 0.3 use genes property instead"""
-        warn("deprecated, use the genes property instead")
-        return list(self._genes)
 
     def get_coefficient(self, metabolite_id):
         """Return the stoichiometric coefficient for a metabolite in
@@ -560,51 +529,9 @@ class Reaction(Object):
         # filter out 0 values
         return {k: v for k, v in iteritems(reaction_element_dict) if v != 0}
 
-    def print_values(self):
-        """.. deprecated :: 0.3"""
-        warn("deprecated")
-        print("reaction:", self.id)
-        print("subsystem", self.subsystem)
-        print(self.reaction)
-        print("bounds: (%.2f, %.2f)" % (self.lower_bound, self.upper_bound))
-        print("objective_coefficient", self.objective_coefficient)
-        print("gene reaction rule:", self.gene_reaction_rule)
-
     def get_compartments(self):
-        """
-        """
-        return(list(set([x.compartment for x in self._metabolites])))
-
-    def remove_gene(self, cobra_gene):
-        """.. deprecated :: 0.3 update the gene_reaction_rule instead"""
-        warn("deprecated: update the gene_reaction_rule instead")
-        try:
-            self._genes.remove(cobra_gene)
-            cobra_gene._reaction.remove(self)
-        except Exception as e:
-            try:
-                if hasattr(self._genes, 'keys'):
-                    self._genes = set(self._genes.keys())
-                    self.remove_gene(cobra_gene)
-            except:
-                raise Exception('Unable to remove %s from %s: %s' %
-                                (repr(cobra_gene), repr(self), e))
-
-    def add_gene(self, cobra_gene):
-        """.. deprecated :: 0.3 update the gene_reaction_rule instead"""
-        warn("deprecated: update the gene_reaction_rule instead")
-        try:
-            self._genes.add(cobra_gene)
-            cobra_gene._reaction.add(self)
-            cobra_gene._model = self._model
-        except Exception as e:
-            try:
-                if hasattr(self._genes, 'keys'):
-                    self._genes = set(self._genes.keys())
-                    self.add_gene(cobra_gene)
-            except:
-                raise Exception('Unable to add %s to %s: %s' %
-                                (repr(cobra_gene), repr(self), e))
+        """lists compartments the metabolites are in"""
+        return list({x.compartment for x in self._metabolites})
 
     def _associate_gene(self, cobra_gene):
         """Associates a cobra.Gene object with a cobra.Reaction.
