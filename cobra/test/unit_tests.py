@@ -275,6 +275,17 @@ class TestReactions(CobraTestCase):
         reaction.subtract_metabolites(reaction.metabolites)
         self.assertEqual(len(reaction.metabolites), 0)
 
+    def test_mass_balance(self):
+        model = self.model
+        reaction = model.reactions.get_by_id("PGI")
+        # should be balanced now
+        self.assertEqual(len(reaction.check_mass_balance()), 0)
+        # should not be balanced after adding a hydrogen
+        reaction.add_metabolites({model.metabolites.get_by_id("h_c"): 1})
+        imbalance = reaction.check_mass_balance()
+        self.assertIn("H", imbalance)
+        self.assertEqual(imbalance["H"], 1)
+
     def test_build_from_string(self):
         model = self.model
         pgi = model.reactions.get_by_id("PGI")
@@ -290,12 +301,14 @@ class TestReactions(CobraTestCase):
         self.assertIn(model.metabolites.foo, pgi._metabolites)
         self.assertEqual(len(model.metabolites), 1803)
 
+
 class TestCobraMetabolites(CobraTestCase):
     def test_metabolite_formula(self):
         met = Metabolite("water")
         met.formula = "H2O"
         self.assertEqual(met.elements, {"H": 2, "O": 1})
         self.assertEqual(met.formula_weight, 18.01528)
+
 
 class TestCobraModel(CobraTestCase):
     """test core cobra functions"""

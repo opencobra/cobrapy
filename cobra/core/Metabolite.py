@@ -45,6 +45,9 @@ class Metabolite(Species):
         tmp_formula = self.formula
         if tmp_formula is None:
             return {}
+        # necessary for some old pickles which use the deprecated
+        # Formula class
+        tmp_formula = str(self.formula)
         # commonly occuring characters in incorrectly constructed formulas
         if "*" in tmp_formula:
             warn("invalid character '*' found in formula '%s'" % self.formula)

@@ -548,23 +548,17 @@ class Reaction(Object):
         return reaction_string
 
     def check_mass_balance(self):
-        """Makes sure that the reaction is elementally-balanced."""
-        reaction_element_dict = defaultdict(list)
-        for the_metabolite, the_coefficient in self._metabolites.items():
-            if the_metabolite.formula is not None:
-                try:
-                    elements = the_metabolite.elements
-                except AttributeError:
-                    # This happens when loading from old pickles
-                    elements = the_metabolite.formula.elements
-                for k, v in iteritems(elements):
-                    reaction_element_dict[k].append(the_coefficient * v)
-        reaction_element_dict = {k: sum(v) for k, v
-                                 in reaction_element_dict.items()}
-        if sum(map(abs, reaction_element_dict.values())) != 0:
-            return [self.id, reaction_element_dict]
-        else:
-            return []
+        """Makes sure that the reaction is elementally-balanced.
+
+        returns a dict of {element: amount} for unbalanced elements.
+        This should be empty for balanced reactions.
+        """
+        reaction_element_dict = defaultdict(int)
+        for metabolite, coefficient in self._metabolites.items():
+            for element, amount in iteritems(metabolite.elements):
+                reaction_element_dict[element] += coefficient * amount
+        # filter out 0 values
+        return {k: v for k, v in iteritems(reaction_element_dict) if v != 0}
 
     def print_values(self):
         """.. deprecated :: 0.3"""
