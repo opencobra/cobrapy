@@ -513,21 +513,28 @@ class TestCobraModel(CobraTestCase):
     def test_change_objective(self):
         biomass = self.model.reactions.get_by_id("biomass_iRR1083_metals")
         atpm = self.model.reactions.get_by_id("ATPM")
-        self.model.change_objective(atpm.id)
+        self.model.objective = atpm.id
         self.assertEqual(atpm.objective_coefficient, 1.)
         self.assertEqual(biomass.objective_coefficient, 0.)
+        self.assertEqual(self.model.objective, {atpm: 1.})
         # change it back using object itself
-        self.model.change_objective(biomass)
+        self.model.objective = biomass
         self.assertEqual(atpm.objective_coefficient, 0.)
         self.assertEqual(biomass.objective_coefficient, 1.)
         # set both to 1 with a list
-        self.model.change_objective([atpm, biomass])
+        self.model.objective = [atpm, biomass]
         self.assertEqual(atpm.objective_coefficient, 1.)
         self.assertEqual(biomass.objective_coefficient, 1.)
         # set both using a dict
-        self.model.change_objective({atpm: 0.2, biomass: 0.3})
+        self.model.objective = {atpm: 0.2, biomass: 0.3}
         self.assertEqual(atpm.objective_coefficient, 0.2)
         self.assertEqual(biomass.objective_coefficient, 0.3)
+        # test setting by index
+        self.model.objective = self.model.reactions.index(atpm)
+        self.assertEqual(self.model.objective, {atpm: 1.})
+        # test by setting list of indexes
+        self.model.objective = map(self.model.reactions.index, [atpm, biomass])
+        self.assertEqual(self.model.objective, {atpm: 1., biomass: 1.})
 
 
 @skipIf(scipy is None, "scipy required for ArrayBasedModel")

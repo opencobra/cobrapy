@@ -213,10 +213,10 @@ class TestCobraSolver(object):
         m = Model()
         m.add_reactions([x, y])
         # test that optimal values are at the vertices
-        m.change_objective("x")
+        m.objective = "x"
         self.assertAlmostEqual(solver.solve(m).f, 1.0)
         self.assertAlmostEqual(solver.solve(m).x_dict["y"], 2.0)
-        m.change_objective("y")
+        m.objective = "y"
         self.assertAlmostEqual(solver.solve(m).f, 3.0)
         self.assertAlmostEqual(solver.solve(m, objective_sense="minimize").f,
                                1.0)

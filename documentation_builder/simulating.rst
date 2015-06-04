@@ -23,9 +23,10 @@ Running FBA
 
 
 
+
 .. parsed-literal::
 
-    <Solution 0.38 at 0x660d990>
+    <Solution 0.38 at 0x7f7baba1b950>
 
 
 
@@ -51,6 +52,7 @@ objective value
 
 
 
+
 .. parsed-literal::
 
     'optimal'
@@ -63,9 +65,10 @@ objective value
 
 
 
+
 .. parsed-literal::
 
-    0.38000797227551136
+    0.38000797227280014
 
 
 
@@ -78,35 +81,35 @@ only one objective reaction, with an objective coefficient of 1.
 
 .. code:: python
 
-    {reaction: reaction.objective_coefficient for reaction in model.reactions
-            if reaction.objective_coefficient > 0}
+    model.objective
+
 
 
 
 .. parsed-literal::
 
-    {<Reaction biomass_iRR1083_metals at 0x660d350>: 1.0}
+    {<Reaction biomass_iRR1083_metals at 0x7f7baba1b290>: 1.0}
 
 
 
-The objective function can be changed by using the function
-Model.change\_objective, which will take either a reaction object or
-just its name.
+The objective function can be changed by assigning Model.objective,
+which can be a reaction object (or just it's name), or a dict of
+{Reaction: objective\_coefficient}.
 
 .. code:: python
 
     # change the objective to ATPM
     # the upper bound should be 1000 so we get the actual optimal value
     model.reactions.get_by_id("ATPM").upper_bound = 1000.
-    model.change_objective("ATPM")
-    {reaction: reaction.objective_coefficient for reaction in model.reactions
-            if reaction.objective_coefficient > 0}
+    model.objective = "ATPM"
+    model.objective
+
 
 
 
 .. parsed-literal::
 
-    {<Reaction ATPM at 0x52cb190>: 1.0}
+    {<Reaction ATPM at 0x7f7bac79ef90>: 1}
 
 
 
@@ -116,9 +119,10 @@ just its name.
 
 
 
+
 .. parsed-literal::
 
-    <Solution 119.67 at 0x4c93110>
+    <Solution 119.67 at 0x7f7baba1bf10>
 
 
 
@@ -129,13 +133,13 @@ Reaction.objective\_coefficient directly.
 
     model.reactions.get_by_id("ATPM").objective_coefficient = 0.
     model.reactions.get_by_id("biomass_iRR1083_metals").objective_coefficient = 1.
-    {reaction: reaction.objective_coefficient for reaction in model.reactions
-            if reaction.objective_coefficient > 0}
+    model.objective
+
 
 
 
 .. parsed-literal::
 
-    {<Reaction biomass_iRR1083_metals at 0x660d350>: 1.0}
+    {<Reaction biomass_iRR1083_metals at 0x7f7baba1b290>: 1.0}
 
 

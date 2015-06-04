@@ -2,9 +2,11 @@ from warnings import warn
 from copy import deepcopy, copy
 
 from six import iteritems, string_types
+
 from ..solvers import optimize
 from .Object import Object
 from .Solution import Solution
+from .Reaction import Reaction
 from .DictList import DictList
 
 
@@ -307,43 +309,40 @@ class Model(Object):
         return
 
     def change_objective(self, objectives):
-        """Change the objective in the cobrapy model.
+        """Change the model objective
 
-        objectives: A list or a dictionary.  If a list then
-        a list of reactions for which the coefficient in the
-        linear objective is set as 1.  If a dictionary then the
-        key is the reaction and the value is the linear coefficient
-        for the respective reaction.
+        .. deprecated:: 0.4
+           Use the objective setter instead"""
+        warn("Deprecated. Use the objective setter "
+             "(Model.objective = ...) instead")
+        self.objective = objectives
 
-        """
-        # I did not want to refactor code just to rename the variable, but this
-        # way the API uses the variable "objectives"
-        the_objectives = objectives
+    @property
+    def objective(self):
+        return {reaction: reaction.objective_coefficient
+                for reaction in self.reactions
+                if reaction.objective_coefficient != 0}
+
+    @objective.setter
+    def objective(self, objectives):
         # set all objective coefficients to 0 initially
         for x in self.reactions:
             x.objective_coefficient = 0.
-        # update the objective coefficients if a dict is passed in
-        if hasattr(the_objectives, "items"):
-            for the_reaction, the_coefficient in iteritems(the_objectives):
-                if isinstance(the_reaction, int):
-                    the_reaction = self.reactions[the_reaction]
-                else:
-                    if hasattr(the_reaction, 'id'):
-                        the_reaction = the_reaction.id
-                    the_reaction = self.reactions.get_by_id(the_reaction)
-                the_reaction.objective_coefficient = the_coefficient
-        # If a list (or a single reaction is passed in), each reaction gets
-        # 1 for the objective coefficent.
+        # case of a single reaction
+        if isinstance(objectives, string_types) or \
+                isinstance(objectives, Reaction):
+            self.reactions.get_by_id(str(objectives)).objective_coefficient = 1
+        elif isinstance(objectives, int):
+            self.reactions[objectives].objective_coefficient = 1
+
+        # case of an iterable
         else:
-            # Allow for objectives to be constructed from multiple reactions
-            if not hasattr(the_objectives, "__iter__") or \
-                    isinstance(the_objectives, string_types):
-                the_objectives = [the_objectives]
-            for the_reaction in the_objectives:
-                if isinstance(the_reaction, int):
-                    the_reaction = self.reactions[the_reaction]
+            for reaction_id in objectives:
+                if isinstance(reaction_id, int):  # index in a list
+                    reaction = self.reactions[reaction_id]
                 else:
-                    if hasattr(the_reaction, 'id'):
-                        the_reaction = the_reaction.id
-                    the_reaction = self.reactions.get_by_id(the_reaction)
-                the_reaction.objective_coefficient = 1.
+                    reaction = self.reactions.get_by_id(str(reaction_id))
+                # objective coefficient obtained from a dict, and is 1. if
+                # from a list.
+                reaction.objective_coefficient = objectives[reaction_id] \
+                    if hasattr(objectives, "items") else 1.
