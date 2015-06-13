@@ -1,6 +1,7 @@
 ##cobra.solvers.gurobi_solver
 #Interface to the gurobi 5.0.1 python and java solvers
 #QPs are not yet supported on java
+from __future__ import print_function
 from warnings import warn
 from os import name as __name
 from copy import deepcopy
@@ -70,7 +71,7 @@ def set_parameter(lp, parameter_name, parameter_value):
         else:
             warn("%s is not a DoubleParam, IntParam, StringParam, IntAttr"%parameter_name)
             ## raise Exception("%s is not a DoubleParam, IntParam, StringParam, IntAttr"%parameter_name)
-    except Exception, e:
+    except Exception as e:
         warn("%s %s didn't work %s"%(parameter_name, parameter_value, e))
 
 def get_objective_value(lp):
@@ -213,7 +214,7 @@ def solve_problem(lp, **kwargs):
     lp.optimize()
     status = get_status(lp)
     if print_solver_time:
-        print 'optimize time: %f'%(time() - start_time)
+        print('optimize time: {:f}'.format(time() - start_time))
     return status
 
     
@@ -274,7 +275,7 @@ def solve(cobra_model, **kwargs):
     status = solve_problem(lp, **the_parameters)
     the_solution = format_solution(lp, cobra_model)
     if status != 'optimal' and error_reporting:
-        print '%s failed: %s'%(solver_name, status)
+        print('{:s} failed: {:s}'.format(solver_name, status))
     cobra_model.solution = the_solution
     solution = {'the_problem': lp, 'the_solution': the_solution}
     return solution
