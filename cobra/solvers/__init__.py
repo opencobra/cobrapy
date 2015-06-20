@@ -77,8 +77,8 @@ def get_solver_name(mip=False, qp=False):
     if len(solver_dict) == 0:
         raise SolverNotFound("no solvers installed")
     # glpk only does lp, not qp. Gurobi and cplex are better at mip
-    mip_order = ["gurobi", "cplex", "cglpk", "glpk"]
-    lp_order = ["cglpk", "cplex",  "glpk", "gurobi"]
+    mip_order = ["gurobi", "cplex", "coin", "cglpk", "glpk"]
+    lp_order = ["cglpk", "cplex",  "glpk", "gurobi", "coin"]
     qp_order = ["gurobi", "cplex"]
 
     if mip is False and qp is False:

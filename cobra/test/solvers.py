@@ -272,9 +272,9 @@ class TestCobraSolver(object):
         # should be 12 not 24 because 1/2 (V^T Q V)
         self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(solution.f, 6)
-        self.assertAlmostEqual(solution.x_dict["x"], 2)
-        self.assertAlmostEqual(solution.x_dict["y"], 2)
-        self.assertAlmostEqual(solution.x_dict["z"], 2)
+        self.assertAlmostEqual(solution.x_dict["x"], 2, places=6)
+        self.assertAlmostEqual(solution.x_dict["y"], 2, places=6)
+        self.assertAlmostEqual(solution.x_dict["z"], 2, places=6)
 
 for solver_name in solvers.solver_dict:
     exec('class %sTester(TestCobraSolver, TestCase): None' % solver_name)
