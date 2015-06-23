@@ -6,7 +6,7 @@ python:
 # command to install dependencies
 before_install:
   - export PIP_OPTS="-f https://opencobra.github.io/pypi_cobrapy_travis --no-index"
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install glpk $PIP_OPTS; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install glpk cylp $PIP_OPTS; fi
   - pip install python-libsbml-experimental cython numpy scipy $PIP_OPTS
   - wget https://opencobra.github.io/pypi_cobrapy_travis/travis_test_dependencies.zip  # esolver, and glpk
   - unzip travis_test_dependencies.zip
