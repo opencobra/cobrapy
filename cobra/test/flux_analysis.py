@@ -335,6 +335,44 @@ class TestCobraFluxAnalysis(TestCase):
         self.assertEqual(feasible_sol.status, "optimal")
         self.assertEqual(infeasible_sol.status, "infeasible")
 
+    def test_gapfilling(self):
+        try:
+            solver = get_solver_name(mip=True)
+        except:
+            self.skip("no MILP solver found")
+        m = Model()
+        m.add_metabolites(map(Metabolite, ["a", "b", "c"]))
+        r = Reaction("EX_A")
+        m.add_reaction(r)
+        r.add_metabolites({m.metabolites.a: 1})
+        r = Reaction("r1")
+        m.add_reaction(r)
+        r.add_metabolites({m.metabolites.b: -1, m.metabolites.c: 1})
+        r = Reaction("DM_C")
+        m.add_reaction(r)
+        r.add_metabolites({m.metabolites.c: -1})
+        r.objective_coefficient = 1
+
+        U = Model()
+        r = Reaction("a2b")
+        U.add_reaction(r)
+        r.build_reaction_from_string("a --> b", verbose=False)
+        r = Reaction("a2d")
+        U.add_reaction(r)
+        r.build_reaction_from_string("a --> d", verbose=False)
+
+        result = gapfilling.growMatch(m, U)[0]
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].id, "a2b")
+
+        # 2 rounds with exchange reactions
+        result = gapfilling.growMatch(m, None, ex_rxns=True, iterations=2)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result[0]), 1)
+        self.assertEqual(len(result[1]), 1)
+        self.assertEqual({i[0].id for i in result},
+                         {"SMILEY_EX_b", "SMILEY_EX_c"})
+
 # make a test suite to run all of the tests
 loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])

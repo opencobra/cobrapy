@@ -104,7 +104,7 @@ class SUXModelMILP(Model):
         """solve the MILP problem"""
         if solver is None:
             solver = get_solver_name(mip=True)
-        used_reactions = {}
+        used_reactions = [None] * iterations
         numeric_error_cutoff = 0.0001
         self._update_objectives()
         for i in range(iterations):

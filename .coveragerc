@@ -3,12 +3,16 @@
 branch = True
 source = cobra
 omit =
-    cobra/external/*
-    cobra/oven/*
-    cobra/mlab/*
-    cobra/stats/*
-    cobra/test*
     cobra/solvers/*
+    cobra/test/data/*
+    cobra/test_all.py
+    cobra/version.py
+    cobra/oven/*
+    # deprecated code
+    cobra/core/Formula.py
+    # can not be run with free solver
+    cobra/flux_analysis/moma.py
+
 
 [report]
 # Regexes for lines to exclude from consideration
