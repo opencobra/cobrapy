@@ -309,12 +309,7 @@ class Model(Object):
         return
 
     def change_objective(self, objectives):
-        """Change the model objective
-
-        .. deprecated:: 0.4
-           Use the objective setter instead"""
-        warn("Deprecated. Use the objective setter "
-             "(Model.objective = ...) instead")
+        """Change the model objective"""
         self.objective = objectives
 
     @property
