@@ -21,8 +21,8 @@ except:
 class TestCobraSolver(object):
     def setUp(self):
         self.solver = solvers.solver_dict[self.solver_name]
-        self.model = create_test_model()
-        self.old_solution = 0.380008
+        self.model = create_test_model("textbook")
+        self.old_solution = 0.8739215
         self.infeasible_model = Model()
         metabolite_1 = Metabolite("met1")
         reaction_1 = Reaction("rxn1")

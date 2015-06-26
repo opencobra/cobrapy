@@ -15,6 +15,16 @@ except ImportError:
     from xml.etree.ElementTree import parse, Element, SubElement, \
         ElementTree, tostring, register_namespace
 
+# use sbml level 2 from sbml.py (which uses libsbml). Eventually, it would
+# be nice to use the libSBML converters directly instead.
+try:
+    import libsbml
+except ImportError:
+    libsbml = None
+else:
+    from .sbml import create_cobra_model_from_sbml_file as read_sbml2
+    from .sbml import write_cobra_model_to_sbml_file as write_sbml2
+
 try:
     from sympy import Basic
 except:
@@ -111,8 +121,9 @@ def parse_xml_into_model(xml, number=float):
     xml_model = xml.find(ns("sbml:model"))
     if get_attrib(xml_model, "fbc:strict") != "true":
         warn('loading SBML model without fbc:strict="true"')
-    model = Model()
-    model.id = get_attrib(xml_model, "id")
+    
+    model_id = get_attrib(xml_model, "id")
+    model = Model(model_id)
 
     model.compartments = {c.get("id"): c.get("name") for c in
                           xml.findall(ns(COMPARTMENT_XPATH))}
@@ -379,13 +390,21 @@ def model_to_xml(cobra_model, units=True):
     return xml
 
 
-def read_sbml_model(filename, number=float):
+def read_sbml_model(filename, number=float, **kwargs):
     xmlfile = parse(filename)
     xml = xmlfile.getroot()
+    if xml.get("level") != "3" or xml.get("version") != "1" or \
+            get_attrib(xml, "fbc:required") is None:
+        if libsbml is None:
+            raise Exception("libSBML required for fbc < 2")
+        return read_sbml2(filename, **kwargs)
     return parse_xml_into_model(xml, number=number)
 
 
-def write_sbml_model(cobra_model, filename, **kwargs):
+def write_sbml_model(cobra_model, filename, use_fbc_package=True, **kwargs):
+    if not use_fbc_package:
+        write_sbml2(cobra_model, filename, use_fbc_package=False, **kwargs)
+        return
     xml = model_to_xml(cobra_model, **kwargs)
     indent_xml(xml)
     ElementTree(xml).write(filename, encoding="UTF-8")

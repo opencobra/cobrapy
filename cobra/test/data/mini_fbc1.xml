@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version1" level="3" version="1" fbc:required="false">
+  <model id="mini_textbook" substanceUnits="substance" timeUnits="dimensionless" volumeUnits="volume" areaUnits="area" lengthUnits="metre" extentUnits="substance">
+    <annotation>
+      <listOfGeneAssociations xmlns="http://www.sbml.org/sbml/level3/version1/fbc/version1">
+        <geneAssociation id="ga_1" reaction="R_ENO">
+          <gene reference="b2779"/>
+        </geneAssociation>
+        <geneAssociation id="ga_2" reaction="R_FBA">
+          <or>
+            <gene reference="b2925"/>
+            <gene reference="b1773"/>
+            <gene reference="b2097"/>
+          </or>
+        </geneAssociation>
+        <geneAssociation id="ga_3" reaction="R_GAPD">
+          <gene reference="b1779"/>
+        </geneAssociation>
+        <geneAssociation id="ga_4" reaction="R_GLCpts">
+          <or>
+            <and>
+              <gene reference="b2417"/>
+              <gene reference="b1621"/>
+              <gene reference="b2415"/>
+              <gene reference="b2416"/>
+            </and>
+            <and>
+              <gene reference="b2417"/>
+              <gene reference="b1101"/>
+              <gene reference="b2415"/>
+              <gene reference="b2416"/>
+            </and>
+            <and>
+              <gene reference="b1817"/>
+              <gene reference="b1818"/>
+              <gene reference="b1819"/>
+              <gene reference="b2415"/>
+              <gene reference="b2416"/>
+            </and>
+          </or>
+        </geneAssociation>
+        <geneAssociation id="ga_5" reaction="R_H2Ot">
+          <gene reference="b0875"/>
+        </geneAssociation>
+        <geneAssociation id="ga_6" reaction="R_PFK">
+          <or>
+            <gene reference="b3916"/>
+            <gene reference="b1723"/>
+          </or>
+        </geneAssociation>
+        <geneAssociation id="ga_7" reaction="R_PGI">
+          <gene reference="b4025"/>
+        </geneAssociation>
+        <geneAssociation id="ga_8" reaction="R_PGK">
+          <gene reference="b2926"/>
+        </geneAssociation>
+        <geneAssociation id="ga_9" reaction="R_PGM">
+          <or>
+            <gene reference="b4395"/>
+            <gene reference="b3612"/>
+            <gene reference="b0755"/>
+          </or>
+        </geneAssociation>
+        <geneAssociation id="ga_10" reaction="R_PIt2r">
+          <or>
+            <gene reference="b2987"/>
+            <gene reference="b3493"/>
+          </or>
+        </geneAssociation>
+        <geneAssociation id="ga_11" reaction="R_PYK">
+          <or>
+            <gene reference="b1854"/>
+            <gene reference="b1676"/>
+          </or>
+        </geneAssociation>
+        <geneAssociation id="ga_12" reaction="R_TPI">
+          <gene reference="b3919"/>
+        </geneAssociation>
+        <geneAssociation id="ga_13" reaction="R_LDH_D">
+          <or>
+            <gene reference="b2133"/>
+            <gene reference="b1380"/>
+          </or>
+        </geneAssociation>
+        <geneAssociation id="ga_14" reaction="R_D_LACt2">
+          <or>
+            <gene reference="b3603"/>
+            <gene reference="b2975"/>
+          </or>
+        </geneAssociation>
+      </listOfGeneAssociations>
+    </annotation>
+    <listOfCompartments>
+      <compartment id="c" name="Cytoplasm" spatialDimensions="3" size="1" constant="true"/>
+      <compartment id="e" name="Extracellular" spatialDimensions="3" size="1" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="M_atp_c" name="ATP" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-4">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_h_c" name="H+" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="1">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_adp_c" name="ADP" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-3">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_h2o_c" name="H2O" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_pi_c" name="Phosphate" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-2">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_2pg_c" name="D-Glycerate 2-phosphate" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-3">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_pep_c" name="Phosphoenolpyruvate" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-3">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_glc__D_e" name="D-Glucose" compartment="e" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_h_e" name="H+" compartment="e" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="1">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_g3p_c" name="Glyceraldehyde 3-phosphate" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-2">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_dhap_c" name="Dihydroxyacetone phosphate" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-2">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_fdp_c" name="D-Fructose 1,6-bisphosphate" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-4">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_nadh_c" name="Nicotinamide adenine dinucleotide - reduced" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-2">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_13dpg_c" name="3-Phospho-D-glyceroyl phosphate" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-4">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_nad_c" name="Nicotinamide adenine dinucleotide" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-1">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_g6p_c" name="D-Glucose 6-phosphate" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-2">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_pyr_c" name="Pyruvate" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-1">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_h2o_e" name="H2O" compartment="e" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_f6p_c" name="D-Fructose 6-phosphate" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-2">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_3pg_c" name="3-Phospho-D-glycerate" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-3">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_pi_e" name="Phosphate" compartment="e" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-2">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_lac__D_c" name="D-Lactate" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-1" fbc:chemicalFormula="C3H5O3">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C3H5O3</p>
+          </html>
+        </notes>
+      </species>
+      <species id="M_lac__D_e" name="D-Lactate" compartment="e" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="-1" fbc:chemicalFormula="C3H5O3">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C3H5O3</p>
+          </html>
+        </notes>
+      </species>
+      <species id="M_glc__D_e_boundary" name="D-Glucose" compartment="e" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_h_e_boundary" name="H+" compartment="e" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false" fbc:charge="1">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml"/>
+        </notes>
+      </species>
+      <species id="M_lac__D_e_boundary" name="D-Lactate" compartment="e" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false" fbc:charge="-1" fbc:chemicalFormula="C3H5O3">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C3H5O3</p>
+          </html>
+        </notes>
+      </species>
+    </listOfSpecies>
+    <listOfReactions>
+      <reaction id="R_ATPM" name="ATP maintenance requirement" reversible="false" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: </p>
+            <p>SUBSYSTEM: Oxidative Phosphorylation</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_atp_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h2o_c" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_adp_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_ENO" name="enolase" reversible="true" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (b2779)</p>
+            <p>SUBSYSTEM: Glycolysis/Gluconeogenesis</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_2pg_c" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_h2o_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_pep_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_EX_glc__D_e" name="D-Glucose exchange" reversible="true" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: </p>
+            <p>SUBSYSTEM: </p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_glc__D_e" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_glc__D_e_boundary" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_EX_h_e" name="H+ exchange" reversible="true" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: </p>
+            <p>SUBSYSTEM: </p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_h_e" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_h_e_boundary" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_FBA" name="fructose-bisphosphate aldolase" reversible="true" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (b2925) or (b1773) or (b2097)</p>
+            <p>SUBSYSTEM: Glycolysis/Gluconeogenesis</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_fdp_c" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_g3p_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_dhap_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_GAPD" name="glyceraldehyde-3-phosphate dehydrogenase" reversible="true" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (b1779)</p>
+            <p>SUBSYSTEM: Glycolysis/Gluconeogenesis</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_g3p_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_nad_c" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_nadh_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_13dpg_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_GLCpts" name="D-glucose transport via PEP:Pyr PTS" reversible="false" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: ((b2417 and b1621 and b2415 and b2416) or (b2417 and b1101 and b2415 and b2416) or (b1817 and b1818 and b1819 and b2415 and b2416))</p>
+            <p>SUBSYSTEM: Transport, Extracellular</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_glc__D_e" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_pep_c" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_g6p_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_pyr_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_H2Ot" name="H2O transport via diffusion" reversible="true" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (b0875)</p>
+            <p>SUBSYSTEM: Transport, Extracellular</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_h2o_e" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_h2o_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_PFK" name="phosphofructokinase" reversible="false" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (b3916) or (b1723)</p>
+            <p>SUBSYSTEM: Glycolysis/Gluconeogenesis</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_f6p_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_atp_c" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_adp_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_fdp_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_PGI" name="glucose-6-phosphate isomerase" reversible="true" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (b4025)</p>
+            <p>SUBSYSTEM: Glycolysis/Gluconeogenesis</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_g6p_c" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_f6p_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_PGK" name="phosphoglycerate kinase" reversible="true" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (b2926)</p>
+            <p>SUBSYSTEM: Glycolysis/Gluconeogenesis</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_3pg_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_atp_c" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_adp_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_13dpg_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_PGM" name="phosphoglycerate mutase" reversible="true" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (b4395) or (b3612) or (b0755)</p>
+            <p>SUBSYSTEM: Glycolysis/Gluconeogenesis</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_2pg_c" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_3pg_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_PIt2r" name="phosphate reversible transport via symport" reversible="true" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (b2987) or (b3493)</p>
+            <p>SUBSYSTEM: Inorganic Ion Transport and Metabolism</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_pi_e" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h_e" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_PYK" name="pyruvate kinase" reversible="false" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (b1854) or (b1676)</p>
+            <p>SUBSYSTEM: Glycolysis/Gluconeogenesis</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_pep_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_adp_c" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_pyr_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_atp_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_TPI" name="triose-phosphate isomerase" reversible="true" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (b3919)</p>
+            <p>SUBSYSTEM: Glycolysis/Gluconeogenesis</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_dhap_c" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_g3p_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_LDH_D" name="D-lactate dehydrogenase" reversible="true" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (b2133 or b1380)</p>
+            <p>SUBSYSTEM: Pyruvate Metabolism</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_lac__D_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_nad_c" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_nadh_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_pyr_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_EX_lac__D_e" name="D-lactate exchange" reversible="false" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: </p>
+            <p>SUBSYSTEM: </p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_lac__D_e" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_lac__D_e_boundary" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="R_D_LACt2" name="D_LACt2" reversible="true" fast="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (b3603 or b2975)</p>
+            <p>SUBSYSTEM: </p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_lac__D_e" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h_e" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_lac__D_c" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+    </listOfReactions>
+    <fbc:listOfFluxBounds>
+      <fbc:fluxBound fbc:reaction="R_ATPM" fbc:operation="greaterEqual" fbc:value="8.39"/>
+      <fbc:fluxBound fbc:reaction="R_ATPM" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_ENO" fbc:operation="greaterEqual" fbc:value="-999999"/>
+      <fbc:fluxBound fbc:reaction="R_ENO" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_EX_glc__D_e" fbc:operation="greaterEqual" fbc:value="-10"/>
+      <fbc:fluxBound fbc:reaction="R_EX_glc__D_e" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_EX_h_e" fbc:operation="greaterEqual" fbc:value="-999999"/>
+      <fbc:fluxBound fbc:reaction="R_EX_h_e" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_FBA" fbc:operation="greaterEqual" fbc:value="-999999"/>
+      <fbc:fluxBound fbc:reaction="R_FBA" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_GAPD" fbc:operation="greaterEqual" fbc:value="-999999"/>
+      <fbc:fluxBound fbc:reaction="R_GAPD" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_GLCpts" fbc:operation="greaterEqual" fbc:value="0"/>
+      <fbc:fluxBound fbc:reaction="R_GLCpts" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_H2Ot" fbc:operation="greaterEqual" fbc:value="-999999"/>
+      <fbc:fluxBound fbc:reaction="R_H2Ot" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_PFK" fbc:operation="greaterEqual" fbc:value="0"/>
+      <fbc:fluxBound fbc:reaction="R_PFK" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_PGI" fbc:operation="greaterEqual" fbc:value="-999999"/>
+      <fbc:fluxBound fbc:reaction="R_PGI" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_PGK" fbc:operation="greaterEqual" fbc:value="-999999"/>
+      <fbc:fluxBound fbc:reaction="R_PGK" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_PGM" fbc:operation="greaterEqual" fbc:value="-999999"/>
+      <fbc:fluxBound fbc:reaction="R_PGM" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_PIt2r" fbc:operation="greaterEqual" fbc:value="-999999"/>
+      <fbc:fluxBound fbc:reaction="R_PIt2r" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_PYK" fbc:operation="greaterEqual" fbc:value="0"/>
+      <fbc:fluxBound fbc:reaction="R_PYK" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_TPI" fbc:operation="greaterEqual" fbc:value="-999999"/>
+      <fbc:fluxBound fbc:reaction="R_TPI" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_LDH_D" fbc:operation="greaterEqual" fbc:value="-999999"/>
+      <fbc:fluxBound fbc:reaction="R_LDH_D" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_EX_lac__D_e" fbc:operation="greaterEqual" fbc:value="0"/>
+      <fbc:fluxBound fbc:reaction="R_EX_lac__D_e" fbc:operation="lessEqual" fbc:value="999999"/>
+      <fbc:fluxBound fbc:reaction="R_D_LACt2" fbc:operation="greaterEqual" fbc:value="-999999"/>
+      <fbc:fluxBound fbc:reaction="R_D_LACt2" fbc:operation="lessEqual" fbc:value="999999"/>
+    </fbc:listOfFluxBounds>
+    <fbc:listOfObjectives fbc:activeObjective="obj">
+      <fbc:objective fbc:id="obj" fbc:type="maximize">
+        <fbc:listOfFluxObjectives>
+          <fbc:fluxObjective fbc:reaction="R_ATPM" fbc:coefficient="1"/>
+        </fbc:listOfFluxObjectives>
+      </fbc:objective>
+    </fbc:listOfObjectives>
+  </model>
+</sbml>

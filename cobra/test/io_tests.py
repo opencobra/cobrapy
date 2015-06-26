@@ -9,16 +9,10 @@ import sys
 
 if __name__ == "__main__":
     from cobra import io
-    from cobra.test import data_directory, create_test_model
-    from cobra.test import ecoli_mat, ecoli_pickle, ecoli_json
-    from cobra.test import salmonella_sbml, salmonella_pickle
-    from cobra.test import salmonella_fbc_sbml
+    from cobra.test import data_directory
 else:
     from .. import io
-    from . import data_directory, create_test_model
-    from . import ecoli_mat, ecoli_pickle, ecoli_json
-    from . import salmonella_sbml, salmonella_pickle
-    from . import salmonella_fbc_sbml
+    from . import data_directory
 
 libraries = ["scipy", "libsbml", "cPickle"]
 for library in libraries:
@@ -26,6 +20,9 @@ for library in libraries:
         exec("import %s" % library)
     except ImportError:
         exec("%s = None" % library)
+
+with open(join(data_directory, "mini.pickle"), "rb") as infile:
+    mini_model = load(infile)
 
 
 class TestCobraIO(object):
@@ -50,8 +47,8 @@ class TestCobraIO(object):
                              getattr(model2.metabolites[-1], attr))
         self.assertEqual(len(model1.reactions[0].metabolites),
                          len(model2.reactions[0].metabolites))
-        self.assertEqual(len(model1.reactions[20].metabolites),
-                         len(model2.reactions[20].metabolites))
+        self.assertEqual(len(model1.reactions[14].metabolites),
+                         len(model2.reactions[14].metabolites))
         self.assertEqual(len(model1.reactions[-1].metabolites),
                          len(model2.reactions[-1].metabolites))
         # ensure they have the same solution max
@@ -76,38 +73,47 @@ class TestCobraIO(object):
         unlink(test_output_filename)
 
 
-@skipIf(not libsbml, "libsbml required")
-class TestCobraIOSBML(TestCase, TestCobraIO):
+class TestCobraIOSBMLfbc2(TestCase, TestCobraIO):
     def setUp(self):
-        self.test_model = create_test_model()
-        self.test_file = salmonella_sbml
+        self.test_model = mini_model
+        self.test_file = join(data_directory, "mini_fbc2.xml")
         self.read_function = io.read_sbml_model
         self.write_function = io.write_sbml_model
 
 
 @skipIf(not libsbml, "libsbml required")
-class TestCobraIOSBMLfbc(TestCase, TestCobraIO):
+class TestCobraIOSBMLfbc1(TestCase, TestCobraIO):
     def setUp(self):
-        self.test_model = create_test_model()
-        self.test_file = salmonella_fbc_sbml
+        self.test_model = mini_model
+        self.test_file = join(data_directory, "mini_fbc1.xml")
+        self.read_function = io.read_sbml_model
+        self.write_function = partial(io.write_legacy_sbml,
+                                      use_fbc_package=True)
+
+
+@skipIf(not libsbml, "libsbml required")
+class TestCobraIOSBMLcobra(TestCase, TestCobraIO):
+    def setUp(self):
+        self.test_model = mini_model
+        self.test_file = join(data_directory, "mini_cobra.xml")
         self.read_function = io.read_sbml_model
         self.write_function = partial(io.write_sbml_model,
-                                      use_fbc_package=True)
+                                      use_fbc_package=False)
 
 
 @skipIf(not scipy, "scipy required")
 class TestCobraIOmat(TestCase, TestCobraIO):
     def setUp(self):
-        self.test_model = create_test_model(ecoli_pickle)
-        self.test_file = ecoli_mat
+        self.test_model = mini_model
+        self.test_file = join(data_directory, "mini.mat")
         self.read_function = io.load_matlab_model
         self.write_function = io.save_matlab_model
 
 
 class TestCobraIOjson(TestCase, TestCobraIO):
     def setUp(self):
-        self.test_model = create_test_model(ecoli_pickle)
-        self.test_file = ecoli_json
+        self.test_model = mini_model
+        self.test_file = join(data_directory, "mini.json")
         self.read_function = io.load_json_model
         self.write_function = io.save_json_model
 
@@ -127,8 +133,8 @@ class TestCobraIOjson(TestCase, TestCobraIO):
 
 class TestCobraIOPickle(TestCase, TestCobraIO):
     def setUp(self):
-        self.test_model = create_test_model()
-        self.test_file = salmonella_pickle
+        self.test_model = mini_model
+        self.test_file = join(data_directory, "mini.pickle")
         self.load = load
         self.dump = dump
 
