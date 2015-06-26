@@ -356,7 +356,7 @@ def _double_reaction_deletion_fba(cobra_model, reaction_indexes1,
             # reactions removed carry no flux
             if r1_index in no_flux_reaction_indexes and \
                     r2_index in no_flux_reaction_indexes:
-                results[r1_result_index, r2_result_index] = wt_growth_rate
+                results[result_index] = wt_growth_rate
                 continue
             pool.submit((r1_index, r2_index), label=result_index)
         # get results
@@ -431,7 +431,7 @@ def _double_gene_deletion_fba(cobra_model, gene_ids1, gene_ids2,
                           for i in ko_reactions]
             # if all removed gene indexes carry no flux
             if len(set(ko_indexes) - no_flux_reaction_indexes) == 0:
-                results[result_index] = wt_flux
+                results[result_index] = wt_growth_rate
                 continue
             pool.submit(ko_indexes, label=result_index)
 
