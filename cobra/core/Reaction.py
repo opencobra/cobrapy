@@ -89,7 +89,7 @@ class Reaction(Object):
 
     @gene_reaction_rule.setter
     def gene_reaction_rule(self, new_rule):
-        self._gene_reaction_rule = new_rule
+        self._gene_reaction_rule = new_rule.strip()
         gene_names = set((re.compile(' {2,}').sub(
             ' ', and_or_search.sub('', self._gene_reaction_rule))).split(' '))
         if '' in gene_names:
