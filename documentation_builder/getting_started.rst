@@ -15,7 +15,7 @@ and *E. coli*. To load a test model, type
     model = cobra.test.create_test_model("salmonella")
 
 The reactions, metabolites, and genes attributes of the cobrapy model
-are are a special type of list called a DictList, and each one is made
+are a special type of list called a DictList, and each one is made
 up of Reaction, Metabolite and Gene objects respectively.
 
 .. code:: python
