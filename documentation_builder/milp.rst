@@ -2,9 +2,6 @@
 Mixed-Integer Linear Programming
 ================================
 
-This example is available as an IPython
-`notebook <http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/milp.ipynb>`__.
-
 Ice Cream
 ---------
 
@@ -59,6 +56,7 @@ This problem can be written as a cobra.Model
 
 
 
+
 .. parsed-literal::
 
     {'cone': 33.333333333333336, 'popsicle': 0.0}
@@ -73,6 +71,7 @@ can use the variable kind attribute of a cobra.Reaction to enforce this.
     cone.variable_kind = "integer"
     popsicle.variable_kind = "integer"
     m.optimize().x_dict
+
 
 
 
@@ -94,6 +93,7 @@ comic <http://xkcd.com/287/>`__:
 
     from IPython.display import Image
     Image(url=r"http://imgs.xkcd.com/comics/np_complete.png")
+
 
 
 
@@ -136,6 +136,7 @@ This problem can be written as a COBRA model as well.
 
 
 
+
 .. parsed-literal::
 
     {'french_fries': 0.0,
@@ -153,6 +154,7 @@ obtained if we had maximized for mixed fruit instead of minimizing.
 .. code:: python
 
     m.optimize(objective_sense="maximize").x_dict
+
 
 
 
@@ -190,7 +192,7 @@ them as follows
 .. code:: python
 
     import cobra.test
-    model = cobra.test.create_test_model(cobra.test.ecoli_pickle)
+    model = cobra.test.create_test_model("textbook")
     
     # an indicator for pgi
     pgi = model.reactions.get_by_id("PGI")
@@ -230,6 +232,7 @@ them as follows
     # add the indicator reactions to the model
     model.add_reaction(zwf_indicator)
 
+
 In a model with both these reactions active, the indicators will also be
 active
 
@@ -241,12 +244,13 @@ active
     print("PGI flux = %.2f" % solution.x_dict["PGI"])
     print("ZWF flux = %.2f" % solution.x_dict["G6PDH2r"])
 
+
 .. parsed-literal::
 
     PGI indicator = 1
     ZWF indicator = 1
-    PGI flux = 5.92
-    ZWF flux = 4.08
+    PGI flux = 4.86
+    ZWF flux = 4.96
 
 
 Because these boolean indicators are in the model, additional
@@ -269,10 +273,11 @@ constraint:
     print("PGI flux = %.2f" % solution.x_dict["PGI"])
     print("ZWF flux = %.2f" % solution.x_dict["G6PDH2r"])
 
+
 .. parsed-literal::
 
-    PGI indicator = 0
-    ZWF indicator = 1
-    PGI flux = 0.00
-    ZWF flux = 3.98
+    PGI indicator = 1
+    ZWF indicator = 0
+    PGI flux = 9.82
+    ZWF flux = 0.00
 

@@ -12,8 +12,9 @@ from .gapfilling import growMatch
 
 if numpy:
     from .double_deletion import double_reaction_deletion, double_gene_deletion
+    from .phenotype_phase_plane import calculate_phenotype_phase_plane
 else:
     from warnings import warn
-    warn("double_deletion requires numpy")
+    warn("double deletions and phase planes requires numpy")
     del warn
 del numpy

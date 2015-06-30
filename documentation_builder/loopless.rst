@@ -2,9 +2,6 @@
 Loopless FBA
 ============
 
-This example is available as an IPython
-`notebook <http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/loopless.ipynb>`__.
-
 The goal of this procedure is identification of a thermodynamically
 consistent flux state without loops, as implied by the name.
 
@@ -69,6 +66,9 @@ which bring metabolites in and out of the system.
 
 .. code:: python
 
+    from matplotlib.pylab import *
+    %matplotlib inline
+    
     import cobra.test
     from cobra import Reaction, Metabolite, Model
     from cobra.flux_analysis.loopless import construct_loopless_model
@@ -106,7 +106,8 @@ leave. A graphical view of the system is drawn below:
     text(2.5, 0.9, "C", **text_params);
 
 
-.. image:: loopless_files/loopless_4_0.png
+
+.. image:: loopless_files/loopless_3_0.png
 
 
 .. code:: python
@@ -137,9 +138,10 @@ through reaction v3, and is identified by loopless FBA.
 
 
 
+
 .. parsed-literal::
 
-    <Solution 1000.00 at 0x62cd250>
+    <Solution 1000.00 at 0x7f003ad82850>
 
 
 
@@ -153,9 +155,10 @@ feasible loopless solution.
 
 
 
+
 .. parsed-literal::
 
-    <Solution 'infeasible' at 0x62cd5d0>
+    <Solution 'infeasible' at 0x7f003ad82f10>
 
 
 
@@ -164,14 +167,15 @@ capable MILP solver.
 
 .. code:: python
 
-    salmonella = cobra.test.create_test_model()
+    salmonella = cobra.test.create_test_model("salmonella")
     construct_loopless_model(salmonella).optimize(solver=get_solver_name(mip=True))
+
 
 
 
 .. parsed-literal::
 
-    <Solution 0.38 at 0x9e67650>
+    <Solution 0.38 at 0x7f003a496190>
 
 
 
@@ -182,8 +186,9 @@ capable MILP solver.
 
 
 
+
 .. parsed-literal::
 
-    <Solution 0.98 at 0x8e463d0>
+    <Solution 0.98 at 0x7f003ae06b50>
 
 

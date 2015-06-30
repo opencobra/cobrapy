@@ -13,7 +13,7 @@ solvers such as gurobi or cplex to function correctly.
 
     import cobra.test
     
-    model = cobra.test.create_test_model()
+    model = cobra.test.create_test_model("salmonella")
 
 In this model D-Fructose-6-phosphate is an essential metabolite. We will
 remove all the reactions using it, and at them to a separate model.
@@ -55,11 +55,11 @@ removed) to allow it to grow.
 
 .. parsed-literal::
 
-    [[<Reaction FBP at 0x7fba6a2f8310>,
-      <Reaction GF6PTA at 0x7fba6a2f8390>,
-      <Reaction TKT2_reverse at 0x7fba6a2f8450>,
-      <Reaction MAN6PI_reverse at 0x7fba6a2f8510>,
-      <Reaction PGI_reverse at 0x7fba6a2f8550>]]
+    [[<Reaction GF6PTA at 0x7fcecddbc390>,
+      <Reaction MAN6PI_reverse at 0x7fcecddbc450>,
+      <Reaction F6PA_reverse at 0x7fcecddbc490>,
+      <Reaction PGI_reverse at 0x7fcecddbc510>,
+      <Reaction TKT2_reverse at 0x7fcecddbc590>]]
 
 
 
@@ -78,27 +78,27 @@ through multiple iterations.
 .. parsed-literal::
 
     ---- Run 1 ----
+    FBP
     GF6PTA
-    TKT2_reverse
     MAN6PI_reverse
     PGI_reverse
-    F6PA_reverse
+    TKT2_reverse
     ---- Run 2 ----
     TALA
     F6PP
-    FBP
     GF6PTA
     MAN6PI_reverse
-    ---- Run 3 ----
-    GF6PTA
-    TKT2_reverse
-    MAN6PI_reverse
-    PGI_reverse
     F6PA_reverse
+    ---- Run 3 ----
+    F6PP
+    GF6PTA
+    MAN6PI_reverse
+    F6PA_reverse
+    TKT2_reverse
     ---- Run 4 ----
     TALA
-    F6PP
     FBP
     GF6PTA
     MAN6PI_reverse
+    PGI_reverse
 

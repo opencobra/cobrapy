@@ -28,6 +28,14 @@ cobra.flux_analysis.essentiality module
     :undoc-members:
     :show-inheritance:
 
+cobra.flux_analysis.gapfilling module
+-------------------------------------
+
+.. automodule:: cobra.flux_analysis.gapfilling
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 cobra.flux_analysis.loopless module
 -----------------------------------
 
@@ -40,14 +48,6 @@ cobra.flux_analysis.moma module
 -------------------------------
 
 .. automodule:: cobra.flux_analysis.moma
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-cobra.flux_analysis.objective module
-------------------------------------
-
-.. automodule:: cobra.flux_analysis.objective
     :members:
     :undoc-members:
     :show-inheritance:

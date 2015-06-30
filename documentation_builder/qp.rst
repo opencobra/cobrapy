@@ -2,9 +2,6 @@
 Quadratic Programming
 =====================
 
-This example is available as an IPython
-`notebook <http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/qp.ipynb>`__.
-
 Suppose we want to minimize the Euclidean distance of the solution to
 the origin while subject to linear constraints. This will require a
 quadratic objective function. Consider this example problem:
@@ -23,6 +20,7 @@ This problem can be visualized graphically:
 
 .. code:: python
 
+    %matplotlib inline
     from matplotlib.pyplot import figure, xlim, ylim
     from mpl_toolkits.axes_grid.axislines import SubplotZero
     from numpy import linspace, arange, sqrt, pi, sin, cos, sign
@@ -53,7 +51,8 @@ This problem can be visualized graphically:
         ax.plot(r * cos(t), r * sin(t), '-.', color="gray")
 
 
-.. image:: qp_files/qp_3_0.png
+
+.. image:: qp_files/qp_1_0.png
 
 
 The objective can be rewritten as
@@ -80,6 +79,7 @@ sparse matrix.
 
 
 
+
 .. parsed-literal::
 
     <2x2 sparse matrix of type '<type 'numpy.float64'>'
@@ -92,6 +92,7 @@ In this case, the quadratic objective is simply the identity matrix
 .. code:: python
 
     Q.todense()
+
 
 
 
@@ -110,6 +111,7 @@ installed, this function will return its name.
 
     print(solvers.get_solver_name(qp=True))
 
+
 .. parsed-literal::
 
     gurobi
@@ -127,6 +129,7 @@ installed, this function will return its name.
     m.add_reactions([x, y])
     sol = m.optimize(quadratic_component=Q, objective_sense="minimize")
     sol.x_dict
+
 
 
 
@@ -163,7 +166,8 @@ Graphically, this would be
         ax.plot(abs(t), 1 + sqrt(2 * r + 1 - t ** 2) * sign(t), '-.', color="gray")
 
 
-.. image:: qp_files/qp_14_0.png
+
+.. image:: qp_files/qp_12_0.png
 
 
 QP solvers in cobrapy will combine linear and quadratic coefficients.
@@ -175,6 +179,7 @@ attribute used with LP's.
     y.objective_coefficient = -1
     sol = m.optimize(quadratic_component=Q, objective_sense="minimize")
     sol.x_dict
+
 
 
 

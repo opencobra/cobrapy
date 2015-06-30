@@ -2,21 +2,20 @@
 Getting Started
 ===============
 
-This example is available as an IPython
-`notebook <http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/getting_started.ipynb>`__.
-
-To begin with, cobrapy comes with two bundled models for *Salmonella*
-and *E. coli*. To load a test model, type
+To begin with, cobrapy comes with bundled models for *Salmonella* and
+*E. coli*, as well as a "textbook" model of *E. coli* core metabolism.
+To load a test model, type
 
 .. code:: python
 
     from __future__ import print_function
     import cobra.test
-    model = cobra.test.create_test_model("salmonella")
+    
+    model = cobra.test.create_test_model("textbook")  # "ecoli" and "salmonella" are also valid arguments
 
 The reactions, metabolites, and genes attributes of the cobrapy model
-are are a special type of list called a DictList, and each one is made
-up of Reaction, Metabolite and Gene objects respectively.
+are a special type of list called a DictList, and each one is made up of
+Reaction, Metabolite and Gene objects respectively.
 
 .. code:: python
 
@@ -24,11 +23,12 @@ up of Reaction, Metabolite and Gene objects respectively.
     print(len(model.metabolites))
     print(len(model.genes))
 
+
 .. parsed-literal::
 
-    2546
-    1802
-    1264
+    95
+    72
+    137
 
 
 Just like a regular list, objects in the DictList can be retrived by
@@ -42,9 +42,10 @@ because of
 
 
 
+
 .. parsed-literal::
 
-    <Reaction 2AGPA180tipp at 0x7f227ada62d0>
+    <Reaction EX_glu__L_e at 0x7fbbe05e5590>
 
 
 
@@ -58,9 +59,10 @@ id is "atp\_c"), we can do the following:
 
 
 
+
 .. parsed-literal::
 
-    <Metabolite atp_c at 0x7f227adf56d0>
+    <Metabolite atp_c at 0x7fbbe0617350>
 
 
 
@@ -76,9 +78,10 @@ interactive prompt:
 
 
 
+
 .. parsed-literal::
 
-    0.0
+    -10.0
 
 
 
@@ -96,9 +99,10 @@ id for this reaction in our test model is PGI.
 
 
 
+
 .. parsed-literal::
 
-    <Reaction PGI at 0x7f227a10b1d0>
+    <Reaction PGI at 0x7fbbe0611790>
 
 
 
@@ -109,9 +113,10 @@ We can view the full name and reaction catalyzed as strings
     print(pgi.name)
     print(pgi.reaction)
 
+
 .. parsed-literal::
 
-    glucose 6 phosphate isomerase
+    glucose-6-phosphate isomerase
     g6p_c <=> f6p_c
 
 
@@ -122,6 +127,7 @@ pgi.lower\_bound < 0, and pgi.upper\_bound > 0, pgi is reversible
 
     print(pgi.lower_bound, "< pgi <", pgi.upper_bound)
     print(pgi.reversibility)
+
 
 .. parsed-literal::
 
@@ -139,9 +145,10 @@ the reaction is mass balanced.
 
 
 
+
 .. parsed-literal::
 
-    []
+    {}
 
 
 
@@ -152,6 +159,7 @@ object and its coefficient
 
     pgi.add_metabolites({model.metabolites.get_by_id("h_c"): -1})
     pgi.reaction
+
 
 
 
@@ -169,9 +177,10 @@ The reaction is no longer mass balanced
 
 
 
+
 .. parsed-literal::
 
-    ['PGI', {'C': 0.0, 'H': -1.0, 'O': 0.0, 'P': 0.0}]
+    {'H': -1.0}
 
 
 
@@ -184,10 +193,11 @@ again.
     print(pgi.reaction)
     print(pgi.check_mass_balance())
 
+
 .. parsed-literal::
 
     g6p_c <=> f6p_c
-    []
+    {}
 
 
 It is also possible to build the reaction from a string. However, care
@@ -198,6 +208,7 @@ lower bounds.
 .. code:: python
 
     pgi.reaction = "g6p_c --> f6p_c + h_c + green_eggs + ham"
+
 
 .. parsed-literal::
 
@@ -211,9 +222,24 @@ lower bounds.
 
 
 
+
 .. parsed-literal::
 
-    'g6p_c --> f6p_c + green_eggs + ham + h_c'
+    'g6p_c --> green_eggs + ham + h_c + f6p_c'
+
+
+
+.. code:: python
+
+    pgi.reaction = "g6p_c <=> f6p_c"
+    pgi.reaction
+
+
+
+
+.. parsed-literal::
+
+    'g6p_c <=> f6p_c'
 
 
 
@@ -230,9 +256,10 @@ atp\_c in our test model.
 
 
 
+
 .. parsed-literal::
 
-    <Metabolite atp_c at 0x7f227adf56d0>
+    <Metabolite atp_c at 0x7fbbe0617350>
 
 
 
@@ -243,6 +270,7 @@ case).
 
     print(atp.name)
     print(atp.compartment)
+
 
 .. parsed-literal::
 
@@ -258,6 +286,7 @@ We can see that ATP is a charged molecule in our model.
 
 
 
+
 .. parsed-literal::
 
     -4
@@ -269,6 +298,7 @@ We can see the chemical formula for the metabolite as well.
 .. code:: python
 
     print(atp.formula)
+
 
 .. parsed-literal::
 
@@ -285,9 +315,10 @@ use atp.
 
 
 
+
 .. parsed-literal::
 
-    348
+    13
 
 
 
@@ -300,18 +331,13 @@ reactions.
 
 
 
+
 .. parsed-literal::
 
-    frozenset({<Reaction AB6PGH at 0x7f2279de6a50>,
-               <Reaction TRE6PH at 0x7f2279fdb110>,
-               <Reaction TRE6PS at 0x7f2279fdb3d0>,
-               <Reaction PGI at 0x7f227a10b1d0>,
-               <Reaction PGMT at 0x7f227a10b750>,
-               <Reaction HEX1 at 0x7f227a368a90>,
-               <Reaction GLCptspp at 0x7f227a3d2710>,
-               <Reaction G6PDH2r at 0x7f227a3fd850>,
-               <Reaction G6PP at 0x7f227a3fda50>,
-               <Reaction G6Pt6_2pp at 0x7f227a3fdb10>})
+    frozenset({<Reaction G6PDH2r at 0x7fbbe05fd050>,
+               <Reaction GLCpts at 0x7fbbe05fd150>,
+               <Reaction PGI at 0x7fbbe0611790>,
+               <Reaction Biomass_Ecoli_core at 0x7fbbe0650ed0>})
 
 
 
@@ -333,9 +359,10 @@ string.
 
 
 
+
 .. parsed-literal::
 
-    'STM4221'
+    'b4025'
 
 
 
@@ -348,22 +375,24 @@ reactions itself, as well as by the model
 
 
 
+
 .. parsed-literal::
 
-    frozenset({<Gene STM4221 at 0x7f227a10b250>})
+    frozenset({<Gene b4025 at 0x7fbbe063dc90>})
 
 
 
 .. code:: python
 
-    pgi_gene = model.genes.get_by_id("STM4221")
+    pgi_gene = model.genes.get_by_id("b4025")
     pgi_gene
+
 
 
 
 .. parsed-literal::
 
-    <Gene STM4221 at 0x7f227a10b250>
+    <Gene b4025 at 0x7fbbe063dc90>
 
 
 
@@ -375,9 +404,10 @@ Each gene keeps track of the reactions it catalyzes
 
 
 
+
 .. parsed-literal::
 
-    frozenset({<Reaction PGI at 0x7f227a10b1d0>})
+    frozenset({<Reaction PGI at 0x7fbbe0611790>})
 
 
 
@@ -391,15 +421,17 @@ necessary and update all relationships.
 
 
 
+
 .. parsed-literal::
 
-    frozenset({<Gene eggs at 0x7f2279d7ec90>, <Gene spam at 0x7f2279d7edd0>})
+    frozenset({<Gene eggs at 0x7fbbe0611b50>, <Gene spam at 0x7fbbe0611e90>})
 
 
 
 .. code:: python
 
     pgi_gene.reactions
+
 
 
 
@@ -417,9 +449,10 @@ Newly created genes are also added to the model
 
 
 
+
 .. parsed-literal::
 
-    <Gene spam at 0x7f2279d7edd0>
+    <Gene spam at 0x7fbbe0611e90>
 
 
 
@@ -435,9 +468,10 @@ cumulative\_deletions flag.
     cobra.manipulation.delete_model_genes(model, ["eggs"], cumulative_deletions=True)
     print(pgi.lower_bound, "< pgi <", pgi.upper_bound)
 
+
 .. parsed-literal::
 
-    0 < pgi < 1000
+    -1000 < pgi < 1000
     0.0 < pgi < 0.0
 
 
@@ -448,7 +482,8 @@ The undelete\_model\_genes can be used to reset a gene deletion
     cobra.manipulation.undelete_model_genes(model)
     print(pgi.lower_bound, "< pgi <", pgi.upper_bound)
 
+
 .. parsed-literal::
 
-    0 < pgi < 1000
+    -1000 < pgi < 1000
 

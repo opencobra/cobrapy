@@ -10,17 +10,19 @@ python through
 
     %load_ext pymatbridge
 
+
 .. parsed-literal::
 
-    Starting MATLAB on ZMQ socket ipc:///tmp/pymatbridge
+    Starting MATLAB on ZMQ socket ipc:///tmp/pymatbridge-39fd5b7f-475a-40d3-b831-3adf4da6edd3
     Send 'exit' command to kill the server
-    .....MATLAB started and connected!
+    ....MATLAB started and connected!
 
 
 .. code:: python
 
     import cobra.test
-    m = cobra.test.create_test_model()
+    m = cobra.test.create_test_model("textbook")
+
 The model\_to\_pymatbridge function will send the model to the workspace
 with the given variable name.
 
@@ -28,6 +30,7 @@ with the given variable name.
 
     from cobra.io.mat import model_to_pymatbridge
     model_to_pymatbridge(m, variable_name="model")
+
 Now in the MATLAB workspace, the variable name 'model' holds a COBRA
 toolbox struct encoding the model.
 
@@ -37,27 +40,28 @@ toolbox struct encoding the model.
     model
 
 
+
 .. parsed-literal::
 
     
     model = 
     
-                rev: [2546x1 logical]
-           metNames: {1802x1 cell}
-                  b: [1802x1 double]
-                  c: [2546x1 double]
-             csense: [1802x1 char]
-              genes: {1264x1 cell}
-        metFormulas: {1802x1 cell}
-               rxns: {2546x1 cell}
-            grRules: {2546x1 cell}
-           rxnNames: {2546x1 cell}
-        description: [28x1 char]
-                  S: [1802x2546 double]
-                 ub: [2546x1 double]
-                 lb: [2546x1 double]
-               mets: {1802x1 cell}
-         subSystems: {2546x1 cell}
+                rev: [95x1 double]
+           metNames: {72x1 cell}
+                  b: [72x1 double]
+                  c: [95x1 double]
+             csense: [72x1 char]
+              genes: {137x1 cell}
+        metFormulas: {72x1 cell}
+               rxns: {95x1 cell}
+            grRules: {95x1 cell}
+           rxnNames: {95x1 cell}
+        description: [8x1 char]
+                  S: [72x95 double]
+                 ub: [95x1 double]
+                 lb: [95x1 double]
+               mets: {72x1 cell}
+         subSystems: {95x1 cell}
     
 
 
@@ -70,6 +74,7 @@ First, we have to initialize the COBRA toolbox in MATLAB.
     warning('off'); % this works around a pymatbridge bug
     addpath(genpath('~/cobratoolbox/'));
     initCobraToolbox();
+
 Commands from the COBRA toolbox can now be run on the model
 
 .. code:: python
@@ -78,19 +83,42 @@ Commands from the COBRA toolbox can now be run on the model
     optimizeCbModel(model)
 
 
+
 .. parsed-literal::
 
     
     ans = 
     
-               x: [2546x1 double]
-               f: 0.3800
-               y: [1801x1 double]
-               w: [2546x1 double]
+               x: [95x1 double]
+               f: 0.8739
+               y: [71x1 double]
+               w: [95x1 double]
             stat: 1
         origStat: 5
           solver: 'glpk'
-            time: 0.6857
+            time: 0.2327
     
+
+
+
+FBA in the COBRA toolbox should give the same result as cobrapy
+
+.. code:: python
+
+    %time
+    m.optimize().f
+
+
+.. parsed-literal::
+
+    CPU times: user 5 µs, sys: 0 ns, total: 5 µs
+    Wall time: 10 µs
+
+
+
+
+.. parsed-literal::
+
+    0.8739215069684305
 
 

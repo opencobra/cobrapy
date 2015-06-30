@@ -47,8 +47,8 @@ def create_euclidian_distance_objective(n_moma_reactions):
     """returns a matrix which will minimze the euclidian distance
 
     This matrix has the structure
-    [[ I -I]
-     [-I  I]]
+    [ I  -I]
+    [-I   I]
     where I is the identity matrix the same size as the number of
     reactions in the original model.
 

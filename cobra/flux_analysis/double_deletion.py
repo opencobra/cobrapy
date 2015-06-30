@@ -52,7 +52,7 @@ def yield_upper_tria_indexes(ids1, ids2, id_to_index):
             yield((index2, index1), (id2, id1))  # note that order flipped
 
 
-def format_upper_triangular_matrix(row_indexes, column_indexes, matrix):
+def _format_upper_triangular_matrix(row_indexes, column_indexes, matrix):
     """reformat the square upper-triangular result matrix
 
     For example, results may look like this
@@ -193,7 +193,7 @@ def double_reaction_deletion(cobra_model,
         raise ValueError("Unknown deletion method '%s'" % method)
 
     # convert upper triangular matrix to full matrix
-    full_result = format_upper_triangular_matrix(
+    full_result = _format_upper_triangular_matrix(
         [reaction_to_result[i] for i in reaction_indexes1],  # row indexes
         [reaction_to_result[i] for i in reaction_indexes2],  # col indexes
         results)
@@ -288,7 +288,7 @@ def double_gene_deletion(cobra_model,
         raise ValueError("Unknown deletion method '%s'" % method)
 
     # convert upper triangular matrix to full matrix
-    full_result = format_upper_triangular_matrix(
+    full_result = _format_upper_triangular_matrix(
         [gene_id_to_result[id] for id in gene_ids1],  # row indexes
         [gene_id_to_result[id] for id in gene_ids2],  # col indexes,
         result)

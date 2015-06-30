@@ -10,8 +10,6 @@ Subpackages
     cobra.flux_analysis
     cobra.io
     cobra.manipulation
-    cobra.mlab
-    cobra.solvers
     cobra.topology
 
 Module contents
