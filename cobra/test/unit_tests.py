@@ -5,15 +5,11 @@ from pickle import loads, dumps, HIGHEST_PROTOCOL
 
 if __name__ == "__main__":
     sys.path.insert(0, "../..")
-    from cobra.test import data_directory, create_test_model
-    from cobra.test import ecoli_mat, ecoli_pickle
-    from cobra.test import salmonella_sbml, salmonella_pickle
+    from cobra.test import create_test_model
     from cobra import Object, Model, Metabolite, Reaction, DictList
     sys.path.pop(0)
 else:
-    from . import data_directory, create_test_model
-    from . import ecoli_mat, ecoli_pickle
-    from . import salmonella_sbml, salmonella_pickle
+    from . import create_test_model
     from .. import Object, Model, Metabolite, Reaction, DictList
 
 # libraries which may or may not be installed
@@ -217,7 +213,7 @@ class TestDictList(TestCase):
 
 class CobraTestCase(TestCase):
     def setUp(self):
-        self.model = create_test_model()
+        self.model = create_test_model("textbook")
         self.model_class = Model
 
 
@@ -288,6 +284,7 @@ class TestReactions(CobraTestCase):
 
     def test_build_from_string(self):
         model = self.model
+        m = len(model.metabolites)
         pgi = model.reactions.get_by_id("PGI")
         pgi.reaction = "g6p_c --> f6p_c"
         self.assertEqual(pgi.lower_bound, 0)
@@ -299,7 +296,7 @@ class TestReactions(CobraTestCase):
         self.assertNotIn(model.metabolites.h2o_c, pgi._metabolites)
         self.assertIn("foo", model.metabolites)
         self.assertIn(model.metabolites.foo, pgi._metabolites)
-        self.assertEqual(len(model.metabolites), 1803)
+        self.assertEqual(len(model.metabolites), m + 1)
 
 
 class TestCobraMetabolites(CobraTestCase):
@@ -359,7 +356,7 @@ class TestCobraModel(CobraTestCase):
         other = model.copy()
         for i in other.reactions:
             i.id += "_other"
-        other.reactions._generate_index()
+        other.repair()
         model.add_reactions(other.reactions)
 
     def test_model_remove_reaction(self):
@@ -511,7 +508,7 @@ class TestCobraModel(CobraTestCase):
                          'when running Model.add_reactions')
 
     def test_change_objective(self):
-        biomass = self.model.reactions.get_by_id("biomass_iRR1083_metals")
+        biomass = self.model.reactions.get_by_id("Biomass_Ecoli_core")
         atpm = self.model.reactions.get_by_id("ATPM")
         self.model.objective = atpm.id
         self.assertEqual(atpm.objective_coefficient, 1.)
@@ -540,20 +537,22 @@ class TestCobraModel(CobraTestCase):
 @skipIf(scipy is None, "scipy required for ArrayBasedModel")
 class TestCobraArrayModel(TestCobraModel):
     def setUp(self):
-        model = create_test_model().to_array_based_model()
+        model = create_test_model("textbook").to_array_based_model()
         self.model_class = model.__class__
         self.model = model
 
     def test_array_based_model(self):
+        m = len(self.model.metabolites)
+        n = len(self.model.reactions)
         assertEqual = self.assertEqual  # alias
         for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
-            model = create_test_model().\
+            model = create_test_model("textbook").\
                 to_array_based_model(matrix_type=matrix_type)
-            self.assertEqual(model.S[1605, 0], -1)
-            self.assertEqual(model.S[43, 0], 0)
+            assertEqual(model.S[7, 0], -1)
+            assertEqual(model.S[43, 0], 0)
             model.S[43, 0] = 1
-            self.assertEqual(model.S[43, 0], 1)
-            self.assertEqual(
+            assertEqual(model.S[43, 0], 1)
+            assertEqual(
                 model.reactions[0].metabolites[model.metabolites[43]], 1)
             model.S[43, 0] = 0
             assertEqual(model.lower_bounds[0], model.reactions[0].lower_bound)
@@ -571,40 +570,42 @@ class TestCobraArrayModel(TestCobraModel):
 
             # test something for all the attributes
             model.lower_bounds[2] = -1
-            self.assertEqual(model.reactions[2].lower_bound, -1)
-            self.assertEqual(model.lower_bounds[2], -1)
+            assertEqual(model.reactions[2].lower_bound, -1)
+            assertEqual(model.lower_bounds[2], -1)
             model.objective_coefficients[2] = 1
-            self.assertEqual(model.reactions[2].objective_coefficient, 1)
-            self.assertEqual(model.objective_coefficients[2], 1)
+            assertEqual(model.reactions[2].objective_coefficient, 1)
+            assertEqual(model.objective_coefficients[2], 1)
             model.b[2] = 1
-            self.assertEqual(model.metabolites[2]._bound, 1)
-            self.assertEqual(model.b[2], 1)
+            assertEqual(model.metabolites[2]._bound, 1)
+            assertEqual(model.b[2], 1)
             model.constraint_sense[2] = "L"
-            self.assertEqual(model.metabolites[2]._constraint_sense, "L")
-            self.assertEqual(model.constraint_sense[2], "L")
+            assertEqual(model.metabolites[2]._constraint_sense, "L")
+            assertEqual(model.constraint_sense[2], "L")
 
             # test resize matrix on reaction removal
-            old_shape = model.S.shape
+            m, n = model.S.shape
             model.remove_reactions([model.reactions[2]], remove_orphans=False)
             self.assertEqual(len(model.metabolites), model.S.shape[0])
-            self.assertEqual(model.S.shape[0], old_shape[0])
             self.assertEqual(len(model.reactions), model.S.shape[1])
-            self.assertEqual(model.S.shape[1], old_shape[1] - 1)
+            self.assertEqual(model.S.shape, (m, n - 1))
 
     def test_array_based_model_add(self):
+        m = len(self.model.metabolites)
+        n = len(self.model.reactions)
         for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
-            model = create_test_model().\
+            model = create_test_model("textbook").\
                 to_array_based_model(matrix_type=matrix_type)
             test_reaction = Reaction("test")
             test_reaction.add_metabolites({model.metabolites[0]: 4})
             test_reaction.lower_bound = -3.14
             model.add_reaction(test_reaction)
-            self.assertEqual(len(model.reactions), 2547)
-            self.assertEqual(model.S.shape[1], 2547)
-            self.assertEqual(len(model.lower_bounds), 2547)
-            self.assertEqual(model.S[0, 2546], 4)
-            self.assertEqual(model.S[1605, 0], -1)
-            self.assertEqual(model.lower_bounds[2546], -3.14)
+            self.assertEqual(len(model.reactions), n + 1)
+            self.assertEqual(model.S.shape, (m, n + 1))
+            self.assertEqual(len(model.lower_bounds), n + 1)
+            self.assertEqual(len(model.upper_bounds), n + 1)
+            self.assertEqual(model.S[0, n], 4)
+            self.assertEqual(model.S[7, 0], -1)
+            self.assertEqual(model.lower_bounds[n], -3.14)
 
     def test_array_based_select(self):
         model = self.model

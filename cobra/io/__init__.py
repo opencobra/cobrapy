@@ -10,9 +10,8 @@ except ImportError:
     scipy = None
 
 if libsbml:
-    from .sbml import create_cobra_model_from_sbml_file as read_sbml_model
     from .sbml import read_legacy_sbml
-    from .sbml import write_cobra_model_to_sbml_file as write_sbml_model
+    from .sbml import write_cobra_model_to_sbml_file as write_legacy_sbml
 else:
     warn("cobra.io.sbml requires libsbml")
 
@@ -22,6 +21,7 @@ if scipy:
 else:
     warn("cobra.io.mat requires scipy")
 
+from .sbml3 import read_sbml_model, write_sbml_model
 
 from .json import load_json_model
 from .json import save_json_model, to_json
