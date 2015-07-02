@@ -2,6 +2,7 @@ import sys
 from unittest import TestCase, TestLoader, TextTestRunner, skipIf
 from copy import copy, deepcopy
 from pickle import loads, dumps, HIGHEST_PROTOCOL
+import warnings
 
 if __name__ == "__main__":
     sys.path.insert(0, "../..")
@@ -447,7 +448,9 @@ class TestCobraModel(CobraTestCase):
     def test_remove_gene(self):
         target_gene = self.model.genes[0]
         gene_reactions = list(target_gene.reactions)
-        target_gene.remove_from_model()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            target_gene.remove_from_model()
         self.assertEqual(target_gene.model, None)
         # make sure the reaction was removed from the model
         self.assertNotIn(target_gene, self.model.genes)

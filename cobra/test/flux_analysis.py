@@ -366,6 +366,46 @@ class TestCobraFluxAnalysis(TestCase):
         self.assertEqual({i[0].id for i in result},
                          {"SMILEY_EX_b", "SMILEY_EX_c"})
 
+    def test_remove_genes(self):
+        m = Model("test")
+        m.add_reactions([Reaction("r" + str(i + 1)) for i in range(8)])
+        self.assertEqual(len(m.reactions), 8)
+        rxns = m.reactions
+        rxns.r1.gene_reaction_rule = "(a and b) or (c and a)"
+        rxns.r2.gene_reaction_rule = "(a and b and d and e)"
+        rxns.r3.gene_reaction_rule = "(a and b) or (b and c)"
+        rxns.r4.gene_reaction_rule = "(f and b) or (b and c)"
+        rxns.r5.gene_reaction_rule = "x"
+        rxns.r6.gene_reaction_rule = "y"
+        rxns.r7.gene_reaction_rule = "x or     z"
+        rxns.r8.gene_reaction_rule = ""
+        self.assertIn("a", m.genes)
+        self.assertIn("x", m.genes)
+        delete.remove_genes(m, ["a"], remove_reactions=False)
+        self.assertNotIn("a", m.genes)
+        self.assertIn("x", m.genes)
+        self.assertEqual(rxns.r1.gene_reaction_rule, "")
+        self.assertEqual(rxns.r2.gene_reaction_rule, "")
+        self.assertEqual(rxns.r3.gene_reaction_rule, "b and c")
+        self.assertEqual(rxns.r4.gene_reaction_rule, "(f and b) or (b and c)")
+        self.assertEqual(rxns.r5.gene_reaction_rule, "x")
+        self.assertEqual(rxns.r6.gene_reaction_rule, "y")
+        self.assertEqual(rxns.r7.genes, {m.genes.x, m.genes.z})
+        self.assertEqual(rxns.r8.gene_reaction_rule, "")
+        delete.remove_genes(m, ["x"], remove_reactions=True)
+        self.assertEqual(len(m.reactions), 7)
+        self.assertNotIn("r5", m.reactions)
+        self.assertNotIn("x", m.genes)
+        self.assertEqual(rxns.r1.gene_reaction_rule, "")
+        self.assertEqual(rxns.r2.gene_reaction_rule, "")
+        self.assertEqual(rxns.r3.gene_reaction_rule, "b and c")
+        self.assertEqual(rxns.r4.gene_reaction_rule, "(f and b) or (b and c)")
+        self.assertEqual(rxns.r6.gene_reaction_rule, "y")
+        self.assertEqual(rxns.r7.gene_reaction_rule, "z")
+        self.assertEqual(rxns.r7.genes, {m.genes.z})
+        self.assertEqual(rxns.r8.gene_reaction_rule, "")
+
+
 # make a test suite to run all of the tests
 loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])

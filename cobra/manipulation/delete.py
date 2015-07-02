@@ -2,12 +2,9 @@ import re
 from copy import deepcopy
 from warnings import warn
 
-from six import string_types
+from six import iteritems, string_types
 
-# compile regular expressions now instead of in every function call
-spontaneous_re = re.compile('(^|(?<=( |\()))s0001(?=( |\)|$))')
-and_re = re.compile(r'\band\b')
-or_re = re.compile(r'\bor\b')
+from ..core.Gene import eval_gpr, GeneRemover, parse_gpr, ast2str
 
 
 def prune_unused_metabolites(cobra_model):
@@ -86,25 +83,12 @@ def get_compiled_gene_reaction_rules(cobra_model):
     rules.
 
     """
-    rules = {}
-    # some gene names can not be put through eval
-    bad_genes = {g for g in cobra_model.genes if g.id[0].isdigit() or
-                 not g.id.isalnum()}
-    for reaction in cobra_model.reactions:
-        try:
-            if len(bad_genes.intersection(reaction.genes)) > 0:
-                continue
-            rules[reaction.id] = compile(reaction.gene_reaction_rule,
-                                         '<string>', 'eval')
-        except SyntaxError:
-            # This is necessary because some gene_reaction_rules do not
-            # compile.
-            None
-    return rules
+    return {r: parse_gpr(r.gene_reaction_rule)[0]
+            for r in cobra_model.reactions}
 
 
 def find_gene_knockout_reactions(cobra_model, gene_list,
-                                 compiled_gene_reaction_rules={}):
+                                 compiled_gene_reaction_rules=None):
     """identify reactions which will be disabled when the genes are knocked out
 
     cobra_model: :class:`~cobra.core.Model.Model`
@@ -119,46 +103,18 @@ def find_gene_knockout_reactions(cobra_model, gene_list,
         dict must exclude any rules which can not be used with eval.
 
     """
-
     potential_reactions = set()
     for gene in gene_list:
         if isinstance(gene, string_types):
             gene = cobra_model.genes.get_by_id(gene)
         potential_reactions.update(gene._reaction)
-    gene_list = {str(i) for i in gene_list}
+    gene_set = {str(i) for i in gene_list}
+    if compiled_gene_reaction_rules is None:
+        compiled_gene_reaction_rules = {r: parse_gpr(r.gene_reaction_rule)[0]
+                                        for r in potential_reactions}
 
-    knocked_out_reactions = []
-    for the_reaction in potential_reactions:
-        # Attempt to use the compiled gene reaction rule if provided
-        if the_reaction.id in compiled_gene_reaction_rules:
-            gene_state = {i.id: False if i.id in gene_list else True
-                          for i in the_reaction._genes}
-            result = eval(compiled_gene_reaction_rules[the_reaction.id],
-                          {}, gene_state)
-            if result is False:
-                knocked_out_reactions.append(the_reaction)
-                continue
-            elif result is True:
-                continue
-
-        # operates on a copy
-        gene_reaction_rule = and_re.sub("*", the_reaction.gene_reaction_rule)
-        gene_reaction_rule = or_re.sub("+", gene_reaction_rule)
-        # To prevent shorter gene names from replacing substrings in
-        # longer names, go in order from longest to shortest.
-        reaction_genes = sorted(the_reaction._genes, reverse=True,
-                                key=lambda x: len(x.id))
-        # Replace each gene in the gpr string with 1 if it is still
-        # active, or 0 if it is being knocked out.
-        for gene in reaction_genes:
-            if gene.id in gene_list:
-                gene_reaction_rule = gene_reaction_rule.replace(gene.id, '0')
-            else:
-                gene_reaction_rule = gene_reaction_rule.replace(gene.id, '1')
-        gene_reaction_rule = spontaneous_re.sub('1', gene_reaction_rule)
-        if not eval(gene_reaction_rule):  # evaluates to 0 when gpr is false
-            knocked_out_reactions.append(the_reaction)
-    return knocked_out_reactions
+    return [r for r in potential_reactions
+            if not eval_gpr(compiled_gene_reaction_rules[r], gene_set)]
 
 
 def delete_model_genes(cobra_model, gene_list,
@@ -220,3 +176,32 @@ def delete_model_genes(cobra_model, gene_list,
 
     cobra_model._trimmed_genes = list(set(cobra_model._trimmed_genes +
                                           gene_list))
+
+
+def remove_genes(cobra_model, gene_list, remove_reactions=True):
+    """remove genes entirely from the model
+
+    This will also simplify all gene_reaction_rules with this
+    gene inactivated."""
+    gene_set = {cobra_model.genes.get_by_id(str(i)) for i in gene_list}
+    gene_id_set = {i.id for i in gene_set}
+    remover = GeneRemover(gene_id_set)
+    ast_rules = get_compiled_gene_reaction_rules(cobra_model)
+    target_reactions = []
+    for reaction, rule in iteritems(ast_rules):
+        if reaction.gene_reaction_rule is None or \
+                len(reaction.gene_reaction_rule) == 0:
+            continue
+        # reactions to remove
+        if remove_reactions and not eval_gpr(rule, gene_id_set):
+            target_reactions.append(reaction)
+        else:
+            # if the reaction is not removed, remove the gene
+            # from its gpr
+            remover.visit(rule)
+            new_rule = ast2str(rule)
+            if new_rule != reaction.gene_reaction_rule:
+                reaction.gene_reaction_rule = new_rule
+    for gene in gene_set:
+        cobra_model.genes.remove(gene)
+    cobra_model.remove_reactions(target_reactions)

@@ -8,7 +8,7 @@ from warnings import warn
 from six import string_types, iteritems
 
 from .Object import Object
-from .Gene import Gene
+from .Gene import Gene, parse_gpr
 from .Metabolite import Metabolite
 
 
@@ -31,6 +31,7 @@ class Frozendict(dict):
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
 and_or_search = re.compile(r'\(| and| or|\+|\)', re.IGNORECASE)
+gpr_clean = re.compile(' {2,}')
 # This regular expression finds any single letter compartment enclosed in
 # square brackets at the beginning of the string. For example [c] : foo --> bar
 compartment_finder = re.compile("^\s*(\[[A-Za-z]\])\s*:*")
@@ -90,8 +91,13 @@ class Reaction(Object):
     @gene_reaction_rule.setter
     def gene_reaction_rule(self, new_rule):
         self._gene_reaction_rule = new_rule.strip()
-        gene_names = set((re.compile(' {2,}').sub(
-            ' ', and_or_search.sub('', self._gene_reaction_rule))).split(' '))
+        try:
+            _, gene_names = parse_gpr(self._gene_reaction_rule)
+        except (SyntaxError, TypeError):
+            warn("malformed gene_reaction_rule '%s' for %s" %
+                 (new_rule, repr(self)))
+            tmp_str = and_or_search.sub('', self._gene_reaction_rule)
+            gene_names = set((gpr_clean.sub(' ', tmp_str).split(' ')))
         if '' in gene_names:
             gene_names.remove('')
         old_genes = self._genes
