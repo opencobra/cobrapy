@@ -6,6 +6,7 @@ from ast import parse as ast_parse, Name, Or, And, BoolOp
 from six import iteritems
 
 from .. import Metabolite, Reaction, Gene, Model
+from ..core.Gene import parse_gpr
 
 
 try:
@@ -380,7 +381,7 @@ def model_to_xml(cobra_model, units=True):
             gpr = gpr.replace(".", SBML_DOT)
             gpr_xml = SubElement(sbml_reaction, ns(GPR_TAG))
             try:
-                parsed = ast_parse(gpr, filename="<string>", mode="eval")
+                parsed = parse_gpr(gpr)[0]
                 construct_gpr_xml(gpr_xml, parsed.body)
             except Exception as e:
                 print("failed on '%s' in %s" %

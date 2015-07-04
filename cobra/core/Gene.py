@@ -12,6 +12,18 @@ keywords.remove("and")
 keywords.remove("or")
 keywords.extend(("True", "False"))
 keyword_re = re.compile(r"(?=\b(%s)\b)" % "|".join(keywords))
+number_start_re = re.compile(r"(?=\b[0-9])")
+
+replacements = (
+    (".", "__COBRA_DOT__"),
+    ("'", "__COBRA_SQUOTE__"),
+    ('"', "__COBRA_DQUOTE__"),
+    (":", "__COBRA_COLON__"),
+    ("/", "__COBRA_FSLASH__"),
+    ("\\", "__COBRA_BSLASH"),
+    ("-", "__COBRA_DASH__"),
+    ("=", "__COBRA_EQ__")
+)
 
 
 # functions for gene reaction rules
@@ -68,8 +80,8 @@ class GPRCleaner(NodeTransformer):
     def visit_Name(self, node):
         if node.id.startswith("__cobra_escape__"):
             node.id = node.id[16:]
-        node.id = node.id.replace("__COBRA_COLON__", ":").\
-            replace("__COBRA_SQUOTE__", "'").replace("__COBRA_DQUOTE__", '"')
+        for replacement in replacements:
+            node.id = node.id.replace(replacement[1], replacement[0])
         self.gene_set.add(node.id)
         return node
 
@@ -83,48 +95,18 @@ class GPRCleaner(NodeTransformer):
             raise TypeError("unsupported operation '%s'" %
                             node.op.__class__.__name__)
 
-    def visit_Attribute(self, node):
-        # handle periods in gene id
-        gene_id = node.attr
-        while isinstance(node.value, Attribute):
-            node = node.value
-            gene_id = node.attr + "." + gene_id
-        gene_id = node.value.id + "." + gene_id
-        self.gene_set.add(gene_id)
-        return Name(id=gene_id)
-
-
-class GeneRemover(NodeTransformer):
-    def __init__(self, target_genes):
-        NodeTransformer.__init__(self)
-        self.target_genes = {str(i) for i in target_genes}
-
-    def visit_Name(self, node):
-        return None if node.id in self.target_genes else node
-
-    def visit_BoolOp(self, node):
-        original_n = len(node.values)
-        self.generic_visit(node)
-        if len(node.values) == 0:
-            return None
-        # AND with any entities removed
-        if len(node.values) < original_n and isinstance(node.op, And):
-            return None
-        # if one entity in an OR was removed, just that entity passed up
-        if len(node.values) == 1:
-            return node.values[0]
-        return node
-
 
 def parse_gpr(str_expr):
     """parse gpr into AST
 
     returns: (ast_tree, {gene_ids})"""
-    if len(str_expr.strip()) == 0:
+    str_expr = str_expr.strip()
+    if len(str_expr) == 0:
         return None, set()
-    str_expr = str_expr.replace(":", "__COBRA_COLON__").\
-        replace("'", "__COBRA_SQUOTE__").replace('"', "__COBRA_DQUOTE__")
+    for replacement in replacements:
+        str_expr = str_expr.replace(replacement[0], replacement[1])
     escaped_str = keyword_re.sub("__cobra_escape__", str_expr)
+    escaped_str = number_start_re.sub("__cobra_escape__", escaped_str)
     tree = ast_parse(escaped_str, "<string>", "eval")
     cleaner = GPRCleaner()
     cleaner.visit(tree)

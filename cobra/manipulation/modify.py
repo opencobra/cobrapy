@@ -1,7 +1,54 @@
 from copy import deepcopy
 from warnings import warn
+from itertools import chain
+from ast import NodeTransformer
+
+from six import iteritems
 
 from .. import Reaction
+from .delete import get_compiled_gene_reaction_rules
+from ..core.Gene import ast2str
+
+_renames = (
+    (".", "_DOT_"),
+    ("(", "_LPAREN_"),
+    (")", "_RPAREN_"),
+    ("-", "__"),
+    ("[", "_LSQBKT"),
+    ("]", "_RSQBKT"),
+    (",", "_COMMA_"),
+    (":", "_COLON_"),
+    (">", "_GT_"),
+    ("<", "_LT"),
+    ("/", "_FLASH"),
+    ("\\", "_BSLASH"),
+    ("+", "_PLUS_"),
+    ("=", "_EQ_"),
+    (" ", "_SPACE_"),
+)
+
+
+class _GeneRenamer(NodeTransformer):
+
+    def visit_Name(self, node):
+        for char, escaped_char in _renames:
+            node.id = node.id.replace(char, escaped_char)
+        return node
+
+
+def escape_ID(cobra_model):
+    """makes all ids SBML compliant"""
+    for x in chain([cobra_model],
+                   cobra_model.metabolites,
+                   cobra_model.reactions,
+                   cobra_model.genes):
+        for char, escaped_char in _renames:
+            x.id = x.id.replace(char, escaped_char)
+    cobra_model.repair()
+    gene_renamer = _GeneRenamer()
+    for rxn, rule in iteritems(get_compiled_gene_reaction_rules(cobra_model)):
+        if rule is not None:
+            rxn._gene_reaction_rule = ast2str(gene_renamer.visit(rule))
 
 
 def initialize_growth_medium(cobra_model, the_medium='MgM',

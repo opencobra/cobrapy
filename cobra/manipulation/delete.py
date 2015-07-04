@@ -1,10 +1,11 @@
 import re
 from copy import deepcopy
 from warnings import warn
+from ast import NodeTransformer, And
 
 from six import iteritems, string_types
 
-from ..core.Gene import eval_gpr, GeneRemover, parse_gpr, ast2str
+from ..core.Gene import eval_gpr, parse_gpr, ast2str
 
 
 def prune_unused_metabolites(cobra_model):
@@ -178,6 +179,28 @@ def delete_model_genes(cobra_model, gene_list,
                                           gene_list))
 
 
+class _GeneRemover(NodeTransformer):
+    def __init__(self, target_genes):
+        NodeTransformer.__init__(self)
+        self.target_genes = {str(i) for i in target_genes}
+
+    def visit_Name(self, node):
+        return None if node.id in self.target_genes else node
+
+    def visit_BoolOp(self, node):
+        original_n = len(node.values)
+        self.generic_visit(node)
+        if len(node.values) == 0:
+            return None
+        # AND with any entities removed
+        if len(node.values) < original_n and isinstance(node.op, And):
+            return None
+        # if one entity in an OR was removed, just that entity passed up
+        if len(node.values) == 1:
+            return node.values[0]
+        return node
+
+
 def remove_genes(cobra_model, gene_list, remove_reactions=True):
     """remove genes entirely from the model
 
@@ -185,7 +208,7 @@ def remove_genes(cobra_model, gene_list, remove_reactions=True):
     gene inactivated."""
     gene_set = {cobra_model.genes.get_by_id(str(i)) for i in gene_list}
     gene_id_set = {i.id for i in gene_set}
-    remover = GeneRemover(gene_id_set)
+    remover = _GeneRemover(gene_id_set)
     ast_rules = get_compiled_gene_reaction_rules(cobra_model)
     target_reactions = []
     for reaction, rule in iteritems(ast_rules):
