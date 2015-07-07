@@ -132,7 +132,7 @@ class Metabolite(Species):
                 the_coefficient = the_reaction._metabolites[self]
                 the_reaction.subtract_metabolites({self: the_coefficient})
         elif method.lower() == 'destructive':
-            for x in self._reaction():
+            for x in self._reaction:
                 x.remove_from_model()
         else:
             raise Exception(method + " is not 'subtractive' or 'destructive'")
