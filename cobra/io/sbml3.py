@@ -2,6 +2,8 @@ from collections import defaultdict
 from warnings import warn
 from decimal import Decimal
 from ast import parse as ast_parse, Name, Or, And, BoolOp
+from gzip import GzipFile
+from bz2 import BZ2File
 
 from six import iteritems
 
@@ -122,7 +124,7 @@ def parse_xml_into_model(xml, number=float):
     xml_model = xml.find(ns("sbml:model"))
     if get_attrib(xml_model, "fbc:strict") != "true":
         warn('loading SBML model without fbc:strict="true"')
-    
+
     model_id = get_attrib(xml_model, "id")
     model = Model(model_id)
 
@@ -392,7 +394,14 @@ def model_to_xml(cobra_model, units=True):
 
 
 def read_sbml_model(filename, number=float, **kwargs):
-    xmlfile = parse(filename)
+    if filename.endswith(".gz"):
+        with GzipFile(filename) as infile:
+            xmlfile = parse(infile)
+    elif filename.endswith(".bz2"):
+        with BZ2File(filename) as infile:
+            xmlfile = parse(infile)
+    else:
+        xmlfile = parse(filename)
     xml = xmlfile.getroot()
     if xml.get("level") != "3" or xml.get("version") != "1" or \
             get_attrib(xml, "fbc:required") is None:
@@ -408,7 +417,14 @@ def write_sbml_model(cobra_model, filename, use_fbc_package=True, **kwargs):
         return
     xml = model_to_xml(cobra_model, **kwargs)
     indent_xml(xml)
-    ElementTree(xml).write(filename, encoding="UTF-8")
+    if filename.endswith(".gz"):
+        xmlfile = GzipFile(filename, "wb")
+    elif filename.endswith(".bz2"):
+        xmlfile = BZ2File(filename, "wb")
+    else:
+        xmlfile = open(filename, "wb")
+    ElementTree(xml).write(xmlfile, encoding="UTF-8")
+    xmlfile.close()
 
 
 # inspired by http://effbot.org/zone/element-lib.htm#prettyprint

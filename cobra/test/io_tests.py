@@ -81,6 +81,22 @@ class TestCobraIOSBMLfbc2(TestCase, TestCobraIO):
         self.write_function = io.write_sbml_model
 
 
+class TestCobraIOSBMLfbc2Gz(TestCase, TestCobraIO):
+    def setUp(self):
+        self.test_model = mini_model
+        self.test_file = join(data_directory, "mini_fbc2.xml.gz")
+        self.read_function = io.read_sbml_model
+        self.write_function = io.write_sbml_model
+
+
+class TestCobraIOSBMLfbc2Bz2(TestCase, TestCobraIO):
+    def setUp(self):
+        self.test_model = mini_model
+        self.test_file = join(data_directory, "mini_fbc2.xml.bz2")
+        self.read_function = io.read_sbml_model
+        self.write_function = io.write_sbml_model
+
+
 @skipIf(not libsbml, "libsbml required")
 class TestCobraIOSBMLfbc1(TestCase, TestCobraIO):
     def setUp(self):
