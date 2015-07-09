@@ -565,7 +565,7 @@ class Reaction(Object):
 
     def build_reaction_from_string(self, reaction_str, verbose=True,
                                    fwd_arrow=None, rev_arrow=None,
-                                   reversible_arrow=None):
+                                   reversible_arrow=None, term_split="+"):
         # set the arrows
         forward_arrow_finder = _forward_arrow_finder if fwd_arrow is None \
             else re.compile(re.escape(fwd_arrow))
@@ -615,7 +615,7 @@ class Reaction(Object):
         for substr, factor in ((reactant_str, -1), (product_str, 1)):
             if len(substr) == 0:
                 continue
-            for term in substr.split("+"):
+            for term in substr.split(term_split):
                 term = term.strip()
                 if term.lower() == "nothing":
                     continue
