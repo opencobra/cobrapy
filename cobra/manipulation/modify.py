@@ -25,14 +25,26 @@ _renames = (
     ("+", "_PLUS_"),
     ("=", "_EQ_"),
     (" ", "_SPACE_"),
+    ("'", "_SQUOT_"),
+    ('"', "_DQUOT_"),
 )
+
+
+def _escape_str_id(id_str):
+    """make a single string id SBML compliant"""
+    for c in ("'", '"'):
+        if id_str.startswith(c) and id_str.endswith(c) \
+                and id_str.count(c) == 2:
+            id_str = id_str.strip(c)
+    for char, escaped_char in _renames:
+        id_str = id_str.replace(char, escaped_char)
+    return id_str
 
 
 class _GeneRenamer(NodeTransformer):
 
     def visit_Name(self, node):
-        for char, escaped_char in _renames:
-            node.id = node.id.replace(char, escaped_char)
+        node.id = _escape_str_id(node.id)
         return node
 
 
@@ -42,8 +54,7 @@ def escape_ID(cobra_model):
                    cobra_model.metabolites,
                    cobra_model.reactions,
                    cobra_model.genes):
-        for char, escaped_char in _renames:
-            x.id = x.id.replace(char, escaped_char)
+        x.id = _escape_str_id(x.id)
     cobra_model.repair()
     gene_renamer = _GeneRenamer()
     for rxn, rule in iteritems(get_compiled_gene_reaction_rules(cobra_model)):

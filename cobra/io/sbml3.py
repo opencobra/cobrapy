@@ -368,12 +368,12 @@ def model_to_xml(cobra_model, units=True):
                 reactants[met_id] = strnum(-stoichiomety)
         if len(reactants) > 0:
             reactant_list = SubElement(sbml_reaction, "listOfReactants")
-            for met_id, stoichiomety in iteritems(reactants):
+            for met_id, stoichiomety in sorted(iteritems(reactants)):
                 SubElement(reactant_list, "speciesReference", species=met_id,
                            stoichiometry=stoichiomety, constant="true")
         if len(products) > 0:
             product_list = SubElement(sbml_reaction, "listOfProducts")
-            for met_id, stoichiomety in iteritems(products):
+            for met_id, stoichiomety in sorted(iteritems(products)):
                 SubElement(product_list, "speciesReference", species=met_id,
                            stoichiometry=stoichiomety, constant="true")
 
