@@ -25,7 +25,7 @@ environment:
       PYTHON_ARCH: "64"
       WINDOWS_SDK_VERSION: "v7.1"
 
-clone_depth: 5
+clone_depth: 25
 
 init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
