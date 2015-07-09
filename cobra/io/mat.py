@@ -56,22 +56,14 @@ def load_matlab_model(infile_path, variable_name=None):
 
     """
     data = loadmat(infile_path)
+    if variable_name is None:
+        # skip meta variables
+        meta_vars = {"__globals__", "__header__", "__version__"}
+        possible_names = sorted(i for i in data if i not in meta_vars)
+        if len(possible_names) == 1:
+            variable_name = possible_names[0]
     if variable_name is not None:
         return from_mat_struct(data[variable_name], model_id=variable_name)
-    else:
-        # will try all of the variables in the dict
-        possible_names = {}
-        for key in data.keys():
-            possible_names[key] = None
-        # skip meta variables
-        to_remove = ["__globals__", "__header__", "__version__"]
-        to_pop = []
-        for name in possible_names:
-            if name in to_remove:
-                to_pop.append(name)
-        for i in to_pop:
-            possible_names.pop(i)
-        possible_names = possible_names.keys()
     for possible_name in possible_names:
         try:
             return from_mat_struct(data[possible_name], model_id=possible_name)
