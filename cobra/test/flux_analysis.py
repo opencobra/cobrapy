@@ -67,6 +67,13 @@ class TestCobraFluxAnalysis(TestCase):
         modify.convert_to_irreversible(model4)
         modify.revert_to_reversible(model4)
 
+    def test_escape_ids(self):
+        model = create_test_model('textbook')
+        model.reactions.PGI.gene_reaction_rule = "a.b or c"
+        self.assertIn("a.b", model.genes)
+        modify.escape_ID(model)
+        self.assertNotIn("a.b", model.genes)
+
     def test_gene_knockout_computation(self):
         cobra_model = create_test_model()
 
