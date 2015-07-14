@@ -9,7 +9,7 @@ For usage instructions, please see the
 All releases require Python 2.7+ or 3.4+ to be installed before proceeding.
 Mac OS X (10.7+) and Ubuntu ship with Python. Windows users without python 
 can download and install python from the [python 
-website](https://www.python.org/ftp/python/2.7.9/python-2.7.9.amd64.msi).
+website](https://www.python.org/ftp/python/2.7.10/python-2.7.10.amd64.msi).
 Please note that though Anaconda and other python distributions may work with
 cobrapy, they are not explicitly supported at this time.
 
@@ -22,7 +22,7 @@ cobrapy, they are not explicitly supported at this time.
 0. [install pip](http://pip.readthedocs.org/en/latest/installing.html).
 1. In a terminal, run ```sudo pip install cobra```
 
-### GNU/Linux
+### Ubuntu Linux
 0. [install pip](http://pip.readthedocs.org/en/latest/installing.html).
 1. Install the python and glpk development libraries. On debian-based
    systems (including Ubuntu and Mint), this can be done with
@@ -33,8 +33,18 @@ cobrapy, they are not explicitly supported at this time.
 The preferred installation method on Windows is also to use pip. The latest
 Windows installers for Python 2.7 and 3.4 include pip, so if you use those you
 will already have pip.
+
+In order to use pip on Windows, you will need to use command prompt.
+To open the command prompt, hit the start button and search for
+```cmd```. Clicking on ```cmd.exe``` will launch the command prompt.
+For more information about using the command line, many
+[guides](http://dosprompt.info/basics.asp) are readily available.
+
+0. Make sure you have pip installed already. To do this, run
+   ```C:\Python27\Scripts\pip.exe --version```. On Python 3.4, you
+   will need to adjust the path to ```C:\Python34\Scripts\pip.exe --version```
 1. In a terminal, run ```C:\Python27\Scripts\pip.exe install cobra```
-   (you may need to adjust the path accordingly).
+   (you will need to replace 27 with 34 if you are usuing Python 3.4).
 
 To install without pip, you will need to download and use the appropriate
 installer for your version of python from the [python package
@@ -61,13 +71,20 @@ On windows, these can downloaded from [this site]
 (http://www.lfd.uci.edu/~gohlke/pythonlibs/). On Mac/Linux, they can be
 installed using pip, or from the OS package manager (e.g brew, apt, yum).
 
-1. [libsbml](http://sbml.org) >= 5.10 to read/write SBML files
+1. [libsbml](http://sbml.org) >= 5.10 to read/write older SBML files. This is
+   not necessary for newer SBML level 3 files (such as those from
+   http://bigg.ucsd.edu), which cobrapy can read/write natively.
   * [Windows installer](http://www.lfd.uci.edu/~gohlke/pythonlibs/#libsbml)
   * Use ```sudo pip install python-libsbml-experimental``` on Mac/Linux
 2. [numpy](http://numpy.org) >= 1.6.1 for double deletions
   * [Windows installer](http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy)
 3. [scipy](http://scipy.org) >= 0.11 for ArrayBasedModel and saving to *.mat files.
   * [Windows installer](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy)
+4. [IPython notebook](http://ipython.org/) for a notebook interface. Cobrapy
+   support tab-completion in the IPython notebook.
+  * Use ```sudo pip install ipython[notebook]``` on Mac/Linux
+  * Use ```C:\Python27\Scripts\pip.exe install ipython[notebook]``` on Windows with Python 2.7
+  * Use ```C:\Python34\Scripts\pip.exe install ipython[notebook]``` on Windows with Python 3.4
 
 ## Other solvers
 cobrapy comes with bindings to the GNU Linear Programming Kit ([glpk]
