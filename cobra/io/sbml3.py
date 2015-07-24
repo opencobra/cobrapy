@@ -1,9 +1,12 @@
 from collections import defaultdict
-from warnings import warn
+from warnings import warn, catch_warnings, simplefilter
 from decimal import Decimal
+from math import isinf, isnan
 from ast import parse as ast_parse, Name, Or, And, BoolOp
 from gzip import GzipFile
 from bz2 import BZ2File
+from tempfile import NamedTemporaryFile
+import re
 
 from six import iteritems
 
@@ -13,10 +16,10 @@ from ..core.Gene import parse_gpr
 
 try:
     from xml.etree.cElementTree import parse, Element, SubElement, \
-        ElementTree, tostring, register_namespace
+        ElementTree, tostring, register_namespace, ParseError
 except ImportError:
     from xml.etree.ElementTree import parse, Element, SubElement, \
-        ElementTree, tostring, register_namespace
+        ElementTree, tostring, register_namespace, ParseError
 
 # use sbml level 2 from sbml.py (which uses libsbml). Eventually, it would
 # be nice to use the libSBML converters directly instead.
@@ -33,6 +36,27 @@ try:
 except:
     class Basic:
         pass
+
+
+_renames = (
+    (".", "_DOT_"),
+    ("(", "_LPAREN_"),
+    (")", "_RPAREN_"),
+    ("-", "__"),
+    ("[", "_LSQBKT"),
+    ("]", "_RSQBKT"),
+    (",", "_COMMA_"),
+    (":", "_COLON_"),
+    (">", "_GT_"),
+    ("<", "_LT"),
+    ("/", "_FLASH"),
+    ("\\", "_BSLASH"),
+    ("+", "_PLUS_"),
+    ("=", "_EQ_"),
+    (" ", "_SPACE_"),
+    ("'", "_SQUOT_"),
+    ('"', "_DQUOT_"),
+)
 
 
 # deal with namespaces
@@ -63,6 +87,10 @@ OBJECTIVES_XPATH = ("fbc:objective[@fbc:id='%s']/"
                     "fbc:fluxObjective")
 
 
+class CobraSBMLError(Exception):
+    pass
+
+
 def ns(query):
     """replace prefixes with namespace"""
     return query.replace("fbc:", fbc_prefix).replace("sbml:", sbml_prefix)
@@ -71,8 +99,8 @@ def ns(query):
 def get_attrib(tag, attribute, type=lambda x: x, require=False):
     value = tag.get(ns(attribute))
     if require and value is None:
-        raise Exception("required attribute '%s' not found in tag '%s'" %
-                        (attribute, tag.tag))
+        raise CobraSBMLError("required attribute '%s' not found in tag '%s'" %
+                             (attribute, tag.tag))
     return type(value) if value is not None else None
 
 
@@ -80,6 +108,23 @@ def set_attrib(xml, attribute_name, value):
     if value is None or value == "":
         return
     xml.set(ns(attribute_name), str(value))
+
+
+def parse_stream(filename):
+    """parses filename or compressed stream to xml"""
+    try:
+        if hasattr(filename, "read"):
+            return parse(filename)
+        elif filename.endswith(".gz"):
+            with GzipFile(filename) as infile:
+                return parse(infile)
+        elif filename.endswith(".bz2"):
+            with BZ2File(filename) as infile:
+                return parse(infile)
+        else:
+            return parse(filename)
+    except ParseError as e:
+        raise CobraSBMLError("Malformed XML file: " + e.message)
 
 
 # string utility functions
@@ -204,8 +249,8 @@ def parse_xml_into_model(xml, number=float):
             try:
                 metabolite = model.metabolites.get_by_id(met_id)
             except KeyError:
-                warn("ignoring unknown metabolite '%s' in %s" %
-                     (met_id, repr(reaction)))
+                warn("ignoring unknown metabolite '%s' in reaction %s" %
+                     (met_id, reaction.id))
                 continue
             object_stoichiometry[metabolite] = stoichiometry[met_id]
         reaction.add_metabolites(object_stoichiometry)
@@ -224,6 +269,9 @@ def parse_xml_into_model(xml, number=float):
 
     # objective coefficients are handled after all reactions are added
     obj_list = xml_model.find(ns("fbc:listOfObjectives"))
+    if obj_list is None:
+        warn("listOfObjectives element not found")
+        return model
     target_objective = get_attrib(obj_list, "fbc:activeObjective")
     obj_query = ns(OBJECTIVES_XPATH) % target_objective
     for sbml_objective in obj_list.findall(obj_query):
@@ -310,12 +358,12 @@ def model_to_xml(cobra_model, units=True):
     for met in cobra_model.metabolites:
         species = SubElement(species_list, "species",
                              id="M_" + met.id,
-                             compartment=str(met.compartment),
                              # Useless required SBML parameters
                              constant="false",
                              boundaryCondition="false",
                              hasOnlySubstanceUnits="false")
         set_attrib(species, "name", met.name)
+        set_attrib(species, "compartment", met.compartment)
         set_attrib(species, "fbc:charge", met.charge)
         set_attrib(species, "fbc:chemicalFormula", met.formula)
 
@@ -394,37 +442,124 @@ def model_to_xml(cobra_model, units=True):
 
 
 def read_sbml_model(filename, number=float, **kwargs):
-    if filename.endswith(".gz"):
-        with GzipFile(filename) as infile:
-            xmlfile = parse(infile)
-    elif filename.endswith(".bz2"):
-        with BZ2File(filename) as infile:
-            xmlfile = parse(infile)
-    else:
-        xmlfile = parse(filename)
+    xmlfile = parse_stream(filename)
     xml = xmlfile.getroot()
+    # use libsbml if not l3v1 with fbc v2
     if xml.get("level") != "3" or xml.get("version") != "1" or \
             get_attrib(xml, "fbc:required") is None:
         if libsbml is None:
             raise Exception("libSBML required for fbc < 2")
+        # libsbml needs a file string, so write to temp file if a file handle
+        if hasattr(filename, "read"):
+            with NamedTemporaryFile(suffix=".xml", delete=False) as outfile:
+                xmlfile.write(outfile, encoding="UTF-8")
+            filename = outfile.name
         return read_sbml2(filename, **kwargs)
-    return parse_xml_into_model(xml, number=number)
+    return parse_xml_into_model(xml, number=number, **kwargs)
+
+
+id_required = {ns(i) for i in ("sbml:model", "sbml:reaction:", "sbml:species",
+                               "fbc:geneProduct", "sbml:compartment",
+                               "sbml:paramter", "sbml:UnitDefinition",
+                               "fbc:objective")}
+invalid_id_detector = re.compile("|".join(re.escape(i[0]) for i in _renames))
+
+
+def validate_sbml_model(filename):
+    """returns the model along with a list of errors"""
+    xmlfile = parse_stream(filename)
+    xml = xmlfile.getroot()
+    # use libsbml if not l3v1 with fbc v2
+    if xml.get("level") != "3" or xml.get("version") != "1" or \
+            get_attrib(xml, "fbc:required") is None:
+        raise CobraSBMLError("XML is not SBML level 3 v1 with fbc v2")
+
+    sbml_errors = []
+
+    def err(err_msg):
+        sbml_errors.append(err_msg)
+
+    # make sure all sbml id's are valid
+    all_ids = set()
+    for element in xmlfile.iter():
+        if element.tag.startswith(fbc_prefix):
+            prefix = fbc_prefix
+        elif element.tag.startswith(sbml_prefix):
+            prefix = ""
+        else:
+            continue
+        str_id = element.get(prefix + "id", None)
+        element_name = element.tag.split("}")[-1]
+        id_repr = "%s id '%s' " % (element_name, str_id)
+        if str_id is None or len(str_id) == 0:
+            if element.tag in id_required:
+                err(element_name + " missing id")
+        else:
+            if str_id in all_ids:
+                err("duplicate id for " + id_repr)
+            all_ids.add(str_id)
+            try:
+                str_id.encode("ascii")
+            except UnicodeEncodeError as e:
+                err("invalid character '%s' found in %s" %
+                    (str_id[e.start:e.end], id_repr))
+            if invalid_id_detector.search(str_id):
+                bad_chars = "".join(invalid_id_detector.findall(str_id))
+                err("invalid character%s %s found in %s" %
+                    ("s" if len(bad_chars) > 1 else "", bad_chars, id_repr))
+            if not str_id[0].isalpha():
+                err("%s does not start with alphabet character" % id_repr)
+
+    # ensure can be made into model
+    with catch_warnings(record=True) as warning_list:
+        simplefilter("always")
+        model = parse_xml_into_model(xml)
+    sbml_errors.extend(i.message.message for i in warning_list)
+
+    # ensure exactly one objective
+    if len(model.objective) == 0:
+        sbml_errors.append("no objective reaction identified")
+    elif len(model.objective) > 1:
+        sbml_errors.append("only one reaction should be the objective")
+
+    # make sure there are no infinite bounds
+    if any(isinf(i) or isnan(i)
+           for i in model.reactions.list_attr("lower_bound")):
+        sbml_errors.append("infinite or NaN value detected in lower bounds")
+    if any(isinf(i) or isnan(i)
+           for i in model.reactions.list_attr("upper_bound")):
+        sbml_errors.append("infinite or NaN value detected in upper bounds")
+    for reaction in model.reactions:
+        if reaction.lower_bound > reaction.upper_bound:
+            sbml_errors.append("reaction '%s' has lower bound > upper bound" %
+                               reaction.id)
+
+    return model, sbml_errors
 
 
 def write_sbml_model(cobra_model, filename, use_fbc_package=True, **kwargs):
     if not use_fbc_package:
+        if libsbml is None:
+            raise Exception("libSBML required to write non-fbc models")
         write_sbml2(cobra_model, filename, use_fbc_package=False, **kwargs)
         return
+    # create xml
     xml = model_to_xml(cobra_model, **kwargs)
     indent_xml(xml)
-    if filename.endswith(".gz"):
+    # write xml to file
+    should_close = True
+    if hasattr(filename, "write"):
+        xmlfile = filename
+        should_close = False
+    elif filename.endswith(".gz"):
         xmlfile = GzipFile(filename, "wb")
     elif filename.endswith(".bz2"):
         xmlfile = BZ2File(filename, "wb")
     else:
         xmlfile = open(filename, "wb")
     ElementTree(xml).write(xmlfile, encoding="UTF-8")
-    xmlfile.close()
+    if should_close:
+        xmlfile.close()
 
 
 # inspired by http://effbot.org/zone/element-lib.htm#prettyprint

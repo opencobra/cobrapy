@@ -80,6 +80,9 @@ class TestCobraIOSBMLfbc2(TestCase, TestCobraIO):
         self.read_function = io.read_sbml_model
         self.write_function = io.write_sbml_model
 
+    def test_validate(self):
+        io.sbml3.validate_sbml_model(self.test_file)
+
 
 class TestCobraIOSBMLfbc2Gz(TestCase, TestCobraIO):
     def setUp(self):
