@@ -12,9 +12,9 @@ env:
 before_install:
   - pip install pip --upgrade
   - export PIP_OPTS="-f https://opencobra.github.io/pypi_cobrapy_travis --no-index"
-  - pip install -v cython coveralls python-libsbml-experimental  # these guys get cached
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install -v lxml; fi # cached
-  - pip install numpy scipy $PIP_OPTS  # download wheels
+  - pip install cython coveralls  # these guys get cached
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install lxml; fi # cached
+  - pip install numpy scipy python-libsbml-experimental $PIP_OPTS  # download wheels
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install glpk cylp $PIP_OPTS; fi
   - wget https://opencobra.github.io/pypi_cobrapy_travis/travis_test_dependencies.zip  # esolver, and glpk
   - unzip travis_test_dependencies.zip
