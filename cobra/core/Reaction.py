@@ -93,7 +93,7 @@ class Reaction(Object):
         self._gene_reaction_rule = new_rule.strip()
         try:
             _, gene_names = parse_gpr(self._gene_reaction_rule)
-        except (SyntaxError, TypeError):
+        except (SyntaxError, TypeError) as e:
             warn("malformed gene_reaction_rule '%s' for %s" %
                  (new_rule, repr(self)))
             tmp_str = and_or_search.sub('', self._gene_reaction_rule)

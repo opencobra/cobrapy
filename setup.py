@@ -129,7 +129,7 @@ except:
 
 extras = {
     'matlab': ["pymatbridge"],
-    'sbml': ["python-libsbml-experimental"],
+    'sbml': ["python-libsbml-experimental", "lxml"],
     'array': ["numpy>=1.6", "scipy>=11.0"],
     'display': ["matplotlib", "brewer2mpl", "pandas"]
 }

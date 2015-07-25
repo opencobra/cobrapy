@@ -80,8 +80,9 @@ class GPRCleaner(NodeTransformer):
     def visit_Name(self, node):
         if node.id.startswith("__cobra_escape__"):
             node.id = node.id[16:]
-        for replacement in replacements:
-            node.id = node.id.replace(replacement[1], replacement[0])
+        for char, escaped in replacements:
+            if escaped in node.id:
+                node.id = node.id.replace(escaped, char)
         self.gene_set.add(node.id)
         return node
 
@@ -103,8 +104,9 @@ def parse_gpr(str_expr):
     str_expr = str_expr.strip()
     if len(str_expr) == 0:
         return None, set()
-    for replacement in replacements:
-        str_expr = str_expr.replace(replacement[0], replacement[1])
+    for char, escaped in replacements:
+        if char in str_expr:
+            str_expr = str_expr.replace(char, escaped)
     escaped_str = keyword_re.sub("__cobra_escape__", str_expr)
     escaped_str = number_start_re.sub("__cobra_escape__", escaped_str)
     tree = ast_parse(escaped_str, "<string>", "eval")
