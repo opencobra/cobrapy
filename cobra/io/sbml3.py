@@ -8,7 +8,7 @@ from bz2 import BZ2File
 from tempfile import NamedTemporaryFile
 import re
 
-from six import iteritems
+from six import iteritems, string_types
 
 from .. import Metabolite, Reaction, Gene, Model
 from ..core.Gene import parse_gpr
@@ -61,9 +61,18 @@ _renames = (
 
 # deal with namespaces
 namespaces = {"fbc": "http://www.sbml.org/sbml/level3/version1/fbc/version2",
-              "sbml": "http://www.sbml.org/sbml/level3/version1/core"}
+              "sbml": "http://www.sbml.org/sbml/level3/version1/core",
+              "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+              "bqbiol": "http://biomodels.net/biology-qualifiers/"}
 for key in namespaces:
     register_namespace(key, namespaces[key])
+
+
+def ns(query):
+    """replace prefixes with namespace"""
+    for prefix, uri in iteritems(namespaces):
+        query = query.replace(prefix + ":", "{" + uri + "}")
+    return query
 
 # XPATH query wrappers
 fbc_prefix = "{" + namespaces["fbc"] + "}"
@@ -71,29 +80,27 @@ sbml_prefix = "{" + namespaces["sbml"] + "}"
 
 SBML_DOT = "__SBML_DOT__"
 # FBC TAGS
-OR_TAG = "fbc:or"
-AND_TAG = "fbc:and"
-GENEREF_TAG = "fbc:geneProductRef"
-GPR_TAG = "fbc:geneProductAssociation"
-GENELIST_TAG = "fbc:listOfGeneProducts"
-GENE_TAG = "fbc:geneProduct"
+OR_TAG = ns("fbc:or")
+AND_TAG = ns("fbc:and")
+GENEREF_TAG = ns("fbc:geneProductRef")
+GPR_TAG = ns("fbc:geneProductAssociation")
+GENELIST_TAG = ns("fbc:listOfGeneProducts")
+GENE_TAG = ns("fbc:geneProduct")
 # XPATHS
-BOUND_XPATH = "sbml:listOfParameters/sbml:parameter"  # TODO only get constant
-COMPARTMENT_XPATH = "sbml:listOfCompartments/sbml:compartment"
+BOUND_XPATH = ns("sbml:listOfParameters/sbml:parameter")  # TODO only constant
+COMPARTMENT_XPATH = ns("sbml:listOfCompartments/sbml:compartment")
 GENES_XPATH = GENELIST_TAG + "/" + GENE_TAG
-SPECIES_XPATH = "sbml:listOfSpecies/sbml:species[@boundaryCondition='%s']"
-OBJECTIVES_XPATH = ("fbc:objective[@fbc:id='%s']/"
-                    "fbc:listOfFluxObjectives/"
-                    "fbc:fluxObjective")
+SPECIES_XPATH = ns("sbml:listOfSpecies/sbml:species[@boundaryCondition='%s']")
+OBJECTIVES_XPATH = ns("fbc:objective[@fbc:id='%s']/"
+                      "fbc:listOfFluxObjectives/"
+                      "fbc:fluxObjective")
+RDF_ANNOTATION_XPATH = ns("sbml:annotation/rdf:RDF/"
+                          "rdf:Description[@rdf:about='#%s']/"
+                          "bqbiol:isEncodedBy/rdf:Bag/rdf:li")
 
 
 class CobraSBMLError(Exception):
     pass
-
-
-def ns(query):
-    """replace prefixes with namespace"""
-    return query.replace("fbc:", fbc_prefix).replace("sbml:", sbml_prefix)
 
 
 def get_attrib(tag, attribute, type=lambda x: x, require=False):
@@ -165,6 +172,67 @@ def construct_gpr_xml(parent, expression):
         raise Exception("unsupported operation  " + repr(expression))
 
 
+def annotate_cobra_from_sbml(cobra_element, sbml_element):
+    meta_id = get_attrib(sbml_element, "metaid")
+    if meta_id is None:
+        return
+    search_xpath = RDF_ANNOTATION_XPATH % meta_id
+    sbml_linkouts = sbml_element.findall(search_xpath)
+    # also need to get is in addition to isencodedby
+    sbml_linkouts.extend(sbml_element.findall(
+        search_xpath.replace("isEncodedBy", "is")))
+    annotation = cobra_element.annotation
+    for linkout in sbml_linkouts:
+        uri = get_attrib(linkout, "rdf:resource")
+        if not uri.startswith("http://identifiers.org/"):
+            warn("%s does not start with http://identifiers.org/" % uri)
+            continue
+        try:
+            provider, identifier = uri[23:].split("/")
+        except ValueError:
+            warn("%s does not conform to http://identifiers.org/<provider>/id"
+                 % uri)
+            continue
+        # handle multiple id's in the same database
+        if provider in annotation:
+            # make into a list if necessary
+            if isinstance(annotation[provider], string_types):
+                annotation[provider] = [annotation[provider]]
+            annotation[provider].append(identifier)
+        else:
+            cobra_element.annotation[provider] = identifier
+
+
+def annotate_sbml_from_cobra(sbml_element, cobra_element):
+    if len(cobra_element.annotation) == 0:
+        return
+    # get the id so we can set the metaid
+    tag = sbml_element.tag
+    if tag.startswith(sbml_prefix) or tag[0] != "{":
+        prefix = ""
+    elif tag.startswith(fbc_prefix):
+        prefix = fbc_prefix
+    else:
+        raise ValueError("Can not annotate " + repr(sbml_element))
+    id = sbml_element.get(prefix + "id")
+    if len(id) == 0:
+        raise ValueError("%s does not have id set" % repr(sbml_element))
+    set_attrib(sbml_element, "metaid", id)
+    annotation = SubElement(sbml_element, ns("sbml:annotation"))
+    rdf_desc = SubElement(SubElement(annotation, ns("rdf:RDF")),
+                          ns("rdf:Description"))
+    set_attrib(rdf_desc, "rdf:about", "#" + id)
+    bag = SubElement(SubElement(rdf_desc, ns("bqbiol:isEncodedBy")),
+                     ns("rdf:Bag"))
+    for provider, identifiers in sorted(iteritems(cobra_element.annotation)):
+        if isinstance(identifiers, string_types):
+            identifiers = (identifiers,)
+        for identifier in identifiers:
+            li = SubElement(bag, ns("rdf:li"))
+            set_attrib(li, "rdf:resource", "http://identifiers.org/%s/%s" %
+                       (provider, identifier))
+
+
 def parse_xml_into_model(xml, number=float):
     xml_model = xml.find(ns("sbml:model"))
     if get_attrib(xml_model, "fbc:strict") != "true":
@@ -174,12 +242,13 @@ def parse_xml_into_model(xml, number=float):
     model = Model(model_id)
 
     model.compartments = {c.get("id"): c.get("name") for c in
-                          xml.findall(ns(COMPARTMENT_XPATH))}
+                          xml_model.findall(COMPARTMENT_XPATH)}
 
     # add metabolites
     for species in xml_model.findall(ns(SPECIES_XPATH) % 'false'):
         met = Metabolite(clip(species.get("id"), "M_"))
         met.name = species.get("name")
+        annotate_cobra_from_sbml(met, species)
         met.compartment = species.get("compartment")
         met.charge = get_attrib(species, "fbc:charge", int)
         met.formula = get_attrib(species, "fbc:chemicalFormula")
@@ -195,6 +264,7 @@ def parse_xml_into_model(xml, number=float):
         gene_id = get_attrib(sbml_gene, "fbc:id").replace(SBML_DOT, ".")
         gene = Gene(clip(gene_id, "G_"))
         gene.name = get_attrib(sbml_gene, "fbc:label")
+        annotate_cobra_from_sbml(gene, sbml_gene)
         model.genes.append(gene)
 
     or_tag = ns(OR_TAG)
@@ -217,13 +287,14 @@ def parse_xml_into_model(xml, number=float):
     opts = {"type": number, "require": True}
     # TODO handle infinity
     bounds = {bound.get("id"): get_attrib(bound, "value", **opts)
-              for bound in xml_model.findall(ns(BOUND_XPATH))}
+              for bound in xml_model.findall(BOUND_XPATH)}
     # add reactions
     reactions = []
     for sbml_reaction in xml_model.findall(
             ns("sbml:listOfReactions/sbml:reaction")):
         reaction = Reaction(clip(sbml_reaction.get("id"), "R_"))
         reaction.name = sbml_reaction.get("name")
+        annotate_cobra_from_sbml(reaction, sbml_reaction)
         lb_id = get_attrib(sbml_reaction, "fbc:lowerFluxBound", require=True)
         reaction.lower_bound = bounds[lb_id]
         ub_id = get_attrib(sbml_reaction, "fbc:upperFluxBound", require=True)
@@ -363,6 +434,7 @@ def model_to_xml(cobra_model, units=True):
                              boundaryCondition="false",
                              hasOnlySubstanceUnits="false")
         set_attrib(species, "name", met.name)
+        annotate_sbml_from_cobra(species, met)
         set_attrib(species, "compartment", met.compartment)
         set_attrib(species, "fbc:charge", met.charge)
         set_attrib(species, "fbc:chemicalFormula", met.formula)
@@ -379,6 +451,7 @@ def model_to_xml(cobra_model, units=True):
             name = gene.id
         set_attrib(sbml_gene, "fbc:label", gene_id)
         set_attrib(sbml_gene, "fbc:name", gene.name)
+        annotate_sbml_from_cobra(sbml_gene, gene)
 
     # add in reactions
     reactions_list = SubElement(xml_model, "listOfReactions")
@@ -391,6 +464,7 @@ def model_to_xml(cobra_model, units=True):
             fast="false",
             reversible=str(reaction.lower_bound < 0).lower())
         set_attrib(sbml_reaction, "name", reaction.name)
+        annotate_sbml_from_cobra(sbml_reaction, reaction)
         # add in bounds
         set_attrib(sbml_reaction, "fbc:upperFluxBound",
                    create_bound(reaction, "upper_bound"))
