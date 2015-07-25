@@ -1,17 +1,24 @@
 language: python
 sudo: false
+cache:
+  directories:
+    - $HOME/.cache/pip
 python:
- - "2.7"
- - "3.4"
+  - "2.7"
+  - "3.4"
 # command to install dependencies
+env:
+  - PIP_CACHE_DIR=$HOME/.cache/pip
 before_install:
+  - pip install pip --upgrade
   - export PIP_OPTS="-f https://opencobra.github.io/pypi_cobrapy_travis --no-index"
+  - pip install -v cython coveralls python-libsbml-experimental  # these guys get cached
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install -v lxml; fi # cached
+  - pip install numpy scipy $PIP_OPTS  # download wheels
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install glpk cylp $PIP_OPTS; fi
-  - pip install python-libsbml-experimental cython numpy scipy $PIP_OPTS
   - wget https://opencobra.github.io/pypi_cobrapy_travis/travis_test_dependencies.zip  # esolver, and glpk
   - unzip travis_test_dependencies.zip
   - export PATH=$PATH:$PWD
-  - pip install coveralls
 install:
   - python setup.py develop
 # # command to run tests
