@@ -238,7 +238,7 @@ def annotate_sbml_from_cobra(sbml_element, cobra_element):
     rdf_desc = SubElement(SubElement(annotation, ns("rdf:RDF")),
                           ns("rdf:Description"))
     set_attrib(rdf_desc, "rdf:about", "#" + id)
-    bag = SubElement(SubElement(rdf_desc, ns("bqbiol:isEncodedBy")),
+    bag = SubElement(SubElement(rdf_desc, ns("bqbiol:is")),
                      ns("rdf:Bag"))
     for provider, identifiers in sorted(iteritems(cobra_element.annotation)):
         if isinstance(identifiers, string_types):
