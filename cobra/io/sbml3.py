@@ -105,7 +105,8 @@ if _with_lxml:
                             "rdf:Description[@rdf:about=$metaid]/"
                             "*[self::bqbiol:isEncodedBy or self::bqbiol:is]/"
                             "rdf:Bag/rdf:li/@rdf:resource")
-    extract_rdf_annotation = XPath(RDF_ANNOTATION_XPATH, namespaces=namespaces)
+    extract_rdf_annotation = XPath(RDF_ANNOTATION_XPATH, namespaces=namespaces,
+                                   smart_strings=False)
 else:
     RDF_ANNOTATION_XPATH = ns("sbml:annotation/rdf:RDF/"
                               "rdf:Description[@rdf:about='%s']/"
