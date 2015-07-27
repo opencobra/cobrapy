@@ -18,7 +18,7 @@ except ImportError:
 
 _DEFAULT_REACTION_ATTRIBUTES = {
     'id', 'name', 'subsystem', 'lower_bound', 'upper_bound',
-    'objective_coefficient', 'notes', 'gene_reaction_rule', 'variable_kind'}
+    'objective_coefficient', 'notes', 'gene_reaction_rule', 'variable_kind', 'annotation'}
 
 _DEFAULT_METABOLITE_ATTRIBUTES = {
     'id', 'annotation', 'charge', 'compartment', 'formula', 'name', 'notes',
