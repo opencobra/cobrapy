@@ -2,7 +2,8 @@ from unittest import TestCase, TestLoader, TextTestRunner, skipIf
 
 from warnings import warn
 import sys
-from os import name
+from os.path import join
+from json import load
 
 from six import iteritems
 
@@ -13,7 +14,7 @@ except:
 
 if __name__ == "__main__":
     sys.path.insert(0, "../..")
-    from cobra.test import create_test_model
+    from cobra.test import create_test_model, data_directory
     from cobra import Model, Reaction, Metabolite
     from cobra.manipulation import initialize_growth_medium
     from cobra.solvers import solver_dict, get_solver_name
@@ -21,7 +22,7 @@ if __name__ == "__main__":
     from cobra.flux_analysis import *
     sys.path.pop(0)
 else:
-    from . import create_test_model
+    from . import create_test_model, data_directory
     from .. import Model, Reaction, Metabolite
     from ..manipulation import initialize_growth_medium
     from ..solvers import solver_dict, get_solver_name
@@ -156,7 +157,7 @@ class TestCobraFluxAnalysis(TestCase):
         # expected knockouts for textbook model
         growth_dict = {"fba": {"b0008": 0.87, "b0114": 0.80, "b0116": 0.78,
                                "b2276": 0.21, "b1779": 0.00},
-                       "moma": {"b0008": 0.87, "b0114": 0.73, "b0116": 0.59,
+                       "moma": {"b0008": 0.87, "b0114": 0.71, "b0116": 0.56,
                                 "b2276": 0.11, "b1779": 0.00},
                        }
 
@@ -240,40 +241,8 @@ class TestCobraFluxAnalysis(TestCase):
         self.compare_matrices(growth_list, solution["data"])
 
     def test_flux_variability(self):
-        fva_results = {
-            'ACALDt':      {'minimum':    0.00000, 'maximum':    0.00000},
-            'ACONTb':      {'minimum':    6.00725, 'maximum':    6.00725},
-            'AKGDH':       {'minimum':    5.06438, 'maximum':    5.06438},
-            'ATPM':        {'minimum':    8.39000, 'maximum':    8.39000},
-            'CO2t':        {'minimum':  -22.80983, 'maximum':  -22.80983},
-            'D_LACt2':     {'minimum':    0.00000, 'maximum':   -0.00000},
-            'EX_ac_e':     {'minimum':    0.00000, 'maximum':   -0.00000},
-            'EX_co2_e':    {'minimum':   22.80983, 'maximum':   22.80983},
-            'EX_fru_e':    {'minimum':    0.00000, 'maximum':   -0.00000},
-            'EX_gln__L_e': {'minimum':    0.00000, 'maximum':    0.00000},
-            'EX_h_e':      {'minimum':   17.53087, 'maximum':   17.53087},
-            'EX_nh4_e':    {'minimum':   -4.76532, 'maximum':   -4.76532},
-            'EX_pyr_e':    {'minimum':    0.00000, 'maximum':   -0.00000},
-            'FBP':         {'minimum':    0.00000, 'maximum':   -0.00000},
-            'FRD7':        {'minimum':    0.00000, 'maximum':  994.93562},
-            'FUMt2_2':     {'minimum':    0.00000, 'maximum':    0.00000},
-            'GLCpts':      {'minimum':   10.00000, 'maximum':   10.00000},
-            'GLUDy':       {'minimum':   -4.54186, 'maximum':   -4.54186},
-            'GLUt2r':      {'minimum':    0.00000, 'maximum':   -0.00000},
-            'ICDHyr':      {'minimum':    6.00725, 'maximum':    6.00725},
-            'MALS':        {'minimum':    0.00000, 'maximum':   -0.00000},
-            'ME1':         {'minimum':    0.00000, 'maximum':   -0.00000},
-            'NADTRHD':     {'minimum':    0.00000, 'maximum':   -0.00000},
-            'PDH':         {'minimum':    9.28253, 'maximum':    9.28253},
-            'PGI':         {'minimum':    4.86086, 'maximum':    4.86086},
-            'PGM':         {'minimum':  -14.71614, 'maximum':  -14.71614},
-            'PPCK':        {'minimum':    0.00000, 'maximum':   -0.00000},
-            'PYK':         {'minimum':    1.75818, 'maximum':    1.75818},
-            'RPI':         {'minimum':   -2.28150, 'maximum':   -2.28150},
-            'SUCDi':       {'minimum':    5.06438, 'maximum': 1000.00000},
-            'THD2':        {'minimum':    0.00000, 'maximum':   -0.00000},
-            'TPI':         {'minimum':    7.47738, 'maximum':    7.47738},
-        }
+        with open(join(data_directory, "textbook_fva.json"), "r") as infile:
+            fva_results = load(infile)
 
         infeasible_model = create_test_model("textbook")
         infeasible_model.reactions.get_by_id("EX_glc__D_e").lower_bound = 0

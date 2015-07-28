@@ -158,6 +158,7 @@ setup(
     packages=find_packages(exclude=['cobra.oven', 'cobra.oven*']),
     setup_requires=[],
     install_requires=["six"],
+    tests_require=["jsonschema > 2.5"],
     extras_require=extras,
     ext_modules=ext_modules,
 
