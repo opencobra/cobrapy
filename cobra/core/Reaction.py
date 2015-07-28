@@ -523,13 +523,17 @@ class Reaction(Object):
         return reaction_string
 
     def check_mass_balance(self):
-        """Makes sure that the reaction is elementally-balanced.
+        """Compute mass and charge balance for the reaction
 
         returns a dict of {element: amount} for unbalanced elements.
+        "charge" is treated as an element in this dict
         This should be empty for balanced reactions.
         """
         reaction_element_dict = defaultdict(int)
         for metabolite, coefficient in self._metabolites.items():
+            if metabolite.charge is not None:
+                reaction_element_dict["charge"] += \
+                    coefficient * metabolite.charge
             for element, amount in iteritems(metabolite.elements):
                 reaction_element_dict[element] += coefficient * amount
         # filter out 0 values
