@@ -21,7 +21,7 @@ salmonella_sbml = join(data_directory, "salmonella.xml")
 salmonella_pickle = join(data_directory, "salmonella.pickle")
 
 ecoli_sbml = join(data_directory, "iJO1366.xml")
-textbook_sbml = join(data_directory, "textbook.xml")
+textbook_sbml = join(data_directory, "textbook.xml.gz")
 mini_sbml = join(data_directory, "mini_fbc2.xml")
 
 del abspath, join, dirname
