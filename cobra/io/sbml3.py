@@ -278,7 +278,9 @@ def parse_xml_into_model(xml, number=float):
     for sbml_gene in xml_model.iterfind(GENES_XPATH):
         gene_id = get_attrib(sbml_gene, "fbc:id").replace(SBML_DOT, ".")
         gene = Gene(clip(gene_id, "G_"))
-        gene.name = get_attrib(sbml_gene, "fbc:label")
+        gene.name = get_attrib(sbml_gene, "fbc:name")
+        if gene.name is None:
+            gene.name = get_attrib(sbml_gene, "fbc:label")
         annotate_cobra_from_sbml(gene, sbml_gene)
         model.genes.append(gene)
 
@@ -647,7 +649,7 @@ def write_sbml_model(cobra_model, filename, use_fbc_package=True, **kwargs):
         xmlfile = BZ2File(filename, "wb")
     else:
         xmlfile = open(filename, "wb")
-    ElementTree(xml).write(xmlfile, encoding="UTF-8")
+    ElementTree(xml).write(xmlfile, **write_args)
     if should_close:
         xmlfile.close()
 

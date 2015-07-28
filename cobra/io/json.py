@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import json
 from warnings import warn
 
-from .. import Model, Metabolite, Reaction
+from .. import Model, Metabolite, Reaction, Gene
 from six import iteritems, string_types
 
 # Detect numpy types to replace them.
@@ -78,6 +78,12 @@ def _from_dict(obj):
             setattr(new_metabolite, k, v)
         new_metabolites.append(new_metabolite)
     model.add_metabolites(new_metabolites)
+    # add genes
+    for gene in obj['genes']:
+        new_gene = Gene(gene["id"])
+        for k, v in iteritems(gene):
+            setattr(new_gene, k, _fix_type(v))
+        model.genes.append(new_gene)
     # add reactions
     new_reactions = []
     for reaction in obj['reactions']:
@@ -93,17 +99,8 @@ def _from_dict(obj):
                 setattr(new_reaction, k, _fix_type(v))
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
-    # add gene attributes
-    for gene in obj['genes']:
-        if gene['id'] in model.genes:
-            new_gene = model.genes.get_by_id(gene['id'])
-            for k, v in iteritems(gene):
-                # don't set the id
-                if k == 'id':
-                    continue
-                setattr(new_gene, k, _fix_type(v))
     for k, v in iteritems(obj):
-        if k in ['id', 'description', 'notes']:
+        if k in {'id', 'description', 'notes', 'compartments', 'annotation'}:
             setattr(model, k, v)
     return model
 
@@ -184,7 +181,7 @@ def load_json_model(file_name):
     return model
 
 
-def save_json_model(model, file_name):
+def save_json_model(model, file_name, pretty=False):
     """Save the cobra model as a json file.
 
     model : :class:`~cobra.core.Model.Model` object
@@ -198,7 +195,12 @@ def save_json_model(model, file_name):
         file_name = open(file_name, 'w')
         should_close = True
 
-    json.dump(_to_dict(model), file_name, allow_nan=False)
+    if pretty:
+        dump_opts = {"indent": 4, "separators": (",", ": "), "sort_keys": True}
+    else:
+        dump_opts = {}
+
+    json.dump(_to_dict(model), file_name, allow_nan=False, **dump_opts)
 
     if should_close:
         file_name.close()
