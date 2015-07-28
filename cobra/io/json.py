@@ -16,16 +16,38 @@ except ImportError:
     class bool_:
         pass
 
-_DEFAULT_REACTION_ATTRIBUTES = {
-    'id', 'name', 'subsystem', 'lower_bound', 'upper_bound',
-    'objective_coefficient', 'notes', 'gene_reaction_rule', 'variable_kind'}
+_REQUIRED_REACTION_ATTRIBUTES = {"id", "name", "metabolites", "lower_bound",
+                                 "upper_bound", "gene_reaction_rule"}
+_OPTIONAL_REACTION_ATTRIBUTES = {
+    "objective_coefficient": 0,
+    "variable_kind": "continuous",
+    "subsystem": "",
+    "notes": {},
+    "annotation": {},
+}
 
-_DEFAULT_METABOLITE_ATTRIBUTES = {
-    'id', 'annotation', 'charge', 'compartment', 'formula', 'name', 'notes',
-    '_bound', '_constraint_sense'}
+_REQUIRED_METABOLITE_ATTRIBUTES = {"id", "name", "compartment"}
+_OPTIONAL_METABOLITE_ATTRIBUTES = {
+    "charge": None,
+    "formula": None,
+    "_bound": 0,
+    "_constraint_sense": "E",
+    "notes": {},
+    "annotation": {},
+}
 
-_DEFAULT_GENE_ATTRIBUTES = {
-    'id', 'name'}
+_REQUIRED_GENE_ATTRIBUTES = {"id", "name"}
+_OPTIONAL_GENE_ATTRIBUTES = {
+    "notes": {},
+    "annotation": {},
+}
+
+_OPTIONAL_MODEL_ATTRIBUTES = {
+    "description": None,
+    "compartments": {},
+    "notes": {},
+    "annotation": {},
+}
 
 
 def _fix_type(value):
@@ -86,17 +108,24 @@ def _from_dict(obj):
     return model
 
 
+def _update_optional(cobra_object, new_dict, optional_attribute_dict):
+    """update new_dict with optional attributes from cobra_object"""
+    for key, default_value in iteritems(optional_attribute_dict):
+        value = getattr(cobra_object, key)
+        if value != default_value:
+            new_dict[key] = _fix_type(value)
+
+
 def _to_dict(model):
     """convert the model to a dict"""
-    reaction_attributes = _DEFAULT_REACTION_ATTRIBUTES
-    metabolite_attributes = _DEFAULT_METABOLITE_ATTRIBUTES
-    gene_attributes = _DEFAULT_GENE_ATTRIBUTES
     new_reactions = []
     new_metabolites = []
     new_genes = []
     for reaction in model.reactions:
         new_reaction = {key: _fix_type(getattr(reaction, key))
-                        for key in reaction_attributes}
+                        for key in _REQUIRED_REACTION_ATTRIBUTES
+                        if key != "metabolites"}
+        _update_optional(reaction, new_reaction, _OPTIONAL_REACTION_ATTRIBUTES)
         # set metabolites
         mets = {str(met): coeff for met, coeff
                 in iteritems(reaction._metabolites)}
@@ -104,18 +133,24 @@ def _to_dict(model):
         new_reactions.append(new_reaction)
     for metabolite in model.metabolites:
         new_metabolite = {key: _fix_type(getattr(metabolite, key))
-                          for key in metabolite_attributes}
+                          for key in _REQUIRED_METABOLITE_ATTRIBUTES}
+        _update_optional(metabolite, new_metabolite,
+                         _OPTIONAL_METABOLITE_ATTRIBUTES)
         new_metabolites.append(new_metabolite)
     for gene in model.genes:
         new_gene = {key: str(getattr(gene, key))
-                    for key in gene_attributes}
+                    for key in _REQUIRED_GENE_ATTRIBUTES}
+        _update_optional(gene, new_gene, _OPTIONAL_GENE_ATTRIBUTES)
         new_genes.append(new_gene)
     obj = {'reactions': new_reactions,
            'metabolites': new_metabolites,
            'genes': new_genes,
            'id': model.id,
            'description': model.description,
-           'notes': model.notes}
+           }
+    _update_optional(model, obj, _OPTIONAL_MODEL_ATTRIBUTES)
+    # add in the JSON version
+    obj["version"] = 1
     return obj
 
 
@@ -167,3 +202,109 @@ def save_json_model(model, file_name):
 
     if should_close:
         file_name.close()
+
+
+json_schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "COBRA",
+    "description": "JSON representation of COBRA model",
+    "type": "object",
+    "properties": {
+        "id": {"type": "string"},
+        "description": {"type": "string"},
+        "version": {
+            "type": "integer",
+            "default": 1,
+        },
+
+        "reactions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string"},
+                    "name": {"type": "string"},
+                    "metabolites": {
+                        "type": "object",
+                        "patternProperties": {
+                            ".*": {"type": "number"},
+                        }
+                    },
+                    "gene_reaction_rule": {"type": "string"},
+                    "lower_bound": {"type": "number"},
+                    "upper_bound": {"type": "number"},
+                    "objective_coefficient": {
+                        "type": "number",
+                        "default": 0,
+                    },
+                    "variable_kind": {
+                        "type": "string",
+                        "pattern": "integer|continuous",
+                        "default": "continuous"
+                    },
+                    "subsystem": {"type": "string"},
+                    "notes": {"type": "object"},
+                    "annotation": {"type": "object"},
+                },
+                "required": ["id", "name", "metabolites", "lower_bound",
+                             "upper_bound", "gene_reaction_rule"],
+                "additionalProperties": False,
+            }
+        },
+        "metabolites": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string"},
+                    "name": {"type": "string"},
+                    "compartment": {
+                        "type": "string",
+                        "pattern": "[a-z]{1,2}"
+                    },
+                    "charge": {"type": "integer"},
+                    "formula": {"type": "string"},
+                    "_bound": {
+                        "type": "number",
+                        "default": 0
+                    },
+                    "_constraint_sense": {
+                        "type": "string",
+                        "default": "E",
+                        "pattern": "E|L|G",
+                    },
+                    "notes": {"type": "object"},
+                    "annotation": {"type": "object"},
+                },
+                "required": ["id", "name", "compartment"],
+                "additionalProperties": False,
+            }
+
+        },
+        "genes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string"},
+                    "name": {"type": "string"},
+                    "notes": {"type": "object"},
+                    "annotation": {"type": "object"},
+                },
+                "required": ["id", "name"],
+                "additionalProperties": False,
+            }
+
+        },
+        "compartments": {
+            "type": "object",
+            "patternProperties": {
+                "[a-z]{1,2}": {"type": "string"}
+            }
+        },
+        "notes": {"type": "object"},
+        "annotation": {"type": "object"},
+    },
+    "required": ["id", "reactions", "metabolites", "genes"],
+    "additionalProperties": False,
+}
