@@ -67,13 +67,10 @@ class Reaction(Object):
 
         self.objective_coefficient = self.lower_bound = 0.
         self.upper_bound = 1000.
-        # Either None or if this reaction is irreversible then
-        self.reflection = None
-        # a reaction in the model that is essentially self * -1
         # Used during optimization.  Indicates whether the
-        self.variable_kind = 'continuous'
         # variable is modeled as continuous, integer, binary, semicontinous, or
         # semiinteger.
+        self.variable_kind = 'continuous'
 
     # read-only
     @property
