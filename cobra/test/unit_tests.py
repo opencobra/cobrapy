@@ -253,6 +253,8 @@ class TestReactions(CobraTestCase):
         fake_gene = model.genes.get_by_id("fake_gene")
         self.assertIn(fake_gene, reaction.genes)
         self.assertIn(reaction, fake_gene.reactions)
+        fake_gene.name = "foo_gene"
+        self.assertEqual(reaction.gene_name_reaction_rule, fake_gene.name)
 
     def test_add_metabolite(self):
         """adding a metabolite to a reaction in a model"""
@@ -291,6 +293,7 @@ class TestReactions(CobraTestCase):
         self.assertEqual(pgi.lower_bound, 0)
         pgi.reaction = "g6p_c <== f6p_c"
         self.assertEqual(pgi.upper_bound, 0)
+        self.assertEqual(pgi.reaction.strip(), "g6p_c <-- f6p_c")
         pgi.reaction = "g6p_c --> f6p_c + h2o_c"
         self.assertIn(model.metabolites.h2o_c, pgi._metabolites)
         pgi.build_reaction_from_string("g6p_c --> f6p_c + foo", verbose=False)

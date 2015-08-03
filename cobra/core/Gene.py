@@ -27,18 +27,31 @@ replacements = (
 
 
 # functions for gene reaction rules
-def ast2str(expr, level=0):
-    """convert compiled ast to gene_reaction_rule str"""
+def ast2str(expr, level=0, names=None):
+    """convert compiled ast to gene_reaction_rule str
+
+    expr: str of a gene reaction rule
+
+    level: internal use only
+
+    names: optional dict of {Gene.id: Gene.name}
+        Use this to get a rule str which uses names instead. This
+        should be done for display purposes only. All gene_reaction_rule
+        strings which are computed with should use the id.
+    """
     if isinstance(expr, Expression):
-        return ast2str(expr.body, 0) if hasattr(expr, "body") else ""
+        return ast2str(expr.body, 0, names) \
+            if hasattr(expr, "body") else ""
     elif isinstance(expr, Name):
-        return expr.id
+        return names.get(expr.id, expr.id) if names else expr.id
     elif isinstance(expr, BoolOp):
         op = expr.op
         if isinstance(op, Or):
-            str_exp = " or ".join(ast2str(i, level + 1) for i in expr.values)
+            str_exp = " or ".join(ast2str(i, level + 1, names)
+                                  for i in expr.values)
         elif isinstance(op, And):
-            str_exp = " and ".join(ast2str(i, level + 1) for i in expr.values)
+            str_exp = " and ".join(ast2str(i, level + 1, names)
+                                   for i in expr.values)
         else:
             raise TypeError("unsupported operation " + op.__class__.__name)
         return "(" + str_exp + ")" if level else str_exp
