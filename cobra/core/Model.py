@@ -27,13 +27,17 @@ class Model(Object):
         for y in ['reactions', 'genes', 'metabolites']:
             for x in getattr(self, y):
                 x._model = self
+        if not hasattr(self, "name"):
+            self.name = None
 
-    def __init__(self, description=None):
-        if isinstance(description, Model):
-            self.__dict__ = description.__dict__
+    def __init__(self, id_or_model=None, name=None):
+        if isinstance(id_or_model, Model):
+            Object.__init__(self, name=name)
+            self.__setstate__(id_or_model.__dict__)
+            if not hasattr(self, "name"):
+                self.name = None
         else:
-            Object.__init__(self, description)
-            self.description = self.id
+            Object.__init__(self, id_or_model, name=name)
             self._trimmed = False
             self._trimmed_genes = []
             self._trimmed_reactions = {}
@@ -43,6 +47,16 @@ class Model(Object):
             # genes based on their ids {Gene.id: Gene}
             self.compartments = {}
             self.solution = Solution(None)
+
+    @property
+    def description(self):
+        warn("description deprecated")
+        return self.name if self.name is not None else ""
+
+    @description.setter
+    def description(self, value):
+        self.name = value
+        warn("description deprecated")
 
     def __add__(self, other_model):
         """Adds two models. +

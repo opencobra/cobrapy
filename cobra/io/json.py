@@ -43,7 +43,8 @@ _OPTIONAL_GENE_ATTRIBUTES = {
 }
 
 _OPTIONAL_MODEL_ATTRIBUTES = {
-    "description": None,
+    "name": None,
+    #  "description": None, should not actually be included
     "compartments": {},
     "notes": {},
     "annotation": {},
@@ -100,7 +101,7 @@ def _from_dict(obj):
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
     for k, v in iteritems(obj):
-        if k in {'id', 'description', 'notes', 'compartments', 'annotation'}:
+        if k in {'id', 'name', 'notes', 'compartments', 'annotation'}:
             setattr(model, k, v)
     return model
 
@@ -143,8 +144,8 @@ def _to_dict(model):
            'metabolites': new_metabolites,
            'genes': new_genes,
            'id': model.id,
-           'description': model.description,
            }
+
     _update_optional(model, obj, _OPTIONAL_MODEL_ATTRIBUTES)
     # add in the JSON version
     obj["version"] = 1
@@ -213,6 +214,7 @@ json_schema = {
     "type": "object",
     "properties": {
         "id": {"type": "string"},
+        "name": {"type": "string"},
         "description": {"type": "string"},
         "version": {
             "type": "integer",

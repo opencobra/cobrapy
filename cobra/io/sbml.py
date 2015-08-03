@@ -294,7 +294,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
 
 
     #Now, add all of the reactions to the model.
-    cobra_model.description = sbml_model.getId()
+    cobra_model.id = sbml_model.getId()
     #Populate the compartment list - This will be done based on cobra.Metabolites
     #in cobra.Reactions in the future.
     cobra_model.compartments = compartment_dict
@@ -364,7 +364,7 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
         
     
     sbml_doc = SBMLDocument(sbml_level, sbml_version)
-    sbml_model = sbml_doc.createModel(cobra_model.description.split('.')[0])
+    sbml_model = sbml_doc.createModel(cobra_model.id.split('.')[0])
     #Note need to set units
     reaction_units = 'mmol_per_gDW_per_hr'
     model_units = sbml_model.createUnitDefinition()
