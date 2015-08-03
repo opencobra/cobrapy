@@ -263,6 +263,7 @@ def parse_xml_into_model(xml, number=float):
 
     model_id = get_attrib(xml_model, "id")
     model = Model(model_id)
+    model.name = xml_model.get("name")
 
     model.compartments = {c.get("id"): c.get("name") for c in
                           xml_model.findall(COMPARTMENT_XPATH)}
@@ -381,6 +382,8 @@ def model_to_xml(cobra_model, units=True):
     set_attrib(xml_model, "fbc:strict", "true")
     if cobra_model.id is not None:
         xml_model.set("id", cobra_model.id)
+    if cobra_model.name is not None:
+        xml_model.set("name", cobra_model.name)
 
     # if using units, add in mmol/gdw/hr
     if units:

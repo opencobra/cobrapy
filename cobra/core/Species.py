@@ -17,10 +17,7 @@ class Species(Object):
         name: String.  A human readable name.
 
         """
-        Object.__init__(self, id)
-        self.name = name
-        if not name:
-            self.name = self.id
+        Object.__init__(self, id, name)
         self._model = None
         # references to reactions that operate on this species
         self._reaction = set()
@@ -47,16 +44,6 @@ class Species(Object):
         This should be fixed with self.__deecopy__ if possible
         """
         return deepcopy(self)
-
-    def get_reaction(self):
-        """Returns a list of Reactions that contain this Species"""
-        warn("deprecated, used species.reactions instead")
-        return list(self._reaction)
-
-    def get_model(self):
-        """Returns the Model object that contain this Object"""
-        print("get_model is deprecated. used model property instead")
-        return self._model
 
     @property
     def model(self):

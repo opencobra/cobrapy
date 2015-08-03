@@ -118,7 +118,7 @@ def parse_gpr(str_expr):
 
 class Gene(Species):
 
-    def __init__(self, id, name=None, functional=True):
+    def __init__(self, id=id, name=None, functional=True):
         """
         id: A string.
 
@@ -129,7 +129,7 @@ class Gene(Species):
         can its products be used.
 
         """
-        Species.__init__(self, id, name=name)
+        Species.__init__(self, id=id, name=name)
         self.functional = functional
 
     def remove_from_model(self, model=None,

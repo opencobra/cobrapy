@@ -84,7 +84,7 @@ def save_matlab_model(model, file_name):
 
     """
     mat = create_mat_dict(model)
-    savemat(file_name, {str(model.description): mat},
+    savemat(file_name, {str(model.id): mat},
             appendmat=True, oned_as="column")
 
 
@@ -111,7 +111,7 @@ def create_mat_dict(model):
     mat["b"] = array(mets.list_attr("_bound")) * 1.
     mat["c"] = array(rxns.list_attr("objective_coefficient")) * 1.
     mat["rev"] = array(rxns.list_attr("reversibility")) * 1
-    mat["description"] = str(model.description)
+    mat["description"] = str(model.id)
     return mat
 
 
@@ -138,7 +138,6 @@ def from_mat_struct(mat_struct, model_id=None):
         model.id = model_id
     else:
         model.id = "imported_model"
-    model.description = model.id
     for i, name in enumerate(m["mets"][0, 0]):
         new_metabolite = Metabolite()
         new_metabolite.id = str(name[0][0])
