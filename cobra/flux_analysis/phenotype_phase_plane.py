@@ -235,14 +235,10 @@ def calculate_phenotype_phase_plane(
         reaction1_range_max, reaction2_range_max,
         reaction1_npoints, reaction2_npoints)
     # find the objects for the reactions and metabolites
-    index1 = model.reactions.index(
-        model.reactions.get_by_id(data.reaction1_name))
-    index2 = model.reactions.index(
-        model.reactions.get_by_id(data.reaction2_name))
-    metabolite1_name = \
-        str(model.reactions.get_by_id(reaction1_name)._metabolites.keys()[0])
-    metabolite2_name = \
-        str(model.reactions.get_by_id(reaction2_name)._metabolites.keys()[0])
+    index1 = model.reactions.index(data.reaction1_name)
+    index2 = model.reactions.index(data.reaction2_name)
+    metabolite1_name = list(model.reactions[index1]._metabolites)[0].id
+    metabolite2_name = list(model.reactions[index2]._metabolites)[0].id
     if n_processes > reaction1_npoints:  # limit the number of processes
         n_processes = reaction1_npoints
     range_add = reaction1_npoints / n_processes

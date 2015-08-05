@@ -381,6 +381,15 @@ class TestCobraFluxAnalysis(TestCase):
         self.assertEqual(rxns.r7.genes, {m.genes.z})
         self.assertEqual(rxns.r8.gene_reaction_rule, "")
 
+    @skipIf(numpy is None, "double deletions require numpy")
+    def test_phenotype_phase_plane(self):
+        model = create_test_model("textbook")
+        data = calculate_phenotype_phase_plane(
+            model, "EX_glc__D_e", "EX_o2_e",
+            reaction1_npoints=20, reaction2_npoints=20)
+        self.assertEqual(data.growth_rates.shape, (20, 20))
+        self.assertAlmostEqual(data.growth_rates.max(), 1.20898, places=4)
+        self.assertAlmostEqual(abs(data.growth_rates[0, :]).max(), 0, places=4)
 
 # make a test suite to run all of the tests
 loader = TestLoader()
