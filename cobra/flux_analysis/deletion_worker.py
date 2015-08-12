@@ -29,7 +29,7 @@ def compute_fba_deletion(lp, solver_object, model, indexes, **kwargs):
         s.solve_problem(lp, **kwargs)
     except Exception as e:
         return RuntimeError("solver failure when deleting %s: %s" %
-                                (str(indexes), repr(e)))
+                            (str(indexes), repr(e)))
     status = s.get_status(lp)
     objective = s.get_objective_value(lp) if status == "optimal" else 0.
 

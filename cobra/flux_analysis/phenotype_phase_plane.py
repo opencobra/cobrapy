@@ -146,11 +146,9 @@ class phenotypePhasePlaneData:
             i, j = unravel_index(self.segments.argmin(), self.segments.shape)
             # update the segment id for any point with a similar shadow price
             # to the current point
-            self.segments[
-                (abs(self.shadow_prices1 - self.shadow_prices1[i, j])
-                    < threshold) *
-                (abs(self.shadow_prices2 - self.shadow_prices2[i, j])
-                    < threshold)] += segment_id
+            d1 = abs(self.shadow_prices1 - self.shadow_prices1[i, j])
+            d2 = abs(self.shadow_prices2 - self.shadow_prices2[i, j])
+            self.segments[(d1 < threshold) * (d2 < threshold)] += segment_id
             # add the current point as one of the phases
             self.phases.append((
                 (self.reaction1_fluxes[i], self.reaction2_fluxes[j]),
@@ -185,8 +183,8 @@ def _calculate_subset(arguments):
         # float instead of numpy.float64
         flux1 = float(-1 * flux1)
         # change bounds on reaction 1
-        solver.change_variable_bounds(problem, index1, flux1 - tolerance, flux1
-                                      + tolerance)
+        solver.change_variable_bounds(problem, index1, flux1 - tolerance,
+                                      flux1 + tolerance)
         for b, flux2 in enumerate(reaction2_fluxes):
             j = j_list[b]
             flux2 = float(-1 * flux2)  # same story as flux1
