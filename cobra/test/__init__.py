@@ -63,4 +63,7 @@ suite = create_test_suite()
 
 def test_all():
     """###running unit tests on cobra py###"""
-    _unittest.TextTestRunner(verbosity=2).run(create_test_suite())
+    status = not _unittest.TextTestRunner(verbosity=2).run(
+        create_test_suite()
+    ).wasSuccessful()
+    return status
