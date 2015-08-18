@@ -116,14 +116,15 @@ cdef check_error(int result):
                        (ERROR_CODES[result], ERROR_MESSAGES[result]))
 
 
-# Do not want to print out to terminal. Even when not verbose, output
-# will be redirected through the hook.
-glp_term_out(GLP_OFF)
-
 
 cdef int hook(void *info, const char *s):
     """function to redirect sdout to python stdout"""
     print(s)
+    return 1
+
+
+cdef int silent_hook(void *info, const char *s):
+    """function to print nothing but trick GLPK into thinking we did"""
     return 1
 
 cdef double _to_double(value):
@@ -142,10 +143,13 @@ cdef class GLP:
     # cython related allocation/dellocation functions
     def __cinit__(self):
         self.glp = glp_create_prob()
+        # initialize parameters
         glp_set_obj_dir(self.glp, GLP_MAX)  # default is maximize
         glp_init_smcp(&self.parameters)
         glp_init_iocp(&self.integer_parameters)
         self.exact = False
+        glp_term_hook(hook, NULL)
+        self.parameters.msg_lev = GLP_MSG_OFF
 
     def __dealloc__(self):
         glp_delete_prob(self.glp)
@@ -157,10 +161,6 @@ cdef class GLP:
         cdef int *c_cols
         cdef double *c_values
         cdef double b
-        
-        # initialize parameters
-        self.parameters.msg_lev = GLP_MSG_OFF
-        glp_term_hook(NULL, NULL)
 
         if cobra_model is None:
             return
@@ -274,15 +274,8 @@ cdef class GLP:
 
     def solve_problem(self, **solver_parameters):
         cdef int result
-        cdef glp_smcp parameters = self.parameters
-        cdef int time_limit = parameters.tm_lim
-        cdef glp_iocp integer_parameters = self.integer_parameters
+        cdef int time_limit
         cdef glp_prob *glp = self.glp
-
-        if "quadratic_component" in solver_parameters:
-            q = solver_parameters.pop("quadratic_component")
-            if q is not None:
-                raise ValueError("quadratic component must be None for glpk")
 
         for key, value in solver_parameters.items():
             self.set_parameter(key, value)
@@ -296,22 +289,22 @@ cdef class GLP:
         #with nogil:  # we can use this if glpk ever gets thread-safe malloc
         # Try to solve the problem with the existing basis, but with
         # a time limit in case it gets stuck.
-        if parameters.tm_lim > 500:
-            parameters.tm_lim = 500
-        if glp_simplex(glp, &parameters) != 0:
+        time_limit = self.parameters.tm_lim  # save time limit
+        self.parameters.tm_lim = min(500, time_limit)
+        fast_status = glp_simplex(glp, &self.parameters)
+        self.parameters.tm_lim = time_limit
+        
+        if fast_status != 0:
             glp_adv_basis(glp, 0)
-            parameters.tm_lim = time_limit
-            check_error(glp_simplex(glp, &parameters))
-        parameters.tm_lim = time_limit
+            check_error(glp_simplex(glp, &self.parameters))
+        self.parameters.tm_lim = time_limit
         if self.exact:
-            check_error(glp_exact(glp, &parameters))
+            check_error(glp_exact(glp, &self.parameters))
         if self.is_mip():
             self.integer_parameters.tm_lim = self.parameters.tm_lim
             self.integer_parameters.msg_lev = self.parameters.msg_lev
-            #self.integer_parameters.tol_bnd = self.parameters.tol_bnd
-            #self.integer_parameters.tol_piv = self.parameters.tol_piv
             #with nogil:
-            check_error(glp_intopt(glp, &integer_parameters))
+            check_error(glp_intopt(glp, &self.integer_parameters))
         return self.get_status()
 
     @classmethod
@@ -351,6 +344,11 @@ cdef class GLP:
             self.set_objective_sense(value)
         elif parameter_name in {"time_limit", "tm_lim"}:
             self.parameters.tm_lim = int(1000 * value)
+            # Setting a value less than 0.001 would cause us to not
+            # set a time limit at all. It's better to set a time limit
+            # of 1 ms in this case.
+            #if value > 0 and self.parameters.tm_lim == 0:
+            #    self.parameters.tm_lim = 1
         elif parameter_name == "tolerance_feasibility":
             self.parameters.tol_bnd = float(value)
             self.parameters.tol_dj = float(value)
@@ -367,9 +365,7 @@ cdef class GLP:
         elif parameter_name == "verbose":
             if not value:  # suppress all output
                 self.parameters.msg_lev = GLP_MSG_OFF
-                glp_term_hook(NULL, NULL)
                 return
-            glp_term_hook(hook, NULL)
             if value == "err":
                 self.parameters.msg_lev = GLP_MSG_ERR
             elif value is True or value == "all":
@@ -400,6 +396,9 @@ cdef class GLP:
                     glp_scale_prob(self.glp, SCALINGS[value])
             else:
                 glp_unscale_prob(self.glp)
+        elif parameter_name == "quadratic_component":
+            if value is not None:
+                raise ValueError("quadratic component must be None for glpk")
         else:
             raise ValueError("unknown parameter " + str(parameter_name))
 
@@ -496,14 +495,19 @@ cdef class GLP:
             raise RuntimeError("Unknown python version")
         cdef char *c_name = <bytes> b_name
         cdef int res
-        if b_name.endswith(".lp"):
-            res = glp_write_lp(self.glp, NULL, c_name)
-        elif b_name.endswith(".mps"):
-            res = glp_write_mps(self.glp, GLP_MPS_FILE, NULL, c_name)
-        else:
-            raise ValueError("Unknown file format for %s" % str(filename))
-        if res != 0:
-            raise IOError("failed to write LP to file %s" % str(filename))
+        # no other way to silence this function
+        glp_term_hook(silent_hook, NULL)
+        try:
+            if b_name.endswith(".lp"):
+                res = glp_write_lp(self.glp, NULL, c_name)
+            elif b_name.endswith(".mps"):
+                res = glp_write_mps(self.glp, GLP_MPS_FILE, NULL, c_name)
+            else:
+                raise ValueError("Unknown file format for %s" % str(filename))
+            if res != 0:
+                raise IOError("failed to write LP to file %s" % str(filename))
+        finally:
+            glp_term_hook(hook, NULL)
 
 
 # wrappers for all the functions at the module level
