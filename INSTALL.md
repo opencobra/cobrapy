@@ -11,18 +11,21 @@ Mac OS X (10.7+) and Ubuntu ship with Python. Windows users without python
 can download and install python from the [python 
 website](https://www.python.org/ftp/python/2.7.9/python-2.7.9.amd64.msi).
 Please note that though Anaconda and other python distributions may work with
-cobrapy, they are not explicitly supported at this time.
+cobrapy, they are not explicitly supported (yet!).
 
 
 #Installation of cobrapy
 
 ## Stable version installation
 
+cobrapy can be installed with any recent installation of pip. Instructions
+for several operating systems are below:
+
 ### Mac OS X
 0. [install pip](http://pip.readthedocs.org/en/latest/installing.html).
 1. In a terminal, run ```sudo pip install cobra```
 
-### GNU/Linux
+### Ubuntu or Debian Linux
 0. [install pip](http://pip.readthedocs.org/en/latest/installing.html).
 1. Install the python and glpk development libraries. On debian-based
    systems (including Ubuntu and Mint), this can be done with
@@ -33,6 +36,7 @@ cobrapy, they are not explicitly supported at this time.
 The preferred installation method on Windows is also to use pip. The latest
 Windows installers for Python 2.7 and 3.4 include pip, so if you use those you
 will already have pip.
+
 1. In a terminal, run ```C:\Python27\Scripts\pip.exe install cobra```
    (you may need to adjust the path accordingly).
 
@@ -61,7 +65,7 @@ On windows, these can downloaded from [this site]
 (http://www.lfd.uci.edu/~gohlke/pythonlibs/). On Mac/Linux, they can be
 installed using pip, or from the OS package manager (e.g brew, apt, yum).
 
-1. [libsbml](http://sbml.org) >= 5.10 to read/write SBML files
+1. [libsbml](http://sbml.org) >= 5.10 to read/write SBML level files
   * [Windows installer](http://www.lfd.uci.edu/~gohlke/pythonlibs/#libsbml)
   * Use ```sudo pip install python-libsbml-experimental``` on Mac/Linux
 2. [numpy](http://numpy.org) >= 1.6.1 for double deletions
