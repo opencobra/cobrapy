@@ -239,7 +239,7 @@ def calculate_phenotype_phase_plane(
     metabolite2_name = list(model.reactions[index2]._metabolites)[0].id
     if n_processes > reaction1_npoints:  # limit the number of processes
         n_processes = reaction1_npoints
-    range_add = reaction1_npoints / n_processes
+    range_add = reaction1_npoints // n_processes
     # prepare the list of arguments for each _calculate_subset call
     arguments_list = []
     i = arange(reaction1_npoints)
