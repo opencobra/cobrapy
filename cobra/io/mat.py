@@ -41,7 +41,8 @@ def _get_id_comparment(id):
 
 def _cell(x):
     """translate an array x into a MATLAB cell array"""
-    return array(x, dtype=np_object)
+    x_no_none = [i if i is not None else "" for i in x]
+    return array(x_no_none, dtype=np_object)
 
 
 def load_matlab_model(infile_path, variable_name=None):
