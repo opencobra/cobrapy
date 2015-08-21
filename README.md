@@ -1,5 +1,10 @@
 cobrapy
 =======
+[![Build Status](https://travis-ci.org/opencobra/cobrapy.svg?branch=master)](https://travis-ci.org/opencobra/cobrapy)
+[![Coverage Status](https://coveralls.io/repos/opencobra/cobrapy/badge.svg?branch=master&service=github)](https://coveralls.io/github/opencobra/cobrapy?branch=master)
+[![Build status](https://ci.appveyor.com/api/projects/status/2o549lhjyukke8nd/branch/master?svg=true)](https://ci.appveyor.com/project/aebrahim/cobrapy/branch/master)
+[![PyPI](https://img.shields.io/pypi/v/cobra.svg)](https://pypi.python.org/pypi/cobra)
+
 
 COnstraint-Based Reconstruction and Analysis (COBRA) methods are widely used
 for genome-scale modeling of metabolic networks in both prokaryotes and
