@@ -6,19 +6,32 @@ cache:
 python:
   - "2.7"
   - "3.4"
+addons:
+  apt:
+    packages:
+      - gfortran
+      - libatlas-dev
+      - libatlas-base-dev
+      - liblapack-dev
+      - libgmp-dev
+      - libglpk-dev
+      - libmpfr-dev
+
 # command to install dependencies
 env:
   - PIP_CACHE_DIR=$HOME/.cache/pip
 before_install:
   - pip install pip --upgrade
   - export PIP_OPTS="-f https://opencobra.github.io/pypi_cobrapy_travis --no-index"
-  - pip install cython coveralls  # these guys get cached
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install lxml; fi # cached
-  - pip install numpy scipy python-libsbml-experimental $PIP_OPTS  # download wheels
+  # These get cached
+  - pip install numpy scipy python-libsbml -v  # verbose for long-running compiles
+  - pip install cython coveralls jsonschema six
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install lxml; fi
+  # These use pre-compiled wheels (defined in PIP_OPTS)
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install glpk cylp $PIP_OPTS; fi
-  - wget https://opencobra.github.io/pypi_cobrapy_travis/travis_test_dependencies.zip  # esolver, and glpk
-  - unzip travis_test_dependencies.zip
-  - export PATH=$PATH:$PWD
+  # Download esolver and add it to the path
+  - wget https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
+  - gzip -d esolver.gz; chmod +x esolver; export PATH=$PATH:$PWD
 install:
   - python setup.py develop
 # # command to run tests
