@@ -32,7 +32,7 @@ init:
 
 install:
   - "powershell appveyor\\install.ps1"
-  - ps: Start-FileDownload 'https://opencobra.github.io/pypi_cobrapy_travis/six.py'
+  - ps: Start-FileDownload 'https://bitbucket.org/gutworth/six/raw/default/six.py'
   # Download glpk.h and glpk.lib (separate files for 32/64 bit)
   - ps: Start-FileDownload 'https://opencobra.github.io/pypi_cobrapy_travis/glpk.h'
   - "appveyor DownloadFile https://opencobra.github.io/pypi_cobrapy_travis/glpk.lib%PYTHON_ARCH% -FileName glpk.lib"
