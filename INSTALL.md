@@ -1,8 +1,9 @@
-For installation help, please use the [Google Group]
-(http://groups.google.com/group/cobra-pie).
+#Installation of cobrapy
 
+For installation help, please use the
+[Google Group](http://groups.google.com/group/cobra-pie).
 For usage instructions, please see the 
-[documentation](https://cobrapy.readthedocs.org/en/latest/)
+[documentation](https://cobrapy.readthedocs.org/en/latest/).
 
 --------------------------------------------------------------------------------
 
@@ -12,9 +13,6 @@ can download and install python from the [python
 website](https://www.python.org/ftp/python/2.7.9/python-2.7.9.amd64.msi).
 Please note that though Anaconda and other python distributions may work with
 cobrapy, they are not explicitly supported (yet!).
-
-
-#Installation of cobrapy
 
 ## Stable version installation
 
@@ -65,13 +63,14 @@ On windows, these can downloaded from [this site]
 (http://www.lfd.uci.edu/~gohlke/pythonlibs/). On Mac/Linux, they can be
 installed using pip, or from the OS package manager (e.g brew, apt, yum).
 
-1. [libsbml](http://sbml.org) >= 5.10 to read/write SBML level files
-  * [Windows installer](http://www.lfd.uci.edu/~gohlke/pythonlibs/#libsbml)
-  * Use ```sudo pip install python-libsbml-experimental``` on Mac/Linux
-2. [numpy](http://numpy.org) >= 1.6.1 for double deletions
-  * [Windows installer](http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy)
-3. [scipy](http://scipy.org) >= 0.11 for ArrayBasedModel and saving to *.mat files.
-  * [Windows installer](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy)
+1. [libsbml](http://sbml.org) >= 5.10 to read/write SBML level 2 files
+    * [Windows installer](http://www.lfd.uci.edu/~gohlke/pythonlibs/#libsbml)
+    * Use ```sudo pip install python-libsbml``` on Mac/Linux
+2. [lxml](http://lxml.de/) to speed up read/write of SBML level 3 files.
+3. [numpy](http://numpy.org) >= 1.6.1 for double deletions
+    * [Windows installer](http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy)
+4. [scipy](http://scipy.org) >= 0.11 for ArrayBasedModel and saving to *.mat files.
+    * [Windows installer](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy)
 
 ## Other solvers
 cobrapy comes with bindings to the GNU Linear Programming Kit ([glpk]

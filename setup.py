@@ -129,7 +129,7 @@ except:
 
 extras = {
     'matlab': ["pymatbridge"],
-    'sbml': ["python-libsbml-experimental", "lxml"],
+    'sbml': ["python-libsbml", "lxml"],
     'array': ["numpy>=1.6", "scipy>=11.0"],
     'display': ["matplotlib", "brewer2mpl", "pandas"]
 }
@@ -149,8 +149,14 @@ extras["all"] = list(all_extras)
 if "bdist_wininst" in argv:
     setup_kwargs["py_modules"] = ["six"]
 
-with open("README.md", "r") as infile:
-    setup_kwargs["long_description"] = infile.read()
+try:
+    import pypandoc
+    readme = pypandoc.convert("README.md", "rst")
+    install = pypandoc.convert("INSTALL.md", "rst")
+    setup_kwargs["long_description"] = readme + "\n\n" + install
+except:
+    with open("README.md", "r") as infile:
+        setup_kwargs["long_description"] = infile.read()
 
 setup(
     name="cobra",
