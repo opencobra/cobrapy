@@ -5,9 +5,23 @@ from itertools import izip
 
 from gurobipy import Model, LinExpr, GRB, QuadExpr
 
-
 from ..core.Solution import Solution
+
 from six import string_types
+
+try:
+    from sympy import Basic, Number
+except:
+    class Basic:
+        pass
+    Number = Basic
+
+
+def _float(value):
+    if isinstance(value, Basic) and not isinstance(value, Number):
+        return 0.
+    else:
+        return float(value)
 
 solver_name = 'gurobi'
 _SUPPORTS_MILP = True
@@ -47,6 +61,7 @@ objective_senses = {'maximize': GRB.MAXIMIZE, 'minimize': GRB.MINIMIZE}
 status_dict = {GRB.OPTIMAL: 'optimal', GRB.INFEASIBLE: 'infeasible',
                GRB.UNBOUNDED: 'unbounded', GRB.TIME_LIMIT: 'time_limit'}
 
+
 def get_status(lp):
     status = lp.status
     if status in status_dict:
@@ -55,8 +70,10 @@ def get_status(lp):
         status = 'failed'
     return status
 
+
 def get_objective_value(lp):
     return lp.ObjVal
+
 
 def format_solution(lp, cobra_model, **kwargs):
     status = get_status(lp)
@@ -70,10 +87,12 @@ def format_solution(lp, cobra_model, **kwargs):
             y = y_dict = None  # MIP's don't have duals
         else:
             y = [c.Pi for c in lp.getConstrs()]
-            y_dict = {m.id: value for m, value in izip(cobra_model.metabolites, y)}
+            y_dict = {m.id: value for m, value
+                      in izip(cobra_model.metabolites, y)}
         the_solution = Solution(objective_value, x=x, x_dict=x_dict, y=y,
                                 y_dict=y_dict, status=status)
     return(the_solution)
+
 
 def set_parameter(lp, parameter_name, parameter_value):
     if parameter_name == 'ModelSense' or parameter_name == "objective_sense":
@@ -86,6 +105,7 @@ def set_parameter(lp, parameter_name, parameter_value):
                                                      string_types):
             parameter_value = METHODS[parameter_value]
         lp.setParam(parameter_name, parameter_value)
+
 
 def change_variable_bounds(lp, index, lower_bound, upper_bound):
     variable = lp.getVarByName(str(index))
@@ -150,8 +170,8 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
 
     # Create variables
     #TODO:  Speed this up
-    variable_list = [lp.addVar(float(x.lower_bound),
-                               float(x.upper_bound),
+    variable_list = [lp.addVar(_float(x.lower_bound),
+                               _float(x.upper_bound),
                                float(x.objective_coefficient),
                                variable_kind_dict[x.variable_kind],
                                str(i))
@@ -169,7 +189,7 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
         constraint_coefficients = []
         constraint_variables = []
         for the_reaction in the_metabolite._reaction:
-            constraint_coefficients.append(the_reaction._metabolites[the_metabolite])
+            constraint_coefficients.append(_float(the_reaction._metabolites[the_metabolite]))
             constraint_variables.append(reaction_to_variable[the_reaction])
         #Add the metabolite to the problem
         lp.addConstr(LinExpr(constraint_coefficients, constraint_variables),

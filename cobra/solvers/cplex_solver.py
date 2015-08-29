@@ -11,6 +11,18 @@ from ..core.Solution import Solution
 from six.moves import zip
 from six import string_types, iteritems
 
+try:
+    from sympy import Basic, Number
+except:
+    class Basic:
+        pass
+
+def _float(value):
+    if isinstance(value, Basic) and not isinstance(value, Number):
+        return 0.
+    else:
+        return float(value)
+
 solver_name = 'cplex'
 _SUPPORTS_MILP = True
 
@@ -155,8 +167,8 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
         set_parameter(lp, k, v)
     objective_coefficients = [float(x.objective_coefficient)
                               for x in cobra_model.reactions]
-    lower_bounds = [float(x.lower_bound) for x in cobra_model.reactions]
-    upper_bounds = [float(x.upper_bound) for x in cobra_model.reactions]
+    lower_bounds = [_float(x.lower_bound) for x in cobra_model.reactions]
+    upper_bounds = [_float(x.upper_bound) for x in cobra_model.reactions]
     variable_names = cobra_model.reactions.list_attr("id")
     variable_kinds = [variable_kind_dict[x.variable_kind] for x
                       in cobra_model.reactions]
@@ -174,28 +186,23 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
                          ub=upper_bounds,
                          names=variable_names)
 
-   ## if relax_b:
-        ## range_values = zeros(len(cobra_model.metabolites))
-        ## b_values = array([x._bound for x in cobra_model.metabolties])
-        ## for the_nonzero in list(b_values.nonzero()[0]):
-        ##     range_values[the_nonzero] = -relax_b
-
     constraint_sense = []
     constraint_names = []
     constraint_limits = []
-    [(constraint_sense.append(x._constraint_sense),
-      constraint_names.append(x.id),
-      constraint_limits.append(float(x._bound)))
-     for x in cobra_model.metabolites]
+
+    for x in cobra_model.metabolites:
+        constraint_sense.append(x._constraint_sense)
+        constraint_names.append(x.id)
+        constraint_limits.append(float(x._bound))
 
     the_linear_expressions = []
-    #NOTE: This won't work with metabolites that aren't in any reaction
+    # NOTE: This won't work with metabolites that aren't in any reaction
     for the_metabolite in cobra_model.metabolites:
         variable_list = []
         coefficient_list = []
         for the_reaction in the_metabolite._reaction:
             variable_list.append(the_reaction.id)
-            coefficient_list.append(float(the_reaction._metabolites[the_metabolite]))
+            coefficient_list.append(_float(the_reaction._metabolites[the_metabolite]))
         the_linear_expressions.append(SparsePair(ind=variable_list,
                                                  val=coefficient_list))
     # Set objective to quadratic program
@@ -215,7 +222,7 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
                                   senses=constraint_sense,
                                   names=constraint_names)
 
-    #Set the problem type as cplex doesn't appear to do this correctly
+    # Set the problem type as cplex doesn't appear to do this correctly
     problem_type = Cplex.problem_type.LP
     if Cplex.variables.type.integer in variable_kinds:
         if quadratic_component is not None:
@@ -245,9 +252,11 @@ def set_quadratic_objective(lp, quadratic_objective):
     for k, v in quadratic_component_scaled.items():
         lp.objective.set_quadratic_coefficients(int(k[0]), int(k[1]), v)
 
+
 def change_variable_bounds(lp, index, lower_bound, upper_bound):
     lp.variables.set_lower_bounds(index, lower_bound)
     lp.variables.set_upper_bounds(index, upper_bound)
+
 
 def change_variable_objective(lp, index, objective):
     lp.objective.set_linear(index, objective)
@@ -255,6 +264,7 @@ def change_variable_objective(lp, index, objective):
 
 def change_coefficient(lp, met_index, rxn_index, value):
     lp.linear_constraints.set_coefficients(met_index, rxn_index, value)
+
 
 def update_problem(lp, cobra_model, new_objective=None, **kwargs):
     """A performance tunable method for updating a model problem file
@@ -301,8 +311,8 @@ def solve(cobra_model, **kwargs):
     """
 
     """
-    #Start out with default parameters and then modify if
-    #new onese are provided
+    # Start out with default parameters and then modify if
+    # new onese are provided
     for i in ["new_objective", "update_problem", "the_problem"]:
         if i in kwargs:
             raise Exception("Option %s removed" % i)
@@ -313,7 +323,7 @@ def solve(cobra_model, **kwargs):
     # Create problem will get parameter defaults
     lp = create_problem(cobra_model, **kwargs)
 
-    ###Try to solve the problem using other methods if the first method doesn't work
+    # Try to solve the problem using other methods if first method doesn't work
     try:
         lp_method = the_parameters['lp_method']
     except:
@@ -321,7 +331,7 @@ def solve(cobra_model, **kwargs):
     the_methods = [1, 2, 3, 4, 5, 6]
     if lp_method in the_methods:
         the_methods.remove(lp_method)
-    #Start with the user specified method
+    # Start with the user specified method
     the_methods.insert(0, lp_method)
     for the_method in the_methods:
         try:
