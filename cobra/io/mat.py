@@ -74,7 +74,7 @@ def load_matlab_model(infile_path, variable_name=None):
     raise Exception("no COBRA model found")
 
 
-def save_matlab_model(model, file_name):
+def save_matlab_model(model, file_name, varname=None):
     """Save the cobra model as a .mat file.
 
     This .mat file can be used directly in the MATLAB version of COBRA.
@@ -84,8 +84,12 @@ def save_matlab_model(model, file_name):
     file_name : str or file-like object
 
     """
+    if varname is None:
+        varname = str(model.id) \
+            if model.id is not None and len(model.id) > 0 \
+            else "exported_model"
     mat = create_mat_dict(model)
-    savemat(file_name, {str(model.id): mat},
+    savemat(file_name, {varname: mat},
             appendmat=True, oned_as="column")
 
 
