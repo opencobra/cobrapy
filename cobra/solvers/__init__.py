@@ -85,6 +85,8 @@ def get_solver_name(mip=False, qp=False):
         for solver_name in lp_order:
             if solver_name in solver_dict:
                 return solver_name
+        # none of them are in the list order - so return the first one
+        return list(solver_dict)[0]
     elif qp:  # mip does not yet matter for this determination
         for solver_name in qp_order:
             if solver_name in solver_dict:
