@@ -136,6 +136,14 @@ class TestCobraIOSBMLfbc2Bz2(TestCobraIOSBMLfbc2):
         self.write_function = io.write_sbml_model
 
 
+class TestCobraSBMLValidation(TestCase):
+    def test_bad_valiation(self):
+        for i in range(3):
+            filename = join(data_directory, "invalid", str(i) + ".xml")
+            m, errors = io.sbml3.validate_sbml_model(filename)
+            self.assertTrue(len(errors) >= 1)
+
+
 @skipIf(not libsbml, "libsbml required")
 class TestCobraIOSBMLfbc1(TestCase, TestCobraIO):
     def setUp(self):

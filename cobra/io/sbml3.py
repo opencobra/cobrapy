@@ -337,6 +337,7 @@ def parse_xml_into_model(xml, number=float):
         object_stoichiometry = {}
         for met_id in stoichiometry:
             if met_id in boundary_metabolites:
+                warn("Boundary metabolite '%s' used in reaction '%s'" % (met_id, reaction.id))
                 continue
             try:
                 metabolite = model.metabolites.get_by_id(met_id)
@@ -368,7 +369,11 @@ def parse_xml_into_model(xml, number=float):
     obj_query = OBJECTIVES_XPATH % target_objective
     for sbml_objective in obj_list.findall(obj_query):
         rxn_id = clip(get_attrib(sbml_objective, "fbc:reaction"), "R_")
-        model.reactions.get_by_id(rxn_id).objective_coefficient = \
+        try:
+            objective_reaction = model.reactions.get_by_id(rxn_id)
+        except KeyError as e:
+            raise CobraSBMLError("Objective reaction '%s' not found" % rxn_id)
+        objective_reaction.objective_coefficient = \
             get_attrib(sbml_objective, "fbc:coefficient", type=number)
 
     return model
@@ -581,6 +586,15 @@ def validate_sbml_model(filename):
     def err(err_msg):
         sbml_errors.append(err_msg)
 
+    # make sure there is exactly one model
+    xml_models = xml.findall(ns("sbml:model"))
+    if len(xml_models) > 1:
+        err("More than 1 SBML model detected in file")
+    elif len(xml_models) == 0:
+        err("No SBML model detected in file")
+    else:
+        xml_model = xml_models[0]
+
     # make sure all sbml id's are valid
     all_ids = set()
     for element in xmlfile.iter():
@@ -607,7 +621,7 @@ def validate_sbml_model(filename):
                     (str_id[e.start:e.end], id_repr))
             if invalid_id_detector.search(str_id):
                 bad_chars = "".join(invalid_id_detector.findall(str_id))
-                err("invalid character%s %s found in %s" %
+                err("invalid character%s '%s' found in %s" %
                     ("s" if len(bad_chars) > 1 else "", bad_chars, id_repr))
             if not str_id[0].isalpha():
                 err("%s does not start with alphabet character" % id_repr)
@@ -616,31 +630,54 @@ def validate_sbml_model(filename):
     for element in xml.findall(".//*[@sboTerm]"):
         sbo_term = element.get("sboTerm")
         if not sbo_term.startswith("SBO:"):
-            warn("sboTerm '%s' does not begin with 'SBO:'" % sbo_term)
+            err("sboTerm '%s' does not begin with 'SBO:'" % sbo_term)
 
     # ensure can be made into model
+    # all warnings generated while loading will be logged as errors
     with catch_warnings(record=True) as warning_list:
         simplefilter("always")
-        model = parse_xml_into_model(xml)
-    sbml_errors.extend(i.message.message for i in warning_list)
+        try:
+            model = parse_xml_into_model(xml)
+        except CobraSBMLError as e:
+            err(str(e))
+            return (None, sbml_errors)
+    sbml_errors.extend(str(i.message) for i in warning_list)
 
     # ensure exactly one objective
     if len(model.objective) == 0:
-        sbml_errors.append("no objective reaction identified")
+        err("no objective reaction identified")
     elif len(model.objective) > 1:
-        sbml_errors.append("only one reaction should be the objective")
+        err("only one reaction should be the objective")
 
     # make sure there are no infinite bounds
     if any(isinf(i) or isnan(i)
            for i in model.reactions.list_attr("lower_bound")):
-        sbml_errors.append("infinite or NaN value detected in lower bounds")
+        err("infinite or NaN value detected in lower bounds")
     if any(isinf(i) or isnan(i)
            for i in model.reactions.list_attr("upper_bound")):
-        sbml_errors.append("infinite or NaN value detected in upper bounds")
+        err("infinite or NaN value detected in upper bounds")
     for reaction in model.reactions:
         if reaction.lower_bound > reaction.upper_bound:
-            sbml_errors.append("reaction '%s' has lower bound > upper bound" %
-                               reaction.id)
+            err("reaction '%s' has lower bound > upper bound" % reaction.id)
+
+    # check genes
+    xml_genes = {
+        get_attrib(i, "fbc:id").replace(SBML_DOT, ".")
+        for i in xml_model.iterfind(GENES_XPATH)}
+    for gene in model.genes:
+        if "G_" + gene.id not in xml_genes and gene.id not in xml_genes:
+            err("No gene specfied with id 'G_%s'" % gene.id)
+
+    # check metabolite compartments and formulas
+    for met in model.metabolites:
+        if met.compartment is not None and \
+                met.compartment not in model.compartments:
+            err("Metabolite '%s' compartment '%s' not found" %
+                (met.id, met.compartment))
+        if met.formula is not None and len(met.formula) > 0:
+            if not met.formula.isalnum():
+                err("Metabolite '%s' formula '%s' not alphanumeric" %
+                    (met.id, met.formula))
 
     return model, sbml_errors
 

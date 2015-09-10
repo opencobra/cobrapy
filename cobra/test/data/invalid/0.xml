@@ -1,0 +1,47 @@
+<sbml xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" level="3" sboTerm="SBO:0000624" version="1" xmlns="http://www.sbml.org/sbml/level3/version1/core" fbc:required="false">
+  <model fbc:strict="true" id="invalid3">
+    <listOfUnitDefinitions>
+      <unitDefinition id="mmol_per_gDW_per_hr">
+        <listOfUnits>
+          <unit exponent="1" kind="mole" multiplier="1" scale="-3"/>
+          <unit exponent="-1" kind="gram" multiplier="1" scale="0"/>
+          <unit exponent="-1" kind="second" multiplier="3600" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <fbc:listOfObjectives fbc:activeObjective="obj">
+      <fbc:objective fbc:id="obj" fbc:type="maximize">
+        <fbc:listOfFluxObjectives>
+          <fbc:fluxObjective fbc:reaction="R_ATPM" fbc:coefficient="1"/>
+        </fbc:listOfFluxObjectives>
+      </fbc:objective>
+    </fbc:listOfObjectives>
+    <listOfParameters>
+      <parameter constant="true" id="cobra_default_lb" sboTerm="SBO:0000626" units="mmol_per_gDW_per_hr" value="8.39"/>
+      <parameter constant="true" id="cobra_default_ub" sboTerm="SBO:0000626" units="mmol_per_gDW_per_hr" value="1000"/>
+      <parameter constant="true" id="cobra_0_bound" sboTerm="SBO:0000626" units="mmol_per_gDW_per_hr" value="0"/>
+    </listOfParameters>
+    <listOfCompartments/>
+    <listOfSpecies>
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_h2o_c" name="H2O" compartment="c" fbc:chemicalFormula="H2O"/>
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_atp_c" name="ATP" compartment="c" fbc:chemicalFormula="C10H12N5O13P3"/>
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_h_c" name="H+" compartment="c" fbc:chemicalFormula="H"/>
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_adp_c" name="ADP" compartment="c" fbc:chemicalFormula="C10H12N5O10P2"/>
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_pi_c" name="Phosphate" compartment="c" fbc:chemicalFormula="HO4P"/>
+      <species boundaryCondition="true" id="Please_never_use_this"/>
+    </listOfSpecies>
+    <listOfReactions>
+      <reaction fast="false" id="R_ATPM" reversible="false" name="ATP maintenance requirement" metaid="R_ATPM" fbc:upperFluxBound="fake">
+        <listOfReactants>
+          <speciesReference constant="true" species="M_atp_c" stoichiometry="1"/>
+          <speciesReference constant="true" species="M_h2o_c" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference constant="true" species="M_adp_c" stoichiometry="1"/>
+          <speciesReference constant="true" species="M_h_c" stoichiometry="1"/>
+          <speciesReference constant="true" species="M_pi_c" stoichiometry="1"/>
+        </listOfProducts>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>
