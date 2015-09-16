@@ -334,7 +334,6 @@ def parse_legacy_sbml_notes(note_string, note_delimiter = ':'):
         
     return(note_dict)
 
-
 def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
                                    sbml_level=2, sbml_version=1,
                                    print_time=False,
@@ -358,6 +357,22 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
     Level 2 Version 4
 
     """
+
+    sbml_doc = get_libsbml_document(cobra_model, 
+                                   sbml_level=sbml_level, sbml_version=sbml_version,
+                                   print_time=print_time,
+                                   use_fbc_package=use_fbc_package)
+
+    writeSBML(sbml_doc, sbml_filename)
+
+def get_libsbml_document(cobra_model,
+                                   sbml_level=2, sbml_version=1,
+                                   print_time=False,
+                                   use_fbc_package=True):
+
+    """ Return a libsbml document object for writing to a file. This function
+    is used by write_cobra_model_to_sbml_file(). """
+
     note_start_tag, note_end_tag = '<p>', '</p>'
     if sbml_level > 2 or (sbml_level == 2 and sbml_version == 4):
         note_start_tag, note_end_tag = '<html:p>', '</html:p>'
@@ -508,7 +523,7 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
                     error_string += "You've got libsbml %s installed.   You need 5.8.0 or later with the fbc package"
 
             raise(Exception(error_string))
-    writeSBML(sbml_doc, sbml_filename)
+    return sbml_doc
 
 def add_sbml_species(sbml_model, cobra_metabolite, note_start_tag,
                      note_end_tag, boundary_metabolite=False):
