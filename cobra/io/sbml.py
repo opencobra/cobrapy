@@ -25,6 +25,8 @@ else:
     from libsbml import SBMLDocument, SpeciesReference, KineticLaw, Parameter
     from libsbml import readSBML, writeSBML
     from libsbml import UNIT_KIND_MOLE, UNIT_KIND_GRAM, UNIT_KIND_SECOND, UNIT_KIND_DIMENSIONLESS
+
+
 def parse_legacy_id(the_id, the_compartment=None, the_type='metabolite',
                     use_hyphens=False):
     """Deals with a bunch of problems due to bigg.ucsd.edu not following SBML standards
@@ -42,10 +44,12 @@ def parse_legacy_id(the_id, the_compartment=None, the_type='metabolite',
         the_id = the_id.replace('__','-')
     if the_type == 'metabolite':
         if the_id.split('_')[-1] == the_compartment:
-            #Reformat Ids to match convention in Palsson Lab.
+            # Reformat Ids to match convention in Palsson Lab.
             the_id = the_id[:-len(the_compartment)-1]
         the_id += '[%s]'%the_compartment
     return the_id
+
+
 def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_metabolite=False,
                                       print_time=False, use_hyphens=False):
     """convert an SBML XML file into a cobra.Model object.  Supports
@@ -70,17 +74,17 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
     __default_lower_bound = -1000
     __default_upper_bound = 1000
     __default_objective_coefficient = 0
-     # Ensure that the file exists
+    # Ensure that the file exists
     if not isfile(sbml_filename):
         raise IOError('Your SBML file is not found: %s'%sbml_filename)
-    #Expressions to change SBML Ids to Palsson Lab Ids
+    # Expressions to change SBML Ids to Palsson Lab Ids
     metabolite_re = re.compile('^M_')
     reaction_re = re.compile('^R_')
     compartment_re = re.compile('^C_')
     if print_time:
         warn("print_time is deprecated")
     model_doc = readSBML(sbml_filename)
-    if (model_doc.getPlugin("fbc") != None):
+    if model_doc.getPlugin("fbc") is not None:
         from libsbml import ConversionProperties, LIBSBML_OPERATION_SUCCESS
         conversion_properties = ConversionProperties()
         conversion_properties.addOption("convert fbc to cobra", True, "Convert FBC model to Cobra model")
@@ -95,7 +99,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
     compartment_dict = dict([(compartment_re.split(x.getId())[-1], x.getName())
                              for x in sbml_compartments])
     if legacy_metabolite:
-        #Deal with the palsson lab appending the compartment id to the metabolite id
+        # Deal with the palsson lab appending the compartment id to the metabolite id
         new_dict = {}
         for the_id, the_name in compartment_dict.items():
             if the_name == '':
@@ -109,15 +113,15 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
     cobra_model = Model(sbml_model_id)
     metabolites = []
     metabolite_dict = {}
-    #Convert sbml_metabolites to cobra.Metabolites
+    # Convert sbml_metabolites to cobra.Metabolites
     for sbml_metabolite in sbml_species:
-        #Skip sbml boundary species
+        # Skip sbml boundary species
         if sbml_metabolite.getBoundaryCondition():
             continue
 
         if (old_sbml or legacy_metabolite) and \
                sbml_metabolite.getId().endswith('_b'):
-            #Deal with incorrect sbml from bigg.ucsd.edu
+            # Deal with incorrect sbml from bigg.ucsd.edu
             continue
         tmp_metabolite = Metabolite()
         metabolite_id = tmp_metabolite.id = sbml_metabolite.getId()
@@ -130,7 +134,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         if use_hyphens:
             tmp_metabolite.id = metabolite_re.split(tmp_metabolite.id)[-1].replace('__','-')
         else:
-            #Just in case the SBML ids are ill-formed and use -
+            # Just in case the SBML ids are ill-formed and use -
             tmp_metabolite.id = metabolite_re.split(tmp_metabolite.id)[-1].replace('-','__')
         tmp_metabolite.name = sbml_metabolite.getName()
         tmp_formula = ''
@@ -152,6 +156,13 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
                     msg = "different charges specified for %s (%d and %d)"
                     msg = msg % (tmp_metabolite.id, tmp_metabolite.charge, note_charge)
                     warn(msg)
+
+        if "KEGG" in tmp_metabolite.notes:
+            kegg_ids = tmp_metabolite.notes["KEGG"][0]
+            splitted = kegg_ids.split(" ")
+            kegg_ids_set = {s for s in splitted if s.startswith("C")}
+            if kegg_ids_set:
+                tmp_metabolite.kegg_ids = kegg_ids_set
 
         for the_key in tmp_metabolite.notes.keys():
             if the_key.lower() == 'formula':
@@ -328,11 +339,10 @@ def parse_legacy_sbml_notes(note_string, note_delimiter = ':'):
             else:
                 note_dict[note_field] = [note_value]
         note_string = note_string[(note_end+len(end_tag)): ]
-
     if 'CHARGE' in note_dict and note_dict['CHARGE'][0].lower() in ['none', 'na', 'nan']:
-        note_dict.pop('CHARGE') #Remove non-numeric charges
+        note_dict.pop('CHARGE')  # Remove non-numeric charges
         
-    return(note_dict)
+    return note_dict
 
 def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
                                    sbml_level=2, sbml_version=1,
@@ -524,6 +534,7 @@ def get_libsbml_document(cobra_model,
 
             raise(Exception(error_string))
     return sbml_doc
+
 
 def add_sbml_species(sbml_model, cobra_metabolite, note_start_tag,
                      note_end_tag, boundary_metabolite=False):
