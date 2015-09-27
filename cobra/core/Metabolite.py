@@ -36,7 +36,7 @@ class Metabolite(Species):
         # because in a Model a metabolite may participate in multiple Reactions
         self.compartment = compartment
         self.charge = None
-
+        self.kegg_ids = None
         self._constraint_sense = 'E'
         self._bound = 0.
 
