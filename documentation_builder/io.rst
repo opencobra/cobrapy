@@ -3,8 +3,9 @@ Reading and Writing Models
 ==========================
 
 Cobrapy supports reading and writing models in SBML (with and without
-FBC), JSON, MAT, and pickle formats. Generally, SBML with FBC is the
-preferred format for general use.
+FBC), JSON, MAT, and pickle formats. Generally, SBML with FBC version 2
+is the preferred format for general use. The JSON format may be more
+useful for cobrapy-specific functionality.
 
 The package also ships with test models in various formats for testing
 purposes.
@@ -25,7 +26,7 @@ purposes.
 .. parsed-literal::
 
     mini test files: 
-    mini.mat, mini_cobra.xml, mini.json, mini_fbc2.xml, mini_fbc1.xml, mini.pickle
+    mini.mat, mini_cobra.xml, mini.json, mini_fbc2.xml.gz, mini_fbc2.xml.bz2, mini_fbc2.xml, mini_fbc1.xml, mini.pickle
 
 
 SBML
@@ -50,7 +51,7 @@ requirements in order to generate a valid SBML file.
 
 .. parsed-literal::
 
-    <Model mini_textbook at 0x7f82fc4aec90>
+    <Model mini_textbook at 0x7f246d4e2e50>
 
 
 
@@ -77,7 +78,7 @@ flag can be used can be used.
 
 .. parsed-literal::
 
-    <Model mini_textbook at 0x7f82cc744c10>
+    <Model mini_textbook at 0x7f2436c65a10>
 
 
 
@@ -90,8 +91,7 @@ JSON
 
 cobrapy models have a `JSON <https://en.wikipedia.org/wiki/JSON>`__
 (JavaScript Object Notation) representation. This format was crated for
-interoperability with `escher <https://escher.github.io>`__. Additional
-fields, however, will not be saved.
+interoperability with `escher <https://escher.github.io>`__.
 
 .. code:: python
 
@@ -102,13 +102,13 @@ fields, however, will not be saved.
 
 .. parsed-literal::
 
-    <Model mini_textbook at 0x7f82fc4d4f50>
+    <Model mini_textbook at 0x7f2436c7c850>
 
 
 
 .. code:: python
 
-    cobra.io.write_sbml_model(textbook_model, "test.json")
+    cobra.io.save_json_model(textbook_model, "test.json")
 
 MATLAB
 ------
@@ -133,7 +133,7 @@ reading function:
 
 .. parsed-literal::
 
-    <Model mini_textbook at 0x7f82cc97b110>
+    <Model mini_textbook at 0x7f2436c7c810>
 
 
 
@@ -149,7 +149,7 @@ variable to read from, and the variable\_name paramter is unnecessary.
 
 .. parsed-literal::
 
-    <Model mini_textbook at 0x7f82fc4d4450>
+    <Model mini_textbook at 0x7f2436c65510>
 
 
 
@@ -163,19 +163,8 @@ Pickle
 ------
 
 Cobra models can be serialized using the python serialization format,
-`pickle <https://docs.python.org/2/library/pickle.html>`__. While this
-will save any extra fields which may have been created, it does not work
-with any other tools and can break between cobrapy major versions. JSON,
-SBML, and MAT are generally the preferred format.
+`pickle <https://docs.python.org/2/library/pickle.html>`__.
 
-.. code:: python
-
-    from pickle import load, dump
-    
-    # read in the test models
-    with open(os.path.join(cobra.test.data_directory, "mini.pickle"), "rb") as infile:
-        mini_model = load(infile)
-    
-    # output to a file
-    with open("test.pickle", "wb") as outfile:
-        dump(textbook_model, outfile)
+Please note that use of the pickle format is generally not recommended
+for most use cases. JSON, SBML, and MAT are generally the preferred
+formats.
