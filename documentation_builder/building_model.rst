@@ -2,10 +2,8 @@
 Building a Model
 ================
 
-This simple example (available as an IPython
-`notebook <http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/building_model.ipynb>`__)
-demonstrates how to create a model, create a reaction, and then add the
-reaction to the model.
+This simple example demonstrates how to create a model, create a
+reaction, and then add the reaction to the model.
 
 We'll use the '3OAS140' reaction from the STM\_1.0 model:
 
@@ -33,16 +31,30 @@ objects instead.
 
 .. code:: python
 
-    ACP_c = Metabolite('ACP_c', formula='C11H21N2O7PRS',
-        name='acyl-carrier-protein', compartment='c')
-    omrsACP_c = Metabolite('3omrsACP_c', formula='C25H45N2O9PRS',
-        name='3-Oxotetradecanoyl-acyl-carrier-protein', compartment='c')
-    co2_c = Metabolite('co2_c', formula='CO2', name='CO2', compartment='c')
-    malACP_c = Metabolite('malACP_c', formula='C14H22N2O10PRS',
-        name='Malonyl-acyl-carrier-protein', compartment='c')
-    h_c = Metabolite('h_c', formula='H', name='H', compartment='c')
-    ddcaACP_c = Metabolite('ddcaACP_c', formula='C23H43N2O8PRS',
-        name='Dodecanoyl-ACP-n-C120ACP', compartment='c')
+    ACP_c = Metabolite('ACP_c',
+                       formula='C11H21N2O7PRS',
+                       name='acyl-carrier-protein',
+                       compartment='c')
+    omrsACP_c = Metabolite('3omrsACP_c',
+                           formula='C25H45N2O9PRS',
+                           name='3-Oxotetradecanoyl-acyl-carrier-protein',
+                           compartment='c')
+    co2_c = Metabolite('co2_c',
+                       formula='CO2',
+                       name='CO2',
+                       compartment='c')
+    malACP_c = Metabolite('malACP_c',
+                          formula='C14H22N2O10PRS',
+                          name='Malonyl-acyl-carrier-protein',
+                          compartment='c')
+    h_c = Metabolite('h_c',
+                     formula='H',
+                     name='H',
+                     compartment='c')
+    ddcaACP_c = Metabolite('ddcaACP_c',
+                           formula='C23H43N2O8PRS',
+                           name='Dodecanoyl-ACP-n-C120ACP',
+                           compartment='c')
 
 Adding metabolites to a reaction requires using a dictionary of the
 metabolites and their stoichiometric coefficients. A group of
@@ -63,9 +75,10 @@ time.
 
 
 
+
 .. parsed-literal::
 
-    'malACP_c + h_c + ddcaACP_c --> co2_c + 3omrsACP_c + ACP_c'
+    'malACP_c + h_c + ddcaACP_c --> 3omrsACP_c + ACP_c + co2_c'
 
 
 
@@ -78,14 +91,15 @@ the corresponding gene objects.
 
 .. code:: python
 
-    reaction.gene_reaction_rule = '( STM2378  or STM1197 )'
+    reaction.gene_reaction_rule = '( STM2378 or STM1197 )'
     reaction.genes
+
 
 
 
 .. parsed-literal::
 
-    frozenset({<Gene STM2378 at 0x3739b10>, <Gene STM1197 at 0x3739b50>})
+    frozenset({<Gene STM1197 at 0x7feea0ae9850>, <Gene STM2378 at 0x7feea0ae9b10>})
 
 
 
@@ -96,6 +110,7 @@ At this point in time, the model is still empty
     print('%i reactions in initial model' % len(cobra_model.reactions))
     print('%i metabolites in initial model' % len(cobra_model.metabolites))
     print('%i genes in initial model' % len(cobra_model.genes))
+
 
 .. parsed-literal::
 
@@ -116,6 +131,7 @@ associated metabolites and genes
     print('%i metabolites in model' % len(cobra_model.metabolites))
     print('%i genes in model' % len(cobra_model.genes))
 
+
 .. parsed-literal::
 
     1 reaction in model
@@ -131,32 +147,33 @@ We can iterate through the model objects to observe the contents
     print("Reactions")
     print("---------")
     for x in cobra_model.reactions:
-        print("%s : %s" % (repr(x), x.reaction))
+        print("%s : %s" % (x.id, x.reaction))
     print("Metabolites")
     print("-----------")
     for x in cobra_model.metabolites:
-        print('%s : %s' % (repr(x), x.formula))
+        print('%s : %s' % (x.id, x.formula))
     print("Genes")
     print("-----")
     for x in cobra_model.genes:
-        reactions_list_str = ", ".join((repr(i) for i in x.reactions))
-        print("%s is associated with reactions: %s" % (repr(x), reactions_list_str))
+        reactions_list_str = "{" + ", ".join((i.id for i in x.reactions)) + "}"
+        print("%s is associated with reactions: %s" % (x.id, reactions_list_str))
+
 
 .. parsed-literal::
 
     Reactions
     ---------
-    <Reaction 3OAS140 at 0x4a18b90> : malACP_c + h_c + ddcaACP_c --> co2_c + 3omrsACP_c + ACP_c
+    3OAS140 : malACP_c + h_c + ddcaACP_c --> 3omrsACP_c + ACP_c + co2_c
     Metabolites
     -----------
-    <Metabolite co2_c at 0x594ba10> : CO2
-    <Metabolite malACP_c at 0x594ba90> : C14H22N2O10PRS
-    <Metabolite h_c at 0x594bb10> : H
-    <Metabolite 3omrsACP_c at 0x594b950> : C25H45N2O9PRS
-    <Metabolite ACP_c at 0x594b990> : C11H21N2O7PRS
-    <Metabolite ddcaACP_c at 0x594bb90> : C23H43N2O8PRS
+    3omrsACP_c : C25H45N2O9PRS
+    ACP_c : C11H21N2O7PRS
+    co2_c : CO2
+    malACP_c : C14H22N2O10PRS
+    h_c : H
+    ddcaACP_c : C23H43N2O8PRS
     Genes
     -----
-    <Gene STM2378 at 0x3739b10> is associated with reactions: <Reaction 3OAS140 at 0x4a18b90>
-    <Gene STM1197 at 0x3739b50> is associated with reactions: <Reaction 3OAS140 at 0x4a18b90>
+    STM2378 is associated with reactions: {3OAS140}
+    STM1197 is associated with reactions: {3OAS140}
 

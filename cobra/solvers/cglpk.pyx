@@ -10,6 +10,13 @@ from tempfile import NamedTemporaryFile as _NamedTemporaryFile  # for pickling
 from os import unlink as _unlink
 from warnings import warn as _warn
 
+try:
+    from sympy import Basic, Number
+except:
+    class Basic:
+        pass
+    Number = Basic
+
 __glpk_version__ = str(glp_version())
 _SUPPORTS_MILP = True
 solver_name = "cglpk"
@@ -74,6 +81,31 @@ cdef dict METHODS = {
     "dual": GLP_DUAL
 }
 
+cdef dict PRICINGS = {
+    "std": GLP_PT_STD,
+    "pse": GLP_PT_PSE
+}
+
+cdef dict RATIOS = {
+    "std": GLP_RT_STD,
+    "har": GLP_RT_HAR
+}
+
+cdef dict SCALINGS = {
+    "auto": GLP_SF_AUTO,
+    "gm": GLP_SF_GM,
+    "eq": GLP_SF_EQ,
+    "2n": GLP_SF_2N,
+    "skip": GLP_SF_SKIP
+}
+
+cdef int downcast_pos_size(Py_ssize_t size):
+    if size > INT_MAX:
+        raise ValueError("Integer overflow %d > %d" % (size, INT_MAX))
+    else:
+        return <int> size
+
+
 cdef check_error(int result):
     if result == 0:
         return
@@ -84,15 +116,22 @@ cdef check_error(int result):
                        (ERROR_CODES[result], ERROR_MESSAGES[result]))
 
 
-# Do not want to print out to terminal. Even when not verbose, output
-# will be redirected through the hook.
-glp_term_out(GLP_OFF)
-
 
 cdef int hook(void *info, const char *s):
     """function to redirect sdout to python stdout"""
     print(s)
     return 1
+
+
+cdef int silent_hook(void *info, const char *s):
+    """function to print nothing but trick GLPK into thinking we did"""
+    return 1
+
+cdef double _to_double(value):
+    if isinstance(value, Basic) and not isinstance(value, Number):
+        return 0.
+    else:
+        return <double>value
 
 
 cdef class GLP:
@@ -104,34 +143,32 @@ cdef class GLP:
     # cython related allocation/dellocation functions
     def __cinit__(self):
         self.glp = glp_create_prob()
+        # initialize parameters
         glp_set_obj_dir(self.glp, GLP_MAX)  # default is maximize
         glp_init_smcp(&self.parameters)
         glp_init_iocp(&self.integer_parameters)
         self.exact = False
+        glp_term_hook(hook, NULL)
+        self.parameters.msg_lev = GLP_MSG_OFF
 
     def __dealloc__(self):
         glp_delete_prob(self.glp)
 
     def __init__(self, cobra_model=None):
-        cdef int bound_type, index, m, n, n_values, i
+        cdef int bound_type, index, n, n_values
         cdef glp_prob *glp
         cdef int *c_rows
         cdef int *c_cols
         cdef double *c_values
-        
-        # initialize parameters
-        self.parameters.msg_lev = GLP_MSG_OFF
-        glp_term_hook(NULL, NULL)
+        cdef double b
 
         if cobra_model is None:
             return
         glp = self.glp
-        m = len(cobra_model.metabolites)
-        n = len(cobra_model.reactions)
-        glp_add_rows(glp, m)
-        glp_add_cols(glp, n)
+        glp_add_rows(glp, downcast_pos_size(len(cobra_model.metabolites)))
+        glp_add_cols(glp, downcast_pos_size(len(cobra_model.reactions)))
 
-        metabolite_id_to_index = {r.id: i for i, r
+        metabolite_id_to_index = {r.id: index for index, r
                                   in enumerate(cobra_model.metabolites, 1)}
 
         linear_constraint_rows = []
@@ -140,7 +177,7 @@ cdef class GLP:
 
         # set metabolite/consraint bounds
         for index, metabolite in enumerate(cobra_model.metabolites, 1):
-            b = float(metabolite._bound)
+            b = _to_double(metabolite._bound)
             c = metabolite._constraint_sense
             if c == 'E':
                 bound_type = GLP_FX  # Set metabolite to steady state levels
@@ -164,28 +201,29 @@ cdef class GLP:
             else:
                 bound_type = GLP_DB
             glp_set_col_bnds(glp, index, bound_type,
-                             float(reaction.lower_bound),
-                             float(reaction.upper_bound))
-            glp_set_obj_coef(glp, index, float(reaction.objective_coefficient))
+                             _to_double(reaction.lower_bound),
+                             _to_double(reaction.upper_bound))
+            glp_set_obj_coef(glp, index,
+                             _to_double(reaction.objective_coefficient))
 
             for metabolite, coefficient in reaction._metabolites.iteritems():
-                metabolite_index = metabolite_id_to_index[metabolite.id]
-                linear_constraint_rows.append(metabolite_index)
+                linear_constraint_rows.append(
+                    metabolite_id_to_index[metabolite.id])
                 linear_constraint_cols.append(index)
                 linear_constraint_values.append(coefficient)
         
         # set constraint marix
         # first copy the python lists to c arrays
-        n_values = len(linear_constraint_rows)
+        n_values = downcast_pos_size(len(linear_constraint_rows))
         c_cols = <int *> malloc((n_values + 1) * sizeof(int))
         c_rows = <int *> malloc((n_values + 1) * sizeof(int))
         c_values = <double *> malloc((n_values + 1) * sizeof(double))
         if c_rows is NULL or c_rows is NULL or c_values is NULL:
             raise MemoryError()
-        for i in range(n_values):
-            c_rows[i + 1] = linear_constraint_rows[i]
-            c_cols[i + 1] = linear_constraint_cols[i]
-            c_values[i + 1] = float(linear_constraint_values[i])
+        for index in range(n_values):
+            c_rows[index + 1] = linear_constraint_rows[index]
+            c_cols[index + 1] = linear_constraint_cols[index]
+            c_values[index + 1] = _to_double(linear_constraint_values[index])
         # actually set the values
         glp_load_matrix(glp, n_values, c_rows, c_cols, c_values)
         # free the c arrays
@@ -236,15 +274,8 @@ cdef class GLP:
 
     def solve_problem(self, **solver_parameters):
         cdef int result
-        cdef glp_smcp parameters = self.parameters
-        cdef int time_limit = parameters.tm_lim
-        cdef glp_iocp integer_parameters = self.integer_parameters
+        cdef int time_limit
         cdef glp_prob *glp = self.glp
-
-        if "quadratic_component" in solver_parameters:
-            q = solver_parameters.pop("quadratic_component")
-            if q is not None:
-                raise ValueError("quadratic component must be None for glpk")
 
         for key, value in solver_parameters.items():
             self.set_parameter(key, value)
@@ -258,22 +289,22 @@ cdef class GLP:
         #with nogil:  # we can use this if glpk ever gets thread-safe malloc
         # Try to solve the problem with the existing basis, but with
         # a time limit in case it gets stuck.
-        if parameters.tm_lim > 500:
-            parameters.tm_lim = 500
-        if glp_simplex(glp, &parameters) != 0:
+        time_limit = self.parameters.tm_lim  # save time limit
+        self.parameters.tm_lim = min(500, time_limit)
+        fast_status = glp_simplex(glp, &self.parameters)
+        self.parameters.tm_lim = time_limit
+        
+        if fast_status != 0:
             glp_adv_basis(glp, 0)
-            parameters.tm_lim = time_limit
-            check_error(glp_simplex(glp, &parameters))
-        parameters.tm_lim = time_limit
+            check_error(glp_simplex(glp, &self.parameters))
+        self.parameters.tm_lim = time_limit
         if self.exact:
-            check_error(glp_exact(glp, &parameters))
+            check_error(glp_exact(glp, &self.parameters))
         if self.is_mip():
             self.integer_parameters.tm_lim = self.parameters.tm_lim
             self.integer_parameters.msg_lev = self.parameters.msg_lev
-            #self.integer_parameters.tol_bnd = self.parameters.tol_bnd
-            #self.integer_parameters.tol_piv = self.parameters.tol_piv
             #with nogil:
-            check_error(glp_intopt(glp, &integer_parameters))
+            check_error(glp_intopt(glp, &self.integer_parameters))
         return self.get_status()
 
     @classmethod
@@ -311,23 +342,30 @@ cdef class GLP:
         """set a solver parameter"""
         if parameter_name == "objective_sense":
             self.set_objective_sense(value)
-        elif parameter_name == "time_limit":
+        elif parameter_name in {"time_limit", "tm_lim"}:
             self.parameters.tm_lim = int(1000 * value)
+            # Setting a value less than 0.001 would cause us to not
+            # set a time limit at all. It's better to set a time limit
+            # of 1 ms in this case.
+            #if value > 0 and self.parameters.tm_lim == 0:
+            #    self.parameters.tm_lim = 1
         elif parameter_name == "tolerance_feasibility":
             self.parameters.tol_bnd = float(value)
             self.parameters.tol_dj = float(value)
-        elif parameter_name == "tolerance_markowitz":
+        elif parameter_name == "tol_bnd":
+            self.parameters.tol_bnd = float(value)
+        elif parameter_name == "tol_dj":
+            self.parameters.tol_dj = float(value)
+        elif parameter_name in {"tolerance_markowitz", "tol_piv"}:
             self.parameters.tol_piv = float(value)
-        elif parameter_name == "tolerance_integer":
+        elif parameter_name in {"tolerance_integer", "tol_int"}:
             self.integer_parameters.tol_int = float(value)
-        elif parameter_name == "mip_gap" or parameter_name == "MIP_gap":
+        elif parameter_name in {"mip_gap", "MIP_gap"}:
             self.integer_parameters.mip_gap = float(value)
         elif parameter_name == "verbose":
             if not value:  # suppress all output
                 self.parameters.msg_lev = GLP_MSG_OFF
-                glp_term_hook(NULL, NULL)
                 return
-            glp_term_hook(hook, NULL)
             if value == "err":
                 self.parameters.msg_lev = GLP_MSG_ERR
             elif value is True or value == "all":
@@ -344,6 +382,23 @@ cdef class GLP:
             _warn("multiple threads not supported")
         elif parameter_name == "MIP_gap_abs":
             _warn("setting aboslute mip gap not supported")
+        elif parameter_name == "presolve":
+            self.parameters.presolve = GLP_ON if value else GLP_OFF
+        elif parameter_name == "pricing":
+            self.parameters.pricing = PRICINGS[value]
+        elif parameter_name == "r_test":
+            self.parameters.r_test = RATIOS[value]
+        elif parameter_name == "scale":
+            if value:
+                if isinstance(value, int):
+                    glp_scale_prob(self.glp, value)
+                else:
+                    glp_scale_prob(self.glp, SCALINGS[value])
+            else:
+                glp_unscale_prob(self.glp)
+        elif parameter_name == "quadratic_component":
+            if value is not None:
+                raise ValueError("quadratic component must be None for glpk")
         else:
             raise ValueError("unknown parameter " + str(parameter_name))
 
@@ -440,14 +495,19 @@ cdef class GLP:
             raise RuntimeError("Unknown python version")
         cdef char *c_name = <bytes> b_name
         cdef int res
-        if b_name.endswith(".lp"):
-            res = glp_write_lp(self.glp, NULL, c_name)
-        elif b_name.endswith(".mps"):
-            res = glp_write_mps(self.glp, GLP_MPS_FILE, NULL, c_name)
-        else:
-            raise ValueError("Unknown file format for %s" % str(filename))
-        if res != 0:
-            raise IOError("failed to write LP to file %s" % str(filename))
+        # no other way to silence this function
+        glp_term_hook(silent_hook, NULL)
+        try:
+            if b_name.endswith(".lp"):
+                res = glp_write_lp(self.glp, NULL, c_name)
+            elif b_name.endswith(".mps"):
+                res = glp_write_mps(self.glp, GLP_MPS_FILE, NULL, c_name)
+            else:
+                raise ValueError("Unknown file format for %s" % str(filename))
+            if res != 0:
+                raise IOError("failed to write LP to file %s" % str(filename))
+        finally:
+            glp_term_hook(hook, NULL)
 
 
 # wrappers for all the functions at the module level

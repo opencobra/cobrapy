@@ -40,6 +40,7 @@ indexes based off of ID's, which can cause errors. For example:
     except KeyError as e:
         print(repr(e))
 
+
 .. parsed-literal::
 
     KeyError('test_dcaACP_c',)
@@ -51,6 +52,7 @@ The Model.repair function will rebuild the necessary indexes
 
     model.repair()
     model.metabolites.get_by_id(model.metabolites[0].id)
+
 
 
 
@@ -77,6 +79,7 @@ function are reversed by cobra.manipulation.undelete\_model\_genes.
     cobra.manipulation.delete_model_genes(model, ["STM4221"])
     print("bounds after knockouts", (PGI.lower_bound, PGI.upper_bound))
 
+
 .. parsed-literal::
 
     bounds before knockout: (-1000.0, 1000.0)
@@ -100,6 +103,7 @@ is requested from the lower and upper bounds.
 
 
 
+
 .. parsed-literal::
 
     True
@@ -115,6 +119,7 @@ Trying to set it directly will result in an error:
     except Exception as e:
         print(repr(e))
 
+
 .. parsed-literal::
 
     AttributeError("can't set attribute",)
@@ -127,6 +132,7 @@ reaction irreversible.
 
     model.reactions.get_by_id("PGI").lower_bound = 10
     model.reactions.get_by_id("PGI").reversibility
+
 
 
 
@@ -162,6 +168,7 @@ all) solvers will rewrite the maximization as a minimzation.
     cplex_problem = cobra.solvers.cplex_solver.create_problem(model)
     cplex_problem.write("test.lp")
     cplex_problem.write("test.mps")  # rewrites objective
+
 How do I visualize my flux solutions?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

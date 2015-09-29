@@ -18,7 +18,7 @@ _warnings.formatwarning = _warn_format
 
 from .version import get_version
 __version__ = get_version()
-from .core import Object, Formula, Metabolite, Gene, Reaction, Model, \
+from .core import Object, Metabolite, Gene, Reaction, Model, \
     DictList, Species
 from . import io, flux_analysis
 

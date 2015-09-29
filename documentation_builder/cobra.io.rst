@@ -28,6 +28,14 @@ cobra.io.sbml module
     :undoc-members:
     :show-inheritance:
 
+cobra.io.sbml3 module
+---------------------
+
+.. automodule:: cobra.io.sbml3
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

@@ -1,7 +1,7 @@
 #cobra/sbml.py: Tools for reading / writing SBML now contained in
 #this module
 #System modules
-from .. import Model, Reaction, Metabolite, Formula
+from .. import Model, Reaction, Metabolite
 from os.path import isfile
 from os import name as __name
 from warnings import warn
@@ -160,7 +160,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         if tmp_formula == '' and old_sbml:
             tmp_formula = tmp_metabolite.name.split('_')[-1]
             tmp_metabolite.name = tmp_metabolite.name[:-len(tmp_formula)-1]
-        tmp_metabolite.formula = Formula(tmp_formula)
+        tmp_metabolite.formula = tmp_formula
         metabolite_dict.update({metabolite_id: tmp_metabolite})
         metabolites.append(tmp_metabolite)
     cobra_model.add_metabolites(metabolites)
@@ -260,11 +260,14 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         #TODO: READ IN OTHER NOTES AND GIVE THEM A reaction_ prefix.
         #TODO: Make sure genes get added as objects
         if 'GENE ASSOCIATION' in reaction_note_dict:
+            rule = reaction_note_dict['GENE ASSOCIATION'][0]
             try:
-                rule = reaction_note_dict['GENE ASSOCIATION'][0].encode('ascii')
-                reaction.gene_reaction_rule = str(rule)
-            except:
-                warn("gene_reaction_rule is not ascii compliant")
+                rule.encode('ascii')
+            except (UnicodeEncodeError, UnicodeDecodeError):
+                warn("gene_reaction_rule '%s' is not ascii compliant" % rule)
+            if rule.startswith("&quot;") and rule.endswith("&quot;"):
+                rule = rule[6:-6]
+            reaction.gene_reaction_rule = rule
             if 'GENE LIST' in reaction_note_dict:
                 reaction.systematic_names = reaction_note_dict['GENE LIST'][0]
             elif 'GENES' in reaction_note_dict and \
@@ -291,7 +294,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
 
 
     #Now, add all of the reactions to the model.
-    cobra_model.description = sbml_model.getId()
+    cobra_model.id = sbml_model.getId()
     #Populate the compartment list - This will be done based on cobra.Metabolites
     #in cobra.Reactions in the future.
     cobra_model.compartments = compartment_dict
@@ -331,7 +334,6 @@ def parse_legacy_sbml_notes(note_string, note_delimiter = ':'):
         
     return(note_dict)
 
-
 def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
                                    sbml_level=2, sbml_version=1,
                                    print_time=False,
@@ -355,13 +357,29 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
     Level 2 Version 4
 
     """
+
+    sbml_doc = get_libsbml_document(cobra_model, 
+                                   sbml_level=sbml_level, sbml_version=sbml_version,
+                                   print_time=print_time,
+                                   use_fbc_package=use_fbc_package)
+
+    writeSBML(sbml_doc, sbml_filename)
+
+def get_libsbml_document(cobra_model,
+                                   sbml_level=2, sbml_version=1,
+                                   print_time=False,
+                                   use_fbc_package=True):
+
+    """ Return a libsbml document object for writing to a file. This function
+    is used by write_cobra_model_to_sbml_file(). """
+
     note_start_tag, note_end_tag = '<p>', '</p>'
     if sbml_level > 2 or (sbml_level == 2 and sbml_version == 4):
         note_start_tag, note_end_tag = '<html:p>', '</html:p>'
         
     
     sbml_doc = SBMLDocument(sbml_level, sbml_version)
-    sbml_model = sbml_doc.createModel(cobra_model.description.split('.')[0])
+    sbml_model = sbml_doc.createModel(cobra_model.id.split('.')[0])
     #Note need to set units
     reaction_units = 'mmol_per_gDW_per_hr'
     model_units = sbml_model.createUnitDefinition()
@@ -408,7 +426,17 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
         #Need to remove - for proper SBML.  Replace with __
         the_reaction_id = 'R_' + the_reaction.id.replace('-','__' )
         sbml_reaction.setId(the_reaction_id)
-        sbml_reaction.setReversible(the_reaction.reversibility)
+        # The reason we are not using the Reaction.reversibility property
+        # is because the SBML definition of reversibility does not quite
+        # match with the cobra definition. In cobra, reversibility implies
+        # that both positive and negative flux values are feasible. However,
+        # SBML requires negative-flux-only reactions to still be classified
+        # as reversible. To quote from the SBML Level 3 Version 1 Spec:
+        # > However, labeling a reaction as irreversible is interpreted as
+        # > an assertion that the rate expression will not have negative
+        # > values during a simulation.
+        # (Page 60 lines 44-45)
+        sbml_reaction.setReversible(the_reaction.lower_bound < 0)
         if the_reaction.name:
             sbml_reaction.setName(the_reaction.name)
         else:
@@ -495,7 +523,7 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
                     error_string += "You've got libsbml %s installed.   You need 5.8.0 or later with the fbc package"
 
             raise(Exception(error_string))
-    writeSBML(sbml_doc, sbml_filename)
+    return sbml_doc
 
 def add_sbml_species(sbml_model, cobra_metabolite, note_start_tag,
                      note_end_tag, boundary_metabolite=False):

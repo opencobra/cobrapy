@@ -2,20 +2,15 @@
 Simulating Deletions
 ====================
 
-This example is available as an IPython
-`notebook <http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/deletions.ipynb>`__.
-
 .. code:: python
 
+    import pandas
     from time import time
     
+    import cobra.test
     
-    from cobra.test import create_test_model, salmonella_pickle, ecoli_pickle
-    from cobra.flux_analysis import single_deletion
-    from cobra.flux_analysis import double_deletion
-    
-    
-    cobra_model = create_test_model(salmonella_pickle)
+    cobra_model = cobra.test.create_test_model("textbook")
+    ecoli_model = cobra.test.create_test_model("ecoli")
 
 Single Deletions
 ----------------
@@ -24,48 +19,431 @@ Perform all single gene deletions on a model
 
 .. code:: python
 
-    start = time()  # start timer()
-    growth_rates, statuses = single_deletion(cobra_model)
-    print("All single gene deletions completed in %.2f sec" % (time() - start))
-
-.. parsed-literal::
-
-    All single gene deletions completed in 4.01 sec
-
+    growth_rates, statuses = cobra.flux_analysis.single_gene_deletion(cobra_model)
 
 These can also be done for only a subset of genes
 
 .. code:: python
 
-    single_deletion(cobra_model, element_list=cobra_model.genes[:100]);
+    growth_rates, statuses = cobra.flux_analysis.single_gene_deletion(cobra_model, cobra_model.genes[:20])
+    pandas.DataFrame.from_dict({"growth_rates": growth_rates, "status": statuses})
 
-Single deletions can also be run on reactions
+
+
+
+.. raw:: html
+
+    <div>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>growth_rates</th>
+          <th>status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>b0116</th>
+          <td>0.782351</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b0118</th>
+          <td>0.873922</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b0351</th>
+          <td>0.873922</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b0356</th>
+          <td>0.873922</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b0474</th>
+          <td>0.873922</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b0726</th>
+          <td>0.858307</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b0727</th>
+          <td>0.858307</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b1241</th>
+          <td>0.873922</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b1276</th>
+          <td>0.873922</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b1478</th>
+          <td>0.873922</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b1849</th>
+          <td>0.873922</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b2296</th>
+          <td>0.873922</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b2587</th>
+          <td>0.873922</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b3115</th>
+          <td>0.873922</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b3734</th>
+          <td>0.374230</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b3735</th>
+          <td>0.374230</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b3736</th>
+          <td>0.374230</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b3737</th>
+          <td>0.374230</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>b3738</th>
+          <td>0.374230</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>s0001</th>
+          <td>0.211141</td>
+          <td>optimal</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+
+
+This can also be done for reactions
 
 .. code:: python
 
-    start = time()  # start timer()
-    growth_rates, statuses = single_deletion(cobra_model, element_type="reaction")
-    print("All single reaction deletions completed in %.2f sec" % (time() - start))
+    growth_rates, statuses = cobra.flux_analysis.single_reaction_deletion(cobra_model, cobra_model.reactions[:20])
+    pandas.DataFrame.from_dict({"growth_rates": growth_rates, "status": statuses})
 
-.. parsed-literal::
 
-    All single reaction deletions completed in 7.41 sec
+
+
+.. raw:: html
+
+    <div>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>growth_rates</th>
+          <th>status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>ACALD</th>
+          <td>8.739215e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>ACALDt</th>
+          <td>8.739215e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>ACKr</th>
+          <td>8.739215e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>ACONTa</th>
+          <td>-3.963237e-27</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>ACONTb</th>
+          <td>6.162976e-33</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>ACt2r</th>
+          <td>8.739215e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>ADK1</th>
+          <td>8.739215e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>AKGDH</th>
+          <td>8.583074e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>AKGt2r</th>
+          <td>8.739215e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>ALCD2x</th>
+          <td>8.739215e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>ATPM</th>
+          <td>9.166475e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>ATPS4r</th>
+          <td>3.742299e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>Biomass_Ecoli_core</th>
+          <td>0.000000e+00</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>CO2t</th>
+          <td>4.616696e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>CS</th>
+          <td>-5.916457e-30</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>CYTBD</th>
+          <td>2.116629e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>D_LACt2</th>
+          <td>8.739215e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>ENO</th>
+          <td>-3.266892e-18</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>ETOHt2r</th>
+          <td>8.739215e-01</td>
+          <td>optimal</td>
+        </tr>
+        <tr>
+          <th>EX_ac_e</th>
+          <td>8.739215e-01</td>
+          <td>optimal</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
 
 
 Double Deletions
 ----------------
 
-Double deletions run in a similar way
+Double deletions run in a similar way. Passing in return\_frame=True
+will cause them to format the results as a pandas Dataframe
 
 .. code:: python
 
-    start = time()  # start timer()
-    double_deletion(cobra_model, element_list_1=cobra_model.genes[:100])
-    print("Double gene deletions for 100 genes completed in %.2f sec" % (time() - start))
+    cobra.flux_analysis.double_gene_deletion(cobra_model, cobra_model.genes[-10:], return_frame=True)
 
-.. parsed-literal::
 
-    Double gene deletions for 100 genes completed in 4.94 sec
+
+
+.. raw:: html
+
+    <div>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>b0724</th>
+          <th>b0723</th>
+          <th>b0721</th>
+          <th>b0729</th>
+          <th>b0728</th>
+          <th>b2464</th>
+          <th>b0008</th>
+          <th>b2935</th>
+          <th>b2465</th>
+          <th>b3919</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>b0724</th>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.704037</td>
+        </tr>
+        <tr>
+          <th>b0723</th>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.704037</td>
+        </tr>
+        <tr>
+          <th>b0721</th>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.704037</td>
+        </tr>
+        <tr>
+          <th>b0729</th>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.704037</td>
+        </tr>
+        <tr>
+          <th>b0728</th>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.704037</td>
+        </tr>
+        <tr>
+          <th>b2464</th>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.873922</td>
+          <td>0.864759</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.704037</td>
+        </tr>
+        <tr>
+          <th>b0008</th>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.864759</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.704037</td>
+        </tr>
+        <tr>
+          <th>b2935</th>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.000000</td>
+          <td>0.704037</td>
+        </tr>
+        <tr>
+          <th>b2465</th>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.814298</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.000000</td>
+          <td>0.873922</td>
+          <td>0.704037</td>
+        </tr>
+        <tr>
+          <th>b3919</th>
+          <td>0.704037</td>
+          <td>0.704037</td>
+          <td>0.704037</td>
+          <td>0.704037</td>
+          <td>0.704037</td>
+          <td>0.704037</td>
+          <td>0.704037</td>
+          <td>0.704037</td>
+          <td>0.704037</td>
+          <td>0.704037</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
 
 
 By default, the double deletion function will automatically use
@@ -77,158 +455,183 @@ library, which often aids debuggging.
 .. code:: python
 
     start = time()  # start timer()
-    double_deletion(cobra_model, element_list_1=cobra_model.genes[:100],
-                    number_of_processes=2)
+    cobra.flux_analysis.double_gene_deletion(ecoli_model, ecoli_model.genes[:100], number_of_processes=2)
     t1 = time() - start
     print("Double gene deletions for 100 genes completed in %.2f sec with 2 cores" % t1)
     
     start = time()  # start timer()
-    double_deletion(cobra_model, element_list_1=cobra_model.genes[:100],
-                    number_of_processes=1)
+    cobra.flux_analysis.double_gene_deletion(ecoli_model, ecoli_model.genes[:100], number_of_processes=1)
     t2 = time() - start
     print("Double gene deletions for 100 genes completed in %.2f sec with 1 core" % t2)
     
     print("Speedup of %.2fx" % (t2/t1))
 
+
 .. parsed-literal::
 
-    Double gene deletions for 100 genes completed in 4.02 sec with 2 cores
-    Double gene deletions for 100 genes completed in 6.77 sec with 1 core
-    Speedup of 1.69x
+    Double gene deletions for 100 genes completed in 1.69 sec with 2 cores
+    Double gene deletions for 100 genes completed in 2.02 sec with 1 core
+    Speedup of 1.20x
 
 
 Double deletions can also be run for reactions
 
 .. code:: python
 
-    start = time()
-    double_deletion(cobra_model, element_list_1=cobra_model.reactions[:100],
-                    element_type="reaction")
-    t = time() - start
-    print("Double reaction deletions for 100 reactions completed in %.2f sec" % t)
+    cobra.flux_analysis.double_reaction_deletion(cobra_model, cobra_model.reactions[:10], return_frame=True)
 
-.. parsed-literal::
-
-    Double reaction deletions for 100 reactions completed in 0.93 sec
-
-
-If pandas is installed, the results can be returned formatted as a
-pandas.DataFrame
-
-.. code:: python
-
-    frame = double_deletion(cobra_model, element_list_1=cobra_model.reactions[300:308],
-                            element_type="reaction", return_frame=True)
-    frame[frame < 1e-9] = 0.  # round small values to 0
-    frame
 
 
 
 .. raw:: html
 
-    <div style="max-height:1000px;max-width:1500px;overflow:auto;">
+    <div>
     <table border="1" class="dataframe">
       <thead>
         <tr style="text-align: right;">
           <th></th>
-          <th>ARBtex</th>
-          <th>ARGAGMt7pp</th>
-          <th>ARGDC</th>
-          <th>ARGDCpp</th>
-          <th>ARGORNt7pp</th>
-          <th>ARGSL</th>
-          <th>ARGSS</th>
-          <th>ARGTRS</th>
+          <th>ACALD</th>
+          <th>ACALDt</th>
+          <th>ACKr</th>
+          <th>ACONTa</th>
+          <th>ACONTb</th>
+          <th>ACt2r</th>
+          <th>ADK1</th>
+          <th>AKGDH</th>
+          <th>AKGt2r</th>
+          <th>ALCD2x</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <th>ARBtex</th>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0</td>
-          <td> 0</td>
-          <td> 0.380008</td>
+          <th>ACALD</th>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.858307</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
         </tr>
         <tr>
-          <th>ARGAGMt7pp</th>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0</td>
-          <td> 0</td>
-          <td> 0.380008</td>
+          <th>ACALDt</th>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.858307</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
         </tr>
         <tr>
-          <th>ARGDC</th>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0</td>
-          <td> 0</td>
-          <td> 0.380008</td>
+          <th>ACKr</th>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.858307</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
         </tr>
         <tr>
-          <th>ARGDCpp</th>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0</td>
-          <td> 0</td>
-          <td> 0.380008</td>
+          <th>ACONTa</th>
+          <td>0.000000</td>
+          <td>0.000000</td>
+          <td>0.000000</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0.000000</td>
+          <td>0.000000</td>
+          <td>0.000000</td>
+          <td>0.000000</td>
+          <td>0.000000</td>
         </tr>
         <tr>
-          <th>ARGORNt7pp</th>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0</td>
-          <td> 0</td>
-          <td> 0.380008</td>
+          <th>ACONTb</th>
+          <td>0.000000</td>
+          <td>0.000000</td>
+          <td>0.000000</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0.000000</td>
+          <td>0.000000</td>
+          <td>0.000000</td>
+          <td>0.000000</td>
+          <td>0.000000</td>
         </tr>
         <tr>
-          <th>ARGSL</th>
-          <td> 0.000000</td>
-          <td> 0.000000</td>
-          <td> 0.000000</td>
-          <td> 0.000000</td>
-          <td> 0.000000</td>
-          <td> 0</td>
-          <td> 0</td>
-          <td> 0.000000</td>
+          <th>ACt2r</th>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.858307</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
         </tr>
         <tr>
-          <th>ARGSS</th>
-          <td> 0.000000</td>
-          <td> 0.000000</td>
-          <td> 0.000000</td>
-          <td> 0.000000</td>
-          <td> 0.000000</td>
-          <td> 0</td>
-          <td> 0</td>
-          <td> 0.000000</td>
+          <th>ADK1</th>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.858307</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
         </tr>
         <tr>
-          <th>ARGTRS</th>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0.380008</td>
-          <td> 0</td>
-          <td> 0</td>
-          <td> 0.380008</td>
+          <th>AKGDH</th>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+          <td>0.858307</td>
+        </tr>
+        <tr>
+          <th>AKGt2r</th>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.858307</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+        </tr>
+        <tr>
+          <th>ALCD2x</th>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
+          <td>0.858307</td>
+          <td>0.873922</td>
+          <td>0.873922</td>
         </tr>
       </tbody>
     </table>

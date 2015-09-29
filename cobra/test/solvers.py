@@ -3,13 +3,11 @@ import sys
 # deal with absolute imports by adding the appropriate directory to the path
 if __name__ == "__main__":
     sys.path.insert(0, "../..")
-    from cobra.manipulation import initialize_growth_medium
     from cobra.test import create_test_model
     from cobra import Model, Reaction, Metabolite
     from cobra import solvers
     sys.path.pop(0)  # remove the added directory to the path
 else:
-    from ..manipulation import initialize_growth_medium
     from . import create_test_model
     from .. import Model, Reaction, Metabolite
     from .. import solvers
@@ -23,9 +21,8 @@ except:
 class TestCobraSolver(object):
     def setUp(self):
         self.solver = solvers.solver_dict[self.solver_name]
-        self.model = create_test_model()
-        initialize_growth_medium(self.model, 'MgM')
-        self.old_solution = 0.320064
+        self.model = create_test_model("textbook")
+        self.old_solution = 0.8739215
         self.infeasible_model = Model()
         metabolite_1 = Metabolite("met1")
         reaction_1 = Reaction("rxn1")
@@ -107,7 +104,9 @@ class TestCobraSolver(object):
         max_solution = solver.format_solution(maximize, self.model)
         min_solution = solver.format_solution(minimize, self.model)
         self.assertAlmostEqual(0, min_solution.f, places=4)
+        self.assertEqual(min_solution.status, "optimal")
         self.assertAlmostEqual(self.old_solution, max_solution.f, places=4)
+        self.assertEqual(max_solution.status, "optimal")
         # if we set minimize at creation, can we override it at solve
         solver.solve_problem(minimize, objective_sense="maximize")
         override_minimize = solver.format_solution(minimize, self.model)
@@ -214,10 +213,10 @@ class TestCobraSolver(object):
         m = Model()
         m.add_reactions([x, y])
         # test that optimal values are at the vertices
-        m.change_objective("x")
+        m.objective = "x"
         self.assertAlmostEqual(solver.solve(m).f, 1.0)
         self.assertAlmostEqual(solver.solve(m).x_dict["y"], 2.0)
-        m.change_objective("y")
+        m.objective = "y"
         self.assertAlmostEqual(solver.solve(m).f, 3.0)
         self.assertAlmostEqual(solver.solve(m, objective_sense="minimize").f,
                                1.0)
@@ -244,6 +243,7 @@ class TestCobraSolver(object):
         solver.set_quadratic_objective(lp, quadratic_obj)
         solver.solve_problem(lp, objective_sense="minimize")
         solution = solver.format_solution(lp, m)
+        self.assertEqual(solution.status, "optimal")
         # Respecting linear objectives also makes the objective value 1.
         self.assertAlmostEqual(solution.f, 1.)
         self.assertAlmostEqual(solution.x_dict["y"], 1.)
@@ -253,10 +253,12 @@ class TestCobraSolver(object):
         solver.change_variable_objective(lp, 1, 0.)
         solver.solve_problem(lp, objective_sense="minimize")
         solution = solver.format_solution(lp, m)
+        self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(solution.f, 2.)
         # test quadratic from solve function
         solution = solver.solve(m, quadratic_component=quadratic_obj,
                                 objective_sense="minimize")
+        self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(solution.f, 1.)
         c._bound = 6
         z = Reaction("z")
@@ -268,10 +270,11 @@ class TestCobraSolver(object):
         solution = solver.solve(m, quadratic_component=scipy.sparse.eye(3),
                                 objective_sense="minimize")
         # should be 12 not 24 because 1/2 (V^T Q V)
+        self.assertEqual(solution.status, "optimal")
         self.assertAlmostEqual(solution.f, 6)
-        self.assertAlmostEqual(solution.x_dict["x"], 2)
-        self.assertAlmostEqual(solution.x_dict["y"], 2)
-        self.assertAlmostEqual(solution.x_dict["z"], 2)
+        self.assertAlmostEqual(solution.x_dict["x"], 2, places=6)
+        self.assertAlmostEqual(solution.x_dict["y"], 2, places=6)
+        self.assertAlmostEqual(solution.x_dict["z"], 2, places=6)
 
 for solver_name in solvers.solver_dict:
     exec('class %sTester(TestCobraSolver, TestCase): None' % solver_name)

@@ -12,7 +12,7 @@ cobra/solvers/cglpk.c
 cobra/solvers/*so
 glpk.h
 libglpk.a
-libgmp.a
 .idea/
 .ipynb_checkpoints
 examples/faq.py
+documentation_builder/test*\.*

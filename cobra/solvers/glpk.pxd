@@ -94,6 +94,9 @@ cdef extern from "glpk.h":
     double glp_get_col_lb(glp_prob *lp, int i)
     double glp_get_col_ub(glp_prob *lp, int i)
 
+    void glp_scale_prob(glp_prob *lp, int flags)
+    void glp_unscale_prob(glp_prob *lp)
+
     int glp_get_prim_stat(glp_prob *lp)
     int glp_get_status(glp_prob *lp)
     int glp_mip_status(glp_prob *lp)
@@ -108,6 +111,7 @@ cdef extern from "glpk.h":
     double glp_get_obj_coef(glp_prob *lp, int)
     int glp_get_obj_dir(glp_prob *lp)
     void glp_copy_prob(glp_prob *dst, glp_prob *src, int names)
+
     const char *glp_version()
 
     # output redirection
@@ -142,6 +146,13 @@ cdef extern from "glpk.h":
 
     int GLP_ON
     int GLP_OFF
+
+    # constants for scaling the problem
+    int GLP_SF_AUTO
+    int GLP_SF_GM
+    int GLP_SF_EQ
+    int GLP_SF_2N
+    int GLP_SF_SKIP
 
     # constants for iocp control, not already in simplex
 

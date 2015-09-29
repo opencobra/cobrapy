@@ -5,10 +5,11 @@ import re
 from copy import copy, deepcopy
 from warnings import warn
 
-from ..external.six import string_types, iteritems
+from six import string_types, iteritems
 
 from .Object import Object
-from .Gene import Gene
+from .Gene import Gene, parse_gpr, ast2str
+from .Metabolite import Metabolite
 
 
 class Frozendict(dict):
@@ -27,7 +28,17 @@ class Frozendict(dict):
         raise NotImplementedError("read-only")
 
 
+# precompiled regular expressions
+# Matches and/or in a gene reaction rule
 and_or_search = re.compile(r'\(| and| or|\+|\)', re.IGNORECASE)
+gpr_clean = re.compile(' {2,}')
+# This regular expression finds any single letter compartment enclosed in
+# square brackets at the beginning of the string. For example [c] : foo --> bar
+compartment_finder = re.compile("^\s*(\[[A-Za-z]\])\s*:*")
+# Regular expressions to match the arrows
+_reversible_arrow_finder = re.compile("<(-+|=+)>")
+_forward_arrow_finder = re.compile("(-+|=+)>")
+_reverse_arrow_finder = re.compile("<(-+|=+)")
 
 
 class Reaction(Object):
@@ -56,13 +67,10 @@ class Reaction(Object):
 
         self.objective_coefficient = self.lower_bound = 0.
         self.upper_bound = 1000.
-        # Either None or if this reaction is irreversible then
-        self.reflection = None
-        # a reaction in the model that is essentially self * -1
         # Used during optimization.  Indicates whether the
-        self.variable_kind = 'continuous'
         # variable is modeled as continuous, integer, binary, semicontinous, or
         # semiinteger.
+        self.variable_kind = 'continuous'
 
     # read-only
     @property
@@ -79,9 +87,14 @@ class Reaction(Object):
 
     @gene_reaction_rule.setter
     def gene_reaction_rule(self, new_rule):
-        self._gene_reaction_rule = new_rule
-        gene_names = set((re.compile(' {2,}').sub(
-            ' ', and_or_search.sub('', self._gene_reaction_rule))).split(' '))
+        self._gene_reaction_rule = new_rule.strip()
+        try:
+            _, gene_names = parse_gpr(self._gene_reaction_rule)
+        except (SyntaxError, TypeError) as e:
+            warn("malformed gene_reaction_rule '%s' for %s" %
+                 (new_rule, repr(self)))
+            tmp_str = and_or_search.sub('', self._gene_reaction_rule)
+            gene_names = set((gpr_clean.sub(' ', tmp_str).split(' ')))
         if '' in gene_names:
             gene_names.remove('')
         old_genes = self._genes
@@ -113,6 +126,19 @@ class Reaction(Object):
                          (g.id, self.id))
 
     @property
+    def gene_name_reaction_rule(self):
+        """Display gene_reaction_rule with names intead.
+
+        Do NOT use this string for computation. It is intended to give a
+        representation of the rule using more familiar gene names instead of
+        the often cryptic ids.
+
+        """
+        names = {i.id: i.name for i in self._genes}
+        ast = parse_gpr(self._gene_reaction_rule)[0]
+        return ast2str(ast, names=names)
+
+    @property
     def x(self):
         """The flux through the reaction in the most recent solution
 
@@ -142,6 +168,10 @@ class Reaction(Object):
         """
         return self.lower_bound < 0 and self.upper_bound > 0
 
+    @reversibility.setter
+    def reversibility(self, value):
+        warn("Setting reaction reversibility is ignored")
+
     @property
     def boundary(self):
         # single metabolite implies it must be a boundary
@@ -154,6 +184,11 @@ class Reaction(Object):
             return "system_boundary"
         return None
 
+    @property
+    def model(self):
+        """returns the model the reaction is a part of"""
+        return self._model
+
     def _update_awareness(self):
         """Make sure all metabolites and genes that are associated with
         this reaction are aware of it.
@@ -163,12 +198,6 @@ class Reaction(Object):
             x._reaction.add(self)
         for x in self._genes:
             x._reaction.add(self)
-
-    def get_model(self):
-        """Returns the Model object that this Reaction is associated with.
-
-        """
-        return self._model
 
     def remove_from_model(self, model=None, remove_orphans=False):
         """Removes the reaction from the model while keeping it intact
@@ -278,26 +307,6 @@ class Reaction(Object):
         # self._model = the_model
         return new_reaction
 
-    def guided_copy(self, the_model, metabolite_dict, gene_dict=None):
-        """.. deprecated :: 0.3 use copy directly"""
-        warn("deprecated")
-        the_copy = Object.guided_copy(self)
-        # Replace the complex items in a faster fashion
-        the_copy._model = the_model
-        if gene_dict:
-            the_copy._genes = set([gene_dict[k.id]
-                                   for k in self._genes])
-        the_copy._metabolites = {metabolite_dict[k.id]: v
-                                 for k, v in iteritems(self._metabolites)}
-
-        # make the metabolites and genes aware of the reaction
-        [k._reaction.add(the_copy)
-         for k in the_copy._genes]
-        [k._reaction.add(the_copy)
-         for k in the_copy._metabolites.keys()]
-
-        return(the_copy)
-
     def pop(self, metabolite_id):
         """Remove a metabolite from the reaction and return the
         stoichiometric coefficient.
@@ -381,41 +390,15 @@ class Reaction(Object):
         self *= the_coefficient
         return self
 
-    def parse_gene_association(self, **kwargs):
-        """.. deprecated :: 0.3 Set gene_reaction_rule directly"""
-        warn("deprecated function")
-        # trigger the update if that was the desired behavior for some reason
-        self.gene_reaction_rule = self._gene_reaction_rule
-
-    def add_gene_reaction_rule(self, the_rule):
-        """.. deprecated :: 0.3 Set gene_reaction_rule directly"""
-        self.gene_reaction_rule = the_rule
-        warn("deprecated, assign to gene_reaction_rule directly")
-
-    def get_reactants(self):
-        """.. deprecated :: 0.3 use reactants property instead"""
-        warn("deprecated, use the reactants property instead")
-        return self.reactants
-
     @property
     def reactants(self):
         """Return a list of reactants for the reaction."""
         return [k for k, v in self._metabolites.items() if v < 0]
 
-    def get_products(self):
-        """.. deprecated :: 0.3 use products property instead"""
-        warn("depreacated, use the products property instead")
-        return self.products
-
     @property
     def products(self):
         """Return a list of products for the reaction"""
         return [k for k, v in self._metabolites.items() if v > 0]
-
-    def get_gene(self):
-        """.. deprecated :: 0.3 use genes property instead"""
-        warn("deprecated, use the genes property instead")
-        return list(self._genes)
 
     def get_coefficient(self, metabolite_id):
         """Return the stoichiometric coefficient for a metabolite in
@@ -461,31 +444,35 @@ class Reaction(Object):
             the reaction is associated with (i.e. self.model)
 
         """
-        the_metabolites = metabolites
-        _id_to_metabolites = dict([(x.id, x)
-                                   for x in self._metabolites])
+        _id_to_metabolites = {x.id: x for x in self._metabolites}
         new_metabolites = []
-        for the_metabolite, the_coefficient in iteritems(the_metabolites):
+        for metabolite, coefficient in iteritems(metabolites):
             # If a metabolite already exists in the reaction then
             # just add them.
-            if the_metabolite.id in _id_to_metabolites:
-                reaction_metabolite = _id_to_metabolites[the_metabolite.id]
+            if metabolite.id in _id_to_metabolites:
+                reaction_metabolite = _id_to_metabolites[metabolite.id]
                 if combine:
-                    self._metabolites[reaction_metabolite] += the_coefficient
+                    self._metabolites[reaction_metabolite] += coefficient
                 else:
-                    self._metabolites[reaction_metabolite] = the_coefficient
+                    self._metabolites[reaction_metabolite] = coefficient
             else:
-                self._metabolites[the_metabolite] = the_coefficient
+                # If the reaction is in a model, ensure we aren't using
+                # a duplicate metabolite.
+                try:
+                    metabolite = \
+                        self._model.metabolites.get_by_id(metabolite.id)
+                except:
+                    new_metabolites.append(metabolite)
+                self._metabolites[metabolite] = coefficient
                 # make the metabolite aware that it is involved in this
                 # reaction
-                the_metabolite._reaction.add(self)
-                new_metabolites.append(the_metabolite)
-        for the_metabolite, the_coefficient in list(self._metabolites.items()):
+                metabolite._reaction.add(self)
+        for metabolite, the_coefficient in list(self._metabolites.items()):
             if the_coefficient == 0:
                 # make the metabolite aware that it no longer participates
                 # in this reaction
-                the_metabolite._reaction.remove(self)
-                self._metabolites.pop(the_metabolite)
+                metabolite._reaction.remove(self)
+                self._metabolites.pop(metabolite)
         if add_to_container_model and hasattr(self._model, 'add_metabolites'):
             self._model.add_metabolites(new_metabolites)
 
@@ -499,19 +486,22 @@ class Reaction(Object):
 
         .. note:: A final coefficient < 0 implies a reactant.
 
-        .. note:: This function uses deepcopy in case the reaction is being
-                  subtracted from itself.
-
         """
-        metabolites = deepcopy(metabolites)
-        metabolites = dict([(k, -v)
-                            for k, v in metabolites.items()])
-        self.add_metabolites(metabolites)
+        self.add_metabolites({k: -v for k, v in iteritems(metabolites)})
+
+    def clear_metabolites(self):
+        """Remove all metabolites from the reaction"""
+        for metabolite in list(self._metabolites.keys()):
+            self.pop(metabolite)
 
     @property
     def reaction(self):
         """Human readable reaction string"""
         return self.build_reaction_string()
+
+    @reaction.setter
+    def reaction(self, value):
+        return self.build_reaction_from_string(value)
 
     def build_reaction_string(self, use_metabolite_names=False):
         """Generate a human readable reaction string"""
@@ -524,7 +514,7 @@ class Reaction(Object):
             id_type = 'name'
         reactant_bits = []
         product_bits = []
-        for the_metabolite, coefficient in self._metabolites.items():
+        for the_metabolite, coefficient in iteritems(self._metabolites):
             name = str(getattr(the_metabolite, id_type))
             if coefficient > 0:
                 product_bits.append(format(coefficient) + name)
@@ -543,64 +533,25 @@ class Reaction(Object):
         return reaction_string
 
     def check_mass_balance(self):
-        """Makes sure that the reaction is elementally-balanced."""
-        reaction_element_dict = defaultdict(list)
-        for the_metabolite, the_coefficient in self._metabolites.items():
-            if the_metabolite.formula is not None:
-                for k, v in the_metabolite.formula.elements.items():
-                    reaction_element_dict[k].append(the_coefficient * v)
-        reaction_element_dict = {k: sum(v) for k, v
-                                 in reaction_element_dict.items()}
-        if sum(map(abs, reaction_element_dict.values())) != 0:
-            return [self.id, reaction_element_dict]
-        else:
-            return []
+        """Compute mass and charge balance for the reaction
 
-    def print_values(self):
-        """.. deprecated :: 0.3"""
-        warn("deprecated")
-        print("reaction:", self.id)
-        print("subsystem", self.subsystem)
-        print(self.reaction)
-        print("bounds: (%.2f, %.2f)" % (self.lower_bound, self.upper_bound))
-        print("objective_coefficient", self.objective_coefficient)
-        print("gene reaction rule:", self.gene_reaction_rule)
+        returns a dict of {element: amount} for unbalanced elements.
+        "charge" is treated as an element in this dict
+        This should be empty for balanced reactions.
+        """
+        reaction_element_dict = defaultdict(int)
+        for metabolite, coefficient in self._metabolites.items():
+            if metabolite.charge is not None:
+                reaction_element_dict["charge"] += \
+                    coefficient * metabolite.charge
+            for element, amount in iteritems(metabolite.elements):
+                reaction_element_dict[element] += coefficient * amount
+        # filter out 0 values
+        return {k: v for k, v in iteritems(reaction_element_dict) if v != 0}
 
     def get_compartments(self):
-        """
-        """
-        return(list(set([x.compartment for x in self._metabolites])))
-
-    def remove_gene(self, cobra_gene):
-        """.. deprecated :: 0.3 update the gene_reaction_rule instead"""
-        warn("deprecated: update the gene_reaction_rule instead")
-        try:
-            self._genes.remove(cobra_gene)
-            cobra_gene._reaction.remove(self)
-        except Exception as e:
-            try:
-                if hasattr(self._genes, 'keys'):
-                    self._genes = set(self._genes.keys())
-                    self.remove_gene(cobra_gene)
-            except:
-                raise Exception('Unable to remove %s from %s: %s' %
-                                (repr(cobra_gene), repr(self), e))
-
-    def add_gene(self, cobra_gene):
-        """.. deprecated :: 0.3 update the gene_reaction_rule instead"""
-        warn("deprecated: update the gene_reaction_rule instead")
-        try:
-            self._genes.add(cobra_gene)
-            cobra_gene._reaction.add(self)
-            cobra_gene._model = self._model
-        except Exception as e:
-            try:
-                if hasattr(self._genes, 'keys'):
-                    self._genes = set(self._genes.keys())
-                    self.add_gene(cobra_gene)
-            except:
-                raise Exception('Unable to add %s to %s: %s' %
-                                (repr(cobra_gene), repr(self), e))
+        """lists compartments the metabolites are in"""
+        return list({x.compartment for x in self._metabolites})
 
     def _associate_gene(self, cobra_gene):
         """Associates a cobra.Gene object with a cobra.Reaction.
@@ -625,3 +576,74 @@ class Reaction(Object):
         """Change the upper and lower bounds of the reaction to 0."""
         self.lower_bound = 0
         self.upper_bound = 0
+
+    def build_reaction_from_string(self, reaction_str, verbose=True,
+                                   fwd_arrow=None, rev_arrow=None,
+                                   reversible_arrow=None, term_split="+"):
+        # set the arrows
+        forward_arrow_finder = _forward_arrow_finder if fwd_arrow is None \
+            else re.compile(re.escape(fwd_arrow))
+        reverse_arrow_finder = _reverse_arrow_finder if rev_arrow is None \
+            else re.compile(re.escape(rev_arrow))
+        reversible_arrow_finder = _reversible_arrow_finder \
+            if reversible_arrow is None \
+            else re.compile(re.escape(reversible_arrow))
+        if self._model is None:
+            warn("no model found")
+            model = None
+        else:
+            model = self._model
+        original_str = "" + reaction_str  # copy
+        found_compartments = compartment_finder.findall(reaction_str)
+        if len(found_compartments) == 1:
+            compartment = found_compartments[0]
+            reaction_str = compartment_finder.sub("", reaction_str)
+        else:
+            compartment = ""
+
+        # reversible case
+        arrow_match = reversible_arrow_finder.search(reaction_str)
+        if arrow_match is not None:
+            self.lower_bound = -1000
+            self.upper_bound = 1000
+        else:  # irreversible
+            # try forward
+            arrow_match = forward_arrow_finder.search(reaction_str)
+            if arrow_match is not None:
+                self.upper_bound = 1000
+                self.lower_bound = 0
+            else:
+                # must be reverse
+                arrow_match = reverse_arrow_finder.search(reaction_str)
+                if arrow_match is None:
+                    raise ValueError("no suitable arrow found in '%s'" %
+                                     reaction_str)
+                else:
+                    self.upper_bound = 0
+                    self.lower_bound = -1000
+        reactant_str = reaction_str[:arrow_match.start()].strip()
+        product_str = reaction_str[arrow_match.end():].strip()
+
+        self.clear_metabolites()
+
+        for substr, factor in ((reactant_str, -1), (product_str, 1)):
+            if len(substr) == 0:
+                continue
+            for term in substr.split(term_split):
+                term = term.strip()
+                if term.lower() == "nothing":
+                    continue
+                if " " in term:
+                    num_str, met_id = term.split()
+                    num = float(num_str.lstrip("(").rstrip(")")) * factor
+                else:
+                    met_id = term
+                    num = factor
+                met_id += compartment
+                try:
+                    met = model.metabolites.get_by_id(met_id)
+                except KeyError:
+                    if verbose:
+                        print("unknown metabolite '%s' created" % met_id)
+                    met = Metabolite(met_id)
+                self.add_metabolites({met: num})

@@ -1,7 +1,46 @@
 from copy import deepcopy
 from warnings import warn
+from itertools import chain
+from ast import NodeTransformer
+
+from six import iteritems
 
 from .. import Reaction
+from .delete import get_compiled_gene_reaction_rules
+from ..core.Gene import ast2str
+from ..io.sbml3 import _renames
+
+
+def _escape_str_id(id_str):
+    """make a single string id SBML compliant"""
+    for c in ("'", '"'):
+        if id_str.startswith(c) and id_str.endswith(c) \
+                and id_str.count(c) == 2:
+            id_str = id_str.strip(c)
+    for char, escaped_char in _renames:
+        id_str = id_str.replace(char, escaped_char)
+    return id_str
+
+
+class _GeneRenamer(NodeTransformer):
+
+    def visit_Name(self, node):
+        node.id = _escape_str_id(node.id)
+        return node
+
+
+def escape_ID(cobra_model):
+    """makes all ids SBML compliant"""
+    for x in chain([cobra_model],
+                   cobra_model.metabolites,
+                   cobra_model.reactions,
+                   cobra_model.genes):
+        x.id = _escape_str_id(x.id)
+    cobra_model.repair()
+    gene_renamer = _GeneRenamer()
+    for rxn, rule in iteritems(get_compiled_gene_reaction_rules(cobra_model)):
+        if rule is not None:
+            rxn._gene_reaction_rule = ast2str(gene_renamer.visit(rule))
 
 
 def initialize_growth_medium(cobra_model, the_medium='MgM',
@@ -127,8 +166,8 @@ def convert_to_irreversible(cobra_model):
                 reaction.objective_coefficient * -1
             reaction.lower_bound = 0
             # Make the directions aware of each other
-            reaction.reflection = reverse_reaction
-            reverse_reaction.reflection = reaction
+            reaction.notes["reflection"] = reverse_reaction.id
+            reverse_reaction.notes["reflection"] = reaction.id
             reaction_dict = dict([(k, v*-1)
                                   for k, v in reaction._metabolites.items()])
             reverse_reaction.add_metabolites(reaction_dict)
@@ -149,31 +188,38 @@ def revert_to_reversible(cobra_model, update_solution=True):
 
     """
     reverse_reactions = [x for x in cobra_model.reactions
-                         if x.reflection is not None and
+                         if "reflection" in x.notes and
                          x.id.endswith('_reverse')]
 
     # If there are no reverse reactions, then there is nothing to do
     if len(reverse_reactions) == 0:
         return
 
+    update_solution = update_solution and cobra_model.solution is not None \
+        and cobra_model.solution.status != "NA"
+
+    if update_solution:
+        x_dict = cobra_model.solution.x_dict
+
     for reverse in reverse_reactions:
-        forward = reverse.reflection
+        forward_id = reverse.notes.pop("reflection")
+        forward = cobra_model.reactions.get_by_id(forward_id)
         forward.lower_bound = -reverse.upper_bound
-        forward.reflection = None
+
+        # update the solution dict
+        if update_solution:
+            if reverse.id in x_dict:
+                x_dict[forward_id] -= x_dict.pop(reverse.id)
+
+        if "reflection" in forward.notes:
+            forward.notes.pop("reflection")
+
     # Since the metabolites and genes are all still in
     # use we can do this faster removal step.  We can
     # probably speed things up here.
     cobra_model.remove_reactions(reverse_reactions)
-    # fix the solution
-    if update_solution and cobra_model.solution is not None and \
-            cobra_model.solution.status != "NA":
-        x_dict = cobra_model.solution.x_dict
-        # Check if the model was optimized while it was still reversible. If so
-        # then the solution does not need to be fixed.
-        if reverse_reactions[0].id not in x_dict:
-            return
-        # Update x and x_dict to correct for reverse flux.
-        for reverse in reverse_reactions:
-            forward = reverse.reflection
-            x_dict[forward.id] -= x_dict.pop(reverse.id)
+
+    # update the solution vector
+    if update_solution:
+        cobra_model.solution.x_dict = x_dict
         cobra_model.solution.x = [x_dict[r.id] for r in cobra_model.reactions]

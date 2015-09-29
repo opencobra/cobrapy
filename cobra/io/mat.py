@@ -1,10 +1,12 @@
 import re
+from uuid import uuid4
+from warnings import warn
 
 from numpy import array, object as np_object
 from scipy.io import loadmat, savemat
 from scipy.sparse import coo_matrix
 
-from .. import Model, Metabolite, Reaction, Formula
+from .. import Model, Metabolite, Reaction
 
 # try to use an ordered dict
 try:
@@ -39,7 +41,8 @@ def _get_id_comparment(id):
 
 def _cell(x):
     """translate an array x into a MATLAB cell array"""
-    return array(x, dtype=np_object)
+    x_no_none = [i if i is not None else "" for i in x]
+    return array(x_no_none, dtype=np_object)
 
 
 def load_matlab_model(infile_path, variable_name=None):
@@ -54,22 +57,14 @@ def load_matlab_model(infile_path, variable_name=None):
 
     """
     data = loadmat(infile_path)
+    if variable_name is None:
+        # skip meta variables
+        meta_vars = {"__globals__", "__header__", "__version__"}
+        possible_names = sorted(i for i in data if i not in meta_vars)
+        if len(possible_names) == 1:
+            variable_name = possible_names[0]
     if variable_name is not None:
         return from_mat_struct(data[variable_name], model_id=variable_name)
-    else:
-        # will try all of the variables in the dict
-        possible_names = {}
-        for key in data.keys():
-            possible_names[key] = None
-        # skip meta variables
-        to_remove = ["__globals__", "__header__", "__version__"]
-        to_pop = []
-        for name in possible_names:
-            if name in to_remove:
-                to_pop.append(name)
-        for i in to_pop:
-            possible_names.pop(i)
-        possible_names = possible_names.keys()
     for possible_name in possible_names:
         try:
             return from_mat_struct(data[possible_name], model_id=possible_name)
@@ -79,7 +74,7 @@ def load_matlab_model(infile_path, variable_name=None):
     raise Exception("no COBRA model found")
 
 
-def save_matlab_model(model, file_name):
+def save_matlab_model(model, file_name, varname=None):
     """Save the cobra model as a .mat file.
 
     This .mat file can be used directly in the MATLAB version of COBRA.
@@ -89,8 +84,12 @@ def save_matlab_model(model, file_name):
     file_name : str or file-like object
 
     """
+    if varname is None:
+        varname = str(model.id) \
+            if model.id is not None and len(model.id) > 0 \
+            else "exported_model"
     mat = create_mat_dict(model)
-    savemat(file_name, {str(model.description): mat},
+    savemat(file_name, {varname: mat},
             appendmat=True, oned_as="column")
 
 
@@ -110,12 +109,14 @@ def create_mat_dict(model):
     mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
     mat["csense"] = "".join(model._constraint_sense)
     mat["S"] = model.S
-    mat["lb"] = array(rxns.list_attr("lower_bound"))
-    mat["ub"] = array(rxns.list_attr("upper_bound"))
-    mat["b"] = array(mets.list_attr("_bound"))
-    mat["c"] = array(rxns.list_attr("objective_coefficient"))
-    mat["rev"] = array(rxns.list_attr("reversibility"))
-    mat["description"] = str(model.description)
+    # multiply by 1 to convert to float, working around scipy bug
+    # https://github.com/scipy/scipy/issues/4537
+    mat["lb"] = array(rxns.list_attr("lower_bound")) * 1.
+    mat["ub"] = array(rxns.list_attr("upper_bound")) * 1.
+    mat["b"] = array(mets.list_attr("_bound")) * 1.
+    mat["c"] = array(rxns.list_attr("objective_coefficient")) * 1.
+    mat["rev"] = array(rxns.list_attr("reversibility")) * 1
+    mat["description"] = str(model.id)
     return mat
 
 
@@ -130,6 +131,11 @@ def from_mat_struct(mat_struct, model_id=None):
         raise ValueError("not a valid mat struct")
     if not set(["rxns", "mets", "S", "lb", "ub"]) <= set(m.dtype.names):
         raise ValueError("not a valid mat struct")
+    if "c" in m.dtype.names:
+        c_vec = m["c"][0, 0]
+    else:
+        c_vec = None
+        warn("objective vector 'c' not found")
     model = Model()
     if "description" in m:
         model.id = m["description"][0, 0][0]
@@ -137,7 +143,6 @@ def from_mat_struct(mat_struct, model_id=None):
         model.id = model_id
     else:
         model.id = "imported_model"
-    model.description = model.id
     for i, name in enumerate(m["mets"][0, 0]):
         new_metabolite = Metabolite()
         new_metabolite.id = str(name[0][0])
@@ -147,8 +152,7 @@ def from_mat_struct(mat_struct, model_id=None):
         except (IndexError, ValueError):
             pass
         try:
-            new_metabolite.formula = \
-                Formula(str(m["metFormulas"][0][0][i][0][0]))
+            new_metabolite.formula = str(m["metFormulas"][0][0][i][0][0])
         except (IndexError, ValueError):
             pass
         model.add_metabolites([new_metabolite])
@@ -158,7 +162,8 @@ def from_mat_struct(mat_struct, model_id=None):
         new_reaction.id = str(name[0][0])
         new_reaction.lower_bound = float(m["lb"][0, 0][i][0])
         new_reaction.upper_bound = float(m["ub"][0, 0][i][0])
-        new_reaction.objective_coefficient = float(m["c"][0, 0][i][0])
+        if c_vec is not None:
+            new_reaction.objective_coefficient = float(c_vec[i][0])
         try:
             new_reaction.gene_reaction_rule = str(m['grRules'][0, 0][i][0][0])
         except (IndexError, ValueError):
@@ -177,3 +182,42 @@ def from_mat_struct(mat_struct, model_id=None):
     for i, j, v in zip(coo.row, coo.col, coo.data):
         model.reactions[j].add_metabolites({model.metabolites[i]: v})
     return model
+
+
+def _check(result):
+    """ensure success of a pymatbridge operation"""
+    if result["success"] is not True:
+        raise RuntimeError(result["content"]["stdout"])
+
+
+def model_to_pymatbridge(model, variable_name="model", matlab=None):
+    """send the model to a MATLAB workspace through pymatbridge
+
+    This model can then be manipulated through the COBRA toolbox
+
+    variable_name: str
+        The variable name to which the model will be assigned in the
+        MATLAB workspace
+
+    matlab: None or pymatbridge.Matlab instance
+        The MATLAB workspace to which the variable will be sent. If
+        this is None, then this will be sent to the same environment
+        used in IPython magics.
+
+    """
+    if matlab is None:  # assumed to be running an IPython magic
+        from IPython import get_ipython
+        matlab = get_ipython().magics_manager.registry["MatlabMagics"].Matlab
+    model_info = create_mat_dict(model)
+    S = model_info["S"].todok()
+    model_info["S"] = 0
+    temp_S_name = "cobra_pymatbridge_temp_" + uuid4().hex
+    _check(matlab.set_variable(variable_name, model_info))
+    _check(matlab.set_variable(temp_S_name, S))
+    _check(matlab.run_code("%s.S = %s;" % (variable_name, temp_S_name)))
+    # all vectors need to be transposed
+    for i in model_info.keys():
+        if i == "S":
+            continue
+        _check(matlab.run_code("{0}.{1} = {0}.{1}';".format(variable_name, i)))
+    _check(matlab.run_code("clear %s;" % temp_S_name))

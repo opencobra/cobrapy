@@ -1,7 +1,12 @@
 from copy import copy, deepcopy
 import re
-from ..external.six import string_types, iteritems
+from six import string_types, iteritems
 from itertools import islice
+
+try:
+    from numpy import bool_
+except:
+    bool_ = bool
 
 
 class DictList(list):
@@ -42,7 +47,7 @@ class DictList(list):
 
     def get_by_id(self, id):
         """return the element with a matching id"""
-        return self[self._dict[id]]
+        return list.__getitem__(self, self._dict[id])
 
     def list_attr(self, attribute):
         """return a list of the given attribute for every object
@@ -255,7 +260,7 @@ class DictList(list):
         # If the pop occured from a location other than the end of the list,
         # we will need to subtract 1 from every entry afterwards
         if len(args) == 0 or args == [-1]:  # removing from the end of the list
-            return
+            return value
         _dict = self._dict
         for i, j in iteritems(_dict):
             if j > index:
@@ -287,10 +292,20 @@ class DictList(list):
         self._generate_index()
 
     def __getitem__(self, i):
-        if isinstance(i, slice):
+        if isinstance(i, int):
+            return list.__getitem__(self, i)
+        elif isinstance(i, slice):
             selection = self.__class__()
             selection._extend_nocheck(list.__getitem__(self, i))
             return selection
+        elif hasattr(i, "__len__"):
+            if len(i) == len(self) and isinstance(i[0], (bool, bool_)):
+                selection = self.__class__()
+                result = (o for j, o in enumerate(self) if i[j])
+                selection._extend_nocheck(result)
+                return selection
+            else:
+                return self.__class__(list.__getitem__(self, i))
         else:
             return list.__getitem__(self, i)
 

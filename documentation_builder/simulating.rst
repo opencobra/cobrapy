@@ -2,17 +2,17 @@
 Simulating with FBA
 ===================
 
-This example is available as an IPython
-`notebook <http://nbviewer.ipython.org/github/opencobra/cobrapy/blob/master/documentation_builder/simulating.ipynb>`__.
-
 Simulations using flux balance analysis can be solved using
 Model.optimize(). This will maximize or minimize (maximizing is the
 default) flux through the objective reactions.
 
 .. code:: python
 
+    import pandas
+    pandas.options.display.max_rows = 100
+    
     import cobra.test
-    model = cobra.test.create_test_model()
+    model = cobra.test.create_test_model("textbook")
 
 Running FBA
 -----------
@@ -23,9 +23,10 @@ Running FBA
 
 
 
+
 .. parsed-literal::
 
-    <Solution 0.38 at 0x660d990>
+    <Solution 0.87 at 0x7fb3f849ca10>
 
 
 
@@ -51,6 +52,7 @@ objective value
 
 
 
+
 .. parsed-literal::
 
     'optimal'
@@ -63,9 +65,10 @@ objective value
 
 
 
+
 .. parsed-literal::
 
-    0.38000797227551136
+    0.8739215069684305
 
 
 
@@ -78,35 +81,35 @@ only one objective reaction, with an objective coefficient of 1.
 
 .. code:: python
 
-    {reaction: reaction.objective_coefficient for reaction in model.reactions
-            if reaction.objective_coefficient > 0}
+    model.objective
+
 
 
 
 .. parsed-literal::
 
-    {<Reaction biomass_iRR1083_metals at 0x660d350>: 1.0}
+    {<Reaction Biomass_Ecoli_core at 0x7fb3c899be90>: 1.0}
 
 
 
-The objective function can be changed by using the function
-Model.change\_objective, which will take either a reaction object or
-just its name.
+The objective function can be changed by assigning Model.objective,
+which can be a reaction object (or just it's name), or a dict of
+{Reaction: objective\_coefficient}.
 
 .. code:: python
 
     # change the objective to ATPM
     # the upper bound should be 1000 so we get the actual optimal value
     model.reactions.get_by_id("ATPM").upper_bound = 1000.
-    model.change_objective("ATPM")
-    {reaction: reaction.objective_coefficient for reaction in model.reactions
-            if reaction.objective_coefficient > 0}
+    model.objective = "ATPM"
+    model.objective
+
 
 
 
 .. parsed-literal::
 
-    {<Reaction ATPM at 0x52cb190>: 1.0}
+    {<Reaction ATPM at 0x7fb3c899bbd0>: 1}
 
 
 
@@ -116,9 +119,10 @@ just its name.
 
 
 
+
 .. parsed-literal::
 
-    <Solution 119.67 at 0x4c93110>
+    <Solution 175.00 at 0x7fb3c895de50>
 
 
 
@@ -128,14 +132,276 @@ Reaction.objective\_coefficient directly.
 .. code:: python
 
     model.reactions.get_by_id("ATPM").objective_coefficient = 0.
-    model.reactions.get_by_id("biomass_iRR1083_metals").objective_coefficient = 1.
-    {reaction: reaction.objective_coefficient for reaction in model.reactions
-            if reaction.objective_coefficient > 0}
+    model.reactions.get_by_id("Biomass_Ecoli_core").objective_coefficient = 1.
+    model.objective
+
 
 
 
 .. parsed-literal::
 
-    {<Reaction biomass_iRR1083_metals at 0x660d350>: 1.0}
+    {<Reaction Biomass_Ecoli_core at 0x7fb3c899be90>: 1.0}
+
+
+
+Running FVA
+-----------
+
+FBA will not give always give unique solution, because multiple flux
+states can achieve the same optimum. FVA (or flux variability analysis)
+finds the ranges of each metabolic flux at the optimum.
+
+.. code:: python
+
+    fva_result = cobra.flux_analysis.flux_variability_analysis(model, model.reactions[:20])
+    pandas.DataFrame.from_dict(fva_result).T
+
+
+
+
+.. raw:: html
+
+    <div>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>maximum</th>
+          <th>minimum</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>ACALD</th>
+          <td>9.466331e-29</td>
+          <td>3.720797e-15</td>
+        </tr>
+        <tr>
+          <th>ACALDt</th>
+          <td>-6.310887e-29</td>
+          <td>3.720797e-15</td>
+        </tr>
+        <tr>
+          <th>ACKr</th>
+          <td>-2.524355e-28</td>
+          <td>3.933509e-15</td>
+        </tr>
+        <tr>
+          <th>ACONTa</th>
+          <td>6.007250e+00</td>
+          <td>6.007250e+00</td>
+        </tr>
+        <tr>
+          <th>ACONTb</th>
+          <td>6.007250e+00</td>
+          <td>6.007250e+00</td>
+        </tr>
+        <tr>
+          <th>ACt2r</th>
+          <td>6.121561e-28</td>
+          <td>3.933509e-15</td>
+        </tr>
+        <tr>
+          <th>ADK1</th>
+          <td>-4.042971e-14</td>
+          <td>0.000000e+00</td>
+        </tr>
+        <tr>
+          <th>AKGDH</th>
+          <td>5.064376e+00</td>
+          <td>5.064376e+00</td>
+        </tr>
+        <tr>
+          <th>AKGt2r</th>
+          <td>0.000000e+00</td>
+          <td>7.079399e-15</td>
+        </tr>
+        <tr>
+          <th>ALCD2x</th>
+          <td>0.000000e+00</td>
+          <td>5.729185e-15</td>
+        </tr>
+        <tr>
+          <th>ATPM</th>
+          <td>8.390000e+00</td>
+          <td>8.390000e+00</td>
+        </tr>
+        <tr>
+          <th>ATPS4r</th>
+          <td>4.551401e+01</td>
+          <td>4.551401e+01</td>
+        </tr>
+        <tr>
+          <th>Biomass_Ecoli_core</th>
+          <td>8.739215e-01</td>
+          <td>8.739215e-01</td>
+        </tr>
+        <tr>
+          <th>CO2t</th>
+          <td>-2.280983e+01</td>
+          <td>-2.280983e+01</td>
+        </tr>
+        <tr>
+          <th>CS</th>
+          <td>6.007250e+00</td>
+          <td>6.007250e+00</td>
+        </tr>
+        <tr>
+          <th>CYTBD</th>
+          <td>4.359899e+01</td>
+          <td>4.359899e+01</td>
+        </tr>
+        <tr>
+          <th>D_LACt2</th>
+          <td>3.660315e-28</td>
+          <td>4.140787e-15</td>
+        </tr>
+        <tr>
+          <th>ENO</th>
+          <td>1.471614e+01</td>
+          <td>1.471614e+01</td>
+        </tr>
+        <tr>
+          <th>ETOHt2r</th>
+          <td>0.000000e+00</td>
+          <td>5.729185e-15</td>
+        </tr>
+        <tr>
+          <th>EX_ac_e</th>
+          <td>-3.933509e-15</td>
+          <td>0.000000e+00</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+
+
+Setting parameter fraction\_of\_optimium=0.90 would give the flux ranges
+for reactions at 90% optimality.
+
+.. code:: python
+
+    fva_result = cobra.flux_analysis.flux_variability_analysis(model, model.reactions[:20], fraction_of_optimum=0.9)
+    pandas.DataFrame.from_dict(fva_result).T
+
+
+
+
+.. raw:: html
+
+    <div>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>maximum</th>
+          <th>minimum</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>ACALD</th>
+          <td>9.466331e-29</td>
+          <td>-2.542370</td>
+        </tr>
+        <tr>
+          <th>ACALDt</th>
+          <td>-6.310887e-29</td>
+          <td>-2.542370</td>
+        </tr>
+        <tr>
+          <th>ACKr</th>
+          <td>-3.029226e-28</td>
+          <td>-3.813556</td>
+        </tr>
+        <tr>
+          <th>ACONTa</th>
+          <td>8.894520e+00</td>
+          <td>0.848587</td>
+        </tr>
+        <tr>
+          <th>ACONTb</th>
+          <td>8.894520e+00</td>
+          <td>0.848587</td>
+        </tr>
+        <tr>
+          <th>ACt2r</th>
+          <td>3.407879e-28</td>
+          <td>-3.813556</td>
+        </tr>
+        <tr>
+          <th>ADK1</th>
+          <td>1.716100e+01</td>
+          <td>0.000000</td>
+        </tr>
+        <tr>
+          <th>AKGDH</th>
+          <td>8.045934e+00</td>
+          <td>0.000000</td>
+        </tr>
+        <tr>
+          <th>AKGt2r</th>
+          <td>0.000000e+00</td>
+          <td>-1.430083</td>
+        </tr>
+        <tr>
+          <th>ALCD2x</th>
+          <td>0.000000e+00</td>
+          <td>-2.214323</td>
+        </tr>
+        <tr>
+          <th>ATPM</th>
+          <td>8.390000e+00</td>
+          <td>8.390000</td>
+        </tr>
+        <tr>
+          <th>ATPS4r</th>
+          <td>5.938106e+01</td>
+          <td>34.825618</td>
+        </tr>
+        <tr>
+          <th>Biomass_Ecoli_core</th>
+          <td>8.739215e-01</td>
+          <td>0.786529</td>
+        </tr>
+        <tr>
+          <th>CO2t</th>
+          <td>-1.520653e+01</td>
+          <td>-26.528850</td>
+        </tr>
+        <tr>
+          <th>CS</th>
+          <td>8.894520e+00</td>
+          <td>0.848587</td>
+        </tr>
+        <tr>
+          <th>CYTBD</th>
+          <td>5.123909e+01</td>
+          <td>35.984865</td>
+        </tr>
+        <tr>
+          <th>D_LACt2</th>
+          <td>0.000000e+00</td>
+          <td>-2.145125</td>
+        </tr>
+        <tr>
+          <th>ENO</th>
+          <td>1.673252e+01</td>
+          <td>8.686588</td>
+        </tr>
+        <tr>
+          <th>ETOHt2r</th>
+          <td>0.000000e+00</td>
+          <td>-2.214323</td>
+        </tr>
+        <tr>
+          <th>EX_ac_e</th>
+          <td>3.813556e+00</td>
+          <td>0.000000</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
 
 

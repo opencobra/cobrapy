@@ -134,32 +134,3 @@ def identify_reporter_metabolites(cobra_model, reaction_scores_dict,
         return_dictionary['corrections'] = correction_dict
 
     return(return_dictionary)
-    
-def ppmap_identify_reporter_metabolites(keywords):
-    """
-    A function that receives a dict with all of the parameters for identify_reporter_metabolites
-    Serves to make it possible to call the reporter metabolites function from ppmap.
-    It only will be useful for parallel experiments not for breaking up a single experiment.
-    
-    """
-    the_results = identify_reporter_metabolites(**keywords)
-    return({'id': the_id, 'results': the_results })
-
-if __name__ == '__main__':
-    from cPickle import load
-    from time import time
-    solver = 'glpk'
-    from cobra.test import salmonella_pickle, salmonella_reaction_p_values_pickle
-    with open(salmonella_pickle) as in_file:
-        cobra_model = load(in_file)
-    with open(salmonella_reaction_p_values_pickle) as in_file:
-        reaction_p = load(in_file)
-
-    the_reactions = map(cobra_model.reactions.get_by_id, reaction_p.keys())
-    the_scores = reaction_p.values()
-    reaction_scores_dict = dict(zip(the_reactions, the_scores))
-    
-    tmp_reps = identify_reporter_metabolites(cobra_model, reaction_scores_dict,
-                                             background_correction=True)
-
-    print 'Need to add in validation for the test'

@@ -1,17 +1,18 @@
-try:
-    import setuptools
-except ImportError:
-    import ez_setup
-    ez_setup.use_setuptools()
-from setuptools import setup, find_packages
-from sys import argv, path
 from os.path import isfile, abspath, dirname, join
+from sys import argv, path
 
-# import version to get the version string
-path.insert(0, abspath(join(dirname(__file__), "cobra")))
-from version import get_version, update_release_version
-path.pop(0)
-__version = get_version(pep440=True)
+# To temporarily modify sys.path
+SETUP_DIR = abspath(dirname(__file__))
+
+try:
+    from setuptools import setup, find_packages
+except ImportError:
+    path.insert(0, SETUP_DIR)
+    import ez_setup
+    path.pop(0)
+    ez_setup.use_setuptools()
+    from setuptools import setup, find_packages
+
 
 # for running parallel tests due to a bug in python 2.7.3
 # http://bugs.python.org/issue15881#msg170215
@@ -19,6 +20,12 @@ try:
     import multiprocessing
 except:
     None
+
+# import version to get the version string
+path.insert(0, join(SETUP_DIR, "cobra"))
+from version import get_version, update_release_version
+path.pop(0)
+version = get_version(pep440=True)
 
 # If building something for distribution, ensure the VERSION
 # file is up to date
@@ -31,13 +38,18 @@ try:
     from Cython.Build import cythonize
     from distutils.version import StrictVersion
     import Cython
-    if StrictVersion(Cython.__version__) < StrictVersion("0.18"):
-        raise ImportError("Cython version too old to use")
+    try:
+        cython_version = StrictVersion(Cython.__version__)
+    except ValueError:
+        raise ImportError("Cython version not parseable")
+    else:
+        if cython_version < StrictVersion("0.21"):
+            raise ImportError("Cython version too old to use")
 except ImportError:
     cythonize = None
     for k in ["sdist", "develop"]:
         if k in argv:
-            raise Exception("cython required for " + k)
+            raise Exception("Cython >= 0.21 required for " + k)
 
 # Begin constructing arguments for building
 setup_kwargs = {}
@@ -66,46 +78,16 @@ try:
     build_args = {}
     setup_kwargs["cmdclass"] = {"build_ext": FailBuild}
     # MAC OS X needs some additional configuration tweaks
+    # Build should be run with the python.org python
+    # Cython will output C which could generate warnings in clang
+    # due to the addition of additional unneeded functions. Because
+    # this is a known phenomenon, these warnings are silenced to
+    # make other potential warnings which do signal errors stand
+    # out.
     if system() == "Darwin":
-        build_args["extra_compile_args"] = [
-            # Otherwise Clang gives errors on some versions
-            "-Qunused-arguments",
-            # Cython will output C which could generate warnings in clang
-            # due to the addition of additional unneeded functions. Because
-            # this is a known phenomenon, these warnings are silenced to
-            # make other potential warnings which do signal errors stand
-            # out.
-            "-Wno-unneeded-internal-declaration",
-            "-Wno-unused-function"]
-        # If making a wheel, the platform string needs to be modified to allow
-        # other possible platforms to install. For more information, see
-        # http://lepture.com/en/2014/python-on-a-hard-wheel
-        # This snippet is inspired by setup.py from mistune
-        # https://github.com/lepture/mistune/blob/3ae489a/setup.py
-        try:
-            from wheel.bdist_wheel import bdist_wheel
+        build_args["extra_compile_args"] = ["-Wno-unused-function"]
 
-            class _bdist_wheel(bdist_wheel):
-                def get_tag(self):
-                    tag = bdist_wheel.get_tag(self)
-                    possible_tags = ("macosx_10_6_intel",
-                                     "macosx_10_9_intel",
-                                     "macosx_10_10_intel",
-                                     "macosx_10_9_x86_64",
-                                     "macosx_10_10_x86_64")
-                    if tag[2] in possible_tags:
-                        tag = (tag[0], tag[1], ".".join(possible_tags))
-                    return tag
-
-            setup_kwargs["cmdclass"]["bdist_wheel"] = _bdist_wheel
-
-        except ImportError:
-            pass
-
-    if system() in {"Windows", "Darwin"}:
-        build_args["libraries"] = ["glpk"]
-    else:
-        build_args["libraries"] = ["glpk", "gmp"]
+    build_args["libraries"] = ["glpk"]
     # It is possible to statically link libglpk to the built extension. This
     # allows for simplified installation without the need to install libglpk to
     # the system, and is also usueful when installing a particular version of
@@ -116,10 +98,10 @@ try:
     # https://gist.github.com/aebrahim/94a2b231d86821f7f225
     include_dirs = []
     library_dirs = []
-    if isfile("libglpk.a") or isfile("libgmp.a"):
+    if isfile("libglpk.a"):
         library_dirs.append(abspath("."))
     if isfile("glpk.h"):
-        include_dirs.append(dirname(abspath("glpk.h")))
+        include_dirs.append(abspath("."))
     if name == "posix":
         from subprocess import check_output
         try:
@@ -146,24 +128,43 @@ except:
     ext_modules = None
 
 extras = {
-    'parallel': ['pp>=1.6.0'],
-    'matlab': ["mlabwrap>=1.1"],
-    'sbml': ["python-libsbml-experimental"],
+    'matlab': ["pymatbridge"],
+    'sbml': ["python-libsbml", "lxml"],
     'array': ["numpy>=1.6", "scipy>=11.0"],
     'display': ["matplotlib", "brewer2mpl", "pandas"]
 }
 
-all_extras = set()
+all_extras = {'Cython>=0.21'}
 for extra in extras.values():
     all_extras.update(extra)
 extras["all"] = list(all_extras)
 
+# If using bdist_wininst, the installer will not get dependencies like
+# a setuptools installation does. Therefore, for the one external dependency,
+# which is six.py, we can just download it here and include it in the
+# installer.
+
+# The file six.py will need to be manually downloaded and placed in the
+# same directory as setup.py.
+if "bdist_wininst" in argv:
+    setup_kwargs["py_modules"] = ["six"]
+
+try:
+    import pypandoc
+    readme = pypandoc.convert("README.md", "rst")
+    install = pypandoc.convert("INSTALL.md", "rst")
+    setup_kwargs["long_description"] = readme + "\n\n" + install
+except:
+    with open("README.md", "r") as infile:
+        setup_kwargs["long_description"] = infile.read()
+
 setup(
     name="cobra",
-    version=__version,
+    version=version,
     packages=find_packages(exclude=['cobra.oven', 'cobra.oven*']),
     setup_requires=[],
-    install_requires=[],
+    install_requires=["six"],
+    tests_require=["jsonschema > 2.5"],
     extras_require=extras,
     ext_modules=ext_modules,
 
@@ -177,32 +178,27 @@ setup(
     author_email="danielhyduke@gmail.com",
     description="COBRApy is a package for constraints-based modeling of "
     "biological networks",
-    license="GPL V3.0",
+    license="LGPL/GPL v2+",
     keywords="metabolism biology linear programming optimization flux"
     " balance analysis fba",
     url="https://opencobra.github.io/cobrapy",
     test_suite="cobra.test.suite",
-    long_description="COnstraint-Based Reconstruction and Analysis (COBRA) "
-    "methods are widely used for genome-scale modeling of metabolic networks "
-    "in both prokaryotes and eukaryotes. COBRApy is a constraint-based "
-    "modeling package that is designed to accomodate the biological "
-    "complexity of the next generation of COBRA models and provides access to "
-    "commonly used COBRA methods, such as flux balance analysis, flux "
-    "variability analysis, and gene deletion analyses.",
     download_url='https://pypi.python.org/pypi/cobra',
-    classifiers=['Development Status :: 5 - Production/Stable',
-                 'Environment :: Console',
-                 'Intended Audience :: Science/Research',
-                 'License :: OSI Approved :: GNU General Public License v3'
-                 ' or later (GPLv3+)',
-                 'Operating System :: OS Independent',
-                 'Programming Language :: Python :: 2.7',
-                 'Programming Language :: Python :: 3.3',
-                 'Programming Language :: Python :: 3.4',
-                 'Programming Language :: Python :: Implementation :: CPython',
-                 'Programming Language :: Python :: Implementation :: Jython',
-                 'Topic :: Scientific/Engineering',
-                 'Topic :: Scientific/Engineering :: Bio-Informatics'
-                 ],
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: GNU Lesser General Public License v2'
+            ' or later (LGPLv2+)',
+        'License :: OSI Approved :: GNU General Public License v2'
+            ' or later (GPLv2+)',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Cython',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Bio-Informatics'
+    ],
     platforms="GNU/Linux, Mac OS X >= 10.7, Microsoft Windows >= 7",
     **setup_kwargs)

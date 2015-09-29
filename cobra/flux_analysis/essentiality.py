@@ -1,21 +1,8 @@
-from __future__ import with_statement
-#cobra.flux_analysis.essentiality.py
-#runs flux variablity analysis on a Model object.
-from os import name as __name
 from warnings import warn
-if __name == 'java':
-    warn("moma is not supported on %s"%__name)
-    warn("flux_analysis.double_deletion is not supported on %s"%__name)
-    def moma(a, **kwargs):
-        raise Exception("moma is not supported on %s"%__name)
-
-    def double_deletion(a, **kwargs):
-        raise Exception("flux_analysis.double_deletion is not supported on %s"%__name)
-else:
-    try:
-        from cobra.flux_analysis.moma import moma
-    except:
-        warn("moma does not appear to be functional on your system")
+try:
+    from cobra.flux_analysis.moma import moma
+except:
+    warn("moma does not appear to be functional on your system")
 from cobra.manipulation import initialize_growth_medium
 def assess_medium_component_essentiality(cobra_model, the_components=None,
                                          the_medium=None, medium_compartment='e', solver='glpk',
@@ -80,13 +67,3 @@ def assess_medium_component_essentiality(cobra_model, the_components=None,
         the_reaction.lower_bound = original_lower_bound
 
     return(essentiality_dict)
-
-def deletion_analysis(cobra_model, the_medium=None, deletion_type='single',
-                      work_directory=None, growth_cutoff=0.001,
-                      the_problem='return', number_of_processes=6, element_type='gene',
-                      solver='glpk', error_reporting=None, method='fba', element_list=None):
-    """Performs single and/or double deletion analysis on all the genes in the model.  Provides
-    an interface to parallelize the deletion studies.
-
-    """
-    raise Exception("Deletion analysis has been dropped in favor of the single_deletion and double_deletion modules")

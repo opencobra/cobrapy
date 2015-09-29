@@ -1,10 +1,12 @@
 from warnings import warn
 from copy import deepcopy, copy
 
-from ..external.six import iteritems, string_types
+from six import iteritems, string_types
+
 from ..solvers import optimize
 from .Object import Object
 from .Solution import Solution
+from .Reaction import Reaction
 from .DictList import DictList
 
 
@@ -25,13 +27,17 @@ class Model(Object):
         for y in ['reactions', 'genes', 'metabolites']:
             for x in getattr(self, y):
                 x._model = self
+        if not hasattr(self, "name"):
+            self.name = None
 
-    def __init__(self, description=None):
-        if isinstance(description, Model):
-            self.__dict__ = description.__dict__
+    def __init__(self, id_or_model=None, name=None):
+        if isinstance(id_or_model, Model):
+            Object.__init__(self, name=name)
+            self.__setstate__(id_or_model.__dict__)
+            if not hasattr(self, "name"):
+                self.name = None
         else:
-            Object.__init__(self, description)
-            self.description = self.id
+            Object.__init__(self, id_or_model, name=name)
             self._trimmed = False
             self._trimmed_genes = []
             self._trimmed_reactions = {}
@@ -41,6 +47,16 @@ class Model(Object):
             # genes based on their ids {Gene.id: Gene}
             self.compartments = {}
             self.solution = Solution(None)
+
+    @property
+    def description(self):
+        warn("description deprecated")
+        return self.name if self.name is not None else ""
+
+    @description.setter
+    def description(self, value):
+        self.name = value
+        warn("description deprecated")
 
     def __add__(self, other_model):
         """Adds two models. +
@@ -73,18 +89,11 @@ class Model(Object):
         self.id = self.id + '_' + other_model.id
         return self
 
-    def guided_copy(self):
-        """.. warning :: deprecated"""
-        warn("deprecated")
-        return self.copy()
-
-    def copy(self, print_time=False):
+    def copy(self):
         """Provides a partial 'deepcopy' of the Model.  All of the Metabolite,
         Gene, and Reaction objects are created anew but in a faster fashion
         than deepcopy
         """
-        if print_time is not False:
-            warn("print_time is a deprecated option")
         new = self.__class__()
         do_not_copy = {"metabolites", "reactions", "genes"}
         for attr in self.__dict__:
@@ -145,24 +154,8 @@ class Model(Object):
         metabolite_list = [x for x in metabolite_list
                            if x.id not in self.metabolites]
         for x in metabolite_list:
-            setattr(x, '_model', self)
+            x._model = self
         self.metabolites += metabolite_list
-
-    def _update_reaction(self, reaction):
-        """.. warning :: deprecated"""
-        warn("deprecated function")
-        if not hasattr(reaction, '__iter__'):
-            reaction = [reaction]
-        for the_reaction in reaction:
-            if the_reaction.id not in self.reactions:
-                warn(the_reaction.id + ' is not in the model')
-                continue
-            reaction_index = self.reactions.index(the_reaction.id)
-            self.reactions[reaction_index] = the_reaction
-
-    def update(self):
-        """.. warning :: removed"""
-        raise Exception("Model.update is moved to ArrayBasedModel.")
 
     def add_reaction(self, reaction):
         """Will add a cobra.Reaction object to the model, if
@@ -247,9 +240,7 @@ class Model(Object):
         from .ArrayBasedModel import ArrayBasedModel
         return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
 
-    def optimize(self, objective_sense='maximize', solver=None,
-                 quadratic_component=None,
-                 **kwargs):
+    def optimize(self, objective_sense='maximize', **kwargs):
         r"""Optimize model using flux balance analysis
 
         objective_sense: 'maximize' or 'minimize'
@@ -273,18 +264,9 @@ class Model(Object):
                    specified with the appropriate keyword argument.
 
         """
-        if "new_objective" in kwargs:
-            warn("new_objective is deprecated. Use Model.change_objective")
-            self.change_objective(kwargs.pop("new_objective"))
-        if "error_reporting" in kwargs:
-            warn("error_reporting deprecated")
-        if quadratic_component is not None:
-            kwargs["quadratic_component"] = quadratic_component
-        the_solution = optimize(self, solver=solver,
-                                objective_sense=objective_sense,
-                                **kwargs)
-        self.solution = the_solution
-        return the_solution
+        solution = optimize(self, objective_sense=objective_sense, **kwargs)
+        self.solution = solution
+        return solution
 
     def remove_reactions(self, reactions, delete=True,
                          remove_orphans=False):
@@ -341,43 +323,35 @@ class Model(Object):
         return
 
     def change_objective(self, objectives):
-        """Change the objective in the cobrapy model.
+        """Change the model objective"""
+        self.objective = objectives
 
-        objectives: A list or a dictionary.  If a list then
-        a list of reactions for which the coefficient in the
-        linear objective is set as 1.  If a dictionary then the
-        key is the reaction and the value is the linear coefficient
-        for the respective reaction.
+    @property
+    def objective(self):
+        return {reaction: reaction.objective_coefficient
+                for reaction in self.reactions
+                if reaction.objective_coefficient != 0}
 
-        """
-        # I did not want to refactor code just to rename the variable, but this
-        # way the API uses the variable "objectives"
-        the_objectives = objectives
+    @objective.setter
+    def objective(self, objectives):
         # set all objective coefficients to 0 initially
         for x in self.reactions:
             x.objective_coefficient = 0.
-        # update the objective coefficients if a dict is passed in
-        if hasattr(the_objectives, "items"):
-            for the_reaction, the_coefficient in iteritems(the_objectives):
-                if isinstance(the_reaction, int):
-                    the_reaction = self.reactions[the_reaction]
-                else:
-                    if hasattr(the_reaction, 'id'):
-                        the_reaction = the_reaction.id
-                    the_reaction = self.reactions.get_by_id(the_reaction)
-                the_reaction.objective_coefficient = the_coefficient
-        # If a list (or a single reaction is passed in), each reaction gets
-        # 1 for the objective coefficent.
+        # case of a single reaction
+        if isinstance(objectives, string_types) or \
+                isinstance(objectives, Reaction):
+            self.reactions.get_by_id(str(objectives)).objective_coefficient = 1
+        elif isinstance(objectives, int):
+            self.reactions[objectives].objective_coefficient = 1
+
+        # case of an iterable
         else:
-            # Allow for objectives to be constructed from multiple reactions
-            if not hasattr(the_objectives, "__iter__") or \
-                    isinstance(the_objectives, string_types):
-                the_objectives = [the_objectives]
-            for the_reaction in the_objectives:
-                if isinstance(the_reaction, int):
-                    the_reaction = self.reactions[the_reaction]
+            for reaction_id in objectives:
+                if isinstance(reaction_id, int):  # index in a list
+                    reaction = self.reactions[reaction_id]
                 else:
-                    if hasattr(the_reaction, 'id'):
-                        the_reaction = the_reaction.id
-                    the_reaction = self.reactions.get_by_id(the_reaction)
-                the_reaction.objective_coefficient = 1.
+                    reaction = self.reactions.get_by_id(str(reaction_id))
+                # objective coefficient obtained from a dict, and is 1. if
+                # from a list.
+                reaction.objective_coefficient = objectives[reaction_id] \
+                    if hasattr(objectives, "items") else 1.

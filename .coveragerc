@@ -1,0 +1,54 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+source = cobra
+omit =
+    cobra/solvers/*
+    cobra/test/data/*
+    cobra/test_all.py
+    cobra/version.py
+    cobra/oven/*
+    # deprecated code
+    cobra/core/Formula.py
+    # can not be run with free solver
+    cobra/flux_analysis/moma.py
+
+
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Don't complain about missing debug-only code:
+    def __repr__
+    if self\.debug
+    print
+
+    # Don't complain about missing legacy code
+    _legacy
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+    # Don't complain about code for importing
+    import
+    except ImportError
+
+    # Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
+
+    # Don't complain about warnings
+    warn
+
+partial_branches:
+    pragma: no branch
+    # Don't complain about missing legacy code
+    _legacy
+
+ignore_errors = True
+
+[html]
+directory = coverage

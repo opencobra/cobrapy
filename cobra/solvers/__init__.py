@@ -48,6 +48,9 @@ for i in listdir(path.dirname(path.abspath(__file__))):
             or i.endswith(".pyd"):
         possible_solvers.add(i.split(".")[0])
 
+if "wrappers" in possible_solvers:
+    possible_solvers.remove("wrappers")
+
 for solver in possible_solvers:
     try:
         add_solver(solver)
@@ -74,14 +77,16 @@ def get_solver_name(mip=False, qp=False):
     if len(solver_dict) == 0:
         raise SolverNotFound("no solvers installed")
     # glpk only does lp, not qp. Gurobi and cplex are better at mip
-    mip_order = ["gurobi", "cplex", "cglpk", "glpk"]
-    lp_order = ["cglpk", "cplex",  "glpk", "gurobi"]
+    mip_order = ["gurobi", "cplex", "coin", "cglpk", "glpk"]
+    lp_order = ["cglpk", "cplex",  "glpk", "gurobi", "coin"]
     qp_order = ["gurobi", "cplex"]
 
     if mip is False and qp is False:
         for solver_name in lp_order:
             if solver_name in solver_dict:
                 return solver_name
+        # none of them are in the list order - so return the first one
+        return list(solver_dict)[0]
     elif qp:  # mip does not yet matter for this determination
         for solver_name in qp_order:
             if solver_name in solver_dict:

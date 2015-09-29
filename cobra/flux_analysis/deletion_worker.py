@@ -1,7 +1,7 @@
 from multiprocessing import Queue, Process, cpu_count
 
 from ..solvers import get_solver_name, solver_dict
-from ..external.six import iteritems
+from six import iteritems
 
 
 def compute_fba_deletion_worker(cobra_model, solver, job_queue, output_queue,
@@ -29,7 +29,7 @@ def compute_fba_deletion(lp, solver_object, model, indexes, **kwargs):
         s.solve_problem(lp, **kwargs)
     except Exception as e:
         return RuntimeError("solver failure when deleting %s: %s" %
-                                (str(indexes), repr(e)))
+                            (str(indexes), repr(e)))
     status = s.get_status(lp)
     objective = s.get_objective_value(lp) if status == "optimal" else 0.
 

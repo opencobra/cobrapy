@@ -6,7 +6,7 @@ from numpy import array, hstack, ndarray
 from scipy.sparse import lil_matrix, dok_matrix
 
 from .Model import Model
-from ..external.six import iteritems
+from six import iteritems
 
 
 class ArrayBasedModel(Model):
@@ -111,7 +111,7 @@ class ArrayBasedModel(Model):
         contains metabolites is ludacris.
 
         """
-        Model.add_metabolites(metabolite_list)
+        Model.add_metabolites(self, metabolite_list)
         if self._S is not None and expand_stoichiometric_matrix:
             s_expansion = len(self.metabolites) - self._S.shape[0]
             if s_expansion > 0:
@@ -190,7 +190,7 @@ class ArrayBasedModel(Model):
             self._update_matrices(reaction_list)
 
     def remove_reactions(self, reactions, update_matrices=True, **kwargs):
-        """remove reactions from teh model
+        """remove reactions from the model
 
         See :func:`cobra.core.Model.Model.remove_reactions`
 
