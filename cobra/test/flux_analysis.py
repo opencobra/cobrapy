@@ -64,9 +64,18 @@ class TestCobraFluxAnalysis(TestCase):
         modify.revert_to_reversible(model3)
         self.assertAlmostEqual(model1.solution.f, model3.solution.f, places=3)
 
+        # test reaction where both bounds are negative
         model4 = create_test_model("textbook")
+        glc = model4.reactions.get_by_id("EX_glc__D_e")
+        glc.upper_bound = -1
         modify.convert_to_irreversible(model4)
+        model4.optimize()
+        self.assertAlmostEqual(model1.solution.f, model4.solution.f, places=3)
+        glc_rev = model4.reactions.get_by_id(glc.notes["reflection"])
+        self.assertEqual(glc_rev.lower_bound, 1)
+        self.assertEqual(glc.upper_bound, 0)
         modify.revert_to_reversible(model4)
+        self.assertEqual(glc.upper_bound, -1)
 
     def test_escape_ids(self):
         model = create_test_model('textbook')
