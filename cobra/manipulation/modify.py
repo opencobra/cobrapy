@@ -160,16 +160,17 @@ def convert_to_irreversible(cobra_model):
         # will be constrained to 0) will be left in the model.
         if reaction.lower_bound < 0:
             reverse_reaction = Reaction(reaction.id + "_reverse")
-            reverse_reaction.lower_bound = 0
-            reverse_reaction.upper_bound = reaction.lower_bound * -1
+            reverse_reaction.lower_bound = max(0, -reaction.upper_bound)
+            reverse_reaction.upper_bound = -reaction.lower_bound
             reverse_reaction.objective_coefficient = \
                 reaction.objective_coefficient * -1
-            reaction.lower_bound = 0
+            reaction.lower_bound = max(0, reaction.lower_bound)
+            reaction.upper_bound = max(0, reaction.upper_bound)
             # Make the directions aware of each other
             reaction.notes["reflection"] = reverse_reaction.id
             reverse_reaction.notes["reflection"] = reaction.id
-            reaction_dict = dict([(k, v*-1)
-                                  for k, v in reaction._metabolites.items()])
+            reaction_dict = {k: v * -1
+                             for k, v in iteritems(reaction._metabolites)}
             reverse_reaction.add_metabolites(reaction_dict)
             reverse_reaction._model = reaction._model
             reverse_reaction._genes = reaction._genes
@@ -205,6 +206,8 @@ def revert_to_reversible(cobra_model, update_solution=True):
         forward_id = reverse.notes.pop("reflection")
         forward = cobra_model.reactions.get_by_id(forward_id)
         forward.lower_bound = -reverse.upper_bound
+        if forward.upper_bound == 0:
+            forward.upper_bound = -reverse.lower_bound
 
         # update the solution dict
         if update_solution:
