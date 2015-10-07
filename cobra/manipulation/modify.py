@@ -176,6 +176,7 @@ def convert_to_irreversible(cobra_model):
             reverse_reaction._genes = reaction._genes
             for gene in reaction._genes:
                 gene._reaction.add(reverse_reaction)
+            reverse_reaction.subsystem = reaction.subsystem
             reverse_reaction._gene_reaction_rule = reaction._gene_reaction_rule
             reactions_to_add.append(reverse_reaction)
     cobra_model.add_reactions(reactions_to_add)
