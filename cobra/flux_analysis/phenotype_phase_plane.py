@@ -13,9 +13,12 @@ except ImportError:
     axes3d = None
 mlab = None  # mayavi may crash python
 try:  # for prettier colors
-    from brewer2mpl import get_map
-except:
-    get_map = None
+    from palettable.colorbrewer import get_map
+except ImportError:
+    try:
+        from brewer2mpl import get_map
+    except ImportError:
+        get_map = None
 
 
 class phenotypePhasePlaneData:
@@ -52,7 +55,7 @@ class phenotypePhasePlaneData:
     def plot_matplotlib(self, theme="Paired", scale_grid=False):
         """Use matplotlib to plot a phenotype phase plane in 3D.
 
-        theme: color theme to use (requires brewer2mpl)
+        theme: color theme to use (requires palettable)
 
         returns: maptlotlib 3d subplot object"""
         if pyplot is None:

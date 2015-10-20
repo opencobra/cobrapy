@@ -131,7 +131,7 @@ extras = {
     'matlab': ["pymatbridge"],
     'sbml': ["python-libsbml", "lxml"],
     'array': ["numpy>=1.6", "scipy>=11.0"],
-    'display': ["matplotlib", "brewer2mpl", "pandas"]
+    'display': ["matplotlib", "palettable", "pandas"]
 }
 
 all_extras = {'Cython>=0.21'}
