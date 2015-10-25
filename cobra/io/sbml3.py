@@ -413,8 +413,13 @@ def model_to_xml(cobra_model, units=True):
     if units:
         param_attr["units"] = "mmol_per_gDW_per_hr"
     # the most common bounds are the minimum, maxmium, and 0
-    min_value = min(cobra_model.reactions.list_attr("lower_bound"))
-    max_value = max(cobra_model.reactions.list_attr("upper_bound"))
+    if len(cobra_model.reactions) > 0:
+        min_value = min(cobra_model.reactions.list_attr("lower_bound"))
+        max_value = max(cobra_model.reactions.list_attr("upper_bound"))
+    else:
+        min_value = -1000
+        max_value = 1000
+
     SubElement(parameter_list, "parameter", value=strnum(min_value),
                id="cobra_default_lb", sboTerm="SBO:0000626", **param_attr)
     SubElement(parameter_list, "parameter", value=strnum(max_value),
