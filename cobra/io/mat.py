@@ -108,7 +108,7 @@ def create_mat_dict(model):
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
     mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
     mat["csense"] = "".join(model._constraint_sense)
-    mat["S"] = model.S
+    mat["S"] = model.S if model.S is not None else [[]]
     # multiply by 1 to convert to float, working around scipy bug
     # https://github.com/scipy/scipy/issues/4537
     mat["lb"] = array(rxns.list_attr("lower_bound")) * 1.

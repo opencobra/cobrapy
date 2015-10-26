@@ -94,6 +94,16 @@ class TestCobraIO(object):
         self.validate(test_output_filename)
         unlink(test_output_filename)
 
+    def test_write_empty(self):
+        test_output_filename = join(gettempdir(), split(self.test_file)[-1])
+        m = self.test_model.copy()
+        m.remove_reactions(list(m.reactions))
+        self.write_function(m, test_output_filename)
+        reread_model = self.read_function(test_output_filename)
+        self.assertEqual(len(reread_model.reactions), 0)
+        self.assertEqual(len(reread_model.metabolites), len(m.metabolites))
+        unlink(test_output_filename)
+
     def validate(self, filename):
         # overload if a validator exists
         None
