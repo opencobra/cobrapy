@@ -415,12 +415,11 @@ def model_to_xml(cobra_model, units=True):
     # the most common bounds are the minimum, maxmium, and 0
     try:
         min_value = min(cobra_model.reactions.list_attr("lower_bound"))
-    except ValueError:
-        min_value = -1000
-    try:
         max_value = max(cobra_model.reactions.list_attr("upper_bound"))
     except ValueError:
         max_value = 1000
+        min_value = -1000
+
     SubElement(parameter_list, "parameter", value=strnum(min_value),
                id="cobra_default_lb", sboTerm="SBO:0000626", **param_attr)
     SubElement(parameter_list, "parameter", value=strnum(max_value),
