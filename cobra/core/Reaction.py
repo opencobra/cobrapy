@@ -47,26 +47,27 @@ class Reaction(Object):
 
     """
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, id=None, subsystem='', lower_bound=0.,
+                 upper_bound=1000., objective_coefficient=0.):
         """An object for housing reactions and associated information
         for cobra modeling.
 
         """
-        Object.__init__(self, name)
+        Object.__init__(self, name, id)
         self._gene_reaction_rule = ''
-        self.subsystem = ''
+        self.subsystem = subsystem
         # The cobra.Genes that are used to catalyze the reaction
         self._genes = set()
         # A dictionary of metabolites and their stoichiometric coefficients in
         # this reaction.
         self._metabolites = {}
-        self.name = name
         # self.model is None or refers to the cobra.Model that
         # contains self
         self._model = None
 
-        self.objective_coefficient = self.lower_bound = 0.
-        self.upper_bound = 1000.
+        self.objective_coefficient = objective_coefficient
+        self.upper_bound = upper_bound
+        self.lower_bound = lower_bound
         # Used during optimization.  Indicates whether the
         # variable is modeled as continuous, integer, binary, semicontinous, or
         # semiinteger.
