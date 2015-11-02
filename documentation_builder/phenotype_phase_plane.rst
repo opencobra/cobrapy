@@ -15,7 +15,6 @@ Here, we will make one for the "textbook" *E. coli* core model.
     %matplotlib inline
     from time import time
     
-    
     import cobra.test
     from cobra.flux_analysis import calculate_phenotype_phase_plane
     
@@ -34,7 +33,7 @@ and Oxygen.
 .. image:: phenotype_phase_plane_files/phenotype_phase_plane_3_0.png
 
 
-If `brewer2mpl <https://pypi.python.org/pypi/brewer2mpl/>`__ is
+If `palettable <https://github.com/jiffyclub/palettable>`__ is
 installed, other color schemes can be used as well
 
 .. code:: python
@@ -81,6 +80,6 @@ The code can also use multiple processes to speed up calculations
 
 .. parsed-literal::
 
-    took 0.40 seconds with 1 process
-    took 0.21 seconds with 4 process
+    took 0.41 seconds with 1 process
+    took 0.29 seconds with 4 process
 

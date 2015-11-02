@@ -26,9 +26,9 @@ We can make the model irreversible, so that all reactions will satisfy
 
 We will add in boolean indicators as well, such that
 
-.. math::  \max(ub) i \ge v 
+.. math::  \max(ub) \cdot i \ge v 
 
-.. math::  i \in {0, 1} 
+.. math::  i \in \{0, 1\} 
 
 We also want to ensure that an entry in the row space of S also exists
 with negative values wherever v is nonzero. In this expression,
