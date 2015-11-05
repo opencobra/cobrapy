@@ -6,6 +6,7 @@ cobra.egg-info
 build/
 dist/
 .DS_Store
+.eggs/
 setuptools-*egg
 setuptools-*.tar.gz
 cobra/solvers/cglpk.c
