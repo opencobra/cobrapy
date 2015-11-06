@@ -1,6 +1,7 @@
 #cobra.solvers.cplex_solver
 #Interface to ilog/cplex 12.4 python / jython interfaces
 #QPs are not yet supported under jython
+from __future__ import print_function
 from os import name as __name
 from copy import deepcopy
 from warnings import warn
@@ -315,7 +316,7 @@ def solve(cobra_model, **kwargs):
 
     the_solution = format_solution(lp, cobra_model)
     if status != 'optimal' and error_reporting:
-        print '%s failed: %s'%(solver_name, status)
+        print('{:s} failed: {:s}'.format(solver_name, status))
     cobra_model.solution = the_solution
     solution = {'the_problem': lp, 'the_solution': the_solution}
     return solution

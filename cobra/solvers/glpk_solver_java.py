@@ -1,5 +1,6 @@
 ##cobra.solvers.glpk_solver
 #This script provides wrappers for libglpk-java 1.0.22 and pyglpk 0.3
+from __future__ import print_function
 from warnings import warn
 from copy import deepcopy
 ###solver specific parameters
@@ -83,18 +84,18 @@ class Problem():
             try:
                 setattr(self._simplex_parameters, parameter_name,
                         parameter_value)
-            except Exception, e1:
+            except Exception as e1:
                 try:
                     setattr(self._mip_parameters, parameter_name,
                             parameter_value)
-                except Exception, e2:
+                except Exception as e2:
                     if warning:
-                        print "Could not set simplex parameter " +\
-                              "%s: %s"%(parameter_name, repr(e1))
+                        print("Could not set simplex parameter " +\
+                              "{:s}: {:s}".format(parameter_name, repr(e1)))
                         
                         if self._mip_parameters is not None:
-                            print "Could not set mip parameter " +\
-                                  "%s: %s"%(parameter_name, repr(e2))
+                            print("Could not set mip parameter " +\
+                                  "{:s}: {:s}".format(parameter_name, repr(e2)))
     def get_objective_value(self):
         if self._mip:
             tmp_value = self._g.glp_mip_obj_val(self._lp)
@@ -222,8 +223,8 @@ def format_solution(lp, cobra_model, **kwargs):
             y_dict = dict(zip(cobra_model.metabolites, y))
         
             objective_value = lp.objective_value
-        except Exception, e:
-            print repr(e)
+        except Exception as e:
+            print(repr(e))
             y = y_dict = x = x_dict = objective_value = None
             #print status
     else:
@@ -298,7 +299,7 @@ def solve_problem(lp, **kwargs):
     lp.solve()
     status = get_status(lp)
     if print_solver_time:
-        print 'optimize time: %f'%(time() - start_time)
+        print('optimize time: {:f}'.format(time() - start_time))
     return status
 
     
@@ -359,7 +360,7 @@ def solve(cobra_model, **kwargs):
     
     the_solution = format_solution(lp, cobra_model)
     if status != 'optimal' and error_reporting:
-        print '%s failed: %s'%(solver_name, status)
+        print('{:s} failed: {:s}'.format(solver_name, status))
     cobra_model.solution = the_solution
     solution = {'the_problem': lp, 'the_solution': the_solution}
     return solution
