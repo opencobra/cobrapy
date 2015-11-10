@@ -270,10 +270,8 @@ def solve(cobra_model, **kwargs):
     if kwargs:
         the_parameters.update(kwargs)
     #Update objectives if they are new.
-    if 'new_objective' in the_parameters and \
-           the_parameters['new_objective'] not in ['update problem', None]:
-       from ..flux_analysis.objective import update_objective
-       update_objective(cobra_model, the_parameters['new_objective'])
+    if 'new_objective' in the_parameters:
+        raise ValueError("new_objective option removed")
 
     if 'the_problem' in the_parameters:
         the_problem = the_parameters['the_problem']
