@@ -6,6 +6,7 @@ from copy import deepcopy
 from numpy import array, corrcoef, mean, std, tril, where, unique, zeros
 from scipy.stats import norm, randint
 from collections import defaultdict
+from six import iteritems
 
 def identify_reporter_metabolites(cobra_model, reaction_scores_dict,
                                   number_of_randomizations=1000, number_of_layers=1,
@@ -110,7 +111,7 @@ def identify_reporter_metabolites(cobra_model, reaction_scores_dict,
             correction_dict[i] = [mean(random_score_distribution),
                                       std(random_score_distribution,ddof=1)] 
 
-    for the_metabolite, the_score in metabolite_scores.iteritems():
+    for the_metabolite, the_score in iteritems(metabolite_scores):
         number_of_connections = metabolite_connections[the_metabolite]
         if number_of_connections > 0:
             #Correct based on background distribution

@@ -10,6 +10,7 @@ from .parameters import status_dict, variable_kind_dict, \
 
 from ..core.Solution import Solution
 from time import time
+from six import iteritems
 solver_name = 'glpk'
 sense_dict = eval(sense_dict[solver_name])
 #Functions that are different for java implementation of a solver
@@ -191,7 +192,7 @@ class Problem():
 
         g.glp_set_obj_name(lp, "z")
         [g.glp_set_obj_coef(lp, k, v)
-          for k, v in objective_dict.iteritems()]
+          for k, v in iteritems(objective_dict)]
 
         
 
@@ -256,7 +257,7 @@ def create_problem(cobra_model,  **kwargs):
     lp = Problem()        # Create empty problem instance
     lp.create_problem(cobra_model)
     [set_parameter(lp, parameter_mappings[k], v)
-     for k, v in the_parameters.iteritems() if k in parameter_mappings]
+     for k, v in iteritems(the_parameters) if k in parameter_mappings]
     return(lp)
 
 def update_problem(lp, cobra_model, **kwargs):
@@ -289,7 +290,7 @@ def solve_problem(lp, **kwargs):
     #Update parameter settings if provided
     if kwargs:
         [set_parameter(lp, parameter_mappings[k], v)
-         for k, v in kwargs.iteritems() if k in parameter_mappings]
+         for k, v in iteritems(kwargs) if k in parameter_mappings]
     try:
         print_solver_time = kwargs['print_solver_time']
         start_time = time()

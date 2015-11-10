@@ -11,7 +11,7 @@ from gurobipy import Model, LinExpr, GRB, QuadExpr
 
 from ..core.Solution import Solution
 
-from six import string_types
+from six import string_types, iteritems
 
 try:
     from sympy import Basic, Number
@@ -168,7 +168,7 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
         the_parameters = parameter_defaults.copy()
         the_parameters.update(kwargs)
 
-    for k, v in the_parameters.iteritems():
+    for k, v in iteritems(the_parameters):
         set_parameter(lp, k, v)
 
 
@@ -232,7 +232,7 @@ def solve_problem(lp, **kwargs):
 
     """
     #Update parameter settings if provided
-    for k, v in kwargs.iteritems():
+    for k, v in iteritems(kwargs):
         set_parameter(lp, k, v)
 
     lp.update()
