@@ -8,6 +8,7 @@ try:
 except ImportError:
     pass
 
+from six import iteritems
 from glpk import LPX
 
 from ..core.Solution import Solution
@@ -103,7 +104,7 @@ def create_problem(cobra_model, **kwargs):
         c.kind = variable_kind_dict[the_reaction.variable_kind]
         c.bounds = the_reaction.lower_bound, the_reaction.upper_bound
         objective_coefficients.append(float(the_reaction.objective_coefficient))
-        for metabolite, coefficient in the_reaction._metabolites.iteritems():
+        for metabolite, coefficient in iteritems(the_reaction._metabolites):
             metabolite_index = metabolite_to_index[metabolite]
             linear_constraints.append((metabolite_index, c.index, coefficient))
 

@@ -1,6 +1,7 @@
 #cobra.flux_analysis.reaction.py
 #functions for analyzing / creating objective functions
 from ..core.Reaction import Reaction
+from six import iteritems
 
 def assess(model, reaction, flux_coefficient_cutoff=0.001):
     """Assesses the capacity of the model to produce the precursors for the reaction
@@ -81,7 +82,7 @@ def assess_precursors(model, reaction,  flux_coefficient_cutoff=0.001):
 
     #Otherwise assess the ability of the model to produce each precursor individually.
     #Now assess the ability of the model to produce each reactant for a reaction
-    for sink_reaction, (component, coefficient) in sink_reactions.iteritems():
+    for sink_reaction, (component, coefficient) in iteritems(sink_reactions):
         model.optimize(new_objective=sink_reaction) #Calculate the maximum amount of the
         #metabolite that can be produced.
         if flux_coefficient_cutoff > model.solution.f:
@@ -142,7 +143,7 @@ def assess_products(model, reaction, flux_coefficient_cutoff=0.001):
         return(True)
 
     #Now assess the ability of the model to produce each reactant for a reaction
-    for source_reaction, (component, coefficient) in source_reactions.iteritems():
+    for source_reaction, (component, coefficient) in iteritems(source_reactions):
         model.optimize(new_objective=source_reaction) #Calculate the maximum amount of the
         #metabolite that can be produced.
         if flux_coefficient_cutoff > model.solution.f:

@@ -5,6 +5,7 @@ from __future__ import print_function
 from warnings import warn
 from os import name as __name
 from copy import deepcopy
+from six import iteritems
 ###solver specific parameters
 from .parameters import status_dict, variable_kind_dict, \
      sense_dict, parameter_mappings, parameter_defaults, \
@@ -144,7 +145,7 @@ def create_problem(cobra_model,  **kwargs):
         the_parameters.update(kwargs)
 
     [set_parameter(lp, parameter_mappings[k], v)
-         for k, v in the_parameters.iteritems() if k in parameter_mappings]
+         for k, v in iteritems(the_parameters) if k in parameter_mappings]
     quadratic_component = the_parameters['quadratic_component']
     objective_sense = objective_senses[the_parameters['objective_sense']]
 
@@ -202,7 +203,7 @@ def solve_problem(lp, **kwargs):
     #Update parameter settings if provided
     if kwargs:
         [set_parameter(lp, parameter_mappings[k], v)
-         for k, v in kwargs.iteritems() if k in parameter_mappings]
+         for k, v in iteritems(kwargs) if k in parameter_mappings]
 
     try:
         print_solver_time = kwargs['print_solver_time']

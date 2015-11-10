@@ -12,6 +12,7 @@ from .parameters import status_dict, variable_kind_dict, \
 
 from ..core.Solution import Solution
 from time import time
+from six import iteritems
 solver_name = 'cplex'
 parameter_defaults = parameter_defaults[solver_name]
 sense_dict = eval(sense_dict[solver_name])
@@ -121,7 +122,7 @@ def create_problem(cobra_model,  **kwargs):
         lp.setWarning(None)
         lp.setOut(None)
     [set_parameter(lp, parameter_mappings[k], v)
-     for k, v in the_parameters.iteritems() if k in parameter_mappings]
+     for k, v in iteritems(the_parameters) if k in parameter_mappings]
     quadratic_component = the_parameters['quadratic_component']
     new_objective = the_parameters['new_objective']
     error_reporting = the_parameters['error_reporting']
@@ -241,7 +242,7 @@ def solve_problem(lp, **kwargs):
     #Update parameter settings if provided
     if kwargs:
         [set_parameter(lp, parameter_mappings[k], v)
-         for k, v in kwargs.iteritems() if k in parameter_mappings]
+         for k, v in iteritems(kwargs) if k in parameter_mappings]
     try:
         the_problem = kwargs['the_problem']
     except:
