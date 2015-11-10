@@ -1,4 +1,4 @@
-##cobra.solvers.gurobi_solver
+# PLEASE NOTE THAT JYTHON SUPPORT (and this jython-only-solver) is deprecated
 #Interface to the gurobi 5.0.1 python and java solvers
 #QPs are not yet supported on java
 from __future__ import print_function

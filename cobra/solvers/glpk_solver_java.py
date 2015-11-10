@@ -1,4 +1,4 @@
-##cobra.solvers.glpk_solver
+# PLEASE NOTE THAT JYTHON SUPPORT (and this jython-only-solver) is deprecated
 #This script provides wrappers for libglpk-java 1.0.22 and pyglpk 0.3
 from __future__ import print_function
 from warnings import warn

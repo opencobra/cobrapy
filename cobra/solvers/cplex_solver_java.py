@@ -1,4 +1,4 @@
-#cobra.solvers.cplex_solver
+# PLEASE NOTE THAT JYTHON SUPPORT (and this jython-only-solver) is deprecated
 #Interface to ilog/cplex 12.4 python / jython interfaces
 #QPs are not yet supported under jython
 from __future__ import print_function
