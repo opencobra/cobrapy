@@ -1,7 +1,11 @@
 # Interface to gurobipy
 
 from warnings import warn
-from itertools import izip
+try:
+    # Import izip for python versions < 3.x
+    from itertools import izip as zip
+except ImportError:
+    pass
 
 from gurobipy import Model, LinExpr, GRB, QuadExpr
 
@@ -82,13 +86,13 @@ def format_solution(lp, cobra_model, **kwargs):
     else:
         objective_value = lp.ObjVal
         x = [v.X for v in lp.getVars()]
-        x_dict = {r.id: value for r, value in izip(cobra_model.reactions, x)}
+        x_dict = {r.id: value for r, value in zip(cobra_model.reactions, x)}
         if lp.isMIP:
             y = y_dict = None  # MIP's don't have duals
         else:
             y = [c.Pi for c in lp.getConstrs()]
             y_dict = {m.id: value for m, value
-                      in izip(cobra_model.metabolites, y)}
+                      in zip(cobra_model.metabolites, y)}
         the_solution = Solution(objective_value, x=x, x_dict=x_dict, y=y,
                                 y_dict=y_dict, status=status)
     return(the_solution)
