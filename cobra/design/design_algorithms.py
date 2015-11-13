@@ -106,25 +106,30 @@ def dual_problem(model, integer_vars_to_maintain=[], already_irreversible=False,
 
     which is something like this in COBRApy:
 
-        Maximize [objective_coefficients] * [reactions]
-            subject to
-                (assuming met._sense is "E")
-                [coefficients by reaction] * [reactions] <= met._bound
-                - [coefficients by reaction] * [reactions] <= - met._bound
-                [reactions] <= [UB]
-                - [reactions] <= - [LB]
-                [reactions] >= 0
+        Maximize sum(objective_coefficient_j * reaction_j for all j)
+            s.t.
+            sum(coefficient_i_j * reaction_j for all j) <=   metabolite_bound_i
+          - sum(coefficient_i_j * reaction_j for all j) <= - metabolite_bound_i
+            reaction_j <=   upper_bound_j
+          - reaction_j <= - lower_bound_j
+            reaction_j >= 0
 
     to the problem:
 
-        Minimize (b^T)y subject to (A^T)y >= c, y >= 0
+        Minimize (b^T)w subject to (A^T)w >= c, w >= 0
 
-    which is something like this in COBRApy:
+    which is something like this in COBRApy (S matrix is m x n):
 
-        Minimize [met._bound's, - met._bound's, UB's, - LB's] * [dual_vars]
-            subject to
-                [coefficients by metabolite, - coefficients by metabolite, diag, - diag] * [dual_vars] >= [objective_coefficients]
-                [dual_vars] >= 0
+    	Minimize sum(  metabolite_bound_i * dual_i      for all i) +
+                 sum(- metabolite_bound_i * dual_m+i    for all i) +
+                 sum(  upper_bound_j *      dual_2m+j   for all j) +
+                 sum(- lower_bound_j *      dual_2m+n+j for all j)
+            s.t.
+    	    sum(coefficient_i_j *       dual_i   for all i) +
+                sum(- coefficient_i_j * dual_m+i for all i) +
+                sum(  dual_2m+j'                 for all j') +
+                sum(- dual_2m+n+j'               for all j') >= objective_coefficient_j
+            dual_k >= 0
 
 
     Arguments
@@ -157,33 +162,46 @@ def dual_problem(model, integer_vars_to_maintain=[], already_irreversible=False,
         for chemical production: accounting for competing pathways. Bioinformatics.
         2010;26(4):536–43. doi:10.1093/bioinformatics/btp704.
 
-    In COBRApy, this roughly translates to transforming:
+    In COBRApy, this roughly translates to transforming (decision variables p, integer constraints o):
+.
+        Maximize (c^T)x subject to (A_x)x + (A_y)y <= b, x >= 0
 
-        (1) Maximize [objective_coefficients] * [reactions]
-              subject to
-        (2)       [coefficients by reaction] * [reactions] <=   met._bound ("L" or "E")
-        (3)     - [coefficients by reaction] * [reactions] <= - met._bound ("G" or "E")
-        (4)       [reactions] <=   [UB]
-        (5)     - [reactions] <= - [LB]   (these are still necessary because they are attributes of Reaction objects)
-        (6)       [reactions] <=   [decision_vars] .* [UB]   (optional)
-        (7)     - [reactions] <= - [decision_vars] .* [LB]
-        (8)       [reactions decision_vars] >= 0
+        (1) Maximize sum(objective_coefficient_j * reaction_j for all j)
+                s.t.
+        (2)     sum(coefficient_i_j * reaction_j for all j) <=   metabolite_bound_i
+        (3)   - sum(coefficient_i_j * reaction_j for all j) <= - metabolite_bound_i
+        (4)     reaction_j <=   upper_bound_j
+        (5)   - reaction_j <= - lower_bound_j
+        (6)     sum(int_coeff_j_o * reaction_j for all j) + sum(coefficient_p_o * decision_var_p for all p) <= int_bound_o
+           {    reaction_j - upper_bound_j * decision_var_x(j) <= 0 (optional) }
+           {  - reaction_j + lower_bound_j * decision_var_x(j) <= 0 (optional) }
+        (7)     reaction_j >= 0
 
     to the problem:
 
-        (9) Minimize [met._bound's, - met._bound's, UB's, - LB's] * [dual_vars] + [aux_to_decision] * [auxiliary_vars]
-              subject to
-       (10)       [coefficients by metabolite, - coefficients by metabolite, diag, - diag] * [dual_vars] >= [objective_coefficients]
-       (11)       [auxiliary_vars] - dual_maximum * corresponding([decision_vars]) <= 0
-       (12)     - [auxiliary_vars] + corresponding([dual_vars]) >= 0
-       (13)       [auxiliary_vars] - (corresponding([dual_vars]) - dual_maximum * (1 - correspond([decision_vars]))) >= 0
-       (14)       [dual_vars, auxiliary_vars] >= 0
+        Minimize (b - (A_y)y)^T w subject to (A_x^T)w >= c, w >= 0
 
-        aux_to_decision gives the coefficients of the decision_variables that
-        correspond to each auxiliary variable. Auxiliary variables exist for
-        each pair of decision variable and dual for the decision variable
-        constraint.
+    which linearizes to (with auxiliary variables z):
 
+        Minimize (b^T)w - { ((A_y)y)^T w with yw --> z } subject to (A_x^T)w >= c, linearization constraints, w >= 0
+
+        (9) Minimize sum(   metabolite_bound_i * dual_i         for all i ) +
+                      sum(- metabolite_bound_i * dual_m+i       for all i ) +
+                      sum(  upper_bound_j *      dual_2m+j      for all j ) +
+                      sum(- lower_bound_j *      dual_2m+n+j    for all j ) +
+                      sum(  int_bound_o *        dual_2m+2n+o   for all o ) +
+                    - sum(  coefficient_p_o * auxiliary_var_p_o for all combinations p, o )
+                s.t.
+       (10)     sum(   coefficient_i_j * dual_i   for all i ) +
+       (11)      sum(- coefficient_i_j * dual_m+i for all i ) +
+       (12)      sum(  dual_2m+j'                 for all j') +
+       (13)      sum(- dual_2m+n+j'               for all j') +
+       (14)      sum(  int_coeff_j_o              for all o ) >= objective_coefficient_j
+       (15)     auxiliary_var_p_o <= dual_maximum * decision_var_p
+       (16)     auxiliary_var_p_o <= dual_o
+       (17)     auxiliary_var_p_o >= dual_o - dual_maximum * (1 - decision_var_p)
+       (18)     dual_var_k >= 0
+       (19)     auxiliary_var_p >= 0
 
 
     Zachary King 2015
@@ -196,6 +214,11 @@ def dual_problem(model, integer_vars_to_maintain=[], already_irreversible=False,
         if copy:
             irrev_model = irrev_model.copy()
         convert_to_irreversible(irrev_model)
+
+    # TODO convert model to standard form (all less thans, etc). This would
+    # include the convert_to_irreversible fn call.
+
+    # Q: does a COBRA model store an objective sense? why not?
 
     # new model for the dual
     dual = Model("%s_dual" % irrev_model.id)
@@ -231,6 +254,7 @@ def dual_problem(model, integer_vars_to_maintain=[], already_irreversible=False,
 
     # add constraints and upper & lower bound variables
     for reaction in irrev_model.reactions:
+        # integer vars
         if reaction.id in integer_vars_to_maintain:
             # keep these integer variables in the dual, with new transformed
             # constraints
@@ -251,26 +275,44 @@ def dual_problem(model, integer_vars_to_maintain=[], already_irreversible=False,
             # w_j : dual_vars_for_met[met.id]["LE"] and dual_vars_for_met[met.id]["GE"]
             # A^y_i,j : coeff
 
-            # get the associated duals
-            for met, coeff in iteritems(reaction.metabolites):
+            # get all duals
+            # for met, coeff in iteritems(reaction.metabolites):
+            for dual_var in chain(x.values() for x in dual_vars_for_met.values())
                 duals = dual_vars_for_met[met.id]
-                for var, factor in (duals["LE"], 1), (duals["GE"], -1):
-                    if var is None:
+                for constraint_type, factor in ("LE", 1), ("GE", -1):
+                    dual_var = duals[constraint_type]
+                    if dual_var is None:
                         continue
                     # make the auxiliary variable
-                    aux_var = Reaction("%s_auxiliary" % decision_var.id)
+                    aux_var = Reaction("%s_auxiliary_%s" % (decision_var.id, constraint_type))
                     aux_var.lower_bound = 0
                     aux_var.upper_bound = dual_maximum
                     aux_var.variable_kind = "continuous"
                     aux_var.objective_coefficient = factor * coeff
+                    dual.add_reaction(aux_var)
 
                     # add auxiliary constraints (11-13)
                     # (11)       [auxiliary_vars] - dual_maximum * corresponding([decision_vars]) <= 0
+                    aux_max = Metabolite("%s_max" % aux_var.id)
+                    aux_max._constraint_sense = "L"
+                    aux_max._bound = 0
+                    aux_var.add_metabolites({ aux_max: 1 })
+                    decision_var.add_metabolites({ aux_max: - dual_maximum })
                     # (12)     - [auxiliary_vars] + corresponding([dual_vars]) >= 0
-                    # (13)       [auxiliary_vars] - (corresponding([dual_vars]) - dual_maximum * (1 - correspond([decision_vars]))) >= 0
-
-                    raise NotImplementedError
-
+                    aux_min = Metabolite("%s_min" % aux_var.id)
+                    aux_min._constraint_sense = "G"
+                    aux_min._bound = 0
+                    aux_var.add_metabolites({ aux_min: - 1 })
+                    dual_var.add_metabolites({ aux_min: 1 })
+                    # (13)       [auxiliary_vars] - (corresponding([dual_vars]) - dual_maximum * (1 - corresponding([decision_vars]))) >= 0
+                    #            [auxiliary_vars] - corresponding([dual_vars]) - dual_maximum * corresponding([decision_vars]) >= - dual_maximum
+                    aux_triple = Metabolite("%s_triple" % aux_var.id)
+                    aux_triple._constraint_sense = "G"
+                    aux_triple._bound = - dual_maximum
+                    aux_var.add_metabolites({ aux_triple: 1 })
+                    dual_var.add_metabolites({ aux_triple: - 1 })
+                    decision_var.add_metabolites({ aux_triple: - dual_maximum })
+        # other vars
         else:
             # other variables become constraints, (1) to (10)
             constr = Metabolite("%s_dual_constraint" % reaction.id)
@@ -294,5 +336,7 @@ def dual_problem(model, integer_vars_to_maintain=[], already_irreversible=False,
                 # add bound dual variables to dual constraints
                 var_bound.add_metabolites({ constr: factor })
                 dual.add_reaction(var_bound)
+
+    # TODO add linearization constraints here
 
     return dual
