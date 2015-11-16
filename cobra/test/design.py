@@ -72,7 +72,7 @@ class TestDesignAlgorithms(TestCase):
         optknock_problem = set_up_optknock(model, "EX_lac__D_e",
                                            knockable_reactions, n_knockouts=2,
                                            copy=False)
-        solution = run_optknock(optknock_problem)
+        solution = run_optknock(optknock_problem, tolerance_integer=1e-9)
         self.assertIn("ACKr", solution.knockouts)
         self.assertIn("ACALD", solution.knockouts)
         self.assertAlmostEqual(solution.f, 17.891, places=3)

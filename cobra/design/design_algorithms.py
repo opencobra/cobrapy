@@ -130,14 +130,27 @@ def set_up_optknock(model, chemical_objective, knockable_reactions,
     return model
 
 
-def run_optknock(optknock_problem, solver=None, **kwargs):
+def run_optknock(optknock_problem, solver=None, tolerance_integer=1e-9,
+                 **kwargs):
     """Run the OptKnock problem created with set_up_optknock.
+
+
+    optknock_problem: :class:`~cobra.core.Model` object. The problem generated
+    by set_up_optknock.
+
+    solver: str. The name of the preferred solver.
+
+    tolerance_integer: float. The integer tolerance for the MILP.
+
+    **kwargs: Keyword arguments are passed to Model.optimize().
 
 
     Zachary King 2015
 
     """
-    solution = optknock_problem.optimize(solver=solver, **kwargs)
+    solution = optknock_problem.optimize(solver=solver,
+                                         tolerance_integer=tolerance_integer,
+                                         **kwargs)
     solution.knockouts = []
     for reaction in optknock_problem.reactions:
         if solution.x_dict.get(reaction.id, None) == 0:
