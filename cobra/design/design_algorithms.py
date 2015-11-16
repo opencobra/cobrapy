@@ -4,6 +4,7 @@ from ..manipulation.modify import convert_to_irreversible, canonical_form
 from six import iteritems
 from collections import defaultdict
 from itertools import chain
+from copy import deepcopy
 
 
 def _add_decision_variable(model, reaction_id):
@@ -37,17 +38,17 @@ def set_up_optknock(model, chemical_objective, knockable_reactions,
 
         Burgard AP, Pharkya P, Maranas CD. Optknock: a bilevel programming
         framework for identifying gene knockout strategies for microbial strain
-        optimization.  Biotechnol Bioeng. 2003;84(6):647–57. doi:10.1002/bit.10803.
+        optimization.  Biotechnol Bioeng. 2003;84(6):647-57. doi:10.1002/bit.10803.
 
 
     model : :class:`~cobra.core.Model` object.
 
-    chemical_objective: str. The ID of the reaction to Maximize in the outer
+    chemical_objective: str. The ID of the reaction to maximize in the outer
     problem.
 
     knockable_reactions: [str]. A list of reaction IDs that can be knocked out.
 
-    biomass_objective: str. The ID of the reaction to Maximize in the inner
+    biomass_objective: str. The ID of the reaction to maximize in the inner
     problem. By default, this is the existing objective function in the passed
     model.
 
@@ -91,11 +92,16 @@ def set_up_optknock(model, chemical_objective, knockable_reactions,
 
     # add constraints and variables from inner problem to outer problem
     inner_objectives = {}
-    for reaction in inner_dual:
+    for reaction in inner_dual.reactions:
         inner_objectives[reaction.id] = reaction.objective_coefficient
         reaction.objective_coefficient = 0
-        if reaction.id in model:
-            model.reactions.get_by_id(reaction.id).add_metabolites(reaction.metabolites)
+        if reaction.id in model.reactions:
+            existing_reaction = model.reactions.get_by_id(reaction.id)
+            for met, coeff in iteritems(reaction.metabolites):
+                if met.id in model.metabolites:
+                    existing_reaction.add_metabolites({ model.metabolites.get_by_id(met.id): coeff })
+                else:
+                    existing_reaction.add_metabolites({ deepcopy(met): coeff })
         else:
             model.add_reaction(reaction)
 
@@ -104,7 +110,7 @@ def set_up_optknock(model, chemical_objective, knockable_reactions,
     equal_objectives_constr = Metabolite("equal_objectives_constraint")
     equal_objectives_constr._constraint_sense = "E"
     equal_objectives_constr._bound = 0
-    for reaction in model:
+    for reaction in model.reactions:
         if reaction.objective_coefficient != 0:
             reaction.add_metabolites({ equal_objectives_constr: reaction.objective_coefficient })
         inner_objective = inner_objectives.get(reaction.id, 0)
@@ -127,14 +133,28 @@ def set_up_optknock(model, chemical_objective, knockable_reactions,
 def run_optknock(optknock_problem, solver=None, **kwargs):
     """Run the OptKnock problem created with set_up_optknock.
 
+
+    Zachary King 2015
+
     """
     solution = optknock_problem.optimize(solver=solver, **kwargs)
-    solution.knockouts = [r.id for r in optknock_problem.reactions
-                          if solution.x_dict.get(getattr(r, "decision_reaction_id", None)) is 0]
+    solution.knockouts = []
+    for reaction in optknock_problem.reactions:
+        if solution.x_dict.get(reaction.id, None) == 0:
+            r_id = getattr(reaction, "decision_reaction_id", None)
+            if r_id is not None:
+                solution.knockouts.append(r_id)
     return solution
 
 
-def dual_problem(model, objective_sense="Maximize", integer_vars_to_maintain=[],
+# This function will generalize the set_up_optknock code to other MILPs:
+# def dual_embed(outer_model, inner_model, ..., objective_sense="maximize",
+#                integer_vars_to_maintain=[], already_irreversible=False,
+#                copy=True, dual_maximum=1000):
+#     """Embed the dual of the inner model within the outer model"""
+
+
+def dual_problem(model, objective_sense="maximize", integer_vars_to_maintain=[],
                  already_irreversible=False, copy=True, dual_maximum=1000):
     """Return a new model representing the dual of the model.
 
@@ -170,7 +190,7 @@ def dual_problem(model, objective_sense="Maximize", integer_vars_to_maintain=[],
     model : :class:`~cobra.core.Model` object.
 
     objective_sense: str. The objective sense of the starting problem, either
-    'Maximize' or 'Minimize'. A minimization problems will be converted to a
+    'maximize' or 'minimize'. A minimization problems will be converted to a
     maximization before taking the dual. This function always returns a
     minimization problem.
 
@@ -197,7 +217,7 @@ def dual_problem(model, objective_sense="Maximize", integer_vars_to_maintain=[],
 
         Tepper N, Shlomi T. Predicting metabolic engineering knockout strategies
         for chemical production: accounting for competing pathways. Bioinformatics.
-        2010;26(4):536–43. doi:10.1093/bioinformatics/btp704.
+        2010;26(4):536-43. doi:10.1093/bioinformatics/btp704.
 
     In COBRApy, this roughly translates to transforming (decision variables p, integer constraints o):
 .
@@ -238,8 +258,7 @@ def dual_problem(model, objective_sense="Maximize", integer_vars_to_maintain=[],
 
     # convert to canonical form and copy
     model = canonical_form(model, objective_sense=objective_sense,
-                                 already_irreversible=already_irreversible,
-                                 copy=copy)
+                           already_irreversible=already_irreversible, copy=copy)
 
     # new model for the dual
     dual = Model("%s_dual" % model.id)

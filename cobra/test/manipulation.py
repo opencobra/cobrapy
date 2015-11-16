@@ -24,10 +24,10 @@ class TestManipulation(TestCase):
         g_constr._constraint_sense = "G"
         g_constr._bound = 5.0
         model.reactions.get_by_id("SUCCt2_2").add_metabolites({ g_constr: 1 })
-        self.assertAlmostEqual(model.optimize("Maximize").f, 0.855, places=3)
+        self.assertAlmostEqual(model.optimize("maximize").f, 0.855, places=3)
         # convert to canonical form
         model = canonical_form(model)
-        self.assertAlmostEqual(model.optimize("Maximize").f, 0.855, places=3)
+        self.assertAlmostEqual(model.optimize("maximize").f, 0.855, places=3)
 
     def test_canonical_form_minimize(self):
         model = create_test_model("textbook")
@@ -35,10 +35,10 @@ class TestManipulation(TestCase):
         model.reactions.get_by_id("Biomass_Ecoli_core").lower_bound = 0.5
         for reaction in model.reactions:
             reaction.objective_coefficient = reaction.id == "GAPD"
-        self.assertAlmostEqual(model.optimize("Minimize").f, 6.27, places=3)
-        # convert to canonical form. Convert Minimize to Maximize
-        model = canonical_form(model, objective_sense="Minimize")
-        self.assertAlmostEqual(model.optimize("Maximize").f, -6.27, places=3)
+        self.assertAlmostEqual(model.optimize("minimize").f, 6.27, places=3)
+        # convert to canonical form. Convert minimize to maximize
+        model = canonical_form(model, objective_sense="minimize")
+        self.assertAlmostEqual(model.optimize("maximize").f, -6.27, places=3)
         # lower bounds should now be <= constraints
         self.assertEqual(model.reactions.get_by_id("Biomass_Ecoli_core").lower_bound, 0.0)
 

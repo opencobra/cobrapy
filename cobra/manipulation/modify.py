@@ -229,7 +229,7 @@ def revert_to_reversible(cobra_model, update_solution=True):
         cobra_model.solution.x = [x_dict[r.id] for r in cobra_model.reactions]
 
 
-def canonical_form(model, objective_sense='Maximize',
+def canonical_form(model, objective_sense='maximize',
                    already_irreversible=False, copy=True):
     """Return a model (problem in canonical_form).
 
@@ -241,7 +241,7 @@ def canonical_form(model, objective_sense='Maximize',
     model: class:`~cobra.core.Model`. The model/problem to convert.
 
     objective_sense: str. The objective sense of the starting problem, either
-    'Maximize' or 'Minimize'. A minimization problems will be converted to a
+    'maximize' or 'minimize'. A minimization problems will be converted to a
     maximization.
 
     already_irreversible: bool. If the model is already irreversible, then pass
@@ -256,12 +256,12 @@ def canonical_form(model, objective_sense='Maximize',
     if not already_irreversible:
         convert_to_irreversible(model)
 
-    if objective_sense == "Minimize":
+    if objective_sense == "minimize":
         # if converting min to max, reverse all the objective coefficients
         for reaction in model.reactions:
             reaction.objective_coefficient = - reaction.objective_coefficient
-    elif objective_sense != "Maximize":
-        raise Exception("Invalid objective sense '%s'. Must be 'Minimize' or 'Maximize'." % objective_sense)
+    elif objective_sense != "maximize":
+        raise Exception("Invalid objective sense '%s'. Must be 'minimize' or 'maximize'." % objective_sense)
 
     # convert G and E constraints to L constraints
     for metabolite in model.metabolites:
