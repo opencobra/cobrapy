@@ -47,6 +47,7 @@ class Model(Object):
             # genes based on their ids {Gene.id: Gene}
             self.compartments = {}
             self.solution = Solution(None)
+            self.media_compositions = {}
 
     @property
     def description(self):
