@@ -150,6 +150,7 @@ cdef class GLP:
         self.exact = False
         glp_term_hook(hook, NULL)
         self.parameters.msg_lev = GLP_MSG_OFF
+        self.integer_parameters.tol_int = 1e-9
 
     def __dealloc__(self):
         glp_delete_prob(self.glp)
