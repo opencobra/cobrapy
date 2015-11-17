@@ -261,7 +261,8 @@ def canonical_form(model, objective_sense='maximize',
         for reaction in model.reactions:
             reaction.objective_coefficient = - reaction.objective_coefficient
     elif objective_sense != "maximize":
-        raise Exception("Invalid objective sense '%s'. Must be 'minimize' or 'maximize'." % objective_sense)
+        raise Exception("Invalid objective sense '%s'. "
+                        "Must be 'minimize' or 'maximize'." % objective_sense)
 
     # convert G and E constraints to L constraints
     for metabolite in model.metabolites:
@@ -271,7 +272,7 @@ def canonical_form(model, objective_sense='maximize',
             for reaction in metabolite.reactions:
                 coeff = reaction.get_coefficient(metabolite)
                 # reverse the coefficient
-                reaction.add_metabolites({ metabolite: -2 * coeff })
+                reaction.add_metabolites({metabolite: -2 * coeff})
         elif metabolite._constraint_sense == "E":
             # change existing constraint to L
             metabolite._constraint_sense = "L"
@@ -281,19 +282,20 @@ def canonical_form(model, objective_sense='maximize',
             new_constr._bound = - metabolite._bound
             for reaction in metabolite.reactions:
                 coeff = reaction.get_coefficient(metabolite)
-                reaction.add_metabolites({ new_constr: -coeff })
+                reaction.add_metabolites({new_constr: -coeff})
 
     # convert lower bounds to LE constraints
     for reaction in model.reactions:
         if reaction.lower_bound < 0:
-            raise Exception("Bounds of irreversible reactions should be >= 0, for %s" % reaction.id)
+            raise Exception("Bounds of irreversible reactions should be >= 0,"
+                            " for %s" % reaction.id)
         elif reaction.lower_bound == 0:
             continue
         # new constraint for lower bound
         lb_constr = Metabolite("%s__LB_constraint" % reaction.id)
         lb_constr._constraint_sense = "L"
         lb_constr._bound = - reaction.lower_bound
-        reaction.add_metabolites({ lb_constr: -1 })
+        reaction.add_metabolites({lb_constr: -1})
         reaction.lower_bound = 0
 
     return model

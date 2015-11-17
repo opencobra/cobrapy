@@ -23,7 +23,7 @@ class TestManipulation(TestCase):
         g_constr = Metabolite("SUCCt2_2__test_G_constraint")
         g_constr._constraint_sense = "G"
         g_constr._bound = 5.0
-        model.reactions.get_by_id("SUCCt2_2").add_metabolites({ g_constr: 1 })
+        model.reactions.get_by_id("SUCCt2_2").add_metabolites({g_constr: 1})
         self.assertAlmostEqual(model.optimize("maximize").f, 0.855, places=3)
         # convert to canonical form
         model = canonical_form(model)
@@ -40,12 +40,14 @@ class TestManipulation(TestCase):
         model = canonical_form(model, objective_sense="minimize")
         self.assertAlmostEqual(model.optimize("maximize").f, -6.27, places=3)
         # lower bounds should now be <= constraints
-        self.assertEqual(model.reactions.get_by_id("Biomass_Ecoli_core").lower_bound, 0.0)
+        self.assertEqual(
+            model.reactions.get_by_id("Biomass_Ecoli_core").lower_bound, 0.0)
 
 
 # make a test suite to run all of the tests
 loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])
+
 
 def test_all():
     TextTestRunner(verbosity=2).run(suite)

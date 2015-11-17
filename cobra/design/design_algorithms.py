@@ -24,10 +24,10 @@ def _add_decision_variable(model, reaction_id):
     # v >= lb * y  -->  - v + lb * y <= 0
     lb_constr = Metabolite("%s_lower_bound" % var.id)
     lb_constr._constraint_sense = "L"
-    reaction.add_metabolites({ lb_constr: - 1,
-                               ub_constr:   1 })
-    var.add_metabolites({ lb_constr:   reaction.lower_bound,
-                          ub_constr: - reaction.upper_bound })
+    reaction.add_metabolites({lb_constr: - 1,
+                              ub_constr:   1})
+    var.add_metabolites({lb_constr:   reaction.lower_bound,
+                         ub_constr: - reaction.upper_bound})
     return var
 
 
@@ -38,7 +38,8 @@ def set_up_optknock(model, chemical_objective, knockable_reactions,
 
         Burgard AP, Pharkya P, Maranas CD. Optknock: a bilevel programming
         framework for identifying gene knockout strategies for microbial strain
-        optimization.  Biotechnol Bioeng. 2003;84(6):647-57. doi:10.1002/bit.10803.
+        optimization.  Biotechnol Bioeng. 2003;84(6):647-57.
+        http://dx.doi.org/10.1002/bit.10803.
 
 
     model : :class:`~cobra.core.Model` object.
@@ -83,10 +84,12 @@ def set_up_optknock(model, chemical_objective, knockable_reactions,
             if obj:
                 found = True
         if not found:
-            raise Exception("Could not find biomass_objective %s in model" % biomass_objective)
+            raise Exception("Could not find biomass_objective %s in model" %
+                            biomass_objective)
 
     # dual of inner problem
-    inner_dual = dual_problem(inner_problem, integer_vars_to_maintain=decision_variable_ids,
+    inner_dual = dual_problem(inner_problem,
+                              integer_vars_to_maintain=decision_variable_ids,
                               already_irreversible=False, copy=False,
                               dual_maximum=dual_maximum)
 
@@ -99,25 +102,29 @@ def set_up_optknock(model, chemical_objective, knockable_reactions,
             existing_reaction = model.reactions.get_by_id(reaction.id)
             for met, coeff in iteritems(reaction.metabolites):
                 if met.id in model.metabolites:
-                    existing_reaction.add_metabolites({ model.metabolites.get_by_id(met.id): coeff })
+                    existing_reaction.add_metabolites(
+                        {model.metabolites.get_by_id(met.id): coeff})
                 else:
-                    existing_reaction.add_metabolites({ deepcopy(met): coeff })
+                    existing_reaction.add_metabolites({deepcopy(met): coeff})
         else:
             model.add_reaction(reaction)
 
-    # constraint to set outer and inner objectives to be equal, and set chemical
+    # constraint to set outer and inner objectives equal, and set chemical
     # objective
     equal_objectives_constr = Metabolite("equal_objectives_constraint")
     equal_objectives_constr._constraint_sense = "E"
     equal_objectives_constr._bound = 0
     for reaction in model.reactions:
         if reaction.objective_coefficient != 0:
-            reaction.add_metabolites({ equal_objectives_constr: reaction.objective_coefficient })
+            reaction.add_metabolites({equal_objectives_constr:
+                                      reaction.objective_coefficient})
         inner_objective = inner_objectives.get(reaction.id, 0)
         if inner_objective:
-            reaction.add_metabolites({ equal_objectives_constr: - inner_objective})
+            reaction.add_metabolites(
+                {equal_objectives_constr: - inner_objective})
         # set chemical objective
-        reaction.objective_coefficient = 1 if reaction.id == chemical_objective else 0
+        reaction.objective_coefficient = 1 \
+            if reaction.id == chemical_objective else 0
 
     # add the n_knockouts constraint
     n_knockouts_constr = Metabolite("n_knockouts_constraint")
@@ -125,7 +132,7 @@ def set_up_optknock(model, chemical_objective, knockable_reactions,
     n_knockouts_constr._bound = len(decision_variable_ids) - n_knockouts
     for r_id in decision_variable_ids:
         reaction = model.reactions.get_by_id(r_id)
-        reaction.add_metabolites({ n_knockouts_constr: 1 })
+        reaction.add_metabolites({n_knockouts_constr: 1})
 
     return model
 
@@ -167,7 +174,8 @@ def run_optknock(optknock_problem, solver=None, tolerance_integer=1e-9,
 #     """Embed the dual of the inner model within the outer model"""
 
 
-def dual_problem(model, objective_sense="maximize", integer_vars_to_maintain=[],
+def dual_problem(model, objective_sense="maximize",
+                 integer_vars_to_maintain=[],
                  already_irreversible=False, copy=True, dual_maximum=1000):
     """Return a new model representing the dual of the model.
 
@@ -189,10 +197,10 @@ def dual_problem(model, objective_sense="maximize", integer_vars_to_maintain=[],
 
     which is something like this in COBRApy (S matrix is m x n):
 
-    	Minimize sum( metabolite_bound_i * dual_i   for all i ) +
+        Minimize sum( metabolite_bound_i * dual_i   for all i ) +
                  sum( upper_bound_j *      dual_m+j for all j ) +
             s.t.
-    	    sum( coefficient_i_j * dual_i for all i ) +
+             sum( coefficient_i_j * dual_i for all i ) +
              sum( dual_2m+j' for all j' ) >= objective_coefficient_j
             dual_k >= 0
 
@@ -224,21 +232,24 @@ def dual_problem(model, objective_sense="maximize", integer_vars_to_maintain=[],
     -----------------------------
 
     The argument integer_vars_to_maintain can be used to specify certin Boolean
-    integer variables that will be maintained in the dual problem. This makes it
-    possible to join outer and inner problems in a bi-level MILP. The method for
-    maintaining integer variables is described by Tepper and Shlomi, 2010:
+    integer variables that will be maintained in the dual problem. This makes
+    it possible to join outer and inner problems in a bi-level MILP. The method
+    for maintaining integer variables is described by Tepper and Shlomi, 2010:
 
-        Tepper N, Shlomi T. Predicting metabolic engineering knockout strategies
-        for chemical production: accounting for competing pathways. Bioinformatics.
-        2010;26(4):536-43. doi:10.1093/bioinformatics/btp704.
+        Tepper N, Shlomi T. Predicting metabolic engineering knockout
+        strategies for chemical production: accounting for competing pathways.
+        Bioinformatics.  2010;26(4):536-43. doi:10.1093/bioinformatics/btp704.
 
-    In COBRApy, this roughly translates to transforming (decision variables p, integer constraints o):
-.
+    In COBRApy, this roughly translates to transforming (decision variables p,
+    integer constraints o):
+
         Maximize (c^T)x subject to (A_x)x + (A_y)y <= b, x >= 0
 
         (1) Maximize sum(objective_coefficient_j * reaction_j for all j)
                 s.t.
-        (2)     sum(coeff_i_j * reaction_j for all j) + sum(decision_coeff_i_j * decision_var_j for all j) <= metabolite_bound_i
+        (2)     sum(coeff_i_j * reaction_j for all j) +
+                sum(decision_coeff_i_j * decision_var_j for all j)
+                <= metabolite_bound_i
         (3)     reaction_j <= upper_bound_j
         (4)     reaction_j >= 0
 
@@ -248,17 +259,22 @@ def dual_problem(model, objective_sense="maximize", integer_vars_to_maintain=[],
 
     which linearizes to (with auxiliary variables z):
 
-        Minimize (b^T)w - { ((A_y)y)^T w with yw --> z } subject to (A_x^T)w >= c, linearization constraints, w >= 0
-          Linearization constraints: z <= w_max * y, z <= w, z >= w - w_max * (1 - y), z >= 0
+        Minimize (b^T)w - { ((A_y)y)^T w with yw --> z }
+        subject to (A_x^T)w >= c, linearization constraints, w >= 0
+          Linearization constraints: z <= w_max * y, z <= w,
+                                     z >= w - w_max * (1 - y), z >= 0
 
         (5) Minimize sum( metabolite_bound_i *  dual_i            for all i ) +
                       sum( upper_bound_j *      dual_m+j          for all j ) +
-                    - sum( decision_coeff_i_j * auxiliary_var_i_j for all combinations i, j )
+                    - sum( decision_coeff_i_j * auxiliary_var_i_j
+                          for all combinations i, j )
                 s.t.
-        (6)   - sum( coefficient_i_j * dual_i for all i ) - dual_m+j <= - objective_coefficient_j
+        (6)   - sum( coefficient_i_j * dual_i for all i ) - dual_m+j
+              <= - objective_coefficient_j
         (7)     auxiliary_var_i_j - dual_maximum * decision_var_j          <= 0
         (8)     auxiliary_var_i_j - dual_i                                 <= 0
-        (9)   - auxiliary_var_i_j + dual_i + dual_maximum * decision_var_j <= dual_maximum
+        (9)   - auxiliary_var_i_j + dual_i + dual_maximum * decision_var_j
+              <= dual_maximum
        (10)     dual_maximum >= dual_i            >= 0
        (11)     dual_maximum >= dual_m+j          >= 0
        (12)     dual_maximum >= auxiliary_var_i_j >= 0
@@ -271,7 +287,8 @@ def dual_problem(model, objective_sense="maximize", integer_vars_to_maintain=[],
 
     # convert to canonical form and copy
     model = canonical_form(model, objective_sense=objective_sense,
-                           already_irreversible=already_irreversible, copy=copy)
+                           already_irreversible=already_irreversible,
+                           copy=copy)
 
     # new model for the dual
     dual = Model("%s_dual" % model.id)
@@ -283,13 +300,14 @@ def dual_problem(model, objective_sense="maximize", integer_vars_to_maintain=[],
     for metabolite in model.metabolites:
         # add constraints based on metabolite constraint sense
         if metabolite._constraint_sense != "L":
-            raise Exception("Not a less than or equal constraint: %s" % metabolite.id)
+            raise Exception("Not a less than or equal constraint: %s"
+                            % metabolite.id)
 
         var = Reaction("%s__dual" % metabolite.id)
         # Without auxiliary variables, the objective coefficient would include
         # integer variables when present. However, we will separate out the
         # integer parts into objective coefficients for auxiliary variables.
-        var.objective_coefficient = metabolite._bound # (5)
+        var.objective_coefficient = metabolite._bound  # (5)
         # [dual_vars] >= 0
         var.lower_bound = 0
         var.upper_bound = dual_maximum
@@ -310,7 +328,8 @@ def dual_problem(model, objective_sense="maximize", integer_vars_to_maintain=[],
             if (reaction.lower_bound not in [0, 1] or
                     reaction.upper_bound not in [0, 1] or
                     reaction.variable_kind != "integer"):
-                raise Exception("Reaction %s from integer_vars_to_maintain is not a Boolean integer variable" % reaction.id)
+                raise Exception("Reaction %s from integer_vars_to_maintain is "
+                                "not a Boolean integer variable" % reaction.id)
             integer_var = Reaction(reaction.id)
             integer_var.upper_bound = reaction.upper_bound
             integer_var.lower_bound = reaction.lower_bound
@@ -323,21 +342,23 @@ def dual_problem(model, objective_sense="maximize", integer_vars_to_maintain=[],
         # other vars
         else:
             # other variables become constraints, (1) to (6)
-            constr = Metabolite("%s__dual_constrained_by_c" % reaction.id) # (6)
+            constr = Metabolite("%s__dual_constrained_by_c" %
+                                reaction.id)  # (6)
             constr._constraint_sense = "L"
             constr._bound = - reaction.objective_coefficient
             for met, coeff in iteritems(reaction.metabolites):
                 dual_var = dual_var_for_met[met.id]
-                dual_var.add_metabolites({ constr: - coeff })
+                dual_var.add_metabolites({constr: - coeff})
 
             # upper bound constraints -> variables (3) to (5) and (6)
-            var_bound = Reaction("%s__dual_for_upper_bound_constraint" % reaction.id) # dual_m+j
-            var_bound.objective_coefficient = reaction.upper_bound # (5)
+            var_bound = Reaction("%s__dual_for_upper_bound_constraint" %
+                                 reaction.id)  # dual_m+j
+            var_bound.objective_coefficient = reaction.upper_bound  # (5)
             # [dual_vars] >= 0
             var_bound.lower_bound = 0
             var_bound.upper_bound = dual_maximum
             # add bound dual variables to dual constraints
-            var_bound.add_metabolites({ constr: -1 }) # (6)
+            var_bound.add_metabolites({constr: -1})  # (6)
             dual.add_reaction(var_bound)
 
     # add auxiliary variables
@@ -345,34 +366,35 @@ def dual_problem(model, objective_sense="maximize", integer_vars_to_maintain=[],
         for metabolite, coeff in iteritems(original_reaction.metabolites):
             dual_var = dual_var_for_met[metabolite.id]
             # create an auxiliary variable
-            aux_var = Reaction("%s__auxiliary__%s" % (integer_var.id, dual_var.id))
+            aux_var = Reaction("%s__auxiliary__%s" % (integer_var.id,
+                                                      dual_var.id))
             aux_var.lower_bound = 0
             aux_var.upper_bound = dual_maximum
             aux_var.objective_coefficient = - coeff
             dual.add_reaction(aux_var)
 
             # add linearization constraints
-            # (7)     auxiliary_var_i_j - dual_maximum * decision_var_j          <= 0
+            # (7)     auxiliary_var_i_j - dual_maximum * decision_var_j    <= 0
             le_decision_constr = Metabolite("%s__le_decision" % aux_var.id)
             le_decision_constr._constraint_sense = "L"
             le_decision_constr._bound = 0
-            aux_var.add_metabolites({ le_decision_constr: 1 })
-            integer_var.add_metabolites({ le_decision_constr: - dual_maximum })
+            aux_var.add_metabolites({le_decision_constr: 1})
+            integer_var.add_metabolites({le_decision_constr: - dual_maximum})
 
-            # (8)     auxiliary_var_i_j - dual_i                                 <= 0
+            # (8)     auxiliary_var_i_j - dual_i                           <= 0
             le_dual_constr = Metabolite("%s__le_dual" % aux_var.id)
             le_dual_constr._constraint_sense = "L"
             le_dual_constr._bound = 0
-            aux_var.add_metabolites({ le_dual_constr: 1 })
-            dual_var.add_metabolites({ le_dual_constr: -1 })
+            aux_var.add_metabolites({le_dual_constr: 1})
+            dual_var.add_metabolites({le_dual_constr: -1})
 
-            # (9)   - auxiliary_var_i_j + dual_i + dual_maximum * decision_var_j <= dual_maximum
+            # (9)   - auxiliary_var_i_j + dual_i +
+            #         dual_maximum * decision_var_j <= dual_maximum
             g_constr = Metabolite("%s__g_dual" % aux_var.id)
             g_constr._constraint_sense = "L"
             g_constr._bound = dual_maximum
-            aux_var.add_metabolites({ g_constr: -1 })
-            dual_var.add_metabolites({ g_constr: 1 })
-            integer_var.add_metabolites({ g_constr: dual_maximum })
-
+            aux_var.add_metabolites({g_constr: -1})
+            dual_var.add_metabolites({g_constr: 1})
+            integer_var.add_metabolites({g_constr: dual_maximum})
 
     return dual
