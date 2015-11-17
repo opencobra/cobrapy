@@ -291,6 +291,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         if 'SUBSYSTEM' in reaction_note_dict:
             reaction.subsystem = reaction_note_dict['SUBSYSTEM'][0]   
 
+        reaction.notes = reaction_note_dict
 
 
     #Now, add all of the reactions to the model.
@@ -490,12 +491,31 @@ def get_libsbml_document(cobra_model,
                 sbml_parameter.setValue(v)
             sbml_law.addParameter(sbml_parameter)
         sbml_reaction.setKineticLaw(sbml_law)
-        sbml_reaction.setNotes('<html xmlns="http://www.w3.org/1999/xhtml">%sGENE_ASSOCIATION: %s%s%sSUBSYSTEM: %s%s</html>'%(note_start_tag,
-                                                                 the_reaction.gene_reaction_rule,
-                                                                 note_end_tag,
-                                                                 note_start_tag,
-                                                                 the_reaction.subsystem,
-                                                                 note_end_tag))
+
+        #Checks if GPR and Subsystem annotations are present in the notes section and if they are the same as those in
+        #the reaction's gene_reaction_rule/ subsystem attribute
+        #If they are not identical, they are set to be identical
+        if 'GENE ASSOCIATION' in the_reaction.notes and the_reaction.notes['GENE ASSOCIATION'] != '':
+            if the_reaction.gene_reaction_rule != the_reaction.notes['GENE ASSOCIATION']:
+                the_reaction.notes['GENE ASSOCIATION'][0] = the_reaction.gene_reaction_rule
+        if 'SUBSYSTEM' in the_reaction.notes and the_reaction.notes['SUBSYSTEM']:
+            if the_reaction.subsystem != the_reaction.notes['SUBSYSTEM']:
+                the_reaction.notes.update({'SUBSYSTEM': [str(the_reaction.subsystem)]})
+        else:
+            the_reaction.notes.update({'SUBSYSTEM': [str(the_reaction.subsystem)]})
+        
+        #In a cobrapy model the notes section is stored as a dictionary. The following section turns the key-value-pairs
+        #of the dictionary into a string and replaces recurring symbols so that the string has the required syntax for
+        #an SBML doc.
+        note_str = str(the_reaction.notes.viewitems())
+        note_start_tag, note_end_tag, note_delimiter = '<p>', '</p>', ':'
+        note_str = note_str.replace('dict_items([','<html xmlns="http://www.w3.org/1999/xhtml">')
+        note_str = note_str.replace('(\'',note_start_tag)
+        note_str = note_str.replace('\']),',note_end_tag)
+        note_str = note_str.replace('\',',note_delimiter)
+        note_str = note_str.replace('\']','')
+        note_str = note_str.replace('[\'','')
+        note_str = note_str.replace(')])',note_end_tag+'</html>')
 
 
     if use_fbc_package:
@@ -566,13 +586,16 @@ def add_sbml_species(sbml_model, cobra_metabolite, note_start_tag,
             return cobra_metabolite
     if cobra_metabolite.charge is not None:
         sbml_species.setCharge(cobra_metabolite.charge)
-    if hasattr(cobra_metabolite.formula, 'id') or \
-       hasattr(cobra_metabolite.notes, 'items'):
+    if cobra_metabolite.formula or cobra_metabolite.notes:
         tmp_note =  '<html xmlns="http://www.w3.org/1999/xhtml">'
         if hasattr(cobra_metabolite.formula, 'id'):
             tmp_note += '%sFORMULA: %s%s'%(note_start_tag,
                                               cobra_metabolite.formula.id,
                                               note_end_tag)
+        else:
+            tmp_note += '%sFORMULA: %s%s'%(note_start_tag,
+                                  cobra_metabolite.formula,
+                                  note_end_tag)
         if hasattr(cobra_metabolite.notes, 'items'):
             for the_id_type, the_id in cobra_metabolite.notes.items():
                 if the_id_type.lower() == 'charge':
