@@ -325,7 +325,7 @@ def parse_legacy_sbml_notes(note_string, note_delimiter = ':'):
             note_field = the_note[:note_delimiter_index].lstrip(' ').rstrip(' ').replace('_',' ').upper()
             note_value = the_note[(note_delimiter_index+1):].lstrip(' ').rstrip(' ')
             if note_field in note_dict:
-                note_dict[note_field ].append(note_value)
+                note_dict[note_field].append(note_value)
             else:
                 note_dict[note_field] = [note_value]
         note_string = note_string[(note_end+len(end_tag)): ]
@@ -497,7 +497,6 @@ def get_libsbml_document(cobra_model,
         #If they are not identical, they are set to be identical
         if 'GENE ASSOCIATION' in the_reaction.notes and the_reaction.notes['GENE ASSOCIATION'] != '':
             if the_reaction.gene_reaction_rule != the_reaction.notes['GENE ASSOCIATION']:
-                the_reaction.notes['GENE ASSOCIATION'][0] = the_reaction.gene_reaction_rule
         if 'SUBSYSTEM' in the_reaction.notes and the_reaction.notes['SUBSYSTEM']:
             if the_reaction.subsystem != the_reaction.notes['SUBSYSTEM']:
                 the_reaction.notes.update({'SUBSYSTEM': [str(the_reaction.subsystem)]})
@@ -516,7 +515,6 @@ def get_libsbml_document(cobra_model,
         note_str = note_str.replace('\']','')
         note_str = note_str.replace('[\'','')
         note_str = note_str.replace(')])',note_end_tag+'</html>')
-
 
     if use_fbc_package:
         try:
