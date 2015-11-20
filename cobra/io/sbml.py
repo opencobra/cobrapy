@@ -511,7 +511,7 @@ def get_libsbml_document(cobra_model,
         note_str = note_str.replace('\']','')
         note_str = note_str.replace('[\'','')
         note_str = note_str.replace('[','<html xmlns="http://www.w3.org/1999/xhtml">')
-        note_str = note_str.replace(')])',note_end_tag+'</html>')
+        note_str = note_str.replace(')]',note_end_tag+'</html>')
         sbml_reaction.setNotes(note_str)
 
     if use_fbc_package:
