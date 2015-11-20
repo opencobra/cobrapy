@@ -102,15 +102,19 @@ try:
         library_dirs.append(abspath("."))
     if isfile("glpk.h"):
         include_dirs.append(abspath("."))
-    if name == "posix":
+    # if the glpk files are not in the current directory attempt to
+    # auto-detect their location by finding the location of the glpsol
+    # command
+    if name == "posix" and len(include_dirs) == 0 and len(library_dirs) == 0:
         from subprocess import check_output
         try:
-            glpksol_path = check_output(["which", "glpsol"]).strip()
+            glpksol_path = check_output(["which", "glpsol"],
+                                        universal_newlines=True).strip()
             glpk_path = abspath(join(dirname(glpksol_path), ".."))
             include_dirs.append(join(glpk_path, "include"))
             library_dirs.append(join(glpk_path, "lib"))
-        except:
-            None
+        except Exception as e:
+            print('Could not add include and library dirs: {}'.format(e))
     if len(include_dirs) > 0:
         build_args["include_dirs"] = include_dirs
     if len(library_dirs) > 0:
@@ -124,7 +128,8 @@ try:
     else:
         ext_modules = [Extension("cobra.solvers.cglpk",
                                  ["cobra/solvers/cglpk.c"], **build_args)]
-except:
+except Exception as e:
+    print('Could not build CGLPK: {}'.format(e))
     ext_modules = None
 
 extras = {
