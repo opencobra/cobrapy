@@ -503,7 +503,7 @@ def get_libsbml_document(cobra_model,
         #In a cobrapy model the notes section is stored as a dictionary. The following section turns the key-value-pairs
         #of the dictionary into a string and replaces recurring symbols so that the string has the required syntax for
         #an SBML doc.
-        note_str = str(list(cameo_model.reactions.MNXR4410_c.notes.items()))
+        note_str = str(list(the_reaction.notes.items()))
         note_start_tag, note_end_tag, note_delimiter = '<p>', '</p>', ':'
         note_str = note_str.replace('(\'',note_start_tag)
         note_str = note_str.replace('\']),',note_end_tag)
