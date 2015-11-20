@@ -495,12 +495,9 @@ def get_libsbml_document(cobra_model,
         #Checks if GPR and Subsystem annotations are present in the notes section and if they are the same as those in
         #the reaction's gene_reaction_rule/ subsystem attribute
         #If they are not identical, they are set to be identical
-        if 'GENE ASSOCIATION' in the_reaction.notes and the_reaction.notes['GENE ASSOCIATION'] != '':
-            if the_reaction.gene_reaction_rule != the_reaction.notes['GENE ASSOCIATION']:
-        if 'SUBSYSTEM' in the_reaction.notes and the_reaction.notes['SUBSYSTEM']:
-            if the_reaction.subsystem != the_reaction.notes['SUBSYSTEM']:
-                the_reaction.notes.update({'SUBSYSTEM': [str(the_reaction.subsystem)]})
-        else:
+        if the_reaction.gene_reaction_rule:
+            the_reaction.notes.update({'GENE ASSOCIATION': [str(the_reaction.gene_reaction_rule)]})
+        if the_reaction.subsystem:
             the_reaction.notes.update({'SUBSYSTEM': [str(the_reaction.subsystem)]})
         
         #In a cobrapy model the notes section is stored as a dictionary. The following section turns the key-value-pairs
@@ -515,6 +512,7 @@ def get_libsbml_document(cobra_model,
         note_str = note_str.replace('\']','')
         note_str = note_str.replace('[\'','')
         note_str = note_str.replace(')])',note_end_tag+'</html>')
+        sbml_reaction.setNotes(note_str)
 
     if use_fbc_package:
         try:
@@ -584,6 +582,7 @@ def add_sbml_species(sbml_model, cobra_metabolite, note_start_tag,
             return cobra_metabolite
     if cobra_metabolite.charge is not None:
         sbml_species.setCharge(cobra_metabolite.charge)
+    #Deal with cases where the formula in the model is not an object but as a string
     if cobra_metabolite.formula or cobra_metabolite.notes:
         tmp_note =  '<html xmlns="http://www.w3.org/1999/xhtml">'
         if hasattr(cobra_metabolite.formula, 'id'):
