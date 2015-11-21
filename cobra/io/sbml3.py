@@ -337,7 +337,8 @@ def parse_xml_into_model(xml, number=float):
         object_stoichiometry = {}
         for met_id in stoichiometry:
             if met_id in boundary_metabolites:
-                warn("Boundary metabolite '%s' used in reaction '%s'" % (met_id, reaction.id))
+                warn("Boundary metabolite '%s' used in reaction '%s'" %
+                     (met_id, reaction.id))
                 continue
             try:
                 metabolite = model.metabolites.get_by_id(met_id)

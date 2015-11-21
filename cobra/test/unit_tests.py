@@ -188,7 +188,6 @@ class TestDictList(TestCase):
         result = self.list.query(re.compile("foobar."), "name")
         self.assertEqual(len(result), 1)
 
-
     def testRemoval(self):
         obj_list = DictList(Object("test%d" % (i)) for i in range(2, 10))
         del obj_list[3]
