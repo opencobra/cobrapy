@@ -131,7 +131,7 @@ def parse_gpr(str_expr):
 
 class Gene(Species):
 
-    def __init__(self, id=id, name=None, functional=True):
+    def __init__(self, id=None, name="", functional=True):
         """
         id: A string.
 

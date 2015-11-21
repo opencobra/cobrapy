@@ -47,13 +47,13 @@ class Reaction(Object):
 
     """
 
-    def __init__(self, name=None, id=None, subsystem='', lower_bound=0.,
+    def __init__(self, id=None, name='', subsystem='', lower_bound=0.,
                  upper_bound=1000., objective_coefficient=0.):
         """An object for housing reactions and associated information
         for cobra modeling.
 
         """
-        Object.__init__(self, name, id)
+        Object.__init__(self, id, name)
         self._gene_reaction_rule = ''
         self.subsystem = subsystem
         # The cobra.Genes that are used to catalyze the reaction
