@@ -3,6 +3,7 @@ from unittest import TestCase, TestLoader, TextTestRunner, skipIf
 from copy import copy, deepcopy
 from pickle import loads, dumps, HIGHEST_PROTOCOL
 import warnings
+import re
 
 if __name__ == "__main__":
     sys.path.insert(0, "../..")
@@ -168,12 +169,25 @@ class TestDictList(TestCase):
 
     def testQuery(self):
         obj2 = Object("test2")
+        obj2.name = "foobar1"
         self.list.append(obj2)
         result = self.list.query("test1")  # matches only test1
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0], self.obj)
+        result = self.list.query("foo", "name")  # matches only test2
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], obj2)
         result = self.list.query("test")  # matches test1 and test2
         self.assertEqual(len(result), 2)
+        # test with a regular expression
+        result = self.list.query(re.compile("test[0-9]"))
+        self.assertEqual(len(result), 2)
+        result = self.list.query(re.compile("test[29]"))
+        self.assertEqual(len(result), 1)
+        # test query of name
+        result = self.list.query(re.compile("foobar."), "name")
+        self.assertEqual(len(result), 1)
+
 
     def testRemoval(self):
         obj_list = DictList(Object("test%d" % (i)) for i in range(2, 10))
