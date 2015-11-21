@@ -4,7 +4,7 @@ from six import iteritems
 class Object(object):
     """Defines common behavior of object in cobra.core"""
 
-    def __init__(self, id=None, name=None):
+    def __init__(self, id=None, name=""):
         """
         id: None or a string
 
