@@ -7,6 +7,12 @@ from six import iteritems, string_types
 
 env = mosek.Env()
 
+# make sure the mosek environment works
+test = env.Task(0, 0)
+test.optimize()
+del test
+
+
 solver_name = "mosek"
 __mosek_version__ = ".".join(str(i) for i in mosek.getversion())
 _SUPPORTS_MILP = True
