@@ -300,7 +300,15 @@ cdef class GLP:
             check_error(glp_simplex(glp, &self.parameters))
         self.parameters.tm_lim = time_limit
         if self.exact:
-            check_error(glp_exact(glp, &self.parameters))
+            # sigh... it looks like the exact routine doesn't fully respect
+            # the verbosity parameter
+            if self.parameters.msg_lev == GLP_MSG_OFF:
+                glp_term_hook(silent_hook, NULL)
+            try:
+                check_error(glp_exact(glp, &self.parameters))
+            finally:
+                glp_term_hook(hook, NULL)
+
         if self.is_mip():
             self.integer_parameters.tm_lim = self.parameters.tm_lim
             self.integer_parameters.msg_lev = self.parameters.msg_lev
