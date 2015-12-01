@@ -1,5 +1,5 @@
 from numpy import linspace, zeros, array, meshgrid, abs, empty, arange, \
-    int32, unravel_index
+    int32, unravel_index, dtype
 from multiprocessing import Pool
 
 from ..solvers import solver_dict, get_solver_name
@@ -60,7 +60,7 @@ class phenotypePhasePlaneData:
         returns: maptlotlib 3d subplot object"""
         if pyplot is None:
             raise ImportError("Error importing matplotlib 3D plotting")
-        colors = empty(self.growth_rates.shape, dtype="|S7")
+        colors = empty(self.growth_rates.shape, dtype=dtype((str, 7)))
         n_segments = self.segments.max()
         # pick colors
         if get_map is None:
