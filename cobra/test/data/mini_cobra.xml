@@ -15,153 +15,199 @@
       <compartment id="e" name="extracellular" size="1"/>
     </listOfCompartments>
     <listOfSpecies>
-      <species id="M_13dpg_c" name="3-Phospho-D-glyceroyl phosphate" compartment="c">
+      <species id="M_13dpg_c" name="3-Phospho-D-glyceroyl phosphate" compartment="c" charge="-4">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C3H4O10P2</p>
+          </html>
         </notes>
       </species>
-      <species id="M_2pg_c" name="D-Glycerate 2-phosphate" compartment="c">
+      <species id="M_2pg_c" name="D-Glycerate 2-phosphate" compartment="c" charge="-3">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C3H4O7P</p>
+          </html>
         </notes>
       </species>
-      <species id="M_3pg_c" name="3-Phospho-D-glycerate" compartment="c">
+      <species id="M_3pg_c" name="3-Phospho-D-glycerate" compartment="c" charge="-3">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C3H4O7P</p>
+          </html>
         </notes>
       </species>
-      <species id="M_adp_c" name="ADP" compartment="c">
+      <species id="M_adp_c" name="ADP" compartment="c" charge="-3">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C10H12N5O10P2</p>
+          </html>
         </notes>
       </species>
-      <species id="M_atp_c" name="ATP" compartment="c">
+      <species id="M_atp_c" name="ATP" compartment="c" charge="-4">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C10H12N5O13P3</p>
+          </html>
         </notes>
       </species>
-      <species id="M_dhap_c" name="Dihydroxyacetone phosphate" compartment="c">
+      <species id="M_dhap_c" name="Dihydroxyacetone phosphate" compartment="c" charge="-2">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C3H5O6P</p>
+          </html>
         </notes>
       </species>
-      <species id="M_f6p_c" name="D-Fructose 6-phosphate" compartment="c">
+      <species id="M_f6p_c" name="D-Fructose 6-phosphate" compartment="c" charge="-2">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C6H11O9P</p>
+          </html>
         </notes>
       </species>
-      <species id="M_fdp_c" name="D-Fructose 1,6-bisphosphate" compartment="c">
+      <species id="M_fdp_c" name="D-Fructose 1,6-bisphosphate" compartment="c" charge="-4">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C6H10O12P2</p>
+          </html>
         </notes>
       </species>
-      <species id="M_g3p_c" name="Glyceraldehyde 3-phosphate" compartment="c">
+      <species id="M_g3p_c" name="Glyceraldehyde 3-phosphate" compartment="c" charge="-2">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C3H5O6P</p>
+          </html>
         </notes>
       </species>
-      <species id="M_g6p_c" name="D-Glucose 6-phosphate" compartment="c">
+      <species id="M_g6p_c" name="D-Glucose 6-phosphate" compartment="c" charge="-2">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C6H11O9P</p>
+          </html>
         </notes>
       </species>
-      <species id="M_glc__D_e" name="D-Glucose" compartment="e">
+      <species id="M_glc__D_e" name="D-Glucose" compartment="e" charge="0">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C6H12O6</p>
+          </html>
         </notes>
       </species>
-      <species id="M_h2o_c" name="H2O" compartment="c">
+      <species id="M_h2o_c" name="H2O" compartment="c" charge="0">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: H2O</p>
+          </html>
         </notes>
       </species>
-      <species id="M_h2o_e" name="H2O" compartment="e">
+      <species id="M_h2o_e" name="H2O" compartment="e" charge="0">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: H2O</p>
+          </html>
         </notes>
       </species>
-      <species id="M_h_c" name="H+" compartment="c">
+      <species id="M_h_c" name="H+" compartment="c" charge="1">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: H</p>
+          </html>
         </notes>
       </species>
-      <species id="M_h_e" name="H+" compartment="e">
+      <species id="M_h_e" name="H+" compartment="e" charge="1">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: H</p>
+          </html>
         </notes>
       </species>
       <species id="M_lac__D_c" name="D-Lactate" compartment="c" charge="-1">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C3H5O3</p>
+          </html>
         </notes>
       </species>
       <species id="M_lac__D_e" name="D-Lactate" compartment="e" charge="-1">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C3H5O3</p>
+          </html>
         </notes>
       </species>
-      <species id="M_nad_c" name="Nicotinamide adenine dinucleotide" compartment="c">
+      <species id="M_nad_c" name="Nicotinamide adenine dinucleotide" compartment="c" charge="-1">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C21H26N7O14P2</p>
+          </html>
         </notes>
       </species>
-      <species id="M_nadh_c" name="Nicotinamide adenine dinucleotide - reduced" compartment="c">
+      <species id="M_nadh_c" name="Nicotinamide adenine dinucleotide - reduced" compartment="c" charge="-2">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C21H27N7O14P2</p>
+          </html>
         </notes>
       </species>
-      <species id="M_pep_c" name="Phosphoenolpyruvate" compartment="c">
+      <species id="M_pep_c" name="Phosphoenolpyruvate" compartment="c" charge="-3">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C3H2O6P</p>
+          </html>
         </notes>
       </species>
-      <species id="M_pi_c" name="Phosphate" compartment="c">
+      <species id="M_pi_c" name="Phosphate" compartment="c" charge="-2">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: HO4P</p>
+          </html>
         </notes>
       </species>
-      <species id="M_pi_e" name="Phosphate" compartment="e">
+      <species id="M_pi_e" name="Phosphate" compartment="e" charge="-2">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: HO4P</p>
+          </html>
         </notes>
       </species>
-      <species id="M_pyr_c" name="Pyruvate" compartment="c">
+      <species id="M_pyr_c" name="Pyruvate" compartment="c" charge="-1">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C3H3O3</p>
+          </html>
         </notes>
       </species>
-      <species id="M_glc__D_e_boundary" name="D-Glucose" compartment="e" boundaryCondition="true">
+      <species id="M_glc__D_e_boundary" name="D-Glucose" compartment="e" boundaryCondition="true" charge="0">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C6H12O6</p>
+          </html>
         </notes>
       </species>
-      <species id="M_h_e_boundary" name="H+" compartment="e" boundaryCondition="true">
+      <species id="M_h_e_boundary" name="H+" compartment="e" boundaryCondition="true" charge="1">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: H</p>
+          </html>
         </notes>
       </species>
       <species id="M_lac__D_e_boundary" name="D-Lactate" compartment="e" boundaryCondition="true" charge="-1">
         <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml"/>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA: C3H5O3</p>
+          </html>
         </notes>
       </species>
     </listOfSpecies>
     <listOfReactions>
       <reaction id="R_ATPM" name="ATP maintenance requirement" reversible="false">
-        <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: </p>
-            <p>SUBSYSTEM: </p>
-          </html>
-        </notes>
         <listOfReactants>
-          <speciesReference species="M_h2o_c" stoichiometry="1"/>
           <speciesReference species="M_atp_c" stoichiometry="1"/>
+          <speciesReference species="M_h2o_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_pi_c" stoichiometry="1"/>
-          <speciesReference species="M_h_c" stoichiometry="1"/>
           <speciesReference species="M_adp_c" stoichiometry="1"/>
+          <speciesReference species="M_h_c" stoichiometry="1"/>
+          <speciesReference species="M_pi_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -179,7 +225,6 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: b3603 or b2975</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>
@@ -206,15 +251,14 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: b2779</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>
           <speciesReference species="M_2pg_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_h2o_c" stoichiometry="1"/>
           <speciesReference species="M_pep_c" stoichiometry="1"/>
+          <speciesReference species="M_h2o_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -229,12 +273,6 @@
         </kineticLaw>
       </reaction>
       <reaction id="R_EX_glc__D_e" name="D-Glucose exchange" reversible="true">
-        <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: </p>
-            <p>SUBSYSTEM: </p>
-          </html>
-        </notes>
         <listOfReactants>
           <speciesReference species="M_glc__D_e" stoichiometry="1"/>
         </listOfReactants>
@@ -254,12 +292,6 @@
         </kineticLaw>
       </reaction>
       <reaction id="R_EX_h_e" name="H+ exchange" reversible="true">
-        <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: </p>
-            <p>SUBSYSTEM: </p>
-          </html>
-        </notes>
         <listOfReactants>
           <speciesReference species="M_h_e" stoichiometry="1"/>
         </listOfReactants>
@@ -279,12 +311,6 @@
         </kineticLaw>
       </reaction>
       <reaction id="R_EX_lac__D_e" name="D-lactate exchange" reversible="false">
-        <notes>
-          <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: </p>
-            <p>SUBSYSTEM: </p>
-          </html>
-        </notes>
         <listOfReactants>
           <speciesReference species="M_lac__D_e" stoichiometry="1"/>
         </listOfReactants>
@@ -307,15 +333,14 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: b1773 or b2097 or b2925</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>
           <speciesReference species="M_fdp_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_g3p_c" stoichiometry="1"/>
           <speciesReference species="M_dhap_c" stoichiometry="1"/>
+          <speciesReference species="M_g3p_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -333,13 +358,12 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: b1779</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>
+          <speciesReference species="M_g3p_c" stoichiometry="1"/>
           <speciesReference species="M_nad_c" stoichiometry="1"/>
           <speciesReference species="M_pi_c" stoichiometry="1"/>
-          <speciesReference species="M_g3p_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
           <speciesReference species="M_h_c" stoichiometry="1"/>
@@ -362,7 +386,6 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: ( b2417 and b1621 and b2415 and b2416 ) or ( b2417 and b1101 and b2415 and b2416 ) or ( b1817 and b1818 and b1819 and b2415 and b2416 )</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>
@@ -370,8 +393,8 @@
           <speciesReference species="M_glc__D_e" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_g6p_c" stoichiometry="1"/>
           <speciesReference species="M_pyr_c" stoichiometry="1"/>
+          <speciesReference species="M_g6p_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -389,7 +412,6 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: b0875 or s0001</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>
@@ -414,17 +436,16 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: b2133 or b1380</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_nad_c" stoichiometry="1"/>
           <speciesReference species="M_lac__D_c" stoichiometry="1"/>
+          <speciesReference species="M_nad_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
+          <speciesReference species="M_h_c" stoichiometry="1"/>
           <speciesReference species="M_pyr_c" stoichiometry="1"/>
           <speciesReference species="M_nadh_c" stoichiometry="1"/>
-          <speciesReference species="M_h_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -442,7 +463,6 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: b3916 or b1723</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>
@@ -450,8 +470,8 @@
           <speciesReference species="M_atp_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_h_c" stoichiometry="1"/>
           <speciesReference species="M_adp_c" stoichiometry="1"/>
+          <speciesReference species="M_h_c" stoichiometry="1"/>
           <speciesReference species="M_fdp_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
@@ -470,7 +490,6 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: b4025</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>
@@ -495,12 +514,11 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: b2926</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_atp_c" stoichiometry="1"/>
           <speciesReference species="M_3pg_c" stoichiometry="1"/>
+          <speciesReference species="M_atp_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
           <speciesReference species="M_13dpg_c" stoichiometry="1"/>
@@ -522,7 +540,6 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: b4395 or b3612 or b0755</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>
@@ -547,7 +564,6 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: b2987 or b3493</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>
@@ -574,7 +590,6 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: b1854 or b1676</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>
@@ -583,8 +598,8 @@
           <speciesReference species="M_pep_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_atp_c" stoichiometry="1"/>
           <speciesReference species="M_pyr_c" stoichiometry="1"/>
+          <speciesReference species="M_atp_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -602,7 +617,6 @@
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: b3919</p>
-            <p>SUBSYSTEM: </p>
           </html>
         </notes>
         <listOfReactants>

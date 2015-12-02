@@ -63,6 +63,8 @@ def _fix_type(value):
     # handle legacy Formula type
     if value.__class__.__name__ == "Formula":
         return str(value)
+    if value is None:
+        return ''
     return value
 
 

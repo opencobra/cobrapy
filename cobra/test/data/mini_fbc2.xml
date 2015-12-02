@@ -28,7 +28,7 @@
       <compartment constant="true" id="e" name="extracellular"/>
     </listOfCompartments>
     <listOfSpecies>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_13dpg_c" name="3-Phospho-D-glyceroyl phosphate" metaid="M_13dpg_c" compartment="c" fbc:chemicalFormula="C3H4O10P2">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_13dpg_c" name="3-Phospho-D-glyceroyl phosphate" metaid="M_13dpg_c" compartment="c" fbc:charge="-4" fbc:chemicalFormula="C3H4O10P2">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_13dpg_c">
@@ -53,7 +53,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_2pg_c" name="D-Glycerate 2-phosphate" metaid="M_2pg_c" compartment="c" fbc:chemicalFormula="C3H4O7P">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_2pg_c" name="D-Glycerate 2-phosphate" metaid="M_2pg_c" compartment="c" fbc:charge="-3" fbc:chemicalFormula="C3H4O7P">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_2pg_c">
@@ -82,7 +82,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_3pg_c" name="3-Phospho-D-glycerate" metaid="M_3pg_c" compartment="c" fbc:chemicalFormula="C3H4O7P">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_3pg_c" name="3-Phospho-D-glycerate" metaid="M_3pg_c" compartment="c" fbc:charge="-3" fbc:chemicalFormula="C3H4O7P">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_3pg_c">
@@ -117,7 +117,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_adp_c" name="ADP" metaid="M_adp_c" compartment="c" fbc:chemicalFormula="C10H12N5O10P2">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_adp_c" name="ADP" metaid="M_adp_c" compartment="c" fbc:charge="-3" fbc:chemicalFormula="C10H12N5O10P2">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_adp_c">
@@ -157,7 +157,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_atp_c" name="ATP" metaid="M_atp_c" compartment="c" fbc:chemicalFormula="C10H12N5O13P3">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_atp_c" name="ATP" metaid="M_atp_c" compartment="c" fbc:charge="-4" fbc:chemicalFormula="C10H12N5O13P3">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_atp_c">
@@ -196,7 +196,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_dhap_c" name="Dihydroxyacetone phosphate" metaid="M_dhap_c" compartment="c" fbc:chemicalFormula="C3H5O6P">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_dhap_c" name="Dihydroxyacetone phosphate" metaid="M_dhap_c" compartment="c" fbc:charge="-2" fbc:chemicalFormula="C3H5O6P">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_dhap_c">
@@ -228,7 +228,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_f6p_c" name="D-Fructose 6-phosphate" metaid="M_f6p_c" compartment="c" fbc:chemicalFormula="C6H11O9P">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_f6p_c" name="D-Fructose 6-phosphate" metaid="M_f6p_c" compartment="c" fbc:charge="-2" fbc:chemicalFormula="C6H11O9P">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_f6p_c">
@@ -260,7 +260,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_fdp_c" name="D-Fructose 1,6-bisphosphate" metaid="M_fdp_c" compartment="c" fbc:chemicalFormula="C6H10O12P2">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_fdp_c" name="D-Fructose 1,6-bisphosphate" metaid="M_fdp_c" compartment="c" fbc:charge="-4" fbc:chemicalFormula="C6H10O12P2">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_fdp_c">
@@ -293,7 +293,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_g3p_c" name="Glyceraldehyde 3-phosphate" metaid="M_g3p_c" compartment="c" fbc:chemicalFormula="C3H5O6P">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_g3p_c" name="Glyceraldehyde 3-phosphate" metaid="M_g3p_c" compartment="c" fbc:charge="-2" fbc:chemicalFormula="C3H5O6P">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_g3p_c">
@@ -319,7 +319,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_g6p_c" name="D-Glucose 6-phosphate" metaid="M_g6p_c" compartment="c" fbc:chemicalFormula="C6H11O9P">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_g6p_c" name="D-Glucose 6-phosphate" metaid="M_g6p_c" compartment="c" fbc:charge="-2" fbc:chemicalFormula="C6H11O9P">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_g6p_c">
@@ -354,7 +354,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_glc__D_e" name="D-Glucose" metaid="M_glc__D_e" compartment="e" fbc:chemicalFormula="C6H12O6">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_glc__D_e" name="D-Glucose" metaid="M_glc__D_e" compartment="e" fbc:charge="0" fbc:chemicalFormula="C6H12O6">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_glc__D_e">
@@ -371,7 +371,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_h2o_c" name="H2O" metaid="M_h2o_c" compartment="c" fbc:chemicalFormula="H2O">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_h2o_c" name="H2O" metaid="M_h2o_c" compartment="c" fbc:charge="0" fbc:chemicalFormula="H2O">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_h2o_c">
@@ -442,7 +442,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_h2o_e" name="H2O" metaid="M_h2o_e" compartment="e" fbc:chemicalFormula="H2O">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_h2o_e" name="H2O" metaid="M_h2o_e" compartment="e" fbc:charge="0" fbc:chemicalFormula="H2O">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_h2o_e">
@@ -513,7 +513,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_h_c" name="H+" metaid="M_h_c" compartment="c" fbc:chemicalFormula="H">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_h_c" name="H+" metaid="M_h_c" compartment="c" fbc:charge="1" fbc:chemicalFormula="H">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_h_c">
@@ -557,7 +557,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_h_e" name="H+" metaid="M_h_e" compartment="e" fbc:chemicalFormula="H">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_h_e" name="H+" metaid="M_h_e" compartment="e" fbc:charge="1" fbc:chemicalFormula="H">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_h_e">
@@ -603,7 +603,7 @@
       </species>
       <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_lac__D_c" name="D-Lactate" compartment="c" fbc:charge="-1" fbc:chemicalFormula="C3H5O3"/>
       <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_lac__D_e" name="D-Lactate" compartment="e" fbc:charge="-1" fbc:chemicalFormula="C3H5O3"/>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_nad_c" name="Nicotinamide adenine dinucleotide" metaid="M_nad_c" compartment="c" fbc:chemicalFormula="C21H26N7O14P2">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_nad_c" name="Nicotinamide adenine dinucleotide" metaid="M_nad_c" compartment="c" fbc:charge="-1" fbc:chemicalFormula="C21H26N7O14P2">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_nad_c">
@@ -640,7 +640,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_nadh_c" name="Nicotinamide adenine dinucleotide - reduced" metaid="M_nadh_c" compartment="c" fbc:chemicalFormula="C21H27N7O14P2">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_nadh_c" name="Nicotinamide adenine dinucleotide - reduced" metaid="M_nadh_c" compartment="c" fbc:charge="-2" fbc:chemicalFormula="C21H27N7O14P2">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_nadh_c">
@@ -672,7 +672,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_pep_c" name="Phosphoenolpyruvate" metaid="M_pep_c" compartment="c" fbc:chemicalFormula="C3H2O6P">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_pep_c" name="Phosphoenolpyruvate" metaid="M_pep_c" compartment="c" fbc:charge="-3" fbc:chemicalFormula="C3H2O6P">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_pep_c">
@@ -703,7 +703,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_pi_c" name="Phosphate" metaid="M_pi_c" compartment="c" fbc:chemicalFormula="HO4P">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_pi_c" name="Phosphate" metaid="M_pi_c" compartment="c" fbc:charge="-2" fbc:chemicalFormula="HO4P">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_pi_c">
@@ -762,7 +762,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_pi_e" name="Phosphate" metaid="M_pi_e" compartment="e" fbc:chemicalFormula="HO4P">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_pi_e" name="Phosphate" metaid="M_pi_e" compartment="e" fbc:charge="-2" fbc:chemicalFormula="HO4P">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_pi_e">
@@ -821,7 +821,7 @@
           </rdf:RDF>
         </sbml:annotation>
       </species>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_pyr_c" name="Pyruvate" metaid="M_pyr_c" compartment="c" fbc:chemicalFormula="C3H3O3">
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_pyr_c" name="Pyruvate" metaid="M_pyr_c" compartment="c" fbc:charge="-1" fbc:chemicalFormula="C3H3O3">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#M_pyr_c">
@@ -972,7 +972,7 @@
           <speciesReference constant="true" species="M_pi_c" stoichiometry="1"/>
         </listOfProducts>
       </reaction>
-      <reaction fast="false" id="R_D_LACt2" reversible="true" name="D_LACt2" fbc:upperFluxBound="cobra_default_ub" fbc:lowerFluxBound="cobra_default_lb">
+      <reaction fast="false" id="R_D_LACt2" reversible="true" fbc:upperFluxBound="cobra_default_ub" fbc:lowerFluxBound="cobra_default_lb">
         <listOfReactants>
           <speciesReference constant="true" species="M_h_e" stoichiometry="1"/>
           <speciesReference constant="true" species="M_lac__D_e" stoichiometry="1"/>
