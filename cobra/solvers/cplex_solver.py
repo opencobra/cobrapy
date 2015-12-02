@@ -241,7 +241,7 @@ def set_quadratic_objective(lp, quadratic_objective):
         raise Exception('quadratic component must have method todok')
     # ensure the matrix is properly read in
     nnz = quadratic_objective.nnz
-    if lp.parameters.read.qpnonzeros < nnz:
+    if lp.parameters.read.qpnonzeros.get() < nnz:
         lp.parameters.read.qpnonzeros.set(nnz + 1)
     # Reset the quadratic coefficient if it exists
     if lp.objective.get_num_quadratic_nonzeros() > 0:
