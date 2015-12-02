@@ -31,7 +31,8 @@ class TestCobraIO(object):
                          len(model2.reactions))
         self.assertEqual(len(model1.metabolites),
                          len(model2.metabolites))
-        for attr in ("id", "name", "lower_bound", "upper_bound", "gene_reaction_rule"):
+        for attr in ("id", "name", "lower_bound", "upper_bound",
+                     "objective_coefficient", "gene_reaction_rule"):
             self.assertEqual(getattr(model1.reactions[0], attr),
                              getattr(model2.reactions[0], attr))
             self.assertEqual(getattr(model1.reactions[10], attr),
