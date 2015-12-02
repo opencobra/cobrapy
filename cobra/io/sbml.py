@@ -8,6 +8,8 @@ from warnings import warn
 import re
 from math import isnan, isinf
 
+from six import iteritems
+
 #
 if __name == 'java':
     from org.sbml.jsbml import SBMLDocument, SpeciesReference, KineticLaw, Parameter
@@ -289,7 +291,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
                         gene_id_to_object[tmp_locus_id].name = tmp_row_dict['ABBREVIATION']
 
         if 'SUBSYSTEM' in reaction_note_dict:
-            reaction.subsystem = reaction_note_dict['SUBSYSTEM'][0]   
+            reaction.subsystem = reaction_note_dict.pop('SUBSYSTEM')[0]
 
         reaction.notes = reaction_note_dict
 
@@ -495,15 +497,16 @@ def get_libsbml_document(cobra_model,
         #Checks if GPR and Subsystem annotations are present in the notes section and if they are the same as those in
         #the reaction's gene_reaction_rule/ subsystem attribute
         #If they are not identical, they are set to be identical
+        note_dict = the_reaction.notes.copy()
         if the_reaction.gene_reaction_rule:
-            the_reaction.notes.update({'GENE ASSOCIATION': [str(the_reaction.gene_reaction_rule)]})
+            note_dict['GENE_ASSOCIATION'] = [str(the_reaction.gene_reaction_rule)]
         if the_reaction.subsystem:
-            the_reaction.notes.update({'SUBSYSTEM': [str(the_reaction.subsystem)]})
-        
+            note_dict['SUBSYSTEM'] = [str(the_reaction.subsystem)]
+
         #In a cobrapy model the notes section is stored as a dictionary. The following section turns the key-value-pairs
         #of the dictionary into a string and replaces recurring symbols so that the string has the required syntax for
         #an SBML doc.
-        note_str = str(list(the_reaction.notes.items()))
+        note_str = str(list(iteritems(note_dict)))
         note_start_tag, note_end_tag, note_delimiter = '<p>', '</p>', ':'
         note_str = note_str.replace('(\'',note_start_tag)
         note_str = note_str.replace('\']),',note_end_tag)
