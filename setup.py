@@ -114,7 +114,7 @@ try:
             include_dirs.append(join(glpk_path, "include"))
             library_dirs.append(join(glpk_path, "lib"))
         except Exception as e:
-            print('Could not add include and library dirs: {}'.format(e))
+            print('Could not autodetect include and library dirs: ' + str(e))
     if len(include_dirs) > 0:
         build_args["include_dirs"] = include_dirs
     if len(library_dirs) > 0:
@@ -180,7 +180,7 @@ setup(
 
     author="Daniel Robert Hyduke <danielhyduke@gmail.com>, "
     "Ali Ebrahim <aebrahim@ucsd.edu>",
-    author_email="danielhyduke@gmail.com",
+    author_email="aebrahim@ucsd.edu",
     description="COBRApy is a package for constraints-based modeling of "
     "biological networks",
     license="LGPL/GPL v2+",
@@ -200,6 +200,7 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Cython',
         'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: Scientific/Engineering',

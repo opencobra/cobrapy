@@ -45,7 +45,8 @@ index](https://pypi.python.org/pypi/cobra/).
 
 ## Hacking version installation
 Use pip to install [Cython](http://cython.org/). Install libglpk 
-using your package manger. This would be ```brew install glpk``` on a Mac
+using your package manger. This would be
+```brew install homebrew/science/glpk``` on a Mac
 and ```sudo apt-get install libglpk-dev``` on debian-based systems
 (including Ubuntu and Mint). GLPK can also be compiled from the
 released source.
