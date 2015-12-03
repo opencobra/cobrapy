@@ -1,11 +1,29 @@
 # Interface to gurobipy
 
 from warnings import warn
+from multiprocessing import Process
 try:
     # Import izip for python versions < 3.x
     from itertools import izip as zip
 except ImportError:
     pass
+
+
+def test_import():
+    """Sometimes trying to import gurobipy can segfault. To prevent this from
+    crashing everything, ensure it can be imported in a separate process."""
+    try:
+        import gurobipy
+    except ImportError:
+        pass
+
+p = Process(target=test_import)
+p.start()
+p.join()
+if p.exitcode != 0:
+    raise RuntimeError("importing gurobi causes a crash (exitcode %d)" %
+                       p.exitcode)
+
 
 from gurobipy import Model, LinExpr, GRB, QuadExpr
 
