@@ -11,6 +11,10 @@ try:
     import numpy
 except:
     numpy = None
+try:
+    import matplotlib
+except:
+    matplotlib = None
 
 if __name__ == "__main__":
     sys.path.insert(0, "../..")
@@ -390,7 +394,7 @@ class TestCobraFluxAnalysis(TestCase):
         self.assertEqual(rxns.r7.genes, {m.genes.z})
         self.assertEqual(rxns.r8.gene_reaction_rule, "")
 
-    @skipIf(numpy is None, "double deletions require numpy")
+    @skipIf(numpy is None, "phase plane requires numpy")
     def test_phenotype_phase_plane(self):
         model = create_test_model("textbook")
         data = calculate_phenotype_phase_plane(
@@ -399,6 +403,9 @@ class TestCobraFluxAnalysis(TestCase):
         self.assertEqual(data.growth_rates.shape, (20, 20))
         self.assertAlmostEqual(data.growth_rates.max(), 1.20898, places=4)
         self.assertAlmostEqual(abs(data.growth_rates[0, :]).max(), 0, places=4)
+        if matplotlib is None:
+            self.skip("can't test plots without matplotlib")
+        data.plot()
 
 # make a test suite to run all of the tests
 loader = TestLoader()

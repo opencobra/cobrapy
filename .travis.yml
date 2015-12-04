@@ -25,11 +25,13 @@ before_install:
   - pip install pip --upgrade
   # These get cached
   - pip install numpy scipy python-libsbml -v  # verbose for long-running compiles
-  - pip install cython coveralls jsonschema six
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install lxml glpk pep8; fi
+  - pip install cython coveralls jsonschema six matplotlib
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install lxml glpk pep8 palettable; fi
   # Download esolver and add it to the path
   - wget https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
   - gzip -d esolver.gz; chmod +x esolver; export PATH=$PATH:$PWD
+  - mkdir -p $HOME/.config/matplotlib
+  - "echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc"
 install:
   - python setup.py develop
 # # command to run tests
