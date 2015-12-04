@@ -26,7 +26,7 @@ Running FBA
 
 .. parsed-literal::
 
-    <Solution 0.87 at 0x7fb3f849ca10>
+    <Solution 0.87 at 0x7fe558058b50>
 
 
 
@@ -88,7 +88,7 @@ only one objective reaction, with an objective coefficient of 1.
 
 .. parsed-literal::
 
-    {<Reaction Biomass_Ecoli_core at 0x7fb3c899be90>: 1.0}
+    {<Reaction Biomass_Ecoli_core at 0x7fe526516490>: 1.0}
 
 
 
@@ -109,20 +109,20 @@ which can be a reaction object (or just it's name), or a dict of
 
 .. parsed-literal::
 
-    {<Reaction ATPM at 0x7fb3c899bbd0>: 1}
+    {<Reaction ATPM at 0x7fe526516210>: 1}
 
 
 
 .. code:: python
 
-    model.optimize()
+    model.optimize().f
 
 
 
 
 .. parsed-literal::
 
-    <Solution 175.00 at 0x7fb3c895de50>
+    174.99999999999997
 
 
 
@@ -140,7 +140,7 @@ Reaction.objective\_coefficient directly.
 
 .. parsed-literal::
 
-    {<Reaction Biomass_Ecoli_core at 0x7fb3c899be90>: 1.0}
+    {<Reaction Biomass_Ecoli_core at 0x7fe526516490>: 1.0}
 
 
 
@@ -352,7 +352,7 @@ for reactions at 90% optimality.
         </tr>
         <tr>
           <th>ATPM</th>
-          <td>8.390000e+00</td>
+          <td>2.555100e+01</td>
           <td>8.390000</td>
         </tr>
         <tr>
@@ -403,5 +403,34 @@ for reactions at 90% optimality.
       </tbody>
     </table>
     </div>
+
+
+
+Running pFBA
+------------
+
+Parsimonious FBA (often written pFBA) finds a flux distribution which
+gives the optimal growth rate, but minimizes the total sum of flux. This
+involves solving two sequential linear programs, but is handled
+transparently by cobrapy. For more details on pFBA, please see `Lewis et
+al. (2010) <http://dx.doi.org/10.1038/msb.2010.47>`__.
+
+.. code:: python
+
+    FBA_solution = model.optimize()
+    pFBA_solution = cobra.flux_analysis.optimize_minimal_flux(model)
+
+These functions should give approximately the same objective value
+
+.. code:: python
+
+    abs(FBA_solution.f - pFBA_solution.f)
+
+
+
+
+.. parsed-literal::
+
+    1.1102230246251565e-16
 
 
