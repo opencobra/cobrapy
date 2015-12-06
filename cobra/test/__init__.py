@@ -11,7 +11,7 @@ from ..io import read_sbml_model
 
 
 available_tests = ['unit_tests', 'solvers', 'flux_analysis', 'io_tests',
-                   'design']
+                   'design', 'manipulation']
 
 
 cobra_directory = abspath(join(dirname(abspath(__file__)), ".."))

@@ -1,3 +1,5 @@
-from .delete import delete_model_genes, undelete_model_genes, remove_genes
+from .delete import delete_model_genes, undelete_model_genes, remove_genes, \
+    find_gene_knockout_reactions
 from .modify import initialize_growth_medium, convert_to_irreversible, \
-    revert_to_reversible, escape_ID, canonical_form
+    revert_to_reversible, escape_ID, canonical_form, \
+    get_compiled_gene_reaction_rules
