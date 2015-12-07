@@ -197,7 +197,7 @@ class TestManipulation(TestCase):
     def test_SBO_annotation(self):
         model = create_test_model("textbook")
         rxns = model.reactions
-        rxns.query("EX_")[0].annotation.clear()
+        rxns.EX_o2_e.annotation.clear()
         fake_DM = Reaction("DM_h_c")
         model.add_reaction(fake_DM)
         fake_DM.add_metabolites({model.metabolites.get_by_id("h_c"): -1})
