@@ -194,6 +194,20 @@ class TestManipulation(TestCase):
         self.assertEqual(rxns.r7.genes, {m.genes.z})
         self.assertEqual(rxns.r8.gene_reaction_rule, "")
 
+    def test_SBO_annotation(self):
+        model = create_test_model("textbook")
+        rxns = model.reactions
+        rxns.query("EX_")[0].annotation.clear()
+        fake_DM = Reaction("DM_h_c")
+        model.add_reaction(fake_DM)
+        fake_DM.add_metabolites({model.metabolites.get_by_id("h_c"): -1})
+        # this exchange will be set wrong. The function should not overwrite
+        # an existing SBO annotation
+        rxns.get_by_id("EX_h_e").annotation["SBO"] = "SBO:0000628"
+        add_SBO(model)
+        self.assertEqual(rxns.EX_o2_e.annotation["SBO"], "SBO:0000627")
+        self.assertEqual(rxns.DM_h_c.annotation["SBO"], "SBO:0000628")
+        self.assertEqual(rxns.EX_h_e.annotation["SBO"], "SBO:0000628")
 
 # make a test suite to run all of the tests
 loader = TestLoader()
