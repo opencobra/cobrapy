@@ -129,8 +129,11 @@ class CobraSBMLError(Exception):
 def get_attrib(tag, attribute, type=lambda x: x, require=False):
     value = tag.get(ns(attribute))
     if require and value is None:
-        raise CobraSBMLError("required attribute '%s' not found in tag '%s'" %
-                             (attribute, tag.tag))
+        msg = "required attribute '%s' not found in tag '%s'" % \
+                             (attribute, tag.tag)
+        if tag.get("id") is not None:
+            msg += "with id '%s'" % tag.get("id")
+        raise CobraSBMLError(msg)
     return type(value) if value is not None else None
 
 
