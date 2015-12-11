@@ -3,7 +3,6 @@
         "c": "cytosol",
         "e": "extracellular"
     },
-    "description": "mini_textbook",
     "genes": [
         {
             "id": "b0755",
@@ -171,6 +170,7 @@
                 "seed.compound": "cpd00203",
                 "unipathway.compound": "UPC00236"
             },
+            "charge": -4,
             "compartment": "c",
             "formula": "C3H4O10P2",
             "id": "13dpg_c",
@@ -200,6 +200,7 @@
                 "seed.compound": "cpd00482",
                 "unipathway.compound": "UPC00631"
             },
+            "charge": -3,
             "compartment": "c",
             "formula": "C3H4O7P",
             "id": "2pg_c",
@@ -237,6 +238,7 @@
                     "UPC00197"
                 ]
             },
+            "charge": -3,
             "compartment": "c",
             "formula": "C3H4O7P",
             "id": "3pg_c",
@@ -281,6 +283,7 @@
                 "seed.compound": "cpd00008",
                 "unipathway.compound": "UPC00008"
             },
+            "charge": -3,
             "compartment": "c",
             "formula": "C10H12N5O10P2",
             "id": "adp_c",
@@ -322,6 +325,7 @@
                 "seed.compound": "cpd00002",
                 "unipathway.compound": "UPC00002"
             },
+            "charge": -4,
             "compartment": "c",
             "formula": "C10H12N5O13P3",
             "id": "atp_c",
@@ -358,6 +362,7 @@
                 "seed.compound": "cpd00095",
                 "unipathway.compound": "UPC00111"
             },
+            "charge": -2,
             "compartment": "c",
             "formula": "C3H5O6P",
             "id": "dhap_c",
@@ -394,6 +399,7 @@
                     "UPC00085"
                 ]
             },
+            "charge": -2,
             "compartment": "c",
             "formula": "C6H11O9P",
             "id": "f6p_c",
@@ -429,6 +435,7 @@
                 "seed.compound": "cpd00290",
                 "unipathway.compound": "UPC00354"
             },
+            "charge": -4,
             "compartment": "c",
             "formula": "C6H10O12P2",
             "id": "fdp_c",
@@ -459,6 +466,7 @@
                     "UPC00118"
                 ]
             },
+            "charge": -2,
             "compartment": "c",
             "formula": "C3H5O6P",
             "id": "g3p_c",
@@ -500,6 +508,7 @@
                 "seed.compound": "cpd00079",
                 "unipathway.compound": "UPC00092"
             },
+            "charge": -2,
             "compartment": "c",
             "formula": "C6H11O9P",
             "id": "g6p_c",
@@ -515,6 +524,7 @@
                 "kegg.compound": "C00031",
                 "pubchem.substance": "3333"
             },
+            "charge": 0,
             "compartment": "e",
             "formula": "C6H12O6",
             "id": "glc__D_e",
@@ -600,6 +610,7 @@
                     "UPC01328"
                 ]
             },
+            "charge": 0,
             "compartment": "c",
             "formula": "H2O",
             "id": "h2o_c",
@@ -685,6 +696,7 @@
                     "UPC01328"
                 ]
             },
+            "charge": 0,
             "compartment": "e",
             "formula": "H2O",
             "id": "h2o_e",
@@ -731,6 +743,7 @@
                 "seed.compound": "cpd00067",
                 "unipathway.compound": "UPC00080"
             },
+            "charge": 1,
             "compartment": "c",
             "formula": "H",
             "id": "h_c",
@@ -777,6 +790,7 @@
                 "seed.compound": "cpd00067",
                 "unipathway.compound": "UPC00080"
             },
+            "charge": 1,
             "compartment": "e",
             "formula": "H",
             "id": "h_e",
@@ -830,6 +844,7 @@
                 "seed.compound": "cpd00003",
                 "unipathway.compound": "UPC00003"
             },
+            "charge": -1,
             "compartment": "c",
             "formula": "C21H26N7O14P2",
             "id": "nad_c",
@@ -864,6 +879,7 @@
                 "seed.compound": "cpd00004",
                 "unipathway.compound": "UPC00004"
             },
+            "charge": -2,
             "compartment": "c",
             "formula": "C21H27N7O14P2",
             "id": "nadh_c",
@@ -897,6 +913,7 @@
                 "seed.compound": "cpd00061",
                 "unipathway.compound": "UPC00074"
             },
+            "charge": -3,
             "compartment": "c",
             "formula": "C3H2O6P",
             "id": "pep_c",
@@ -964,6 +981,7 @@
                 ],
                 "unipathway.compound": "UPC00009"
             },
+            "charge": -2,
             "compartment": "c",
             "formula": "HO4P",
             "id": "pi_c",
@@ -1031,6 +1049,7 @@
                 ],
                 "unipathway.compound": "UPC00009"
             },
+            "charge": -2,
             "compartment": "e",
             "formula": "HO4P",
             "id": "pi_e",
@@ -1065,6 +1084,7 @@
                 "seed.compound": "cpd00020",
                 "unipathway.compound": "UPC00022"
             },
+            "charge": -1,
             "compartment": "c",
             "formula": "C3H3O3",
             "id": "pyr_c",
@@ -1100,7 +1120,7 @@
                 "lac__D_c": 1,
                 "lac__D_e": -1
             },
-            "name": "D_LACt2",
+            "name": "",
             "upper_bound": 1000.0
         },
         {
