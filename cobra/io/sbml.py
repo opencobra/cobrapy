@@ -137,7 +137,8 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         tmp_metabolite.name = sbml_metabolite.getName()
         tmp_formula = ''
         tmp_metabolite.notes = parse_legacy_sbml_notes(sbml_metabolite.getNotesString())
-        tmp_metabolite.charge = sbml_metabolite.getCharge()
+        if sbml_metabolite.isSetCharge():
+            tmp_metabolite.charge = sbml_metabolite.getCharge()
         if "CHARGE" in tmp_metabolite.notes:
             note_charge = tmp_metabolite.notes["CHARGE"][0]
             try:

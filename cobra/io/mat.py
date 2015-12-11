@@ -102,7 +102,11 @@ def create_mat_dict(model):
     mat["mets"] = _cell(mets.list_attr("id"))
     mat["metNames"] = _cell(mets.list_attr("name"))
     mat["metFormulas"] = _cell([str(m.formula) for m in mets])
-    mat["metCharge"] = array(mets.list_attr("charge")) * 1.
+    try:
+        mat["metCharge"] = array(mets.list_attr("charge")) * 1.
+    except TypeError:
+        # can't have any None entries for charge, or this will fail
+        pass
     mat["genes"] = _cell(model.genes.list_attr("id"))
     mat["grRules"] = _cell(rxns.list_attr("gene_reaction_rule"))
     mat["rxns"] = _cell(rxns.list_attr("id"))
