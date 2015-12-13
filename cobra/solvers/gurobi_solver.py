@@ -2,6 +2,7 @@
 
 from warnings import warn
 from multiprocessing import Process
+import platform
 try:
     # Import izip for python versions < 3.x
     from itertools import izip as zip
@@ -17,13 +18,14 @@ def test_import():
     except ImportError:
         pass
 
-p = Process(target=test_import)
-p.start()
-p.join()
-if p.exitcode != 0:
-    raise RuntimeError("importing gurobi causes a crash (exitcode %d)" %
-                       p.exitcode)
-
+if platform.system() != "Windows":
+    # https://github.com/opencobra/cobrapy/issues/207
+    p = Process(target=test_import)
+    p.start()
+    p.join()
+    if p.exitcode != 0:
+        raise RuntimeError("importing gurobi causes a crash (exitcode %d)" %
+                           p.exitcode)
 
 from gurobipy import Model, LinExpr, GRB, QuadExpr
 
