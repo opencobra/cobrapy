@@ -148,8 +148,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             except:
                 warn("charge of %s is not a number (%s)" % (tmp_metabolite.id, str(note_charge)))
             else:
-                if tmp_metabolite.charge == 0 or tmp_metabolite.charge == note_charge:  # get_charge() when unspecified is 0
-                    tmp_metabolite.charge = note_charge
+                if tmp_metabolite.charge is None or tmp_metabolite.charge == note_charge:
                     tmp_metabolite.notes.pop("CHARGE")
                 else:  # tmp_metabolite.charge != note_charge
                     msg = "different charges specified for %s (%d and %d)"
