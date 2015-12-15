@@ -694,8 +694,9 @@ def write_sbml_model(cobra_model, filename, use_fbc_package=True, **kwargs):
         return
     # create xml
     xml = model_to_xml(cobra_model, **kwargs)
-    write_args = {"encoding": "UTF-8"}
+    write_args = {"encoding": "UTF-8", "xml_declaration": True}
     if _with_lxml:
+        write_args["pretty_print"] = True
         write_args["pretty_print"] = True
     else:
         indent_xml(xml)
