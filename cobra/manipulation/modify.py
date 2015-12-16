@@ -8,7 +8,27 @@ from six import iteritems
 from .. import Reaction, Metabolite
 from .delete import get_compiled_gene_reaction_rules
 from ..core.Gene import ast2str
-from ..io.sbml3 import _renames
+
+
+_renames = (
+    (".", "_DOT_"),
+    ("(", "_LPAREN_"),
+    (")", "_RPAREN_"),
+    ("-", "__"),
+    ("[", "_LSQBKT"),
+    ("]", "_RSQBKT"),
+    (",", "_COMMA_"),
+    (":", "_COLON_"),
+    (">", "_GT_"),
+    ("<", "_LT"),
+    ("/", "_FLASH"),
+    ("\\", "_BSLASH"),
+    ("+", "_PLUS_"),
+    ("=", "_EQ_"),
+    (" ", "_SPACE_"),
+    ("'", "_SQUOT_"),
+    ('"', "_DQUOT_"),
+)
 
 
 def _escape_str_id(id_str):

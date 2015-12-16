@@ -209,6 +209,35 @@ class TestManipulation(TestCase):
         self.assertEqual(rxns.DM_h_c.annotation["SBO"], "SBO:0000628")
         self.assertEqual(rxns.EX_h_e.annotation["SBO"], "SBO:0000628")
 
+    def test_validate_reaction_bounds(self):
+        model = create_test_model("textbook")
+        model.reactions[0].lower_bound = float("-inf")
+        model.reactions[1].lower_bound = float("nan")
+        model.reactions[0].upper_bound = float("inf")
+        model.reactions[1].upper_bound = float("nan")
+        errors = check_reaction_bounds(model)
+        self.assertEqual(len(errors), 4)
+
+    def test_validate_formula_compartment(self):
+        model = create_test_model("textbook")
+        model.metabolites[1].compartment = "fake"
+        model.metabolites[1].formula = "(a*.bcde)"
+        errors = check_metabolite_compartment_formula(model)
+        self.assertEqual(len(errors), 2)
+
+    def test_validate_mass_balance(self):
+        model = create_test_model("textbook")
+        self.assertEqual(len(check_mass_balance(model)), 0)
+        # if we remove the SBO term which marks the reaction as
+        # mass balanced, then the reaction should be detected as
+        # no longer mass balanced
+        EX_rxn = model.reactions.query("EX")[0]
+        EX_rxn.annotation.pop("SBO")
+        balance = check_mass_balance(model)
+        self.assertEqual(len(balance), 1)
+        self.assertIn(EX_rxn, balance)
+
+
 # make a test suite to run all of the tests
 loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])

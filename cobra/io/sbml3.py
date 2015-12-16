@@ -1,7 +1,6 @@
 from collections import defaultdict
 from warnings import warn, catch_warnings, simplefilter
 from decimal import Decimal
-from math import isinf, isnan
 from ast import parse as ast_parse, Name, Or, And, BoolOp
 from gzip import GzipFile
 from bz2 import BZ2File
@@ -12,6 +11,9 @@ from six import iteritems, string_types
 
 from .. import Metabolite, Reaction, Gene, Model
 from ..core.Gene import parse_gpr
+from ..manipulation.modify import _renames
+from ..manipulation.validate import check_reaction_bounds, \
+    check_metabolite_compartment_formula
 
 try:
     from lxml.etree import parse, Element, SubElement, \
@@ -42,27 +44,6 @@ try:
 except:
     class Basic:
         pass
-
-
-_renames = (
-    (".", "_DOT_"),
-    ("(", "_LPAREN_"),
-    (")", "_RPAREN_"),
-    ("-", "__"),
-    ("[", "_LSQBKT"),
-    ("]", "_RSQBKT"),
-    (",", "_COMMA_"),
-    (":", "_COLON_"),
-    (">", "_GT_"),
-    ("<", "_LT"),
-    ("/", "_FLASH"),
-    ("\\", "_BSLASH"),
-    ("+", "_PLUS_"),
-    ("=", "_EQ_"),
-    (" ", "_SPACE_"),
-    ("'", "_SQUOT_"),
-    ('"', "_DQUOT_"),
-)
 
 
 # deal with namespaces
@@ -576,7 +557,7 @@ id_required = {ns(i) for i in ("sbml:model", "sbml:reaction:", "sbml:species",
 invalid_id_detector = re.compile("|".join(re.escape(i[0]) for i in _renames))
 
 
-def validate_sbml_model(filename):
+def validate_sbml_model(filename, check_model=True):
     """returns the model along with a list of errors"""
     xmlfile = parse_stream(filename)
     xml = xmlfile.getroot()
@@ -647,23 +628,6 @@ def validate_sbml_model(filename):
             return (None, sbml_errors)
     sbml_errors.extend(str(i.message) for i in warning_list)
 
-    # ensure exactly one objective
-    if len(model.objective) == 0:
-        err("no objective reaction identified")
-    elif len(model.objective) > 1:
-        err("only one reaction should be the objective")
-
-    # make sure there are no infinite bounds
-    if any(isinf(i) or isnan(i)
-           for i in model.reactions.list_attr("lower_bound")):
-        err("infinite or NaN value detected in lower bounds")
-    if any(isinf(i) or isnan(i)
-           for i in model.reactions.list_attr("upper_bound")):
-        err("infinite or NaN value detected in upper bounds")
-    for reaction in model.reactions:
-        if reaction.lower_bound > reaction.upper_bound:
-            err("reaction '%s' has lower bound > upper bound" % reaction.id)
-
     # check genes
     xml_genes = {
         get_attrib(i, "fbc:id").replace(SBML_DOT, ".")
@@ -672,16 +636,9 @@ def validate_sbml_model(filename):
         if "G_" + gene.id not in xml_genes and gene.id not in xml_genes:
             err("No gene specfied with id 'G_%s'" % gene.id)
 
-    # check metabolite compartments and formulas
-    for met in model.metabolites:
-        if met.compartment is not None and \
-                met.compartment not in model.compartments:
-            err("Metabolite '%s' compartment '%s' not found" %
-                (met.id, met.compartment))
-        if met.formula is not None and len(met.formula) > 0:
-            if not met.formula.isalnum():
-                err("Metabolite '%s' formula '%s' not alphanumeric" %
-                    (met.id, met.formula))
+    if check_model:
+        sbml_errors.extend(check_reaction_bounds(model))
+        sbml_errors.extend(check_metabolite_compartment_formula(model))
 
     return model, sbml_errors
 
