@@ -1,6 +1,6 @@
 from copy import copy, deepcopy
 import re
-from six import string_types, iteritems
+from six import string_types, iteritems, PY3
 from itertools import islice
 
 try:
@@ -288,7 +288,10 @@ class DictList(list):
         if key is None:
             def key(i):
                 return i.id
-        list.sort(self, cmp=cmp, key=key, reverse=reverse)
+        if PY3:
+            list.sort(self, key=key, reverse=reverse)
+        else:
+            list.sort(self, cmp=cmp, key=key, reverse=reverse)
         self._generate_index()
 
     def __getitem__(self, i):

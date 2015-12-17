@@ -224,6 +224,29 @@ class TestDictList(TestCase):
         self.assertRaises(ValueError, obj_list.__setitem__, slice(5, 7),
                           [Object("testd"), Object("testd")])
 
+    def testSortandReverse(self):
+        dl = DictList(Object("test%d" % (i)) for i in reversed(range(10)))
+        self.assertEqual(dl[0].id, "test9")
+        dl.sort()
+        self.assertEqual(len(dl), 10)
+        self.assertEqual(dl[0].id, "test0")
+        self.assertEqual(dl.index("test0"), 0)
+        dl.reverse()
+        self.assertEqual(dl[0].id, "test9")
+        self.assertEqual(dl.index("test0"), 9)
+
+    def testDir(self):
+        """makes sure tab complete will work"""
+        attrs = dir(self.list)
+        self.assertIn("test1", attrs)
+        self.assertIn("_dict", attrs)  # attribute of DictList
+
+    def testUnion(self):
+        self.list.union([Object("test1"), Object("test2")])
+        # should only add 1 element
+        self.assertEqual(len(self.list), 2)
+        self.assertEqual(self.list.index("test2"), 1)
+
 
 class CobraTestCase(TestCase):
     def setUp(self):
