@@ -192,7 +192,7 @@ def annotate_cobra_from_sbml(cobra_element, sbml_element):
             warn("%s does not start with http://identifiers.org/" % uri)
             continue
         try:
-            provider, identifier = uri[23:].split("/")
+            provider, identifier = uri[23:].split("/", 1)
         except ValueError:
             warn("%s does not conform to http://identifiers.org/provider/id"
                  % uri)

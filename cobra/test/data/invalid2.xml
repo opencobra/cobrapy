@@ -23,7 +23,24 @@
     </listOfParameters>
     <listOfCompartments/>
     <listOfSpecies>
-      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_h2o_c" name="H2O" compartment="c" fbc:chemicalFormula="H2O"/>
+      <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_h2o_c" metaid="M_h2o_c" name="H2O" compartment="c" fbc:chemicalFormula="H2O">
+        <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+            <rdf:Description rdf:about="#M_h2o_c">
+              <bqbiol:is xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+                <rdf:Bag>
+                  <rdf:li rdf:resource="http://random.org/bigg.metabolite/h2o"/>
+                </rdf:Bag>
+              </bqbiol:is>
+              <bqbiol:isEncodedBy xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+                <rdf:Bag>
+                  <rdf:li rdf:resource="http://identifiers.org/biocyc_WATER"/>
+                </rdf:Bag>
+              </bqbiol:isEncodedBy>
+            </rdf:Description>
+          </rdf:RDF>
+        </sbml:annotation>
+      </species>
       <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_atp_c" name="ATP" compartment="c" fbc:chemicalFormula="C10H12N5O13P3"/>
       <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_h_c" name="H+" compartment="c" fbc:chemicalFormula="H"/>
       <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_adp_c" name="ADP" compartment="c" fbc:chemicalFormula="C10H12N5O10P2"/>
