@@ -112,7 +112,7 @@ def _update_optional(cobra_object, new_dict, optional_attribute_dict):
     """update new_dict with optional attributes from cobra_object"""
     for key, default_value in iteritems(optional_attribute_dict):
         value = getattr(cobra_object, key)
-        if value != default_value:
+        if value is not None and value != default_value:
             new_dict[key] = _fix_type(value)
 
 
