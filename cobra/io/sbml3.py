@@ -138,7 +138,7 @@ def parse_stream(filename):
         else:
             return parse(filename)
     except ParseError as e:
-        raise CobraSBMLError("Malformed XML file: " + e.message)
+        raise CobraSBMLError("Malformed XML file: " + str(e))
 
 
 # string utility functions
