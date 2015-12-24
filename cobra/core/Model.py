@@ -356,3 +356,11 @@ class Model(Object):
                 # from a list.
                 reaction.objective_coefficient = objectives[reaction_id] \
                     if hasattr(objectives, "items") else 1.
+    
+    def set_effective_bounds(self):
+        original_objective = self.objective
+        for rxn in self.reactions:
+            self.change_objective(rxn)
+            rxn.lower_bound = self.optimize(objective_sense='minimize').f
+            rxn.upper_bound = self.optimize(objective_sense='maximize').f
+        self.objective = objective
