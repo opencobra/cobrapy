@@ -358,12 +358,15 @@ class Model(Object):
                     if hasattr(objectives, "items") else 1.
     
     def set_effective_bounds(self, delete_inactive=False, **kwargs):
+        """Sets reaction lower and upper bounds to their effective values."""
+        # save original objective so we can restore it later
         original_objective = self.objective
         for rxn in list(self.reactions):
             self.change_objective(rxn)
             rxn.lower_bound = self.optimize(objective_sense='minimize', **kwargs).f
             rxn.upper_bound = self.optimize(objective_sense='maximize', **kwargs).f
             assert rxn.lower_bound <= rxn.upper_bound
-            if delete_inactive and rxn.lower_bound == rxn.upper_bound:
+            if delete_inactive and rxn.lower_bound == rxn.upper_bound == 0:
                 rxn.remove_from_model()
+        # restore original objective
         self.objective = objective
