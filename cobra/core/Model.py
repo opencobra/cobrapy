@@ -357,10 +357,13 @@ class Model(Object):
                 reaction.objective_coefficient = objectives[reaction_id] \
                     if hasattr(objectives, "items") else 1.
     
-    def set_effective_bounds(self):
+    def set_effective_bounds(self, delete_inactive=False, **kwargs):
         original_objective = self.objective
-        for rxn in self.reactions:
+        for rxn in list(self.reactions):
             self.change_objective(rxn)
-            rxn.lower_bound = self.optimize(objective_sense='minimize').f
-            rxn.upper_bound = self.optimize(objective_sense='maximize').f
+            rxn.lower_bound = self.optimize(objective_sense='minimize', **kwargs).f
+            rxn.upper_bound = self.optimize(objective_sense='maximize', **kwargs).f
+            assert rxn.lower_bound <= rxn.upper_bound
+            if delete_inactive and rxn.lower_bound == rxn.upper_bound:
+                rxn.remove_from_model()
         self.objective = objective
