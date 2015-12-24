@@ -365,6 +365,7 @@ class Model(Object):
             self.change_objective(rxn)
             rxn.lower_bound = self.optimize(objective_sense='minimize', **kwargs).f
             rxn.upper_bound = self.optimize(objective_sense='maximize', **kwargs).f
+            # if the following assert fails, the original model was inconsistent. If it never fails, the model is consistent.
             assert rxn.lower_bound <= rxn.upper_bound
             if delete_inactive and rxn.lower_bound == rxn.upper_bound == 0:
                 rxn.remove_from_model()
