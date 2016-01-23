@@ -28,6 +28,15 @@ class Frozendict(dict):
         raise NotImplementedError("read-only")
 
 
+def _is_positive(n):
+    try:
+        if n >= 0:
+            return True
+        else:
+            return False
+    except:
+        return True
+
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
 and_or_search = re.compile(r'\(| and| or|\+|\)', re.IGNORECASE)
@@ -394,12 +403,12 @@ class Reaction(Object):
     @property
     def reactants(self):
         """Return a list of reactants for the reaction."""
-        return [k for k, v in self._metabolites.items() if v < 0]
+        return [k for k, v in self._metabolites.items() if not _is_positive(v)]
 
     @property
     def products(self):
         """Return a list of products for the reaction"""
-        return [k for k, v in self._metabolites.items() if v > 0]
+        return [k for k, v in self._metabolites.items() if _is_positive(v)]
 
     def get_coefficient(self, metabolite_id):
         """Return the stoichiometric coefficient for a metabolite in
@@ -517,7 +526,7 @@ class Reaction(Object):
         product_bits = []
         for the_metabolite, coefficient in iteritems(self._metabolites):
             name = str(getattr(the_metabolite, id_type))
-            if coefficient > 0:
+            if _is_positive(coefficient):
                 product_bits.append(format(coefficient) + name)
             else:
                 reactant_bits.append(format(abs(coefficient)) + name)
