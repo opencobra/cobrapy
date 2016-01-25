@@ -30,7 +30,7 @@ class Solution(object):
 
     def dress_results(self, model):
         """.. warning :: deprecated"""
-        from warning import warn
+        from warnings import warn
         warn("unnecessary to call this deprecated function")
 
     def __repr__(self):
