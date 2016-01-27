@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
 <sbml xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" level="3" sboTerm="SBO:0000624" version="1" xmlns="http://www.sbml.org/sbml/level3/version1/core" fbc:required="false">
   <model fbc:strict="true" id="mini_textbook">
     <listOfUnitDefinitions>
@@ -1011,7 +1012,7 @@
           <fbc:geneProductRef fbc:geneProduct="G_b2779"/>
         </fbc:geneProductAssociation>
       </reaction>
-      <reaction fast="false" id="R_EX_glc__D_e" reversible="true" name="D-Glucose exchange" metaid="R_EX_glc__D_e" fbc:upperFluxBound="cobra_default_ub" fbc:lowerFluxBound="R_EX_glc__D_e_lower_bound">
+      <reaction fast="false" id="R_EX_glc__D_e" reversible="true" name="D-Glucose exchange" metaid="R_EX_glc__D_e" sboTerm="SBO:0000627" fbc:upperFluxBound="cobra_default_ub" fbc:lowerFluxBound="R_EX_glc__D_e_lower_bound">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#R_EX_glc__D_e">
@@ -1027,7 +1028,7 @@
           <speciesReference constant="true" species="M_glc__D_e" stoichiometry="1"/>
         </listOfReactants>
       </reaction>
-      <reaction fast="false" id="R_EX_h_e" reversible="true" name="H+ exchange" metaid="R_EX_h_e" fbc:upperFluxBound="cobra_default_ub" fbc:lowerFluxBound="cobra_default_lb">
+      <reaction fast="false" id="R_EX_h_e" reversible="true" name="H+ exchange" metaid="R_EX_h_e" sboTerm="SBO:0000627" fbc:upperFluxBound="cobra_default_ub" fbc:lowerFluxBound="cobra_default_lb">
         <sbml:annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             <rdf:Description rdf:about="#R_EX_h_e">

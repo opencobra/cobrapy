@@ -1140,6 +1140,7 @@
         },
         {
             "annotation": {
+                "SBO": "SBO:0000627",
                 "bigg.reaction": "glc"
             },
             "gene_reaction_rule": "",
@@ -1153,6 +1154,7 @@
         },
         {
             "annotation": {
+                "SBO": "SBO:0000627",
                 "bigg.reaction": "h"
             },
             "gene_reaction_rule": "",
