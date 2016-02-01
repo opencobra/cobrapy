@@ -93,10 +93,11 @@ class phenotypePhasePlaneData:
                           antialiased=False)
         axes.plot_wireframe(xgrid, ygrid, self.growth_rates, color="black",
                             rstride=xgrid_scale, cstride=ygrid_scale)
-        axes.set_xlabel(self.reaction1_name)
-        axes.set_ylabel(self.reaction2_name)
-        axes.set_zlabel("Growth rate")
+        axes.set_xlabel(self.reaction1_name, size="x-large")
+        axes.set_ylabel(self.reaction2_name, size="x-large")
+        axes.set_zlabel("Growth rate", size="x-large")
         axes.view_init(elev=30, azim=-135)
+        figure.tight_layout()
         return axes
 
     def plot_mayavi(self):
