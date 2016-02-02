@@ -243,20 +243,19 @@ class Model(Object):
         """
         # Only add the reaction if one with the same ID is not already
         # present in the model.
-
+        
+        if not hasattr(reaction_formula_list, "__len__"):
+            reaction_formula_list = [reaction_formula_list]
+                
         existing_reaction_IDs = [reaction.id for reaction in self.reactions]
-        
         reactions_not_added = []
-        
         reaction_list = []
         metabolite_added_list = []
         
         # Add reactions. Also take care of genes and metabolites in the loop
         for reaction_formula in reaction_formula_list:
-            
             reactionID = reaction_formula[0]
             formula = reaction_formula[1]
-            
             if reactionID in existing_reaction_IDs:
                 reactions_not_added.append((reactionID,'already exists'))
                 continue
@@ -281,11 +280,6 @@ class Model(Object):
             metabolite_list = [Metabolite(metabolite,compartment=compartment) for
                 metabolite, compartment in zip(metabolite_list,compartment_list)]
             
-#             if len(metabolite_list) > 1:
-#                 return metabolite_list
-#             else:
-#                 continue
-            
             metabolite_added_list.extend(metabolite_list)
             self.add_metabolites(metabolite_list)
             metabolite_coefficient_dict = {}
@@ -296,12 +290,9 @@ class Model(Object):
                 metabolite_coefficient_dict,
                 combine=False,
                 add_to_container_model=False)    
-            
             reaction_list.append(reaction)
         
         self.add_reactions(reaction_list)
-        
-        return metabolite_added_list    
         return reactions_not_added
         
     def to_array_based_model(self, deepcopy_model=False, **kwargs):
