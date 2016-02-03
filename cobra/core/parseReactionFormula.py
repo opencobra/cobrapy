@@ -1,17 +1,19 @@
 import re
+
+
 def parseReactionFormula(formula=None):
     """Parse formula into a list of metabolites and a list of coefficients
      [metaboliteList, stoichCoeffList, revFlag] = parseReactionFormula(formula)
     INPUT
     formula           Reaction formula, may contain symbols '+', '->', '<=>' in
-                       addition to stoichiometric coefficients and metabolite 
+                       addition to stoichiometric coefficients and metabolite
                        names
                        examples:
-                       '0.01 cdpdag-SC[m] + 0.01 pg-SC[m]  -> 0.01 clpn-SC[m] 
+                       '0.01 cdpdag-SC[m] + 0.01 pg-SC[m]  -> 0.01 clpn-SC[m]
                        + cmp[m] + h[m]' (irreversible reaction)
-                       'cit[c] + icit[x]  <=> cit[x] + icit[c] ' (reversible 
+                       'cit[c] + icit[x]  <=> cit[x] + icit[c] ' (reversible
                        reaction)
-                       If no stoichiometric coefficient is provided, it is 
+                       If no stoichiometric coefficient is provided, it is
                        assumed to be = 1
                        Reaction formula should be a string, not a cell array
                         (default: irreversible reaction above)
@@ -51,9 +53,9 @@ def parseReactionFormula(formula=None):
     # Designates products vs reactants
     productFlag = False
     compartment_default = 'c'
-    forwardArrows = ['->','-->','=>','==>']
-    reversibleArrows = ['<=>','<==>']
-    reverseArrows = ['<-','<--','<=','<==']
+    forwardArrows = ['->', '-->', '=>', '==>']
+    reversibleArrows = ['<=>', '<==>']
+    reverseArrows = ['<-', '<--', '<=', '<==']
     switchDirection = False
     for token in tokens:
         t = token

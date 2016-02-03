@@ -16,6 +16,7 @@ from .parseReactionFormula import parseReactionFormula
 # performance.  When doing this, take care to monitor metabolite coefficients.
 # Do the same for Model.reactions[:].genes and Model.genes
 
+
 class Model(Object):
     """Metabolic Model
 
@@ -255,44 +256,44 @@ class Model(Object):
             reactionID = reaction_formula[0]
             formula = reaction_formula[1]
             if reactionID in existing_reaction_IDs:
-                reactions_not_added.append((reactionID,'already exists'))
+                reactions_not_added.append((reactionID, 'already exists'))
                 continue
 
             try:
-                [metabolite_list, compartment_list, stoich_coeff_list, 
+                [metabolite_list, compartment_list, stoich_coeff_list,
                     is_reversible] = parseReactionFormula(formula)
             except:
-                reactions_not_added.append((reactionID,'fails to parse'))
+                reactions_not_added.append((reactionID, 'fails to parse'))
                 continue
 
             # Create reaction
             reaction = Reaction(reactionID)
             reaction._model = self
             if is_reversible:
-                reaction.lower_bound=-1000
+                reaction.lower_bound = -1000
             else:
                 reaction.lower_bound = 0
 
             reaction.upper_bound = 1000
-            reaction.subsystem='Unknown'
+            reaction.subsystem = 'Unknown'
 
             # Create/retrieve metabolites
             metabolite_list = [Metabolite(
-                                metabolite, compartment = compartment) for
-                                metabolite, compartment in 
-                                zip(metabolite_list, compartment_list)]
+                metabolite, compartment=compartment) for
+                metabolite, compartment in
+                zip(metabolite_list, compartment_list)]
 
             metabolite_added_list.extend(metabolite_list)
             self.add_metabolites(metabolite_list)
             metabolite_coefficient_dict = {}
-            for metabolite, coefficient in zip(metabolite_list, 
-                                                stoich_coeff_list):
+            for metabolite, coefficient in zip(metabolite_list,
+                    stoich_coeff_list):
                 metabolite_coefficient_dict[metabolite] = coefficient
 
             reaction.add_metabolites(
                 metabolite_coefficient_dict,
-                combine = False,
-                add_to_container_model = False)
+                combine=False,
+                add_to_container_model=False)
 
             reaction_list.append(reaction)
 
