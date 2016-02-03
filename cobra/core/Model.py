@@ -11,7 +11,6 @@ from .Metabolite import Metabolite
 from .DictList import DictList
 from .parseReactionFormula import parseReactionFormula
 
-
 # Note, when a reaction is added to the Model it will no longer keep personal
 # instances of its Metabolites, it will reference Model.metabolites to improve
 # performance.  When doing this, take care to monitor metabolite coefficients.
@@ -237,21 +236,20 @@ class Model(Object):
 
         reaction_formula_list: A list of iterable objects, each containing a
         reaction ID and a reaction formula.
-        
-        N.B. there is no gene association for any added reaction.
 
+        N.B. there is no gene association for any added reaction.
         """
         # Only add the reaction if one with the same ID is not already
         # present in the model.
-        
+
         if not hasattr(reaction_formula_list, "__len__"):
             reaction_formula_list = [reaction_formula_list]
-                
+
         existing_reaction_IDs = [reaction.id for reaction in self.reactions]
         reactions_not_added = []
         reaction_list = []
         metabolite_added_list = []
-        
+
         # Add reactions. Also take care of genes and metabolites in the loop
         for reaction_formula in reaction_formula_list:
             reactionID = reaction_formula[0]
@@ -259,42 +257,48 @@ class Model(Object):
             if reactionID in existing_reaction_IDs:
                 reactions_not_added.append((reactionID,'already exists'))
                 continue
-            
+
             try:
-                [metabolite_list,compartment_list,stoich_coeff_list,is_reversible] = parseReactionFormula(formula)
+                [metabolite_list, compartment_list, stoich_coeff_list, 
+                    is_reversible] = parseReactionFormula(formula)
             except:
                 reactions_not_added.append((reactionID,'fails to parse'))
                 continue
-            
+
             # Create reaction
             reaction = Reaction(reactionID)
             reaction._model = self
             if is_reversible:
                 reaction.lower_bound=-1000
             else:
-                reaction.lower_bound=0    
-            reaction.upper_bound=1000
+                reaction.lower_bound = 0
+
+            reaction.upper_bound = 1000
             reaction.subsystem='Unknown'
-            
+
             # Create/retrieve metabolites
-            metabolite_list = [Metabolite(metabolite,compartment=compartment) for
-                metabolite, compartment in zip(metabolite_list,compartment_list)]
-            
+            metabolite_list = [Metabolite(
+                                metabolite, compartment = compartment) for
+                                metabolite, compartment in 
+                                zip(metabolite_list, compartment_list)]
+
             metabolite_added_list.extend(metabolite_list)
             self.add_metabolites(metabolite_list)
             metabolite_coefficient_dict = {}
-            for metabolite, coefficient in zip(metabolite_list,stoich_coeff_list):
+            for metabolite, coefficient in zip(metabolite_list, 
+                                                stoich_coeff_list):
                 metabolite_coefficient_dict[metabolite] = coefficient
-            
+
             reaction.add_metabolites(
                 metabolite_coefficient_dict,
-                combine=False,
-                add_to_container_model=False)    
+                combine = False,
+                add_to_container_model = False)
+
             reaction_list.append(reaction)
-        
+
         self.add_reactions(reaction_list)
         return reactions_not_added
-        
+
     def to_array_based_model(self, deepcopy_model=False, **kwargs):
         """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model which
         may be used to perform linear algebra operations with the
