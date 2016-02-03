@@ -287,7 +287,7 @@ class Model(Object):
             self.add_metabolites(metabolite_list)
             metabolite_coefficient_dict = {}
             for metabolite, coefficient in zip(metabolite_list,
-                    stoich_coeff_list):
+                                               stoich_coeff_list):
                 metabolite_coefficient_dict[metabolite] = coefficient
 
             reaction.add_metabolites(

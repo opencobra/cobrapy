@@ -24,7 +24,7 @@ def parseReactionFormula(formula=None):
     revFlag           Indicates whether the reaction is reversible (True) or
                        not (False)
     Example:
-    formula = '0.01 cdpdag-SC[m] + 0.01 pg-SC[m]  -> 0.01 clpn-SC[m] + cmp[m] 
+    formula = '0.01 cdpdag-SC[m] + 0.01 pg-SC[m]  -> 0.01 clpn-SC[m] + cmp[m]
                     + h[m]'
     [metaboliteList, stoichCoeffList, revFlag] = parseReactionFormula(formula)
         metaboliteList =
