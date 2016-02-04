@@ -606,12 +606,10 @@ class Reaction(Object):
         original_str = "" + reaction_str  # copy
         found_compartments = compartment_finder.findall(reaction_str)
         if len(found_compartments) == 1:
-            compartment_string = found_compartments[0]
-            compartment_id = compartment_string[1]
+            compartment_id = found_compartments[0][1]
             reaction_str = compartment_finder.sub("", reaction_str)
         else:
             # set default compartment to cytosol
-            compartment_string = "[c]"
             compartment_id = "c"
 
         # reversible case
@@ -654,19 +652,18 @@ class Reaction(Object):
                     num = factor
                 # Does met_id contain compartment specification?
                 try:
-                    met_compartment_string = re.search('.+(\[.+\])$', met_id).group(1)
-                    met_compartment_id = met_compartment_string[1] 
+                    met_compartment_id = re.search('.+\[([^\[\]]+)\]$', met_id)\
+                        .group(1)
+                    met_id = re.sub('\[[^\[\]]+\]$','_' + met_compartment_id,
+                                    met_id)
                 except:
                     try:
-                        met_compartment_string = re.search('.+_([^_]+)$', met_id)\
+                        met_compartment_id = re.search('.+_([^_]+)$',
+                            met_id)\
                             .group(1)
-                        met_compartment_id = "" + met_compartment_string
-                        met_compartment_string = '[' + met_compartment_string + ']'
-                        met_id = re.sub('_([^_]+)$', met_compartment_string, met_id)
                     except:
-                        met_compartment_id = met_compartment_string[1]
-                        met_compartment_string = compartment_string
-                        met_id += compartment_string
+                        met_compartment_id = "" + compartment_id
+                        met_id += "_" + met_compartment_id
                 try:
                     met = model.metabolites.get_by_id(met_id)
                 except KeyError:
