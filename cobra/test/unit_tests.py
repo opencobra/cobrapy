@@ -401,7 +401,7 @@ class TestCobraModel(CobraTestCase):
         reaction_formula_list.append(('test_formula_reaction1',
                                       'test_met_1_c + 2 ' +
                                       test_met_from_model_id +
-                                      ' ==> test_met_3_c + test_met_4_e'))
+                                      ' ==> test_met_3_c + test_met_4[e]'))
         self.model.add_reactions_by_formula(reaction_formula_list)
 
         # Does reaction exist?
@@ -427,8 +427,11 @@ class TestCobraModel(CobraTestCase):
                               test_met_from_model_id,
                               'test_met_3_c',
                               'test_met_4_e']
+        metabolite_ids_in_model = [metabolite.id for metabolite
+                                   in self.model.metabolites]
         metabolite_list = []
         for metabolite_id in metabolite_id_list:
+            self.assertIn(metabolite_id, metabolite_ids_in_model)
             metabolite_list.append(
                 self.model.metabolites.get_by_id(metabolite_id)
             )
