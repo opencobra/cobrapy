@@ -397,7 +397,7 @@ class TestCobraModel(CobraTestCase):
         old_reaction_count = len(self.model.reactions)
         old_metabolite_count = len(self.model.metabolites)
         test_met_from_model_id = self.model.metabolites[0].id
-        
+
         # Construct reaction
         reaction_formula_list = []
         reaction_formula_list.append(('test_formula_reaction1',
@@ -424,7 +424,7 @@ class TestCobraModel(CobraTestCase):
                       Metabolite)
         new_metabolite_count = len(self.model.metabolites)
         self.assertEqual(new_metabolite_count - old_metabolite_count, 3)
-        
+
         metabolite_id_list = ['test_met_1_c',
                               test_met_from_model_id,
                               'test_met_3_c',
@@ -436,7 +436,7 @@ class TestCobraModel(CobraTestCase):
             )
         stoichiometry_list = [-1, -2, 1, 1]
         compartment_list = ['c', 'c', 'c', 'e']
-        
+
         # Are stoichiometries and compartments correct?
         for metabolite, stoichiometry, compartment in\
                 zip(metabolite_list, stoichiometry_list, compartment_list):
@@ -727,13 +727,13 @@ class TestParseReactionFormula(TestCase):
         self.assertEqual(tuple(compartment_list), ('m', 'm', 'm', 'm', 'm'))
         self.assertEqual(tuple(stoich_coeff_list), (-0.01, -0.01, 0.01, 1, 1))
         self.assertIs(rev_flag, False)
-        
+
         test_formula2 = '2 testmet1__c + 0.01 pg-SC <==> 0.01 test_2_e '\
                         '+ c_hdie_c_c + h[m]'
         [metabolite_list, compartment_list, stoich_coeff_list, rev_flag] =\
             prf.parseReactionFormula(test_formula2)
-        self.assertEqual(tuple(metabolite_list), ('testmet1__c', 'pg-SC_c',
-            'test_2_e', 'c_hdie_c_c', 'h_m'))
+        self.assertEqual(tuple(metabolite_list),
+            ('testmet1__c', 'pg-SC_c', 'test_2_e', 'c_hdie_c_c', 'h_m'))
         self.assertEqual(tuple(compartment_list), ('c', 'c', 'e', 'c', 'm'))
         self.assertEqual(tuple(stoich_coeff_list), (-2.0, -0.01, 0.01, 1, 1))
         self.assertIs(rev_flag, True)
