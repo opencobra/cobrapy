@@ -102,7 +102,7 @@ def parseReactionFormula(formula=None):
                     metaboliteID = re.sub('\[(.+)\]$', r'_\1', t)
                 except:
                     try:
-                        compartment = re.search('.+_([^_]+)$',t).group(1)
+                        compartment = re.search('.+_([^_]+)$', t).group(1)
                     except:
                         compartment = compartment_default
                         metaboliteID += '_' + compartment

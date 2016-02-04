@@ -401,19 +401,19 @@ class TestCobraModel(CobraTestCase):
         # Construct reaction
         reaction_formula_list = []
         reaction_formula_list.append(('test_formula_reaction1',
-                                      'test_met_1_c + 2 ' +\
-                                      test_met_from_model_id +\
+                                      'test_met_1_c + 2 ' +
+                                      test_met_from_model_id +
                                       ' ==> test_met_3_c + test_met_4_e'))
         self.model.add_reactions_by_formula(reaction_formula_list)
 
         # Does reaction exist?
         new_reaction_count = len(self.model.reactions)
-        self.assertEqual(new_reaction_count-old_reaction_count,1)
+        self.assertEqual(new_reaction_count-old_reaction_count, 1)
         self.assertIn(reaction_formula_list[0][0],
                       [reaction.id for reaction in self.model.reactions])
         formula_reaction = self.model.reactions\
             .get_by_id(reaction_formula_list[0][0])
-        self.assertEqual(formula_reaction.reversibility,False)
+        self.assertEqual(formula_reaction.reversibility, False)
 
         # Have metabolites been added to model?
         self.assertIs(type(self.model.metabolites.get_by_id('test_met_1_c')),
@@ -434,16 +434,16 @@ class TestCobraModel(CobraTestCase):
             metabolite_list.append(
                 self.model.metabolites.get_by_id(metabolite_id)
             )
-        stoichiometry_list = [-1,-2,1,1]
-        compartment_list = ['c','c','c','e']
+        stoichiometry_list = [-1, -2, 1, 1]
+        compartment_list = ['c', 'c', 'c', 'e']
         
         # Are stoichiometries and compartments correct?
         for metabolite, stoichiometry, compartment in\
-                zip(metabolite_list,stoichiometry_list, compartment_list):
-            self.assertIn(metabolite,formula_reaction._metabolites)
+                zip(metabolite_list, stoichiometry_list, compartment_list):
+            self.assertIn(metabolite, formula_reaction._metabolites)
             self.assertEqual(formula_reaction._metabolites[metabolite],
                              stoichiometry)
-            self.assertEqual(metabolite.compartment,compartment)
+            self.assertEqual(metabolite.compartment, compartment)
 
     def test_add_reaction_from_other_model(self):
         model = self.model
@@ -714,17 +714,17 @@ class TestCobraArrayModel(TestCobraModel):
         with self.assertRaises(TypeError):
             model.reactions[[True, False]]
 
+
 class TestParseReactionFormula(TestCase):
-     
+
     def test_formula_parse(self):
         test_formula1 = '0.01 cdpdag-SC[m] + 0.01 pg-SC[m]  -> 0.01 clpn-SC'\
                         '[m] + cmp[m] + h[m]'
         [metabolite_list, compartment_list, stoich_coeff_list, rev_flag] =\
             prf.parseReactionFormula(test_formula1)
-        
-        self.assertEqual(tuple(metabolite_list), ('cdpdag-SC_m', 'pg-SC_m', \
-            'clpn-SC_m', 'cmp_m', 'h_m'))
-        self.assertEqual(tuple(compartment_list),('m', 'm', 'm', 'm', 'm'))
+        self.assertEqual(tuple(metabolite_list), ('cdpdag-SC_m', 'pg-SC_m',
+                                                  'clpn-SC_m', 'cmp_m', 'h_m'))
+        self.assertEqual(tuple(compartment_list), ('m', 'm', 'm', 'm', 'm'))
         self.assertEqual(tuple(stoich_coeff_list), (-0.01, -0.01, 0.01, 1, 1))
         self.assertIs(rev_flag, False)
         
@@ -732,14 +732,13 @@ class TestParseReactionFormula(TestCase):
                         '+ c_hdie_c_c + h[m]'
         [metabolite_list, compartment_list, stoich_coeff_list, rev_flag] =\
             prf.parseReactionFormula(test_formula2)
-        
-        self.assertEqual(tuple(metabolite_list), ('testmet1__c', 'pg-SC_c',\
+        self.assertEqual(tuple(metabolite_list), ('testmet1__c', 'pg-SC_c',
             'test_2_e', 'c_hdie_c_c', 'h_m'))
-        self.assertEqual(tuple(compartment_list),('c', 'c', 'e', 'c', 'm'))
+        self.assertEqual(tuple(compartment_list), ('c', 'c', 'e', 'c', 'm'))
         self.assertEqual(tuple(stoich_coeff_list), (-2.0, -0.01, 0.01, 1, 1))
         self.assertIs(rev_flag, True)
-        
-        
+
+
 # make a test suite to run all of the tests
 loader = TestLoader()
 suite = loader.loadTestsFromModule(sys.modules[__name__])
