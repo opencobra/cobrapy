@@ -247,11 +247,8 @@ class Model(Object):
         existing_reaction_IDs = [reaction.id for reaction in self.reactions]
         reactions_not_added = []
         
-        print reaction_formula_list
-        
         # Add reactions. Also take care of genes and metabolites in the loop
         for reaction_formula in reaction_formula_list:
-            print reaction_formula
             reactionID = reaction_formula[0]
             formula = reaction_formula[1]
             if reactionID in existing_reaction_IDs:
@@ -259,16 +256,11 @@ class Model(Object):
                 continue
             
             # Create reaction
-            print("reactionID - {}".format(reactionID))
-            print("formula - '{}'".format(formula))
             reaction = Reaction(reactionID)
-            reaction._model = self
-            
-            print("reaction.model - {}".format(reaction.model))
-            
+            self.add_reaction(reaction)            
             reaction.build_reaction_from_string(
                 formula,
-                verbose=True,
+                verbose=False,
                 fwd_arrow=None, rev_arrow=None,
                 reversible_arrow=None, term_split="+"
             )
