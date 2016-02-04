@@ -19,7 +19,7 @@ _warnings.formatwarning = _warn_format
 from .version import get_version
 __version__ = get_version()
 from .core import Object, Metabolite, Gene, Reaction, Model, \
-    DictList, Species
+    DictList, Species, parseReactionFormula
 from . import io, flux_analysis, design
 
 try:
