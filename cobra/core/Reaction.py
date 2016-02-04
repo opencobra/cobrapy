@@ -606,10 +606,13 @@ class Reaction(Object):
         original_str = "" + reaction_str  # copy
         found_compartments = compartment_finder.findall(reaction_str)
         if len(found_compartments) == 1:
-            compartment = found_compartments[0]
+            compartment_string = found_compartments[0]
+            compartment_id = compartment_string[1]
             reaction_str = compartment_finder.sub("", reaction_str)
         else:
-            compartment = ""
+            # set default compartment to cytosol
+            compartment_string = "[c]"
+            compartment_id = "c"
 
         # reversible case
         arrow_match = reversible_arrow_finder.search(reaction_str)
@@ -650,12 +653,24 @@ class Reaction(Object):
                     met_id = term
                     num = factor
                 # Does met_id contain compartment specification?
-                
-                met_id += compartment
+                try:
+                    met_compartment_string = re.search('.+(\[.+\])$', met_id).group(1)
+                    met_compartment_id = met_compartment_string[1] 
+                except:
+                    try:
+                        met_compartment_string = re.search('.+_([^_]+)$', met_id)\
+                            .group(1)
+                        met_compartment_id = "" + met_compartment_string
+                        met_compartment_string = '[' + met_compartment_string + ']'
+                        met_id = re.sub('_([^_]+)$', met_compartment_string, met_id)
+                    except:
+                        met_compartment_id = met_compartment_string[1]
+                        met_compartment_string = compartment_string
+                        met_id += compartment_string
                 try:
                     met = model.metabolites.get_by_id(met_id)
                 except KeyError:
                     if verbose:
                         print("unknown metabolite '%s' created" % met_id)
-                    met = Metabolite(met_id)
+                    met = Metabolite(met_id, compartment=met_compartment_id)
                 self.add_metabolites({met: num})
