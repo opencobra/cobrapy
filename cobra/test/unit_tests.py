@@ -334,8 +334,8 @@ class TestReactions(CobraTestCase):
         self.assertIn(model.metabolites.h2o_c, pgi._metabolites)
         pgi.build_reaction_from_string("g6p_c --> f6p_c + foo", verbose=False)
         self.assertNotIn(model.metabolites.h2o_c, pgi._metabolites)
-        self.assertIn("foo", model.metabolites)
-        self.assertIn(model.metabolites.foo, pgi._metabolites)
+        self.assertIn("foo_c", model.metabolites)
+        self.assertIn(model.metabolites.foo_c, pgi._metabolites)
         self.assertEqual(len(model.metabolites), m + 1)
 
 
