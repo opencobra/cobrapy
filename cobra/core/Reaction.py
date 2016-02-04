@@ -649,6 +649,8 @@ class Reaction(Object):
                 else:
                     met_id = term
                     num = factor
+                # Does met_id contain compartment specification?
+                
                 met_id += compartment
                 try:
                     met = model.metabolites.get_by_id(met_id)

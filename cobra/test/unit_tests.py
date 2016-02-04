@@ -391,6 +391,58 @@ class TestCobraModel(CobraTestCase):
         r2.add_metabolites({Metabolite(self.model.metabolites[0].id): 1})
         self.assertIs(self.model.metabolites[0], list(r2._metabolites)[0])
 
+    def test_add_reactions_by_formula(self):
+        old_reaction_count = len(self.model.reactions)
+        old_metabolite_count = len(self.model.metabolites)
+        test_met_from_model_id = self.model.metabolites[0].id
+
+        # Construct reaction
+        reaction_formula_list = []
+        reaction_formula_list.append(('test_formula_reaction1',
+                                      'test_met_1_c + 2 ' +
+                                      test_met_from_model_id +
+                                      ' ==> test_met_3_c + test_met_4_e'))
+        self.model.add_reactions_by_formula(reaction_formula_list)
+
+        # Does reaction exist?
+        new_reaction_count = len(self.model.reactions)
+        self.assertEqual(new_reaction_count-old_reaction_count, 1)
+        self.assertIn(reaction_formula_list[0][0],
+                      [reaction.id for reaction in self.model.reactions])
+        formula_reaction = self.model.reactions\
+            .get_by_id(reaction_formula_list[0][0])
+        self.assertEqual(formula_reaction.reversibility, False)
+
+        # Have metabolites been added to model?
+        self.assertIs(type(self.model.metabolites.get_by_id('test_met_1_c')),
+                      Metabolite)
+        self.assertIs(type(self.model.metabolites.get_by_id('test_met_3_c')),
+                      Metabolite)
+        self.assertIs(type(self.model.metabolites.get_by_id('test_met_4_e')),
+                      Metabolite)
+        new_metabolite_count = len(self.model.metabolites)
+        self.assertEqual(new_metabolite_count - old_metabolite_count, 3)
+
+        metabolite_id_list = ['test_met_1_c',
+                              test_met_from_model_id,
+                              'test_met_3_c',
+                              'test_met_4_e']
+        metabolite_list = []
+        for metabolite_id in metabolite_id_list:
+            metabolite_list.append(
+                self.model.metabolites.get_by_id(metabolite_id)
+            )
+        stoichiometry_list = [-1, -2, 1, 1]
+        compartment_list = ['c', 'c', 'c', 'e']
+
+        # Are stoichiometries and compartments correct?
+        for metabolite, stoichiometry, compartment in\
+                zip(metabolite_list, stoichiometry_list, compartment_list):
+            self.assertIn(metabolite, formula_reaction._metabolites)
+            self.assertEqual(formula_reaction._metabolites[metabolite],
+                             stoichiometry)
+            self.assertEqual(metabolite.compartment, compartment)
+            
     def test_add_reaction_from_other_model(self):
         model = self.model
         other = model.copy()

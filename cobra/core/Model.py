@@ -229,6 +229,52 @@ class Model(Object):
 
         self.reactions += reaction_list
 
+    def add_reactions_by_formula(self, reaction_formula_list):
+        """Will add a cobra.Reaction object to the model, if
+        reaction.id is not in self.reactions.
+
+        reaction_formula_list: A list of iterable objects, each containing a
+        reaction ID and a reaction formula.
+
+        N.B. there is no gene association for any added reaction.
+        """
+        # Only add the reaction if one with the same ID is not already
+        # present in the model.
+
+        if not hasattr(reaction_formula_list, "__len__"):
+            reaction_formula_list = [reaction_formula_list]
+
+        existing_reaction_IDs = [reaction.id for reaction in self.reactions]
+        reactions_not_added = []
+        
+        print reaction_formula_list
+        
+        # Add reactions. Also take care of genes and metabolites in the loop
+        for reaction_formula in reaction_formula_list:
+            print reaction_formula
+            reactionID = reaction_formula[0]
+            formula = reaction_formula[1]
+            if reactionID in existing_reaction_IDs:
+                reactions_not_added.append((reactionID, 'already exists'))
+                continue
+            
+            # Create reaction
+            print("reactionID - {}".format(reactionID))
+            print("formula - '{}'".format(formula))
+            reaction = Reaction(reactionID)
+            reaction._model = self
+            
+            print("reaction.model - {}".format(reaction.model))
+            
+            reaction.build_reaction_from_string(
+                formula,
+                verbose=True,
+                fwd_arrow=None, rev_arrow=None,
+                reversible_arrow=None, term_split="+"
+            )
+
+        return reaction
+
     def to_array_based_model(self, deepcopy_model=False, **kwargs):
         """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model which
         may be used to perform linear algebra operations with the
