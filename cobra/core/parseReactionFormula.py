@@ -41,8 +41,8 @@ def parseReactionFormula(formula=None):
      IT May 2012 Modified to handle '=>'
      WBryant Jan 2016 Converted to Python for COBRApy
      """
-    formula = formula or '0.01 cdpdag-SC[m] + 0.01 pg-SC[m]  -> 0.01 clpn-SC \
-                            [m] + cmp[m] + h[m]'
+    formula = formula or '0.01 cdpdag-SC[m] + 0.01 pg-SC[m]  -> 0.01 clpn-SC'\
+                         '[m] + cmp[m] + h[m]'
     tokens = formula.split()
     metaboliteList = []
     compartmentList = []
@@ -102,7 +102,7 @@ def parseReactionFormula(formula=None):
                     metaboliteID = re.sub('\[(.+)\]$', r'_\1', t)
                 except:
                     try:
-                        compartment = re.search('.+_([^_]+)$').group(1)
+                        compartment = re.search('.+_([^_]+)$',t).group(1)
                     except:
                         compartment = compartment_default
                         metaboliteID += '_' + compartment
