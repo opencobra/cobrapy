@@ -733,7 +733,8 @@ class TestParseReactionFormula(TestCase):
         [metabolite_list, compartment_list, stoich_coeff_list, rev_flag] =\
             prf.parseReactionFormula(test_formula2)
         self.assertEqual(tuple(metabolite_list),
-            ('testmet1__c', 'pg-SC_c', 'test_2_e', 'c_hdie_c_c', 'h_m'))
+                        ('testmet1__c', 'pg-SC_c', 'test_2_e', 'c_hdie_c_c',
+                         'h_m'))
         self.assertEqual(tuple(compartment_list), ('c', 'c', 'e', 'c', 'm'))
         self.assertEqual(tuple(stoich_coeff_list), (-2.0, -0.01, 0.01, 1, 1))
         self.assertIs(rev_flag, True)
