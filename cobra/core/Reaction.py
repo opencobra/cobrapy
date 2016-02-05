@@ -590,13 +590,13 @@ class Reaction(Object):
     def build_reaction_from_string(self, reaction_str, verbose=False,
                                    fwd_arrow=None, rev_arrow=None,
                                    reversible_arrow=None, term_split="+"):
-        """Builds reaction from reaction equation reaction_str using parser 
-        
-        Takes a string and using the specifications supplied in the optional 
-        arguments infers a set of metabolites, metabolite compartments and 
+        """Builds reaction from reaction equation reaction_str using parser
+
+        Takes a string and using the specifications supplied in the optional
+        arguments infers a set of metabolites, metabolite compartments and
         stoichiometries for the reaction.  It also infers the reversibility
         of the reaction from the reaction arrow.
-        
+
         Args:
             reaction_str: a string containing a reaction formula (equation)
             verbose: Boolean setting verbosity of function
@@ -672,15 +672,14 @@ class Reaction(Object):
                     num = factor
                 # Does met_id contain compartment specification?
                 try:
-                    met_compartment_id = re.search('.+\[([^\[\]]+)\]$', met_id)\
-                        .group(1)
-                    met_id = re.sub('\[[^\[\]]+\]$','_' + met_compartment_id,
+                    met_compartment_id = re.search('.+\[([^\[\]]+)\]$',
+                                                   met_id).group(1)
+                    met_id = re.sub('\[[^\[\]]+\]$', '_' + met_compartment_id,
                                     met_id)
                 except:
                     try:
                         met_compartment_id = re.search('.+_([^_]+)$',
-                            met_id)\
-                            .group(1)
+                                                       met_id).group(1)
                     except:
                         met_compartment_id = "" + compartment_id
                         met_id += "_" + met_compartment_id
