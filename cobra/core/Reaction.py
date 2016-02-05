@@ -587,9 +587,29 @@ class Reaction(Object):
         self.lower_bound = 0
         self.upper_bound = 0
 
-    def build_reaction_from_string(self, reaction_str, verbose=True,
+    def build_reaction_from_string(self, reaction_str, verbose=False,
                                    fwd_arrow=None, rev_arrow=None,
                                    reversible_arrow=None, term_split="+"):
+        """Builds reaction from reaction equation reaction_str using parser
+
+        Takes a string and using the specifications supplied in the optional
+        arguments infers a set of metabolites, metabolite compartments and
+        stoichiometries for the reaction.  It also infers the reversibility
+        of the reaction from the reaction arrow.
+
+        Args:
+            reaction_str: a string containing a reaction formula (equation)
+            verbose: Boolean setting verbosity of function
+                (optional, default=False)
+            fwd_arrow: re.compile for forward irreversible reaction arrows
+                (optional, default=_forward_arrow_finder)
+            reverse_arrow: re.compile for backward irreversible reaction arrows
+                (optional, default=_reverse_arrow_finder)
+            fwd_arrow: re.compile for reversible reaction arrows
+                (optional, default=_reversible_arrow_finder)
+            term_split: String dividing individual metabolite entries
+                (optional, default='+')
+        """
         # set the arrows
         forward_arrow_finder = _forward_arrow_finder if fwd_arrow is None \
             else re.compile(re.escape(fwd_arrow))
@@ -606,10 +626,11 @@ class Reaction(Object):
         original_str = "" + reaction_str  # copy
         found_compartments = compartment_finder.findall(reaction_str)
         if len(found_compartments) == 1:
-            compartment = found_compartments[0]
+            compartment_id = found_compartments[0][1]
             reaction_str = compartment_finder.sub("", reaction_str)
         else:
-            compartment = ""
+            # set default compartment to cytosol
+            compartment_id = "c"
 
         # reversible case
         arrow_match = reversible_arrow_finder.search(reaction_str)
@@ -649,11 +670,23 @@ class Reaction(Object):
                 else:
                     met_id = term
                     num = factor
-                met_id += compartment
+                # Does met_id contain compartment specification?
+                try:
+                    met_compartment_id = re.search('.+\[([^\[\]]+)\]$',
+                                                   met_id).group(1)
+                    met_id = re.sub('\[[^\[\]]+\]$', '_' + met_compartment_id,
+                                    met_id)
+                except:
+                    try:
+                        met_compartment_id = re.search('.+_([^_]+)$',
+                                                       met_id).group(1)
+                    except:
+                        met_compartment_id = "" + compartment_id
+                        met_id += "_" + met_compartment_id
                 try:
                     met = model.metabolites.get_by_id(met_id)
                 except KeyError:
                     if verbose:
                         print("unknown metabolite '%s' created" % met_id)
-                    met = Metabolite(met_id)
+                    met = Metabolite(met_id, compartment=met_compartment_id)
                 self.add_metabolites({met: num})

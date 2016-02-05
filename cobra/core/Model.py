@@ -229,6 +229,39 @@ class Model(Object):
 
         self.reactions += reaction_list
 
+    def add_reactions_by_formula(self, reaction_formula_list):
+        """Adds a set of reactions to the model specified by a formula string
+
+        Takes a list of (reactionID, formula) tuples (or other iterables) and
+        for each, if the reactionID is not in self.reactions, the formula
+        (reaction equation) is parsed and the described reaction is added to
+        the model.  N.B. No gene association is added for any of these
+        reactions.
+
+        Args:
+            reaction_formula_list: a list of (reactionID, formula) tuples
+        """
+        if not hasattr(reaction_formula_list, "__len__"):
+            reaction_formula_list = [reaction_formula_list]
+        existing_reaction_IDs = [reaction.id for reaction in self.reactions]
+
+        # Add reactions
+        for reaction_formula in reaction_formula_list:
+            reactionID = reaction_formula[0]
+            formula = reaction_formula[1]
+            if reactionID in existing_reaction_IDs:
+                continue
+
+            # Create reaction
+            reaction = Reaction(reactionID)
+            self.add_reaction(reaction)
+            reaction.build_reaction_from_string(
+                formula,
+                verbose=False,
+                fwd_arrow=None, rev_arrow=None,
+                reversible_arrow=None, term_split="+"
+            )
+
     def to_array_based_model(self, deepcopy_model=False, **kwargs):
         """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model which
         may be used to perform linear algebra operations with the
