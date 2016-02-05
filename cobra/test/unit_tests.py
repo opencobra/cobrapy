@@ -445,7 +445,7 @@ class TestCobraModel(CobraTestCase):
             self.assertEqual(formula_reaction._metabolites[metabolite],
                              stoichiometry)
             self.assertEqual(metabolite.compartment, compartment)
-            
+
     def test_add_reaction_from_other_model(self):
         model = self.model
         other = model.copy()
