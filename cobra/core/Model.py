@@ -233,13 +233,13 @@ class Model(Object):
         """Adds a set of reactions to the model specified by a formula string
         
         Takes a list of (reactionID, formula) tuples (or other iterables) and
-        for each, if the reactionID is not in self.reactions, the formula is 
-        parsed and the described reaction is added to the model.  N.B. No gene
-        association is added orany of these reactions.
+        for each, if the reactionID is not in self.reactions, the formula
+        (reaction equation) is parsed and the described reaction is added to
+        the model.  N.B. No gene association is added for any of these
+        reactions.
         
         Args:
             reaction_formula_list: a list of (reactionID, formula) tuples
-        
         """
         if not hasattr(reaction_formula_list, "__len__"):
             reaction_formula_list = [reaction_formula_list]

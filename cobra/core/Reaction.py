@@ -587,9 +587,29 @@ class Reaction(Object):
         self.lower_bound = 0
         self.upper_bound = 0
 
-    def build_reaction_from_string(self, reaction_str, verbose=True,
+    def build_reaction_from_string(self, reaction_str, verbose=False,
                                    fwd_arrow=None, rev_arrow=None,
                                    reversible_arrow=None, term_split="+"):
+        """Builds reaction from reaction equation reaction_str using parser 
+        
+        Takes a string and using the specifications supplied in the optional 
+        arguments infers a set of metabolites, metabolite compartments and 
+        stoichiometries for the reaction.  It also infers the reversibility
+        of the reaction from the reaction arrow.
+        
+        Args:
+            reaction_str: a string containing a reaction formula (equation)
+            verbose: Boolean setting verbosity of function
+                (optional, default=False)
+            fwd_arrow: re.compile for forward irreversible reaction arrows
+                (optional, default=_forward_arrow_finder)
+            reverse_arrow: re.compile for backward irreversible reaction arrows
+                (optional, default=_reverse_arrow_finder)
+            fwd_arrow: re.compile for reversible reaction arrows
+                (optional, default=_reversible_arrow_finder)
+            term_split: String dividing individual metabolite entries
+                (optional, default='+')
+        """
         # set the arrows
         forward_arrow_finder = _forward_arrow_finder if fwd_arrow is None \
             else re.compile(re.escape(fwd_arrow))
