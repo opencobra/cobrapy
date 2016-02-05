@@ -5,5 +5,5 @@ if __name == 'java':
     warn("%s is not yet supported on jython"%__modules[__name__])
 
 else:
-    from reporter_metabolites import *
+    from .reporter_metabolites import *
 del __name, __modules
