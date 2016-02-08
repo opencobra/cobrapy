@@ -293,7 +293,6 @@ class TestReactions(CobraTestCase):
         self.assertEqual(reaction.gene_name_reaction_rule, fake_gene.name)
 
     def test_add_metabolite(self):
-        """adding a metabolite to a reaction in a model"""
         model = self.model
         reaction = model.reactions.get_by_id("PGI")
         reaction.add_metabolites({model.metabolites[0]: 1})
@@ -303,6 +302,22 @@ class TestReactions(CobraTestCase):
         self.assertIn(fake_metabolite, reaction.metabolites)
         self.assertTrue(model.metabolites.has_id("fake"))
         self.assertIs(model.metabolites.get_by_id("fake"), fake_metabolite)
+
+        # test adding by string
+        reaction.add_metabolites({"g6p_c": -1})  # already in reaction
+        self.assertTrue(
+            reaction._metabolites[model.metabolites.get_by_id("g6p_c")], -2)
+        reaction.add_metabolites({"h_c": 1})  # not currently in reaction
+        self.assertTrue(
+            reaction._metabolites[model.metabolites.get_by_id("h_c")], 1)
+        with self.assertRaises(KeyError):
+            reaction.add_metabolites({"missing": 1})
+
+        # test adding to a new Reaction
+        reaction = Reaction("test")
+        self.assertEqual(len(reaction._metabolites), 0)
+        reaction.add_metabolites({Metabolite("test_met"): -1})
+        self.assertEqual(len(reaction._metabolites), 1)
 
     def test_subtract_metabolite(self):
         model = self.model
