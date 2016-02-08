@@ -441,7 +441,7 @@ class Reaction(Object):
         from the reaction.
 
         metabolites: dict
-            {:class:`~cobra.core.Metabolite.Metabolite`: coefficient}
+            {str or :class:`~cobra.core.Metabolite.Metabolite`: coefficient}
 
         combine: Boolean.
             Describes behavior a metabolite already exists in the reaction.
@@ -457,6 +457,11 @@ class Reaction(Object):
         _id_to_metabolites = {x.id: x for x in self._metabolites}
         new_metabolites = []
         for metabolite, coefficient in iteritems(metabolites):
+            # Create a metabolite object if string is provided.
+            if (not isinstance(metabolite, Metabolite) and
+                    isinstance(metabolite, str)):
+                metabolite = Metabolite(metabolite)
+
             # If a metabolite already exists in the reaction then
             # just add them.
             if metabolite.id in _id_to_metabolites:
