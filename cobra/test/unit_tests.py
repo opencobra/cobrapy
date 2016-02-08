@@ -296,10 +296,10 @@ class TestReactions(CobraTestCase):
         model = self.model
         reaction = model.reactions.get_by_id("PGI")
         reaction.add_metabolites({model.metabolites[0]: 1})
-        self.assertIn(model.metabolites[0], reaction.metabolites)
+        self.assertIn(model.metabolites[0], reaction._metabolites)
         fake_metabolite = Metabolite("fake")
         reaction.add_metabolites({fake_metabolite: 1})
-        self.assertIn(fake_metabolite, reaction.metabolites)
+        self.assertIn(fake_metabolite, reaction._metabolites)
         self.assertTrue(model.metabolites.has_id("fake"))
         self.assertIs(model.metabolites.get_by_id("fake"), fake_metabolite)
 
@@ -553,7 +553,7 @@ class TestCobraModel(CobraTestCase):
         _metabolites = []
         for x in _model.reactions:
             _genes.extend(x.genes)
-            _metabolites.extend(x.metabolites)
+            _metabolites.extend(x._metabolites)
 
         orphan_genes = [x for x in _genes if x.model is not _model]
         orphan_metabolites = [x for x in _metabolites if x.model is not _model]
@@ -610,7 +610,7 @@ class TestCobraArrayModel(TestCobraModel):
             model.S[43, 0] = 1
             assertEqual(model.S[43, 0], 1)
             assertEqual(
-                model.reactions[0].metabolites[model.metabolites[43]], 1)
+                model.reactions[0]._metabolites[model.metabolites[43]], 1)
             model.S[43, 0] = 0
             assertEqual(model.lower_bounds[0], model.reactions[0].lower_bound)
             assertEqual(model.lower_bounds[5], model.reactions[5].lower_bound)

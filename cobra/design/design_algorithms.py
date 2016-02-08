@@ -100,7 +100,7 @@ def set_up_optknock(model, chemical_objective, knockable_reactions,
         reaction.objective_coefficient = 0
         if reaction.id in model.reactions:
             existing_reaction = model.reactions.get_by_id(reaction.id)
-            for met, coeff in iteritems(reaction.metabolites):
+            for met, coeff in iteritems(reaction._metabolites):
                 if met.id in model.metabolites:
                     existing_reaction.add_metabolites(
                         {model.metabolites.get_by_id(met.id): coeff})
@@ -346,7 +346,7 @@ def dual_problem(model, objective_sense="maximize",
                                 reaction.id)  # (6)
             constr._constraint_sense = "L"
             constr._bound = - reaction.objective_coefficient
-            for met, coeff in iteritems(reaction.metabolites):
+            for met, coeff in iteritems(reaction._metabolites):
                 dual_var = dual_var_for_met[met.id]
                 dual_var.add_metabolites({constr: - coeff})
 
@@ -363,7 +363,7 @@ def dual_problem(model, objective_sense="maximize",
 
     # add auxiliary variables
     for integer_var, original_reaction in integer_vars_added:
-        for metabolite, coeff in iteritems(original_reaction.metabolites):
+        for metabolite, coeff in iteritems(original_reaction._metabolites):
             dual_var = dual_var_for_met[metabolite.id]
             # create an auxiliary variable
             aux_var = Reaction("%s__auxiliary__%s" % (integer_var.id,
