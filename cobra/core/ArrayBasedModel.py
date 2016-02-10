@@ -1,12 +1,11 @@
 from sys import maxsize
-from copy import deepcopy
 from warnings import warn
+from six import iteritems
 
-from numpy import array, hstack, ndarray
+from numpy import array, ndarray
 from scipy.sparse import lil_matrix, dok_matrix
 
 from .Model import Model
-from six import iteritems
 
 
 class ArrayBasedModel(Model):
@@ -76,7 +75,7 @@ class ArrayBasedModel(Model):
         return self._b
 
     @b.setter
-    def b(self, b):
+    def b(self, vector):
         self._update_from_vector("b", vector)
 
     @property
