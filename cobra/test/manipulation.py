@@ -225,6 +225,17 @@ class TestManipulation(TestCase):
         errors = check_metabolite_compartment_formula(model)
         self.assertEqual(len(errors), 2)
 
+    def test_validate_formula_setting(self):
+        model = create_test_model("textbook")
+        met = model.metabolites[1]
+        orig_formula = str(met.formula)
+        orig_elements = dict(met.elements)
+        
+        met.formula = ''
+        self.assertEqual(met.elements, {})
+        met.elements = orig_elements
+        self.assertEqual(met.formula, orig_formula)
+
     def test_validate_mass_balance(self):
         model = create_test_model("textbook")
         self.assertEqual(len(check_mass_balance(model)), 0)
