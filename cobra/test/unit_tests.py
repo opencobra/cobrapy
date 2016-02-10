@@ -376,6 +376,17 @@ class TestCobraMetabolites(CobraTestCase):
         self.assertEqual(met.elements, {"H": 2, "O": 1})
         self.assertEqual(met.formula_weight, 18.01528)
 
+    def test_foruma_element_setting(self):
+        model = self.model
+        met = model.metabolites[1]
+        orig_formula = str(met.formula)
+        orig_elements = dict(met.elements)
+
+        met.formula = ''
+        self.assertEqual(met.elements, {})
+        met.elements = orig_elements
+        self.assertEqual(met.formula, orig_formula)
+
 
 class TestCobraModel(CobraTestCase):
     """test core cobra functions"""

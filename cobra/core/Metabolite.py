@@ -1,6 +1,8 @@
 from warnings import warn
 import re
 
+from six import iteritems
+
 from .Species import Species
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
@@ -78,6 +80,14 @@ class Metabolite(Species):
             else:
                 composition[element] = count
         return composition
+
+    @elements.setter
+    def elements(self, elements_dict):
+        def stringify(element, number):
+            return element if number == 1 else element + str(number)
+
+        self.formula = ''.join(stringify(e, n) for e, n in
+                               sorted(iteritems(elements_dict)))
 
     @property
     def formula_weight(self):
