@@ -154,6 +154,10 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
                     msg = "different charges specified for %s (%d and %d)"
                     msg = msg % (tmp_metabolite.id, tmp_metabolite.charge, note_charge)
                     warn(msg)
+                    # Chances are a 0 note charge was written by mistake. We
+                    # will default to the note_charge in this case.
+                    if tmp_metabolite.charge == 0:
+                        tmp_metabolite.charge = note_charge
 
         for the_key in tmp_metabolite.notes.keys():
             if the_key.lower() == 'formula':
