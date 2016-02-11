@@ -82,7 +82,6 @@ class Metabolite(Species):
     @property
     def formula_weight(self):
         """Calculate the formula weight"""
-        weight_dict = elements_and_molecular_weights
         try:
             return sum([count * elements_and_molecular_weights[element]
                         for element, count in self.elements.items()])

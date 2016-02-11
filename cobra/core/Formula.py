@@ -1,6 +1,6 @@
 import re
 from warnings import warn
-from copy import deepcopy
+
 from .Object import Object
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
@@ -68,7 +68,6 @@ class Formula(Object):
     @property
     def weight(self):
         """Calculate the formula weight"""
-        weight_dict = elements_and_molecular_weights
         try:
             return sum([count * elements_and_molecular_weights[element]
                         for element, count in self.elements.items()])

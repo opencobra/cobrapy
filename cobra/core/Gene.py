@@ -1,7 +1,7 @@
 import re
 from warnings import warn
-from ast import parse as ast_parse, Name, And, Or, BitOr, BitAnd, BinOp, \
-    BoolOp, Attribute, Expression, NodeTransformer
+from ast import parse as ast_parse, Name, And, Or, BitOr, BitAnd, \
+    BoolOp, Expression, NodeTransformer
 from keyword import kwlist
 
 from .Species import Species

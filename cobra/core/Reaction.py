@@ -527,8 +527,6 @@ class Reaction(Object):
         """Generate a human readable reaction string"""
         def format(number):
             return "" if number == 1 else str(number).rstrip(".") + " "
-        reactant_dict = {}
-        product_dict = {}
         id_type = 'id'
         if use_metabolite_names:
             id_type = 'name'
@@ -633,7 +631,6 @@ class Reaction(Object):
             model = None
         else:
             model = self._model
-        original_str = "" + reaction_str  # copy
         found_compartments = compartment_finder.findall(reaction_str)
         if len(found_compartments) == 1:
             compartment = found_compartments[0]

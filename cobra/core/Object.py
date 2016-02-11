@@ -1,6 +1,3 @@
-from six import iteritems
-
-
 class Object(object):
     """Defines common behavior of object in cobra.core"""
 
