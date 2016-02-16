@@ -173,7 +173,7 @@ class TestCobraFluxAnalysis(TestCase):
         try:
             solver = get_solver_name(mip=True)
         except:
-            self.skip("no MILP solver found")
+            self.skipTest("no MILP solver found")
         test_model = Model()
         test_model.add_metabolites(Metabolite("A"))
         test_model.add_metabolites(Metabolite("B"))
@@ -203,7 +203,7 @@ class TestCobraFluxAnalysis(TestCase):
         try:
             solver = get_solver_name(mip=True)
         except:
-            self.skip("no MILP solver found")
+            self.skipTest("no MILP solver found")
         m = Model()
         m.add_metabolites(map(Metabolite, ["a", "b", "c"]))
         r = Reaction("EX_A")
@@ -247,7 +247,7 @@ class TestCobraFluxAnalysis(TestCase):
         self.assertAlmostEqual(data.growth_rates.max(), 1.20898, places=4)
         self.assertAlmostEqual(abs(data.growth_rates[0, :]).max(), 0, places=4)
         if matplotlib is None:
-            self.skip("can't test plots without matplotlib")
+            self.skipTest("can't test plots without matplotlib")
         data.plot()
 
 # make a test suite to run all of the tests
