@@ -5,41 +5,45 @@ environment:
     # /E:ON and /V:ON options are not enabled in the batch script intepreter
     # See: http://stackoverflow.com/a/13751649/163740
     WITH_COMPILER: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
-    UCRT: " "
 
   matrix:
     - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.10"
+      PYTHON_VERSION: "2.7.11"
       PYTHON_ARCH: "32"
 
     - PYTHON: "C:\\Python34"
-      PYTHON_VERSION: "3.4.3"
+      PYTHON_VERSION: "3.4.4"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python35"
+      PYTHON_VERSION: "3.5.1"
       PYTHON_ARCH: "32"
 
     - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.10"
+      PYTHON_VERSION: "2.7.11"
       PYTHON_ARCH: "64"
 
     - PYTHON: "C:\\Python34-x64"
-      PYTHON_VERSION: "3.4.3"
+      PYTHON_VERSION: "3.4.4"
       PYTHON_ARCH: "64"
 
     - PYTHON: "C:\\Python35-x64"
-      PYTHON_VERSION: "3.5.0"
+      PYTHON_VERSION: "3.5.1"
       PYTHON_ARCH: "64"
-      UCRT: "UCRT"
 
 clone_depth: 25
 
 init:
-  - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH% %UCRT%"
+  - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%bit"
+
+cache:
+    - glpk_build -> appveyor/build_glpk.py
+
 
 install:
   - "powershell appveyor\\install.ps1"
   - ps: Start-FileDownload 'https://bitbucket.org/gutworth/six/raw/default/six.py'
-  # Download glpk.h and glpk.lib (separate files for 32/64 bit)
-  - ps: Start-FileDownload 'https://opencobra.github.io/pypi_cobrapy_travis/glpk.h'
-  - "appveyor DownloadFile https://opencobra.github.io/pypi_cobrapy_travis/glpk.lib%PYTHON_ARCH%%UCRT% -FileName glpk.lib"
+  - "%WITH_COMPILER% %PYTHON%/python appveyor/build_glpk.py"
   - "%PYTHON%/python -m pip install Cython"
 
 build: off
