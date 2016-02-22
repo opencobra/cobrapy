@@ -40,6 +40,8 @@ def _is_positive(n):
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
 and_or_search = re.compile(r'\(| and| or|\+|\)', re.IGNORECASE)
+uppercase_AND = re.compile(r'\bAND\b')
+uppercase_OR = re.compile(r'\bOR\b')
 gpr_clean = re.compile(' {2,}')
 # This regular expression finds any single letter compartment enclosed in
 # square brackets at the beginning of the string. For example [c] : foo --> bar
@@ -101,6 +103,13 @@ class Reaction(Object):
         try:
             _, gene_names = parse_gpr(self._gene_reaction_rule)
         except (SyntaxError, TypeError) as e:
+            if "AND" in new_rule or "OR" in new_rule:
+                warn("uppercase AND/OR found in rule '%s' for '%s'" %
+                     (new_rule, repr(self)))
+                new_rule = uppercase_AND.sub("and", new_rule)
+                new_rule = uppercase_OR.sub("or", new_rule)
+                self.gene_reaction_rule = new_rule
+                return
             warn("malformed gene_reaction_rule '%s' for %s" %
                  (new_rule, repr(self)))
             tmp_str = and_or_search.sub('', self._gene_reaction_rule)

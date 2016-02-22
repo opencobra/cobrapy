@@ -269,6 +269,21 @@ class TestReactions(CobraTestCase):
         reaction_gene = list(reaction.genes)[0]
         model_gene = model.genes.get_by_id(reaction_gene.id)
         self.assertIs(reaction_gene, model_gene)
+        # test ability to handle uppercase AND/OR
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            reaction.gene_reaction_rule = "(b1 AND b2) OR (b3 and b4)"
+        self.assertEqual(reaction.gene_reaction_rule,
+                         "(b1 and b2) or (b3 and b4)")
+        self.assertEqual(len(reaction.genes), 4)
+        # ensure regular expressions correctly extract genes from malformed
+        # GPR string
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            reaction.gene_reaction_rule = "(a1 or a2"
+            self.assertEqual(len(reaction.genes), 2)
+            reaction.gene_reaction_rule = "(forT or "
+            self.assertEqual(len(reaction.genes), 1)
 
     def testGPR_modification(self):
         model = self.model
