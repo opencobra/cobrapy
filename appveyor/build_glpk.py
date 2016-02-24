@@ -11,8 +11,8 @@ except ImportError:  # python 3
     import urllib.request as urllib2
 
 # these need to be set to the latest glpk version
-glpk_version = "4.57"
-glpk_md5 = "237531a54f73155842f8defe51aedb0f"
+glpk_version = "4.58"
+glpk_md5 = "924ff878278d07a52f2e06240f2fe30a"
 
 glpk_build_dir = "glpk_build/glpk-%s" % glpk_version
 url = "http://ftp.gnu.org/gnu/glpk/glpk-%s.tar.gz" % glpk_version
