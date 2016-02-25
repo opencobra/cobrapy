@@ -225,7 +225,7 @@ class TestManipulation(TestCase):
         errors = check_metabolite_compartment_formula(model)
         self.assertEqual(len(errors), 2)
 
-    def test_validate_formula_setting(self):
+    def test_foruma_element_setting(self):
         model = create_test_model("textbook")
         met = model.metabolites[1]
         orig_formula = str(met.formula)

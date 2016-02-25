@@ -43,54 +43,51 @@ class Metabolite(Species):
         self._bound = 0.
 
     @property
-    def formula(self):
-        """Describes a Chemical Formula
-        A legal formula string contains only letters and numbers.
-        """
-        try:
-            return self._formula
-        except AttributeError:
-            # Handle loading old pickled classes
-            self._formula = self.__dict__['formula']
-            return self._formula
-
-    @formula.setter
-    def formula(self, formula):
-        self._formula = str(formula) if formula is not None else ''
-
-        if "*" in self._formula:
-            warn("invalid character '*' found in formula '{}'".format(
-                self._formula))
-        if "(" in self._formula or ")" in self._formula:
-            warn("invalid formula (has parenthesis) in '{}'".format(
-                self._formula))
-        for element, stoich in element_re.findall(self._formula):
-            if element not in elements_and_molecular_weights:
-                warn('{} not a valid element'.format(element))
-            try:
-                int(stoich) if stoich else 1
-            except ValueError:
-                warn('{} not a valid element count'.format(stoich))
-
-    @property
     def elements(self):
-        """A dictionary breaking the chemical formula down by element.
-        
-        Will raise a ValueError if the formula contains non-integer
-        stochiometries, or if being set with an atom not present in the
-        elements_and_molecular_weights dict.
-        
-        """
-        return {element: int(stoich) if stoich else 1
-                for element, stoich in element_re.findall(self.formula)}
+        tmp_formula = self.formula
+        if tmp_formula is None:
+            return {}
+        # necessary for some old pickles which use the deprecated
+        # Formula class
+        tmp_formula = str(self.formula)
+        # commonly occuring characters in incorrectly constructed formulas
+        if "*" in tmp_formula:
+            warn("invalid character '*' found in formula '%s'" % self.formula)
+            tmp_formula = tmp_formula.replace("*", "")
+        if "(" in tmp_formula or ")" in tmp_formula:
+            warn("invalid formula (has parenthesis) in '%s'" % self.formula)
+            return None
+        composition = {}
+        parsed = element_re.findall(tmp_formula)
+        for (element, count) in parsed:
+            if count == '':
+                count = 1
+            else:
+                try:
+                    count = float(count)
+                    int_count = int(count)
+                    if count == int_count:
+                        count = int_count
+                    else:
+                        warn("%s is not an integer (in formula %s)" %
+                             (count, self.formula))
+                except ValueError:
+                    warn("failed to parse %s (in formula %s)" %
+                         (count, self.formula))
+                    return None
+            if element in composition:
+                composition[element] += count
+            else:
+                composition[element] = count
+        return composition
 
     @elements.setter
     def elements(self, elements_dict):
         def stringify(element, number):
-            return ''.join((element, str(number) if number != 1 else ''))
+            return element if number == 1 else element + str(number)
 
         self.formula = ''.join(stringify(e, n) for e, n in
-                                sorted(iteritems(elements_dict)))
+                               sorted(iteritems(elements_dict)))
 
     @property
     def formula_weight(self):
