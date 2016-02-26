@@ -368,6 +368,75 @@ class TestReactions(CobraTestCase):
         self.assertIn(model.metabolites.foo, pgi._metabolites)
         self.assertEqual(len(model.metabolites), m + 1)
 
+    def test_copy(self):
+        model = self.model
+        PGI = model.reactions.PGI
+        copied = PGI.copy()
+        self.assertIsNot(PGI, copied)
+        self.assertIs(PGI._model, model)
+        self.assertIsNot(copied._model, model)
+        # the copy should refer to different metabolites and genes
+        for met in copied.metabolites:
+            self.assertIsNot(met, model.metabolites.get_by_id(met.id))
+            self.assertIsNot(met.model, model)
+        for gene in copied.genes:
+            self.assertIsNot(gene, model.genes.get_by_id(gene.id))
+            self.assertIsNot(gene.model, model)
+
+    def test_iadd(self):
+        model = self.model
+        PGI = model.reactions.PGI
+        EX_h2o = model.reactions.EX_h2o_e
+        original_PGI_gpr = PGI.gene_reaction_rule
+        PGI += EX_h2o
+        self.assertEqual(PGI.gene_reaction_rule, original_PGI_gpr)
+        self.assertEqual(PGI.metabolites[model.metabolites.h2o_e], -1.0)
+        # original should not have changed
+        self.assertEqual(EX_h2o.gene_reaction_rule, '')
+        self.assertEqual(EX_h2o.metabolites[model.metabolites.h2o_e], -1.0)
+        # what about adding a reaction not in the model
+        new_reaction = Reaction("test")
+        new_reaction.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
+        PGI += new_reaction
+        self.assertEqual(PGI.gene_reaction_rule, original_PGI_gpr)
+        self.assertEqual(len(PGI.gene_reaction_rule), 5)
+        # and vice versa
+        new_reaction += PGI
+        self.assertEqual(len(new_reaction.metabolites), 5)  # not 7
+        self.assertEqual(len(new_reaction.genes), 1)
+        self.assertEqual(new_reaction.gene_reaction_rule, original_PGI_gpr)
+        # what about combining 2 gpr's
+        model.reactions.ACKr += model.reactions.ACONTa
+        self.assertEqual(model.reactions.ACKr.gene_reaction_rule,
+                         "(b2296 or b3115 or b1849) and (b0118 or b1276)")
+        self.assertEqual(len(model.reactions.ACKr.genes), 5)
+
+    def test_add(self):
+        # not in place addition should work on a copy
+        model = self.model
+        new = model.reactions.PGI + model.reactions.EX_h2o_e
+        self.assertIsNot(new._model, model)
+        self.assertEqual(len(new.metabolites), 3)
+        # the copy should refer to different metabolites and genes
+        # This currently fails because add_metabolites does not copy.
+        # Should that be changed?
+        # for met in new.metabolites:
+        #    self.assertIsNot(met, model.metabolites.get_by_id(met.id))
+        #    self.assertIsNot(met.model, model)
+        for gene in new.genes:
+            self.assertIsNot(gene, model.genes.get_by_id(gene.id))
+            self.assertIsNot(gene.model, model)
+
+    def test_mul(self):
+        new = self.model.reactions.PGI * 2
+        self.assertEqual(set(new.metabolites.values()), {-2, 2})
+
+    def test_sub(self):
+        model = self.model
+        new = model.reactions.PGI - model.reactions.EX_h2o_e
+        self.assertIsNot(new._model, model)
+        self.assertEqual(len(new.metabolites), 3)
+
 
 class TestCobraMetabolites(CobraTestCase):
     def test_metabolite_formula(self):

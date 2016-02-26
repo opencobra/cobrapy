@@ -288,7 +288,6 @@ class Reaction(Object):
         self._genes = set()
 
     def __setstate__(self, state):
-
         """Probably not necessary to set _model as the cobra.Model that
         contains self sets the _model attribute for all metabolites and genes
         in the reaction.
@@ -313,17 +312,26 @@ class Reaction(Object):
             x._reaction.add(self)
 
     def copy(self):
-        """When copying a reaction, it is necessary to deepcopy the
-        components so the list references aren't carried over.
+        """Copy a reaction
 
-        Additionally, a copy of a reaction is no longer in a cobra.Model.
+        The referenced metabolites and genes are also copied.
 
-        This should be fixed with self.__deecopy__ if possible
         """
-        # the_model = self._model
-        # self._model = None
+        # no references to model when copying
+        model = self._model
+        self._model = None
+        for i in self._metabolites:
+            i._model = None
+        for i in self._genes:
+            i._model = None
+        # now we can copy
         new_reaction = deepcopy(self)
-        # self._model = the_model
+        # restore the references
+        self._model = model
+        for i in self._metabolites:
+            i._model = model
+        for i in self._genes:
+            i._model = model
         return new_reaction
 
     def pop(self, metabolite_id):
@@ -349,65 +357,51 @@ class Reaction(Object):
         the_metabolite._reaction.remove(self)
         return the_coefficient
 
-    def __add__(self, other_reaction):
-        """Adds two reactions to each other.  Default behavior is
-        to combine the metabolites but only use the remaining parameters
-        from the first object.
+    def __add__(self, other):
+        """Add two reactions
 
-        TODO: Either clean up metabolite associations or remove function
-
-        TODO: Deal with gene association logic from adding reactions.
-
-        TODO: Simplify and add in an __iadd__
+        The stoichiometry will be the combined stoichiometry of the two
+        reactions, and the gene reaction rule will be both rules combined by an
+        and. All other attributes (i.e. reaction bounds) will match those of
+        the first reaction
 
         """
-        new_reaction = deepcopy(self)
-        new_reaction.id = self.id + '_' + other_reaction.id
-        new_reaction.add_metabolites(deepcopy(other_reaction._metabolites))
-        new_reaction._genes.update(deepcopy(other_reaction._genes))
-        # Make all the genes aware of this reaction
-        [x._reaction.add(new_reaction) for x in new_reaction._genes]
-        gpr_1 = new_reaction.gene_reaction_rule
-        gpr_2 = other_reaction.gene_reaction_rule
-        if gpr_1 != '' and gpr_2 != '':
-            new_reaction.gene_reaction_rule = '%s and %s' % (gpr_1, gpr_2)
-        elif gpr_2 != '':
-            new_reaction.gene_reaction_rule = gpr_2
+        new_reaction = self.copy()
+        new_reaction += other
         return new_reaction
 
-    def __sub__(self, other_reaction):
-        """Subtracts two reactions.  Default behavior is
-        to combine the metabolites but only use the remaining parameters
-        from the first object.
+    def __iadd__(self, other):
+        self.add_metabolites(other._metabolites, combine=True)
+        gpr1 = self.gene_reaction_rule.strip()
+        gpr2 = other.gene_reaction_rule.strip()
+        if gpr1 != '' and gpr2 != '':
+            self.gene_reaction_rule = "(%s) and (%s)" % \
+                (self.gene_reaction_rule, other.gene_reaction_rule)
+        elif gpr1 != '' and gpr2 == '':
+            self.gene_reaction_rule = gpr1
+        elif gpr1 == '' and gpr2 != '':
+            self.gene_reaction_rule = gpr2
+        return self
 
-        Note: This is equivalent to adding reactions after changing the sign
-        of the metabolites in other_reaction
+    def __sub__(self, other):
+        new = self.copy()
+        new -= other
+        return new
 
-        """
-        new_reaction = deepcopy(self)
-        if self is other_reaction:
-            other_reaction = deepcopy(other_reaction)
-        new_reaction.id = self.id + '_' + other_reaction.id
-        new_reaction.subtract_metabolites(
-            deepcopy(other_reaction._metabolites))
-        return new_reaction
+    def __isub__(self, other):
+        self.subtract_metabolites(other._metabolites, combine=True)
+        return self
 
-    def __imul__(self, the_coefficient):
-        """Allows the reaction coefficients to be rapidly scaled.
-
-        """
-        self._metabolites = {k: the_coefficient * v for k, v in
+    def __imul__(self, coefficient):
+        """Scale coefficients in a reaction"""
+        self._metabolites = {k: coefficient * v for k, v in
                              iteritems(self._metabolites)}
         return self
 
-    def __mul__(self, the_coefficient):
-        """Allows a reaction to be multiplied by a coefficient.
-
-        TODO: this should return a new reaction.
-
-        """
-        self *= the_coefficient
-        return self
+    def __mul__(self, coefficient):
+        new = self.copy()
+        new *= coefficient
+        return new
 
     @property
     def reactants(self):
@@ -505,7 +499,7 @@ class Reaction(Object):
         if add_to_container_model and hasattr(self._model, 'add_metabolites'):
             self._model.add_metabolites(new_metabolites)
 
-    def subtract_metabolites(self, metabolites):
+    def subtract_metabolites(self, metabolites, combine=True):
         """This function will 'subtract' metabolites from a reaction, which
         means add the metabolites with -1*coefficient. If the final coefficient
         for a metabolite is 0 then the metabolite is removed from the reaction.
@@ -516,7 +510,8 @@ class Reaction(Object):
         .. note:: A final coefficient < 0 implies a reactant.
 
         """
-        self.add_metabolites({k: -v for k, v in iteritems(metabolites)})
+        self.add_metabolites({k: -v for k, v in iteritems(metabolites)},
+                             combine=combine)
 
     def clear_metabolites(self):
         """Remove all metabolites from the reaction"""

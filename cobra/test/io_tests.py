@@ -59,6 +59,10 @@ class TestCobraIO(object):
         model2.optimize()
         self.assertAlmostEqual(model1.solution.f, model2.solution.f,
                                places=3)
+        # ensure the references are correct
+        self.assertIs(model2.metabolites[0]._model, model2)
+        self.assertIs(model2.reactions[0]._model, model2)
+        self.assertIs(model2.genes[0]._model, model2)
         self.extra_comparisons(model1, model2)
 
     def extra_comparisons(self, model1, model2):
