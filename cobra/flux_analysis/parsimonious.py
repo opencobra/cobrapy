@@ -1,8 +1,14 @@
-from ..manipulation import modify
+from six import iterkeys, iteritems
+from warnings import warn
+
+from ..manipulation.modify import convert_to_irreversible, revert_to_reversible
+from ..core import Solution
+from ..solvers import solver_dict, get_solver_name
 
 
-def optimize_minimal_flux(model, already_irreversible=False,
-                          **optimize_kwargs):
+def optimize_minimal_flux(cobra_model, already_irreversible=False,
+                          fraction_of_optimum=1.0, solver=None,
+                          desired_objective_value=None, **optimize_kwargs):
     """Perform basic pFBA (parsimonius FBA) and minimize total flux.
 
     The function attempts to act as a drop-in replacement for optimize. It
@@ -11,53 +17,71 @@ def optimize_minimal_flux(model, already_irreversible=False,
     flux. Finally, it will convert the reaction back to the irreversible
     form it was in before. See http://dx.doi.org/10.1038/msb.2010.47
 
-    model : :class:`~cobra.core.Model` object
+    cobra_model : :class:`~cobra.core.Model` object
 
     already_irreversible : bool, optional
         By default, the model is converted to an irreversible one.
         However, if the model is already irreversible, this step can be
-        skipped.
+        skipped
 
+    fraction_of_optimum : float, optional
+        Fraction of optimum which must be maintained. The original objective
+        reaction is constrained to be greater than maximal_value *
+        fraction_of_optimum. By default, this option is specified to be 1.0
+
+    desired_objective_value : float, optional
+        A desired objective value for the minimal solution that bypasses the
+        initial optimization result.
+
+    solver : string of solver name
+        If None is given, the default solver will be used.
+
+    Updates everything in-place, returns model to original state at end.
     """
-    if not already_irreversible:
-        modify.convert_to_irreversible(model)
-    model.optimize(**optimize_kwargs)
-    # if the problem is infeasible
-    if model.solution.f is None:
-        raise Exception("model could not be solved")
-    old_f = model.solution.f
-    old_objective_coefficients = {}
-    old_lower_bounds = {}
-    old_upper_bounds = {}
-    for reaction in model.reactions:
-        # if the reaction has a nonzero objective coefficient, then
-        # the same flux should be maintained through that reaction
+
+    if len(cobra_model.objective) > 1:
+        raise ValueError('optimize_minimal_flux only supports models with'
+                         ' a single objective function')
+
+    if 'objective_sense' in optimize_kwargs:
+        if optimize_kwargs['objective_sense'] == 'minimize':
+            raise ValueError(
+                'Minimization not supported in optimize_minimal_flux')
+        optimize_kwargs.pop('objective_sense', None)
+
+    # Convert to irreversible, so all reactions will have a positive flux
+    convert_to_irreversible(cobra_model)
+
+    solver = solver_dict[get_solver_name() if solver is None else solver]
+    lp = solver.create_problem(cobra_model, **optimize_kwargs)
+    if not desired_objective_value:
+        solver.solve_problem(lp, objective_sense='maximize')
+        status = solver.get_status(lp)
+        if status != "optimal":
+            raise ValueError(
+                "pFBA requires optimal solution status, not {}".format(status))
+        desired_objective_value = solver.get_objective_value(lp)
+
+    for i, reaction in enumerate(cobra_model.reactions):
+
         if reaction.objective_coefficient != 0:
-            old_objective_coefficients[reaction] = \
-                reaction.objective_coefficient
-            old_lower_bounds[reaction] = reaction.lower_bound
-            old_upper_bounds[reaction] = reaction.upper_bound
-            x = model.solution.x_dict[reaction.id]
-            reaction.lower_bound = x
-            reaction.upper_bound = x
-            reaction.objective_coefficient = 0
-        else:
-            reaction.objective_coefficient = 1
-    # set to minimize flux
-    optimize_kwargs["objective_sense"] = "minimize"
-    model.optimize(**optimize_kwargs)
-    # make the model back the way it was
-    for reaction in model.reactions:
-        if reaction in old_objective_coefficients:
-            reaction.objective_coefficient = \
-                old_objective_coefficients[reaction]
-            reaction.lower_bound = old_lower_bounds[reaction]
-            reaction.upper_bound = old_upper_bounds[reaction]
-        else:
-            reaction.objective_coefficient = 0
-    # if the minimization problem was successful
-    if model.solution.f is not None:
-        model.solution.f = old_f
-    if not already_irreversible:
-        modify.revert_to_reversible(model)
-    return model.solution
+            # Enforce a certain fraction of the original objective
+            target = (desired_objective_value * fraction_of_optimum /
+                      reaction.objective_coefficient)
+            solver.change_variable_bounds(lp, i, target, reaction.upper_bound)
+
+        # Minimize all reaction fluxes (including objective?)
+        solver.change_variable_objective(lp, i, 1)
+
+    solver.solve_problem(lp, objective_sense='minimize', **optimize_kwargs)
+    solution = solver.format_solution(lp, cobra_model)
+
+    # Return the model to its original state
+    cobra_model.solution = solution
+    revert_to_reversible(cobra_model)
+
+    if solution.status == "optimal":
+        cobra_model.solution.f = sum([coeff * reaction.x for reaction, coeff in
+                                      iteritems(cobra_model.objective)])
+
+    return solution

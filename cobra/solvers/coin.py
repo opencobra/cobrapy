@@ -27,7 +27,7 @@ class Coin(CyClpSimplex):
 
 
 def create_problem(cobra_model, objective_sense="maximize", **kwargs):
-    m = cobra_model.to_array_based_model()
+    m = cobra_model.to_array_based_model(deepcopy_model=True)
     lp = Coin()
     v = lp.addVariable("v", len(m.reactions))
     for i, rxn in enumerate(m.reactions):
