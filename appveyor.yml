@@ -5,6 +5,7 @@ environment:
     # /E:ON and /V:ON options are not enabled in the batch script intepreter
     # See: http://stackoverflow.com/a/13751649/163740
     WITH_COMPILER: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
+    PIP_CACHE_DIR: "pip_cache"
 
   matrix:
     - PYTHON: "C:\\Python27"
@@ -38,13 +39,15 @@ init:
 
 cache:
     - glpk_build -> appveyor/build_glpk.py
+    - pip_cache -> appveyor.yml
 
 
 install:
   - "powershell appveyor\\install.ps1"
   - ps: Start-FileDownload 'https://bitbucket.org/gutworth/six/raw/default/six.py'
   - "%WITH_COMPILER% %PYTHON%/python appveyor/build_glpk.py"
-  - "%PYTHON%/python -m pip install Cython"
+  - "%PYTHON%/python -m pip install pip setuptools wheel --upgrade"
+  - "%PYTHON%/python -m pip install Cython jsonschema"
 
 build: off
 
