@@ -4,8 +4,10 @@ from warnings import warn
 import sys
 from os.path import join
 from json import load
+from contextlib import contextmanager
+import re
 
-from six import iteritems
+from six import iteritems, StringIO
 
 try:
     import numpy
@@ -15,6 +17,10 @@ try:
     import matplotlib
 except:
     matplotlib = None
+try:
+    import pandas
+except:
+    pandas = None
 
 if __name__ == "__main__":
     sys.path.insert(0, "../..")
@@ -30,6 +36,18 @@ else:
     from ..manipulation import initialize_growth_medium
     from ..solvers import solver_dict, get_solver_name
     from ..flux_analysis import *
+
+
+@contextmanager
+def captured_output():
+    """ A context manager to test the IO summary methods """
+    new_out, new_err = StringIO(), StringIO()
+    old_out, old_err = sys.stdout, sys.stderr
+    try:
+        sys.stdout, sys.stderr = new_out, new_err
+        yield sys.stdout, sys.stderr
+    finally:
+        sys.stdout, sys.stderr = old_out, old_err
 
 
 class TestCobraFluxAnalysis(TestCase):
@@ -249,6 +267,63 @@ class TestCobraFluxAnalysis(TestCase):
         if matplotlib is None:
             self.skipTest("can't test plots without matplotlib")
         data.plot()
+
+    @skipIf(pandas is None, "summary methods require pandas")
+    def test_summary_methods(self):
+
+        # Test model summary methods
+        model = create_test_model("textbook")
+        model.optimize()
+        desired_entries = [
+            u'glc__D_e     -9.76 \u00B1 0.24'
+            u'co2_e       21.81 \u00B1 2.86',
+            u'nh4_e        -4.84 \u00B1 0.32'
+            u'h_e         19.51 \u00B1 2.86',
+            u'pi_e         -3.13 \u00B1 0.08'
+            u'for_e        2.86 \u00B1 2.86',
+            u'ac_e         0.95 \u00B1 0.95',
+            u'acald_e      0.64 \u00B1 0.64',
+            u'pyr_e        0.64 \u00B1 0.64',
+            u'etoh_e       0.55 \u00B1 0.55',
+            u'lac__D_e     0.54 \u00B1 0.54',
+            u'succ_e       0.42 \u00B1 0.42',
+            u'akg_e        0.36 \u00B1 0.36',
+            u'glu__L_e     0.32 \u00B1 0.32']
+
+        with captured_output() as (out, err):
+            model.summary(fva=0.95)
+
+        output = out.getvalue().strip()
+        output_set = set((re.sub('\s', '', l) for l in output.splitlines()))
+
+        for item in desired_entries:
+            self.assertIn(re.sub('\s', '', item), output_set)
+
+        # Test metabolite summary methods
+
+        desired_entries = [
+            'PRODUCING REACTIONS -- Ubiquinone-8',
+            '-----------------------------------',
+            '%      FLUX   RXN ID'
+            'REACTION',
+            '100.0%     44    CYTBD'
+            '2.0 h_c + 0.5 o2_c + q8h2_c --> h2o_c + 2.0 h_e +...',
+            'CONSUMING REACTIONS -- Ubiquinone-8',
+            '-----------------------------------',
+            '88.4%    -39   NADH16'
+            '4.0 h_c + nadh_c + q8_c --> 3.0 h_e + nad_c + q8h2_c',
+            '11.6%   -5.1    SUCDi                       '
+            'q8_c + succ_c --> fum_c + q8h2_c',
+        ]
+
+        with captured_output() as (out, err):
+            model.metabolites.q8_c.summary()
+
+        output = out.getvalue().strip()
+        output_set = set((re.sub('\s', '', l) for l in output.splitlines()))
+
+        for item in desired_entries:
+            self.assertIn(re.sub('\s', '', item), output_set)
 
 # make a test suite to run all of the tests
 loader = TestLoader()

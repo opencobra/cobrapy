@@ -536,7 +536,8 @@ class Reaction(Object):
             id_type = 'name'
         reactant_bits = []
         product_bits = []
-        for the_metabolite, coefficient in iteritems(self._metabolites):
+        for the_metabolite, coefficient in sorted(
+                iteritems(self._metabolites), key=lambda x: x[0].id):
             name = str(getattr(the_metabolite, id_type))
             if _is_positive(coefficient):
                 product_bits.append(format(coefficient) + name)

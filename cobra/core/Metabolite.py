@@ -146,6 +146,25 @@ class Metabolite(Species):
         else:
             raise Exception(method + " is not 'subtractive' or 'destructive'")
 
+    def summary(self, **kwargs):
+        """Print a summary of the reactions which produce and consume this
+        metabolite. This method requires the model for which this metabolite is
+        a part to be solved.
+
+        threshold: float
+            a value below which to ignore reaction fluxes
+
+        fva: float (0->1), or None
+            Whether or not to include flux variability analysis in the output.
+            If given, fva should be a float between 0 and 1, representing the
+            fraction of the optimum objective to be searched.
+
+        """
+        try:
+            from ..flux_analysis.summary import metabolite_summary
+            return metabolite_summary(self, **kwargs)
+        except ImportError:
+            warn('Summary methods require pandas')
 
 elements_and_molecular_weights = {
     'H':   1.007940,

@@ -356,3 +356,23 @@ class Model(Object):
                 # from a list.
                 reaction.objective_coefficient = objectives[reaction_id] \
                     if hasattr(objectives, "items") else 1.
+
+    def summary(self, **kwargs):
+        """Print a summary of the input and output fluxes of the model. This
+        method requires the model to have been previously solved.
+
+        threshold: float
+            tolerance for determining if a flux is zero (not printed)
+        fva: int or None
+            Whether or not to calculate and report flux variability in the
+            output summary
+        round: int
+            number of digits after the decimal place to print
+
+        """
+
+        try:
+            from ..flux_analysis.summary import model_summary
+            return model_summary(self, **kwargs)
+        except ImportError:
+            warn('Summary methods require pandas')
