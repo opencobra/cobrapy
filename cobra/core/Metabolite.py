@@ -17,8 +17,8 @@ class Metabolite(Species):
 
     """
 
-    def __init__(self, id=None, formula=None,
-                 name="", compartment=None):
+    def __init__(self, id=None, formula=None, name="",
+                 charge=None, compartment=None):
         """
         id: str
 
@@ -37,7 +37,7 @@ class Metabolite(Species):
         self.formula = formula
         # because in a Model a metabolite may participate in multiple Reactions
         self.compartment = compartment
-        self.charge = None
+        self.charge = charge
 
         self._constraint_sense = 'E'
         self._bound = 0.
