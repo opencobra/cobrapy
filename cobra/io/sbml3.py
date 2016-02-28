@@ -50,7 +50,8 @@ except:
 namespaces = {"fbc": "http://www.sbml.org/sbml/level3/version1/fbc/version2",
               "sbml": "http://www.sbml.org/sbml/level3/version1/core",
               "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-              "bqbiol": "http://biomodels.net/biology-qualifiers/"}
+              "bqbiol": "http://biomodels.net/biology-qualifiers/",
+              "cobra": "https://github.com/opencobra"}
 for key in namespaces:
     register_namespace(key, namespaces[key])
 
@@ -81,6 +82,7 @@ SPECIES_XPATH = ns("sbml:listOfSpecies/sbml:species[@boundaryCondition='%s']")
 OBJECTIVES_XPATH = ns("fbc:objective[@fbc:id='%s']/"
                       "fbc:listOfFluxObjectives/"
                       "fbc:fluxObjective")
+SUBSYSTEM_ATTRIB = ns("cobra:subsystem")
 if _with_lxml:
     RDF_ANNOTATION_XPATH = ("sbml:annotation/rdf:RDF/"
                             "rdf:Description[@rdf:about=$metaid]/"
@@ -295,6 +297,7 @@ def parse_xml_into_model(xml, number=float):
             ns("sbml:listOfReactions/sbml:reaction")):
         reaction = Reaction(clip(sbml_reaction.get("id"), "R_"))
         reaction.name = sbml_reaction.get("name")
+        reaction.subsystem = sbml_reaction.get(SUBSYSTEM_ATTRIB)
         annotate_cobra_from_sbml(reaction, sbml_reaction)
         lb_id = get_attrib(sbml_reaction, "fbc:lowerFluxBound", require=True)
         ub_id = get_attrib(sbml_reaction, "fbc:upperFluxBound", require=True)
@@ -483,6 +486,8 @@ def model_to_xml(cobra_model, units=True):
             reversible=str(reaction.lower_bound < 0).lower())
         set_attrib(sbml_reaction, "name", reaction.name)
         annotate_sbml_from_cobra(sbml_reaction, reaction)
+        # add subsystem
+        set_attrib(sbml_reaction, "cobra:subsystem", reaction.subsystem)
         # add in bounds
         set_attrib(sbml_reaction, "fbc:upperFluxBound",
                    create_bound(reaction, "upper_bound"))
