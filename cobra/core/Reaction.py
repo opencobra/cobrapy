@@ -592,8 +592,8 @@ class Reaction(Object):
         cobra_gene : :class:`~cobra.core.Gene.Gene`
 
         """
-        self._genes.remove(cobra_gene)
-        cobra_gene._reaction.remove(self)
+        self._genes.discard(cobra_gene)
+        cobra_gene._reaction.discard(self)
 
     def knock_out(self):
         """Change the upper and lower bounds of the reaction to 0."""

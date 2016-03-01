@@ -508,6 +508,12 @@ class TestCobraModel(CobraTestCase):
             i.id += "_other"
         other.repair()
         model.add_reactions(other.reactions)
+        # what if the other reaction has an error in its GPR
+        m1 = create_test_model("textbook")
+        m2 = create_test_model("textbook")
+        m1.reactions.PGI.remove_from_model()
+        m2.genes.b4025._reaction.clear()
+        m1.add_reaction(m2.reactions.PGI)
 
     def test_model_remove_reaction(self):
         old_reaction_count = len(self.model.reactions)
