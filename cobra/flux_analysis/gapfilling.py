@@ -137,7 +137,7 @@ def growMatch(model, Universal, dm_rxns=False, ex_rxns=False,
 
 
 def SMILEY(model, metabolite_id, Universal,
-           dm_rxns=False, ex_rxns=False, panalties=None, **solver_parameters):
+           dm_rxns=False, ex_rxns=False, penalties=None, **solver_parameters):
     """
     runs the SMILEY algorithm to determine which gaps should be
     filled in order for the model to create the metabolite with the

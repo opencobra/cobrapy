@@ -243,11 +243,16 @@ class TestCobraFluxAnalysis(TestCase):
         U.add_reaction(r)
         r.build_reaction_from_string("a --> d", verbose=False)
 
+        # GrowMatch
         result = gapfilling.growMatch(m, U)[0]
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].id, "a2b")
+        # SMILEY
+        result = gapfilling.SMILEY(m, "b", U)[0]
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].id, "a2b")
 
-        # 2 rounds with exchange reactions
+        # 2 rounds of GrowMatch with exchange reactions
         result = gapfilling.growMatch(m, None, ex_rxns=True, iterations=2)
         self.assertEqual(len(result), 2)
         self.assertEqual(len(result[0]), 1)
