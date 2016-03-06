@@ -44,15 +44,15 @@ def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001):
 
     reaction: A :class:`~cobra.core.Reaction` object
 
-    flux_coefficient_cutoff: Float. The minimum flux that reaction must carry to
-    be considered active.
+    flux_coefficient_cutoff: Float. The minimum flux that reaction must carry
+    to be considered active.
 
     returns: True if the precursors can be simultaneously produced at the
     specified cutoff. False, if the model has the capacity to produce each
     individual precursor at the specified threshold  but not all precursors at
     the required level simultaneously. Otherwise a dictionary of the required
-    and the produced fluxes for each reactant that is not produced in sufficient
-    quantities.
+    and the produced fluxes for each reactant that is not produced in
+    sufficient quantities.
 
     """
     model = model.copy()
@@ -84,9 +84,9 @@ def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001):
     if flux_coefficient_cutoff <= model.solution.f:
         return True
 
-    # Otherwise assess the ability of the model to produce each precursor individually.
-    # Now assess the ability of the model to produce each reactant for a
-    # reaction
+    # Otherwise assess the ability of the model to produce each precursor
+    # individually.  Now assess the ability of the model to produce each
+    # reactant for a reaction
     for sink_reaction, (component, coefficient) in iteritems(sink_reactions):
         # Calculate the maximum amount of the
         model.optimize(new_objective=sink_reaction)
@@ -114,8 +114,8 @@ def assess_products(model, reaction, flux_coefficient_cutoff=0.001):
 
     reaction: A :class:`~cobra.core.Reaction` object
 
-    flux_coefficient_cutoff:  Float.  The minimum flux that reaction must carry to
-    be considered active.
+    flux_coefficient_cutoff:  Float.  The minimum flux that reaction must carry
+    to be considered active.
 
     returns: True if the model has the capacity to absorb all the reaction
     products being simultaneously given the specified cutoff.   False, if the
@@ -156,7 +156,8 @@ def assess_products(model, reaction, flux_coefficient_cutoff=0.001):
 
     # Now assess the ability of the model to produce each reactant for a
     # reaction
-    for source_reaction, (component, coefficient) in iteritems(source_reactions):
+    for source_reaction, (component, coefficient) in \
+            iteritems(source_reactions):
         # Calculate the maximum amount of the
         model.optimize(new_objective=source_reaction)
         # metabolite that can be produced.

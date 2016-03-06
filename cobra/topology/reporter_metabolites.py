@@ -1,4 +1,3 @@
-# cobra.topology.reporter_metabolites.py: Module for topological analysis of cobra_models
 # Based on Patil et al 2005 PNAS 102:2685-9
 # TODO: Validate cobra.core compliance
 from __future__ import print_function
@@ -8,9 +7,10 @@ from six import iteritems
 
 
 def identify_reporter_metabolites(cobra_model, reaction_scores_dict,
-                                  number_of_randomizations=1000, number_of_layers=1,
+                                  number_of_randomizations=1000,
                                   scoring_metric='default', score_type='p',
-                                  entire_network=False, background_correction=True,
+                                  entire_network=False,
+                                  background_correction=True,
                                   ignore_external_boundary_reactions=False):
     """Calculate the aggregate Z-score for the metabolites in the model.
     Ignore reactions that are solely spontaneous or orphan. Allow the scores to
@@ -28,8 +28,6 @@ def identify_reporter_metabolites(cobra_model, reaction_scores_dict,
 
     number_of_randomizations: Integer.  Number of random shuffles of the
     scores to assess which are significant.
-
-    number_of_layers: 1 is the only option supported
 
     scoring_metric: default means divide by k**0.5
 
@@ -63,9 +61,9 @@ def identify_reporter_metabolites(cobra_model, reaction_scores_dict,
         # update the dictionary with the new scores
         reaction_scores_dict = dict(zip(the_reactions, the_scores))
     elif hasattr(the_scores[0], '__iter__'):
-        # In the case that the_scores is a list of lists, assume that each list is
-        # the score for each reaction in the_reactions across all reactions.  Then
-        # for each metabolite, calculate the invnorm(|Pearson Correlation
+        # In the case that the_scores is a list of lists, assume that each list
+        # is the score for each reaction in the_reactions across all reactions.
+        # Then for each metabolite, calculate the invnorm(|Pearson Correlation
         # Coefficient| for each reaction pair that it links.
         raise Exception("This isn't implemented yet")
 
@@ -93,21 +91,22 @@ def identify_reporter_metabolites(cobra_model, reaction_scores_dict,
         metabolite_scores[the_metabolite] = tmp_score
         metabolite_connections[the_metabolite] = number_of_connections
 
-    # NOTE: Doing the corrections based only on the significantly perturbed scores
-    # is probably going to underestimate the significance.
+    # NOTE: Doing the corrections based only on the significantly perturbed
+    # scores is probably going to underestimate the significance.
     if background_correction:
         correction_dict = {}
         for i in set(metabolite_connections.values()):
-            # if entire_network # add in a section to deal with the situation where
-            # the entire network structure is considered by only have p-values for
-            # a limited subset.
+            # if entire_network # add in a section to deal with the situation
+            # where the entire network structure is considered by only have
+            # p-values for a limited subset.
             #
             # Basically, what we're doing here is that for each i we select i
             # scores number_of_randomizations times
             the_random_indices = randint.rvs(
                 0, len(the_scores), size=(number_of_randomizations, i))
             random_score_distribution = array(
-                [sum(the_scores[x]) for x in list(the_random_indices)]) / i**0.5
+                [sum(the_scores[x])
+                 for x in list(the_random_indices)]) / i**0.5
             correction_dict[i] = [mean(random_score_distribution),
                                   std(random_score_distribution, ddof=1)]
 
@@ -116,11 +115,11 @@ def identify_reporter_metabolites(cobra_model, reaction_scores_dict,
         if number_of_connections > 0:
             # Correct based on background distribution
             if background_correction:
-                # if the list of scores is only for significant perturbations then the
-                # background correction shouldn't be applied because the current sampling
-                # method only takes into account the_scores not the entire network.
-                # It'd be more accurate to assign unscored reactions a default
-                # score.
+                # if the list of scores is only for significant perturbations
+                # then the background correction shouldn't be applied because
+                # the current sampling method only takes into account
+                # the_scores not the entire network.  It'd be more accurate to
+                # assign unscored reactions a default score.
                 the_score = ((the_score / number_of_connections**.5) -
                              correction_dict[number_of_connections][0]) / \
                     correction_dict[number_of_connections][1]

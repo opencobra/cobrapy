@@ -37,7 +37,7 @@ install:
 script:
   - coverage run --source=cobra setup.py test
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
-    pep8 cobra/core cobra/design cobra/manipulation cobra/test cobra/version.py;
+    pep8 cobra --exclude=oven,solvers,sbml.py --show-source;
     fi
 after_success:
   - coveralls

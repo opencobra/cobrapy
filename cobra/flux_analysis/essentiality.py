@@ -7,37 +7,34 @@ from cobra.manipulation import initialize_growth_medium
 
 
 def assess_medium_component_essentiality(cobra_model, the_components=None,
-                                         the_medium=None, medium_compartment='e', solver='glpk',
-                                         the_problem='return',
+                                         the_medium=None,
+                                         medium_compartment='e', solver='glpk',
                                          the_condition=None, method='fba'):
-    """Determines which components in an in silico medium are essential for growth in the
-    context of the remaining components.
+    """Determines which components in an in silico medium are essential for
+    growth in the context of the remaining components.
 
     cobra_model: A Model object.
 
-    the_components: None or a list of external boundary reactions that will be sequentially
-    disabled.
+    the_components: None or a list of external boundary reactions that will be
+    sequentially disabled.
 
     the_medium: Is None, a string, or a dictionary.  If a string then the
-    initialize_growth_medium function expects that the_model has an
-    attribute dictionary called media_compositions, which is a dictionary of
-    dictionaries for various medium compositions.  Where a medium
-    composition is a dictionary of external boundary reaction ids for the medium
-    components and the external boundary fluxes for each medium component.
+    initialize_growth_medium function expects that the_model has an attribute
+    dictionary called media_compositions, which is a dictionary of dictionaries
+    for various medium compositions.  Where a medium composition is a
+    dictionary of external boundary reaction ids for the medium components and
+    the external boundary fluxes for each medium component.
 
-    medium_compartment: the compartment in which the boundary reactions supplying the medium
-    components exist
+    medium_compartment: the compartment in which the boundary reactions
+    supplying the medium components exist
 
-    NOTE: that these fluxes must be negative because the convention is backwards means something
-    is feed into the system.
+    NOTE: that these fluxes must be negative because the convention is
+    backwards means something is feed into the system.
 
     solver: 'glpk', 'gurobi', or 'cplex'
 
-    the_problem: Is None, 'return', or an LP model object for the solver.
-
-    returns:
-     essentiality_dict:  A dictionary providing the maximum growth rate accessible when
-     the respective component is removed from the medium.
+    returns: essentiality_dict:  A dictionary providing the maximum growth rate
+    accessible when the respective component is removed from the medium.
 
     """
     if method.lower() == 'moma':
@@ -62,7 +59,7 @@ def assess_medium_component_essentiality(cobra_model, the_components=None,
         original_lower_bound = float(the_reaction.lower_bound)
         the_reaction.lower_bound = 0.
         if method.lower() == 'fba':
-            cobra_model.optimize(solver=solver, the_problem=the_problem)
+            cobra_model.optimize(solver=solver)
             objective_value = cobra_model.solution.f
         elif method.lower() == 'moma':
             objective_value = moma(wt_model, cobra_model, solver=solver)[
