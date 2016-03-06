@@ -29,7 +29,7 @@ def construct_loopless_model(cobra_model):
         # populate the S^T dict
         bound_id = "thermo_bound_" + reaction.id
         for met, stoic in iteritems(reaction._metabolites):
-                thermo_stoic["thermo_var_" + met.id][bound_id] = stoic
+            thermo_stoic["thermo_var_" + met.id][bound_id] = stoic
         # I * 1000 > v --> I * 1000 - v > 0
         reaction_ind = Reaction(reaction.id + "_indicator")
         reaction_ind.variable_kind = "integer"

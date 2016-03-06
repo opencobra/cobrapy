@@ -1,12 +1,12 @@
 from warnings import warn
 from itertools import chain, product
 
-from six import iteritems, string_types
+from six import iteritems
 import numpy
 
 from ..solvers import get_solver_name, solver_dict
-from ..manipulation.delete import find_gene_knockout_reactions, \
-    get_compiled_gene_reaction_rules
+from ..manipulation.delete import (find_gene_knockout_reactions,
+                                   get_compiled_gene_reaction_rules)
 from .deletion_worker import CobraDeletionPool, CobraDeletionMockPool
 
 try:

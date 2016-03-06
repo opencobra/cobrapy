@@ -1,5 +1,5 @@
-from numpy import linspace, zeros, array, meshgrid, abs, empty, arange, \
-    int32, unravel_index, dtype
+from numpy import (linspace, zeros, meshgrid, abs, empty, arange, int32,
+                   unravel_index, dtype)
 from multiprocessing import Pool
 
 from ..solvers import solver_dict, get_solver_name
@@ -23,6 +23,7 @@ except ImportError:
 
 class phenotypePhasePlaneData:
     """class to hold results of a phenotype phase plane analysis"""
+
     def __init__(self,
                  reaction1_name, reaction2_name,
                  reaction1_range_max, reaction2_range_max,

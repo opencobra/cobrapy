@@ -12,6 +12,7 @@ class SUXModelMILP(Model):
     total number of added reactions. See the figure for more
     information on the structure of the matrix.
     """
+
     def __init__(self, model, Universal=None, threshold=.05,
                  penalties=None, dm_rxns=True, ex_rxns=False):
         Model.__init__(self, "")

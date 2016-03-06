@@ -58,6 +58,7 @@ class CobraDeletionPool(object):
     # reverting the object after simulating a deletion, and are written to be
     # flexible enough so they can be used in most applications instead of
     # writing a custom worker each time.
+
     def __init__(self, cobra_model, n_processes=None, solver=None, **kwargs):
         if n_processes is None:
             n_processes = min(cpu_count(), 4)
@@ -122,6 +123,7 @@ class CobraDeletionPool(object):
 
 class CobraDeletionMockPool(object):
     """Mock pool solves LP's in the same process"""
+
     def __init__(self, cobra_model, n_processes=1, solver=None, **kwargs):
         if n_processes != 1:
             from warnings import warn

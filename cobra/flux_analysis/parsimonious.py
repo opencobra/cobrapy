@@ -1,8 +1,6 @@
-from six import iterkeys, iteritems
-from warnings import warn
+from six import iteritems
 
 from ..manipulation.modify import convert_to_irreversible, revert_to_reversible
-from ..core import Solution
 from ..solvers import solver_dict, get_solver_name
 
 

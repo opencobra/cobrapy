@@ -1,7 +1,6 @@
 from warnings import warn
 
-from six import iteritems, string_types
-from ..core.Metabolite import Metabolite
+from six import iteritems
 from ..solvers import solver_dict, get_solver_name
 
 
@@ -34,8 +33,8 @@ def flux_variability_analysis(cobra_model, reaction_list=None,
     solver.solve_problem(lp, objective_sense=objective_sense)
     solution = solver.format_solution(lp, cobra_model)
     if solution.status != "optimal":
-        raise ValueError("FVA requires the solution status to be optimal, not "
-                         + solution.status)
+        raise ValueError("FVA requires the solution status to be optimal, not " +
+                         solution.status)
     # set all objective coefficients to 0
     for i, r in enumerate(cobra_model.reactions):
         if r.objective_coefficient != 0:

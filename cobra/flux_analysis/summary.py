@@ -88,7 +88,7 @@ def metabolite_summary(met, threshold=0.01, fva=False):
 
     for row in producing.iterrows():
         print_((u"{0.percent:6.1%} {0.flux:>" + str(flux_len) +
-               "} {0.id:>8} {0.reaction:>54}").format(row[1]))
+                "} {0.id:>8} {0.reaction:>54}").format(row[1]))
 
     print_()
     print_("CONSUMING REACTIONS -- " + format_long_string(met.name, 55))
@@ -182,9 +182,9 @@ def model_summary(model, threshold=1E-8, fva=None, round=2):
         table = pd.np.array(
             [((a if a else ''), (b if b else ''), (c if c else ''))
              for a, b, c in zip_longest(
-                     ['IN FLUXES'] + in_fluxes_s.to_string().split('\n'),
-                     ['OUT FLUXES'] + out_fluxes_s.to_string().split('\n'),
-                     ['OBJECTIVES'] + obj_fluxes.to_string().split('\n'))])
+                ['IN FLUXES'] + in_fluxes_s.to_string().split('\n'),
+                ['OUT FLUXES'] + out_fluxes_s.to_string().split('\n'),
+                ['OBJECTIVES'] + obj_fluxes.to_string().split('\n'))])
 
     print_(u'\n'.join([u"{a:<30}{b:<30}{c:<20}".format(a=a, b=b, c=c) for
                        a, b, c in table]))

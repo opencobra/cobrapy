@@ -1,9 +1,7 @@
 from ..core import Model, Reaction, Metabolite
-from ..manipulation.modify import convert_to_irreversible, canonical_form
+from ..manipulation.modify import canonical_form
 
 from six import iteritems
-from collections import defaultdict
-from itertools import chain
 from copy import deepcopy
 
 
