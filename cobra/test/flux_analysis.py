@@ -315,6 +315,14 @@ class TestCobraFluxAnalysis(TestCase):
             self.skipTest("can't test plots without matplotlib")
         data.plot()
 
+    def check_entries(self, out, desired_entries):
+        """ensure each entry in desired_entries appears in output"""
+        output = out.getvalue().strip()
+        output_set = set((re.sub('\s', '', l) for l in output.splitlines()))
+
+        for item in desired_entries:
+            self.assertIn(re.sub('\s', '', item), output_set)
+
     @skipIf(pandas is None, "summary methods require pandas")
     def test_summary_methods(self):
 
@@ -335,16 +343,30 @@ class TestCobraFluxAnalysis(TestCase):
             u'lac__D_e     0.54 \u00B1 0.54',
             u'succ_e       0.42 \u00B1 0.42',
             u'akg_e        0.36 \u00B1 0.36',
-            u'glu__L_e     0.32 \u00B1 0.32']
-
+            u'glu__L_e     0.32 \u00B1 0.32'
+        ]
         with captured_output() as (out, err):
             model.summary(fva=0.95)
+        self.check_entries(out, desired_entries)
 
-        output = out.getvalue().strip()
-        output_set = set((re.sub('\s', '', l) for l in output.splitlines()))
-
-        for item in desired_entries:
-            self.assertIn(re.sub('\s', '', item), output_set)
+        # test non-fva version (these should be fixed for textbook model
+        desired_entries = [
+            "o2_e       -21.80",
+            "glc__D_e   -10.00",
+            "nh4_e       -4.77",
+            "pi_e        -3.21",
+            "h2o_e    29.18",
+            "co2_e    22.81",
+            "h_e      17.53",
+            "Biomass_Ecoli_core    0.874"
+        ]
+        # Need to use a different method here because
+        # there are multiple entries per line.
+        with captured_output() as (out, err):
+            model.summary()
+        s = out.getvalue()
+        for i in desired_entries:
+            self.assertIn(i, s)
 
         # Test metabolite summary methods
 
@@ -362,15 +384,10 @@ class TestCobraFluxAnalysis(TestCase):
             '11.6%   -5.1    SUCDi                       '
             'q8_c + succ_c --> fum_c + q8h2_c',
         ]
-
         with captured_output() as (out, err):
             model.metabolites.q8_c.summary()
+        self.check_entries(out, desired_entries)
 
-        output = out.getvalue().strip()
-        output_set = set((re.sub('\s', '', l) for l in output.splitlines()))
-
-        for item in desired_entries:
-            self.assertIn(re.sub('\s', '', item), output_set)
 
 # make a test suite to run all of the tests
 loader = TestLoader()

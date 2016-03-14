@@ -101,7 +101,7 @@ def metabolite_summary(met, threshold=0.01, fva=False):
                 "} {0.id:>8} {0.reaction:>54}").format(row[1]))
 
 
-def model_summary(model, threshold=1E-8, fva=None, round=2):
+def model_summary(model, threshold=1E-8, fva=None, digits=2):
     """Print a summary of the input and output fluxes of the model.
 
     threshold: float
@@ -109,7 +109,7 @@ def model_summary(model, threshold=1E-8, fva=None, round=2):
     fva: int or None
         Whether or not to calculate and report flux variability in the
         output summary
-    round: int
+    digits: int
         number of digits after the decimal place to print
 
     """
@@ -129,9 +129,11 @@ def model_summary(model, threshold=1E-8, fva=None, round=2):
         out_fluxes = pd.Series({r.reactants[0]: r.x for r in out_rxns})
         in_fluxes = pd.Series({r.reactants[0]: r.x for r in in_rxns})
 
-        out_fluxes = pd.np.round(
-            out_fluxes.sort_values(ascending=False), round)
-        in_fluxes = pd.np.round(in_fluxes.sort_values(), round)
+        # sort and round
+        out_fluxes.sort_values(ascending=False, inplace=True)
+        out_fluxes = out_fluxes.round(digits)
+        in_fluxes.sort_values(inplace=True)
+        in_fluxes = in_fluxes.round(digits)
 
         table = pd.np.array(
             [((a if a else ''), (b if b else ''), (c if c else ''))
@@ -165,10 +167,10 @@ def model_summary(model, threshold=1E-8, fva=None, round=2):
                               'err': half_span.loc[r.id]}
              for r in in_rxns}).T
 
-        out_fluxes = pd.np.round(
-            out_fluxes.sort_values(by='x', ascending=False), round)
-        in_fluxes = pd.np.round(
-            in_fluxes.sort_values(by='x'), round)
+        out_fluxes.sort_values(by='x', ascending=False, inplace=True)
+        out_fluxes = out_fluxes.round(digits)
+        in_fluxes.sort_values(by='x', inplace=True)
+        in_fluxes = in_fluxes.round(digits)
 
         in_fluxes_s = in_fluxes.apply(
             lambda x: u'{0:0.2f} \u00B1 {1:0.2f}'.format(x.x, x.err),
