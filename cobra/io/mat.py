@@ -142,7 +142,7 @@ def from_mat_struct(mat_struct, model_id=None):
         c_vec = None
         warn("objective vector 'c' not found")
     model = Model()
-    if "description" in m:
+    if "description" in m.dtype.names:
         model.id = m["description"][0, 0][0]
     elif model_id is not None:
         model.id = model_id
