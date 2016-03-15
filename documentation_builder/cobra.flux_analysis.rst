@@ -84,6 +84,14 @@ cobra.flux_analysis.single_deletion module
     :undoc-members:
     :show-inheritance:
 
+cobra.flux_analysis.summary module
+----------------------------------
+
+.. automodule:: cobra.flux_analysis.summary
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 cobra.flux_analysis.variability module
 --------------------------------------
 

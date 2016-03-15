@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
 
     cobra.core
+    cobra.design
     cobra.flux_analysis
     cobra.io
     cobra.manipulation
