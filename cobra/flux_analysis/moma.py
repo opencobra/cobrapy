@@ -75,7 +75,8 @@ def create_euclidian_distance_lp(moma_model, solver):
 
 
 def solve_moma_model(moma_model, objective_id, solver=None, **solver_args):
-    solver = solver_dict[solver if solver else get_solver_name(qp=True)]
+    solver = solver_dict[solver if solver and isinstance(solver, str)
+                         else get_solver_name(qp=True)]
     lp = create_euclidian_distance_lp(moma_model, solver=solver)
     solver.solve_problem(lp, **solver_args)
     solution = solver.format_solution(lp, moma_model)

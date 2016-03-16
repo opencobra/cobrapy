@@ -97,7 +97,7 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
     if moma is None:
         raise RuntimeError("scipy required for moma")
     solver = solver_dict[solver if solver else get_solver_name(qp=True)]
-    moma_model, moma_obj = moma.create_euclidian_moma_model(cobra_model)
+    moma_model, moma_objective = moma.create_euclidian_moma_model(cobra_model)
 
     growth_rate_dict = {}
     status_dict = {}
@@ -167,13 +167,13 @@ def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
     if moma is None:
         raise RuntimeError("scipy required for moma")
     solver = solver if solver else get_solver_name(qp=True)
-    moma_model, moma_obj = moma.create_euclidian_moma_model(cobra_model)
+    moma_model, moma_objective = moma.create_euclidian_moma_model(cobra_model)
 
     growth_rate_dict = {}
     status_dict = {}
     for gene in gene_list:
         delete_model_genes(moma_model, [gene.id])
-        solution = moma.solve_moma_model(moma_model, moma_obj,
+        solution = moma.solve_moma_model(moma_model, moma_objective,
                                          solver=solver, **solver_args)
         status_dict[gene.id] = solution.status
         growth_rate_dict[gene.id] = solution.f
