@@ -75,7 +75,12 @@ def create_euclidian_distance_lp(moma_model, solver):
 
 
 def solve_moma_model(moma_model, objective_id, solver=None, **solver_args):
+<<<<<<< 0ef6c79f1ca2209b7e56c0980e9ba391b575495d
     solver = solver_dict[solver if solver and isinstance(solver, str) else get_solver_name(qp=True)]
+=======
+    solver = solver_dict[solver if solver and isinstance(solver, str)
+                         else get_solver_name(qp=True)]
+>>>>>>> Fixed bug in single_reaction_deletion_moma & moma
     lp = create_euclidian_distance_lp(moma_model, solver=solver)
     solver.solve_problem(lp, **solver_args)
     solution = solver.format_solution(lp, moma_model)
