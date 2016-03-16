@@ -97,7 +97,7 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
     if moma is None:
         raise RuntimeError("scipy required for moma")
     solver = solver_dict[solver if solver else get_solver_name(qp=True)]
-    moma_model, moma_obj = moma.create_euclidian_moma_model(cobra_model)
+    moma_model, moma_objective = moma.create_euclidian_moma_model(cobra_model)
 
     growth_rate_dict = {}
     status_dict = {}
