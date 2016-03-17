@@ -13,7 +13,7 @@ def format_long_string(string, max_length):
     return string
 
 
-def metabolite_summary(met, threshold=0.01, fva=False):
+def metabolite_summary(met, threshold=0.01, fva=False, **solver_args):
     """Print a summary of the reactions which produce and consume this
     metabolite
 
@@ -59,7 +59,8 @@ def metabolite_summary(met, threshold=0.01, fva=False):
     else:
         fva_results = pd.DataFrame(
             flux_variability_analysis(met.model, met.reactions,
-                                      fraction_of_optimum=fva)).T
+                                      fraction_of_optimum=fva,
+                                      **solver_args)).T
         half_span = (fva_results.maximum - fva_results.minimum) / 2
         median = fva_results.minimum + half_span
 
@@ -101,14 +102,16 @@ def metabolite_summary(met, threshold=0.01, fva=False):
                 "} {0.id:>8} {0.reaction:>54}").format(row[1]))
 
 
-def model_summary(model, threshold=1E-8, fva=None, digits=2):
+def model_summary(model, threshold=1E-8, fva=None, digits=2, **solver_args):
     """Print a summary of the input and output fluxes of the model.
 
     threshold: float
         tolerance for determining if a flux is zero (not printed)
+
     fva: int or None
         Whether or not to calculate and report flux variability in the
         output summary
+
     digits: int
         number of digits after the decimal place to print
 
@@ -143,33 +146,29 @@ def model_summary(model, threshold=1E-8, fva=None, digits=2):
                 ['OBJECTIVES'] + obj_fluxes.to_string().split('\n'))])
 
     else:
+        boundary_reactions = model.reactions.query(lambda x: x, 'boundary')
+
         fva_results = pd.DataFrame(
-            flux_variability_analysis(model, fraction_of_optimum=fva)).T
+            flux_variability_analysis(model, reaction_list=boundary_reactions,
+                                      fraction_of_optimum=fva,
+                                      **solver_args)).T
 
         half_span = (fva_results.maximum - fva_results.minimum) / 2
         median = fva_results.minimum + half_span
+        rxn_data = pd.concat([median, half_span], 1)
+        rxn_data.columns = ['x', 'err']
 
-        out_rxns = model.reactions.query(
-            lambda rxn: median.loc[rxn.id] > threshold, None
-        ).query(lambda x: x, 'boundary')
+        for r in rxn_data.index:
+            rxn_data.loc[r, 'met'] = model.reactions.get_by_id(r).reactants[0]
 
-        in_rxns = model.reactions.query(
-            lambda rxn: median.loc[rxn.id] < -threshold, None
-        ).query(lambda x: x, 'boundary')
+        rxn_data.set_index('met', drop=True, inplace=True)
 
-        out_fluxes = pd.DataFrame(
-            {r.reactants[0]: {'x': median.loc[r.id],
-                              'err': half_span.loc[r.id]}
-             for r in out_rxns}).T
+        out_fluxes = rxn_data[rxn_data.x > threshold]
+        in_fluxes = rxn_data[rxn_data.x < -threshold]
 
-        in_fluxes = pd.DataFrame(
-            {r.reactants[0]: {'x': median.loc[r.id],
-                              'err': half_span.loc[r.id]}
-             for r in in_rxns}).T
-
-        out_fluxes.sort_values(by='x', ascending=False, inplace=True)
+        out_fluxes = out_fluxes.sort_values(by='x', ascending=False)
         out_fluxes = out_fluxes.round(digits)
-        in_fluxes.sort_values(by='x', inplace=True)
+        in_fluxes = in_fluxes.sort_values(by='x')
         in_fluxes = in_fluxes.round(digits)
 
         in_fluxes_s = in_fluxes.apply(
