@@ -284,6 +284,8 @@ cdef class GLP:
             if indexes[i + 1] == met_index:
                 values[i + 1] = value
                 glp_set_mat_col(self.glp, rxn_index, col_length, indexes, values)
+                free(indexes)
+                free(values)
                 return
         # need to add a new entry
         indexes[col_length + 1] = met_index
