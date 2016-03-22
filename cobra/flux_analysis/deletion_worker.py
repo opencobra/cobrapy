@@ -89,7 +89,10 @@ class CobraDeletionPool(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.terminate()
+        try:
+            self.terminate()
+        except:
+            pass
 
     def submit(self, indexes, label=None):
         self.job_queue.put((indexes, label))
