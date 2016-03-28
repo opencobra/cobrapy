@@ -82,6 +82,19 @@ class TestManipulation(TestCase):
         escape_ID(model)
         self.assertNotIn("a.b", model.genes)
 
+    def test_rename_gene(self):
+        model = create_test_model('textbook')
+        original_name = model.genes.b1241.name
+        modify.rename_genes(model, {"b1241": "foo", "hello": "world"})
+        self.assertNotIn("b1241", model.genes)
+        self.assertIn("foo", model.genes)
+        # make sure the object name was preserved
+        self.assertEqual(model.genes.foo.name, original_name)
+        # make sure the reactions are correct
+        self.assertEqual(len(model.genes.foo.reactions), 2)
+        self.assertEqual(model.reactions.ACALD.gene_reaction_rule,
+                         "b0351 or foo")
+
     def test_gene_knockout_computation(self):
         cobra_model = create_test_model()
 

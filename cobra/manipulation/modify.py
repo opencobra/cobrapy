@@ -5,7 +5,7 @@ from ast import NodeTransformer
 
 from six import iteritems
 
-from .. import Reaction, Metabolite
+from .. import Reaction, Metabolite, Gene
 from .delete import get_compiled_gene_reaction_rules
 from ..core.Gene import ast2str
 
@@ -42,7 +42,7 @@ def _escape_str_id(id_str):
     return id_str
 
 
-class _GeneRenamer(NodeTransformer):
+class _GeneEscaper(NodeTransformer):
 
     def visit_Name(self, node):
         node.id = _escape_str_id(node.id)
@@ -57,7 +57,29 @@ def escape_ID(cobra_model):
                    cobra_model.genes):
         x.id = _escape_str_id(x.id)
     cobra_model.repair()
-    gene_renamer = _GeneRenamer()
+    gene_renamer = _GeneEscaper()
+    for rxn, rule in iteritems(get_compiled_gene_reaction_rules(cobra_model)):
+        if rule is not None:
+            rxn._gene_reaction_rule = ast2str(gene_renamer.visit(rule))
+
+
+def rename_genes(cobra_model, rename_dict):
+    """renames genes in a model from the rename_dict"""
+    for old_name, new_name in iteritems(rename_dict):
+        # undefined if there a value matches a different key
+        # because dict is unordered
+        try:
+            cobra_model.genes.get_by_id(old_name).id = new_name
+        except KeyError:
+            # the new gene's _model will be set by repair
+            cobra_model.genes.append(Gene(new_name))
+    cobra_model.repair()
+
+    class Renamer(NodeTransformer):
+        def visit_Name(self, node):
+            node.id = rename_dict.get(node.id, node.id)
+            return node
+    gene_renamer = Renamer()
     for rxn, rule in iteritems(get_compiled_gene_reaction_rules(cobra_model)):
         if rule is not None:
             rxn._gene_reaction_rule = ast2str(gene_renamer.visit(rule))
