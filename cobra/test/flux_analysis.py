@@ -111,7 +111,7 @@ class TestCobraFluxAnalysis(TestCase):
         cobra_model = create_test_model("textbook")
         # expected knockouts for textbook model
         growth_dict = {"b0008": 0.87, "b0114": 0.80, "b0116": 0.78,
-                               "b2276": 0.21, "b1779": 0.00}
+                       "b2276": 0.21, "b1779": 0.00}
 
         rates, statuses = single_gene_deletion(cobra_model,
                                                gene_list=growth_dict.keys(),
@@ -130,7 +130,7 @@ class TestCobraFluxAnalysis(TestCase):
         cobra_model = create_test_model("textbook")
         # expected knockouts for textbook model
         growth_dict = {"b0008": 0.87, "b0114": 0.71, "b0116": 0.56,
-                                "b2276": 0.11, "b1779": 0.00}
+                       "b2276": 0.11, "b1779": 0.00}
 
         rates, statuses = single_gene_deletion(cobra_model,
                                                gene_list=growth_dict.keys(),
