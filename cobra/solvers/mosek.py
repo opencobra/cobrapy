@@ -20,6 +20,7 @@ _SUPPORTS_MILP = True
 status_dict = {
     mosek.solsta.dual_infeas_cer: 'infeasible',
     mosek.solsta.prim_infeas_cer: 'infeasible',
+    mosel.solsta.near_optimal: 'optimal',
     mosek.solsta.optimal: 'optimal',
     mosek.solsta.integer_optimal: 'optimal'}
 
