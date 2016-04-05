@@ -71,6 +71,7 @@ def create_problem(cobra_model, objective_sense="maximize",
     lp.putdouparam(mosek.dparam.basis_tol_s, 1e-9)
     lp.putdouparam(mosek.dparam.basis_rel_tol_s, 0.)
     lp.putdouparam(mosek.dparam.simplex_abs_tol_piv, 1e-12)
+    lp.putdouparam(mosek.dparam.intpnt_tol_rel_gap, 1e-6)
     lp.putdouparam(mosek.dparam.presolve_tol_aij, 1e-15)
     lp.putdouparam(mosek.dparam.presolve_tol_abs_lindep, 0.)
     lp.putdouparam(mosek.dparam.presolve_tol_s, 0.)
@@ -124,6 +125,7 @@ def set_objective_sense(lp, objective_sense):
 
 
 def set_parameter(lp, parameter_name, parameter_value):
+    parameter_name = parameter_name.lower()
     parameter_name = param_aliases.get(parameter_name, parameter_name)
     if parameter_name == "verbose":
         if parameter_value:
