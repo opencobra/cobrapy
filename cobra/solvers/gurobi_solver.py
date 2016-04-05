@@ -188,6 +188,9 @@ def create_problem(cobra_model, quadratic_component=None, **kwargs):
         the_parameters = parameter_defaults.copy()
         the_parameters.update(kwargs)
 
+    # Set verbosity first to quiet infos on parameter changes
+    if "verbose" in the_parameters:
+        set_parameter(lp, "verbose", the_parameters["verbose"])
     for k, v in iteritems(the_parameters):
         set_parameter(lp, k, v)
 
@@ -260,7 +263,7 @@ def solve_problem(lp, **kwargs):
     status = get_status(lp)
     return status
 
-    
+
 def solve(cobra_model, **kwargs):
     """
 
