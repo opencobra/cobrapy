@@ -107,27 +107,37 @@ class TestCobraFluxAnalysis(TestCase):
                 optimize_minimal_flux(model, solver=solver)
             model.reactions.ATPM.lower_bound = atpm
 
-    def test_single_gene_deletion(self):
+    def test_single_gene_deletion_fba(self):
         cobra_model = create_test_model("textbook")
         # expected knockouts for textbook model
-        growth_dict = {"fba": {"b0008": 0.87, "b0114": 0.80, "b0116": 0.78,
-                               "b2276": 0.21, "b1779": 0.00},
-                       "moma": {"b0008": 0.87, "b0114": 0.71, "b0116": 0.56,
-                                "b2276": 0.11, "b1779": 0.00},
-                       }
+        growth_dict = {"b0008": 0.87, "b0114": 0.80, "b0116": 0.78,
+                       "b2276": 0.21, "b1779": 0.00}
 
-        # MOMA requires cplex or gurobi
+        rates, statuses = single_gene_deletion(cobra_model,
+                                               gene_list=growth_dict.keys(),
+                                               method="fba")
+        for gene, expected_value in iteritems(growth_dict):
+            self.assertEqual(statuses[gene], 'optimal')
+            self.assertAlmostEqual(rates[gene], expected_value, places=2)
+
+    def test_single_gene_deletion_moma(self):
+        # MOMA requires a QP solver
         try:
             get_solver_name(qp=True)
         except:
-            growth_dict.pop('moma')
-        for method, expected in growth_dict.items():
-            rates, statuses = single_gene_deletion(cobra_model,
-                                                   gene_list=expected.keys(),
-                                                   method=method)
-            for gene, expected_value in iteritems(expected):
-                self.assertEqual(statuses[gene], 'optimal')
-                self.assertAlmostEqual(rates[gene], expected_value, places=2)
+            self.skipTest("no qp support")
+
+        cobra_model = create_test_model("textbook")
+        # expected knockouts for textbook model
+        growth_dict = {"b0008": 0.87, "b0114": 0.71, "b0116": 0.56,
+                       "b2276": 0.11, "b1779": 0.00}
+
+        rates, statuses = single_gene_deletion(cobra_model,
+                                               gene_list=growth_dict.keys(),
+                                               method="moma")
+        for gene, expected_value in iteritems(growth_dict):
+            self.assertEqual(statuses[gene], 'optimal')
+            self.assertAlmostEqual(rates[gene], expected_value, places=2)
 
     def test_single_reaction_deletion(self):
         cobra_model = create_test_model("textbook")
