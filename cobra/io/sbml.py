@@ -209,6 +209,11 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
                         cobra_metabolites.pop(tmp_metabolite)
                 else:
                     cobra_metabolites[tmp_metabolite] = sbml_metabolite.getStoichiometry()
+        # check for nan
+        for met, v in iteritems(cobra_metabolites):
+            if isnan(v) or isinf(v):
+                warn("invalid value %s for metabolite '%s' in reaction '%s'" %
+                     (str(v), met.id, reaction.id))
         reaction.add_metabolites(cobra_metabolites)
         #Parse the kinetic law info here.
         parameter_dict = {}
