@@ -4,7 +4,7 @@ from warnings import warn
 
 from numpy import array, object as np_object
 from scipy.io import loadmat, savemat
-from scipy.sparse import coo_matrix
+from scipy.sparse import coo_matrix, dok_matrix
 
 from .. import Model, Metabolite, Reaction
 
@@ -108,6 +108,14 @@ def create_mat_dict(model):
         # can't have any None entries for charge, or this will fail
         pass
     mat["genes"] = _cell(model.genes.list_attr("id"))
+    # make a matrix for rxnGeneMat
+    # reactions are rows, genes are columns
+    rxnGene = dok_matrix((len(model.reactions), len(model.genes)))
+    if min(rxnGene.shape) > 0:
+        for i, reaction in enumerate(model.reactions):
+            for gene in reaction.genes:
+                rxnGene[i, model.genes.index(gene)] = 1
+        mat["rxnGeneMat"] = rxnGene
     mat["grRules"] = _cell(rxns.list_attr("gene_reaction_rule"))
     mat["rxns"] = _cell(rxns.list_attr("id"))
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
