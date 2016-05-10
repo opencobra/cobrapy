@@ -323,7 +323,9 @@ class DictList(list):
             list.__setitem__(self, i, y)
             self._generate_index()
             return
-        self._dict.pop(self[i].id)
+        # in case a rename has occured
+        if self._dict.get(self[i].id) == i:
+            self._dict.pop(self[i].id)
         the_id = y.id
         self._check(the_id)
         list.__setitem__(self, i, y)

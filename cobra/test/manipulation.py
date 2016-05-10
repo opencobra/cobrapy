@@ -85,8 +85,11 @@ class TestManipulation(TestCase):
     def test_rename_gene(self):
         model = create_test_model('textbook')
         original_name = model.genes.b1241.name
-        modify.rename_genes(model, {"b1241": "foo", "hello": "world"})
-        self.assertNotIn("b1241", model.genes)
+        rename_dict = {"b1241": "foo", "hello": "world",
+                       "b2465": "b3919", "bar": "2935"}
+        modify.rename_genes(model, rename_dict)
+        for i in rename_dict:
+            self.assertNotIn(i, model.genes)
         self.assertIn("foo", model.genes)
         # make sure the object name was preserved
         self.assertEqual(model.genes.foo.name, original_name)
@@ -94,6 +97,15 @@ class TestManipulation(TestCase):
         self.assertEqual(len(model.genes.foo.reactions), 2)
         self.assertEqual(model.reactions.ACALD.gene_reaction_rule,
                          "b0351 or foo")
+        self.assertEqual(model.reactions.TPI.gene_reaction_rule, "b3919")
+        self.assertEqual(model.reactions.TPI.genes, {model.genes.b3919})
+        self.assertEqual(model.reactions.TKT1.gene_reaction_rule,
+                         "b2935 or b3919")
+        self.assertEqual(model.reactions.TKT1.genes,
+                         {model.genes.b2935, model.genes.b3919})
+        self.assertEqual(model.genes.b3919.reactions,
+                         {model.reactions.get_by_id(i)
+                          for i in ("TKT1", "TKT2", "TPI")})
 
     def test_gene_knockout_computation(self):
         cobra_model = create_test_model()
