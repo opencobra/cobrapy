@@ -107,3 +107,5 @@ from cobra.test import test_all
 test_all()
 ```
 
+You should see some skipped tests and expected failures, and the function should return ```False```.
+
