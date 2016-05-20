@@ -103,8 +103,8 @@ class TestCobraSolver(object):
         solver.solve_problem(minimize)
         max_solution = solver.format_solution(maximize, self.model)
         min_solution = solver.format_solution(minimize, self.model)
-        self.assertAlmostEqual(0, min_solution.f, places=4)
         self.assertEqual(min_solution.status, "optimal")
+        self.assertAlmostEqual(0, min_solution.f, places=4)
         self.assertAlmostEqual(self.old_solution, max_solution.f, places=4)
         self.assertEqual(max_solution.status, "optimal")
         # if we set minimize at creation, can we override it at solve
