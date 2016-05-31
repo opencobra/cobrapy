@@ -173,19 +173,17 @@ def model_summary(model, threshold=1E-8, fva=None, digits=2, **solver_args):
 
         in_fluxes_s = in_fluxes.apply(
             lambda x: u'{0:0.2f} \u00B1 {1:0.2f}'.format(x.x, x.err),
-            axis=1)
+            axis=1).to_string(header=False).split('\n')
         out_fluxes_s = out_fluxes.apply(
             lambda x: u'{0:0.2f} \u00B1 {1:0.2f}'.format(x.x, x.err),
-            axis=1)
-        out_fluxes_s = out_fluxes.apply(lambda x: text_type(x.x) +
-                                        u" \u00B1 " + text_type(x.err), axis=1)
+            axis=1).to_string(header=False).split('\n')
 
         table = pd.np.array(
             [((a if a else ''), (b if b else ''), (c if c else ''))
              for a, b, c in zip_longest(
-                ['IN FLUXES'] + in_fluxes_s.to_string().split('\n'),
-                ['OUT FLUXES'] + out_fluxes_s.to_string().split('\n'),
-                ['OBJECTIVES'] + obj_fluxes.to_string().split('\n'))])
+                 ['IN FLUXES'] + in_fluxes_s,
+                 ['OUT FLUXES'] + out_fluxes_s,
+                 ['OBJECTIVES'] + obj_fluxes.to_string().split('\n'))])
 
     print_(u'\n'.join([u"{a:<30}{b:<30}{c:<20}".format(a=a, b=b, c=c) for
                        a, b, c in table]))
