@@ -142,7 +142,7 @@ extras = {
 all_extras = {'Cython>=0.21'}
 for extra in extras.values():
     all_extras.update(extra)
-extras["all"] = list(all_extras)
+extras["all"] = sorted(list(all_extras))
 
 # If using bdist_wininst, the installer will not get dependencies like
 # a setuptools installation does. Therefore, for the one external dependency,
