@@ -649,7 +649,7 @@ class TestCobraModel(CobraTestCase):
         contained in reactions after adding them to the model.
         """
         _model = self.model_class('test')
-        _model.add_reactions([x.copy() for x in self.model.reactions])
+        _model.add_reactions((x.copy() for x in self.model.reactions))
         _genes = []
         _metabolites = []
         for x in _model.reactions:
