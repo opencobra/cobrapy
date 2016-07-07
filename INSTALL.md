@@ -19,16 +19,9 @@ cobrapy, they are not explicitly supported (yet!).
 cobrapy can be installed with any recent installation of pip. Instructions
 for several operating systems are below:
 
-### Mac OS X
+### Mac OS X or Linux
 0. [install pip](http://pip.readthedocs.org/en/latest/installing.html).
 1. In a terminal, run ```sudo pip install cobra```
-
-### Ubuntu or Debian Linux
-0. [install pip](http://pip.readthedocs.org/en/latest/installing.html).
-1. Install the python and glpk development libraries. On debian-based
-   systems (including Ubuntu and Mint), this can be done with
-   ```sudo apt-get install python-dev libglpk-dev```
-3. In a terminal, run ```sudo pip install cobra```
 
 ### Microsoft Windows
 The preferred installation method on Windows is also to use pip. The latest
