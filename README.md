@@ -31,9 +31,8 @@ License
 -------
 The cobrapy source is released under both the GPL and LGPL licenses.  You may
 choose which license you choose to use the software under. However, please note
-that binary packages which include GLPK (such as the binary wheels for Windows
-and Mac OS X distributed at https://pypi.python.org/pypi/cobra) will be bound
-by its license as well.
+that binary packages which include GLPK (such as the binary wheels distributed
+at https://pypi.python.org/pypi/cobra) will be bound by its license as well.
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License or the Lesser GNU General Public
