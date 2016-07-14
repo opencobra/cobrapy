@@ -88,3 +88,4 @@ libglpk.a
 .idea/
 .DS_Store
 .eggs/
+*\.swp

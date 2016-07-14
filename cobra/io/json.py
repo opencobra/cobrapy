@@ -85,7 +85,7 @@ def _from_dict(obj):
     for gene in obj['genes']:
         new_gene = Gene(gene["id"])
         for k, v in iteritems(gene):
-            setattr(new_gene, k, _fix_type(v))
+            setattr(new_gene, k, v)
         model.genes.append(new_gene)
     # add reactions
     new_reactions = []
@@ -99,7 +99,7 @@ def _from_dict(obj):
                     {model.metabolites.get_by_id(str(met)): coeff
                      for met, coeff in iteritems(v)})
             else:
-                setattr(new_reaction, k, _fix_type(v))
+                setattr(new_reaction, k, v)
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
     for k, v in iteritems(obj):
