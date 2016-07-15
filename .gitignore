@@ -89,3 +89,4 @@ libglpk.a
 .DS_Store
 .eggs/
 *\.swp
+manylinux_builder/wheelhouse
