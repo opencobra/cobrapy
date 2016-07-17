@@ -3,6 +3,7 @@ from unittest import TestCase, TestLoader, TextTestRunner, skipIf
 from warnings import warn
 import sys
 from os.path import join
+from os import name
 from json import load
 from contextlib import contextmanager
 import re
@@ -177,7 +178,8 @@ class TestCobraFluxAnalysis(TestCase):
             [0.858, 0.863, 0.814, 0.000, 0.874, 0.874, 0.874, 0.874],
             [0.858, 0.863, 0.814, 0.000, 0.874, 0.874, 0.874, 0.874],
             [0.858, 0.863, 0.814, 0.000, 0.874, 0.874, 0.874, 0.874]]
-        solution = double_gene_deletion(cobra_model, gene_list1=genes)
+        opts = {"number_of_processes": 1} if name == "nt" else {}
+        solution = double_gene_deletion(cobra_model, gene_list1=genes, **opts)
         self.assertEqual(solution["x"], genes)
         self.assertEqual(solution["y"], genes)
         self.compare_matrices(growth_list, solution["data"])
