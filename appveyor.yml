@@ -47,7 +47,7 @@ install:
   - ps: Start-FileDownload 'https://bitbucket.org/gutworth/six/raw/default/six.py'
   - "%WITH_COMPILER% %PYTHON%/python appveyor/build_glpk.py"
   - "%PYTHON%/python -m pip install pip setuptools wheel --upgrade"
-  - "%PYTHON%/python -m pip install Cython jsonschema numpy twine pypandoc==1.1.3"
+  - "%PYTHON%/python -m pip install Cython jsonschema twine pypandoc==1.1.3"
 
 build: off
 
