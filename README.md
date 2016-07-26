@@ -1,5 +1,7 @@
 cobrapy
 =======
+
+[![Join the chat at https://gitter.im/opencobra/cobrapy](https://badges.gitter.im/opencobra/cobrapy.svg)](https://gitter.im/opencobra/cobrapy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/opencobra/cobrapy.svg?branch=master)](https://travis-ci.org/opencobra/cobrapy)
 [![Coverage Status](https://coveralls.io/repos/opencobra/cobrapy/badge.svg?branch=master&service=github)](https://coveralls.io/github/opencobra/cobrapy?branch=master)
 [![Build status](https://ci.appveyor.com/api/projects/status/2o549lhjyukke8nd/branch/master?svg=true)](https://ci.appveyor.com/project/aebrahim/cobrapy/branch/master)
