@@ -4,6 +4,7 @@ cobrapy
 [![Coverage Status](https://coveralls.io/repos/opencobra/cobrapy/badge.svg?branch=master&service=github)](https://coveralls.io/github/opencobra/cobrapy?branch=master)
 [![Build status](https://ci.appveyor.com/api/projects/status/2o549lhjyukke8nd/branch/master?svg=true)](https://ci.appveyor.com/project/aebrahim/cobrapy/branch/master)
 [![PyPI](https://img.shields.io/pypi/v/cobra.svg)](https://pypi.python.org/pypi/cobra)
+[![Gitter](https://badges.gitter.im/opencobra/cobrapy.svg)](https://gitter.im/opencobra/cobrapy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 
 COnstraint-Based Reconstruction and Analysis (COBRA) methods are widely used
@@ -21,7 +22,9 @@ and can also be
 [downloaded](https://readthedocs.org/projects/cobrapy/downloads/).
 
 Please use the [Google Group](http://groups.google.com/group/cobra-pie) for
-help. More information about opencobra is available at the
+help. Alternatively, you can use [gitter.im](https://gitter.im/opencobra/cobrapy) for quick questions and discussions about cobrapy (faster response times).
+
+More information about opencobra is available at the
 [website](http://opencobra.github.io/).
 
 If you use cobrapy in a scientific publication, please cite
