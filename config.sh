@@ -39,6 +39,7 @@ function run_tests_in_repo {
     # Run tests from within source repo
 	ls -la
 	pwd
+	export PATH=$BUILD_PREFIX/bin:$PATH
     coverage run --source=cobra setup.py test
 }
 
