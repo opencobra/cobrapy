@@ -26,11 +26,12 @@ function pre_build {
 				&& make install)
 		yum install -y libxslt libxml2 libxml2-devel libxslt-devel
 	fi
+	pip install cython
+	cython -a cobra/solvers/cglpk.pyx
 }
 
 function build_wheel {
     # Set default building method to pip
-	cython -a cobra/solvers/cglpk.pyx
     build_bdist_wheel $@
 }
 
