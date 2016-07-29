@@ -43,7 +43,7 @@ matrix:
 
 before_install:
   - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout d7ba4ae)
-  - TEST_DEPENDS="coverge lxml numpy scipy python-libsbml cython jsonschema six matplotlib pandas"
+  - TEST_DEPENDS="coverage lxml numpy scipy python-libsbml cython jsonschema six matplotlib pandas"
   - source multibuild/common_utils.sh
   - source multibuild/travis_steps.sh
   - before_install

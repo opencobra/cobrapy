@@ -4,7 +4,7 @@
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
     # Runs in the root directory of this repository.
-	wget https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
+	wget --no-check-certificate https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
 	gzip -d esolver.gz
 	chmod +x esolver
 	export PATH=$PATH:$PWD
@@ -15,7 +15,7 @@ function pre_build {
     if [ -n "$IS_OSX" ]; then
         export CC=clang
         export CXX=clang++
-		export CFLAGS="-fPIC -O3 -arch x86_64 -g -DNDEBUG -mmacosx-version=10.6"
+		export CFLAGS="-fPIC -O3 -arch x86_64 -g -DNDEBUG -mmacosx-version-min=10.6"
 	fi
 	(cd glpk-4.60 \
 			&& ./configure --prefix=$BUILD_PREFIX \
