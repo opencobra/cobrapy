@@ -30,6 +30,7 @@ function pre_build {
 
 function build_wheel {
     # Set default building method to pip
+	cython -a cobra/solvers/cglpk.pyx
     build_bdist_wheel $@
 }
 
