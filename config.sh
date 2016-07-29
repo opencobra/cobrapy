@@ -5,22 +5,26 @@ function pre_build {
     # Any stuff that you need to do before you start building the wheels
     # Runs in the root directory of this repository.
 	wget --no-check-certificate https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
-	gzip -d esolver.gz
+	gzip -f -d esolver.gz		# download seems to happen twice? so force
 	chmod +x esolver
 	export PATH=$PATH:$PWD
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
-    curl -O http://ftp.gnu.org/gnu/glpk/glpk-4.60.tar.gz
-    tar xzf glpk-4.60.tar.gz
     if [ -n "$IS_OSX" ]; then
         export CC=clang
         export CXX=clang++
-		export CFLAGS="-fPIC -O3 -arch x86_64 -g -DNDEBUG -mmacosx-version-min=10.6"
+		# export CFLAGS="-fPIC -O3 -arch x86_64 -g -DNDEBUG -mmacosx-version-min=10.6"
+		brew tap homebrew/science
+        brew update
+        brew install glpk
+	else 
+		curl -O http://ftp.gnu.org/gnu/glpk/glpk-4.60.tar.gz
+		tar xzf glpk-4.60.tar.gz
+		(cd glpk-4.60 \
+				&& ./configure --prefix=$BUILD_PREFIX \
+				&& make \
+				&& make install)
 	fi
-	(cd glpk-4.60 \
-			&& ./configure --prefix=$BUILD_PREFIX \
-			&& make \
-			&& make install)
 }
 
 function build_wheel {
@@ -30,6 +34,8 @@ function build_wheel {
 
 function run_tests_in_repo {
     # Run tests from within source repo
+	ls -la
+	pwd
     coverage run --source=cobra setup.py test
 }
 
