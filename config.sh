@@ -18,13 +18,13 @@ function pre_build {
         brew update
         brew install glpk
 	else
-		yum install -y libxml2-devel libxslt-devel
 		curl -O http://ftp.gnu.org/gnu/glpk/glpk-4.60.tar.gz
 		tar xzf glpk-4.60.tar.gz
 		(cd glpk-4.60 \
 				&& ./configure --prefix=$BUILD_PREFIX \
 				&& make \
 				&& make install)
+		yum install -y libxslt libxml2 libxml2-devel libxslt-devel
 	fi
 }
 
