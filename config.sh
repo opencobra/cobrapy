@@ -42,5 +42,5 @@ function run_tests_in_repo {
 
 function run_tests {
     # Runs tests on installed distribution from an empty directory
-    (cd ../cobra && run_tests_in_repo)
+    (cd .. && run_tests_in_repo)
 }
