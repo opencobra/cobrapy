@@ -24,6 +24,8 @@ function pre_build {
 				&& ./configure --prefix=$BUILD_PREFIX \
 				&& make \
 				&& make install)
+		cp $BUILD_PREFIX/include/glpk.h .
+		cp $BUILD_PREFIX/include/libglpk.a .
 		yum install -y libxslt libxml2 libxml2-devel libxslt-devel
 	fi
 	pip install cython
@@ -39,7 +41,8 @@ function run_tests_in_repo {
     # Run tests from within source repo
 	ls -la
 	pwd
-	export PATH=$BUILD_PREFIX/bin:$PATH
+	echo $BUILD_PREFIX
+	ls -la $BUILD_PREFIX
     coverage run --source=cobra setup.py test
 }
 
