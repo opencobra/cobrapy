@@ -90,3 +90,5 @@ libglpk.a
 .eggs/
 *\.swp
 manylinux_builder/wheelhouse
+*~
+venv/

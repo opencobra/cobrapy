@@ -1,43 +1,61 @@
 language: python
-sudo: false
+python: 3.5
+sudo: required
+dist: trusty
+services: docker
+sudo: required
 cache:
   directories:
     - $HOME/.cache/pip
-python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
-addons:
-  apt:
-    packages:
-      - gfortran
-      - libatlas-dev
-      - libatlas-base-dev
-      - liblapack-dev
-      - libgmp-dev
-      - libglpk-dev
-      - libmpfr-dev
 
-# command to install dependencies
 env:
-  - PIP_CACHE_DIR=$HOME/.cache/pip
+  global:
+    - secure: "OyCxLHV86t/4gTOyXdmQa4ux3GYPPS5PCsr/mAfQkGaRPPwdmuSqt/3DZVB9OuWmVn0I8/7I+jNHiLdW7TkHYeDgJzR3cZM6yy/Ear7igV+zlGJStCpCiBX9kzOxxShtZqTWq48ET8eAhlEF+cBXg1IBKv5orQrhxon8JszFHfM="
+    - secure: "Ao68oM4+c+uV3MYAsR3KNpKVpVDOnCoCRhF0CPHh0sYEcFH7EM5wCy5fzYSo8iThcV4pCuzJ/ThMtijNDmVoAH7xPfanJL3IMpq0urp8AVruv5vjKzG40G3BK0nMCKDUBwPSN1e3YCl5tBxutqW7K95CrQ4tY1pL6I1+IU/w5nM="
+    - PLAT=x86_64
+    - UNICODE_WIDTH=32
+
+matrix:
+  exclude:
+      - python: 3.5
+  include:
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=3.4
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=3.5
+    - os: osx
+      language: objective-c
+      env:
+        - MB_PYTHON_VERSION=2.7
+    - os: osx
+      language: objective-c
+      env:
+        - MB_PYTHON_VERSION=3.4
+    - os: osx
+      language: objective-c
+      env:
+        - MB_PYTHON_VERSION=3.5
+
 before_install:
-  - pip install pip --upgrade
-  # These get cached
-  - pip install numpy scipy python-libsbml cython coveralls jsonschema six matplotlib pandas
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install lxml glpk pep8 palettable; fi
-  # Download esolver and add it to the path
-  - wget https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
-  - gzip -d esolver.gz; chmod +x esolver; export PATH=$PATH:$PWD
-  - mkdir -p $HOME/.config/matplotlib
-  - "echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc"
+  - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout d7ba4ae)
+  - TEST_DEPENDS="coverge lxml numpy scipy python-libsbml cython jsonschema six matplotlib pandas"
+  - source multibuild/common_utils.sh
+  - source multibuild/travis_steps.sh
+  - before_install
+
 install:
-  - python setup.py develop
-# # command to run tests
+  - build_wheel . $PLAT
+
 script:
-  - coverage run --source=cobra setup.py test
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
-    pep8 cobra --exclude=oven,solvers,sbml.py --show-source;
-    fi
+  - pip install pep8
+  - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then pep8 cobra --exclude=oven,solvers,sbml.py --show-source; fi
+  - install_run $PLAT
+
 after_success:
-  - coveralls
+  - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then pip install coveralls; coveralls; fi
+  - scripts/deploy.sh
