@@ -17,7 +17,8 @@ function pre_build {
 		brew tap homebrew/science
         brew update
         brew install glpk
-	else 
+	else
+		yum install -y libxml2-devel libxslt-devel
 		curl -O http://ftp.gnu.org/gnu/glpk/glpk-4.60.tar.gz
 		tar xzf glpk-4.60.tar.gz
 		(cd glpk-4.60 \
@@ -41,5 +42,5 @@ function run_tests_in_repo {
 
 function run_tests {
     # Runs tests on installed distribution from an empty directory
-    run_tests_in_repo
+    (cd ../cobra && run_tests_in_repo)
 }

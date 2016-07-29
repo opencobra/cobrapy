@@ -19,23 +19,23 @@ matrix:
   exclude:
       - python: 3.5
   include:
-    - os: linux
-      env:
-        - MB_PYTHON_VERSION=2.7
-    - os: linux
-      env:
-        - MB_PYTHON_VERSION=3.4
+    # - os: linux
+    #   env:
+    #     - MB_PYTHON_VERSION=2.7
+    # - os: linux
+    #   env:
+    #     - MB_PYTHON_VERSION=3.4
     - os: linux
       env:
         - MB_PYTHON_VERSION=3.5
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=2.7
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=3.4
+    # - os: osx
+    #   language: objective-c
+    #   env:
+    #     - MB_PYTHON_VERSION=2.7
+    # - os: osx
+    #   language: objective-c
+    #   env:
+    #     - MB_PYTHON_VERSION=3.4
     - os: osx
       language: objective-c
       env:
@@ -43,7 +43,7 @@ matrix:
 
 before_install:
   - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout d7ba4ae)
-  - TEST_DEPENDS="coverage lxml numpy scipy python-libsbml cython jsonschema six matplotlib pandas"
+  - TEST_DEPENDS="cython coverage lxml numpy scipy python-libsbml jsonschema six matplotlib pandas"
   - source multibuild/common_utils.sh
   - source multibuild/travis_steps.sh
   - before_install
@@ -52,8 +52,7 @@ install:
   - build_wheel . $PLAT
 
 script:
-  - pip install pep8
-  - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then pep8 cobra --exclude=oven,solvers,sbml.py --show-source; fi
+  - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then pip install pep8 && pep8 cobra --exclude=oven,solvers,sbml.py --show-source; fi
   - install_run $PLAT
 
 after_success:
