@@ -30,12 +30,12 @@ function pre_build {
 	fi
 	pip install cython
 	cython -a cobra/solvers/cglpk.pyx
+	echo $PATH
+	export PATH="/usr/local/bin:$PATH"
 }
 
 function build_wheel {
     # Set default building method to pip
-	echo $PATH
-	export $PATH="/usr/local/bin:$PATH"
     build_bdist_wheel $@
 }
 
