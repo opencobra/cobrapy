@@ -56,6 +56,7 @@ def optimize_minimal_flux(cobra_model, already_irreversible=False,
         solver.solve_problem(lp, objective_sense='maximize')
         status = solver.get_status(lp)
         if status != "optimal":
+            revert_to_reversible(cobra_model)
             raise ValueError(
                 "pFBA requires optimal solution status, not {}".format(status))
         desired_objective_value = solver.get_objective_value(lp)
