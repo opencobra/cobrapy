@@ -28,11 +28,7 @@ function pre_build {
 	fi
 	pip install cython
 	cython -a cobra/solvers/cglpk.pyx
-	echo $PATH
 	export PATH="/usr/local/bin:$PATH"
-	ls -la /usr/local/bin
-	echo `which glpsol`
-	
 }
 
 function build_wheel {
@@ -46,6 +42,11 @@ function run_tests_in_repo {
 	pwd
 	echo $BUILD_PREFIX
 	ls -la $BUILD_PREFIX
+	echo $PATH
+	export PATH="/usr/local/bin:$PATH"
+	ls -la /usr/local/bin
+	echo `which glpsol`
+
     coverage run --source=cobra setup.py test
 }
 
