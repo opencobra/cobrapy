@@ -38,16 +38,9 @@ function build_wheel {
 
 function run_tests_in_repo {
     # Run tests from within source repo
-	ls -la
-	pwd
-	echo $BUILD_PREFIX
-	ls -la $BUILD_PREFIX
-	echo $PATH
-	export PATH="/usr/local/bin:$PATH"
-	ls -la /usr/local/bin
-	echo `which glpsol`
-
-    coverage run --source=cobra setup.py test
+	# trick is to run the /installed/ package 
+    # coverage run --source=cobra setup.py test
+	python -c "import cobra.test; cobra.test.test_all()"
 }
 
 function run_tests {
