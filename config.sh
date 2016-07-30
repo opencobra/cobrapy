@@ -24,14 +24,15 @@ function pre_build {
 				&& ./configure --prefix=$BUILD_PREFIX \
 				&& make \
 				&& make install)
-		cp $BUILD_PREFIX/include/glpk.h .
-		cp $BUILD_PREFIX/lib/libglpk.a .
 		yum install -y libxslt libxml2 libxml2-devel libxslt-devel
 	fi
 	pip install cython
 	cython -a cobra/solvers/cglpk.pyx
 	echo $PATH
 	export PATH="/usr/local/bin:$PATH"
+	ls -la /usr/local/bin
+	echo `which glpsol`
+	
 }
 
 function build_wheel {
