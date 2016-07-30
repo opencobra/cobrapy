@@ -25,7 +25,7 @@ function pre_build {
 				&& make \
 				&& make install)
 		cp $BUILD_PREFIX/include/glpk.h .
-		cp $BUILD_PREFIX/include/libglpk.a .
+		cp $BUILD_PREFIX/lib/libglpk.a .
 		yum install -y libxslt libxml2 libxml2-devel libxslt-devel
 	fi
 	pip install cython
