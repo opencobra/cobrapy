@@ -34,6 +34,8 @@ function pre_build {
 
 function build_wheel {
     # Set default building method to pip
+	echo $PATH
+	export $PATH="/usr/local/bin:$PATH"
     build_bdist_wheel $@
 }
 
