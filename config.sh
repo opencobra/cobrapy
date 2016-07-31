@@ -33,9 +33,10 @@ function run_tests_in_repo {
 	# trick is to run the /installed/ package 
     # coverage run --source=cobra setup.py test
 	if [ -n "$IS_OSX" ]; then
-		brew tap homebrew/science
-        brew update
-        brew install glpk
+		# brew tap homebrew/science
+        # brew update
+        # brew install glpk
+		echo -e " ************** here *********** "
 		which glpsol
 		ls -la /usr/local/bin
 	else
