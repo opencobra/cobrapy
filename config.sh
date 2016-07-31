@@ -32,8 +32,9 @@ function run_tests_in_repo {
     # Run tests from within source repo
 	# trick is to run the /installed/ package 
     # coverage run --source=cobra setup.py test
+	pwd
+	ls -la
 	if [ -n "$IS_OSX" ]; then
-		unzip -l ./wheelhouse/cobra-0.4.2b2.post29-cp35-cp35m-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
 		echo -e " ************** here *********** "
 	else
 		wget --no-check-certificate \
@@ -46,9 +47,10 @@ function run_tests_in_repo {
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
 	python -c "import cobra.test; cobra.test.test_all()"
+
 }
 
 function run_tests {
     # Runs tests on installed distribution from an empty directory
-    (cd .. && run_tests_in_repo)
+    run_tests_in_repo
 }
