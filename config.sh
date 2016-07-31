@@ -33,17 +33,13 @@ function run_tests_in_repo {
 	# trick is to run the /installed/ package 
     # coverage run --source=cobra setup.py test
 	if [ -n "$IS_OSX" ]; then
-		# brew tap homebrew/science
-        # brew update
-        # brew install glpk
 		echo -e " ************** here *********** "
-		which glpsol
-		ls -la /usr/local/bin
 	else
 		wget --no-check-certificate \
 			 https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
 		gzip -f -d esolver.gz
 		chmod +x esolver
+		./esolver -h
 		export PATH=$PATH:$PWD
 	fi
 	mkdir -p $HOME/.config/matplotlib
