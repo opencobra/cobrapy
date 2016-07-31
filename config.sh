@@ -33,6 +33,7 @@ function run_tests_in_repo {
 	# trick is to run the /installed/ package 
     # coverage run --source=cobra setup.py test
 	if [ -n "$IS_OSX" ]; then
+		unzip -l ./wheelhouse/cobra-0.4.2b2.post29-cp35-cp35m-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
 		echo -e " ************** here *********** "
 	else
 		wget --no-check-certificate \
