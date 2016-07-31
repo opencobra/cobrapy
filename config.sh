@@ -4,12 +4,6 @@
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
     # Runs in the root directory of this repository.
-	wget --no-check-certificate https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
-	gzip -f -d esolver.gz		# download seems to happen twice? so force
-	chmod +x esolver
-	export PATH=$PATH:$PWD
-	mkdir -p $HOME/.config/matplotlib
-	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
     if [ -n "$IS_OSX" ]; then
         export CC=clang
         export CXX=clang++
@@ -40,6 +34,13 @@ function run_tests_in_repo {
     # Run tests from within source repo
 	# trick is to run the /installed/ package 
     # coverage run --source=cobra setup.py test
+	wget --no-check-certificate \
+		 https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
+	gzip -f -d esolver.gz
+	chmod +x esolver
+	export PATH=$PATH:$PWD
+	mkdir -p $HOME/.config/matplotlib
+	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
 	python -c "import cobra.test; cobra.test.test_all()"
 }
 
