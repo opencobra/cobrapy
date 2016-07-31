@@ -8,20 +8,18 @@ function pre_build {
         export CC=clang
         export CXX=clang++
 		export CFLAGS="-fPIC -O3 -arch i386 -arch x86_64 -g -DNDEBUG -mmacosx-version-min=10.6"
-		brew tap homebrew/science
-        brew update
-        brew install glpk
 	else
-		curl -O http://ftp.gnu.org/gnu/glpk/glpk-4.60.tar.gz
-		tar xzf glpk-4.60.tar.gz
-		(cd glpk-4.60 \
-				&& ./configure --prefix=$BUILD_PREFIX \
-				&& make \
-				&& make install)
 		yum install -y libxslt libxml2 libxml2-devel libxslt-devel
 	fi
+	curl -O http://ftp.gnu.org/gnu/glpk/glpk-4.60.tar.gz
+	tar xzf glpk-4.60.tar.gz
+	(cd glpk-4.60 \
+			&& ./configure \
+			&& make \
+			&& make install)
 	pip install cython
 	cython -a cobra/solvers/cglpk.pyx
+	ls -la /usr/local/bin
 	export PATH="/usr/local/bin:$PATH"
 }
 
