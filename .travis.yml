@@ -59,10 +59,11 @@ install:
   - build_wheel . $PLAT
 
 script:
+  - if [[ $$TRAVIS_OS_NAME == "linux" ]]; pip install pip --upgrade; pip install matplotlib; fi
   - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then pip install pep8 && pep8 cobra --exclude=oven,solvers,sbml.py --show-source; fi
   - install_run $PLAT
 
 after_success:
-  - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then pip install coveralls; coveralls; fi
+  - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then echo -e "pip install coveralls; coveralls;" fi
   - deploy.sh
   
