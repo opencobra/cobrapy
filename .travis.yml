@@ -43,7 +43,6 @@ matrix:
     #     - MB_PYTHON_VERSION=3.4
     - os: osx
       language: objective-c
-      env:
         - MB_PYTHON_VERSION=3.5
 
 before_install:
@@ -64,8 +63,5 @@ script:
   - install_run $PLAT
 
 after_success:
-  - echo -e "tjohoo"
-
-# after_success:
-#   - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then echo -e "pip install coveralls; coveralls;" fi
-#   - scripts/deploy.sh
+  - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then echo -e "pip install coveralls; coveralls;"; fi
+  - scripts/deploy.sh
