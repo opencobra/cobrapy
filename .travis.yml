@@ -62,8 +62,8 @@ script:
   - if [[ $$TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install matplotlib; fi
   - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then pip install pep8 && pep8 cobra --exclude=oven,solvers,sbml.py --show-source; fi
   - install_run $PLAT
-  - cat /home/travis/build.sh
+  # - cat /home/travis/build.sh
 
-after_success:
-  - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then echo -e "pip install coveralls; coveralls;" fi
-  - deploy.sh
+# after_success:
+#   - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then echo -e "pip install coveralls; coveralls;" fi
+#   - deploy.sh
