@@ -19,7 +19,7 @@ function pre_build {
 			&& make install)
 	pip install cython
 	cython -a cobra/solvers/cglpk.pyx
-	export PATH="/usr/local/bin:$PATH"
+	export PATH="$PATH:/usr/local/bin"
 }
 
 function build_wheel {
@@ -38,7 +38,7 @@ function run_tests_in_repo {
 			 https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
 		gzip -f -d esolver.gz
 		chmod +x esolver
-		export PATH=$PATH:$PWD
+		export PATH=$PWD:$PATH
 		# which pkg-config
 		# pip install matplotlib
 	fi
