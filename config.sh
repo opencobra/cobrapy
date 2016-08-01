@@ -41,8 +41,8 @@ function run_tests_in_repo {
 		chmod +x esolver
 		export PATH=$PATH:$PWD
 		echo -e " travis randomly stopping? 2"
-		which pkg-config
-		pip install matplotlib
+		# which pkg-config
+		# pip install matplotlib
 		echo -e " travis randomly stopping? 3"
 	fi
 	echo -e " travis randomly stopping? 4"
