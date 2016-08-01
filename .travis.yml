@@ -43,7 +43,7 @@ matrix:
 
 before_install:
   - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout d7ba4ae)
-  - TEST_DEPENDS="cython coverage numpy scipy python-libsbml jsonschema six pandas" # need lxml and matplotlib?
+  - TEST_DEPENDS="cython coverage numpy scipy python-libsbml jsonschema six pandas matplotlib"
   - BUILD_DEPENDS="cython numpy scipy"
   - source multibuild/common_utils.sh
   - source multibuild/travis_steps.sh
@@ -58,4 +58,4 @@ script:
 
 after_success:
   - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then pip install coveralls; coveralls; fi
-  - scripts/deploy.sh
+  - deploy.sh
