@@ -36,21 +36,15 @@ function run_tests_in_repo {
 	else
 		wget --no-check-certificate \
 			 https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
-		echo -e " travis randomly stopping? 1"
 		gzip -f -d esolver.gz
 		chmod +x esolver
 		export PATH=$PATH:$PWD
-		echo -e " travis randomly stopping? 2"
 		# which pkg-config
 		# pip install matplotlib
-		echo -e " travis randomly stopping? 3"
 	fi
-	echo -e " travis randomly stopping? 4"
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
-	echo -e " travis randomly stopping? 5"
 	python -c "import cobra.test; cobra.test.test_all()"
-	echo $?
 }
 
 function run_tests {
