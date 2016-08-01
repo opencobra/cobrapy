@@ -7,6 +7,11 @@ sudo: required
 cache:
   directories:
     - $HOME/.cache/pip
+addons:
+  apt:
+    packages:
+      - libfreetype6-dev
+      - libpng12-dev
 
 env:
   global:

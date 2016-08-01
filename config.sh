@@ -19,7 +19,6 @@ function pre_build {
 			&& make install)
 	pip install cython
 	cython -a cobra/solvers/cglpk.pyx
-	ls -la /usr/local/bin
 	export PATH="/usr/local/bin:$PATH"
 }
 
@@ -32,8 +31,6 @@ function run_tests_in_repo {
     # Run tests from within source repo
 	# trick is to run the /installed/ package 
     # coverage run --source=cobra setup.py test
-	pwd
-	ls -la
 	if [ -n "$IS_OSX" ]; then
 		echo -e " testing for mac.. "
 	else
@@ -42,12 +39,13 @@ function run_tests_in_repo {
 		gzip -f -d esolver.gz
 		chmod +x esolver
 		export PATH=$PATH:$PWD
+		which pkg-config
 		pip install matplotlib
 	fi
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
 	python -c "import cobra.test; cobra.test.test_all()"
-
+	echo $?
 }
 
 function run_tests {

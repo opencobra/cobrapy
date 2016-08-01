@@ -24,8 +24,6 @@ from __future__ import absolute_import
 from warnings import warn
 from os import listdir, path
 
-import sys
-
 solver_dict = {}
 possible_solvers = set()
 
@@ -43,7 +41,6 @@ def add_solver(solver_name, use_name=None):
 
     
 for i in listdir(path.dirname(path.abspath(__file__))):
-    sys.stdout.write("{}\n".format(i))
     if i.startswith("_") or i.startswith(".") or i.startswith('legacy'):
         continue
     if i.startswith("parameters"):
@@ -59,7 +56,6 @@ for solver in possible_solvers:
     try:
         add_solver(solver)
     except:
-        sys.stdout.write("import failed {}\n".format(solver))
         pass
     del solver
 
