@@ -10,4 +10,5 @@ if [[ -n "$TRAVIS_TAG" ]]; then
 else
 	echo -e " ... skipping deploy as no tag detected: $TRAVIS_TAG ... "
 fi
+
 exit 0;

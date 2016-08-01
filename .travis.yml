@@ -66,4 +66,3 @@ script:
 after_success:
   - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then echo -e "pip install coveralls; coveralls;" fi
   - deploy.sh
-  
