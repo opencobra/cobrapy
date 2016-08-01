@@ -35,14 +35,14 @@ function run_tests_in_repo {
 	pwd
 	ls -la
 	if [ -n "$IS_OSX" ]; then
-		echo -e " ************** here *********** "
+		echo -e " testing for mac.. "
 	else
 		wget --no-check-certificate \
 			 https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
 		gzip -f -d esolver.gz
 		chmod +x esolver
-		./esolver -h
 		export PATH=$PATH:$PWD
+		pip install matplotlib
 	fi
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
