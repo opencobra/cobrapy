@@ -8,4 +8,3 @@ repository = ${PYPI_REPOSITORY}
 pip install twine
 twine upload --skip-existing --username "${PYPI_USERNAME}" --password "${PYPI_PASSWORD}" \
 	  ${TRAVIS_BUILD_DIR}/wheelhouse/* -r pypirepository
-exit 0;
