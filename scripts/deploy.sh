@@ -5,7 +5,7 @@
 if [[ -n "$TRAVIS_TAG" ]]; then
 	echo -e " ... running twine to deploy ... "
 	pip install twine
-	twine upload --skip-existing --username "${PYPI_USERNAME}" --password "${PYPI_PASSWORD}" ${TRAVIS_BUILD_DIR}/wheelhouse/*
+	twine upload --skip-existing --username "${PYPI_USERNAME}" --password "${PYPI_PASSWORD}" ${TRAVIS_BUILD_DIR}/wheelhouse/* -r ${PYPI_REPOSITORY}
 else
 	echo -e " ... skipping deploy as no tag detected: $TRAVIS_TAG ... "
 fi
