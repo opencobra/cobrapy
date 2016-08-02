@@ -32,7 +32,7 @@ function run_tests_in_repo {
 	# trick is to run the /installed/ package 
     # coverage run --source=cobra setup.py test
 	if [ -n "$IS_OSX" ]; then
-		echo -e " testing for mac.. "
+		echo -e " testing for mac... "
 	else
 		wget --no-check-certificate \
 			 https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
