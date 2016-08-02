@@ -74,5 +74,7 @@ deploy:
     branch: master
 
 after_sucess:
+  - echo "abou to do coveralls"
+  - cat .coverage
   - coveralls
   
