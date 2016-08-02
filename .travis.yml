@@ -18,7 +18,7 @@ env:
     - secure: "OyCxLHV86t/4gTOyXdmQa4ux3GYPPS5PCsr/mAfQkGaRPPwdmuSqt/3DZVB9OuWmVn0I8/7I+jNHiLdW7TkHYeDgJzR3cZM6yy/Ear7igV+zlGJStCpCiBX9kzOxxShtZqTWq48ET8eAhlEF+cBXg1IBKv5orQrhxon8JszFHfM="
     - secure: "Ao68oM4+c+uV3MYAsR3KNpKVpVDOnCoCRhF0CPHh0sYEcFH7EM5wCy5fzYSo8iThcV4pCuzJ/ThMtijNDmVoAH7xPfanJL3IMpq0urp8AVruv5vjKzG40G3BK0nMCKDUBwPSN1e3YCl5tBxutqW7K95CrQ4tY1pL6I1+IU/w5nM="
     - secure: "pbdlIXUozrKUeUhME0QrK4yePVBMlpq9b8jH55eLyKydbL5mtJwM0I1GTNCv549OfAALWTK73+XqM4VwXxuGAVVN/kAbbWN2ABO/P59RsLDAEG6ADLdwSaUDF4zIBo3hicAooMh5ZVYOSDxZxsoAuof0wDqtmumUzvhM+pWf0BRR7KglMZP1ii9VU9fvVnj36166zedWDSb5tj62HZ+X7A/mvfekvZ9aVis8ffHRogWMF4qOHtazhe3/W/uZTvJo8WWhmFlsP5Tfp/eKR7O67xE0hrpDJsH226PdxoGLGF3+Yg1aDs0+IN/zqXIr/9a1NYv/R46uZ50X++oXp8hIkBd+QyiGQR58lDXGM1xsoZdMNYTWngLEw8stym1uT7kUciEXkkRgFerWJdlVzsDxK+YZaRhACcojNks2tJxdPdrj0I2bvHJaxbv9K+bXtqrxxX3Y9QRlNxazNNg9N/d+LS0PyhQLfHKTSx9rupGtoSaBZUMU7Brji5oXqZKoXoGvBcue8cJSbqA+0x3SjeQqhFwUihDGL0rB0nDjAKK5MRrd0IzkFuRJBWxglwrYcQlwp5/PZCSNvheS+U3gQ6dw5frnaA+aMayrBc1LUMI1l7DY0flvlnEre70KAeRLC4Wkivm99hPupe1rnBipj4CdkISsfpqS2WrC+CNC26ew9FU="
-    - PYPI_REPOSITORY=https://testpypi.python.org/pypi
+    - PYPI_REPOSITORY="https://testpypi.python.org/pypi"
     - PLAT=x86_64
     - UNICODE_WIDTH=32
 
