@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 # seemingly bug in travis: TRAVIS_BRANCH doesn't get set to the branch but to the tag
 

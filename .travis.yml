@@ -55,6 +55,9 @@ before_install:
   - source multibuild/travis_steps.sh
   - before_install
 
+before_cache:
+  - set +e
+
 install:
   - build_wheel . $PLAT
 
@@ -62,6 +65,7 @@ script:
   - if [[ $$TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install matplotlib; fi
   - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then pip install pep8 && pep8 cobra --exclude=oven,solvers,sbml.py --show-source; fi
   - install_run $PLAT
-  - export PATH=/usr/local/rvm/gems/ruby-2.2.3/bin:$PATH
+
+after_success:
   - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then echo -e "pip install coveralls; coveralls;"; fi
   - scripts/deploy.sh
