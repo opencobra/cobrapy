@@ -12,5 +12,5 @@ repository: ${PYPI_REPOSITORY}
 cat ~/.pypirc
 
 pip install twine
-twine upload --skip-existing --username "${PYPI_USERNAME}" --password "${PYPI_PASSWORD}" \
+twine upload --skip-existing --username "${PYPI_USERNAME}" --password "${TEST_PYPI_PASSWORD}" \
 	  ${TRAVIS_BUILD_DIR}/wheelhouse/* -r pypirepository
