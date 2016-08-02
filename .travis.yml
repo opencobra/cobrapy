@@ -49,7 +49,7 @@ matrix:
 before_install:
   - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout d7ba4ae)
   # matplotlib non-compatible as testing runs in venv (non-framework)
-  - TEST_DEPENDS="cython coverage numpy scipy python-libsbml jsonschema six pandas"
+  - TEST_DEPENDS="cython coveralls coverage numpy scipy python-libsbml jsonschema six pandas"
   - BUILD_DEPENDS="cython numpy scipy"
   - source multibuild/common_utils.sh
   - source multibuild/travis_steps.sh
@@ -64,12 +64,15 @@ install:
 script:
   - if [[ $$TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install matplotlib; fi
   - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then pip install pep8 && pep8 cobra --exclude=oven,solvers,sbml.py --show-source; fi
-  - if [[ $MB_PYTHON_VERSION == "3.5" && $TRAVIS_OS_NAME == "linux" ]]; then echo -e "pip install coveralls; coveralls;"; fi
   - install_run $PLAT
 
 deploy:
   provider: script
   skip_cleanup: true
-  script: scripts/deploy-test.sh
+  script: scripts/deploy.sh
   on:
-    branch: feature/auto-wheel
+    branch: master
+
+after_sucess:
+  - coveralls
+  
