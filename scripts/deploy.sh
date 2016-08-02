@@ -3,10 +3,10 @@ echo -e " ... running twine to deploy ... "
 echo -e "
 [distutils]
 index-servers=
-    test
+    pypirepository
 
 [pypirepository]
-repository = ${PYPI_REPOSITORY}
+repository: ${PYPI_REPOSITORY}
 " > ~/.pypirc
 
 cat ~/.pypirc
