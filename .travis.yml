@@ -24,23 +24,23 @@ matrix:
   exclude:
       - python: 3.5
   include:
-    # - os: linux
-    #   env:
-    #     - MB_PYTHON_VERSION=2.7
-    # - os: linux
-    #   env:
-    #     - MB_PYTHON_VERSION=3.4
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=3.4
     - os: linux
       env:
         - MB_PYTHON_VERSION=3.5
-    # - os: osx
-    #   language: objective-c
-    #   env:
-    #     - MB_PYTHON_VERSION=2.7
-    # - os: osx
-    #   language: objective-c
-    #   env:
-    #     - MB_PYTHON_VERSION=3.4
+    - os: osx
+      language: objective-c
+      env:
+        - MB_PYTHON_VERSION=2.7
+    - os: osx
+      language: objective-c
+      env:
+        - MB_PYTHON_VERSION=3.4
     - os: osx
       language: objective-c
       env:
