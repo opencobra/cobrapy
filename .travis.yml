@@ -74,5 +74,5 @@ deploy:
   skip_cleanup: true
   script: scripts/deploy.sh
   on:
-    branch: feature/auto-wheel
+    branch: master
     tags: true
