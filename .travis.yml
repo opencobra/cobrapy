@@ -71,7 +71,7 @@ deploy:
   skip_cleanup: true
   script: scripts/deploy.sh
   on:
-    branch: master
+    branch: feature/auto-wheel
 
 after_sucess:
   - echo "abou to do coveralls"
