@@ -72,5 +72,5 @@ deploy:
   on:
     branch: feature/auto-wheel
 
-# after_success:
-#   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install codecov; cat .coverage; codecov; fi
+after_success:
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install codecov; cat coverage.xml; codecov; fi
