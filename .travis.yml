@@ -74,4 +74,4 @@ deploy:
 
 after_success:
   - cat .coverage
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install coveralls; coveralls; fi
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install coveralls; (cd tmp_for_test && coveralls); fi

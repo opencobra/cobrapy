@@ -46,7 +46,6 @@ function run_tests_in_repo {
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
 	echo -e "import cobra.test; cobra.test.test_all()" > run-tests.py
 	coverage run --source=cobra --rcfile ../.coveragerc run-tests.py
-	cat .coverage > ../.coverage
 }
 
 function run_tests {
