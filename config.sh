@@ -46,8 +46,11 @@ function run_tests_in_repo {
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
 	echo -e "import cobra.test; cobra.test.test_all()" > run-tests.py
 	coverage run --source=cobra --rcfile .coveragerc run-tests.py
-	parentdir=`readlink -f ..`
-	cat .coverage | python -c "import re; import sys; import re; [sys.stdout.write(re.sub('/venv/lib/python.../site-packages/', '${parentdir}/', x)) for x in sys.stdin]" > ../.coverage
+	if ! [[ -n "$IS_OSX" ]]; then
+		codecov
+	fi
+	# parentdir=`readlink -f ..`
+	# cat .coverage | python -c "import re; import sys; import re; [sys.stdout.write(re.sub('/venv/lib/python.../site-packages/', '${parentdir}/', x)) for x in sys.stdin]" > ../.coverage
 }
 
 function run_tests {
