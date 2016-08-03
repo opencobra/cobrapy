@@ -11,7 +11,5 @@ username: henred
 password: pippi_langstrump
 " > ~/.pypirc
 
-cat ~/.pypirc
-
 pip install twine
 twine upload --skip-existing ${TRAVIS_BUILD_DIR}/wheelhouse/* -r pypirepository
