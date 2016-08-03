@@ -44,13 +44,12 @@ function run_tests_in_repo {
 	fi
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
-	echo -e "import sys; sys.path = sys.path[1:]; import cobra.test; cobra.test.test_all()" > run-tests.py
+	echo -e "import cobra.test; cobra.test.test_all()" > run-tests.py
 	coverage run --source=cobra --rcfile .coveragerc run-tests.py
-	pwd
-	cat .coverage
+	cat .coverage > ../.coverage
 }
 
 function run_tests {
     # Runs tests on installed distribution from an empty directory
-    (cd .. && run_tests_in_repo)
+    run_tests_in_repo
 }
