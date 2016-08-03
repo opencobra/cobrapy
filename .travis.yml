@@ -1,43 +1,77 @@
 language: python
-sudo: false
+python: 3.5
+sudo: required
+dist: trusty
+services: docker
+sudo: required
 cache:
   directories:
     - $HOME/.cache/pip
-python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
 addons:
   apt:
     packages:
-      - gfortran
-      - libatlas-dev
-      - libatlas-base-dev
-      - liblapack-dev
-      - libgmp-dev
-      - libglpk-dev
-      - libmpfr-dev
+      - libfreetype6-dev
+      - libpng12-dev
 
-# command to install dependencies
 env:
-  - PIP_CACHE_DIR=$HOME/.cache/pip
+  global:
+    - secure: "cZb8f52Ei3Rxr0r7mCkYClk/gMRia3Idi6EO8VvsJKcVwAn3r0hVRnpP3H75hFEFpys4K000CdzhRMQgKF2Se6cmEad2UbyIJa193pHZ9kqPbhK/amEx5F8EO8SuozRGzVM6/IPx19N8RhZxMQuPizcwC3azqgNLxsoMLGAx2oCVVKbHcNZRE/Xwws8Xj7Zj9J6VVf4WyE7PMTniYv8I7fbGrG809b/65fh55b9aDKTfPb7RyPo5I7ZneUEMBh+UL2Hq1lvElAXnQisFOQ1l3Ihre5+p7Pbqa6UVTljbH3912RBi2esslTHzC+wY6zUzu5VRlGhsdkT9DPmO72igMW4Il3Xcf/MQ+S3ZvBKzHmdBgdIV7YyjxiRBtJNujXY4MWVD52kdACujjQXcJaxvNfaqzK8N4w0XUil8VZ6YFBx0TqgoeD4pOwbjUXwY5LrPqx5SSy92o5MpZaHWGZOWhjgcnFgv5JAHK9LenRwq3kEdvoN6efohvxVZwmoh8CgKQu8P0W45B/3cPo10zZcxRkLSQrLJcUAfEUjYZaUZw0m/UGI88Ren63NKveJoZPuh4trb1VwCFz+4JcUx18P/S/XO1fKwY9w8ga88W4IdgDtLkQTiHJ5bKs/Cm9RQPow4HXXc8u6M+V732s4AzS/TiTI7a+QOl6CQGYhJwGQ0Lz0="
+    - secure: "MGBObsRUG8vG/QlxnBTgDOA5jzISnQTcVTe45x3LqbndExKmvJPDnOwYVpRUbwtB+VeC3+ED19JEFlyix60DE8pAfqW26DAZanhzMXpW9evkGjKS+3HCMpgpJHFlK/3e2HJcYm4ISvWR7+oWfAb0Qo3LUL18lQ36Mi7CRrLpCvzX4QPY9pLow6VbLWdumfDWSvxay18jzj2fpn6eOTeqiokQpa5nXErjLARQCoLWZiGWfOA0ZnKD6AA7K/XvMss8uekcgz9ArqM/6VDBcA6C/U3snsgZm6VlQYjSde2RdIIhyx3tKPHkm1T9T1h2MFyXX5JGMDziPYxwX7bNlLZ0NjLNsB6AdUuA/V6KVlRgbb7HQvHnONgUjl2lRXkCimFmtKrtPIetV5/Dxu9OYm4GuyByKBeRbMsIFzhIlRWS+Ha35oZyvMRgRt1ttMlJp28yx0F5MAPeMq4V0uxgt5u4Z1C5Snr9WGBDplSx2v+p7hP9Mi8DKjw0PycT2qx4+yRKUjF2AtWbftQmN0sKNwIo6JPNiFDunP49Lk35LsQTQ0T/OxjLZRMfb8uBrp11b9BAj7bCCUBQErI9HUzLXeyLaDLKwBYYtUx5zLJ5sfvcjWiub2FHfwjfCYBi1NqBcWLRgN1lx3vCA7SoUs9SJEQPOgGwyg9bHdjg70m13jMMBPU="
+    - PLAT=x86_64
+    - UNICODE_WIDTH=32
+
+matrix:
+  exclude:
+      - python: 3.5
+  include:
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=3.4
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=3.5
+    - os: osx
+      language: objective-c
+      env:
+        - MB_PYTHON_VERSION=2.7
+    - os: osx
+      language: objective-c
+      env:
+        - MB_PYTHON_VERSION=3.4
+    - os: osx
+      language: objective-c
+      env:
+        - MB_PYTHON_VERSION=3.5
+
 before_install:
-  - pip install pip --upgrade
-  # These get cached
-  - pip install numpy scipy python-libsbml cython coveralls jsonschema six matplotlib pandas
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install lxml glpk pep8 palettable; fi
-  # Download esolver and add it to the path
-  - wget https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
-  - gzip -d esolver.gz; chmod +x esolver; export PATH=$PATH:$PWD
-  - mkdir -p $HOME/.config/matplotlib
-  - "echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc"
+  - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout d7ba4ae)
+  # matplotlib non-compatible as testing runs in venv (non-framework)
+  - TEST_DEPENDS="cython codecov coverage numpy scipy python-libsbml jsonschema six pandas"
+  - BUILD_DEPENDS="cython numpy scipy"
+  - source multibuild/common_utils.sh
+  - source multibuild/travis_steps.sh
+  - before_install
+
+before_cache:
+  - set +e
+
 install:
-  - python setup.py develop
-# # command to run tests
+  - build_wheel . $PLAT
+
 script:
-  - coverage run --source=cobra setup.py test
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
-    pep8 cobra --exclude=oven,solvers,sbml.py --show-source;
-    fi
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install pep8; pep8 cobra --exclude=oven,solvers,sbml.py --show-source; fi
+  - install_run $PLAT
+
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: scripts/deploy.sh
+  on:
+    branch: master
+    tags: true
+
 after_success:
-  - coveralls
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install codecov; cat coverage.xml; codecov; fi
