@@ -42,8 +42,9 @@ function run_tests_in_repo {
 	fi
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
-	# test the installed wheel
-	python -c "import cobra.test; cobra.test.test_all()"
+	echo -e "import cobra.test; cobra.test.test_all()" > run-tests.py
+	coverage run --source=cobra --rcfile ../.coveragerc run-tests.py
+	cat .coverage > ../.coverage
 }
 
 function run_tests {

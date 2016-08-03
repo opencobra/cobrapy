@@ -63,7 +63,6 @@ install:
 
 script:
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install pep8; pep8 cobra --exclude=oven,solvers,sbml.py --show-source; fi
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then coverage.sh; fi
   - install_run $PLAT
 
 deploy:
