@@ -69,12 +69,12 @@ script:
 deploy:
   provider: script
   skip_cleanup: true
-  script: scripts/deploy.sh
+  script: scripts/deploy-test.sh
   on:
     branch: feature/auto-wheel
 
 after_sucess:
-  - echo "abou to do coveralls"
+  - echo "about to do coveralls"
   - cat .coverage
   - coveralls
   
