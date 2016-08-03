@@ -51,8 +51,8 @@ Public License for more details.
 
 .. |Build Status| image:: https://travis-ci.org/opencobra/cobrapy.svg?branch=master
    :target: https://travis-ci.org/opencobra/cobrapy
-.. |Coverage Status| image:: https://coveralls.io/repos/opencobra/cobrapy/badge.svg?branch=master&service=github
-   :target: https://coveralls.io/github/opencobra/cobrapy?branch=master
+.. |Coverage Status| image:: https://codecov.io/github/opencobra/cobrapy/coverage.svg?branch=master
+   :target: https://codecov.io/github/opencobra/cobrapy/coverage.svg?branch=master
 .. |Build status| image:: https://ci.appveyor.com/api/projects/status/2o549lhjyukke8nd/branch/master?svg=true
    :target: https://ci.appveyor.com/project/aebrahim/cobrapy/branch/master
 .. |PyPI| image:: https://img.shields.io/pypi/v/cobra.svg

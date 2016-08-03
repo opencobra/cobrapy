@@ -70,7 +70,8 @@ deploy:
   skip_cleanup: true
   script: scripts/deploy-test.sh
   on:
-    branch: feature/auto-wheel
+    branch: master
+    tags: true
 
 after_success:
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install codecov; cat coverage.xml; codecov; fi
