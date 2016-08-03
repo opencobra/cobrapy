@@ -7,6 +7,6 @@ gzip -d esolver.gz
 chmod +x esolver
 export PATH=$PATH:$PWD
 mkdir -p $HOME/.config/matplotlib
-"echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc"
+echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
 python setup.py develop
 coverage run --source=cobra setup.py test

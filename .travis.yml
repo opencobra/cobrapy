@@ -12,6 +12,13 @@ addons:
     packages:
       - libfreetype6-dev
       - libpng12-dev
+      - gfortran
+      - libatlas-dev
+      - libatlas-base-dev
+      - liblapack-dev
+      - libgmp-dev
+      - libglpk-dev
+      - libmpfr-dev
 
 env:
   global:
