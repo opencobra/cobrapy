@@ -73,7 +73,7 @@ deploy:
   on:
     branch: feature/auto-wheel
 
-after_sucess:
+after_success:
   - echo "about to do coveralls"
   - cat .coverage
   - coveralls
