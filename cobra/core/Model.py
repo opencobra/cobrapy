@@ -364,11 +364,13 @@ class Model(Object):
 
         threshold: float
             tolerance for determining if a flux is zero (not printed)
+
         fva: int or None
             Whether or not to calculate and report flux variability in the
             output summary
-        round: int
-            number of digits after the decimal place to print
+
+        floatfmt: string
+            format method for floats, passed to tabulate. Default is '.3g'.
 
         """
 
@@ -376,4 +378,4 @@ class Model(Object):
             from ..flux_analysis.summary import model_summary
             return model_summary(self, **kwargs)
         except ImportError:
-            warn('Summary methods require pandas')
+            warn('Summary methods require pandas/tabulate')

@@ -24,7 +24,7 @@ env:
 before_install:
   - pip install pip --upgrade
   # These get cached
-  - pip install numpy scipy python-libsbml cython coveralls jsonschema six matplotlib pandas
+  - pip install numpy scipy python-libsbml cython coveralls jsonschema six matplotlib pandas tabulate
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install lxml glpk pep8 palettable; fi
   # Download esolver and add it to the path
   - wget https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz

@@ -340,22 +340,27 @@ class TestCobraFluxAnalysis(TestCase):
 
         # Test model summary methods
         model = create_test_model("textbook")
+        with self.assertRaises(Exception):
+            model.summary()
         model.optimize()
         desired_entries = [
-            u'glc__D_e     -9.76 \u00B1 0.24'
-            u'co2_e       21.81 \u00B1 2.86',
-            u'nh4_e        -4.84 \u00B1 0.32'
-            u'h_e         19.51 \u00B1 2.86',
-            u'pi_e         -3.13 \u00B1 0.08'
-            u'for_e        2.86 \u00B1 2.86',
-            u'ac_e         0.95 \u00B1 0.95',
-            u'acald_e      0.64 \u00B1 0.64',
-            u'pyr_e        0.64 \u00B1 0.64',
-            u'etoh_e       0.55 \u00B1 0.55',
-            u'lac__D_e     0.54 \u00B1 0.54',
-            u'succ_e       0.42 \u00B1 0.42',
-            u'akg_e        0.36 \u00B1 0.36',
-            u'glu__L_e     0.32 \u00B1 0.32'
+            'idFluxRangeidFluxRangeBiomass_Ecol...0.874',
+            'o2_e       21.8   [19.9, 23.7]'
+            'h2o_e       29.2  [25, 30.7]',
+            'glc__D_e   10     [9.52, 10]'
+            'co2_e       22.8  [18.9, 24.7]',
+            'nh4_e       4.77  [4.53, 5.16]'
+            'h_e         17.5  [16.7, 22.4]',
+            'pi_e        3.21  [3.05, 3.21]'
+            'for_e        0    [0, 5.72]',
+            'ac_e         0    [0, 1.91]',
+            'pyr_e        0    [0, 1.27]',
+            'lac__D_e     0    [0, 1.07]',
+            'succ_e       0    [0, 0.837]',
+            'glu__L_e     0    [0, 0.636]',
+            'akg_e        0    [0, 0.715]',
+            'etoh_e       0    [0, 1.11]',
+            'acald_e      0    [0, 1.27]',
         ]
         for solver in solver_dict:
             with captured_output() as (out, err):
@@ -364,14 +369,14 @@ class TestCobraFluxAnalysis(TestCase):
 
         # test non-fva version (these should be fixed for textbook model
         desired_entries = [
-            "o2_e       -21.80",
-            "glc__D_e   -10.00",
-            "nh4_e       -4.77",
-            "pi_e        -3.21",
-            "h2o_e    29.18",
-            "co2_e    22.81",
-            "h_e      17.53",
-            "Biomass_Ecoli_core    0.874"
+            'o2_e      21.8',
+            'glc__D_e  10',
+            'nh4_e      4.77',
+            'pi_e       3.21',
+            'h2o_e  29.2',
+            'co2_e  22.8',
+            'h_e    17.5',
+            'Biomass_Ecol...  0.874',
         ]
         # Need to use a different method here because
         # there are multiple entries per line.
@@ -383,36 +388,32 @@ class TestCobraFluxAnalysis(TestCase):
 
         # Test metabolite summary methods
         desired_entries = [
-            'PRODUCING REACTIONS -- Ubiquinone-8',
-            '-----------------------------------',
-            '%      FLUX   RXN ID'
-            'REACTION',
-            '100.0%     44    CYTBD'
-            '2.0 h_c + 0.5 o2_c + q8h2_c --> h2o_c + 2.0 h_e +...',
-            'CONSUMING REACTIONS -- Ubiquinone-8',
-            '-----------------------------------',
-            '88.4%    -39   NADH16'
-            '4.0 h_c + nadh_c + q8_c --> 3.0 h_e + nad_c + q8h2_c',
-            '11.6%   -5.1    SUCDi'
-            'q8_c + succ_c --> fum_c + q8h2_c',
+            'PRODUCING REACTIONS -- Ubiquinone-8 (q8_c)',
+            '%       FLUX  RXN ID    REACTION',
+            '100%   43.6   CYTBD     '
+            '2.0 h_c + 0.5 o2_c + q8h2_c --> h2o_c + 2.0 h_e...',
+            'CONSUMING REACTIONS -- Ubiquinone-8 (q8_c)',
+            '%       FLUX  RXN ID    REACTION',
+            '88%    38.5   NADH16    '
+            '4.0 h_c + nadh_c + q8_c --> 3.0 h_e + nad_c + q...',
+            '12%     5.06  SUCDi     q8_c + succ_c --> fum_c + q8h2_c',
         ]
         with captured_output() as (out, err):
             model.metabolites.q8_c.summary()
         self.check_entries(out, desired_entries)
 
         desired_entries = [
-            u'PRODUCING REACTIONS -- D-Fructose 1,6-bisphosphate',
-            u'--------------------------------------------------',
-            u'  %            FLUX   RXN ID'
-            u'REACTION',
-            u'100.0%  7.71 \u00B1 1.54      PFK'
-            u'atp_c + f6p_c --> adp_c + fdp_c + h_c',
-            u'CONSUMING REACTIONS -- D-Fructose 1,6-bisphosphate',
-            u'--------------------------------------------------',
-            u'  %            FLUX   RXN ID'
-            u'REACTION',
-            u'100.0%  7.54 \u00B1 1.37      FBA'
-            u'fdp_c <=> dhap_c + g3p_c',
+            'PRODUCING REACTIONS -- D-Fructose 1,6-bisphosphate (fdp_c)',
+            '----------------------------------------------------------',
+            '%       FLUX  RANGE         RXN ID    REACTION',
+            '100%    7.48  [6.17, 9.26]  PFK       '
+            'atp_c + f6p_c --> adp_c + fdp_c + h_c',
+            'CONSUMING REACTIONS -- D-Fructose 1,6-bisphosphate (fdp_c)',
+            '----------------------------------------------------------',
+            '%       FLUX  RANGE         RXN ID    REACTION',
+            '100%    7.48  [6.17, 8.92]  FBA       fdp_c <=> dhap_c + g3p_c',
+            '0%      0     [0, 1.72]     FBP       '
+            'fdp_c + h2o_c --> f6p_c + pi_c',
         ]
         for solver in solver_dict:
             with captured_output() as (out, err):
