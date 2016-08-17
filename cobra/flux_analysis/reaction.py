@@ -41,7 +41,7 @@ def assess(model, reaction, flux_coefficient_cutoff=0.001, solver=None):
         return results
 
 
-def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001, 
+def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001,
                       solver=None):
     """Assesses the ability of the model to provide sufficient precursors for
     a reaction operating at, or beyond, the specified cutoff.
