@@ -1,5 +1,6 @@
 from six.moves import zip_longest
 from six import iterkeys, print_, text_type
+from warnings import warn
 
 import pandas as pd
 
@@ -129,8 +130,20 @@ def model_summary(model, threshold=1E-8, fva=None, digits=2, **solver_args):
             lambda rxn: rxn.x < -threshold, None
         ).query(lambda x: x, 'boundary')
 
-        out_fluxes = pd.Series({r.reactants[0]: r.x for r in out_rxns})
-        in_fluxes = pd.Series({r.reactants[0]: r.x for r in in_rxns})
+        def get_boundary_species(cobra_reaction):
+            """For a given cobra_reaction, find out which species is being
+            produced """
+            mets = list(iterkeys(cobra_reaction.metabolites))
+            if len(mets) != 1:
+                warn('The boundary reaction {} exhanges more than one '
+                     'metabolite'.format(cobra_reaction.id))
+
+            return mets[0]
+
+        out_fluxes = pd.Series({
+            get_boundary_species(r): r.x for r in out_rxns})
+        in_fluxes = pd.Series({
+            get_boundary_species(r): r.x for r in in_rxns})
 
         # sort and round
         out_fluxes.sort_values(ascending=False, inplace=True)
