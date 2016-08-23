@@ -4,7 +4,7 @@ from ..core.Reaction import Reaction
 from six import iteritems
 
 
-def assess(model, reaction, flux_coefficient_cutoff=0.001):
+def assess(model, reaction, flux_coefficient_cutoff=0.001, solver=None):
     """Assesses the capacity of the model to produce the precursors for the
     reaction and absorb the production of the reaction while the reaction is
     operating at, or above, the specified cutoff.
@@ -16,6 +16,8 @@ def assess(model, reaction, flux_coefficient_cutoff=0.001):
     flux_coefficient_cutoff:  Float.  The minimum flux that reaction must carry
     to be considered active.
 
+    solver : String or solver name. If None, the default solver will be used.
+
     returns: True if the model can produce the precursors and absorb the
     products for the reaction operating at, or above, flux_coefficient_cutoff.
     Otherwise, a dictionary of {'precursor': Status, 'product': Status}.  Where
@@ -24,7 +26,10 @@ def assess(model, reaction, flux_coefficient_cutoff=0.001):
 
     """
     reaction = model.reactions.get_by_id(reaction.id)
-    model.optimize(new_objective={reaction: 1})
+    original_objective = model.objective
+    model.objective = reaction
+    model.optimize(solver=solver)
+    model.objective = original_objective
     if model.solution.f >= flux_coefficient_cutoff:
         return True
     else:
@@ -36,7 +41,8 @@ def assess(model, reaction, flux_coefficient_cutoff=0.001):
         return results
 
 
-def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001):
+def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001,
+                      solver=None):
     """Assesses the ability of the model to provide sufficient precursors for
     a reaction operating at, or beyond, the specified cutoff.
 
@@ -46,6 +52,8 @@ def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001):
 
     flux_coefficient_cutoff: Float. The minimum flux that reaction must carry
     to be considered active.
+
+    solver : String or solver name. If None, the default solver will be used.
 
     returns: True if the precursors can be simultaneously produced at the
     specified cutoff. False, if the model has the capacity to produce each
@@ -57,14 +65,17 @@ def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001):
     """
     model = model.copy()
     reaction = model.reactions.get_by_id(reaction.id)
-    model.optimize(new_objective={reaction: 1})
+    original_objective = model.objective
+    model.objective = reaction
+    model.optimize(solver=solver)
+    model.objective = original_objective
     if model.solution.f >= flux_coefficient_cutoff:
         return True
     #
     simulation_results = {}
     # build the sink reactions and add all at once
     sink_reactions = {}
-    for the_component in reaction.get_reactants():
+    for the_component in reaction.reactants:
         # add in a sink reaction for each component
         sink_reaction = Reaction('test_sink_%s' % the_component.id)
         # then simulate production ability
@@ -80,7 +91,9 @@ def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001):
         super_sink += reaction
     super_sink.id = 'super_sink'
     model.add_reactions(sink_reactions.keys() + [super_sink])
-    model.optimize(new_objective=super_sink)
+    model.objective = super_sink
+    model.optimize(solver=solver)
+    model.objective = original_objective
     if flux_coefficient_cutoff <= model.solution.f:
         return True
 
@@ -89,7 +102,9 @@ def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001):
     # reactant for a reaction
     for sink_reaction, (component, coefficient) in iteritems(sink_reactions):
         # Calculate the maximum amount of the
-        model.optimize(new_objective=sink_reaction)
+        model.objective = sink_reaction
+        model.optimize(solver=solver)
+        model.objective = original_objective
         # metabolite that can be produced.
         if flux_coefficient_cutoff > model.solution.f:
             # Scale the results to a single unit
@@ -105,7 +120,8 @@ def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001):
     return simulation_results
 
 
-def assess_products(model, reaction, flux_coefficient_cutoff=0.001):
+def assess_products(model, reaction, flux_coefficient_cutoff=0.001,
+                    solver=None):
     """Assesses whether the model has the capacity to absorb the products of
     a reaction at a given flux rate.  Useful for identifying which components
     might be blocking a reaction from achieving a specific flux rate.
@@ -117,6 +133,8 @@ def assess_products(model, reaction, flux_coefficient_cutoff=0.001):
     flux_coefficient_cutoff:  Float.  The minimum flux that reaction must carry
     to be considered active.
 
+    solver : String or solver name. If None, the default solver will be used.
+
     returns: True if the model has the capacity to absorb all the reaction
     products being simultaneously given the specified cutoff.   False, if the
     model has the capacity to absorb each individual product but not all
@@ -127,14 +145,17 @@ def assess_products(model, reaction, flux_coefficient_cutoff=0.001):
     """
     model = model.copy()
     reaction = model.reactions.get_by_id(reaction.id)
-    model.optimize(new_objective={reaction: 1})
+    original_objective = model.objective
+    model.objective = reaction
+    model.optimize(solver=solver)
+    model.objective = original_objective
     if model.solution.f >= flux_coefficient_cutoff:
         return True
     #
     simulation_results = {}
     # build the sink reactions and add all at once
     source_reactions = {}
-    for the_component in reaction.get_products():
+    for the_component in reaction.products:
         # add in a sink reaction for each component
         source_reaction = Reaction('test_source_%s' % the_component.id)
         # then simulate production ability
@@ -150,7 +171,9 @@ def assess_products(model, reaction, flux_coefficient_cutoff=0.001):
         super_source += reaction
     super_source.id = 'super_source'
     model.add_reactions(source_reactions.keys() + [super_source])
-    model.optimize(new_objective=super_source)
+    model.objective = super_source
+    model.optimize(solver=solver)
+    model.objective = original_objective
     if flux_coefficient_cutoff <= model.solution.f:
         return True
 
@@ -159,7 +182,9 @@ def assess_products(model, reaction, flux_coefficient_cutoff=0.001):
     for source_reaction, (component, coefficient) in \
             iteritems(source_reactions):
         # Calculate the maximum amount of the
-        model.optimize(new_objective=source_reaction)
+        model.objective = source_reaction
+        model.optimize(solver=solver)
+        model.objective = original_objective
         # metabolite that can be produced.
         if flux_coefficient_cutoff > model.solution.f:
             # Scale the results to a single unit
