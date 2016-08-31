@@ -1,8 +1,8 @@
 from six.moves import zip_longest
-from six import iterkeys, print_, text_type
-from warnings import warn
+from six import print_, iteritems
 
 import pandas as pd
+from tabulate import tabulate
 
 from .variability import flux_variability_analysis
 
@@ -14,7 +14,8 @@ def format_long_string(string, max_length):
     return string
 
 
-def metabolite_summary(met, threshold=0.01, fva=False, **solver_args):
+def metabolite_summary(met, threshold=0.01, fva=False, floatfmt='.3g',
+                       **solver_args):
     """Print a summary of the reactions which produce and consume this
     metabolite
 
@@ -26,84 +27,89 @@ def metabolite_summary(met, threshold=0.01, fva=False, **solver_args):
     If given, fva should be a float between 0 and 1, representing the
     fraction of the optimum objective to be searched.
 
+    floatfmt: string
+        format method for floats, passed to tabulate. Default is '.3g'.
+
     """
 
     def rxn_summary(r):
-        return {
-            'id': r.id,
+        out = {
+            'id': format_long_string(r.id, 10),
             'flux': r.x * r.metabolites[met],
-            'reaction': r.reaction,
+            'reaction': format_long_string(r.reaction, 40 if fva else 50),
         }
+
+        if rxn_summary.fva_results is not False:
+            fmax = rxn_summary.fva_results.loc[r.id, 'maximum']
+            fmin = rxn_summary.fva_results.loc[r.id, 'minimum']
+            imax = r.metabolites[met] * fmax
+            imin = r.metabolites[met] * fmin
+
+            # Correct 'max' and 'min' for negative values
+            out.update({
+                'fmin': imin if abs(imin) <= abs(imax) else imax,
+                'fmax': imax if abs(imin) <= abs(imax) else imin,
+            })
+
+        return out
+
+    if fva:
+        rxn_summary.fva_results = pd.DataFrame(flux_variability_analysis(
+            met.model, met.reactions, fraction_of_optimum=fva,
+            **solver_args)).T
+    else:
+        rxn_summary.fva_results = False
 
     flux_summary = pd.DataFrame((rxn_summary(r) for r in met.reactions))
     assert flux_summary.flux.sum() < 1E-6, "Error in flux balance"
-    producing = flux_summary[flux_summary.flux > 0].copy()
-    consuming = flux_summary[flux_summary.flux < 0].copy()
 
-    for df in [producing, consuming]:
-        df['percent'] = df.flux / df.flux.sum()
-        df.drop(df[df['percent'] < threshold].index, axis=0,
-                inplace=True)
+    flux_summary = _process_flux_dataframe(flux_summary, fva, threshold,
+                                           floatfmt)
 
-    producing.sort_values('percent', ascending=False, inplace=True)
-    consuming.sort_values('percent', ascending=False, inplace=True)
+    flux_summary['percent'] = 0
+    total_flux = flux_summary[flux_summary.is_input].flux.sum()
 
-    if not fva:
+    flux_summary.loc[flux_summary.is_input, 'percent'] = \
+        flux_summary.loc[flux_summary.is_input, 'flux'] / total_flux
+    flux_summary.loc[~flux_summary.is_input, 'percent'] = \
+        flux_summary.loc[~flux_summary.is_input, 'flux'] / total_flux
 
-        producing.flux = producing.flux.apply(
-            lambda x: '{:6.2g}'.format(x))
-        consuming.flux = consuming.flux.apply(
-            lambda x: '{:6.2g}'.format(x))
+    flux_summary['percent'] = flux_summary.percent.apply(
+        lambda x: '{:.0%}'.format(x))
 
-        flux_len = 6
-
+    if fva:
+        flux_table = tabulate(
+            flux_summary.loc[:, ['percent', 'flux', 'fva_fmt', 'id',
+                                 'reaction']].values, floatfmt=floatfmt,
+            headers=['%', 'FLUX', 'RANGE', 'RXN ID', 'REACTION']).split('\n')
     else:
-        fva_results = pd.DataFrame(
-            flux_variability_analysis(met.model, met.reactions,
-                                      fraction_of_optimum=fva,
-                                      **solver_args)).T
-        half_span = (fva_results.maximum - fva_results.minimum) / 2
-        median = fva_results.minimum + half_span
+        flux_table = tabulate(
+            flux_summary.loc[:, ['percent', 'flux', 'id', 'reaction']].values,
+            floatfmt=floatfmt, headers=['%', 'FLUX', 'RXN ID', 'REACTION']
+        ).split('\n')
 
-        producing.flux = producing.id.apply(
-            lambda x, median=median, err=half_span:
-            u'{0:0.2f} \u00B1 {1:0.2f}'.format(median[x], err[x]))
-        consuming.flux = consuming.id.apply(
-            lambda x, median=median, err=half_span:
-            u'{0:0.2f} \u00B1 {1:0.2f}'.format(median[x], err[x]))
+    flux_table_head = flux_table[:2]
 
-        flux_len = max(producing.flux.apply(len).max(),
-                       consuming.flux.apply(len).max()) + 1
+    met_tag = "{0} ({1})".format(format_long_string(met.name, 45),
+                                 format_long_string(met.id, 10))
 
-    for df in [producing, consuming]:
-
-        df['reaction'] = df['reaction'].map(
-            lambda x: format_long_string(x, 52))
-        df['id'] = df['id'].map(
-            lambda x: format_long_string(x, 8))
-
-    head = "PRODUCING REACTIONS -- " + format_long_string(met.name, 55)
+    head = "PRODUCING REACTIONS -- " + met_tag
     print_(head)
     print_("-" * len(head))
-    print_(("{0:^6} {1:>" + str(flux_len) + "} {2:>8} {3:^54}").format(
-        '%', 'FLUX', 'RXN ID', 'REACTION'))
-
-    for row in producing.iterrows():
-        print_((u"{0.percent:6.1%} {0.flux:>" + str(flux_len) +
-                "} {0.id:>8} {0.reaction:>54}").format(row[1]))
+    print_('\n'.join(flux_table_head))
+    print_('\n'.join(
+        pd.np.array(flux_table[2:])[flux_summary.is_input.values]))
 
     print_()
-    print_("CONSUMING REACTIONS -- " + format_long_string(met.name, 55))
+    print_("CONSUMING REACTIONS -- " + met_tag)
     print_("-" * len(head))
-    print_(("{0:^6} {1:>" + str(flux_len) + "} {2:>8} {3:^54}").format(
-        '%', 'FLUX', 'RXN ID', 'REACTION'))
-
-    for row in consuming.iterrows():
-        print_((u"{0.percent:6.1%} {0.flux:>" + str(flux_len) +
-                "} {0.id:>8} {0.reaction:>54}").format(row[1]))
+    print_('\n'.join(flux_table_head))
+    print_('\n'.join(
+        pd.np.array(flux_table[2:])[~flux_summary.is_input.values]))
 
 
-def model_summary(model, threshold=1E-8, fva=None, digits=2, **solver_args):
+def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
+                  **solver_args):
     """Print a summary of the input and output fluxes of the model.
 
     threshold: float
@@ -113,90 +119,136 @@ def model_summary(model, threshold=1E-8, fva=None, digits=2, **solver_args):
         Whether or not to calculate and report flux variability in the
         output summary
 
-    digits: int
-        number of digits after the decimal place to print
+    floatfmt: string
+        format method for floats, passed to tabulate. Default is '.3g'.
 
     """
-    obj_fluxes = pd.Series({'{:<15}'.format(r.id): '{:.3f}'.format(r.x)
-                            for r in iterkeys(model.objective)})
 
-    if not fva:
+    # Create a dataframe of objective fluxes
+    obj_fluxes = pd.DataFrame({key: key.x * value for key, value in
+                               iteritems(model.objective)}, index=['flux']).T
+    obj_fluxes['id'] = obj_fluxes.apply(
+        lambda x: format_long_string(x.name.id, 15), 1)
 
-        out_rxns = model.reactions.query(
-            lambda rxn: rxn.x > threshold, None
-        ).query(lambda x: x, 'boundary')
+    # Build a dictionary of metabolite production from the boundary reactions
+    boundary_reactions = model.reactions.query(lambda x: x, 'boundary')
 
-        in_rxns = model.reactions.query(
-            lambda rxn: rxn.x < -threshold, None
-        ).query(lambda x: x, 'boundary')
-
-        def get_boundary_species(cobra_reaction):
-            """For a given cobra_reaction, find out which species is being
-            produced """
-            mets = list(iterkeys(cobra_reaction.metabolites))
-            if len(mets) != 1:
-                warn('The boundary reaction {} exhanges more than one '
-                     'metabolite'.format(cobra_reaction.id))
-
-            return mets[0]
-
-        out_fluxes = pd.Series({
-            get_boundary_species(r): r.x for r in out_rxns})
-        in_fluxes = pd.Series({
-            get_boundary_species(r): r.x for r in in_rxns})
-
-        # sort and round
-        out_fluxes.sort_values(ascending=False, inplace=True)
-        out_fluxes = out_fluxes.round(digits)
-        in_fluxes.sort_values(inplace=True)
-        in_fluxes = in_fluxes.round(digits)
-
-        table = pd.np.array(
-            [((a if a else ''), (b if b else ''), (c if c else ''))
-             for a, b, c in zip_longest(
-                ['IN FLUXES'] + in_fluxes.to_string().split('\n'),
-                ['OUT FLUXES'] + out_fluxes.to_string().split('\n'),
-                ['OBJECTIVES'] + obj_fluxes.to_string().split('\n'))])
-
-    else:
-        boundary_reactions = model.reactions.query(lambda x: x, 'boundary')
-
+    # Calculate FVA results if requested
+    if fva:
         fva_results = pd.DataFrame(
             flux_variability_analysis(model, reaction_list=boundary_reactions,
                                       fraction_of_optimum=fva,
                                       **solver_args)).T
 
-        half_span = (fva_results.maximum - fva_results.minimum) / 2
-        median = fva_results.minimum + half_span
-        rxn_data = pd.concat([median, half_span], 1)
-        rxn_data.columns = ['x', 'err']
+    metabolite_fluxes = {}
+    for rxn in boundary_reactions:
+        for met, stoich in iteritems(rxn.metabolites):
+            metabolite_fluxes[met] = {
+                'id': format_long_string(met.id, 15),
+                'flux': stoich * rxn.x}
 
-        for r in rxn_data.index:
-            rxn_data.loc[r, 'met'] = model.reactions.get_by_id(r).reactants[0]
+            if fva:
+                imin = stoich * fva_results.loc[rxn.id]['minimum']
+                imax = stoich * fva_results.loc[rxn.id]['maximum']
 
-        rxn_data.set_index('met', drop=True, inplace=True)
+                # Correct 'max' and 'min' for negative values
+                metabolite_fluxes[met].update({
+                    'fmin': imin if abs(imin) <= abs(imax) else imax,
+                    'fmax': imax if abs(imin) <= abs(imax) else imin,
+                })
 
-        out_fluxes = rxn_data[rxn_data.x > threshold]
-        in_fluxes = rxn_data[rxn_data.x < -threshold]
+    # Generate a dataframe of boundary fluxes
+    metabolite_fluxes = pd.DataFrame(metabolite_fluxes).T
+    metabolite_fluxes = _process_flux_dataframe(
+        metabolite_fluxes, fva, threshold, floatfmt)
 
-        out_fluxes = out_fluxes.sort_values(by='x', ascending=False)
-        out_fluxes = out_fluxes.round(digits)
-        in_fluxes = in_fluxes.sort_values(by='x')
-        in_fluxes = in_fluxes.round(digits)
+    # Begin building string output table
+    def get_str_table(species_df, fva=False):
+        """Formats a string table for each column"""
 
-        in_fluxes_s = in_fluxes.apply(
-            lambda x: u'{0:0.2f} \u00B1 {1:0.2f}'.format(x.x, x.err),
-            axis=1).to_string(header=False).split('\n')
-        out_fluxes_s = out_fluxes.apply(
-            lambda x: u'{0:0.2f} \u00B1 {1:0.2f}'.format(x.x, x.err),
-            axis=1).to_string(header=False).split('\n')
+        if not fva:
+            return tabulate(species_df.loc[:, ['id', 'flux']].values,
+                            floatfmt=floatfmt, tablefmt='plain').split('\n')
 
-        table = pd.np.array(
-            [((a if a else ''), (b if b else ''), (c if c else ''))
-             for a, b, c in zip_longest(
-                 ['IN FLUXES'] + in_fluxes_s,
-                 ['OUT FLUXES'] + out_fluxes_s,
-                 ['OBJECTIVES'] + obj_fluxes.to_string().split('\n'))])
+        else:
+            return tabulate(
+                species_df.loc[:, ['id', 'flux', 'fva_fmt']].values,
+                floatfmt=floatfmt, tablefmt='simple',
+                headers=['id', 'Flux', 'Range']).split('\n')
 
-    print_(u'\n'.join([u"{a:<30}{b:<30}{c:<20}".format(a=a, b=b, c=c) for
-                       a, b, c in table]))
+    in_table = get_str_table(
+        metabolite_fluxes[metabolite_fluxes.is_input], fva=fva)
+    out_table = get_str_table(
+        metabolite_fluxes[~metabolite_fluxes.is_input], fva=fva)
+    obj_table = get_str_table(obj_fluxes, fva=False)
+
+    # Print nested output table
+    print_(tabulate(
+        [entries for entries in zip_longest(in_table, out_table, obj_table)],
+        headers=['IN FLUXES', 'OUT FLUXES', 'OBJECTIVES'], tablefmt='simple'))
+
+
+def _process_flux_dataframe(flux_dataframe, fva, threshold, floatfmt):
+    """Some common methods for processing a database of flux information into
+    print-ready formats. Used in both model_summary and metabolite_summary. """
+
+    # Drop unused boundary fluxes
+    if not fva:
+        flux_dataframe = flux_dataframe[
+            flux_dataframe.flux.abs() > threshold].copy()
+    else:
+        flux_dataframe = flux_dataframe[
+            (flux_dataframe.flux.abs() > threshold) |
+            (flux_dataframe.fmin.abs() > threshold) |
+            (flux_dataframe.fmax.abs() > threshold)].copy()
+
+    # Make all fluxes positive
+    if not fva:
+        flux_dataframe['is_input'] = flux_dataframe.flux >= 0
+        flux_dataframe.flux = \
+            flux_dataframe.flux.abs().astype('float').round(6)
+    else:
+
+        def get_direction(flux, fmin, fmax):
+            """ decide whether or not to reverse a flux to make it positive """
+
+            if flux < 0:
+                return -1
+            elif flux > 0:
+                return 1
+            elif (fmax > 0) & (fmin <= 0):
+                return 1
+            elif (fmax < 0) & (fmin >= 0):
+                return -1
+            elif ((fmax + fmin)/2) < 0:
+                return -1
+            else:
+                return 1
+
+        sign = flux_dataframe.apply(
+            lambda x: get_direction(x.flux, x.fmin, x.fmax), 1)
+
+        flux_dataframe['is_input'] = sign == 1
+
+        flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']] = \
+            flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']].multiply(
+                sign, 0).astype('float').round(6)
+
+        flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']] = \
+            flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']].applymap(
+                lambda x: x if abs(x) > 1E-6 else 0)
+
+    if fva:
+        flux_dataframe['fva_fmt'] = flux_dataframe.apply(
+            lambda x: ("[{0.fmin:" + floatfmt + "}, {0.fmax:" +
+                       floatfmt + "}]").format(x), 1)
+
+        flux_dataframe = flux_dataframe.sort_values(
+            by=['flux', 'fmax', 'fmin', 'id'],
+            ascending=[False, False, False, True])
+
+    else:
+        flux_dataframe = flux_dataframe.sort_values(
+            by=['flux', 'id'], ascending=[False, True])
+
+    return flux_dataframe
