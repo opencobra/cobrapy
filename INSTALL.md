@@ -86,7 +86,7 @@ solvers:
 ILOG/CPLEX, MOSEK, and Gurobi are commercial software packages that currently
 provide free licenses for academics and support both linear and quadratic
 programming. GLPK and clp are open source linear programming solvers; however,
-they may not be as robsut as the commercial solvers for mixed-integer and
+they may not be as robust as the commercial solvers for mixed-integer and
 quadratic programming. QSopt_ex esolver is also open source, and can solve
 linear programs using rational operations, giving exact solutions.
 
