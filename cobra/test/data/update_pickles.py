@@ -89,3 +89,8 @@ for key in sorted(fva_result):
     clean_result[key] = {k: round(v, 5) for k, v in fva_result[key].items()}
 with open("textbook_fva.json", "w") as outfile:
     json_dump(clean_result, outfile)
+
+# textbook solution
+cobra.flux_analysis.parsimonious.optimize_minimal_flux(textbook)
+with open('textbook_solution.pickle', 'wb') as f:
+    dump(textbook.solution, f, protocol=2)

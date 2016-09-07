@@ -6,6 +6,7 @@ from os.path import join
 from os import name
 from json import load
 from contextlib import contextmanager
+import pickle
 import re
 
 from six import iteritems, StringIO
@@ -22,6 +23,10 @@ try:
     import pandas
 except:
     pandas = None
+try:
+    import tabulate
+except:
+    tabulate = None
 
 if __name__ == "__main__":
     sys.path.insert(0, "../..")
@@ -335,14 +340,20 @@ class TestCobraFluxAnalysis(TestCase):
         for item in desired_entries:
             self.assertIn(re.sub('\s', '', item), output_set)
 
-    @skipIf(pandas is None, "summary methods require pandas")
+    @skipIf((pandas is None) or (tabulate is None),
+            "summary methods require pandas and tabulate")
     def test_summary_methods(self):
 
         # Test model summary methods
         model = create_test_model("textbook")
         with self.assertRaises(Exception):
             model.summary()
-        model.optimize()
+
+        # Load model solution
+        with open(join(data_directory, "textbook_solution.pickle"),
+                  "rb") as infile:
+            model.solution = pickle.load(infile)
+
         desired_entries = [
             'idFluxRangeidFluxRangeBiomass_Ecol...0.874',
             'o2_e       21.8   [19.9, 23.7]'
@@ -380,11 +391,13 @@ class TestCobraFluxAnalysis(TestCase):
         ]
         # Need to use a different method here because
         # there are multiple entries per line.
-        with captured_output() as (out, err):
-            model.summary()
-        s = out.getvalue()
-        for i in desired_entries:
-            self.assertIn(i, s)
+        for solver in solver_dict:
+            with captured_output() as (out, err):
+                model.summary()
+
+            s = out.getvalue()
+            for i in desired_entries:
+                self.assertIn(i, s)
 
         # Test metabolite summary methods
         desired_entries = [
@@ -398,9 +411,11 @@ class TestCobraFluxAnalysis(TestCase):
             '4.0 h_c + nadh_c + q8_c --> 3.0 h_e + nad_c + q...',
             '12%     5.06  SUCDi     q8_c + succ_c --> fum_c + q8h2_c',
         ]
-        with captured_output() as (out, err):
-            model.metabolites.q8_c.summary()
-        self.check_entries(out, desired_entries)
+
+        for solver in solver_dict:
+            with captured_output() as (out, err):
+                model.metabolites.q8_c.summary()
+            self.check_entries(out, desired_entries)
 
         desired_entries = [
             'PRODUCING REACTIONS -- D-Fructose 1,6-bisphosphate (fdp_c)',
@@ -415,6 +430,7 @@ class TestCobraFluxAnalysis(TestCase):
             '0%      0     [0, 1.72]     FBP       '
             'fdp_c + h2o_c --> f6p_c + pi_c',
         ]
+
         for solver in solver_dict:
             with captured_output() as (out, err):
                 model.metabolites.fdp_c.summary(fva=0.99, solver=solver)
