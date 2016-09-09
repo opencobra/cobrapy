@@ -357,6 +357,9 @@ class TestReactions(CobraTestCase):
         pgi = model.reactions.get_by_id("PGI")
         pgi.reaction = "g6p_c --> f6p_c"
         self.assertEqual(pgi.lower_bound, 0)
+        pgi.bounds = (0, 1000)
+        self.assertEqual(pgi.bounds, (0, 1000))
+        self.assertEqual(pgi.reversibility, False)
         pgi.reaction = "g6p_c <== f6p_c"
         self.assertEqual(pgi.upper_bound, 0)
         self.assertEqual(pgi.reaction.strip(), "g6p_c <-- f6p_c")
