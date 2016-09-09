@@ -39,6 +39,7 @@ def add_solver(solver_name, use_name=None):
             use_name = solver_name
     solver_dict[use_name] = eval(solver_name)
 
+    
 for i in listdir(path.dirname(path.abspath(__file__))):
     if i.startswith("_") or i.startswith(".") or i.startswith('legacy'):
         continue

@@ -64,12 +64,16 @@ class phenotypePhasePlaneData:
         colors = empty(self.growth_rates.shape, dtype=dtype((str, 7)))
         n_segments = self.segments.max()
         # pick colors
-        if get_map is None:
-            color_list = ['#A6CEE3', '#1F78B4', '#B2DF8A', '#33A02C',
-                          '#FB9A99', '#E31A1C', '#FDBF6F', '#FF7F00',
-                          '#CAB2D6', '#6A3D9A', '#FFFF99', '#B15928']
-        else:
-            color_list = get_map(theme, 'Qualitative', n_segments).hex_colors
+        color_list = ['#A6CEE3', '#1F78B4', '#B2DF8A', '#33A02C',
+                      '#FB9A99', '#E31A1C', '#FDBF6F', '#FF7F00',
+                      '#CAB2D6', '#6A3D9A', '#FFFF99', '#B15928']
+        if get_map is not None:
+            try:
+                color_list = get_map(theme, 'Qualitative',
+                                     n_segments).hex_colors
+            except ValueError:
+                from warnings import warn
+                warn('palettable could not be used for this number of phases')
         if n_segments > len(color_list):
             from warnings import warn
             warn("not enough colors to color all detected phases")

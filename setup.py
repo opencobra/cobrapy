@@ -155,13 +155,13 @@ if "bdist_wininst" in argv:
     setup_kwargs["py_modules"] = ["six"]
 
 try:
-    import pypandoc
-    readme = pypandoc.convert("README.md", "rst")
-    install = pypandoc.convert("INSTALL.md", "rst")
+    with open('README.rst') as handle:
+        readme = handle.read()
+    with open('INSTALL.rst') as handle:
+        install = handle.read()
     setup_kwargs["long_description"] = readme + "\n\n" + install
 except:
-    with open("README.md", "r") as infile:
-        setup_kwargs["long_description"] = infile.read()
+    setup_kwargs["long_description"] = ''
 
 setup(
     name="cobra",
