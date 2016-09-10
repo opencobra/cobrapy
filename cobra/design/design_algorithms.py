@@ -34,9 +34,10 @@ def set_up_optknock(model, chemical_objective, knockable_reactions,
                     n_knockouts_required=True, dual_maximum=1000, copy=True):
     """Set up the OptKnock problem described by Burgard et al., 2003:
 
-    Burgard AP, Pharkya P, Maranas CD. Optknock: a bilevel programming framework
-    for identifying gene knockout strategies for microbial strain optimization.
-    Biotechnol Bioeng. 2003;84(6):647-57. https://doi.org/10.1002/bit.10803.
+    Burgard AP, Pharkya P, Maranas CD. Optknock: a bilevel programming
+    framework for identifying gene knockout strategies for microbial strain
+    optimization. Biotechnol Bioeng. 2003;84(6):647-57.
+    https://doi.org/10.1002/bit.10803.
 
     Arguments
     ---------
@@ -235,8 +236,9 @@ def dual_problem(model, objective_sense="maximize",
         problem.
 
     iteger_vars_to_maintain: [str]
-        A list of IDs for Boolean integer variables to be maintained in the dual
-        problem. See 'Maintaining integer variables' below for more details.
+        A list of IDs for Boolean integer variables to be maintained in the
+        dual problem. See 'Maintaining integer variables' below for more
+        details.
 
     already_irreversible: bool
         If True, then do not convert the model to irreversible.
@@ -251,13 +253,14 @@ def dual_problem(model, objective_sense="maximize",
 
     **Maintaining integer variables**
 
-    The argument ``integer_vars_to_maintain`` can be used to specify certin Boolean
-    integer variables that will be maintained in the dual problem. This makes
-    it possible to join outer and inner problems in a bi-level MILP. The method
-    for maintaining integer variables is described by Tepper and Shlomi, 2010:
+    The argument ``integer_vars_to_maintain`` can be used to specify certin
+    Boolean integer variables that will be maintained in the dual problem. This
+    makes it possible to join outer and inner problems in a bi-level MILP. The
+    method for maintaining integer variables is described by Tepper and Shlomi,
+    2010:
 
-    Tepper N, Shlomi T. Predicting metabolic engineering knockout strategies for
-    chemical production: accounting for competing pathways. Bioinformatics.
+    Tepper N, Shlomi T. Predicting metabolic engineering knockout strategies
+    for chemical production: accounting for competing pathways. Bioinformatics.
     2010;26(4):536-43. https://doi.org/10.1093/bioinformatics/btp704.
 
     In COBRApy, this roughly translates to transforming (decision variables p,
