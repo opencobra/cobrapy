@@ -42,6 +42,8 @@ function run_tests_in_repo {
 		# which pkg-config
 		# pip install matplotlib
 	fi
+	(cd glpk-4.60 \
+		&& make uninstall)
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
 	echo -e "import cobra.test; import sys; sys.exit(cobra.test.test_all())" > run-tests.py
