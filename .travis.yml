@@ -71,7 +71,7 @@ deploy:
   script: scripts/deploy-test.sh
   on:
     branch: fix/auto-wheel-test
-  #   tags: true
+  # tags: true
 
 after_success:
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install codecov; codecov; fi
