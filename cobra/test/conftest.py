@@ -1,11 +1,22 @@
 from os.path import join
 from . import create_test_model, data_dir
 import pytest
+
 try:
     from cPickle import load as _load
 except ImportError:
     from pickle import load as _load
 import json
+
+
+def pytest_addoption(parser):
+    try:
+        parser.addoption("--run-slow", action="store_true",
+                         help="run slow tests")
+        parser.addoption("--run-non-deterministic", action="store_true",
+                         help="run tests that sometimes (rarely) fail")
+    except ValueError:
+        pass
 
 
 @pytest.fixture(scope="session")

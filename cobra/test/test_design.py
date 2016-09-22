@@ -14,11 +14,13 @@ else:
 
 class TestDesignAlgorithms:
     """Test functions in cobra.design"""
+    @pytest.mark.xfail(reason="not currently supported")
     def test_dual(self, model):
         assert abs(model.optimize("maximize").f - 0.874) < 0.001
         dual = dual_problem(model)
         assert abs(dual.optimize("minimize").f - 0.874) < 0.001
 
+    @pytest.mark.xfail(reason="not currently supported")
     def test_dual_integer_vars_as_lp(self, model):
         var = _add_decision_variable(model, "AKGDH")
         assert abs(model.optimize("maximize").f - 0.874) < 0.001
@@ -31,6 +33,7 @@ class TestDesignAlgorithms:
         r.lower_bound = r.upper_bound = 0
         assert abs(dual.optimize("minimize").f - 0.858) < 0.001
 
+    @pytest.mark.xfail(reason="not currently supported")
     @pytest.mark.skipif(no_mip_solver, reason="no MILP solver found")
     def test_dual_integer_vars_as_mip(self, model):
         # mip
@@ -46,6 +49,7 @@ class TestDesignAlgorithms:
         var_in_dual.lower_bound = var_in_dual.upper_bound = 0
         assert abs(dual.optimize("minimize").f - 0.858) < 0.001
 
+    @pytest.mark.xfail(reason="not currently supported")
     @pytest.mark.skipif(no_mip_solver, reason="no MILP solver found")
     def test_optknock(self, model):
         model.reactions.get_by_id("EX_o2_e").lower_bound = 0

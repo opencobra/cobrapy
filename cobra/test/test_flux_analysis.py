@@ -8,6 +8,7 @@ from cobra.core import Model, Reaction, Metabolite
 from cobra.solvers import solver_dict, get_solver_name
 from cobra.flux_analysis import *
 from cobra.solvers import SolverNotFound
+from cobra.manipulation import convert_to_irreversible
 
 try:
     import numpy
@@ -44,7 +45,13 @@ class TestCobraFluxAnalysis:
 
     @pytest.mark.parametrize("solver", list(solver_dict))
     def test_pfba_benchmark(self, large_model, benchmark, solver):
-        benchmark(optimize_minimal_flux, large_model, solver=solver)
+        convert_to_irreversible(large_model)
+
+        def do_pfba(solver):
+            optimize_minimal_flux(large_model, solver=solver,
+                                  already_irreversible=True)
+
+        benchmark(do_pfba, solver)
 
     @pytest.mark.parametrize("solver", list(solver_dict))
     def test_pfba(self, model, solver):

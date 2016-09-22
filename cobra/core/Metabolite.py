@@ -2,7 +2,6 @@ from warnings import warn
 import re
 
 from six import iteritems
-
 from .Species import Species
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
@@ -39,6 +38,29 @@ class Metabolite(Species):
 
         self._constraint_sense = 'E'
         self._bound = 0.
+
+    def _set_id_with_model(self, value):
+        if value in self.model.metabolites:
+            raise ValueError("The model already contains a metabolite with "
+                             "the id:", value)
+        self.model.solver.constraints[self.id].name = value
+        self._id = value
+        self.model.metabolites._generate_index()
+
+    @property
+    def constraint(self):
+        if self.model is not None:
+            return self.model.solver.constraints[self.id]
+
+    @property
+    def constraint(self):
+        if self.model is not None:
+            return self.model.solver.constraints[self.id]
+
+    @property
+    def constraint(self):
+        if self.model is not None:
+            return self.model.solver.constraints[self.id]
 
     @property
     def elements(self):
@@ -104,6 +126,7 @@ class Metabolite(Species):
         the solution.
 
         """
+        warn("use metabolite.shadow_price instead", DeprecationWarning)
         try:
             return self._model.solution.y_dict[self.id]
         except Exception as e:
@@ -116,6 +139,26 @@ class Metabolite(Species):
             if self._model.solution.status != "optimal":
                 raise Exception("model solution was not optimal")
             raise e  # Not sure what the exact problem was
+
+    def shadow_price(self):
+        """The shadow price for the metabolite in the most recent solution
+
+        Shadow prices are computed from the dual values of the bounds in
+        the solution.
+
+        """
+        try:
+            return self._model.solution.shadow_prices[self.id]
+        except Exception as e:
+            if self._model is None:
+                raise Exception("not part of a model")
+            if not hasattr(self._model, "solution") or \
+                    self._model.solution is None or \
+                    self._model.solution.status == "NA":
+                raise Exception("model has not been solved")
+            if self._model.solution.status != "optimal":
+                raise Exception("model solution was not optimal")
+            raise e
 
     def remove_from_model(self, method='subtractive', **kwargs):
         """Removes the association from self.model
@@ -131,7 +174,7 @@ class Metabolite(Species):
         # with multiple Models
         if "model" in kwargs:
             warn("model argument deprecated")
-
+        model = self._model
         self._model.metabolites.remove(self)
         self._model = None
         if method.lower() == 'subtractive':
@@ -143,6 +186,7 @@ class Metabolite(Species):
                 x.remove_from_model()
         else:
             raise Exception(method + " is not 'subtractive' or 'destructive'")
+        model.solver.remove(model.solver.constraints[self.id])
 
     def summary(self, **kwargs):
         """Print a summary of the reactions which produce and consume this
@@ -166,6 +210,21 @@ class Metabolite(Species):
             return metabolite_summary(self, **kwargs)
         except ImportError:
             warn('Summary methods require pandas/tabulate')
+
+    def _repr_html_(self):
+        return """
+        <table>
+            <tr>
+                <td><strong>Id</strong></td><td>%s</td>
+            </tr>
+            <tr>
+                <td><strong>Name</strong></td><td>%s</td>
+            </tr>
+            <tr>
+                <td><strong>Formula</strong></td><td>%s</td>
+            </tr>
+        </table>""" % (self.id, self.name, self.formula)
+
 
 elements_and_molecular_weights = {
     'H':   1.007940,
