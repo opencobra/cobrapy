@@ -3,7 +3,6 @@ from cobra.manipulation import *
 import pytest
 from .conftest import model, salmonella
 
-
 class TestManipulation:
     """Test functions in cobra.manipulation"""
 
