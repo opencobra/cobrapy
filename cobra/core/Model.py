@@ -128,7 +128,7 @@ class Model(Object):
             new_reaction = reaction.__class__()
             for attr, value in iteritems(reaction.__dict__):
                 if attr not in do_not_copy:
-                    new_reaction.__dict__[attr] = value
+                    new_reaction.__dict__[attr] = copy(value)
             new_reaction._model = new
             new.reactions.append(new_reaction)
             # update awareness
