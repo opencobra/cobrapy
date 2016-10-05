@@ -321,7 +321,7 @@ class LinkedArray(ndarray):
         ndarray.__setitem__(self, index, value)
         if isinstance(index, slice):
             for i, entry in enumerate(self._list[index]):
-                setattr(entry, self._attr, value)
+                setattr(entry, self._attr, value[i])
         else:
             setattr(self._list[index], self._attr, value)
 
