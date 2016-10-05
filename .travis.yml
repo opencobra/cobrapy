@@ -3,7 +3,6 @@ python: 3.5
 sudo: required
 dist: trusty
 services: docker
-sudo: required
 cache:
   directories:
     - $HOME/.cache/pip
