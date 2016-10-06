@@ -333,7 +333,7 @@ class LinkedArray(ndarray):
             setattr(self._list[index], self._attr, value)
 
     def __setslice__(self, i, j, value):
-        self.__setitem__(self, slice(i, j), value)
+        self.__setitem__(slice(i, j), value)
 
     def _extend(self, other):
         old_size = len(self)
