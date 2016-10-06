@@ -786,9 +786,12 @@ class TestCobraArrayModel(TestCobraModel):
         self.assertAlmostEqual(model.reactions[0].lower_bound, 0.0)
         model.upper_bounds[1] = 1234.0
         self.assertAlmostEqual(model.reactions[1].upper_bound, 1234.0)
-        model.upper_bounds[0:2] = [100.0, 200.0]
-        self.assertAlmostEqual(model.reactions[0].upper_bound, 100.0)
-        self.assertAlmostEqual(model.reactions[1].upper_bound, 200.0)
+        model.upper_bounds[9:11] = [100.0, 200.0]
+        self.assertAlmostEqual(model.reactions[9].upper_bound, 100.0)
+        self.assertAlmostEqual(model.reactions[10].upper_bound, 200.0)
+        model.upper_bounds[9:11] = 123.0
+        self.assertAlmostEqual(model.reactions[9].upper_bound, 123.0)
+        self.assertAlmostEqual(model.reactions[10].upper_bound, 123.0)
 
 
 # make a test suite to run all of the tests

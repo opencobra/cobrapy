@@ -320,21 +320,20 @@ class LinkedArray(ndarray):
     def __setitem__(self, index, value):
         ndarray.__setitem__(self, index, value)
         if isinstance(index, slice):
-            for i, entry in enumerate(self._list[index]):
-                setattr(entry, self._attr, value[i])
+            # not sure why that is here
+            if index.stop == maxsize:
+                index = slice(index.start, len(self))
+            if hasattr(value, "__getitem__"):
+                for i, entry in enumerate(self._list[index]):
+                    setattr(entry, self._attr, value[i])
+            else:
+                for i, entry in enumerate(self._list[index]):
+                    setattr(entry, self._attr, value)
         else:
             setattr(self._list[index], self._attr, value)
 
     def __setslice__(self, i, j, value):
-        ndarray.__setitem__(self, slice(i, j), value)
-        if j == maxsize:
-            j = len(self)
-        if hasattr(value, "__getitem__"):  # setting to a list
-            for index in range(i, j):
-                setattr(self._list[index], self._attr, value[index])
-        else:
-            for index in range(i, j):
-                setattr(self._list[index], self._attr, value)
+        self.__setitem__(self, slice(i, j), value)
 
     def _extend(self, other):
         old_size = len(self)
