@@ -50,18 +50,17 @@ def flux_variability_analysis(cobra_model, reaction_list=None,
 def calculate_lp_variability(lp, solver, cobra_model, reaction_list,
                              **solver_args):
     """calculate max and min of selected variables in an LP"""
-    fva_results = {}
-    for r in reaction_list:
-        r_id = str(r)
-        i = cobra_model.reactions.index(r_id)
-        fva_results[r_id] = {}
-        solver.change_variable_objective(lp, i, 1.)
-        solver.solve_problem(lp, objective_sense="maximize", **solver_args)
-        fva_results[r_id]["maximum"] = solver.get_objective_value(lp)
-        solver.solve_problem(lp, objective_sense="minimize", **solver_args)
-        fva_results[r_id]["minimum"] = solver.get_objective_value(lp)
-        # revert the problem to how it was before
-        solver.change_variable_objective(lp, i, 0.)
+    fva_results = {str(r): {} for r in reaction_list}
+    for what in ("minimum", "maximum"):
+        sense = "minimize" if what == "minimum" else "maximize"
+        for r in reaction_list:
+            r_id = str(r)
+            i = cobra_model.reactions.index(r_id)
+            solver.change_variable_objective(lp, i, 1.)
+            solver.solve_problem(lp, objective_sense=sense, **solver_args)
+            fva_results[r_id][what] = solver.get_objective_value(lp)
+            # revert the problem to how it was before
+            solver.change_variable_objective(lp, i, 0.)
     return fva_results
 
 
