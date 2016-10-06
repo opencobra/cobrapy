@@ -4,6 +4,7 @@ sudo: required
 dist: trusty
 services: docker
 sudo: required
+osx_image: xcode6.4
 cache:
   directories:
     - $HOME/.cache/pip
