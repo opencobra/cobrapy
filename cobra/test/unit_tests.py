@@ -289,7 +289,6 @@ class TestReactions(CobraTestCase):
         model = self.model
         reaction = model.reactions.get_by_id("PGI")
         old_gene = list(reaction.genes)[0]
-        old_gene_reaction_rule = reaction.gene_reaction_rule
         new_gene = model.genes.get_by_id("s0001")
         # add an existing 'gene' to the gpr
         reaction.gene_reaction_rule = 's0001'
@@ -778,6 +777,21 @@ class TestCobraArrayModel(TestCobraModel):
         # mismatched dimensions should give an error
         with self.assertRaises(TypeError):
             model.reactions[[True, False]]
+
+    def test_array_based_bounds_setting(self):
+        model = self.model
+        bounds = [0.0] * len(model.reactions)
+        model.lower_bounds = bounds
+        self.assertEqual(type(model.reactions[0].lower_bound), float)
+        self.assertAlmostEqual(model.reactions[0].lower_bound, 0.0)
+        model.upper_bounds[1] = 1234.0
+        self.assertAlmostEqual(model.reactions[1].upper_bound, 1234.0)
+        model.upper_bounds[9:11] = [100.0, 200.0]
+        self.assertAlmostEqual(model.reactions[9].upper_bound, 100.0)
+        self.assertAlmostEqual(model.reactions[10].upper_bound, 200.0)
+        model.upper_bounds[9:11] = 123.0
+        self.assertAlmostEqual(model.reactions[9].upper_bound, 123.0)
+        self.assertAlmostEqual(model.reactions[10].upper_bound, 123.0)
 
 
 # make a test suite to run all of the tests
