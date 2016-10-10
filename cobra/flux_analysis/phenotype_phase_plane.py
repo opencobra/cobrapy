@@ -102,7 +102,7 @@ class phenotypePhasePlaneData:
         axes.set_ylabel(self.reaction2_name, size="x-large")
         axes.set_zlabel("Growth rate", size="x-large")
         axes.view_init(elev=30, azim=-135)
-        figure.tight_layout()
+        figure.set_tight_layout(True)
         return axes
 
     def plot_mayavi(self):
@@ -228,12 +228,15 @@ def calculate_phenotype_phase_plane(
     """calculates the growth rates while varying the uptake rates for two
     reactions.
 
-    returns: an object containing the growth rates for the uptake rates.
-    To plot the result, call the plot function of the returned object.
+    :returns: a `phenotypePhasePlaneData` object containing the growth rates
+    for the uptake rates. To plot the
+    result, call the plot function of the returned object.
 
-    Example:
-    data = calculate_phenotype_phase_plane(my_model, "EX_foo", "EX_bar")
-    data.plot()
+    :Example:
+    >>> import cobra.test
+    >>> model = cobra.test.create_test_model("textbook")
+    >>> ppp = calculate_phenotype_phase_plane(model, "EX_glc__D_e", "EX_o2_e")
+    >>> ppp.plot()
     """
     if solver is None:
         solver = get_solver_name()
