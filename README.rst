@@ -11,7 +11,7 @@ of COBRA models and provides access to commonly used COBRA methods, such
 as flux balance analysis, flux variability analysis, and gene deletion
 analyses.
 
-To install, please follow the `instructions <INSTALL.md>`__.
+To install, please follow the `instructions <INSTALL.rst>`__.
 
 The documentation is browseable online at
 `readthedocs <https://cobrapy.readthedocs.org/en/stable/>`__ and can
