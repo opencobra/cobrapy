@@ -28,6 +28,8 @@ Mac OS X or Linux
    pip <http://pip.readthedocs.org/en/latest/installing.html>`__.
 1. In a terminal, run ``sudo pip install cobra``
 
+We highly recommend updating ``pip`` beforehand (``pip install pip --upgrade``).
+
 Microsoft Windows
 ~~~~~~~~~~~~~~~~~
 
