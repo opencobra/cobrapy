@@ -53,7 +53,7 @@ Installation
 Use pip to install cobrapy from
 `PyPI <https://pypi.python.org/pypi/cameo>`__ (we recommend doing this
 inside a `virtual
-environment <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`__).::
+environment <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`__)::
 
     pip install cobra
 
@@ -68,7 +68,7 @@ Contributing
 ~~~~~~~~~~~~
 
 Contributions are always welcome! Please read the `contributions
-guideline <CONTRIBUTING.rst>`__. to get started.
+guideline <CONTRIBUTING.rst>`__ to get started.
 
 License
 -------
