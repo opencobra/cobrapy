@@ -24,7 +24,7 @@ function pre_build {
 
 function build_wheel {
     # Set default building method to pip
-	pip install pyelftools==0.23
+	pip freeze
     build_bdist_wheel $@
 	auditwheel show /io/wheelhouse/*.whl
 	(cd glpk-4.60 && make uninstall)
