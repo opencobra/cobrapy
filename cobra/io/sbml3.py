@@ -548,7 +548,13 @@ def read_sbml_model(filename, number=float, **kwargs):
                 xmlfile.write(outfile, encoding="UTF-8")
             filename = outfile.name
         return read_sbml2(filename, **kwargs)
-    return parse_xml_into_model(xml, number=number, **kwargs)
+    try:
+        return parse_xml_into_model(xml, number=number, **kwargs)
+    except Exception:
+        raise CobraSBMLError(
+            "Something went wrong reading the model. You can get a detailed "
+            "report using the `cobra.io.sbml3.validate_sbml_model` function "
+            "or using the online validator at http://sbml.org/validator")
 
 
 id_required = {ns(i) for i in ("sbml:model", "sbml:reaction:", "sbml:species",
