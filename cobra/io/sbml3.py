@@ -1,10 +1,11 @@
 from collections import defaultdict
 from warnings import warn, catch_warnings, simplefilter
 from decimal import Decimal
-from ast import parse as ast_parse, Name, Or, And, BoolOp
+from ast import Name, Or, And, BoolOp
 from gzip import GzipFile
 from bz2 import BZ2File
 from tempfile import NamedTemporaryFile
+from sys import exc_info
 import re
 
 from six import iteritems, string_types
@@ -558,7 +559,29 @@ invalid_id_detector = re.compile("|".join(re.escape(i[0]) for i in _renames))
 
 
 def validate_sbml_model(filename, check_model=True):
-    """returns the model along with a list of errors"""
+    """Returns the model along with a list of errors.
+
+    Parameters
+    ----------
+    filename : str
+        The filename of the SBML model to be validated.
+    check_model: bool, optional
+        Whether to also check some basic model properties such as reaction
+        boundaries and compartment formulas.
+
+    Returns
+    -------
+    model : :class:`~cobra.core.Model.Model` object
+        The cobra model if the file could be read succesfully or None
+        otherwise.
+    errors : dict
+        Warnings and errors grouped by their respective types.
+
+    Raises
+    ------
+    CobraSBMLError
+        If the file is not a valid SBML Level 3 file with FBC.
+    """
     xmlfile = parse_stream(filename)
     xml = xmlfile.getroot()
     # use libsbml if not l3v1 with fbc v2
@@ -566,10 +589,10 @@ def validate_sbml_model(filename, check_model=True):
             get_attrib(xml, "fbc:required") is None:
         raise CobraSBMLError("XML is not SBML level 3 v1 with fbc v2")
 
-    sbml_errors = []
+    errors = {k: [] for k in ("validator", "warnings", "SBML errors", "other")}
 
-    def err(err_msg):
-        sbml_errors.append(err_msg)
+    def err(err_msg, group="validator"):
+        errors[group].append(err_msg)
 
     # make sure there is exactly one model
     xml_models = xml.findall(ns("sbml:model"))
@@ -624,9 +647,12 @@ def validate_sbml_model(filename, check_model=True):
         try:
             model = parse_xml_into_model(xml)
         except CobraSBMLError as e:
-            err(str(e))
-            return (None, sbml_errors)
-    sbml_errors.extend(str(i.message) for i in warning_list)
+            err(str(e), "SBML errors")
+            return (None, errors)
+        except:
+            err(str(exc_info()[1]), "other")
+            return (None, errors)
+    errors["warnings"].extend(str(i.message) for i in warning_list)
 
     # check genes
     xml_genes = {
@@ -637,10 +663,10 @@ def validate_sbml_model(filename, check_model=True):
             err("No gene specfied with id 'G_%s'" % gene.id)
 
     if check_model:
-        sbml_errors.extend(check_reaction_bounds(model))
-        sbml_errors.extend(check_metabolite_compartment_formula(model))
+        errors["validator"].extend(check_reaction_bounds(model))
+        errors["validator"].extend(check_metabolite_compartment_formula(model))
 
-    return model, sbml_errors
+    return model, errors
 
 
 def write_sbml_model(cobra_model, filename, use_fbc_package=True, **kwargs):
