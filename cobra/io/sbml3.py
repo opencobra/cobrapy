@@ -114,7 +114,9 @@ def get_attrib(tag, attribute, type=lambda x: x, require=False):
         msg = "required attribute '%s' not found in tag '%s'" % \
                              (attribute, tag.tag)
         if tag.get("id") is not None:
-            msg += "with id '%s'" % tag.get("id")
+            msg += " with id '%s'" % tag.get("id")
+        elif tag.get("name") is not None:
+            msg += " with name '%s'" % tag.get("name")
         raise CobraSBMLError(msg)
     return type(value) if value is not None else None
 
@@ -254,7 +256,8 @@ def parse_xml_into_model(xml, number=float):
                           xml_model.findall(COMPARTMENT_XPATH)}
     # add metabolites
     for species in xml_model.findall(SPECIES_XPATH % 'false'):
-        met = Metabolite(clip(species.get("id"), "M_"))
+        met = get_attrib(species, "id", require=True)
+        met = Metabolite(clip(met, "M_"))
         met.name = species.get("name")
         annotate_cobra_from_sbml(met, species)
         met.compartment = species.get("compartment")
@@ -294,7 +297,8 @@ def parse_xml_into_model(xml, number=float):
     reactions = []
     for sbml_reaction in xml_model.iterfind(
             ns("sbml:listOfReactions/sbml:reaction")):
-        reaction = Reaction(clip(sbml_reaction.get("id"), "R_"))
+        reaction = get_attrib(sbml_reaction, "id", require=True)
+        reaction = Reaction(clip(reaction, "R_"))
         reaction.name = sbml_reaction.get("name")
         annotate_cobra_from_sbml(reaction, sbml_reaction)
         lb_id = get_attrib(sbml_reaction, "fbc:lowerFluxBound", require=True)

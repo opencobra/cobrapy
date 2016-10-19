@@ -147,6 +147,12 @@ class TestCobraIOSBMLfbc2Bz2(TestCobraIOSBMLfbc2):
 
 
 class TestCobraSBMLValidation(TestCase):
+    def test_sbml_error(self):
+        filename = join(data_directory, "invalid0.xml")
+        with self.assertRaisesRegex(io.sbml3.CobraSBMLError,
+                                    "Something went wrong"):
+            io.read_sbml_model(filename)
+
     def test_bad_validation(self):
         for i in range(3):
             filename = join(data_directory, "invalid%d.xml" % i)
