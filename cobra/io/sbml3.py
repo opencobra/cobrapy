@@ -659,8 +659,8 @@ def validate_sbml_model(filename, check_model=True):
         except CobraSBMLError as e:
             err(str(e), "SBML errors")
             return (None, errors)
-        except:
-            err(str(exc_info()[1]), "other")
+        except Exception as e:
+            err(str(e), "other")
             return (None, errors)
     errors["warnings"].extend(str(i.message) for i in warning_list)
 
