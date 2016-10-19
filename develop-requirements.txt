@@ -1,0 +1,15 @@
+# Requirements for developing cobrapy
+six
+Cython>=0.21
+numpy>=1.6
+scipy>=0.11.0
+python-libsbml
+lxml
+matplotlib
+palettable
+zmq
+pymatbridge
+pandas>=0.17.0
+tabulate
+tox
+pep8
