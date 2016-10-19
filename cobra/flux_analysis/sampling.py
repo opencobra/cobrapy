@@ -2,8 +2,8 @@ import numpy as np
 from ..solvers import solver_dict, get_solver_name
 
 
-class Sampler(object):
-    """The abstract base class for samplers
+class HRsampler(object):
+    """The abstract base class for hit-and-run samplers
 
     """
 
