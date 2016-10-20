@@ -31,29 +31,29 @@ implement and easier to use, thereby bringing the power of COBRA to
 more researchers.
 
 The documentation is browseable online at
-`readthedocs <https://cobrapy.readthedocs.org/en/stable/>`__ and can
+`readthedocs <https://cobrapy.readthedocs.org/en/stable/>`_ and can
 also be
-`downloaded <https://readthedocs.org/projects/cobrapy/downloads/>`__.
+`downloaded <https://readthedocs.org/projects/cobrapy/downloads/>`_.
 
 Please use the `Google
-Group <http://groups.google.com/group/cobra-pie>`__ for help.
+Group <http://groups.google.com/group/cobra-pie>`_ for help.
 Alternatively, you can use
-`gitter.im <https://gitter.im/opencobra/cobrapy>`__ for quick questions
+`gitter.im <https://gitter.im/opencobra/cobrapy>`_ for quick questions
 and discussions about cobrapy (faster response times).
 
 More information about opencobra is available at the
-`website <http://opencobra.github.io/>`__.
+`website <http://opencobra.github.io/>`_.
 
 If you use cobrapy in a scientific publication, please cite
-`doi:10.1186/1752-0509-7-74 <http://dx.doi.org/doi:10.1186/1752-0509-7-74>`__
+`doi:10.1186/1752-0509-7-74 <http://dx.doi.org/doi:10.1186/1752-0509-7-74>`_
 
 Installation
 ~~~~~~~~~~~~
 
 Use pip to install cobrapy from
-`PyPI <https://pypi.python.org/pypi/cameo>`__ (we recommend doing this
+`PyPI <https://pypi.python.org/pypi/cameo>`_ (we recommend doing this
 inside a `virtual
-environment <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`__)::
+environment <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_)::
 
     pip install cobra
 
@@ -62,13 +62,13 @@ In case you downloaded the source code, run::
     pip install -e .
 
 In the ``cobrapy`` directory. For further information, please follow
-the `detailed instructions <INSTALL.rst>`__.
+the `detailed instructions <INSTALL.rst>`_.
 
 Contributing
 ~~~~~~~~~~~~
 
 Contributions are always welcome! Please read the `contributions
-guideline <CONTRIBUTING.rst>`__ to get started.
+guideline <CONTRIBUTING.rst>`_ to get started.
 
 License
 -------
