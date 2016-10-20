@@ -64,36 +64,51 @@ Here's how to set up `cobrapy` for local development to contribute smaller featu
 1. Fork the `cobrapy` repository on GitHub.
 2. Clone your fork locally::
 
-    git clone git@github.com:your_name_here/cobrapy.git
+    $ git clone git@github.com:your_name_here/cobrapy.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development ::
+3. Install libglpk using your package manager.  For macOS:: ``brew install homebrew/science/glpk``. For Debian-based
+   Linux systems (including Ubuntu and Mint):: ``sudo apt-get install libglpk-dev``.
 
-    mkvirtualenv cobrapy
-    cd cobrapy/
-    python setup.py develop
+4. If virtualenvwrapper is not installed, `follow the directions <https://virtualenvwrapper.readthedocs.io/en/latest/>`__
+   to install virtualenvwrapper.
 
-4. Create a branch for local development::
+5. Install your local copy of cobrapy into a virtualenv with virtualenvwrapper::
 
-    git checkout -b name-of-your-bugfix-or-feature
+    $ cd cobrapy
+    $ mkvirtualenv cobrapy
+
+   Use the ``--python`` option to select a specific version of Python for the virtualenv. Note on macOS, matplotlib
+   requires Python be installed as a framework but virtualenv creates a non-framework build of Python.
+   See the `matplotlib FAQ <http://matplotlib.org/1.5.3/faq/virtualenv_faq.html>`__ for details
+   on a workaround.
+
+6. Install the required packages for development in the virtualenv using pip install::
+
+   (cobrapy)$ pip install --upgrade pip
+   (cobrapy)$ pip install -r develop-requirements.txt
+
+7. Setup cobrapy for development::
+
+    (cobrapy)$ python setup.py develop
+
+8. Create a branch for local development (see below for details on the branching model)::
+
+    (cobrapy)$ git checkout -b name-of-your-bugfix-or-feature
 
    Now you can make your changes locally.
 
-5. When you are done making changes, check that your changes pass pep8 and the tests, including testing other Python versions with tox::
+5. When you are done making changes, check that your changes pass pep8 and the tests with tox for the supported
+   Python versions::
 
-    tox
-
-   or::
-
-    tox -e py35
-
-   To only test on python 3.5 (tox on all python versions takes quite long so may want to try one at a time to start with.
-   To get pep8 and tox, just pip install them into your virtualenv.
+    (cobrapy)$ tox -e py27
+    (cobrapy)$ tox -e py34
+    (cobrapy)$ tox -e py35
 
 6. Commit your changes and push your branch to GitHub::
 
-    git add .
-    git commit -m "Your detailed description of your changes."
-    git push origin name-of-your-bugfix-or-feature
+    (cobrapy)$ git add .
+    (cobrapy)$ git commit -m "Your detailed description of your changes."
+    (cobrapy)$ git push origin name-of-your-bugfix-or-feature
 
 7. Submit a pull request through the GitHub website.
 
