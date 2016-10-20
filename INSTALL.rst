@@ -28,6 +28,8 @@ Mac OS X or Linux
    pip <http://pip.readthedocs.org/en/latest/installing.html>`__.
 1. In a terminal, run ``sudo pip install cobra``
 
+We highly recommend updating ``pip`` beforehand (``pip install pip --upgrade``).
+
 Microsoft Windows
 ~~~~~~~~~~~~~~~~~
 
@@ -42,23 +44,10 @@ To install without pip, you will need to download and use the
 appropriate installer for your version of python from the `python
 package index <https://pypi.python.org/pypi/cobra/>`__.
 
-Hacking version installation
+Installation for development
 ----------------------------
 
-Use pip to install `Cython <http://cython.org/>`__. Install libglpk
-using your package manger. This would be
-``brew install homebrew/science/glpk`` on a Mac and
-``sudo apt-get install libglpk-dev`` on debian-based systems (including
-Ubuntu and Mint). GLPK can also be compiled from the released source.
-
-Clone the git repository using your preferred mothod. Cloning from your
-own `github fork <https://help.github.com/articles/fork-a-repo>`__ is
-recommended! Afterwards, open a terminal, enter the cobrapy repository
-and run the following command:
-
-::
-
-    python setup.py develop --user
+Get the `detailed instructions <CONTRIBUTING.rst>`__ for contributing to cobrapy.
 
 Installation of optional dependencies
 =====================================

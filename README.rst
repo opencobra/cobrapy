@@ -1,17 +1,34 @@
-cobrapy
-=======
+cobrapy - constraint-based reconstruction and analysis in python
+================================================================
 
 |Build Status| |Coverage Status| |Build status| |PyPI| |Gitter|
 
-COnstraint-Based Reconstruction and Analysis (COBRA) methods are widely
-used for genome-scale modeling of metabolic networks in both prokaryotes
-and eukaryotes. COBRApy is a constraint-based modeling package that is
-designed to accommodate the biological complexity of the next generation
-of COBRA models and provides access to commonly used COBRA methods, such
-as flux balance analysis, flux variability analysis, and gene deletion
-analyses.
+What is cobrapy?
+~~~~~~~~~~~~~~~~
 
-To install, please follow the `instructions <INSTALL.rst>`__.
+COBRA methods are widely used for genome-scale modeling of metabolic
+networks in both prokaryotes and eukaryotes. **cobrapy** is a
+constraint-based modeling package that is designed to accommodate the
+biological complexity of the next generation of COBRA models and
+provides access to commonly used COBRA methods, such as flux balance
+analysis, flux variability analysis, and gene deletion analyses.
+
+Our aim with cobrapy is to provide useful, efficient infrastructure
+for:
+
+- creating and managing metabolic models
+- accessing popular solvers
+- analyzing models with methods such as FVA, FBA, pFBA, MOMA etc. 
+- inspecting models and drawing conclusions on gene essentiality,
+  testing consequences of knock-outs etc.
+
+Our goal with cobrapy is for it to be useful on its own, and for it to
+be the natural choice of infrastructure for developers that want to
+build new COBRA related python packages for e.g. visualization,
+strain-design and data driven analysis. By re-using the same classes
+and design principles, we can make new methods both easier to
+implement and easier to use, thereby bringing the power of COBRA to
+more researchers.
 
 The documentation is browseable online at
 `readthedocs <https://cobrapy.readthedocs.org/en/stable/>`__ and can
@@ -29,6 +46,29 @@ More information about opencobra is available at the
 
 If you use cobrapy in a scientific publication, please cite
 `doi:10.1186/1752-0509-7-74 <http://dx.doi.org/doi:10.1186/1752-0509-7-74>`__
+
+Installation
+~~~~~~~~~~~~
+
+Use pip to install cobrapy from
+`PyPI <https://pypi.python.org/pypi/cameo>`__ (we recommend doing this
+inside a `virtual
+environment <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`__)::
+
+    pip install cobra
+
+In case you downloaded the source code, run::
+
+    pip install -e .
+
+In the ``cobrapy`` directory. For further information, please follow
+the `detailed instructions <INSTALL.rst>`__.
+
+Contributing
+~~~~~~~~~~~~
+
+Contributions are always welcome! Please read the `contributions
+guideline <CONTRIBUTING.rst>`__ to get started.
 
 License
 -------
