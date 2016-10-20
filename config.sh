@@ -24,10 +24,9 @@ function pre_build {
 
 function build_wheel {
     # Set default building method to pip
-	pip freeze
-	pip install pyelftools==0.23
     build_bdist_wheel $@
-	(cd glpk-4.60 && make uninstall)
+	# avoid this for now, (we get broken linux wheels due to https://github.com/pypa/manylinux/issues/80, but testing works)
+	# (cd glpk-4.60 && make uninstall)
 }
 
 function run_tests_in_repo {
