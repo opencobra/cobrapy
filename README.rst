@@ -62,7 +62,7 @@ In case you downloaded the source code, run::
     pip install -e .
 
 In the ``cobrapy`` directory. For further information, please follow
-the `detailed instructions <INSTALL.rst>`_.
+the `detailed installation instructions <INSTALL.rst>`_.
 
 Contributing
 ~~~~~~~~~~~~
@@ -99,3 +99,4 @@ Public License for more details.
    :target: https://pypi.python.org/pypi/cobra
 .. |Gitter| image:: https://badges.gitter.im/opencobra/cobrapy.svg
    :target: https://gitter.im/opencobra/cobrapy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+
