@@ -44,7 +44,7 @@ To install without pip, you will need to download and use the
 appropriate installer for your version of python from the `python
 package index <https://pypi.python.org/pypi/cobra/>`__.
 
-Hacking version installation
+Installation for development
 ----------------------------
 
 Get the `detailed instructions <CONTRIBUTING.rst>`__ for contributing to cobrapy.
