@@ -47,20 +47,7 @@ package index <https://pypi.python.org/pypi/cobra/>`__.
 Hacking version installation
 ----------------------------
 
-Use pip to install `Cython <http://cython.org/>`__. Install libglpk
-using your package manger. This would be
-``brew install homebrew/science/glpk`` on a Mac and
-``sudo apt-get install libglpk-dev`` on debian-based systems (including
-Ubuntu and Mint). GLPK can also be compiled from the released source.
-
-Clone the git repository using your preferred mothod. Cloning from your
-own `github fork <https://help.github.com/articles/fork-a-repo>`__ is
-recommended! Afterwards, open a terminal, enter the cobrapy repository
-and run the following command:
-
-::
-
-    python setup.py develop --user
+Get the `detailed instructions <CONTRIBUTING.rst>`__ for contributing to cobrapy.
 
 Installation of optional dependencies
 =====================================
