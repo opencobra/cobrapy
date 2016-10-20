@@ -1,77 +1,43 @@
 language: python
-python: 3.5
-sudo: required
-dist: trusty
-services: docker
+sudo: false
 cache:
   directories:
     - $HOME/.cache/pip
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
 addons:
   apt:
     packages:
-      - libfreetype6-dev
-      - libpng12-dev
+      - gfortran
+      - libatlas-dev
+      - libatlas-base-dev
+      - liblapack-dev
+      - libgmp-dev
+      - libglpk-dev
+      - libmpfr-dev
 
+# command to install dependencies
 env:
-  global:
-    - secure: "hkKBaGLvoDVgktSKR3BmX+mYlGzHw9EO11MRHtiH8D9BbdygOR9p9aSV/OxkaRWhnkSP5/0SXqVgBrvU1g5OsR6cc85UQSpJ5H5jVnLoWelIbTxMCikjxDSkZlseD7ZEWrKZjRo/ZN2qym0HRWpsir3qLpl8W25xHRv/sK7Z6g8="
-    - secure: "DflyBz+QiyhlhBxn4wN00xu248EJUMjKTxUZQN6wq22qV55xO3ToGJTy9i4D6OBfZGAlSXxjjKCJ2+0sAjsghBSDEK56ud3EEg/08TIo7/T8ex/C58FsGoGFz3yDBATmquClEWN8vAMrLdxwniHmQVCBZCP/phdt5dct0AUuDc8="
-    - PLAT=x86_64
-    - UNICODE_WIDTH=32
-
-matrix:
-  exclude:
-      - python: 3.5
-  include:
-    - os: linux
-      env:
-        - MB_PYTHON_VERSION=2.7
-    - os: linux
-      env:
-        - MB_PYTHON_VERSION=3.4
-    - os: linux
-      env:
-        - MB_PYTHON_VERSION=3.5
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=2.7
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=3.4
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=3.5
-
+  - PIP_CACHE_DIR=$HOME/.cache/pip
 before_install:
-  - rvm get head
-  - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout ffe5995)
-  # matplotlib non-compatible as testing runs in venv (non-framework)
-  - TEST_DEPENDS="cython codecov coverage numpy scipy python-libsbml jsonschema six pandas tabulate"
-  - BUILD_DEPENDS="cython numpy scipy"
-  - source multibuild/common_utils.sh
-  - source multibuild/travis_steps.sh
-  - before_install
-
-before_cache:
-  - set +e
-
+  - pip install pip --upgrade
+  # These get cached
+  - pip install numpy scipy python-libsbml cython codecov jsonschema six matplotlib pandas
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install lxml glpk pep8 palettable; fi
+  # Download esolver and add it to the path
+  - wget https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
+  - gzip -d esolver.gz; chmod +x esolver; export PATH=$PATH:$PWD
+  - mkdir -p $HOME/.config/matplotlib
+  - "echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc"
 install:
-  - build_wheel . $PLAT
-
+  - python setup.py develop
+# # command to run tests
 script:
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install pep8; pep8 cobra --exclude=oven,solvers,sbml.py --show-source; fi
-  - install_run $PLAT
-
-deploy:
-  provider: script
-  skip_cleanup: true
-  script: scripts/deploy.sh
-  on:
-    branch: master
-    tags: true
-
+  - coverage run --source=cobra setup.py test
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
+    pep8 cobra --exclude=oven,solvers,sbml.py --show-source;
+    fi
 after_success:
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install codecov; codecov; fi
+  - codecov
