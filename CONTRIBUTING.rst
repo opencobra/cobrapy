@@ -66,8 +66,13 @@ Here's how to set up `cobrapy` for local development to contribute smaller featu
 
     $ git clone git@github.com:your_name_here/cobrapy.git
 
-3. Install libglpk using your package manager.  For macOS:: ``brew install homebrew/science/glpk``. For Debian-based
-   Linux systems (including Ubuntu and Mint):: ``sudo apt-get install libglpk-dev``.
+3. Install libglpk using your package manager. For macOS::
+
+	$ brew install homebrew/science/glpk
+
+   For Debian-based Linux systems (including Ubuntu and Mint)::
+
+	$ sudo apt-get install libglpk-dev
 
 4. If virtualenvwrapper is not installed, `follow the directions <https://virtualenvwrapper.readthedocs.io/en/latest/>`__
    to install virtualenvwrapper.
