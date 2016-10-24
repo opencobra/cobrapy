@@ -6,6 +6,7 @@ from unittest import TestCase, TestLoader, TextTestRunner, skipIf, \
     expectedFailure
 from functools import partial
 from pickle import load, dump
+from six import iteritems
 import sys
 
 if __name__ == "__main__":
@@ -146,11 +147,16 @@ class TestCobraIOSBMLfbc2Bz2(TestCobraIOSBMLfbc2):
 
 
 class TestCobraSBMLValidation(TestCase):
-    def test_bad_valiation(self):
+    def test_sbml_error(self):
+        filename = join(data_directory, "invalid0.xml")
+        with self.assertRaises(io.sbml3.CobraSBMLError):
+            io.read_sbml_model(filename)
+
+    def test_bad_validation(self):
         for i in range(3):
             filename = join(data_directory, "invalid%d.xml" % i)
             m, errors = io.sbml3.validate_sbml_model(filename)
-            self.assertTrue(len(errors) >= 1)
+            self.assertTrue(any(len(v) >= 1 for v in iteritems(errors)))
 
 
 @skipIf(not libsbml, "libsbml required")
