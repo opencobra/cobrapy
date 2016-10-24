@@ -37,7 +37,7 @@ class Mock(object):
 
 MOCK_MODULES = ['numpy', 'scipy', 'scipy.sparse', 'scipy.io', 'scipy.stats',
                 'glpk', 'gurobipy', 'gurobipy.GRB', 'cplex', 'pp', 'libsbml',
-                'cplex.exceptions', 'pandas']
+                'cplex.exceptions', 'pandas', 'tabulate']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
 
