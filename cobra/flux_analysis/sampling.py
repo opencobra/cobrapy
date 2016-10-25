@@ -23,16 +23,18 @@ FTOL = BTOL
 def _step(sampler, x, delta, fraction=None):
     """Samples a feasible step from the point `x` in direction `delta`."""
     # delta = delta / np.sqrt((delta * delta).sum())
-    nonzero = np.abs(delta) > FTOL
+    nonzero = np.abs(delta) > 0.0
     alphas = ((1.0 - BTOL) * sampler.bounds - x)[:, nonzero]
     alphas = (alphas / delta[nonzero]).flatten()
-    alpha_range = (alphas[alphas > 0].min(), alphas[alphas < 0].max())
+    alpha_range = (alphas[alphas > 0.0].min(), alphas[alphas <= 0.0].max())
     if fraction:
         alpha = alpha_range[0] + fraction * (alpha_range[1] - alpha_range[0])
     else:
         alpha = np.random.uniform(alpha_range[0], alpha_range[1])
     # Setting step sizes for almost zero or fixed directions only means trouble
-    delta[np.logical_not(nonzero) | sampler.fixed] = 0.0
+    # delta[np.logical_not(nonzero) | sampler.fixed] = 0.0
+    if not sampler.validate(x + alpha * delta):
+        raise(ValueError(str(x), str(alpha * delta)))
     return alpha * delta
 
 
@@ -462,7 +464,8 @@ def sample(model, n, method="optgp", processes=1,
     Currently we support two methods:
 
     1. 'optgp' (default) which uses the OptGPSampler that supports parallel
-        sampling [1]_.
+        sampling [1]_. Requires large numbers of samples to be performant
+        (n < 1000). For smaller samples 'arch' might be better suited.
 
     or
 
@@ -513,9 +516,10 @@ def sample(model, n, method="optgp", processes=1,
        Operations Research 199846:1 , 84-95
     """
     if method == "optgp":
-        sampler = OptGPSampler(model, processes, solver, **solver_kwargs)
+        sampler = OptGPSampler(model, processes, solver=solver,
+                               **solver_kwargs)
     elif method == "arch":
-        sampler = ARCHSampler(model, solver, **solver_kwargs)
+        sampler = ARCHSampler(model, solver=solver, **solver_kwargs)
     else:
         raise ValueError("method must be 'optgp' or 'arch'!")
 
