@@ -180,7 +180,7 @@ class HRSampler(object):
 class ARCHSampler(HRSampler):
     """Artificial Centering Hit-and-Run sampler.
 
-    A sampler with low memory foot print and acceptable convergence.
+    A sampler with low memory foot print and good convergence.
 
     Parameters
     ----------
@@ -235,7 +235,7 @@ class ARCHSampler(HRSampler):
     .. [2] https://github.com/opencobra/cobratoolbox
     """
 
-    def __init__(self, model, thinning=10, solver=None, **solver_kwargs):
+    def __init__(self, model, thinning=100, solver=None, **solver_kwargs):
         super(ARCHSampler, self).__init__(model, thinning)
         self.generate_fva_warmup(solver, **solver_kwargs)
         self.prev = self.center = self.warmup.mean(axis=0)
@@ -382,7 +382,7 @@ class OptGPSampler(HRSampler):
        https://doi.org/10.1371/journal.pone.0086587
     """
 
-    def __init__(self, model, processes, thinning=10, memory=1000,
+    def __init__(self, model, processes, thinning=100, memory=10000,
                  solver=None, **solver_kwargs):
         super(OptGPSampler, self).__init__(model, thinning)
         self.generate_fva_warmup(solver, **solver_kwargs)
@@ -452,3 +452,71 @@ class OptGPSampler(HRSampler):
         d = dict(self.__dict__)
         del d['model']
         return d
+
+
+def sample(model, n, method="optgp", processes=1,
+           solver=None, **solver_kwargs):
+    """Samples valid flux distribution from a cobra model.
+
+    The function samples valid flux distributions from a cobra model.
+    Currently we support two methods:
+
+    1. 'optgp' (default) which uses the OptGPSampler that supports parallel
+        sampling [1]_.
+
+    or
+
+    2. 'arch' which uses artificial centering hit-and-run. This is a single
+       process method with good convergence [2]_.
+
+    Parameters
+    ----------
+    model : a cobra model
+        The model from which to sample flux distributions.
+    n : int
+        The number of samples to obtain. When using 'optgp' this must be a
+        multiple of `processes`, otherwise a larger number of samples will be
+        returned.
+    method : str, optional
+        The sampling algorithm to use.
+    processes : int, optional
+        Only used for 'optgp'. The number of processes used to generate
+        samples.
+    solver : str or cobra solver interface, optional
+        The solver used for the arising LP problems during warmup point
+        generation.
+    **solver_args
+        Additional arguments passed to the solver.
+
+    Returns
+    -------
+    numpy matrix
+        The generated flux samples. Each row corresponds to a sample of the
+        fluxes. Thus, the number of columns corresponds to the number of
+        reactions in the model. The order of columns is the same as the order
+        of reactions in the model.
+
+    Notes
+    -----
+    Currently, cobrapy does not support the definition of complex constraints
+    for a model. If you want to add additional contraints those have to be
+    implemented in your model with mock reactions.
+
+    References
+    ----------
+    .. [1] Megchelenbrink W, Huynen M, Marchiori E (2014)
+       optGpSampler: An Improved Tool for Uniformly Sampling the Solution-Space
+       of Genome-Scale Metabolic Networks.
+       PLoS ONE 9(2): e86587.
+    .. [2] Direction Choice for Accelerated Convergence in Hit-and-Run Sampling
+       David E. Kaufman Robert L. Smith
+       Operations Research 199846:1 , 84-95
+    """
+    if method == "optgp":
+        sampler = OptGPSampler(model, processes, solver, **solver_kwargs)
+    elif method == "arch":
+        sampler = ARCHSampler(model, solver, **solver_kwargs)
+    else:
+        raise ValueError("method must be 'optgp' or 'arch'!")
+
+    return sampler.sample(n)
