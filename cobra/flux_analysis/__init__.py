@@ -9,6 +9,7 @@ from .single_deletion import single_gene_deletion, single_reaction_deletion
 from .parsimonious import optimize_minimal_flux
 from .loopless import construct_loopless_model
 from .gapfilling import growMatch
+from .sampling import sample
 
 if numpy:
     from .double_deletion import double_reaction_deletion, double_gene_deletion
