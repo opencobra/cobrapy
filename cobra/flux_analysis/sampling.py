@@ -4,16 +4,36 @@ New samplers should derive from the abstract `HRSampler` class
 where possible to provide a uniform interface.
 """
 
+from __future__ import division
+from builtins import range
 import numpy as np
 from ..solvers import solver_dict, get_solver_name
 from copy import deepcopy
-from builtins import range
+from multiprocessing import Pool, Array
+import ctypes
 
 BTOL = np.finfo(np.float32).eps
 """The tolerance used for checking bounds feasibility."""
 
 FTOL = BTOL
 """The tolerance used for checking equalities feasibility."""
+
+
+# Has to be declared outside of class to be used for multiprocessing :(
+def _step(sampler, x, delta, fraction=None):
+    """Samples a feasible step from the point `x` in direction `delta`."""
+    # delta = delta / np.sqrt((delta * delta).sum())
+    nonzero = np.abs(delta) > FTOL
+    alphas = ((1.0 - BTOL) * sampler.bounds - x)[:, nonzero]
+    alphas = (alphas / delta[nonzero]).flatten()
+    alpha_range = (alphas[alphas > 0].min(), alphas[alphas < 0].max())
+    if fraction:
+        alpha = alpha_range[0] + fraction * (alpha_range[1] - alpha_range[0])
+    else:
+        alpha = np.random.uniform(alpha_range[0], alpha_range[1])
+    # Setting step sizes for almost zero or fixed directions only means trouble
+    delta[np.logical_not(nonzero) | sampler.fixed] = 0.0
+    return alpha * delta
 
 
 class HRSampler(object):
@@ -51,6 +71,7 @@ class HRSampler(object):
         self.n_samples = 0
         self.bounds = np.array([[r.lower_bound, r.upper_bound]
                                for r in model.reactions]).T
+        self.fixed = np.diff(self.bounds, axis=0).flatten() < 2 * BTOL
         self.warmup = None
 
     def generate_fva_warmup(self, solver=None, **solver_args):
@@ -72,35 +93,29 @@ class HRSampler(object):
         for i, r in enumerate(self.model.reactions):
             solver.change_variable_objective(lp, i, 0.0)
 
-        self.n_warmup = 2 * len(self.model.reactions)
-        self.warmup = np.zeros((self.n_warmup, len(self.model.reactions)))
+        self.n_warmup = 0
+        self.warmup = np.zeros((2 * len(self.model.reactions),
+                                len(self.model.reactions)))
 
-        idx = 0
         for sense in ("minimize", "maximize"):
             for i, r in enumerate(self.model.reactions):
+                # Omit fixed reactions
+                if self.fixed[i]:
+                    pass
                 solver.change_variable_objective(lp, i, 1.0)
                 solver.solve_problem(lp, objective_sense=sense, **solver_args)
                 sol = solver.format_solution(lp, self.model).x
                 # some solvers do not enforce bounds too much -> we recontrain
                 sol = np.maximum(sol, self.bounds[0, ])
                 sol = np.minimum(sol, self.bounds[1, ])
-                self.warmup[idx, ] = sol
-                idx += 1
+                self.warmup[self.n_warmup, ] = sol
+                self.n_warmup += 1
                 # revert objective
                 solver.change_variable_objective(lp, i, 0.)
+        # Shrink warmup points to measure
+        self.warmup = self.warmup[0:self.n_warmup, ]
 
-    def __step(self, x, delta):
-        """Samples a feasible step from the point `x` in direction `delta`."""
-        delta = delta / np.sqrt((delta * delta).sum())
-        nonzero = np.abs(delta) > FTOL
-        alphas = ((1.0 - BTOL) * self.bounds - x)[:, nonzero]
-        alphas = (alphas / delta[nonzero]).flatten()
-        alpha = np.random.uniform(alphas[alphas > 0].min(),
-                                  alphas[alphas < 0].max())
-        delta[np.logical_not(nonzero)] = 0.0
-        return alpha * delta
-
-    def sample(self):
+    def sample(self, n):
         """Abstract sampling function.
 
         Should be overwritten by child classes.
@@ -126,10 +141,7 @@ class HRSampler(object):
             a valid flux sample for a total of n_r reactions in each row.
         """
         for i in range(batch_num):
-            b = np.zeros((batch_size, len(self.model.reactions)))
-            for j in range(batch_size):
-                b[j, ] = self.sample()
-            yield b
+            yield self.sample(batch_size)
 
     def validate(self, samples):
         """Validates a set of samples for equality and inequality feasibility.
@@ -150,10 +162,16 @@ class HRSampler(object):
             a boolean value for each sample which denotes whether the sample
             is feasible (True) or infeasible (False).
         """
-        S = deepcopy(self.model).to_array_based_model().S
-        feasibility = np.abs(S.dot(samples.T)).max(axis=0)
-        lb_error = (samples - self.bounds[0, ]).min(axis=1)
-        ub_error = (self.bounds[1, ] - samples).min(axis=1)
+        if len(samples.shape) > 1:
+            S = deepcopy(self.model).to_array_based_model().S
+            feasibility = np.abs(S.dot(samples.T)).max(axis=0)
+            lb_error = (samples - self.bounds[0, ]).min(axis=1)
+            ub_error = (self.bounds[1, ] - samples).min(axis=1)
+        else:
+            S = deepcopy(self.model).to_array_based_model().S
+            feasibility = np.abs(S.dot(samples.T)).max()
+            lb_error = (samples - self.bounds[0, ]).min()
+            ub_error = (self.bounds[1, ] - samples).min()
 
         valid = (feasibility < FTOL) & (lb_error > -BTOL) & (ub_error > -BTOL)
         return valid
@@ -202,15 +220,23 @@ class ARCHSampler(HRSampler):
     -----
     ARCH generates samples by choosing new directions from the sampling space's
     center and the warmup points. The implementation used here is the same
-    as in the Matlab Cobra Toolbox and uses only the initial warmup points
+    as in the Matlab Cobra Toolbox [2]_ and uses only the initial warmup points
     to generate new directions and not any other previous iterates. This
     usually gives better mixing since the startup points are chosen to span
     the space in a wide manner. This also makes the generated sampling chain
     quasi-markovian since the center converges rapidly.
+
+    References
+    ----------
+    .. [1] Direction Choice for Accelerated Convergence in Hit-and-Run Sampling
+       David E. Kaufman Robert L. Smith
+       Operations Research 199846:1 , 84-95
+       https://doi.org/10.1287/opre.46.1.84
+    .. [2] https://github.com/opencobra/cobratoolbox
     """
 
     def __init__(self, model, thinning=10, solver=None, **solver_kwargs):
-        super(ARCHSampler, self).__init__(model)
+        super(ARCHSampler, self).__init__(model, thinning)
         self.generate_fva_warmup(solver, **solver_kwargs)
         self.prev = self.center = self.warmup.mean(axis=0)
 
@@ -219,12 +245,210 @@ class ARCHSampler(HRSampler):
         # mix in the original warmup points to not get stuck
         p = self.warmup[pi, ]
         delta = p - self.center
-        self.prev += self.__step(self.prev, delta)
+        self.prev += _step(self, self.prev, delta)
         self.center = (self.n_samples * self.center + self.prev) / (
                        self.n_samples + 1)
         self.n_samples += 1
 
-    def sample(self):
-        for i in range(self.thinning):
-            self.single_iteration()
-        return self.prev
+    def sample(self, n):
+        """Generate a set of samples.
+
+        This is the basic sampling function for all hit-and-run samplers.
+
+        Paramters
+        ---------
+        n : int
+            The number of samples that are generated at once.
+
+        Returns
+        -------
+        numpy matrix
+            Returns a matrix with `n` rows, each containing a flux sample.
+
+        Notes
+        -----
+        Performance of this function linearly depends on the number
+        of reactions in your model and the thinning factor.
+        """
+        samples = np.zeros((n, len(self.model.reactions)))
+        for i in range(self.thinning * n):
+            self.__single_iteration()
+            if i % self.thinning == 0:
+                samples[i//self.thinning, ] = self.prev
+        return samples
+
+
+# Unfortunately this has to be outside the class to be usable with
+# multiprocessing :()
+def _sample_chain(sampler, n):
+    """samples a single chain for OptGPSampler.
+
+    center and n_samples are updated locally and forgotten afterwards.
+    """
+    center = sampler.center
+    prev = sampler.warmup[np.random.randint(sampler.n_warmup), ]
+    prev = center + _step(sampler, center, prev - center, 0.95)
+    n_samples = sampler.n_samples + 1
+    samples = np.zeros((n, center.shape[0]))
+    n_mem = min(sampler.n_samples, sampler.memory)
+
+    for i in range(sampler.thinning * n):
+        pi = np.random.randint(sampler.n_warmup + n_mem)
+        if pi < sampler.n_warmup:
+            p = sampler.warmup[pi, ]
+        else:
+            p = sampler.mem[pi - sampler.n_warmup, ]
+
+        delta = p - center
+        prev += _step(sampler, prev, delta)
+        if i % sampler.thinning == 0:
+            samples[i//sampler.thinning, ] = prev
+            center = (n_samples * center + prev) / (n_samples + 1)
+            n_samples += 1
+
+    return samples
+
+
+class OptGPSampler(HRSampler):
+    """A parallel optimized sampler.
+
+    A parallel sampler with fast convergence and parallel execution. See [1]_
+    for details.
+
+    Parameters
+    ----------
+    model : a cobra model
+        The cobra model from which to generate samples.
+    processes: int
+        The number of processes used during sampling.
+    thinnning : int, optional
+        The thinning factor of the generated sampling chain. A thinning of 10
+        means samples are returned every 10 steps.
+    memory : int
+        How many of the previous samples are remembered by the sampler and used
+        to sample new search directions.
+    solver : str or cobra solver interface, optional
+        The solver used for the arising LP problems during warmup point
+        generation.
+    **solver_args
+        Additional arguments passed to the solver.
+
+    Attributes
+    ----------
+    model : a cobra model
+        The cobra model from which the samples get generated.
+    thinning : int
+        The currently used thinning factor.
+    memory : int
+        Number of samples the sampler remembers.
+    mem : numpy array
+        The samples contained in the memory.
+    np : int
+        The number of processes used by the sampler.
+    n_samples : int
+        The total number of samples that have been generated by this
+        sampler instance.
+    bounds : a numpy matrix
+        The matrix has 2 rows, the first containing the lower flux bounds
+        in its columns and the second the upper flux bounds.
+    warmup : a numpy matrix
+        A matrix of with as many columns as reactions in the model and more
+        than 3 rows containing a warmup sample in each row.
+    prev : numpy array
+        The cuurent/last flux sample generated.
+    center : numpy array
+        The center of the sampling space as estimated by the mean of all
+        previously generated samples.
+
+    Notes
+    -----
+    The sampler is very similar to artificial centering where each process
+    samples its own chain. The sampler also used previous iterates and, thus,
+    is non-markovian. Initial points are chosen randomly from the warmup points
+    followed by a linear transformation that pulls the points towards the
+    a little bit towards the center of the sampling space.
+
+    If the number of processes used is larger than one the requested
+    number of samples is adjusted to the smallest multiple of the number of
+    processes larger than the requested sample number. For instance, if you
+    have 3 processes and request 8 samples you will receive 9.
+
+    References
+    ----------
+    .. [1] Megchelenbrink W, Huynen M, Marchiori E (2014)
+       optGpSampler: An Improved Tool for Uniformly Sampling the Solution-Space
+       of Genome-Scale Metabolic Networks.
+       PLoS ONE 9(2): e86587.
+       https://doi.org/10.1371/journal.pone.0086587
+    """
+
+    def __init__(self, model, processes, thinning=10, memory=1000,
+                 solver=None, **solver_kwargs):
+        super(OptGPSampler, self).__init__(model, thinning)
+        self.generate_fva_warmup(solver, **solver_kwargs)
+        self.np = processes
+        self.memory = int(memory)
+
+        # This maps our saved samples and center into shared memory,
+        # meaning they are synchronized across processes
+        shared = Array(ctypes.c_double, self.memory * len(model.reactions))
+        self.mem = np.frombuffer(shared.get_obj())
+        self.mem = self.mem.reshape(self.memory, len(model.reactions))
+        shared_center = Array(ctypes.c_double, len(model.reactions))
+        self.center = np.frombuffer(shared_center.get_obj())
+        # Has to be like this because we want a copy
+        self.center[:] = self.warmup.mean(axis=0)
+
+    def sample(self, n):
+        """Generate a set of samples.
+
+        This is the basic sampling function for all hit-and-run samplers.
+
+        Paramters
+        ---------
+        n : int
+            The minimum number of samples that are generated at once
+            (see Notes).
+
+        Returns
+        -------
+        numpy matrix
+            Returns a matrix with `n` rows, each containing a flux sample.
+
+        Notes
+        -----
+        Performance of this function linearly depends on the number
+        of reactions in your model and the thinning factor.
+
+        If the number of processes is larger than one, computation is split
+        across as the CPUs of your machine. This may shorten computation time.
+        However, there is also overhead in setting up parallel computation so
+        we recommend to calculate large numbers of samples at once
+        (`n` > 1000).
+        """
+        if self.np > 1:
+            n_process = np.ceil(n / self.np).astype(int)
+            n = n_process * self.np
+            with Pool(self.np) as mp:
+                chains = mp.starmap(
+                    _sample_chain,
+                    zip([self] * self.np, [n_process] * self.np)
+                    )
+            chains = np.vstack(chains)
+        else:
+            chains = _sample_chain(self, n)
+
+        # Update the memory matrix
+        update_idx = np.arange(self.n_samples, self.n_samples +
+                               chains.shape[0]) % self.memory
+        self.mem[update_idx, ] = chains
+        self.center = (self.n_samples * self.center +
+                       n * chains.mean(axis=0)) / (self.n_samples + n)
+        self.n_samples += n
+        return chains
+
+    # Models can be large so don't pass them around during multiprocessing
+    def __getstate__(self):
+        d = dict(self.__dict__)
+        del d['model']
+        return d
