@@ -18,6 +18,53 @@ BTOL = np.finfo(np.float32).eps
 FTOL = BTOL
 """The tolerance used for checking equalities feasibility."""
 
+bad_x = None
+bad_delta = None
+bad_alpha = None
+
+
+def nullspace(A, atol=1e-13, rtol=0):
+    """Compute an approximate basis for the nullspace of A.
+    The algorithm used by this function is based on the singular value
+    decomposition of `A`.
+
+    Parameters
+    ----------
+    A : ndarray
+    A should be at most 2-D.  A 1-D array with length k will be treated
+    as a 2-D with shape (1, k)
+    atol : float
+    The absolute tolerance for a zero singular value.  Singular values
+    smaller than `atol` are considered to be zero.
+    rtol : float
+    The relative tolerance.  Singular values less than rtol*smax are
+    considered to be zero, where smax is the largest singular value.
+
+    If both `atol` and `rtol` are positive, the combined tolerance is the
+    maximum of the two; that is::
+    tol = max(atol, rtol * smax)
+    Singular values smaller than `tol` are considered to be zero.
+
+    Returns
+    -------
+    ns : ndarray
+    If `A` is an array with shape (m, k), then `ns` will be an array
+    with shape (k, n), where n is the estimated dimension of the
+    nullspace of `A`.  The columns of `ns` are a basis for the
+    nullspace; each element in numpy.dot(A, ns) will be approximately
+    zero.
+
+    Notes
+    -----
+    Taken from the numpy cookbook.
+    """
+    A = np.atleast_2d(A)
+    u, s, vh = np.linalg.svd(A)
+    tol = max(atol, rtol * s[0])
+    nnz = (s >= tol).sum()
+    ns = vh[nnz:].conj().T
+    return ns
+
 
 # Has to be declared outside of class to be used for multiprocessing :(
 def _step(sampler, x, delta, fraction=None):
@@ -31,10 +78,13 @@ def _step(sampler, x, delta, fraction=None):
         alpha = alpha_range[0] + fraction * (alpha_range[1] - alpha_range[0])
     else:
         alpha = np.random.uniform(alpha_range[0], alpha_range[1])
-    # Setting step sizes for almost zero or fixed directions only means trouble
-    # delta[np.logical_not(nonzero) | sampler.fixed] = 0.0
-    if not sampler.validate(x + alpha * delta):
-        raise(ValueError(str(x), str(alpha * delta)))
+    step = alpha * delta
+
+    # Numerical instabilities may cause bounds validation
+    # sample from one of the original warmup directions if that occurs
+    if np.any(sampler._bounds_dist(x + step) < -BTOL):
+        newdir = sampler.warmup[np.random.randint(sampler.n_warmup)]
+        return _step(sampler, x, newdir - sampler.center)
     return alpha * delta
 
 
@@ -71,6 +121,8 @@ class HRSampler(object):
         self.model = model
         self.thinning = thinning
         self.n_samples = 0
+        self.S = deepcopy(self.model).to_array_based_model().S.toarray()
+        self.NS = nullspace(self.S)
         self.bounds = np.array([[r.lower_bound, r.upper_bound]
                                for r in model.reactions]).T
         self.fixed = np.diff(self.bounds, axis=0).flatten() < 2 * BTOL
@@ -117,6 +169,16 @@ class HRSampler(object):
         # Shrink warmup points to measure
         self.warmup = self.warmup[0:self.n_warmup, ]
 
+    def _reproject(self, p):
+        """Reprojects a point into the feasibility region"""
+        return self.NS.dot(self.NS.T.dot(p))
+
+    def _bounds_dist(self, p):
+        """Get the lower and upper bound distances. Negative is bad."""
+        lb_dist = (p - self.bounds[0, ]).min()
+        ub_dist = (self.bounds[1, ] - p).min()
+        return np.array([lb_dist, ub_dist])
+
     def sample(self, n):
         """Abstract sampling function.
 
@@ -161,22 +223,24 @@ class HRSampler(object):
         -------
         numpy array
             A one-dimensional numpy array of length containing
-            a boolean value for each sample which denotes whether the sample
-            is feasible (True) or infeasible (False).
-        """
-        if len(samples.shape) > 1:
-            S = deepcopy(self.model).to_array_based_model().S
-            feasibility = np.abs(S.dot(samples.T)).max(axis=0)
-            lb_error = (samples - self.bounds[0, ]).min(axis=1)
-            ub_error = (self.bounds[1, ] - samples).min(axis=1)
-        else:
-            S = deepcopy(self.model).to_array_based_model().S
-            feasibility = np.abs(S.dot(samples.T)).max()
-            lb_error = (samples - self.bounds[0, ]).min()
-            ub_error = (self.bounds[1, ] - samples).min()
+            a code of 1 to 3 letters denoting the validation result:
 
+            - 'v' means feasible in bounds and equality constraints
+            - 'l' means a lower bound violation
+            - 'u' means a lower bound validation
+            - 'e' means and equality constraint violation
+        """
+        ax = (0, 1) if len(samples.shape) > 1 else (None, None)
+        feasibility = np.abs(self.S.dot(samples.T)).max(axis=ax[0])
+        lb_error = (samples - self.bounds[0, ]).min(axis=ax[1])
+        ub_error = (self.bounds[1, ] - samples).min(axis=ax[1])
         valid = (feasibility < FTOL) & (lb_error > -BTOL) & (ub_error > -BTOL)
-        return valid
+        codes = np.repeat("", valid.shape[0])
+        codes[valid] = "v"
+        codes[lb_error <= -BTOL] = np.char.add(codes[lb_error <= -BTOL], "l")
+        codes[ub_error <= -BTOL] = np.char.add(codes[ub_error <= -BTOL], "u")
+        codes[feasibility > FTOL] = np.char.add(codes[feasibility > FTOL], "e")
+        return codes
 
 
 class ARCHSampler(HRSampler):
@@ -248,6 +312,8 @@ class ARCHSampler(HRSampler):
         p = self.warmup[pi, ]
         delta = p - self.center
         self.prev += _step(self, self.prev, delta)
+        if (self.n_samples * self.thinning % 1000 == 0):
+            self.prev = self._reproject(self.prev)
         self.center = (self.n_samples * self.center + self.prev) / (
                        self.n_samples + 1)
         self.n_samples += 1
@@ -275,6 +341,8 @@ class ARCHSampler(HRSampler):
         samples = np.zeros((n, len(self.model.reactions)))
         for i in range(self.thinning * n):
             self.__single_iteration()
+            if (self.n_samples * self.thinning % 1000 == 0):
+                self.prev = self.NS.dot(self.NS.T.dot(self.prev))
             if i % self.thinning == 0:
                 samples[i//self.thinning, ] = self.prev
         return samples
@@ -303,6 +371,8 @@ def _sample_chain(sampler, n):
 
         delta = p - center
         prev += _step(sampler, prev, delta)
+        if (n_samples * sampler.thinning % 1000 == 0):
+            prev = sampler._reproject(prev)
         if i % sampler.thinning == 0:
             samples[i//sampler.thinning, ] = prev
             center = (n_samples * center + prev) / (n_samples + 1)
