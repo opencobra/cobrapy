@@ -24,6 +24,7 @@ function pre_build {
 
 function build_wheel {
     # Set default building method to pip
+	pip install pyelftools==0.23
     build_bdist_wheel $@
 	(cd glpk-4.60 && make uninstall)
 }
