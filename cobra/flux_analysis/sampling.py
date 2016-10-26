@@ -230,10 +230,12 @@ class HRSampler(object):
             - 'u' means a lower bound validation
             - 'e' means and equality constraint violation
         """
-        ax = (0, 1) if len(samples.shape) > 1 else (None, None)
-        feasibility = np.abs(self.S.dot(samples.T)).max(axis=ax[0])
-        lb_error = (samples - self.bounds[0, ]).min(axis=ax[1])
-        ub_error = (self.bounds[1, ] - samples).min(axis=ax[1])
+        feasibility = np.abs(self.S.dot(samples.T))
+        feasibility = np.atleast_2d(feasibility).max(axis=0)
+        lb_error = (samples - self.bounds[0, ])
+        lb_error = np.atleast_2d(lb_error).min(axis=1)
+        ub_error = (self.bounds[1, ] - samples)
+        ub_error = np.atleast_2d(ub_error).min(axis=1)
         valid = (feasibility < FTOL) & (lb_error > -BTOL) & (ub_error > -BTOL)
         codes = np.repeat("", valid.shape[0])
         codes[valid] = "v"
@@ -339,12 +341,12 @@ class ARCHSampler(HRSampler):
         of reactions in your model and the thinning factor.
         """
         samples = np.zeros((n, len(self.model.reactions)))
-        for i in range(self.thinning * n):
+        for i in range(1, self.thinning * n + 1):
             self.__single_iteration()
             if (self.n_samples * self.thinning % 1000 == 0):
                 self.prev = self.NS.dot(self.NS.T.dot(self.prev))
             if i % self.thinning == 0:
-                samples[i//self.thinning, ] = self.prev
+                samples[i//self.thinning - 1, ] = self.prev
         return samples
 
 
@@ -358,23 +360,19 @@ def _sample_chain(sampler, n):
     center = sampler.center
     prev = sampler.warmup[np.random.randint(sampler.n_warmup), ]
     prev = center + _step(sampler, center, prev - center, 0.95)
-    n_samples = sampler.n_samples + 1
+    n_samples = max(sampler.n_samples, 1)
     samples = np.zeros((n, center.shape[0]))
-    n_mem = min(sampler.n_samples, sampler.memory)
 
-    for i in range(sampler.thinning * n):
-        pi = np.random.randint(sampler.n_warmup + n_mem)
-        if pi < sampler.n_warmup:
-            p = sampler.warmup[pi, ]
-        else:
-            p = sampler.mem[pi - sampler.n_warmup, ]
+    for i in range(1, sampler.thinning * n + 1):
+        pi = np.random.randint(sampler.n_warmup)
+        p = sampler.warmup[pi, ]
 
         delta = p - center
         prev += _step(sampler, prev, delta)
         if (n_samples * sampler.thinning % 1000 == 0):
             prev = sampler._reproject(prev)
         if i % sampler.thinning == 0:
-            samples[i//sampler.thinning, ] = prev
+            samples[i//sampler.thinning - 1, ] = prev
             center = (n_samples * center + prev) / (n_samples + 1)
             n_samples += 1
 
@@ -396,9 +394,6 @@ class OptGPSampler(HRSampler):
     thinnning : int, optional
         The thinning factor of the generated sampling chain. A thinning of 10
         means samples are returned every 10 steps.
-    memory : int
-        How many of the previous samples are remembered by the sampler and used
-        to sample new search directions.
     solver : str or cobra solver interface, optional
         The solver used for the arising LP problems during warmup point
         generation.
@@ -411,10 +406,6 @@ class OptGPSampler(HRSampler):
         The cobra model from which the samples get generated.
     thinning : int
         The currently used thinning factor.
-    memory : int
-        Number of samples the sampler remembers.
-    mem : numpy array
-        The samples contained in the memory.
     np : int
         The number of processes used by the sampler.
     n_samples : int
@@ -435,10 +426,9 @@ class OptGPSampler(HRSampler):
     Notes
     -----
     The sampler is very similar to artificial centering where each process
-    samples its own chain. The sampler also used previous iterates and, thus,
-    is non-markovian. Initial points are chosen randomly from the warmup points
-    followed by a linear transformation that pulls the points towards the
-    a little bit towards the center of the sampling space.
+    samples its own chain. Initial points are chosen randomly from the warmup
+    points followed by a linear transformation that pulls the points towards
+    the a little bit towards the center of the sampling space.
 
     If the number of processes used is larger than one the requested
     number of samples is adjusted to the smallest multiple of the number of
@@ -454,18 +444,14 @@ class OptGPSampler(HRSampler):
        https://doi.org/10.1371/journal.pone.0086587
     """
 
-    def __init__(self, model, processes, thinning=100, memory=10000,
-                 solver=None, **solver_kwargs):
+    def __init__(self, model, processes, thinning=100, solver=None,
+                 **solver_kwargs):
         super(OptGPSampler, self).__init__(model, thinning)
         self.generate_fva_warmup(solver, **solver_kwargs)
         self.np = processes
-        self.memory = int(memory)
 
-        # This maps our saved samples and center into shared memory,
+        # This maps our saved center into shared memory,
         # meaning they are synchronized across processes
-        shared = Array(ctypes.c_double, self.memory * len(model.reactions))
-        self.mem = np.frombuffer(shared.get_obj())
-        self.mem = self.mem.reshape(self.memory, len(model.reactions))
         shared_center = Array(ctypes.c_double, len(model.reactions))
         self.center = np.frombuffer(shared_center.get_obj())
         # Has to be like this because we want a copy
@@ -510,12 +496,10 @@ class OptGPSampler(HRSampler):
         else:
             chains = _sample_chain(self, n)
 
-        # Update the memory matrix
-        update_idx = np.arange(self.n_samples, self.n_samples +
-                               chains.shape[0]) % self.memory
-        self.mem[update_idx, ] = chains
+        # Update the global center
         self.center = (self.n_samples * self.center +
-                       n * chains.mean(axis=0)) / (self.n_samples + n)
+                       n * np.atleast_2d(chains).mean(axis=0)) / (
+                       self.n_samples + n)
         self.n_samples += n
         return chains
 
