@@ -581,6 +581,9 @@ class Reaction(Object):
             if metabolite.charge is not None:
                 reaction_element_dict["charge"] += \
                     coefficient * metabolite.charge
+            if metabolite.elements is None:
+                raise ValueError("No elements found in metabolite %s"
+                                 % metabolite.id)
             for element, amount in iteritems(metabolite.elements):
                 reaction_element_dict[element] += coefficient * amount
         # filter out 0 values
