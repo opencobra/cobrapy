@@ -59,6 +59,14 @@ class TestReactions:
         fake_gene.name = "foo_gene"
         assert reaction.gene_name_reaction_rule == fake_gene.name
 
+    def test_add_metabolite_benchmark(self, model, benchmark):
+        reaction = model.reactions.get_by_id("PGI")
+
+        def add_remove_metabolite():
+            reaction.add_metabolites({"h_c": 1})
+            reaction.pop("h_c")
+        benchmark(add_remove_metabolite)
+
     def test_add_metabolite(self, model):
         reaction = model.reactions.get_by_id("PGI")
         reaction.add_metabolites({model.metabolites[0]: 1})
@@ -73,7 +81,7 @@ class TestReactions:
         reaction.add_metabolites({"g6p_c": -1})  # already in reaction
         assert reaction._metabolites[
                    model.metabolites.get_by_id("g6p_c")] == -2
-        reaction.add_metabolites({"h_c": 1})  # not currently in reaction
+        reaction.add_metabolites({"h_c": 1})
         assert reaction._metabolites[model.metabolites.get_by_id("h_c")] == 1
         with pytest.raises(KeyError):
             reaction.add_metabolites({"missing": 1})
@@ -83,6 +91,9 @@ class TestReactions:
         assert len(reaction._metabolites) == 0
         reaction.add_metabolites({Metabolite("test_met"): -1})
         assert len(reaction._metabolites) == 1
+
+    def test_subtract_metabolite_benchmark(self, model, benchmark):
+        benchmark(self.test_subtract_metabolite, model)
 
     def test_subtract_metabolite(self, model):
         reaction = model.reactions.get_by_id("PGI")
@@ -191,7 +202,7 @@ class TestCobraMetabolites:
         assert met.elements == {"H": 2, "O": 1}
         assert met.formula_weight == 18.01528
 
-    def test_foruma_element_setting(self, model):
+    def test_formula_element_setting(self, model):
         met = model.metabolites[1]
         orig_formula = str(met.formula)
         orig_elements = dict(met.elements)
@@ -203,6 +214,22 @@ class TestCobraMetabolites:
 
 class TestCobraModel:
     """test core cobra functions"""
+
+    def test_add_remove_reaction_benchmark(self, model, benchmark):
+        metabolite_foo = Metabolite("test_foo")
+        metabolite_bar = Metabolite("test_bar")
+        metabolite_baz = Metabolite("test_baz")
+        actual_metabolite = model.metabolites[0]
+        dummy_reaction = Reaction("test_foo_reaction")
+        dummy_reaction.add_metabolites({metabolite_foo: -1,
+                                        metabolite_bar: 1,
+                                        metabolite_baz: -2,
+                                        actual_metabolite: 1})
+
+        def benchmark_add_reaction():
+            model.add_reaction(dummy_reaction)
+            model.remove_reactions([dummy_reaction], delete=False)
+        benchmark(benchmark_add_reaction)
 
     def test_add_reaction(self, model):
         old_reaction_count = len(model.reactions)
@@ -216,6 +243,7 @@ class TestCobraModel:
                                         dummy_metabolite_2: 1,
                                         copy_metabolite: -2,
                                         actual_metabolite: 1})
+
         model.add_reaction(dummy_reaction)
         assert model.reactions.get_by_id(dummy_reaction.id) == dummy_reaction
         for x in [dummy_metabolite_1, dummy_metabolite_2]:
@@ -223,7 +251,7 @@ class TestCobraModel:
         # should have added 1 reaction and 2 metabolites
         assert len(model.reactions) == old_reaction_count + 1
         assert len(model.metabolites) == old_metabolite_count + 2
-        # tests on theadded reaction
+        # tests on the added reaction
         reaction_in_model = model.reactions.get_by_id(dummy_reaction.id)
         assert type(reaction_in_model) is Reaction
         assert reaction_in_model is dummy_reaction
@@ -352,6 +380,9 @@ class TestCobraModel:
         for reaction in gene_reactions:
             assert target_gene not in reaction.genes
 
+    def test_copy_benchmark(self, model, benchmark):
+        benchmark(lambda: model.copy())
+
     def test_copy(self, model):
         """modifying copy should not modify the original"""
         # test that deleting reactions in the copy does not change the
@@ -363,6 +394,9 @@ class TestCobraModel:
         model_copy.remove_reactions(model_copy.reactions[0:5])
         assert old_reaction_count == len(model.reactions)
         assert len(model.reactions) != len(model_copy.reactions)
+
+    def test_deepcopy_benchmark(self, model, benchmark):
+        benchmark(deepcopy, model)
 
     def test_deepcopy(self, model):
         """Reference structures are maintained when deepcopying"""
@@ -398,6 +432,13 @@ class TestCobraModel:
         assert len(orphan_genes) == 0
         # 'check not dangling metabolites when running Model.add_reactions
         assert len(orphan_metabolites) == 0
+
+    def test_change_objective_benchmark(self, model, benchmark):
+        atpm = model.reactions.get_by_id("ATPM")
+
+        def benchmark_change_objective():
+            model.objective = atpm.id
+        benchmark(benchmark_change_objective)
 
     def test_change_objective(self, model):
         biomass = model.reactions.get_by_id("Biomass_Ecoli_core")

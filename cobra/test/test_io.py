@@ -50,6 +50,7 @@ def write_pickle(model, filename, dump_function=dump):
     with open(filename, "wb") as outfile:
         dump_function(model, outfile)
 
+
 IOTrial = namedtuple('IOTrial',
                      ['name', 'reference_file', 'test_file', 'read_function',
                       'write_function', 'validation_function'])
@@ -164,6 +165,14 @@ class TestCobraIO:
             pytest.xfail('not supported')
         self.compare_models(name, test_model, reread_model)
         self.extra_comparisons(name, test_model, reread_model)
+
+
+def test_benchmark_read(data_directory, benchmark):
+    benchmark(io.sbml3.read_sbml_model, join(data_directory, 'mini_fbc2.xml'))
+
+
+def test_benchmark_write(model, benchmark):
+    benchmark(io.sbml3.write_sbml_model, model, join(gettempdir(), "-bench"))
 
 
 @pytest.mark.parametrize("trial", trials)

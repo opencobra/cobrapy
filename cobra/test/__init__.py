@@ -1,5 +1,6 @@
 from os.path import join, abspath, dirname
 from cobra.io import read_sbml_model
+import pytest
 try:
     from cPickle import load as _load
 except ImportError:
@@ -27,8 +28,7 @@ def create_test_model(model_name="salmonella"):
     elif model_name == "mini":
         mini_sbml = join(data_dir, "mini_fbc2.xml")
         return read_sbml_model(mini_sbml)
-    if model_name == "salmonella":
-        salmonella_sbml = join(data_dir, "salmonella.xml")
+    elif model_name == "salmonella":
         salmonella_pickle = join(data_dir, "salmonella.pickle")
         model_name = salmonella_pickle
     with open(model_name, "rb") as infile:

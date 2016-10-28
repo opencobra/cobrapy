@@ -42,6 +42,10 @@ def captured_output():
 class TestCobraFluxAnalysis:
     """Test the simulation functions in cobra.flux_analysis"""
 
+    def test_pfba_benchmark(self, model, benchmark):
+        for solver in solver_dict:
+            benchmark(optimize_minimal_flux, model, solver=solver)
+
     def test_pfba(self, model):
         for solver in solver_dict:
             optimize_minimal_flux(model, solver=solver)
@@ -91,11 +95,13 @@ class TestCobraFluxAnalysis:
                 optimize_minimal_flux(model, solver=solver)
             model.reactions.ATPM.lower_bound = atpm
 
+    def test_single_gene_deletion_fba_benchmark(self, model, benchmark):
+        benchmark(self.test_single_gene_deletion_fba, model)
+
     def test_single_gene_deletion_fba(self, model):
         # expected knockouts for textbook model
         growth_dict = {"b0008": 0.87, "b0114": 0.80, "b0116": 0.78,
                        "b2276": 0.21, "b1779": 0.00}
-
         rates, statuses = single_gene_deletion(model,
                                                gene_list=growth_dict.keys(),
                                                method="fba")
@@ -104,7 +110,6 @@ class TestCobraFluxAnalysis:
             assert abs(rates[gene] - expected_value) < 0.01
 
     def test_single_gene_deletion_moma(self, model):
-        # MOMA requires a QP solver
         try:
             get_solver_name(qp=True)
         except SolverNotFound:
@@ -142,6 +147,10 @@ class TestCobraFluxAnalysis:
         for i in range(nrows):
             for j in range(ncols):
                 assert abs(matrix1[i][j] - matrix2[i][j]) < 10 ** -places
+
+    @pytest.mark.skipif(numpy is None, reason="double deletions require numpy")
+    def test_double_gene_deletion_benchmark(self, model, benchmark):
+        benchmark(self.test_double_gene_deletion, model)
 
     @pytest.mark.skipif(numpy is None, reason="double deletions require numpy")
     def test_double_gene_deletion(self, model):
@@ -184,6 +193,9 @@ class TestCobraFluxAnalysis:
         assert solution["y"] == reactions
         self.compare_matrices(growth_list, solution["data"])
 
+    def test_flux_variability_benchmark(self, model, fva_results, benchmark):
+        benchmark(self.test_flux_variability, model, fva_results)
+
     def test_flux_variability(self, model, fva_results):
         infeasible_model = model.copy()
         infeasible_model.reactions.get_by_id("EX_glc__D_e").lower_bound = 0
@@ -213,11 +225,8 @@ class TestCobraFluxAnalysis:
                                         open_exchanges=True)
         assert result == []
 
-    def test_loopless(self):
-        try:
-            solver = get_solver_name(mip=True)
-        except SolverNotFound:
-            pytest.skip("no MILP solver found")
+    @classmethod
+    def construct_ll_test_model(cls):
         test_model = Model()
         test_model.add_metabolites(Metabolite("A"))
         test_model.add_metabolites(Metabolite("B"))
@@ -237,15 +246,27 @@ class TestCobraFluxAnalysis:
                             test_model.metabolites.A: 1})
         DM_C.objective_coefficient = 1
         test_model.add_reactions([EX_A, DM_C, v1, v2, v3])
+        return test_model
+
+    def test_loopless_benchmark(self, benchmark):
+        test_model = self.construct_ll_test_model()
+        benchmark(lambda: construct_loopless_model(test_model).optimize())
+
+    def test_loopless(self):
+        try:
+            get_solver_name(mip=True)
+        except SolverNotFound:
+            pytest.skip("no MILP solver found")
+        test_model = self.construct_ll_test_model()
         feasible_sol = construct_loopless_model(test_model).optimize()
-        v3.lower_bound = 1
+        test_model.reactions.get_by_id('v3').lower_bound = 1
         infeasible_sol = construct_loopless_model(test_model).optimize()
         assert feasible_sol.status == "optimal"
         assert infeasible_sol.status == "infeasible"
 
     def test_gapfilling(self):
         try:
-            solver = get_solver_name(mip=True)
+            get_solver_name(mip=True)
         except SolverNotFound:
             pytest.skip("no MILP solver found")
         m = Model()
@@ -284,6 +305,12 @@ class TestCobraFluxAnalysis:
         assert len(result[0]) == 1
         assert len(result[1]) == 1
         assert {i[0].id for i in result} == {"SMILEY_EX_b", "SMILEY_EX_c"}
+
+    @pytest.mark.skipif(numpy is None, reason="phase plane require numpy")
+    def test_phenotype_phase_plane_benchmark(self, model, benchmark):
+        benchmark(calculate_phenotype_phase_plane,
+                  model, "EX_glc__D_e", "EX_o2_e",
+                  reaction1_npoints=20, reaction2_npoints=20)
 
     @pytest.mark.skipif(numpy is None, reason="phase plane require numpy")
     def test_phenotype_phase_plane(self, model):
