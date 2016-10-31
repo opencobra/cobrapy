@@ -93,8 +93,8 @@ def io_trial(request, data_directory):
                                 split(request.param.test_file)[-1])
     request.param.write_function(test_model, test_output_filename)
     reread_model = request.param.read_function(test_output_filename)
-    yield request.param.name, reference_model, test_model, reread_model
     unlink(test_output_filename)
+    return request.param.name, reference_model, test_model, reread_model
 
 
 class TestCobraIO:
