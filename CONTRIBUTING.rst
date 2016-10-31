@@ -144,7 +144,7 @@ Before you submit a pull request, check that it meets these guidelines:
 Unit tests and benchmarks
 -------------------------
 
-cobrapy uses `pytest <http://docs.pytest.org/en/latest/`_ for its
+cobrapy uses `pytest <http://docs.pytest.org/en/latest/>`_ for its
 unit-tests and new features should in general always come with new
 tests that make sure that the code runs as intended. Since COBRA
 rapidly can become quite resource intensive fundamental methods such
