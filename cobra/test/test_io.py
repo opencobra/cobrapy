@@ -15,6 +15,7 @@ except ImportError:
     scipy = None
 try:
     import libsbml
+    write_legacy_sbml = io.write_legacy_sbml
 except ImportError:
     libsbml = None
     def write_legacy_sbml():
