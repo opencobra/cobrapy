@@ -76,8 +76,8 @@ trials = [IOTrial('fbc2', 'mini.pickle', 'mini_fbc2.xml',
                   read_pickle, write_pickle, None),
           pytest.mark.skipif("not cPickle")(
               IOTrial('pickle', 'mini.pickle', 'mini.pickle',
-                      partial(read_pickle, load=cload),
-                      partial(write_pickle, dump=cdump), None))
+                      partial(read_pickle, load_function=cload),
+                      partial(write_pickle, dump_function=cdump), None))
           ]
 trial_names = [node.name for node in trials]
 
