@@ -54,7 +54,7 @@ install:
 build: off
 
 test_script:
-  - "%WITH_COMPILER% %PYTHON%/py.test --cov=cobra --benchmark-skip "
+  - "%WITH_COMPILER% %PYTHON%/python -m pytest --cov=cobra --benchmark-skip"
 
 after_test:
   - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel bdist_wininst"
