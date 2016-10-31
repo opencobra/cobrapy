@@ -9,17 +9,22 @@ import pytest
 from collections import namedtuple
 from cobra import io
 
+
+def write_legacy_sbml_placeholder():
+    pass
+
+
 try:
     import scipy
 except ImportError:
     scipy = None
 try:
     import libsbml
+
     write_legacy_sbml = io.write_legacy_sbml
 except ImportError:
     libsbml = None
-    def write_legacy_sbml():
-        pass
+    write_legacy_sbml = write_legacy_sbml_placeholder
 try:
     import jsonschema
 except ImportError:
@@ -71,7 +76,8 @@ trials = [IOTrial('fbc2', 'mini.pickle', 'mini_fbc2.xml',
           pytest.mark.skipif("not libsbml")(
               IOTrial('cobra', 'mini.pickle', 'mini_cobra.xml',
                       io.read_sbml_model,
-                      partial(write_legacy_sbml, use_fbc_package=False), None)),
+                      partial(write_legacy_sbml, use_fbc_package=False),
+                      None)),
           pytest.mark.skipif("not scipy")(
               IOTrial('mat', 'mini.pickle', 'mini.mat',
                       io.load_matlab_model, io.save_matlab_model, None)),
