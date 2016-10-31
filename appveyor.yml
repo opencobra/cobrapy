@@ -54,6 +54,7 @@ install:
 build: off
 
 test_script:
+  - "%WITH_COMPILER% %PYTHON%/python setup.py develop"
   - "%WITH_COMPILER% %PYTHON%/python -m pytest --cov=cobra --benchmark-skip"
 
 after_test:
