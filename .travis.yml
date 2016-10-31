@@ -24,8 +24,8 @@ env:
 before_install:
   - pip install pip --upgrade
   # These get cached
-  - pip install numpy scipy python-libsbml cython codecov jsonschema six matplotlib pandas
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install lxml glpk pep8 pytest pytest-cov palettable; fi
+  - pip install numpy scipy python-libsbml cython codecov jsonschema six matplotlib pandas pytest pytest-cov pytest-benchmark
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install lxml glpk pep8 palettable; fi
   # Download esolver and add it to the path
   - wget https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
   - gzip -d esolver.gz; chmod +x esolver; export PATH=$PATH:$PWD
