@@ -17,6 +17,8 @@ try:
     import libsbml
 except ImportError:
     libsbml = None
+    def write_legacy_sbml():
+        pass
 try:
     import jsonschema
 except ImportError:
@@ -61,12 +63,14 @@ trials = [IOTrial('fbc2', 'mini.pickle', 'mini_fbc2.xml',
                   io.read_sbml_model, io.write_sbml_model, None),
           IOTrial('fbc2Bz2', 'mini.pickle', 'mini_fbc2.xml.bz2',
                   io.read_sbml_model, io.write_sbml_model, None),
-          IOTrial('fbc1', 'mini.pickle', 'mini_fbc1.xml',
-                  io.read_sbml_model,
-                  partial(io.write_legacy_sbml, use_fbc_package=True), None),
-          IOTrial('cobra', 'mini.pickle', 'mini_cobra.xml',
-                  io.read_sbml_model,
-                  partial(io.write_legacy_sbml, use_fbc_package=False), None),
+          pytest.mark.skipif("not libsbml")(
+              IOTrial('fbc1', 'mini.pickle', 'mini_fbc1.xml',
+                      io.read_sbml_model,
+                      partial(write_legacy_sbml, use_fbc_package=True), None)),
+          pytest.mark.skipif("not libsbml")(
+              IOTrial('cobra', 'mini.pickle', 'mini_cobra.xml',
+                      io.read_sbml_model,
+                      partial(write_legacy_sbml, use_fbc_package=False), None)),
           pytest.mark.skipif("not scipy")(
               IOTrial('mat', 'mini.pickle', 'mini.mat',
                       io.load_matlab_model, io.save_matlab_model, None)),
