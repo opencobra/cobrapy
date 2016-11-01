@@ -42,9 +42,11 @@ def captured_output():
 class TestCobraFluxAnalysis:
     """Test the simulation functions in cobra.flux_analysis"""
 
-    def test_pfba_benchmark(self, model, benchmark):
-        for solver in solver_dict:
-            benchmark(optimize_minimal_flux, model, solver=solver)
+    def test_pfba_benchmark(self, large_model, benchmark):
+        def pfba_all_solvers():
+            for solver in solver_dict:
+                optimize_minimal_flux(large_model, solver=solver)
+        benchmark(pfba_all_solvers)
 
     def test_pfba(self, model):
         for solver in solver_dict:
@@ -95,8 +97,12 @@ class TestCobraFluxAnalysis:
                 optimize_minimal_flux(model, solver=solver)
             model.reactions.ATPM.lower_bound = atpm
 
-    def test_single_gene_deletion_fba_benchmark(self, model, benchmark):
-        benchmark(self.test_single_gene_deletion_fba, model)
+    def test_single_gene_deletion_fba_benchmark(self, large_model, benchmark):
+        genes = ['b0511', 'b2521', 'b0651', 'b2502', 'b3132', 'b1486', 'b3384',
+                 'b4321', 'b3428', 'b2789', 'b0052', 'b0115',
+                 'b2167', 'b0759', 'b3389', 'b4031', 'b3916', 'b2374', 'b0677',
+                 'b2202']
+        benchmark(single_gene_deletion, large_model, gene_list=genes)
 
     def test_single_gene_deletion_fba(self, model):
         # expected knockouts for textbook model
@@ -108,6 +114,15 @@ class TestCobraFluxAnalysis:
         for gene, expected_value in iteritems(growth_dict):
             assert statuses[gene] == 'optimal'
             assert abs(rates[gene] - expected_value) < 0.01
+
+    def test_single_gene_deletion_moma_benchmark(self, large_model, benchmark):
+        try:
+            get_solver_name(qp=True)
+        except SolverNotFound:
+            pytest.skip("no qp support")
+        genes = ['b1764', 'b0463', 'b1779', 'b0417']
+        benchmark(single_gene_deletion, large_model, gene_list=genes,
+                  method="moma")
 
     def test_single_gene_deletion_moma(self, model):
         try:
@@ -126,6 +141,11 @@ class TestCobraFluxAnalysis:
             assert statuses[gene] == 'optimal'
             assert abs(rates[gene] - expected_value) < 0.01
 
+    def test_single_gene_deletion_benchmark(self, large_model, benchmark):
+        reactions = ['CDPMEK', 'PRATPP', 'HISTD', 'PPCDC']
+        benchmark(single_reaction_deletion, large_model,
+                  reaction_list=reactions)
+
     def test_single_reaction_deletion(self, model):
         expected_results = {'FBA': 0.70404, 'FBP': 0.87392, 'CS': 0,
                             'FUM': 0.81430, 'GAPD': 0, 'GLUDy': 0.85139}
@@ -139,7 +159,8 @@ class TestCobraFluxAnalysis:
         for reaction, value in results.items():
             assert abs(value - expected_results[reaction]) < 0.00001
 
-    def compare_matrices(self, matrix1, matrix2, places=3):
+    @classmethod
+    def compare_matrices(cls, matrix1, matrix2, places=3):
         nrows = len(matrix1)
         ncols = len(matrix1[0])
         assert nrows == len(matrix2)
@@ -149,13 +170,15 @@ class TestCobraFluxAnalysis:
                 assert abs(matrix1[i][j] - matrix2[i][j]) < 10 ** -places
 
     @pytest.mark.skipif(numpy is None, reason="double deletions require numpy")
-    def test_double_gene_deletion_benchmark(self, model, benchmark):
-        benchmark(self.test_double_gene_deletion, model)
+    def test_double_gene_deletion_benchmark(self, large_model, benchmark):
+        genes = ["b0726", "b4025", "b0724", "b0720", "b2935", "b2935", "b1276",
+                 "b1241"]
+        benchmark(double_gene_deletion, large_model, gene_list1=genes)
 
     @pytest.mark.skipif(numpy is None, reason="double deletions require numpy")
     def test_double_gene_deletion(self, model):
-        genes = ["b0726", "b4025", "b0724", "b0720",
-                 "b2935", "b2935", "b1276", "b1241"]
+        genes = ["b0726", "b4025", "b0724", "b0720", "b2935", "b2935", "b1276",
+                 "b1241"]
         growth_list = [
             [0.858, 0.857, 0.814, 0.000, 0.858, 0.858, 0.858, 0.858],
             [0.857, 0.863, 0.739, 0.000, 0.863, 0.863, 0.863, 0.863],
@@ -193,8 +216,9 @@ class TestCobraFluxAnalysis:
         assert solution["y"] == reactions
         self.compare_matrices(growth_list, solution["data"])
 
-    def test_flux_variability_benchmark(self, model, fva_results, benchmark):
-        benchmark(self.test_flux_variability, model, fva_results)
+    def test_flux_variability_benchmark(self, large_model, benchmark):
+        benchmark(flux_variability_analysis, large_model, solver='cglpk',
+                  reaction_list=large_model.reactions[1::3])
 
     def test_flux_variability(self, model, fva_results):
         infeasible_model = model.copy()
