@@ -47,8 +47,8 @@ def optimize_minimal_flux(cobra_model, already_irreversible=False,
                 'Minimization not supported in optimize_minimal_flux')
         optimize_kwargs.pop('objective_sense', None)
 
-    # Convert to irreversible, so all reactions will have a positive flux
-    convert_to_irreversible(cobra_model)
+    if already_irreversible:
+        convert_to_irreversible(cobra_model)
 
     solver = solver_dict[get_solver_name() if solver is None else solver]
     lp = solver.create_problem(cobra_model, **optimize_kwargs)
