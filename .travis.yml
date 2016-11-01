@@ -24,7 +24,8 @@ env:
 before_install:
   - pip install pip --upgrade
   # These get cached
-  - pip install numpy scipy python-libsbml cython codecov jsonschema six matplotlib pandas
+  - pip install --upgrade pytest
+  - pip install numpy scipy python-libsbml cython codecov jsonschema six matplotlib pandas pytest-cov pytest-benchmark
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install lxml glpk pep8 palettable; fi
   # Download esolver and add it to the path
   - wget https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
@@ -35,7 +36,7 @@ install:
   - python setup.py develop
 # # command to run tests
 script:
-  - coverage run --source=cobra setup.py test
+  - py.test --cov=cobra --benchmark-skip
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
     pep8 cobra --exclude=oven,solvers,sbml.py --show-source;
     fi
