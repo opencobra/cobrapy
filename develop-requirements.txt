@@ -13,3 +13,4 @@ pandas>=0.17.0
 tabulate
 tox
 pep8
+pytest

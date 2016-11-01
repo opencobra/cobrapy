@@ -102,8 +102,8 @@ Here's how to set up `cobrapy` for local development to contribute smaller featu
 
    Now you can make your changes locally.
 
-5. When you are done making changes, check that your changes pass pep8 and the tests with tox for the supported
-   Python versions::
+5. When you are done making changes, check that your changes pass pep8
+   and the tests with tox for the supported Python versions::
 
     (cobrapy)$ tox -e py27
     (cobrapy)$ tox -e py34
@@ -140,6 +140,46 @@ Before you submit a pull request, check that it meets these guidelines:
 4. Assign a reviewer to your pull request. If in doubt, assign Henning
    Redestig. Your pull request must be approved by at least one
    reviewer before it can be merged.
+
+Unit tests and benchmarks
+-------------------------
+
+cobrapy uses `pytest <http://docs.pytest.org/en/latest/>`_ for its
+unit-tests and new features should in general always come with new
+tests that make sure that the code runs as intended. Since COBRA
+rapidly can become quite resource intensive fundamental methods such
+as model manipulation, adding and removing reactions, metabolites etc
+also must work efficiently. We use `pytest-benchmark
+<https://pytest-benchmark.readthedocs.io/en/latest/>`_ to compare
+different implementations to make sure that new code do not come with
+unacceptable increased computation time. If you add benchmarked tests,
+make sure to also include a test with and without the benchmark as we
+do not want to slow down continuous integration by running benchmarks,
+for examples, see e.g. ``test_add_metabolite`` in `test_model.py
+<cobra/test/test_model.py>`_. ``test_add_metabolite`` is the main
+test, ``test_add_metabolite_benchmark`` takes the special
+``benchmark`` fixture that enables profiling the important code
+snippet but is skipped when running::
+
+    (cobrapy)$ pytest --benchmark-skip
+
+When the test function itself is small and can safely be assumed to
+not take many resources, we can directly profile the test as in
+``test_subtract_metabolite_benchmark`` which calls
+``benchmark(self.test_subtract_metabolite, model)``.
+
+To run all tests and benchmarks do::
+
+    (cobrapy)$ pytest
+
+and to compare two implementations you may keep them in two branches
+e.g. ``old`` and ``new`` and then do::
+
+    (cobrapy)$ git checkout old
+    (cobrapy)$ pytest --benchmark-save
+    (cobrapy)$ git checkout new
+    (cobrapy)$ pytest --benchmark-compare
+
 
 Branching model
 ---------------
