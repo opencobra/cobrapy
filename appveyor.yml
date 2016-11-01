@@ -47,12 +47,15 @@ install:
   - ps: Start-FileDownload 'https://bitbucket.org/gutworth/six/raw/default/six.py'
   - "%WITH_COMPILER% %PYTHON%/python appveyor/build_glpk.py"
   - "%PYTHON%/python -m pip install pip setuptools wheel --upgrade"
+  - "%PYTHON%/python -m pip install --upgrade pytest"
+  - "%PYTHON%/python -m pip install pytest-cov pytest-benchmark"
   - "%PYTHON%/python -m pip install Cython jsonschema twine pypandoc==1.1.3"
 
 build: off
 
 test_script:
-  - "%WITH_COMPILER% %PYTHON%/python setup.py test"
+  - "%WITH_COMPILER% %PYTHON%/python setup.py develop"
+  - "%WITH_COMPILER% %PYTHON%/python -m pytest --cov=cobra --benchmark-skip"
 
 after_test:
   - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel bdist_wininst"
