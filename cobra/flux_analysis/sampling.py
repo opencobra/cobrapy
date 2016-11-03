@@ -230,14 +230,13 @@ class HRSampler(object):
             - 'u' means a lower bound validation
             - 'e' means and equality constraint violation
         """
+        samples = np.atleast_2d(samples)
         feasibility = np.abs(self.S.dot(samples.T))
-        feasibility = np.atleast_2d(feasibility).max(axis=0)
-        lb_error = (samples - self.bounds[0, ])
-        lb_error = np.atleast_2d(lb_error).min(axis=1)
-        ub_error = (self.bounds[1, ] - samples)
-        ub_error = np.atleast_2d(ub_error).min(axis=1)
+        feasibility = feasibility.max(axis=0)
+        lb_error = (samples - self.bounds[0, ]).min(axis=1)
+        ub_error = (self.bounds[1, ] - samples).min(axis=1)
         valid = (feasibility < FTOL) & (lb_error > -BTOL) & (ub_error > -BTOL)
-        codes = np.repeat("", valid.shape[0])
+        codes = np.repeat("", valid.shape[0]).astype(np.dtype((str, 3)))
         codes[valid] = "v"
         codes[lb_error <= -BTOL] = np.char.add(codes[lb_error <= -BTOL], "l")
         codes[ub_error <= -BTOL] = np.char.add(codes[ub_error <= -BTOL], "u")
