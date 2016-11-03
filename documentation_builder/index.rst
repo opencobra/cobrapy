@@ -17,6 +17,7 @@ be viewed at `nbviewer
     simulating
     deletions
     phenotype_phase_plane
+    sampling
     milp
     qp
     loopless
