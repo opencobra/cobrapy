@@ -1,5 +1,6 @@
 from cobra.core import Metabolite, Model, Reaction
 from cobra.manipulation import *
+import pytest
 
 
 class TestManipulation:
@@ -235,3 +236,8 @@ class TestManipulation:
         balance = check_mass_balance(model)
         assert len(balance) == 1
         assert EX_rxn in balance
+        m1 = Metabolite('m1', formula='()')
+        r1 = Reaction('r1')
+        r1.add_metabolites({m1: 1})
+        with pytest.raises(ValueError):
+            r1.check_mass_balance()
