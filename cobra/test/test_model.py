@@ -2,6 +2,7 @@ from copy import deepcopy
 import warnings
 import pytest
 from cobra.core import Model, Metabolite, Reaction
+from cobra.solvers import solver_dict
 
 try:
     import scipy
@@ -59,12 +60,20 @@ class TestReactions:
         fake_gene.name = "foo_gene"
         assert reaction.gene_name_reaction_rule == fake_gene.name
 
-    def test_add_metabolite_benchmark(self, model, benchmark):
+    @pytest.mark.parametrize("solver", list(solver_dict))
+    def test_add_metabolite_benchmark(self, model, benchmark, solver):
         reaction = model.reactions.get_by_id("PGI")
+        many_metabolites = dict((m, 1) for m in model.metabolites[0:50])
 
         def add_remove_metabolite():
-            reaction.add_metabolites({"h_c": 1})
-            reaction.pop("h_c")
+            reaction.add_metabolites(many_metabolites)
+            if not getattr(model, 'solver', None):
+                solver_dict[solver].create_problem(model)
+            for m, c in many_metabolites.items():
+                try:
+                    reaction.pop(m.id)
+                except KeyError:
+                    pass
         benchmark(add_remove_metabolite)
 
     def test_add_metabolite(self, model):
@@ -92,12 +101,16 @@ class TestReactions:
         reaction.add_metabolites({Metabolite("test_met"): -1})
         assert len(reaction._metabolites) == 1
 
-    def test_subtract_metabolite_benchmark(self, model, benchmark):
-        benchmark(self.test_subtract_metabolite, model)
+    @pytest.mark.parametrize("solver", list(solver_dict))
+    def test_subtract_metabolite_benchmark(self, model, benchmark, solver):
+        benchmark(self.test_subtract_metabolite, model, solver)
 
-    def test_subtract_metabolite(self, model):
+    @pytest.mark.parametrize("solver", list(solver_dict))
+    def test_subtract_metabolite(self, model, solver):
         reaction = model.reactions.get_by_id("PGI")
         reaction.subtract_metabolites(reaction.metabolites)
+        if not getattr(model, 'solver', None):
+            solver_dict[solver].create_problem(model)
         assert len(reaction.metabolites) == 0
 
     def test_mass_balance(self, model):
@@ -215,7 +228,8 @@ class TestCobraMetabolites:
 class TestCobraModel:
     """test core cobra functions"""
 
-    def test_add_remove_reaction_benchmark(self, model, benchmark):
+    @pytest.mark.parametrize("solver", list(solver_dict))
+    def test_add_remove_reaction_benchmark(self, model, benchmark, solver):
         metabolite_foo = Metabolite("test_foo")
         metabolite_bar = Metabolite("test_bar")
         metabolite_baz = Metabolite("test_baz")
@@ -228,6 +242,8 @@ class TestCobraModel:
 
         def benchmark_add_reaction():
             model.add_reaction(dummy_reaction)
+            if not getattr(model, 'solver', None):
+                solver_dict[solver].create_problem(model)
             model.remove_reactions([dummy_reaction], delete=False)
         benchmark(benchmark_add_reaction)
 
@@ -433,11 +449,14 @@ class TestCobraModel:
         # 'check not dangling metabolites when running Model.add_reactions
         assert len(orphan_metabolites) == 0
 
-    def test_change_objective_benchmark(self, model, benchmark):
+    @pytest.mark.parametrize("solver", list(solver_dict))
+    def test_change_objective_benchmark(self, model, benchmark, solver):
         atpm = model.reactions.get_by_id("ATPM")
 
         def benchmark_change_objective():
             model.objective = atpm.id
+            if not getattr(model, 'solver', None):
+                solver_dict[solver].create_problem(model)
         benchmark(benchmark_change_objective)
 
     def test_change_objective(self, model):
