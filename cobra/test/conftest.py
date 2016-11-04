@@ -19,6 +19,11 @@ def model():
 
 
 @pytest.fixture(scope="function")
+def large_model():
+    return create_test_model("ecoli")
+
+
+@pytest.fixture(scope="function")
 def array_model():
     return create_test_model("textbook").to_array_based_model()
 

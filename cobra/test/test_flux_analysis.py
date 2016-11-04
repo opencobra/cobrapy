@@ -42,61 +42,65 @@ def captured_output():
 class TestCobraFluxAnalysis:
     """Test the simulation functions in cobra.flux_analysis"""
 
-    def test_pfba_benchmark(self, model, benchmark):
-        for solver in solver_dict:
-            benchmark(optimize_minimal_flux, model, solver=solver)
+    @pytest.mark.parametrize("solver", list(solver_dict))
+    def test_pfba_benchmark(self, large_model, benchmark, solver):
+        benchmark(optimize_minimal_flux, large_model, solver=solver)
 
-    def test_pfba(self, model):
-        for solver in solver_dict:
+    @pytest.mark.parametrize("solver", list(solver_dict))
+    def test_pfba(self, model, solver):
+        optimize_minimal_flux(model, solver=solver)
+        abs_x = [abs(i) for i in model.solution.x]
+        assert model.solution.status == "optimal"
+        assert abs(model.solution.f - 0.8739) < 0.001
+        assert abs(sum(abs_x) - 518.4221) < 0.001
+
+        # Test desired_objective_value
+        desired_objective = 0.8
+        optimize_minimal_flux(model, solver=solver,
+                              desired_objective_value=desired_objective)
+        abs_x = [abs(i) for i in model.solution.x]
+        assert model.solution.status == "optimal"
+        assert abs(model.solution.f - desired_objective) < 0.001
+        assert abs(sum(abs_x) - 476.1594) < 0.001
+
+        # Test fraction_of_optimum
+        optimize_minimal_flux(model, solver=solver,
+                              fraction_of_optimum=0.95)
+        abs_x = [abs(i) for i in model.solution.x]
+        assert model.solution.status == "optimal"
+        assert abs(model.solution.f - 0.95 * 0.8739) < 0.001
+        assert abs(sum(abs_x) - 493.4400) < 0.001
+
+        # Make sure the model works for non-unity objective values
+        model.reactions.Biomass_Ecoli_core.objective_coefficient = 2
+        optimize_minimal_flux(model, solver=solver)
+        assert abs(model.solution.f - 2 * 0.8739) < 0.001
+        model.reactions.Biomass_Ecoli_core.objective_coefficient = 1
+
+        # Test some erroneous inputs -- multiple objectives
+        model.reactions.ATPM.objective_coefficient = 1
+        with pytest.raises(ValueError):
             optimize_minimal_flux(model, solver=solver)
-            abs_x = [abs(i) for i in model.solution.x]
-            assert model.solution.status == "optimal"
-            assert abs(model.solution.f - 0.8739) < 0.001
-            assert abs(sum(abs_x) - 518.4221) < 0.001
+        model.reactions.ATPM.objective_coefficient = 0
 
-            # Test desired_objective_value
-            desired_objective = 0.8
+        # Minimization of objective
+        with pytest.raises(ValueError):
             optimize_minimal_flux(model, solver=solver,
-                                  desired_objective_value=desired_objective)
-            abs_x = [abs(i) for i in model.solution.x]
-            assert model.solution.status == "optimal"
-            assert abs(model.solution.f - desired_objective) < 0.001
-            assert abs(sum(abs_x) - 476.1594) < 0.001
+                                  objective_sense='minimize')
 
-            # Test fraction_of_optimum
-            optimize_minimal_flux(model, solver=solver,
-                                  fraction_of_optimum=0.95)
-            abs_x = [abs(i) for i in model.solution.x]
-            assert model.solution.status == "optimal"
-            assert abs(model.solution.f - 0.95 * 0.8739) < 0.001
-            assert abs(sum(abs_x) - 493.4400) < 0.001
-
-            # Make sure the model works for non-unity objective values
-            model.reactions.Biomass_Ecoli_core.objective_coefficient = 2
+        # Infeasible solution
+        atpm = float(model.reactions.ATPM.lower_bound)
+        model.reactions.ATPM.lower_bound = 500
+        with pytest.raises(ValueError):
             optimize_minimal_flux(model, solver=solver)
-            assert abs(model.solution.f - 2 * 0.8739) < 0.001
-            model.reactions.Biomass_Ecoli_core.objective_coefficient = 1
+        model.reactions.ATPM.lower_bound = atpm
 
-            # Test some erroneous inputs -- multiple objectives
-            model.reactions.ATPM.objective_coefficient = 1
-            with pytest.raises(ValueError):
-                optimize_minimal_flux(model, solver=solver)
-            model.reactions.ATPM.objective_coefficient = 0
-
-            # Minimization of objective
-            with pytest.raises(ValueError):
-                optimize_minimal_flux(model, solver=solver,
-                                      objective_sense='minimize')
-
-            # Infeasible solution
-            atpm = float(model.reactions.ATPM.lower_bound)
-            model.reactions.ATPM.lower_bound = 500
-            with pytest.raises(ValueError):
-                optimize_minimal_flux(model, solver=solver)
-            model.reactions.ATPM.lower_bound = atpm
-
-    def test_single_gene_deletion_fba_benchmark(self, model, benchmark):
-        benchmark(self.test_single_gene_deletion_fba, model)
+    def test_single_gene_deletion_fba_benchmark(self, large_model, benchmark):
+        genes = ['b0511', 'b2521', 'b0651', 'b2502', 'b3132', 'b1486', 'b3384',
+                 'b4321', 'b3428', 'b2789', 'b0052', 'b0115',
+                 'b2167', 'b0759', 'b3389', 'b4031', 'b3916', 'b2374', 'b0677',
+                 'b2202']
+        benchmark(single_gene_deletion, large_model, gene_list=genes)
 
     def test_single_gene_deletion_fba(self, model):
         # expected knockouts for textbook model
@@ -108,6 +112,15 @@ class TestCobraFluxAnalysis:
         for gene, expected_value in iteritems(growth_dict):
             assert statuses[gene] == 'optimal'
             assert abs(rates[gene] - expected_value) < 0.01
+
+    def test_single_gene_deletion_moma_benchmark(self, large_model, benchmark):
+        try:
+            get_solver_name(qp=True)
+        except SolverNotFound:
+            pytest.skip("no qp support")
+        genes = ['b1764', 'b0463', 'b1779', 'b0417']
+        benchmark(single_gene_deletion, large_model, gene_list=genes,
+                  method="moma")
 
     def test_single_gene_deletion_moma(self, model):
         try:
@@ -126,6 +139,11 @@ class TestCobraFluxAnalysis:
             assert statuses[gene] == 'optimal'
             assert abs(rates[gene] - expected_value) < 0.01
 
+    def test_single_gene_deletion_benchmark(self, large_model, benchmark):
+        reactions = ['CDPMEK', 'PRATPP', 'HISTD', 'PPCDC']
+        benchmark(single_reaction_deletion, large_model,
+                  reaction_list=reactions)
+
     def test_single_reaction_deletion(self, model):
         expected_results = {'FBA': 0.70404, 'FBP': 0.87392, 'CS': 0,
                             'FUM': 0.81430, 'GAPD': 0, 'GLUDy': 0.85139}
@@ -139,7 +157,8 @@ class TestCobraFluxAnalysis:
         for reaction, value in results.items():
             assert abs(value - expected_results[reaction]) < 0.00001
 
-    def compare_matrices(self, matrix1, matrix2, places=3):
+    @classmethod
+    def compare_matrices(cls, matrix1, matrix2, places=3):
         nrows = len(matrix1)
         ncols = len(matrix1[0])
         assert nrows == len(matrix2)
@@ -149,13 +168,15 @@ class TestCobraFluxAnalysis:
                 assert abs(matrix1[i][j] - matrix2[i][j]) < 10 ** -places
 
     @pytest.mark.skipif(numpy is None, reason="double deletions require numpy")
-    def test_double_gene_deletion_benchmark(self, model, benchmark):
-        benchmark(self.test_double_gene_deletion, model)
+    def test_double_gene_deletion_benchmark(self, large_model, benchmark):
+        genes = ["b0726", "b4025", "b0724", "b0720", "b2935", "b2935", "b1276",
+                 "b1241"]
+        benchmark(double_gene_deletion, large_model, gene_list1=genes)
 
     @pytest.mark.skipif(numpy is None, reason="double deletions require numpy")
     def test_double_gene_deletion(self, model):
-        genes = ["b0726", "b4025", "b0724", "b0720",
-                 "b2935", "b2935", "b1276", "b1241"]
+        genes = ["b0726", "b4025", "b0724", "b0720", "b2935", "b2935", "b1276",
+                 "b1241"]
         growth_list = [
             [0.858, 0.857, 0.814, 0.000, 0.858, 0.858, 0.858, 0.858],
             [0.857, 0.863, 0.739, 0.000, 0.863, 0.863, 0.863, 0.863],
@@ -193,26 +214,27 @@ class TestCobraFluxAnalysis:
         assert solution["y"] == reactions
         self.compare_matrices(growth_list, solution["data"])
 
-    def test_flux_variability_benchmark(self, model, fva_results, benchmark):
-        benchmark(self.test_flux_variability, model, fva_results)
+    @pytest.mark.parametrize("solver", list(solver_dict))
+    def test_flux_variability_benchmark(self, large_model, benchmark, solver):
+        benchmark(flux_variability_analysis, large_model, solver=solver,
+                  reaction_list=large_model.reactions[1::3])
 
-    def test_flux_variability(self, model, fva_results):
+    @pytest.mark.parametrize("solver", list(solver_dict))
+    def test_flux_variability(self, model, fva_results, solver):
+        if solver == "esolver":
+            pytest.skip("esolver too slow...")
+        fva_out = flux_variability_analysis(
+            model, solver=solver, reaction_list=model.reactions[1::3])
+        for name, result in iteritems(fva_out):
+            for k, v in iteritems(result):
+                assert abs(fva_results[name][k] - v) < 0.00001
+
+    def test_fva_infeasible(self, model):
         infeasible_model = model.copy()
         infeasible_model.reactions.get_by_id("EX_glc__D_e").lower_bound = 0
-        for solver in solver_dict:
-            # esolver is really slow
-            if solver == "esolver":
-                continue
-            cobra_model = model.copy()
-            fva_out = flux_variability_analysis(
-                cobra_model, solver=solver,
-                reaction_list=cobra_model.reactions[1::3])
-            for name, result in iteritems(fva_out):
-                for k, v in iteritems(result):
-                    assert abs(fva_results[name][k] - v) < 0.00001
-            # ensure that an infeasible model does not run FVA
-            with pytest.raises(ValueError):
-                flux_variability_analysis(infeasible_model, solver=solver)
+        # ensure that an infeasible model does not run FVA
+        with pytest.raises(ValueError):
+            flux_variability_analysis(infeasible_model)
 
     def test_find_blocked_reactions(self, model):
         result = find_blocked_reactions(model, model.reactions[40:46])
