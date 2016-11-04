@@ -7,6 +7,7 @@ from six import iteritems, StringIO
 from cobra.core import Model, Reaction, Metabolite
 from cobra.solvers import solver_dict, get_solver_name
 from cobra.flux_analysis import *
+from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 from cobra.solvers import SolverNotFound
 from .conftest import model, large_model, solved_model, fva_results
 from cobra.manipulation import convert_to_irreversible
@@ -449,3 +450,64 @@ class TestCobraFluxAnalysis:
             with captured_output() as (out, err):
                 solved_model.metabolites.fdp_c.summary(fva=0.99, solver=solver)
             self.check_entries(out, desired_entries)
+
+
+@pytest.mark.skipif(numpy is None, reason="flux sampling requires numpy")
+class TestCobraFluxSampling:
+    """Test and benchmark flux sampling"""
+
+    def test_single_arch(self, model):
+        s = sample(model, 10, method="arch")
+        assert s.shape == (10, len(model.reactions))
+
+    def test_single_optgp(self, model):
+        s = sample(model, 10, processes=1)
+        assert s.shape == (10, len(model.reactions))
+
+    def test_multi_optgp(self, model):
+        s = sample(model, 10, processes=2)
+        assert s.shape == (10, len(model.reactions))
+
+    def test_wrong_method(self, model):
+        with pytest.raises(ValueError):
+            sample(model, 1, method="schwupdiwupp")
+
+    def setup_class(self):
+        from . import create_test_model
+        model = create_test_model("textbook")
+        arch = ARCHSampler(model, thinning=1)
+        assert arch.n_warmup > 0 and arch.n_warmup <= 2 * len(model.reactions)
+        assert all(arch.validate(arch.warmup) == "v")
+        self.arch = arch
+
+        optgp = OptGPSampler(model, processes=1, thinning=1)
+        assert (optgp.n_warmup > 0 and
+                optgp.n_warmup <= 2 * len(model.reactions))
+        assert all(optgp.validate(optgp.warmup) == "v")
+        self.optgp = optgp
+
+    def test_arch_init_benchmark(self, model, benchmark):
+        benchmark(lambda: ARCHSampler(model))
+
+    def test_optgp_init_benchmark(self, model, benchmark):
+        benchmark(lambda: OptGPSampler(model, processes=2))
+
+    def test_sampling(self):
+        s = self.arch.sample(10)
+        assert all(self.arch.validate(s) == "v")
+
+        s = self.optgp.sample(10)
+        assert all(self.optgp.validate(s) == "v")
+
+    def test_arch_sample_benchmark(self, benchmark):
+        benchmark(self.arch.sample, 1)
+
+    def test_optgp_sample_benchmark(self, benchmark):
+        benchmark(self.optgp.sample, 1)
+
+    def test_batch_sampling(self):
+        for b in self.arch.batch(5, 4):
+            assert all(self.arch.validate(b) == "v")
+
+        for b in self.optgp.batch(5, 4):
+            assert all(self.optgp.validate(b) == "v")
