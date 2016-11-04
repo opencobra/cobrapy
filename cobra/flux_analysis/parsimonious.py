@@ -47,7 +47,7 @@ def optimize_minimal_flux(cobra_model, already_irreversible=False,
                 'Minimization not supported in optimize_minimal_flux')
         optimize_kwargs.pop('objective_sense', None)
 
-    if already_irreversible:
+    if not already_irreversible:
         convert_to_irreversible(cobra_model)
 
     solver = solver_dict[get_solver_name() if solver is None else solver]
