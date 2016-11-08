@@ -2,6 +2,7 @@ from cobra.core import Metabolite, Model, Reaction
 from cobra.manipulation import *
 import pytest
 
+
 class TestManipulation:
     """Test functions in cobra.manipulation"""
 

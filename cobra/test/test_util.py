@@ -286,6 +286,7 @@ class TestDictList:
         assert len(test_list) == 2
         assert test_list.index("test2") == 1
 
+
 class TimeMachineTestCase:
     def test_one_change_list(self, tm):
         l = [1, 2, 3, 4]
@@ -300,8 +301,8 @@ class TimeMachineTestCase:
 
         partial_function = partial(str, 1)
         tm(do=normal_function, undo=partial_function)
-        assert tm.__str__().split('\n')[2:-1] == \
-               ["undo: " + str(str) + " (1,) {}", 'redo: normal_function']
+        assert tm.__str__().split('\n')[2:-1] == [
+            "undo: " + str(str) + " (1,) {}", 'redo: normal_function']
 
     def test_with_statement(self):
         l = [1, 2, 3, 4]
@@ -344,10 +345,13 @@ def some_method_that_adds_stuff(model, cache):
 class TestProblemCache:
     def test_add_variable(self, model):
         cache = ProblemCache(model)
-        add_var = lambda model, var_id: model.solver.interface.Variable(
-            var_id,
-            ub=0)
-        update_var = lambda model, var: setattr(var, "ub", 1000)
+
+        def add_var(model, var_id):
+            model.solver.interface.Variable(var_id, ub=0)
+
+        def update_var(model, var):
+            setattr(var, "ub", 1000)
+
         for i in range(10):
             cache.add_variable("%i" % i, add_var, update_var)
 
@@ -370,13 +374,13 @@ class TestProblemCache:
     def test_add_constraint(self, model):
         cache = ProblemCache(model)
 
-        add_var = lambda model, var_id: model.solver.interface.Variable(
-            var_id,
-            ub=0)
-        add_constraint = lambda m, const_id, var: \
-            m.solver.interface.Constraint(var, lb=-10, ub=10,
-                                          name=const_id)
-        update_constraint = lambda model, const, var: \
+        def add_var(model, var_id):
+            model.solver.interface.Variable(var_id, ub=0)
+
+        def add_constraint(m, const_id, var):
+            m.solver.interface.Constraint(var, lb=-10, ub=10, name=const_id)
+
+        def update_constraint(model, const, var):
             setattr(const, "ub", 1000)
 
         for i in range(10):
@@ -449,6 +453,7 @@ class TestProblemCache:
         assert n_constraints == len(model.solver.constraints)
         assert n_variables == len(model.solver.variables)
 
+
 class TestUtils:
     def test_color_generation(self):
         for i in range(1, 100):
@@ -492,6 +497,7 @@ class FrozendictTestCase:
             frozen_dict.update()
 
         assert hasattr(frozen_dict, "__hash__")
+
 
 class TestSingleton:
     def test_singleton(self):
