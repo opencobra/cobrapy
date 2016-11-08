@@ -3,6 +3,7 @@ import pytest
 from cobra.design import *
 from cobra.design.design_algorithms import _add_decision_variable
 from cobra.solvers import get_solver_name
+from .conftest import model
 
 try:
     solver = get_solver_name(mip=True)

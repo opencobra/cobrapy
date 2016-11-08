@@ -8,6 +8,7 @@ from cobra.core import Model, Reaction, Metabolite
 from cobra.solvers import solver_dict, get_solver_name
 from cobra.flux_analysis import *
 from cobra.solvers import SolverNotFound
+from .conftest import model, large_model, solved_model, fva_results
 from cobra.manipulation import convert_to_irreversible
 
 try:

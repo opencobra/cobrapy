@@ -1,6 +1,7 @@
 from cobra.core import Metabolite, Model, Reaction
 from cobra.manipulation import *
 import pytest
+from .conftest import model, salmonella
 
 
 class TestManipulation:

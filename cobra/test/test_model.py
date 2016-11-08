@@ -3,6 +3,7 @@ import warnings
 import pytest
 from cobra.core import Model, Metabolite, Reaction
 from cobra.solvers import solver_dict
+from .conftest import model, array_model
 
 try:
     import scipy
