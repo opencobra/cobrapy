@@ -207,7 +207,9 @@ class Model(Object):
         except Exception:  # pragma: no cover
             new._solver = copy(self.solver)  # pragma: no cover
 
-        new.solution = deepcopy(self.solution)
+        # No use in copying it, also circular dependencies
+        new._timestamp_last_optimization = None
+        new.solution = LazySolution(self)
         return new
 
     def add_metabolites(self, metabolite_list):
