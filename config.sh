@@ -45,9 +45,7 @@ function run_tests_in_repo {
 	fi
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
-	echo -e "import cobra.test; import sys; sys.exit(cobra.test.test_all())" > run-tests.py
-	(coverage run --source=cobra --rcfile ../.coveragerc run-tests.py &&
-			coverage xml &&
+	(pytest --cov=cobra --cov-report=xml --cov-config=../.coveragerc --benchmark-skip &&
 			mv coverage.xml ..)
 }
 
