@@ -38,4 +38,4 @@ def create_test_model(model_name="salmonella"):
 def test_all():
     """ alias for running all unit-tests on installed cobra
     """
-    return pytest.main(['--pyargs', 'cobra']) == 0
+    return pytest.main(['--pyargs', 'cobra', '--benchmark-skip', '-v', '-rs']) == 0

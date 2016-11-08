@@ -8,7 +8,7 @@ from pickle import load, dump
 import pytest
 from collections import namedtuple
 from cobra import io
-
+from .conftest import data_directory
 
 def write_legacy_sbml_placeholder():
     pass
