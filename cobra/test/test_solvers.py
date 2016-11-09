@@ -1,6 +1,7 @@
 import pytest
 from cobra.core import Model, Reaction, Metabolite
 from cobra import solvers
+from .conftest import model
 
 try:
     import scipy

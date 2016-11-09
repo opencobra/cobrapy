@@ -3,6 +3,7 @@ import warnings
 import pytest
 from cobra.core import Model, Metabolite, Reaction
 from cobra.solvers import solver_dict
+from .conftest import model, array_model
 
 try:
     import scipy
@@ -396,8 +397,21 @@ class TestCobraModel:
         for reaction in gene_reactions:
             assert target_gene not in reaction.genes
 
-    def test_copy_benchmark(self, model, benchmark):
-        benchmark(lambda: model.copy())
+    @pytest.mark.parametrize("solver", list(solver_dict))
+    def test_copy_benchmark(self, model, solver, benchmark):
+        def _():
+            model.copy()
+            if not getattr(model, 'solver', None):
+                solver_dict[solver].create_problem(model)
+        benchmark(_)
+
+    @pytest.mark.parametrize("solver", list(solver_dict))
+    def test_copy_benchmark_large_model(self, large_model, solver, benchmark):
+        def _():
+            large_model.copy()
+            if not getattr(large_model, 'solver', None):
+                solver_dict[solver].create_problem(large_model)
+        benchmark(_)
 
     def test_copy(self, model):
         """modifying copy should not modify the original"""
