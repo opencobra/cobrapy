@@ -45,7 +45,7 @@ function run_tests_in_repo {
 	fi
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
-	(pytest --cov=cobra --cov-report=xml --cov-config=../.coveragerc --benchmark-skip &&
+	(pytest --pyargs --cov=cobra --cov-report=xml --cov-config=../.coveragerc --benchmark-skip cobra &&
 			mv coverage.xml ..)
 }
 
