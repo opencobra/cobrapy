@@ -11,6 +11,7 @@ from cobra.util import TimeMachine, generate_colors, Singleton, partition, \
     frozendict, ProblemCache
 from . import create_test_model
 import pytest
+from .conftest import model
 
 
 @pytest.fixture(scope="session")
@@ -347,10 +348,10 @@ class TestProblemCache:
         cache = ProblemCache(model)
 
         def add_var(model, var_id):
-            model.solver.interface.Variable(var_id, ub=0)
+            return model.solver.interface.Variable(var_id, ub=0)
 
         def update_var(model, var):
-            setattr(var, "ub", 1000)
+            return setattr(var, "ub", 1000)
 
         for i in range(10):
             cache.add_variable("%i" % i, add_var, update_var)
@@ -375,13 +376,14 @@ class TestProblemCache:
         cache = ProblemCache(model)
 
         def add_var(model, var_id):
-            model.solver.interface.Variable(var_id, ub=0)
+            return model.solver.interface.Variable(var_id, ub=0)
 
         def add_constraint(m, const_id, var):
-            m.solver.interface.Constraint(var, lb=-10, ub=10, name=const_id)
+            return m.solver.interface.Constraint(var, lb=-10, ub=10,
+                                                 name=const_id)
 
         def update_constraint(model, const, var):
-            setattr(const, "ub", 1000)
+            return setattr(const, "ub", 1000)
 
         for i in range(10):
             cache.add_variable("%i" % i, add_var, None)
