@@ -594,7 +594,7 @@ class TestCobraArrayModel:
         assert abs(model.reactions[9].upper_bound - 123.0) < 10 ** -5
         assert abs(model.reactions[10].upper_bound - 123.0) < 10 ** -5
 
-    def text_context_manager(self, model):
+    def test_context_manager(self, model):
         bounds0 = model.reactions[0].bounds
         bounds1 = (1, 2)
         bounds2 = (3, 4)
