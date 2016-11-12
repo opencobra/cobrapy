@@ -421,6 +421,7 @@ class Model(Object):
                    specified with the appropriate keyword argument.
 
         """
+        warn("use model.solve() instead", DeprecationWarning)
         if kwargs.get('solver', None) in ('cglpk', 'gurobi'):
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
