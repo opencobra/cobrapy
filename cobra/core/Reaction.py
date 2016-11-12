@@ -11,6 +11,8 @@ from .Object import Object
 from .Gene import Gene, parse_gpr, ast2str
 from .Metabolite import Metabolite
 
+from ..util.context import resettable
+
 
 class Frozendict(dict):
     """Read-only dictionary view"""
@@ -77,8 +79,8 @@ class Reaction(Object):
         self._model = None
 
         self.objective_coefficient = objective_coefficient
-        self.upper_bound = upper_bound
-        self.lower_bound = lower_bound
+        self._upper_bound = upper_bound
+        self._lower_bound = lower_bound
         # Used during optimization.  Indicates whether the
         # variable is modeled as continuous, integer, binary, semicontinous, or
         # semiinteger.
@@ -179,11 +181,29 @@ class Reaction(Object):
             raise e  # Not sure what the exact problem was
 
     @property
+    def lower_bound(self):
+        return self._lower_bound
+
+    @lower_bound.setter
+    @resettable
+    def lower_bound(self, new_bound):
+        self._lower_bound = new_bound
+
+    @property
+    def upper_bound(self):
+        return self._upper_bound
+
+    @upper_bound.setter
+    @resettable
+    def upper_bound(self, new_bound):
+        self._upper_bound = new_bound
+
+    @property
     def bounds(self):
         """ A more convienient bounds structure than seperate upper and lower
         bounds """
 
-        return (self.lower_bound, self.upper_bound)
+        return (self._lower_bound, self._upper_bound)
 
     @bounds.setter
     def bounds(self, value):
@@ -316,6 +336,10 @@ class Reaction(Object):
             state.pop("reaction")
         if "gene_reaction_rule" in state:
             state["_gene_reaction_rule"] = state.pop("gene_reaction_rule")
+        if "lower_bound" in state:
+            state['_lower_bound'] = state.pop('lower_bound')
+        if "upper_bound" in state:
+            state['_upper_bound'] = state.pop('upper_bound')
 
         self.__dict__.update(state)
         for x in state['_metabolites']:

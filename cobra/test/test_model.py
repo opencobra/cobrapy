@@ -593,3 +593,19 @@ class TestCobraArrayModel:
         model.upper_bounds[9:11] = 123.0
         assert abs(model.reactions[9].upper_bound - 123.0) < 10 ** -5
         assert abs(model.reactions[10].upper_bound - 123.0) < 10 ** -5
+
+    def text_context_manager(self, model):
+        bounds0 = model.reactions[0].bounds
+        bounds1 = (1, 2)
+        bounds2 = (3, 4)
+
+        # Trigger a nested model context, ensuring that bounds are
+        # preserved at each level
+        with model:
+            model.reactions[0].bounds = bounds1
+            with model:
+                model.reactions[0].bounds = bounds2
+
+                assert model.reactions[0].bounds == bounds2
+            assert model.reactions[0].bounds == bounds1
+        assert model.reactions[0].bounds == bounds0

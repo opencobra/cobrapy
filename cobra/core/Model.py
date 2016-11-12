@@ -9,6 +9,8 @@ from .Solution import Solution
 from .Reaction import Reaction
 from .DictList import DictList
 
+from ..util.context import HistoryManager
+
 
 # Note, when a reaction is added to the Model it will no longer keep personal
 # instances of its Metabolites, it will reference Model.metabolites to improve
@@ -48,6 +50,7 @@ class Model(Object):
             self.compartments = {}
             self.solution = Solution(None)
             self.media_compositions = {}
+            self._contexts = []
 
     @property
     def description(self):
@@ -379,3 +382,29 @@ class Model(Object):
             return model_summary(self, **kwargs)
         except ImportError:
             warn('Summary methods require pandas/tabulate')
+
+    @property
+    def context(self):
+        """Return the top-most context."""
+
+        # If the model doesn't have a _contexts stack, initialize one.
+        if not hasattr(self, '_contexts'):
+            self._contexts = []
+
+        if self._contexts:
+            return self._contexts[-1]
+        else:
+            return None
+
+    def __enter__(self):
+        """Record all future changes to the model, undoing them when a call to
+        __exit__ is recieved"""
+
+        # Create a new context and add it to the stack
+        self.context  # Touch the property to initalize the list if missing
+        self._contexts += [HistoryManager()]
+
+    def __exit__(self, type, value, traceback):
+        """Pop the top context manager and trigger the undo functions"""
+        context = self._contexts.pop()
+        context.reset()
