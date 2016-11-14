@@ -135,14 +135,20 @@ class Solution(SolutionBase):
         super(Solution, self).__init__(model, *args, **kwargs)
         self.f = model.solver.objective.value
         self.fluxes = OrderedDict()
-        self.shadow_prices = OrderedDict()
+        self.shadow_prices = model.solver.shadow_prices
         self.reduced_costs = OrderedDict()
+        self._primal_values = model.solver.primal_values
+        self._reduced_values = model.solver.reduced_costs
         for reaction in model.reactions:
-            self.fluxes[reaction.id] = reaction.flux
-            self.reduced_costs[reaction.id] = reaction.reduced_cost
-        for metabolite in model.metabolites:
-            self.shadow_prices[metabolite.id] = self.model.solver.constraints[
-                metabolite.id].dual
+            self.fluxes[reaction.id] = (
+                self._primal_values[reaction._get_forward_id()] -
+                self._primal_values[reaction._get_reverse_id()]
+            )
+            self.reduced_costs[reaction.id] = (
+                self._reduced_values[reaction._get_forward_id()] -
+                self._reduced_values[reaction._get_reverse_id()]
+            )
+
         self.status = model.solver.status
         self._reaction_ids = [r.id for r in self.model.reactions]
         self._metabolite_ids = [m.id for m in self.model.metabolites]
@@ -198,6 +204,8 @@ class LazySolution(SolutionBase):
         else:
             self._time_stamp = time.time()
         self._f = None
+        self._primal_values = None
+        self._reduced_values = None
 
     @property
     def data_frame(self):
@@ -256,27 +264,34 @@ class LazySolution(SolutionBase):
     @property
     def fluxes(self):
         self._check_freshness()
-        primals = OrderedDict()
+        primal_values = self.model.solver.primal_values
+
+        fluxes = OrderedDict()
         for reaction in self.model.reactions:
-            primals[reaction.id] = reaction.flux
-        return primals
+            fluxes[reaction.id] = (
+                primal_values[reaction._get_forward_id()] -
+                primal_values[reaction._get_reverse_id()]
+            )
+
+        return fluxes
 
     @property
     def reduced_costs(self):
         self._check_freshness()
-        duals = OrderedDict()
+        reduced_values = self.model.solver.reduced_costs
+
+        reduced_costs = OrderedDict()
         for reaction in self.model.reactions:
-            duals[reaction.id] = reaction.reduced_cost
-        return duals
+            reduced_costs[reaction.id] = (
+                reduced_values[reaction._get_forward_id()] -
+                reduced_values[reaction._get_reverse_id()]
+            )
+        return reduced_costs
 
     @property
     def shadow_prices(self):
         self._check_freshness()
-        duals = OrderedDict()
-        for metabolite in self.model.metabolites:
-            duals[metabolite.id] = self.model.solver.constraints[
-                metabolite.id].dual
-        return duals
+        return self.model.solver.shadow_prices
 
     def get_primal_by_id(self, reaction_id):
         """Return a flux/primal value for a reaction.
