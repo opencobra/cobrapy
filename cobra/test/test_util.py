@@ -3,6 +3,7 @@ from __future__ import absolute_import, print_function
 from copy import deepcopy, copy
 import re
 from cobra import DictList, Object
+from cobra.core import LazySolution
 from pickle import loads, dumps, HIGHEST_PROTOCOL
 from functools import partial
 from itertools import chain
@@ -32,7 +33,7 @@ def frozen_dict():
 @pytest.fixture(scope="function")
 def problem_cache_trial():
     model = create_test_model("textbook")
-    reference = model.solve().fluxes
+    reference = model.optimize(solution_type=LazySolution).fluxes
     n_constraints = len(model.solver.constraints)
     n_variables = len(model.solver.variables)
     return model, reference, n_constraints, n_variables

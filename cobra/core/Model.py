@@ -398,9 +398,17 @@ class Model(Object):
 
     def optimize(self, objective_sense='maximize', solution_type=Solution,
                  **kwargs):
-        r"""Optimize model using flux balance analysis
+        """Optimize model using flux balance analysis
+
+        Parameters
+        ----------
 
         objective_sense: 'maximize' or 'minimize'
+
+        solution_type: Solution or LazySolution
+            The type of solution that should be returned. A LazySolution
+            only fetches attributes from the solver when requested in order
+            to reduce unnecessary communication.
 
         solver: 'glpk', 'cglpk', 'gurobi', 'cplex' or None
 
@@ -421,13 +429,10 @@ class Model(Object):
                    specified with the appropriate keyword argument.
 
         """
-        warn("use model.solve() instead", DeprecationWarning)
+        # TODO: make LazySolution default
         if kwargs.get('solver', None) in ('cglpk', 'gurobi'):
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
-            self.solution = solution
-            return solution
-
         else:  # make the following honor the solver kwarg ...
             # from cameo ...
             self._timestamp_last_optimization = time.time()
@@ -440,31 +445,15 @@ class Model(Object):
             else:
                 self.solver.optimize()
             solution = solution_type(self)
-            self.solution = solution
-            return solution
-
-    def solve(self, solution_type=LazySolution, *args, **kwargs):
-        """Optimize model.
-
-        Parameters
-        ----------
-        solution_type : Solution or LazySolution, optional
-            The type of solution that should be returned (defaults to
-            LazySolution).
-
-        Returns
-        -------
-        Solution or LazySolution
-        """
-        solution = self.optimize(solution_type=solution_type, *args, **kwargs)
-        if solution.status is not 'optimal':
-            raise exceptions._OPTLANG_TO_EXCEPTIONS_DICT.get(solution.status,
-                                                             SolveError)(
-                'Solving model %s did not return an optimal solution. The '
-                'returned solution status is "%s"' % (
-                    self, solution.status))
-        else:
-            return solution
+        self.solution = solution
+        # TODO: make failing optimization raise suitable exception
+        # if solution.status is not 'optimal':
+        #     raise exceptions._OPTLANG_TO_EXCEPTIONS_DICT.get(solution.status,
+        #                                                      SolveError)(
+        #         'Solving model %s did not return an optimal solution. The '
+        #         'returned solution status is "%s"' % (
+        #             self, solution.status))
+        return solution
 
     def remove_reactions(self, reactions, delete=True,
                          remove_orphans=False):

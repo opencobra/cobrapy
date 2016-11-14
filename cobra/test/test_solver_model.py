@@ -17,7 +17,7 @@ except ImportError:
 import six
 
 from cobra import config
-from cobra.core import Metabolite, Reaction, Model
+from cobra.core import Metabolite, Reaction, Model, LazySolution
 from cobra.test import create_test_model
 from cobra.exceptions import UndefinedSolution
 from cobra.util import TimeMachine
@@ -52,7 +52,7 @@ def tiny_toy_model():
 @pytest.fixture(scope="function", params=solver_trials)
 def solved_model(request, model):
     model.solver = request.param
-    solution = model.solve()
+    solution = model.optimize(solution_type=LazySolution)
     return solution, model
 
 
@@ -325,7 +325,7 @@ class TestReaction:
         assert rxn.reverse_variable.ub == 1000.
 
     def test_model_less_reaction(self, model):
-        model.solve()
+        model.optimize(solution_type=LazySolution)
         for reaction in model.reactions:
             assert isinstance(reaction.flux, float)
             assert isinstance(reaction.reduced_cost, float)
@@ -714,11 +714,11 @@ class TestSolverBasedModel:
     def test_solver_change(self, model):
         solver_id = id(model.solver)
         problem_id = id(model.solver.problem)
-        solution = model.solve().x_dict
+        solution = model.optimize(solution_type=LazySolution).x_dict
         model.solver = 'glpk'
         assert id(model.solver) != solver_id
         assert id(model.solver.problem) != problem_id
-        new_solution = model.solve()
+        new_solution = model.optimize(solution_type=LazySolution)
         for key in list(solution.keys()):
             assert round(abs(new_solution.x_dict[key] - solution[key]),
                          7) == 0
@@ -726,11 +726,11 @@ class TestSolverBasedModel:
     def test_solver_change_with_optlang_interface(self, model):
         solver_id = id(model.solver)
         problem_id = id(model.solver.problem)
-        solution = model.solve().x_dict
+        solution = model.optimize(solution_type=LazySolution).x_dict
         model.solver = optlang.glpk_interface
         assert id(model.solver) != solver_id
         assert id(model.solver.problem) != problem_id
-        new_solution = model.solve()
+        new_solution = model.optimize(solution_type=LazySolution)
         for key in list(solution.keys()):
             assert round(abs(new_solution.x_dict[key] - solution[key]),
                          7) == 0
