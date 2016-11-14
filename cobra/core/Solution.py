@@ -161,16 +161,23 @@ class Solution(SolutionBase):
 
 
 class LazySolution(SolutionBase):
-    """This class implements a lazy evaluating version of the cobrapy
-    Solution class.
+    """This class implements a lazy evaluating version of the Solution class.
+
+    Instead of directly fetching results from the solver, this class only
+    gets results when they are requested after checking that the model has
+    not changed since the last optimization.
 
     Attributes
     ----------
     model : SolverBasedModel
     fluxes : OrderedDict
-        A dictionary of flux values.
+        A dictionary with flux values, populated upon first request
     reduced_costs : OrderedDict
-        A dictionary of reduced costs.
+        A dictionary with the reduced costs for each reaction, populated
+        upon first request
+    shadow_prices: OrderedDict
+        A dictionary with the shadow_prices for each reaction, populated
+        upon first request.
 
     Notes
     -----

@@ -49,16 +49,13 @@ class Metabolite(Species):
 
     @property
     def constraint(self):
-        if self.model is not None:
-            return self.model.solver.constraints[self.id]
+        """Get the constraints associated with this metabolite from the solve
 
-    @property
-    def constraint(self):
-        if self.model is not None:
-            return self.model.solver.constraints[self.id]
-
-    @property
-    def constraint(self):
+        Returns
+        -------
+        optlang.<interface>.Constraint:
+            the optlang constraint for this metabolite
+        """
         if self.model is not None:
             return self.model.solver.constraints[self.id]
 
@@ -210,21 +207,6 @@ class Metabolite(Species):
             return metabolite_summary(self, **kwargs)
         except ImportError:
             warn('Summary methods require pandas/tabulate')
-
-    def _repr_html_(self):
-        return """
-        <table>
-            <tr>
-                <td><strong>Id</strong></td><td>%s</td>
-            </tr>
-            <tr>
-                <td><strong>Name</strong></td><td>%s</td>
-            </tr>
-            <tr>
-                <td><strong>Formula</strong></td><td>%s</td>
-            </tr>
-        </table>""" % (self.id, self.name, self.formula)
-
 
 elements_and_molecular_weights = {
     'H':   1.007940,

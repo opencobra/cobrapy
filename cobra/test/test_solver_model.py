@@ -18,7 +18,6 @@ import six
 
 from cobra import config
 from cobra.core import Metabolite, Reaction, Model, LazySolution
-from cobra.test import create_test_model
 from cobra.exceptions import UndefinedSolution
 from cobra.util import TimeMachine
 import pytest
@@ -358,9 +357,6 @@ class TestReaction:
         for reaction in model.reactions:
             assert reaction.lower_bound == original_bounds[reaction.id][0]
             assert reaction.upper_bound == original_bounds[reaction.id][1]
-
-    def test_repr_html_(self, model):
-        assert '<table>' in model.reactions[0]._repr_html_()
 
     def test_reaction_without_model(self):
         r = Reaction('blub')
@@ -790,19 +786,3 @@ class TestMetabolite:
         met.remove_from_model()
         assert not (met.id in model.metabolites)
         assert not (met.id in model.solver.constraints)
-
-    def test_notebook_repr(self):
-        met = Metabolite(id="test", name="test metabolites", formula="CH4")
-        expected = """
-        <table>
-            <tr>
-                <td><strong>Id</strong></td><td>test</td>
-            </tr>
-            <tr>
-                <td><strong>Name</strong></td><td>test metabolites</td>
-            </tr>
-            <tr>
-                <td><strong>Formula</strong></td><td>CH4</td>
-             </tr>
-        </table>""".replace(' ', '')
-        assert met._repr_html_().replace(' ', '') == expected
