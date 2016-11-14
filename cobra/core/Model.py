@@ -1,19 +1,25 @@
 from warnings import warn
 from copy import deepcopy, copy
 
+import sympy
 from six import iteritems, string_types
 
+from cobra.exceptions import SolveError
 from ..solvers import optimize
 from .Object import Object
-from .Solution import Solution
+from .Solution import Solution, LazySolution
 from .Reaction import Reaction
 from .DictList import DictList
 
+import six
+import time
+import types
+import optlang
+from sympy.core.singleton import S
+from functools import partial
+from cobra.util import AutoVivification
+from cobra import exceptions, config
 
-# Note, when a reaction is added to the Model it will no longer keep personal
-# instances of its Metabolites, it will reference Model.metabolites to improve
-# performance.  When doing this, take care to monitor metabolite coefficients.
-# Do the same for Model.reactions[:].genes and Model.genes
 
 class Model(Object):
     """Metabolic Model
@@ -27,15 +33,20 @@ class Model(Object):
         for y in ['reactions', 'genes', 'metabolites']:
             for x in getattr(self, y):
                 x._model = self
+        # only repairs objectives when they are reactions..
+        for reaction in getattr(self, 'reactions'):
+            reaction.objective_coefficient = \
+                reaction._objective_coefficient
         if not hasattr(self, "name"):
             self.name = None
 
-    def __init__(self, id_or_model=None, name=None):
+    def __init__(self, id_or_model=None, name=None, solver_interface=optlang):
         if isinstance(id_or_model, Model):
             Object.__init__(self, name=name)
             self.__setstate__(id_or_model.__dict__)
             if not hasattr(self, "name"):
                 self.name = None
+            self._solver = id_or_model.solver
         else:
             Object.__init__(self, id_or_model, name=name)
             self._trimmed = False
@@ -46,18 +57,65 @@ class Model(Object):
             self.metabolites = DictList()  # A list of cobra.Metabolites
             # genes based on their ids {Gene.id: Gene}
             self.compartments = {}
-            self.solution = Solution(None)
+            # self.solution = Solution(None)
             self.media_compositions = {}
+
+            # from cameo ...
+
+            # if not hasattr(self, '_solver'):  # backwards compatibility
+            # with older cobrapy pickles?
+            self._solver = solver_interface.Model()
+            self._solver.objective = solver_interface.Objective(S.Zero)
+            self._populate_solver(self.reactions, self.metabolites)
+        self._timestamp_last_optimization = None
+        self.solution = LazySolution(self)
+
+    @property
+    def solver(self):
+        """Get or set the attached solver instance.
+
+        Very useful for accessing the optimization problem directly.
+        Furthermore, can be used to define additional non-metabolic
+        constraints.
+
+        Examples
+        --------
+        >>> import cobra.test
+        >>> model = cobra.test.create_test_model("textbook")
+        >>> new = model.solver.interface.Constraint(model.objective.expression,
+        >>> lb=0.99)
+        >>> model.solver.add(new)
+        """
+        return self._solver
+
+    @solver.setter
+    def solver(self, value):
+        not_valid_interface = ValueError(
+            '%s is not a valid solver interface. Pick from %s, or specify an '
+            'optlang interface (e.g. optlang.glpk_interface).' % (
+                value, list(config.solvers.keys())))
+        if isinstance(value, six.string_types):
+            try:
+                interface = config.solvers[value]
+            except KeyError:
+                raise not_valid_interface
+        elif isinstance(value, types.ModuleType) and hasattr(value, 'Model'):
+            interface = value
+        else:
+            raise not_valid_interface
+        for reaction in self.reactions:
+            reaction._reset_var_cache()
+        self._solver = interface.Model.clone(self._solver)
 
     @property
     def description(self):
-        warn("description deprecated")
+        warn("description deprecated", DeprecationWarning)
         return self.name if self.name is not None else ""
 
     @description.setter
     def description(self, value):
         self.name = value
-        warn("description deprecated")
+        warn("description deprecated", DeprecationWarning)
 
     def __add__(self, other_model):
         """Adds two models. +
@@ -140,6 +198,18 @@ class Model(Object):
                 new_gene = new.genes.get_by_id(gene.id)
                 new_reaction._genes.add(new_gene)
                 new_gene._reaction.add(new_reaction)
+
+        for reaction in new.reactions:
+            reaction._reset_var_cache()
+        try:
+            new._solver = deepcopy(self.solver)
+            # Cplex has an issue with deep copies
+        except Exception:  # pragma: no cover
+            new._solver = copy(self.solver)  # pragma: no cover
+
+        # No use in copying it, also circular dependencies
+        new._timestamp_last_optimization = None
+        new.solution = LazySolution(self)
         return new
 
     def add_metabolites(self, metabolite_list):
@@ -157,6 +227,13 @@ class Model(Object):
         for x in metabolite_list:
             x._model = self
         self.metabolites += metabolite_list
+
+        # from cameo ...
+        for met in metabolite_list:
+            if met.id not in self.solver.constraints:
+                constraint = self.solver.interface.Constraint(
+                    S.Zero, name=met.id, lb=0, ub=0)
+                self.solver.add(constraint)
 
     def add_reaction(self, reaction):
         """Will add a cobra.Reaction object to the model, if
@@ -194,6 +271,7 @@ class Model(Object):
 
         # Add reactions. Also take care of genes and metabolites in the loop
         for reaction in reaction_list:
+            reaction._reset_var_cache()
             reaction._model = self  # the reaction now points to the model
             # keys() is necessary because the dict will be modified during
             # the loop
@@ -204,7 +282,7 @@ class Model(Object):
                     self.metabolites.append(metabolite)
                     metabolite._model = self
                     # this should already be the case. Is it necessary?
-                    metabolite._reaction = set([reaction])
+                    metabolite._reaction = {reaction}
                 # A copy of the metabolite exists in the model, the reaction
                 # needs to point to the metabolite in the model.
                 else:
@@ -220,7 +298,7 @@ class Model(Object):
                     self.genes.append(gene)
                     gene._model = self
                     # this should already be the case. Is it necessary?
-                    gene._reaction = set([reaction])
+                    gene._reaction = {reaction}
                 # Otherwise, make the gene point to the one in the model
                 else:
                     model_gene = self.genes.get_by_id(gene.id)
@@ -230,9 +308,85 @@ class Model(Object):
 
         self.reactions += reaction_list
 
+        # from cameo ...
+        self._populate_solver(reaction_list)
+
+    def _populate_solver(self, reaction_list, metabolite_list=None):
+        """Populate attached solver with constraints and variables that
+        model the provided reactions.
+        """
+        constraint_terms = AutoVivification()
+        if metabolite_list is not None:
+            for met in metabolite_list:
+                constraint = self.solver.interface.Constraint(S.Zero,
+                                                              name=met.id,
+                                                              lb=0, ub=0)
+                self.solver.add(constraint)
+
+        for reaction in reaction_list:
+
+            if reaction.reversibility:
+                forward_variable = self.solver.interface.Variable(
+                    reaction._get_forward_id(), lb=0,
+                    ub=reaction._upper_bound)
+                reverse_variable = self.solver.interface.Variable(
+                    reaction._get_reverse_id(), lb=0,
+                    ub=-1 * reaction._lower_bound)
+            elif 0 == reaction.lower_bound and reaction.upper_bound == 0:
+                forward_variable = self.solver.interface.Variable(
+                    reaction._get_forward_id(), lb=0, ub=0)
+                reverse_variable = self.solver.interface.Variable(
+                    reaction._get_reverse_id(), lb=0, ub=0)
+            elif reaction.lower_bound >= 0:
+                forward_variable = self.solver.interface.Variable(
+                    reaction.id,
+                    lb=reaction._lower_bound,
+                    ub=reaction._upper_bound)
+                reverse_variable = self.solver.interface.Variable(
+                    reaction._get_reverse_id(), lb=0, ub=0)
+            elif reaction.upper_bound <= 0:
+                forward_variable = self.solver.interface.Variable(reaction.id,
+                                                                  lb=0, ub=0)
+                reverse_variable = self.solver.interface.Variable(
+                    reaction._get_reverse_id(),
+                    lb=-1 * reaction._upper_bound,
+                    ub=-1 * reaction._lower_bound)
+
+            self.solver.add(forward_variable)
+            self.solver.add(reverse_variable)
+            self.solver.update()
+
+            for metabolite, coeff in six.iteritems(reaction.metabolites):
+                if metabolite.id in self.solver.constraints:
+                    constraint = self.solver.constraints[metabolite.id]
+                else:
+                    constraint = self.solver.interface.Constraint(
+                        S.Zero,
+                        name=metabolite.id,
+                        lb=0, ub=0)
+                    self.solver.add(constraint, sloppy=True)
+
+                constraint_terms[constraint][forward_variable] = coeff
+                constraint_terms[constraint][reverse_variable] = -coeff
+
+            objective_coeff = reaction._objective_coefficient
+            if objective_coeff != 0.:
+                if self.solver.objective is None:
+                    self.solver.objective = self.solver.interface.Objective(
+                        0, direction='max')
+                if self.solver.objective.direction == 'min':
+                    self.solver.objective.direction = 'max'
+                self.solver.objective.set_linear_coefficients(
+                    {forward_variable: objective_coeff,
+                     reverse_variable: -objective_coeff})
+
+        self.solver.update()
+        for constraint, terms in six.iteritems(constraint_terms):
+            constraint.set_linear_coefficients(terms)
+
     def to_array_based_model(self, deepcopy_model=False, **kwargs):
-        """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model which
-        may be used to perform linear algebra operations with the
+        """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model
+        which may be used to perform linear algebra operations with the
         stoichiomatric matrix.
 
         deepcopy_model: Boolean.  If False then the ArrayBasedModel points
@@ -242,10 +396,19 @@ class Model(Object):
         from .ArrayBasedModel import ArrayBasedModel
         return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
 
-    def optimize(self, objective_sense='maximize', **kwargs):
-        r"""Optimize model using flux balance analysis
+    def optimize(self, objective_sense='maximize', solution_type=Solution,
+                 **kwargs):
+        """Optimize model using flux balance analysis
+
+        Parameters
+        ----------
 
         objective_sense: 'maximize' or 'minimize'
+
+        solution_type: Solution or LazySolution
+            The type of solution that should be returned. A LazySolution
+            only fetches attributes from the solver when requested in order
+            to reduce unnecessary communication.
 
         solver: 'glpk', 'cglpk', 'gurobi', 'cplex' or None
 
@@ -266,8 +429,30 @@ class Model(Object):
                    specified with the appropriate keyword argument.
 
         """
-        solution = optimize(self, objective_sense=objective_sense, **kwargs)
+        # TODO: make LazySolution default
+        if kwargs.get('solver', None) in ('cglpk', 'gurobi'):
+            solution = optimize(self, objective_sense=objective_sense,
+                                **kwargs)
+        else:  # make the following honor the solver kwarg ...
+            # from cameo ...
+            self._timestamp_last_optimization = time.time()
+            if objective_sense is not None:
+                original_direction = self.solver.objective.direction
+                self.solver.objective.direction = \
+                    {'minimize': 'min', 'maximize': 'max'}[objective_sense]
+                self.solver.optimize()
+                self.solver.objective.direction = original_direction
+            else:
+                self.solver.optimize()
+            solution = solution_type(self)
         self.solution = solution
+        # TODO: make failing optimization raise suitable exception
+        # if solution.status is not 'optimal':
+        #     raise exceptions._OPTLANG_TO_EXCEPTIONS_DICT.get(solution.status,
+        #                                                      SolveError)(
+        #         'Solving model %s did not return an optimal solution. The '
+        #         'returned solution status is "%s"' % (
+        #             self, solution.status))
         return solution
 
     def remove_reactions(self, reactions, delete=True,
@@ -324,39 +509,111 @@ class Model(Object):
             self.solution = Solution(None)
         return
 
-    def change_objective(self, objectives):
-        """Change the model objective"""
-        self.objective = objectives
+    def change_objective(self, value, time_machine=None):
+        """
+        Changes the objective of the model to the given value. Allows
+        passing a time machine to revert the change later
+
+        Parameters
+        ----------
+
+        """
+        if time_machine is None:
+            self.objective = value
+        else:
+            time_machine(do=partial(setattr, self, "objective", value),
+                         undo=partial(setattr, self, "objective",
+                                      self.objective))
 
     @property
-    def objective(self):
+    def objective_reactions(self):
         return {reaction: reaction.objective_coefficient
                 for reaction in self.reactions
                 if reaction.objective_coefficient != 0}
 
-    @objective.setter
-    def objective(self, objectives):
-        # set all objective coefficients to 0 initially
-        for x in self.reactions:
-            x.objective_coefficient = 0.
-        # case of a single reaction
-        if isinstance(objectives, string_types) or \
-                isinstance(objectives, Reaction):
-            self.reactions.get_by_id(str(objectives)).objective_coefficient = 1
-        elif isinstance(objectives, int):
-            self.reactions[objectives].objective_coefficient = 1
+    @objective_reactions.setter
+    def objective_reactions(self, value):
+        """Get or set solver objective based on a list of reactions
 
-        # case of an iterable
+        Parameters
+        ----------
+        value: list or dict of `Reactions`
+            if value is a list, then each element should be a reaction. if
+            it is a dictionary, then each key is a reaction identifier and
+            the associated value the new objective coefficient for that
+            reaction.
+        """
+        for reaction in self.reactions:
+            reaction.objective_coefficient = 0.
+        for item in value:
+            if isinstance(item, int):
+                reaction = self.reactions[item]
+            elif isinstance(item, six.string_types):
+                reaction = self.reactions.get_by_id(item)
+            elif hasattr(item, 'id'):
+                reaction = self.reactions.get_by_id(item.id)
+            else:
+                raise ValueError('item in iterable cannot be %s' %
+                                 type(item))
+            if isinstance(value, list):
+                reaction.objective_coefficient = 1
+            if isinstance(value, dict):
+                reaction.objective_coefficient = value[item]
+
+    @property
+    def objective(self):
+        """Get or set the solver objective
+
+        Before introduction of the optlang based solver interfaces,
+        this function always returned the objective reactions as a list.
+        With optlang, the objective is not limited to reactions making the
+        return value ambiguous. Henceforth, use `objective_reactions` to get
+        a list (empty if there are none), or `model.solver.objective` for
+        the complete solver objective. In a future release of cobrapy,
+        this function will return the solver objective.
+
+        The set value can be string, int, Reaction,
+        solver.interface.Objective or sympy expression. Strings should be
+        reaction identifiers, integers are reaction indices in the current
+        model, Reaction, solver.interface.Objective or sympy expressions are
+        directly interpreted as new objectives
+        """
+        warn(("use objective_reactions or model.solver.objective "
+              "instead. A future version of cobra will not "
+              "necessarily return a list of reactions."), DeprecationWarning)
+        return self.objective_reactions
+
+    @objective.setter
+    def objective(self, value):
+        if isinstance(value, six.string_types):
+            try:
+                value = self.reactions.get_by_id(value)
+            except KeyError:
+                raise ValueError("No reaction with the id %s in the model"
+                                 % value)
+        if isinstance(value, int):
+            value = self.reactions[value]
+        if isinstance(value, Reaction):
+            if value.model is not self:
+                raise ValueError("%r does not belong to the model" % value)
+            value.objective_coefficient = 1.
+            self.solver.objective = self.solver.interface.Objective(
+                value.flux_expression, sloppy=True)
+        elif isinstance(value, self.solver.interface.Objective):
+            self.solver.objective = value
+        elif isinstance(value, sympy.Basic):
+            self.solver.objective = self.solver.interface.Objective(
+                value, sloppy=False)
+        elif isinstance(value, (dict, list)):
+            warn("use model.objective_reactions for lists and dictionaries",
+                 DeprecationWarning)
+            self.objective_reactions = value
+        # TODO(old): maybe the following should be allowed
+        # elif isinstance(value, optlang.interface.Objective):
+        # self.solver.objective = self.solver.interface.Objective.clone(value)
         else:
-            for reaction_id in objectives:
-                if isinstance(reaction_id, int):  # index in a list
-                    reaction = self.reactions[reaction_id]
-                else:
-                    reaction = self.reactions.get_by_id(str(reaction_id))
-                # objective coefficient obtained from a dict, and is 1. if
-                # from a list.
-                reaction.objective_coefficient = objectives[reaction_id] \
-                    if hasattr(objectives, "items") else 1.
+            raise TypeError('%r is not a valid objective for %r.' %
+                            (value, self.solver))
 
     def summary(self, **kwargs):
         """Print a summary of the input and output fluxes of the model. This
@@ -379,3 +636,12 @@ class Model(Object):
             return model_summary(self, **kwargs)
         except ImportError:
             warn('Summary methods require pandas/tabulate')
+
+    @property
+    def exchanges(self):
+        """Exchange reactions in model.
+
+        Reactions that either don't have products or substrates.
+        """
+        return [reaction for reaction in self.reactions if
+                len(reaction.reactants) == 0 or len(reaction.products) == 0]

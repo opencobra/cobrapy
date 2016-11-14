@@ -490,13 +490,14 @@ class TestCobraModel:
         assert biomass.objective_coefficient == 1.
         # set both using a dict
         model.objective = {atpm: 0.2, biomass: 0.3}
-        assert atpm.objective_coefficient == 0.2
-        assert biomass.objective_coefficient == 0.3
+        assert abs(atpm.objective_coefficient - 0.2) < 10 ** -9
+        assert abs(biomass.objective_coefficient - 0.3) < 10 ** -9
         # test setting by index
         model.objective = model.reactions.index(atpm)
         assert model.objective == {atpm: 1.}
         # test by setting list of indexes
-        model.objective = map(model.reactions.index, [atpm, biomass])
+        model.objective = [model.reactions.index(reaction) for
+                           reaction in [atpm, biomass]]
         assert model.objective == {atpm: 1., biomass: 1.}
 
 

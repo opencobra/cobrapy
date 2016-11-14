@@ -1107,7 +1107,7 @@
                 "pi_c": 1.0
             },
             "name": "ATP maintenance requirement",
-            "objective_coefficient": 1,
+            "objective_coefficient": 1.0,
             "upper_bound": 1000.0
         },
         {

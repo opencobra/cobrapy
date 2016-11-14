@@ -1,4 +1,5 @@
 from math import isinf, isnan
+from warnings import warn
 
 NOT_MASS_BALANCED_TERMS = {"SBO:0000627",  # EXCHANGE
                            "SBO:0000628",  # DEMAND
@@ -19,7 +20,10 @@ def check_mass_balance(model):
     return unbalanced
 
 
+# no longer strictly necessary, done by optlang solver interfaces
 def check_reaction_bounds(model):
+    warn("no longer necessary, done by optlang solver interfaces",
+         DeprecationWarning)
     errors = []
     for reaction in model.reactions:
         if reaction.lower_bound > reaction.upper_bound:

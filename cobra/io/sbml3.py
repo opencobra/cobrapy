@@ -348,7 +348,10 @@ def parse_xml_into_model(xml, number=float):
             gpr = gpr[1:-1].strip()
         gpr = gpr.replace(SBML_DOT, ".")
         reaction.gene_reaction_rule = gpr
-    model.add_reactions(reactions)
+    try:
+        model.add_reactions(reactions)
+    except ValueError as e:
+        warn(str(e))
 
     # objective coefficients are handled after all reactions are added
     obj_list = xml_model.find(ns("fbc:listOfObjectives"))
@@ -361,11 +364,13 @@ def parse_xml_into_model(xml, number=float):
         rxn_id = clip(get_attrib(sbml_objective, "fbc:reaction"), "R_")
         try:
             objective_reaction = model.reactions.get_by_id(rxn_id)
-        except KeyError as e:
+        except KeyError:
             raise CobraSBMLError("Objective reaction '%s' not found" % rxn_id)
-        objective_reaction.objective_coefficient = \
-            get_attrib(sbml_objective, "fbc:coefficient", type=number)
-
+        try:
+            objective_reaction.objective_coefficient = get_attrib(
+                sbml_objective, "fbc:coefficient", type=number)
+        except ValueError as e:
+            warn(str(e))
     return model
 
 
