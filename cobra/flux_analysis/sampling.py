@@ -5,7 +5,6 @@ where possible to provide a uniform interface.
 """
 
 from __future__ import division
-from builtins import range
 import numpy as np
 from ..solvers import solver_dict, get_solver_name
 from copy import deepcopy
