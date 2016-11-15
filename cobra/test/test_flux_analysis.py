@@ -28,6 +28,10 @@ try:
     import tabulate
 except ImportError:
     tabulate = None
+try:
+    import scipy
+except ImportError:
+    scipy = None
 
 
 @contextmanager
@@ -452,7 +456,8 @@ class TestCobraFluxAnalysis:
             self.check_entries(out, desired_entries)
 
 
-@pytest.mark.skipif(numpy is None, reason="flux sampling requires numpy")
+@pytest.mark.skipif(scipy is None,
+                    reason="flux sampling requires numpy and scipy")
 class TestCobraFluxSampling:
     """Test and benchmark flux sampling"""
 
