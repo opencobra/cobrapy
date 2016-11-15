@@ -1,7 +1,6 @@
 from os.path import join, abspath, dirname
 from cobra.io import read_sbml_model
 import pytest
-
 try:
     from cPickle import load as _load
 except ImportError:

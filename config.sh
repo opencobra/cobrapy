@@ -7,26 +7,25 @@ function pre_build {
     if [ -n "$IS_OSX" ]; then
         export CC=clang
         export CXX=clang++
-        export CFLAGS="-fPIC -O3 -arch i386 -arch x86_64 -g -DNDEBUG -mmacosx-version-min=10.6"
-    else
-        yum install -y libxslt libxml2 libxml2-devel libxslt-devel
-    fi
-    curl -O http://ftp.gnu.org/gnu/glpk/glpk-4.60.tar.gz
-    tar xzf glpk-4.60.tar.gz
-    (cd glpk-4.60 \
-            && ./configure \
-            && make \
-            && make install)
-    pip install cython
-    cython -a cobra/solvers/cglpk.pyx
-    export PATH="$PATH:/usr/local/bin"
+		export CFLAGS="-fPIC -O3 -arch i386 -arch x86_64 -g -DNDEBUG -mmacosx-version-min=10.6"
+	else
+		yum install -y libxslt libxml2 libxml2-devel libxslt-devel
+	fi
+	curl -O http://ftp.gnu.org/gnu/glpk/glpk-4.60.tar.gz
+	tar xzf glpk-4.60.tar.gz
+	(cd glpk-4.60 \
+			&& ./configure \
+			&& make \
+			&& make install)
+	pip install cython
+	cython -a cobra/solvers/cglpk.pyx
+	export PATH="$PATH:/usr/local/bin"
 }
 
 function build_wheel {
     # Set default building method to pip
     build_bdist_wheel $@
-	# avoid this for now, (we get broken linux wheels due to https://github.com/pypa/manylinux/issues/80, but testing works)
-	#(cd glpk-4.60 && make uninstall)
+	(cd glpk-4.60 && make uninstall)
 }
 
 function run_tests_in_repo {
@@ -46,9 +45,7 @@ function run_tests_in_repo {
 	fi
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
-	echo -e "import cobra.test; import sys; sys.exit(cobra.test.test_all())" > run-tests.py
-	(coverage run --source=cobra --rcfile ../.coveragerc run-tests.py &&
-			coverage xml &&
+	(pytest --pyargs -v -rsx --cov=cobra --cov-report=xml --cov-config=../.coveragerc --benchmark-skip cobra &&
 			mv coverage.xml ..)
 }
 
