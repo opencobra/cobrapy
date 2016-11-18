@@ -39,7 +39,6 @@ def add_solver(solver_name, use_name=None):
             use_name = solver_name
     solver_dict[use_name] = eval(solver_name)
 
-import sys
 
 for i in listdir(path.dirname(path.abspath(__file__))):
     if i.startswith("_") or i.startswith(".") or i.startswith('legacy'):
@@ -48,7 +47,6 @@ for i in listdir(path.dirname(path.abspath(__file__))):
         continue
     if i.endswith(".py") or i.endswith(".so") or i.endswith(".pyc") \
             or i.endswith(".pyd"):
-        sys.stdout.write('to try: {}\n'.format(i))
         possible_solvers.add(i.split(".")[0])
 
 if "wrappers" in possible_solvers:
@@ -57,9 +55,7 @@ if "wrappers" in possible_solvers:
 for solver in possible_solvers:
     try:
         add_solver(solver)
-        sys.stdout.write("succeeded: {}\n".format(solver))
     except:
-        sys.stdout.write("failed: {}\n".format(solver))
         pass
     del solver
 
