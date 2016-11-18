@@ -19,6 +19,8 @@ function pre_build {
 			&& make install)
 	pip install cython
 	cython -a cobra/solvers/cglpk.pyx
+	pip install swiglpk
+	python -c 'import swiglpk'
 	export PATH="$PATH:/usr/local/bin"
 }
 
@@ -47,7 +49,8 @@ function run_tests_in_repo {
 	fi
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
-	echo `which glpsol`
+	python -c 'import swiglpk'
+	echo "***** glpsol:" `which glpsol`
 	echo $PATH
 	(pytest --pyargs -v -rsx --cov=cobra --cov-report=xml --cov-config=../.coveragerc --benchmark-skip cobra &&
 			mv coverage.xml ..)
