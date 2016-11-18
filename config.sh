@@ -19,13 +19,14 @@ function pre_build {
 			&& make install)
 	pip install cython
 	cython -a cobra/solvers/cglpk.pyx
-	pip install swiglpk
-	python -c 'import swiglpk'
 	export PATH="$PATH:/usr/local/bin"
+	echo "***** glpsol:" `which glpsol`
 }
 
 function build_wheel {
     # Set default building method to pip
+	python -c 'import swiglpk; print(swiglpk)'
+	python -c 'import cobra; print(cobra)'
     build_bdist_wheel $@
     # since swiglpk doesn't have wheels, we currently must keep glpk
     # installed for testing
@@ -49,7 +50,8 @@ function run_tests_in_repo {
 	fi
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
-	python -c 'import swiglpk'
+	python -c 'import cobra; print(cobra)'
+	python -c 'import swiglpk; print(swiglpk)'
 	echo "***** glpsol:" `which glpsol`
 	echo $PATH
 	(pytest --pyargs -v -rsx --cov=cobra --cov-report=xml --cov-config=../.coveragerc --benchmark-skip cobra &&
