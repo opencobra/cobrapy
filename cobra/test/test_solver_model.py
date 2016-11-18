@@ -464,7 +464,7 @@ class TestReaction:
                 already_included_metabolite.id].expression.has(
                 -1 * new_coefficient * reaction.reverse_variable)
 
-    @pytest.mark.xfail('non-deterministic test')
+    @pytest.mark.xfail(reason='non-deterministic test')
     def test_add_metabolites_combine_false(self, model):
         test_metabolite = Metabolite('test')
         for reaction in model.reactions:
