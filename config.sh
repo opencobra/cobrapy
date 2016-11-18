@@ -25,9 +25,8 @@ function pre_build {
 
 function build_wheel {
     # Set default building method to pip
-	python -c 'import swiglpk; print(swiglpk)'
-	python -c 'import cobra; print(cobra)'
     build_bdist_wheel $@
+	python -c 'import swiglpk; print(swiglpk)'
     # since swiglpk doesn't have wheels, we currently must keep glpk
     # installed for testing
 	# (cd glpk-4.60 && make uninstall)
