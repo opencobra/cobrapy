@@ -50,7 +50,7 @@ before_install:
   - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout ffe5995)
   # matplotlib non-compatible as testing runs in venv (non-framework)
   - TEST_DEPENDS="swiglpk optlang sympy decorator cython codecov coverage numpy scipy python-libsbml jsonschema six pytest pytest-cov pytest-benchmark pandas tabulate"
-  - BUILD_DEPENDS="cython numpy scipy"
+  - BUILD_DEPENDS="swiglpk optlang sympy decorator cython numpy scipy"
   - source multibuild/common_utils.sh
   - source multibuild/travis_steps.sh
   - before_install
