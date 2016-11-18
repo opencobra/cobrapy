@@ -1,7 +1,6 @@
 from os.path import join, abspath, dirname
 from cobra.io import read_sbml_model
 import pytest
-
 try:
     from cPickle import load as _load
 except ImportError:
@@ -36,8 +35,11 @@ def create_test_model(model_name="salmonella"):
         return _load(infile)
 
 
-def test_all():
+def test_all(args=None):
     """ alias for running all unit-tests on installed cobra
     """
+    args = args if args else []
+
     return pytest.main(
-        ['--pyargs', 'cobra', '--benchmark-skip', '-v', '-rs']) == 0
+        ['--pyargs', 'cobra', '--benchmark-skip', '-v', '-rs'] + args
+        ) == 0

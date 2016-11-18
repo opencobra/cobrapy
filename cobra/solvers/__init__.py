@@ -57,8 +57,8 @@ if "wrappers" in possible_solvers:
 for solver in possible_solvers:
     try:
         add_solver(solver)
+        sys.stdout.write("succeeded: {}\n".format(solver))
     except:
-
         sys.stdout.write("failed: {}\n".format(solver))
         pass
     del solver

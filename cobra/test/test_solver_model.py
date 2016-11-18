@@ -22,14 +22,6 @@ from cobra.exceptions import UndefinedSolution
 from cobra.util import TimeMachine
 import pytest
 
-slow = pytest.mark.skipif(
-    not pytest.config.getoption("--run-slow"),
-    reason="need --run-slow option to run"
-)
-non_deterministic = pytest.mark.skipif(
-    not pytest.config.getoption("--run-non-deterministic"),
-    reason="need --run-non-deterministic option to run"
-)
 
 solver_trials = ['glpk',
                  pytest.mark.skipif('cplex' not in config.solvers,
@@ -472,8 +464,8 @@ class TestReaction:
                 already_included_metabolite.id].expression.has(
                 -1 * new_coefficient * reaction.reverse_variable)
 
-    @non_deterministic
     def test_add_metabolites_combine_false(self, model):
+        pytest.skip('fix later')
         test_metabolite = Metabolite('test')
         for reaction in model.reactions:
             reaction.add_metabolites({test_metabolite: -66}, combine=False)

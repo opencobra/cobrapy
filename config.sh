@@ -53,8 +53,10 @@ function run_tests_in_repo {
 	python -c 'import swiglpk; print(swiglpk)'
 	echo "***** glpsol:" `which glpsol`
 	echo $PATH
-	(pytest --pyargs -v -rsx --cov=cobra --cov-report=xml --cov-config=../.coveragerc --benchmark-skip cobra &&
-			mv coverage.xml ..)
+	echo -e "import cobra.test; import sys; sys.exit(cobra.test.test_all(['-rsx', '--cov=cobra', '--cov-report=xml', '--cov-config=../.coveragerc']))" > run-tests.py
+	(python run-tests.py && mv coverage.xml ..)
+#	(pytest --pyargs -v -rsx --cov=cobra --cov-report=xml --cov-config=../.coveragerc --benchmark-skip cobra &&
+#			mv coverage.xml ..)
 }
 
 function run_tests {
