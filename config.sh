@@ -36,7 +36,6 @@ function run_tests_in_repo {
     # coverage run --source=cobra setup.py test
 	if [ -n "$IS_OSX" ]; then
 		echo -e " testing for mac... "
-		brew install glpk
 	else
 		wget --no-check-certificate \
 			 https://opencobra.github.io/pypi_cobrapy_travis/esolver.gz
@@ -48,8 +47,8 @@ function run_tests_in_repo {
 	fi
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
-	pip freeze
-	which glpsol
+	echo `which glpsol`
+	echo $PATH
 	(pytest --pyargs -v -rsx --cov=cobra --cov-report=xml --cov-config=../.coveragerc --benchmark-skip cobra &&
 			mv coverage.xml ..)
 }
