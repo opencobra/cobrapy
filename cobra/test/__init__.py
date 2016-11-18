@@ -42,4 +42,4 @@ def test_all(args=None):
 
     return pytest.main(
         ['--pyargs', 'cobra', '--benchmark-skip', '-v', '-rs'] + args
-        ) == 0
+        ) != 0

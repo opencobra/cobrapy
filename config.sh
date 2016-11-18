@@ -50,7 +50,7 @@ function run_tests_in_repo {
 	COVERAGEXML=`python -c "import os,sys; print(os.path.realpath('coverage.xml'))"`
 	COVERAGERC=`python -c "import os,sys; print(os.path.realpath('../.coveragerc'))"`
 	echo -e "import cobra.test; import sys; sys.exit(cobra.test.test_all(['-rsx', '--cov=cobra', '--cov-report=xml:$COVERAGEXML', '--cov-config=$COVERAGERC']))" > run-tests.py
-	(python run-tests.py && mv coverage.xml ..)
+	(python run-tests.py && mv ${COVERAGEXML} ..)
 }
 
 function run_tests {
