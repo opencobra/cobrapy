@@ -58,7 +58,10 @@ install:
   - "powershell appveyor\\install.ps1"
   - ps: Start-FileDownload 'https://bitbucket.org/gutworth/six/raw/default/six.py'
   - "%WITH_COMPILER% %PYTHON%/python appveyor/build_glpk.py"
-  - IF "%CONDA"=="true" (%PYTHON%/conda install pip) ELSE (%PYTHON%/python -m pip install pip setuptools wheel --upgrade)
+  - ps: |
+      if ($env:CONDA -eq "true") {
+          %PYTHON%/conda install pip } else {
+          %PYTHON%/python -m pip install pip setuptools wheel --upgrade }
   - "%PYTHON%/python -m pip install --upgrade pytest"
   - "%PYTHON%/python -m pip install pytest-cov pytest-benchmark"
   - IF "%CONDA%"=="true" %PYTHON%/conda install nomkl numpy scipy
