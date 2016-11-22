@@ -7,7 +7,6 @@ from six import iteritems, StringIO
 from cobra.core import Model, Reaction, Metabolite
 from cobra.solvers import solver_dict, get_solver_name
 from cobra.flux_analysis import *
-from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 from cobra.solvers import SolverNotFound
 from .conftest import model, large_model, solved_model, fva_results
 from cobra.manipulation import convert_to_irreversible
@@ -16,6 +15,11 @@ try:
     import numpy
 except ImportError:
     numpy = None
+try:
+    import scipy
+    from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
+except ImportError:
+    scipy = None
 try:
     import matplotlib
 except ImportError:
@@ -452,7 +456,7 @@ class TestCobraFluxAnalysis:
             self.check_entries(out, desired_entries)
 
 
-@pytest.mark.skipif(numpy is None, reason="flux sampling requires numpy")
+@pytest.mark.skipif(scipy is None, reason="flux sampling requires numpy")
 class TestCobraFluxSampling:
     """Test and benchmark flux sampling"""
 
