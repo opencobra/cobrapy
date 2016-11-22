@@ -73,39 +73,41 @@ def _from_dict(obj):
     if 'reactions' not in obj:
         raise Exception('JSON object has no reactions attribute. Cannot load.')
     model = Model()
-    # add metabolites
-    new_metabolites = []
-    for metabolite in obj['metabolites']:
-        new_metabolite = Metabolite()
-        for k, v in iteritems(metabolite):
-            setattr(new_metabolite, k, v)
-        new_metabolites.append(new_metabolite)
-    model.add_metabolites(new_metabolites)
-    # add genes
-    for gene in obj['genes']:
-        new_gene = Gene(gene["id"])
-        for k, v in iteritems(gene):
-            setattr(new_gene, k, v)
-        model.genes.append(new_gene)
-    # add reactions
-    new_reactions = []
-    for reaction in obj['reactions']:
-        new_reaction = Reaction()
-        for k, v in iteritems(reaction):
-            if k == 'reversibility' or k == "reaction":
-                continue
-            elif k == 'metabolites':
-                new_reaction.add_metabolites(
-                    {model.metabolites.get_by_id(str(met)): coeff
-                     for met, coeff in iteritems(v)})
-            else:
-                setattr(new_reaction, k, v)
-        new_reactions.append(new_reaction)
-    model.add_reactions(new_reactions)
+    model.add_metabolites([metabolite_from_dict(metabolite) for metabolite in obj['metabolites']])
+    model.genes.extend([gene_from_dict(gene) for gene in obj['genes']])
+    model.add_reactions([reaction_from_dict(reaction, model) for reaction in obj['reactions']])
     for k, v in iteritems(obj):
         if k in {'id', 'name', 'notes', 'compartments', 'annotation'}:
             setattr(model, k, v)
     return model
+
+
+def reaction_from_dict(reaction, model):
+    new_reaction = Reaction()
+    for k, v in iteritems(reaction):
+        if k == 'reversibility' or k == "reaction":
+            continue
+        elif k == 'metabolites':
+            new_reaction.add_metabolites(
+                {model.metabolites.get_by_id(str(met)): coeff
+                 for met, coeff in iteritems(v)})
+        else:
+            setattr(new_reaction, k, v)
+    return new_reaction
+
+
+def gene_from_dict(gene):
+    new_gene = Gene(gene["id"])
+    for k, v in iteritems(gene):
+        setattr(new_gene, k, v)
+    return new_gene
+
+
+def metabolite_from_dict(metabolite):
+    new_metabolite = Metabolite()
+    for k, v in iteritems(metabolite):
+        setattr(new_metabolite, k, v)
+    return new_metabolite
 
 
 def _update_optional(cobra_object, new_dict, optional_attribute_dict):
@@ -118,40 +120,42 @@ def _update_optional(cobra_object, new_dict, optional_attribute_dict):
 
 def _to_dict(model):
     """convert the model to a dict"""
-    new_reactions = []
-    new_metabolites = []
-    new_genes = []
-    for reaction in model.reactions:
-        new_reaction = {key: _fix_type(getattr(reaction, key))
-                        for key in _REQUIRED_REACTION_ATTRIBUTES
-                        if key != "metabolites"}
-        _update_optional(reaction, new_reaction, _OPTIONAL_REACTION_ATTRIBUTES)
-        # set metabolites
-        mets = {str(met): coeff for met, coeff
-                in iteritems(reaction._metabolites)}
-        new_reaction['metabolites'] = mets
-        new_reactions.append(new_reaction)
-    for metabolite in model.metabolites:
-        new_metabolite = {key: _fix_type(getattr(metabolite, key))
-                          for key in _REQUIRED_METABOLITE_ATTRIBUTES}
-        _update_optional(metabolite, new_metabolite,
-                         _OPTIONAL_METABOLITE_ATTRIBUTES)
-        new_metabolites.append(new_metabolite)
-    for gene in model.genes:
-        new_gene = {key: str(getattr(gene, key))
-                    for key in _REQUIRED_GENE_ATTRIBUTES}
-        _update_optional(gene, new_gene, _OPTIONAL_GENE_ATTRIBUTES)
-        new_genes.append(new_gene)
-    obj = {'reactions': new_reactions,
-           'metabolites': new_metabolites,
-           'genes': new_genes,
+    obj = {'reactions': [reaction_to_dict(reaction) for reaction in model.reactions],
+           'metabolites': [metabolite_to_dict(metabolite) for metabolite in model.metabolites],
+           'genes': [gene_to_dict(gene) for gene in model.genes],
            'id': model.id,
            }
-
     _update_optional(model, obj, _OPTIONAL_MODEL_ATTRIBUTES)
     # add in the JSON version
     obj["version"] = 1
     return obj
+
+
+def gene_to_dict(gene):
+    new_gene = {key: str(getattr(gene, key))
+                for key in _REQUIRED_GENE_ATTRIBUTES}
+    _update_optional(gene, new_gene, _OPTIONAL_GENE_ATTRIBUTES)
+    return new_gene
+
+
+def metabolite_to_dict(metabolite):
+    new_metabolite = {key: _fix_type(getattr(metabolite, key))
+                      for key in _REQUIRED_METABOLITE_ATTRIBUTES}
+    _update_optional(metabolite, new_metabolite,
+                     _OPTIONAL_METABOLITE_ATTRIBUTES)
+    return new_metabolite
+
+
+def reaction_to_dict(reaction):
+    new_reaction = {key: _fix_type(getattr(reaction, key))
+                    for key in _REQUIRED_REACTION_ATTRIBUTES
+                    if key != "metabolites"}
+    _update_optional(reaction, new_reaction, _OPTIONAL_REACTION_ATTRIBUTES)
+    # set metabolites
+    mets = {str(met): coeff for met, coeff
+            in iteritems(reaction._metabolites)}
+    new_reaction['metabolites'] = mets
+    return new_reaction
 
 
 def to_json(model):
