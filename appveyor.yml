@@ -11,37 +11,37 @@ environment:
     - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7.12"
       PYTHON_ARCH: "32"
-      NUMPY: "https://www.dropbox.com/s/b8mcha00r02tssb/numpy-1.11.2%2Bmkl-cp27-cp27m-win32.whl"
+      NUMPY: "https://www.dropbox.com/s/b8mcha00r02tssb/numpy-1.11.2+mkl-cp27-cp27m-win32.whl"
       SCIPY: "https://www.dropbox.com/s/5bncpkkiddtj0jc/scipy-0.18.1-cp27-cp27m-win32.whl"
 
     - PYTHON: "C:\\Python34"
       PYTHON_VERSION: "3.4.5"
       PYTHON_ARCH: "32"
-      NUMPY: "https://www.dropbox.com/s/x500x3qqoitpxw4/numpy-1.11.2%2Bmkl-cp34-cp34m-win32.whl"
+      NUMPY: "https://www.dropbox.com/s/x500x3qqoitpxw4/numpy-1.11.2+mkl-cp34-cp34m-win32.whl"
       SCIPY: "https://www.dropbox.com/s/dxqw1lnzuq0j0o9/scipy-0.18.1-cp34-cp34m-win32.whl"
 
     - PYTHON: "C:\\Python35"
       PYTHON_VERSION: "3.5.2"
       PYTHON_ARCH: "32"
-      NUMPY: "https://www.dropbox.com/s/2tlvvn4f6httsc6/numpy-1.11.2%2Bmkl-cp35-cp35m-win32.whl"
+      NUMPY: "https://www.dropbox.com/s/2tlvvn4f6httsc6/numpy-1.11.2+Bmkl-cp35-cp35m-win32.whl"
       SCIPY: "https://www.dropbox.com/s/q0m005q2nky6p82/scipy-0.18.1-cp35-cp35m-win32.whl"
 
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.12"
       PYTHON_ARCH: "64"
-      NUMPY: "https://www.dropbox.com/s/nhm9cvlpyqjh6ry/numpy-1.11.2%2Bmkl-cp27-cp27m-win_amd64.whl"
+      NUMPY: "https://www.dropbox.com/s/nhm9cvlpyqjh6ry/numpy-1.11.2+mkl-cp27-cp27m-win_amd64.whl"
       SCIPY: "https://www.dropbox.com/s/xqmlbsv27d7rtjv/scipy-0.18.1-cp27-cp27m-win_amd64.whl"
 
     - PYTHON: "C:\\Python34-x64"
       PYTHON_VERSION: "3.4.5"
       PYTHON_ARCH: "64"
-      NUMPY: "https://www.dropbox.com/s/z7azal6ysq5de70/numpy-1.11.2%2Bmkl-cp34-cp34m-win_amd64.whl"
+      NUMPY: "https://www.dropbox.com/s/z7azal6ysq5de70/numpy-1.11.2+Bmkl-cp34-cp34m-win_amd64.whl"
       SCIPY: "https://www.dropbox.com/s/pnwl0h0n8v0t0it/scipy-0.18.1-cp34-cp34m-win_amd64.whl"
 
     - PYTHON: "C:\\Python35-x64"
       PYTHON_VERSION: "3.5.2"
       PYTHON_ARCH: "64"
-      NUMPY: "https://www.dropbox.com/s/xie1654527xziow/numpy-1.11.2%2Bmkl-cp35-cp35m-win_amd64.whl"
+      NUMPY: "https://www.dropbox.com/s/xie1654527xziow/numpy-1.11.2+mkl-cp35-cp35m-win_amd64.whl"
       SCIPY: "https://www.dropbox.com/s/h0mf2rfepjb4syw/scipy-0.18.1-cp35-cp35m-win_amd64.whl"
 
 clone_depth: 25
