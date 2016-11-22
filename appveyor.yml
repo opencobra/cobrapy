@@ -17,7 +17,7 @@ environment:
       PYTHON_VERSION: "3.5.1"
       PYTHON_ARCH: "64"
       CONDA: true
-      
+
     - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7.12"
       PYTHON_ARCH: "32"
@@ -60,7 +60,7 @@ install:
   - "%WITH_COMPILER% %PYTHON%/python appveyor/build_glpk.py"
   - ps: |
       if ($env:CONDA -eq "true") {
-          & "$env:PYTHON\\conda" install pip } else {
+          & "$env:PYTHON\\Scripts\\conda.exe" install pip } else {
           & "$env:PYTHON\\python.exe" -m pip install pip setuptools wheel --upgrade }
   - "%PYTHON%/python -m pip install --upgrade pytest"
   - "%PYTHON%/python -m pip install pytest-cov pytest-benchmark"
