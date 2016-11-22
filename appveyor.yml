@@ -61,8 +61,8 @@ install:
   - "%PYTHON%/python -m pip install pip setuptools wheel --upgrade"
   - "%PYTHON%/python -m pip install --upgrade pytest"
   - "%PYTHON%/python -m pip install pytest-cov pytest-benchmark"
-  - ps: Start-FileDownload %NUMPY% -FileName 'numpy.whl'
-  - ps: Start-FileDownload %SCIPY% -FileName 'scipy.whl'
+  - ps: Start-FileDownload "$env:NUMPY" -FileName "numpy.whl"
+  - ps: Start-FileDownload "$env:SCIPY" -FileName "scipy.whl"
   - "%PYTHON%/python -m pip install numpy.whl scipy.whl"
   - "%PYTHON%/python -m pip install swiglpk optlang sympy decorator Cython jsonschema twine pypandoc==1.1.3"
 
