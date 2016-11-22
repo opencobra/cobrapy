@@ -7,7 +7,6 @@ from six import iteritems, StringIO
 from cobra.core import Model, Reaction, Metabolite
 from cobra.solvers import solver_dict, get_solver_name
 from cobra.flux_analysis import *
-from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 from cobra.solvers import SolverNotFound
 from .conftest import model, large_model, solved_model, fva_results
 from cobra.manipulation import convert_to_irreversible
@@ -454,6 +453,10 @@ class TestCobraFluxAnalysis:
             with captured_output() as (out, err):
                 solved_model.metabolites.fdp_c.summary(fva=0.99, solver=solver)
             self.check_entries(out, desired_entries)
+
+
+if scipy is not None:
+    from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 
 
 @pytest.mark.skipif(scipy is None,
