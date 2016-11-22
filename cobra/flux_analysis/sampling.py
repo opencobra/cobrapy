@@ -485,12 +485,14 @@ class OptGPSampler(HRSampler):
         if self.np > 1:
             n_process = np.ceil(n / self.np).astype(int)
             n = n_process * self.np
-            with Pool(self.np) as mp:
-                chains = mp.starmap(
-                    _sample_chain,
-                    zip([self] * self.np, [n_process] * self.np)
-                    )
+            # No with statement here since Python 2.x does not support it :(
+            mp = Pool(self.np)
+            chains = mp.starmap(
+                _sample_chain,
+                zip([self] * self.np, [n_process] * self.np)
+                )
             chains = np.vstack(chains)
+            mp.terminate()
         else:
             chains = _sample_chain(self, n)
 
