@@ -49,8 +49,10 @@ def solved_model(request, model):
 
 class TestLazySolution:
     def test_self_invalidation(self, solved_model):
+        from time import sleep
         solution, model = solved_model
         assert abs(solution.f - 0.873921506968431) < 0.000001
+        sleep(0.05)
         model.optimize()
         with pytest.raises(UndefinedSolution):
             getattr(solution, 'f')
