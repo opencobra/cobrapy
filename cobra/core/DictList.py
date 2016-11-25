@@ -79,7 +79,7 @@ class DictList(list):
                 return getattr(x, attribute)
 
         # if the search_function is a regular expression
-        if isinstance(search_function, str):
+        if isinstance(search_function, string_types):
             search_function = re.compile(search_function)
         if hasattr(search_function, "findall"):
             matches = (i for i in self

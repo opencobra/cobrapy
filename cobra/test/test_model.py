@@ -419,6 +419,8 @@ class TestCobraModel:
         # number of reactions in the original model
         model_copy = model.copy()
         old_reaction_count = len(model.reactions)
+        assert model_copy.notes is not model.notes
+        assert model_copy.annotation is not model.annotation
         assert len(model.reactions) == len(model_copy.reactions)
         assert len(model.metabolites) == len(model_copy.metabolites)
         model_copy.remove_reactions(model_copy.reactions[0:5])

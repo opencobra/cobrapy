@@ -96,10 +96,13 @@ class Model(Object):
         than deepcopy
         """
         new = self.__class__()
-        do_not_copy = {"metabolites", "reactions", "genes"}
+        do_not_copy = {"metabolites", "reactions", "genes", "notes",
+                       "annotation"}
         for attr in self.__dict__:
             if attr not in do_not_copy:
                 new.__dict__[attr] = self.__dict__[attr]
+        new.notes = copy(self.notes)
+        new.annotation = copy(self.annotation)
 
         new.metabolites = DictList()
         do_not_copy = {"_reaction", "_model"}
