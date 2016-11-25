@@ -13,7 +13,7 @@ password: pippi_langstrump
 
 echo -e " starting deploy for branch ${TRAVIS_BRANCH} .."
 
-if [[ "$TRAVIS_BRANCH" == "devel" ]]; then
+if [[ "$TRAVIS_BRANCH" == "fix/deploy-problem" ]]; then
 	echo -e " ... running twine to TEST deploy ... "
 	pip install twine
 	twine upload --skip-existing ${TRAVIS_BUILD_DIR}/wheelhouse/* -r pypirepository
