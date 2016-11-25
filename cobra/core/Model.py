@@ -96,17 +96,20 @@ class Model(Object):
         than deepcopy
         """
         new = self.__class__()
-        do_not_copy = {"metabolites", "reactions", "genes"}
+        do_not_copy_by_ref = {"metabolites", "reactions", "genes", "notes",
+                              "annotation"}
         for attr in self.__dict__:
-            if attr not in do_not_copy:
+            if attr not in do_not_copy_by_ref:
                 new.__dict__[attr] = self.__dict__[attr]
+        new.notes = deepcopy(self.notes)
+        new.annotation = deepcopy(self.annotation)
 
         new.metabolites = DictList()
-        do_not_copy = {"_reaction", "_model"}
+        do_not_copy_by_ref = {"_reaction", "_model"}
         for metabolite in self.metabolites:
             new_met = metabolite.__class__()
             for attr, value in iteritems(metabolite.__dict__):
-                if attr not in do_not_copy:
+                if attr not in do_not_copy_by_ref:
                     new_met.__dict__[attr] = copy(
                         value) if attr == "formula" else value
             new_met._model = new
@@ -116,18 +119,18 @@ class Model(Object):
         for gene in self.genes:
             new_gene = gene.__class__(None)
             for attr, value in iteritems(gene.__dict__):
-                if attr not in do_not_copy:
+                if attr not in do_not_copy_by_ref:
                     new_gene.__dict__[attr] = copy(
                         value) if attr == "formula" else value
             new_gene._model = new
             new.genes.append(new_gene)
 
         new.reactions = DictList()
-        do_not_copy = {"_model", "_metabolites", "_genes"}
+        do_not_copy_by_ref = {"_model", "_metabolites", "_genes"}
         for reaction in self.reactions:
             new_reaction = reaction.__class__()
             for attr, value in iteritems(reaction.__dict__):
-                if attr not in do_not_copy:
+                if attr not in do_not_copy_by_ref:
                     new_reaction.__dict__[attr] = copy(value)
             new_reaction._model = new
             new.reactions.append(new_reaction)
