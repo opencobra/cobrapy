@@ -73,9 +73,13 @@ def _from_dict(obj):
     if 'reactions' not in obj:
         raise Exception('JSON object has no reactions attribute. Cannot load.')
     model = Model()
-    model.add_metabolites([metabolite_from_dict(metabolite) for metabolite in obj['metabolites']])
+    model.add_metabolites(
+        [metabolite_from_dict(metabolite) for metabolite in obj['metabolites']]
+    )
     model.genes.extend([gene_from_dict(gene) for gene in obj['genes']])
-    model.add_reactions([reaction_from_dict(reaction, model) for reaction in obj['reactions']])
+    model.add_reactions(
+        [reaction_from_dict(reaction, model) for reaction in obj['reactions']]
+    )
     for k, v in iteritems(obj):
         if k in {'id', 'name', 'notes', 'compartments', 'annotation'}:
             setattr(model, k, v)
@@ -120,11 +124,14 @@ def _update_optional(cobra_object, new_dict, optional_attribute_dict):
 
 def _to_dict(model):
     """convert the model to a dict"""
-    obj = {'reactions': [reaction_to_dict(reaction) for reaction in model.reactions],
-           'metabolites': [metabolite_to_dict(metabolite) for metabolite in model.metabolites],
-           'genes': [gene_to_dict(gene) for gene in model.genes],
-           'id': model.id,
-           }
+    obj = dict(
+        reactions=[reaction_to_dict(reaction) for reaction in model.reactions],
+        metabolites=[
+            metabolite_to_dict(metabolite) for metabolite in model.metabolites
+            ],
+        genes=[gene_to_dict(gene) for gene in model.genes],
+        id=model.id,
+    )
     _update_optional(model, obj, _OPTIONAL_MODEL_ATTRIBUTES)
     # add in the JSON version
     obj["version"] = 1
