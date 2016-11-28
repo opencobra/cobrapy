@@ -350,11 +350,12 @@ class ARCHSampler(HRSampler):
 
 # Unfortunately this has to be outside the class to be usable with
 # multiprocessing :()
-def _sample_chain(sampler, n):
+def _sample_chain(args):
     """samples a single chain for OptGPSampler.
 
     center and n_samples are updated locally and forgotten afterwards.
     """
+    sampler, n = args       # has to be this way to work in Python 2.7
     center = sampler.center
     prev = sampler.warmup[np.random.randint(sampler.n_warmup), ]
     prev = center + _step(sampler, center, prev - center, 0.95)
@@ -485,16 +486,17 @@ class OptGPSampler(HRSampler):
         if self.np > 1:
             n_process = np.ceil(n / self.np).astype(int)
             n = n_process * self.np
-            # No with statement here since Python 2.x does not support it :(
+            # No with statement or starmap here since Python 2.x
+            # does not support it :(
             mp = Pool(self.np)
-            chains = mp.starmap(
+            chains = mp.map(
                 _sample_chain,
                 zip([self] * self.np, [n_process] * self.np)
                 )
             chains = np.vstack(chains)
             mp.terminate()
         else:
-            chains = _sample_chain(self, n)
+            chains = _sample_chain((self, n))
 
         # Update the global center
         self.center = (self.n_samples * self.center +
