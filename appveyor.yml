@@ -8,6 +8,16 @@ environment:
     PIP_CACHE_DIR: "pip_cache"
 
   matrix:
+    - PYTHON: "C:\\Miniconda-x64"
+      PYTHON_VERSION: "2.7.12"
+      PYTHON_ARCH: "64"
+      CONDA: true
+
+    - PYTHON: "C:\\Miniconda35-x64"
+      PYTHON_VERSION: "3.5.2"
+      PYTHON_ARCH: "64"
+      CONDA: true
+
     - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7.12"
       PYTHON_ARCH: "32"
@@ -32,6 +42,9 @@ environment:
       PYTHON_VERSION: "3.5.2"
       PYTHON_ARCH: "64"
 
+matrix:
+  fast_finish: true
+
 clone_depth: 25
 
 init:
@@ -43,30 +56,34 @@ cache:
 
 
 install:
-  - "powershell appveyor\\install.ps1"
-  - ps: Start-FileDownload 'https://bitbucket.org/gutworth/six/raw/default/six.py'
-  - "%WITH_COMPILER% %PYTHON%/python appveyor/build_glpk.py"
-  - "%PYTHON%/python -m pip install pip setuptools wheel --upgrade"
-  - "%PYTHON%/python -m pip install --upgrade pytest"
-  - "%PYTHON%/python -m pip install pytest-cov pytest-benchmark"
-  - "%PYTHON%/python -m pip install swiglpk optlang sympy decorator Cython jsonschema twine pypandoc==1.1.3"
+  - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "%WITH_COMPILER% python appveyor/build_glpk.py"
+  - ps: |
+      if ($env:CONDA -eq "true") {
+          conda config --set always_yes yes --set changeps1 no;
+          conda install -q pip } else {
+          python -m pip install pip setuptools wheel --upgrade }
+  - python -m pip install --upgrade pytest
+  - python -m pip install pytest-cov pytest-benchmark
+  - if defined CONDA conda install -q numpy scipy
+  - python -m pip install swiglpk optlang sympy python-libsbml decorator Cython jsonschema twine pypandoc==1.1.3
 
 build: off
 
 test_script:
-  - "%WITH_COMPILER% %PYTHON%/python setup.py develop"
-  - "%WITH_COMPILER% %PYTHON%/python -m pytest --cov=cobra --benchmark-skip"
+  - "%WITH_COMPILER% python setup.py develop"
+  - "%WITH_COMPILER% python -m pytest --cov=cobra --benchmark-skip"
 
 after_test:
-  - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel bdist_wininst"
+  - if not defined CONDA %WITH_COMPILER% python setup.py bdist_wheel bdist_wininst
 
 artifacts:
   - path: dist\*
 
 deploy_script:
-  - ps: >-
-      if($env:appveyor_repo_tag -eq 'True') {
-          Invoke-Expression "$env:PYTHON/Scripts/twine upload dist/* --username $env:PYPI_USERNAME --password $env:PYPI_PASSWORD"
+  - ps: |
+      if($env:appveyor_repo_tag -eq "True" -And $env:CONDA -ne "true") {
+          Invoke-Expression "twine upload dist/* --username $env:PYPI_USERNAME --password $env:PYPI_PASSWORD"
       }
 
 #on_success:
