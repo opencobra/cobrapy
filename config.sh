@@ -25,8 +25,9 @@ function pre_build {
 function build_wheel {
     # Set default building method to pip
     build_bdist_wheel $@
-	# avoid this for now, (we get broken linux wheels due to https://github.com/pypa/manylinux/issues/80, but testing works)
-	#(cd glpk-4.60 && make uninstall)
+    # since swiglpk doesn't have wheels, we currently must keep glpk
+    # installed for testing
+	# (cd glpk-4.60 && make uninstall)
 }
 
 function run_tests_in_repo {
@@ -46,10 +47,10 @@ function run_tests_in_repo {
 	fi
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
-	echo -e "import cobra.test; import sys; sys.exit(cobra.test.test_all())" > run-tests.py
-	(coverage run --source=cobra --rcfile ../.coveragerc run-tests.py &&
-			coverage xml &&
-			mv coverage.xml ..)
+	COVERAGEXML=`python -c "import os,sys; print(os.path.realpath('coverage.xml'))"`
+	COVERAGERC=`python -c "import os,sys; print(os.path.realpath('../.coveragerc'))"`
+	echo -e "import cobra.test; import sys; sys.exit(cobra.test.test_all(['-rsx', '--cov=cobra', '--cov-report=xml:$COVERAGEXML', '--cov-config=$COVERAGERC']))" > run-tests.py
+	(python run-tests.py && mv ${COVERAGEXML} ..)
 }
 
 function run_tests {

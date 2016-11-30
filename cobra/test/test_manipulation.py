@@ -7,6 +7,7 @@ from .conftest import model, salmonella
 class TestManipulation:
     """Test functions in cobra.manipulation"""
 
+    @pytest.mark.xfail(reason="defunct with optlang model")
     def test_canonical_form(self, model):
         # add G constraint to test
         g_constr = Metabolite("SUCCt2_2__test_G_constraint")
@@ -18,6 +19,7 @@ class TestManipulation:
         model = canonical_form(model)
         assert abs(model.optimize("maximize").f - 0.855) < 10 ** -3
 
+    @pytest.mark.xfail(reason="defunct with optlang model")
     def test_canonical_form_minimize(self, model):
         # make a minimization problem
         model.reactions.get_by_id("Biomass_Ecoli_core").lower_bound = 0.5
@@ -213,6 +215,9 @@ class TestManipulation:
         assert rxns.DM_h_c.annotation["SBO"] == "SBO:0000628"
         assert rxns.EX_h_e.annotation["SBO"] == "SBO:0000628"
 
+    # TODO: remove the following test eventually because bound checking has
+    # handled by optlang now.
+    @pytest.mark.skip(reason='optlang handles bound checking now')
     def test_validate_reaction_bounds(self, model):
         model.reactions[0].lower_bound = float("-inf")
         model.reactions[1].lower_bound = float("nan")
