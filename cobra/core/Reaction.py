@@ -225,8 +225,11 @@ class Reaction(Object):
     @lower_bound.setter
     @resettable
     def lower_bound(self, value):
+        if self.upper_bound < value:
+            self.upper_bound = value
+
         self._lower_bound = value
-        update_forward_and_reverse_bounds(self)
+        update_forward_and_reverse_bounds(self, 'lower')
 
     @property
     def upper_bound(self):
@@ -242,8 +245,11 @@ class Reaction(Object):
     @upper_bound.setter
     @resettable
     def upper_bound(self, value):
+        if self.lower_bound > value:
+            self.lower_bound = value
+
         self._upper_bound = value
-        update_forward_and_reverse_bounds(self)
+        update_forward_and_reverse_bounds(self, 'upper')
 
     @property
     def bounds(self):

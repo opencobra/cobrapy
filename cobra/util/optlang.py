@@ -6,7 +6,7 @@ def split_bounds(lower_bound, upper_bound):
 
     """
 
-    # assert lower_bound <= upper_bound, "lower bound is greater than upper"
+    assert lower_bound <= upper_bound, "lower bound is greater than upper"
 
     bounds_list = [0, 0, lower_bound, upper_bound]
     bounds_list.sort()
@@ -14,7 +14,7 @@ def split_bounds(lower_bound, upper_bound):
     return -bounds_list[1], -bounds_list[0], bounds_list[2], bounds_list[3]
 
 
-def update_forward_and_reverse_bounds(reaction):
+def update_forward_and_reverse_bounds(reaction, direction='both'):
     """For the given reaction, update the bounds in the forward and
     reverse variable bounds.
 
@@ -27,11 +27,20 @@ def update_forward_and_reverse_bounds(reaction):
     r_lb, r_ub, f_lb, f_ub = split_bounds(*reaction.bounds)
 
     try:
-        reaction.reverse_variable.lb = r_lb
-        reaction.reverse_variable.ub = r_ub
+        # Clear the original bounds to avoid complaints
+        if direction == 'both':
+            reaction.forward_variable._ub = None
+            reaction.reverse_variable._lb = None
+            reaction.reverse_variable._ub = None
+            reaction.forward_variable._lb = None
 
-        reaction.forward_variable.lb = f_lb
-        reaction.forward_variable.ub = f_ub
+        if direction in {'both', 'upper'}:
+            reaction.forward_variable.ub = f_ub
+            reaction.reverse_variable.lb = r_lb
+
+        if direction in {'both', 'lower'}:
+            reaction.reverse_variable.ub = r_ub
+            reaction.forward_variable.lb = f_lb
 
     except AttributeError:
         pass

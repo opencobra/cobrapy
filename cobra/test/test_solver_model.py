@@ -19,7 +19,6 @@ import six
 from cobra import config
 from cobra.core import Metabolite, Reaction, Model, LazySolution
 from cobra.exceptions import UndefinedSolution
-from cobra.util import TimeMachine
 import pytest
 
 
@@ -219,7 +218,7 @@ class TestReaction:
 
     def test_change_bounds(self, model):
         reac = model.reactions.ACALD
-        reac.change_bounds(lb=2, ub=2)
+        reac.bounds = (2, 2)
         assert reac.lower_bound == 2
         assert reac.upper_bound == 2
         with model:
