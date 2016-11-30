@@ -12,6 +12,7 @@ from .Metabolite import Metabolite
 import hashlib
 
 from ..util.context import resettable
+from ..util.optlang import update_forward_and_reverse_bounds
 
 
 class Frozendict(dict):
@@ -217,132 +218,47 @@ class Reaction(Object):
         Setting the lower bound (float) will also adjust the associated optlang
         variables associated with the reaction. Infeasible combinations,
         such as a lower bound higher than the current upper bound will
-        implicitly correct the upper bound to zero.
+        raise an AssertionError.
         """
         return self._lower_bound
 
     @lower_bound.setter
     @resettable
     def lower_bound(self, value):
-        if self.model is not None:
-
-            forward_variable, reverse_variable = \
-                self.forward_variable, self.reverse_variable
-            if self._lower_bound < 0 < self._upper_bound:  # reversible
-                if value < 0:
-                    reverse_variable.ub = -1 * value
-                elif value >= 0:
-                    reverse_variable.ub = 0
-                    try:
-                        forward_variable.lb = value
-                    except ValueError:
-                        forward_variable.ub = value
-                        self._upper_bound = value
-                        forward_variable.lb = value
-            elif self._lower_bound == 0 and self._upper_bound == 0:  # knockout
-                if value < 0:
-                    reverse_variable.ub = -1 * value
-                elif value >= 0:
-                    forward_variable.ub = value
-                    self._upper_bound = value
-                    forward_variable.lb = value
-            elif self._lower_bound >= 0:  # forward irreversible
-                if value < 0:
-                    reverse_variable.ub = -1 * value
-                    forward_variable.lb = 0
-                else:
-                    try:
-                        forward_variable.lb = value
-                    except ValueError:
-                        forward_variable.ub = value
-                        self._upper_bound = value
-                        forward_variable.lb = value
-
-            elif self._upper_bound <= 0:  # reverse irreversible
-                if value > 0:
-                    reverse_variable.lb = 0
-                    reverse_variable.ub = 0
-                    forward_variable.ub = value
-                    self._upper_bound = value
-                    forward_variable.lb = value
-                else:
-                    try:
-                        reverse_variable.ub = -1 * value
-                    except ValueError:
-                        reverse_variable.lb = -1 * value
-                        self._upper_bound = value
-                        reverse_variable.ub = -1 * value
-            else:
-                raise ValueError('lower_bound issue')
-
         self._lower_bound = value
+        update_forward_and_reverse_bounds(self)
 
     @property
-    @resettable
     def upper_bound(self):
         """Get or set the upper bound
 
         Setting the upper bound (float) will also adjust the associated optlang
         variables associated with the reaction. Infeasible combinations,
         such as a upper bound lower than the current lower bound will
-        implicitly correct the lower bound to zero.
+        raise an AssertionError.
         """
         return self._upper_bound
 
     @upper_bound.setter
+    @resettable
     def upper_bound(self, value):
-        if self.model is not None:
-
-            forward_variable, reverse_variable = \
-                self.forward_variable, self.reverse_variable
-            if self._lower_bound < 0 < self._upper_bound:  # reversible
-                if value > 0:
-                    forward_variable.ub = value
-                elif value <= 0:
-                    forward_variable.ub = 0
-                    try:
-                        reverse_variable.lb = -1 * value
-                    except ValueError:
-                        reverse_variable.ub = -1 * value
-                        self._lower_bound = value
-                        reverse_variable.lb = -1 * value
-            elif self._lower_bound == 0 and self._upper_bound == 0:  # knockout
-                if value > 0:
-                    forward_variable.ub = value
-                elif value <= 0:
-                    reverse_variable.ub = -1 * value
-                    self._lower_bound = value
-                    reverse_variable.lb = -1 * value
-            elif self._lower_bound >= 0:  # forward irreversible
-                if value > 0:
-                    try:
-                        forward_variable.ub = value
-                    except ValueError:
-                        forward_variable.lb = value
-                        self._lower_bound = value
-                        forward_variable.ub = value
-                else:
-                    forward_variable.lb = 0
-                    forward_variable.ub = 0
-                    reverse_variable.ub = -1 * value
-                    self._lower_bound = value
-                    reverse_variable.lb = -1 * value
-
-            elif self._upper_bound <= 0:  # reverse irreversible
-                if value < 0:
-                    try:
-                        reverse_variable.lb = -1 * value
-                    except ValueError:
-                        reverse_variable.ub = -1 * value
-                        self._lower_bound = value
-                        reverse_variable.lb = -1 * value
-                else:
-                    forward_variable.ub = value
-                    reverse_variable.lb = 0
-            else:
-                raise ValueError('upper_bound issue')
-
         self._upper_bound = value
+        update_forward_and_reverse_bounds(self)
+
+    @property
+    def bounds(self):
+        """ Get or set the bounds directly from a tuple
+
+        Convenience method for setting upper and lower bounds in one line
+        using a tuple of lower and upper bound
+        """
+        return self.lower_bound, self.upper_bound
+
+    @bounds.setter
+    @resettable
+    def bounds(self, value):
+        self._lower_bound, self._upper_bound = value
+        update_forward_and_reverse_bounds(self)
 
     @property
     def flux(self):
@@ -452,19 +368,6 @@ class Reaction(Object):
             if self._model.solution.status != "optimal":
                 raise Exception("model solution was not optimal")
             raise e  # Not sure what the exact problem was
-
-    @property
-    def bounds(self):
-        """ Get or set the bounds directly from a tuple
-
-        Convenience method for setting upper and lower bounds in one line
-        using a tuple of lower and upper bound
-        """
-        return self.lower_bound, self.upper_bound
-
-    @bounds.setter
-    def bounds(self, value):
-        self.lower_bound, self.upper_bound = value
 
     @property
     def reversibility(self):

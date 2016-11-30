@@ -664,24 +664,24 @@ class TestSolverBasedModel:
                    'Biomass_Ecoli_core': 1}
         assert obj.direction == "max"
 
-    def test_change_objective(self, model):
-        expression = 1.0 * model.solver.variables['ENO'] + \
-                     1.0 * model.solver.variables['PFK']
-        model.solver.objective = model.solver.interface.Objective(
-            expression)
-        assert model.solver.objective.expression == expression
-
-        model.change_objective("ENO")
-        eno_obj = model.solver.interface.Objective(
-            model.reactions.ENO.flux_expression, direction="max")
-        pfk_obj = model.solver.interface.Objective(
-            model.reactions.PFK.flux_expression, direction="max")
-        assert model.solver.objective == eno_obj
-
-        with TimeMachine() as tm:
-            model.change_objective("PFK", tm)
-            assert model.solver.objective == pfk_obj
-        assert model.solver.objective == eno_obj
+    # def test_change_objective(self, model):
+    #     expression = 1.0 * model.solver.variables['ENO'] + \
+    #                  1.0 * model.solver.variables['PFK']
+    #     model.solver.objective = model.solver.interface.Objective(
+    #         expression)
+    #     assert model.solver.objective.expression == expression
+    #
+    #     model.change_objective("ENO")
+    #     eno_obj = model.solver.interface.Objective(
+    #         model.reactions.ENO.flux_expression, direction="max")
+    #     pfk_obj = model.solver.interface.Objective(
+    #         model.reactions.PFK.flux_expression, direction="max")
+    #     assert model.solver.objective == eno_obj
+    #
+    #     with TimeMachine() as tm:
+    #         model.change_objective("PFK", tm)
+    #         assert model.solver.objective == pfk_obj
+    #     assert model.solver.objective == eno_obj
 
     def test_set_reaction_objective(self, model):
         model.objective = model.reactions.ACALD

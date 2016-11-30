@@ -17,6 +17,7 @@ import optlang
 from sympy.core.singleton import S
 from ..util import AutoVivification
 from ..util.context import HistoryManager
+from ..util.optlang import split_bounds
 from .. import config
 
 
@@ -328,32 +329,12 @@ class Model(Object):
 
         for reaction in reaction_list:
 
-            if reaction.reversibility:
-                forward_variable = self.solver.interface.Variable(
-                    reaction._get_forward_id(), lb=0,
-                    ub=reaction._upper_bound)
-                reverse_variable = self.solver.interface.Variable(
-                    reaction._get_reverse_id(), lb=0,
-                    ub=-1 * reaction._lower_bound)
-            elif 0 == reaction.lower_bound and reaction.upper_bound == 0:
-                forward_variable = self.solver.interface.Variable(
-                    reaction._get_forward_id(), lb=0, ub=0)
-                reverse_variable = self.solver.interface.Variable(
-                    reaction._get_reverse_id(), lb=0, ub=0)
-            elif reaction.lower_bound >= 0:
-                forward_variable = self.solver.interface.Variable(
-                    reaction.id,
-                    lb=reaction._lower_bound,
-                    ub=reaction._upper_bound)
-                reverse_variable = self.solver.interface.Variable(
-                    reaction._get_reverse_id(), lb=0, ub=0)
-            elif reaction.upper_bound <= 0:
-                forward_variable = self.solver.interface.Variable(reaction.id,
-                                                                  lb=0, ub=0)
-                reverse_variable = self.solver.interface.Variable(
-                    reaction._get_reverse_id(),
-                    lb=-1 * reaction._upper_bound,
-                    ub=-1 * reaction._lower_bound)
+            r_lb, r_ub, f_lb, f_ub = split_bounds(*reaction.bounds)
+
+            forward_variable = self.solver.interface.Variable(
+                reaction.id, lb=f_lb, ub=f_ub)
+            reverse_variable = self.solver.interface.Variable(
+                reaction._get_reverse_id(), lb=r_lb, ub=r_ub)
 
             self.solver.add(forward_variable)
             self.solver.add(reverse_variable)
