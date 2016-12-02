@@ -9,7 +9,7 @@ from functools import partial
 from itertools import chain
 from six.moves import range
 from cobra.util import TimeMachine, generate_colors, Singleton, partition, \
-    frozendict, ProblemCache
+    Frozendict, ProblemCache
 from . import create_test_model
 import pytest
 from .conftest import model
@@ -27,7 +27,7 @@ def seed():
 
 @pytest.fixture(scope="session")
 def frozen_dict():
-    return frozendict({"A": 1, "B": 2, "C": 3, "D": 4, "E": [2, 3, 4, 5]})
+    return Frozendict({"A": 1, "B": 2, "C": 3, "D": 4, "E": [2, 3, 4, 5]})
 
 
 @pytest.fixture(scope="function")

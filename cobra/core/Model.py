@@ -4,21 +4,21 @@ from copy import deepcopy, copy
 import sympy
 from six import iteritems, string_types
 
-from ..solvers import optimize
-from .Object import Object
-from .Solution import Solution, LazySolution
-from .Reaction import Reaction
-from .DictList import DictList
+from cobra.solvers import optimize
+from cobra.core.Object import Object
+from cobra.core.Solution import Solution, LazySolution
+from cobra.core.Reaction import Reaction
+from cobra.core.DictList import DictList
 
 import six
 import time
 import types
 import optlang
 from sympy.core.singleton import S
-from ..util import AutoVivification
-from ..util.context import HistoryManager
-from ..util.optlang import split_bounds
-from .. import config
+from cobra.util.util import AutoVivification
+from cobra.util.context import HistoryManager
+from cobra.util.optlang import separate_forward_and_reverse_bounds
+from cobra import config
 
 
 class Model(Object):
@@ -329,12 +329,13 @@ class Model(Object):
 
         for reaction in reaction_list:
 
-            r_lb, r_ub, f_lb, f_ub = split_bounds(*reaction.bounds)
+            reverse_lb, reverse_ub, forward_lb, forward_ub = \
+                separate_forward_and_reverse_bounds(*reaction.bounds)
 
             forward_variable = self.solver.interface.Variable(
-                reaction.id, lb=f_lb, ub=f_ub)
+                reaction.id, lb=forward_lb, ub=forward_ub)
             reverse_variable = self.solver.interface.Variable(
-                reaction._get_reverse_id(), lb=r_lb, ub=r_ub)
+                reaction._get_reverse_id(), lb=reverse_lb, ub=reverse_ub)
 
             self.solver.add(forward_variable)
             self.solver.add(reverse_variable)

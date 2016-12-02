@@ -1,4 +1,4 @@
-def split_bounds(lower_bound, upper_bound):
+def separate_forward_and_reverse_bounds(lower_bound, upper_bound):
     """Split a given (lower_bound, upper_bound) interval into a negative
     component and a positive component. Negative components are negated
     (returns positive ranges) and flipped for usage with forward and reverse
@@ -24,7 +24,8 @@ def update_forward_and_reverse_bounds(reaction, direction='both'):
 
     """
 
-    r_lb, r_ub, f_lb, f_ub = split_bounds(*reaction.bounds)
+    reverse_lb, reverse_ub, forward_lb, forward_ub = \
+        separate_forward_and_reverse_bounds(*reaction.bounds)
 
     try:
         # Clear the original bounds to avoid complaints
@@ -35,12 +36,12 @@ def update_forward_and_reverse_bounds(reaction, direction='both'):
             reaction.forward_variable._lb = None
 
         if direction in {'both', 'upper'}:
-            reaction.forward_variable.ub = f_ub
-            reaction.reverse_variable.lb = r_lb
+            reaction.forward_variable.ub = forward_ub
+            reaction.reverse_variable.lb = reverse_lb
 
         if direction in {'both', 'lower'}:
-            reaction.reverse_variable.ub = r_ub
-            reaction.forward_variable.lb = f_lb
+            reaction.reverse_variable.ub = reverse_ub
+            reaction.forward_variable.lb = forward_lb
 
     except AttributeError:
         pass

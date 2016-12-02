@@ -1,1 +1,1 @@
-from .util import *
+from cobra.util.util import *

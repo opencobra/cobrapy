@@ -2,8 +2,6 @@ from __future__ import absolute_import, print_function
 
 import logging
 
-from .parallel import SequentialView
-
 logging.getLogger().setLevel(logging.ERROR)
 
 log = logging.getLogger(__name__)
@@ -26,6 +24,3 @@ try:
     solvers['cplex'] = cplex_interface
 except ImportError:
     pass
-
-# Set default parallelization view
-default_view = SequentialView()

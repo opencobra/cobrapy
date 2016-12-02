@@ -20,33 +20,44 @@ from six.moves import range
 logger = logging.getLogger(__name__)
 
 
-class frozendict(dict):
+def _is_positive(n):
+    """Robustly test if n is positive, yielding True on Exceptions"""
+    try:
+        if n >= 0:
+            return True
+        else:
+            return False
+    except Exception:
+        return True
+
+
+class Frozendict(dict):
     def __init__(self, iterable, **kwargs):
-        super(frozendict, self).__init__(iterable, **kwargs)
+        super(Frozendict, self).__init__(iterable, **kwargs)
 
     def popitem(self):
-        raise AttributeError("'frozendict' object has no attribute 'popitem")
+        raise AttributeError("'Frozendict' object has no attribute 'popitem")
 
     def pop(self, k, d=None):
-        raise AttributeError("'frozendict' object has no attribute 'pop")
+        raise AttributeError("'Frozendict' object has no attribute 'pop")
 
     def __setitem__(self, key, value):
         raise AttributeError(
-            "'frozendict' object has no attribute '__setitem__")
+            "'Frozendict' object has no attribute '__setitem__")
 
     def setdefault(self, k, d=None):
         raise AttributeError(
-            "'frozendict' object has no attribute 'setdefault")
+            "'Frozendict' object has no attribute 'setdefault")
 
     def __delitem__(self, key):
         raise AttributeError(
-            "'frozendict' object has no attribute '__delitem__")
+            "'Frozendict' object has no attribute '__delitem__")
 
     def __hash__(self):
         return hash(tuple(sorted(self.items())))
 
     def update(self, E=None, **F):
-        raise AttributeError("'frozendict' object has no attribute 'update")
+        raise AttributeError("'Frozendict' object has no attribute 'update")
 
 
 class ProblemCache(object):

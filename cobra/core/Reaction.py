@@ -6,39 +6,14 @@ from copy import copy, deepcopy
 from warnings import warn
 
 from six import string_types, iteritems
-from .Object import Object
-from .Gene import Gene, parse_gpr, ast2str
-from .Metabolite import Metabolite
+from cobra.core.Object import Object
+from cobra.core.Gene import Gene, parse_gpr, ast2str
+from cobra.core.Metabolite import Metabolite
 import hashlib
 
-from ..util.context import resettable
-from ..util.optlang import update_forward_and_reverse_bounds
-
-
-class Frozendict(dict):
-    """Read-only dictionary view"""
-
-    def __setitem__(self, key, value):
-        raise NotImplementedError("read-only")
-
-    def __delitem__(self, key):
-        raise NotImplementedError("read-only")
-
-    def pop(self, key, value):
-        raise NotImplementedError("read-only")
-
-    def popitem(self):
-        raise NotImplementedError("read-only")
-
-
-def _is_positive(n):
-    try:
-        if n >= 0:
-            return True
-        else:
-            return False
-    except:
-        return True
+from cobra.util.util import Frozendict, _is_positive
+from cobra.util.context import resettable
+from cobra.util.optlang import update_forward_and_reverse_bounds
 
 
 # precompiled regular expressions
