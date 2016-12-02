@@ -3,6 +3,11 @@ try:
 except:
     numpy = None
 
+try:
+    import scipy
+except:
+    scipy = None
+
 from .essentiality import assess_medium_component_essentiality
 from .variability import flux_variability_analysis, find_blocked_reactions
 from .single_deletion import single_gene_deletion, single_reaction_deletion
@@ -18,3 +23,10 @@ else:
     warn("double deletions and phase planes requires numpy")
     del warn
 del numpy
+
+if scipy:
+    from .sampling import sample
+else:
+    from warnings import warn
+    warn("flux sampling requires numpy and scipy")
+del scipy
