@@ -78,10 +78,11 @@ class Reaction(Object):
         # contains self
         self._model = None
 
+        if objective_coefficient != 0:
+            warn('Reaction.objective_coefficient is not used',
+                 DeprecationWarning)
         self._objective_coefficient = objective_coefficient
-        # the following two lines are commented out
-        # self.upper_bound = upper_bound
-        # self.lower_bound = lower_bound
+
         # Used during optimization.  Indicates whether the
         # variable is modeled as continuous, integer, binary, semicontinous, or
         # semiinteger.
@@ -123,7 +124,7 @@ class Reaction(Object):
         Returns
         -------
         sympy expression:
-            The expression represeenting the the forward flux (if associated
+            The expression representing the the forward flux (if associated
             with model), otherwise None. Representing the net flux if
             model.reversible_encoding == 'unsplit' or None if reaction is
             not associated with a model """
@@ -179,23 +180,16 @@ class Reaction(Object):
     def objective_coefficient(self):
         """ Get or set the objective coefficient (float)
         """
+        warn("use model.reaction_coefficient", DeprecationWarning)
         if self.model is not None and self.model.solver.objective is not None:
-            coefficients_dict = \
-                self.model.solver.objective.expression.as_coefficients_dict()
-            forw_coef = coefficients_dict.get(self.forward_variable, 0)
-            rev_coef = coefficients_dict.get(self.reverse_variable, 0)
-            if forw_coef == -rev_coef:
-                self._objective_coefficient = float(forw_coef)
-            else:
-                self._objective_coefficient = 0
+            self._objective_coefficient = self.model.reaction_coefficient(self)
         return self._objective_coefficient
 
     @objective_coefficient.setter
     def objective_coefficient(self, value):
+        warn("use model.reaction_coefficient", DeprecationWarning)
         if self.model is not None:
-            coef_difference = value - self.objective_coefficient
-            self.model.solver.objective += \
-                coef_difference * self.flux_expression
+            self.model.set_reaction_coefficient(self, value)
         self._objective_coefficient = value
 
     def __copy__(self):
