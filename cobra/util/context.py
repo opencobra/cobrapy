@@ -42,7 +42,7 @@ class HistoryManager(object):
 
     def execute(self, bookmark=None):
         """ Execute up to the given entry in the history.
-        If no entry is specifed, executes the last entry.
+        If no entry is specified, executes the last entry.
 
         bookmark: The index of the operation to execute.
 
@@ -63,8 +63,7 @@ class HistoryManager(object):
                 (uuid, entry) = self._history.popitem()
                 entry()
         else:
-            raise Exception(
-                'Provided bookmark %s cannot be found.')
+            raise Exception('Provided bookmark %s cannot be found.')
 
     def reset(self):
         """Trigger executions for all items in the stack in reverse order"""
