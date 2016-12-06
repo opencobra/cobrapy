@@ -1,6 +1,7 @@
 from copy import deepcopy
 import warnings
 import pytest
+from sympy.core.singleton import S
 from cobra.core import Model, Metabolite, Reaction
 from cobra.solvers import solver_dict
 from .conftest import model, array_model
@@ -474,6 +475,21 @@ class TestCobraModel:
             if not getattr(model, 'solver', None):
                 solver_dict[solver].create_problem(model)
         benchmark(benchmark_change_objective)
+
+    def test_model_reaction_objective(self, model):
+        atpm = model.reactions.get_by_id("ATPM")
+        model.set_reaction_coefficient(atpm, 1)
+        assert atpm in model.objective_reactions
+        assert model.reaction_coefficient(atpm) == 1
+        model.set_reaction_coefficient(atpm, 0)
+        assert atpm not in model.objective_reactions
+        assert model.reaction_coefficient(atpm) == 0
+
+    def test_model_reset_objective(self, model):
+        model.reset_objective()
+        zero = model.solver.interface.Objective(S.Zero)
+        assert model.solver.objective == zero
+        assert len(model.objective_reactions) == 0
 
     def test_change_objective(self, model):
         biomass = model.reactions.get_by_id("Biomass_Ecoli_core")

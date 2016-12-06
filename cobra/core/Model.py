@@ -594,9 +594,11 @@ class Model(Object):
             an arbitrary coefficient the flux expression of the reaction
             should be multiplied with in the objective.
         """
-        coefficient -= self.reaction_coefficient(reaction)
         self._objective_reactions.add(reaction)
-        self.solver.objective += coefficient * reaction.flux_expression
+        diff_coefficient = coefficient - self.reaction_coefficient(reaction)
+        self.solver.objective += diff_coefficient * reaction.flux_expression
+        if self.reaction_coefficient(reaction) == 0:
+            self._objective_reactions.remove(reaction)
         reaction._objective_coefficient = coefficient
 
     @property
