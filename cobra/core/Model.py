@@ -371,7 +371,6 @@ class Model(Object):
 
             objective_coeff = self.reaction_coefficient(reaction)
             if objective_coeff != 0.:
-                self.set_reaction_coefficient(reaction)
                 if self.solver.objective is None:
                     self.solver.objective = self.solver.interface.Objective(
                         0, direction='max')
