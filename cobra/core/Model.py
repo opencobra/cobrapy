@@ -7,7 +7,7 @@ from six import iteritems, string_types
 from cobra.solvers import optimize
 from cobra.core.Object import Object
 from cobra.core.Solution import Solution, LazySolution
-from cobra.core.Reaction import Reaction
+from cobra.core.Reaction import Reaction, separate_forward_and_reverse_bounds
 from cobra.core.DictList import DictList
 
 import six
@@ -17,7 +17,6 @@ import optlang
 from sympy.core.singleton import S
 from cobra.util.util import AutoVivification
 from cobra.util.context import HistoryManager
-from cobra.util.optlang import separate_forward_and_reverse_bounds
 from cobra import config
 
 
