@@ -89,11 +89,11 @@ class SUXModelMILP(Model):
         penalties for added reactions.
         """
         for reaction in self.original_reactions:
-            if reaction.objective_coefficient > 0:
+            if self.reaction_coefficient(reaction) > 0:
                 reaction.lower_bound = max(
                     reaction.lower_bound,
-                    reaction.objective_coefficient * self.threshold)
-            reaction.objective_coefficient = 0
+                    self.reaction_coefficient(reaction) * self.threshold)
+            self.set_reaction_coefficient(reaction, 0)
 
     def add_reactions(self, reactions):
         Model.add_reactions(self, reactions)
@@ -153,7 +153,7 @@ def SMILEY(model, metabolite_id, Universal,
                        penalties=penalties)
     # change the objective to be the metabolite
     for reaction in SUX.original_reactions:
-        reaction.objective_coefficient = 0
+        SUX.set_reaction_coefficient(reaction, 0)
     demand_name = "SMILEY_DM_" + metabolite_id
     if demand_name not in SUX.reactions:
         demand_reaction = Reaction(demand_name)

@@ -177,13 +177,14 @@ def from_mat_struct(mat_struct, model_id=None):
             pass
         model.add_metabolites([new_metabolite])
     new_reactions = []
+    objective_reactions = {}
     for i, name in enumerate(m["rxns"][0, 0]):
         new_reaction = Reaction()
         new_reaction.id = str(name[0][0])
         new_reaction.lower_bound = float(m["lb"][0, 0][i][0])
         new_reaction.upper_bound = float(m["ub"][0, 0][i][0])
         if c_vec is not None:
-            new_reaction.objective_coefficient = float(c_vec[i][0])
+            objective_reactions[new_reaction.id] = float(c_vec[i][0])
         try:
             new_reaction.gene_reaction_rule = str(m['grRules'][0, 0][i][0][0])
         except (IndexError, ValueError):
@@ -198,6 +199,7 @@ def from_mat_struct(mat_struct, model_id=None):
             pass
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
+    model.objective = objective_reactions
     coo = coo_matrix(m["S"][0, 0])
     for i, j, v in zip(coo.row, coo.col, coo.data):
         model.reactions[j].add_metabolites({model.metabolites[i]: v})

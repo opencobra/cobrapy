@@ -33,12 +33,10 @@ class Model(Object):
         for y in ['reactions', 'genes', 'metabolites']:
             for x in getattr(self, y):
                 x._model = self
-        # only repairs objectives when they are reactions..
-        for reaction in getattr(self, 'reactions'):
-            reaction.objective_coefficient = \
-                reaction._objective_coefficient
         if not hasattr(self, "name"):
             self.name = None
+        for reaction in self.reactions:
+            reaction._reset_var_cache()
 
     def __init__(self, id_or_model=None, name=None, solver_interface=optlang):
         if isinstance(id_or_model, Model):
@@ -59,7 +57,7 @@ class Model(Object):
             self.compartments = {}
             # self.solution = Solution(None)
             self.media_compositions = {}
-
+            self._objective_reactions = set()
             # from cameo ...
 
             # if not hasattr(self, '_solver'):  # backwards compatibility
@@ -265,8 +263,7 @@ class Model(Object):
         # Only add the reaction if one with the same ID is not already
         # present in the model.
         reactions_in_model = [
-            i.id for i in reaction_list if self.reactions.has_id(
-                i.id)]
+            i.id for i in reaction_list if self.reactions.has_id(i.id)]
 
         if len(reactions_in_model) > 0:
             raise Exception("Reactions already in the model: " +
@@ -372,7 +369,7 @@ class Model(Object):
                 constraint_terms[constraint][forward_variable] = coeff
                 constraint_terms[constraint][reverse_variable] = -coeff
 
-            objective_coeff = reaction._objective_coefficient
+            objective_coeff = self.reaction_coefficient(reaction)
             if objective_coeff != 0.:
                 if self.solver.objective is None:
                     self.solver.objective = self.solver.interface.Objective(
@@ -530,9 +527,8 @@ class Model(Object):
 
     @property
     def objective_reactions(self):
-        return {reaction: reaction.objective_coefficient
-                for reaction in self.reactions
-                if reaction.objective_coefficient != 0}
+        return {reaction: self.reaction_coefficient(reaction)
+                for reaction in self._objective_reactions}
 
     @objective_reactions.setter
     def objective_reactions(self, value):
@@ -546,8 +542,6 @@ class Model(Object):
             the associated value the new objective coefficient for that
             reaction.
         """
-        for reaction in self.reactions:
-            reaction.objective_coefficient = 0.
         for item in value:
             if isinstance(item, int):
                 reaction = self.reactions[item]
@@ -556,12 +550,55 @@ class Model(Object):
             elif hasattr(item, 'id'):
                 reaction = self.reactions.get_by_id(item.id)
             else:
-                raise ValueError('item in iterable cannot be %s' %
-                                 type(item))
+                raise ValueError('item in iterable cannot be %s' % type(item))
             if isinstance(value, list):
-                reaction.objective_coefficient = 1
+                self.set_reaction_coefficient(reaction, 1)
             if isinstance(value, dict):
-                reaction.objective_coefficient = value[item]
+                self.set_reaction_coefficient(reaction, value[item])
+
+    def reaction_coefficient(self, reaction):
+        """Get the coefficient the model defines for a given reaction
+
+        Parameters
+        ----------
+        reaction: `cobra.core.Reaction.Reaction`
+            the reaction to get the coefficient for
+
+        Returns
+        -------
+        float:
+            the objective coefficient for the given reaction
+        """
+        if reaction in self._objective_reactions:
+            coef_dict = self.solver.objective.expression.as_coefficients_dict()
+            fwd_coef = coef_dict.get(reaction.forward_variable, 0)
+            rev_coef = coef_dict.get(reaction.reverse_variable, 0)
+            if fwd_coef == -rev_coef:
+                reaction._objective_coefficient = float(fwd_coef)
+            else:
+                reaction._objective_coefficient = 0
+        return reaction._objective_coefficient
+
+    def set_reaction_coefficient(self, reaction, coefficient=1):
+        """Add a reaction the the model objective
+
+        Add the flux expression of reaction, times a given coefficient,
+        to the objective function of the model.
+
+        Parameters
+        ----------
+        reaction: `cobra.core.Reaction.Reaction`
+            a reaction to add to objective
+        coefficient: `float`
+            an arbitrary coefficient the flux expression of the reaction
+            should be multiplied with in the objective.
+        """
+        self._objective_reactions.add(reaction)
+        diff_coefficient = coefficient - self.reaction_coefficient(reaction)
+        self.solver.objective += diff_coefficient * reaction.flux_expression
+        if self.reaction_coefficient(reaction) == 0:
+            self._objective_reactions.remove(reaction)
+        reaction._objective_coefficient = coefficient
 
     @property
     def objective(self):
@@ -581,13 +618,22 @@ class Model(Object):
         model, Reaction, solver.interface.Objective or sympy expressions are
         directly interpreted as new objectives
         """
-        warn(("use objective_reactions or model.solver.objective "
+        warn(("use model.objective_reactions or model.solver.objective "
               "instead. A future version of cobra will not "
               "necessarily return a list of reactions."), DeprecationWarning)
         return self.objective_reactions
 
+    def reset_objective(self):
+        """Reset the model objective to the zero-objective, i.e. no objective
+        at all """
+        self.solver.objective = self.solver.interface.Objective(S.Zero)
+        self._objective_reactions = set()
+        for reaction in self.reactions:
+            reaction._objective_coefficient = 0
+
     @objective.setter
     def objective(self, value):
+        self.reset_objective()
         if isinstance(value, six.string_types):
             try:
                 value = self.reactions.get_by_id(value)
@@ -599,17 +645,13 @@ class Model(Object):
         if isinstance(value, Reaction):
             if value.model is not self:
                 raise ValueError("%r does not belong to the model" % value)
-            value.objective_coefficient = 1.
-            self.solver.objective = self.solver.interface.Objective(
-                value.flux_expression, sloppy=True)
+            self.set_reaction_coefficient(value, 1)
         elif isinstance(value, self.solver.interface.Objective):
             self.solver.objective = value
         elif isinstance(value, sympy.Basic):
             self.solver.objective = self.solver.interface.Objective(
                 value, sloppy=False)
         elif isinstance(value, (dict, list)):
-            warn("use model.objective_reactions for lists and dictionaries",
-                 DeprecationWarning)
             self.objective_reactions = value
         # TODO(old): maybe the following should be allowed
         # elif isinstance(value, optlang.interface.Objective):
