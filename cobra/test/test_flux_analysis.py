@@ -299,7 +299,7 @@ class TestCobraFluxAnalysis:
         assert feasible_sol.status == "optimal"
         assert infeasible_sol.status == "infeasible"
 
-    @pytest.mark.xfail(reason='needs reimplementation, uses ._constraint_sense')
+    @pytest.mark.xfail(reason='to be reimplemented, uses ._constraint_sense')
     def test_gapfilling(self):
         try:
             get_solver_name(mip=True)
