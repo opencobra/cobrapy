@@ -16,7 +16,7 @@ import types
 import optlang
 from sympy.core.singleton import S
 from cobra.util.util import AutoVivification
-from cobra.util.context import HistoryManager
+from cobra.util.context import HistoryManager, resettable
 from cobra import config
 
 
@@ -552,6 +552,7 @@ class Model(Object):
         return self.objective_reactions
 
     @objective.setter
+    @resettable
     def objective(self, value):
         if isinstance(value, six.string_types):
             try:
