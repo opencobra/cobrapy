@@ -616,7 +616,7 @@ class Model(Object):
 
         # Create a new context and add it to the stack
         try:
-            self._contexts += [HistoryManager()]
+            self._contexts.append(HistoryManager())
         except AttributeError:
             self._contexts = [HistoryManager()]
 

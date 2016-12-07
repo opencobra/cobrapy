@@ -143,6 +143,11 @@ class TestReactions:
         assert model.metabolites.foo in pgi._metabolites
         assert len(model.metabolites) == m + 1
 
+    def test_bounds_setter(self, model):
+        rxn = model.reactions.get_by_id("PGI")
+        with pytest.raises(AssertionError):
+            rxn.bounds = (1, 0)
+
     def test_copy(self, model):
         PGI = model.reactions.PGI
         copied = PGI.copy()

@@ -192,7 +192,7 @@ class Reaction(Object):
         Setting the lower bound (float) will also adjust the associated optlang
         variables associated with the reaction. Infeasible combinations,
         such as a lower bound higher than the current upper bound will
-        raise an AssertionError.
+        update the other bound.
 
         When using a `HistoryManager` context, this attribute can be set
         temporarily, reversed when the exiting the context.
@@ -215,7 +215,7 @@ class Reaction(Object):
         Setting the upper bound (float) will also adjust the associated optlang
         variables associated with the reaction. Infeasible combinations,
         such as a upper bound lower than the current lower bound will
-        raise an AssertionError.
+        update the other bound.
 
         When using a `HistoryManager` context, this attribute can be set
         temporarily, reversed when the exiting the context.
@@ -236,7 +236,8 @@ class Reaction(Object):
         """ Get or set the bounds directly from a tuple
 
         Convenience method for setting upper and lower bounds in one line
-        using a tuple of lower and upper bound
+        using a tuple of lower and upper bound. Invalid bounds will raise an
+        AssertionError.
 
         When using a `HistoryManager` context, this attribute can be set
         temporarily, reversed when the exiting the context.
@@ -246,6 +247,7 @@ class Reaction(Object):
     @bounds.setter
     @resettable
     def bounds(self, value):
+        assert value[0] <= value[1], "Invalid bounds: {}".format(value)
         self._lower_bound, self._upper_bound = value
         update_forward_and_reverse_bounds(self)
 
