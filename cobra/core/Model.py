@@ -545,6 +545,10 @@ class Model(Object):
         reaction identifiers, integers are reaction indices in the current
         model, Reaction, solver.interface.Objective or sympy expressions are
         directly interpreted as new objectives
+
+
+        When using a `HistoryManager` context, this attribute can be set
+        temporarily, reversed when the exiting the context.
         """
         warn(("use objective_reactions or model.solver.objective "
               "instead. A future version of cobra will not "

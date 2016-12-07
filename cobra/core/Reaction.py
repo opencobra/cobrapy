@@ -193,6 +193,9 @@ class Reaction(Object):
         variables associated with the reaction. Infeasible combinations,
         such as a lower bound higher than the current upper bound will
         raise an AssertionError.
+
+        When using a `HistoryManager` context, this attribute can be set
+        temporarily, reversed when the exiting the context.
         """
         return self._lower_bound
 
@@ -213,6 +216,9 @@ class Reaction(Object):
         variables associated with the reaction. Infeasible combinations,
         such as a upper bound lower than the current lower bound will
         raise an AssertionError.
+
+        When using a `HistoryManager` context, this attribute can be set
+        temporarily, reversed when the exiting the context.
         """
         return self._upper_bound
 
@@ -231,6 +237,9 @@ class Reaction(Object):
 
         Convenience method for setting upper and lower bounds in one line
         using a tuple of lower and upper bound
+
+        When using a `HistoryManager` context, this attribute can be set
+        temporarily, reversed when the exiting the context.
         """
         return self.lower_bound, self.upper_bound
 

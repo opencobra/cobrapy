@@ -16,10 +16,17 @@ class HistoryManager(object):
     def __call__(self, operation, bookmark=None):
         """ Add the corresponding method to the history stack.
 
-        operation: A function to be called at a later time
+        Parameters
+        ----------
+        operation: `function`
+            A function to be called at a later time
         bookmark: string or None
             The index of the operation in `_history`. If the given index is
             already present, the previous entry will be removed.
+
+        Returns
+        -------
+        str: the newly created uuid
 
         """
 
@@ -44,7 +51,10 @@ class HistoryManager(object):
         """ Execute up to the given entry in the history.
         If no entry is specified, executes the last entry.
 
-        bookmark: The index of the operation to execute.
+        Parameters
+        ----------
+        bookmark: `str`
+            The index of the operation to execute.
 
         ..NOTE: I'm not sure we want this to work this way. I'm wondering if
         bookmark should instead check to see if that particular attribute has
@@ -92,7 +102,7 @@ def get_context(obj):
 
 
 def resettable(f):
-    """A wrapper to simplify the context management of simple object
+    """A decorator to simplify the context management of simple object
     attributes. Gets the value of the attribute prior to setting it, and stores
     a function to set the value to the old value in the HistoryManager.
     """
