@@ -103,8 +103,14 @@ using rational operations, giving exact solutions.
 Testing your installation
 =========================
 
-1. Start python
-2. Type the following into the Python shell
+While it is not a hard requirement for using cobrapy, you need pytest and
+pytest-benchmark to run its tests. First do
+
+.. code:: shell
+    pip install pytest pytest-benchmark
+
+
+Then start python and type the following into the Python shell
 
 .. code:: python
 

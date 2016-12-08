@@ -168,8 +168,8 @@ setup(
     version=version,
     packages=find_packages(exclude=['cobra.oven', 'cobra.oven*']),
     setup_requires=[],
-    install_requires=["six"],
-    tests_require=["jsonschema > 2.5"],
+    install_requires=["six", "swiglpk", "optlang"],
+    tests_require=["jsonschema > 2.5", "pytest", "pytest-benchmark"],
     extras_require=extras,
     ext_modules=ext_modules,
 

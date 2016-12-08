@@ -15,6 +15,5 @@ tox
 pep8
 pytest
 optlang
-decorator
-sympy
 swiglpk
+pytest-benchmark
