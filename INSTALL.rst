@@ -22,9 +22,9 @@ Instructions for several operating systems are below:
 Mac OS X or Linux
 -----------------
 
-0. `install
+1. `install
    pip <http://pip.readthedocs.org/en/latest/installing.html>`_.
-1. In a terminal, run ``sudo pip install cobra``
+2. In a terminal, run ``sudo pip install cobra``
 
 We highly recommend updating ``pip`` beforehand (``pip install pip --upgrade``).
 
