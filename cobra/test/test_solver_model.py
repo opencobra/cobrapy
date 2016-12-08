@@ -19,7 +19,6 @@ import six
 from cobra import config
 from cobra.core import Metabolite, Reaction, Model, LazySolution
 from cobra.exceptions import UndefinedSolution
-from cobra.util import TimeMachine
 import pytest
 
 
@@ -219,11 +218,11 @@ class TestReaction:
 
     def test_change_bounds(self, model):
         reac = model.reactions.ACALD
-        reac.change_bounds(lb=2, ub=2)
+        reac.bounds = (2, 2)
         assert reac.lower_bound == 2
         assert reac.upper_bound == 2
-        with TimeMachine() as tm:
-            reac.change_bounds(lb=5, time_machine=tm)
+        with model:
+            reac.bounds = (5, 5)
             assert reac.lower_bound == 5
             assert reac.upper_bound == 5
         assert reac.lower_bound == 2
@@ -341,11 +340,11 @@ class TestReaction:
         for reaction in model.reactions:
             assert reaction.lower_bound == original_bounds[reaction.id][0]
             assert reaction.upper_bound == original_bounds[reaction.id][1]
-        with TimeMachine() as tm:
+        with model:
             for reaction in model.reactions:
                 original_bounds[reaction.id] = (
                     reaction.lower_bound, reaction.upper_bound)
-                reaction.knock_out(time_machine=tm)
+                reaction.knock_out()
                 assert reaction.lower_bound == 0
                 assert reaction.upper_bound == 0
         for reaction in model.reactions:
@@ -365,8 +364,8 @@ class TestReaction:
         assert d1._lower_bound == -1000
         assert d1.upper_bound == 0
         assert d1._upper_bound == 0
-        with TimeMachine() as tm:
-            d1.knock_out(time_machine=tm)
+        with tiny_toy_model:
+            d1.knock_out()
             assert d1.lower_bound == 0
             assert d1._lower_bound == 0
             assert d1.upper_bound == 0
@@ -670,16 +669,15 @@ class TestSolverBasedModel:
         model.solver.objective = model.solver.interface.Objective(
             expression)
         assert model.solver.objective.expression == expression
-
-        model.change_objective("ENO")
+        model.objective = "ENO"
         eno_obj = model.solver.interface.Objective(
             model.reactions.ENO.flux_expression, direction="max")
         pfk_obj = model.solver.interface.Objective(
             model.reactions.PFK.flux_expression, direction="max")
         assert model.solver.objective == eno_obj
 
-        with TimeMachine() as tm:
-            model.change_objective("PFK", tm)
+        with model:
+            model.objective = "PFK"
             assert model.solver.objective == pfk_obj
         assert model.solver.objective == eno_obj
 

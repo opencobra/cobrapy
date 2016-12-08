@@ -4,21 +4,20 @@ from copy import deepcopy, copy
 import sympy
 from six import iteritems, string_types
 
-from cobra.exceptions import SolveError
-from ..solvers import optimize
-from .Object import Object
-from .Solution import Solution, LazySolution
-from .Reaction import Reaction
-from .DictList import DictList
+from cobra.solvers import optimize
+from cobra.core.Object import Object
+from cobra.core.Solution import Solution, LazySolution
+from cobra.core.Reaction import Reaction, separate_forward_and_reverse_bounds
+from cobra.core.DictList import DictList
 
 import six
 import time
 import types
 import optlang
 from sympy.core.singleton import S
-from functools import partial
-from cobra.util import AutoVivification
-from cobra import exceptions, config
+from cobra.util.util import AutoVivification
+from cobra.util.context import HistoryManager, resettable
+from cobra import config
 
 
 class Model(Object):
@@ -59,6 +58,7 @@ class Model(Object):
             self.compartments = {}
             # self.solution = Solution(None)
             self.media_compositions = {}
+            self._contexts = []
 
             # from cameo ...
 
@@ -328,32 +328,13 @@ class Model(Object):
 
         for reaction in reaction_list:
 
-            if reaction.reversibility:
-                forward_variable = self.solver.interface.Variable(
-                    reaction._get_forward_id(), lb=0,
-                    ub=reaction._upper_bound)
-                reverse_variable = self.solver.interface.Variable(
-                    reaction._get_reverse_id(), lb=0,
-                    ub=-1 * reaction._lower_bound)
-            elif 0 == reaction.lower_bound and reaction.upper_bound == 0:
-                forward_variable = self.solver.interface.Variable(
-                    reaction._get_forward_id(), lb=0, ub=0)
-                reverse_variable = self.solver.interface.Variable(
-                    reaction._get_reverse_id(), lb=0, ub=0)
-            elif reaction.lower_bound >= 0:
-                forward_variable = self.solver.interface.Variable(
-                    reaction.id,
-                    lb=reaction._lower_bound,
-                    ub=reaction._upper_bound)
-                reverse_variable = self.solver.interface.Variable(
-                    reaction._get_reverse_id(), lb=0, ub=0)
-            elif reaction.upper_bound <= 0:
-                forward_variable = self.solver.interface.Variable(reaction.id,
-                                                                  lb=0, ub=0)
-                reverse_variable = self.solver.interface.Variable(
-                    reaction._get_reverse_id(),
-                    lb=-1 * reaction._upper_bound,
-                    ub=-1 * reaction._lower_bound)
+            reverse_lb, reverse_ub, forward_lb, forward_ub = \
+                separate_forward_and_reverse_bounds(*reaction.bounds)
+
+            forward_variable = self.solver.interface.Variable(
+                reaction.id, lb=forward_lb, ub=forward_ub)
+            reverse_variable = self.solver.interface.Variable(
+                reaction._get_reverse_id(), lb=reverse_lb, ub=reverse_ub)
 
             self.solver.add(forward_variable)
             self.solver.add(reverse_variable)
@@ -512,22 +493,6 @@ class Model(Object):
             self.solution = Solution(None)
         return
 
-    def change_objective(self, value, time_machine=None):
-        """
-        Changes the objective of the model to the given value. Allows
-        passing a time machine to revert the change later
-
-        Parameters
-        ----------
-
-        """
-        if time_machine is None:
-            self.objective = value
-        else:
-            time_machine(do=partial(setattr, self, "objective", value),
-                         undo=partial(setattr, self, "objective",
-                                      self.objective))
-
     @property
     def objective_reactions(self):
         return {reaction: reaction.objective_coefficient
@@ -580,6 +545,10 @@ class Model(Object):
         reaction identifiers, integers are reaction indices in the current
         model, Reaction, solver.interface.Objective or sympy expressions are
         directly interpreted as new objectives
+
+
+        When using a `HistoryManager` context, this attribute can be set
+        temporarily, reversed when the exiting the context.
         """
         warn(("use objective_reactions or model.solver.objective "
               "instead. A future version of cobra will not "
@@ -587,6 +556,7 @@ class Model(Object):
         return self.objective_reactions
 
     @objective.setter
+    @resettable
     def objective(self, value):
         if isinstance(value, six.string_types):
             try:
@@ -640,7 +610,21 @@ class Model(Object):
         except ImportError:
             warn('Summary methods require pandas/tabulate')
 
-    @property
+    def __enter__(self):
+        """Record all future changes to the model, undoing them when a call to
+        __exit__ is recieved"""
+
+        # Create a new context and add it to the stack
+        try:
+            self._contexts.append(HistoryManager())
+        except AttributeError:
+            self._contexts = [HistoryManager()]
+
+    def __exit__(self, type, value, traceback):
+        """Pop the top context manager and trigger the undo functions"""
+        context = self._contexts.pop()
+        context.reset()
+
     def exchanges(self):
         """Exchange reactions in model.
 

@@ -6,37 +6,13 @@ from copy import copy, deepcopy
 from warnings import warn
 
 from six import string_types, iteritems
-from .Object import Object
-from .Gene import Gene, parse_gpr, ast2str
-from .Metabolite import Metabolite
-from functools import partial
+from cobra.core.Object import Object
+from cobra.core.Gene import Gene, parse_gpr, ast2str
+from cobra.core.Metabolite import Metabolite
 import hashlib
 
-
-class Frozendict(dict):
-    """Read-only dictionary view"""
-
-    def __setitem__(self, key, value):
-        raise NotImplementedError("read-only")
-
-    def __delitem__(self, key):
-        raise NotImplementedError("read-only")
-
-    def pop(self, key, value):
-        raise NotImplementedError("read-only")
-
-    def popitem(self):
-        raise NotImplementedError("read-only")
-
-
-def _is_positive(n):
-    try:
-        if n >= 0:
-            return True
-        else:
-            return False
-    except:
-        return True
+from cobra.util.util import Frozendict, _is_positive
+from cobra.util.context import resettable
 
 
 # precompiled regular expressions
@@ -69,19 +45,20 @@ class Reaction(Object):
         Object.__init__(self, id, name)
         self._gene_reaction_rule = ''
         self.subsystem = subsystem
+
         # The cobra.Genes that are used to catalyze the reaction
         self._genes = set()
+
         # A dictionary of metabolites and their stoichiometric coefficients in
         # this reaction.
         self._metabolites = {}
+
         # self.model is None or refers to the cobra.Model that
         # contains self
         self._model = None
 
         self._objective_coefficient = objective_coefficient
-        # the following two lines are commented out
-        # self.upper_bound = upper_bound
-        # self.lower_bound = lower_bound
+
         # Used during optimization.  Indicates whether the
         # variable is modeled as continuous, integer, binary, semicontinous, or
         # semiinteger.
@@ -215,64 +192,21 @@ class Reaction(Object):
         Setting the lower bound (float) will also adjust the associated optlang
         variables associated with the reaction. Infeasible combinations,
         such as a lower bound higher than the current upper bound will
-        implicitly correct the upper bound to zero.
+        update the other bound.
+
+        When using a `HistoryManager` context, this attribute can be set
+        temporarily, reversed when the exiting the context.
         """
         return self._lower_bound
 
     @lower_bound.setter
+    @resettable
     def lower_bound(self, value):
-        if self.model is not None:
-
-            forward_variable, reverse_variable = \
-                self.forward_variable, self.reverse_variable
-            if self._lower_bound < 0 < self._upper_bound:  # reversible
-                if value < 0:
-                    reverse_variable.ub = -1 * value
-                elif value >= 0:
-                    reverse_variable.ub = 0
-                    try:
-                        forward_variable.lb = value
-                    except ValueError:
-                        forward_variable.ub = value
-                        self._upper_bound = value
-                        forward_variable.lb = value
-            elif self._lower_bound == 0 and self._upper_bound == 0:  # knockout
-                if value < 0:
-                    reverse_variable.ub = -1 * value
-                elif value >= 0:
-                    forward_variable.ub = value
-                    self._upper_bound = value
-                    forward_variable.lb = value
-            elif self._lower_bound >= 0:  # forward irreversible
-                if value < 0:
-                    reverse_variable.ub = -1 * value
-                    forward_variable.lb = 0
-                else:
-                    try:
-                        forward_variable.lb = value
-                    except ValueError:
-                        forward_variable.ub = value
-                        self._upper_bound = value
-                        forward_variable.lb = value
-
-            elif self._upper_bound <= 0:  # reverse irreversible
-                if value > 0:
-                    reverse_variable.lb = 0
-                    reverse_variable.ub = 0
-                    forward_variable.ub = value
-                    self._upper_bound = value
-                    forward_variable.lb = value
-                else:
-                    try:
-                        reverse_variable.ub = -1 * value
-                    except ValueError:
-                        reverse_variable.lb = -1 * value
-                        self._upper_bound = value
-                        reverse_variable.ub = -1 * value
-            else:
-                raise ValueError('lower_bound issue')
+        if self.upper_bound < value:
+            self.upper_bound = value
 
         self._lower_bound = value
+        update_forward_and_reverse_bounds(self, 'lower')
 
     @property
     def upper_bound(self):
@@ -281,64 +215,41 @@ class Reaction(Object):
         Setting the upper bound (float) will also adjust the associated optlang
         variables associated with the reaction. Infeasible combinations,
         such as a upper bound lower than the current lower bound will
-        implicitly correct the lower bound to zero.
+        update the other bound.
+
+        When using a `HistoryManager` context, this attribute can be set
+        temporarily, reversed when the exiting the context.
         """
         return self._upper_bound
 
     @upper_bound.setter
+    @resettable
     def upper_bound(self, value):
-        if self.model is not None:
-
-            forward_variable, reverse_variable = \
-                self.forward_variable, self.reverse_variable
-            if self._lower_bound < 0 < self._upper_bound:  # reversible
-                if value > 0:
-                    forward_variable.ub = value
-                elif value <= 0:
-                    forward_variable.ub = 0
-                    try:
-                        reverse_variable.lb = -1 * value
-                    except ValueError:
-                        reverse_variable.ub = -1 * value
-                        self._lower_bound = value
-                        reverse_variable.lb = -1 * value
-            elif self._lower_bound == 0 and self._upper_bound == 0:  # knockout
-                if value > 0:
-                    forward_variable.ub = value
-                elif value <= 0:
-                    reverse_variable.ub = -1 * value
-                    self._lower_bound = value
-                    reverse_variable.lb = -1 * value
-            elif self._lower_bound >= 0:  # forward irreversible
-                if value > 0:
-                    try:
-                        forward_variable.ub = value
-                    except ValueError:
-                        forward_variable.lb = value
-                        self._lower_bound = value
-                        forward_variable.ub = value
-                else:
-                    forward_variable.lb = 0
-                    forward_variable.ub = 0
-                    reverse_variable.ub = -1 * value
-                    self._lower_bound = value
-                    reverse_variable.lb = -1 * value
-
-            elif self._upper_bound <= 0:  # reverse irreversible
-                if value < 0:
-                    try:
-                        reverse_variable.lb = -1 * value
-                    except ValueError:
-                        reverse_variable.ub = -1 * value
-                        self._lower_bound = value
-                        reverse_variable.lb = -1 * value
-                else:
-                    forward_variable.ub = value
-                    reverse_variable.lb = 0
-            else:
-                raise ValueError('upper_bound issue')
+        if self.lower_bound > value:
+            self.lower_bound = value
 
         self._upper_bound = value
+        update_forward_and_reverse_bounds(self, 'upper')
+
+    @property
+    def bounds(self):
+        """ Get or set the bounds directly from a tuple
+
+        Convenience method for setting upper and lower bounds in one line
+        using a tuple of lower and upper bound. Invalid bounds will raise an
+        AssertionError.
+
+        When using a `HistoryManager` context, this attribute can be set
+        temporarily, reversed when the exiting the context.
+        """
+        return self.lower_bound, self.upper_bound
+
+    @bounds.setter
+    @resettable
+    def bounds(self, value):
+        assert value[0] <= value[1], "Invalid bounds: {}".format(value)
+        self._lower_bound, self._upper_bound = value
+        update_forward_and_reverse_bounds(self)
 
     @property
     def flux(self):
@@ -448,20 +359,6 @@ class Reaction(Object):
             if self._model.solution.status != "optimal":
                 raise Exception("model solution was not optimal")
             raise e  # Not sure what the exact problem was
-
-    @property
-    def bounds(self):
-        """ Get or set the bounds directly from a tuple
-
-        Convenience method for setting upper and lower bounds in one line
-        using a tuple of lower and upper bound
-        """
-        return self.lower_bound, self.upper_bound
-
-    @bounds.setter
-    def bounds(self, value):
-        lower_bound, upper_bound = value
-        self.change_bounds(lb=lower_bound, ub=upper_bound)
 
     @property
     def reversibility(self):
@@ -600,6 +497,10 @@ class Reaction(Object):
             state.pop("reaction")
         if "gene_reaction_rule" in state:
             state["_gene_reaction_rule"] = state.pop("gene_reaction_rule")
+        if "lower_bound" in state:
+            state['_lower_bound'] = state.pop('lower_bound')
+        if "upper_bound" in state:
+            state['_upper_bound'] = state.pop('upper_bound')
 
         self.__dict__.update(state)
         for x in state['_metabolites']:
@@ -933,47 +834,9 @@ class Reaction(Object):
         self._genes.discard(cobra_gene)
         cobra_gene._reaction.discard(self)
 
-    def change_bounds(self, lb=None, ub=None, time_machine=None):
-        """Changes one or both of the reaction bounds
-
-        Parameters
-        ----------
-        lb: float
-            new lower bound
-        ub: float
-            new upper bound
-        time_machine: TimeMachine
-            allows the changes to be reversed with a TimeMachine
-        """
-        if time_machine is not None:
-            time_machine(do=int,
-                         undo=partial(setattr, self, "lower_bound",
-                                      self.lower_bound))
-            time_machine(do=int,
-                         undo=partial(setattr, self, "upper_bound",
-                                      self.upper_bound))
-        if lb is not None:
-            self.lower_bound = lb
-        if ub is not None:
-            self.upper_bound = ub
-
-    def knock_out(self, time_machine=None):
-        """Knockout reaction by setting its bounds to zero.
-
-        Parameters
-        ----------
-        time_machine: TimeMachine
-            A time TimeMachine instance can be provided to undo the knockout
-            eventually.
-
-        Returns
-        -------
-        None
-        """
-        if time_machine is not None:
-            self.change_bounds(0, 0, time_machine=time_machine)
-        else:
-            self.change_bounds(0, 0)
+    def knock_out(self):
+        """Knockout reaction by setting its bounds to zero."""
+        self.bounds = (0, 0)
 
     def build_reaction_from_string(self, reaction_str, verbose=True,
                                    fwd_arrow=None, rev_arrow=None,
@@ -1064,3 +927,52 @@ class Reaction(Object):
                         print("unknown metabolite '%s' created" % met_id)
                     met = Metabolite(met_id)
                 self.add_metabolites({met: num})
+
+
+def separate_forward_and_reverse_bounds(lower_bound, upper_bound):
+    """Split a given (lower_bound, upper_bound) interval into a negative
+    component and a positive component. Negative components are negated
+    (returns positive ranges) and flipped for usage with forward and reverse
+    reactions bounds
+
+    """
+
+    assert lower_bound <= upper_bound, "lower bound is greater than upper"
+
+    bounds_list = [0, 0, lower_bound, upper_bound]
+    bounds_list.sort()
+
+    return -bounds_list[1], -bounds_list[0], bounds_list[2], bounds_list[3]
+
+
+def update_forward_and_reverse_bounds(reaction, direction='both'):
+    """For the given reaction, update the bounds in the forward and
+    reverse variable bounds.
+
+    Parameters
+    ----------
+    reaction : cobra.Reaction object
+
+    """
+
+    reverse_lb, reverse_ub, forward_lb, forward_ub = \
+        separate_forward_and_reverse_bounds(*reaction.bounds)
+
+    try:
+        # Clear the original bounds to avoid complaints
+        if direction == 'both':
+            reaction.forward_variable._ub = None
+            reaction.reverse_variable._lb = None
+            reaction.reverse_variable._ub = None
+            reaction.forward_variable._lb = None
+
+        if direction in {'both', 'upper'}:
+            reaction.forward_variable.ub = forward_ub
+            reaction.reverse_variable.lb = reverse_lb
+
+        if direction in {'both', 'lower'}:
+            reaction.reverse_variable.ub = reverse_ub
+            reaction.forward_variable.lb = forward_lb
+
+    except AttributeError:
+        pass
