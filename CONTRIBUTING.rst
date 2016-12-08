@@ -102,20 +102,20 @@ Here's how to set up `cobrapy` for local development to contribute smaller featu
 
    Now you can make your changes locally.
 
-5. When you are done making changes, check that your changes pass pep8
+9. When you are done making changes, check that your changes pass pep8
    and the tests with tox for the supported Python versions::
 
     (cobrapy)$ tox -e py27
     (cobrapy)$ tox -e py34
     (cobrapy)$ tox -e py35
 
-6. Commit your changes and push your branch to GitHub::
+10. Commit your changes and push your branch to GitHub::
 
     (cobrapy)$ git add .
     (cobrapy)$ git commit -m "Your detailed description of your changes."
     (cobrapy)$ git push origin name-of-your-bugfix-or-feature
 
-7. Submit a pull request through the GitHub website.
+11. Submit a pull request through the GitHub website.
 
 For larger features that you want to work on collaboratively with other cobrapy team members, you may consider to first request to join the cobrapy developers team to get write access to the repository so that you can create a branch in the main repository (or simply ask the maintainer to create a branch for you). Once you have a new branch you can push your changes directly to the main repository and when finished, submit a pull request from that branch to ``devel``.
 
@@ -194,12 +194,12 @@ Branching model
 
 Please use concise descriptive commit messages and consider using ``git pull --rebase`` when you update your own fork to avoid merge commits.
 
-5. Tests are in the ``cobra/test`` directory. They are automatically run
+1. Tests are in the ``cobra/test`` directory. They are automatically run
    through continuous integration services on both python 2 and python 3
    when pull requests are made.
-6. Please write tests for new functions. Writing documentation as well
+2. Please write tests for new functions. Writing documentation as well
    would also be very helpful.
-7. Ensure code will work with both python 2 and python 3. For example,
+3. Ensure code will work with both python 2 and python 3. For example,
    instead of ``my_dict.iteritems()`` use ``six.iteritems(my_dict)``
 
 Thank you very much for contributing to cobrapy!
