@@ -103,8 +103,14 @@ using rational operations, giving exact solutions.
 Testing your installation
 =========================
 
-1. Start python
-2. Type the following into the Python shell
+While it is not a hard requirement for using cobrapy, you need pytest and
+pytest-benchmark to run its tests. First do
+
+.. code:: shell
+    pip install pytest pytest-benchmark
+
+
+Then start python and type the following into the Python shell
 
 .. code:: python
 
@@ -112,4 +118,4 @@ Testing your installation
     test_all()
 
 You should see some skipped tests and expected failures, and the
-function should return ``False``.
+function should return ``True``.

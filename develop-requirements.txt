@@ -14,3 +14,4 @@ tabulate
 tox
 pep8
 pytest
+pytest-benchmark

@@ -136,6 +136,7 @@ extras = {
     'matlab': ["pymatbridge"],
     'sbml': ["python-libsbml", "lxml"],
     'array': ["numpy>=1.6", "scipy>=0.11.0"],
+    'test': ["pytest", "pytest-benchmark"],
     'display': ["matplotlib", "palettable", "pandas>=0.17.0", "tabulate"]
 }
 
