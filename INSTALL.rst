@@ -116,6 +116,7 @@ While it is not a hard requirement for using cobrapy, you need pytest and
 pytest-benchmark to run its tests. First do
 
 .. code:: shell
+
     pip install pytest pytest-benchmark
 
 or to install cobrapy directly with the test dependencies
