@@ -50,7 +50,7 @@ Get the `detailed contribution instructions <CONTRIBUTING.rst>`_ for contributin
 Installation of optional dependencies
 =====================================
 
-Optional Dependencies
+Optional dependencies
 ~~~~~~~~~~~~~~~~~~~~~
 
 On windows, these can downloaded from [this site]
@@ -71,6 +71,15 @@ yum).
 4. `scipy <http://scipy.org>`_ >= 0.11 for ArrayBasedModel and saving to \*.mat files.
 
    -  `Windows scipy installer <http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy>`_
+5. `pytest <http://docs.pytest.org/en/latest/>`_ and `pytest-benchmark
+   <http://pytest-benchmark.readthedocs.io/en/latest/>`_ are required
+   for testing
+
+You can install all packages directly by
+
+.. code:: shell
+
+    pip install "cobra[all]"
 
 Other solvers
 ~~~~~~~~~~~~~
@@ -107,8 +116,14 @@ While it is not a hard requirement for using cobrapy, you need pytest and
 pytest-benchmark to run its tests. First do
 
 .. code:: shell
+
     pip install pytest pytest-benchmark
 
+or to install cobrapy directly with the test dependencies
+
+.. code:: shell
+
+   pip install "cobra[test]"
 
 Then start python and type the following into the Python shell
 
