@@ -160,7 +160,7 @@ class HRSampler(object):
                 solver.change_variable_objective(lp, i, 1.0)
                 solver.solve_problem(lp, objective_sense=sense, **solver_args)
                 sol = solver.format_solution(lp, self.model).x
-                # some solvers do not enforce bounds too much -> we recontrain
+                # some solvers do not enforce bounds too much -> we reconstrain
                 sol = np.maximum(sol, self.bounds[0, ])
                 sol = np.minimum(sol, self.bounds[1, ])
                 self.warmup[self.n_warmup, ] = sol
@@ -359,7 +359,7 @@ def _sample_chain(args):
     """
     sampler, n, idx = args       # has to be this way to work in Python 2.7
     center = sampler.center
-    np.random.seed(int(time()) + idx * int(time()) + idx)
+    np.random.seed(int(time() * idx + idx) % np.iinfo(np.int32).max)
     prev = sampler.warmup[np.random.randint(sampler.n_warmup), ]
     prev = _step(sampler, center, prev - center, 0.95)
     n_samples = max(sampler.n_samples, 1)
