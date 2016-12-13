@@ -160,6 +160,8 @@ class HRSampler(object):
                 solver.change_variable_objective(lp, i, 1.0)
                 solver.solve_problem(lp, objective_sense=sense, **solver_args)
                 sol = solver.format_solution(lp, self.model).x
+                if not sol:
+                    pass
                 # some solvers do not enforce bounds too much -> we reconstrain
                 sol = np.maximum(sol, self.bounds[0, ])
                 sol = np.minimum(sol, self.bounds[1, ])
