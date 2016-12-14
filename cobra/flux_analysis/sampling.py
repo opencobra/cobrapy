@@ -10,6 +10,7 @@ from ..solvers import solver_dict, get_solver_name
 from copy import deepcopy
 from multiprocessing import Pool, Array
 import ctypes
+from time import time
 
 BTOL = np.finfo(np.float32).eps
 """The tolerance used for checking bounds feasibility."""
@@ -67,7 +68,7 @@ def nullspace(A, atol=1e-13, rtol=0):
 
 # Has to be declared outside of class to be used for multiprocessing :(
 def _step(sampler, x, delta, fraction=None):
-    """Samples a feasible step from the point `x` in direction `delta`."""
+    """Samples a new feasible point from the point `x` in direction `delta`."""
     # delta = delta / np.sqrt((delta * delta).sum())
     nonzero = np.abs(delta) > 0.0
     alphas = ((1.0 - BTOL) * sampler.bounds - x)[:, nonzero]
@@ -77,14 +78,15 @@ def _step(sampler, x, delta, fraction=None):
         alpha = alpha_range[0] + fraction * (alpha_range[1] - alpha_range[0])
     else:
         alpha = np.random.uniform(alpha_range[0], alpha_range[1])
-    step = alpha * delta
+    p = x + alpha * delta
 
-    # Numerical instabilities may cause bounds validation
-    # sample from one of the original warmup directions if that occurs
-    if np.any(sampler._bounds_dist(x + step) < -BTOL):
+    # Numerical instabilities may cause bounds invalidation
+    # reset sampler and sample from one of the original warmup directions
+    # if that occurs
+    if np.any(sampler._bounds_dist(p) < -BTOL):
         newdir = sampler.warmup[np.random.randint(sampler.n_warmup)]
-        return _step(sampler, x, newdir - sampler.center)
-    return alpha * delta
+        return _step(sampler, sampler.center, newdir - sampler.center)
+    return p
 
 
 class HRSampler(object):
@@ -158,7 +160,9 @@ class HRSampler(object):
                 solver.change_variable_objective(lp, i, 1.0)
                 solver.solve_problem(lp, objective_sense=sense, **solver_args)
                 sol = solver.format_solution(lp, self.model).x
-                # some solvers do not enforce bounds too much -> we recontrain
+                if not sol:
+                    pass
+                # some solvers do not enforce bounds too much -> we reconstrain
                 sol = np.maximum(sol, self.bounds[0, ])
                 sol = np.minimum(sol, self.bounds[1, ])
                 self.warmup[self.n_warmup, ] = sol
@@ -311,7 +315,7 @@ class ARCHSampler(HRSampler):
         # mix in the original warmup points to not get stuck
         p = self.warmup[pi, ]
         delta = p - self.center
-        self.prev += _step(self, self.prev, delta)
+        self.prev = _step(self, self.prev, delta)
         if (self.n_samples * self.thinning % 1000 == 0):
             self.prev = self._reproject(self.prev)
         self.center = (self.n_samples * self.center + self.prev) / (
@@ -355,10 +359,11 @@ def _sample_chain(args):
 
     center and n_samples are updated locally and forgotten afterwards.
     """
-    sampler, n = args       # has to be this way to work in Python 2.7
+    sampler, n, idx = args       # has to be this way to work in Python 2.7
     center = sampler.center
+    np.random.seed(int(time() * idx + idx) % np.iinfo(np.int32).max)
     prev = sampler.warmup[np.random.randint(sampler.n_warmup), ]
-    prev = center + _step(sampler, center, prev - center, 0.95)
+    prev = _step(sampler, center, prev - center, 0.95)
     n_samples = max(sampler.n_samples, 1)
     samples = np.zeros((n, center.shape[0]))
 
@@ -367,7 +372,7 @@ def _sample_chain(args):
         p = sampler.warmup[pi, ]
 
         delta = p - center
-        prev += _step(sampler, prev, delta)
+        prev = _step(sampler, prev, delta)
         if (n_samples * sampler.thinning % 1000 == 0):
             prev = sampler._reproject(prev)
         if i % sampler.thinning == 0:
@@ -491,12 +496,12 @@ class OptGPSampler(HRSampler):
             mp = Pool(self.np)
             chains = mp.map(
                 _sample_chain,
-                zip([self] * self.np, [n_process] * self.np)
+                zip([self] * self.np, [n_process] * self.np, range(self.np))
                 )
             chains = np.vstack(chains)
             mp.terminate()
         else:
-            chains = _sample_chain((self, n))
+            chains = _sample_chain((self, n, 0))
 
         # Update the global center
         self.center = (self.n_samples * self.center +
