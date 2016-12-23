@@ -15,12 +15,13 @@ try:
     # if scipy version is earlier than 0.11, OrderedDict will not work, so use
     # a dict instead
     if scipy_version < 11:
-        dicttype = dict
+        DictClass = dict
     else:
-        from collections import OrderedDict as dicttype
+        from collections import OrderedDict as DictClass
     del short_version, scipy_version
 except ImportError:
-    dicttype = dict
+    DictClass = dict
+    short_version = None
 
 
 # precompiled regular expressions
@@ -28,7 +29,7 @@ _bracket_re = re.compile("r\[[a-z]\]$")
 _underscore_re = re.compile(r"_[a-z]$")
 
 
-def _get_id_comparment(id):
+def _get_id_compartment(id):
     """extract the compartment from the id string"""
     bracket_search = _bracket_re.findall(id)
     if len(bracket_search) == 1:
@@ -67,6 +68,7 @@ def load_matlab_model(infile_path, variable_name=None, inf=inf):
 
     """
     data = loadmat(infile_path)
+    possible_names = []
     if variable_name is None:
         # skip meta variables
         meta_vars = {"__globals__", "__header__", "__version__"}
@@ -105,13 +107,22 @@ def save_matlab_model(model, file_name, varname=None):
             appendmat=True, oned_as="column")
 
 
+def create_mat_metabolite_id(model):
+    for met in model.metabolites:
+        if not _get_id_compartment(met.id) and met.compartment:
+            yield '{}[{}]'.format(met.id,
+                                  model.compartments[met.compartment].lower())
+        else:
+            yield met.id
+
+
 def create_mat_dict(model):
     """create a dict mapping model attributes to arrays"""
     model = model.to_array_based_model(deepcopy_model=True)
     rxns = model.reactions
     mets = model.metabolites
-    mat = dicttype()
-    mat["mets"] = _cell(mets.list_attr("id"))
+    mat = DictClass()
+    mat["mets"] = _cell([met_id for met_id in create_mat_metabolite_id(model)])
     mat["metNames"] = _cell(mets.list_attr("name"))
     mat["metFormulas"] = _cell([str(m.formula) for m in mets])
     try:
@@ -154,7 +165,7 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
     m = mat_struct
     if m.dtype.names is None:
         raise ValueError("not a valid mat struct")
-    if not set(["rxns", "mets", "S", "lb", "ub"]) <= set(m.dtype.names):
+    if not {"rxns", "mets", "S", "lb", "ub"} <= set(m.dtype.names):
         raise ValueError("not a valid mat struct")
     if "c" in m.dtype.names:
         c_vec = m["c"][0, 0]
@@ -171,7 +182,19 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
     for i, name in enumerate(m["mets"][0, 0]):
         new_metabolite = Metabolite()
         new_metabolite.id = str(name[0][0])
-        new_metabolite.compartment = _get_id_comparment(new_metabolite.id)
+        if all(var in m.dtype.names for var in
+               ['metComps', 'comps', 'compNames']):
+            comp_index = m["metComps"][0, 0][i][0] - 1
+            new_metabolite.compartment = m['comps'][0, 0][comp_index][0][0]
+            if new_metabolite.compartment not in model.compartments:
+
+                comp_name = m['compNames'][0, 0][comp_index][0][0]
+                model.compartments[new_metabolite.compartment] = comp_name
+        else:
+            new_metabolite.compartment = _get_id_compartment(new_metabolite.id)
+            if new_metabolite.compartment not in model.compartments:
+                model.compartments[
+                    new_metabolite.compartment] = new_metabolite.compartment
         try:
             new_metabolite.name = str(m["metNames"][0, 0][i][0][0])
         except (IndexError, ValueError):
