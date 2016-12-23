@@ -95,7 +95,7 @@ def save_matlab_model(model, file_name, varname=None):
 
 def create_mat_dict(model):
     """create a dict mapping model attributes to arrays"""
-    model = model.to_array_based_model()
+    model = model.to_array_based_model(deepcopy_model=True)
     rxns = model.reactions
     mets = model.metabolites
     mat = dicttype()
