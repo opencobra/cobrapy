@@ -2,7 +2,7 @@ import re
 from uuid import uuid4
 from warnings import warn
 
-from numpy import array, object as np_object
+from numpy import isinf, inf, array, object as np_object
 from scipy.io import loadmat, savemat
 from scipy.sparse import coo_matrix, dok_matrix
 
@@ -45,15 +45,25 @@ def _cell(x):
     return array(x_no_none, dtype=np_object)
 
 
-def load_matlab_model(infile_path, variable_name=None):
+def load_matlab_model(infile_path, variable_name=None, inf=inf):
     """Load a cobra model stored as a .mat file
 
-    infile_path : str
-
-    variable_name : str, optional
+    Parameters
+    ----------
+    infile_path: str
+        path to the file to to read
+    variable_name: str, optional
         The variable name of the model in the .mat file. If this is not
         specified, then the first MATLAB variable which looks like a COBRA
         model will be used
+    inf: value
+        The value to use for infinite bounds. Some solvers do not handle
+        infinite values so for using those, set this to a high numeric value.
+
+    Returns
+    -------
+    cobra.core.Model.Model:
+        The resulting cobra model
 
     """
     data = loadmat(infile_path)
@@ -64,12 +74,14 @@ def load_matlab_model(infile_path, variable_name=None):
         if len(possible_names) == 1:
             variable_name = possible_names[0]
     if variable_name is not None:
-        return from_mat_struct(data[variable_name], model_id=variable_name)
+        return from_mat_struct(data[variable_name], model_id=variable_name,
+                               inf=inf)
     for possible_name in possible_names:
         try:
-            return from_mat_struct(data[possible_name], model_id=possible_name)
+            return from_mat_struct(data[possible_name], model_id=possible_name,
+                                   inf=inf)
         except ValueError:
-            None
+            pass
     # If code here is executed, then no model was found.
     raise Exception("no COBRA model found")
 
@@ -133,7 +145,7 @@ def create_mat_dict(model):
     return mat
 
 
-def from_mat_struct(mat_struct, model_id=None):
+def from_mat_struct(mat_struct, model_id=None, inf=inf):
     """create a model from the COBRA toolbox struct
 
     The struct will be a dict read in by scipy.io.loadmat
@@ -182,6 +194,10 @@ def from_mat_struct(mat_struct, model_id=None):
         new_reaction.id = str(name[0][0])
         new_reaction.lower_bound = float(m["lb"][0, 0][i][0])
         new_reaction.upper_bound = float(m["ub"][0, 0][i][0])
+        if isinf(new_reaction.lower_bound) and new_reaction.lower_bound < 0:
+            new_reaction.lower_bound = -inf
+        if isinf(new_reaction.upper_bound) and new_reaction.upper_bound > 0:
+            new_reaction.upper_bound = inf
         if c_vec is not None:
             new_reaction.objective_coefficient = float(c_vec[i][0])
         try:
