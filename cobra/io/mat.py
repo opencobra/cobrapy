@@ -85,7 +85,7 @@ def load_matlab_model(infile_path, variable_name=None, inf=inf):
         except ValueError:
             pass
     # If code here is executed, then no model was found.
-    raise Exception("no COBRA model found")
+    raise IOError("no COBRA model found")
 
 
 def save_matlab_model(model, file_name, varname=None):
