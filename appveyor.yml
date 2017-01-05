@@ -46,7 +46,7 @@ install:
   - "powershell appveyor\\install.ps1"
   - ps: Start-FileDownload 'https://bitbucket.org/gutworth/six/raw/default/six.py'
   - "%WITH_COMPILER% %PYTHON%/python appveyor/build_glpk.py"
-  - "%PYTHON%/python -m pip install pip setuptools wheel --upgrade"
+  - "%PYTHON%/python -m pip install pip setuptools>=6.0 wheel --upgrade"
   - "%PYTHON%/python -m pip install --upgrade pytest"
   - "%PYTHON%/python -m pip install pytest-cov pytest-benchmark"
   - "%PYTHON%/python -m pip install Cython jsonschema twine pypandoc==1.1.3"
