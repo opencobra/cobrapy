@@ -242,3 +242,14 @@ class TestManipulation:
         r1.add_metabolites({m1: 1})
         with pytest.raises(ValueError):
             r1.check_mass_balance()
+
+    def test_prune_unused(self, model):
+        metabolite = model.metabolites.ru5p__D_c
+        [model.reactions.get_by_id(x).remove_from_model() for x in
+         ['RPI', 'RPE', 'GND']]
+        unused = delete.prune_unused_metabolites(model)
+        assert unused[0] is metabolite
+        reaction = Reaction('foo')
+        model.add_reaction(reaction)
+        unused = delete.prune_unused_reactions(model)
+        assert unused[0] is reaction

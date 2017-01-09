@@ -1,56 +1,54 @@
-import re
-from copy import deepcopy
-from warnings import warn
 from ast import NodeTransformer, And
 
 from six import iteritems, string_types
 
-from ..core.Gene import eval_gpr, parse_gpr, ast2str
+from cobra.core.Gene import eval_gpr, parse_gpr, ast2str
 
 
 def prune_unused_metabolites(cobra_model):
-    """Removes metabolites that aren't involved in any reactions in the model
+    """Remove metabolites that are not involved in any reactions
 
-    cobra_model: A Model object.
+    Parameters
+    ----------
+    cobra_model: cobra.core.Model
+        the model to remove unused metabolites from
 
+    Returns
+    -------
+    list
+        list of metabolites that were removed
     """
     inactive_metabolites = []
     active_metabolites = []
     for the_metabolite in cobra_model.metabolites:
         if len(the_metabolite._reaction) == 0:
-            the_metabolite.remove_from_model(cobra_model)
+            the_metabolite.remove_from_model()
             inactive_metabolites.append(the_metabolite)
         else:
             active_metabolites.append(the_metabolite)
-    if inactive_metabolites:
-        return inactive_metabolites
-    else:
-        warn('All metabolites used in at least 1 reaction')
+    return inactive_metabolites
 
 
 def prune_unused_reactions(cobra_model):
-    """Removes reactions from cobra_model.
+    """Remove reactions that have no assigned metabolites
 
-    cobra_model: A Model object.
+    Parameters
+    ----------
+    cobra_model: cobra.core.Model
+        the model to remove unused reactions from
 
-    reactions_to_prune: None, a string matching a reaction.id, a
-    cobra.Reaction, or as list of the ids / Reactions to remove from
-    cobra_model.  If None then the function will delete reactions that have no
-    active metabolites in the model.
-
+    Returns
+    -------
+    list
+        list of reactions that were removed
     """
     pruned_reactions = []
     reactions_to_prune = [x for x in cobra_model.reactions
                           if len(x._metabolites) == 0]
     for the_reaction in reactions_to_prune:
-        try:
-            the_reaction.remove_from_model(cobra_model)
-            pruned_reactions.append(the_reaction)
-        except:
-            warn('%s not in %s' % (the_reaction.id, cobra_model.id))
-    if not pruned_reactions:
-        warn('All reactions have at least 1 metabolite')
-        return
+        the_reaction.remove_from_model()
+        pruned_reactions.append(the_reaction)
+    return pruned_reactions
 
 
 def undelete_model_genes(cobra_model):
