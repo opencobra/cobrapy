@@ -46,7 +46,6 @@ matrix:
         - MB_PYTHON_VERSION=3.5
 
 before_install:
-  - rvm get head
   - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout ffe5995)
   # matplotlib non-compatible as testing runs in venv (non-framework)
   - TEST_DEPENDS="cython codecov coverage numpy scipy python-libsbml jsonschema six pytest pytest-cov pytest-benchmark pandas tabulate"
@@ -62,7 +61,7 @@ install:
   - build_wheel . $PLAT
 
 script:
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install rstcheck pep8; pep8 cobra --exclude=oven,solvers,sbml.py --show-source; rstcheck *.rst; fi
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install 'sphinx>=1.5' rstcheck pep8; pep8 cobra --exclude=oven,solvers,sbml.py --show-source; rstcheck *.rst; fi
   - install_run $PLAT
 
 deploy:

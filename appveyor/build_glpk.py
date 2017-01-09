@@ -4,7 +4,7 @@ import hashlib
 import tarfile
 import struct
 import shutil
-import setuptools.msvc9_support
+import setuptools.msvc
 try:
     import urllib2
 except ImportError:  # python 3
@@ -35,7 +35,7 @@ def get_vcvarsall_cmd():
         vc_ver = 10
     else:
         vc_ver = 9
-    vc_path = setuptools.msvc9_support.find_vcvarsall(vc_ver)
+    vc_path = setuptools.msvc.msvc9_find_vcvarsall(vc_ver)
     assert vc_path is not None
     return '"%s" %s' % (vc_path, " amd64" if bitness == 64 else "")
 
