@@ -38,10 +38,9 @@ clone_depth: 25
 init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%bit"
 
-cache:
-    - glpk_build -> appveyor/build_glpk.py
-    - pip_cache -> appveyor.yml
-
+# cache:
+#     - glpk_build -> appveyor/build_glpk.py
+#     - pip_cache -> appveyor.yml
 
 install:
   - "powershell appveyor\\install.ps1"
