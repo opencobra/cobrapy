@@ -57,12 +57,12 @@ cache:
 
 install:
   - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - "%WITH_COMPILER% python appveyor/build_glpk.py"
   - ps: |
       if ($env:CONDA -eq "true") {
           conda config --set always_yes yes --set changeps1 no;
           conda install -q pip } else {
-          python -m pip install pip setuptools wheel --upgrade }
+          python -m pip install pip setuptools>=24.0 wheel --upgrade }
+  - "%WITH_COMPILER% python appveyor/build_glpk.py"
   - python -m pip install --upgrade pytest
   - python -m pip install pytest-cov pytest-benchmark
   - if defined CONDA conda install -q numpy scipy

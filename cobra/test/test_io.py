@@ -82,6 +82,9 @@ trials = [IOTrial('fbc2', 'mini.pickle', 'mini_fbc2.xml',
           pytest.mark.skipif("not scipy")(
               IOTrial('mat', 'mini.pickle', 'mini.mat',
                       io.load_matlab_model, io.save_matlab_model, None)),
+          pytest.mark.skipif("not scipy")(
+              IOTrial('raven-mat', 'raven.pickle', 'raven.mat',
+                      io.load_matlab_model, io.save_matlab_model, None)),
           IOTrial('json', 'mini.pickle', 'mini.json',
                   io.load_json_model, io.save_json_model, validate_json),
           IOTrial('pickle', 'mini.pickle', 'mini.pickle',
@@ -118,21 +121,21 @@ class TestCobraIO:
                      "objective_coefficient", "gene_reaction_rule"):
             assert getattr(model1.reactions[0], attr) == getattr(
                 model2.reactions[0], attr)
-            assert getattr(model1.reactions[10], attr) == getattr(
-                model2.reactions[10], attr)
+            assert getattr(model1.reactions[5], attr) == getattr(
+                model2.reactions[5], attr)
             assert getattr(model1.reactions[-1], attr) == getattr(
                 model2.reactions[-1], attr)
         for attr in ("id", "name", "compartment", "formula", "charge"):
             assert getattr(model1.metabolites[0], attr) == getattr(
                 model2.metabolites[0], attr)
-            assert getattr(model1.metabolites[10], attr) == getattr(
-                model2.metabolites[10], attr)
+            assert getattr(model1.metabolites[5], attr) == getattr(
+                model2.metabolites[5], attr)
             assert getattr(model1.metabolites[-1], attr) == getattr(
                 model2.metabolites[-1], attr)
         assert len(model1.reactions[0].metabolites) == len(
             model2.reactions[0].metabolites)
-        assert len(model1.reactions[14].metabolites) == len(
-            model2.reactions[14].metabolites)
+        assert len(model1.reactions[8].metabolites) == len(
+            model2.reactions[8].metabolites)
         assert len(model1.reactions[-1].metabolites) == len(
             model2.reactions[-1].metabolites)
         assert len(model1.genes) == len(model2.genes)
@@ -141,21 +144,17 @@ class TestCobraIO:
         model2.optimize()
         assert abs(model1.solution.f - model2.solution.f) < 0.001
         # ensure the references are correct
-        if name == 'mat':
-            pytest.xfail('curiously, reference check now fail with matlab')
         assert model2.metabolites[0]._model is model2
         assert model2.reactions[0]._model is model2
         assert model2.genes[0]._model is model2
 
     @classmethod
     def extra_comparisons(cls, name, model1, model2):
-        if name in ['fbc1', 'mat', 'cobra']:
-            pytest.skip("not supported")
         assert model1.compartments == model2.compartments
         assert model1.metabolites[4].annotation == model2.metabolites[
             4].annotation
         assert model1.reactions[4].annotation == model2.reactions[4].annotation
-        assert model1.genes[4].annotation == model2.genes[4].annotation
+        assert model1.genes[5].annotation == model2.genes[5].annotation
         for attr in ("id", "name"):
             assert getattr(model1.genes[0], attr) == getattr(model2.genes[0],
                                                              attr)
@@ -164,18 +163,28 @@ class TestCobraIO:
             assert getattr(model1.genes[-1], attr) == getattr(model2.genes[-1],
                                                               attr)
 
-    def test_read(self, io_trial):
+    def test_read_1(self, io_trial):
         name, reference_model, test_model, _ = io_trial
         if name in ['fbc1']:
             pytest.xfail('not supported')
         self.compare_models(name, reference_model, test_model)
+
+    def test_read_2(self, io_trial):
+        name, reference_model, test_model, _ = io_trial
+        if name in ['fbc1', 'mat', 'cobra', 'raven-mat']:
+            pytest.xfail('not supported')
         self.extra_comparisons(name, reference_model, test_model)
 
-    def test_write(self, io_trial):
+    def test_write_1(self, io_trial):
         name, _, test_model, reread_model = io_trial
-        if name in ['fbc1']:
+        if name in ['fbc1', 'raven-mat']:
             pytest.xfail('not supported')
         self.compare_models(name, test_model, reread_model)
+
+    def test_write_2(self, io_trial):
+        name, _, test_model, reread_model = io_trial
+        if name in ['fbc1', 'mat', 'cobra', 'raven-mat']:
+            pytest.xfail('not supported')
         self.extra_comparisons(name, test_model, reread_model)
 
 

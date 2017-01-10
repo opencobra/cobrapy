@@ -12,7 +12,7 @@ from collections import OrderedDict
 import cobra
 from cobra.version import get_version
 from cobra.io import read_sbml_model, write_sbml_model, save_matlab_model, \
-    save_json_model
+    save_json_model, load_matlab_model
 from cobra.io.sbml3 import write_sbml2
 
 # ecoli
@@ -81,6 +81,9 @@ write_sbml_model(mini, "mini_fbc2.xml.bz2")
 write_sbml_model(mini, "mini_fbc2.xml.gz")
 write_sbml2(mini, "mini_fbc1.xml", use_fbc_package=True)
 write_sbml_model(mini, "mini_cobra.xml", use_fbc_package=False)
+raven = load_matlab_model("raven.mat")
+with open("raven.pickle", "wb") as outfile:
+    dump(raven, outfile, protocol=2)
 
 # fva results
 fva_result = cobra.flux_analysis.flux_variability_analysis(textbook)
