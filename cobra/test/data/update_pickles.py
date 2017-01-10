@@ -43,7 +43,7 @@ for r in textbook.reactions:
                 "PIt2r"):
         mini.add_reaction(r.copy())
 mini.reactions.ATPM.upper_bound = mini.reactions.PGI.upper_bound
-mini.change_objective("ATPM")  # No biomass
+mini.objective = "ATPM"  # No biomass
 
 # add in some information from iJO1366
 mini.add_reaction(ecoli_model.reactions.LDH_D.copy())
