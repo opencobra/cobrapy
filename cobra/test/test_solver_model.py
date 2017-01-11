@@ -733,7 +733,7 @@ class TestSolverBasedModel:
         with pytest.raises(SolverNotFound):
             setattr(model, 'solver', os)
 
-    @pytest.mark.skipif('optlang-cplex' not in solvers, reason='no cplex')
+    @pytest.mark.skipif('cplex' not in solvers, reason='no cplex')
     def test_change_solver_to_cplex_and_check_copy_works(self, model):
         assert round(abs(model.optimize().f - 0.8739215069684306), 7) == 0
         model_copy = model.copy()
