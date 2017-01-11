@@ -17,13 +17,14 @@ except ImportError:
 import six
 
 from cobra import config
+from cobra.util.solver import solvers, SolverNotFound
 from cobra.core import Metabolite, Reaction, Model, LazySolution
 from cobra.exceptions import UndefinedSolution
 import pytest
 
 
 solver_trials = ['glpk',
-                 pytest.mark.skipif('cplex' not in config.solvers,
+                 pytest.mark.skipif('cplex' not in solvers,
                                     reason='no cplex')]
 
 
@@ -724,15 +725,15 @@ class TestSolverBasedModel:
                          7) == 0
 
     def test_invalid_solver_change_raises(self, model):
-        with pytest.raises(ValueError):
+        with pytest.raises(SolverNotFound):
             setattr(model, 'solver', [1, 2, 3])
-        with pytest.raises(ValueError):
+        with pytest.raises(SolverNotFound):
             setattr(model, 'solver',
                     'ThisIsDefinitelyNotAvalidSolver')
-        with pytest.raises(ValueError):
+        with pytest.raises(SolverNotFound):
             setattr(model, 'solver', os)
 
-    @pytest.mark.skipif('cplex' not in config.solvers, reason='no cplex')
+    @pytest.mark.skipif('optlang-cplex' not in solvers, reason='no cplex')
     def test_change_solver_to_cplex_and_check_copy_works(self, model):
         assert round(abs(model.optimize().f - 0.8739215069684306), 7) == 0
         model_copy = model.copy()

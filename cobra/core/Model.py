@@ -13,11 +13,11 @@ from cobra.core.DictList import DictList
 import six
 import time
 import types
-import optlang
 from sympy.core.singleton import S
 from cobra.util.util import AutoVivification
 from cobra.util.context import HistoryManager, resettable
-from cobra import config
+from cobra.util.solver import solvers, SolverNotFound, interface_to_str,\
+                              get_solver_name
 
 
 class Model(Object):
@@ -39,7 +39,7 @@ class Model(Object):
         if not hasattr(self, "name"):
             self.name = None
 
-    def __init__(self, id_or_model=None, name=None, solver_interface=optlang):
+    def __init__(self, id_or_model=None, name=None):
         if isinstance(id_or_model, Model):
             Object.__init__(self, name=name)
             self.__setstate__(id_or_model.__dict__)
@@ -64,8 +64,9 @@ class Model(Object):
 
             # if not hasattr(self, '_solver'):  # backwards compatibility
             # with older cobrapy pickles?
-            self._solver = solver_interface.Model()
-            self._solver.objective = solver_interface.Objective(S.Zero)
+            interface = solvers[get_solver_name()]
+            self._solver = interface.Model()
+            self._solver.objective = interface.Objective(S.Zero)
             self._populate_solver(self.reactions, self.metabolites)
         self._timestamp_last_optimization = None
         self.solution = LazySolution(self)
@@ -90,13 +91,13 @@ class Model(Object):
 
     @solver.setter
     def solver(self, value):
-        not_valid_interface = ValueError(
+        not_valid_interface = SolverNotFound(
             '%s is not a valid solver interface. Pick from %s, or specify an '
             'optlang interface (e.g. optlang.glpk_interface).' % (
-                value, list(config.solvers.keys())))
+                value, list(solvers.keys())))
         if isinstance(value, six.string_types):
             try:
-                interface = config.solvers[value]
+                interface = solvers[interface_to_str(value)]
             except KeyError:
                 raise not_valid_interface
         elif isinstance(value, types.ModuleType) and hasattr(value, 'Model'):
@@ -414,11 +415,13 @@ class Model(Object):
 
         """
         # TODO: make LazySolution default
-        if kwargs.get('solver', None) in ('cglpk', 'gurobi'):
-            solution = optimize(self, objective_sense=objective_sense,
-                                **kwargs)
-        else:  # make the following honor the solver kwarg ...
-            # from cameo ...
+        so = kwargs.get('solver', 'optlang-glpk')
+        # after deprecation this can be checked with:
+        # if so in solvers:
+        if so in ('optlang-' + k for k in solvers):
+            current = interface_to_str(self.solver.interface.__name__)
+            if interface_to_str(so) != current:
+                self.solver = interface_to_str(so)
             self._timestamp_last_optimization = time.time()
             if objective_sense is not None:
                 original_direction = self.solver.objective.direction
@@ -429,6 +432,9 @@ class Model(Object):
             else:
                 self.solver.optimize()
             solution = solution_type(self)
+        else:
+            solution = optimize(self, objective_sense=objective_sense,
+                                **kwargs)
         self.solution = solution
         # TODO: make failing optimization raise suitable exception
         # if solution.status is not 'optimal':

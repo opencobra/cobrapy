@@ -1,6 +1,7 @@
 """This module includes additional helper functions for the optlang
 solver object that integrate well with the context manager, meaning that
-all operations defined here work well with the model context manager.
+all operations defined here are automatically reverted when used in a
+`with model:` block.
 
 The functions defined here together with the existing model functions should
 allow you to implement custom flux analysis methods with ease."""
@@ -8,14 +9,38 @@ allow you to implement custom flux analysis methods with ease."""
 from cobra.util.context import get_context
 from functools import partial
 import optlang
+import re
 
 
 class SolverNotFound(Exception):
+    """
+    A simple Exception when a solver can not be found.
+    """
     None
 
 
 solvers = {match.split("_")[0]: getattr(optlang, match)
            for match in dir(optlang) if "_interface" in match}
+"""
+Defines all the solvers that were found in optlang.
+"""
+
+
+def interface_to_str(interface):
+    """Give a string representation for an optlang interface.
+
+    Parameters
+    ----------
+    interface: string
+    Full name of the interface in optlang or cobra representation.
+    For instance 'optlang.glpk_interface' or 'optlang-glpk'.
+
+    Returns
+    -------
+    name: string
+    The name of the interface as a string
+    """
+    return re.sub(r"optlang.|.interface", "", interface)
 
 
 def get_solver_name(mip=False, qp=False):
@@ -63,7 +88,7 @@ def get_solver_name(mip=False, qp=False):
     raise SolverNotFound("no mip-capable solver found")
 
 
-def add_to_solver(model, variables=[], constraints=[]):
+def add_to_solver(model, what=[]):
     """Adds variables and constraints to a Model's solver object.
 
     Useful for variables and constraints that can not be expressed with
@@ -74,23 +99,19 @@ def add_to_solver(model, variables=[], constraints=[]):
     ----------
     model: a cobra model
     The model to which to add the variables and constraints.
-    variables: list or tuple of optlang variables.
-    The variables to add to the model. Must be of class
-    `model.solver.interface.Variable`.
-    constraints: list or tuple of optlang constraints
-    The constraints to add to the model. Must be of class
-    `model.solver.interface.Constraint`.
+    what: list or tuple of optlang variables or constraints.
+    The variables or constraints to add to the model. Must be of class
+    `model.solver.interface.Variable` or `model.solver.interface.Constraint`.
     """
     context = get_context(model)
-    both = variables + constraints
 
-    if len(both) > 0:
-        model.solver.add(both)
+    if len(what) > 0:
+        model.solver.add(what)
         if context:
-            context(partial(model.solver.remove, both))
+            context(partial(model.solver.remove, what))
 
 
-def remove_from_solver(model, variables=[], constraints=[]):
+def remove_from_solver(model, what=[]):
     """Removes variables and constraints from a Model's solver object.
 
     Useful to temporarily remove variables and constraints from a Models's
@@ -100,20 +121,16 @@ def remove_from_solver(model, variables=[], constraints=[]):
     ----------
     model: a cobra model
     The model from which to remove the variables and constraints.
-    variables: list or tuple of optlang variables.
-    The variables to remove from the model. Must be of class
-    `model.solver.interface.Variable`.
-    constraints: list or tuple of optlang constraints
-    The constraints to remove from the model. Must be of class
-    `model.solver.interface.Constraint`.
+    what: list or tuple of optlang variables or constraints.
+    The variables or constraints to remove from the model. Must be of class
+    `model.solver.interface.Variable` or `model.solver.interface.Constraint`.
     """
     context = get_context(model)
-    both = variables + constraints
 
-    if len(both) > 0:
-        model.solver.remove(both)
+    if len(what) > 0:
+        model.solver.remove(what)
         if context:
-            context(partial(model.solver.add, both))
+            context(partial(model.solver.add, what))
 
 
 def add_absolute_expression(model, expression, name="abs_var", ub=None):
@@ -138,7 +155,7 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
     variable = model.solver.interface.Variable(name, lb=0, ub=ub)
 
     # The following constraints enforce variable > expression and
-    # variable > - expression
+    # variable > -expression
     constraints = [
         # positive value constraint
         model.solver.interface.Constraint(expression - variable, ub=0,
@@ -150,4 +167,4 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
     model.solver.add(constraints + [variable])
 
     if context:
-        context(model.solver.remove(constraints + [variable]))
+        context(partial(model.solver.remove, constraints + [variable]))
