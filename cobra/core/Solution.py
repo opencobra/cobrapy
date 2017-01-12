@@ -162,9 +162,6 @@ class Solution(SolutionBase):
         fields.remove('y_dict')
         return fields
 
-    def _repr_html_(self):
-        return "%s: %f" % (self.model.solver.objective.expression, self.f)
-
 
 class LazySolution(SolutionBase):
     """This class implements a lazy evaluating version of the Solution class.
