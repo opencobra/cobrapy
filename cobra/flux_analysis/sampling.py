@@ -6,11 +6,13 @@ where possible to provide a uniform interface.
 
 from __future__ import division
 import numpy as np
-from ..solvers import solver_dict, get_solver_name
 from copy import deepcopy
 from multiprocessing import Pool, Array
 import ctypes
 from time import time
+
+from ..solvers import solver_dict, get_solver_name
+from cobra.util import create_stoichiometric_array
 
 BTOL = np.finfo(np.float32).eps
 """The tolerance used for checking bounds feasibility."""
@@ -122,7 +124,7 @@ class HRSampler(object):
         self.model = model
         self.thinning = thinning
         self.n_samples = 0
-        self.S = deepcopy(self.model).to_array_based_model().S.toarray()
+        self.S = create_stoichiometric_array(model, array_type='dense')
         self.NS = nullspace(self.S)
         self.bounds = np.array([[r.lower_bound, r.upper_bound]
                                for r in model.reactions]).T

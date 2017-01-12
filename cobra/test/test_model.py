@@ -3,13 +3,18 @@ import warnings
 import pytest
 from cobra.core import Model, Metabolite, Reaction
 from cobra.solvers import solver_dict
-from .conftest import model, array_model
+from .conftest import model
+
+try:
+    import numpy
+    from cobra.util import create_stoichiometric_array
+except ImportError:
+    numpy = None
 
 try:
     import scipy
 except ImportError:
     scipy = None
-
 
 class TestReactions:
     def test_gpr(self):
@@ -508,100 +513,6 @@ class TestCobraModel:
         assert model.objective == {atpm: 1., biomass: 1.}
 
 
-@pytest.mark.skipif(scipy is None, reason="scipy required for ArrayBasedModel")
-class TestCobraArrayModel:
-    def test_array_model(self, model):
-        for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
-            array_model = model.to_array_based_model(matrix_type=matrix_type)
-            assert array_model.S[7, 0] == -1
-            assert array_model.S[43, 0] == 0
-            array_model.S[43, 0] = 1
-            assert array_model.S[43, 0] == 1
-            assert array_model.reactions[0]._metabolites[
-                       array_model.metabolites[43]] == 1
-            array_model.S[43, 0] = 0
-            assert array_model.lower_bounds[0] == array_model.reactions[
-                0].lower_bound
-            assert array_model.lower_bounds[5] == array_model.reactions[
-                5].lower_bound
-            assert array_model.upper_bounds[0] == array_model.reactions[
-                0].upper_bound
-            assert array_model.upper_bounds[5] == array_model.reactions[
-                5].upper_bound
-            array_model.lower_bounds[6] = 2
-            assert array_model.lower_bounds[6] == 2
-            assert array_model.reactions[6].lower_bound == 2
-            # this should fail because it is the wrong size
-            with pytest.raises(Exception):
-                array_model.upper_bounds = [0, 1]
-            array_model.upper_bounds = [0] * len(array_model.reactions)
-            assert max(array_model.upper_bounds) == 0
-            # test something for all the attributes
-            array_model.lower_bounds[2] = -1
-            assert array_model.reactions[2].lower_bound == -1
-            assert array_model.lower_bounds[2] == -1
-            array_model.objective_coefficients[2] = 1
-            assert array_model.reactions[2].objective_coefficient == 1
-            assert array_model.objective_coefficients[2] == 1
-            array_model.b[2] = 1
-            assert array_model.metabolites[2]._bound == 1
-            assert array_model.b[2] == 1
-            array_model.constraint_sense[2] = "L"
-            assert array_model.metabolites[2]._constraint_sense == "L"
-            assert array_model.constraint_sense[2] == "L"
-            # test resize matrix on reaction removal
-            m, n = array_model.S.shape
-            array_model.remove_reactions([array_model.reactions[2]],
-                                         remove_orphans=False)
-            assert len(array_model.metabolites) == array_model.S.shape[0]
-            assert len(array_model.reactions) == array_model.S.shape[1]
-            assert array_model.S.shape == (m, n - 1)
-
-    def test_array_based_model_add(self, model):
-        array_model = model.to_array_based_model()
-        m = len(array_model.metabolites)
-        n = len(array_model.reactions)
-        for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
-            test_model = model.copy().to_array_based_model(
-                matrix_type=matrix_type)
-            test_reaction = Reaction("test")
-            test_reaction.add_metabolites({test_model.metabolites[0]: 4})
-            test_reaction.lower_bound = -3.14
-            test_model.add_reaction(test_reaction)
-            assert len(test_model.reactions) == n + 1
-            assert test_model.S.shape == (m, n + 1)
-            assert len(test_model.lower_bounds) == n + 1
-            assert len(test_model.upper_bounds) == n + 1
-            assert test_model.S[0, n] == 4
-            assert test_model.S[7, 0] == -1
-            assert test_model.lower_bounds[n] == -3.14
-
-    def test_array_based_select(self, array_model):
-        atpm_select = array_model.reactions[array_model.lower_bounds > 0]
-        assert len(atpm_select) == 1
-        assert atpm_select[0].id == "ATPM"
-        assert len(
-            array_model.reactions[array_model.lower_bounds <= 0]) == len(
-            array_model.reactions) - 1
-        # mismatched dimensions should give an error
-        with pytest.raises(TypeError):
-            array_model.reactions[[True, False]]
-
-    def test_array_based_bounds_setting(self, array_model):
-        model = array_model
-        bounds = [0.0] * len(model.reactions)
-        model.lower_bounds = bounds
-        assert type(model.reactions[0].lower_bound) == float
-        assert abs(model.reactions[0].lower_bound) < 10 ** -5
-        model.upper_bounds[1] = 1234.0
-        assert abs(model.reactions[1].upper_bound - 1234.0) < 10 ** -5
-        model.upper_bounds[9:11] = [100.0, 200.0]
-        assert abs(model.reactions[9].upper_bound - 100.0) < 10 ** -5
-        assert abs(model.reactions[10].upper_bound - 200.0) < 10 ** -5
-        model.upper_bounds[9:11] = 123.0
-        assert abs(model.reactions[9].upper_bound - 123.0) < 10 ** -5
-        assert abs(model.reactions[10].upper_bound - 123.0) < 10 ** -5
-
     def test_context_manager(self, model):
         bounds0 = model.reactions[0].bounds
         bounds1 = (1, 2)
@@ -617,3 +528,33 @@ class TestCobraArrayModel:
                 assert model.reactions[0].bounds == bounds2
             assert model.reactions[0].bounds == bounds1
         assert model.reactions[0].bounds == bounds0
+
+
+class TestStoichiometricMatrix:
+    """Test the simple replacement for ArrayBasedModel"""
+
+    @pytest.mark.skipif(not numpy, reason='Array methods require numpy')
+    def test_dense_matrix(self, model):
+        S = create_stoichiometric_array(model, array_type='dense', dtype=int)
+        assert S.dtype == int
+        assert numpy.allclose(S.max(), 59)
+
+        S = create_stoichiometric_array(model, array_type='dense', dtype=float)
+        model.optimize()
+        # Is this really the best way to get a vector of fluxes?
+        mass_balance = S @ numpy.array(list(model.solution.fluxes.values()))
+
+        assert numpy.allclose(mass_balance, 0)
+
+    @pytest.mark.skipif(not scipy, reason='Sparse array methods require scipy')
+    def test_sparse_matrix(self, model):
+        sparse_types = ['dok', 'lil']
+
+        model.optimize()
+        fluxes = numpy.array(list(model.solution.fluxes.values()))
+        for sparse_type in sparse_types:
+            S = create_stoichiometric_array(model, array_type=sparse_type)
+            mass_balance = S @ fluxes
+            assert numpy.allclose(mass_balance, 0)
+
+        # Is this really the best way to get a vector of fluxes?

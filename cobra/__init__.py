@@ -8,11 +8,6 @@ from .core import Object, Metabolite, Gene, Reaction, Model, \
     DictList, Species
 from . import io, flux_analysis, design
 
-try:
-    from .core import ArrayBasedModel
-except ImportError:
-    None
-
 __version__ = get_version()
 del get_version
 

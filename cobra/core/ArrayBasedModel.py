@@ -27,6 +27,10 @@ class ArrayBasedModel(Model):
             Specifies which type of backend matrix to use for S.
 
         """
+        warn("ArrayBasedModel is deprecated, use "
+             "`cobra.util.array.create_stoichiometric_matrix` instead",
+             DeprecationWarning)
+
         if deepcopy_model and isinstance(description, Model):
             description = description.copy()
         Model.__init__(self, description)
