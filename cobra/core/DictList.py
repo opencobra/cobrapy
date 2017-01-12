@@ -54,7 +54,7 @@ class DictList(list):
         """
         return [getattr(i, attribute) for i in self]
 
-    def query(self, search_function, attribute="id"):
+    def query(self, search_function, attribute=None):
         """query the list
 
         search_function: used to select which objects to return
@@ -66,7 +66,7 @@ class DictList(list):
             * a function which takes one argument and returns True
               for desired values
 
-        attribute: the attribute to be searched for (default is 'id').
+        attribute: the attribute to be searched for (default is None).
                    If this is None, the object itself is used.
 
         returns: a list of objects which match the query

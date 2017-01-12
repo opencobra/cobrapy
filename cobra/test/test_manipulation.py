@@ -237,7 +237,7 @@ class TestManipulation:
         # if we remove the SBO term which marks the reaction as
         # mass balanced, then the reaction should be detected as
         # no longer mass balanced
-        EX_rxn = model.reactions.query("EX")[0]
+        EX_rxn = model.reactions.query(lambda r: r.boundary)[0]
         EX_rxn.annotation.pop("SBO")
         balance = check_mass_balance(model)
         assert len(balance) == 1
