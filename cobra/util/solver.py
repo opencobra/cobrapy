@@ -150,8 +150,6 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
     ub: positive float
     The upper bound for the variable.
     """
-
-    context = get_context(model)
     variable = model.solver.interface.Variable(name, lb=0, ub=ub)
 
     # The following constraints enforce variable > expression and
@@ -164,7 +162,4 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
         model.solver.interface.Constraint(expression + variable, lb=0,
                                           name="abs_neg_" + name)
         ]
-    model.solver.add(constraints + [variable])
-
-    if context:
-        context(partial(model.solver.remove, constraints + [variable]))
+    add_to_solver(model, constraints + [variable])
