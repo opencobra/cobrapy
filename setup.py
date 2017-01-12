@@ -166,7 +166,7 @@ except:
 setup(
     name="cobra",
     version=version,
-    packages=find_packages(exclude=['cobra.oven', 'cobra.oven*']),
+    packages=find_packages(),
     setup_requires=[],
     install_requires=["six", "swiglpk", "optlang"],
     tests_require=["jsonschema > 2.5", "pytest", "pytest-benchmark"],
