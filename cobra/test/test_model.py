@@ -542,7 +542,7 @@ class TestStoichiometricMatrix:
         S = create_stoichiometric_array(model, array_type='dense', dtype=float)
         model.optimize()
         # Is this really the best way to get a vector of fluxes?
-        mass_balance = S @ numpy.array(list(model.solution.fluxes.values()))
+        mass_balance = S.dot(numpy.array(list(model.solution.fluxes.values())))
         assert numpy.allclose(mass_balance, 0)
 
         # Test model property
