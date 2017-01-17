@@ -189,7 +189,7 @@ class TestDictList:
         obj2 = Object("test2")
         obj2.name = "foobar1"
         test_list.append(obj2)
-        result = test_list.query("test1", "id")  # matches only test1
+        result = test_list.query("test1")  # matches only test1
         assert len(result) == 1
         result = test_list.query(u"test1", "id")  # matches with unicode
         assert len(result) == 1

@@ -71,22 +71,31 @@ class DictList(list):
 
         returns: a list of objects which match the query
         """
-        if attribute is None:
-            def select_attribute(x):
+        def select_attribute(x):
+            if attribute is None:
                 return x
-        else:
-            def select_attribute(x):
+            else:
                 return getattr(x, attribute)
 
-        # if the search_function is a regular expression
-        if isinstance(search_function, string_types):
-            search_function = re.compile(search_function)
-        if hasattr(search_function, "findall"):
-            matches = (i for i in self
-                       if search_function.findall(select_attribute(i)) != [])
-        else:
-            matches = (i for i in self
-                       if search_function(select_attribute(i)))
+        try:
+            # if the search_function is a regular expression
+            regex_searcher = re.compile(search_function)
+
+            if attribute is not None:
+                matches = (
+                    i for i in self if
+                    regex_searcher.findall(select_attribute(i)) != [])
+
+            else:
+                # Don't regex on objects
+                matches = (
+                    i for i in self if
+                    regex_searcher.findall(getattr(i, 'id')) != [])
+
+        except TypeError:
+            matches = (
+                i for i in self if search_function(select_attribute(i)))
+
         results = self.__class__()
         results._extend_nocheck(matches)
         return results
