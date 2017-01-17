@@ -118,6 +118,37 @@ class Model(Object):
         self.name = value
         warn("description deprecated", DeprecationWarning)
 
+    @property
+    def media(self):
+        return {rxn.id: rxn.bounds for rxn in
+                self.reactions.query(lambda x: x, 'boundary')}
+
+    @media.setter
+    def media(self, media):
+        """Get or set the constraints on the model exchanges.
+
+        `model.media` returns a dictionary of the bounds for each of the
+        boundary reactions, in the form of `{rxn_id: (l_bound, u_bound)}`
+
+        Parameters
+        ----------
+        media: string or dictionary
+            The media to initialize. If a string, then the media dictionary
+            should be contained in `self.media_compositions`. Otherwise, media
+            should be a dictionary defining `{rxn_id: bounds}` pairs.
+
+        """
+        try:
+            media_dict = self.media_compositions[media]
+        except (KeyError, TypeError):
+            media_dict = media
+
+        for reaction_id, bounds in iteritems(media_dict):
+            # Don't set the bounds unnecessarily to avoid cluttering contexts
+            reaction = self.reactions.get_by_id(reaction_id)
+            if bounds != reaction.bounds:
+                reaction.bounds = bounds
+
     def __add__(self, other_model):
         """Adds two models. +
 

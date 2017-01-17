@@ -18,6 +18,7 @@ except ImportError:
 
 
 class TestReactions:
+
     def test_gpr(self):
         model = Model()
         reaction = Reaction("test")
@@ -96,7 +97,7 @@ class TestReactions:
         # test adding by string
         reaction.add_metabolites({"g6p_c": -1})  # already in reaction
         assert reaction._metabolites[
-                   model.metabolites.get_by_id("g6p_c")] == -2
+            model.metabolites.get_by_id("g6p_c")] == -2
         reaction.add_metabolites({"h_c": 1})
         assert reaction._metabolites[model.metabolites.get_by_id("h_c")] == 1
         with pytest.raises(KeyError):
@@ -221,6 +222,7 @@ class TestReactions:
 
 
 class TestCobraMetabolites:
+
     def test_metabolite_formula(self):
         met = Metabolite("water")
         met.formula = "H2O"
@@ -512,6 +514,23 @@ class TestCobraModel:
         model.objective = [model.reactions.index(reaction) for
                            reaction in [atpm, biomass]]
         assert model.objective == {atpm: 1., biomass: 1.}
+
+    def test_model_media(self, model):
+        # Test basic setting and getting methods
+        model.media = model.media
+
+        with model:
+            new_media = model.media
+            new_media['EX_glc__D_e'] = (-20, 1000)
+            assert model.reactions.EX_glc__D_e.lower_bound == -10
+            model.media = new_media
+            assert model.reactions.EX_glc__D_e.lower_bound == -20
+            model.media_compositions['new'] = model.media
+
+        # Test context management
+        assert model.reactions.EX_glc__D_e.lower_bound == -10
+        model.media = 'new'  # Test setting with string key
+        assert model.reactions.EX_glc__D_e.lower_bound == -20
 
     def test_context_manager(self, model):
         bounds0 = model.reactions[0].bounds
