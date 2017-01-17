@@ -543,8 +543,10 @@ class TestStoichiometricMatrix:
         model.optimize()
         # Is this really the best way to get a vector of fluxes?
         mass_balance = S @ numpy.array(list(model.solution.fluxes.values()))
-
         assert numpy.allclose(mass_balance, 0)
+
+        # Test model property
+        assert numpy.allclose(model.S, S)
 
     @pytest.mark.skipif(not scipy, reason='Sparse array methods require scipy')
     def test_sparse_matrix(self, model):

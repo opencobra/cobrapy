@@ -369,6 +369,36 @@ class Model(Object):
         for constraint, terms in six.iteritems(constraint_terms):
             constraint.set_linear_coefficients(terms)
 
+    @property
+    def S(self):
+        """Return a stoichiometric array representation of the given model.
+
+        The the columns represent the reactions and rows represent
+        metabolites. S[i,j] therefore contains the quantity of metabolite `i`
+        produced (negative for consumed) by reaction `j`.
+
+        Returns a dense numpy array.
+        """
+
+        from cobra.util import create_stoichiometric_array
+        return create_stoichiometric_array(self)
+
+    def to_array_based_model(self, deepcopy_model=False, **kwargs):
+        """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model
+        which may be used to perform linear algebra operations with the
+        stoichiomatric matrix.
+
+        Deprecated (0.6). Use `~cobra.util.array.create_stoichiometric_array`
+        or `model.S` instead.
+
+        deepcopy_model: Boolean.  If False then the ArrayBasedModel points
+        to the Model
+
+        """
+
+        from .ArrayBasedModel import ArrayBasedModel
+        return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
+
     def optimize(self, objective_sense='maximize', solution_type=Solution,
                  **kwargs):
         """Optimize model using flux balance analysis

@@ -143,7 +143,8 @@ def create_mat_dict(model):
     mat["rxns"] = _cell(rxns.list_attr("id"))
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
     mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
-    mat["csense"] = "".join(model._constraint_sense)
+    mat["csense"] = "".join((
+        met._constraint_sense for met in model.metabolites))
     stoich_mat = create_stoichiometric_array(model)
     mat["S"] = stoich_mat if stoich_mat is not None else [[]]
     # multiply by 1 to convert to float, working around scipy bug
