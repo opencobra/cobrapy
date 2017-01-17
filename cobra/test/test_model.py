@@ -556,7 +556,7 @@ class TestStoichiometricMatrix:
         fluxes = numpy.array(list(model.solution.fluxes.values()))
         for sparse_type in sparse_types:
             S = create_stoichiometric_array(model, array_type=sparse_type)
-            mass_balance = S @ fluxes
+            mass_balance = S.dot(fluxes)
             assert numpy.allclose(mass_balance, 0)
 
         # Is this really the best way to get a vector of fluxes?
