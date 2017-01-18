@@ -16,6 +16,7 @@ try:
 except ImportError:
     scipy = None
 
+
 class TestReactions:
     def test_gpr(self):
         model = Model()
@@ -511,7 +512,6 @@ class TestCobraModel:
         model.objective = [model.reactions.index(reaction) for
                            reaction in [atpm, biomass]]
         assert model.objective == {atpm: 1., biomass: 1.}
-
 
     def test_context_manager(self, model):
         bounds0 = model.reactions[0].bounds
