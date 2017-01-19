@@ -648,11 +648,3 @@ class Model(Object):
         """Pop the top context manager and trigger the undo functions"""
         context = self._contexts.pop()
         context.reset()
-
-    def exchanges(self):
-        """Exchange reactions in model.
-
-        Reactions that either don't have products or substrates.
-        """
-        return [reaction for reaction in self.reactions if
-                len(reaction.reactants) == 0 or len(reaction.products) == 0]

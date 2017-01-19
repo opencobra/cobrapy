@@ -375,15 +375,12 @@ class Reaction(Object):
 
     @property
     def boundary(self):
-        # single metabolite implies it must be a boundary
-        if len(self._metabolites) == 1:
-            return "system_boundary"
-        # if there is more than one metabolite, if it ONLY produces or ONLY
-        # consumes, it is also a boundary.
-        all_stoichiometry = self._metabolites.values()
-        if not min(all_stoichiometry) < 0 < max(all_stoichiometry):
-            return "system_boundary"
-        return None
+        """Whether or not this reaction is an exchange reaction.
+
+        Returns `True` if the reaction has either no products or reactants.
+        """
+
+        return (not self.reactants) or (not self.products)
 
     @property
     def model(self):
