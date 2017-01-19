@@ -55,21 +55,35 @@ class DictList(list):
         return [getattr(i, attribute) for i in self]
 
     def query(self, search_function, attribute=None):
-        """query the list
+        """Query the list
 
-        search_function: used to select which objects to return
-            * a string, in which case any object.attribute containing
-              the string will be returned
+        Parameters
+        ----------
+        search_function : a string, regular expression or function
+            used to find the matching elements in the list.
 
-            * a compiled regular expression
+            - a regular expression (possibly compiled), in which case the
+            given attribute of the object should match the regular expression.
 
-            * a function which takes one argument and returns True
-              for desired values
+            - a function which takes one argument and returns True for
+            desired values
+        attribute : string or None
+            the name attribute of the object to passed as argument to the
+            `search_function`. If this is None, the object itself is used.
 
-        attribute: the attribute to be searched for (default is None).
-                   If this is None, the object itself is used.
+        Returns
+        -------
+        DictList
+            a new list of objects which match the query
 
-        returns: a list of objects which match the query
+        Examples
+        --------
+        >>> import cobra.test
+        >>> model = cobra.test.create_test_model('textbook')
+        >>> model.reactions.query(lambda x: x.boundary)
+        >>> import re
+        >>> regex = re.compile('^g', flags=re.IGNORECASE)
+        >>> model.metabolites.query(regex, attribute='name')
         """
         def select_attribute(x):
             if attribute is None:
