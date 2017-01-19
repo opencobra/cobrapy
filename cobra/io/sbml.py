@@ -38,7 +38,7 @@ def parse_legacy_id(the_id, the_compartment=None, the_type='metabolite',
     the_type: String.  Currently only 'metabolite' is supported
 
     use_hyphens:   Boolean.  If True, double underscores (__) in an SBML ID will be converted to hyphens
-    
+
     """
     if use_hyphens:
         the_id = the_id.replace('__','-')
@@ -150,6 +150,9 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
             else:
                 if tmp_metabolite.charge is None or tmp_metabolite.charge == note_charge:
                     tmp_metabolite.notes.pop("CHARGE")
+                    # set charge to the one from notes if not assigend before
+                    # the same
+                    tmp_metabolite.charge = note_charge
                 else:  # tmp_metabolite.charge != note_charge
                     msg = "different charges specified for %s (%d and %d)"
                     msg = msg % (tmp_metabolite.id, tmp_metabolite.charge, note_charge)
@@ -221,7 +224,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
         #they override the sbml reversible attribute.  If they are not
         #specified then the bounds are determined by getReversible.
         if not sbml_reaction.getKineticLaw():
-            
+
             if sbml_reaction.getReversible():
                 parameter_dict['lower_bound'] = __default_lower_bound
                 parameter_dict['upper_bound'] = __default_upper_bound
@@ -229,7 +232,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
                 #Assume that irreversible reactions only proceed from left to right.
                 parameter_dict['lower_bound'] = 0
                 parameter_dict['upper_bound'] = __default_upper_bound
-                
+
             parameter_dict['objective_coefficient'] = __default_objective_coefficient
         else:
             for sbml_parameter in sbml_reaction.getKineticLaw().getListOfParameters():
@@ -295,7 +298,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False, legacy_meta
                     tmp_locus_id = tmp_row_dict['LOCUS']
                     if 'TRANSCRIPT' in tmp_row_dict:
                         tmp_locus_id = tmp_locus_id + '.' + tmp_row_dict['TRANSCRIPT']
-                    
+
                     if 'ABBREVIATION' in tmp_row_dict:
                         gene_id_to_object[tmp_locus_id].name = tmp_row_dict['ABBREVIATION']
 
@@ -343,7 +346,7 @@ def parse_legacy_sbml_notes(note_string, note_delimiter = ':'):
 
     if 'CHARGE' in note_dict and note_dict['CHARGE'][0].lower() in ['none', 'na', 'nan']:
         note_dict.pop('CHARGE') #Remove non-numeric charges
-        
+
     return(note_dict)
 
 def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
@@ -370,7 +373,7 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
 
     """
 
-    sbml_doc = get_libsbml_document(cobra_model, 
+    sbml_doc = get_libsbml_document(cobra_model,
                                    sbml_level=sbml_level, sbml_version=sbml_version,
                                    print_time=print_time,
                                    use_fbc_package=use_fbc_package)
@@ -388,8 +391,8 @@ def get_libsbml_document(cobra_model,
     note_start_tag, note_end_tag = '<p>', '</p>'
     if sbml_level > 2 or (sbml_level == 2 and sbml_version == 4):
         note_start_tag, note_end_tag = '<html:p>', '</html:p>'
-        
-    
+
+
     sbml_doc = SBMLDocument(sbml_level, sbml_version)
     sbml_model = sbml_doc.createModel(cobra_model.id.split('.')[0])
     #Note need to set units
@@ -412,7 +415,7 @@ def get_libsbml_document(cobra_model,
     if not cobra_model.compartments:
         cobra_model.compartments = {'c': 'cytosol',
                                     'p': 'periplasm',
-                                    'e': 'extracellular'}    
+                                    'e': 'extracellular'}
     for the_key in cobra_model.compartments.keys():
         sbml_comp = sbml_model.createCompartment()
         sbml_comp.setId(the_key)
@@ -481,7 +484,7 @@ def get_libsbml_document(cobra_model,
             species_reference.setId(metabolite_id + '_' + the_reaction_id)
             species_reference.setSpecies(metabolite_id)
             species_reference.setStoichiometry(abs(sbml_stoichiometry))
-            
+
         #Add in the kineticLaw
         sbml_law = KineticLaw(sbml_level, sbml_version)
         if hasattr(sbml_law, 'setId'):
