@@ -7,6 +7,7 @@ from scipy.io import loadmat, savemat
 from scipy.sparse import coo_matrix, dok_matrix
 
 from .. import Model, Metabolite, Reaction
+from cobra.util import create_stoichiometric_array
 
 # try to use an ordered dict
 try:
@@ -118,7 +119,6 @@ def create_mat_metabolite_id(model):
 
 def create_mat_dict(model):
     """create a dict mapping model attributes to arrays"""
-    model = model.to_array_based_model(deepcopy_model=True)
     rxns = model.reactions
     mets = model.metabolites
     mat = DictClass()
@@ -143,8 +143,10 @@ def create_mat_dict(model):
     mat["rxns"] = _cell(rxns.list_attr("id"))
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
     mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
-    mat["csense"] = "".join(model._constraint_sense)
-    mat["S"] = model.S if model.S is not None else [[]]
+    mat["csense"] = "".join((
+        met._constraint_sense for met in model.metabolites))
+    stoich_mat = create_stoichiometric_array(model)
+    mat["S"] = stoich_mat if stoich_mat is not None else [[]]
     # multiply by 1 to convert to float, working around scipy bug
     # https://github.com/scipy/scipy/issues/4537
     mat["lb"] = array(rxns.list_attr("lower_bound")) * 1.
