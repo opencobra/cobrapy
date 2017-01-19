@@ -54,39 +54,62 @@ class DictList(list):
         """
         return [getattr(i, attribute) for i in self]
 
-    def query(self, search_function, attribute="id"):
-        """query the list
+    def query(self, search_function, attribute=None):
+        """Query the list
 
-        search_function: used to select which objects to return
-            * a string, in which case any object.attribute containing
-              the string will be returned
+        Parameters
+        ----------
+        search_function : a string, regular expression or function
+            used to find the matching elements in the list.
 
-            * a compiled regular expression
+            - a regular expression (possibly compiled), in which case the
+            given attribute of the object should match the regular expression.
 
-            * a function which takes one argument and returns True
-              for desired values
+            - a function which takes one argument and returns True for
+            desired values
+        attribute : string or None
+            the name attribute of the object to passed as argument to the
+            `search_function`. If this is None, the object itself is used.
 
-        attribute: the attribute to be searched for (default is 'id').
-                   If this is None, the object itself is used.
+        Returns
+        -------
+        DictList
+            a new list of objects which match the query
 
-        returns: a list of objects which match the query
+        Examples
+        --------
+        >>> import cobra.test
+        >>> model = cobra.test.create_test_model('textbook')
+        >>> model.reactions.query(lambda x: x.boundary)
+        >>> import re
+        >>> regex = re.compile('^g', flags=re.IGNORECASE)
+        >>> model.metabolites.query(regex, attribute='name')
         """
-        if attribute is None:
-            def select_attribute(x):
+        def select_attribute(x):
+            if attribute is None:
                 return x
-        else:
-            def select_attribute(x):
+            else:
                 return getattr(x, attribute)
 
-        # if the search_function is a regular expression
-        if isinstance(search_function, string_types):
-            search_function = re.compile(search_function)
-        if hasattr(search_function, "findall"):
-            matches = (i for i in self
-                       if search_function.findall(select_attribute(i)) != [])
-        else:
-            matches = (i for i in self
-                       if search_function(select_attribute(i)))
+        try:
+            # if the search_function is a regular expression
+            regex_searcher = re.compile(search_function)
+
+            if attribute is not None:
+                matches = (
+                    i for i in self if
+                    regex_searcher.findall(select_attribute(i)) != [])
+
+            else:
+                # Don't regex on objects
+                matches = (
+                    i for i in self if
+                    regex_searcher.findall(getattr(i, 'id')) != [])
+
+        except TypeError:
+            matches = (
+                i for i in self if search_function(select_attribute(i)))
+
         results = self.__class__()
         results._extend_nocheck(matches)
         return results

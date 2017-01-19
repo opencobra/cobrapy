@@ -191,21 +191,24 @@ class TestDictList:
         test_list.append(obj2)
         result = test_list.query("test1")  # matches only test1
         assert len(result) == 1
-        result = test_list.query(u"test1")  # matches with unicode
+        result = test_list.query(u"test1", "id")  # matches with unicode
         assert len(result) == 1
         assert result[0] == obj
         result = test_list.query("foo", "name")  # matches only test2
         assert len(result) == 1
         assert result[0] == obj2
-        result = test_list.query("test")  # matches test1 and test2
+        result = test_list.query("test", "id")  # matches test1 and test2
         assert len(result) == 2
         # test with a regular expression
-        result = test_list.query(re.compile("test[0-9]"))
+        result = test_list.query(re.compile("test[0-9]"), "id")
         assert len(result) == 2
-        result = test_list.query(re.compile("test[29]"))
+        result = test_list.query(re.compile("test[29]"), "id")
         assert len(result) == 1
         # test query of name
         result = test_list.query(re.compile("foobar."), "name")
+        assert len(result) == 1
+        # test query with lambda function
+        result = test_list.query(lambda x: x.id == 'test1')
         assert len(result) == 1
 
     def test_removal(self):
