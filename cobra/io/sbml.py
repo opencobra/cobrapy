@@ -34,6 +34,8 @@ def parse_legacy_id(the_id, the_compartment=None, the_type='metabolite',
     """Deals with a bunch of problems due to bigg.ucsd.edu not following SBML
     standards
 
+    Parameters
+    ----------
     the_id: String.
     the_compartment: String
     the_type: String
@@ -42,6 +44,9 @@ def parse_legacy_id(the_id, the_compartment=None, the_type='metabolite',
         If True, double underscores (__) in an SBML ID will be converted to
         hyphens
 
+    Returns
+    -------
+    string: the identifier
     """
     if use_hyphens:
         the_id = the_id.replace('__', '-')
@@ -62,20 +67,26 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
     SBML fbc package is used in the file and run the converter if the fbc
     package is used.
 
-    sbml_filename: String
-    old_sbml: Boolean
+    Parameters
+    ----------
+    sbml_filename: string
+    old_sbml: bool
         Set to True if the XML file has metabolite formula appended to
         metabolite names. This was a poorly designed artifact that persists in
         some models.
-    legacy_metabolite: Boolean
+    legacy_metabolite: bool
         If True then assume that the metabolite id has the compartment id
          appended after an underscore (e.g. _c for cytosol). This has not been
          implemented but will be soon.
-    print_time: deprecated
-    use_hyphens: Boolean
+    print_time: bool
+         deprecated
+    use_hyphens: bool
         If True, double underscores (__) in an SBML ID will be converted to
         hyphens
 
+    Returns
+    -------
+    Model : The parsed cobra model
     """
     __default_lower_bound = -1000
     __default_upper_bound = 1000
@@ -88,9 +99,9 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
     reaction_re = re.compile('^R_')
     compartment_re = re.compile('^C_')
     if print_time:
-        warn("print_time is deprecated")
+        warn("print_time is deprecated", DeprecationWarning)
     model_doc = readSBML(sbml_filename)
-    if (model_doc.getPlugin("fbc") is not None):
+    if model_doc.getPlugin("fbc") is not None:
         from libsbml import ConversionProperties, LIBSBML_OPERATION_SUCCESS
         conversion_properties = ConversionProperties()
         conversion_properties.addOption(
@@ -396,22 +407,31 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
                                    use_fbc_package=True):
     """Write a cobra.Model object to an SBML XML file.
 
-    cobra_model:  :class:`~cobra.core.Model.Model` object
+    Parameters
+    ----------
+    cobra_model: :class:`~cobra.core.Model.Model` object
 
-    sbml_filename:  The file to write the SBML XML to.
+    sbml_filename: string
+        The file to write the SBML XML to.
 
-    sbml_level:  2 is the only level supported at the moment.
+    sbml_level: int
+        2 is the only supported level.
 
-    sbml_version: 1 is the only version supported at the moment.
+    sbml_version: int
+        1 is the only supported version.
 
-    use_fbc_package: Boolean.
+    print_time: bool
+        deprecated
+
+    use_fbc_package: bool
         Convert the model to the FBC package format to improve portability.
         http://sbml.org/Documents/Specifications/SBML_Level_3/Packages/Flux_Balance_Constraints_(flux)
 
 
+    Notes
+    -----
     TODO: Update the NOTES to match the SBML standard and provide support for
     Level 2 Version 4
-
     """
 
     sbml_doc = get_libsbml_document(cobra_model,
@@ -464,7 +484,7 @@ def get_libsbml_document(cobra_model,
         sbml_comp.setSize(1)  # Just to get rid of warnings
 
     if print_time:
-        warn("print_time is deprecated")
+        warn("print_time is deprecated", DeprecationWarning)
     # Use this dict to allow for fast look up of species id
     # for references created in the reaction section.
     metabolite_dict = {}
@@ -610,16 +630,25 @@ def add_sbml_species(sbml_model, cobra_metabolite, note_start_tag,
                      note_end_tag, boundary_metabolite=False):
     """A helper function for adding cobra metabolites to an sbml model.
 
+    Parameters
+    ----------
     sbml_model: sbml_model object
 
     cobra_metabolite: a cobra.Metabolite object
 
-    note_start_tag: the start tag for parsing cobra notes. this will eventually
-    be supplanted when COBRA is worked into sbml.
+    note_start_tag: string
+       the start tag for parsing cobra notes. this will eventually
+       be supplanted when COBRA is worked into sbml.
 
-    note_end_tag: the end tag for parsing cobra notes. this will eventually
-    be supplanted when COBRA is worked into sbml.
+    note_end_tag: string
+       the end tag for parsing cobra notes. this will eventually
+       be supplanted when COBRA is worked into sbml.
+    boundary_metabolite: bool
+       if metabolite boundary condition should be set or not
 
+    Returns
+    -------
+    string: the created metabolite identifier
     """
     sbml_species = sbml_model.createSpecies()
     the_id = 'M_' + cobra_metabolite.id.replace('-', '__')
