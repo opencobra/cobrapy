@@ -65,7 +65,7 @@ install:
   - "%WITH_COMPILER% python appveyor/build_glpk.py"
   - python -m pip install --upgrade pytest
   - python -m pip install pytest-cov pytest-benchmark
-  - if defined CONDA conda install -q numpy scipy
+  - if defined CONDA conda install -q setuptools numpy scipy
   - python -m pip install swiglpk optlang sympy python-libsbml decorator Cython jsonschema twine pypandoc==1.1.3
 
 build: off
