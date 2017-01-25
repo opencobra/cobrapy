@@ -644,6 +644,8 @@ class Model(Object):
         except AttributeError:
             self._contexts = [HistoryManager()]
 
+        return self
+
     def __exit__(self, type, value, traceback):
         """Pop the top context manager and trigger the undo functions"""
         context = self._contexts.pop()
