@@ -57,7 +57,6 @@ class Model(Object):
             # genes based on their ids {Gene.id: Gene}
             self.compartments = {}
             # self.solution = Solution(None)
-            self.media_compositions = {}
             self._contexts = []
 
             # from cameo ...
@@ -119,33 +118,41 @@ class Model(Object):
         warn("description deprecated", DeprecationWarning)
 
     @property
-    def media(self):
+    def medium(self):
         return {rxn.id: rxn.bounds for rxn in
                 self.reactions.query(lambda x: x, 'boundary')}
 
-    @media.setter
-    def media(self, media):
+    @medium.setter
+    def medium(self, medium):
         """Get or set the constraints on the model exchanges.
 
-        `model.media` returns a dictionary of the bounds for each of the
+        `model.medium` returns a dictionary of the bounds for each of the
         boundary reactions, in the form of `{rxn_id: (l_bound, u_bound)}`
 
         Parameters
         ----------
-        media: string or dictionary
-            The media to initialize. If a string, then the media dictionary
-            should be contained in `self.media_compositions`. Otherwise, media
-            should be a dictionary defining `{rxn_id: bounds}` pairs.
+        medium: dictionary-like
+            The medium to initialize. medium should be a dictionary defining
+            `{rxn_id: bounds}` pairs.
 
         """
-        try:
-            media_dict = self.media_compositions[media]
-        except (KeyError, TypeError):
-            media_dict = media
 
-        for reaction_id, bounds in iteritems(media_dict):
+        # Check the symmetric difference to see if reactions are missing
+        boundary_rxn_keys = set([rxn.id for rxn in self.reactions.query(
+                        lambda x: x.boundary)])
+        medium_keys = set(medium.keys())
+        missing_in_medium = boundary_rxn_keys - medium_keys
+        missing_in_model = medium_keys - boundary_rxn_keys
+
+        for rxnid in missing_in_medium:
+            warn("{} is missing from the medium".format(rxnid))
+        for rxnid in missing_in_model:
+            warn("{} is missing from the model".format(rxnid))
+
+        for reaction_id in medium_keys.intersection(boundary_rxn_keys):
             # Don't set the bounds unnecessarily to avoid cluttering contexts
             reaction = self.reactions.get_by_id(reaction_id)
+            bounds = medium[reaction_id]
             if bounds != reaction.bounds:
                 reaction.bounds = bounds
 

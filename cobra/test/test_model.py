@@ -515,22 +515,32 @@ class TestCobraModel:
                            reaction in [atpm, biomass]]
         assert model.objective == {atpm: 1., biomass: 1.}
 
-    def test_model_media(self, model):
+    def test_model_medium(self, model):
         # Test basic setting and getting methods
-        model.media = model.media
-
-        with model:
-            new_media = model.media
-            new_media['EX_glc__D_e'] = (-20, 1000)
-            assert model.reactions.EX_glc__D_e.lower_bound == -10
-            model.media = new_media
-            assert model.reactions.EX_glc__D_e.lower_bound == -20
-            model.media_compositions['new'] = model.media
+        model.medium = model.medium
 
         # Test context management
+        with model:
+            new_medium = model.medium
+            new_medium['EX_glc__D_e'] = (-20, 1000)
+            assert model.reactions.EX_glc__D_e.lower_bound == -10
+            model.medium = new_medium
+            assert model.reactions.EX_glc__D_e.lower_bound == -20
+
         assert model.reactions.EX_glc__D_e.lower_bound == -10
-        model.media = 'new'  # Test setting with string key
-        assert model.reactions.EX_glc__D_e.lower_bound == -20
+
+        # Test warnings
+        del new_medium['EX_glc__D_e']
+        with pytest.warns(UserWarning):
+            model.medium = new_medium
+
+        # Make sure missing rxn is unchanged
+        assert model.reactions.EX_glc__D_e.lower_bound == -10
+
+        new_medium['EX_glc__D_e'] = (-20, 1000)
+        new_medium['bogus_rxn'] = (0, 0)
+        with pytest.warns(UserWarning):
+            model.medium = new_medium
 
     def test_context_manager(self, model):
         bounds0 = model.reactions[0].bounds
