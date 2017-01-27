@@ -50,7 +50,7 @@ matrix:
     - os: osx
       language: objective-c
       env:
-        - MB_PYTHON_VERSION=3.7
+        - MB_PYTHON_VERSION=3.6
 
 before_install:
   - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout ffe5995)
