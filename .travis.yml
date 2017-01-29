@@ -32,6 +32,9 @@ matrix:
     - os: linux
       env:
         - MB_PYTHON_VERSION=3.5
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=3.6
     - os: osx
       language: objective-c
       env:
@@ -44,9 +47,13 @@ matrix:
       language: objective-c
       env:
         - MB_PYTHON_VERSION=3.5
+    - os: osx
+      language: objective-c
+      env:
+        - MB_PYTHON_VERSION=3.6
 
 before_install:
-  - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout ffe5995)
+  - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout e6ebbfa)
   # matplotlib non-compatible as testing runs in venv (non-framework)
   - TEST_DEPENDS="cython codecov coverage numpy scipy python-libsbml jsonschema six pytest pytest-cov pytest-benchmark pandas tabulate"
   - BUILD_DEPENDS="cython numpy scipy"
