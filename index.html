@@ -1,60 +1,130 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="description" content="My personal website incuding Posts and my CV.">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+	<meta name="generator" content="Hugo 0.19-DEV" />
+	<title>cobrapy - constraint-based metabolic modeling in Python</title>
 
-  <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="COBRApy : COBRApy is a package for constraints-based modeling of biological networks" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.3.0/material.teal-indigo.min.css">
+	<link rel="stylesheet" href="./css/styles.css">
+    <link href="./css/prism.css" rel="stylesheet" />
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <script defer src="./js/prism.js"></script>
+    <link rel="icon" type="image/png" href="./media/favicon.png" />
+</head>
+<body>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+<header class="mdl-layout__header mdl-shadow--6dp mdl-color-text--black">
+<div class="mdl-layout__header-row mdl-color-text--black">
+	<span class="mdl-layout-title">Menu</span>
+	<div class="mdl-layout-spacer"></div>
+	<nav class="mdl-navigation mdl-layout--large-screen-only">
+		<a class="mdl-navigation__link mdl-color-text--black" href="./">Home</a>
+		<a class="mdl-navigation__link mdl-color-text--black" href="./packages">Packages</a>
+        <a class="mdl-navigation__link mdl-color-text--black" href="./pubs">Publications</a>
+        <a class="mdl-navigation__link mdl-color-text--black" href="https://cobrapy.readthedocs.io/en/stable/">Docs</a>
+	</nav>
+</div>
+</header>
+<div class="mdl-layout__drawer">
+	<span class="mdl-layout-title"><img src="./media/logo.png" width="100%"></span>
+	<nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="./">Home</a>
+		<a class="mdl-navigation__link" href="./packages">Packages</a>
+        <a class="mdl-navigation__link" href="./pubs">Publications</a>
+        <a class="mdl-navigation__link" href="https://cobrapy.readthedocs.io/en/stable/">Docs</a>
+	</nav>
+</div>
+<main class="mdl-layout__content">
+<div class="page-content mdl-grid">
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>COBRApy</title>
-  </head>
+<div id="hero" class="mdl-cell mdl-cell--12-col mdl-cell--4-col-phone mdl-cell--8-col-tablet">
+<img src="./media/hero.png"/>
+</div>
 
-  <body>
+<div class="mdl-cell mdl-cell--12-col mdl-cell--4-col-phone mdl-cell--8-col-tablet
+            ">
+<div class="highlight">
+<h3></h3>
+<p><strong>cobrapy</strong> is a python package that provides a simple interface to metabolic constraint-based reconstruction and analysis.</p>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/opencobra/cobrapy">View on GitHub</a>
-	  <img src=images/cobra_pie.jpg></img>
-          <h1 id="project_title">COBRApy</h1>
-          <h2 id="project_tagline">Constraints-based modeling of biological networks</h2>
-        </header>
-    </div>
+<pre><code class="language-python">&gt;&gt;&gt; import cobra
+&gt;&gt;&gt; model = cobra.io.read_sbml_model('Ec_core_flux1.xml')
+&gt;&gt;&gt; model.metabolites[:3]
+[&lt;Metabolite 13dpg_c at 0x112b2d160&gt;,
+ &lt;Metabolite 2pg_c at 0x1024eb048&gt;,
+ &lt;Metabolite 3pg_c at 0x112b2d748&gt;]
+</code></pre>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h2>
-<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a><a href="https://github.com/opencobra/cobrapy/blob/master/INSTALL.rst">Installation</a>
-</h2>
+<p>The package includes simple, object-oriented interfaces for model construction (including reading to/from sbml, matlab, and json formats) and implements commonly used COBRA methods such as flux balance analysis, flux variability analysis, and gene deletion analyses.</p>
 
-<h2>
-<a name="documentation" class="anchor" href="#documentation"><span class="octicon octicon-link"></span></a><a href="https://cobrapy.readthedocs.org/en/stable/">Documentation</a>
-</h2>
+<pre><code class="language-python">&gt;&gt;&gt; model.optimize()
+&lt;Solution 0.86 at 0x11272c2b0&gt;
+&gt;&gt;&gt; model.summary()
+IN FLUXES       OUT FLUXES    OBJECTIVES
+--------------  ------------  ----------------------
+o2_e     22.3   h2o_e  24.9   Biomass_Ecol...  0.861
+glc_D_e  10     co2_e  23.3
+pi_e      3.17  h_e     9.11
+</code></pre>
 
-<h2>
-<a name="help" class="anchor" href="#help"><span class="octicon octicon-link"></span></a><a href="http://groups.google.com/group/cobra-pie">Help</a>
-</h2>
-<hr>
-<p><a href="http://hydukelab.com"><img src="http://opencobra.github.io/images/logos/usu.png"></a>
-<a href="http://ucsd.edu"><img src="http://opencobra.github.io/images/logos/ucsd.png"></a>
-<a href="http://sbrg.ucsd.edu"><img src="http://opencobra.github.io/images/logos/sbrg.png"></a>
-</p>
+<p><strong>cobrapy</strong> is a community-supported effort under active development and is licensed under
+the GPL.</p>
 
-      </section>
-    </div>
+</div></div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">COBRApy maintained by <a href="https://github.com/opencobra">opencobra</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
+<div class="mdl-cell mdl-cell--12-col mdl-cell--4-col-phone mdl-cell--8-col-tablet
+            mdl-shadow--4dp dark mdl-color--primary">
+<div class="highlight">
+<h3>Installation</h3>
+<p>You can install cobrapy on linux, Mac OSX and Windows with pip.</p>
 
-    
+<p>On Linux and Mac a simple:</p>
 
-  </body>
+<pre><code>$ pip install cobra
+</code></pre>
+
+<p>will be enough. On Windows substitute pip with pip.exe.</p>
+
+<p>If you want to install all optional dependencies as well just install with</p>
+
+<pre><code>$ pip install cobra[all]
+</code></pre>
+
+<p>For futher help refer to the <a href="https://github.com/opencobra/cobrapy/blob/devel/INSTALL.rst">detailed installation instructions</a>.</p>
+
+</div></div>
+
+<div class="mdl-cell mdl-cell--12-col mdl-cell--4-col-phone mdl-cell--8-col-tablet
+            ">
+<div class="highlight">
+<h3>Getting Help</h3>
+<p>The documentation is browsable online at
+<a href="https://cobrapy.readthedocs.org/en/stable/">readthedocs</a> and can
+also be
+<a href="https://readthedocs.org/projects/cobrapy/downloads/">downloaded</a>.</p>
+
+<p>Please use the <a href="http://groups.google.com/group/cobra-pie">Google
+Group</a> for help.
+Alternatively, you can use
+<a href="https://gitter.im/opencobra/cobrapy">gitter.im</a> for quick questions
+and discussions about cobrapy (faster response times).</p>
+
+<p>File bug reports and contribute to development on our <a href="https://github.com/opencobra/cobrapy">github page</a>.</p>
+
+<p>If you use cobrapy in a scientific publication, please cite
+<a href="http://dx.doi.org/doi:10.1186/1752-0509-7-74">our publication</a> 😄</p>
+
+</div></div>
+
+	</main>
+</div>
+</body>
 </html>
+

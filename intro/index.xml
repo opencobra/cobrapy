@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Intros on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/intro/index.xml</link>
+    <description>Recent content in Intros on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <atom:link href="https://opencobra.github.io/cobrapy/intro/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title></title>
+      <link>https://opencobra.github.io/cobrapy/intro/description/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/intro/description/</guid>
+      <description>&lt;p&gt;&lt;strong&gt;cobrapy&lt;/strong&gt; is a python package that provides a simple interface to metabolic constraint-based reconstruction and analysis.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import cobra
+&amp;gt;&amp;gt;&amp;gt; model = cobra.io.read_sbml_model(&#39;Ec_core_flux1.xml&#39;)
+&amp;gt;&amp;gt;&amp;gt; model.metabolites[:3]
+[&amp;lt;Metabolite 13dpg_c at 0x112b2d160&amp;gt;,
+ &amp;lt;Metabolite 2pg_c at 0x1024eb048&amp;gt;,
+ &amp;lt;Metabolite 3pg_c at 0x112b2d748&amp;gt;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The package includes simple, object-oriented interfaces for model construction (including reading to/from sbml, matlab, and json formats) and implements commonly used COBRA methods such as flux balance analysis, flux variability analysis, and gene deletion analyses.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; model.optimize()
+&amp;lt;Solution 0.86 at 0x11272c2b0&amp;gt;
+&amp;gt;&amp;gt;&amp;gt; model.summary()
+IN FLUXES       OUT FLUXES    OBJECTIVES
+--------------  ------------  ----------------------
+o2_e     22.3   h2o_e  24.9   Biomass_Ecol...  0.861
+glc_D_e  10     co2_e  23.3
+pi_e      3.17  h_e     9.11
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;cobrapy&lt;/strong&gt; is a community-supported effort under active development and is licensed under
+the GPL.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Installation</title>
+      <link>https://opencobra.github.io/cobrapy/intro/installation/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/intro/installation/</guid>
+      <description>&lt;p&gt;You can install cobrapy on linux, Mac OSX and Windows with pip.&lt;/p&gt;
+
+&lt;p&gt;On Linux and Mac a simple:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ pip install cobra
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;will be enough. On Windows substitute pip with pip.exe.&lt;/p&gt;
+
+&lt;p&gt;If you want to install all optional dependencies as well just install with&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ pip install cobra[all]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;For futher help refer to the &lt;a href=&#34;https://github.com/opencobra/cobrapy/blob/devel/INSTALL.rst&#34;&gt;detailed installation instructions&lt;/a&gt;.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Getting Help</title>
+      <link>https://opencobra.github.io/cobrapy/intro/help/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/intro/help/</guid>
+      <description>&lt;p&gt;The documentation is browsable online at
+&lt;a href=&#34;https://cobrapy.readthedocs.org/en/stable/&#34;&gt;readthedocs&lt;/a&gt; and can
+also be
+&lt;a href=&#34;https://readthedocs.org/projects/cobrapy/downloads/&#34;&gt;downloaded&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Please use the &lt;a href=&#34;http://groups.google.com/group/cobra-pie&#34;&gt;Google
+Group&lt;/a&gt; for help.
+Alternatively, you can use
+&lt;a href=&#34;https://gitter.im/opencobra/cobrapy&#34;&gt;gitter.im&lt;/a&gt; for quick questions
+and discussions about cobrapy (faster response times).&lt;/p&gt;
+
+&lt;p&gt;File bug reports and contribute to development on our &lt;a href=&#34;https://github.com/opencobra/cobrapy&#34;&gt;github page&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If you use cobrapy in a scientific publication, please cite
+&lt;a href=&#34;http://dx.doi.org/doi:10.1186/1752-0509-7-74&#34;&gt;our publication&lt;/a&gt; 😄&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

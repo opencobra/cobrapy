@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/index.xml</link>
+    <description>Recent content on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 13 Jan 2017 11:00:05 -0600</lastBuildDate>
+    <atom:link href="https://opencobra.github.io/cobrapy/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title></title>
+      <link>https://opencobra.github.io/cobrapy/intro/description/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/intro/description/</guid>
+      <description>&lt;p&gt;&lt;strong&gt;cobrapy&lt;/strong&gt; is a python package that provides a simple interface to metabolic constraint-based reconstruction and analysis.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import cobra
+&amp;gt;&amp;gt;&amp;gt; model = cobra.io.read_sbml_model(&#39;Ec_core_flux1.xml&#39;)
+&amp;gt;&amp;gt;&amp;gt; model.metabolites[:3]
+[&amp;lt;Metabolite 13dpg_c at 0x112b2d160&amp;gt;,
+ &amp;lt;Metabolite 2pg_c at 0x1024eb048&amp;gt;,
+ &amp;lt;Metabolite 3pg_c at 0x112b2d748&amp;gt;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The package includes simple, object-oriented interfaces for model construction (including reading to/from sbml, matlab, and json formats) and implements commonly used COBRA methods such as flux balance analysis, flux variability analysis, and gene deletion analyses.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; model.optimize()
+&amp;lt;Solution 0.86 at 0x11272c2b0&amp;gt;
+&amp;gt;&amp;gt;&amp;gt; model.summary()
+IN FLUXES       OUT FLUXES    OBJECTIVES
+--------------  ------------  ----------------------
+o2_e     22.3   h2o_e  24.9   Biomass_Ecol...  0.861
+glc_D_e  10     co2_e  23.3
+pi_e      3.17  h_e     9.11
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;cobrapy&lt;/strong&gt; is a community-supported effort under active development and is licensed under
+the GPL.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Installation</title>
+      <link>https://opencobra.github.io/cobrapy/intro/installation/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/intro/installation/</guid>
+      <description>&lt;p&gt;You can install cobrapy on linux, Mac OSX and Windows with pip.&lt;/p&gt;
+
+&lt;p&gt;On Linux and Mac a simple:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ pip install cobra
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;will be enough. On Windows substitute pip with pip.exe.&lt;/p&gt;
+
+&lt;p&gt;If you want to install all optional dependencies as well just install with&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ pip install cobra[all]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;For futher help refer to the &lt;a href=&#34;https://github.com/opencobra/cobrapy/blob/devel/INSTALL.rst&#34;&gt;detailed installation instructions&lt;/a&gt;.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Getting Help</title>
+      <link>https://opencobra.github.io/cobrapy/intro/help/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/intro/help/</guid>
+      <description>&lt;p&gt;The documentation is browsable online at
+&lt;a href=&#34;https://cobrapy.readthedocs.org/en/stable/&#34;&gt;readthedocs&lt;/a&gt; and can
+also be
+&lt;a href=&#34;https://readthedocs.org/projects/cobrapy/downloads/&#34;&gt;downloaded&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Please use the &lt;a href=&#34;http://groups.google.com/group/cobra-pie&#34;&gt;Google
+Group&lt;/a&gt; for help.
+Alternatively, you can use
+&lt;a href=&#34;https://gitter.im/opencobra/cobrapy&#34;&gt;gitter.im&lt;/a&gt; for quick questions
+and discussions about cobrapy (faster response times).&lt;/p&gt;
+
+&lt;p&gt;File bug reports and contribute to development on our &lt;a href=&#34;https://github.com/opencobra/cobrapy&#34;&gt;github page&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If you use cobrapy in a scientific publication, please cite
+&lt;a href=&#34;http://dx.doi.org/doi:10.1186/1752-0509-7-74&#34;&gt;our publication&lt;/a&gt; 😄&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>MMinte</title>
+      <link>https://opencobra.github.io/cobrapy/packages/mminte/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:05 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/mminte/</guid>
+      <description>&lt;p&gt;MMinte (pronounced /‘minti/) is an integrated pipeline that allows users to explore the pairwise interactions (positive or negative) that occur in a microbial network. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. Our application is composed of seven widgets that run sequentially, and each widget may also be run as independent modules.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>D3flux</title>
+      <link>https://opencobra.github.io/cobrapy/packages/d3flux/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:03 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/d3flux/</guid>
+      <description>&lt;p&gt;This package implements a d3.js based visualization tool for cobrapy models.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>cameo</title>
+      <link>https://opencobra.github.io/cobrapy/packages/cameo/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/cameo/</guid>
+      <description>&lt;p&gt;Cameo is a high-level python library developed to aid the strain design process in metabolic engineering projects. The library provides a modular framework of simulation methods, strain design methods, access to models, that targets developers that want custom analysis workflows.&lt;/p&gt;
+
+&lt;p&gt;Computationally heavy methods have been parallelized and can be run on a clusters using the IPython parallelization framework (see example and documentation for more details). The default fallback is python&amp;rsquo;s multiprocessing library.&lt;/p&gt;
+
+&lt;p&gt;Furthermore, it exposes a high-level API to users that just want to compute promising strain designs.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Unique attributes of cyanobacterial metabolism revealed by improved genome-scale metabolic modeling and essential gene analysis.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27911809/</link>
+      <pubDate>Sat, 03 Dec 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27911809/</guid>
+      <description>&lt;p&gt;The model cyanobacterium, Synechococcus elongatus PCC 7942, is a genetically tractable obligate phototroph that is being developed for the bioproduction of high-value chemicals. Genome-scale models (GEMs) have been successfully used to assess and engineer cellular metabolism; however, GEMs of phototrophic metabolism have been limited by the lack of experimental datasets for model validation and the challenges of incorporating photon uptake. Here, we develop a GEM of metabolism in S. elongatus using random barcode transposon site sequencing (RB-TnSeq) essential gene and physiological data specific to photoautotrophic metabolism. The model explicitly describes photon absorption and accounts for shading, resulting in the characteristic linear growth curve of photoautotrophs. GEM predictions of gene essentiality were compared with data obtained from recent dense-transposon mutagenesis experiments. This dataset allowed major improvements to the accuracy of the model. Furthermore, discrepancies between GEM predictions and the in vivo dataset revealed biological characteristics, such as the importance of a truncated, linear TCA pathway, low flux toward amino acid synthesis from photorespiration, and knowledge gaps within nucleotide metabolism. Coupling of strong experimental support and photoautotrophic modeling methods thus resulted in a highly accurate model of S. elongatus metabolism that highlights previously unknown areas of S. elongatus biology.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Modelling microbial metabolic rewiring during growth in a complex medium.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27881075/</link>
+      <pubDate>Fri, 25 Nov 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27881075/</guid>
+      <description>&lt;p&gt;In their natural environment, bacteria face a wide range of environmental conditions that change over time and that impose continuous rearrangements at all the cellular levels (e.g. gene expression, metabolism). When facing a nutritionally rich environment, for example, microbes first use the preferred compound(s) and only later start metabolizing the other one(s). A systemic re-organization of the overall microbial metabolic network in response to a variation in the composition/concentration of the surrounding nutrients has been suggested, although the range and the entity of such modifications in organisms other than a few model microbes has been scarcely described up to now.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Multi-omic data integration enables discovery of hidden biological regularities.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27782110/</link>
+      <pubDate>Thu, 27 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27782110/</guid>
+      <description>&lt;p&gt;Rapid growth in size and complexity of biological data sets has led to the &amp;lsquo;Big Data to Knowledge&amp;rsquo; challenge. We develop advanced data integration methods for multi-level analysis of genomic, transcriptomic, ribosomal profiling, proteomic and fluxomic data. First, we show that pairwise integration of primary omics data reveals regularities that tie cellular processes together in Escherichia coli: the number of protein molecules made per mRNA transcript and the number of ribosomes required per translated protein molecule. Second, we show that genome-scale models, based on genomic and bibliomic data, enable quantitative synchronization of disparate data types. Integrating omics data with models enabled the discovery of two novel regularities: condition invariant in vivo turnover rates of enzymes and the correlation of protein structural motifs and translational pausing. These regularities can be formally represented in a computable format allowing for coherent interpretation and prediction of fitness and selection that underlies cellular physiology.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Multi-omics Quantification of Species Variation of Escherichia coli Links Molecular Features with Strain Phenotypes.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27667363/</link>
+      <pubDate>Tue, 27 Sep 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27667363/</guid>
+      <description>&lt;p&gt;Escherichia coli strains are widely used in academic research and biotechnology. New technologies for quantifying strain-specific differences and their underlying contributing factors promise greater understanding of how these differences significantly impact physiology, synthetic biology, metabolic engineering, and process design. Here, we quantified strain-specific differences in seven widely used strains of E. coli (BL21, C, Crooks, DH5a, K-12 MG1655, K-12 W3110, and W) using genomics, phenomics, transcriptomics, and genome-scale modeling. Metabolic physiology and gene expression varied widely with downstream implications for productivity, product yield, and titer. These differences could be linked to differential regulatory structure. Analyzing high-flux reactions and expression of encoding genes resulted in a correlated and quantitative link between these sets, with strain-specific caveats. Integrated modeling revealed that certain strains are better suited to produce given compounds or express desired constructs considering native expression states of pathways that enable high-production phenotypes. This study yields a framework for quantitatively comparing strains in a species with implications for strain selection.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>solveME: fast and reliable solution of nonlinear ME models.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27659412/</link>
+      <pubDate>Sat, 24 Sep 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27659412/</guid>
+      <description>&lt;p&gt;Genome-scale models of metabolism and macromolecular expression (ME) significantly expand the scope and predictive capabilities of constraint-based modeling. ME models present considerable computational challenges: they are much (&amp;gt;30 times) larger than corresponding metabolic reconstructions (M models), are multiscale, and growth maximization is a nonlinear programming (NLP) problem, mainly due to macromolecule dilution constraints.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>MMinte: an application for predicting metabolic interactions among the microbial species in a community.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27590448/</link>
+      <pubDate>Sun, 04 Sep 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27590448/</guid>
+      <description>&lt;p&gt;The explosive growth of microbiome research has yielded great quantities of data. These data provide us with many answers, but raise just as many questions. 16S rDNA-the backbone of microbiome analyses-allows us to assess α-diversity, β-diversity, and microbe-microbe associations, which characterize the overall properties of an ecosystem. However, we are still unable to use 16S rDNA data to directly assess the microbe-microbe and microbe-environment interactions that determine the broader ecology of that system. Thus, properties such as competition, cooperation, and nutrient conditions remain insufficiently analyzed. Here, we apply predictive community metabolic models of microbes identified with 16S rDNA data to probe the ecology of microbial communities.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>From DNA to FBA: How to Build Your Own Genome-Scale Metabolic Model.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27379044/</link>
+      <pubDate>Wed, 06 Jul 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27379044/</guid>
+      <description>&lt;p&gt;Microbiological studies are increasingly relying on in silico methods to perform exploration and rapid analysis of genomic data, and functional genomics studies are supplemented by the new perspectives that genome-scale metabolic models offer. A mathematical model consisting of a microbe&amp;rsquo;s entire metabolic map can be rapidly determined from whole-genome sequencing and annotating the genomic material encoded in its DNA. Flux-balance analysis (FBA), a linear programming technique that uses metabolic models to predict the phenotypic responses imposed by environmental elements and factors, is the leading method to simulate and manipulate cellular growth in silico. However, the process of creating an accurate model to use in FBA consists of a series of steps involving a multitude of connections between bioinformatics databases, enzyme resources, and metabolic pathways. We present the methodology and procedure to obtain a metabolic model using PyFBA, an extensible Python-based open-source software package aimed to provide a platform where functional annotations are used to build metabolic models (&lt;a href=&#34;http://linsalrob.github.io/PyFBA&#34;&gt;http://linsalrob.github.io/PyFBA&lt;/a&gt;). Backed by the Model SEED biochemistry database, PyFBA contains methods to reconstruct a microbe&amp;rsquo;s metabolic map, run FBA upon different media conditions, and gap-fill its metabolism. The extensibility of PyFBA facilitates novel techniques in creating accurate genome-scale metabolic models.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Genome-Scale Metabolic Model for the Green Alga Chlorella vulgaris UTEX 395 Accurately Predicts Phenotypes under Autotrophic, Heterotrophic, and Mixotrophic Growth Conditions.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27372244/</link>
+      <pubDate>Mon, 04 Jul 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27372244/</guid>
+      <description>&lt;p&gt;The green microalga Chlorella vulgaris has been widely recognized as a promising candidate for biofuel production due to its ability to store high lipid content and its natural metabolic versatility. Compartmentalized genome-scale metabolic models constructed from genome sequences enable quantitative insight into the transport and metabolism of compounds within a target organism. These metabolic models have long been utilized to generate optimized design strategies for an improved production process. Here, we describe the reconstruction, validation, and application of a genome-scale metabolic model for C. vulgaris UTEX 395, iCZ843. The reconstruction represents the most comprehensive model for any eukaryotic photosynthetic organism to date, based on the genome size and number of genes in the reconstruction. The highly curated model accurately predicts phenotypes under photoautotrophic, heterotrophic, and mixotrophic conditions. The model was validated against experimental data and lays the foundation for model-driven strain design and medium alteration to improve yield. Calculated flux distributions under different trophic conditions show that a number of key pathways are affected by nitrogen starvation conditions, including central carbon metabolism and amino acid, nucleotide, and pigment biosynthetic pathways. Furthermore, model prediction of growth rates under various medium compositions and subsequent experimental validation showed an increased growth rate with the addition of tryptophan and methionine.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Integrated In Silico Analysis of Pathway Designs for Synthetic Photo-Electro-Autotrophy.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27336167/</link>
+      <pubDate>Fri, 24 Jun 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27336167/</guid>
+      <description>&lt;p&gt;The strong advances in synthetic biology enable the engineering of novel functions and complex biological features in unprecedented ways, such as implementing synthetic autotrophic metabolism into heterotrophic hosts. A key challenge for the sustainable production of fuels and chemicals entails the engineering of synthetic autotrophic organisms that can effectively and efficiently fix carbon dioxide by using sustainable energy sources. This challenge involves the integration of carbon fixation and energy uptake systems. A variety of carbon fixation pathways and several types of photosystems and other energy uptake systems can be chosen and, potentially, modularly combined to design synthetic autotrophic metabolism. Prior to implementation, these designs can be evaluated by the combination of several computational pathway analysis techniques. Here we present a systematic, integrated in silico analysis of photo-electro-autotrophic pathway designs, consisting of natural and synthetic carbon fixation pathways, a proton-pumping rhodopsin photosystem for ATP regeneration and an electron uptake pathway. We integrated Flux Balance Analysis of the heterotrophic chassis Escherichia coli with kinetic pathway analysis and thermodynamic pathway analysis (Max-min Driving Force). The photo-electro-autotrophic designs are predicted to have a limited potential for anaerobic, autotrophic growth of E. coli, given the relatively low ATP regenerating capacity of the proton pumping rhodopsin photosystems and the high ATP maintenance of E. coli. If these factors can be tackled, our analysis indicates the highest growth potential for the natural reductive tricarboxylic acid cycle and the synthetic pyruvate synthase-pyruvate carboxylate -glyoxylate bicycle. Both carbon fixation cycles are very ATP efficient, while maintaining fast kinetics, which also results in relatively low estimated protein costs for these pathways. Furthermore, the synthetic bicycles are highly thermodynamic favorable under conditions analysed. However, the most important challenge identified for improving photo-electro-autotrophic growth is increasing the proton-pumping rate of the rhodopsin photosystems, allowing for higher ATP regeneration. Alternatively, other designs of autotrophy may be considered, therefore the herein presented integrated modeling approach allows synthetic biologists to evaluate and compare complex pathway designs before experimental implementation.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
