@@ -6,7 +6,6 @@ where possible to provide a uniform interface.
 
 from __future__ import division
 import numpy as np
-from copy import deepcopy
 from multiprocessing import Pool, Array
 import ctypes
 from time import time
@@ -118,9 +117,12 @@ class HRSampler(object):
         A matrix of with as many columns as reactions in the model and more
         than 3 rows containing a warmup sample in each row. None if no warmup
         points have been generated yet.
+    seed : positive integer, optional
+        Sets the random number seed. Initialized to the current time stamp if
+        None.
     """
 
-    def __init__(self, model, thinning):
+    def __init__(self, model, thinning, seed=None):
         self.model = model
         self.thinning = thinning
         self.n_samples = 0
@@ -130,6 +132,12 @@ class HRSampler(object):
                                for r in model.reactions]).T
         self.fixed = np.diff(self.bounds, axis=0).flatten() < 2 * BTOL
         self.warmup = None
+        if seed is None:
+            self._seed = int(time())
+        else:
+            self._seed = seed
+        # Avoid overflow
+        self._seed = self._seed % np.iinfo(np.int32).max
 
     def generate_fva_warmup(self, solver=None, **solver_args):
         """Generates the warmup points for the sampler.
@@ -264,6 +272,9 @@ class ARCHSampler(HRSampler):
     solver : str or cobra solver interface, optional
         The solver used for the arising LP problems during warmup point
         generation.
+    seed : positive integer, optional
+        Sets the random number seed. Initialized to the current time stamp if
+        None.
     **solver_args
         Additional arguments passed to the solver.
 
@@ -283,7 +294,7 @@ class ARCHSampler(HRSampler):
         A matrix of with as many columns as reactions in the model and more
         than 3 rows containing a warmup sample in each row.
     prev : numpy array
-        The cuurent/last flux sample generated.
+        The current/last flux sample generated.
     center : numpy array
         The center of the sampling space as estimated by the mean of all
         previously generated samples.
@@ -307,10 +318,12 @@ class ARCHSampler(HRSampler):
     .. [2] https://github.com/opencobra/cobratoolbox
     """
 
-    def __init__(self, model, thinning=100, solver=None, **solver_kwargs):
-        super(ARCHSampler, self).__init__(model, thinning)
+    def __init__(self, model, thinning=100, solver=None,
+                 seed=None, **solver_kwargs):
+        super(ARCHSampler, self).__init__(model, thinning, seed=seed)
         self.generate_fva_warmup(solver, **solver_kwargs)
         self.prev = self.center = self.warmup.mean(axis=0)
+        np.random.seed(self._seed)
 
     def __single_iteration(self):
         pi = np.random.randint(self.n_warmup)
@@ -363,7 +376,7 @@ def _sample_chain(args):
     """
     sampler, n, idx = args       # has to be this way to work in Python 2.7
     center = sampler.center
-    np.random.seed(int(time() * idx + idx) % np.iinfo(np.int32).max)
+    np.random.seed((sampler._seed + idx) % np.iinfo(np.int32).max)
     prev = sampler.warmup[np.random.randint(sampler.n_warmup), ]
     prev = _step(sampler, center, prev - center, 0.95)
     n_samples = max(sampler.n_samples, 1)
@@ -403,6 +416,9 @@ class OptGPSampler(HRSampler):
     solver : str or cobra solver interface, optional
         The solver used for the arising LP problems during warmup point
         generation.
+    seed : positive integer, optional
+        Sets the random number seed. Initialized to the current time stamp if
+        None.
     **solver_args
         Additional arguments passed to the solver.
 
@@ -451,8 +467,8 @@ class OptGPSampler(HRSampler):
     """
 
     def __init__(self, model, processes, thinning=100, solver=None,
-                 **solver_kwargs):
-        super(OptGPSampler, self).__init__(model, thinning)
+                 seed=None, **solver_kwargs):
+        super(OptGPSampler, self).__init__(model, thinning, seed=seed)
         self.generate_fva_warmup(solver, **solver_kwargs)
         self.np = processes
 
@@ -519,7 +535,7 @@ class OptGPSampler(HRSampler):
         return d
 
 
-def sample(model, n, method="optgp", processes=1,
+def sample(model, n, method="optgp", processes=1, seed=None,
            solver=None, **solver_kwargs):
     """Samples valid flux distribution from a cobra model.
 
@@ -551,6 +567,9 @@ def sample(model, n, method="optgp", processes=1,
     solver : str or cobra solver interface, optional
         The solver used for the arising LP problems during warmup point
         generation.
+    seed : positive integer, optional
+        The random number seed to be used. Initialized to current time stamp
+        if None.
     **solver_args
         Additional arguments passed to the solver.
 
@@ -579,10 +598,10 @@ def sample(model, n, method="optgp", processes=1,
        Operations Research 199846:1 , 84-95
     """
     if method == "optgp":
-        sampler = OptGPSampler(model, processes, solver=solver,
+        sampler = OptGPSampler(model, processes, solver=solver, seed=seed,
                                **solver_kwargs)
     elif method == "arch":
-        sampler = ARCHSampler(model, solver=solver, **solver_kwargs)
+        sampler = ARCHSampler(model, solver=solver, seed=seed, **solver_kwargs)
     else:
         raise ValueError("method must be 'optgp' or 'arch'!")
 
