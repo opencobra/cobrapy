@@ -88,11 +88,11 @@ def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
             for reaction in reaction_list:
                 with m:
                     reaction.bounds = (0.0, 0.0)
-                    m.optimize()
+                    m.solver.optimize()
                     status = m.solver.status
                     status_dict[reaction.id] = status
-                    growth_rate_dict[reaction.id] = m.solution.f if \
-                        status == "optimal" else 0.
+                    growth_rate_dict[reaction.id] = m.solver.objective.value \
+                        if status == "optimal" else 0.
     else:
         # This entire block can be removed once the legacy solvers are
         # deprecated
@@ -147,7 +147,7 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
             for reaction in reaction_list:
                 with m:
                     reaction.bounds = (0.0, 0.0)
-                    m.optimize(objective_sense="minimize")
+                    m.solver.optimize()
                     status = m.solver.status
                     status_dict[reaction.id] = status
                     if status == "optimal":
@@ -215,10 +215,10 @@ def single_gene_deletion_fba(cobra_model, gene_list, solver=None,
                 with m:
                     for reaction in ko:
                         reaction.bounds = (0.0, 0.0)
-                    m.optimize()
+                    m.solver.optimize()
                     status = m.solver.status
                     status_dict[gene.id] = status
-                    growth_rate_dict[gene.id] = m.solution.f if \
+                    growth_rate_dict[gene.id] = m.solver.objective.value if \
                         status == "optimal" else 0.
     else:
         for gene in gene_list:
@@ -269,7 +269,7 @@ def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
                 with m:
                     for reaction in ko:
                         reaction.bounds = (0.0, 0.0)
-                    m.optimize(objective_sense="minimize")
+                    m.solver.optimize()
                     status = m.solver.status
                     status_dict[gene.id] = status
                     if status == "optimal":
