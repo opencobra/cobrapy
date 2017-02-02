@@ -507,17 +507,19 @@ class Model(Object):
             if interface_to_str(so) != current:
                 self.solver = interface_to_str(so)
             self._timestamp_last_optimization = time.time()
+            original_direction = self.solver.objective.direction
             if objective_sense is not None:
-                original_direction = self.solver.objective.direction
                 self.solver.objective.direction = \
                     {'minimize': 'min', 'maximize': 'max'}[objective_sense]
-                self.solver.optimize()
-                self.solver.objective.direction = original_direction
-            else:
-                self.solver.optimize()
-            # Not nice, but necessary due to optlang bug:
+            # Please note that the solution must always be extracted right
+            # after solver.optimize() since some solvers such as cplex
+            # invalidate their solution if the model is changed afterwards
+            self.solver.optimize()
+            # Not nice, but necessary until next optlang release
             solution = (solution_type(self) if
                         self.solver.status == 'optimal' else self.solution)
+            if objective_sense is not None:
+                self.solver.objective.direction = original_direction
         else:
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)

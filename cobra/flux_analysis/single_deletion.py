@@ -6,7 +6,9 @@ from ..manipulation import delete_model_genes, undelete_model_genes
 from ..manipulation.delete import find_gene_knockout_reactions
 import cobra.solvers as legacy_solvers
 import cobra.util.solver as solvers
-import sympy
+
+# this can be removed after deprecation of the old solver interface
+# since the optlang vrsion requires neither numpy nor scipy
 try:
     import scipy
 except ImportError:
@@ -68,7 +70,7 @@ def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
 
     legacy = False
     if solver is None:
-        solver = solvers.solvers[solvers.get_solver_name()]
+        solver = cobra_model.solver
     elif "optlang-" in solver:
         solver = solvers.interface_to_str(solver)
         solver = solvers.solvers[solver]
@@ -125,7 +127,7 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
 
     legacy = False
     if solver is None:
-        solver = solvers.solvers[solvers.get_solver_name(qp=True)]
+        solver = cobra_model.solver
     elif "optlang-" in solver:
         solver = solvers.interface_to_str(solver)
         solver = solvers.solvers[solver]
@@ -193,7 +195,7 @@ def single_gene_deletion_fba(cobra_model, gene_list, solver=None,
 
     legacy = False
     if solver is None:
-        solver = solvers.solvers[solvers.get_solver_name()]
+        solver = cobra_model.solver
     elif "optlang-" in solver:
         solver = solvers.interface_to_str(solver)
         solver = solvers.solvers[solver]
@@ -245,7 +247,7 @@ def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
 
     legacy = False
     if solver is None:
-        solver = solvers.solvers[solvers.get_solver_name(qp=True)]
+        solver = cobra_model.solver
     elif "optlang-" in solver:
         solver = solvers.interface_to_str(solver)
         solver = solvers.solvers[solver]
@@ -267,11 +269,14 @@ def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
                 with m:
                     for reaction in ko:
                         reaction.bounds = (0.0, 0.0)
-                    m.optimize()
+                    m.optimize(objective_sense="minimize")
                     status = m.solver.status
                     status_dict[gene.id] = status
-                    growth_rate_dict[gene.id] = m.solution.f if \
-                        status == "optimal" else 0.
+                    if status == "optimal":
+                        growth = m.solver.variables.moma_old_objective.primal
+                    else:
+                        growth = 0.0
+                    growth_rate_dict[gene.id] = growth
     else:
         for gene in gene_list:
             delete_model_genes(moma_model, [gene.id])

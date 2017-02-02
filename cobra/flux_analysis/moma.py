@@ -1,7 +1,7 @@
 from scipy.sparse import dok_matrix
 
 from ..solvers import get_solver_name, solver_dict
-from cobra.util.solver import add_to_solver
+import cobra.util.solver as sutil
 import sympy
 
 
@@ -39,7 +39,16 @@ def moma_model(model):
 
     So basically we just re-center the flux space at the old solution and than
     find the flux distribution closest to the new zero (center).
+
+    The former objective function is saved in the optlang solver interface as
+    "moma_old_objective" and this can be used to immediately extract the value
+    of the former objective after MOMA optimization.
     """
+
+    # Fall back to default QP solver if current one has no QP capability
+    if not hasattr(model.solver.configuration, "qp_method"):
+        model.solver = sutil.get_solver_name(qp=True)
+
     model.optimize()
     prob = model.solver.interface
     v = prob.Variable("moma_old_objective")
@@ -54,7 +63,7 @@ def moma_model(model):
                                 name="moma_constraint_" + r.id)
         to_add.extend([dist, const])
         new_obj += dist**2
-    add_to_solver(model, to_add)
+    sutil.add_to_solver(model, to_add)
     model.objective = prob.Objective(new_obj, direction='min')
 
 
