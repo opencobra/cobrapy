@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Packages on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/packages/index.xml</link>
+    <description>Recent content in Packages on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 13 Jan 2017 11:00:05 -0600</lastBuildDate>
+    <atom:link href="https://opencobra.github.io/cobrapy/packages/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>MMinte</title>
+      <link>https://opencobra.github.io/cobrapy/packages/mminte/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:05 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/mminte/</guid>
+      <description>&lt;p&gt;MMinte (pronounced /‘minti/) is an integrated pipeline that allows users to explore the pairwise interactions (positive or negative) that occur in a microbial network. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. Our application is composed of seven widgets that run sequentially, and each widget may also be run as independent modules.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>D3flux</title>
+      <link>https://opencobra.github.io/cobrapy/packages/d3flux/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:03 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/d3flux/</guid>
+      <description>&lt;p&gt;This package implements a d3.js based visualization tool for cobrapy models.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>cameo</title>
+      <link>https://opencobra.github.io/cobrapy/packages/cameo/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/cameo/</guid>
+      <description>&lt;p&gt;Cameo is a high-level python library developed to aid the strain design process in metabolic engineering projects. The library provides a modular framework of simulation methods, strain design methods, access to models, that targets developers that want custom analysis workflows.&lt;/p&gt;
+
+&lt;p&gt;Computationally heavy methods have been parallelized and can be run on a clusters using the IPython parallelization framework (see example and documentation for more details). The default fallback is python&amp;rsquo;s multiprocessing library.&lt;/p&gt;
+
+&lt;p&gt;Furthermore, it exposes a high-level API to users that just want to compute promising strain designs.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

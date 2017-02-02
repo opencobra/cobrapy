@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Pubs on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/pubs/index.xml</link>
+    <description>Recent content in Pubs on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 03 Dec 2016 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://opencobra.github.io/cobrapy/pubs/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Unique attributes of cyanobacterial metabolism revealed by improved genome-scale metabolic modeling and essential gene analysis.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27911809/</link>
+      <pubDate>Sat, 03 Dec 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27911809/</guid>
+      <description>&lt;p&gt;The model cyanobacterium, Synechococcus elongatus PCC 7942, is a genetically tractable obligate phototroph that is being developed for the bioproduction of high-value chemicals. Genome-scale models (GEMs) have been successfully used to assess and engineer cellular metabolism; however, GEMs of phototrophic metabolism have been limited by the lack of experimental datasets for model validation and the challenges of incorporating photon uptake. Here, we develop a GEM of metabolism in S. elongatus using random barcode transposon site sequencing (RB-TnSeq) essential gene and physiological data specific to photoautotrophic metabolism. The model explicitly describes photon absorption and accounts for shading, resulting in the characteristic linear growth curve of photoautotrophs. GEM predictions of gene essentiality were compared with data obtained from recent dense-transposon mutagenesis experiments. This dataset allowed major improvements to the accuracy of the model. Furthermore, discrepancies between GEM predictions and the in vivo dataset revealed biological characteristics, such as the importance of a truncated, linear TCA pathway, low flux toward amino acid synthesis from photorespiration, and knowledge gaps within nucleotide metabolism. Coupling of strong experimental support and photoautotrophic modeling methods thus resulted in a highly accurate model of S. elongatus metabolism that highlights previously unknown areas of S. elongatus biology.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Modelling microbial metabolic rewiring during growth in a complex medium.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27881075/</link>
+      <pubDate>Fri, 25 Nov 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27881075/</guid>
+      <description>&lt;p&gt;In their natural environment, bacteria face a wide range of environmental conditions that change over time and that impose continuous rearrangements at all the cellular levels (e.g. gene expression, metabolism). When facing a nutritionally rich environment, for example, microbes first use the preferred compound(s) and only later start metabolizing the other one(s). A systemic re-organization of the overall microbial metabolic network in response to a variation in the composition/concentration of the surrounding nutrients has been suggested, although the range and the entity of such modifications in organisms other than a few model microbes has been scarcely described up to now.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Multi-omic data integration enables discovery of hidden biological regularities.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27782110/</link>
+      <pubDate>Thu, 27 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27782110/</guid>
+      <description>&lt;p&gt;Rapid growth in size and complexity of biological data sets has led to the &amp;lsquo;Big Data to Knowledge&amp;rsquo; challenge. We develop advanced data integration methods for multi-level analysis of genomic, transcriptomic, ribosomal profiling, proteomic and fluxomic data. First, we show that pairwise integration of primary omics data reveals regularities that tie cellular processes together in Escherichia coli: the number of protein molecules made per mRNA transcript and the number of ribosomes required per translated protein molecule. Second, we show that genome-scale models, based on genomic and bibliomic data, enable quantitative synchronization of disparate data types. Integrating omics data with models enabled the discovery of two novel regularities: condition invariant in vivo turnover rates of enzymes and the correlation of protein structural motifs and translational pausing. These regularities can be formally represented in a computable format allowing for coherent interpretation and prediction of fitness and selection that underlies cellular physiology.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Multi-omics Quantification of Species Variation of Escherichia coli Links Molecular Features with Strain Phenotypes.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27667363/</link>
+      <pubDate>Tue, 27 Sep 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27667363/</guid>
+      <description>&lt;p&gt;Escherichia coli strains are widely used in academic research and biotechnology. New technologies for quantifying strain-specific differences and their underlying contributing factors promise greater understanding of how these differences significantly impact physiology, synthetic biology, metabolic engineering, and process design. Here, we quantified strain-specific differences in seven widely used strains of E. coli (BL21, C, Crooks, DH5a, K-12 MG1655, K-12 W3110, and W) using genomics, phenomics, transcriptomics, and genome-scale modeling. Metabolic physiology and gene expression varied widely with downstream implications for productivity, product yield, and titer. These differences could be linked to differential regulatory structure. Analyzing high-flux reactions and expression of encoding genes resulted in a correlated and quantitative link between these sets, with strain-specific caveats. Integrated modeling revealed that certain strains are better suited to produce given compounds or express desired constructs considering native expression states of pathways that enable high-production phenotypes. This study yields a framework for quantitatively comparing strains in a species with implications for strain selection.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>solveME: fast and reliable solution of nonlinear ME models.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27659412/</link>
+      <pubDate>Sat, 24 Sep 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27659412/</guid>
+      <description>&lt;p&gt;Genome-scale models of metabolism and macromolecular expression (ME) significantly expand the scope and predictive capabilities of constraint-based modeling. ME models present considerable computational challenges: they are much (&amp;gt;30 times) larger than corresponding metabolic reconstructions (M models), are multiscale, and growth maximization is a nonlinear programming (NLP) problem, mainly due to macromolecule dilution constraints.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>MMinte: an application for predicting metabolic interactions among the microbial species in a community.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27590448/</link>
+      <pubDate>Sun, 04 Sep 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27590448/</guid>
+      <description>&lt;p&gt;The explosive growth of microbiome research has yielded great quantities of data. These data provide us with many answers, but raise just as many questions. 16S rDNA-the backbone of microbiome analyses-allows us to assess α-diversity, β-diversity, and microbe-microbe associations, which characterize the overall properties of an ecosystem. However, we are still unable to use 16S rDNA data to directly assess the microbe-microbe and microbe-environment interactions that determine the broader ecology of that system. Thus, properties such as competition, cooperation, and nutrient conditions remain insufficiently analyzed. Here, we apply predictive community metabolic models of microbes identified with 16S rDNA data to probe the ecology of microbial communities.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>From DNA to FBA: How to Build Your Own Genome-Scale Metabolic Model.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27379044/</link>
+      <pubDate>Wed, 06 Jul 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27379044/</guid>
+      <description>&lt;p&gt;Microbiological studies are increasingly relying on in silico methods to perform exploration and rapid analysis of genomic data, and functional genomics studies are supplemented by the new perspectives that genome-scale metabolic models offer. A mathematical model consisting of a microbe&amp;rsquo;s entire metabolic map can be rapidly determined from whole-genome sequencing and annotating the genomic material encoded in its DNA. Flux-balance analysis (FBA), a linear programming technique that uses metabolic models to predict the phenotypic responses imposed by environmental elements and factors, is the leading method to simulate and manipulate cellular growth in silico. However, the process of creating an accurate model to use in FBA consists of a series of steps involving a multitude of connections between bioinformatics databases, enzyme resources, and metabolic pathways. We present the methodology and procedure to obtain a metabolic model using PyFBA, an extensible Python-based open-source software package aimed to provide a platform where functional annotations are used to build metabolic models (&lt;a href=&#34;http://linsalrob.github.io/PyFBA&#34;&gt;http://linsalrob.github.io/PyFBA&lt;/a&gt;). Backed by the Model SEED biochemistry database, PyFBA contains methods to reconstruct a microbe&amp;rsquo;s metabolic map, run FBA upon different media conditions, and gap-fill its metabolism. The extensibility of PyFBA facilitates novel techniques in creating accurate genome-scale metabolic models.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Genome-Scale Metabolic Model for the Green Alga Chlorella vulgaris UTEX 395 Accurately Predicts Phenotypes under Autotrophic, Heterotrophic, and Mixotrophic Growth Conditions.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27372244/</link>
+      <pubDate>Mon, 04 Jul 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27372244/</guid>
+      <description>&lt;p&gt;The green microalga Chlorella vulgaris has been widely recognized as a promising candidate for biofuel production due to its ability to store high lipid content and its natural metabolic versatility. Compartmentalized genome-scale metabolic models constructed from genome sequences enable quantitative insight into the transport and metabolism of compounds within a target organism. These metabolic models have long been utilized to generate optimized design strategies for an improved production process. Here, we describe the reconstruction, validation, and application of a genome-scale metabolic model for C. vulgaris UTEX 395, iCZ843. The reconstruction represents the most comprehensive model for any eukaryotic photosynthetic organism to date, based on the genome size and number of genes in the reconstruction. The highly curated model accurately predicts phenotypes under photoautotrophic, heterotrophic, and mixotrophic conditions. The model was validated against experimental data and lays the foundation for model-driven strain design and medium alteration to improve yield. Calculated flux distributions under different trophic conditions show that a number of key pathways are affected by nitrogen starvation conditions, including central carbon metabolism and amino acid, nucleotide, and pigment biosynthetic pathways. Furthermore, model prediction of growth rates under various medium compositions and subsequent experimental validation showed an increased growth rate with the addition of tryptophan and methionine.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Integrated In Silico Analysis of Pathway Designs for Synthetic Photo-Electro-Autotrophy.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27336167/</link>
+      <pubDate>Fri, 24 Jun 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27336167/</guid>
+      <description>&lt;p&gt;The strong advances in synthetic biology enable the engineering of novel functions and complex biological features in unprecedented ways, such as implementing synthetic autotrophic metabolism into heterotrophic hosts. A key challenge for the sustainable production of fuels and chemicals entails the engineering of synthetic autotrophic organisms that can effectively and efficiently fix carbon dioxide by using sustainable energy sources. This challenge involves the integration of carbon fixation and energy uptake systems. A variety of carbon fixation pathways and several types of photosystems and other energy uptake systems can be chosen and, potentially, modularly combined to design synthetic autotrophic metabolism. Prior to implementation, these designs can be evaluated by the combination of several computational pathway analysis techniques. Here we present a systematic, integrated in silico analysis of photo-electro-autotrophic pathway designs, consisting of natural and synthetic carbon fixation pathways, a proton-pumping rhodopsin photosystem for ATP regeneration and an electron uptake pathway. We integrated Flux Balance Analysis of the heterotrophic chassis Escherichia coli with kinetic pathway analysis and thermodynamic pathway analysis (Max-min Driving Force). The photo-electro-autotrophic designs are predicted to have a limited potential for anaerobic, autotrophic growth of E. coli, given the relatively low ATP regenerating capacity of the proton pumping rhodopsin photosystems and the high ATP maintenance of E. coli. If these factors can be tackled, our analysis indicates the highest growth potential for the natural reductive tricarboxylic acid cycle and the synthetic pyruvate synthase-pyruvate carboxylate -glyoxylate bicycle. Both carbon fixation cycles are very ATP efficient, while maintaining fast kinetics, which also results in relatively low estimated protein costs for these pathways. Furthermore, the synthetic bicycles are highly thermodynamic favorable under conditions analysed. However, the most important challenge identified for improving photo-electro-autotrophic growth is increasing the proton-pumping rate of the rhodopsin photosystems, allowing for higher ATP regeneration. Alternatively, other designs of autotrophy may be considered, therefore the herein presented integrated modeling approach allows synthetic biologists to evaluate and compare complex pathway designs before experimental implementation.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Comparative genome-scale modelling of Staphylococcus aureus strains identifies strain-specific metabolic capabilities linked to pathogenicity.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM27286824/</link>
+      <pubDate>Sun, 12 Jun 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM27286824/</guid>
+      <description>&lt;p&gt;Staphylococcus aureus is a preeminent bacterial pathogen capable of colonizing diverse ecological niches within its human host. We describe here the pangenome of S. aureus based on analysis of genome sequences from 64 strains of S. aureus spanning a range of ecological niches, host types, and antibiotic resistance profiles. Based on this set, S. aureus is expected to have an open pangenome composed of 7,411 genes and a core genome composed of 1,441 genes. Metabolism was highly conserved in this core genome; however, differences were identified in amino acid and nucleotide biosynthesis pathways between the strains. Genome-scale models (GEMs) of metabolism were constructed for the 64 strains of S. aureus These GEMs enabled a systems approach to characterizing the core metabolic and panmetabolic capabilities of the S. aureus species. All models were predicted to be auxotrophic for the vitamins niacin (vitamin B3) and thiamin (vitamin B1), whereas strain-specific auxotrophies were predicted for riboflavin (vitamin B2), guanosine, leucine, methionine, and cysteine, among others. GEMs were used to systematically analyze growth capabilities in more than 300 different growth-supporting environments. The results identified metabolic capabilities linked to pathogenic traits and virulence acquisitions. Such traits can be used to differentiate strains responsible for mild vs. severe infections and preference for hosts (e.g., animals vs. humans). Genome-scale analysis of multiple strains of a species can thus be used to identify metabolic determinants of virulence and increase our understanding of why certain strains of this deadly pathogen have spread rapidly throughout the world.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Systems biology of the structural proteome.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM26969117/</link>
+      <pubDate>Sun, 13 Mar 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM26969117/</guid>
+      <description>&lt;p&gt;The success of genome-scale models (GEMs) can be attributed to the high-quality, bottom-up reconstructions of metabolic, protein synthesis, and transcriptional regulatory networks on an organism-specific basis. Such reconstructions are biochemically, genetically, and genomically structured knowledge bases that can be converted into a mathematical format to enable a myriad of computational biological studies. In recent years, genome-scale reconstructions have been extended to include protein structural information, which has opened up new vistas in systems biology research and empowered applications in structural systems biology and systems pharmacology.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Global characterization of in vivo enzyme catalytic rates and their correspondence to in vitro kcat measurements.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM26951675/</link>
+      <pubDate>Thu, 10 Mar 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM26951675/</guid>
+      <description>&lt;p&gt;Turnover numbers, also known as kcat values, are fundamental properties of enzymes. However, kcat data are scarce and measured in vitro, thus may not faithfully represent the in vivo situation. A basic question that awaits elucidation is: how representative are kcat values for the maximal catalytic rates of enzymes in vivo? Here, we harness omics data to calculate kmax(vivo), the observed maximal catalytic rate of an enzyme inside cells. Comparison with kcat values from Escherichia coli, yields a correlation ofr(2)= 0.62 in log scale (p &amp;lt; 10(-10)), with a root mean square difference of 0.54 (3.5-fold in linear scale), indicating that in vivo and in vitro maximal rates generally concur. By accounting for the degree of saturation of enzymes and the backward flux dictated by thermodynamics, we further refine the correspondence between kmax(vivo) and kcat values. The approach we present here characterizes the quantitative relationship between enzymatic catalysis in vitro and in vivo and offers a high-throughput method for extracting enzyme kinetic constants from omics data.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>What Makes a Bacterial Species Pathogenic?:Comparative Genomic Analysis of the Genus Leptospira.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM26890609/</link>
+      <pubDate>Sat, 20 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM26890609/</guid>
+      <description>&lt;p&gt;Leptospirosis, caused by spirochetes of the genus Leptospira, is a globally widespread, neglected and emerging zoonotic disease. While whole genome analysis of individual pathogenic, intermediately pathogenic and saprophytic Leptospira species has been reported, comprehensive cross-species genomic comparison of all known species of infectious and non-infectious Leptospira, with the goal of identifying genes related to pathogenesis and mammalian host adaptation, remains a key gap in the field. Infectious Leptospira, comprised of pathogenic and intermediately pathogenic Leptospira, evolutionarily diverged from non-infectious, saprophytic Leptospira, as demonstrated by the following computational biology analyses: 1) the definitive taxonomy and evolutionary relatedness among all known Leptospira species; 2) genomically-predicted metabolic reconstructions that indicate novel adaptation of infectious Leptospira to mammals, including sialic acid biosynthesis, pathogen-specific porphyrin metabolism and the first-time demonstration of cobalamin (B12) autotrophy as a bacterial virulence factor; 3) CRISPR/Cas systems demonstrated only to be present in pathogenic Leptospira, suggesting a potential mechanism for this clade&amp;rsquo;s refractoriness to gene targeting; 4) finding Leptospira pathogen-specific specialized protein secretion systems; 5) novel virulence-related genes/gene families such as the Virulence Modifying (VM) (PF07598 paralogs) proteins and pathogen-specific adhesins; 6) discovery of novel, pathogen-specific protein modification and secretion mechanisms including unique lipoprotein signal peptide motifs, Sec-independent twin arginine protein secretion motifs, and the absence of certain canonical signal recognition particle proteins from all Leptospira; and 7) and demonstration of infectious Leptospira-specific signal-responsive gene expression, motility and chemotaxis systems. By identifying large scale changes in infectious (pathogenic and intermediately pathogenic) vs. non-infectious Leptospira, this work provides new insights into the evolution of a genus of bacterial pathogens. This work will be a comprehensive roadmap for understanding leptospirosis pathogenesis. More generally, it provides new insights into mechanisms by which bacterial pathogens adapt to mammalian hosts.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>PSAMM: A Portable System for the Analysis of Metabolic Models.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM26828591/</link>
+      <pubDate>Tue, 02 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM26828591/</guid>
+      <description>&lt;p&gt;The genome-scale models of metabolic networks have been broadly applied in phenotype prediction, evolutionary reconstruction, community functional analysis, and metabolic engineering. Despite the development of tools that support individual steps along the modeling procedure, it is still difficult to associate mathematical simulation results with the annotation and biological interpretation of metabolic models. In order to solve this problem, here we developed a Portable System for the Analysis of Metabolic Models (PSAMM), a new open-source software package that supports the integration of heterogeneous metadata in model annotations and provides a user-friendly interface for the analysis of metabolic models. PSAMM is independent of paid software environments like MATLAB, and all its dependencies are freely available for academic users. Compared to existing tools, PSAMM significantly reduced the running time of constraint-based analysis and enabled flexible settings of simulation parameters using simple one-line commands. The integration of heterogeneous, model-specific annotation information in PSAMM is achieved with a novel format of YAML-based model representation, which has several advantages, such as providing a modular organization of model components and simulation settings, enabling model version tracking, and permitting the integration of multiple simulation problems. PSAMM also includes a number of quality checking procedures to examine stoichiometric balance and to identify blocked reactions. Applying PSAMM to 57 models collected from current literature, we demonstrated how the software can be used for managing and simulating metabolic models. We identified a number of common inconsistencies in existing models and constructed an updated model repository to document the resolution of these inconsistencies.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>FlexFlux: combining metabolic flux and regulatory network analyses.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM26666757/</link>
+      <pubDate>Thu, 17 Dec 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM26666757/</guid>
+      <description>&lt;p&gt;Expression of cell phenotypes highly depends on metabolism that supplies matter and energy. To achieve proper utilisation of the different metabolic pathways, metabolism is tightly regulated by a complex regulatory network composed of diverse biological entities (genes, transcripts, proteins, signalling molecules…). The integrated analysis of both regulatory and metabolic networks appears very insightful but is not straightforward because of the distinct characteristics of both networks. The classical method used for metabolic flux analysis is Flux Balance Analysis (FBA), which is constraint-based and relies on the assumption of steady-state metabolite concentrations throughout the network. Regarding regulatory networks, a broad spectrum of methods are dedicated to their analysis although logical modelling remains the major method to take charge of large-scale networks.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
