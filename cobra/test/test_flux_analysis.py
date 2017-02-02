@@ -34,7 +34,11 @@ try:
 except ImportError:
     tabulate = None
 
-all_solvers = ["optlang-" + s for s in sutil.solvers] + list(solver_dict)
+# The scipt interface is currently unstable and may yield errors or infeasible
+# solutions
+stable_optlang = ["glpk", "cplex", "gurobi"]
+all_solvers = ["optlang-" + s for s in stable_optlang if s in sutil.solvers] +\
+              list(solver_dict)
 
 
 @contextmanager
@@ -118,8 +122,6 @@ class TestCobraFluxAnalysis:
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_single_gene_deletion_fba(self, model, solver):
-        if solver == "optlang-scipy":
-            pytest.skip("scipy LP solver is unstable")
         # expected knockouts for textbook model
         growth_dict = {"b0008": 0.87, "b0114": 0.80, "b0116": 0.78,
                        "b2276": 0.21, "b1779": 0.00}

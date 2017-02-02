@@ -704,38 +704,38 @@ class TestSolverBasedModel:
         with pytest.raises(TypeError):
             setattr(model, 'objective', 3.)
 
-    @pytest.mark.skipif(not scipy, reason='no scipy available')
+    @pytest.mark.skipif("cplex" not in solvers, reason="need cplex")
     def test_solver_change(self, model):
         solver_id = id(model.solver)
         problem_id = id(model.solver.problem)
         solution = model.optimize(solution_type=LazySolution).x_dict
-        model.solver == 'scipy'
+        model.solver = "cplex"
         assert id(model.solver) != solver_id
         assert id(model.solver.problem) != problem_id
-        new_solution = model.optimize(solution_type=LazySolution)
+        new_solution = model.optimize(solution_type=LazySolution).x_dict
         for key in list(solution.keys()):
-            assert round(abs(new_solution.x_dict[key] - solution[key]),
+            assert round(abs(new_solution[key] - solution[key]),
                          7) == 0
 
-    @pytest.mark.skipif(not scipy, reason='no scipy available')
+    @pytest.mark.skipif("cplex" not in solvers, reason="need cplex")
     def test_solver_change_with_optlang_interface(self, model):
         solver_id = id(model.solver)
         problem_id = id(model.solver.problem)
         solution = model.optimize(solution_type=LazySolution).x_dict
-        model.solver = optlang.scipy_interface
+        model.solver = optlang.cplex_interface
         assert id(model.solver) != solver_id
         assert id(model.solver.problem) != problem_id
-        new_solution = model.optimize(solution_type=LazySolution)
+        new_solution = model.optimize(solution_type=LazySolution).x_dict
         for key in list(solution.keys()):
-            assert round(abs(new_solution.x_dict[key] - solution[key]),
+            assert round(abs(new_solution[key] - solution[key]),
                          7) == 0
 
     def test_no_change_for_same_solver(self, model):
         solver_id = id(model.solver)
         problem_id = id(model.solver.problem)
         model.solver = "glpk"
-        assert id(model.solver) != solver_id
-        assert id(model.solver.problem) != problem_id
+        assert id(model.solver) == solver_id
+        assert id(model.solver.problem) == problem_id
 
     def test_invalid_solver_change_raises(self, model):
         with pytest.raises(SolverNotFound):
