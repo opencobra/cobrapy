@@ -119,42 +119,61 @@ class Model(Object):
 
     @property
     def medium(self):
-        return {rxn.id: rxn.bounds for rxn in
-                self.reactions.query(lambda x: x, 'boundary')}
+
+        def is_active(reaction):
+            """Determine if a boundary reaction permits flux towards creating
+            metabolites
+            """
+
+            return ((bool(reaction.products) and (reaction.upper_bound > 0)) or
+                    (bool(reaction.reactants) and (reaction.lower_bound < 0)))
+
+        def get_active_bound(reaction):
+            """For an active boundary reaction, return the relevant bound"""
+            if reaction.reactants:
+                return -reaction.lower_bound
+            elif reaction.products:
+                return reaction.upper_bound
+
+        active_reactions = (self.reactions.query(lambda x: x.boundary)
+                            .query(is_active))
+
+        return {rxn.id: get_active_bound(rxn) for rxn in active_reactions}
 
     @medium.setter
     def medium(self, medium):
         """Get or set the constraints on the model exchanges.
 
         `model.medium` returns a dictionary of the bounds for each of the
-        boundary reactions, in the form of `{rxn_id: (l_bound, u_bound)}`
+        boundary reactions, in the form of `{rxn_id: bound}`, where `bound`
+        specifies the absolute value of the bound in direction of metabolite
+        creation (i.e., lower_bound for `met <--`, upper_bound for `met -->`)
 
         Parameters
         ----------
         medium: dictionary-like
             The medium to initialize. medium should be a dictionary defining
-            `{rxn_id: bounds}` pairs.
+            `{rxn_id: bound}` pairs.
 
         """
 
-        # Check the symmetric difference to see if reactions are missing
-        boundary_rxn_keys = set([rxn.id for rxn in self.reactions.query(
-                        lambda x: x.boundary)])
-        medium_keys = set(medium.keys())
-        missing_in_medium = boundary_rxn_keys - medium_keys
-        missing_in_model = medium_keys - boundary_rxn_keys
+        def set_active_bound(reaction, bound):
+            if reaction.reactants:
+                reaction.lower_bound = -bound
+            elif reaction.products:
+                reaction.upper_bound = bound
 
-        for rxnid in missing_in_medium:
-            warn("{} is missing from the medium".format(rxnid))
-        for rxnid in missing_in_model:
-            warn("{} is missing from the model".format(rxnid))
+        # Set the given media bounds
+        for rxn_id, bound in iteritems(medium):
+            set_active_bound(self.reactions.get_by_id(rxn_id), bound)
 
-        for reaction_id in medium_keys.intersection(boundary_rxn_keys):
-            # Don't set the bounds unnecessarily to avoid cluttering contexts
-            reaction = self.reactions.get_by_id(reaction_id)
-            bounds = medium[reaction_id]
-            if bounds != reaction.bounds:
-                reaction.bounds = bounds
+        boundary_rxns = set((
+            r.id for r in self.reactions.query(lambda x: x.boundary)))
+        media_rxns = set(medium.keys())
+
+        # Turn off reactions not present in media
+        for rxn_id in (boundary_rxns - media_rxns):
+            set_active_bound(self.reactions.get_by_id(rxn_id), 0)
 
     def __add__(self, other_model):
         """Adds two models. +

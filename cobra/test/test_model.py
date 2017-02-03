@@ -516,30 +516,41 @@ class TestCobraModel:
         assert model.objective == {atpm: 1., biomass: 1.}
 
     def test_model_medium(self, model):
+        # Add a dummy 'malformed' import reaction
+        bad_import = Reaction('bad_import')
+        bad_import.add_metabolites({model.metabolites.pyr_c: 1})
+        bad_import.bounds = (0, 42)
+        model.add_reaction(bad_import)
+
         # Test basic setting and getting methods
         model.medium = model.medium
 
         # Test context management
         with model:
-            new_medium = model.medium
-            new_medium['EX_glc__D_e'] = (-20, 1000)
+            # Ensure the bounds are correct beforehand
             assert model.reactions.EX_glc__D_e.lower_bound == -10
+            assert model.reactions.bad_import.upper_bound == 42
+            assert model.reactions.EX_co2_e.lower_bound == -1000
+
+            # Make changes to the media
+            new_medium = model.medium
+            new_medium['EX_glc__D_e'] = 20
+            new_medium['bad_import'] = 24
+            del new_medium['EX_co2_e']
+
+            # Change the medium, make sure changes work
             model.medium = new_medium
             assert model.reactions.EX_glc__D_e.lower_bound == -20
+            assert model.reactions.bad_import.upper_bound == 24
+            assert model.reactions.EX_co2_e.lower_bound == 0
 
+        # Make sure changes revert after the contex
         assert model.reactions.EX_glc__D_e.lower_bound == -10
+        assert model.reactions.bad_import.upper_bound == 42
+        assert model.reactions.EX_co2_e.lower_bound == -1000
 
-        # Test warnings
-        del new_medium['EX_glc__D_e']
-        with pytest.warns(UserWarning):
-            model.medium = new_medium
-
-        # Make sure missing rxn is unchanged
-        assert model.reactions.EX_glc__D_e.lower_bound == -10
-
-        new_medium['EX_glc__D_e'] = (-20, 1000)
-        new_medium['bogus_rxn'] = (0, 0)
-        with pytest.warns(UserWarning):
+        new_medium['bogus_rxn'] = 0
+        with pytest.raises(KeyError):
             model.medium = new_medium
 
     def test_context_manager(self, model):
