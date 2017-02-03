@@ -13,11 +13,11 @@ from cobra.manipulation import convert_to_irreversible
 
 try:
     import numpy
+    from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 except ImportError:
     numpy = None
 try:
     import scipy
-    from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 except ImportError:
     scipy = None
 try:
@@ -456,7 +456,7 @@ class TestCobraFluxAnalysis:
             self.check_entries(out, desired_entries)
 
 
-@pytest.mark.skipif(scipy is None, reason="flux sampling requires numpy")
+@pytest.mark.skipif(numpy is None, reason="flux sampling requires numpy")
 class TestCobraFluxSampling:
     """Test and benchmark flux sampling"""
 
@@ -475,6 +475,10 @@ class TestCobraFluxSampling:
     def test_wrong_method(self, model):
         with pytest.raises(ValueError):
             sample(model, 1, method="schwupdiwupp")
+
+    def test_fixed_seed(Self, model):
+        s = sample(model, 1, seed=42)
+        assert numpy.allclose(s[0, 94], 8.38570846)
 
     def setup_class(self):
         from . import create_test_model
