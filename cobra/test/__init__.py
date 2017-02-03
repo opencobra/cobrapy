@@ -50,4 +50,5 @@ def test_all(args=None):
             ['--pyargs', 'cobra', '--benchmark-skip', '-v', '-rs'] + args
         ) != 0
     else:
-        raise ImportError('missing package pytest required for testing')
+        raise ImportError('missing package pytest and pytest_benchmark'
+                          ' required for testing')
