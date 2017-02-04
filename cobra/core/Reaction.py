@@ -171,7 +171,9 @@ class Reaction(Object):
     def objective_coefficient(self, value):
         if self.model is not None:
             if self.flux_expression is not None:
-                self.model.solver.objective.set_linear_coefficients({self._forward_variable: value, self._reverse_variable: -value})
+                self.model.solver.objective.set_linear_coefficients(
+                    {self._forward_variable: value,
+                     self._reverse_variable: -value})
         self._objective_coefficient = value
 
     def __copy__(self):
