@@ -523,7 +523,9 @@ class TestCobraModel:
         model.add_reaction(bad_import)
 
         # Test basic setting and getting methods
-        model.medium = model.medium
+        medium = model.medium
+        model.medium = medium
+        assert model.medium == medium
 
         # Test context management
         with model:
