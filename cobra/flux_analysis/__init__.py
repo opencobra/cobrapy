@@ -3,7 +3,11 @@ try:
 except:
     numpy = None
 
-from .essentiality import assess_medium_component_essentiality
+try:
+    import scipy
+except:
+    scipy = None
+
 from .variability import flux_variability_analysis, find_blocked_reactions
 from .single_deletion import single_gene_deletion, single_reaction_deletion
 from .parsimonious import optimize_minimal_flux

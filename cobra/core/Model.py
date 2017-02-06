@@ -57,7 +57,6 @@ class Model(Object):
             # genes based on their ids {Gene.id: Gene}
             self.compartments = {}
             # self.solution = Solution(None)
-            self.media_compositions = {}
             self._contexts = []
 
             # from cameo ...
@@ -117,6 +116,64 @@ class Model(Object):
     def description(self, value):
         self.name = value
         warn("description deprecated", DeprecationWarning)
+
+    @property
+    def medium(self):
+
+        def is_active(reaction):
+            """Determine if a boundary reaction permits flux towards creating
+            metabolites
+            """
+
+            return ((bool(reaction.products) and (reaction.upper_bound > 0)) or
+                    (bool(reaction.reactants) and (reaction.lower_bound < 0)))
+
+        def get_active_bound(reaction):
+            """For an active boundary reaction, return the relevant bound"""
+            if reaction.reactants:
+                return -reaction.lower_bound
+            elif reaction.products:
+                return reaction.upper_bound
+
+        active_reactions = (self.reactions.query(lambda x: x.boundary)
+                            .query(is_active))
+
+        return {rxn.id: get_active_bound(rxn) for rxn in active_reactions}
+
+    @medium.setter
+    def medium(self, medium):
+        """Get or set the constraints on the model exchanges.
+
+        `model.medium` returns a dictionary of the bounds for each of the
+        boundary reactions, in the form of `{rxn_id: bound}`, where `bound`
+        specifies the absolute value of the bound in direction of metabolite
+        creation (i.e., lower_bound for `met <--`, upper_bound for `met -->`)
+
+        Parameters
+        ----------
+        medium: dictionary-like
+            The medium to initialize. medium should be a dictionary defining
+            `{rxn_id: bound}` pairs.
+
+        """
+
+        def set_active_bound(reaction, bound):
+            if reaction.reactants:
+                reaction.lower_bound = -bound
+            elif reaction.products:
+                reaction.upper_bound = bound
+
+        # Set the given media bounds
+        for rxn_id, bound in iteritems(medium):
+            set_active_bound(self.reactions.get_by_id(rxn_id), bound)
+
+        boundary_rxns = set((
+            r.id for r in self.reactions.query(lambda x: x.boundary)))
+        media_rxns = set(medium.keys())
+
+        # Turn off reactions not present in media
+        for rxn_id in (boundary_rxns - media_rxns):
+            set_active_bound(self.reactions.get_by_id(rxn_id), 0)
 
     def __add__(self, other_model):
         """Adds two models. +
