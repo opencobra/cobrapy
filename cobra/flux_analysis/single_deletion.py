@@ -1,5 +1,3 @@
-from warnings import warn
-
 from six import string_types, iteritems
 
 from ..manipulation import delete_model_genes, undelete_model_genes
@@ -10,27 +8,11 @@ import cobra.util.solver as solvers
 # this can be removed after deprecation of the old solver interface
 # since the optlang vrsion requires neither numpy nor scipy
 try:
-    import scipy
+    import scipy  # noqa
 except ImportError:
     moma = None
 else:
     from . import moma
-
-
-def single_deletion(cobra_model, element_list=None,
-                    element_type='gene', **kwargs):
-    """Wrapper for single_gene_deletion and single_reaction_deletion
-
-    .. deprecated :: 0.4
-        Use single_reaction_deletion and single_gene_deletion
-    """
-    warn("deprecated - use single_reaction_deletion and single_gene_deletion")
-    if element_type == "reaction":
-        return single_reaction_deletion(cobra_model, element_list, **kwargs)
-    elif element_type == "gene":
-        return single_gene_deletion(cobra_model, element_list, **kwargs)
-    else:
-        raise Exception("unknown element type")
 
 
 def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
