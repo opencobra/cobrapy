@@ -136,7 +136,7 @@ class TestCobraFluxAnalysis:
     def test_single_gene_deletion_moma_benchmark(self, model, benchmark):
         try:
             sutil.get_solver_name(qp=True)
-        except SolverNotFound:
+        except sutil.SolverNotFound:
             pytest.skip("no qp support")
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
         benchmark(single_gene_deletion, model, gene_list=genes,
@@ -145,7 +145,7 @@ class TestCobraFluxAnalysis:
     def test_single_gene_deletion_moma(self, model):
         try:
             sutil.get_solver_name(qp=True)
-        except SolverNotFound:
+        except sutil.SolverNotFound:
             pytest.skip("no qp support")
 
         # expected knockouts for textbook model
