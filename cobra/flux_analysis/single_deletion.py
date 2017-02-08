@@ -17,13 +17,31 @@ else:
 
 def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
                              method="fba", **solver_args):
-    """sequentially knocks out each reaction in a model
+    """Sequentially knocks out each reaction from a given reaction list.
 
-    reaction_list: list of reaction_ids or cobra.Reaction
+    Parameters
+    ----------
+    cobra_model : a cobra model
+        The model from which to delete the reactions. The model will not be
+        modified.
+    reaction_list : iterable
+        List of reaction IDs or cobra.Reaction. If None (default) will use all
+        reactions in the model.
+    method : str, optional
+        The method used to obtain fluxes. Must be one of "fba" or "moma".
+    solver : str, optional
+        Name of the solver to be used.
+    solver_args : optional
+        Additional arguments for the solver. Ignored for optlang solver, please
+        use `model.solver.configuration` instead.
 
-    method: "fba" or "moma"
-
-    returns ({reaction_id: growth_rate}, {reaction_id: status})"""
+    Returns
+    -------
+    tuple of 2 dictionaries
+        The first dictionary maps each reaction id to its growth rate after
+        the knockout. The second tuple reports the solutions status (for
+        instance "optimal" for each knockout).
+    """
     if reaction_list is None:
         reaction_list = cobra_model.reactions
     else:
@@ -42,14 +60,23 @@ def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
 
 def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
                                  **solver_args):
-    """sequentially knocks out each reaction in a model using FBA
+    """Sequentially knocks out each reaction in a model using FBA.
 
-    reaction_list: list of reaction_ids or cobra.Reaction
+    Not supposed to be called directly use
+    `single_reactions_deletion(..., method="fba")` instead.
 
-    method: "fba" or "moma"
+    Parameters
+    ----------
+    reaction_list : iterable
+        List of reaction Ids or cobra.Reaction.
+    solver: str, optional
+        The name of the solver to be used.
 
-    returns ({reaction_id: growth_rate}, {reaction_id: status})"""
-
+    Returns
+    -------
+    tuple of dicts
+        A tuple ({reaction_id: growth_rate}, {reaction_id: status})
+    """
     legacy = False
     if solver is None:
         solver = cobra_model.solver
@@ -96,14 +123,26 @@ def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
 
 def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
                                   **solver_args):
-    """sequentially knocks out each reaction in a model using MOMA
+    """Sequentially knocks out each reaction in a model using MOMA.
 
-    reaction_list: list of reaction_ids or cobra.Reaction
+    Not supposed to be called directly use
+    `single_reactions_deletion(..., method="moma")` instead.
 
+    Parameters
+    ----------
+    reaction_list : iterable
+        List of reaction IDs or cobra.Reaction.
+    solver: str, optional
+        The name of the solver to be used.
 
-    returns ({reaction_id: growth_rate}, {reaction_id: status})"""
+    Returns
+    -------
+    tuple of dicts
+        A tuple ({reaction_id: growth_rate}, {reaction_id: status})
+    """
     # The same function can not be used because MOMA can not re-use the
     # same LP object. Problem re-use leads to incorrect solutions.
+    # This is *not* true for optlang solvers!
     if moma is None:
         raise RuntimeError("scipy required for moma")
 
@@ -149,13 +188,31 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
 
 def single_gene_deletion(cobra_model, gene_list=None, solver=None,
                          method="fba", **solver_args):
-    """sequentially knocks out each gene in a model
+    """Sequentially knocks out each gene from a given gene list.
 
-    gene_list: list of gene_ids or cobra.Gene
+    Parameters
+    ----------
+    cobra_model : a cobra model
+        The model from which to delete the genes. The model will not be
+        modified.
+    gene_list : iterable
+        List of gene IDs or cobra.Gene. If None (default) will use all genes in
+        the model.
+    method : str, optional
+        The method used to obtain fluxes. Must be one of "fba" or "moma".
+    solver : str, optional
+        Name of the solver to be used.
+    solver_args : optional
+        Additional arguments for the solver. Ignored for optlang solver, please
+        use `model.solver.configuration` instead.
 
-    method: "fba" or "moma"
-
-    returns ({gene_id: growth_rate}, {gene_id: status})"""
+    Returns
+    -------
+    tuple of 2 dictionaries
+        The first dictionary maps each gene id to its growth rate after
+        the knockout. The second tuple reports the solutions status (for
+        instance "optimal" for each knockout).
+    """
     if gene_list is None:
         gene_list = cobra_model.genes
     else:
@@ -174,7 +231,23 @@ def single_gene_deletion(cobra_model, gene_list=None, solver=None,
 
 def single_gene_deletion_fba(cobra_model, gene_list, solver=None,
                              **solver_args):
+    """Sequentially knocks out each gene in a model using FBA.
 
+    Not supposed to be called directly use
+    `single_reactions_deletion(..., method="fba")` instead.
+
+    Parameters
+    ----------
+    gene_list : iterable
+        List of gene IDs or cobra.Reaction.
+    solver: str, optional
+        The name of the solver to be used.
+
+    Returns
+    -------
+    tuple of dicts
+        A tuple ({reaction_id: growth_rate}, {reaction_id: status})
+    """
     legacy = False
     if solver is None:
         solver = cobra_model.solver
@@ -224,6 +297,23 @@ def single_gene_deletion_fba(cobra_model, gene_list, solver=None,
 
 def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
                               **solver_args):
+    """Sequentially knocks out each gene in a model using MOMA.
+
+    Not supposed to be called directly use
+    `single_reactions_deletion(..., method="moma")` instead.
+
+    Parameters
+    ----------
+    gene_list : iterable
+        List of gene IDs or cobra.Reaction.
+    solver: str, optional
+        The name of the solver to be used.
+
+    Returns
+    -------
+    tuple of dicts
+        A tuple ({reaction_id: growth_rate}, {reaction_id: status})
+    """
     if moma is None:
         raise RuntimeError("scipy required for moma")
 
