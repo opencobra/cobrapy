@@ -143,7 +143,7 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
     if not legacy:
         with cobra_model as m:
             m.solver = solver
-            moma.moma_model(m)
+            moma.add_moma(m)
             for reaction in reaction_list:
                 with m:
                     reaction.bounds = (0.0, 0.0)
@@ -263,7 +263,7 @@ def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
     if not legacy:
         with cobra_model as m:
             m.solver = solver
-            moma.moma_model(m)
+            moma.add_moma(m)
             for gene in gene_list:
                 ko = find_gene_knockout_reactions(cobra_model, [gene])
                 with m:

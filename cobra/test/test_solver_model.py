@@ -708,11 +708,11 @@ class TestSolverBasedModel:
     def test_solver_change(self, model):
         solver_id = id(model.solver)
         problem_id = id(model.solver.problem)
-        solution = model.optimize(solution_type=LazySolution).x_dict
+        solution = model.optimize(solution_type=LazySolution).fluxes
         model.solver = "cplex"
         assert id(model.solver) != solver_id
         assert id(model.solver.problem) != problem_id
-        new_solution = model.optimize(solution_type=LazySolution).x_dict
+        new_solution = model.optimize(solution_type=LazySolution).fluxes
         for key in list(solution.keys()):
             assert round(abs(new_solution[key] - solution[key]),
                          7) == 0
@@ -721,11 +721,11 @@ class TestSolverBasedModel:
     def test_solver_change_with_optlang_interface(self, model):
         solver_id = id(model.solver)
         problem_id = id(model.solver.problem)
-        solution = model.optimize(solution_type=LazySolution).x_dict
+        solution = model.optimize(solution_type=LazySolution).fluxes
         model.solver = optlang.cplex_interface
         assert id(model.solver) != solver_id
         assert id(model.solver.problem) != problem_id
-        new_solution = model.optimize(solution_type=LazySolution).x_dict
+        new_solution = model.optimize(solution_type=LazySolution).fluxes
         for key in list(solution.keys()):
             assert round(abs(new_solution[key] - solution[key]),
                          7) == 0

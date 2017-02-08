@@ -5,8 +5,8 @@ import cobra.util.solver as sutil
 import sympy
 
 
-def moma_model(model):
-    """Changes a model's objective and bounds to represent a MOMA
+def add_moma(model):
+    """Add constraints and objective representing a MOMA
     (minimization of metabolic adjustment) model.
 
     Parameters:
@@ -38,7 +38,8 @@ def moma_model(model):
          lb_i <= v^d_i <= ub_i
 
     So basically we just re-center the flux space at the old solution and than
-    find the flux distribution closest to the new zero (center).
+    find the flux distribution closest to the new zero (center). This is the
+    same strategy as used in cameo.
 
     The former objective function is saved in the optlang solver interface as
     "moma_old_objective" and this can be used to immediately extract the value
