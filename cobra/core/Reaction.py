@@ -13,6 +13,7 @@ import hashlib
 
 from cobra.util.util import Frozendict, _is_positive
 from cobra.util.context import resettable
+from cobra.util.solver import reset_objective
 
 
 # precompiled regular expressions
@@ -168,11 +169,13 @@ class Reaction(Object):
         return self._objective_coefficient
 
     @objective_coefficient.setter
+    @reset_objective
     def objective_coefficient(self, value):
         if self.model is not None:
-            coef_difference = value - self.objective_coefficient
-            self.model.solver.objective += \
-                coef_difference * self.flux_expression
+            if self.flux_expression is not None:
+                self.model.solver.objective.set_linear_coefficients(
+                    {self._forward_variable: value,
+                     self._reverse_variable: -value})
         self._objective_coefficient = value
 
     def __copy__(self):

@@ -7,6 +7,7 @@ The functions defined here together with the existing model functions should
 allow you to implement custom flux analysis methods with ease."""
 
 from cobra.util.context import get_context
+import cobra
 from functools import partial
 import optlang
 import re
@@ -163,3 +164,41 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
             expression + variable, lb=0, name="abs_neg_" + name)
     ]
     add_to_solver(model, constraints + [variable])
+
+
+def reset_objective(fn):
+    """A decorator to reset the optimization objective in a smart way.
+
+    The decorator will work for any function whose first argument is either
+    a cobra model or a cobra reaction. This includes all class methods of those
+    objects as well. It automaticaly choses the fastest way to reset the
+    objective depending on the passed cobra object.
+
+    Parameters
+    ----------
+    fn : a function
+        The function to decorate
+
+    Returns
+    -------
+    function
+        The decorated function.
+    """
+    def wrap(obj, *args, **kw_args):
+        context = get_context(obj)
+
+        if context and isinstance(obj, cobra.Model):
+            old_ex = obj.solver.objective.expression
+            old_dir = obj.solver.objective.direction
+
+            def reset():
+                obj.solver.objective = obj.solver.interface.Objective(old_ex)
+                obj.solver.objective.direction = old_dir
+            context(reset)
+        elif context and isinstance(obj, cobra.Reaction):
+            def reset():
+                obj.model.solver.objective.set_linear_coefficients(
+                    {obj.forward_variable: 0, obj.reverse_variable: 0})
+            context(reset)
+        fn(obj, *args, **kw_args)
+    return wrap

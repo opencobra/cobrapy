@@ -17,7 +17,7 @@ from sympy.core.singleton import S
 from cobra.util.util import AutoVivification
 from cobra.util.context import HistoryManager, resettable
 from cobra.util.solver import solvers, SolverNotFound, interface_to_str,\
-                              get_solver_name
+                              get_solver_name, reset_objective
 import optlang
 
 
@@ -650,7 +650,7 @@ class Model(Object):
         return self.objective_reactions
 
     @objective.setter
-    @resettable
+    @reset_objective
     def objective(self, value):
         if isinstance(value, six.string_types):
             try:
