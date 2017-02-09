@@ -1,12 +1,39 @@
 from warnings import warn
 
 from six import iteritems
-from ..solvers import solver_dict, get_solver_name
+from cobra.solvers import solver_dict, get_solver_name
+import cobra.util.solver as sutil
+from sympy import Float
 
 
 def flux_variability_analysis(cobra_model, reaction_list=None,
                               fraction_of_optimum=1.0, solver=None,
-                              objective_sense="maximize", **solver_args):
+                              **solver_args):
+    legacy = False
+    if solver is None:
+        solver = cobra_model.solver
+    elif "optlang-" in solver:
+        solver = sutil.interface_to_str(solver)
+        solver = sutil.solvers[solver]
+    else:
+        legacy = True
+        solver = solver_dict[solver]
+
+    if reaction_list is None and "the_reactions" in solver_args:
+        reaction_list = solver_args.pop("the_reactions")
+        warn("the_reactions is deprecated. Please use reaction_list=")
+    if reaction_list is None:
+        reaction_list = cobra_model.reactions
+
+    if not legacy:
+        return _fva_optlang(cobra_model, reaction_list, fraction_of_optimum)
+    else:
+        return _fva_legacy(cobra_model, reaction_list, fraction_of_optimum,
+                           "maximize", solver, **solver_args)
+
+
+def _fva_legacy(cobra_model, reaction_list, fraction_of_optimum,
+                objective_sense, solver, **solver_args):
     """Runs flux variability analysis to find max/min flux values
 
     cobra_model : :class:`~cobra.core.Model`:
@@ -23,12 +50,6 @@ def flux_variability_analysis(cobra_model, reaction_list=None,
         If None is given, the default solver will be used.
 
     """
-    if reaction_list is None and "the_reactions" in solver_args:
-        reaction_list = solver_args.pop("the_reactions")
-        warn("the_reactions is deprecated. Please use reaction_list=")
-    if reaction_list is None:
-        reaction_list = cobra_model.reactions
-    solver = solver_dict[get_solver_name() if solver is None else solver]
     lp = solver.create_problem(cobra_model)
     solver.solve_problem(lp, objective_sense=objective_sense)
     solution = solver.format_solution(lp, cobra_model)
@@ -61,6 +82,55 @@ def calculate_lp_variability(lp, solver, cobra_model, reaction_list,
             fva_results[r_id][what] = solver.get_objective_value(lp)
             # revert the problem to how it was before
             solver.change_variable_objective(lp, i, 0.)
+    return fva_results
+
+
+def _fva_optlang(model, reaction_list, fraction):
+    """Helper function to perform FVA with the optlang interface.
+
+    Parameters
+    ----------
+    model : a cobra model
+    reaction_list : list of reactions
+
+    Returns
+    -------
+    dict
+        A dictionary containing the results.
+    """
+    fva_results = {str(r): {} for r in reaction_list}
+    prob = model.solver.interface
+    with model as m:
+        m.solver.optimize()
+        if m.solver.status != "optimal":
+            raise ValueError("There is no optimal solution "
+                             "for the chosen objective!")
+        # Add objective as a variable to the model than set to zero
+        # This also uses the fraction to create the lower bound for the
+        # old objective
+        v = prob.Variable("fva_old_objective",
+                          lb=fraction * m.solver.objective.value)
+        c = prob.Constraint(
+            m.solver.objective.expression - v, lb=0.0, ub=0.0,
+            name="fva_old_objective_constraint")
+        sutil.add_to_solver(m, [v, c])
+        model.objective = Float(0.0)  # This will trigger the reset as well
+        for what in ("minimum", "maximum"):
+            sense = "min" if what == "minimum" else "max"
+            for r in reaction_list:
+                r_id = str(r)
+                r = m.reactions.get_by_id(r_id)
+                # The previous objective assignment already triggers a reset
+                # so directly update coefs here to not trigger redundant resets
+                # in the history manager
+                m.solver.objective.set_linear_coefficients(
+                    {r.forward_variable: 1, r.reverse_variable: -1})
+                m.solver.objective.direction = sense
+                m.solver.optimize()
+                fva_results[r_id][what] = m.solver.objective.value
+                m.solver.objective.set_linear_coefficients(
+                    {r.forward_variable: 0, r.reverse_variable: 0})
+
     return fva_results
 
 

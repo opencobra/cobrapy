@@ -235,12 +235,12 @@ class TestCobraFluxAnalysis:
         assert solution["y"] == reactions
         self.compare_matrices(growth_list, solution["data"])
 
-    @pytest.mark.parametrize("solver", list(solver_dict))
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_flux_variability_benchmark(self, large_model, benchmark, solver):
         benchmark(flux_variability_analysis, large_model, solver=solver,
                   reaction_list=large_model.reactions[1::3])
 
-    @pytest.mark.parametrize("solver", list(solver_dict))
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_flux_variability(self, model, fva_results, solver):
         if solver == "esolver":
             pytest.skip("esolver too slow...")
