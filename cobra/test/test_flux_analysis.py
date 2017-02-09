@@ -6,6 +6,7 @@ import re
 from six import iteritems, StringIO
 from cobra.core import Model, Reaction, Metabolite
 from cobra.solvers import solver_dict, get_solver_name
+import cobra.util.solver as sutil
 from cobra.flux_analysis import *
 from cobra.solvers import SolverNotFound
 from .conftest import model, large_model, solved_model, fva_results
@@ -32,6 +33,12 @@ try:
     import tabulate
 except ImportError:
     tabulate = None
+
+# The scipt interface is currently unstable and may yield errors or infeasible
+# solutions
+stable_optlang = ["glpk", "cplex", "gurobi"]
+all_solvers = ["optlang-" + s for s in stable_optlang if s in sutil.solvers] +\
+              list(solver_dict)
 
 
 @contextmanager
@@ -108,37 +115,37 @@ class TestCobraFluxAnalysis:
             optimize_minimal_flux(model, solver=solver)
         model.reactions.ATPM.lower_bound = atpm
 
-    def test_single_gene_deletion_fba_benchmark(self, large_model, benchmark):
-        genes = ['b0511', 'b2521', 'b0651', 'b2502', 'b3132', 'b1486', 'b3384',
-                 'b4321', 'b3428', 'b2789', 'b0052', 'b0115',
-                 'b2167', 'b0759', 'b3389', 'b4031', 'b3916', 'b2374', 'b0677',
-                 'b2202']
-        benchmark(single_gene_deletion, large_model, gene_list=genes)
+    @pytest.mark.parametrize("solver", all_solvers)
+    def test_single_gene_deletion_fba_benchmark(self, model, benchmark,
+                                                solver):
+        benchmark(single_gene_deletion, model, solver=solver)
 
-    def test_single_gene_deletion_fba(self, model):
+    @pytest.mark.parametrize("solver", all_solvers)
+    def test_single_gene_deletion_fba(self, model, solver):
         # expected knockouts for textbook model
         growth_dict = {"b0008": 0.87, "b0114": 0.80, "b0116": 0.78,
                        "b2276": 0.21, "b1779": 0.00}
         rates, statuses = single_gene_deletion(model,
                                                gene_list=growth_dict.keys(),
-                                               method="fba")
+                                               method="fba",
+                                               solver=solver)
         for gene, expected_value in iteritems(growth_dict):
             assert statuses[gene] == 'optimal'
             assert abs(rates[gene] - expected_value) < 0.01
 
-    def test_single_gene_deletion_moma_benchmark(self, large_model, benchmark):
+    def test_single_gene_deletion_moma_benchmark(self, model, benchmark):
         try:
-            get_solver_name(qp=True)
-        except SolverNotFound:
+            sutil.get_solver_name(qp=True)
+        except sutil.SolverNotFound:
             pytest.skip("no qp support")
-        genes = ['b1764', 'b0463', 'b1779', 'b0417']
-        benchmark(single_gene_deletion, large_model, gene_list=genes,
+        genes = ['b0008', 'b0114', 'b2276', 'b1779']
+        benchmark(single_gene_deletion, model, gene_list=genes,
                   method="moma")
 
     def test_single_gene_deletion_moma(self, model):
         try:
-            get_solver_name(qp=True)
-        except SolverNotFound:
+            sutil.get_solver_name(qp=True)
+        except sutil.SolverNotFound:
             pytest.skip("no qp support")
 
         # expected knockouts for textbook model
@@ -152,17 +159,18 @@ class TestCobraFluxAnalysis:
             assert statuses[gene] == 'optimal'
             assert abs(rates[gene] - expected_value) < 0.01
 
-    def test_single_gene_deletion_benchmark(self, large_model, benchmark):
-        reactions = ['CDPMEK', 'PRATPP', 'HISTD', 'PPCDC']
-        benchmark(single_reaction_deletion, large_model,
-                  reaction_list=reactions)
+    @pytest.mark.parametrize("solver", all_solvers)
+    def test_single_gene_deletion_benchmark(self, model, benchmark,
+                                            solver):
+        benchmark(single_reaction_deletion, model, solver=solver)
 
-    def test_single_reaction_deletion(self, model):
+    @pytest.mark.parametrize("solver", all_solvers)
+    def test_single_reaction_deletion(self, model, solver):
         expected_results = {'FBA': 0.70404, 'FBP': 0.87392, 'CS': 0,
                             'FUM': 0.81430, 'GAPD': 0, 'GLUDy': 0.85139}
 
         results, status = single_reaction_deletion(
-            model, reaction_list=expected_results.keys())
+            model, reaction_list=expected_results.keys(), solver=solver)
         assert len(results) == 6
         assert len(status) == 6
         for status_value in status.values():
@@ -295,9 +303,10 @@ class TestCobraFluxAnalysis:
         test_model = self.construct_ll_test_model()
         feasible_sol = construct_loopless_model(test_model).optimize()
         test_model.reactions.get_by_id('v3').lower_bound = 1
-        infeasible_sol = construct_loopless_model(test_model).optimize()
+        infeasible_mod = construct_loopless_model(test_model)
+        infeasible_mod.solver.optimize()
         assert feasible_sol.status == "optimal"
-        assert infeasible_sol.status == "infeasible"
+        assert infeasible_mod.solver.status == "infeasible"
 
     def test_gapfilling(self):
         try:

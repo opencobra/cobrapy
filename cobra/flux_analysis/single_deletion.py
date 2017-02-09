@@ -1,43 +1,47 @@
-from warnings import warn
-
 from six import string_types, iteritems
 
 from ..manipulation import delete_model_genes, undelete_model_genes
 from ..manipulation.delete import find_gene_knockout_reactions
-from ..solvers import solver_dict, get_solver_name
+import cobra.solvers as legacy_solvers
+import cobra.util.solver as solvers
+
+# this can be removed after deprecation of the old solver interface
+# since the optlang vrsion requires neither numpy nor scipy
 try:
-    import scipy
+    import scipy  # noqa
 except ImportError:
     moma = None
 else:
     from . import moma
 
 
-def single_deletion(cobra_model, element_list=None,
-                    element_type='gene', **kwargs):
-    """Wrapper for single_gene_deletion and single_reaction_deletion
-
-    .. deprecated :: 0.4
-        Use single_reaction_deletion and single_gene_deletion
-    """
-    warn("deprecated - use single_reaction_deletion and single_gene_deletion")
-    if element_type == "reaction":
-        return single_reaction_deletion(cobra_model, element_list, **kwargs)
-    elif element_type == "gene":
-        return single_gene_deletion(cobra_model, element_list, **kwargs)
-    else:
-        raise Exception("unknown element type")
-
-
 def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
                              method="fba", **solver_args):
-    """sequentially knocks out each reaction in a model
+    """Sequentially knocks out each reaction from a given reaction list.
 
-    reaction_list: list of reaction_ids or cobra.Reaction
+    Parameters
+    ----------
+    cobra_model : a cobra model
+        The model from which to delete the reactions. The model will not be
+        modified.
+    reaction_list : iterable
+        List of reaction IDs or cobra.Reaction. If None (default) will use all
+        reactions in the model.
+    method : str, optional
+        The method used to obtain fluxes. Must be one of "fba" or "moma".
+    solver : str, optional
+        Name of the solver to be used.
+    solver_args : optional
+        Additional arguments for the solver. Ignored for optlang solver, please
+        use `model.solver.configuration` instead.
 
-    method: "fba" or "moma"
-
-    returns ({reaction_id: growth_rate}, {reaction_id: status})"""
+    Returns
+    -------
+    tuple of 2 dictionaries
+        The first dictionary maps each reaction id to its growth rate after
+        the knockout. The second tuple reports the solutions status (for
+        instance "optimal" for each knockout).
+    """
     if reaction_list is None:
         reaction_list = cobra_model.reactions
     else:
@@ -56,69 +60,159 @@ def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
 
 def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
                                  **solver_args):
-    """sequentially knocks out each reaction in a model using FBA
+    """Sequentially knocks out each reaction in a model using FBA.
 
-    reaction_list: list of reaction_ids or cobra.Reaction
+    Not supposed to be called directly use
+    `single_reactions_deletion(..., method="fba")` instead.
 
-    method: "fba" or "moma"
+    Parameters
+    ----------
+    reaction_list : iterable
+        List of reaction Ids or cobra.Reaction.
+    solver: str, optional
+        The name of the solver to be used.
 
-    returns ({reaction_id: growth_rate}, {reaction_id: status})"""
-
-    solver = solver_dict[get_solver_name() if solver is None else solver]
-    lp = solver.create_problem(cobra_model)
+    Returns
+    -------
+    tuple of dicts
+        A tuple ({reaction_id: growth_rate}, {reaction_id: status})
+    """
+    legacy = False
+    if solver is None:
+        solver = cobra_model.solver
+    elif "optlang-" in solver:
+        solver = solvers.interface_to_str(solver)
+        solver = solvers.solvers[solver]
+    else:
+        legacy = True
+        solver = legacy_solvers.solver_dict[solver]
+        lp = solver.create_problem(cobra_model)
 
     growth_rate_dict = {}
     status_dict = {}
-    for reaction in reaction_list:
-        old_bounds = (reaction.lower_bound, reaction.upper_bound)
-        index = cobra_model.reactions.index(reaction)
-        solver.change_variable_bounds(lp, index, 0., 0.)
-        solver.solve_problem(lp, **solver_args)
-        # get the status and growth rate
-        status = solver.get_status(lp)
-        status_dict[reaction.id] = status
-        growth_rate_dict[reaction.id] = solver.get_objective_value(lp) \
-            if status == "optimal" else 0.
-        # reset the problem
-        solver.change_variable_bounds(lp, index, old_bounds[0], old_bounds[1])
+
+    if not legacy:
+        with cobra_model as m:
+            m.solver = solver
+            for reaction in reaction_list:
+                with m:
+                    reaction.bounds = (0.0, 0.0)
+                    m.solver.optimize()
+                    status = m.solver.status
+                    status_dict[reaction.id] = status
+                    growth_rate_dict[reaction.id] = m.solver.objective.value \
+                        if status == "optimal" else 0.
+    else:
+        # This entire block can be removed once the legacy solvers are
+        # deprecated
+        for reaction in reaction_list:
+            old_bounds = (reaction.lower_bound, reaction.upper_bound)
+            index = cobra_model.reactions.index(reaction)
+            solver.change_variable_bounds(lp, index, 0., 0.)
+            solver.solve_problem(lp, **solver_args)
+            # get the status and growth rate
+            status = solver.get_status(lp)
+            status_dict[reaction.id] = status
+            growth_rate_dict[reaction.id] = solver.get_objective_value(lp) \
+                if status == "optimal" else 0.
+            # reset the problem
+            solver.change_variable_bounds(lp, index, old_bounds[0],
+                                          old_bounds[1])
     return (growth_rate_dict, status_dict)
 
 
 def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
                                   **solver_args):
-    """sequentially knocks out each reaction in a model using MOMA
+    """Sequentially knocks out each reaction in a model using MOMA.
 
-    reaction_list: list of reaction_ids or cobra.Reaction
+    Not supposed to be called directly use
+    `single_reactions_deletion(..., method="moma")` instead.
 
+    Parameters
+    ----------
+    reaction_list : iterable
+        List of reaction IDs or cobra.Reaction.
+    solver: str, optional
+        The name of the solver to be used.
 
-    returns ({reaction_id: growth_rate}, {reaction_id: status})"""
+    Returns
+    -------
+    tuple of dicts
+        A tuple ({reaction_id: growth_rate}, {reaction_id: status})
+    """
     # The same function can not be used because MOMA can not re-use the
     # same LP object. Problem re-use leads to incorrect solutions.
+    # This is *not* true for optlang solvers!
     if moma is None:
         raise RuntimeError("scipy required for moma")
-    solver = solver_dict[solver if solver else get_solver_name(qp=True)]
-    moma_model, moma_objective = moma.create_euclidian_moma_model(cobra_model)
+
+    legacy = False
+    if solver is None:
+        solver = cobra_model.solver
+    elif "optlang-" in solver:
+        solver = solvers.interface_to_str(solver)
+        solver = solvers.solvers[solver]
+    else:
+        legacy = True
+        solver = legacy_solvers.solver_dict[solver]
+        moma_model, moma_objective = moma.create_euclidian_moma_model(
+                                     cobra_model)
 
     growth_rate_dict = {}
     status_dict = {}
-    for reaction in reaction_list:
-        index = cobra_model.reactions.index(reaction)
-        solution = moma.moma_knockout(moma_model, moma_objective, (index,),
-                                      solver=solver, **solver_args)
-        status_dict[reaction.id] = solution.status
-        growth_rate_dict[reaction.id] = solution.f
+
+    if not legacy:
+        with cobra_model as m:
+            m.solver = solver
+            moma.add_moma(m)
+            for reaction in reaction_list:
+                with m:
+                    reaction.bounds = (0.0, 0.0)
+                    m.solver.optimize()
+                    status = m.solver.status
+                    status_dict[reaction.id] = status
+                    if status == "optimal":
+                        growth = m.solver.variables.moma_old_objective.primal
+                    else:
+                        growth = 0.0
+                    growth_rate_dict[reaction.id] = growth
+    else:
+        for reaction in reaction_list:
+            index = cobra_model.reactions.index(reaction)
+            solution = moma.moma_knockout(moma_model, moma_objective, (index,),
+                                          solver=solver, **solver_args)
+            status_dict[reaction.id] = solution.status
+            growth_rate_dict[reaction.id] = solution.f
     return (growth_rate_dict, status_dict)
 
 
 def single_gene_deletion(cobra_model, gene_list=None, solver=None,
                          method="fba", **solver_args):
-    """sequentially knocks out each gene in a model
+    """Sequentially knocks out each gene from a given gene list.
 
-    gene_list: list of gene_ids or cobra.Gene
+    Parameters
+    ----------
+    cobra_model : a cobra model
+        The model from which to delete the genes. The model will not be
+        modified.
+    gene_list : iterable
+        List of gene IDs or cobra.Gene. If None (default) will use all genes in
+        the model.
+    method : str, optional
+        The method used to obtain fluxes. Must be one of "fba" or "moma".
+    solver : str, optional
+        Name of the solver to be used.
+    solver_args : optional
+        Additional arguments for the solver. Ignored for optlang solver, please
+        use `model.solver.configuration` instead.
 
-    method: "fba" or "moma"
-
-    returns ({gene_id: growth_rate}, {gene_id: status})"""
+    Returns
+    -------
+    tuple of 2 dictionaries
+        The first dictionary maps each gene id to its growth rate after
+        the knockout. The second tuple reports the solutions status (for
+        instance "optimal" for each knockout).
+    """
     if gene_list is None:
         gene_list = cobra_model.genes
     else:
@@ -137,45 +231,130 @@ def single_gene_deletion(cobra_model, gene_list=None, solver=None,
 
 def single_gene_deletion_fba(cobra_model, gene_list, solver=None,
                              **solver_args):
+    """Sequentially knocks out each gene in a model using FBA.
 
-    solver = solver_dict[get_solver_name() if solver is None else solver]
-    lp = solver.create_problem(cobra_model)
+    Not supposed to be called directly use
+    `single_reactions_deletion(..., method="fba")` instead.
+
+    Parameters
+    ----------
+    gene_list : iterable
+        List of gene IDs or cobra.Reaction.
+    solver: str, optional
+        The name of the solver to be used.
+
+    Returns
+    -------
+    tuple of dicts
+        A tuple ({reaction_id: growth_rate}, {reaction_id: status})
+    """
+    legacy = False
+    if solver is None:
+        solver = cobra_model.solver
+    elif "optlang-" in solver:
+        solver = solvers.interface_to_str(solver)
+        solver = solvers.solvers[solver]
+    else:
+        legacy = True
+        solver = legacy_solvers.solver_dict[solver]
+        lp = solver.create_problem(cobra_model)
 
     growth_rate_dict = {}
     status_dict = {}
-    for gene in gene_list:
-        old_bounds = {}
-        for reaction in find_gene_knockout_reactions(cobra_model, [gene]):
-            index = cobra_model.reactions.index(reaction)
-            old_bounds[index] = (reaction.lower_bound, reaction.upper_bound)
-            solver.change_variable_bounds(lp, index, 0., 0.)
-        solver.solve_problem(lp, **solver_args)
-        # get the status and growth rate
-        status = solver.get_status(lp)
-        status_dict[gene.id] = status
-        growth_rate = solver.get_objective_value(lp) \
-            if status == "optimal" else 0.
-        growth_rate_dict[gene.id] = growth_rate
-        # reset the problem
-        for index, bounds in iteritems(old_bounds):
-            solver.change_variable_bounds(lp, index, bounds[0], bounds[1])
+
+    if not legacy:
+        with cobra_model as m:
+            m.solver = solver
+            for gene in gene_list:
+                ko = find_gene_knockout_reactions(cobra_model, [gene])
+                with m:
+                    for reaction in ko:
+                        reaction.bounds = (0.0, 0.0)
+                    m.solver.optimize()
+                    status = m.solver.status
+                    status_dict[gene.id] = status
+                    growth_rate_dict[gene.id] = m.solver.objective.value if \
+                        status == "optimal" else 0.
+    else:
+        for gene in gene_list:
+            old_bounds = {}
+            for reaction in find_gene_knockout_reactions(cobra_model, [gene]):
+                index = cobra_model.reactions.index(reaction)
+                old_bounds[index] = reaction.bounds
+                solver.change_variable_bounds(lp, index, 0., 0.)
+            solver.solve_problem(lp, **solver_args)
+            # get the status and growth rate
+            status = solver.get_status(lp)
+            status_dict[gene.id] = status
+            growth_rate = solver.get_objective_value(lp) \
+                if status == "optimal" else 0.
+            growth_rate_dict[gene.id] = growth_rate
+            # reset the problem
+            for index, bounds in iteritems(old_bounds):
+                solver.change_variable_bounds(lp, index, bounds[0], bounds[1])
     return (growth_rate_dict, status_dict)
 
 
 def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
                               **solver_args):
+    """Sequentially knocks out each gene in a model using MOMA.
+
+    Not supposed to be called directly use
+    `single_reactions_deletion(..., method="moma")` instead.
+
+    Parameters
+    ----------
+    gene_list : iterable
+        List of gene IDs or cobra.Reaction.
+    solver: str, optional
+        The name of the solver to be used.
+
+    Returns
+    -------
+    tuple of dicts
+        A tuple ({reaction_id: growth_rate}, {reaction_id: status})
+    """
     if moma is None:
         raise RuntimeError("scipy required for moma")
-    solver = solver if solver else get_solver_name(qp=True)
-    moma_model, moma_objective = moma.create_euclidian_moma_model(cobra_model)
+
+    legacy = False
+    if solver is None:
+        solver = cobra_model.solver
+    elif "optlang-" in solver:
+        solver = solvers.interface_to_str(solver)
+        solver = solvers.solvers[solver]
+    else:
+        legacy = True
+        solver = legacy_solvers.solver_dict[solver]
+        moma_model, moma_objective = moma.create_euclidian_moma_model(
+                                     cobra_model)
 
     growth_rate_dict = {}
     status_dict = {}
-    for gene in gene_list:
-        delete_model_genes(moma_model, [gene.id])
-        solution = moma.solve_moma_model(moma_model, moma_objective,
-                                         solver=solver, **solver_args)
-        status_dict[gene.id] = solution.status
-        growth_rate_dict[gene.id] = solution.f
-        undelete_model_genes(moma_model)
+
+    if not legacy:
+        with cobra_model as m:
+            m.solver = solver
+            moma.add_moma(m)
+            for gene in gene_list:
+                ko = find_gene_knockout_reactions(cobra_model, [gene])
+                with m:
+                    for reaction in ko:
+                        reaction.bounds = (0.0, 0.0)
+                    m.solver.optimize()
+                    status = m.solver.status
+                    status_dict[gene.id] = status
+                    if status == "optimal":
+                        growth = m.solver.variables.moma_old_objective.primal
+                    else:
+                        growth = 0.0
+                    growth_rate_dict[gene.id] = growth
+    else:
+        for gene in gene_list:
+            delete_model_genes(moma_model, [gene.id])
+            solution = moma.solve_moma_model(moma_model, moma_objective,
+                                             solver=solver, **solver_args)
+            status_dict[gene.id] = solution.status
+            growth_rate_dict[gene.id] = solution.f
+            undelete_model_genes(moma_model)
     return (growth_rate_dict, status_dict)

@@ -1,6 +1,71 @@
 from scipy.sparse import dok_matrix
 
 from ..solvers import get_solver_name, solver_dict
+import cobra.util.solver as sutil
+import sympy
+
+
+def add_moma(model):
+    """Add constraints and objective representing a MOMA
+    (minimization of metabolic adjustment) model.
+
+    Parameters:
+    -----------
+
+    model : a cobra model
+
+    Returns:
+    --------
+    Nothing.
+
+    Notes
+    -----
+
+    In the original MOMA specification one looks for the flux distribution
+    of the deletion (v^d) closest to the fluxes without the deletion (v).
+    In math this means:
+
+    minimize \sum_i (v^d_i - v_i)^2
+    s.t. Sv^d = 0
+         lb_i <= v^d_i <= ub_i
+
+    Here, we use a variable transformation v^t := v^d_i - v_i. Substituting
+    and using the fact that Sv = 0 gives:
+
+    minimize \sum (v^t_i)^2
+    s.t. Sv^d = 0
+         v^t = v^d_i - v_i
+         lb_i <= v^d_i <= ub_i
+
+    So basically we just re-center the flux space at the old solution and than
+    find the flux distribution closest to the new zero (center). This is the
+    same strategy as used in cameo.
+
+    The former objective function is saved in the optlang solver interface as
+    "moma_old_objective" and this can be used to immediately extract the value
+    of the former objective after MOMA optimization.
+    """
+
+    # Fall back to default QP solver if current one has no QP capability
+    if not hasattr(model.solver.configuration, "qp_method"):
+        model.solver = sutil.get_solver_name(qp=True)
+
+    model.optimize()
+    prob = model.solver.interface
+    v = prob.Variable("moma_old_objective")
+    c = prob.Constraint(model.solver.objective.expression - v,
+                        lb=0.0, ub=0.0, name="moma_old_objective_constraint")
+    to_add = [v, c]
+    new_obj = sympy.Float(0.0)
+    for r in model.reactions:
+        flux = model.solution.fluxes[r.id]
+        dist = prob.Variable("moma_dist_" + r.id)
+        const = prob.Constraint(r.flux_expression - dist, lb=flux, ub=flux,
+                                name="moma_constraint_" + r.id)
+        to_add.extend([dist, const])
+        new_obj += dist**2
+    sutil.add_to_solver(model, to_add)
+    model.objective = prob.Objective(new_obj, direction='min')
 
 
 def create_euclidian_moma_model(cobra_model, wt_model=None, **solver_args):

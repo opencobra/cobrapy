@@ -18,6 +18,7 @@ from cobra.util.util import AutoVivification
 from cobra.util.context import HistoryManager, resettable
 from cobra.util.solver import solvers, SolverNotFound, interface_to_str,\
                               get_solver_name
+import optlang
 
 
 class Model(Object):
@@ -89,6 +90,7 @@ class Model(Object):
         return self._solver
 
     @solver.setter
+    @resettable
     def solver(self, value):
         not_valid_interface = SolverNotFound(
             '%s is not a valid solver interface. Pick from %s, or specify an '
@@ -101,8 +103,15 @@ class Model(Object):
                 raise not_valid_interface
         elif isinstance(value, types.ModuleType) and hasattr(value, 'Model'):
             interface = value
+        elif isinstance(value, optlang.interface.Model):
+            interface = value.interface
         else:
             raise not_valid_interface
+
+        # Do nothing if the solver did not change
+        if self.solver.interface == interface:
+            return
+
         for reaction in self.reactions:
             reaction._reset_var_cache()
         self._solver = interface.Model.clone(self._solver)
@@ -490,23 +499,27 @@ class Model(Object):
 
         """
         # TODO: make LazySolution default
-        so = kwargs.get('solver', 'optlang-glpk')
+        current = interface_to_str(self.solver.interface.__name__)
+        so = kwargs.get('solver', 'optlang-' + current)
         # after deprecation this can be checked with:
         # if so in solvers:
         if so in ('optlang-' + k for k in solvers):
-            current = interface_to_str(self.solver.interface.__name__)
             if interface_to_str(so) != current:
                 self.solver = interface_to_str(so)
             self._timestamp_last_optimization = time.time()
+            original_direction = self.solver.objective.direction
             if objective_sense is not None:
-                original_direction = self.solver.objective.direction
                 self.solver.objective.direction = \
                     {'minimize': 'min', 'maximize': 'max'}[objective_sense]
-                self.solver.optimize()
+            # Please note that the solution must always be extracted right
+            # after solver.optimize() since some solvers such as cplex
+            # invalidate their solution if the model is changed afterwards
+            self.solver.optimize()
+            # Not nice, but necessary until next optlang release
+            solution = (solution_type(self) if
+                        self.solver.status == 'optimal' else self.solution)
+            if objective_sense is not None:
                 self.solver.objective.direction = original_direction
-            else:
-                self.solver.optimize()
-            solution = solution_type(self)
         else:
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
