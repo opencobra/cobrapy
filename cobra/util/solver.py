@@ -139,8 +139,7 @@ def remove_from_solver(model, what=None):
             context(partial(model.solver.add, what))
 
 
-def add_absolute_expression(model, expression, name="abs_var",
-                            upper_bound=None):
+def add_absolute_expression(model, expression, name="abs_var", ub=None):
     """Adds the absolute value of an expression to the model and defines
     a variable for the absolute value that can be used in other objectives or
     constraints.
@@ -154,10 +153,10 @@ def add_absolute_expression(model, expression, name="abs_var",
        absolute value is applied automatically on the expression.
     name: string
        The name of the newly created variable.
-    upper_bound: positive float
+    ub: positive float
        The upper bound for the variable.
     """
-    variable = model.solver.interface.Variable(name, lb=0, ub=upper_bound)
+    variable = model.solver.interface.Variable(name, lb=0, ub=ub)
 
     # The following constraints enforce variable > expression and
     # variable > -expression
