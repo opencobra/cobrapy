@@ -16,7 +16,7 @@ class SolverNotFound(Exception):
     """
     A simple Exception when a solver can not be found.
     """
-    None
+    pass
 
 
 solvers = {match.split("_")[0]: getattr(optlang, match)
@@ -32,13 +32,13 @@ def interface_to_str(interface):
     Parameters
     ----------
     interface: string
-    Full name of the interface in optlang or cobra representation.
-    For instance 'optlang.glpk_interface' or 'optlang-glpk'.
+        Full name of the interface in optlang or cobra representation.
+        For instance 'optlang.glpk_interface' or 'optlang-glpk'.
 
     Returns
     -------
-    name: string
-    The name of the interface as a string
+    string
+       The name of the interface as a string
     """
     return re.sub(r"optlang.|.interface", "", interface)
 
@@ -50,14 +50,14 @@ def get_solver_name(mip=False, qp=False):
     Parameters
     ----------
     mip: string
-    Does the solver require mixed integer linear programming capabilities?
+        Does the solver require mixed integer linear programming capabilities?
     qp: string
-    Does the solver require quadratic programming capabilities?
+        Does the solver require quadratic programming capabilities?
 
     Returns
     -------
-    name: string
-    The name of feasible solver.
+    string
+        The name of feasible solver.
 
     Notes
     -----
@@ -67,7 +67,7 @@ def get_solver_name(mip=False, qp=False):
         raise SolverNotFound("no solvers installed")
     # glpk only does lp, not qp. Gurobi and cplex are better at mip
     mip_order = ["gurobi", "cplex", "mosek", "glpk"]
-    lp_order = ["glpk", "cplex",  "gurobi", "mosek", "scipy"]
+    lp_order = ["glpk", "cplex", "gurobi", "mosek", "scipy"]
     qp_order = ["gurobi", "cplex", "mosek"]
 
     if mip is False and qp is False:
@@ -88,7 +88,7 @@ def get_solver_name(mip=False, qp=False):
     raise SolverNotFound("no mip-capable solver found")
 
 
-def add_to_solver(model, what=[]):
+def add_to_solver(model, what=None):
     """Adds variables and constraints to a Model's solver object.
 
     Useful for variables and constraints that can not be expressed with
@@ -98,11 +98,14 @@ def add_to_solver(model, what=[]):
     Parameters
     ----------
     model: a cobra model
-    The model to which to add the variables and constraints.
+       The model to which to add the variables and constraints.
     what: list or tuple of optlang variables or constraints.
-    The variables or constraints to add to the model. Must be of class
-    `model.solver.interface.Variable` or `model.solver.interface.Constraint`.
+       The variables or constraints to add to the model. Must be of class
+       `model.solver.interface.Variable` or
+       `model.solver.interface.Constraint`.
     """
+    if not what:
+        what = []
     context = get_context(model)
 
     if len(what) > 0:
@@ -111,7 +114,7 @@ def add_to_solver(model, what=[]):
             context(partial(model.solver.remove, what))
 
 
-def remove_from_solver(model, what=[]):
+def remove_from_solver(model, what=None):
     """Removes variables and constraints from a Model's solver object.
 
     Useful to temporarily remove variables and constraints from a Models's
@@ -120,11 +123,14 @@ def remove_from_solver(model, what=[]):
     Parameters
     ----------
     model: a cobra model
-    The model from which to remove the variables and constraints.
+       The model from which to remove the variables and constraints.
     what: list or tuple of optlang variables or constraints.
-    The variables or constraints to remove from the model. Must be of class
-    `model.solver.interface.Variable` or `model.solver.interface.Constraint`.
+       The variables or constraints to remove from the model. Must be of
+       class `model.solver.interface.Variable` or
+       `model.solver.interface.Constraint`.
     """
+    if not what:
+        what = []
     context = get_context(model)
 
     if len(what) > 0:
@@ -133,7 +139,8 @@ def remove_from_solver(model, what=[]):
             context(partial(model.solver.add, what))
 
 
-def add_absolute_expression(model, expression, name="abs_var", ub=None):
+def add_absolute_expression(model, expression, name="abs_var",
+                            upper_bound=None):
     """Adds the absolute value of an expression to the model and defines
     a variable for the absolute value that can be used in other objectives or
     constraints.
@@ -141,25 +148,23 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
     Parameters
     ----------
     model: a cobra model
-    The model to which to add the absolute expression.
+       The model to which to add the absolute expression.
     expression: A sympy expression
-    Must be a valid expression within the Model's solver object. The absolute
-    value is applied automatically on the expression.
+       Must be a valid expression within the Model's solver object. The
+       absolute value is applied automatically on the expression.
     name: string
-    The name of the newly created variable.
-    ub: positive float
-    The upper bound for the variable.
+       The name of the newly created variable.
+    upper_bound: positive float
+       The upper bound for the variable.
     """
-    variable = model.solver.interface.Variable(name, lb=0, ub=ub)
+    variable = model.solver.interface.Variable(name, lb=0, ub=upper_bound)
 
     # The following constraints enforce variable > expression and
     # variable > -expression
     constraints = [
-        # positive value constraint
-        model.solver.interface.Constraint(expression - variable, ub=0,
-                                          name="abs_pos_" + name),
-        # negative value constraint
-        model.solver.interface.Constraint(expression + variable, lb=0,
-                                          name="abs_neg_" + name)
-        ]
+        model.solver.interface.Constraint(
+            expression - variable, ub=0, name="abs_pos_" + name),
+        model.solver.interface.Constraint(
+            expression + variable, lb=0, name="abs_neg_" + name)
+    ]
     add_to_solver(model, constraints + [variable])
