@@ -104,11 +104,9 @@ def add_to_solver(model, what=None):
        `model.solver.interface.Variable` or
        `model.solver.interface.Constraint`.
     """
-    if not what:
-        what = []
     context = get_context(model)
 
-    if len(what) > 0:
+    if what:
         model.solver.add(what)
         if context:
             context(partial(model.solver.remove, what))
@@ -129,11 +127,9 @@ def remove_from_solver(model, what=None):
        class `model.solver.interface.Variable` or
        `model.solver.interface.Constraint`.
     """
-    if not what:
-        what = []
     context = get_context(model)
 
-    if len(what) > 0:
+    if what:
         model.solver.remove(what)
         if context:
             context(partial(model.solver.add, what))
