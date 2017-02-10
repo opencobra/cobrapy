@@ -3,6 +3,7 @@ import warnings
 import pytest
 from cobra.core import Model, Metabolite, Reaction
 from cobra.solvers import solver_dict
+from cobra.util.solver import linear_reaction_coefficients
 from .conftest import model
 
 try:
@@ -494,7 +495,7 @@ class TestCobraModel:
         model.objective = atpm.id
         assert atpm.objective_coefficient == 1.
         assert biomass.objective_coefficient == 0.
-        assert model.objective == {atpm: 1.}
+        assert linear_reaction_coefficients(model) == {atpm: 1.}
         # change it back using object itself
         model.objective = biomass
         assert atpm.objective_coefficient == 0.
@@ -509,11 +510,11 @@ class TestCobraModel:
         assert abs(biomass.objective_coefficient - 0.3) < 10 ** -9
         # test setting by index
         model.objective = model.reactions.index(atpm)
-        assert model.objective == {atpm: 1.}
+        assert linear_reaction_coefficients(model) == {atpm: 1.}
         # test by setting list of indexes
         model.objective = [model.reactions.index(reaction) for
                            reaction in [atpm, biomass]]
-        assert model.objective == {atpm: 1., biomass: 1.}
+        assert linear_reaction_coefficients(model) == {atpm: 1., biomass: 1.}
 
     def test_model_medium(self, model):
         # Add a dummy 'malformed' import reaction

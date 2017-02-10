@@ -3,6 +3,7 @@ from __future__ import print_function
 from ..core import Model, Reaction, Metabolite
 from ..solvers import get_solver_name
 from ..manipulation import modify
+from cobra.util.solver import set_objective_from_coefficients
 
 
 class SUXModelMILP(Model):
@@ -65,6 +66,7 @@ class SUXModelMILP(Model):
 
         # Add MILP indicator reactions
         indicators = []
+        coefficients = {}
         for reaction in self.added_reactions:
             dummy_metabolite = Metabolite("dummy_met_" + reaction.id)
             dummy_metabolite._constraint_sense = "L"
@@ -75,19 +77,21 @@ class SUXModelMILP(Model):
             indicator_reaction.lower_bound = 0
             indicator_reaction.upper_bound = 1
             indicator_reaction.variable_kind = "integer"
-            indicator_reaction.objective_coefficient = \
-                self.penalties[reaction.notes["gapfilling_type"]]
+            coefficients[indicator_reaction] = self.penalties[
+                reaction.notes["gapfilling_type"]]
             indicators.append(indicator_reaction)
         Model.add_reactions(self, indicators)
 
         # original reaction objectives need to be set to lower bounds
-        self._update_objectives()
+        self._update_objectives(coefficients=coefficients)
 
-    def _update_objectives(self, added=True):
+    def _update_objectives(self, added=True, coefficients=None):
         """Update the metabolite which encodes the objective function
         with the objective coefficients for the reaction, and impose
         penalties for added reactions.
         """
+        if coefficients:
+            set_objective_from_coefficients(self, coefficients, additive=True)
         for reaction in self.original_reactions:
             if reaction.objective_coefficient > 0:
                 reaction.lower_bound = max(

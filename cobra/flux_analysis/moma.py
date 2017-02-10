@@ -75,15 +75,14 @@ def create_euclidian_moma_model(cobra_model, wt_model=None, **solver_args):
     else:
         wt_model = wt_model.copy()
         # ensure single objective
-        wt_obj = wt_model.reactions.query(lambda x: x > 0,
-                                          "objective_coefficient")
+        wt_obj = sutil.linear_reaction_coefficients(wt_model)
         if len(wt_obj) != 1:
             raise ValueError("wt_model must have exactly 1 objective, %d found"
                              % len(wt_obj))
 
-    obj = cobra_model.reactions.query(lambda x: x > 0, "objective_coefficient")
+    obj = sutil.linear_reaction_coefficients(wt_model)
     if len(obj) == 1:
-        objective_id = obj[0].id
+        objective_id = list(obj)[0].id
     else:
         raise ValueError("model must have exactly 1 objective, %d found" %
                          len(obj))

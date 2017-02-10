@@ -1,5 +1,10 @@
+import pytest
+
 import cobra.util.solver as su
 from cobra.test.conftest import model
+
+stable_optlang = ["glpk", "cplex", "gurobi"]
+optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
 
 
 class TestHelpers:
@@ -14,6 +19,25 @@ class TestHelpers:
 
     def test_solver_name(self):
         assert su.get_solver_name() == "glpk"
+
+
+class TestObjectiveHelpers:
+    def test_linear_reaction_coefficients(self, model):
+        coefficients = su.linear_reaction_coefficients(model)
+        assert coefficients == {model.reactions.Biomass_Ecoli_core: 1}
+
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_fail_non_linear_reaction_coefficients(self, model, solver):
+        model.solver = solver
+        try:
+            model.objective = model.solver.interface.Objective(
+                model.reactions.ATPM.flux_expression ** 2
+            )
+        except ValueError:
+            pass
+        else:
+            coefficients = su.linear_reaction_coefficients(model)
+            assert coefficients == {}
 
 
 class TestSolverMods:

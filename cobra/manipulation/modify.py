@@ -3,10 +3,10 @@ from ast import NodeTransformer
 
 from six import iteritems
 
-from .. import Reaction, Metabolite, Gene
-from .delete import get_compiled_gene_reaction_rules
-from ..core.Gene import ast2str
-
+from cobra import Reaction, Metabolite, Gene
+from cobra.manipulation.delete import get_compiled_gene_reaction_rules
+from cobra.core.Gene import ast2str
+from cobra.util.solver import set_objective_from_coefficients
 
 _renames = (
     (".", "_DOT_"),
@@ -41,7 +41,6 @@ def _escape_str_id(id_str):
 
 
 class _GeneEscaper(NodeTransformer):
-
     def visit_Name(self, node):
         node.id = _escape_str_id(node.id)
         return node
@@ -96,6 +95,7 @@ def rename_genes(cobra_model, rename_dict):
         def visit_Name(self, node):
             node.id = rename_dict.get(node.id, node.id)
             return node
+
     gene_renamer = Renamer()
     for rxn, rule in iteritems(get_compiled_gene_reaction_rules(cobra_model)):
         if rule is not None:
@@ -118,6 +118,7 @@ def convert_to_irreversible(cobra_model):
 
     """
     reactions_to_add = []
+    coefficients = {}
     for reaction in cobra_model.reactions:
         # If a reaction is reverse only, the forward reaction (which
         # will be constrained to 0) will be left in the model.
@@ -125,8 +126,8 @@ def convert_to_irreversible(cobra_model):
             reverse_reaction = Reaction(reaction.id + "_reverse")
             reverse_reaction.lower_bound = max(0, -reaction.upper_bound)
             reverse_reaction.upper_bound = -reaction.lower_bound
-            reverse_reaction.objective_coefficient = \
-                reaction.objective_coefficient * -1
+            coefficients[
+                reverse_reaction] = reaction.objective_coefficient * -1
             reaction.lower_bound = max(0, reaction.lower_bound)
             reaction.upper_bound = max(0, reaction.upper_bound)
             # Make the directions aware of each other
@@ -143,6 +144,7 @@ def convert_to_irreversible(cobra_model):
             reverse_reaction._gene_reaction_rule = reaction._gene_reaction_rule
             reactions_to_add.append(reverse_reaction)
     cobra_model.add_reactions(reactions_to_add)
+    set_objective_from_coefficients(cobra_model, coefficients, additive=True)
 
 
 def revert_to_reversible(cobra_model, update_solution=True):

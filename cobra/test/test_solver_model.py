@@ -579,9 +579,9 @@ class TestSolverBasedModel:
         r2.add_metabolites(
             {Metabolite('A'): -1, Metabolite('C'): 1, Metabolite('D'): 1})
         r2.lower_bound, r2.upper_bound = 0., 999999.
+        model.add_reactions([r1, r2])
         r2.objective_coefficient = 3.
         assert r2.objective_coefficient == 3.
-        model.add_reactions([r1, r2])
         assert model.reactions[-2] == r1
         assert model.reactions[-1] == r2
         assert isinstance(model.reactions[-2].reverse_variable,
