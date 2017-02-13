@@ -7,10 +7,12 @@ The functions defined here together with the existing model functions should
 allow you to implement custom flux analysis methods with ease."""
 
 from cobra.util.context import get_context
+import cobra
 from functools import partial
 import optlang
 import re
-from sympy import S
+import sympy
+import six
 
 
 class SolverNotFound(Exception):
@@ -61,27 +63,72 @@ def linear_reaction_coefficients(model, reactions=None):
     return linear_coefficients
 
 
-def set_objective_from_coefficients(model, coefficients, additive=False):
-    """ Set a linear model objective using dictionary of coefficients
+def set_objective(model, value, additive=False):
+    """ Set the model objective
 
     Parameters
     ----------
     model: cobra model
        The model to set the objective for
-    coefficients: dict
-       A dictionary where each key is a reaction object and the value is a
-       coefficient (float)
+    value: model.solver.interface.Objective such as
+           optlang.glpk_interface.Objective, sympy.Basic, dict, int,
+           list, string or Reaction
+
+        If the model objective is linear, the value can be a new Objective
+        object directly, a sympy expression which is used to create a new
+        Objective, a dictionary of linear coefficients where each key is a
+        reaction and the element the new coefficient (float), a list of
+        reactions where each reaction is interpreted to be meant to have an
+        objective coefficient of 1, a string interpreted as a single
+        reaction identifier or directly a Reaction object.
+
+        If the objective is not linear, only values of class Objective or
+        sympy expression's are allowed.
     additive: bool
-       If true, add the terms to the current objective, otherwise start with
-       an empty objective
+        If true, add the terms to the current objective, otherwise start with
+        an empty objective
     """
-    if not additive:
-        model.solver.objective = model.solver.interface.Objective(
-            S.Zero, direction='max')
-    for reaction, coef in coefficients.items():
-        model.solver.objective.set_linear_coefficients(
-            {reaction.forward_variable: coef,
-             reaction.reverse_variable: -coef})
+    by_expression = (isinstance(value, sympy.Basic) or
+                     isinstance(value, model.solver.interface.Objective))
+    by_coefficient = isinstance(value, (dict, int, list, six.string_types,
+                                        cobra.Reaction))
+    not_supported = (
+        additive and (not model.objective.is_Linear and not by_expression))
+    if not_supported:
+        raise ValueError('can only update non-linear objectives additively '
+                         'using object of class '
+                         'model.solver.interface.Objective, not %s' %
+                         type(value))
+    if by_expression:
+        if not additive:
+            if isinstance(value, sympy.Basic):
+                model.solver.objective = model.interface.Objective(
+                    value, sloppy=False)
+            if isinstance(value, model.solver.interface.Objective):
+                model.solver.objective = value
+        else:
+            if isinstance(value, model.solver.interface.Objective):
+                value = value.expression
+            model.solver.objective += value
+            value = -value
+    elif by_coefficient:
+        if not additive:
+            model.solver.objective = model.solver.interface.Objective(
+                sympy.S.Zero, direction='max')
+        if not isinstance(value, dict):
+            value = {rxn: 1 for rxn in model.reactions.get_by_any(value)}
+        for reaction, coef in value.items():
+            value[reaction] = reaction.objective_coefficient
+            model.solver.objective.set_linear_coefficients(
+                {reaction.forward_variable: coef,
+                 reaction.reverse_variable: -coef})
+    else:
+        raise TypeError(
+            '%r is not a valid objective for %r.' % (value, model.solver))
+    context = get_context(model)
+    if context:
+        context(partial(set_objective, model=model, value=value,
+                        additive=additive))
 
 
 def interface_to_str(interface):
@@ -107,9 +154,9 @@ def get_solver_name(mip=False, qp=False):
 
     Parameters
     ----------
-    mip: string
+    mip: bool
         Does the solver require mixed integer linear programming capabilities?
-    qp: string
+    qp: bool
         Does the solver require quadratic programming capabilities?
 
     Returns
@@ -146,7 +193,7 @@ def get_solver_name(mip=False, qp=False):
     raise SolverNotFound("no mip-capable solver found")
 
 
-def add_to_solver(model, what=None):
+def add_to_solver(model, what):
     """Adds variables and constraints to a Model's solver object.
 
     Useful for variables and constraints that can not be expressed with
@@ -164,13 +211,12 @@ def add_to_solver(model, what=None):
     """
     context = get_context(model)
 
-    if what:
-        model.solver.add(what)
-        if context:
-            context(partial(model.solver.remove, what))
+    model.solver.add(what)
+    if context:
+        context(partial(model.solver.remove, what))
 
 
-def remove_from_solver(model, what=None):
+def remove_from_solver(model, what):
     """Removes variables and constraints from a Model's solver object.
 
     Useful to temporarily remove variables and constraints from a Models's
@@ -187,10 +233,9 @@ def remove_from_solver(model, what=None):
     """
     context = get_context(model)
 
-    if what:
-        model.solver.remove(what)
-        if context:
-            context(partial(model.solver.add, what))
+    model.solver.remove(what)
+    if context:
+        context(partial(model.solver.add, what))
 
 
 def add_absolute_expression(model, expression, name="abs_var", ub=None):

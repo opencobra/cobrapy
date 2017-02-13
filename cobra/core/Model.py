@@ -17,7 +17,7 @@ from sympy import S
 from cobra.util.util import AutoVivification
 from cobra.util.context import HistoryManager, resettable
 from cobra.util.solver import solvers, SolverNotFound, interface_to_str,\
-                              get_solver_name, set_objective_from_coefficients
+                              get_solver_name, set_objective
 import optlang
 
 
@@ -601,20 +601,7 @@ class Model(Object):
     @objective.setter
     @resettable
     def objective(self, value):
-        if isinstance(value, self.solver.interface.Objective):
-            self.solver.objective = value
-        elif isinstance(value, sympy.Basic):
-            self.solver.objective = self.solver.interface.Objective(
-                value, sloppy=False)
-        elif isinstance(value, (dict, int, list, six.string_types, Reaction)):
-            if isinstance(value, (int, list, six.string_types, Reaction)):
-                coefficients = {rxn: 1 for rxn in get_reactions(self, value)}
-            else:
-                coefficients = value
-            set_objective_from_coefficients(self, coefficients)
-        else:
-            raise TypeError(
-                '%r is not a valid objective for %r.' % (value, self.solver))
+        set_objective(self, value, additive=False)
 
     def summary(self, **kwargs):
         """Print a summary of the input and output fluxes of the model. This
@@ -654,39 +641,3 @@ class Model(Object):
         """Pop the top context manager and trigger the undo functions"""
         context = self._contexts.pop()
         context.reset()
-
-
-def get_reactions(model, reactions):
-    """
-    Get a list of reactions
-
-    Parameters
-    ----------
-    model: cobra model
-        the model to get reactions from
-    reactions: list (or single element)
-        list where each element is either int (referring to an index in
-        model.reactions), string (a reaction id) or Reaction for pass-through
-
-    Returns
-    -------
-    list
-       a list of reactions
-    """
-
-    def get_rxn(item):
-        if isinstance(item, int):
-            return model.reactions[item]
-        elif isinstance(item, six.string_types):
-            try:
-                return model.reactions.get_by_id(item)
-            except KeyError:
-                raise ValueError('reaction %s not in model' % item)
-        elif isinstance(item, Reaction):
-            return item
-        else:
-            raise TypeError("item in iterable cannot be '%s'" % type(item))
-
-    if not isinstance(reactions, list):
-        reactions = [reactions]
-    return [get_rxn(item) for item in reactions]

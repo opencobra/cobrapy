@@ -38,6 +38,8 @@ class TestObjectiveHelpers:
         else:
             coefficients = su.linear_reaction_coefficients(model)
             assert coefficients == {}
+            with pytest.raises(ValueError):
+                model.reactions.ACALD.objective_coefficient = 1
 
 
 class TestSolverMods:

@@ -3,7 +3,7 @@ from __future__ import print_function
 from ..core import Model, Reaction, Metabolite
 from ..solvers import get_solver_name
 from ..manipulation import modify
-from cobra.util.solver import set_objective_from_coefficients
+from cobra.util.solver import set_objective
 
 
 class SUXModelMILP(Model):
@@ -91,7 +91,7 @@ class SUXModelMILP(Model):
         penalties for added reactions.
         """
         if coefficients:
-            set_objective_from_coefficients(self, coefficients, additive=True)
+            set_objective(self, coefficients, additive=True)
         for reaction in self.original_reactions:
             if reaction.objective_coefficient > 0:
                 reaction.lower_bound = max(

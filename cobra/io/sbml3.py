@@ -14,7 +14,7 @@ from cobra.core.Gene import parse_gpr
 from cobra.manipulation.modify import _renames
 from cobra.manipulation.validate import check_reaction_bounds, \
     check_metabolite_compartment_formula
-from cobra.util.solver import set_objective_from_coefficients
+from cobra.util.solver import set_objective
 
 try:
     from lxml.etree import parse, Element, SubElement, \
@@ -372,7 +372,7 @@ def parse_xml_into_model(xml, number=float):
         except ValueError as e:
             warn(str(e))
         else:
-            set_objective_from_coefficients(model, coefficients)
+            set_objective(model, coefficients)
     return model
 
 

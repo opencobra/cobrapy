@@ -8,7 +8,7 @@ from scipy.sparse import coo_matrix, dok_matrix
 
 from cobra import Model, Metabolite, Reaction
 from cobra.util import create_stoichiometric_array
-from cobra.util.solver import set_objective_from_coefficients
+from cobra.util.solver import set_objective
 
 # try to use an ordered dict
 try:
@@ -246,7 +246,7 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
             pass
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
-    set_objective_from_coefficients(model, coefficients)
+    set_objective(model, coefficients)
     coo = coo_matrix(m["S"][0, 0])
     for i, j, v in zip(coo.row, coo.col, coo.data):
         model.reactions[j].add_metabolites({model.metabolites[i]: v})

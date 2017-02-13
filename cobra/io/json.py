@@ -4,7 +4,7 @@ import json
 
 from cobra import Model, Metabolite, Reaction, Gene
 from six import iteritems, string_types
-from cobra.util.solver import set_objective_from_coefficients
+from cobra.util.solver import set_objective
 
 # Detect numpy types to replace them.
 try:
@@ -12,7 +12,6 @@ try:
 except ImportError:
     class float_:
         pass
-
 
     class bool_:
         pass
@@ -86,7 +85,7 @@ def _from_dict(obj):
     coefficients = {
         model.reactions.get_by_id(rxn['id']): rxn['objective_coefficient'] for
         rxn in objective_reactions}
-    set_objective_from_coefficients(model, coefficients)
+    set_objective(model, coefficients)
     for k, v in iteritems(obj):
         if k in {'id', 'name', 'notes', 'compartments', 'annotation'}:
             setattr(model, k, v)

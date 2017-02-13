@@ -13,7 +13,8 @@ import hashlib
 
 from cobra.util.util import Frozendict, _is_positive
 from cobra.util.context import resettable
-from cobra.util.solver import linear_reaction_coefficients
+from cobra.util.solver import linear_reaction_coefficients, \
+    set_objective
 
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
@@ -173,9 +174,7 @@ class Reaction(Object):
         if self.model is None:
             raise AttributeError('cannot assign objective to a missing model')
         if self.flux_expression is not None:
-            self.model.solver.objective.set_linear_coefficients(
-                {self._forward_variable: value,
-                 self._reverse_variable: -value})
+            set_objective(self.model, {self: value}, additive=True)
 
     def __copy__(self):
         cop = copy(super(Reaction, self))
@@ -355,8 +354,8 @@ class Reaction(Object):
             if self._model is None:
                 raise Exception("not part of a model")
             if not hasattr(self._model, "solution") or \
-                            self._model.solution is None or \
-                            self._model.solution.status == "NA":
+                    self._model.solution is None or \
+                    self._model.solution.status == "NA":
                 raise Exception("model has not been solved")
             if self._model.solution.status != "optimal":
                 raise Exception("model solution was not optimal")

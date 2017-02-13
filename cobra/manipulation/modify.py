@@ -6,7 +6,7 @@ from six import iteritems
 from cobra import Reaction, Metabolite, Gene
 from cobra.manipulation.delete import get_compiled_gene_reaction_rules
 from cobra.core.Gene import ast2str
-from cobra.util.solver import set_objective_from_coefficients
+from cobra.util.solver import set_objective
 
 _renames = (
     (".", "_DOT_"),
@@ -144,7 +144,7 @@ def convert_to_irreversible(cobra_model):
             reverse_reaction._gene_reaction_rule = reaction._gene_reaction_rule
             reactions_to_add.append(reverse_reaction)
     cobra_model.add_reactions(reactions_to_add)
-    set_objective_from_coefficients(cobra_model, coefficients, additive=True)
+    set_objective(cobra_model, coefficients, additive=True)
 
 
 def revert_to_reversible(cobra_model, update_solution=True):
