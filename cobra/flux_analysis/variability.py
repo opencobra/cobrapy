@@ -16,20 +16,20 @@ def flux_variability_analysis(model, reaction_list=None,
     ----------
     model : a cobra model
         The model for which to run the analysis. It will *not* be modified.
-    reaction_list: list of cobra.Reaction or str, optional
+    reaction_list : list of cobra.Reaction or str, optional
         The reactions for which to obtain min/max fluxes. If None will use
         all reactions in the model.
-    fraction_of_optimum: float, optional
+    fraction_of_optimum : float, optional
         Must be <= 1.0. Requires that the objective value is at least
         fraction * max_objective_value. A value of 0.85 for instance means that
         the objective has to be at least at 95% percent of its maximum.
     solver : str, optional
         Name of the solver to be used. If None it will respect the solver set
         in the model (model.solver).
-    **solver_args: additional arguments for legacy solver, optional
+    **solver_args : additional arguments for legacy solver, optional
         Additional arguments passed to the legacy solver. Ignored for
         optlang solver (those can be configured using
-        model.solver.confguration).
+        model.solver.configuration).
 
     Returns
     -------
@@ -54,9 +54,6 @@ def flux_variability_analysis(model, reaction_list=None,
     """
     legacy, solver = sutil.choose_solver(model, solver)
 
-    if reaction_list is None and "the_reactions" in solver_args:
-        reaction_list = solver_args.pop("the_reactions")
-        warn("the_reactions is deprecated. Please use reaction_list=")
     if reaction_list is None:
         reaction_list = model.reactions
 
@@ -133,7 +130,7 @@ def _fva_optlang(model, reaction_list, fraction):
     dict
         A dictionary containing the results.
     """
-    fva_results = {str(r): {} for r in reaction_list}
+    fva_results = {str(rxn): {} for rxn in reaction_list}
     prob = model.solver.interface
     with model as m:
         m.solver.optimize()
@@ -143,28 +140,29 @@ def _fva_optlang(model, reaction_list, fraction):
         # Add objective as a variable to the model than set to zero
         # This also uses the fraction to create the lower bound for the
         # old objective
-        v = prob.Variable("fva_old_objective",
-                          lb=fraction * m.solver.objective.value)
-        c = prob.Constraint(
-            m.solver.objective.expression - v, lb=0.0, ub=0.0,
+        fva_old_objective = prob.Variable(
+            "fva_old_objective", lb=fraction * m.solver.objective.value)
+        fva_old_obj_constraint = prob.Constraint(
+            m.solver.objective.expression - fva_old_objective, lb=0.0, ub=0.0,
             name="fva_old_objective_constraint")
-        sutil.add_to_solver(m, [v, c])
+        sutil.add_to_solver(m, [fva_old_objective, fva_old_obj_constraint])
         model.objective = S.Zero  # This will trigger the reset as well
         for what in ("minimum", "maximum"):
             sense = "min" if what == "minimum" else "max"
-            for r in reaction_list:
-                r_id = str(r)
-                r = m.reactions.get_by_id(r_id)
+            for rxn in reaction_list:
+                r_id = str(rxn)
+                rxn = m.reactions.get_by_id(r_id)
                 # The previous objective assignment already triggers a reset
                 # so directly update coefs here to not trigger redundant resets
-                # in the history manager
+                # in the history manager which can take longer than the actual
+                # FVA for small models
                 m.solver.objective.set_linear_coefficients(
-                    {r.forward_variable: 1, r.reverse_variable: -1})
+                    {rxn.forward_variable: 1, rxn.reverse_variable: -1})
                 m.solver.objective.direction = sense
                 m.solver.optimize()
                 fva_results[r_id][what] = m.solver.objective.value
                 m.solver.objective.set_linear_coefficients(
-                    {r.forward_variable: 0, r.reverse_variable: 0})
+                    {rxn.forward_variable: 0, rxn.reverse_variable: 0})
 
     return fva_results
 
