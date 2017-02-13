@@ -101,4 +101,4 @@ Public License for more details.
    :target: https://gitter.im/opencobra/cobrapy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 .. |Waffle| image:: https://badge.waffle.io/opencobra/cobrapy.png?label=ready&title=Ready
    :target: https://waffle.io/opencobra/cobrapy 
-   :alt: 'Stories we are working one right now'
+   :alt: 'Stories in Ready'
