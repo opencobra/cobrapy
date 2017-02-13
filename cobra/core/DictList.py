@@ -60,7 +60,7 @@ class DictList(list):
 
         Parameters
         ----------
-        iterable: list (if not, turned into single element list)
+        iterable : list (if not, turned into single element list)
             list where each element is either int (referring to an index in
             in this DictList), string (a id of a member in this DictList) or
             member of this DictList for pass-through

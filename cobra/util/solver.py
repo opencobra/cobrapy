@@ -34,9 +34,9 @@ def linear_reaction_coefficients(model, reactions=None):
 
     Parameters
     ----------
-    model: cobra model
+    model : cobra model
         the model object that defined the objective
-    reactions: list
+    reactions : list
         an optional list for the reactions to get the coefficients for. All
         reactions if left missing.
 
@@ -68,9 +68,9 @@ def set_objective(model, value, additive=False):
 
     Parameters
     ----------
-    model: cobra model
+    model : cobra model
        The model to set the objective for
-    value: model.solver.interface.Objective such as
+    value : model.solver.interface.Objective such as
            optlang.glpk_interface.Objective, sympy.Basic, dict, int,
            list, string or Reaction
 
@@ -84,7 +84,7 @@ def set_objective(model, value, additive=False):
 
         If the objective is not linear, only values of class Objective or
         sympy expression's are allowed.
-    additive: bool
+    additive : bool
         If true, add the terms to the current objective, otherwise start with
         an empty objective
     """
