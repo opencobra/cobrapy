@@ -493,6 +493,17 @@ class TestCobraModel:
         benchmark(benchmark_change_objective)
 
     def test_change_objective(self, model):
+        # Test for correct optimization behavior
+        model.optimize()
+        assert model.reactions.Biomass_Ecoli_core.x > 0.5
+        with model:
+            model.objective = model.reactions.EX_etoh_e
+            model.optimize()
+        assert model.reactions.Biomass_Ecoli_core.x < 0.5
+        assert model.reactions.Biomass_Ecoli_core.objective_coefficient == 1
+        model.optimize()
+        assert model.reactions.Biomass_Ecoli_core.x > 0.5
+        # test changing objective
         biomass = model.reactions.get_by_id("Biomass_Ecoli_core")
         atpm = model.reactions.get_by_id("ATPM")
         model.objective = atpm.id
