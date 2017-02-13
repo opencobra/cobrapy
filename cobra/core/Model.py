@@ -6,7 +6,7 @@ from six import iteritems, string_types
 
 from cobra.solvers import optimize
 from cobra.core.Object import Object
-from cobra.core.Solution import Solution, LazySolution
+from cobra.core.solution import Solution, LazySolution
 from cobra.core.Reaction import Reaction, separate_forward_and_reverse_bounds
 from cobra.core.DictList import DictList
 

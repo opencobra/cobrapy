@@ -1,9 +1,21 @@
-from __future__ import absolute_import, print_function
+# -*- coding: utf-8 -*-
 
-from collections import OrderedDict
+"""
+Provide classes for unified solver solution interfaces.
+
+`cobra.solution`
+`cobra.LazySolution`
+`cobra.LegacySolution`
+"""
+
+from __future__ import absolute_import
 
 import time
 import datetime
+import logging
+
+from collections import OrderedDict
+from warnings import warn
 
 import cobra
 
@@ -13,14 +25,24 @@ except ImportError:
     pandas = None
 
 from cobra.exceptions import UndefinedSolution
-from warnings import warn
-import logging
 
 logger = logging.getLogger(__name__)
 
 
 class SolutionBase(object):
+    """
+    The base for a unified interface to a `cobra.Model` optimization solution.
+
+    Attributes
+    ----------
+    model : cobra.Model
+        The model used for finding a solution.
+    objective_value : float
+        The (optimal) value for the objective function.
+    """
+
     def __new__(cls, *args, **kwargs):
+        """Create either legacy or SolutionBase."""
         # this is a cobrapy compatibility hack
         if len(args) == 1 and not isinstance(args[0], cobra.core.Model):
             cobrapy_solution = super(SolutionBase, cls).__new__(LegacySolution)
@@ -30,6 +52,14 @@ class SolutionBase(object):
             return super(SolutionBase, cls).__new__(cls)
 
     def __init__(self, model, *args, **kwargs):
+        """
+        Initialize a base solution from a model.
+
+        Parameters
+        ----------
+        model : cobra.Model
+            The model used for finding a solution.
+        """
         self.f = None
         self.model = model
         self._x = None
@@ -49,6 +79,7 @@ class SolutionBase(object):
 
     @property
     def x_dict(self):
+        """Deprecated property for accessing fluxes."""
         warn("use solution.fluxes instead", DeprecationWarning)
         if self._x_dict is None:
             return self.fluxes
@@ -57,11 +88,13 @@ class SolutionBase(object):
 
     @x_dict.setter
     def x_dict(self, value):
+        """Deprecated property for setting fluxes."""
         warn("not used", DeprecationWarning)
         self._x_dict = value
 
     @property
     def x(self):
+        """Deprecated property for accessing flux values."""
         warn("use solution.fluxes.values instead", DeprecationWarning)
         if self._x is None:
             return self.fluxes.values()
@@ -70,11 +103,13 @@ class SolutionBase(object):
 
     @x.setter
     def x(self, value):
+        """Deprecated property for setting flux values."""
         warn("not used", DeprecationWarning)
         self._x = value
 
     @property
     def y_dict(self):
+        """Deprecated property for accessing reduced costs."""
         warn("use solution.reduced_costs instead", DeprecationWarning)
         if self._y_dict is None:
             return self.reduced_costs
@@ -83,10 +118,12 @@ class SolutionBase(object):
 
     @y_dict.setter
     def y_dict(self, value):
+        """Deprecated property for setting reduced costs."""
         self._y_dict = value
 
     @property
     def y(self):
+        """Deprecated property for accessing reduced cost values."""
         warn("use solution.reduced_costs.values instead", DeprecationWarning)
         if self._y is None:
             return self.reduced_costs.values()
@@ -95,22 +132,27 @@ class SolutionBase(object):
 
     @y.setter
     def y(self, value):
+        """Deprecated property for setting reduced cost values."""
         warn("not used", DeprecationWarning)
         self._y = value
 
     @property
     def objective_value(self):
+        """Return the objective value if it exists."""
         return self.f
 
     def __repr__(self):
+        """String representation of the solution instance."""
         if self.f is None:
-            return "<Solution '%s' at 0x%x>" % (self.status, id(self))
-        return "<Solution %.2f at 0x%x>" % (self.f, id(self))
+            return "<Solution {0:r} at 0x{1:x}>".format(self.status, id(self))
+        return "<Solution {0:.3g} at 0x{1:x}>" % (self.f, id(self))
 
 
 class Solution(SolutionBase):
-    """Stores the solution from optimizing a cobra.Model. This is
-    used to provide a single interface to results from different
+    """
+    A unified interface to a `cobra.Model` optimization solution.
+
+    This is used to provide a single interface to results from different
     solvers that store their values in different ways.
 
     Attributes
@@ -119,18 +161,24 @@ class Solution(SolutionBase):
         A dictionary of flux values.
     reduced_costs : OrderedDict
         A dictionary of reduced costs.
+    shadow_prices : OrderedDict
+    status : str
+
 
     Notes
     -----
-    See also documentation for cobra.core.Solution.Solution for an extensive
-    list of inherited attributes.
+    See also documentation for cobra.core.solution.solutionBase for a list of
+    inherited attributes.
     """
 
     def __init__(self, model, *args, **kwargs):
         """
+        Initialize a convenient solution interface from a model.
+
         Parameters
         ----------
-        model : SolverBasedModel
+        model : cobra.Model
+            The model used for finding a solution.
         """
         super(Solution, self).__init__(model, *args, **kwargs)
         self.f = model.solver.objective.value
@@ -154,7 +202,7 @@ class Solution(SolutionBase):
         self._metabolite_ids = [m.id for m in self.model.metabolites]
 
     def __dir__(self):
-        # Hide deprecated attributes and methods from user.
+        """Hide deprecated attributes and methods from the public interface."""
         fields = sorted(dir(type(self)) + list(self.__dict__.keys()))
         fields.remove('x')
         fields.remove('y')
@@ -164,7 +212,8 @@ class Solution(SolutionBase):
 
 
 class LazySolution(SolutionBase):
-    """This class implements a lazy evaluating version of the Solution class.
+    """
+    A lazily evaluated interface to a `cobra.Model` optimization solution.
 
     Instead of directly fetching results from the solver, this class only
     gets results when they are requested after checking that the model has
@@ -172,28 +221,32 @@ class LazySolution(SolutionBase):
 
     Attributes
     ----------
-    model : SolverBasedModel
+    model : cobra.Model
+        The model used for finding a solution.
     fluxes : OrderedDict
-        A dictionary with flux values, populated upon first request
+        A dictionary with flux values, populated upon first request.
     reduced_costs : OrderedDict
         A dictionary with the reduced costs for each reaction, populated
-        upon first request
+        upon first request.
     shadow_prices: OrderedDict
         A dictionary with the shadow_prices for each reaction, populated
         upon first request.
 
     Notes
     -----
-    See also documentation for cobra.core.Solution.Solution for an extensive
-    list of inherited attributes.
+    See also documentation for `cobra.core.solution.solutionBase` for an
+    extensive list of inherited attributes.
 
     """
 
     def __init__(self, model, *args, **kwargs):
         """
+        Initialize a lazily evaluated solution interface from a model.
+
         Parameters
         ----------
-        model : SolverBasedModel
+        model : cobra.Model
+            The model used for finding a solution.
         """
         super(LazySolution, self).__init__(model, *args, **kwargs)
         if self.model._timestamp_last_optimization is not None:
@@ -206,7 +259,8 @@ class LazySolution(SolutionBase):
 
     @property
     def data_frame(self):
-        if pandas:
+        """Return flux values and reduced costs as a `pandas.DataFrame`."""
+        if pandas is not None:
             return pandas.DataFrame(
                 {'fluxes': pandas.Series(self.fluxes),
                  'reduced_costs': pandas.Series(self.reduced_costs)})
@@ -214,40 +268,46 @@ class LazySolution(SolutionBase):
             warn("pandas not available")
 
     def _repr_html_(self):
+        """Create an HTML representation of the solution, useful for Jupyter."""
         if pandas:
             return self.data_frame._repr_html_()
         else:
             warn("pandas not available")
 
     def _check_freshness(self):
-        """Raises an exceptions if the solution might have become invalid
-        due to re-optimization of the attached model.
+        """
+        Ensure that the solution is current.
 
         Raises
         ------
         UndefinedSolution
-            If solution has become invalid.
+            If the solution has become invalid due to re-optimization of the
+            underlying model.
         """
+        # Assume that self.model._timestamp_last_optimization is not None since
+        # otherwise there would be no solution.
         if self._time_stamp != self.model._timestamp_last_optimization:
             def timestamp_formatter(timestamp):
                 datetime.datetime.fromtimestamp(timestamp).strftime(
                     "%Y-%m-%d %H:%M:%S:%f")
 
             raise UndefinedSolution(
-                'The solution (captured around %s) has become invalid as the '
-                'model has been re-optimized recently (%s).' % (
+                "The solution (captured around {0}) has become invalid as the "
+                "model has been re-optimized recently ({1}).".format(
                     timestamp_formatter(self._time_stamp),
-                    timestamp_formatter(
-                        self.model._timestamp_last_optimization))
+                    timestamp_formatter(self.model._timestamp_last_optimization)
+                )
             )
 
     @property
     def status(self):
+        """Access the solver status after optimization."""
         self._check_freshness()
         return self.model.solver.status
 
     @property
     def f(self):
+        """Access the objective value."""
         self._check_freshness()
         if self._f is None:
             return self.model.solver.objective.value
@@ -256,10 +316,25 @@ class LazySolution(SolutionBase):
 
     @f.setter
     def f(self, value):
+        """Set the objective value."""
         self._f = value
 
     @property
     def fluxes(self):
+        """
+        Access the fluxes.
+
+        Warning
+        -------
+        Accessing all flux values in this way is not recommended since it
+        defeats the purpose of lazy evaluation.
+
+        Returns
+        -------
+        OrderedDict
+            All fluxes in the model as an ordered dictionary keyed by
+            reaction ID.
+        """
         self._check_freshness()
         primal_values = self.model.solver.primal_values
 
@@ -274,6 +349,20 @@ class LazySolution(SolutionBase):
 
     @property
     def reduced_costs(self):
+        """
+        Access the reduced costs.
+
+        Warning
+        -------
+        Accessing all reduced costs in this way is not recommended since it
+        defeats the purpose of lazy evaluation.
+
+        Returns
+        -------
+        OrderedDict
+            All reduced costs in the model as an ordered dictionary keyed by
+            reaction ID.
+        """
         self._check_freshness()
         reduced_values = self.model.solver.reduced_costs
 
@@ -287,6 +376,20 @@ class LazySolution(SolutionBase):
 
     @property
     def shadow_prices(self):
+        """
+        Access shadow prices.
+
+        Warning
+        -------
+        Accessing all shadow prices in this way is not recommended since it
+        defeats the purpose of lazy evaluation.
+
+        Returns
+        -------
+        OrderedDict
+            All shadow prices in the model as an ordered dictionary keyed by
+            reaction ID.
+        """
         self._check_freshness()
         return self.model.solver.shadow_prices
 
@@ -303,27 +406,40 @@ class LazySolution(SolutionBase):
 
 
 class LegacySolution(object):
-    """Stores the solution from optimizing a cobra.Model. This is
-    used to provide a single interface to results from different
-    solvers that store their values in different ways.
+    """
+    Legacy support for an interface to a `cobra.Model` optimization solution.
 
-    f: The objective value
+    Attributes
+    ----------
+    f : float
+        The objective value
+    solver : str
+        A string indicating which solver package was used.
+    x : iterable
+        List or Array of the fluxes (primal values).
+    x_dict : dict
+        A dictionary of reaction IDs that maps to the respective primal values.
+    y : iterable
+        List or Array of the dual values.
+    y_dict : dict
+        A dictionary of reaction IDs that maps to the respective dual values.
 
-    solver: A string indicating which solver package was used.
-
-    x: List or Array of the values from the primal.
-
-    x_dict: A dictionary of reaction ids that maps to the primal values.
-
-    y: List or Array of the values from the dual.
-
-    y_dict: A dictionary of reaction ids that maps to the dual values.
-
+    .. warning :: deprecated
     """
 
     def __init__(self, f, x=None,
                  x_dict=None, y=None, y_dict=None,
                  solver=None, the_time=0, status='NA'):
+        """
+        Initialize a legacy interface to a solution from an objective value.
+
+        Parameters
+        ----------
+        f : float
+            Objective value.
+
+        .. warning :: deprecated
+        """
         self.solver = solver
         self.f = f
         self.x = x
@@ -333,6 +449,10 @@ class LegacySolution(object):
         self.y_dict = y_dict
 
     def dress_results(self, model):
-        """.. warning :: deprecated"""
+        """
+        Method could be intended as a decorator.
+
+        .. warning :: deprecated
+        """
         warn("unnecessary to call this deprecated function",
              DeprecationWarning)
