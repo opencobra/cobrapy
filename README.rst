@@ -1,7 +1,7 @@
 cobrapy - constraint-based reconstruction and analysis in python
 ================================================================
 
-|Build Status| |Coverage Status| |Build status| |PyPI| |Gitter|
+|Build Status| |Coverage Status| |Build status| |PyPI| |Gitter| |Waffle|
 
 What is cobrapy?
 ~~~~~~~~~~~~~~~~
@@ -99,4 +99,6 @@ Public License for more details.
    :target: https://pypi.python.org/pypi/cobra
 .. |Gitter| image:: https://badges.gitter.im/opencobra/cobrapy.svg
    :target: https://gitter.im/opencobra/cobrapy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
-
+.. |Waffle| image:: https://badge.waffle.io/opencobra/cobrapy.png?label=ready&title=Ready
+   :target: https://waffle.io/opencobra/cobrapy 
+   :alt: 'Stories we are working one right now'
