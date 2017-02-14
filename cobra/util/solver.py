@@ -128,7 +128,7 @@ def interface_to_str(interface):
 
     Parameters
     ----------
-    interface: string
+    interface : string
         Full name of the interface in optlang or cobra representation.
         For instance 'optlang.glpk_interface' or 'optlang-glpk'.
 
@@ -146,9 +146,9 @@ def get_solver_name(mip=False, qp=False):
 
     Parameters
     ----------
-    mip: bool
+    mip : bool
         Does the solver require mixed integer linear programming capabilities?
-    qp: bool
+    qp : bool
         Does the solver require quadratic programming capabilities?
 
     Returns
@@ -225,7 +225,7 @@ def choose_solver(model, solver=None, **solver_specs):
         legacy = True
         solver = legacy_solvers.solver_dict[solver]
 
-    return (legacy, solver)
+    return legacy, solver
 
 
 def add_to_solver(model, what):
@@ -237,9 +237,9 @@ def add_to_solver(model, what):
 
     Parameters
     ----------
-    model: a cobra model
+    model : a cobra model
        The model to which to add the variables and constraints.
-    what: list or tuple of optlang variables or constraints.
+    what : list or tuple of optlang variables or constraints.
        The variables or constraints to add to the model. Must be of class
        `model.solver.interface.Variable` or
        `model.solver.interface.Constraint`.
@@ -259,9 +259,9 @@ def remove_from_solver(model, what):
 
     Parameters
     ----------
-    model: a cobra model
+    model : a cobra model
        The model from which to remove the variables and constraints.
-    what: list or tuple of optlang variables or constraints.
+    what : list or tuple of optlang variables or constraints.
        The variables or constraints to remove from the model. Must be of
        class `model.solver.interface.Variable` or
        `model.solver.interface.Constraint`.
@@ -280,14 +280,14 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
 
     Parameters
     ----------
-    model: a cobra model
+    model : a cobra model
        The model to which to add the absolute expression.
-    expression: A sympy expression
+    expression : A sympy expression
        Must be a valid expression within the Model's solver object. The
        absolute value is applied automatically on the expression.
-    name: string
+    name : string
        The name of the newly created variable.
-    ub: positive float
+    ub : positive float
        The upper bound for the variable.
     """
     variable = model.solver.interface.Variable(name, lb=0, ub=ub)
