@@ -224,7 +224,6 @@ def choose_solver(model, solver=None, **solver_specs):
     else:
         legacy = True
         solver = legacy_solvers.solver_dict[solver]
-
     return legacy, solver
 
 
