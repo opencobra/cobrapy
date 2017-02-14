@@ -18,7 +18,7 @@ class HistoryManager(object):
 
         Parameters
         ----------
-        operation: `function`
+        operation : `function`
             A function to be called at a later time
 
         """

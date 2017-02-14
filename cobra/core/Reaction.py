@@ -32,16 +32,24 @@ _reverse_arrow_finder = re.compile("<(-+|=+)")
 
 class Reaction(Object):
     """Reaction is a class for holding information regarding
-    a biochemical reaction in a cobra.Model object
+    a biochemical reaction in a cobra.Model object.
 
+    Parameters
+    ----------
+    id : string
+        The identifier to associate with this reaction
+    name : string
+        A human readable name for the reaction
+    subsystem : string
+        Subsystem where the reaction is meant to occur
+    lower_bound : float
+        The lower flux bound
+    upper_bound : float
+        The upper flux bound
     """
 
     def __init__(self, id=None, name='', subsystem='', lower_bound=0.,
                  upper_bound=1000., objective_coefficient=0.):
-        """An object for housing reactions and associated information
-        for cobra modeling.
-
-        """
         Object.__init__(self, id, name)
         self._gene_reaction_rule = ''
         self.subsystem = subsystem
@@ -71,7 +79,6 @@ class Reaction(Object):
         self._reverse_variable = None
         self._forward_variable = None
 
-    # from cameo ...
     def _set_id_with_model(self, value):
         if value in self.model.reactions:
             raise ValueError("The model already contains a reaction with"
@@ -99,7 +106,7 @@ class Reaction(Object):
 
         Returns
         -------
-        sympy expression:
+        sympy expression
             The expression represeenting the the forward flux (if associated
             with model), otherwise None. Representing the net flux if
             model.reversible_encoding == 'unsplit' or None if reaction is
@@ -115,7 +122,7 @@ class Reaction(Object):
 
         Returns
         -------
-        optlang.interface.Variable:
+        optlang.interface.Variable
             An optlang variable for the forward flux or None if reaction is
             not associated with a model.
         """
@@ -134,7 +141,7 @@ class Reaction(Object):
 
         Returns
         -------
-        optlang.interface.Variable:
+        optlang.interface.Variable
             An optlang variable for the reverse flux or None if reaction is
             not associated with a model.
         """
@@ -400,11 +407,12 @@ class Reaction(Object):
     def remove_from_model(self, model=None, remove_orphans=False):
         """Removes the reaction from the model while keeping it intact
 
-        remove_orphans: Boolean
+        Parameters
+        ----------
+        remove_orphans : bool
             Remove orphaned genes and metabolites from the model as well
 
-        model: deprecated argument, must be None
-
+        model : deprecated argument, must be None
         """
         if model is not None:
             warn("model does not need to be passed into remove_from_model")
@@ -449,7 +457,9 @@ class Reaction(Object):
         model, metabolites and genes (unlike remove_from_model which only
         dissociates the reaction from the model).
 
-        remove_orphans: Boolean
+        Parameters
+        ----------
+        remove_orphans : bool
             Remove orphaned genes and metabolites from the model as well
 
         """
@@ -534,8 +544,10 @@ class Reaction(Object):
         """Remove a metabolite from the reaction and return the
         stoichiometric coefficient.
 
-        metabolite_id: str or :class:`~cobra.core.Metabolite.Metabolite`
-
+        Parameters
+        ----------
+        metabolite_id : str or cobra.core.Metabolite.Metabolite
+            The metabolite to remove
         """
         if self.model is None:
             the_metabolite = metabolite_id
@@ -598,7 +610,10 @@ class Reaction(Object):
         return self
 
     def __imul__(self, coefficient):
-        """Scale coefficients in a reaction"""
+        """Scale coefficients in a reaction by a given value
+
+        E.g. A -> B becomes 2A -> 2B
+        """
         self._metabolites = {k: coefficient * v for k, v in
                              iteritems(self._metabolites)}
         return self
@@ -622,7 +637,9 @@ class Reaction(Object):
         """Return the stoichiometric coefficient for a metabolite in
         the reaction.
 
-        metabolite_id: str or :class:`~cobra.core.Metabolite.Metabolite`
+        Parameters
+        ----------
+        metabolite_id : str or cobra.core.Metabolite.Metabolite
 
         """
         _id_to_metabolites = dict([(x.id, x)
@@ -636,7 +653,9 @@ class Reaction(Object):
         """Return the stoichiometric coefficients for a list of
         metabolites in the reaction.
 
-        metabolite_ids: iterable
+        Parameters
+        ----------
+        metabolite_ids : iterable
             Containing str or :class:`~cobra.core.Metabolite.Metabolite`
 
         """
@@ -648,16 +667,18 @@ class Reaction(Object):
         If the final coefficient for a metabolite is 0 then it is removed
         from the reaction.
 
-        metabolites: dict
+        Parameters
+        ----------
+        metabolites : dict
             {str or :class:`~cobra.core.Metabolite.Metabolite`: coefficient}
 
-        combine: Boolean.
+        combine : bool
             Describes behavior a metabolite already exists in the reaction.
             True causes the coefficients to be added.
             False causes the coefficient to be replaced.
             True and a metabolite already exists in the
 
-        add_to_container_model: Boolean.
+        add_to_container_model : bool
             Add the metabolite to the :class:`~cobra.core.Model.Model`
             the reaction is associated with (i.e. self.model)
 
@@ -735,8 +756,12 @@ class Reaction(Object):
         means add the metabolites with -1*coefficient. If the final coefficient
         for a metabolite is 0 then the metabolite is removed from the reaction.
 
-        metabolites: dict of {:class:`~cobra.core.Metabolite`: coefficient}
-            These metabolites will be added to the reaction
+        Parameters
+        ----------
+        metabolites : dict
+            Dictionary where the keys are of class Metabolite and the values
+            are the coefficients. These metabolites will be added to the
+            reaction.
 
         .. note:: A final coefficient < 0 implies a reactant.
 
@@ -815,7 +840,9 @@ class Reaction(Object):
     def _associate_gene(self, cobra_gene):
         """Associates a cobra.Gene object with a cobra.Reaction.
 
-        cobra_gene : :class:`~cobra.core.Gene.Gene`
+        Parameters
+        ----------
+        cobra_gene : cobra.core.Gene.Gene
 
         """
         self._genes.add(cobra_gene)
@@ -825,7 +852,9 @@ class Reaction(Object):
     def _dissociate_gene(self, cobra_gene):
         """Dissociates a cobra.Gene object with a cobra.Reaction.
 
-        cobra_gene : :class:`~cobra.core.Gene.Gene`
+        Parameters
+        ----------
+        cobra_gene : cobra.core.Gene.Gene
 
         """
         self._genes.discard(cobra_gene)
@@ -845,18 +874,21 @@ class Reaction(Object):
         stoichiometries for the reaction.  It also infers the reversibility
         of the reaction from the reaction arrow.
 
-        Args:
-            reaction_str: a string containing a reaction formula (equation)
-            verbose: Boolean setting verbosity of function
-                (optional, default=True)
-            fwd_arrow: re.compile for forward irreversible reaction arrows
-                (optional, default=_forward_arrow_finder)
-            reverse_arrow: re.compile for backward irreversible reaction arrows
-                (optional, default=_reverse_arrow_finder)
-            fwd_arrow: re.compile for reversible reaction arrows
-                (optional, default=_reversible_arrow_finder)
-            term_split: String dividing individual metabolite entries
-                (optional, default='+')
+        Parameters
+        ----------
+        reaction_str : string
+            a string containing a reaction formula (equation)
+        verbose: bool
+            setting verbosity of function
+        fwd_arrow : re.compile
+            for forward irreversible reaction arrows
+        rev_arrow : re.compile
+            for backward irreversible reaction arrows
+        reversible_arrow : re.compile
+            for reversible reaction arrows
+        term_split : string
+            dividing individual metabolite entries
+
         """
         # set the arrows
         forward_arrow_finder = _forward_arrow_finder if fwd_arrow is None \
@@ -932,6 +964,12 @@ def separate_forward_and_reverse_bounds(lower_bound, upper_bound):
     (returns positive ranges) and flipped for usage with forward and reverse
     reactions bounds
 
+    Parameters
+    ----------
+    lower_bound : float
+        The lower flux bound
+    upper_bound : float
+        The upper flux bound
     """
 
     assert lower_bound <= upper_bound, "lower bound is greater than upper"
@@ -948,8 +986,11 @@ def update_forward_and_reverse_bounds(reaction, direction='both'):
 
     Parameters
     ----------
-    reaction : cobra.Reaction object
-
+    reaction : cobra.Reaction
+       The reaction to operate on
+    direction : string
+       Either 'both', 'upper' or 'lower' for updating the corresponding flux
+       bounds.
     """
 
     reverse_lb, reverse_ub, forward_lb, forward_ub = \

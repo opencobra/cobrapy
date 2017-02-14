@@ -1,8 +1,8 @@
-from .DictList import DictList
-from .Object import Object
-from .Gene import Gene
-from .Metabolite import Metabolite
-from .Reaction import Reaction
-from .Solution import Solution, LazySolution
-from .Model import Model
-from .Species import Species
+from cobra.core.DictList import DictList
+from cobra.core.Object import Object
+from cobra.core.Gene import Gene
+from cobra.core.Metabolite import Metabolite
+from cobra.core.Reaction import Reaction
+from cobra.core.Solution import Solution, LazySolution
+from cobra.core.Model import Model
+from cobra.core.Species import Species

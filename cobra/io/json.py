@@ -178,8 +178,14 @@ def from_json(jsons):
 def load_json_model(file_name):
     """Load a cobra model stored as a json file
 
+    Parameters
+    ----------
     file_name : str or file-like object
 
+    Returns
+    -------
+    cobra.Model
+       The loaded model
     """
     # open the file
     should_close = False
@@ -198,10 +204,12 @@ def load_json_model(file_name):
 def save_json_model(model, file_name, pretty=False):
     """Save the cobra model as a json file.
 
-    model : :class:`~cobra.core.Model.Model` object
-
+    Parameters
+    ----------
+    model : cobra.core.Model.Model
+        The model to save
     file_name : str or file-like object
-
+        The file to save to
     """
     # open the file
     should_close = False

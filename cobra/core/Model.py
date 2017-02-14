@@ -22,9 +22,32 @@ import optlang
 
 
 class Model(Object):
-    """Metabolic Model
+    """Class representation for a cobra model
 
-    Refers to Metabolite, Reaction, and Gene Objects.
+    Parameters
+    ----------
+    id_or_model : Model, string
+        Either an existing Model object in which case a new model object is
+        instantiated with the same properties as the original model,
+        or a the identifier to associate with the model as a string.
+    name : string
+        Human readable name for the model
+
+    Attributes
+    ----------
+    reactions : DictList
+        A DictList where the key is the reaction identifier and the value a
+        Reaction
+    metabolites : DictList
+        A DictList where the key is the metabolite identifier and the value a
+        Metabolite
+    genes : DictList
+        A DictList where the key is the gene identifier and the value a
+        Gene
+    compartments : dict
+        A dictionary with abbreviations for compartments and their full names.
+    solution : Solution
+        The last obtained solution from optimizing the model.
     """
 
     def __setstate__(self, state):
@@ -75,9 +98,11 @@ class Model(Object):
     def solver(self):
         """Get or set the attached solver instance.
 
-        Very useful for accessing the optimization problem directly.
-        Furthermore, can be used to define additional non-metabolic
-        constraints.
+        The associated the solver object, which manages the interaction with
+        the associated solver, e.g. glpk.
+
+        This property is useful for accessing the optimization problem
+        directly and to define additional non-metabolic constraints.
 
         Examples
         --------
@@ -283,10 +308,12 @@ class Model(Object):
         return new
 
     def add_metabolites(self, metabolite_list):
-        """Will add a list of metabolites to the the object, if they do not
-        exist and then expand the stochiometric matrix
+        """Will add a list of metabolites to the model object and add new
+        constraints accordingly.
 
-        metabolite_list: A list of :class:`~cobra.core.Metabolite` objects
+        Parameters
+        ----------
+        metabolite_list : A list of `cobra.core.Metabolite` objects
 
         """
         if not hasattr(metabolite_list, '__iter__'):
@@ -309,7 +336,9 @@ class Model(Object):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
 
-        reaction: A :class:`~cobra.core.Reaction` object
+        Parameters
+        ----------
+        reaction : A `cobra.core.Reaction` object
 
         """
         self.add_reactions([reaction])
@@ -318,7 +347,9 @@ class Model(Object):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
 
-        reaction_list: A list of :class:`~cobra.core.Reaction` objects
+        Parameters
+        ----------
+        reaction_list : A list of `cobra.core.Reaction` objects
 
         """
 
@@ -471,27 +502,26 @@ class Model(Object):
 
         Parameters
         ----------
+        objective_sense : 'maximize' or 'minimize'
 
-        objective_sense: 'maximize' or 'minimize'
-
-        solution_type: Solution or LazySolution
+        solution_type : Solution or LazySolution
             The type of solution that should be returned. A LazySolution
             only fetches attributes from the solver when requested in order
             to reduce unnecessary communication.
 
-        solver: 'glpk', 'cglpk', 'gurobi', 'cplex' or None
+        solver : 'glpk', 'cglpk', 'gurobi', 'cplex' or None
 
-        quadratic_component: None or :class:`scipy.sparse.dok_matrix`
+        quadratic_component : None or :class:`scipy.sparse.dok_matrix`
             The dimensions should be (n, n) where n is the number of reactions.
 
             This sets the quadratic component (Q) of the objective coefficient,
             adding :math:`\\frac{1}{2} v^T \cdot Q \cdot v` to the objective.
 
-        tolerance_feasibility: Solver tolerance for feasibility.
+        tolerance_feasibility : Solver tolerance for feasibility.
 
-        tolerance_markowitz: Solver threshold during pivot
+        tolerance_markowitz : Solver threshold during pivot
 
-        time_limit: Maximum solver time (in seconds)
+        time_limit : Maximum solver time (in seconds)
 
         .. NOTE :: Only the most commonly used parameters are presented here.
                    Additional parameters for cobra.solvers may be available and
@@ -564,7 +594,16 @@ class Model(Object):
                     reaction.remove_from_model(remove_orphans=remove_orphans)
 
     def repair(self, rebuild_index=True, rebuild_relationships=True):
-        """Update all indexes and pointers in a model"""
+        """Update all indexes and pointers in a model
+
+        Parameters
+        ----------
+        rebuild_index : bool
+            rebuild the indices kept in reactions, metabolites and genes
+        rebuild_relationships : bool
+             reset all associations between genes, metabolites, model and
+             then re-add them.
+        """
         if rebuild_index:  # DictList indexes
             self.reactions._generate_index()
             self.metabolites._generate_index()
@@ -585,7 +624,6 @@ class Model(Object):
                 e._model = self
         if self.solution is None:
             self.solution = Solution(None)
-        return
 
     @property
     def objective_reactions(self):
@@ -599,7 +637,7 @@ class Model(Object):
 
         Parameters
         ----------
-        value: list or dict of `Reactions`
+        value : list or dict of `Reactions`
             if value is a list, then each element should be a reaction. if
             it is a dictionary, then each key is a reaction identifier and
             the associated value the new objective coefficient for that
@@ -682,31 +720,34 @@ class Model(Object):
             raise TypeError('%r is not a valid objective for %r.' %
                             (value, self.solver))
 
-    def summary(self, **kwargs):
+    def summary(self, threshold=1E-8, fva=None, floatfmt='.3g', **kwargs):
         """Print a summary of the input and output fluxes of the model. This
         method requires the model to have been previously solved.
 
-        threshold: float
+        Parameters
+        ----------
+        threshold : float
             tolerance for determining if a flux is zero (not printed)
 
-        fva: int or None
+        fva : int or None
             Whether or not to calculate and report flux variability in the
             output summary
 
-        floatfmt: string
+        floatfmt : string
             format method for floats, passed to tabulate. Default is '.3g'.
 
         """
 
         try:
             from ..flux_analysis.summary import model_summary
-            return model_summary(self, **kwargs)
+            return model_summary(self, threshold=threshold, fva=fva,
+                                 floatfmt=floatfmt, **kwargs)
         except ImportError:
             warn('Summary methods require pandas/tabulate')
 
     def __enter__(self):
         """Record all future changes to the model, undoing them when a call to
-        __exit__ is recieved"""
+        __exit__ is received"""
 
         # Create a new context and add it to the stack
         try:
