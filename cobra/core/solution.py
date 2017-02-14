@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import
 
-__all__ = ("Solution",)
-
 import time
 import logging
 
@@ -17,6 +15,8 @@ from builtins import (object, super, dict)
 from future.utils import python_2_unicode_compatible
 
 from cobra.exceptions import UndefinedSolution
+
+__all__ = ("Solution",)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -101,7 +101,8 @@ class Solution(object):
         """String representation of the solution instance."""
         if self.objective_value is None:
             return "<Solution {0:r} at 0x{1:x}>".format(self.status, id(self))
-        return "<Solution {0:.3g} at 0x{1:x}>" % (self.objective_value, id(self))
+        return "<Solution {0:.3g} at 0x{1:x}>".format(self.objective_value,
+                                                      id(self))
 
     def __dir__(self):
         """Hide deprecated attributes and methods from the public interface."""
@@ -142,18 +143,21 @@ class Solution(object):
             If the solution has become invalid due to re-optimization of the
             underlying model.
         """
-        # Assume that self._model._timestamp_last_optimization is not None since
-        # otherwise there would be no solution.
+        # Assume that self._model._timestamp_last_optimization is not None
+        # since otherwise there would be no solution.
         if self._time_stamp != self._model._timestamp_last_optimization:
             def timestamp_formatter(timestamp):
-                datetime.fromtimestamp(timestamp).strftime(
+                if timestamp is None:
+                    return "unknown"
+                return datetime.fromtimestamp(timestamp).strftime(
                     "%Y-%m-%d %H:%M:%S:%f")
 
             raise UndefinedSolution(
                 "The solution (captured around {0}) has become invalid as the "
                 "model has been re-optimized recently ({1}).".format(
                     timestamp_formatter(self._time_stamp),
-                    timestamp_formatter(self._model._timestamp_last_optimization)
+                    timestamp_formatter(
+                        self._model._timestamp_last_optimization)
                 )
             )
 
@@ -182,8 +186,8 @@ class Solution(object):
 
         Warning
         -------
-        Accessing all fluxes in this way is not recommended since it defeats the
-        purpose of lazy evaluation.
+        Accessing all fluxes in this way is not recommended since it defeats
+        the purpose of lazy evaluation.
 
         Returns
         -------
@@ -196,9 +200,9 @@ class Solution(object):
 
         self._is_current()
         primal_values = self._model.solver.primal_values
-        self._fluxes = OrderedDict((rxn.id,
-            primal_values[rxn._get_forward_id()] -
-            primal_values[rxn._get_reverse_id()])
+        self._fluxes = OrderedDict(
+            (rxn.id, primal_values[rxn._get_forward_id()] -
+             primal_values[rxn._get_reverse_id()])
             for rxn in self._model.reactions)
         return self._fluxes
 
@@ -223,9 +227,9 @@ class Solution(object):
 
         self._is_current()
         reduced_values = self._model.solver.reduced_costs
-        self._reduced_costs = OrderedDict((rxn.id,
-            reduced_values[rxn._get_forward_id()] -
-            reduced_values[rxn._get_reverse_id()])
+        self._reduced_costs = OrderedDict(
+            (rxn.id, reduced_values[rxn._get_forward_id()] -
+             reduced_values[rxn._get_reverse_id()])
             for rxn in self._model.reactions)
         return self._reduced_costs
 
@@ -333,11 +337,13 @@ class LegacySolution(object):
         x : iterable, optional
             List or Array of the fluxes (primal values).
         x_dict : dict, optional
-            A dictionary of reaction IDs that maps to the respective primal values.
+            A dictionary of reaction IDs that maps to the respective primal
+            values.
         y : iterable, optional
             List or Array of the dual values.
         y_dict : dict, optional
-            A dictionary of reaction IDs that maps to the respective dual values.
+            A dictionary of reaction IDs that maps to the respective dual
+            values.
         the_time : int, optional
         status : str, optional
 
@@ -354,9 +360,10 @@ class LegacySolution(object):
 
     def __repr__(self):
         """String representation of the solution instance."""
-        if self.f is None:
+        if self.objective_value is None:
             return "<Solution {0:r} at 0x{1:x}>".format(self.status, id(self))
-        return "<Solution {0:.3g} at 0x{1:x}>" % (self.f, id(self))
+        return "<Solution {0:.3g} at 0x{1:x}>".format(self.objective_value,
+                                                      id(self))
 
     def dress_results(self, model):
         """
@@ -364,4 +371,5 @@ class LegacySolution(object):
 
         .. warning :: deprecated
         """
-        warn("unnecessary to call this deprecated function", DeprecationWarning)
+        warn("unnecessary to call this deprecated function",
+             DeprecationWarning)
