@@ -312,8 +312,8 @@
           <speciesReference species="M_h2o_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_adp_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
@@ -328,8 +328,8 @@
           <speciesReference species="M_lac__D_e" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_lac__D_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_lac__D_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_ENO" name="enolase" reversible="true" fast="false">
@@ -380,8 +380,8 @@
           <speciesReference species="M_fdp_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_g3p_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_dhap_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_g3p_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_GAPD" name="glyceraldehyde-3-phosphate dehydrogenase" reversible="true" fast="false">
@@ -391,13 +391,13 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_g3p_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_nad_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_g3p_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_nadh_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_13dpg_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
@@ -440,9 +440,9 @@
           <speciesReference species="M_lac__D_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_pyr_c" stoichiometry="1" constant="true"/>
-          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_nadh_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_pyr_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_PFK" name="phosphofructokinase" reversible="false" fast="false">
@@ -513,8 +513,8 @@
           <speciesReference species="M_pi_e" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_PYK" name="pyruvate kinase" reversible="false" fast="false">
@@ -525,12 +525,12 @@
         </notes>
         <listOfReactants>
           <speciesReference species="M_pep_c" stoichiometry="1" constant="true"/>
-          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_adp_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_pyr_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_atp_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_pyr_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_TPI" name="triose-phosphate isomerase" reversible="true" fast="false">
