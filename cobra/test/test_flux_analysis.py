@@ -295,22 +295,46 @@ class TestCobraFluxAnalysis:
         DM_C.objective_coefficient = 1
         return test_model
 
+    def test_legacy_loopless_benchmark(self, benchmark):
+        test_model = self.construct_ll_test_model()
+        benchmark(lambda: construct_loopless_model(test_model).optimize(
+            solver="cglpk"))
+
     def test_loopless_benchmark(self, benchmark):
         test_model = self.construct_ll_test_model()
-        benchmark(lambda: construct_loopless_model(test_model).optimize())
 
-    def test_loopless(self):
+        def _():
+            with test_model:
+                add_loopless(test_model)
+                test_model.optimize(solver="optlang-glpk")
+        benchmark(_)
+
+    def test_legacy_loopless(self):
         try:
             get_solver_name(mip=True)
         except SolverNotFound:
             pytest.skip("no MILP solver found")
         test_model = self.construct_ll_test_model()
-        feasible_sol = construct_loopless_model(test_model).optimize()
-        test_model.reactions.get_by_id('v3').lower_bound = 1
+        feasible_sol = construct_loopless_model(test_model).optimize(
+            solver="cglpk")
+        test_model.reactions.v3.lower_bound = 1
         infeasible_mod = construct_loopless_model(test_model)
-        infeasible_mod.solver.optimize()
+        infeasible_sol = infeasible_mod.optimize(solver="cglpk")
         assert feasible_sol.status == "optimal"
-        assert infeasible_mod.solver.status == "infeasible"
+        assert infeasible_sol.status == "infeasible"
+
+    def test_loopless(self):
+        try:
+            sutil.get_solver_name(mip=True)
+        except SolverNotFound:
+            pytest.skip("no MILP solver found")
+        test_model = self.construct_ll_test_model()
+        add_loopless(test_model)
+        feasible_status = test_model.solver.optimize()
+        test_model.reactions.v3.lower_bound = 1
+        infeasible_status = test_model.solver.optimize()
+        assert feasible_status == "optimal"
+        assert infeasible_status == "infeasible"
 
     @pytest.mark.skipif(numpy is None, reason="phase plane require numpy")
     def test_phenotype_phase_plane_benchmark(self, model, benchmark):

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 try:
     import numpy
 except:
@@ -10,7 +11,8 @@ except:
     scipy = None
 
 from cobra.flux_analysis.gapfilling import growMatch
-from cobra.flux_analysis.loopless import construct_loopless_model
+from cobra.flux_analysis.loopless import (
+    construct_loopless_model, loopless_solution)
 from cobra.flux_analysis.parsimonious import optimize_minimal_flux
 from cobra.flux_analysis.single_deletion import (
     single_gene_deletion, single_reaction_deletion)
