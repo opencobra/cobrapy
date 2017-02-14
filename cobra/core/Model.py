@@ -580,18 +580,16 @@ class Model(Object):
 
         Before introduction of the optlang based solver interfaces,
         this function returned the objective reactions as a list. With
-        optlang, the objective is not limited to reactions making the return
-        value ambiguous. Henceforth, use
-        `cobra.util.solver.linear_reaction_coefficients` to get a dictionary
-        of reactions with their linear coefficients (empty if there are
-        none)
+        optlang, the objective is not limited a simple linear summation of
+        individual reaction fluxes, making that return value ambiguous.
+        Henceforth, use `cobra.util.solver.linear_reaction_coefficients` to
+        get a dictionary of reactions with their linear coefficients (empty
+        if there are none)
 
-        The set value can be string, int, Reaction,
-        solver.interface.Objective or sympy expression. Strings should be
-        reaction identifiers, integers are reaction indices in the current
-        model, Reaction, solver.interface.Objective or sympy expressions are
-        directly interpreted as new objectives
-
+        The set value can be dictionary (reactions as keys, linear
+        coefficients as values), string (reaction identifier), int (reaction
+        index), Reaction or solver.interface.Objective or sympy expression
+        directly interpreted as objectives.
 
         When using a `HistoryManager` context, this attribute can be set
         temporarily, reversed when the exiting the context.
@@ -601,6 +599,10 @@ class Model(Object):
     @objective.setter
     @resettable
     def objective(self, value):
+        if isinstance(value, sympy.Basic):
+            value = self.solver.interface.Objective(value, sloppy=False)
+        if not isinstance(value, (dict, self.solver.interface.Objective)):
+            value = {rxn: 1 for rxn in self.reactions.get_by_any(value)}
         set_objective(self, value, additive=False)
 
     def summary(self, **kwargs):

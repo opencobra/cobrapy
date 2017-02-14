@@ -70,55 +70,48 @@ def set_objective(model, value, additive=False):
     ----------
     model : cobra model
        The model to set the objective for
-    value : model.solver.interface.Objective such as
-           optlang.glpk_interface.Objective, sympy.Basic, dict, int,
-           list, string or Reaction
+    value : model.solver.interface.Objective,
+            e.g. optlang.glpk_interface.Objective, sympy.Basic or dict
 
         If the model objective is linear, the value can be a new Objective
-        object directly, a sympy expression which is used to create a new
-        Objective, a dictionary of linear coefficients where each key is a
-        reaction and the element the new coefficient (float), a list of
-        reactions where each reaction is interpreted to be meant to have an
-        objective coefficient of 1, a string interpreted as a single
-        reaction identifier or directly a Reaction object.
+        object or a dictionary with linear coefficients where each key is a
+        reaction and the element the new coefficient (float).
 
-        If the objective is not linear, only values of class Objective or
-        sympy expression's are allowed.
+        If the objective is not linear and `additive` is true, only values
+        of class Objective.
+
     additive : bool
         If true, add the terms to the current objective, otherwise start with
-        an empty objective
+        an empty objective.
     """
-    by_expression = (isinstance(value, sympy.Basic) or
-                     isinstance(value, model.solver.interface.Objective))
-    by_coefficient = isinstance(value, (dict, int, list, six.string_types,
-                                        cobra.Reaction))
+    by_objective = isinstance(value,
+                              (sympy.Basic, model.solver.interface.Objective))
+
     not_supported = (
-        additive and (not model.objective.is_Linear and not by_expression))
+        additive and (not model.objective.is_Linear and not by_objective))
     if not_supported:
         raise ValueError('can only update non-linear objectives additively '
                          'using object of class '
                          'model.solver.interface.Objective, not %s' %
                          type(value))
-    if by_expression:
+    reverse_value = None
+    if by_objective:
         if not additive:
             if isinstance(value, sympy.Basic):
-                model.solver.objective = model.interface.Objective(
-                    value, sloppy=False)
-            if isinstance(value, model.solver.interface.Objective):
-                model.solver.objective = value
+                value = model.solver.interface.Objective(value, sloppy=False)
+            model.solver.objective = value
         else:
             if isinstance(value, model.solver.interface.Objective):
                 value = value.expression
             model.solver.objective += value
-            value = -value
-    elif by_coefficient:
+            reverse_value = -value
+    elif isinstance(value, dict):
         if not additive:
             model.solver.objective = model.solver.interface.Objective(
                 sympy.S.Zero, direction='max')
-        if not isinstance(value, dict):
-            value = {rxn: 1 for rxn in model.reactions.get_by_any(value)}
+        reverse_value = {}
         for reaction, coef in value.items():
-            value[reaction] = reaction.objective_coefficient
+            reverse_value[reaction] = reaction.objective_coefficient
             model.solver.objective.set_linear_coefficients(
                 {reaction.forward_variable: coef,
                  reaction.reverse_variable: -coef})
@@ -126,8 +119,8 @@ def set_objective(model, value, additive=False):
         raise TypeError(
             '%r is not a valid objective for %r.' % (value, model.solver))
     context = get_context(model)
-    if context:
-        context(partial(set_objective, model=model, value=value,
+    if context and reverse_value:
+        context(partial(set_objective, model=model, value=reverse_value,
                         additive=additive))
 
 
