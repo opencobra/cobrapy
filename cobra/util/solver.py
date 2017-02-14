@@ -7,6 +7,7 @@ The functions defined here together with the existing model functions should
 allow you to implement custom flux analysis methods with ease."""
 
 from cobra.util.context import get_context
+import cobra.solvers as legacy_solvers
 from functools import partial
 import optlang
 import re
@@ -86,6 +87,49 @@ def get_solver_name(mip=False, qp=False):
             if solver_name in solvers:
                 return solver_name
     raise SolverNotFound("no mip-capable solver found")
+
+
+def choose_solver(model, solver=None, **solver_specs):
+    """Choose a solver given a solver name and model.
+
+    This will choose a solver compatible with the model and required
+    capabilities. Also respects model.solver where it can.
+
+    Parameters
+    ----------
+    model : a cobra model
+        The model for which to choose the solver.
+    solver : str, optional
+        The name of the solver to be used. Optlang solvers should be prefixed
+        by "optlang-", for instance "optlang-glpk".
+    solver_specs : arguments passed to get_solver_name, optional
+        The specifications for the solver. For instance `qp=True`.
+
+    Returns
+    -------
+    legacy : boolean
+        Whether the returned solver is a legacy (old cobra solvers) version or
+        an optlang solver (legacy = False).
+    solver : a cobra or optlang solver interface
+        Returns a valid solver for the problem. May be a cobra solver or an
+        optlang interface.
+
+    Raises
+    ------
+    SolverNotFound
+        If no suitable solver could be found.
+    """
+    legacy = False
+    if solver is None:
+        solver = model.solver
+    elif "optlang-" in solver:
+        solver = interface_to_str(solver)
+        solver = solvers[solver]
+    else:
+        legacy = True
+        solver = legacy_solvers.solver_dict[solver]
+
+    return (legacy, solver)
 
 
 def add_to_solver(model, what=None):
