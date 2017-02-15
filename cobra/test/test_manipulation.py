@@ -1,5 +1,6 @@
 from cobra.core import Metabolite, Model, Reaction
 from cobra.manipulation import *
+from cobra.solvers import solver_dict as legacy_solvers
 import pytest
 from .conftest import model, salmonella
 
@@ -7,28 +8,31 @@ from .conftest import model, salmonella
 class TestManipulation:
     """Test functions in cobra.manipulation"""
 
-    @pytest.mark.xfail(reason="defunct with optlang model")
-    def test_canonical_form(self, model):
+    @pytest.mark.parametrize("solver", list(legacy_solvers))
+    def test_canonical_form(self, model, solver):
         # add G constraint to test
         g_constr = Metabolite("SUCCt2_2__test_G_constraint")
         g_constr._constraint_sense = "G"
         g_constr._bound = 5.0
         model.reactions.get_by_id("SUCCt2_2").add_metabolites({g_constr: 1})
-        assert abs(model.optimize("maximize").f - 0.855) < 0.001
+        assert abs(model.optimize("maximize", solver=solver).f - 0.855) < 0.001
         # convert to canonical form
         model = canonical_form(model)
-        assert abs(model.optimize("maximize").f - 0.855) < 10 ** -3
+        assert abs(
+            model.optimize("maximize", solver=solver).f - 0.855) < 10 ** -3
 
-    @pytest.mark.xfail(reason="defunct with optlang model")
-    def test_canonical_form_minimize(self, model):
+    @pytest.mark.parametrize("solver", list(legacy_solvers))
+    def test_canonical_form_minimize(self, model, solver):
         # make a minimization problem
         model.reactions.get_by_id("Biomass_Ecoli_core").lower_bound = 0.5
         for reaction in model.reactions:
             reaction.objective_coefficient = reaction.id == "GAPD"
-        assert abs(model.optimize("minimize").f - 6.27) < 10 ** -3
+        assert abs(
+            model.optimize("minimize", solver=solver).f - 6.27) < 10 ** -3
         # convert to canonical form. Convert minimize to maximize
         model = canonical_form(model, objective_sense="minimize")
-        assert abs(model.optimize("maximize").f + 6.27) < 10 ** -3
+        assert abs(
+            model.optimize("maximize", solver=solver).f + 6.27) < 10 ** -3
         # lower bounds should now be <= constraints
         assert model.reactions.get_by_id(
             "Biomass_Ecoli_core").lower_bound == 0.0
@@ -214,17 +218,6 @@ class TestManipulation:
         assert rxns.EX_o2_e.annotation["SBO"] == "SBO:0000627"
         assert rxns.DM_h_c.annotation["SBO"] == "SBO:0000628"
         assert rxns.EX_h_e.annotation["SBO"] == "SBO:0000628"
-
-    # TODO: remove the following test eventually because bound checking has
-    # handled by optlang now.
-    @pytest.mark.skip(reason='optlang handles bound checking now')
-    def test_validate_reaction_bounds(self, model):
-        model.reactions[0].lower_bound = float("-inf")
-        model.reactions[1].lower_bound = float("nan")
-        model.reactions[0].upper_bound = float("inf")
-        model.reactions[1].upper_bound = float("nan")
-        errors = check_reaction_bounds(model)
-        assert len(errors) == 4
 
     def test_validate_formula_compartment(self, model):
         model.metabolites[1].compartment = "fake"

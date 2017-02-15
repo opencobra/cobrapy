@@ -308,49 +308,6 @@ class TestCobraFluxAnalysis:
         assert feasible_sol.status == "optimal"
         assert infeasible_mod.solver.status == "infeasible"
 
-    @pytest.mark.xfail(reason='broken / needs re-implementation')
-    def test_gapfilling(self):
-        try:
-            get_solver_name(mip=True)
-        except SolverNotFound:
-            pytest.skip("no MILP solver found")
-        m = Model()
-        m.add_metabolites(map(Metabolite, ["a", "b", "c"]))
-        r = Reaction("EX_A")
-        m.add_reaction(r)
-        r.add_metabolites({m.metabolites.a: 1})
-        r = Reaction("r1")
-        m.add_reaction(r)
-        r.add_metabolites({m.metabolites.b: -1, m.metabolites.c: 1})
-        r = Reaction("DM_C")
-        m.add_reaction(r)
-        r.add_metabolites({m.metabolites.c: -1})
-        r.objective_coefficient = 1
-        U = Model()
-        r = Reaction("a2b")
-        U.add_reaction(r)
-
-        r.build_reaction_from_string("a --> b", verbose=False)
-        r = Reaction("a2d")
-        U.add_reaction(r)
-        r.build_reaction_from_string("a --> d", verbose=False)
-
-        # GrowMatch
-        result = gapfilling.growMatch(m, U)[0]
-        assert len(result) == 1
-        assert result[0].id == "a2b"
-        # SMILEY
-        result = gapfilling.SMILEY(m, "b", U)[0]
-        assert len(result) == 1
-        assert result[0].id == "a2b"
-
-        # 2 rounds of GrowMatch with exchange reactions
-        result = gapfilling.growMatch(m, None, ex_rxns=True, iterations=2)
-        assert len(result) == 2
-        assert len(result[0]) == 1
-        assert len(result[1]) == 1
-        assert {i[0].id for i in result} == {"SMILEY_EX_b", "SMILEY_EX_c"}
-
     @pytest.mark.skipif(numpy is None, reason="phase plane require numpy")
     def test_phenotype_phase_plane_benchmark(self, model, benchmark):
         benchmark(calculate_phenotype_phase_plane,
