@@ -25,6 +25,7 @@ if numpy:
     from cobra.flux_analysis.phenotype_phase_plane import (
         calculate_phenotype_phase_plane,)
     from cobra.flux_analysis.sampling import sample
+    from cobra.flux_analysis.loopless import add_loopless
 else:
     from warnings import warn
     warn("double deletions, phase planes and flux sampling requires numpy")

@@ -244,6 +244,10 @@ class TestCobraFluxAnalysis:
         benchmark(flux_variability_analysis, large_model, solver=solver,
                   reaction_list=large_model.reactions[1::3])
 
+    def test_loopless_flux_variability_benchmark(self, model, benchmark):
+        benchmark(flux_variability_analysis, model,
+                  reaction_list=model.reactions[1::5])
+
     @pytest.mark.parametrize("solver", all_solvers)
     def test_flux_variability(self, model, fva_results, solver):
         if solver == "esolver":
@@ -300,7 +304,7 @@ class TestCobraFluxAnalysis:
         benchmark(lambda: construct_loopless_model(test_model).optimize(
             solver="cglpk"))
 
-    def test_loopless_benchmark(self, benchmark):
+    def test_loopless_benchmark_before(self, benchmark):
         test_model = self.construct_ll_test_model()
 
         def _():
@@ -308,6 +312,10 @@ class TestCobraFluxAnalysis:
                 add_loopless(test_model)
                 test_model.optimize(solver="optlang-glpk")
         benchmark(_)
+
+    def test_loopless_benchmark_after(self, benchmark):
+        test_model = self.construct_ll_test_model()
+        benchmark(loopless_solution, test_model)
 
     def test_legacy_loopless(self):
         try:
@@ -328,6 +336,17 @@ class TestCobraFluxAnalysis:
             sutil.get_solver_name(mip=True)
         except SolverNotFound:
             pytest.skip("no MILP solver found")
+
+        # test with loopless_solution
+        test_model = self.construct_ll_test_model()
+        fluxes_feasible = loopless_solution(test_model)
+        test_model.reactions.v3.lower_bound = 1
+        test_model.optimize()
+        fluxes_infeasible = loopless_solution(test_model)
+        assert fluxes_feasible["v3"] == 0.0
+        assert fluxes_infeasible["v3"] == 1.0
+
+        # test with add_loopless
         test_model = self.construct_ll_test_model()
         add_loopless(test_model)
         feasible_status = test_model.solver.optimize()

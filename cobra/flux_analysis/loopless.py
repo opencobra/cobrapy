@@ -30,7 +30,7 @@ def add_loopless(model, zero_cutoff=1e-12):
     References
     ----------
     .. [1] Elimination of thermodynamically infeasible loops in steady-state
-       metabolic models.
+           metabolic models.
        Schellenberger J, Lewis NE, Palsson BO.
        Biophys J. 2011 Feb 2;100(3):544-53.
        doi: 10.1016/j.bpj.2010.12.3707.
@@ -70,6 +70,152 @@ def add_loopless(model, zero_cutoff=1e-12):
             "delta_g_" + model.reactions[ridx].id]: row[i]
             for i, ridx in enumerate(internal) if abs(row[i]) > zero_cutoff}
         model.solver.constraints[name].set_linear_coefficients(coefs)
+
+
+def loopless_solution(model):
+    """Converts an existing solution to a solution with the least amount of
+    loops possible. Uses the method from CycleFreeFlux [1]_ which should be
+    faster than `add_loopless`.
+
+    Parameters
+    ----------
+    model : a cobra model
+        The model to which to add the constraints.
+
+    Returns
+    -------
+    dict
+        A dictionary {rid: flux} containing the fluxes with the least amount of
+        loops possible.
+
+    Notes
+    -----
+
+    The returned flux solution has the following properties:
+
+    - it contains the minimal number of loops possible and no loops at all if
+      all flux bounds include zero
+    - it has the same exact objective value as the previous solution
+    - it has the same exact exchange fluxes as the previous solution
+    - all fluxes have the same sign (flow in the same direction) as the
+      previous solution
+
+    References
+    ----------
+    .. [1] CycleFreeFlux: efficient removal of thermodynamically infeasible
+           loops from flux distributions.
+       Desouki AA, Jarre F, Gelius-Dietrich G, Lercher MJ.
+       Bioinformatics. 2015 Jul 1;31(13):2159-65.
+       doi: 10.1093/bioinformatics/btv096.
+    """
+    try:
+        old_sol = model.solution
+        old_sol.f
+    except Exception:
+        old_sol = model.optimize()
+
+    prob = model.solver.interface
+    with model:
+        loopless_old_obj = prob.Variable("loopless_old_objective",
+                                         lb=old_sol.f, ub=old_sol.f)
+        loopless_obj_constraint = prob.Constraint(
+            model.solver.objective.expression - loopless_old_obj,
+            lb=0, ub=0, name="loopless_obj_constraint")
+        add_to_solver(model, [loopless_old_obj, loopless_obj_constraint])
+        model.objective = S.Zero
+        for rxn in model.reactions:
+            if rxn.boundary:
+                rxn.bounds = (rxn.flux, rxn.flux)
+                continue
+            if rxn.flux >= 0:
+                rxn.lower_bound = max(0, rxn.lower_bound)
+            else:
+                rxn.upper_bound = min(0, rxn.upper_bound)
+            model.objective.set_linear_coefficients(
+                {rxn.forward_variable: 1, rxn.reverse_variable: 1})
+        model.solver.objective.direction = "min"
+        model.optimize()
+        if model.solver.status == "optimal":
+            fluxes = model.solution.fluxes
+        else:
+            fluxes = None
+
+    return fluxes
+
+
+def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-12):
+    """Plugin to get a loopless FVA solution from single FVA iteration.
+
+    Assumes the following about `model` and `reaction`:
+    1. the model objective is set to be `reaction`
+    2. the model has been optimized and contains the minimum/maximum flux for
+       `reaction`
+    3. the model contains an auxiliary variable called "fva_old_objective"
+       denoting the previous objective
+
+    Parameters
+    ----------
+    model : a cobra model
+        The model to be used.
+    reaction : a cobra reaction
+        The reaction currently minimized/maximized.
+    all_fluxes : boolean, optional
+        Whether to return all fluxes or only the minimum/maximum for
+        `reaction`.
+    zero_cutoff : positive float, optional
+        Cutoff used for loop removal. Fluxes with an absolute value smaller
+        than `zero_cutoff` are considered to be zero.
+
+    Returns
+    -------
+    single float or dictionary
+        Returns the minimized/maximized flux through `reaction` if
+        all_fluxes == False (default). Otherwise returns a loopless flux
+        solution containing the minimum/maximum flux for `reaction`.
+    """
+    current = reaction.flux
+    # Reset objective to original one and get a loopless solution
+    model.solver.objective.set_linear_coefficients(
+        {model.solver.variables.fva_old_objective: 1,
+         reaction.forward_variable: 0, reaction.reverse_variable: 0})
+    loopless = loopless_solution(model)
+
+    # If the previous optimum is maintained in the loopless solution it was
+    # loopless and we are done
+    if abs(loopless[reaction.id] - current) < zero_cutoff:
+        # Reset the objective to the one used in the iteration, walk around
+        # the context manager for speed
+        model.solver.objective.set_linear_coefficients(
+            {model.solver.variables.fva_old_objective: 0,
+             reaction.forward_variable: 1, reaction.reverse_variable: -1})
+        if all_fluxes:
+            current = loopless
+        return current
+
+    # If previous optimum was not in the loopless solution create a new
+    # almost loopless solution containing only loops including the current
+    # reaction. Than remove all of those loops.
+    with model:
+        reaction.bounds = (current, current)
+        almost_loopless = loopless_solution(model)
+        # find the reactions with loops using the current reaction and remove
+        # the loops
+        for rxn in model.reactions:
+            if (abs(loopless[rxn.id]) < zero_cutoff and
+               abs(almost_loopless[rxn.id]) > zero_cutoff):
+                rxn.bounds = (0, 0)
+
+        # Globally reset the objective to the one used in the FVA iteration
+        model.solver.objective.set_linear_coefficients(
+            {model.solver.variables.fva_old_objective: 0,
+             reaction.forward_variable: 1, reaction.reverse_variable: -1})
+
+        if all_fluxes:
+            best = model.optimize().fluxes
+        else:
+            model.solver.optimize()
+            best = reaction.flux
+    return best
 
 
 def construct_loopless_model(cobra_model):

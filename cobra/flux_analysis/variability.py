@@ -6,10 +6,11 @@ from six import iteritems
 from sympy.core.singleton import S
 
 import cobra.util.solver as sutil
+from cobra.flux_analysis.loopless import loopless_fva_iter
 from cobra.solvers import get_solver_name, solver_dict
 
 
-def flux_variability_analysis(model, reaction_list=None,
+def flux_variability_analysis(model, reaction_list=None, loopless=False,
                               fraction_of_optimum=1.0, solver=None,
                               **solver_args):
     """Runs flux variability analysis to find the min/max flux values for each
@@ -22,6 +23,9 @@ def flux_variability_analysis(model, reaction_list=None,
     reaction_list : list of cobra.Reaction or str, optional
         The reactions for which to obtain min/max fluxes. If None will use
         all reactions in the model.
+    loopless : boolean, optional
+        Whether to return only loopless solutions. Ignored for legacy solvers,
+        also see `Notes`.
     fraction_of_optimum : float, optional
         Must be <= 1.0. Requires that the objective value is at least
         fraction * max_objective_value. A value of 0.85 for instance means that
@@ -48,12 +52,24 @@ def flux_variability_analysis(model, reaction_list=None,
     individually and a single minimal flux might require all others to be
     suboptimal.
 
+    Using the loopless option will lead to a significant increase in
+    computation time (about a factor of 100 for large models). However, the
+    algorithm used here (see [2]_) is still more than 1000x faster than the
+    "naive" version using `add_loopless(model)`. Also note that if you have
+    included constraints that force a loop (for instance by setting all fluxes
+    in a loop to be non-zero) this loop will be included in the solution.
+
     References
     ----------
     .. [1] Computationally efficient flux variability analysis.
        Gudmundsson S, Thiele I.
        BMC Bioinformatics. 2010 Sep 29;11:489.
        doi: 10.1186/1471-2105-11-489, PMID: 20920235
+    .. [2] CycleFreeFlux: efficient removal of thermodynamically infeasible
+           loops from flux distributions.
+       Desouki AA, Jarre F, Gelius-Dietrich G, Lercher MJ.
+       Bioinformatics. 2015 Jul 1;31(13):2159-65.
+       doi: 10.1093/bioinformatics/btv096.
     """
     legacy, solver = sutil.choose_solver(model, solver)
 
@@ -61,7 +77,8 @@ def flux_variability_analysis(model, reaction_list=None,
         reaction_list = model.reactions
 
     if not legacy:
-        return _fva_optlang(model, reaction_list, fraction_of_optimum)
+        return _fva_optlang(model, reaction_list, fraction_of_optimum,
+                            loopless)
     else:
         return _fva_legacy(model, reaction_list, fraction_of_optimum,
                            "maximize", solver, **solver_args)
@@ -120,7 +137,7 @@ def calculate_lp_variability(lp, solver, cobra_model, reaction_list,
     return fva_results
 
 
-def _fva_optlang(model, reaction_list, fraction):
+def _fva_optlang(model, reaction_list, fraction, loopless):
     """Helper function to perform FVA with the optlang interface.
 
     Parameters
@@ -163,7 +180,11 @@ def _fva_optlang(model, reaction_list, fraction):
                     {rxn.forward_variable: 1, rxn.reverse_variable: -1})
                 m.solver.objective.direction = sense
                 m.solver.optimize()
-                fva_results[r_id][what] = m.solver.objective.value
+                if loopless:
+                    value = loopless_fva_iter(m, rxn)
+                else:
+                    value = m.solver.objective.value
+                fva_results[r_id][what] = value
                 m.solver.objective.set_linear_coefficients(
                     {rxn.forward_variable: 0, rxn.reverse_variable: 0})
 
