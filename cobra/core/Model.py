@@ -13,11 +13,11 @@ from cobra.core.DictList import DictList
 import six
 import time
 import types
-from sympy.core.singleton import S
+from sympy import S
 from cobra.util.util import AutoVivification
 from cobra.util.context import HistoryManager, resettable
 from cobra.util.solver import solvers, SolverNotFound, interface_to_str,\
-                              get_solver_name
+                              get_solver_name, set_objective
 import optlang
 
 
@@ -56,10 +56,8 @@ class Model(Object):
         for y in ['reactions', 'genes', 'metabolites']:
             for x in getattr(self, y):
                 x._model = self
-        # only repairs objectives when they are reactions..
-        for reaction in getattr(self, 'reactions'):
-            reaction.objective_coefficient = \
-                reaction._objective_coefficient
+                if y == 'reactions':
+                    x._reset_var_cache()
         if not hasattr(self, "name"):
             self.name = None
 
@@ -451,17 +449,6 @@ class Model(Object):
                 constraint_terms[constraint][forward_variable] = coeff
                 constraint_terms[constraint][reverse_variable] = -coeff
 
-            objective_coeff = reaction._objective_coefficient
-            if objective_coeff != 0.:
-                if self.solver.objective is None:
-                    self.solver.objective = self.solver.interface.Objective(
-                        0, direction='max')
-                if self.solver.objective.direction == 'min':
-                    self.solver.objective.direction = 'max'
-                self.solver.objective.set_linear_coefficients(
-                    {forward_variable: objective_coeff,
-                     reverse_variable: -objective_coeff})
-
         self.solver.update()
         for constraint, terms in six.iteritems(constraint_terms):
             constraint.set_linear_coefficients(terms)
@@ -626,99 +613,35 @@ class Model(Object):
             self.solution = Solution(None)
 
     @property
-    def objective_reactions(self):
-        return {reaction: reaction.objective_coefficient
-                for reaction in self.reactions
-                if reaction.objective_coefficient != 0}
-
-    @objective_reactions.setter
-    def objective_reactions(self, value):
-        """Get or set solver objective based on a list of reactions
-
-        Parameters
-        ----------
-        value : list or dict of `Reactions`
-            if value is a list, then each element should be a reaction. if
-            it is a dictionary, then each key is a reaction identifier and
-            the associated value the new objective coefficient for that
-            reaction.
-        """
-        for reaction in self.reactions:
-            reaction.objective_coefficient = 0.
-        for item in value:
-            if isinstance(item, int):
-                reaction = self.reactions[item]
-            elif isinstance(item, six.string_types):
-                reaction = self.reactions.get_by_id(item)
-            elif hasattr(item, 'id'):
-                reaction = self.reactions.get_by_id(item.id)
-            else:
-                raise ValueError('item in iterable cannot be %s' %
-                                 type(item))
-            if isinstance(value, list):
-                reaction.objective_coefficient = 1
-            if isinstance(value, dict):
-                reaction.objective_coefficient = value[item]
-
-    @property
     def objective(self):
         """Get or set the solver objective
 
         Before introduction of the optlang based solver interfaces,
-        this function always returned the objective reactions as a list.
-        With optlang, the objective is not limited to reactions making the
-        return value ambiguous. Henceforth, use `objective_reactions` to get
-        a list (empty if there are none), or `model.solver.objective` for
-        the complete solver objective. In a future release of cobrapy,
-        this function will return the solver objective.
+        this function returned the objective reactions as a list. With
+        optlang, the objective is not limited a simple linear summation of
+        individual reaction fluxes, making that return value ambiguous.
+        Henceforth, use `cobra.util.solver.linear_reaction_coefficients` to
+        get a dictionary of reactions with their linear coefficients (empty
+        if there are none)
 
-        The set value can be string, int, Reaction,
-        solver.interface.Objective or sympy expression. Strings should be
-        reaction identifiers, integers are reaction indices in the current
-        model, Reaction, solver.interface.Objective or sympy expressions are
-        directly interpreted as new objectives
-
+        The set value can be dictionary (reactions as keys, linear
+        coefficients as values), string (reaction identifier), int (reaction
+        index), Reaction or solver.interface.Objective or sympy expression
+        directly interpreted as objectives.
 
         When using a `HistoryManager` context, this attribute can be set
         temporarily, reversed when the exiting the context.
         """
-        warn(("use objective_reactions or model.solver.objective "
-              "instead. A future version of cobra will not "
-              "necessarily return a list of reactions."), DeprecationWarning)
-        return self.objective_reactions
+        return self.solver.objective
 
     @objective.setter
     @resettable
     def objective(self, value):
-        if isinstance(value, six.string_types):
-            try:
-                value = self.reactions.get_by_id(value)
-            except KeyError:
-                raise ValueError("No reaction with the id %s in the model"
-                                 % value)
-        if isinstance(value, int):
-            value = self.reactions[value]
-        if isinstance(value, Reaction):
-            if value.model is not self:
-                raise ValueError("%r does not belong to the model" % value)
-            value.objective_coefficient = 1.
-            self.solver.objective = self.solver.interface.Objective(
-                value.flux_expression, sloppy=True)
-        elif isinstance(value, self.solver.interface.Objective):
-            self.solver.objective = value
-        elif isinstance(value, sympy.Basic):
-            self.solver.objective = self.solver.interface.Objective(
-                value, sloppy=False)
-        elif isinstance(value, (dict, list)):
-            warn("use model.objective_reactions for lists and dictionaries",
-                 DeprecationWarning)
-            self.objective_reactions = value
-        # TODO(old): maybe the following should be allowed
-        # elif isinstance(value, optlang.interface.Objective):
-        # self.solver.objective = self.solver.interface.Objective.clone(value)
-        else:
-            raise TypeError('%r is not a valid objective for %r.' %
-                            (value, self.solver))
+        if isinstance(value, sympy.Basic):
+            value = self.solver.interface.Objective(value, sloppy=False)
+        if not isinstance(value, (dict, self.solver.interface.Objective)):
+            value = {rxn: 1 for rxn in self.reactions.get_by_any(value)}
+        set_objective(self, value, additive=False)
 
     def summary(self, threshold=1E-8, fva=None, floatfmt='.3g', **kwargs):
         """Print a summary of the input and output fluxes of the model. This

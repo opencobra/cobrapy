@@ -2,6 +2,7 @@ from six import iteritems
 
 from ..manipulation.modify import convert_to_irreversible, revert_to_reversible
 from ..solvers import solver_dict, get_solver_name
+from cobra.util.solver import linear_reaction_coefficients
 
 
 def optimize_minimal_flux(cobra_model, already_irreversible=False,
@@ -36,8 +37,8 @@ def optimize_minimal_flux(cobra_model, already_irreversible=False,
 
     Updates everything in-place, returns model to original state at end.
     """
-
-    if len(cobra_model.objective) > 1:
+    objective_reactions = linear_reaction_coefficients(cobra_model)
+    if len(objective_reactions) > 1:
         raise ValueError('optimize_minimal_flux only supports models with'
                          ' a single objective function')
 
@@ -81,6 +82,6 @@ def optimize_minimal_flux(cobra_model, already_irreversible=False,
 
     if solution.status == "optimal":
         cobra_model.solution.f = sum([coeff * reaction.x for reaction, coeff in
-                                      iteritems(cobra_model.objective)])
+                                      iteritems(objective_reactions)])
 
     return solution

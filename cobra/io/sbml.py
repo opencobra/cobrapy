@@ -1,24 +1,24 @@
-# cobra/sbml.py: Tools for reading / writing SBML now contained in
-# this module
-# System modules
-from .. import Model, Reaction, Metabolite
 from os.path import isfile
 from os import name as __name
 from warnings import warn
 import re
 from math import isnan, isinf
-
 from six import iteritems
 
-#
+from cobra import Model, Reaction, Metabolite
+from cobra.util.solver import set_objective
+
+
 if __name == 'java':
     from org.sbml.jsbml import SBMLDocument, KineticLaw, Parameter
     from org.sbml.jsbml import SBMLReader, SBMLWriter
+
     __tmp_reader = SBMLReader()
     __tmp_writer = SBMLWriter()
     readSBML = __tmp_reader.readSBMLFromFile
     writeSBML = __tmp_writer.writeSBMLToFile
     from org.sbml.jsbml.Unit import Kind as __Kind
+
     UNIT_KIND_MOLE = __Kind.MOLE
     UNIT_KIND_GRAM = __Kind.GRAM
     UNIT_KIND_SECOND = __Kind.SECOND
@@ -108,7 +108,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
             "convert fbc to cobra", True, "Convert FBC model to Cobra model")
         result = model_doc.convert(conversion_properties)
         if result != LIBSBML_OPERATION_SUCCESS:
-            raise(Exception("Conversion of SBML+fbc to COBRA failed"))
+            raise Exception("Conversion of SBML+fbc to COBRA failed")
     sbml_model = model_doc.getModel()
     sbml_model_id = sbml_model.getId()
     sbml_species = sbml_model.getListOfSpecies()
@@ -208,6 +208,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
     # info to feed to the cobra toolbox.
     # Always assume steady state simulations so b is set to 0
     cobra_reaction_list = []
+    coefficients = {}
     for sbml_reaction in sbml_reactions:
         if use_hyphens:
             # Change the ids to match conventions used by the Palsson lab.
@@ -274,8 +275,8 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
         else:
             for sbml_parameter in \
                     sbml_reaction.getKineticLaw().getListOfParameters():
-                parameter_dict[sbml_parameter.getId().lower()
-                               ] = sbml_parameter.getValue()
+                parameter_dict[
+                    sbml_parameter.getId().lower()] = sbml_parameter.getValue()
 
         if 'lower_bound' in parameter_dict:
             reaction.lower_bound = parameter_dict['lower_bound']
@@ -293,14 +294,11 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
         else:
             reaction.upper_bound = __default_upper_bound
 
-        if 'objective_coefficient' in parameter_dict:
-            reaction.objective_coefficient = parameter_dict[
-                'objective_coefficient']
-        elif 'objective coefficient' in parameter_dict:
-            reaction.objective_coefficient = parameter_dict[
-                'objective coefficient']
-        else:
-            reaction.objective_coefficient = __default_objective_coefficient
+        objective_coefficient = parameter_dict.get(
+            'objective_coefficient', parameter_dict.get(
+                'objective_coefficient', __default_objective_coefficient))
+        if objective_coefficient != 0:
+            coefficients[reaction] = objective_coefficient
 
         # ensure values are not set to nan or inf
         if isnan(reaction.lower_bound) or isinf(reaction.lower_bound):
@@ -326,8 +324,8 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
             reaction.gene_reaction_rule = rule
             if 'GENE LIST' in reaction_note_dict:
                 reaction.systematic_names = reaction_note_dict['GENE LIST'][0]
-            elif 'GENES' in reaction_note_dict and \
-                    reaction_note_dict['GENES'] != ['']:
+            elif ('GENES' in reaction_note_dict and
+                  reaction_note_dict['GENES'] != ['']):
                 reaction.systematic_names = reaction_note_dict['GENES'][0]
             elif 'LOCUS' in reaction_note_dict:
                 gene_id_to_object = dict([(x.id, x) for x in reaction._genes])
@@ -340,7 +338,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
                     tmp_locus_id = tmp_row_dict['LOCUS']
                     if 'TRANSCRIPT' in tmp_row_dict:
                         tmp_locus_id = tmp_locus_id + \
-                            '.' + tmp_row_dict['TRANSCRIPT']
+                                       '.' + tmp_row_dict['TRANSCRIPT']
 
                     if 'ABBREVIATION' in tmp_row_dict:
                         gene_id_to_object[tmp_locus_id].name = tmp_row_dict[
@@ -358,7 +356,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
     cobra_model.compartments = compartment_dict
 
     cobra_model.add_reactions(cobra_reaction_list)
-    # cobra_model.update_rules()
+    set_objective(cobra_model, coefficients)
     return cobra_model
 
 
@@ -377,13 +375,14 @@ def parse_legacy_sbml_notes(note_string, note_delimiter=':'):
         note_start = note_string.index(start_tag)
         note_end = note_string.index(end_tag)
         the_note = note_string[
-            (note_start + len(start_tag)):note_end].lstrip(' ').rstrip(' ')
+                   (note_start + len(start_tag)):note_end].lstrip(' ').rstrip(
+            ' ')
         if note_delimiter in the_note:
             note_delimiter_index = the_note.index(note_delimiter)
             note_field = the_note[:note_delimiter_index].lstrip(
                 ' ').rstrip(' ').replace('_', ' ').upper()
             note_value = the_note[
-                (note_delimiter_index + 1):].lstrip(' ').rstrip(' ')
+                         (note_delimiter_index + 1):].lstrip(' ').rstrip(' ')
             if note_field in note_dict:
                 note_dict[note_field].append(note_value)
             else:
@@ -394,11 +393,12 @@ def parse_legacy_sbml_notes(note_string, note_delimiter=':'):
             note_dict['CHARGE'][0].lower() in ['none', 'na', 'nan']):
         note_dict.pop('CHARGE')  # Remove non-numeric charges
 
-    if 'CHARGE' in note_dict and note_dict['CHARGE'][0].lower() in [
-            'none', 'na', 'nan']:
+    if 'CHARGE' in note_dict and note_dict['CHARGE'][0].lower() in ['none',
+                                                                    'na',
+                                                                    'nan']:
         note_dict.pop('CHARGE')  # Remove non-numeric charges
 
-    return(note_dict)
+    return note_dict
 
 
 def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
@@ -617,7 +617,7 @@ def get_libsbml_document(cobra_model,
                     error_string += "You've got libsbml %s installed. "
                     "You need 5.8.0 or later with the fbc package"
 
-            raise(Exception(error_string))
+            raise Exception(error_string)
     return sbml_doc
 
 
@@ -724,7 +724,7 @@ def fix_legacy_id(id, use_hyphens=False, fix_compartments=False):
     if fix_compartments:
         if len(id) > 2:
             if (id[-3] == "(" and id[-1] == ")") or \
-               (id[-3] == "[" and id[-1] == "]"):
+                    (id[-3] == "[" and id[-1] == "]"):
                 id = id[:-3] + "_" + id[-2]
     return id
 

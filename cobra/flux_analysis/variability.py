@@ -1,12 +1,71 @@
 from warnings import warn
 
 from six import iteritems
-from ..solvers import solver_dict, get_solver_name
+from cobra.solvers import solver_dict, get_solver_name
+import cobra.util.solver as sutil
+from sympy.core.singleton import S
 
 
-def flux_variability_analysis(cobra_model, reaction_list=None,
+def flux_variability_analysis(model, reaction_list=None,
                               fraction_of_optimum=1.0, solver=None,
-                              objective_sense="maximize", **solver_args):
+                              **solver_args):
+    """Runs flux variability analysis to find the min/max flux values for each
+    each reaction in `reaction_list`.
+
+    Parameters
+    ----------
+    model : a cobra model
+        The model for which to run the analysis. It will *not* be modified.
+    reaction_list : list of cobra.Reaction or str, optional
+        The reactions for which to obtain min/max fluxes. If None will use
+        all reactions in the model.
+    fraction_of_optimum : float, optional
+        Must be <= 1.0. Requires that the objective value is at least
+        fraction * max_objective_value. A value of 0.85 for instance means that
+        the objective has to be at least at 95% percent of its maximum.
+    solver : str, optional
+        Name of the solver to be used. If None it will respect the solver set
+        in the model (model.solver).
+    **solver_args : additional arguments for legacy solver, optional
+        Additional arguments passed to the legacy solver. Ignored for
+        optlang solver (those can be configured using
+        model.solver.configuration).
+
+    Returns
+    -------
+    dict
+        A nested dictionary {reaction_id: {minimize/maximize: flux}} giving
+        the minimal and maximal flux for each reaction.
+
+    Notes
+    -----
+    This implements the fast version as described in [1]_. Please note that
+    the flux distribution containing all minimal/maximal fluxes does not have
+    to be a feasible solution for the model. Fluxes are minimized/maximized
+    individually and a single minimal flux might require all others to be
+    suboptimal.
+
+    References
+    ----------
+    .. [1] Computationally efficient flux variability analysis.
+       Gudmundsson S, Thiele I.
+       BMC Bioinformatics. 2010 Sep 29;11:489.
+       doi: 10.1186/1471-2105-11-489, PMID: 20920235
+    """
+    legacy, solver = sutil.choose_solver(model, solver)
+
+    if reaction_list is None:
+        reaction_list = model.reactions
+
+    if not legacy:
+        return _fva_optlang(model, reaction_list, fraction_of_optimum)
+    else:
+        return _fva_legacy(model, reaction_list, fraction_of_optimum,
+                           "maximize", solver, **solver_args)
+
+
+def _fva_legacy(cobra_model, reaction_list, fraction_of_optimum,
+                objective_sense, solver, **solver_args):
     """Runs flux variability analysis to find max/min flux values
 
     cobra_model : :class:`~cobra.core.Model`:
@@ -23,12 +82,6 @@ def flux_variability_analysis(cobra_model, reaction_list=None,
         If None is given, the default solver will be used.
 
     """
-    if reaction_list is None and "the_reactions" in solver_args:
-        reaction_list = solver_args.pop("the_reactions")
-        warn("the_reactions is deprecated. Please use reaction_list=")
-    if reaction_list is None:
-        reaction_list = cobra_model.reactions
-    solver = solver_dict[get_solver_name() if solver is None else solver]
     lp = solver.create_problem(cobra_model)
     solver.solve_problem(lp, objective_sense=objective_sense)
     solution = solver.format_solution(lp, cobra_model)
@@ -61,6 +114,56 @@ def calculate_lp_variability(lp, solver, cobra_model, reaction_list,
             fva_results[r_id][what] = solver.get_objective_value(lp)
             # revert the problem to how it was before
             solver.change_variable_objective(lp, i, 0.)
+    return fva_results
+
+
+def _fva_optlang(model, reaction_list, fraction):
+    """Helper function to perform FVA with the optlang interface.
+
+    Parameters
+    ----------
+    model : a cobra model
+    reaction_list : list of reactions
+
+    Returns
+    -------
+    dict
+        A dictionary containing the results.
+    """
+    fva_results = {str(rxn): {} for rxn in reaction_list}
+    prob = model.solver.interface
+    with model as m:
+        m.solver.optimize()
+        if m.solver.status != "optimal":
+            raise ValueError("There is no optimal solution "
+                             "for the chosen objective!")
+        # Add objective as a variable to the model than set to zero
+        # This also uses the fraction to create the lower bound for the
+        # old objective
+        fva_old_objective = prob.Variable(
+            "fva_old_objective", lb=fraction * m.solver.objective.value)
+        fva_old_obj_constraint = prob.Constraint(
+            m.solver.objective.expression - fva_old_objective, lb=0.0, ub=0.0,
+            name="fva_old_objective_constraint")
+        sutil.add_to_solver(m, [fva_old_objective, fva_old_obj_constraint])
+        model.objective = S.Zero  # This will trigger the reset as well
+        for what in ("minimum", "maximum"):
+            sense = "min" if what == "minimum" else "max"
+            for rxn in reaction_list:
+                r_id = str(rxn)
+                rxn = m.reactions.get_by_id(r_id)
+                # The previous objective assignment already triggers a reset
+                # so directly update coefs here to not trigger redundant resets
+                # in the history manager which can take longer than the actual
+                # FVA for small models
+                m.solver.objective.set_linear_coefficients(
+                    {rxn.forward_variable: 1, rxn.reverse_variable: -1})
+                m.solver.objective.direction = sense
+                m.solver.optimize()
+                fva_results[r_id][what] = m.solver.objective.value
+                m.solver.objective.set_linear_coefficients(
+                    {rxn.forward_variable: 0, rxn.reverse_variable: 0})
+
     return fva_results
 
 
