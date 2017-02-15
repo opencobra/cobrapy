@@ -5,6 +5,7 @@ import pandas as pd
 from tabulate import tabulate
 
 from .variability import flux_variability_analysis
+from cobra.util.solver import linear_reaction_coefficients
 
 
 def format_long_string(string, max_length):
@@ -125,8 +126,10 @@ def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
     """
 
     # Create a dataframe of objective fluxes
+    objective_reactions = linear_reaction_coefficients(model)
     obj_fluxes = pd.DataFrame({key: key.x * value for key, value in
-                               iteritems(model.objective)}, index=['flux']).T
+                               iteritems(objective_reactions)},
+                              index=['flux']).T
     obj_fluxes['id'] = obj_fluxes.apply(
         lambda x: format_long_string(x.name.id, 15), 1)
 

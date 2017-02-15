@@ -21,7 +21,7 @@ except ImportError:
 import six
 
 from cobra import config
-from cobra.util.solver import solvers, SolverNotFound
+from cobra.util.solver import solvers, SolverNotFound, set_objective
 from cobra.core import Metabolite, Reaction, Model, LazySolution
 from cobra.exceptions import UndefinedSolution
 import pytest
@@ -579,9 +579,9 @@ class TestSolverBasedModel:
         r2.add_metabolites(
             {Metabolite('A'): -1, Metabolite('C'): 1, Metabolite('D'): 1})
         r2.lower_bound, r2.upper_bound = 0., 999999.
+        model.add_reactions([r1, r2])
         r2.objective_coefficient = 3.
         assert r2.objective_coefficient == 3.
-        model.add_reactions([r1, r2])
         assert model.reactions[-2] == r1
         assert model.reactions[-1] == r2
         assert isinstance(model.reactions[-2].reverse_variable,
@@ -685,6 +685,24 @@ class TestSolverBasedModel:
             model.objective = "PFK"
             assert model.solver.objective == pfk_obj
         assert model.solver.objective == eno_obj
+        expression = model.solver.objective.expression
+        atpm = model.reactions.get_by_id("ATPM")
+        biomass = model.reactions.get_by_id("Biomass_Ecoli_core")
+        with model:
+            model.objective = atpm
+        assert model.solver.objective.expression == expression
+        with model:
+            atpm.objective_coefficient = 1
+            biomass.objective_coefficient = 2
+        assert model.solver.objective.expression == expression
+
+        expression = model.solver.objective.expression
+        with model:
+            set_objective(model, model.reactions.ATPM.flux_expression,
+                          additive=True)
+            assert (model.solver.objective.expression ==
+                    expression + model.reactions.ATPM.flux_expression)
+        assert model.solver.objective.expression == expression
 
     def test_set_reaction_objective(self, model):
         model.objective = model.reactions.ACALD

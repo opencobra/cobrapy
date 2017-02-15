@@ -11,6 +11,7 @@ import cobra.solvers as legacy_solvers
 from functools import partial
 import optlang
 import re
+import sympy
 
 
 class SolverNotFound(Exception):
@@ -27,12 +28,107 @@ Defines all the solvers that were found in optlang.
 """
 
 
+def linear_reaction_coefficients(model, reactions=None):
+    """Coefficient for the reactions in a linear objective
+
+    Parameters
+    ----------
+    model : cobra model
+        the model object that defined the objective
+    reactions : list
+        an optional list for the reactions to get the coefficients for. All
+        reactions if left missing.
+
+    Returns
+    -------
+    dict
+        A dictionary where the key is the reaction object and the value is
+        the corresponding coefficient. Empty dictionary if there are no
+        linear terms in the objective.
+    """
+    linear_coefficients = {}
+    reactions = model.reactions if not reactions else reactions
+    try:
+        objective_expression = model.solver.objective.expression
+        coefficients = objective_expression.as_coefficients_dict()
+    except AttributeError:
+        return linear_coefficients
+    for rxn in reactions:
+        forward_coefficient = coefficients.get(rxn.forward_variable, 0)
+        reverse_coefficient = coefficients.get(rxn.reverse_variable, 0)
+        if forward_coefficient != 0:
+            if forward_coefficient == -reverse_coefficient:
+                linear_coefficients[rxn] = float(forward_coefficient)
+    return linear_coefficients
+
+
+def set_objective(model, value, additive=False):
+    """ Set the model objective
+
+    Parameters
+    ----------
+    model : cobra model
+       The model to set the objective for
+    value : model.solver.interface.Objective,
+            e.g. optlang.glpk_interface.Objective, sympy.Basic or dict
+
+        If the model objective is linear, the value can be a new Objective
+        object or a dictionary with linear coefficients where each key is a
+        reaction and the element the new coefficient (float).
+
+        If the objective is not linear and `additive` is true, only values
+        of class Objective.
+
+    additive : bool
+        If true, add the terms to the current objective, otherwise start with
+        an empty objective.
+    """
+    by_objective = isinstance(value,
+                              (sympy.Basic, model.solver.interface.Objective))
+
+    not_supported = (
+        additive and (not model.objective.is_Linear and not by_objective))
+    if not_supported:
+        raise ValueError('can only update non-linear objectives additively '
+                         'using object of class '
+                         'model.solver.interface.Objective, not %s' %
+                         type(value))
+    reverse_value = None
+    if by_objective:
+        if not additive:
+            if isinstance(value, sympy.Basic):
+                value = model.solver.interface.Objective(value, sloppy=False)
+            model.solver.objective = value
+        else:
+            if isinstance(value, model.solver.interface.Objective):
+                value = value.expression
+            model.solver.objective += value
+            reverse_value = -value
+    elif isinstance(value, dict):
+        if not additive:
+            model.solver.objective = model.solver.interface.Objective(
+                sympy.S.Zero, direction='max')
+        reverse_value = {}
+        for reaction, coef in value.items():
+            reverse_value[reaction] = reaction.objective_coefficient
+            model.solver.objective.set_linear_coefficients(
+                {reaction.forward_variable: coef,
+                 reaction.reverse_variable: -coef})
+    else:
+        raise TypeError(
+            '%r is not a valid objective for %r.' % (value, model.solver))
+    context = get_context(model)
+    if context and reverse_value:
+        context(partial(set_objective, model=model, value=reverse_value,
+                        additive=additive))
+
+
 def interface_to_str(interface):
     """Give a string representation for an optlang interface.
 
     Parameters
     ----------
-    interface: string
+    interface : string
         Full name of the interface in optlang or cobra representation.
         For instance 'optlang.glpk_interface' or 'optlang-glpk'.
 
@@ -50,9 +146,9 @@ def get_solver_name(mip=False, qp=False):
 
     Parameters
     ----------
-    mip: string
+    mip : bool
         Does the solver require mixed integer linear programming capabilities?
-    qp: string
+    qp : bool
         Does the solver require quadratic programming capabilities?
 
     Returns
@@ -128,11 +224,10 @@ def choose_solver(model, solver=None, **solver_specs):
     else:
         legacy = True
         solver = legacy_solvers.solver_dict[solver]
+    return legacy, solver
 
-    return (legacy, solver)
 
-
-def add_to_solver(model, what=None):
+def add_to_solver(model, what):
     """Adds variables and constraints to a Model's solver object.
 
     Useful for variables and constraints that can not be expressed with
@@ -141,22 +236,21 @@ def add_to_solver(model, what=None):
 
     Parameters
     ----------
-    model: a cobra model
+    model : a cobra model
        The model to which to add the variables and constraints.
-    what: list or tuple of optlang variables or constraints.
+    what : list or tuple of optlang variables or constraints.
        The variables or constraints to add to the model. Must be of class
        `model.solver.interface.Variable` or
        `model.solver.interface.Constraint`.
     """
     context = get_context(model)
 
-    if what:
-        model.solver.add(what)
-        if context:
-            context(partial(model.solver.remove, what))
+    model.solver.add(what)
+    if context:
+        context(partial(model.solver.remove, what))
 
 
-def remove_from_solver(model, what=None):
+def remove_from_solver(model, what):
     """Removes variables and constraints from a Model's solver object.
 
     Useful to temporarily remove variables and constraints from a Models's
@@ -164,19 +258,18 @@ def remove_from_solver(model, what=None):
 
     Parameters
     ----------
-    model: a cobra model
+    model : a cobra model
        The model from which to remove the variables and constraints.
-    what: list or tuple of optlang variables or constraints.
+    what : list or tuple of optlang variables or constraints.
        The variables or constraints to remove from the model. Must be of
        class `model.solver.interface.Variable` or
        `model.solver.interface.Constraint`.
     """
     context = get_context(model)
 
-    if what:
-        model.solver.remove(what)
-        if context:
-            context(partial(model.solver.add, what))
+    model.solver.remove(what)
+    if context:
+        context(partial(model.solver.add, what))
 
 
 def add_absolute_expression(model, expression, name="abs_var", ub=None):
@@ -186,14 +279,14 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
 
     Parameters
     ----------
-    model: a cobra model
+    model : a cobra model
        The model to which to add the absolute expression.
-    expression: A sympy expression
+    expression : A sympy expression
        Must be a valid expression within the Model's solver object. The
        absolute value is applied automatically on the expression.
-    name: string
+    name : string
        The name of the newly created variable.
-    ub: positive float
+    ub : positive float
        The upper bound for the variable.
     """
     variable = model.solver.interface.Variable(name, lb=0, ub=ub)

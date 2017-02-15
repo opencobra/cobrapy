@@ -6,8 +6,9 @@ from numpy import isinf, inf, array, object as np_object
 from scipy.io import loadmat, savemat
 from scipy.sparse import coo_matrix, dok_matrix
 
-from .. import Model, Metabolite, Reaction
+from cobra import Model, Metabolite, Reaction
 from cobra.util import create_stoichiometric_array
+from cobra.util.solver import set_objective
 
 # try to use an ordered dict
 try:
@@ -219,6 +220,7 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
             pass
         model.add_metabolites([new_metabolite])
     new_reactions = []
+    coefficients = {}
     for i, name in enumerate(m["rxns"][0, 0]):
         new_reaction = Reaction()
         new_reaction.id = str(name[0][0])
@@ -229,7 +231,7 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
         if isinf(new_reaction.upper_bound) and new_reaction.upper_bound > 0:
             new_reaction.upper_bound = inf
         if c_vec is not None:
-            new_reaction.objective_coefficient = float(c_vec[i][0])
+            coefficients[new_reaction] = float(c_vec[i][0])
         try:
             new_reaction.gene_reaction_rule = str(m['grRules'][0, 0][i][0][0])
         except (IndexError, ValueError):
@@ -244,6 +246,7 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
             pass
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
+    set_objective(model, coefficients)
     coo = coo_matrix(m["S"][0, 0])
     for i, j, v in zip(coo.row, coo.col, coo.data):
         model.reactions[j].add_metabolites({model.metabolites[i]: v})
