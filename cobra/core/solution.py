@@ -86,10 +86,6 @@ class Solution(object):
         """
         super(Solution, self).__init__(**kwargs)
         self._model = model
-        if self._model._timestamp_last_optimization is not None:
-            self._time_stamp = self._model._timestamp_last_optimization
-        else:
-            self._time_stamp = time.time()
         self._objective_value = None
         self._status = None
         self._fluxes = None
@@ -143,22 +139,12 @@ class Solution(object):
             If the solution has become invalid due to re-optimization of the
             underlying model.
         """
-        # Assume that self._model._timestamp_last_optimization is not None
-        # since otherwise there would be no solution.
-        if self._time_stamp != self._model._timestamp_last_optimization:
-            def timestamp_formatter(timestamp):
-                if timestamp is None:
-                    return "unknown"
-                return datetime.fromtimestamp(timestamp).strftime(
-                    "%Y-%m-%d %H:%M:%S:%f")
-
+        if self is not self._model.solution:
             raise UndefinedSolution(
-                "The solution (captured around {0}) has become invalid as the "
-                "model has been re-optimized recently ({1}).".format(
-                    timestamp_formatter(self._time_stamp),
-                    timestamp_formatter(
-                        self._model._timestamp_last_optimization)
-                )
+                "The solution {0:s} was invalidated by a more recent"
+                " optimization solution {1:s}. Previously accesssed values are"
+                " still available.".format(repr(self),
+                                           repr(self._model.solution))
             )
 
     @property
@@ -197,7 +183,6 @@ class Solution(object):
         """
         if self._fluxes is not None:
             return self._fluxes
-
         self._is_current()
         primal_values = self._model.solver.primal_values
         self._fluxes = OrderedDict(
@@ -224,7 +209,6 @@ class Solution(object):
         """
         if self._reduced_costs is not None:
             return self._reduced_costs
-
         self._is_current()
         reduced_values = self._model.solver.reduced_costs
         self._reduced_costs = OrderedDict(

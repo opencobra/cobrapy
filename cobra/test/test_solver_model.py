@@ -20,7 +20,6 @@ except ImportError:
     pandas = None
 import six
 
-from cobra import config
 from cobra.util.solver import solvers, SolverNotFound
 from cobra.core import Metabolite, Reaction, Model, Solution
 from cobra.exceptions import UndefinedSolution
@@ -53,13 +52,13 @@ def solved_model(request, model):
 
 class TestSolution:
     def test_self_invalidation(self, solved_model):
-        from time import sleep
         solution, model = solved_model
+        # TODO: use numpy.isclose or similar tolerance concept
         assert abs(solution.f - 0.873921506968431) < 0.000001
-        sleep(0.05)
         model.optimize()
+        # get a previously unaccessed flux
         with pytest.raises(UndefinedSolution):
-            getattr(solution, 'f')
+            solution[model.reactions[-1].id]
 
     def test_solution_contains_only_reaction_specific_values(self,
                                                              solved_model):

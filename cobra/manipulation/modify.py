@@ -146,7 +146,7 @@ def convert_to_irreversible(cobra_model):
 
 
 def revert_to_reversible(cobra_model, update_solution=True):
-    """This function will convert a reversible model made by
+    """This function will convert an irreversible model made by
     convert_to_irreversible into a reversible model.
 
     cobra_model: A cobra.Model which will be modified in place.
@@ -189,7 +189,6 @@ def revert_to_reversible(cobra_model, update_solution=True):
     # update the solution vector
     if update_solution:
         cobra_model.solution.x_dict = x_dict
-        cobra_model.solution.x = [x_dict[r.id] for r in cobra_model.reactions]
 
 
 def canonical_form(model, objective_sense='maximize',
