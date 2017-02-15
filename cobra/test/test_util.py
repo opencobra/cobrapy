@@ -57,6 +57,16 @@ class TestDictList:
         assert "o3" not in a
         assert "o3" in b
 
+    def test_get_by_any(self, dict_list):
+        obj, test_list = dict_list
+        assert test_list.get_by_any(0) == [obj]
+        assert test_list.get_by_any('test1') == [obj]
+        with pytest.raises(ValueError):
+            test_list.get_by_any('not-in-list')
+        with pytest.raises(TypeError):
+            test_list.get_by_any(1.1)
+        assert test_list.get_by_any(obj) == [obj]
+
     def test_append(self, dict_list):
         obj, test_list = dict_list
         obj2 = Object("test2")

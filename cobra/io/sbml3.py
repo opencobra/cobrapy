@@ -5,16 +5,16 @@ from ast import Name, Or, And, BoolOp
 from gzip import GzipFile
 from bz2 import BZ2File
 from tempfile import NamedTemporaryFile
-from sys import exc_info
 import re
 
 from six import iteritems, string_types
 
-from .. import Metabolite, Reaction, Gene, Model
-from ..core.Gene import parse_gpr
-from ..manipulation.modify import _renames
-from ..manipulation.validate import check_reaction_bounds, \
+from cobra import Metabolite, Reaction, Gene, Model
+from cobra.core.Gene import parse_gpr
+from cobra.manipulation.modify import _renames
+from cobra.manipulation.validate import check_reaction_bounds, \
     check_metabolite_compartment_formula
+from cobra.util.solver import set_objective
 
 try:
     from lxml.etree import parse, Element, SubElement, \
@@ -367,10 +367,12 @@ def parse_xml_into_model(xml, number=float):
         except KeyError:
             raise CobraSBMLError("Objective reaction '%s' not found" % rxn_id)
         try:
-            objective_reaction.objective_coefficient = get_attrib(
-                sbml_objective, "fbc:coefficient", type=number)
+            coefficients = {objective_reaction: get_attrib(
+                sbml_objective, "fbc:coefficient", type=number)}
         except ValueError as e:
             warn(str(e))
+        else:
+            set_objective(model, coefficients)
     return model
 
 

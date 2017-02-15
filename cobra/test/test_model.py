@@ -3,6 +3,7 @@ import warnings
 import pytest
 from cobra.core import Model, Metabolite, Reaction
 from cobra.solvers import solver_dict
+from cobra.util.solver import linear_reaction_coefficients
 from .conftest import model
 
 try:
@@ -18,7 +19,6 @@ except ImportError:
 
 
 class TestReactions:
-
     def test_gpr(self):
         model = Model()
         reaction = Reaction("test")
@@ -82,6 +82,7 @@ class TestReactions:
                     reaction.pop(m.id)
                 except KeyError:
                     pass
+
         benchmark(add_remove_metabolite)
 
     def test_add_metabolite(self, model):
@@ -97,7 +98,7 @@ class TestReactions:
         # test adding by string
         reaction.add_metabolites({"g6p_c": -1})  # already in reaction
         assert reaction._metabolites[
-            model.metabolites.get_by_id("g6p_c")] == -2
+                   model.metabolites.get_by_id("g6p_c")] == -2
         reaction.add_metabolites({"h_c": 1})
         assert reaction._metabolites[model.metabolites.get_by_id("h_c")] == 1
         with pytest.raises(KeyError):
@@ -222,7 +223,6 @@ class TestReactions:
 
 
 class TestCobraMetabolites:
-
     def test_metabolite_formula(self):
         met = Metabolite("water")
         met.formula = "H2O"
@@ -259,6 +259,7 @@ class TestCobraModel:
             if not getattr(model, 'solver', None):
                 solver_dict[solver].create_problem(model)
             model.remove_reactions([dummy_reaction], delete=False)
+
         benchmark(benchmark_add_reaction)
 
     def test_add_reaction(self, model):
@@ -416,6 +417,7 @@ class TestCobraModel:
             model.copy()
             if not getattr(model, 'solver', None):
                 solver_dict[solver].create_problem(model)
+
         benchmark(_)
 
     @pytest.mark.parametrize("solver", list(solver_dict))
@@ -424,6 +426,7 @@ class TestCobraModel:
             large_model.copy()
             if not getattr(large_model, 'solver', None):
                 solver_dict[solver].create_problem(large_model)
+
         benchmark(_)
 
     def test_copy(self, model):
@@ -486,15 +489,27 @@ class TestCobraModel:
             model.objective = atpm.id
             if not getattr(model, 'solver', None):
                 solver_dict[solver].create_problem(model)
+
         benchmark(benchmark_change_objective)
 
     def test_change_objective(self, model):
+        # Test for correct optimization behavior
+        model.optimize()
+        assert model.reactions.Biomass_Ecoli_core.x > 0.5
+        with model:
+            model.objective = model.reactions.EX_etoh_e
+            model.optimize()
+        assert model.reactions.Biomass_Ecoli_core.x < 0.5
+        assert model.reactions.Biomass_Ecoli_core.objective_coefficient == 1
+        model.optimize()
+        assert model.reactions.Biomass_Ecoli_core.x > 0.5
+        # test changing objective
         biomass = model.reactions.get_by_id("Biomass_Ecoli_core")
         atpm = model.reactions.get_by_id("ATPM")
         model.objective = atpm.id
         assert atpm.objective_coefficient == 1.
         assert biomass.objective_coefficient == 0.
-        assert model.objective == {atpm: 1.}
+        assert linear_reaction_coefficients(model) == {atpm: 1.}
         # change it back using object itself
         model.objective = biomass
         assert atpm.objective_coefficient == 0.
@@ -509,11 +524,11 @@ class TestCobraModel:
         assert abs(biomass.objective_coefficient - 0.3) < 10 ** -9
         # test setting by index
         model.objective = model.reactions.index(atpm)
-        assert model.objective == {atpm: 1.}
+        assert linear_reaction_coefficients(model) == {atpm: 1.}
         # test by setting list of indexes
         model.objective = [model.reactions.index(reaction) for
                            reaction in [atpm, biomass]]
-        assert model.objective == {atpm: 1., biomass: 1.}
+        assert linear_reaction_coefficients(model) == {atpm: 1., biomass: 1.}
 
     def test_model_medium(self, model):
         # Add a dummy 'malformed' import reaction
@@ -601,4 +616,4 @@ class TestStoichiometricMatrix:
             mass_balance = S.dot(fluxes)
             assert numpy.allclose(mass_balance, 0)
 
-        # Is this really the best way to get a vector of fluxes?
+            # Is this really the best way to get a vector of fluxes?

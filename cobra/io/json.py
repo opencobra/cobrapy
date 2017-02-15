@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
 import json
-from warnings import warn
 
-from .. import Model, Metabolite, Reaction, Gene
+from cobra import Model, Metabolite, Reaction, Gene
 from six import iteritems, string_types
+from cobra.util.solver import set_objective
 
 # Detect numpy types to replace them.
 try:
@@ -80,6 +80,12 @@ def _from_dict(obj):
     model.add_reactions(
         [reaction_from_dict(reaction, model) for reaction in obj['reactions']]
     )
+    objective_reactions = [rxn for rxn in obj['reactions'] if
+                           rxn.get('objective_coefficient', 0) != 0]
+    coefficients = {
+        model.reactions.get_by_id(rxn['id']): rxn['objective_coefficient'] for
+        rxn in objective_reactions}
+    set_objective(model, coefficients)
     for k, v in iteritems(obj):
         if k in {'id', 'name', 'notes', 'compartments', 'annotation'}:
             setattr(model, k, v)
@@ -89,7 +95,7 @@ def _from_dict(obj):
 def reaction_from_dict(reaction, model):
     new_reaction = Reaction()
     for k, v in iteritems(reaction):
-        if k == 'reversibility' or k == "reaction":
+        if k in {'objective_coefficient', 'reversibility', 'reaction'}:
             continue
         elif k == 'metabolites':
             new_reaction.add_metabolites(

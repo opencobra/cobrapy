@@ -13,7 +13,8 @@ import hashlib
 
 from cobra.util.util import Frozendict, _is_positive
 from cobra.util.context import resettable
-
+from cobra.util.solver import linear_reaction_coefficients, \
+    set_objective
 
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
@@ -57,7 +58,11 @@ class Reaction(Object):
         # contains self
         self._model = None
 
-        self._objective_coefficient = objective_coefficient
+        if objective_coefficient != 0:
+            raise NotImplementedError('setting objective coefficient when '
+                                      'creating reaction is no longer '
+                                      'supported. Use the model.objective '
+                                      'setter')
 
         # Used during optimization.  Indicates whether the
         # variable is modeled as continuous, integer, binary, semicontinous, or
@@ -154,26 +159,22 @@ class Reaction(Object):
 
     @property
     def objective_coefficient(self):
-        """ Get or set the objective coefficient (float)
+        """ Get the coefficient for this reaction in a linear
+        objective (float)
+
+        Assuming that the objective of the associated model is summation of
+        fluxes from a set of reactions, the coefficient for each reaction
+        can be obtained individually using this property. A more general way
+        is to use the `model.objective` property directly.
         """
-        if self.model is not None and self.model.solver.objective is not None:
-            coefficients_dict = \
-                self.model.solver.objective.expression.as_coefficients_dict()
-            forw_coef = coefficients_dict.get(self.forward_variable, 0)
-            rev_coef = coefficients_dict.get(self.reverse_variable, 0)
-            if forw_coef == -rev_coef:
-                self._objective_coefficient = float(forw_coef)
-            else:
-                self._objective_coefficient = 0
-        return self._objective_coefficient
+        return linear_reaction_coefficients(self.model, [self]).get(self, 0)
 
     @objective_coefficient.setter
     def objective_coefficient(self, value):
-        if self.model is not None:
-            coef_difference = value - self.objective_coefficient
-            self.model.solver.objective += \
-                coef_difference * self.flux_expression
-        self._objective_coefficient = value
+        if self.model is None:
+            raise AttributeError('cannot assign objective to a missing model')
+        if self.flux_expression is not None:
+            set_objective(self.model, {self: value}, additive=True)
 
     def __copy__(self):
         cop = copy(super(Reaction, self))
