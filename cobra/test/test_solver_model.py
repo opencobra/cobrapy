@@ -698,10 +698,11 @@ class TestSolverBasedModel:
 
         expression = model.solver.objective.expression
         with model:
-            set_objective(model, model.reactions.ATPM.flux_expression,
-                          additive=True)
-            assert (model.solver.objective.expression ==
-                    expression + model.reactions.ATPM.flux_expression)
+            with model:  # Test to make sure nested contexts are OK
+                set_objective(model, model.reactions.ATPM.flux_expression,
+                              additive=True)
+                assert (model.solver.objective.expression ==
+                        expression + model.reactions.ATPM.flux_expression)
         assert model.solver.objective.expression == expression
 
     def test_set_reaction_objective(self, model):
