@@ -331,13 +331,7 @@ class TestCobraFluxAnalysis:
         assert feasible_sol.status == "optimal"
         assert infeasible_sol.status == "infeasible"
 
-    def test_loopless(self):
-        try:
-            sutil.get_solver_name(mip=True)
-        except SolverNotFound:
-            pytest.skip("no MILP solver found")
-
-        # test with loopless_solution
+    def test_loopless_solution(self):
         test_model = self.construct_ll_test_model()
         fluxes_feasible = loopless_solution(test_model)
         test_model.reactions.v3.lower_bound = 1
@@ -346,7 +340,8 @@ class TestCobraFluxAnalysis:
         assert fluxes_feasible["v3"] == 0.0
         assert fluxes_infeasible["v3"] == 1.0
 
-        # test with add_loopless
+    @pytest.mark.skipif(numpy is None, reason="null space requires numpy")
+    def test_add_loopless(self):
         test_model = self.construct_ll_test_model()
         add_loopless(test_model)
         feasible_status = test_model.solver.optimize()
