@@ -3,8 +3,11 @@ import warnings
 import pytest
 from cobra.core import Model, Metabolite, Reaction
 from cobra.solvers import solver_dict
-from cobra.util.solver import linear_reaction_coefficients
-from .conftest import model
+import cobra.util.solver as su
+from cobra.test.conftest import model
+
+stable_optlang = ["glpk", "cplex", "gurobi"]
+optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
 
 try:
     import numpy
@@ -509,7 +512,7 @@ class TestCobraModel:
         model.objective = atpm.id
         assert atpm.objective_coefficient == 1.
         assert biomass.objective_coefficient == 0.
-        assert linear_reaction_coefficients(model) == {atpm: 1.}
+        assert su.linear_reaction_coefficients(model) == {atpm: 1.}
         # change it back using object itself
         model.objective = biomass
         assert atpm.objective_coefficient == 0.
@@ -524,11 +527,26 @@ class TestCobraModel:
         assert abs(biomass.objective_coefficient - 0.3) < 10 ** -9
         # test setting by index
         model.objective = model.reactions.index(atpm)
-        assert linear_reaction_coefficients(model) == {atpm: 1.}
+        assert su.linear_reaction_coefficients(model) == {atpm: 1.}
         # test by setting list of indexes
         model.objective = [model.reactions.index(reaction) for
                            reaction in [atpm, biomass]]
-        assert linear_reaction_coefficients(model) == {atpm: 1., biomass: 1.}
+        assert su.linear_reaction_coefficients(model) == {atpm: 1., biomass: 1.}
+
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_fix_objective_as_constraint(self, solver, model):
+        model.solver = solver
+        with model as m:
+            m.fix_objective_as_constraint()
+            constraint_name = m.solver.constraints[-1]
+            assert abs(m.solver.constraints[-1].expression -
+                       m.objective.expression) < 1e-6
+        assert constraint_name not in m.solver.constraints
+        m.fix_objective_as_constraint()
+        constraint_name = m.solver.constraints[-1]
+        assert abs(m.solver.constraints[-1].expression -
+                   m.objective.expression) < 1e-6
+        assert constraint_name in m.solver.constraints
 
     def test_model_medium(self, model):
         # Add a dummy 'malformed' import reaction
