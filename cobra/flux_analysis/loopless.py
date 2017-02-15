@@ -2,12 +2,17 @@
 
 from __future__ import absolute_import
 
-from cobra.core import Metabolite, Reaction
-from cobra.manipulation.modify import convert_to_irreversible
-import numpy as np
 from six import iteritems
-from cobra.util import nullspace, add_to_solver
 from sympy.core.singleton import S
+from cobra.core import Metabolite, Reaction
+from cobra.util import add_to_solver
+from cobra.manipulation.modify import convert_to_irreversible
+
+try:
+    import numpy
+    from cobra.util import nullspace
+except:
+    numpy = None
 
 
 def add_loopless(model, zero_cutoff=1e-12):
@@ -37,7 +42,7 @@ def add_loopless(model, zero_cutoff=1e-12):
        Erratum in: Biophys J. 2011 Mar 2;100(5):1381.
     """
     internal = [i for i, r in enumerate(model.reactions) if not r.boundary]
-    Sint = model.S[:, np.array(internal)]
+    Sint = model.S[:, numpy.array(internal)]
     Nint = nullspace(Sint).T
     max_bound = max(max(abs(b) for b in r.bounds) for r in model.reactions)
     prob = model.solver.interface
