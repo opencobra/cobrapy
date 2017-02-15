@@ -1,3 +1,9 @@
+branches:
+ only:
+ - master
+ - devel
+ - devel-2
+
 environment:
 
   global:
@@ -23,21 +29,21 @@ environment:
       PYTHON_ARCH: "64"
       CONDA: true
 
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.12"
-      PYTHON_ARCH: "32"
+    # - PYTHON: "C:\\Python27"
+    #   PYTHON_VERSION: "2.7.12"
+    #   PYTHON_ARCH: "32"
 
-    - PYTHON: "C:\\Python34"
-      PYTHON_VERSION: "3.4.5"
-      PYTHON_ARCH: "32"
+    # - PYTHON: "C:\\Python34"
+    #   PYTHON_VERSION: "3.4.5"
+    #   PYTHON_ARCH: "32"
 
-    - PYTHON: "C:\\Python35"
-      PYTHON_VERSION: "3.5.2"
-      PYTHON_ARCH: "32"
+    # - PYTHON: "C:\\Python35"
+    #   PYTHON_VERSION: "3.5.2"
+    #   PYTHON_ARCH: "32"
 
-    - PYTHON: "C:\\Python36"
-      PYTHON_VERSION: "3.6.0"
-      PYTHON_ARCH: "32"
+    # - PYTHON: "C:\\Python36"
+    #   PYTHON_VERSION: "3.6.0"
+    # PYTHON_ARCH: "32"
 
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.12"
