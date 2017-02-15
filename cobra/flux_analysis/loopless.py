@@ -31,7 +31,7 @@ def add_loopless(model, zero_cutoff=1e-12):
     ----------
     .. [1] Elimination of thermodynamically infeasible loops in steady-state
        metabolic models.
-       Schellenberger J, Lewis NE, Palsson BØ.
+       Schellenberger J, Lewis NE, Palsson BO.
        Biophys J. 2011 Feb 2;100(3):544-53.
        doi: 10.1016/j.bpj.2010.12.3707.
        Erratum in: Biophys J. 2011 Mar 2;100(5):1381.
