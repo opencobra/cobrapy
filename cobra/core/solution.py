@@ -4,15 +4,12 @@
 
 from __future__ import absolute_import
 
-import time
 import logging
 
-from datetime import datetime
 from collections import OrderedDict
 from warnings import warn
 
 from builtins import (object, super, dict)
-from future.utils import python_2_unicode_compatible
 
 from cobra.exceptions import UndefinedSolution
 
@@ -21,7 +18,6 @@ __all__ = ("Solution",)
 LOGGER = logging.getLogger(__name__)
 
 
-@python_2_unicode_compatible
 class Solution(object):
     """
     The base for a unified interface to a `cobra.Model` optimization solution.
@@ -284,7 +280,6 @@ class Solution(object):
         return self.reduced_costs.values()
 
 
-@python_2_unicode_compatible
 class LegacySolution(object):
     """
     Legacy support for an interface to a `cobra.Model` optimization solution.
