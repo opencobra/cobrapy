@@ -168,7 +168,7 @@ setup(
     version=version,
     packages=find_packages(),
     setup_requires=[],
-    install_requires=["six", "swiglpk", "optlang"],
+    install_requires=["future", "swiglpk", "optlang"],
     tests_require=["jsonschema > 2.5", "pytest", "pytest-benchmark"],
     extras_require=extras,
     ext_modules=ext_modules,

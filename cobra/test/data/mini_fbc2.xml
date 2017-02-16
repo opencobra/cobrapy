@@ -25,8 +25,8 @@
       <parameter constant="true" id="R_EX_glc__D_e_lower_bound" sboTerm="SBO:0000625" units="mmol_per_gDW_per_hr" value="-10"/>
     </listOfParameters>
     <listOfCompartments>
-      <compartment constant="true" id="e" name="extracellular"/>
       <compartment constant="true" id="c" name="cytosol"/>
+      <compartment constant="true" id="e" name="extracellular"/>
     </listOfCompartments>
     <listOfSpecies>
       <species boundaryCondition="false" constant="false" hasOnlySubstanceUnits="false" id="M_13dpg_c" name="3-Phospho-D-glyceroyl phosphate" metaid="M_13dpg_c" compartment="c" fbc:charge="-4" fbc:chemicalFormula="C3H4O10P2">

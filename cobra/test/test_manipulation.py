@@ -1,7 +1,8 @@
+
+import pytest
+
 from cobra.core import Metabolite, Model, Reaction
 from cobra.manipulation import *
-import pytest
-from .conftest import model, salmonella
 
 
 class TestManipulation:
@@ -33,6 +34,7 @@ class TestManipulation:
         assert model.reactions.get_by_id(
             "Biomass_Ecoli_core").lower_bound == 0.0
 
+    @pytest.mark.xfail(reason="defunct with optlang model")
     def test_modify_reversible(self, model):
         model1 = model.copy()
         model1.optimize()

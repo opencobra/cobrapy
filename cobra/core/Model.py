@@ -5,10 +5,10 @@ import sympy
 from six import iteritems, string_types
 
 from cobra.solvers import optimize
-from cobra.core.Object import Object
-from cobra.core.Solution import Solution, LazySolution
-from cobra.core.Reaction import Reaction, separate_forward_and_reverse_bounds
-from cobra.core.DictList import DictList
+from .Object import Object
+from .solution import Solution
+from .Reaction import Reaction, separate_forward_and_reverse_bounds
+from .DictList import DictList
 
 import six
 import time
@@ -67,7 +67,7 @@ class Model(Object):
             self._solver.objective = interface.Objective(S.Zero)
             self._populate_solver(self.reactions, self.metabolites)
         self._timestamp_last_optimization = None
-        self.solution = LazySolution(self)
+        self.solution = Solution(self)
 
     @property
     def solver(self):
@@ -277,7 +277,7 @@ class Model(Object):
 
         # No use in copying it, also circular dependencies
         new._timestamp_last_optimization = None
-        new.solution = LazySolution(self)
+        new.solution = Solution(self)
         return new
 
     def add_metabolites(self, metabolite_list):
@@ -461,8 +461,8 @@ class Model(Object):
 
         objective_sense: 'maximize' or 'minimize'
 
-        solution_type: Solution or LazySolution
-            The type of solution that should be returned. A LazySolution
+        solution_type: Solution
+            The type of solution that should be returned. A Solution
             only fetches attributes from the solver when requested in order
             to reduce unnecessary communication.
 
@@ -485,7 +485,6 @@ class Model(Object):
                    specified with the appropriate keyword argument.
 
         """
-        # TODO: make LazySolution default
         current = interface_to_str(self.solver.interface.__name__)
         so = kwargs.get('solver', 'optlang-' + current)
         # after deprecation this can be checked with:
