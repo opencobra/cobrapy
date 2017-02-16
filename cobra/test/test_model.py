@@ -533,21 +533,6 @@ class TestCobraModel:
                            reaction in [atpm, biomass]]
         assert su.linear_reaction_coefficients(model) == {atpm: 1., biomass: 1.}
 
-    @pytest.mark.parametrize("solver", optlang_solvers)
-    def test_fix_objective_as_constraint(self, solver, model):
-        model.solver = solver
-        with model as m:
-            m.fix_objective_as_constraint()
-            constraint_name = m.solver.constraints[-1]
-            assert abs(m.solver.constraints[-1].expression -
-                       m.objective.expression) < 1e-6
-        assert constraint_name not in m.solver.constraints
-        m.fix_objective_as_constraint()
-        constraint_name = m.solver.constraints[-1]
-        assert abs(m.solver.constraints[-1].expression -
-                   m.objective.expression) < 1e-6
-        assert constraint_name in m.solver.constraints
-
     def test_model_medium(self, model):
         # Add a dummy 'malformed' import reaction
         bad_import = Reaction('bad_import')

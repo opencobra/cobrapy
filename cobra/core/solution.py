@@ -12,6 +12,7 @@ from warnings import warn
 from builtins import (object, super, dict)
 
 from cobra.exceptions import UndefinedSolution
+import cobra
 
 __all__ = ("Solution",)
 
@@ -62,9 +63,8 @@ class Solution(object):
     def __new__(cls, *args, **kwargs):
         """Create either LegacySolution or Solution type."""
         # Prevent a circular import between Solution and Model.
-        from cobra.core.Model import Model
         # this is a cobrapy compatibility hack
-        if len(args) == 1 and not isinstance(args[0], Model):
+        if len(args) == 1 and not isinstance(args[0], cobra.core.Model):
             cobrapy_solution = super(Solution, cls).__new__(LegacySolution)
             cobrapy_solution.__init__(*args, **kwargs)
             return cobrapy_solution

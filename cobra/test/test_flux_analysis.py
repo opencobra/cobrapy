@@ -5,13 +5,14 @@ from contextlib import contextmanager
 import re
 from six import iteritems, StringIO
 from cobra.core import Model, Reaction, Metabolite, Solution
-from cobra.core.Solution import LegacySolution
+from cobra.core.solution import LegacySolution
 from cobra.solvers import solver_dict, get_solver_name
 import cobra.util.solver as sutil
 from cobra.flux_analysis import *
 from cobra.solvers import SolverNotFound
 from .conftest import model, large_model, solved_model, fva_results
 from cobra.manipulation import convert_to_irreversible
+from cobra.exceptions import SolveError
 
 try:
     import numpy
@@ -111,7 +112,7 @@ class TestCobraFluxAnalysis:
         # no idea why this doesn't raise an error...
         # Infeasible solution
         model.reactions.ATPM.lower_bound = 500
-        with pytest.raises(ValueError):
+        with pytest.raises((SolveError, ValueError)):
             optimize_minimal_flux(model, solver=solver)
 
     @pytest.mark.parametrize("solver", all_solvers)

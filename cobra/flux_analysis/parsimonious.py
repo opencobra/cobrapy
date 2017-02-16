@@ -1,4 +1,5 @@
 from six import iteritems
+from itertools import chain
 import sympy
 import logging
 
@@ -91,13 +92,35 @@ def optimize_minimal_flux(model, already_irreversible=False,
 
 
 def add_pfba(model, objective=None, fraction_of_optimum=1.0):
+    """Add pFBA objective
+
+    Add objective to minimize the summed flux of all reactions to the
+    current objective.
+
+    See Also
+    -------
+    optimize_minimal_flux
+
+    Parameters
+    ----------
+    model : cobra.core.Model
+        The model to add the objective to
+    objective :
+        An objective to set in combination with the pFBA objective.
+    fraction_of_optimum : float
+        Fraction of optimum which must be maintained. The original objective
+        reaction is constrained to be greater than maximal_value *
+        fraction_of_optimum.
+    """
     if objective is not None:
         model.objective = objective
-    model.fix_objective_as_constraint(fraction=fraction_of_optimum)
+    sutil.fix_objective_as_constraint(model, fraction=fraction_of_optimum)
+    reaction_variables = ((rxn.forward_variable, rxn.reverse_variable)
+                          for rxn in model.reactions)
+    variables = chain(*reaction_variables)
     pfba_objective = model.solver.interface.Objective(add(
-        [mul((sympy.singleton.S.One, variable)) for variable in
-         list(model.solver.variables.values())]),
-        direction='min', sloppy=True)
+        [mul((sympy.singleton.S.One, variable))
+         for variable in variables]), direction='min', sloppy=True)
     set_objective(model, pfba_objective)
 
 

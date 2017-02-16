@@ -80,3 +80,18 @@ class TestSolverMods:
         assert "test" not in model.solver.variables.keys()
         assert "abs_pos_test" not in model.solver.constraints.keys()
         assert "abs_neg_test" not in model.solver.constraints.keys()
+
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_fix_objective_as_constraint(self, solver, model):
+        model.solver = solver
+        with model as m:
+            su.fix_objective_as_constraint(model, 1.0)
+            constraint_name = m.solver.constraints[-1]
+            assert abs(m.solver.constraints[-1].expression -
+                       m.objective.expression) < 1e-6
+        assert constraint_name not in m.solver.constraints
+        su.fix_objective_as_constraint(model)
+        constraint_name = model.solver.constraints[-1]
+        assert abs(model.solver.constraints[-1].expression -
+                   model.objective.expression) < 1e-6
+        assert constraint_name in model.solver.constraints

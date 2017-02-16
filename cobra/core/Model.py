@@ -14,6 +14,7 @@ import six
 import time
 import types
 from sympy import S
+from cobra.exceptions import SolveError
 from cobra.util.util import AutoVivification
 from cobra.util.context import HistoryManager, resettable
 from cobra.util.solver import solvers, SolverNotFound, interface_to_str, \
@@ -504,21 +505,24 @@ class Model(Object):
             # invalidate their solution if the model is changed afterwards
             self.solver.optimize()
             # Not nice, but necessary until next optlang release
-            solution = (solution_type(self) if
-                        self.solver.status == 'optimal' else self.solution)
+            solution = solution_type(self)
+            # solution = (solution_type(self) if
+            #             self.solver.status == 'optimal' else self.solution)
             if objective_sense is not None:
                 self.solver.objective.direction = original_direction
         else:
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
         self.solution = solution
-        # TODO: make failing optimization raise suitable exception
-        # if solution.status is not 'optimal':
-        #     raise exceptions._OPTLANG_TO_EXCEPTIONS_DICT.get(solution.status,
-        #                                                      SolveError)(
-        #         'Solving model %s did not return an optimal solution. The '
-        #         'returned solution status is "%s"' % (
-        #             self, solution.status))
+
+        if solution.status is not 'optimal':
+            raise SolveError('no optimal solution')
+            # TODO: make failing optimization raise suitable exception
+            # raise exceptions._OPTLANG_TO_EXCEPTIONS_DICT.get(solution.status,
+            #                                                  SolveError)(
+            #     'Solving model %s did not return an optimal solution. The '
+            #     'returned solution status is "%s"' % (
+            #         self, solution.status))
         return solution
 
     def remove_reactions(self, reactions, delete=True,
@@ -644,35 +648,3 @@ class Model(Object):
         """Pop the top context manager and trigger the undo functions"""
         context = self._contexts.pop()
         context.reset()
-
-    def fix_objective_as_constraint(self, fraction=1):
-        """Fix current objective as an additional constraint
-
-        When adding constraints to a model, such as done in pFBA which
-        minimizes total flux, these constraints can become too powerful,
-        resulting in solutions that satisfy optimality but sacrifices too
-        much for the original objective function. To avoid that, we can fix
-        the current objective value as a constraint to ignore solutions that
-        give a lower (or higher depending on the optimization direction)
-        objective value than the original model.
-
-        When done with the model as a context, the modification to the
-        objective will be reverted when exiting that context.
-
-        Parameters
-        ----------
-        fraction : float
-            The fraction of the optimum the objective is allowed to reach.
-        """
-        fix_objective_name = 'Fixed_objective_{}'.format(self.objective.name)
-        if fix_objective_name in self.solver.constraints:
-            remove_from_solver(self, fix_objective_name)
-        objective_value = self.optimize().objective_value * fraction
-        constraint = self.solver.interface.Constraint(
-            self.objective.expression,
-            name=fix_objective_name)
-        if self.objective.direction == 'max':
-            constraint.lb = objective_value
-        else:
-            constraint.ub = objective_value
-        add_to_solver(self, constraint)
