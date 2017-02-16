@@ -46,6 +46,7 @@ except ImportError:
 stable_optlang = ["glpk", "cplex", "gurobi"]
 all_solvers = ["optlang-" + s for s in stable_optlang if s in
                sutil.solvers] + list(solver_dict)
+optlang_solvers = [s for s in all_solvers if "optlang-" in s]
 
 
 @contextmanager
@@ -244,16 +245,29 @@ class TestCobraFluxAnalysis:
         benchmark(flux_variability_analysis, large_model, solver=solver,
                   reaction_list=large_model.reactions[1::3])
 
-    def test_loopless_flux_variability_benchmark(self, model, benchmark):
-        benchmark(flux_variability_analysis, model,
-                  reaction_list=model.reactions[1::5])
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_flux_variability_loopless_benchmark(self, model, benchmark,
+                                                 solver):
+        benchmark(flux_variability_analysis, model, loopless=True,
+                  solver=solver, reaction_list=model.reactions[1::3])
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_flux_variability(self, model, fva_results, solver):
         if solver == "esolver":
             pytest.skip("esolver too slow...")
         fva_out = flux_variability_analysis(
-            model, solver=solver, reaction_list=model.reactions[1::3])
+            model, solver=solver, reaction_list=model.reactions)
+        for name, result in iteritems(fva_out):
+            for k, v in iteritems(result):
+                assert abs(fva_results[name][k] - v) < 0.00001
+
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_flux_variability_loopless(self, model, fva_results, solver):
+        fva_out = flux_variability_analysis(
+            model, loopless=True, solver=solver,
+            reaction_list=model.reactions[1::10])
+        # This works because textbook has no loops in the (unique)
+        # optimal solution
         for name, result in iteritems(fva_out):
             for k, v in iteritems(result):
                 assert abs(fva_results[name][k] - v) < 0.00001

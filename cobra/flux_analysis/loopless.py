@@ -86,6 +86,9 @@ def loopless_solution(model):
     ----------
     model : a cobra model
         The model to which to add the constraints.
+    obj_val : a float
+        Fix the objective value to this value. Uses the current optimum if
+        None.
 
     Returns
     -------
@@ -113,16 +116,15 @@ def loopless_solution(model):
        Bioinformatics. 2015 Jul 1;31(13):2159-65.
        doi: 10.1093/bioinformatics/btv096.
     """
-    try:
-        old_sol = model.solution
-        old_sol.f
-    except Exception:
-        old_sol = model.optimize()
+    # Need to reoptimize otherwise spurious solution artifacts can cause
+    # all kinds of havoc
+    model.solver.optimize()
+    obj_val = model.solver.objective.value
 
     prob = model.solver.interface
     with model:
         loopless_old_obj = prob.Variable("loopless_old_objective",
-                                         lb=old_sol.f, ub=old_sol.f)
+                                         lb=obj_val, ub=obj_val)
         loopless_obj_constraint = prob.Constraint(
             model.solver.objective.expression - loopless_old_obj,
             lb=0, ub=0, name="loopless_obj_constraint")
@@ -134,10 +136,12 @@ def loopless_solution(model):
                 continue
             if rxn.flux >= 0:
                 rxn.lower_bound = max(0, rxn.lower_bound)
+                model.objective.set_linear_coefficients(
+                    {rxn.forward_variable: 1, rxn.reverse_variable: -1})
             else:
                 rxn.upper_bound = min(0, rxn.upper_bound)
-            model.objective.set_linear_coefficients(
-                {rxn.forward_variable: 1, rxn.reverse_variable: 1})
+                model.objective.set_linear_coefficients(
+                    {rxn.forward_variable: -1, rxn.reverse_variable: 1})
         model.solver.objective.direction = "min"
         model.optimize()
         if model.solver.status == "optimal":
@@ -179,6 +183,14 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-12):
         solution containing the minimum/maximum flux for `reaction`.
     """
     current = reaction.flux
+
+    # boundary reactions can not be part of cycles
+    if reaction.boundary:
+        if all_fluxes:
+            return model.solution.fluxes
+        else:
+            return current
+
     # Reset objective to original one and get a loopless solution
     model.solver.objective.set_linear_coefficients(
         {model.solver.variables.fva_old_objective: 1,

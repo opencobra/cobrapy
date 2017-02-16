@@ -163,7 +163,7 @@ def _fva_optlang(model, reaction_list, fraction, loopless):
         fva_old_objective = prob.Variable(
             "fva_old_objective", lb=fraction * m.solver.objective.value)
         fva_old_obj_constraint = prob.Constraint(
-            m.solver.objective.expression - fva_old_objective, lb=0.0, ub=0.0,
+            m.solver.objective.expression - fva_old_objective, lb=0, ub=0,
             name="fva_old_objective_constraint")
         sutil.add_to_solver(m, [fva_old_objective, fva_old_obj_constraint])
         model.objective = S.Zero  # This will trigger the reset as well
