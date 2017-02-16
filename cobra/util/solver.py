@@ -91,7 +91,7 @@ def set_objective(model, value, additive=False):
                              type(value))
         if not additive:
             model.solver.objective = model.solver.interface.Objective(
-                sympy.S.Zero, direction='max')
+                sympy.S.Zero, direction=model.solver.objective.direction)
         reverse_value = {}
         for reaction, coef in value.items():
             reverse_value[reaction.forward_variable] = \
