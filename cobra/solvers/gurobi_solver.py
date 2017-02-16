@@ -29,7 +29,7 @@ if platform.system() != "Windows":
 
 from gurobipy import Model, LinExpr, GRB, QuadExpr
 
-from ..core.Solution import Solution
+from ..core.solution import Solution
 
 from six import string_types, iteritems
 

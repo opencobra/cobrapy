@@ -71,7 +71,7 @@ cobra.core.Reaction module
 cobra.core.Solution module
 --------------------------
 
-.. automodule:: cobra.core.Solution
+.. automodule:: cobra.core.solution
     :members:
     :undoc-members:
     :show-inheritance:

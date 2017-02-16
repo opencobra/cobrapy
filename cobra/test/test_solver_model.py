@@ -20,9 +20,8 @@ except ImportError:
     pandas = None
 import six
 
-from cobra import config
 from cobra.util.solver import solvers, SolverNotFound, set_objective
-from cobra.core import Metabolite, Reaction, Model, LazySolution
+from cobra.core import Metabolite, Reaction, Model, Solution
 from cobra.exceptions import UndefinedSolution
 import pytest
 
@@ -47,19 +46,19 @@ def tiny_toy_model():
 @pytest.fixture(scope="function", params=solver_trials)
 def solved_model(request, model):
     model.solver = request.param
-    solution = model.optimize(solution_type=LazySolution)
+    solution = model.optimize(solution_type=Solution)
     return solution, model
 
 
-class TestLazySolution:
+class TestSolution:
     def test_self_invalidation(self, solved_model):
-        from time import sleep
         solution, model = solved_model
+        # TODO: use numpy.isclose or similar tolerance concept
         assert abs(solution.f - 0.873921506968431) < 0.000001
-        sleep(0.05)
         model.optimize()
+        # get a previously unaccessed flux
         with pytest.raises(UndefinedSolution):
-            getattr(solution, 'f')
+            solution[model.reactions[-1].id]
 
     def test_solution_contains_only_reaction_specific_values(self,
                                                              solved_model):
@@ -322,7 +321,7 @@ class TestReaction:
         assert rxn.reverse_variable.ub == 1000.
 
     def test_model_less_reaction(self, model):
-        model.optimize(solution_type=LazySolution)
+        model.optimize(solution_type=Solution)
         for reaction in model.reactions:
             assert isinstance(reaction.flux, float)
             assert isinstance(reaction.reduced_cost, float)
@@ -733,11 +732,11 @@ class TestSolverBasedModel:
     def test_solver_change(self, model):
         solver_id = id(model.solver)
         problem_id = id(model.solver.problem)
-        solution = model.optimize(solution_type=LazySolution).fluxes
+        solution = model.optimize(solution_type=Solution).fluxes
         model.solver = "cplex"
         assert id(model.solver) != solver_id
         assert id(model.solver.problem) != problem_id
-        new_solution = model.optimize(solution_type=LazySolution).fluxes
+        new_solution = model.optimize(solution_type=Solution).fluxes
         for key in list(solution.keys()):
             assert round(abs(new_solution[key] - solution[key]),
                          7) == 0
@@ -746,11 +745,11 @@ class TestSolverBasedModel:
     def test_solver_change_with_optlang_interface(self, model):
         solver_id = id(model.solver)
         problem_id = id(model.solver.problem)
-        solution = model.optimize(solution_type=LazySolution).fluxes
+        solution = model.optimize(solution_type=Solution).fluxes
         model.solver = optlang.cplex_interface
         assert id(model.solver) != solver_id
         assert id(model.solver.problem) != problem_id
-        new_solution = model.optimize(solution_type=LazySolution).fluxes
+        new_solution = model.optimize(solution_type=Solution).fluxes
         for key in list(solution.keys()):
             assert round(abs(new_solution[key] - solution[key]),
                          7) == 0

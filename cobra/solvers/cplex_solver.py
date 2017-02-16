@@ -7,7 +7,7 @@ import sys
 from cplex import Cplex, SparsePair
 from cplex.exceptions import CplexError
 
-from ..core.Solution import Solution
+from ..core.solution import Solution
 from six.moves import zip
 from six import string_types, iteritems
 

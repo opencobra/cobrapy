@@ -11,7 +11,7 @@ from .parameters import status_dict, variable_kind_dict, \
      sense_dict, parameter_mappings, parameter_defaults, \
      objective_senses, default_objective_sense
 
-from ..core.Solution import Solution
+from ..core.solution import Solution
 from time import time
 solver_name = 'gurobi'
 objective_senses = objective_senses[solver_name]

@@ -8,7 +8,7 @@ from .parameters import status_dict, variable_kind_dict, \
      sense_dict, parameter_mappings, parameter_defaults, \
      objective_senses, default_objective_sense
 
-from ..core.Solution import Solution
+from ..core.solution import Solution
 from time import time
 from six import iteritems
 solver_name = 'glpk'
@@ -308,12 +308,12 @@ def solve(cobra_model, **kwargs):
     """Smart interface to optimization solver functions that will convert
     the cobra_model to a solver object, set the parameters, and try multiple
     methods to get an optimal solution before returning the solver object and
-    a cobra.Solution (which is attached to cobra_model.solution)
+    a cobra.solution (which is attached to cobra_model.solution)
 
     cobra_model: a cobra.Model
 
     returns a dict: {'the_problem': solver specific object, 'the_solution':
-    cobra.Solution for the optimization problem'}
+    cobra.solution for the optimization problem'}
     
 
     """
