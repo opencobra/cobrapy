@@ -337,9 +337,10 @@ class LegacySolution(object):
     def __repr__(self):
         """String representation of the solution instance."""
         if self.objective_value is None:
-            return "<LegacySolution {0:r} at 0x{1:x}>".format(self.status, id(self))
-        return "<LegacySolution {0:.3g} at 0x{1:x}>".format(self.objective_value,
-                                                      id(self))
+            return "<LegacySolution {0:r} at 0x{1:x}>".format(
+                self.status, id(self))
+        return "<LegacySolution {0:.3g} at 0x{1:x}>".format(
+            self.objective_value, id(self))
 
     def __getitem__(self, reaction_id):
         """
