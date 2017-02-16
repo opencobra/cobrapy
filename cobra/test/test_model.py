@@ -531,7 +531,8 @@ class TestCobraModel:
         # test by setting list of indexes
         model.objective = [model.reactions.index(reaction) for
                            reaction in [atpm, biomass]]
-        assert su.linear_reaction_coefficients(model) == {atpm: 1., biomass: 1.}
+        assert su.linear_reaction_coefficients(model) == {atpm: 1.,
+                                                          biomass: 1.}
 
     def test_model_medium(self, model):
         # Add a dummy 'malformed' import reaction

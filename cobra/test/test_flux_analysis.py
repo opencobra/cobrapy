@@ -39,8 +39,8 @@ except ImportError:
 # The scipt interface is currently unstable and may yield errors or infeasible
 # solutions
 stable_optlang = ["glpk", "cplex", "gurobi"]
-all_solvers = ["optlang-" + s for s in stable_optlang if s in sutil.solvers] + \
-              list(solver_dict)
+all_solvers = ["optlang-" + s for s in stable_optlang if s in
+               sutil.solvers] + list(solver_dict)
 
 
 @contextmanager
