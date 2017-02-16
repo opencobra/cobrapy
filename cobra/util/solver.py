@@ -62,7 +62,7 @@ def linear_reaction_coefficients(model, reactions=None):
     return linear_coefficients
 
 
-def set_objective(model, value, additive=False, check_context=True):
+def set_objective(model, value, additive=False):
     """ Set the model objective
 
     Parameters
@@ -82,29 +82,30 @@ def set_objective(model, value, additive=False, check_context=True):
     additive : bool
         If true, add the terms to the current objective, otherwise start with
         an empty objective.
-
-    check_context : bool
-        Whether or not to skip the model's context manager. Internal use only.
     """
-    reverse_value = None
-
     if isinstance(value, dict):
-        if not additive:
-            model.solver.objective = model.solver.interface.Objective(
-                sympy.S.Zero, direction='max')
-        elif not model.objective.is_Linear:  # Not supported
+        if not model.objective.is_Linear:
             raise ValueError('can only update non-linear objectives '
                              'additively using object of class '
                              'model.solver.interface.Objective, not %s' %
                              type(value))
+        if not additive:
+            model.solver.objective = model.solver.interface.Objective(
+                sympy.S.Zero, direction='max')
         reverse_value = {}
         for reaction, coef in value.items():
-            reverse_value[reaction] = reaction.objective_coefficient
+            reverse_value[reaction.forward_variable] = \
+                reaction.objective_coefficient
+            reverse_value[reaction.reverse_variable] = \
+                -reaction.objective_coefficient
             model.solver.objective.set_linear_coefficients(
                 {reaction.forward_variable: coef,
                  reaction.reverse_variable: -coef})
 
     elif isinstance(value, (sympy.Basic, model.solver.interface.Objective)):
+        reverse_value = model.solver.interface.Objective(
+            model.solver.objective.expression,
+            direction=model.solver.objective.direction, sloppy=True)
         if not additive:
             if isinstance(value, sympy.Basic):
                 value = model.solver.interface.Objective(value, sloppy=False)
@@ -113,16 +114,21 @@ def set_objective(model, value, additive=False, check_context=True):
             if isinstance(value, model.solver.interface.Objective):
                 value = value.expression
             model.solver.objective += value
-            reverse_value = -value
-
     else:
         raise TypeError(
             '%r is not a valid objective for %r.' % (value, model.solver))
 
     context = get_context(model)
-    if context and reverse_value and check_context:
-        context(partial(set_objective, model=model, value=reverse_value,
-                        additive=additive, check_context=False))
+    if context:
+        if isinstance(reverse_value, dict):
+            context(partial(model.solver.objective.set_linear_coefficients,
+                            reverse_value))
+        else:
+            def reset():
+                model.solver.objective = reverse_value
+                model.solver.objective.direction = reverse_value.direction
+
+            context(reset)
 
 
 def interface_to_str(interface):
