@@ -12,6 +12,12 @@ addons:
       - libfreetype6-dev
       - libpng12-dev
 
+branches:
+ only:
+ - master
+ - devel
+ - devel-2
+
 env:
   global:
     - secure: "hkKBaGLvoDVgktSKR3BmX+mYlGzHw9EO11MRHtiH8D9BbdygOR9p9aSV/OxkaRWhnkSP5/0SXqVgBrvU1g5OsR6cc85UQSpJ5H5jVnLoWelIbTxMCikjxDSkZlseD7ZEWrKZjRo/ZN2qym0HRWpsir3qLpl8W25xHRv/sK7Z6g8="
@@ -26,31 +32,31 @@ matrix:
     - os: linux
       env:
         - MB_PYTHON_VERSION=2.7
-    - os: linux
-      env:
-        - MB_PYTHON_VERSION=3.4
+    # - os: linux
+    #   env:
+    #     - MB_PYTHON_VERSION=3.4
     - os: linux
       env:
         - MB_PYTHON_VERSION=3.5
     - os: linux
       env:
         - MB_PYTHON_VERSION=3.6
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=2.7
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=3.4
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=3.5
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=3.6
+    # - os: osx
+    #   language: objective-c
+    #   env:
+    #     - MB_PYTHON_VERSION=2.7
+    # - os: osx
+    #   language: objective-c
+    #   env:
+    #     - MB_PYTHON_VERSION=3.4
+    # - os: osx
+    #   language: objective-c
+    #   env:
+    #     - MB_PYTHON_VERSION=3.5
+    # - os: osx
+    #   language: objective-c
+    #   env:
+    #     - MB_PYTHON_VERSION=3.6
 
 before_install:
   - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout e6ebbfa)
