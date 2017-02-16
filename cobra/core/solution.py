@@ -112,15 +112,16 @@ class Solution(object):
 
         Parameters
         ----------
-        reaction_id : str
-            A reaction ID.
+        reaction : str
+            A model reaction ID.
         """
         flux = self._store.get(reaction_id)
         if flux is not None:
             return flux
         self._is_current()
-        self._store[reaction_id] = flux =\
-            self._model.reactions.get_by_id(reaction_id).flux
+        reaction = self._model.reactions.get_by_id(reaction_id)
+        self._store[reaction_id] = flux = reaction.forward_variable.primal -\
+            reaction.reverse_variable.primal
         return flux
 
     get_primal_by_id = __getitem__
@@ -180,10 +181,8 @@ class Solution(object):
         if self._fluxes is not None:
             return self._fluxes
         self._is_current()
-        primal_values = self._model.solver.primal_values
         self._fluxes = OrderedDict(
-            (rxn.id, primal_values[rxn._get_forward_id()] -
-             primal_values[rxn._get_reverse_id()])
+            (rxn.id, rxn.forward_variable.primal - rxn.reverse_variable.primal)
             for rxn in self._model.reactions)
         return self._fluxes
 
@@ -206,10 +205,8 @@ class Solution(object):
         if self._reduced_costs is not None:
             return self._reduced_costs
         self._is_current()
-        reduced_values = self._model.solver.reduced_costs
         self._reduced_costs = OrderedDict(
-            (rxn.id, reduced_values[rxn._get_forward_id()] -
-             reduced_values[rxn._get_reverse_id()])
+            (rxn.id, rxn.forward_variable.dual - rxn.reverse_variable.dual)
             for rxn in self._model.reactions)
         return self._reduced_costs
 
@@ -340,9 +337,20 @@ class LegacySolution(object):
     def __repr__(self):
         """String representation of the solution instance."""
         if self.objective_value is None:
-            return "<Solution {0:r} at 0x{1:x}>".format(self.status, id(self))
-        return "<Solution {0:.3g} at 0x{1:x}>".format(self.objective_value,
+            return "<LegacySolution {0:r} at 0x{1:x}>".format(self.status, id(self))
+        return "<LegacySolution {0:.3g} at 0x{1:x}>".format(self.objective_value,
                                                       id(self))
+
+    def __getitem__(self, reaction_id):
+        """
+        Return the flux of a reaction.
+
+        Parameters
+        ----------
+        reaction_id : str
+            A reaction ID.
+        """
+        return self.x_dict[reaction_id]
 
     def dress_results(self, model):
         """
