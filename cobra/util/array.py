@@ -20,12 +20,12 @@ def create_stoichiometric_array(model, array_type='dense', dtype=None):
     metabolites. S[i,j] therefore contains the quantity of metabolite `i`
     produced (negative for consumed) by reaction `j`.
 
-    model: a :class:`~cobra.core.Model` object
-    array_type: string
+    model : cobra.Model
+    array_type : string
         The type of array to construct. if 'dense', return a standard
         numpy.array. Otherwise, 'dok', or 'lil' will construct a sparse array
         using scipy of the corresponding type.
-    dtype: data-type
+    dtype : data-type
         The desired data-type for the array. If not given, defaults to float.
 
     """
@@ -65,15 +65,15 @@ def nullspace(A, atol=1e-13, rtol=0):
 
     Parameters
     ----------
-    A : ndarray
-    A should be at most 2-D.  A 1-D array with length k will be treated
-    as a 2-D with shape (1, k)
+    A : numpy.ndarray
+        A should be at most 2-D.  A 1-D array with length k will be treated
+        as a 2-D with shape (1, k)
     atol : float
-    The absolute tolerance for a zero singular value.  Singular values
-    smaller than `atol` are considered to be zero.
+        The absolute tolerance for a zero singular value.  Singular values
+        smaller than `atol` are considered to be zero.
     rtol : float
-    The relative tolerance.  Singular values less than rtol*smax are
-    considered to be zero, where smax is the largest singular value.
+        The relative tolerance.  Singular values less than rtol*smax are
+        considered to be zero, where smax is the largest singular value.
 
     If both `atol` and `rtol` are positive, the combined tolerance is the
     maximum of the two; that is::
@@ -82,12 +82,12 @@ def nullspace(A, atol=1e-13, rtol=0):
 
     Returns
     -------
-    ns : ndarray
-    If `A` is an array with shape (m, k), then `ns` will be an array
-    with shape (k, n), where n is the estimated dimension of the
-    nullspace of `A`.  The columns of `ns` are a basis for the
-    nullspace; each element in numpy.dot(A, ns) will be approximately
-    zero.
+    numpy.ndarray
+        If `A` is an array with shape (m, k), then `ns` will be an array
+        with shape (k, n), where n is the estimated dimension of the
+        nullspace of `A`.  The columns of `ns` are a basis for the
+        nullspace; each element in numpy.dot(A, ns) will be approximately
+        zero.
 
     Notes
     -----

@@ -11,8 +11,9 @@ from cobra.manipulation.modify import convert_to_irreversible
 try:
     import numpy
     from cobra.util import nullspace
-except:
+except ImportError:
     numpy = None
+    nullspace = None
 
 
 def add_loopless(model, zero_cutoff=1e-12):
@@ -22,7 +23,7 @@ def add_loopless(model, zero_cutoff=1e-12):
 
     Parameters
     ----------
-    model : a cobra model
+    model : cobra.Model
         The model to which to add the constraints.
     zero_cutoff : positive float, optional
         Cutoff used for null space. Coefficients with an absolute value smaller
@@ -35,15 +36,16 @@ def add_loopless(model, zero_cutoff=1e-12):
     References
     ----------
     .. [1] Elimination of thermodynamically infeasible loops in steady-state
-           metabolic models.
-       Schellenberger J, Lewis NE, Palsson BO.
-       Biophys J. 2011 Feb 2;100(3):544-53.
-       doi: 10.1016/j.bpj.2010.12.3707.
-       Erratum in: Biophys J. 2011 Mar 2;100(5):1381.
+       metabolic models. Schellenberger J, Lewis NE, Palsson BO. Biophys J.
+       2011 Feb 2;100(3):544-53. doi: 10.1016/j.bpj.2010.12.3707. Erratum
+       in: Biophys J. 2011 Mar 2;100(5):1381.
     """
+    if not numpy:
+        raise ImportError("add_loopless requires numpy :(")
+
     internal = [i for i, r in enumerate(model.reactions) if not r.boundary]
-    Sint = model.S[:, numpy.array(internal)]
-    Nint = nullspace(Sint).T
+    s_int = model.S[:, numpy.array(internal)]
+    n_int = nullspace(s_int).T
     max_bound = max(max(abs(b) for b in r.bounds) for r in model.reactions)
     prob = model.solver.interface
 
@@ -67,13 +69,14 @@ def add_loopless(model, zero_cutoff=1e-12):
     add_to_solver(model, to_add)
 
     # Add nullspace constraints for G_i
-    for i, row in enumerate(Nint):
+    for i, row in enumerate(n_int):
         name = "nullspace_constraint_" + str(i)
         nullspace_constraint = prob.Constraint(S.Zero, lb=0, ub=0, name=name)
         add_to_solver(model, [nullspace_constraint])
         coefs = {model.solver.variables[
-            "delta_g_" + model.reactions[ridx].id]: row[i]
-            for i, ridx in enumerate(internal) if abs(row[i]) > zero_cutoff}
+                 "delta_g_" + model.reactions[ridx].id]: row[i]
+                 for i, ridx in enumerate(internal) if
+                 abs(row[i]) > zero_cutoff}
         model.solver.constraints[name].set_linear_coefficients(coefs)
 
 
@@ -84,11 +87,8 @@ def loopless_solution(model):
 
     Parameters
     ----------
-    model : a cobra model
+    model : cobra.Model
         The model to which to add the constraints.
-    obj_val : a float
-        Fix the objective value to this value. Uses the current optimum if
-        None.
 
     Returns
     -------
@@ -111,10 +111,9 @@ def loopless_solution(model):
     References
     ----------
     .. [1] CycleFreeFlux: efficient removal of thermodynamically infeasible
-           loops from flux distributions.
-       Desouki AA, Jarre F, Gelius-Dietrich G, Lercher MJ.
-       Bioinformatics. 2015 Jul 1;31(13):2159-65.
-       doi: 10.1093/bioinformatics/btv096.
+       loops from flux distributions. Desouki AA, Jarre F, Gelius-Dietrich
+       G, Lercher MJ. Bioinformatics. 2015 Jul 1;31(13):2159-65. doi:
+       10.1093/bioinformatics/btv096.
     """
     # Need to reoptimize otherwise spurious solution artifacts can cause
     # all kinds of havoc
@@ -164,9 +163,9 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-12):
 
     Parameters
     ----------
-    model : a cobra model
+    model : cobra.Model
         The model to be used.
-    reaction : a cobra reaction
+    reaction : cobra.Reaction
         The reaction currently minimized/maximized.
     all_fluxes : boolean, optional
         Whether to return all fluxes or only the minimum/maximum for
@@ -177,7 +176,7 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-12):
 
     Returns
     -------
-    single float or dictionary
+    single float or dicti
         Returns the minimized/maximized flux through `reaction` if
         all_fluxes == False (default). Otherwise returns a loopless flux
         solution containing the minimum/maximum flux for `reaction`.
@@ -218,8 +217,8 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-12):
         # find the reactions with loops using the current reaction and remove
         # the loops
         for rxn in model.reactions:
-            if (abs(loopless[rxn.id]) < zero_cutoff and
-               abs(almost_loopless[rxn.id]) > zero_cutoff):
+            if ((abs(loopless[rxn.id]) < zero_cutoff) and
+                    (abs(almost_loopless[rxn.id]) > zero_cutoff)):
                 rxn.bounds = (0, 0)
 
         # Globally reset the objective to the one used in the FVA iteration
