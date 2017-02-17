@@ -485,21 +485,22 @@ class TestCobraFluxSampling:
         with pytest.raises(ValueError):
             sample(model, 1, method="schwupdiwupp")
 
-    def test_fixed_seed(Self, model):
+    def test_fixed_seed(self, model):
         s = sample(model, 1, seed=42)
-        assert numpy.allclose(s[0, 94], 8.38570846)
+        assert numpy.allclose(s[0, 94], [8.38570846])
 
     def setup_class(self):
         from . import create_test_model
         model = create_test_model("textbook")
         arch = ARCHSampler(model, thinning=1)
-        assert arch.n_warmup > 0 and arch.n_warmup <= 2 * len(model.reactions)
+        assert ((arch.n_warmup > 0) and
+                (arch.n_warmup <= 2 * len(model.reactions)))
         assert all(arch.validate(arch.warmup) == "v")
         self.arch = arch
 
         optgp = OptGPSampler(model, processes=1, thinning=1)
-        assert (optgp.n_warmup > 0 and
-                optgp.n_warmup <= 2 * len(model.reactions))
+        assert ((optgp.n_warmup > 0) and
+                (optgp.n_warmup <= 2 * len(model.reactions)))
         assert all(optgp.validate(optgp.warmup) == "v")
         self.optgp = optgp
 

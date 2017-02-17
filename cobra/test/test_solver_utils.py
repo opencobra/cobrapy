@@ -2,6 +2,7 @@ import pytest
 
 import cobra.util.solver as su
 from cobra.test.conftest import model
+import optlang
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
@@ -19,6 +20,22 @@ class TestHelpers:
 
     def test_solver_name(self):
         assert su.get_solver_name() == "glpk"
+
+    def test_choose_solver(self, model):
+        legacy, so = su.choose_solver(model)
+        assert not legacy
+        assert su.interface_to_str(so) == "glpk"
+        legacy, so = su.choose_solver(model, "optlang-glpk")
+        assert not legacy
+        assert su.interface_to_str(so) == "glpk"
+        assert su.choose_solver(model, "cglpk")[0]
+
+        if any(s in su.solvers for s in su.qp_solvers):
+            qp_choice = su.interface_to_str(su.choose_solver(model, qp=True))
+            assert qp_choice in su.qp_solvers
+        else:
+            with pytest.raises(su.SolverNotFound):
+                su.choose_solver(model, qp=True)
 
 
 class TestObjectiveHelpers:

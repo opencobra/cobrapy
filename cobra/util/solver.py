@@ -6,11 +6,12 @@ all operations defined here are automatically reverted when used in a
 The functions defined here together with the existing model functions should
 allow you to implement custom flux analysis methods with ease."""
 
+import re
+from types import ModuleType
 from cobra.util.context import get_context
 import cobra.solvers as legacy_solvers
 from functools import partial
 import optlang
-import re
 import sympy
 
 
@@ -25,6 +26,11 @@ solvers = {match.split("_")[0]: getattr(optlang, match)
            for match in dir(optlang) if "_interface" in match}
 """
 Defines all the solvers that were found in optlang.
+"""
+
+qp_solvers = ["cplex"]  # QP in gurobi not implemented yet
+"""
+Defines all the QP solvers implemented in optlang.
 """
 
 
@@ -145,6 +151,8 @@ def interface_to_str(interface):
     string
        The name of the interface as a string
     """
+    if isinstance(interface, ModuleType):
+        interface = interface.__name__
     return re.sub(r"optlang.|.interface", "", interface)
 
 
@@ -164,9 +172,10 @@ def get_solver_name(mip=False, qp=False):
     string
         The name of feasible solver.
 
-    Notes
-    -----
-    Raises SolverNotFound if a suitable solver is not found.
+    Raises
+    ------
+    SolverNotFound
+        If no suitable solver could be found.
     """
     if len(solvers) == 0:
         raise SolverNotFound("no solvers installed")
@@ -193,7 +202,7 @@ def get_solver_name(mip=False, qp=False):
     raise SolverNotFound("no mip-capable solver found")
 
 
-def choose_solver(model, solver=None, **solver_specs):
+def choose_solver(model, solver=None, qp=False):
     """Choose a solver given a solver name and model.
 
     This will choose a solver compatible with the model and required
@@ -206,8 +215,8 @@ def choose_solver(model, solver=None, **solver_specs):
     solver : str, optional
         The name of the solver to be used. Optlang solvers should be prefixed
         by "optlang-", for instance "optlang-glpk".
-    solver_specs : arguments passed to get_solver_name, optional
-        The specifications for the solver. For instance `qp=True`.
+    qp : boolean, optional
+        Whether the solver needs Quadratic Programming capabilities.
 
     Returns
     -------
@@ -225,13 +234,19 @@ def choose_solver(model, solver=None, **solver_specs):
     """
     legacy = False
     if solver is None:
-        solver = model.solver
+        solver = model.solver.interface
     elif "optlang-" in solver:
         solver = interface_to_str(solver)
         solver = solvers[solver]
     else:
         legacy = True
         solver = legacy_solvers.solver_dict[solver]
+
+    # Check for QP, raise error if no QP solver found
+    # optlang only since old interface interprets None differently
+    if qp and interface_to_str(solver) not in qp_solvers:
+        solver = solvers[get_solver_name(qp=True)]
+
     return legacy, solver
 
 
