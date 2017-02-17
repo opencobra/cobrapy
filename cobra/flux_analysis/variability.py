@@ -180,6 +180,7 @@ def _fva_optlang(model, reaction_list, fraction, loopless):
                     {rxn.forward_variable: 1, rxn.reverse_variable: -1})
                 m.solver.objective.direction = sense
                 m.solver.optimize()
+                print(m.solver.status)
                 if loopless:
                     value = loopless_fva_iter(m, rxn)
                 else:

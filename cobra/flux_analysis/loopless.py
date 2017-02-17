@@ -117,8 +117,9 @@ def loopless_solution(model):
     """
     # Need to reoptimize otherwise spurious solution artifacts can cause
     # all kinds of havoc
-    model.solver.optimize()
-    obj_val = model.solver.objective.value
+    print(model.objective.expression)
+    model.optimize(objective_sense=None)
+    obj_val = model.solution.f
 
     prob = model.solver.interface
     with model:
@@ -142,7 +143,7 @@ def loopless_solution(model):
                 model.objective.set_linear_coefficients(
                     {rxn.forward_variable: -1, rxn.reverse_variable: 1})
         model.solver.objective.direction = "min"
-        model.optimize()
+        model.optimize(objective_sense=None)
         if model.solver.status == "optimal":
             fluxes = model.solution.fluxes
         else:
@@ -181,7 +182,8 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-12):
         all_fluxes == False (default). Otherwise returns a loopless flux
         solution containing the minimum/maximum flux for `reaction`.
     """
-    current = reaction.flux
+    current = model.solver.objective.value
+    print (reaction, current)
 
     # boundary reactions can not be part of cycles
     if reaction.boundary:
