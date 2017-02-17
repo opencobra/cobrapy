@@ -6,11 +6,12 @@ all operations defined here are automatically reverted when used in a
 The functions defined here together with the existing model functions should
 allow you to implement custom flux analysis methods with ease."""
 
+import re
+from types import ModuleType
 from cobra.util.context import get_context
 import cobra.solvers as legacy_solvers
 from functools import partial
 import optlang
-import re
 import sympy
 
 
@@ -25,6 +26,11 @@ solvers = {match.split("_")[0]: getattr(optlang, match)
            for match in dir(optlang) if "_interface" in match}
 """
 Defines all the solvers that were found in optlang.
+"""
+
+qp_solvers = ["cplex"]  # QP in gurobi not implemented yet
+"""
+Defines all the QP solvers implemented in optlang.
 """
 
 
@@ -83,18 +89,29 @@ def set_objective(model, value, additive=False):
         If true, add the terms to the current objective, otherwise start with
         an empty objective.
     """
-    by_objective = isinstance(value,
-                              (sympy.Basic, model.solver.interface.Objective))
+    if isinstance(value, dict):
+        if not model.objective.is_Linear:
+            raise ValueError('can only update non-linear objectives '
+                             'additively using object of class '
+                             'model.solver.interface.Objective, not %s' %
+                             type(value))
+        if not additive:
+            model.solver.objective = model.solver.interface.Objective(
+                sympy.S.Zero, direction=model.solver.objective.direction)
+        reverse_value = {}
+        for reaction, coef in value.items():
+            reverse_value[reaction.forward_variable] = \
+                reaction.objective_coefficient
+            reverse_value[reaction.reverse_variable] = \
+                -reaction.objective_coefficient
+            model.solver.objective.set_linear_coefficients(
+                {reaction.forward_variable: coef,
+                 reaction.reverse_variable: -coef})
 
-    not_supported = (
-        additive and (not model.objective.is_Linear and not by_objective))
-    if not_supported:
-        raise ValueError('can only update non-linear objectives additively '
-                         'using object of class '
-                         'model.solver.interface.Objective, not %s' %
-                         type(value))
-    reverse_value = None
-    if by_objective:
+    elif isinstance(value, (sympy.Basic, model.solver.interface.Objective)):
+        reverse_value = model.solver.interface.Objective(
+            model.solver.objective.expression,
+            direction=model.solver.objective.direction, sloppy=True)
         if not additive:
             if isinstance(value, sympy.Basic):
                 value = model.solver.interface.Objective(value, sloppy=False)
@@ -103,24 +120,21 @@ def set_objective(model, value, additive=False):
             if isinstance(value, model.solver.interface.Objective):
                 value = value.expression
             model.solver.objective += value
-            reverse_value = -value
-    elif isinstance(value, dict):
-        if not additive:
-            model.solver.objective = model.solver.interface.Objective(
-                sympy.S.Zero, direction='max')
-        reverse_value = {}
-        for reaction, coef in value.items():
-            reverse_value[reaction] = reaction.objective_coefficient
-            model.solver.objective.set_linear_coefficients(
-                {reaction.forward_variable: coef,
-                 reaction.reverse_variable: -coef})
     else:
         raise TypeError(
             '%r is not a valid objective for %r.' % (value, model.solver))
+
     context = get_context(model)
-    if context and reverse_value:
-        context(partial(set_objective, model=model, value=reverse_value,
-                        additive=additive))
+    if context:
+        if isinstance(reverse_value, dict):
+            context(partial(model.solver.objective.set_linear_coefficients,
+                            reverse_value))
+        else:
+            def reset():
+                model.solver.objective = reverse_value
+                model.solver.objective.direction = reverse_value.direction
+
+            context(reset)
 
 
 def interface_to_str(interface):
@@ -137,6 +151,8 @@ def interface_to_str(interface):
     string
        The name of the interface as a string
     """
+    if isinstance(interface, ModuleType):
+        interface = interface.__name__
     return re.sub(r"optlang.|.interface", "", interface)
 
 
@@ -156,9 +172,10 @@ def get_solver_name(mip=False, qp=False):
     string
         The name of feasible solver.
 
-    Notes
-    -----
-    Raises SolverNotFound if a suitable solver is not found.
+    Raises
+    ------
+    SolverNotFound
+        If no suitable solver could be found.
     """
     if len(solvers) == 0:
         raise SolverNotFound("no solvers installed")
@@ -185,7 +202,7 @@ def get_solver_name(mip=False, qp=False):
     raise SolverNotFound("no mip-capable solver found")
 
 
-def choose_solver(model, solver=None, **solver_specs):
+def choose_solver(model, solver=None, qp=False):
     """Choose a solver given a solver name and model.
 
     This will choose a solver compatible with the model and required
@@ -198,8 +215,8 @@ def choose_solver(model, solver=None, **solver_specs):
     solver : str, optional
         The name of the solver to be used. Optlang solvers should be prefixed
         by "optlang-", for instance "optlang-glpk".
-    solver_specs : arguments passed to get_solver_name, optional
-        The specifications for the solver. For instance `qp=True`.
+    qp : boolean, optional
+        Whether the solver needs Quadratic Programming capabilities.
 
     Returns
     -------
@@ -217,13 +234,19 @@ def choose_solver(model, solver=None, **solver_specs):
     """
     legacy = False
     if solver is None:
-        solver = model.solver
+        solver = model.solver.interface
     elif "optlang-" in solver:
         solver = interface_to_str(solver)
         solver = solvers[solver]
     else:
         legacy = True
         solver = legacy_solvers.solver_dict[solver]
+
+    # Check for QP, raise error if no QP solver found
+    # optlang only since old interface interprets None differently
+    if qp and interface_to_str(solver) not in qp_solvers:
+        solver = solvers[get_solver_name(qp=True)]
+
     return legacy, solver
 
 
@@ -300,3 +323,39 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
             expression + variable, lb=0, name="abs_neg_" + name)
     ]
     add_to_solver(model, constraints + [variable])
+
+
+def fix_objective_as_constraint(model, fraction=1):
+    """Fix current objective as an additional constraint
+
+    When adding constraints to a model, such as done in pFBA which
+    minimizes total flux, these constraints can become too powerful,
+    resulting in solutions that satisfy optimality but sacrifices too
+    much for the original objective function. To avoid that, we can fix
+    the current objective value as a constraint to ignore solutions that
+    give a lower (or higher depending on the optimization direction)
+    objective value than the original model.
+
+    When done with the model as a context, the modification to the
+    objective will be reverted when exiting that context.
+
+    Parameters
+    ----------
+    model : cobra.core.Model
+        The model to operate on
+    fraction : float
+        The fraction of the optimum the objective is allowed to reach.
+    """
+    fix_objective_name = 'Fixed_objective_{}'.format(model.objective.name)
+    if fix_objective_name in model.solver.constraints:
+        model.solver.remove(fix_objective_name)
+    model.optimize()
+    objective_value = model.solution.objective_value * fraction
+    if model.objective.direction == 'max':
+        ub, lb = None, objective_value
+    else:
+        ub, lb = objective_value, None
+    constraint = model.solver.interface.Constraint(
+        model.objective.expression,
+        name=fix_objective_name, ub=ub, lb=lb)
+    add_to_solver(model, constraint)

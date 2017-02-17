@@ -10,7 +10,7 @@ from .parameters import status_dict, variable_kind_dict, \
      sense_dict, parameter_mappings, parameter_defaults, \
      objective_senses, default_objective_sense
 
-from ..core.Solution import Solution
+from ..core.solution import Solution
 from time import time
 from six import iteritems
 solver_name = 'cplex'
@@ -19,7 +19,7 @@ sense_dict = eval(sense_dict[solver_name])
 
 from ilog.cplex import IloCplex
 from ilog.cplex.IloCplex import DoubleParam, IntParam, StringParam
-from ilog.concert import IloNumVarType, IloObjectiveSense 
+from ilog.concert import IloNumVarType, IloObjectiveSense
 #__solver_class = IloCplex
 status_dict = eval(status_dict[solver_name])
 class Problem(IloCplex):

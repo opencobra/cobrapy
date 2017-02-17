@@ -2,7 +2,7 @@ from scipy.sparse import dok_matrix
 
 from ..solvers import get_solver_name, solver_dict
 import cobra.util.solver as sutil
-import sympy
+from sympy.core.singleton import S
 
 
 def add_moma(model):
@@ -47,8 +47,7 @@ def add_moma(model):
     """
 
     # Fall back to default QP solver if current one has no QP capability
-    if not hasattr(model.solver.configuration, "qp_method"):
-        model.solver = sutil.get_solver_name(qp=True)
+    model.solver = sutil.choose_solver(model, qp=True)[1]
 
     model.optimize()
     prob = model.solver.interface
@@ -56,7 +55,7 @@ def add_moma(model):
     c = prob.Constraint(model.solver.objective.expression - v,
                         lb=0.0, ub=0.0, name="moma_old_objective_constraint")
     to_add = [v, c]
-    new_obj = sympy.Float(0.0)
+    new_obj = S.Zero
     for r in model.reactions:
         flux = model.solution.fluxes[r.id]
         dist = prob.Variable("moma_dist_" + r.id)

@@ -261,17 +261,21 @@ class Reaction(Object):
 
     @property
     def flux(self):
-        if self.model is not None:
-            return self.forward_variable.primal - self.reverse_variable.primal
-        else:
-            return None
+        """Reaction flux in the most recent solution."""
+        if self._model is None:
+            raise RuntimeError("not part of a model")
+        if self._model.solution is None:
+            raise RuntimeError("model has not been solved")
+        return self._model.solution[self.id]
 
     @property
     def reduced_cost(self):
-        if self.model is not None:
-            return self.forward_variable.dual - self.reverse_variable.dual
-        else:
-            return None
+        """Reaction reduced cost in the most recent solution."""
+        if self._model is None:
+            raise RuntimeError("not part of a model")
+        if self._model.solution is None:
+            raise RuntimeError("model has not been solved")
+        return self.forward_variable.dual - self.reverse_variable.dual
 
     # read-only
     @property
@@ -355,18 +359,7 @@ class Reaction(Object):
 
         """
         warn("use reaction.flux instead", DeprecationWarning)
-        try:
-            return self._model.solution.x_dict[self.id]
-        except Exception as e:
-            if self._model is None:
-                raise Exception("not part of a model")
-            if not hasattr(self._model, "solution") or \
-                    self._model.solution is None or \
-                    self._model.solution.status == "NA":
-                raise Exception("model has not been solved")
-            if self._model.solution.status != "optimal":
-                raise Exception("model solution was not optimal")
-            raise e  # Not sure what the exact problem was
+        return self.flux
 
     @property
     def reversibility(self):

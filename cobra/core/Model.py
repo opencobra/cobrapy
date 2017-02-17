@@ -5,19 +5,22 @@ import sympy
 from six import iteritems, string_types
 
 from cobra.solvers import optimize
-from cobra.core.Object import Object
-from cobra.core.Solution import Solution, LazySolution
-from cobra.core.Reaction import Reaction, separate_forward_and_reverse_bounds
-from cobra.core.DictList import DictList
+from .Object import Object
+from .solution import Solution
+from .Reaction import Reaction, separate_forward_and_reverse_bounds
+from .DictList import DictList
 
 import six
 import time
 import types
 from sympy import S
+from cobra.exceptions import SolveError
 from cobra.util.util import AutoVivification
 from cobra.util.context import HistoryManager, resettable
-from cobra.util.solver import solvers, SolverNotFound, interface_to_str,\
-                              get_solver_name, set_objective
+from cobra.util.solver import solvers, SolverNotFound, interface_to_str, \
+    get_solver_name, set_objective, add_to_solver, \
+    remove_from_solver
+
 import optlang
 
 
@@ -90,7 +93,7 @@ class Model(Object):
             self._solver.objective = interface.Objective(S.Zero)
             self._populate_solver(self.reactions, self.metabolites)
         self._timestamp_last_optimization = None
-        self.solution = LazySolution(self)
+        self.solution = None
 
     @property
     def solver(self):
@@ -302,7 +305,7 @@ class Model(Object):
 
         # No use in copying it, also circular dependencies
         new._timestamp_last_optimization = None
-        new.solution = LazySolution(self)
+        new.solution = Solution(self)
         return new
 
     def add_metabolites(self, metabolite_list):
@@ -489,10 +492,10 @@ class Model(Object):
 
         Parameters
         ----------
-        objective_sense : 'maximize' or 'minimize'
+        objective_sense: 'maximize' or 'minimize'
 
-        solution_type : Solution or LazySolution
-            The type of solution that should be returned. A LazySolution
+        solution_type: Solution
+            The type of solution that should be returned. A Solution
             only fetches attributes from the solver when requested in order
             to reduce unnecessary communication.
 
@@ -515,7 +518,6 @@ class Model(Object):
                    specified with the appropriate keyword argument.
 
         """
-        # TODO: make LazySolution default
         current = interface_to_str(self.solver.interface.__name__)
         so = kwargs.get('solver', 'optlang-' + current)
         # after deprecation this can be checked with:
@@ -533,21 +535,24 @@ class Model(Object):
             # invalidate their solution if the model is changed afterwards
             self.solver.optimize()
             # Not nice, but necessary until next optlang release
-            solution = (solution_type(self) if
-                        self.solver.status == 'optimal' else self.solution)
+            solution = solution_type(self)
+            # solution = (solution_type(self) if
+            #             self.solver.status == 'optimal' else self.solution)
             if objective_sense is not None:
                 self.solver.objective.direction = original_direction
         else:
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
         self.solution = solution
-        # TODO: make failing optimization raise suitable exception
-        # if solution.status is not 'optimal':
-        #     raise exceptions._OPTLANG_TO_EXCEPTIONS_DICT.get(solution.status,
-        #                                                      SolveError)(
-        #         'Solving model %s did not return an optimal solution. The '
-        #         'returned solution status is "%s"' % (
-        #             self, solution.status))
+
+        if solution.status is not 'optimal':
+            raise SolveError('no optimal solution')
+            # TODO: make failing optimization raise suitable exception
+            # raise exceptions._OPTLANG_TO_EXCEPTIONS_DICT.get(solution.status,
+            #                                                  SolveError)(
+            #     'Solving model %s did not return an optimal solution. The '
+            #     'returned solution status is "%s"' % (
+            #         self, solution.status))
         return solution
 
     def remove_reactions(self, reactions, delete=True,

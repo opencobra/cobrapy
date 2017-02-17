@@ -11,7 +11,7 @@ except ImportError:
 from six import iteritems
 from glpk import LPX
 
-from ..core.Solution import Solution
+from ..core.solution import Solution
 
 solver_name = 'glpk'
 _SUPPORTS_MILP = True
@@ -226,12 +226,12 @@ def solve(cobra_model, **kwargs):
     """Smart interface to optimization solver functions that will convert
     the cobra_model to a solver object, set the parameters, and try multiple
     methods to get an optimal solution before returning the solver object and
-    a cobra.Solution (which is attached to cobra_model.solution)
+    a cobra.solution (which is attached to cobra_model.solution)
 
     cobra_model: a cobra.Model
 
     returns a dict: {'the_problem': solver specific object, 'the_solution':
-    cobra.Solution for the optimization problem'}
+    cobra.solution for the optimization problem'}
 
 
     """
