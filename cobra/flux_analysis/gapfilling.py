@@ -1,4 +1,4 @@
-from cobra.util import DefunctError
+from cobra.exceptions import DefunctError
 
 
 def growMatch():
