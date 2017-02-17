@@ -323,3 +323,39 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
             expression + variable, lb=0, name="abs_neg_" + name)
     ]
     add_to_solver(model, constraints + [variable])
+
+
+def fix_objective_as_constraint(model, fraction=1):
+    """Fix current objective as an additional constraint
+
+    When adding constraints to a model, such as done in pFBA which
+    minimizes total flux, these constraints can become too powerful,
+    resulting in solutions that satisfy optimality but sacrifices too
+    much for the original objective function. To avoid that, we can fix
+    the current objective value as a constraint to ignore solutions that
+    give a lower (or higher depending on the optimization direction)
+    objective value than the original model.
+
+    When done with the model as a context, the modification to the
+    objective will be reverted when exiting that context.
+
+    Parameters
+    ----------
+    model : cobra.core.Model
+        The model to operate on
+    fraction : float
+        The fraction of the optimum the objective is allowed to reach.
+    """
+    fix_objective_name = 'Fixed_objective_{}'.format(model.objective.name)
+    if fix_objective_name in model.solver.constraints:
+        model.solver.remove(fix_objective_name)
+    model.optimize()
+    objective_value = model.solution.objective_value * fraction
+    if model.objective.direction == 'max':
+        ub, lb = None, objective_value
+    else:
+        ub, lb = objective_value, None
+    constraint = model.solver.interface.Constraint(
+        model.objective.expression,
+        name=fix_objective_name, ub=ub, lb=lb)
+    add_to_solver(model, constraint)

@@ -13,6 +13,7 @@ from builtins import (object, super, dict)
 
 from cobra.exceptions import UndefinedSolution
 
+
 __all__ = ("Solution",)
 
 LOGGER = logging.getLogger(__name__)
