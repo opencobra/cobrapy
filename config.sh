@@ -11,10 +11,10 @@ function pre_build {
     else
         yum install -y libxslt libxml2 libxml2-devel libxslt-devel
     fi
-    curl -O http://ftp.gnu.org/gnu/glpk/glpk-4.60.tar.gz
-    tar xzf glpk-4.60.tar.gz
-    (cd glpk-4.60 \
-            && ./configure \
+    curl -O http://ftp.gnu.org/gnu/glpk/glpk-4.61.tar.gz
+    tar xzf glpk-4.61.tar.gz
+    (cd glpk-4.61 \
+            && ./configure --disable-reentrant \
             && make \
             && make install)
     pip install cython
