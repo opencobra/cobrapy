@@ -43,7 +43,6 @@ all_solvers = ["optlang-" + s for s in stable_optlang if s in
                sutil.solvers] + list(solver_dict)
 
 
-
 @contextmanager
 def captured_output():
     """ A context manager to test the IO summary methods """
