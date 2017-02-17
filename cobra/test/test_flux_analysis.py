@@ -329,13 +329,36 @@ class TestCobraFluxAnalysis:
                        [0.135, 0.374, 0.000, 0.374],
                        [0.000, 0.000, 0.000, 0.000],
                        [0.704, 0.374, 0.000, 0.874]]
+        growth_dict = {
+            "FBA": {
+                "ATPS4r": 0.135,
+                "ENO": None,
+                "FRUpts2": 0.704
+            },
+            "ATPS4r": {
+                "ENO": None,
+                "FRUpts2": 0.374
+            },
+            "ENO": {
+                "FRUpts2": 0.0
+            },
+        }
 
         solution = double_reaction_deletion(model,
                                             reaction_list1=reactions,
                                             number_of_processes=1)
-        assert solution["x"] == reactions
-        assert solution["y"] == reactions
-        self.compare_matrices(growth_list, solution["data"])
+        for (rxn_a, sub) in growth_dict.items():
+            for rxn_b, growth in sub.items():
+                if growth is None:
+                    assert solution[rxn_a][rxn_b] is growth,\
+                        "unexpected {}-{} double knock-out growth".format(rxn_a, rxn_b)
+                else:
+                    assert round(solution[rxn_a][rxn_b], 3) == growth,\
+                        "unexpected {}-{} double knock-out growth".format(rxn_a, rxn_b)
+
+#        assert solution["x"] == reactions
+#        assert solution["y"] == reactions
+#        self.compare_matrices(growth_list, solution["data"])
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_flux_variability_benchmark(self, large_model, benchmark, solver):

@@ -2,8 +2,9 @@
 
 import sys
 import multiprocessing
+import logging
 from warnings import warn
-from itertools import (chain, product, combinations)
+from itertools import (chain, product)
 from operator import attrgetter
 from collections import defaultdict
 from builtins import (map, dict)
@@ -29,6 +30,8 @@ try:
     from pandas import DataFrame
 except:
     DataFrame = None
+
+LOGGER = logging.getLogger(__name__)
 
 
 def double_reaction_deletion(model,
@@ -82,8 +85,10 @@ def double_reaction_deletion(model,
             " the optlang solver interfaces instead.")
 
     if num_cpu is None:
+        num_cpu = kwargs.get("number_of_processes")
+    if num_cpu is None:
         try:
-            num_cpu = multiprocessing.num_cpu()
+            num_cpu = multiprocessing.cpu_count()
         except NotImplementedError:
             warn("Number of cores could not be detected - assuming 1.")
             num_cpu = 1
@@ -100,7 +105,7 @@ def double_reaction_deletion(model,
 
     # Reactions with 0 flux in the current conditions have no impact on
     # deletion. Determine those reactions now to speed up computation later.
-    solution = model.solve()
+    solution = model.optimize()
     if solution.status == "optimal":
         kwargs["growth"] = solution.objective_value
         kwargs["zero_flux_reactions"] = \
@@ -111,15 +116,16 @@ def double_reaction_deletion(model,
 
     args = list()
     covered = set()
-    for (rxn_a, rxn_b) in combinations(reaction_list1, reaction_list2):
-        if rxn_a is rxn_b:
-            continue
-        id_a = rxn_a.id
-        id_b = rxn_b.id
-        if ((id_a, id_b) in covered) or ((id_b, id_a) in covered):
-            continue
-        args.append((model, id_a, id_b))
-        covered.add((id_a, id_b))
+    for rxn_a in reaction_list1:
+        for rxn_b in reaction_list2:
+            if rxn_a is rxn_b:
+                continue
+            id_a = rxn_a.id
+            id_b = rxn_b.id
+            if ((id_a, id_b) in covered) or ((id_b, id_a) in covered):
+                continue
+            args.append((model, id_a, id_b))
+            covered.add((id_a, id_b))
 
     if num_cpu > 1:
         # multiprocessing
@@ -131,8 +137,11 @@ def double_reaction_deletion(model,
         results = map(_deletion_worker, args)
 
     double = defaultdict(dict)
-    for (id_a, id_b, growth) in results:
-        double[id_a][id_b] = growth
+    for (growth, id_a, id_b) in results:
+        if growth is None:
+            double[id_a][id_b] = None
+            continue
+        double[id_a][id_b] = 0.0 if abs(growth) < zero_cutoff else growth
 
     return dict(double)
 
@@ -142,13 +151,14 @@ def _deletion_worker(args):
     with model as mod:
         for rxn_id in rxn_ids:
             mod.reactions.get_by_id(rxn_id).knock_out()
-        solution = mod.solve()
-        growth = solution.objective_value
-        if solution.status != "optimal":
-            warn("Non-optimal solution in {0:s} knock-out.".format(
-                 str(rxn_ids)))
+        try:
+            solution = mod.optimize()
+            growth = solution.objective_value
+        except:
+            LOGGER.error(mod.solver.status)
             growth = None
     return (growth,) + tuple(rxn_ids)
+
 
 # Utility functions
 def generate_matrix_indexes(ids1, ids2):
