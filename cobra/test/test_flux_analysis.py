@@ -109,7 +109,6 @@ class TestCobraFluxAnalysis:
                     'Biomass_Ecoli_core'] - 0.95 * 0.8739) < 0.001
         assert abs(sum(abs_x) - 493.4400) < 0.001
 
-        # no idea why this doesn't raise an error...
         # Infeasible solution
         model.reactions.ATPM.lower_bound = 500
         with pytest.raises((SolveError, ValueError)):

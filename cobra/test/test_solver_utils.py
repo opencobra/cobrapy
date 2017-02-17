@@ -95,3 +95,16 @@ class TestSolverMods:
         assert abs(model.solver.constraints[-1].expression -
                    model.objective.expression) < 1e-6
         assert constraint_name in model.solver.constraints
+
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_fix_objective_as_constraint_minimize(self, solver, model):
+        model.reactions.Biomass_Ecoli_core.bounds = (0.1, 0.1)
+        minimize_glucose = model.solver.interface.Objective(
+            model.reactions.EX_glc__D_e.flux_expression,
+            direction='min')
+        su.set_objective(model, minimize_glucose)
+        su.fix_objective_as_constraint(model)
+        fx_name = 'Fixed_objective_{}'.format(model.objective.name)
+        constr = model.solver.constraints
+        assert (constr[fx_name].lb, constr[fx_name].ub) == (
+            None, model.solution.objective_value)
