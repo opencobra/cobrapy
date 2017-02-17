@@ -2,15 +2,14 @@ import pytest
 
 from cobra.core import Metabolite, Model, Reaction
 from cobra.manipulation import *
-from cobra.solvers import solver_dict as legacy_solvers
 from .conftest import model, salmonella
 
 
 class TestManipulation:
     """Test functions in cobra.manipulation"""
 
-    @pytest.mark.parametrize("solver", list(legacy_solvers))
-    def test_canonical_form(self, model, solver):
+    def test_canonical_form(self, model):
+        solver = 'cglpk'
         # add G constraint to test
         g_constr = Metabolite("SUCCt2_2__test_G_constraint")
         g_constr._constraint_sense = "G"
@@ -22,8 +21,8 @@ class TestManipulation:
         assert abs(
             model.optimize("maximize", solver=solver).f - 0.855) < 10 ** -3
 
-    @pytest.mark.parametrize("solver", list(legacy_solvers))
-    def test_canonical_form_minimize(self, model, solver):
+    def test_canonical_form_minimize(self, model):
+        solver = 'cglpk'
         # make a minimization problem
         model.reactions.get_by_id("Biomass_Ecoli_core").lower_bound = 0.5
         for reaction in model.reactions:
