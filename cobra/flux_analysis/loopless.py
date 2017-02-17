@@ -117,7 +117,6 @@ def loopless_solution(model):
     """
     # Need to reoptimize otherwise spurious solution artifacts can cause
     # all kinds of havoc
-    print(model.objective.expression)
     model.optimize(objective_sense=None)
     obj_val = model.solution.f
 
@@ -152,7 +151,7 @@ def loopless_solution(model):
     return fluxes
 
 
-def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-12):
+def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-9):
     """Plugin to get a loopless FVA solution from single FVA iteration.
 
     Assumes the following about `model` and `reaction`:
@@ -177,13 +176,12 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-12):
 
     Returns
     -------
-    single float or dicti
+    single float or dict
         Returns the minimized/maximized flux through `reaction` if
         all_fluxes == False (default). Otherwise returns a loopless flux
         solution containing the minimum/maximum flux for `reaction`.
     """
     current = model.solver.objective.value
-    print (reaction, current)
 
     # boundary reactions can not be part of cycles
     if reaction.boundary:
@@ -196,6 +194,7 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-12):
     model.solver.objective.set_linear_coefficients(
         {model.solver.variables.fva_old_objective: 1,
          reaction.forward_variable: 0, reaction.reverse_variable: 0})
+
     loopless = loopless_solution(model)
 
     # If the previous optimum is maintained in the loopless solution it was
@@ -228,11 +227,11 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-12):
             {model.solver.variables.fva_old_objective: 0,
              reaction.forward_variable: 1, reaction.reverse_variable: -1})
 
-        if all_fluxes:
-            best = model.optimize().fluxes
-        else:
-            model.solver.optimize()
-            best = reaction.flux
+    model.optimize(objective_sense=None)
+    if all_fluxes:
+        best = model.solution.fluxes
+    else:
+        best = reaction.flux
     return best
 
 
