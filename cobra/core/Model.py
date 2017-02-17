@@ -70,7 +70,7 @@ class Model(Object):
             self._solver.objective = interface.Objective(S.Zero)
             self._populate_solver(self.reactions, self.metabolites)
         self._timestamp_last_optimization = None
-        self.solution = Solution(self)
+        self.solution = None
 
     @property
     def solver(self):

@@ -8,6 +8,8 @@ from six.moves import zip
 from . import cglpk
 from .wrappers import *
 
+from cobra.core.solution import Solution
+
 # detect paths to system calls for esolver and gzip
 with open(devnull, "w") as DEVNULL:
     try:
@@ -120,7 +122,7 @@ class Esolver(cglpk.GLP):
 
     def format_solution(self, cobra_model):
         m = cobra_model
-        solution = m.solution.__class__(None)
+        solution = Solution(None)
         with open(self.solution_filepath) as infile:
             solution.status = infile.readline().split("=")[1].strip().lower()
             if solution.status != "optimal":

@@ -20,6 +20,8 @@ except:
         pass
     Number = Basic
 
+from cobra.core.solution import Solution
+
 __glpk_version__ = str(glp_version())
 _SUPPORTS_MILP = True
 solver_name = "cglpk"
@@ -448,7 +450,6 @@ cdef class GLP:
     def format_solution(self, cobra_model):
         cdef int i, m, n
         cdef glp_prob *glp = self.glp
-        Solution = cobra_model.solution.__class__
         status = self.get_status()
         if status != "optimal":  # todo handle other possible
             return Solution(None, status=status)

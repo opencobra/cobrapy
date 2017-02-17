@@ -327,8 +327,10 @@ class TestReaction:
             assert isinstance(reaction.reduced_cost, float)
         for reaction in model.reactions:
             model.remove_reactions([reaction])
-            assert reaction.flux is None
-            assert reaction.reduced_cost is None
+            with pytest.raises(RuntimeError):
+                reaction.flux
+            with pytest.raises(RuntimeError):
+                reaction.reduced_cost
 
     def test_knockout(self, model):
         original_bounds = dict()
