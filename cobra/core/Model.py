@@ -14,10 +14,13 @@ import six
 import time
 import types
 from sympy import S
+from cobra.exceptions import SolveError
 from cobra.util.util import AutoVivification
 from cobra.util.context import HistoryManager, resettable
-from cobra.util.solver import solvers, SolverNotFound, interface_to_str,\
-                              get_solver_name, set_objective
+from cobra.util.solver import solvers, SolverNotFound, interface_to_str, \
+    get_solver_name, set_objective, add_to_solver, \
+    remove_from_solver
+
 import optlang
 
 
@@ -502,21 +505,24 @@ class Model(Object):
             # invalidate their solution if the model is changed afterwards
             self.solver.optimize()
             # Not nice, but necessary until next optlang release
-            solution = (solution_type(self) if
-                        self.solver.status == 'optimal' else self.solution)
+            solution = solution_type(self)
+            # solution = (solution_type(self) if
+            #             self.solver.status == 'optimal' else self.solution)
             if objective_sense is not None:
                 self.solver.objective.direction = original_direction
         else:
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
         self.solution = solution
-        # TODO: make failing optimization raise suitable exception
-        # if solution.status is not 'optimal':
-        #     raise exceptions._OPTLANG_TO_EXCEPTIONS_DICT.get(solution.status,
-        #                                                      SolveError)(
-        #         'Solving model %s did not return an optimal solution. The '
-        #         'returned solution status is "%s"' % (
-        #             self, solution.status))
+
+        if solution.status is not 'optimal':
+            raise SolveError('no optimal solution')
+            # TODO: make failing optimization raise suitable exception
+            # raise exceptions._OPTLANG_TO_EXCEPTIONS_DICT.get(solution.status,
+            #                                                  SolveError)(
+            #     'Solving model %s did not return an optimal solution. The '
+            #     'returned solution status is "%s"' % (
+            #         self, solution.status))
         return solution
 
     def remove_reactions(self, reactions, delete=True,

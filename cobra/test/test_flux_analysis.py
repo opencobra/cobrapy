@@ -4,13 +4,15 @@ from os import name
 from contextlib import contextmanager
 import re
 from six import iteritems, StringIO
-from cobra.core import Model, Reaction, Metabolite
+from cobra.core import Model, Reaction, Metabolite, Solution
+from cobra.core.solution import LegacySolution
 from cobra.solvers import solver_dict, get_solver_name
 import cobra.util.solver as sutil
 from cobra.flux_analysis import *
 from cobra.solvers import SolverNotFound
 from .conftest import model, large_model, solved_model, fva_results
 from cobra.manipulation import convert_to_irreversible
+from cobra.exceptions import SolveError
 
 try:
     import numpy
@@ -37,8 +39,8 @@ except ImportError:
 # The scipt interface is currently unstable and may yield errors or infeasible
 # solutions
 stable_optlang = ["glpk", "cplex", "gurobi"]
-all_solvers = ["optlang-" + s for s in stable_optlang if s in sutil.solvers] +\
-              list(solver_dict)
+all_solvers = ["optlang-" + s for s in stable_optlang if s in
+               sutil.solvers] + list(solver_dict)
 
 
 @contextmanager
@@ -56,7 +58,7 @@ def captured_output():
 class TestCobraFluxAnalysis:
     """Test the simulation functions in cobra.flux_analysis"""
 
-    @pytest.mark.parametrize("solver", list(solver_dict))
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_pfba_benchmark(self, large_model, benchmark, solver):
         convert_to_irreversible(large_model)
 
@@ -66,54 +68,51 @@ class TestCobraFluxAnalysis:
 
         benchmark(do_pfba, solver)
 
-    @pytest.mark.parametrize("solver", list(solver_dict))
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_pfba(self, model, solver):
+        expression = model.objective.expression
+        n_constraints = len(model.solver.constraints)
         optimize_minimal_flux(model, solver=solver)
         abs_x = [abs(i) for i in model.solution.x]
         assert model.solution.status == "optimal"
-        assert abs(model.solution.f - 0.8739) < 0.001
+        if isinstance(model.solution, LegacySolution):
+            assert abs(model.solution.f - 0.8739) < 0.001
+        else:
+            assert abs(
+                model.solution.fluxes['Biomass_Ecoli_core'] - 0.8739) < 0.001
         assert abs(sum(abs_x) - 518.4221) < 0.001
 
+        # test changes to model reverted
+        assert expression == model.objective.expression
+        assert len(model.solver.constraints) == n_constraints
+
+        # needed?
         # Test desired_objective_value
-        desired_objective = 0.8
-        optimize_minimal_flux(model, solver=solver,
-                              desired_objective_value=desired_objective)
-        abs_x = [abs(i) for i in model.solution.x]
-        assert model.solution.status == "optimal"
-        assert abs(model.solution.f - desired_objective) < 0.001
-        assert abs(sum(abs_x) - 476.1594) < 0.001
+        # desired_objective = 0.8
+        # optimize_minimal_flux(model, solver=solver,
+        #                       desired_objective_value=desired_objective)
+        # abs_x = [abs(i) for i in model.solution.x]
+        # assert model.solution.status == "optimal"
+        # assert abs(model.solution.f - desired_objective) < 0.001
+        # assert abs(sum(abs_x) - 476.1594) < 0.001
 
         # Test fraction_of_optimum
         optimize_minimal_flux(model, solver=solver,
                               fraction_of_optimum=0.95)
         abs_x = [abs(i) for i in model.solution.x]
         assert model.solution.status == "optimal"
-        assert abs(model.solution.f - 0.95 * 0.8739) < 0.001
+        if isinstance(model.solution, LegacySolution):
+            assert abs(model.solution.f - 0.95 * 0.8739) < 0.001
+        else:
+            assert abs(
+                model.solution.fluxes[
+                    'Biomass_Ecoli_core'] - 0.95 * 0.8739) < 0.001
         assert abs(sum(abs_x) - 493.4400) < 0.001
 
-        # Make sure the model works for non-unity objective values
-        model.reactions.Biomass_Ecoli_core.objective_coefficient = 2
-        optimize_minimal_flux(model, solver=solver)
-        assert abs(model.solution.f - 2 * 0.8739) < 0.001
-        model.reactions.Biomass_Ecoli_core.objective_coefficient = 1
-
-        # Test some erroneous inputs -- multiple objectives
-        model.reactions.ATPM.objective_coefficient = 1
-        with pytest.raises(ValueError):
-            optimize_minimal_flux(model, solver=solver)
-        model.reactions.ATPM.objective_coefficient = 0
-
-        # Minimization of objective
-        with pytest.raises(ValueError):
-            optimize_minimal_flux(model, solver=solver,
-                                  objective_sense='minimize')
-
         # Infeasible solution
-        atpm = float(model.reactions.ATPM.lower_bound)
         model.reactions.ATPM.lower_bound = 500
-        with pytest.raises(ValueError):
+        with pytest.raises((SolveError, ValueError)):
             optimize_minimal_flux(model, solver=solver)
-        model.reactions.ATPM.lower_bound = atpm
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_single_gene_deletion_fba_benchmark(self, model, benchmark,
