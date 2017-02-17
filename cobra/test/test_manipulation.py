@@ -38,8 +38,8 @@ class TestManipulation:
         assert model.reactions.get_by_id(
             "Biomass_Ecoli_core").lower_bound == 0.0
 
-    @pytest.mark.parametrize("solver", list(legacy_solvers))
-    def test_modify_reversible(self, model, solver):
+    def test_modify_reversible(self, model):
+        solver = 'cglpk'
         model1 = model.copy()
         model1.optimize(solver=solver)
         model2 = model.copy()
