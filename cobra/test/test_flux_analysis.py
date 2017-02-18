@@ -341,9 +341,10 @@ class TestCobraFluxAnalysis:
             solver="cglpk")
         test_model.reactions.v3.lower_bound = 1
         infeasible_mod = construct_loopless_model(test_model)
-        infeasible_sol = infeasible_mod.optimize(solver="cglpk")
         assert feasible_sol.status == "optimal"
-        assert infeasible_sol.status == "infeasible"
+
+        with pytest.raises(SolveError):
+            infeasible_mod.optimize(solver="cglpk")
 
     def test_loopless_solution(self):
         test_model = self.construct_ll_test_model()
