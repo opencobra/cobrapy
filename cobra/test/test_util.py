@@ -129,6 +129,25 @@ class TestDictList:
         assert len(test_list) == 1
         assert len(sum) == 9
 
+    def test_sub(self, dict_list):
+        obj, test_list = dict_list
+        obj_list = [Object("test%d" % (i)) for i in range(2, 10)]
+        sum = test_list + obj_list
+        sub = sum - test_list
+        assert test_list[0].id == "test1"
+        assert sub[0].id == "test2"
+        assert len(sub) == 8
+        assert sum - obj_list == test_list
+
+    def test_isub(self, dict_list):
+        obj, test_list = dict_list
+        obj_list = [Object("test%d" % (i)) for i in range(2, 10)]
+        sum = test_list + obj_list
+        sum -= obj_list[2:4]
+        assert len(sum) == 7
+        with pytest.raises(ValueError):
+            sum -= [Object('bogus')]
+
     def test_init_copy(self, dict_list):
         obj, test_list = dict_list
         test_list.append(Object("test2"))

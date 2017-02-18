@@ -217,6 +217,31 @@ class DictList(list):
                                 current_length):
             _dict[obj.id] = i
 
+    def __sub__(self, other):
+        """x.__sub__(y) <==> x - y
+
+        other: iterable
+            other must contain only unique id's present in the list
+
+        """
+        total = DictList()
+        total.extend(self)
+        for item in other:
+            total.remove(item)
+        return total
+
+    def __isub__(self, other):
+        """x.__sub__(y) <==> x -= y
+
+        other: iterable
+            other must contain only unique id's present in the list
+
+        """
+
+        for item in other:
+            self.remove(item)
+        return self
+
     def __add__(self, other):
         """x.__add__(y) <==> x + y
 

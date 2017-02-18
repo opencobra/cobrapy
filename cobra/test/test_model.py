@@ -267,6 +267,31 @@ class TestCobraModel:
 
         benchmark(benchmark_add_reaction)
 
+    def test_add_metabolite(self, model):
+        new_metabolite = Metabolite('test_met')
+        assert new_metabolite not in model.metabolites
+        with model:
+            model.add_metabolites(new_metabolite)
+            assert new_metabolite._model == model
+            assert new_metabolite in model.metabolites
+            assert new_metabolite.id in model.solver.constraints
+
+        assert new_metabolite._model is None
+        assert new_metabolite not in model.metabolites
+        assert new_metabolite.id not in model.solver.constraints
+
+    def test_remove_metabolite(self, model):
+        test_metabolite = model.metabolites[4]
+        with model:
+            model.remove_metabolites(test_metabolite)
+            assert test_metabolite._model is None
+            assert test_metabolite not in model.metabolites
+            assert test_metabolite.id not in model.solver.constraints
+
+        assert test_metabolite._model is model
+        assert test_metabolite in model.metabolites
+        assert test_metabolite.id in model.solver.constraints
+
     def test_add_reaction(self, model):
         old_reaction_count = len(model.reactions)
         old_metabolite_count = len(model.metabolites)
@@ -307,6 +332,36 @@ class TestCobraModel:
         model.add_reaction(r2)
         r2.add_metabolites({Metabolite(model.metabolites[0].id): 1})
         assert model.metabolites[0] is list(r2._metabolites)[0]
+
+    def test_add_reaction_context(self, model):
+        old_reaction_count = len(model.reactions)
+        old_metabolite_count = len(model.metabolites)
+        dummy_metabolite_1 = Metabolite("test_foo_1")
+        dummy_metabolite_2 = Metabolite("test_foo_2")
+        actual_metabolite = model.metabolites[0]
+        copy_metabolite = model.metabolites[1].copy()
+        dummy_reaction = Reaction("test_foo_reaction")
+        dummy_reaction.add_metabolites({dummy_metabolite_1: -1,
+                                        dummy_metabolite_2: 1,
+                                        copy_metabolite: -2,
+                                        actual_metabolite: 1})
+        dummy_reaction.gene_reaction_rule = 'dummy_gene'
+
+        with model:
+            model.add_reaction(dummy_reaction)
+            assert model.reactions.get_by_id(dummy_reaction.id) == \
+                dummy_reaction
+            assert len(model.reactions) == old_reaction_count + 1
+            assert len(model.metabolites) == old_metabolite_count + 2
+            assert dummy_metabolite_1._model == model
+            assert 'dummy_gene' in model.genes
+
+        assert len(model.reactions) == old_reaction_count
+        assert len(model.metabolites) == old_metabolite_count
+        with pytest.raises(KeyError):
+            model.reactions.get_by_id(dummy_reaction.id)
+        assert dummy_metabolite_1._model == None
+        assert 'dummy_gene' not in model.genes
 
     def test_add_reaction_from_other_model(self, model):
         other = model.copy()
