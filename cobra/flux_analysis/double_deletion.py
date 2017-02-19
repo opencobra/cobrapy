@@ -7,11 +7,12 @@ from warnings import warn
 from itertools import (chain, product)
 from operator import attrgetter
 from collections import defaultdict
-from builtins import (map, dict)
+from builtins import (map, dict, zip)
 from future.utils import raise_
 
 from six import iteritems
 import numpy
+from tqdm import tqdm
 
 from ..solvers import get_solver_name, solver_dict
 from ..manipulation.delete import (find_gene_knockout_reactions,
@@ -93,6 +94,8 @@ def double_reaction_deletion(model,
             warn("Number of cores could not be detected - assuming 1.")
             num_cpu = 1
 
+    print("making reaction lists")
+
     if reaction_list1 is None:
         reaction_list1 = sorted(model.reactions, key=attrgetter("id"))
     else:
@@ -103,6 +106,7 @@ def double_reaction_deletion(model,
     else:
         reaction_list2 = model.reactions.get_by_any(reaction_list2)
 
+    print("making first solution")
     # Reactions with 0 flux in the current conditions have no impact on
     # deletion. Determine those reactions now to speed up computation later.
     solution = model.optimize()
@@ -114,34 +118,63 @@ def double_reaction_deletion(model,
     else:
         warn("Non-optimal ({0:s}) base solution.".format(solution.status))
 
+    print("making args")
     args = list()
     covered = set()
+#    for rxn_a in reaction_list1:
+#        id_a = rxn_a.id
+#        for rxn_b in reaction_list2:
+#            if rxn_a is rxn_b:
+#                continue
+#            id_b = rxn_b.id
+#            if ((id_a, id_b) in covered) or ((id_b, id_a) in covered):
+#                continue
+#            args.append((model, id_a, id_b))
+#            covered.add((id_a, id_b))
+
     for rxn_a in reaction_list1:
+        id_a = rxn_a.id
+        rest = list()
         for rxn_b in reaction_list2:
             if rxn_a is rxn_b:
                 continue
-            id_a = rxn_a.id
             id_b = rxn_b.id
             if ((id_a, id_b) in covered) or ((id_b, id_a) in covered):
                 continue
-            args.append((model, id_a, id_b))
+            rest.append(id_b)
             covered.add((id_a, id_b))
+        args.append((model, id_a, rest))
 
+    print("{0:n} double knock-outs".format(len(covered)))
+
+    print("making iterators")
     if num_cpu > 1:
         # multiprocessing
-        chunk_size = len(covered) // (num_cpu * 2)
-        with multiprocessing.Pool(num_cpu) as pool:
-            results = pool.imap_unordered(_deletion_worker, args,
-                    chunksize=chunk_size)
+#        chunk_size = len(covered) // (num_cpu * 2)
+        chunk_size = 1
+        pool = multiprocessing.Pool(num_cpu)
+        results = pool.imap_unordered(_deletion_worker2, args,
+            chunksize=chunk_size)
     else:
-        results = map(_deletion_worker, args)
+        results = map(_deletion_worker2, args)
 
+    print("saving results")
     double = defaultdict(dict)
-    for (growth, id_a, id_b) in results:
-        if growth is None:
-            double[id_a][id_b] = None
-            continue
-        double[id_a][id_b] = 0.0 if abs(growth) < zero_cutoff else growth
+
+#    for (growth, id_a, id_b) in results:
+#        if growth is None:
+#            double[id_a][id_b] = None
+#        continue
+#        double[id_a][id_b] = 0.0 if abs(growth) < zero_cutoff else growth
+
+    with tqdm(total=len(covered)) as pbar:
+        for (growth, prim_id, rest) in results:
+            for (rxn_id, value) in zip(rest, growth):
+                pbar.update()
+                if value is None:
+                    double[prim_id][rxn_id] = None
+                continue
+                double[prim_id][rxn_id] = 0.0 if abs(value) < zero_cutoff else value
 
     return dict(double)
 
@@ -155,9 +188,26 @@ def _deletion_worker(args):
             solution = mod.optimize()
             growth = solution.objective_value
         except:
-            LOGGER.error(mod.solver.status)
+#            LOGGER.error(mod.solver.status)
             growth = None
     return (growth,) + tuple(rxn_ids)
+
+def _deletion_worker2(args):
+    (model, primary_id, rest) = args
+    primary = model.reactions.get_by_id(primary_id)
+    growth = list()
+    with model as mod:
+        primary.knock_out()
+        for rxn_id in rest:
+            with mod as double:
+                double.reactions.get_by_id(rxn_id).knock_out()
+                try:
+                    solution = double.optimize()
+                    growth.append(solution.objective_value)
+                except:
+#                    LOGGER.error(double.solver.status)
+                    growth.append(None)
+    return (growth, primary_id, rest)
 
 
 # Utility functions
