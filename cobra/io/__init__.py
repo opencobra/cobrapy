@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from warnings import warn
 
 from .sbml3 import read_sbml_model, write_sbml_model

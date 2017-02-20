@@ -1,12 +1,18 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import re
 from uuid import uuid4
 from warnings import warn
 
-from numpy import isinf, inf, array, object as np_object
+from numpy import object as np_object
+from numpy import array, inf, isinf
 from scipy.io import loadmat, savemat
 from scipy.sparse import coo_matrix, dok_matrix
 
-from cobra import Model, Metabolite, Reaction
+from cobra.core.metabolite import Metabolite
+from cobra.core.model import Model
+from cobra.core.reaction import Reaction
 from cobra.util import create_stoichiometric_array
 from cobra.util.solver import set_objective
 
@@ -24,6 +30,7 @@ try:
 except ImportError:
     DictClass = dict
     short_version = None
+
 
 
 # precompiled regular expressions

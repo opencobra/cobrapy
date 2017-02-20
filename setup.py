@@ -1,5 +1,8 @@
-from os.path import isfile, abspath, dirname, join
+# -*- coding: utf-8 -*-
+from os.path import abspath, dirname, isfile, join
 from sys import argv, path
+
+from version import get_version, update_release_version
 
 # To temporarily modify sys.path
 SETUP_DIR = abspath(dirname(__file__))
@@ -23,7 +26,6 @@ except:
 
 # import version to get the version string
 path.insert(0, join(SETUP_DIR, "cobra"))
-from version import get_version, update_release_version
 path.pop(0)
 version = get_version(pep440=True)
 

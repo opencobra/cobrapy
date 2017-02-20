@@ -1,11 +1,14 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 from sys import maxsize
 from warnings import warn
-from six import iteritems
 
 from numpy import array, ndarray
-from scipy.sparse import lil_matrix, dok_matrix
+from scipy.sparse import dok_matrix, lil_matrix
+from six import iteritems
 
-from .Model import Model
+from cobra.core.model import Model
 
 
 class ArrayBasedModel(Model):

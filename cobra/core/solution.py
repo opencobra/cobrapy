@@ -5,14 +5,11 @@
 from __future__ import absolute_import
 
 import logging
-
+from builtins import dict, object, super
 from collections import OrderedDict
 from warnings import warn
 
-from builtins import (object, super, dict)
-
 from cobra.exceptions import UndefinedSolution
-
 
 __all__ = ("Solution",)
 
@@ -63,7 +60,7 @@ class Solution(object):
     def __new__(cls, *args, **kwargs):
         """Create either LegacySolution or Solution type."""
         # Prevent a circular import between Solution and Model.
-        from cobra.core.Model import Model
+        from cobra.core.model import Model
         # this is a cobrapy compatibility hack
         if len(args) == 1 and not isinstance(args[0], Model):
             cobrapy_solution = super(Solution, cls).__new__(LegacySolution)

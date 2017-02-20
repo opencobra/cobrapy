@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .delete import delete_model_genes, undelete_model_genes, remove_genes, \
     find_gene_knockout_reactions
 from .modify import convert_to_irreversible, revert_to_reversible, escape_ID, \

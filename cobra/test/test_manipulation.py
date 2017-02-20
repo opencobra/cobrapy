@@ -1,7 +1,11 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import pytest
 
 from cobra.core import Metabolite, Model, Reaction
 from cobra.manipulation import *
+
 from .conftest import model, salmonella
 
 

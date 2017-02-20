@@ -1,13 +1,16 @@
-from os.path import isfile
-from os import name as __name
-from warnings import warn
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import re
-from math import isnan, isinf
+from math import isinf, isnan
+from os import name as __name
+from os.path import isfile
+from warnings import warn
+
 from six import iteritems
 
-from cobra import Model, Reaction, Metabolite
+from cobra import Metabolite, Model, Reaction
 from cobra.util.solver import set_objective
-
 
 if __name == 'java':
     from org.sbml.jsbml import SBMLDocument, KineticLaw, Parameter

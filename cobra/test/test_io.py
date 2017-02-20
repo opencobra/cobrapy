@@ -1,13 +1,19 @@
-from warnings import warn
-from tempfile import gettempdir
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
+from collections import namedtuple
+from functools import partial
 from os import unlink
 from os.path import join, split
-from six import iteritems
-from functools import partial
-from pickle import load, dump
+from pickle import dump, load
+from tempfile import gettempdir
+from warnings import warn
+
 import pytest
-from collections import namedtuple
+from six import iteritems
+
 from cobra import io
+
 from .conftest import data_directory
 
 

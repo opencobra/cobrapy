@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from os.path import join, abspath, dirname
 from cobra.io import read_sbml_model
 

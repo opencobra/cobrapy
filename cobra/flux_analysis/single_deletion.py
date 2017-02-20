@@ -1,9 +1,13 @@
-from six import string_types, iteritems
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
+from six import iteritems, string_types
+
+import cobra.solvers as legacy_solvers
+import cobra.util.solver as solvers
 
 from ..manipulation import delete_model_genes, undelete_model_genes
 from ..manipulation.delete import find_gene_knockout_reactions
-import cobra.solvers as legacy_solvers
-import cobra.util.solver as solvers
 
 # this can be removed after deprecation of the old solver interface
 # since the optlang vrsion requires neither numpy nor scipy

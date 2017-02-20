@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from matplotlib.pyplot import figure, xlim, ylim, gca, arrow, text, scatter
 from mpl_toolkits.axes_grid.axislines import SubplotZero
 from numpy import linspace, arange, sqrt, pi, sin, cos, sign

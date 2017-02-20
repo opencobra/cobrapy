@@ -1,8 +1,12 @@
-from warnings import warn
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import re
+from warnings import warn
 
 from six import iteritems
-from .Species import Species
+
+from cobra.core.species import Species
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
 # discussion in https://github.com/opencobra/cobrapy/issues/128 for
