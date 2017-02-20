@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import, print_function
+
 # set the warning format to be on a single line
 import warnings as _warnings
-from os.path import abspath as _abspath, dirname as _dirname
+from os.path import (abspath as _abspath, dirname as _dirname)
 from os import name as _name
 
 from cobra.version import get_version
