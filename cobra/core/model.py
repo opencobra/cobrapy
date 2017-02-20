@@ -468,6 +468,90 @@ class Model(Object):
         # from cameo ...
         self._populate_solver(reaction_list)
 
+    def remove_reactions(self, reactions, delete=True,
+                         remove_orphans=False):
+        """remove reactions from the model
+
+        reactions: [:class:`~cobra.core.Reaction.Reaction`] or [str]
+            The reactions (or their id's) to remove
+
+        delete: Boolean
+            Whether or not the reactions should be deleted after removal.
+            If the reactions are not deleted, those objects will be
+            recreated with new metabolite and gene objects.
+
+        remove_orphans: Boolean
+            Remove orphaned genes and metabolites from the model as well
+
+        """
+        if isinstance(reactions, string_types) or hasattr(reactions, "id"):
+            warn("need to pass in a list")
+            reactions = [reactions]
+
+        context = get_context(self)
+
+        for reaction in reactions:
+            try:
+                reaction = self.reactions[self.reactions.index(reaction)]
+            except ValueError:
+                warn('%s not in %s' % (reaction, self))
+            else:
+                forward = reaction.forward_variable
+                reverse = reaction.reverse_variable
+                remove_from_solver(self, [forward, reverse])
+                self.reactions.remove(reaction)
+                reaction._model = None
+
+                if context:
+                    context(partial(setattr, reaction, '_model', self))
+                    context(partial(self.reactions.add, reaction))
+
+                for x in reaction._metabolites:
+                    if reaction in x._reaction:
+                        x._reaction.remove(reaction)
+                        if context:
+                            context(partial(x._reaction.add, reaction))
+                        if remove_orphans and len(x._reaction) == 0:
+                            self.remove_metabolites(x)
+
+                for x in reaction._genes:
+                    if reaction in x._reaction:
+                        x._reaction.remove(reaction)
+                        if context:
+                            context(partial(x._reaction.add, reaction))
+
+                        if remove_orphans and len(x._reaction) == 0:
+                            self.genes.remove(x)
+                            if context:
+                                context(partial(self.genes.add, x))
+
+                reaction._metabolites = {}
+                reaction._genes = set()
+
+    def repair(self, rebuild_index=True, rebuild_relationships=True):
+        """Update all indexes and pointers in a model"""
+        if rebuild_index:  # DictList indexes
+            self.reactions._generate_index()
+            self.metabolites._generate_index()
+            self.genes._generate_index()
+        if rebuild_relationships:
+            for met in self.metabolites:
+                met._reaction.clear()
+            for gene in self.genes:
+                gene._reaction.clear()
+            for rxn in self.reactions:
+                for met in rxn._metabolites:
+                    met._reaction.add(rxn)
+                for gene in rxn._genes:
+                    gene._reaction.add(rxn)
+        # point _model to self
+        for l in (self.reactions, self.genes, self.metabolites):
+            for e in l:
+                e._model = self
+        if self.solution is None:
+            self.solution = Solution(None)
+        return
+
     def _populate_solver(self, reaction_list, metabolite_list=None):
         """Populate attached solver with constraints and variables that
         model the provided reactions.
@@ -608,68 +692,6 @@ class Model(Object):
             #     'returned solution status is "%s"' % (
             #         self, solution.status))
         return solution
-
-    def remove_reactions(self, reactions, delete=True,
-                         remove_orphans=False):
-        """remove reactions from the model
-
-        reactions: [:class:`~cobra.core.Reaction.Reaction`] or [str]
-            The reactions (or their id's) to remove
-
-        delete: Boolean
-            Whether or not the reactions should be deleted after removal.
-            If the reactions are not deleted, those objects will be
-            recreated with new metabolite and gene objects.
-
-        remove_orphans: Boolean
-            Remove orphaned genes and metabolites from the model as well
-
-        """
-        if isinstance(reactions, string_types) or hasattr(reactions, "id"):
-            warn("need to pass in a list")
-            reactions = [reactions]
-        for reaction in reactions:
-            try:
-                reaction = self.reactions[self.reactions.index(reaction)]
-            except ValueError:
-                warn('%s not in %s' % (reaction, self))
-            else:
-                if delete:
-                    reaction.delete(remove_orphans=remove_orphans)
-                else:
-                    reaction.remove_from_model(remove_orphans=remove_orphans)
-
-    def repair(self, rebuild_index=True, rebuild_relationships=True):
-        """Update all indexes and pointers in a model
-
-        Parameters
-        ----------
-        rebuild_index : bool
-            rebuild the indices kept in reactions, metabolites and genes
-        rebuild_relationships : bool
-             reset all associations between genes, metabolites, model and
-             then re-add them.
-        """
-        if rebuild_index:  # DictList indexes
-            self.reactions._generate_index()
-            self.metabolites._generate_index()
-            self.genes._generate_index()
-        if rebuild_relationships:
-            for met in self.metabolites:
-                met._reaction.clear()
-            for gene in self.genes:
-                gene._reaction.clear()
-            for rxn in self.reactions:
-                for met in rxn._metabolites:
-                    met._reaction.add(rxn)
-                for gene in rxn._genes:
-                    gene._reaction.add(rxn)
-        # point _model to self
-        for l in (self.reactions, self.genes, self.metabolites):
-            for e in l:
-                e._model = self
-        if self.solution is None:
-            self.solution = Solution(None)
 
     @property
     def objective(self):

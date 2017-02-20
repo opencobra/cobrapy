@@ -409,39 +409,14 @@ class Reaction(Object):
 
         model : deprecated argument, must be None
         """
-        if model is not None:
-            warn("model does not need to be passed into remove_from_model")
-            if model != self._model:
-                raise Exception("Can not remove from a different model")
-        if self._model is None:
-            raise Exception("Reaction %s not in a model" % self.id)
-        # preserve the original attributes (but as copies)
-        model = self._model
 
-        # from cameo ...
-        forward = self.forward_variable
-        reverse = self.reverse_variable
-        model.solver.remove([forward, reverse])
-        # ...
-
-        new_metabolites = {copy(met): value
-                           for met, value in iteritems(self._metabolites)}
+        new_metabolites = {copy(met): value for met, value
+                           in iteritems(self._metabolites)}
         new_genes = {copy(i) for i in self._genes}
-        # Begin removing from the model
-        self._model = None
-        model.reactions.remove(self)
-        for x in self._metabolites:
-            x._reaction.remove(self)
-            if remove_orphans and len(x._reaction) == 0:
-                model.metabolites.remove(x)
-        for x in self._genes:
-            x._reaction.remove(self)
-            if remove_orphans and len(x._reaction) == 0:
-                model.genes.remove(x)
-        # Rebuild the model with the new independent genes/metabolites
-        self._metabolites = {}
+
+        self._model.remove_reactions([self], remove_orphans=remove_orphans)
+
         self.add_metabolites(new_metabolites)
-        self._genes = set()
         for k in new_genes:
             self._associate_gene(k)
 
@@ -458,31 +433,7 @@ class Reaction(Object):
             Remove orphaned genes and metabolites from the model as well
 
         """
-        model = self._model
-        # from cameo ...
-        forward = self.forward_variable
-        reverse = self.reverse_variable
-        model.solver.remove([forward, reverse])
-        # ...
-
-        if model is not None:
-            self._model.reactions.remove(self)
-        elif remove_orphans:
-            # can't remove orphans if not part of a model
-            remove_orphans = False
-        self._model = None
-        for x in self._metabolites:
-            if self in x._reaction:
-                x._reaction.remove(self)
-                if remove_orphans and len(x._reaction) == 0:
-                    model.metabolites.remove(x)
-        for x in self._genes:
-            if self in x._reaction:
-                x._reaction.remove(self)
-                if remove_orphans and len(x._reaction) == 0:
-                    model.genes.remove(x)
-        self._metabolites = {}
-        self._genes = set()
+        self._model.remove_reactions([self], remove_orphans=remove_orphans)
 
     def __setstate__(self, state):
         """Probably not necessary to set _model as the cobra.Model that

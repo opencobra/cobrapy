@@ -360,7 +360,7 @@ class TestCobraModel:
         assert len(model.metabolites) == old_metabolite_count
         with pytest.raises(KeyError):
             model.reactions.get_by_id(dummy_reaction.id)
-        assert dummy_metabolite_1._model == None
+        assert dummy_metabolite_1._model is None
         assert 'dummy_gene' not in model.genes
 
     def test_add_reaction_from_other_model(self, model):
@@ -378,17 +378,28 @@ class TestCobraModel:
 
     def test_model_remove_reaction(self, model):
         old_reaction_count = len(model.reactions)
-        model.remove_reactions(["PGI"])
-        assert len(model.reactions) == old_reaction_count - 1
-        with pytest.raises(KeyError):
-            model.reactions.get_by_id("PGI")
-        model.remove_reactions(model.reactions[:1])
-        assert len(model.reactions) == old_reaction_count - 2
+
+        with model:
+            model.remove_reactions(["PGI"])
+            assert len(model.reactions) == old_reaction_count - 1
+            with pytest.raises(KeyError):
+                model.reactions.get_by_id("PGI")
+            model.remove_reactions(model.reactions[:1])
+            assert len(model.reactions) == old_reaction_count - 2
+
+        assert len(model.reactions) == old_reaction_count
+        assert "PGI" in model.reactions
+
         tmp_metabolite = Metabolite("testing")
         model.reactions[0].add_metabolites({tmp_metabolite: 1})
         assert tmp_metabolite in model.metabolites
         model.remove_reactions(model.reactions[:1],
                                remove_orphans=True)
+        assert tmp_metabolite not in model.metabolites
+
+        with model:
+            model.reactions[0].add_metabolites({tmp_metabolite: 1})
+            assert tmp_metabolite in model.metabolites
         assert tmp_metabolite not in model.metabolites
 
     def test_reaction_remove(self, model):

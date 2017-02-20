@@ -354,6 +354,10 @@ class DictList(list):
                 _dict[i] = j - 1
         return value
 
+    def add(self, x):
+        """Opposite of `remove`. Mirrors set.add"""
+        self.extend([x])
+
     def remove(self, x):
         """.. warning :: Internal use only"""
         # Each item is unique in the list which allows this
