@@ -3,6 +3,7 @@ branches:
  - master
  - devel
  - devel-2
+ - /^[0-9]+\.[0-9]+\.[0-9]+[.0-9ab]*$/
 
 environment:
 
@@ -43,7 +44,7 @@ environment:
 
     # - PYTHON: "C:\\Python36"
     #   PYTHON_VERSION: "3.6.0"
-    # PYTHON_ARCH: "32"
+    #   PYTHON_ARCH: "32"
 
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.12"

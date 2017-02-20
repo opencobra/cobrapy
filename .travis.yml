@@ -17,6 +17,7 @@ branches:
  - master
  - devel
  - devel-2
+ - /^[0-9]+\.[0-9]+\.[0-9]+[.0-9ab]*$/
 
 env:
   global:
@@ -41,18 +42,18 @@ matrix:
     - os: linux
       env:
         - MB_PYTHON_VERSION=3.6
-    # - os: osx
-    #   language: objective-c
-    #   env:
-    #     - MB_PYTHON_VERSION=2.7
+    - os: osx
+      language: objective-c
+      env:
+        - MB_PYTHON_VERSION=2.7
     # - os: osx
     #   language: objective-c
     #   env:
     #     - MB_PYTHON_VERSION=3.4
-    # - os: osx
-    #   language: objective-c
-    #   env:
-    #     - MB_PYTHON_VERSION=3.5
+    - os: osx
+      language: objective-c
+      env:
+        - MB_PYTHON_VERSION=3.5
     - os: osx
       language: objective-c
       env:
