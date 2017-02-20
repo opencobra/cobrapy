@@ -31,8 +31,9 @@ class TestHelpers:
         assert su.choose_solver(model, "cglpk")[0]
 
         if any(s in su.solvers for s in su.qp_solvers):
-            qp_choice = su.interface_to_str(su.choose_solver(model, qp=True))
-            assert qp_choice in su.qp_solvers
+            legacy, qp_choice = su.choose_solver(model, qp=True)
+            assert not legacy
+            assert su.interface_to_str(qp_choice) in su.qp_solvers
         else:
             with pytest.raises(su.SolverNotFound):
                 su.choose_solver(model, qp=True)
