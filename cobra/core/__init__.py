@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
 from cobra.core.gene import Gene

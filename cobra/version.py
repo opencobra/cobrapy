@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """Get version identification from git
 
 See the documentation of get_version for more information
 
 """
-from __future__ import absolute_import, print_function
 
-from os import devnull, environ, listdir, name, path
-from subprocess import CalledProcessError, check_output
+from __future__ import (absolute_import, print_function)
+
+from os import (devnull, environ, listdir, name, path)
+from subprocess import (CalledProcessError, check_output)
 
 __all__ = ("get_version",)
 
