@@ -179,10 +179,10 @@ def get_solver_name(mip=False, qp=False):
     """
     if len(solvers) == 0:
         raise SolverNotFound("no solvers installed")
-    # glpk only does lp, not qp. Gurobi and cplex are better at mip
-    mip_order = ["gurobi", "cplex", "mosek", "glpk"]
-    lp_order = ["glpk", "cplex", "gurobi", "mosek", "scipy"]
-    qp_order = ["gurobi", "cplex", "mosek"]
+    # Those lists need to be updated as optlang implements more solvers
+    mip_order = ["gurobi", "cplex", "glpk"]
+    lp_order = ["glpk", "cplex", "gurobi"]
+    qp_order = ["cplex"]
 
     if mip is False and qp is False:
         for solver_name in lp_order:
