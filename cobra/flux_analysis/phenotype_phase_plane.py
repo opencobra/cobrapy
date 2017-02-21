@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 
 from multiprocessing import Pool
 
 from numpy import (
     abs, arange, dtype, empty, int32, linspace, meshgrid, unravel_index, zeros)
-
-from ..solvers import get_solver_name, solver_dict
 
 # attempt to import plotting libraries
 try:
@@ -23,6 +22,8 @@ except ImportError:
         from brewer2mpl import get_map
     except ImportError:
         get_map = None
+
+from cobra.solvers import get_solver_name, solver_dict
 
 
 class phenotypePhasePlaneData:

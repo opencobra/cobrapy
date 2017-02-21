@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 
 import re
@@ -12,10 +13,9 @@ from warnings import catch_warnings, simplefilter, warn
 
 from six import iteritems, string_types
 
-from cobra.core.gene import Gene, parse_gpr
-from cobra.core.metabolite import Metabolite
-from cobra.core.model import Model
-from cobra.core.reaction import Reaction
+
+from cobra.core import Gene, Metabolite, Reaction, Model
+from cobra.core.gene import parse_gpr
 from cobra.manipulation.modify import _renames
 from cobra.manipulation.validate import (
     check_metabolite_compartment_formula, check_reaction_bounds)

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 
 from multiprocessing import Process, Queue, cpu_count
 
 from six import iteritems
 
-from ..solvers import get_solver_name, solver_dict
+from cobra.solvers import get_solver_name, solver_dict
 
 
 def compute_fba_deletion_worker(cobra_model, solver, job_queue, output_queue,

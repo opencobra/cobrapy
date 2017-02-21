@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 
 import re
@@ -9,7 +10,7 @@ from warnings import warn
 
 from six import iteritems
 
-from cobra import Metabolite, Model, Reaction
+from cobra.core import Metabolite, Model, Reaction
 from cobra.util.solver import set_objective
 
 if __name == 'java':
