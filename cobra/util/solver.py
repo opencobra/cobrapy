@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """This module includes additional helper functions for the optlang
 solver object that integrate well with the context manager, meaning that
 all operations defined here are automatically reverted when used in a

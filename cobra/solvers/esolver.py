@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 
 from fractions import Fraction
@@ -10,8 +11,8 @@ from tempfile import NamedTemporaryFile
 from cobra.core.solution import Solution
 from six.moves import zip
 
-from . import cglpk
-from .wrappers import *
+from cobra.solvers import cglpk
+from cobra.solvers.wrappers import *
 
 # detect paths to system calls for esolver and gzip
 with open(devnull, "w") as DEVNULL:

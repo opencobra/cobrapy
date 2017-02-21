@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
+
 # Interface to ilog/cplex 12.4 python interface
 
 from __future__ import absolute_import
 
 import sys
-from copy import deepcopy
 from warnings import warn
 
 from cplex import Cplex, SparsePair
@@ -13,7 +13,7 @@ from six import iteritems, string_types
 
 from six.moves import zip
 
-from ..core.solution import Solution
+from cobra.core import Solution
 
 try:
     from sympy import Basic, Number
