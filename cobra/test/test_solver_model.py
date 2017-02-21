@@ -567,6 +567,15 @@ class TestSolverBasedModel:
         assert coef_dict[biomass_r.forward_variable] == 1
         assert coef_dict[biomass_r.reverse_variable] == -1
 
+    def test_transfer_objective(self, model):
+        new_mod = Model("new model")
+        new_mod.add_reactions(model.reactions)
+        new_mod.objective = model.objective
+        assert (str(new_mod.objective.expression) ==
+                str(model.objective.expression))
+        new_mod.solver.optimize()
+        assert (new_mod.objective.value - 0.874) < 0.001
+
     def test_model_from_other_model(self, model):
         model = Model(id_or_model=model)
         for reaction in model.reactions:
