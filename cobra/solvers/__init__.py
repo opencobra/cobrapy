@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 # Solvers are expected to follow the following interface
 # create_problem: makes a solver problem object from a cobra.model and
 # sets parameters (if possible)
@@ -22,6 +23,7 @@
 # This attempts to import all working solvers in this directory
 
 from __future__ import absolute_import
+
 from warnings import warn
 from os import listdir, path
 
