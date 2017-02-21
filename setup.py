@@ -108,6 +108,11 @@ except Exception as e:
     print('Could not build CGLPK: {}'.format(e))
     ext_modules = None
 
+setup_requirements = []
+# prevent pytest-runner from being installed on every invocation
+if {'pytest', 'test', 'ptr'}.intersection(sys.argv):
+    setup_requirements.append("pytest-runner")
+
 extras = {
     'matlab': ["pymatbridge"],
     'sbml': ["python-libsbml", "lxml"],
@@ -143,7 +148,7 @@ setup(
     name="cobra",
     version="0.5.11",
     packages=find_packages(),
-    setup_requires=[],
+    setup_requires=setup_requirements,
     install_requires=["future", "swiglpk", "optlang"],
     tests_require=["jsonschema > 2.5", "pytest", "pytest-benchmark"],
     extras_require=extras,
