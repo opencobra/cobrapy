@@ -5,7 +5,7 @@ from six import iteritems
 from numpy import array, ndarray
 from scipy.sparse import lil_matrix, dok_matrix
 
-from .Model import Model
+from cobra.core.Model import Model
 
 
 class ArrayBasedModel(Model):

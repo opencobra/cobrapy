@@ -95,10 +95,14 @@ def save_matlab_model(model, file_name, varname=None):
 
     This .mat file can be used directly in the MATLAB version of COBRA.
 
-    model : :class:`~cobra.core.Model.Model` object
-
+    Parameters
+    ----------
+    model : cobra.core.Model.Model object
+        The model to save
     file_name : str or file-like object
-
+        The file to save to
+    varname : string
+       The name of the variable within the workspace
     """
     if varname is None:
         varname = str(model.id) \
@@ -264,11 +268,13 @@ def model_to_pymatbridge(model, variable_name="model", matlab=None):
 
     This model can then be manipulated through the COBRA toolbox
 
-    variable_name: str
+    Parameters
+    ----------
+    variable_name : str
         The variable name to which the model will be assigned in the
         MATLAB workspace
 
-    matlab: None or pymatbridge.Matlab instance
+    matlab : None or pymatbridge.Matlab instance
         The MATLAB workspace to which the variable will be sent. If
         this is None, then this will be sent to the same environment
         used in IPython magics.

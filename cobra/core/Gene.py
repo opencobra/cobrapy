@@ -4,8 +4,7 @@ from ast import parse as ast_parse, Name, And, Or, BitOr, BitAnd, \
     BoolOp, Expression, NodeTransformer
 from keyword import kwlist
 
-from .Species import Species
-
+from cobra.core.Species import Species
 
 keywords = list(kwlist)
 keywords.remove("and")
@@ -30,14 +29,22 @@ replacements = (
 def ast2str(expr, level=0, names=None):
     """convert compiled ast to gene_reaction_rule str
 
-    expr: str of a gene reaction rule
-
-    level: internal use only
-
-    names: optional dict of {Gene.id: Gene.name}
-        Use this to get a rule str which uses names instead. This
+    Parameters
+    ----------
+    expr : str
+        string for a gene reaction rule, e.g "a and b"
+    level : int
+        internal use only
+    names : dict
+        Dict where each element id a gene identifier and the value is the
+        gene name. Use this to get a rule str which uses names instead. This
         should be done for display purposes only. All gene_reaction_rule
         strings which are computed with should use the id.
+
+    Returns
+    ------
+    string
+        The gene reaction rule
     """
     if isinstance(expr, Expression):
         return ast2str(expr.body, 0, names) \
@@ -62,7 +69,21 @@ def ast2str(expr, level=0, names=None):
 
 
 def eval_gpr(expr, knockouts):
-    """evaluate compiled ast of gene_reaction_rule with knockouts"""
+    """evaluate compiled ast of gene_reaction_rule with knockouts
+
+    Parameters
+    ----------
+    expr : Expression
+        The ast of the gene reaction rule
+    knockouts : DictList, set
+        Set of genes that are knocked out
+
+    Returns
+    -------
+    bool
+        True if the gene reaction rule is true with the given knockouts
+        otherwise false
+    """
     if isinstance(expr, Expression):
         return eval_gpr(expr.body, knockouts)
     elif isinstance(expr, Name):
@@ -86,6 +107,7 @@ class GPRCleaner(NodeTransformer):
 
     Parts of the tree are rewritten to allow periods in gene ID's and
     bitwise boolean operations"""
+
     def __init__(self):
         NodeTransformer.__init__(self)
         self.gene_set = set()
@@ -113,7 +135,16 @@ class GPRCleaner(NodeTransformer):
 def parse_gpr(str_expr):
     """parse gpr into AST
 
-    returns: (ast_tree, {gene_ids})"""
+    Parameters
+    ----------
+    str_expr : string
+        string with the gene reaction rule to parse
+
+    Returns
+    -------
+    tuple
+        elements ast_tree and gene_ids as a set
+    """
     str_expr = str_expr.strip()
     if len(str_expr) == 0:
         return None, set()
@@ -130,18 +161,21 @@ def parse_gpr(str_expr):
 
 
 class Gene(Species):
+    """A Gene in a cobra model
+
+    Parameters
+    ----------
+    id : string
+        The identifier to associate the gene with
+    name: string
+        A longer human readable name for the gene
+    functional: bool
+        Indicates whether the gene is functional.  If it is not functional
+        then it cannot be used in an enzyme complex nor can its products be
+        used.
+    """
 
     def __init__(self, id=None, name="", functional=True):
-        """
-        id: A string.
-
-        name: String.  A human readable name.
-
-        functional: Boolean.  Indicate whether the gene is functional.  If it
-        is not functional then it cannot be used in an enzyme complex nor
-        can its products be used.
-
-        """
         Species.__init__(self, id=id, name=name)
         self.functional = functional
 
@@ -149,9 +183,14 @@ class Gene(Species):
                           make_dependent_reactions_nonfunctional=True):
         """Removes the association
 
-        make_dependent_reactions_nonfunctional: Boolean.  If True then replace
-        the gene with 'False' in the gene association, else replace the gene
-        with 'True'
+        Parameters
+        ----------
+        model : cobra model
+           The model to remove the gene from
+        make_dependent_reactions_nonfunctional : bool
+           If True then replace the gene with 'False' in the gene
+           association, else replace the gene with 'True'
+
 
         .. deprecated :: 0.4
             Use cobra.manipulation.delete_model_genes to simulate knockouts
