@@ -1,5 +1,5 @@
-from os.path import isfile, abspath, dirname, join
 from sys import argv
+from os.path import isfile, abspath, dirname, join
 from warnings import warn
 
 # To temporarily modify sys.path
@@ -110,7 +110,7 @@ except Exception as e:
 
 setup_requirements = []
 # prevent pytest-runner from being installed on every invocation
-if {'pytest', 'test', 'ptr'}.intersection(sys.argv):
+if {'pytest', 'test', 'ptr'}.intersection(argv):
     setup_requirements.append("pytest-runner")
 
 extras = {
