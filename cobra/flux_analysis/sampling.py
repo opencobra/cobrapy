@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """Module implementing flux sampling for cobra models.
 
 New samplers should derive from the abstract `HRSampler` class
@@ -15,7 +16,7 @@ import numpy as np
 
 from cobra.util import create_stoichiometric_array
 
-from ..solvers import get_solver_name, solver_dict
+from cobra.solvers import get_solver_name, solver_dict
 
 BTOL = np.finfo(np.float32).eps
 """The tolerance used for checking bounds feasibility."""

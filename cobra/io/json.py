@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 
 import json
 
 from six import iteritems, string_types
-
-from cobra import Gene, Metabolite, Model, Reaction
-from cobra.util.solver import set_objective
 
 # Detect numpy types to replace them.
 try:
@@ -17,6 +15,9 @@ except ImportError:
 
     class bool_:
         pass
+
+from cobra.core import Gene, Metabolite, Model, Reaction
+from cobra.util.solver import set_objective
 
 _REQUIRED_REACTION_ATTRIBUTES = {"id", "name", "metabolites", "lower_bound",
                                  "upper_bound", "gene_reaction_rule"}

@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 
 from six import iteritems, string_types
 
 import cobra.solvers as legacy_solvers
 import cobra.util.solver as solvers
-
-from ..manipulation import delete_model_genes, undelete_model_genes
-from ..manipulation.delete import find_gene_knockout_reactions
 
 # this can be removed after deprecation of the old solver interface
 # since the optlang vrsion requires neither numpy nor scipy
@@ -16,7 +14,10 @@ try:
 except ImportError:
     moma = None
 else:
-    from . import moma
+    from cobra.flux_analysis import moma
+
+from cobra.manipulation import delete_model_genes, undelete_model_genes
+from cobra.manipulation.delete import find_gene_knockout_reactions
 
 
 def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,

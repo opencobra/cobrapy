@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 
-from warnings import warn
+from __future__ import absolute_import
 
 from six import iteritems
 from sympy.core.singleton import S
