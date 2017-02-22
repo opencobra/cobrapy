@@ -1,10 +1,12 @@
-"""This module includes additional helper functions for the optlang
-solver object that integrate well with the context manager, meaning that
+"""Additional helper functions for the optlang solvers.
+
+All functions integrate well with the context manager, meaning that
 all operations defined here are automatically reverted when used in a
 `with model:` block.
 
 The functions defined here together with the existing model functions should
-allow you to implement custom flux analysis methods with ease."""
+allow you to implement custom flux analysis methods with ease.
+"""
 
 import re
 from types import ModuleType
@@ -16,9 +18,8 @@ import sympy
 
 
 class SolverNotFound(Exception):
-    """
-    A simple Exception when a solver can not be found.
-    """
+    """A simple Exception when a solver can not be found."""
+
     pass
 
 
@@ -35,7 +36,7 @@ Defines all the QP solvers implemented in optlang.
 
 
 def linear_reaction_coefficients(model, reactions=None):
-    """Coefficient for the reactions in a linear objective
+    """Coefficient for the reactions in a linear objective.
 
     Parameters
     ----------
@@ -68,8 +69,28 @@ def linear_reaction_coefficients(model, reactions=None):
     return linear_coefficients
 
 
+def _valid_atoms(model, expression):
+    """Check whether a sympy expression references the correct variables.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model in which to check for variables.
+    expression : sympy.Basic
+        A sympy expression.
+
+    Returns
+    -------
+    boolean
+        True if all referenced variables are contained in model, False
+        otherwise.
+    """
+    atoms = expression.atoms(optlang.Variable)
+    return all(a.problem is model.solver for a in atoms)
+
+
 def set_objective(model, value, additive=False):
-    """ Set the model objective
+    """Set the model objective.
 
     Parameters
     ----------
@@ -89,6 +110,7 @@ def set_objective(model, value, additive=False):
         If true, add the terms to the current objective, otherwise start with
         an empty objective.
     """
+    interface = model.solver.interface
     if isinstance(value, dict):
         if not model.objective.is_Linear:
             raise ValueError('can only update non-linear objectives '
@@ -96,7 +118,7 @@ def set_objective(model, value, additive=False):
                              'model.solver.interface.Objective, not %s' %
                              type(value))
         if not additive:
-            model.solver.objective = model.solver.interface.Objective(
+            model.solver.objective = interface.Objective(
                 sympy.S.Zero, direction=model.solver.objective.direction)
         reverse_value = {}
         for reaction, coef in value.items():
@@ -109,17 +131,21 @@ def set_objective(model, value, additive=False):
                  reaction.reverse_variable: -coef})
 
     elif isinstance(value, (sympy.Basic, model.solver.interface.Objective)):
-        reverse_value = model.solver.interface.Objective(
+        reverse_value = interface.Objective(
             model.solver.objective.expression,
             direction=model.solver.objective.direction, sloppy=True)
+        if isinstance(value, sympy.Basic):
+            value = interface.Objective(
+                value, direction=model.solver.objective.direction,
+                sloppy=False)
+        # Check whether expression only uses variables from current model
+        # clone the objective if not, faster than cloning without checking
+        if not _valid_atoms(model, value.expression):
+            value = interface.Objective.clone(value, model=model.solver)
         if not additive:
-            if isinstance(value, sympy.Basic):
-                value = model.solver.interface.Objective(value, sloppy=False)
             model.solver.objective = value
         else:
-            if isinstance(value, model.solver.interface.Objective):
-                value = value.expression
-            model.solver.objective += value
+            model.solver.objective += value.expression
     else:
         raise TypeError(
             '%r is not a valid objective for %r.' % (value, model.solver))
@@ -157,8 +183,7 @@ def interface_to_str(interface):
 
 
 def get_solver_name(mip=False, qp=False):
-    """Selects a solver for a given optimization problem in a reproducible
-    manner.
+    """Select a solver for a given optimization problem.
 
     Parameters
     ----------
@@ -251,7 +276,7 @@ def choose_solver(model, solver=None, qp=False):
 
 
 def add_to_solver(model, what):
-    """Adds variables and constraints to a Model's solver object.
+    """Add variables and constraints to a Model's solver object.
 
     Useful for variables and constraints that can not be expressed with
     reactions and lower/upper bounds. Will integrate with the Model's context
@@ -274,7 +299,7 @@ def add_to_solver(model, what):
 
 
 def remove_from_solver(model, what):
-    """Removes variables and constraints from a Model's solver object.
+    """Remove variables and constraints from a Model's solver object.
 
     Useful to temporarily remove variables and constraints from a Models's
     solver object.
@@ -296,9 +321,10 @@ def remove_from_solver(model, what):
 
 
 def add_absolute_expression(model, expression, name="abs_var", ub=None):
-    """Adds the absolute value of an expression to the model and defines
-    a variable for the absolute value that can be used in other objectives or
-    constraints.
+    """Add the absolute value of an expression to the model.
+
+    Also defines a variable for the absolute value that can be used in other
+    objectives or constraints.
 
     Parameters
     ----------
@@ -326,7 +352,7 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
 
 
 def fix_objective_as_constraint(model, fraction=1):
-    """Fix current objective as an additional constraint
+    """Fix current objective as an additional constraint.
 
     When adding constraints to a model, such as done in pFBA which
     minimizes total flux, these constraints can become too powerful,
