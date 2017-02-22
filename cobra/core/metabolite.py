@@ -8,6 +8,7 @@ from warnings import warn
 from six import iteritems
 
 from cobra.core.species import Species
+from cobra.core.formula import elements_and_molecular_weights
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
 # discussion in https://github.com/opencobra/cobrapy/issues/128 for
