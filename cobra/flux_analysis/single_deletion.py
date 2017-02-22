@@ -18,9 +18,23 @@ except ImportError:
 else:
     from cobra.flux_analysis import moma
 
+try:
+    import pandas
+except ImportError:
+    pandas = None
+
+
+def _deletion_return_value(result, return_frame):
+    if return_frame:
+        if not pandas:
+            raise ValueError('return data frame requires pandas')
+        return pandas.DataFrame({'flux': result[0], 'status': result[1]})
+    else:
+        return result
+
 
 def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
-                             method="fba", **solver_args):
+                             method="fba", return_frame=False, **solver_args):
     """Sequentially knocks out each reaction from a given reaction list.
 
     Parameters
@@ -31,10 +45,13 @@ def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
     reaction_list : iterable
         List of reaction IDs or cobra.Reaction. If None (default) will use all
         reactions in the model.
-    method : str, optional
-        The method used to obtain fluxes. Must be one of "fba" or "moma".
     solver : str, optional
         Name of the solver to be used.
+    method : str, optional
+        The method used to obtain fluxes. Must be one of "fba" or "moma".
+    return_frame : bool
+        Return result as data frame instead of nested dict. This behavior
+        will be the only option in the future.
     solver_args : optional
         Additional arguments for the solver. Ignored for optlang solver, please
         use `model.solver.configuration` instead.
@@ -42,9 +59,9 @@ def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
     Returns
     -------
     tuple of 2 dictionaries
-        The first dictionary maps each reaction id to its growth rate after
-        the knockout. The second tuple reports the solutions status (for
-        instance "optimal" for each knockout).
+        The first dictionary maps each reaction id to its objective value
+        after the knockout. The second tuple reports the solutions status (
+        for instance "optimal" for each knockout).
     """
     if reaction_list is None:
         reaction_list = cobra_model.reactions
@@ -53,13 +70,14 @@ def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
                          if isinstance(i, string_types) else i
                          for i in reaction_list]
     if method == "fba":
-        return single_reaction_deletion_fba(cobra_model, reaction_list,
-                                            solver=solver, **solver_args)
+        result = single_reaction_deletion_fba(cobra_model, reaction_list,
+                                              solver=solver, **solver_args)
     elif method == "moma":
-        return single_reaction_deletion_moma(cobra_model, reaction_list,
-                                             solver=solver, **solver_args)
+        result = single_reaction_deletion_moma(cobra_model, reaction_list,
+                                               solver=solver, **solver_args)
     else:
         raise ValueError("Unknown deletion method '%s'" % method)
+    return _deletion_return_value(result, return_frame)
 
 
 def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
@@ -122,7 +140,7 @@ def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
             # reset the problem
             solver.change_variable_bounds(lp, index, old_bounds[0],
                                           old_bounds[1])
-    return (growth_rate_dict, status_dict)
+    return growth_rate_dict, status_dict
 
 
 def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
@@ -160,7 +178,7 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
         legacy = True
         solver = legacy_solvers.solver_dict[solver]
         moma_model, moma_objective = moma.create_euclidian_moma_model(
-                                     cobra_model)
+            cobra_model)
 
     growth_rate_dict = {}
     status_dict = {}
@@ -191,7 +209,7 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
 
 
 def single_gene_deletion(cobra_model, gene_list=None, solver=None,
-                         method="fba", **solver_args):
+                         method="fba", return_frame=False, **solver_args):
     """Sequentially knocks out each gene from a given gene list.
 
     Parameters
@@ -206,6 +224,9 @@ def single_gene_deletion(cobra_model, gene_list=None, solver=None,
         The method used to obtain fluxes. Must be one of "fba" or "moma".
     solver : str, optional
         Name of the solver to be used.
+    return_frame : bool
+        Return result as data frame instead of nested dict. This behavior
+        will be only option in the future.
     solver_args : optional
         Additional arguments for the solver. Ignored for optlang solver, please
         use `model.solver.configuration` instead.
@@ -224,13 +245,14 @@ def single_gene_deletion(cobra_model, gene_list=None, solver=None,
                      if isinstance(i, string_types) else i for i in gene_list]
 
     if method == "fba":
-        return single_gene_deletion_fba(cobra_model, gene_list,
-                                        solver=solver, **solver_args)
+        result = single_gene_deletion_fba(cobra_model, gene_list,
+                                          solver=solver, **solver_args)
     elif method == "moma":
-        return single_gene_deletion_moma(cobra_model, gene_list,
-                                         solver=solver, **solver_args)
+        result = single_gene_deletion_moma(cobra_model, gene_list,
+                                           solver=solver, **solver_args)
     else:
         raise ValueError("Unknown deletion method '%s'" % method)
+    return _deletion_return_value(result, return_frame)
 
 
 def single_gene_deletion_fba(cobra_model, gene_list, solver=None,
@@ -296,7 +318,7 @@ def single_gene_deletion_fba(cobra_model, gene_list, solver=None,
             # reset the problem
             for index, bounds in iteritems(old_bounds):
                 solver.change_variable_bounds(lp, index, bounds[0], bounds[1])
-    return (growth_rate_dict, status_dict)
+    return growth_rate_dict, status_dict
 
 
 def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
@@ -331,7 +353,7 @@ def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
         legacy = True
         solver = legacy_solvers.solver_dict[solver]
         moma_model, moma_objective = moma.create_euclidian_moma_model(
-                                     cobra_model)
+            cobra_model)
 
     growth_rate_dict = {}
     status_dict = {}

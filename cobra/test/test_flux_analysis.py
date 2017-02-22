@@ -116,9 +116,15 @@ class TestCobraFluxAnalysis:
         assert abs(sum(abs_x) - 493.4400) < 0.001
 
         # Infeasible solution
-        model.reactions.ATPM.lower_bound = 500
-        with pytest.raises((SolveError, ValueError)):
-            optimize_minimal_flux(model, solver=solver)
+        with model:
+            model.reactions.ATPM.lower_bound = 500
+            with pytest.raises((SolveError, ValueError)):
+                optimize_minimal_flux(model, solver=solver)
+
+    @pytest.mark.skipif(not pandas, reason="data frame results require pandas")
+    def test_pfba_data_frame(self, model):
+        df = optimize_minimal_flux(model, return_frame=True)
+        assert numpy.all([df.columns.values == ['flux', 'objective_value']])
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_single_gene_deletion_fba_benchmark(self, model, benchmark,
@@ -137,6 +143,11 @@ class TestCobraFluxAnalysis:
         for gene, expected_value in iteritems(growth_dict):
             assert statuses[gene] == 'optimal'
             assert abs(rates[gene] - expected_value) < 0.01
+
+    @pytest.mark.skipif(not pandas, reason="data frame results require pandas")
+    def test_single_gene_deletion_data_frame(self, model):
+        df = single_gene_deletion(model, return_frame=True)
+        assert numpy.all([df.columns.values == ['flux', 'status']])
 
     def test_single_gene_deletion_moma_benchmark(self, model, benchmark):
         try:
@@ -271,6 +282,11 @@ class TestCobraFluxAnalysis:
         for name, result in iteritems(fva_out):
             for k, v in iteritems(result):
                 assert abs(fva_results[name][k] - v) < 0.00001
+
+    @pytest.mark.skipif(not pandas, reason="data frame results require pandas")
+    def test_fva_data_frame(self, model):
+        df = flux_variability_analysis(model, return_frame=True)
+        assert numpy.all([df.columns.values == ['maximum', 'minimum']])
 
     def test_fva_infeasible(self, model):
         infeasible_model = model.copy()

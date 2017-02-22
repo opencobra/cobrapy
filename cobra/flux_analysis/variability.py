@@ -9,8 +9,14 @@ import cobra.util.solver as sutil
 from cobra.flux_analysis.loopless import loopless_fva_iter
 from cobra.solvers import get_solver_name, solver_dict
 
+try:
+    import pandas
+except ImportError:
+    pandas = None
+
 
 def flux_variability_analysis(model, reaction_list=None, loopless=False,
+                              return_frame=False,
                               fraction_of_optimum=1.0, solver=None,
                               **solver_args):
     """Runs flux variability analysis to find the min/max flux values for each
@@ -30,6 +36,9 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
         Must be <= 1.0. Requires that the objective value is at least
         fraction * max_objective_value. A value of 0.85 for instance means that
         the objective has to be at least at 95% percent of its maximum.
+    return_frame : bool
+        Return result as data frame instead of nested dict. This behavior
+        will be only the option in the future.
     solver : str, optional
         Name of the solver to be used. If None it will respect the solver set
         in the model (model.solver).
@@ -40,9 +49,10 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
 
     Returns
     -------
-    dict
+    dict or DataFrame
         A nested dictionary {reaction_id: {minimize/maximize: flux}} giving
-        the minimal and maximal flux for each reaction.
+        the minimal and maximal flux for each reaction, or a DataFrame with
+        reaction identifier as the index and upper and lower bounds as columns.
 
     Notes
     -----
@@ -65,8 +75,9 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
        Gudmundsson S, Thiele I.
        BMC Bioinformatics. 2010 Sep 29;11:489.
        doi: 10.1186/1471-2105-11-489, PMID: 20920235
+
     .. [2] CycleFreeFlux: efficient removal of thermodynamically infeasible
-           loops from flux distributions.
+       loops from flux distributions.
        Desouki AA, Jarre F, Gelius-Dietrich G, Lercher MJ.
        Bioinformatics. 2015 Jul 1;31(13):2159-65.
        doi: 10.1093/bioinformatics/btv096.
@@ -77,11 +88,17 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
         reaction_list = model.reactions
 
     if not legacy:
-        return _fva_optlang(model, reaction_list, fraction_of_optimum,
+        fva_result =  _fva_optlang(model, reaction_list, fraction_of_optimum,
                             loopless)
     else:
-        return _fva_legacy(model, reaction_list, fraction_of_optimum,
-                           "maximize", solver, **solver_args)
+        fva_result = _fva_legacy(model, reaction_list, fraction_of_optimum,
+                                 "maximize", solver, **solver_args)
+    if return_frame:
+        if not pandas:
+            raise ValueError('return value as data frame requires pandas')
+        return pandas.DataFrame(fva_result).T
+    else:
+        return fva_result
 
 
 def _fva_legacy(cobra_model, reaction_list, fraction_of_optimum,

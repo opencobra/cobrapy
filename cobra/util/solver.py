@@ -368,7 +368,7 @@ def fix_objective_as_constraint(model, fraction=1):
 
     Parameters
     ----------
-    model : cobra.core.Model
+    model : cobra.Model
         The model to operate on
     fraction : float
         The fraction of the optimum the objective is allowed to reach.
