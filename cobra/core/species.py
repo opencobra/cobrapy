@@ -1,5 +1,10 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 from copy import deepcopy
-from cobra.core.Object import Object
+
+from cobra.core.object import Object
 
 
 class Species(Object):

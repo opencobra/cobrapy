@@ -1,9 +1,14 @@
-from copy import deepcopy
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import warnings
+from copy import deepcopy
+
 import pytest
-from cobra.core import Model, Metabolite, Reaction
-from cobra.solvers import solver_dict
+
 import cobra.util.solver as su
+from cobra.core import Metabolite, Model, Reaction
+from cobra.solvers import solver_dict
 from cobra.test.conftest import model
 
 stable_optlang = ["glpk", "cplex", "gurobi"]

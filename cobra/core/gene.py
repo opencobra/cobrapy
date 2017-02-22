@@ -1,10 +1,15 @@
-import re
-from warnings import warn
-from ast import parse as ast_parse, Name, And, Or, BitOr, BitAnd, \
-    BoolOp, Expression, NodeTransformer
-from keyword import kwlist
+# -*- coding: utf-8 -*-
 
-from cobra.core.Species import Species
+from __future__ import absolute_import
+
+import re
+from ast import parse as ast_parse
+from ast import (
+    And, BitAnd, BitOr, BoolOp, Expression, Name, NodeTransformer, Or)
+from keyword import kwlist
+from warnings import warn
+
+from cobra.core.species import Species
 
 keywords = list(kwlist)
 keywords.remove("and")

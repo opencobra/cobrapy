@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """This module includes additional helper functions for the optlang
 solver object that integrate well with the context manager, meaning that
 all operations defined here are automatically reverted when used in a
@@ -6,13 +7,17 @@ all operations defined here are automatically reverted when used in a
 The functions defined here together with the existing model functions should
 allow you to implement custom flux analysis methods with ease."""
 
+from __future__ import absolute_import
+
 import re
-from types import ModuleType
-from cobra.util.context import get_context
-import cobra.solvers as legacy_solvers
 from functools import partial
+from types import ModuleType
+
 import optlang
 import sympy
+
+import cobra.solvers as legacy_solvers
+from cobra.util.context import get_context
 
 
 class SolverNotFound(Exception):

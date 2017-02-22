@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 from cylp.cy import CyClpSimplex
-from cylp.py.modeling.CyLPModel import CyLPArray
 from cylp.cy.CyCoinPackedMatrix import CyCoinPackedMatrix
+from cylp.py.modeling.CyLPModel import CyLPArray
 
 solver_name = "coin"
 _status_translation = {"primal infeasible": "infeasible",

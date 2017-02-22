@@ -1,17 +1,21 @@
+# -*- coding: utf-8 -*-
 """Module implementing flux sampling for cobra models.
 
 New samplers should derive from the abstract `HRSampler` class
 where possible to provide a uniform interface.
 """
 
-from __future__ import division
-import numpy as np
-from multiprocessing import Pool, Array
+from __future__ import absolute_import, division
+
 import ctypes
+from multiprocessing import Array, Pool
 from time import time
 
-from ..solvers import solver_dict, get_solver_name
+import numpy as np
+
 from cobra.util import create_stoichiometric_array
+
+from ..solvers import get_solver_name, solver_dict
 
 BTOL = np.finfo(np.float32).eps
 """The tolerance used for checking bounds feasibility."""

@@ -1,15 +1,19 @@
+# -*- coding: utf-8 -*-
 # Interface to ilog/cplex 12.4 python interface
 
+from __future__ import absolute_import
+
+import sys
 from copy import deepcopy
 from warnings import warn
-import sys
 
 from cplex import Cplex, SparsePair
 from cplex.exceptions import CplexError
+from six import iteritems, string_types
+
+from six.moves import zip
 
 from ..core.solution import Solution
-from six.moves import zip
-from six import string_types, iteritems
 
 try:
     from sympy import Basic, Number

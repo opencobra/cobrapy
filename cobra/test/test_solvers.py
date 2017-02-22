@@ -1,6 +1,11 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import pytest
-from cobra.core import Model, Reaction, Metabolite
+
 from cobra import solvers
+from cobra.core import Metabolite, Model, Reaction
+
 from .conftest import model
 
 try:

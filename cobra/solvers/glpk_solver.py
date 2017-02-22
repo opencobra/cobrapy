@@ -1,17 +1,24 @@
+# -*- coding: utf-8 -*-
 ##cobra.solvers.glpk_solver
 #This script provides wrappers for pyglpk 0.3
-from warnings import warn
+from __future__ import absolute_import
+
 from copy import deepcopy
+from warnings import warn
+
+from six import iteritems
+
+from glpk import LPX
+
+from ..core.solution import Solution
+
 try:
     # Import izip for python versions < 3.x
     from itertools import izip as zip
 except ImportError:
     pass
 
-from six import iteritems
-from glpk import LPX
 
-from ..core.solution import Solution
 
 solver_name = 'glpk'
 _SUPPORTS_MILP = True

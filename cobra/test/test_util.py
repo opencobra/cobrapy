@@ -1,12 +1,15 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
-from copy import deepcopy, copy
 import re
-from cobra import DictList, Object
-from pickle import loads, dumps, HIGHEST_PROTOCOL
-from six.moves import range
-from cobra.util import Frozendict
+from copy import copy, deepcopy
+from pickle import HIGHEST_PROTOCOL, dumps, loads
+
 import pytest
+
+from cobra import DictList, Object
+from cobra.util import Frozendict
+from six.moves import range
 
 
 @pytest.fixture(scope="session")

@@ -1,18 +1,23 @@
-import pytest
-import sys
-from os import name
-from contextlib import contextmanager
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import re
-from six import iteritems, StringIO
-from cobra.core import Model, Reaction, Metabolite, Solution
-from cobra.core.solution import LegacySolution
-from cobra.solvers import solver_dict, get_solver_name
+import sys
+from contextlib import contextmanager
+from os import name
+
+import pytest
+from six import StringIO, iteritems
+
 import cobra.util.solver as sutil
-from cobra.flux_analysis import *
-from cobra.solvers import SolverNotFound
-from .conftest import model, large_model, solved_model, fva_results
-from cobra.manipulation import convert_to_irreversible
+from cobra.core import Metabolite, Model, Reaction, Solution
+from cobra.core.solution import LegacySolution
 from cobra.exceptions import SolveError
+from cobra.flux_analysis import *
+from cobra.manipulation import convert_to_irreversible
+from cobra.solvers import SolverNotFound, get_solver_name, solver_dict
+
+from .conftest import fva_results, large_model, model, solved_model
 
 try:
     import numpy

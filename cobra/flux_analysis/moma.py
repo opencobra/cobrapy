@@ -1,8 +1,12 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 from scipy.sparse import dok_matrix
+from sympy.core.singleton import S
+
+import cobra.util.solver as sutil
 
 from ..solvers import get_solver_name, solver_dict
-import cobra.util.solver as sutil
-from sympy.core.singleton import S
 
 
 def add_moma(model):

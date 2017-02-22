@@ -1,8 +1,17 @@
+# -*- coding: utf-8 -*-
 # Interface to gurobipy
 
-from warnings import warn
-from multiprocessing import Process
+from __future__ import absolute_import
+
 import platform
+from multiprocessing import Process
+from warnings import warn
+
+from gurobipy import GRB, LinExpr, Model, QuadExpr
+from six import iteritems, string_types
+
+from ..core.solution import Solution
+
 try:
     # Import izip for python versions < 3.x
     from itertools import izip as zip
@@ -27,11 +36,8 @@ if platform.system() != "Windows":
         raise RuntimeError("importing gurobi causes a crash (exitcode %d)" %
                            p.exitcode)
 
-from gurobipy import Model, LinExpr, GRB, QuadExpr
 
-from ..core.solution import Solution
 
-from six import string_types, iteritems
 
 try:
     from sympy import Basic, Number

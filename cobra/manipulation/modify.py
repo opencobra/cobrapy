@@ -1,11 +1,15 @@
-from itertools import chain
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 from ast import NodeTransformer
+from itertools import chain
 
 from six import iteritems
 
-from cobra import Reaction, Metabolite, Gene
+from cobra.core.gene import Gene, ast2str
+from cobra.core.metabolite import Metabolite
+from cobra.core.reaction import Reaction
 from cobra.manipulation.delete import get_compiled_gene_reaction_rules
-from cobra.core.Gene import ast2str
 from cobra.util.solver import set_objective
 
 _renames = (

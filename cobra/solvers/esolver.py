@@ -1,14 +1,17 @@
-from subprocess import check_output, check_call, CalledProcessError
-from os import unlink, devnull
-from os.path import isfile
-from tempfile import NamedTemporaryFile
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 from fractions import Fraction
+from os import devnull, unlink
+from os.path import isfile
+from subprocess import CalledProcessError, check_call, check_output
+from tempfile import NamedTemporaryFile
+
+from cobra.core.solution import Solution
 from six.moves import zip
 
 from . import cglpk
 from .wrappers import *
-
-from cobra.core.solution import Solution
 
 # detect paths to system calls for esolver and gzip
 with open(devnull, "w") as DEVNULL:

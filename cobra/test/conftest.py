@@ -1,12 +1,17 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
+import json
 from os.path import join
-from . import create_test_model, data_dir
+
 import pytest
+
+from . import create_test_model, data_dir
 
 try:
     from cPickle import load as _load
 except ImportError:
     from pickle import load as _load
-import json
 
 
 def pytest_addoption(parser):

@@ -1,6 +1,10 @@
-from ..core import Reaction, Metabolite
-from ..manipulation.modify import convert_to_irreversible
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 from six import iteritems
+
+from ..core import Metabolite, Reaction
+from ..manipulation.modify import convert_to_irreversible
 
 
 def construct_loopless_model(cobra_model):
