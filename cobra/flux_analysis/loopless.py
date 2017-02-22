@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+"""Provides functions to remove thermodynamically infeasible loops."""
+
 from __future__ import absolute_import
 
 from six import iteritems
 from sympy.core.singleton import S
 from cobra.core import Metabolite, Reaction
-from cobra.util import add_to_solver
+from cobra.util import add_to_solver, linear_reaction_coefficients
 from cobra.manipulation.modify import convert_to_irreversible
 
 try:
@@ -17,9 +19,15 @@ except ImportError:
 
 
 def add_loopless(model, zero_cutoff=1e-12):
-    """Add variables and constraints to make a model thermodynamically
-    feasible. This removes flux loops. The used formulation is described
-    in [1]_.
+    """Modify a model so all feasible flux distributions are loopless.
+
+    In most cases you probably want to use the much faster `loopless_solution`.
+    May be used in cases where you want to add complex constraints and
+    objecives (for instance quadratic objectives) to the model afterwards
+    or use an approximation of Gibbs free energy directions in you model.
+    Adds variables and constraints to a model which will disallow flux
+    distributions with loops. The used formulation is described in [1]_.
+    This function *will* modify your model.
 
     Parameters
     ----------
@@ -80,15 +88,26 @@ def add_loopless(model, zero_cutoff=1e-12):
         model.solver.constraints[name].set_linear_coefficients(coefs)
 
 
-def loopless_solution(model):
-    """Converts an existing solution to a solution with the least amount of
-    loops possible. Uses the method from CycleFreeFlux [1]_ which should be
-    faster than `add_loopless`.
+def loopless_solution(model, fluxes=None):
+    """Convert an existing solution to a loopless one.
+
+    Removes as many loops as possible (see Notes).
+    Uses the method from CycleFreeFlux [1]_ and is much faster than
+    `add_loopless` and should therefore be the preferred option to get loopless
+    flux distributions.
 
     Parameters
     ----------
     model : cobra.Model
         The model to which to add the constraints.
+    fluxes : dict
+        A dictionary {rxn_id: flux} that assigns a flux to each reaction. If
+        not None will use the provided flux values to obtain a close loopless
+        solution.
+        Note that this requires a linear objective function involving
+        only the model reactions. This is the case if
+        `linear_reaction_coefficients(model)` is a correct representation of
+        the objective.
 
     Returns
     -------
@@ -117,8 +136,16 @@ def loopless_solution(model):
     """
     # Need to reoptimize otherwise spurious solution artifacts can cause
     # all kinds of havoc
-    model.optimize(objective_sense=None)
-    obj_val = model.solution.f
+    if not fluxes:
+        sol = model.optimize(objective_sense=None)
+        fluxes = sol.fluxes
+        obj_val = sol.f
+    else:
+        if not (isinstance(fluxes, dict) and
+                len(fluxes) == len(model.reactions)):
+            raise ValueError("`fluxes` must be a dictionary {rxn_id: flux}")
+        coefs = linear_reaction_coefficients(model)
+        obj_val = sum(coefs[f] * fluxes[f] for f in fluxes)
 
     prob = model.solver.interface
     with model:
@@ -130,10 +157,11 @@ def loopless_solution(model):
         add_to_solver(model, [loopless_old_obj, loopless_obj_constraint])
         model.objective = S.Zero
         for rxn in model.reactions:
+            flux = fluxes[rxn.id]
             if rxn.boundary:
-                rxn.bounds = (rxn.flux, rxn.flux)
+                rxn.bounds = (flux, flux)
                 continue
-            if rxn.flux >= 0:
+            if flux >= 0:
                 rxn.lower_bound = max(0, rxn.lower_bound)
                 model.objective.set_linear_coefficients(
                     {rxn.forward_variable: 1, rxn.reverse_variable: -1})
