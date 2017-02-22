@@ -7,7 +7,6 @@ import warnings as _warnings
 from os.path import (abspath as _abspath, dirname as _dirname)
 from os import name as _name
 
-from cobra.version import get_version
 from cobra.core import (Object, Metabolite, Gene, Reaction, Model, DictList,
     Species)
 from cobra import (io, flux_analysis, design)
