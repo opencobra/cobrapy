@@ -91,7 +91,7 @@ def _valid_atoms(model, expression):
         True if all referenced variables are contained in model, False
         otherwise.
     """
-    atoms = expression.atoms(optlang.Variable)
+    atoms = expression.atoms(optlang.interface.Variable)
     return all(a.problem is model.solver for a in atoms)
 
 
