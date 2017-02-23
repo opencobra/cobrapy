@@ -5,9 +5,9 @@ from __future__ import absolute_import
 import logging
 from itertools import chain
 
+import pandas
 import sympy
 from six import iteritems
-import pandas
 
 import cobra.util.solver as sutil
 from cobra.exceptions import SolveError

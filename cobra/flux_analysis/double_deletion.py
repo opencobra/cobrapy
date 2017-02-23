@@ -6,8 +6,8 @@ from itertools import chain, product
 from warnings import warn
 
 import numpy
-from six import iteritems
 from pandas import DataFrame
+from six import iteritems
 
 from cobra.flux_analysis.deletion_worker import (
     CobraDeletionMockPool, CobraDeletionPool)

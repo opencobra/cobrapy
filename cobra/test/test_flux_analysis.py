@@ -6,6 +6,7 @@ import sys
 from contextlib import contextmanager
 from os import name
 
+import numpy
 import pytest
 from six import StringIO, iteritems
 
@@ -14,16 +15,12 @@ from cobra.core import Metabolite, Model, Reaction, Solution
 from cobra.core.solution import LegacySolution
 from cobra.exceptions import SolveError
 from cobra.flux_analysis import *
+from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 from cobra.manipulation import convert_to_irreversible
 from cobra.solvers import SolverNotFound, get_solver_name, solver_dict
 
 from .conftest import fva_results, large_model, model, solved_model
 
-try:
-    import numpy
-    from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
-except ImportError:
-    numpy = None
 try:
     import scipy
 except ImportError:

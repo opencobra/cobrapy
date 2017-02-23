@@ -5,12 +5,8 @@ from __future__ import absolute_import
 import re
 from itertools import islice
 
+from numpy import bool_
 from six import PY3, iteritems, string_types
-
-try:
-    from numpy import bool_
-except ImportError:
-    bool_ = bool
 
 
 class DictList(list):
