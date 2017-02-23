@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 from six import iteritems, string_types
+import pandas
 
 import cobra.solvers as legacy_solvers
 import cobra.util.solver as solvers
@@ -18,23 +19,9 @@ except ImportError:
 else:
     from cobra.flux_analysis import moma
 
-try:
-    import pandas
-except ImportError:
-    pandas = None
-
-
-def _deletion_return_value(result, return_frame):
-    if return_frame:
-        if not pandas:
-            raise ValueError('return data frame requires pandas')
-        return pandas.DataFrame({'flux': result[0], 'status': result[1]})
-    else:
-        return result
-
 
 def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
-                             method="fba", return_frame=False, **solver_args):
+                             method="fba", **solver_args):
     """Sequentially knocks out each reaction from a given reaction list.
 
     Parameters
@@ -49,19 +36,17 @@ def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
         Name of the solver to be used.
     method : str, optional
         The method used to obtain fluxes. Must be one of "fba" or "moma".
-    return_frame : bool
-        Return result as data frame instead of nested dict. This behavior
-        will be the only option in the future.
     solver_args : optional
         Additional arguments for the solver. Ignored for optlang solver, please
         use `model.solver.configuration` instead.
 
     Returns
     -------
-    tuple of 2 dictionaries
-        The first dictionary maps each reaction id to its objective value
-        after the knockout. The second tuple reports the solutions status (
-        for instance "optimal" for each knockout).
+    pandas.DataFrame
+        Data frame with two column and reaction id as index:
+        - flux: the value of the objective after the knockout
+        - status: the solution's status, (for instance "optimal" for each
+          knockout)
     """
     if reaction_list is None:
         reaction_list = cobra_model.reactions
@@ -77,7 +62,7 @@ def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
                                                solver=solver, **solver_args)
     else:
         raise ValueError("Unknown deletion method '%s'" % method)
-    return _deletion_return_value(result, return_frame)
+    return pandas.DataFrame({'flux': result[0], 'status': result[1]})
 
 
 def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
@@ -205,11 +190,11 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
                                           solver=solver, **solver_args)
             status_dict[reaction.id] = solution.status
             growth_rate_dict[reaction.id] = solution.f
-    return (growth_rate_dict, status_dict)
+    return growth_rate_dict, status_dict
 
 
 def single_gene_deletion(cobra_model, gene_list=None, solver=None,
-                         method="fba", return_frame=False, **solver_args):
+                         method="fba", **solver_args):
     """Sequentially knocks out each gene from a given gene list.
 
     Parameters
@@ -224,19 +209,17 @@ def single_gene_deletion(cobra_model, gene_list=None, solver=None,
         The method used to obtain fluxes. Must be one of "fba" or "moma".
     solver : str, optional
         Name of the solver to be used.
-    return_frame : bool
-        Return result as data frame instead of nested dict. This behavior
-        will be only option in the future.
     solver_args : optional
         Additional arguments for the solver. Ignored for optlang solver, please
         use `model.solver.configuration` instead.
 
     Returns
     -------
-    tuple of 2 dictionaries
-        The first dictionary maps each gene id to its growth rate after
-        the knockout. The second tuple reports the solutions status (for
-        instance "optimal" for each knockout).
+    pandas.DataFrame
+        Data frame with two column and reaction id as index:
+        - flux: the value of the objective after the knockout
+        - status: the solution's status, (for instance "optimal" for each
+          knockout)
     """
     if gene_list is None:
         gene_list = cobra_model.genes
@@ -252,7 +235,7 @@ def single_gene_deletion(cobra_model, gene_list=None, solver=None,
                                            solver=solver, **solver_args)
     else:
         raise ValueError("Unknown deletion method '%s'" % method)
-    return _deletion_return_value(result, return_frame)
+    return pandas.DataFrame({'flux': result[0], 'status': result[1]})
 
 
 def single_gene_deletion_fba(cobra_model, gene_list, solver=None,
@@ -383,4 +366,4 @@ def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
             status_dict[gene.id] = solution.status
             growth_rate_dict[gene.id] = solution.f
             undelete_model_genes(moma_model)
-    return (growth_rate_dict, status_dict)
+    return growth_rate_dict, status_dict

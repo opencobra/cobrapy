@@ -114,8 +114,8 @@ if {'pytest', 'test', 'ptr'}.intersection(argv):
 extras = {
     'matlab': ["pymatbridge"],
     'sbml': ["python-libsbml", "lxml"],
-    'array': ["numpy>=1.6", "scipy>=0.11.0"],
-    'display': ["matplotlib", "palettable", "pandas>=0.17.0", "tabulate"]
+    'array': ["scipy>=0.11.0"],
+    'display': ["matplotlib", "palettable", "tabulate"]
 }
 
 all_extras = {'Cython>=0.21'}
@@ -147,7 +147,8 @@ setup(
     version="0.5.11",
     packages=find_packages(),
     setup_requires=setup_requirements,
-    install_requires=["future", "swiglpk", "optlang"],
+    install_requires=["future", "swiglpk", "optlang",
+                      "pandas>=0.17.0", "numpy>=1.6"],
     tests_require=["jsonschema > 2.5", "pytest", "pytest-benchmark"],
     extras_require=extras,
     ext_modules=ext_modules,
@@ -180,6 +181,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Cython',
         'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: Scientific/Engineering',

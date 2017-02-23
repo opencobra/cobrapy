@@ -671,7 +671,7 @@ class Model(Object):
             return model_summary(self, threshold=threshold, fva=fva,
                                  floatfmt=floatfmt, **kwargs)
         except ImportError:
-            warn('Summary methods require pandas/tabulate')
+            warn('Summary methods require tabulate')
 
     def __enter__(self):
         """Record all future changes to the model, undoing them when a call to

@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 
+import pandas
 from six import iteritems
 from sympy.core.singleton import S
 
@@ -9,16 +10,10 @@ import cobra.util.solver as sutil
 from cobra.flux_analysis.loopless import loopless_fva_iter
 from cobra.solvers import get_solver_name, solver_dict
 
-try:
-    import pandas
-except ImportError:
-    pandas = None
-
 
 def flux_variability_analysis(model, reaction_list=None, loopless=False,
-                              return_frame=False,
-                              fraction_of_optimum=1.0, solver=None,
-                              **solver_args):
+                              fraction_of_optimum=1.0,
+                              solver=None, **solver_args):
     """Runs flux variability analysis to find the min/max flux values for each
     each reaction in `reaction_list`.
 
@@ -36,9 +31,6 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
         Must be <= 1.0. Requires that the objective value is at least
         fraction * max_objective_value. A value of 0.85 for instance means that
         the objective has to be at least at 95% percent of its maximum.
-    return_frame : bool
-        Return result as data frame instead of nested dict. This behavior
-        will be only the option in the future.
     solver : str, optional
         Name of the solver to be used. If None it will respect the solver set
         in the model (model.solver).
@@ -49,10 +41,11 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
 
     Returns
     -------
-    dict or DataFrame
-        A nested dictionary {reaction_id: {minimize/maximize: flux}} giving
-        the minimal and maximal flux for each reaction, or a DataFrame with
-        reaction identifier as the index and upper and lower bounds as columns.
+    DataFrame
+        pandas.DataFrame
+        with reaction identifier as the index columns
+        - maximum: indicating the highest possible flux
+        - minimum: indicating the loweset possible flux
 
     Notes
     -----
@@ -93,12 +86,7 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
     else:
         fva_result = _fva_legacy(model, reaction_list, fraction_of_optimum,
                                  "maximize", solver, **solver_args)
-    if return_frame:
-        if not pandas:
-            raise ValueError('return value as data frame requires pandas')
-        return pandas.DataFrame(fva_result).T
-    else:
-        return fva_result
+    return pandas.DataFrame(fva_result).T
 
 
 def _fva_legacy(cobra_model, reaction_list, fraction_of_optimum,
@@ -233,8 +221,8 @@ def find_blocked_reactions(cobra_model, reaction_list=None,
     reaction_list = [i for i in reaction_list
                      if abs(solution.x_dict[i.id]) < zero_cutoff]
     # run fva to find reactions where both max and min are 0
-    flux_span_dict = flux_variability_analysis(
+    flux_span = flux_variability_analysis(
         cobra_model, fraction_of_optimum=0., reaction_list=reaction_list,
         solver=solver, **solver_args)
-    return [k for k, v in iteritems(flux_span_dict)
-            if max(map(abs, v.values())) < zero_cutoff]
+    return [k for k, v in iteritems(flux_span.T)
+            if max(map(abs, v)) < zero_cutoff]
