@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+from six import PY3, iteritems, string_types
 
 import re
 from itertools import islice
-
-from six import PY3, iteritems, string_types
 
 try:
     from numpy import bool_

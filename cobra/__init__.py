@@ -4,12 +4,13 @@ from __future__ import absolute_import, print_function
 
 # set the warning format to be on a single line
 import warnings as _warnings
-from os.path import (abspath as _abspath, dirname as _dirname)
 from os import name as _name
+from os.path import abspath as _abspath
+from os.path import dirname as _dirname
 
-from cobra.core import (Object, Metabolite, Gene, Reaction, Model, DictList,
-    Species)
-from cobra import (io, flux_analysis, design)
+from cobra import design, flux_analysis, io
+from cobra.core import (
+    DictList, Gene, Metabolite, Model, Object, Reaction, Species)
 
 __version__ = "0.5.11"
 

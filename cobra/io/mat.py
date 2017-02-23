@@ -11,6 +11,10 @@ from numpy import array, inf, isinf
 from scipy.io import loadmat, savemat
 from scipy.sparse import coo_matrix, dok_matrix
 
+from cobra.core import Metabolite, Model, Reaction
+from cobra.util import create_stoichiometric_array
+from cobra.util.solver import set_objective
+
 # try to use an ordered dict
 try:
     from scipy.version import short_version
@@ -26,9 +30,6 @@ except ImportError:
     DictClass = dict
     short_version = None
 
-from cobra.core import Metabolite, Reaction, Model
-from cobra.util import create_stoichiometric_array
-from cobra.util.solver import set_objective
 
 # precompiled regular expressions
 _bracket_re = re.compile("r\[[a-z]\]$")

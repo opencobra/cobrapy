@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+from six import iteritems
 
 from ast import NodeTransformer
 from itertools import chain
 
-from six import iteritems
-
-from cobra.core import (Metabolite, Gene, Reaction)
+from cobra.core import Gene, Metabolite, Reaction
 from cobra.core.gene import ast2str
 from cobra.manipulation.delete import get_compiled_gene_reaction_rules
 from cobra.util.solver import set_objective

@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+from six import iteritems, print_
+from six.moves import zip_longest
 
 import pandas as pd
-from six import iteritems, print_
-
-from six.moves import zip_longest
 from tabulate import tabulate
 
-from cobra.util.solver import linear_reaction_coefficients
 from cobra.flux_analysis.variability import flux_variability_analysis
+from cobra.util.solver import linear_reaction_coefficients
 
 
 def format_long_string(string, max_length):

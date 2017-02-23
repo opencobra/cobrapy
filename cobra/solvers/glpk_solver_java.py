@@ -2,13 +2,12 @@
 # PLEASE NOTE THAT JYTHON SUPPORT (and this jython-only-solver) is deprecated
 #This script provides wrappers for libglpk-java 1.0.22 and pyglpk 0.3
 from __future__ import absolute_import, print_function
+from six import iteritems
 
 from copy import deepcopy
 from os import name
 from time import time
 from warnings import warn
-
-from six import iteritems
 
 from org.gnu.glpk import GLPK, GLPKConstants, glp_iocp, glp_smcp
 

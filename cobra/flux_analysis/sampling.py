@@ -14,9 +14,8 @@ from time import time
 
 import numpy as np
 
-from cobra.util import create_stoichiometric_array
-
 from cobra.solvers import get_solver_name, solver_dict
+from cobra.util import create_stoichiometric_array
 
 BTOL = np.finfo(np.float32).eps
 """The tolerance used for checking bounds feasibility."""

@@ -20,8 +20,6 @@ except:
     from pickle import load, dump
 
 
-
-
 # ecoli
 ecoli_model = read_sbml_model("iJO1366.xml")
 with open("iJO1366.pickle", "wb") as outfile:

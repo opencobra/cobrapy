@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+from six import iteritems, string_types
 
 import re
 from ast import And, BoolOp, Name, Or
@@ -11,10 +12,7 @@ from gzip import GzipFile
 from tempfile import NamedTemporaryFile
 from warnings import catch_warnings, simplefilter, warn
 
-from six import iteritems, string_types
-
-
-from cobra.core import Gene, Metabolite, Reaction, Model
+from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.core.gene import parse_gpr
 from cobra.manipulation.modify import _renames
 from cobra.manipulation.validate import (
@@ -22,18 +20,21 @@ from cobra.manipulation.validate import (
 from cobra.util.solver import set_objective
 
 try:
-    from lxml.etree import parse, Element, SubElement, \
-        ElementTree, register_namespace, ParseError, XPath
+    from lxml.etree import (
+        parse, Element, SubElement, ElementTree, register_namespace,
+        ParseError, XPath)
     _with_lxml = True
 except ImportError:
     warn("Install lxml for faster SBML I/O")
     _with_lxml = False
     try:
-        from xml.etree.cElementTree import (parse, Element, SubElement,
-            ElementTree, register_namespace, ParseError)
+        from xml.etree.cElementTree import (
+            parse, Element, SubElement, ElementTree, register_namespace,
+            ParseError)
     except ImportError:
-        from xml.etree.ElementTree import (parse, Element, SubElement,
-            ElementTree, register_namespace, ParseError)
+        from xml.etree.ElementTree import (
+            parse, Element, SubElement, ElementTree, register_namespace,
+            ParseError)
 
 # use sbml level 2 from sbml.py (which uses libsbml). Eventually, it would
 # be nice to use the libSBML converters directly instead.

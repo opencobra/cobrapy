@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+from six import iteritems
 
 from multiprocessing import Process, Queue, cpu_count
-
-from six import iteritems
 
 from cobra.solvers import get_solver_name, solver_dict
 

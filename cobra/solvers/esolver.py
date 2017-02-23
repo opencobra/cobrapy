@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+from six.moves import zip
 
 from fractions import Fraction
 from os import devnull, unlink
@@ -9,8 +10,6 @@ from subprocess import CalledProcessError, check_call, check_output
 from tempfile import NamedTemporaryFile
 
 from cobra.core.solution import Solution
-from six.moves import zip
-
 from cobra.solvers import cglpk
 from cobra.solvers.wrappers import *
 

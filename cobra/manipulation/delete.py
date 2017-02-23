@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+from six import iteritems, string_types
 
 from ast import And, NodeTransformer
-
-from six import iteritems, string_types
 
 from cobra.core.gene import ast2str, eval_gpr, parse_gpr
 

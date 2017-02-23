@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+from six import iteritems
 
 from sys import maxsize
 from warnings import warn
 
 from numpy import array, ndarray
 from scipy.sparse import dok_matrix, lil_matrix
-from six import iteritems
 
 from cobra.core.model import Model
 

@@ -6,7 +6,6 @@ from scipy.sparse import dok_matrix
 from sympy.core.singleton import S
 
 import cobra.util.solver as sutil
-
 from cobra.solvers import get_solver_name, solver_dict
 
 

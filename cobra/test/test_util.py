@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
+from six.moves import range
 
 import re
 from copy import copy, deepcopy
@@ -9,7 +10,6 @@ import pytest
 
 from cobra import DictList, Object
 from cobra.util import Frozendict
-from six.moves import range
 
 
 @pytest.fixture(scope="session")

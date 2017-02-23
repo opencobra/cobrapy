@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function
+
+from __future__ import absolute_import
+import six
 
 import copy
 import os
 
 import optlang
 import pytest
-import six
 
 import cobra
 from cobra.core import Metabolite, Model, Reaction, Solution
@@ -26,8 +27,6 @@ try:
     import pandas
 except ImportError:
     pandas = None
-
-
 
 solver_trials = ['glpk',
                  pytest.mark.skipif('cplex' not in solvers,

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+from six import StringIO, iteritems
 
 import re
 import sys
@@ -7,7 +8,6 @@ from contextlib import contextmanager
 from os import name
 
 import pytest
-from six import StringIO, iteritems
 
 import cobra.util.solver as sutil
 from cobra.core import Metabolite, Model, Reaction, Solution

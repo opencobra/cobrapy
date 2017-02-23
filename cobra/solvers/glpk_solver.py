@@ -2,11 +2,10 @@
 ##cobra.solvers.glpk_solver
 #This script provides wrappers for pyglpk 0.3
 from __future__ import absolute_import
+from six import iteritems
 
 from copy import deepcopy
 from warnings import warn
-
-from six import iteritems
 
 from glpk import LPX
 

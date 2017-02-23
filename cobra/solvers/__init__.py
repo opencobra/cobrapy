@@ -24,8 +24,8 @@
 
 from __future__ import absolute_import
 
-from warnings import warn
 from os import listdir, path
+from warnings import warn
 
 solver_dict = {}
 possible_solvers = set()

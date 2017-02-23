@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import six
 from __future__ import absolute_import
+from six import iteritems, string_types
 
 import time
 import types
@@ -8,9 +10,7 @@ from copy import copy, deepcopy
 from warnings import warn
 
 import optlang
-import six
 import sympy
-from six import iteritems, string_types
 from sympy import S
 
 from cobra.core.dictlist import DictList
