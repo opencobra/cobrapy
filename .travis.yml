@@ -27,6 +27,7 @@ env:
     - UNICODE_WIDTH=32
 
 matrix:
+  fast_finish: true
   exclude:
       - python: 3.5
   include:
