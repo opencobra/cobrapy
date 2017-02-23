@@ -1,9 +1,19 @@
-from __future__ import absolute_import, print_function
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
 
 import copy
 import os
 
+import optlang
+import pytest
+import six
+
 import cobra
+from cobra.core import Metabolite, Model, Reaction, Solution
+from cobra.exceptions import UndefinedSolution
+from cobra.util.solver import SolverNotFound, set_objective, solvers
+
 try:
     import numpy
 except ImportError:
@@ -12,19 +22,11 @@ try:
     import scipy
 except ImportError:
     scipy = None
-import optlang
 
 try:
     import pandas
 except ImportError:
     pandas = None
-import six
-
-from cobra.util.solver import solvers, SolverNotFound, set_objective
-from cobra.core import Metabolite, Reaction, Model, Solution
-from cobra.exceptions import UndefinedSolution
-import pytest
-
 
 solver_trials = ['glpk',
                  pytest.mark.skipif('cplex' not in solvers,

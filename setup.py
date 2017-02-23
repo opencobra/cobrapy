@@ -1,12 +1,10 @@
+# -*- coding: utf-8 -*-
+
+from os.path import abspath, dirname, isfile, join
 from sys import argv
-from os.path import isfile, abspath, dirname, join
 from warnings import warn
 
-# To temporarily modify sys.path
-SETUP_DIR = abspath(dirname(__file__))
-
 from setuptools import setup, find_packages
-
 
 # cython is optional for building. The c file can be used directly. However,
 # for certain functions, the c file must be generated, which requires cython.

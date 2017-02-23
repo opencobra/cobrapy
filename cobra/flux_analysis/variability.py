@@ -1,9 +1,12 @@
-from warnings import warn
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
 
 from six import iteritems
-from cobra.solvers import solver_dict, get_solver_name
-import cobra.util.solver as sutil
 from sympy.core.singleton import S
+
+import cobra.util.solver as sutil
+from cobra.solvers import get_solver_name, solver_dict
 
 
 def flux_variability_analysis(model, reaction_list=None,

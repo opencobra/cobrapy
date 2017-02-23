@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
+import optlang
 import pytest
 
 import cobra.util.solver as su
 from cobra.test.conftest import model
-import optlang
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]

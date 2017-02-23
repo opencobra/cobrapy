@@ -1,8 +1,12 @@
-from .DictList import DictList
-from .Object import Object
-from .Gene import Gene
-from .Metabolite import Metabolite
-from .Reaction import Reaction
-from .solution import Solution
-from .Model import Model
-from .Species import Species
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
+from cobra.core.dictlist import DictList
+from cobra.core.gene import Gene
+from cobra.core.metabolite import Metabolite
+from cobra.core.model import Model
+from cobra.core.object import Object
+from cobra.core.reaction import Reaction
+from cobra.core.solution import Solution
+from cobra.core.species import Species

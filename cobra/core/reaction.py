@@ -1,20 +1,21 @@
-from __future__ import print_function
+# -*- coding: utf-8 -*-
 
-from collections import defaultdict
+from __future__ import absolute_import, print_function
+
+import hashlib
 import re
+from collections import defaultdict
 from copy import copy, deepcopy
 from warnings import warn
 
-from six import string_types, iteritems
-from cobra.core.Object import Object
-from cobra.core.Gene import Gene, parse_gpr, ast2str
-from cobra.core.Metabolite import Metabolite
-import hashlib
+from six import iteritems, string_types
 
-from cobra.util.util import Frozendict, _is_positive
+from cobra.core.gene import Gene, ast2str, parse_gpr
+from cobra.core.metabolite import Metabolite
+from cobra.core.object import Object
 from cobra.util.context import resettable
-from cobra.util.solver import linear_reaction_coefficients, \
-    set_objective
+from cobra.util.solver import linear_reaction_coefficients, set_objective
+from cobra.util.util import Frozendict, _is_positive
 
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule

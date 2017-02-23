@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 from math import isinf, isnan
 from warnings import warn
 
@@ -10,7 +14,6 @@ NOT_MASS_BALANCED_TERMS = {"SBO:0000627",  # EXCHANGE
 
 
 def check_mass_balance(model):
-    warnings = []
     unbalanced = {}
     for reaction in model.reactions:
         if reaction.annotation.get("SBO") not in NOT_MASS_BALANCED_TERMS:

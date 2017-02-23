@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Wrappers for solvers with an object oriented interface. This creates
 functions to call the objects' functions.
@@ -7,6 +9,8 @@ are classmethods. They should be included by specifying
 create_problem = PROBLEM_CLASS.create_problem
 where PROBLEM_CLASS is the solver class (i.e. GLP, esolver, etc.)
 """
+
+from __future__ import absolute_import
 
 
 def set_objective_sense(lp, objective_sense="maximize"):

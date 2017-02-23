@@ -1,26 +1,31 @@
+# -*- coding: utf-8 -*-
 # PLEASE NOTE THAT JYTHON SUPPORT (and this jython-only-solver) is deprecated
 #This script provides wrappers for libglpk-java 1.0.22 and pyglpk 0.3
-from __future__ import print_function
-from warnings import warn
+from __future__ import absolute_import, print_function
+
 from copy import deepcopy
-###solver specific parameters
-from .parameters import status_dict, variable_kind_dict, \
-     sense_dict, parameter_mappings, parameter_defaults, \
-     objective_senses, default_objective_sense
+from os import name
+from time import time
+from warnings import warn
+
+from six import iteritems
+
+from org.gnu.glpk import GLPK, GLPKConstants, glp_iocp, glp_smcp
 
 from ..core.solution import Solution
-from time import time
-from six import iteritems
+###solver specific parameters
+from .parameters import (
+    default_objective_sense, objective_senses, parameter_defaults,
+    parameter_mappings, sense_dict, status_dict, variable_kind_dict)
+
 solver_name = 'glpk'
 sense_dict = eval(sense_dict[solver_name])
 #Functions that are different for java implementation of a solver
 
-from os import name
 if name != "java":
     raise Exception("jython only")
 
 warn("cobra.solvers.glpk_solver isn't mature.  consider using gurobi or cplex")
-from org.gnu.glpk import GLPK, GLPKConstants, glp_smcp, glp_iocp
 variable_kind_dict = eval(variable_kind_dict['%s_%s'%(solver_name,
                                             __name)])
 status_dict = eval(status_dict['%s_%s'%(solver_name,

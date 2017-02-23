@@ -1,8 +1,13 @@
-from numpy import (linspace, zeros, meshgrid, abs, empty, arange, int32,
-                   unravel_index, dtype)
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 from multiprocessing import Pool
 
-from ..solvers import solver_dict, get_solver_name
+from numpy import (
+    abs, arange, dtype, empty, int32, linspace, meshgrid, unravel_index, zeros)
+
+from cobra.solvers import get_solver_name, solver_dict
 
 # attempt to import plotting libraries
 try:

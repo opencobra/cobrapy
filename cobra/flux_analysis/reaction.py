@@ -1,7 +1,12 @@
+# -*- coding: utf-8 -*-
 # cobra.flux_analysis.reaction.py
 # functions for analyzing / creating objective functions
-from ..core.Reaction import Reaction
+
+from __future__ import absolute_import
+
 from six import iteritems
+
+from cobra.core import Reaction
 
 
 def assess(model, reaction, flux_coefficient_cutoff=0.001, solver=None):

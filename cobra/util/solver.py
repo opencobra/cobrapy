@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Additional helper functions for the optlang solvers.
 
 All functions integrate well with the context manager, meaning that
@@ -8,13 +10,17 @@ The functions defined here together with the existing model functions should
 allow you to implement custom flux analysis methods with ease.
 """
 
+from __future__ import absolute_import
+
 import re
-from types import ModuleType
-from cobra.util.context import get_context
-import cobra.solvers as legacy_solvers
 from functools import partial
+from types import ModuleType
+
 import optlang
 import sympy
+
+import cobra.solvers as legacy_solvers
+from cobra.util.context import get_context
 
 
 class SolverNotFound(Exception):

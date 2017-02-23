@@ -1,4 +1,6 @@
-from os.path import join, abspath, dirname
+# -*- coding: utf-8 -*-
+from os.path import abspath, dirname, join
+
 from cobra.io import read_sbml_model
 
 try:

@@ -1,13 +1,18 @@
-from six import iteritems
-from itertools import chain
-import sympy
-import logging
+# -*- coding: utf-8 -*-
 
-from cobra.manipulation.modify import convert_to_irreversible, \
-    revert_to_reversible
-from cobra.util import linear_reaction_coefficients, set_objective
-from cobra.exceptions import SolveError
+from __future__ import absolute_import
+
+import logging
+from itertools import chain
+
+import sympy
+from six import iteritems
+
 import cobra.util.solver as sutil
+from cobra.exceptions import SolveError
+from cobra.manipulation.modify import (
+    convert_to_irreversible, revert_to_reversible)
+from cobra.util import linear_reaction_coefficients, set_objective
 
 add = sympy.Add._from_args
 mul = sympy.Mul._from_args

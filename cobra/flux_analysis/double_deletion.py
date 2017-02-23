@@ -1,13 +1,18 @@
-from warnings import warn
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 from itertools import chain, product
+from warnings import warn
 
-from six import iteritems
 import numpy
+from six import iteritems
 
-from ..solvers import get_solver_name, solver_dict
-from ..manipulation.delete import (find_gene_knockout_reactions,
-                                   get_compiled_gene_reaction_rules)
-from .deletion_worker import CobraDeletionPool, CobraDeletionMockPool
+from cobra.flux_analysis.deletion_worker import (
+    CobraDeletionMockPool, CobraDeletionPool)
+from cobra.manipulation.delete import (
+    find_gene_knockout_reactions, get_compiled_gene_reaction_rules)
+from cobra.solvers import get_solver_name, solver_dict
 
 try:
     import scipy

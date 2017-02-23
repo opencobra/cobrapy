@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
 import mosek
-
-from six.moves import zip
 from six import iteritems, string_types
+from six.moves import zip
 
 env = mosek.Env()
 

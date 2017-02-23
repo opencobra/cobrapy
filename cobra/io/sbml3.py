@@ -1,34 +1,41 @@
-from collections import defaultdict
-from warnings import warn, catch_warnings, simplefilter
-from decimal import Decimal
-from ast import Name, Or, And, BoolOp
-from gzip import GzipFile
-from bz2 import BZ2File
-from tempfile import NamedTemporaryFile
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 import re
+from ast import And, BoolOp, Name, Or
+from bz2 import BZ2File
+from collections import defaultdict
+from decimal import Decimal
+from gzip import GzipFile
+from tempfile import NamedTemporaryFile
+from warnings import catch_warnings, simplefilter, warn
 
 from six import iteritems, string_types
 
-from cobra import Metabolite, Reaction, Gene, Model
-from cobra.core.Gene import parse_gpr
+from cobra.core import Gene, Metabolite, Model, Reaction
+from cobra.core.gene import parse_gpr
 from cobra.manipulation.modify import _renames
-from cobra.manipulation.validate import check_reaction_bounds, \
-    check_metabolite_compartment_formula
+from cobra.manipulation.validate import (
+    check_metabolite_compartment_formula, check_reaction_bounds)
 from cobra.util.solver import set_objective
 
 try:
-    from lxml.etree import parse, Element, SubElement, \
-        ElementTree, register_namespace, ParseError, XPath
+    from lxml.etree import (
+        parse, Element, SubElement, ElementTree, register_namespace,
+        ParseError, XPath)
     _with_lxml = True
 except ImportError:
     warn("Install lxml for faster SBML I/O")
     _with_lxml = False
     try:
-        from xml.etree.cElementTree import parse, Element, SubElement, \
-            ElementTree, register_namespace, ParseError
+        from xml.etree.cElementTree import (
+            parse, Element, SubElement, ElementTree, register_namespace,
+            ParseError)
     except ImportError:
-        from xml.etree.ElementTree import parse, Element, SubElement, \
-            ElementTree, register_namespace, ParseError
+        from xml.etree.ElementTree import (
+            parse, Element, SubElement, ElementTree, register_namespace,
+            ParseError)
 
 # use sbml level 2 from sbml.py (which uses libsbml). Eventually, it would
 # be nice to use the libSBML converters directly instead.
@@ -37,8 +44,8 @@ try:
 except ImportError:
     libsbml = None
 else:
-    from .sbml import create_cobra_model_from_sbml_file as read_sbml2
-    from .sbml import write_cobra_model_to_sbml_file as write_sbml2
+    from cobra.io.sbml import create_cobra_model_from_sbml_file as read_sbml2
+    from cobra.io.sbml import write_cobra_model_to_sbml_file as write_sbml2
 
 try:
     from sympy import Basic

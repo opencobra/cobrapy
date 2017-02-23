@@ -1,8 +1,8 @@
-from __future__ import absolute_import, print_function
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
 
 import logging
-
-logging.getLogger().setLevel(logging.ERROR)
 
 log = logging.getLogger(__name__)
 

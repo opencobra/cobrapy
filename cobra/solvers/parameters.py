@@ -1,7 +1,11 @@
+# -*- coding: utf-8 -*-
 #This centralizes some of the common elements that are differently named across solvers.
 #These are stored as strings here to prevent problems associated with calling
 #solver objects for solver packages that aren't available
+from __future__ import absolute_import
+
 from copy import deepcopy
+
 __objective_sense_cplex = {'maximize': 'Cplex.objective.sense.maximize',
                            'minimize': 'Cplex.objective.sense.minimize'}
 __objective_sense_cplex_java = {'maximize': 'IloObjectiveSense.Maximize',

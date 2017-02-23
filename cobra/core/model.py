@@ -1,27 +1,28 @@
-from warnings import warn
-from copy import deepcopy, copy
+# -*- coding: utf-8 -*-
 
-import sympy
-from six import iteritems, string_types
+from __future__ import absolute_import
 
-from cobra.solvers import optimize
-from .Object import Object
-from .solution import Solution
-from .Reaction import Reaction, separate_forward_and_reverse_bounds
-from .DictList import DictList
-
-import six
 import time
 import types
-from sympy import S
-from cobra.exceptions import SolveError
-from cobra.util.util import AutoVivification
-from cobra.util.context import HistoryManager, resettable
-from cobra.util.solver import solvers, SolverNotFound, interface_to_str, \
-    get_solver_name, set_objective, add_to_solver, \
-    remove_from_solver
+from copy import copy, deepcopy
+from warnings import warn
 
 import optlang
+import six
+import sympy
+from six import iteritems, string_types
+from sympy import S
+
+from cobra.core.dictlist import DictList
+from cobra.core.object import Object
+from cobra.core.reaction import separate_forward_and_reverse_bounds
+from cobra.core.solution import Solution
+from cobra.exceptions import SolveError
+from cobra.solvers import optimize
+from cobra.util.context import HistoryManager, resettable
+from cobra.util.solver import (
+    SolverNotFound, get_solver_name, interface_to_str, set_objective, solvers)
+from cobra.util.util import AutoVivification
 
 
 class Model(Object):

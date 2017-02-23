@@ -1,7 +1,11 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 import re
 from warnings import warn
 
-from cobra.core.Object import Object
+from cobra.core.object import Object
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
 # discussion in https://github.com/opencobra/cobrapy/issues/128 for
