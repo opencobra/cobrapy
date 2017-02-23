@@ -869,6 +869,7 @@ class Reaction(Object):
         """lists compartments the metabolites are in"""
         if self._compartments is None:
             self._compartments = {met.compartment for met in self._metabolites}
+        return self._compartments
 
     def get_compartments(self):
         """lists compartments the metabolites are in"""
