@@ -489,7 +489,7 @@ class Reaction(Object):
 
         Returns `True` if the reaction has either no products or reactants.
         """
-        return len(self.metabolites) and not (self.reactants and self.products)
+        return len(self.metabolites) == 1 and not (self.reactants and self.products)
 
     @property
     def model(self):
