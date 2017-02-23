@@ -543,6 +543,14 @@ class Model(Object):
                 reaction._metabolites = {}
                 reaction._genes = set()
 
+    @property
+    def exchanges(self):
+        """Exchange reactions in model.
+
+        Reactions that either don't have products or substrates.
+        """
+        return [rxn for rxn in self.reactions if rxn.boundary]
+
     def _populate_solver(self, reaction_list, metabolite_list=None):
         """Populate attached solver with constraints and variables that
         model the provided reactions.
