@@ -9,9 +9,12 @@ class Object(object):
     """Defines common behavior of object in cobra.core"""
 
     def __init__(self, id=None, name=""):
-        """
-        id: None or a string
+        """A simple object with an identifier
 
+        Parameters
+        ----------
+        id: None or a string
+            the identifier to associate with the object
         """
         self._id = id
         self.name = name

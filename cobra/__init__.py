@@ -7,13 +7,11 @@ import warnings as _warnings
 from os.path import (abspath as _abspath, dirname as _dirname)
 from os import name as _name
 
-from cobra.version import get_version
 from cobra.core import (Object, Metabolite, Gene, Reaction, Model, DictList,
     Species)
 from cobra import (io, flux_analysis, design)
 
-__version__ = get_version()
-del get_version
+__version__ = "0.5.11"
 
 # set the warning format to be prettier and fit on one line
 _cobra_path = _dirname(_abspath(__file__))

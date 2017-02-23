@@ -16,8 +16,10 @@ element_re = re.compile("([A-Z][a-z]?)([0-9.]+[0-9.]?|(?=[A-Z])?)")
 class Formula(Object):
     """Describes a Chemical Formula
 
-    A legal formula string contains only letters and numbers.
-
+    Parameters
+    ---------
+    formula : string
+        A legal formula string contains only letters and numbers.
     """
     def __init__(self, formula=None):
         Object.__init__(self, formula)
@@ -29,8 +31,15 @@ class Formula(Object):
     def __add__(self, other_formula):
         """Combine two molecular formulas.
 
-        other_formula: cobra.Formula or str of a chemical Formula.
+        Parameters
+        ----------
+        other_formula : Formula, str
+            string for a chemical formula
 
+        Returns
+        -------
+        Formula
+           The combined formula
         """
         return Formula(self.formula + other_formula.formula)
 
@@ -71,12 +80,18 @@ class Formula(Object):
 
     @property
     def weight(self):
-        """Calculate the formula weight"""
+        """Calculate the mol mass of the compound
+
+        Returns
+        -------
+        float
+            the mol mass
+        """
         try:
             return sum([count * elements_and_molecular_weights[element]
                         for element, count in self.elements.items()])
         except KeyError as e:
-            warn("The element %s does not appear in the peridic table" % e)
+            warn("The element %s does not appear in the periodic table" % e)
 
 
 elements_and_molecular_weights = {

@@ -11,16 +11,15 @@ class Species(Object):
     """Species is a class for holding information regarding
     a chemical Species
 
-
+    Parameters
+    ----------
+    id : string
+       An identifier for the chemical species
+    name : string
+       A human readable name.
     """
 
     def __init__(self, id=None, name=None):
-        """
-        id: A string.
-
-        name: String.  A human readable name.
-
-        """
         Object.__init__(self, id, name)
         self._model = None
         # references to reactions that operate on this species
@@ -45,7 +44,7 @@ class Species(Object):
 
         Additionally, a copy of a reaction is no longer in a cobra.Model.
 
-        This should be fixed with self.__deecopy__ if possible
+        This should be fixed with self.__deepcopy__ if possible
         """
         return deepcopy(self)
 

@@ -17,3 +17,6 @@ pytest
 optlang
 swiglpk
 pytest-benchmark
+bumpversion
+flake8
+pydocstyle

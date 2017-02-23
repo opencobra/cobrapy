@@ -413,24 +413,19 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
 
     Parameters
     ----------
-    cobra_model: :class:`~cobra.core.Model.Model` object
-
-    sbml_filename: string
+    cobra_model : cobra.core.Model.Model
+        The model object to write
+    sbml_filename : string
         The file to write the SBML XML to.
-
-    sbml_level: int
+    sbml_level : int
         2 is the only supported level.
-
-    sbml_version: int
+    sbml_version : int
         1 is the only supported version.
-
-    print_time: bool
+    print_time : bool
         deprecated
-
-    use_fbc_package: bool
+    use_fbc_package : bool
         Convert the model to the FBC package format to improve portability.
         http://sbml.org/Documents/Specifications/SBML_Level_3/Packages/Flux_Balance_Constraints_(flux)
-
 
     Notes
     -----

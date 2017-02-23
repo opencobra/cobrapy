@@ -9,7 +9,7 @@ from six import PY3, iteritems, string_types
 
 try:
     from numpy import bool_
-except:
+except ImportError:
     bool_ = bool
 
 
@@ -19,12 +19,16 @@ class DictList(list):
     This object behaves like a list, but has the O(1) speed
     benefits of a dict when looking up elements by their id.
 
+    Parameters
+    ----------
+    *args : iterable
+        iterable as single argument to create new DictList from
     """
 
     def __init__(self, *args):
         if len(args) > 2:
             raise TypeError("takes at most 1 argument (%d given)" % len(args))
-        list.__init__(self)
+        super(DictList, self).__init__(self)
         self._dict = {}
         if len(args) == 1:
             other = args[0]
@@ -54,9 +58,7 @@ class DictList(list):
         return list.__getitem__(self, self._dict[id])
 
     def list_attr(self, attribute):
-        """return a list of the given attribute for every object
-
-        """
+        """return a list of the given attribute for every object"""
         return [getattr(i, attribute) for i in self]
 
     def get_by_any(self, iterable):
@@ -204,7 +206,7 @@ class DictList(list):
         """extends without checking for uniqueness
 
         This function should only be used internally by DictList when it
-        can guarentee elements are already unique (as in when coming from
+        can guarantee elements are already unique (as in when coming from
         self or other DictList). It will be faster because it skips these
         checks.
 
@@ -222,7 +224,9 @@ class DictList(list):
     def __add__(self, other):
         """x.__add__(y) <==> x + y
 
-        other: iterable
+        Parameters
+        ----------
+        other : iterable
             other must contain only unique id's which do not intersect
             with self
 
@@ -235,7 +239,9 @@ class DictList(list):
     def __iadd__(self, other):
         """x.__iadd__(y) <==> x += y
 
-        other: iterable
+        Parameters
+        ----------
+        other : iterable
             other must contain only unique id's whcih do not intersect
             with self
 
@@ -249,7 +255,7 @@ class DictList(list):
     def __getstate__(self):
         """gets internal state
 
-        This is only provided for backwards compatibilty so older
+        This is only provided for backwards compatibility so older
         versions of cobrapy can load pickles generated with cobrapy. In
         reality, the "_dict" state is ignored when loading a pickle"""
         return {"_dict": self._dict}
@@ -418,7 +424,7 @@ class DictList(list):
             return DictList.get_by_id(self, attr)
         except KeyError:
             raise AttributeError("DictList has no attribute or entry %s" %
-                                 (attr))
+                                 attr)
 
     def __dir__(self):
         # override this to allow tab complete of items by their id
