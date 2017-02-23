@@ -55,7 +55,7 @@ class DefunctError(Exception):
         message = "{} has been removed from cobrapy".format(what)
         if alternative is None:
             message += (" without replacement. Raise an issue at "
-                        "https://github.com/opencobracobrapy if you miss it.")
+                        "https://github.com/opencobra/cobrapy if you miss it.")
         if alternative is not None:
             message += ". Consider using '{}' instead".format(alternative)
         if url is not None:

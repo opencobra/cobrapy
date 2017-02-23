@@ -560,3 +560,19 @@ class TestCobraFluxSampling:
 
         for b in self.optgp.batch(5, 4):
             assert all(self.optgp.validate(b) == "v")
+
+
+class TestProductionEnvelope:
+    """Test the production envelope"""
+
+    def test_envelope_one(self, model):
+        df = production_envelope(model, ["EX_o2_e"])
+        assert abs(sum(df.flux) - 9.34) < 0.01
+
+    def test_envelope_two(self, model):
+        df = production_envelope(model, ["EX_glc__D_e", "EX_o2_e"],
+                                 objective="EX_ac_e",
+                                 c_source="EX_glc__D_e")
+        assert abs(numpy.sum(df.carbon_yield) - 83.5) < 0.1
+        assert abs(numpy.sum(df.flux) - 1737.4) < 0.1
+        assert abs(numpy.sum(df.mass_yield) - 82.2) < 0.1

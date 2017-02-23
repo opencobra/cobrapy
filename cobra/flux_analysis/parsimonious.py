@@ -56,9 +56,10 @@ def optimize_minimal_flux(model, already_irreversible=False,
         pFBA objective. Dictionaries (reaction as key, coefficient as value)
         can be used for linear objectives. Not used for non-optlang solvers.
     reactions : iterable
-        List of reactions or reaction identifiers. Only return fluxes for
-        the given reactions. Faster than fetching all fluxes if only a few
-        are needed. Only supported for optlang solvers.
+        List of reactions or reaction identifiers. Implies `return_frame` to
+        be true. Only return fluxes for the given reactions. Faster than
+        fetching all fluxes if only a few are needed. Only supported for
+        optlang solvers.
     **optimize_kwargs : additional arguments for legacy solver, optional
         Additional arguments passed to the legacy solver. Ignored for
         optlang solver (those can be configured using
