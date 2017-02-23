@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-from six import iteritems, print_
-from six.moves import zip_longest
 
 import pandas as pd
+from six import iteritems, print_
+from six.moves import zip_longest
 from tabulate import tabulate
 
 from cobra.flux_analysis.variability import flux_variability_analysis

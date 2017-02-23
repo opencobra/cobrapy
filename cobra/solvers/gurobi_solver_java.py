@@ -3,12 +3,13 @@
 #Interface to the gurobi 5.0.1 python and java solvers
 #QPs are not yet supported on java
 from __future__ import absolute_import, print_function
-from six import iteritems
 
 from copy import deepcopy
 from os import name as __name
 from time import time
 from warnings import warn
+
+from six import iteritems
 
 from gurobi import GRBQuadExpr as QuadExpr
 from gurobi import GRB, GRBEnv, GRBLinExpr, GRBModel

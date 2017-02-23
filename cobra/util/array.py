@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-from six import iteritems
 
 from warnings import warn
 
 import numpy as np
+from six import iteritems
 
 try:
     import scipy

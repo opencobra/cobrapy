@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
-from six.moves import range
 
 import re
 from copy import copy, deepcopy
 from pickle import HIGHEST_PROTOCOL, dumps, loads
 
 import pytest
+from six.moves import range
 
 from cobra import DictList, Object
 from cobra.util import Frozendict

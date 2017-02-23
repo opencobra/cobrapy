@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-from six import iteritems, string_types
 
 import re
 from ast import And, BoolOp, Name, Or
@@ -11,6 +10,8 @@ from decimal import Decimal
 from gzip import GzipFile
 from tempfile import NamedTemporaryFile
 from warnings import catch_warnings, simplefilter, warn
+
+from six import iteritems, string_types
 
 from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.core.gene import parse_gpr

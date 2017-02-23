@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-from six import iteritems
 
 import re
 from warnings import warn
+
+from six import iteritems
 
 from cobra.core.formula import elements_and_molecular_weights
 from cobra.core.species import Species

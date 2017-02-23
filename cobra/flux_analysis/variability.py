@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-from six import iteritems
 
+from six import iteritems
 from sympy.core.singleton import S
 
 import cobra.util.solver as sutil

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-from six import iteritems, string_types
 
 import json
+
+from six import iteritems, string_types
 
 from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.util.solver import set_objective

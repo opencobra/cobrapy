@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-from six import iteritems
 
 import re
 from math import isinf, isnan
 from os import name as __name
 from os.path import isfile
 from warnings import warn
+
+from six import iteritems
 
 from cobra.core import Metabolite, Model, Reaction
 from cobra.util.solver import set_objective

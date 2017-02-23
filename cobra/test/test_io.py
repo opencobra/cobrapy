@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from six import iteritems
 
 from collections import namedtuple
 from functools import partial
@@ -11,6 +10,7 @@ from tempfile import gettempdir
 from warnings import warn
 
 import pytest
+from six import iteritems
 
 from cobra import io
 

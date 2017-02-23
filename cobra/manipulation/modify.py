@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-from six import iteritems
 
 from ast import NodeTransformer
 from itertools import chain
+
+from six import iteritems
 
 from cobra.core import Gene, Metabolite, Reaction
 from cobra.core.gene import ast2str

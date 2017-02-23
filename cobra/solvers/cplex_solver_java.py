@@ -3,12 +3,13 @@
 #Interface to ilog/cplex 12.4 python / jython interfaces
 #QPs are not yet supported under jython
 from __future__ import absolute_import, print_function
-from six import iteritems
 
 from copy import deepcopy
 from os import name as __name
 from time import time
 from warnings import warn
+
+from six import iteritems
 
 from ilog.concert import IloNumVarType, IloObjectiveSense
 from ilog.cplex import IloCplex

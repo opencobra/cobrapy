@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-from six import iteritems
 
 import logging
 from itertools import chain
 
 import sympy
+from six import iteritems
 
 import cobra.util.solver as sutil
 from cobra.exceptions import SolveError

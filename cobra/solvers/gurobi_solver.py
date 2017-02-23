@@ -2,13 +2,13 @@
 # Interface to gurobipy
 
 from __future__ import absolute_import
-from six import iteritems, string_types
 
 import platform
 from multiprocessing import Process
 from warnings import warn
 
 from gurobipy import GRB, LinExpr, Model, QuadExpr
+from six import iteritems, string_types
 
 from ..core.solution import Solution
 

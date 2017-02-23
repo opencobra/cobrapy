@@ -3,14 +3,14 @@
 # Interface to ilog/cplex 12.4 python interface
 
 from __future__ import absolute_import
-from six import iteritems, string_types
-from six.moves import zip
 
 import sys
 from warnings import warn
 
 from cplex import Cplex, SparsePair
 from cplex.exceptions import CplexError
+from six import iteritems, string_types
+from six.moves import zip
 
 from cobra.core import Solution
 

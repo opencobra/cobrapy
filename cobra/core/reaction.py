@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, print_function
-from six import iteritems, string_types
 
 import hashlib
 import re
 from collections import defaultdict
 from copy import copy, deepcopy
 from warnings import warn
+
+from six import iteritems, string_types
 
 from cobra.core.gene import Gene, ast2str, parse_gpr
 from cobra.core.metabolite import Metabolite

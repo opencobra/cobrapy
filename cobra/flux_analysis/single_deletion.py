@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+
 from six import iteritems, string_types
 
 import cobra.solvers as legacy_solvers
