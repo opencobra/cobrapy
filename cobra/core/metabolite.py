@@ -217,4 +217,4 @@ class Metabolite(Species):
             return metabolite_summary(self, threshold=threshold, fva=fva,
                                       floatfmt=floatfmt, **kwargs)
         except ImportError:
-            warn('Summary methods require pandas/tabulate')
+            warn('Summary methods require tabulate')

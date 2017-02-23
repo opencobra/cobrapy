@@ -258,7 +258,6 @@ class TestCobraFluxAnalysis:
             for k, v in iteritems(result):
                 assert abs(fva_results[name][k] - v) < 0.00001
 
-    @pytest.mark.skipif(not pandas, reason="data frame results require pandas")
     def test_fva_data_frame(self, model):
         df = flux_variability_analysis(model, return_frame=True)
         assert numpy.all([df.columns.values == ['maximum', 'minimum']])
@@ -386,8 +385,8 @@ class TestCobraFluxAnalysis:
         for item in desired_entries:
             assert re.sub('\s', '', item) in output_set
 
-    @pytest.mark.skipif((pandas is None) or (tabulate is None),
-                        reason="summary methods require pandas and tabulate")
+    @pytest.mark.skipif(tabulate is None,
+                        reason="summary methods require tabulate")
     def test_summary_methods(self, model, solved_model):
         # Test model summary methods
         with pytest.raises(Exception):

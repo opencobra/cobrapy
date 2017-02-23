@@ -23,10 +23,6 @@ try:
 except ImportError:
     scipy = None
 
-try:
-    import pandas
-except ImportError:
-    pandas = None
 
 solver_trials = ['glpk',
                  pytest.mark.skipif('cplex' not in solvers,

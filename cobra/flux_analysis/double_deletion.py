@@ -7,6 +7,7 @@ from warnings import warn
 
 import numpy
 from six import iteritems
+from pandas import DataFrame
 
 from cobra.flux_analysis.deletion_worker import (
     CobraDeletionMockPool, CobraDeletionPool)
@@ -20,11 +21,6 @@ except ImportError:
     moma = None
 else:
     from . import moma
-
-try:
-    from pandas import DataFrame
-except:
-    DataFrame = None
 
 
 # Utility functions
@@ -94,11 +90,10 @@ def format_results_frame(row_ids, column_ids, matrix, return_frame=False):
 
     Otherwise returns a dict of
     {"x": row_ids, "y": column_ids", "data": result_matrx}"""
-    if return_frame and DataFrame:
+    if return_frame:
         return DataFrame(data=matrix, index=row_ids, columns=column_ids)
-    elif return_frame and not DataFrame:
-        warn("could not import pandas.DataFrame")
-    return {"x": row_ids, "y": column_ids, "data": matrix}
+    else:
+        return {"x": row_ids, "y": column_ids, "data": matrix}
 
 
 def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
