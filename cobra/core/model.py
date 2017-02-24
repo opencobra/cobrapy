@@ -18,6 +18,7 @@ from cobra.core.object import Object
 from cobra.core.reaction import separate_forward_and_reverse_bounds
 from cobra.core.solution import Solution
 from cobra.exceptions import SolveError
+from cobra.flux_analysis.summary import model_summary
 from cobra.solvers import optimize
 from cobra.util.context import HistoryManager, resettable
 from cobra.util.solver import (
@@ -665,13 +666,8 @@ class Model(Object):
             format method for floats, passed to tabulate. Default is '.3g'.
 
         """
-
-        try:
-            from ..flux_analysis.summary import model_summary
-            return model_summary(self, threshold=threshold, fva=fva,
-                                 floatfmt=floatfmt, **kwargs)
-        except ImportError:
-            warn('Summary methods require tabulate')
+        return model_summary(self, threshold=threshold, fva=fva,
+                             floatfmt=floatfmt, **kwargs)
 
     def __enter__(self):
         """Record all future changes to the model, undoing them when a call to

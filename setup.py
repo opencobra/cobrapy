@@ -115,7 +115,7 @@ extras = {
     'matlab': ["pymatbridge"],
     'sbml': ["python-libsbml", "lxml"],
     'array': ["scipy>=0.11.0"],
-    'display': ["matplotlib", "palettable", "tabulate"]
+    'display': ["matplotlib", "palettable"]
 }
 
 all_extras = {'Cython>=0.21'}
@@ -148,7 +148,7 @@ setup(
     packages=find_packages(),
     setup_requires=setup_requirements,
     install_requires=["future", "swiglpk", "optlang",
-                      "pandas>=0.17.0", "numpy>=1.6"],
+                      "pandas>=0.17.0", "numpy>=1.6", "tabulate"],
     tests_require=["jsonschema > 2.5", "pytest", "pytest-benchmark"],
     extras_require=extras,
     ext_modules=ext_modules,

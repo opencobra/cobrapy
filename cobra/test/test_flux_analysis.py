@@ -8,10 +8,11 @@ from os import name
 
 import numpy
 import pytest
+import tabulate
 from six import StringIO, iteritems
 
 import cobra.util.solver as sutil
-from cobra.core import Metabolite, Model, Reaction, Solution
+from cobra.core import Metabolite, Model, Reaction
 from cobra.core.solution import LegacySolution
 from cobra.exceptions import SolveError
 from cobra.flux_analysis import *
@@ -29,10 +30,7 @@ try:
     import matplotlib
 except ImportError:
     matplotlib = None
-try:
-    import tabulate
-except ImportError:
-    tabulate = None
+
 
 # The scipt interface is currently unstable and may yield errors or infeasible
 # solutions
@@ -127,15 +125,16 @@ class TestCobraFluxAnalysis:
         assert all(abs(df.flux[gene] - expected) < 0.01 for
                    gene, expected in iteritems(growth_dict))
 
+    @pytest.mark.skipif(not scipy, reason="moma gene deletion requires scipy")
     def test_single_gene_deletion_moma_benchmark(self, model, benchmark):
         try:
             sutil.get_solver_name(qp=True)
         except sutil.SolverNotFound:
             pytest.skip("no qp support")
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
-        benchmark(single_gene_deletion, model, gene_list=genes,
-                  method="moma")
+        benchmark(single_gene_deletion, model, gene_list=genes, method="moma")
 
+    @pytest.mark.skipif(not scipy, reason="moma gene deletion requires scipy")
     def test_single_gene_deletion_moma(self, model):
         try:
             sutil.get_solver_name(qp=True)
@@ -382,8 +381,6 @@ class TestCobraFluxAnalysis:
         for item in desired_entries:
             assert re.sub('\s', '', item) in output_set
 
-    @pytest.mark.skipif(tabulate is None,
-                        reason="summary methods require tabulate")
     def test_summary_methods(self, model, solved_model):
         # Test model summary methods
         with pytest.raises(Exception):

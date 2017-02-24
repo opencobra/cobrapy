@@ -2,15 +2,13 @@
 
 from __future__ import absolute_import
 
-from warnings import warn
-
 import numpy as np
 from six import iteritems
 
 try:
-    import scipy
+    from scipy.sparse import dok_matrix, lil_matrix
 except ImportError:
-    scipy = None
+    dok_matrix, lil_matrix = None, None
 
 
 def create_stoichiometric_array(model, array_type='dense', dtype=None):
@@ -20,7 +18,10 @@ def create_stoichiometric_array(model, array_type='dense', dtype=None):
     metabolites. S[i,j] therefore contains the quantity of metabolite `i`
     produced (negative for consumed) by reaction `j`.
 
+    Parameters
+    ----------
     model : cobra.Model
+        The cobra model to construct the matrix for.
     array_type : string
         The type of array to construct. if 'dense', return a standard
         numpy.array. Otherwise, 'dok', or 'lil' will construct a sparse array
@@ -28,17 +29,19 @@ def create_stoichiometric_array(model, array_type='dense', dtype=None):
     dtype : data-type
         The desired data-type for the array. If not given, defaults to float.
 
+    Returns
+    -------
+    matrix of class `dtype`
+        The stoichiometric matrix for the given model.
     """
-    if array_type != 'dense' and not scipy:
-        warn('Sparse matrices require scipy')
+    if array_type != 'dense' and not dok_matrix:
+        raise ValueError('Sparse matrices require scipy')
 
     if dtype is None:
         dtype = np.float64
 
     array_constructor = {
-        'dense': np.zeros,
-        'dok': scipy.sparse.dok_matrix,
-        'lil': scipy.sparse.lil_matrix
+        'dense': np.zeros, 'dok': dok_matrix, 'lil': lil_matrix
     }
 
     n_metabolites = len(model.metabolites)
@@ -46,10 +49,8 @@ def create_stoichiometric_array(model, array_type='dense', dtype=None):
     array = array_constructor[array_type](
         (n_metabolites, n_reactions), dtype=dtype)
 
-    # Convenience functions to index metabolites and reactions
-    def m_ind(met): return model.metabolites.index(met)
-
-    def r_ind(rxn): return model.reactions.index(rxn)
+    m_ind = model.metabolites.index
+    r_ind = model.reactions.index
 
     for reaction in model.reactions:
         for metabolite, stoich in iteritems(reaction.metabolites):
