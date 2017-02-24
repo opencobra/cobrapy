@@ -280,14 +280,18 @@ class TestCobraFluxAnalysis:
         with pytest.raises(ValueError):
             flux_variability_analysis(infeasible_model)
 
-    def test_find_blocked_reactions(self, model):
-        result = find_blocked_reactions(model, model.reactions[40:46])
+    @pytest.mark.parametrize("solver", all_solvers)
+    def test_find_blocked_reactions(self, model, solver):
+        result = find_blocked_reactions(model, model.reactions[40:46],
+                                        solver=solver)
         assert result == ['FRUpts2']
 
-        result = find_blocked_reactions(model, model.reactions[42:48])
+        result = find_blocked_reactions(model, model.reactions[42:48],
+                                        solver=solver)
         assert set(result) == {'FUMt2_2', 'FRUpts2'}
 
         result = find_blocked_reactions(model, model.reactions[30:50],
+                                        solver=solver,
                                         open_exchanges=True)
         assert result == []
 
