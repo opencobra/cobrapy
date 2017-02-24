@@ -37,13 +37,13 @@ def create_stoichiometric_array(model, array_type='dense', dtype=None):
     matrix of class `dtype`
         The stoichiometric matrix for the given model.
     """
-    if array_type != 'dense' and not dok_matrix:
+    if array_type not in ('data_frame', 'dense') and not dok_matrix:
         raise ValueError('Sparse matrices require scipy')
 
     if dtype is None:
         dtype = np.float64
 
-    def data_frame(shape, dtype):
+    def data_frame(_, dtype):
         metabolite_ids = [met.id for met in model.metabolites]
         reaction_ids = [rxn.id for rxn in model.reactions]
         index = pd.MultiIndex.from_tuples(
