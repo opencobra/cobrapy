@@ -2,7 +2,9 @@
 
 from __future__ import absolute_import
 
+from itertools import product
 import numpy as np
+import pandas as pd
 from six import iteritems
 
 try:
@@ -24,8 +26,9 @@ def create_stoichiometric_array(model, array_type='dense', dtype=None):
         The cobra model to construct the matrix for.
     array_type : string
         The type of array to construct. if 'dense', return a standard
-        numpy.array. Otherwise, 'dok', or 'lil' will construct a sparse array
-        using scipy of the corresponding type.
+        numpy.array, 'dok', or 'lil' will construct a sparse array using
+        scipy of the corresponding type and 'data_frame' will give a
+        pandas `DataFrame` with metabolite and reaction identifiers as indices.
     dtype : data-type
         The desired data-type for the array. If not given, defaults to float.
 
@@ -40,21 +43,34 @@ def create_stoichiometric_array(model, array_type='dense', dtype=None):
     if dtype is None:
         dtype = np.float64
 
+    def data_frame(shape, dtype):
+        metabolite_ids = [met.id for met in model.metabolites]
+        reaction_ids = [rxn.id for rxn in model.reactions]
+        index = pd.MultiIndex.from_tuples(
+            list(product(metabolite_ids, reaction_ids)))
+        return pd.DataFrame(data=0, index=index, columns=['stoichiometry'],
+                            dtype=dtype)
+
     array_constructor = {
-        'dense': np.zeros, 'dok': dok_matrix, 'lil': lil_matrix
+        'dense': np.zeros, 'dok': dok_matrix, 'lil': lil_matrix,
+        'data_frame': data_frame
     }
 
     n_metabolites = len(model.metabolites)
     n_reactions = len(model.reactions)
-    array = array_constructor[array_type](
-        (n_metabolites, n_reactions), dtype=dtype)
+    array = array_constructor[array_type]((n_metabolites, n_reactions),
+                                          dtype=dtype)
 
     m_ind = model.metabolites.index
     r_ind = model.reactions.index
 
     for reaction in model.reactions:
         for metabolite, stoich in iteritems(reaction.metabolites):
-            array[m_ind(metabolite), r_ind(reaction)] = stoich
+            if array_type == 'data_frame':
+                array.set_value((metabolite.id, reaction.id),
+                                'stoichiometry', stoich)
+            else:
+                array[m_ind(metabolite), r_ind(reaction)] = stoich
 
     return array
 

@@ -599,17 +599,21 @@ class TestCobraModel:
 class TestStoichiometricMatrix:
     """Test the simple replacement for ArrayBasedModel"""
 
-    @pytest.mark.skipif(not numpy, reason='Array methods require numpy')
     def test_dense_matrix(self, model):
         S = create_stoichiometric_array(model, array_type='dense', dtype=int)
         assert S.dtype == int
-        assert numpy.allclose(S.max(), 59)
+        assert numpy.allclose(S.max(), [59])
+
+        S = create_stoichiometric_array(model, array_type='data_frame',
+                                        dtype=int)
+        assert S.stoichiometry.dtype == int
+        assert numpy.allclose(S.stoichiometry.max(), [59])
 
         S = create_stoichiometric_array(model, array_type='dense', dtype=float)
         model.optimize()
         # Is this really the best way to get a vector of fluxes?
         mass_balance = S.dot(numpy.array(list(model.solution.fluxes.values())))
-        assert numpy.allclose(mass_balance, 0)
+        assert numpy.allclose(mass_balance, [0])
 
         # Test model property
         assert numpy.allclose(model.S, S)
@@ -623,6 +627,6 @@ class TestStoichiometricMatrix:
         for sparse_type in sparse_types:
             S = create_stoichiometric_array(model, array_type=sparse_type)
             mass_balance = S.dot(fluxes)
-            assert numpy.allclose(mass_balance, 0)
+            assert numpy.allclose(mass_balance, [0])
 
             # Is this really the best way to get a vector of fluxes?
