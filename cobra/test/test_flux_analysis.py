@@ -355,6 +355,14 @@ class TestCobraFluxAnalysis:
         assert fluxes_feasible["v3"] == 0.0
         assert fluxes_infeasible["v3"] == 1.0
 
+    def test_loopless_solution_fluxes(self, model):
+        fluxes = model.optimize().fluxes
+        ll_fluxes = loopless_solution(model, fluxes=fluxes)
+        assert len(ll_fluxes) == len(model.reactions)
+        fluxes["Biomass_Ecoli_core"] = 1
+        ll_fluxes = loopless_solution(model, fluxes=fluxes)
+        assert ll_fluxes is None
+
     @pytest.mark.skipif(numpy is None, reason="null space requires numpy")
     def test_add_loopless(self):
         test_model = self.construct_ll_test_model()

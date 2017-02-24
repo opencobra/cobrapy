@@ -7,6 +7,7 @@ from __future__ import absolute_import
 from six import iteritems
 from sympy.core.singleton import S
 from cobra.core import Metabolite, Reaction
+from cobra.exceptions import SolveError
 from cobra.util import add_to_solver, linear_reaction_coefficients
 from cobra.manipulation.modify import convert_to_irreversible
 
@@ -113,7 +114,8 @@ def loopless_solution(model, fluxes=None):
     -------
     dict
         A dictionary {rid: flux} containing the fluxes with the least amount of
-        loops possible.
+        loops possible or None if the optimization failed (usually happening
+        if the flux distribution in `fluxes` is infeasible).
 
     Notes
     -----
@@ -145,7 +147,7 @@ def loopless_solution(model, fluxes=None):
                 len(fluxes) == len(model.reactions)):
             raise ValueError("`fluxes` must be a dictionary {rxn_id: flux}")
         coefs = linear_reaction_coefficients(model)
-        obj_val = sum(coefs[f] * fluxes[f] for f in fluxes)
+        obj_val = sum(coefs[rxn] * fluxes[rxn.id] for rxn in coefs)
 
     prob = model.solver.interface
     with model:
@@ -169,11 +171,12 @@ def loopless_solution(model, fluxes=None):
                 rxn.upper_bound = min(0, rxn.upper_bound)
                 model.objective.set_linear_coefficients(
                     {rxn.forward_variable: -1, rxn.reverse_variable: 1})
+
         model.solver.objective.direction = "min"
-        model.optimize(objective_sense=None)
-        if model.solver.status == "optimal":
+        try:
+            model.optimize(objective_sense=None)
             fluxes = model.solution.fluxes
-        else:
+        except SolveError:
             fluxes = None
 
     return fluxes
@@ -264,7 +267,7 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-9):
 
 
 def construct_loopless_model(cobra_model):
-    """construct a loopless model
+    """Construct a loopless model.
 
     This adds MILP constraints to prevent flux from proceeding in a loop, as
     done in http://dx.doi.org/10.1016/j.bpj.2010.12.3707
