@@ -74,12 +74,14 @@ def linear_reaction_coefficients(model, reactions=None):
 
 def _valid_atoms(model, expression):
     """Check whether a sympy expression references the correct variables.
+
     Parameters
     ----------
     model : cobra.Model
         The model in which to check for variables.
     expression : sympy.Basic
         A sympy expression.
+
     Returns
     -------
     boolean
@@ -92,17 +94,21 @@ def _valid_atoms(model, expression):
 
 def set_objective(model, value, additive=False):
     """Set the model objective.
+
     Parameters
     ----------
     model : cobra model
        The model to set the objective for
     value : model.problem.Objective,
             e.g. optlang.glpk_interface.Objective, sympy.Basic or dict
+
         If the model objective is linear, the value can be a new Objective
         object or a dictionary with linear coefficients where each key is a
         reaction and the element the new coefficient (float).
+
         If the objective is not linear and `additive` is true, only values
         of class Objective.
+
     additive : bool
         If true, add the terms to the current objective, otherwise start with
         an empty objective.
