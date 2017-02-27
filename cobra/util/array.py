@@ -20,12 +20,12 @@ def create_stoichiometric_array(model, array_type='dense', dtype=None):
     metabolites. S[i,j] therefore contains the quantity of metabolite `i`
     produced (negative for consumed) by reaction `j`.
 
-    model: a :class:`~cobra.core.Model` object
-    array_type: string
+    model : cobra.Model
+    array_type : string
         The type of array to construct. if 'dense', return a standard
         numpy.array. Otherwise, 'dok', or 'lil' will construct a sparse array
         using scipy of the corresponding type.
-    dtype: data-type
+    dtype : data-type
         The desired data-type for the array. If not given, defaults to float.
 
     """
@@ -56,3 +56,46 @@ def create_stoichiometric_array(model, array_type='dense', dtype=None):
             array[m_ind(metabolite), r_ind(reaction)] = stoich
 
     return array
+
+
+def nullspace(A, atol=1e-13, rtol=0):
+    """Compute an approximate basis for the nullspace of A.
+    The algorithm used by this function is based on the singular value
+    decomposition of `A`.
+
+    Parameters
+    ----------
+    A : numpy.ndarray
+        A should be at most 2-D.  A 1-D array with length k will be treated
+        as a 2-D with shape (1, k)
+    atol : float
+        The absolute tolerance for a zero singular value.  Singular values
+        smaller than `atol` are considered to be zero.
+    rtol : float
+        The relative tolerance.  Singular values less than rtol*smax are
+        considered to be zero, where smax is the largest singular value.
+
+    If both `atol` and `rtol` are positive, the combined tolerance is the
+    maximum of the two; that is::
+    tol = max(atol, rtol * smax)
+    Singular values smaller than `tol` are considered to be zero.
+
+    Returns
+    -------
+    numpy.ndarray
+        If `A` is an array with shape (m, k), then `ns` will be an array
+        with shape (k, n), where n is the estimated dimension of the
+        nullspace of `A`.  The columns of `ns` are a basis for the
+        nullspace; each element in numpy.dot(A, ns) will be approximately
+        zero.
+
+    Notes
+    -----
+    Taken from the numpy cookbook.
+    """
+    A = np.atleast_2d(A)
+    u, s, vh = np.linalg.svd(A)
+    tol = max(atol, rtol * s[0])
+    nnz = (s >= tol).sum()
+    ns = vh[nnz:].conj().T
+    return ns

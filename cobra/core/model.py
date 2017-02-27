@@ -641,7 +641,6 @@ class Model(Object):
         return self.solver.objective
 
     @objective.setter
-    @resettable
     def objective(self, value):
         if isinstance(value, sympy.Basic):
             value = self.solver.interface.Objective(value, sloppy=False)

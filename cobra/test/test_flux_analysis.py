@@ -46,6 +46,7 @@ except ImportError:
 stable_optlang = ["glpk", "cplex", "gurobi"]
 all_solvers = ["optlang-" + s for s in stable_optlang if s in
                sutil.solvers] + list(solver_dict)
+optlang_solvers = [s for s in all_solvers if "optlang-" in s]
 
 
 @contextmanager
@@ -244,12 +245,29 @@ class TestCobraFluxAnalysis:
         benchmark(flux_variability_analysis, large_model, solver=solver,
                   reaction_list=large_model.reactions[1::3])
 
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_flux_variability_loopless_benchmark(self, model, benchmark,
+                                                 solver):
+        benchmark(flux_variability_analysis, model, loopless=True,
+                  solver=solver, reaction_list=model.reactions[1::3])
+
     @pytest.mark.parametrize("solver", all_solvers)
     def test_flux_variability(self, model, fva_results, solver):
         if solver == "esolver":
             pytest.skip("esolver too slow...")
         fva_out = flux_variability_analysis(
-            model, solver=solver, reaction_list=model.reactions[1::3])
+            model, solver=solver, reaction_list=model.reactions)
+        for name, result in iteritems(fva_out):
+            for k, v in iteritems(result):
+                assert abs(fva_results[name][k] - v) < 0.00001
+
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_flux_variability_loopless(self, model, fva_results, solver):
+        fva_out = flux_variability_analysis(
+            model, loopless=True, solver=solver,
+            reaction_list=model.reactions[1::10])
+        # This works because textbook has no loops in the (unique)
+        # optimal solution
         for name, result in iteritems(fva_out):
             for k, v in iteritems(result):
                 assert abs(fva_results[name][k] - v) < 0.00001
@@ -295,22 +313,65 @@ class TestCobraFluxAnalysis:
         DM_C.objective_coefficient = 1
         return test_model
 
-    def test_loopless_benchmark(self, benchmark):
+    def test_legacy_loopless_benchmark(self, benchmark):
         test_model = self.construct_ll_test_model()
-        benchmark(lambda: construct_loopless_model(test_model).optimize())
+        benchmark(lambda: construct_loopless_model(test_model).optimize(
+            solver="cglpk"))
 
-    def test_loopless(self):
+    def test_loopless_benchmark_before(self, benchmark):
+        test_model = self.construct_ll_test_model()
+
+        def _():
+            with test_model:
+                add_loopless(test_model)
+                test_model.optimize(solver="optlang-glpk")
+        benchmark(_)
+
+    def test_loopless_benchmark_after(self, benchmark):
+        test_model = self.construct_ll_test_model()
+        benchmark(loopless_solution, test_model)
+
+    def test_legacy_loopless(self):
         try:
             get_solver_name(mip=True)
         except SolverNotFound:
             pytest.skip("no MILP solver found")
         test_model = self.construct_ll_test_model()
-        feasible_sol = construct_loopless_model(test_model).optimize()
-        test_model.reactions.get_by_id('v3').lower_bound = 1
+        feasible_sol = construct_loopless_model(test_model).optimize(
+            solver="cglpk")
+        test_model.reactions.v3.lower_bound = 1
         infeasible_mod = construct_loopless_model(test_model)
-        infeasible_mod.solver.optimize()
         assert feasible_sol.status == "optimal"
-        assert infeasible_mod.solver.status == "infeasible"
+
+        with pytest.raises(SolveError):
+            infeasible_mod.optimize(solver="cglpk")
+
+    def test_loopless_solution(self):
+        test_model = self.construct_ll_test_model()
+        fluxes_feasible = loopless_solution(test_model)
+        test_model.reactions.v3.lower_bound = 1
+        test_model.optimize()
+        fluxes_infeasible = loopless_solution(test_model)
+        assert fluxes_feasible["v3"] == 0.0
+        assert fluxes_infeasible["v3"] == 1.0
+
+    def test_loopless_solution_fluxes(self, model):
+        fluxes = model.optimize().fluxes
+        ll_fluxes = loopless_solution(model, fluxes=fluxes)
+        assert len(ll_fluxes) == len(model.reactions)
+        fluxes["Biomass_Ecoli_core"] = 1
+        ll_fluxes = loopless_solution(model, fluxes=fluxes)
+        assert ll_fluxes is None
+
+    @pytest.mark.skipif(numpy is None, reason="null space requires numpy")
+    def test_add_loopless(self):
+        test_model = self.construct_ll_test_model()
+        add_loopless(test_model)
+        feasible_status = test_model.solver.optimize()
+        test_model.reactions.v3.lower_bound = 1
+        infeasible_status = test_model.solver.optimize()
+        assert feasible_status == "optimal"
+        assert infeasible_status == "infeasible"
 
     @pytest.mark.skipif(numpy is None, reason="phase plane require numpy")
     def test_phenotype_phase_plane_benchmark(self, model, benchmark):

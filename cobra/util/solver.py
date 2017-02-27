@@ -91,7 +91,7 @@ def _valid_atoms(model, expression):
         True if all referenced variables are contained in model, False
         otherwise.
     """
-    atoms = expression.atoms(optlang.Variable)
+    atoms = expression.atoms(optlang.interface.Variable)
     return all(a.problem is model.solver for a in atoms)
 
 
@@ -117,29 +117,27 @@ def set_objective(model, value, additive=False):
         an empty objective.
     """
     interface = model.solver.interface
+    reverse_value = model.solver.objective.expression
+    reverse_value = interface.Objective(
+        reverse_value, direction=model.solver.objective.direction,
+        sloppy=True)
+
     if isinstance(value, dict):
         if not model.objective.is_Linear:
             raise ValueError('can only update non-linear objectives '
                              'additively using object of class '
                              'model.solver.interface.Objective, not %s' %
                              type(value))
+
         if not additive:
             model.solver.objective = interface.Objective(
                 sympy.S.Zero, direction=model.solver.objective.direction)
-        reverse_value = {}
         for reaction, coef in value.items():
-            reverse_value[reaction.forward_variable] = \
-                reaction.objective_coefficient
-            reverse_value[reaction.reverse_variable] = \
-                -reaction.objective_coefficient
             model.solver.objective.set_linear_coefficients(
                 {reaction.forward_variable: coef,
                  reaction.reverse_variable: -coef})
 
     elif isinstance(value, (sympy.Basic, model.solver.interface.Objective)):
-        reverse_value = interface.Objective(
-            model.solver.objective.expression,
-            direction=model.solver.objective.direction, sloppy=True)
         if isinstance(value, sympy.Basic):
             value = interface.Objective(
                 value, direction=model.solver.objective.direction,
@@ -148,6 +146,7 @@ def set_objective(model, value, additive=False):
         # clone the objective if not, faster than cloning without checking
         if not _valid_atoms(model, value.expression):
             value = interface.Objective.clone(value, model=model.solver)
+
         if not additive:
             model.solver.objective = value
         else:
@@ -158,15 +157,11 @@ def set_objective(model, value, additive=False):
 
     context = get_context(model)
     if context:
-        if isinstance(reverse_value, dict):
-            context(partial(model.solver.objective.set_linear_coefficients,
-                            reverse_value))
-        else:
-            def reset():
-                model.solver.objective = reverse_value
-                model.solver.objective.direction = reverse_value.direction
+        def reset():
+            model.solver.objective = reverse_value
+            model.solver.objective.direction = reverse_value.direction
 
-            context(reset)
+        context(reset)
 
 
 def interface_to_str(interface):
