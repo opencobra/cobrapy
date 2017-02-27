@@ -18,11 +18,9 @@ be viewed at `nbviewer
     deletions
     phenotype_phase_plane
     sampling
-    milp
-    qp
     loopless
-    gapfilling
-    solvers
+	solvers
+	constraints-objectives
     pymatbridge
     faq
     cobra
