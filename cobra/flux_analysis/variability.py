@@ -81,8 +81,8 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
         reaction_list = model.reactions
 
     if not legacy:
-        fva_result =  _fva_optlang(model, reaction_list, fraction_of_optimum,
-                            loopless)
+        fva_result = _fva_optlang(model, reaction_list, fraction_of_optimum,
+                                  loopless)
     else:
         fva_result = _fva_legacy(model, reaction_list, fraction_of_optimum,
                                  "maximize", solver, **solver_args)
@@ -97,7 +97,7 @@ def _fva_legacy(cobra_model, reaction_list, fraction_of_optimum,
 
     reaction_list : list of :class:`~cobra.core.Reaction`: or their id's
         The id's for which FVA should be run. If this is None, the bounds
-        will be comptued for all reactions in the model.
+        will be computed for all reactions in the model.
 
     fraction_of_optimum : fraction of optimum which must be maintained.
         The original objective reaction is constrained to be greater than

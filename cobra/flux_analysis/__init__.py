@@ -18,4 +18,3 @@ from cobra.flux_analysis.double_deletion import (
 from cobra.flux_analysis.phenotype_phase_plane import (
     calculate_phenotype_phase_plane)
 from cobra.flux_analysis.sampling import sample
-
