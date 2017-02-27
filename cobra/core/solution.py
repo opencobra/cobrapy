@@ -5,11 +5,8 @@
 from __future__ import absolute_import
 
 import logging
-from builtins import dict, object, super
-from collections import OrderedDict
+from builtins import object, super
 from warnings import warn
-
-from cobra.exceptions import UndefinedSolution
 
 __all__ = ("Solution",)
 
@@ -57,19 +54,8 @@ class Solution(object):
         Use `reduced_costs` instead.
     """
 
-    def __new__(cls, *args, **kwargs):
-        """Create either LegacySolution or Solution type."""
-        # Prevent a circular import between Solution and Model.
-        from cobra.core.model import Model
-        # this is a cobrapy compatibility hack
-        if len(args) == 1 and not isinstance(args[0], Model):
-            cobrapy_solution = super(Solution, cls).__new__(LegacySolution)
-            cobrapy_solution.__init__(*args, **kwargs)
-            return cobrapy_solution
-        else:
-            return super(Solution, cls).__new__(cls)
-
-    def __init__(self, model, **kwargs):
+    def __init__(self, objective_value, status, fluxes, reduced_costs=None,
+                 shadow_prices=None, **kwargs):
         """
         Initialize a unified solution interface from a model.
 
@@ -79,13 +65,11 @@ class Solution(object):
             The model used for finding the solution.
         """
         super(Solution, self).__init__(**kwargs)
-        self._model = model
-        self._objective_value = None
-        self._status = None
-        self._fluxes = None
-        self._reduced_costs = None
-        self._shadow_prices = None
-        self._store = dict()
+        self.objective_value = objective_value
+        self.status = status
+        self.fluxes = fluxes
+        self.reduced_costs = reduced_costs
+        self.shadow_prices = shadow_prices
 
     def __repr__(self):
         """String representation of the solution instance."""
@@ -113,122 +97,9 @@ class Solution(object):
         reaction : str
             A model reaction ID.
         """
-        flux = self._store.get(reaction_id)
-        if flux is not None:
-            return flux
-        self._is_current()
-        reaction = self._model.reactions.get_by_id(reaction_id)
-        self._store[reaction_id] = flux = reaction.forward_variable.primal -\
-            reaction.reverse_variable.primal
-        return flux
+        return self.fluxes[reaction_id]
 
     get_primal_by_id = __getitem__
-
-    def _is_current(self):
-        """
-        Ensure that the solution is current.
-
-        Raises
-        ------
-        UndefinedSolution
-            If the solution has become invalid due to re-optimization of the
-            underlying model.
-        """
-        if self is not self._model.solution:
-            raise UndefinedSolution(
-                "The solution {0:s} was invalidated by a more recent"
-                " optimization solution {1:s}. Previously accesssed values are"
-                " still available.".format(repr(self),
-                                           repr(self._model.solution))
-            )
-
-    @property
-    def objective_value(self):
-        """Access the objective value."""
-        if self._objective_value is not None:
-            return self._objective_value
-        self._is_current()
-        self._objective_value = self._model.solver.objective.value
-        return self._objective_value
-
-    @property
-    def status(self):
-        """Access the solver status after optimization."""
-        if self._status is not None:
-            return self._status
-        self._is_current()
-        self._status = self._model.solver.status
-        return self._status
-
-    @property
-    def fluxes(self):
-        """
-        Get the map of reaction IDs to fluxes.
-
-        Warning
-        -------
-        Accessing all fluxes in this way is not recommended since it defeats
-        the purpose of lazy evaluation.
-
-        Returns
-        -------
-        OrderedDict
-            All fluxes in the model as an ordered dictionary keyed by
-            reaction ID.
-        """
-        if self._fluxes is not None:
-            return self._fluxes
-        self._is_current()
-        self._fluxes = OrderedDict(
-            (rxn.id, rxn.forward_variable.primal - rxn.reverse_variable.primal)
-            for rxn in self._model.reactions)
-        return self._fluxes
-
-    @property
-    def reduced_costs(self):
-        """
-        Get the map of reaction IDs to reduced costs.
-
-        Warning
-        -------
-        Accessing all reduced costs in this way is not recommended since it
-        defeats the purpose of lazy evaluation.
-
-        Returns
-        -------
-        OrderedDict
-            All reduced costs in the model as an ordered dictionary keyed by
-            reaction ID.
-        """
-        if self._reduced_costs is not None:
-            return self._reduced_costs
-        self._is_current()
-        self._reduced_costs = OrderedDict(
-            (rxn.id, rxn.forward_variable.dual - rxn.reverse_variable.dual)
-            for rxn in self._model.reactions)
-        return self._reduced_costs
-
-    @property
-    def shadow_prices(self):
-        """
-        Get the map of reaction IDs to shadow prices.
-
-        Warning
-        -------
-        Accessing all shadow prices in this way is not recommended since it
-        defeats the purpose of lazy evaluation.
-
-        Returns
-        -------
-        OrderedDict
-            All shadow prices in the model as an ordered dictionary keyed by
-            reaction ID.
-        """
-        if self._shadow_prices is not None:
-            return self._shadow_prices
-        self._is_current()
-        self._shadow_prices = self._model.solver.shadow_prices
-        return self._shadow_prices
 
     @property
     def f(self):
@@ -245,9 +116,9 @@ class Solution(object):
     @x_dict.setter
     def x_dict(self, fluxes):
         """Deprecated property for setting fluxes."""
-        warn("let Model create a solution instance, don't update yourself",
+        warn("let Model.optimize create a solution instance, don't update yourself",
              DeprecationWarning)
-        self._fluxes = fluxes
+        self.fluxes = fluxes
 
     @property
     def x(self):
@@ -266,7 +137,7 @@ class Solution(object):
         """Deprecated property for setting reduced costs."""
         warn("let Model create a solution instance, don't update yourself",
              DeprecationWarning)
-        self._reduced_costs = costs
+        self.reduced_costs = costs
 
     @property
     def y(self):

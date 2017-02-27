@@ -621,36 +621,40 @@ class Model(Object):
 
     def optimize(self, objective_sense='maximize', solution_type=Solution,
                  **kwargs):
-        """Optimize model using flux balance analysis
+        """
+        Optimize the model using flux balance analysis.
 
         Parameters
         ----------
-        objective_sense: 'maximize' or 'minimize'
-
-        solution_type: Solution
-            The type of solution that should be returned. A Solution
-            only fetches attributes from the solver when requested in order
-            to reduce unnecessary communication.
-
-        solver : 'glpk', 'cglpk', 'gurobi', 'cplex' or None
-
-        quadratic_component : None or :class:`scipy.sparse.dok_matrix`
+        objective_sense : {'maximize' 'minimize'}, optional
+            Whether fluxes should be maximized or minimized.
+        solution_type : cobra.Solution, optional
+            The type of solution that should be returned. The solution is a
+            complete representation of solver state of the current model.
+        solver : {None, 'glpk', 'cglpk', 'gurobi', 'cplex'}, optional
+            If unspecified will use the currently defined `self.solver`
+            otherwise it will use the given solver and update the attribute.
+        quadratic_component : {None, scipy.sparse.dok_matrix}, optional
             The dimensions should be (n, n) where n is the number of reactions.
-
             This sets the quadratic component (Q) of the objective coefficient,
             adding :math:`\\frac{1}{2} v^T \cdot Q \cdot v` to the objective.
+        tolerance_feasibility : float
+            Solver tolerance for feasibility.
+        tolerance_markowitz : float
+            Solver threshold during pivot.
+        time_limit : float
+            Maximum solver time (in seconds).
 
-        tolerance_feasibility : Solver tolerance for feasibility.
-
-        tolerance_markowitz : Solver threshold during pivot
-
-        time_limit : Maximum solver time (in seconds)
-
-        .. NOTE :: Only the most commonly used parameters are presented here.
-                   Additional parameters for cobra.solvers may be available and
-                   specified with the appropriate keyword argument.
+        Notes
+        -----
+        Only the most commonly used parameters are presented here.  Additional
+        parameters for cobra.solvers may be available and specified with the
+        appropriate keyword argument.
 
         """
+        # TODO: Updating the solver attribute seems a bad side consequence of
+        # running this method with a solver argument. Indicator that this should
+        # be a function like fba? Maybe only use those functions?
         current = interface_to_str(self.solver.interface.__name__)
         so = kwargs.get('solver', 'optlang-' + current)
         # after deprecation this can be checked with:
