@@ -6,9 +6,9 @@ import pandas
 from six import iteritems
 from sympy.core.singleton import S
 
-import cobra.util.solver as sutil
 from cobra.flux_analysis.loopless import loopless_fva_iter
 from cobra.solvers import get_solver_name, solver_dict
+from cobra.util import solver as sutil
 
 
 def flux_variability_analysis(model, reaction_list=None, loopless=False,

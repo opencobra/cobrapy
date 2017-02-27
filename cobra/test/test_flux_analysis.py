@@ -8,7 +8,6 @@ from os import name
 
 import numpy
 import pytest
-import tabulate
 from six import StringIO, iteritems
 
 import cobra.util.solver as sutil
@@ -250,7 +249,7 @@ class TestCobraFluxAnalysis:
             reaction_list=model.reactions[1::10])
         # This works because textbook has no loops in the (unique)
         # optimal solution
-        for name, result in iteritems(fva_out):
+        for name, result in iteritems(fva_out.T):
             for k, v in iteritems(result):
                 assert abs(fva_results[name][k] - v) < 0.00001
 

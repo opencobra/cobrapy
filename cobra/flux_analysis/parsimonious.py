@@ -9,7 +9,7 @@ import pandas
 import sympy
 from six import iteritems
 
-import cobra.util.solver as sutil
+from cobra.util import solver as sutil
 from cobra.exceptions import SolveError
 from cobra.manipulation.modify import (
     convert_to_irreversible, revert_to_reversible)

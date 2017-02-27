@@ -4,21 +4,18 @@ from __future__ import absolute_import
 import warnings
 from copy import deepcopy
 
+import numpy
 import pytest
 
 import cobra.util.solver as su
 from cobra.core import Metabolite, Model, Reaction
 from cobra.solvers import solver_dict
+from cobra.util import create_stoichiometric_array
 from cobra.test.conftest import model
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
 
-try:
-    import numpy
-    from cobra.util import create_stoichiometric_array
-except ImportError:
-    numpy = None
 
 try:
     import scipy

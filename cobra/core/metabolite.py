@@ -9,7 +9,7 @@ from six import iteritems
 
 from cobra.core.formula import elements_and_molecular_weights
 from cobra.core.species import Species
-from cobra.flux_analysis.summary import metabolite_summary
+
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
 # discussion in https://github.com/opencobra/cobrapy/issues/128 for
@@ -217,5 +217,6 @@ class Metabolite(Species):
         floatfmt : string
             format method for floats, passed to tabulate. Default is '.3g'.
         """
+        from cobra.flux_analysis.summary import metabolite_summary
         return metabolite_summary(self, threshold=threshold, fva=fva,
                                   floatfmt=floatfmt, **kwargs)
