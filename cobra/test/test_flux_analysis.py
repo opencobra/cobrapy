@@ -489,7 +489,7 @@ class TestCobraFluxSampling:
 
     def test_fixed_seed(self, model):
         s = sample(model, 1, seed=42)
-        assert numpy.allclose(s[0, 94], [8.38570846])
+        assert numpy.allclose(s.TPI[0], [8.38570846])
 
     def setup_class(self):
         from . import create_test_model
