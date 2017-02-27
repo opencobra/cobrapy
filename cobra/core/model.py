@@ -84,7 +84,6 @@ class Model(Object):
             self.metabolites = DictList()  # A list of cobra.Metabolites
             # genes based on their ids {Gene.id: Gene}
             self.compartments = {}
-            # self.solution = Solution(None)
             self._contexts = []
 
             # from cameo ...
@@ -96,7 +95,6 @@ class Model(Object):
             self._solver.objective = interface.Objective(S.Zero)
             self._populate_solver(self.reactions, self.metabolites)
         self._timestamp_last_optimization = None
-        self.solution = None
 
     @property
     def solver(self):
@@ -308,7 +306,6 @@ class Model(Object):
 
         # No use in copying it, also circular dependencies
         new._timestamp_last_optimization = None
-        new.solution = Solution(self)
         return new
 
     def add_metabolites(self, metabolite_list):
@@ -672,14 +669,11 @@ class Model(Object):
             self.solver.optimize()
             # Not nice, but necessary until next optlang release
             solution = solution_type(self)
-            # solution = (solution_type(self) if
-            #             self.solver.status == 'optimal' else self.solution)
             if objective_sense is not None:
                 self.solver.objective.direction = original_direction
         else:
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
-        self.solution = solution
 
         if solution.status is not 'optimal':
             raise SolveError('no optimal solution')
@@ -720,8 +714,6 @@ class Model(Object):
         for l in (self.reactions, self.genes, self.metabolites):
             for e in l:
                 e._model = self
-        if self.solution is None:
-            self.solution = Solution(None)
 
     @property
     def objective(self):
