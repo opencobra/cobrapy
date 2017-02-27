@@ -644,7 +644,7 @@ class Model(Object):
     def objective(self, value):
         if isinstance(value, sympy.Basic):
             value = self.solver.interface.Objective(value, sloppy=False)
-        if not isinstance(value, (dict, self.solver.interface.Objective)):
+        if not isinstance(value, (dict, optlang.interface.Objective)):
             value = {rxn: 1 for rxn in self.reactions.get_by_any(value)}
         set_objective(self, value, additive=False)
 

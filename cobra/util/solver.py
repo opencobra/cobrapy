@@ -137,7 +137,7 @@ def set_objective(model, value, additive=False):
                 {reaction.forward_variable: coef,
                  reaction.reverse_variable: -coef})
 
-    elif isinstance(value, (sympy.Basic, model.solver.interface.Objective)):
+    elif isinstance(value, (sympy.Basic, optlang.interface.Objective)):
         if isinstance(value, sympy.Basic):
             value = interface.Objective(
                 value, direction=model.solver.objective.direction,
