@@ -5,10 +5,11 @@ from __future__ import absolute_import
 import logging
 from itertools import chain
 
+import pandas
 import sympy
 from six import iteritems
 
-import cobra.util.solver as sutil
+from cobra.util import solver as sutil
 from cobra.exceptions import SolveError
 from cobra.manipulation.modify import (
     convert_to_irreversible, revert_to_reversible)
@@ -22,7 +23,7 @@ LOGGER = logging.getLogger(__name__)
 def optimize_minimal_flux(model, already_irreversible=False,
                           fraction_of_optimum=1.0, solver=None,
                           desired_objective_value=None, objective=None,
-                          **optimize_kwargs):
+                          reactions=None, **optimize_kwargs):
     """Perform basic pFBA (parsimonious Enzyme Usage Flux Balance Analysi)
     and minimize total flux.
 
@@ -36,32 +37,30 @@ def optimize_minimal_flux(model, already_irreversible=False,
     ----------
     model : cobra.Model
         The model
-
     already_irreversible : bool, optional
         By default, the model is converted to an irreversible one.
         However, if the model is already irreversible, this step can be
         skipped. Ignored for optlang solvers as not relevant.
-
     fraction_of_optimum : float, optional
         Fraction of optimum which must be maintained. The original objective
         reaction is constrained to be greater than maximal_value *
         fraction_of_optimum.
-
+    solver : str, optional
+        Name of the solver to be used. If None it will respect the solver set
+        in the model (model.solver).
     desired_objective_value : float, optional
         A desired objective value for the minimal solution that bypasses the
         initial optimization result. Ignored for optlang solvers, instead,
         define your objective separately and pass using the `objective`
         argument.
-
     objective : dict or model.solver.interface.Objective
         A desired objective to use during optimization in addition to the
         pFBA objective. Dictionaries (reaction as key, coefficient as value)
         can be used for linear objectives. Not used for non-optlang solvers.
-
-    solver : str, optional
-        Name of the solver to be used. If None it will respect the solver set
-        in the model (model.solver).
-
+    reactions : iterable
+        List of reactions or reaction identifiers. Only return fluxes for
+        the given reactions. Faster than fetching all fluxes if only a few
+        are needed. Only supported for optlang solvers.
     **optimize_kwargs : additional arguments for legacy solver, optional
         Additional arguments passed to the legacy solver. Ignored for
         optlang solver (those can be configured using
@@ -69,9 +68,9 @@ def optimize_minimal_flux(model, already_irreversible=False,
 
     Returns
     -------
-    cobra.core.Solution.Solution
-        The solution object obtained optimizing the model with the added
-        pFBA constraints.
+    pandas.DataFrame
+        A data frame with reaction identifiers as index and fluxes and the
+        objective value as columns.
 
     References
     ----------
@@ -86,12 +85,11 @@ def optimize_minimal_flux(model, already_irreversible=False,
     if not legacy:
         return _optimize_minimal_flux_optlang(
             model, objective=objective,
-            fraction_of_optimum=fraction_of_optimum)
+            fraction_of_optimum=fraction_of_optimum, reactions=reactions)
     else:
         return _optimize_minimal_flux_legacy(
             model, already_irreversible=already_irreversible,
-            fraction_of_optimum=fraction_of_optimum,
-            solver=solver,
+            fraction_of_optimum=fraction_of_optimum, solver=solver,
             desired_objective_value=desired_objective_value,
             **optimize_kwargs)
 
@@ -108,7 +106,7 @@ def add_pfba(model, objective=None, fraction_of_optimum=1.0):
 
     Parameters
     ----------
-    model : cobra.core.Model
+    model : cobra.Model
         The model to add the objective to
     objective :
         An objective to set in combination with the pFBA objective.
@@ -129,9 +127,11 @@ def add_pfba(model, objective=None, fraction_of_optimum=1.0):
     set_objective(model, pfba_objective)
 
 
-def _optimize_minimal_flux_optlang(model, objective=None,
+def _optimize_minimal_flux_optlang(model, objective=None, reactions=None,
                                    fraction_of_optimum=1.0):
     """Helper function to perform pFBA with the optlang interface
+
+    Not meant to be used directly.
 
     Parameters
     ----------
@@ -139,10 +139,19 @@ def _optimize_minimal_flux_optlang(model, objective=None,
         The model to perform pFBA on
     objective :
         An objective to use in addition to the pFBA constraints.
+    reactions : iterable
+        List of reactions or reaction identifiers.
+
+    Returns
+    -------
+    dict
+        A dict with fluxes for each reaction and the objective value.
 
     Updates everything in-place, returns model to original state at end.
     """
-    solution = None
+    reactions = model.reactions if reactions is None \
+        else model.reactions.get_by_any(reactions)
+    # TODO: review/adjust when Solution class is fixed
     with model as m:
         add_pfba(m, objective=objective,
                  fraction_of_optimum=fraction_of_optimum)
@@ -152,7 +161,11 @@ def _optimize_minimal_flux_optlang(model, objective=None,
             LOGGER.error("pfba could not determine an optimal solution for "
                          "objective %s" % m.objective)
             raise e
-    return solution
+        else:
+            results = dict()
+            results['flux'] = {rxn.id: solution[rxn.id] for rxn in reactions}
+            results['objective_value'] = solution.objective_value
+            return pandas.DataFrame(results)
 
 
 def _optimize_minimal_flux_legacy(model, solver, already_irreversible=False,
@@ -171,20 +184,16 @@ def _optimize_minimal_flux_legacy(model, solver, already_irreversible=False,
     ----------
     model : cobra.Model
         The model
-
     solver : solver
         The solver object to use
-
     already_irreversible : bool, optional
         By default, the model is converted to an irreversible one.
         However, if the model is already irreversible, this step can be
         skipped
-
     fraction_of_optimum : float, optional
         Fraction of optimum which must be maintained. The original objective
         reaction is constrained to be greater than maximal_value *
         fraction_of_optimum. By default, this option is specified to be 1.0
-
     desired_objective_value : float, optional
         A desired objective value for the minimal solution that bypasses the
         initial optimization result.
@@ -236,5 +245,7 @@ def _optimize_minimal_flux_legacy(model, solver, already_irreversible=False,
     if solution.status == "optimal":
         model.solution.f = sum([coeff * reaction.x for reaction, coeff in
                                 iteritems(objective_reactions)])
-
-    return solution
+    results = dict()
+    results['flux'] = {reaction.id: reaction.x for reaction in model.reactions}
+    results['objective_value'] = model.solution.f
+    return pandas.DataFrame(results)

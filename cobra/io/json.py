@@ -4,21 +4,11 @@ from __future__ import absolute_import
 
 import json
 
+from numpy import bool_, float_
 from six import iteritems, string_types
 
 from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.util.solver import set_objective
-
-# Detect numpy types to replace them.
-try:
-    from numpy import float_, bool_
-except ImportError:
-    class float_:
-        pass
-
-    class bool_:
-        pass
-
 
 _REQUIRED_REACTION_ATTRIBUTES = {"id", "name", "metabolites", "lower_bound",
                                  "upper_bound", "gene_reaction_rule"}

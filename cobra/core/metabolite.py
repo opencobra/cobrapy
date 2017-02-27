@@ -10,6 +10,7 @@ from six import iteritems
 from cobra.core.formula import elements_and_molecular_weights
 from cobra.core.species import Species
 
+
 # Numbers are not required because of the |(?=[A-Z])? block. See the
 # discussion in https://github.com/opencobra/cobrapy/issues/128 for
 # more details.
@@ -137,9 +138,10 @@ class Metabolite(Species):
         except Exception as e:
             if self._model is None:
                 raise Exception("not part of a model")
-            if not hasattr(self._model, "solution") or \
-                    self._model.solution is None or \
-                    self._model.solution.status == "NA":
+            not_solved = (not hasattr(self._model, "solution") or
+                          self._model.solution is None or
+                          self._model.solution.status == "NA")
+            if not_solved:
                 raise Exception("model has not been solved")
             if self._model.solution.status != "optimal":
                 raise Exception("model solution was not optimal")
@@ -157,9 +159,10 @@ class Metabolite(Species):
         except Exception as e:
             if self._model is None:
                 raise Exception("not part of a model")
-            if not hasattr(self._model, "solution") or \
-                    self._model.solution is None or \
-                    self._model.solution.status == "NA":
+            not_solved = (not hasattr(self._model, "solution") or
+                          self._model.solution is None or
+                          self._model.solution.status == "NA")
+            if not_solved:
                 raise Exception("model has not been solved")
             if self._model.solution.status != "optimal":
                 raise Exception("model solution was not optimal")
@@ -196,8 +199,10 @@ class Metabolite(Species):
 
     def summary(self, threshold=0.01, fva=False, floatfmt='.3g', **kwargs):
         """Print a summary of the reactions which produce and consume this
-        metabolite. This method requires the model for which this metabolite is
-        a part to be solved.
+        metabolite.
+
+        This method requires the model for which this metabolite is a part
+        to be solved.
 
         Parameters
         ----------
@@ -212,9 +217,6 @@ class Metabolite(Species):
         floatfmt : string
             format method for floats, passed to tabulate. Default is '.3g'.
         """
-        try:
-            from cobra.flux_analysis.summary import metabolite_summary
-            return metabolite_summary(self, threshold=threshold, fva=fva,
-                                      floatfmt=floatfmt, **kwargs)
-        except ImportError:
-            warn('Summary methods require pandas/tabulate')
+        from cobra.flux_analysis.summary import metabolite_summary
+        return metabolite_summary(self, threshold=threshold, fva=fva,
+                                  floatfmt=floatfmt, **kwargs)

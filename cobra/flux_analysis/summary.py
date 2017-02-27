@@ -58,9 +58,9 @@ def metabolite_summary(met, threshold=0.01, fva=False, floatfmt='.3g',
         return out
 
     if fva:
-        rxn_summary.fva_results = pd.DataFrame(flux_variability_analysis(
+        rxn_summary.fva_results = flux_variability_analysis(
             met.model, met.reactions, fraction_of_optimum=fva,
-            **solver_args)).T
+            **solver_args)
     else:
         rxn_summary.fva_results = False
 
@@ -141,10 +141,9 @@ def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
 
     # Calculate FVA results if requested
     if fva:
-        fva_results = pd.DataFrame(
-            flux_variability_analysis(model, reaction_list=boundary_reactions,
-                                      fraction_of_optimum=fva,
-                                      **solver_args)).T
+        fva_results = flux_variability_analysis(
+            model, reaction_list=boundary_reactions, fraction_of_optimum=fva,
+            **solver_args)
 
     metabolite_fluxes = {}
     for rxn in boundary_reactions:
@@ -226,7 +225,7 @@ def _process_flux_dataframe(flux_dataframe, fva, threshold, floatfmt):
                 return 1
             elif (fmax < 0) & (fmin >= 0):
                 return -1
-            elif ((fmax + fmin)/2) < 0:
+            elif ((fmax + fmin) / 2) < 0:
                 return -1
             else:
                 return 1

@@ -128,4 +128,4 @@ class TestSolverMods:
         fx_name = 'Fixed_objective_{}'.format(model.objective.name)
         constr = model.solver.constraints
         assert (constr[fx_name].lb, constr[fx_name].ub) == (
-            None, model.solution.objective_value)
+            None, model.solver.objective.value)

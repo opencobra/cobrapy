@@ -2,17 +2,18 @@
 
 from __future__ import absolute_import
 
+import pandas
 from six import iteritems
 from sympy.core.singleton import S
 
-import cobra.util.solver as sutil
 from cobra.flux_analysis.loopless import loopless_fva_iter
 from cobra.solvers import get_solver_name, solver_dict
+from cobra.util import solver as sutil
 
 
 def flux_variability_analysis(model, reaction_list=None, loopless=False,
-                              fraction_of_optimum=1.0, solver=None,
-                              **solver_args):
+                              fraction_of_optimum=1.0,
+                              solver=None, **solver_args):
     """Runs flux variability analysis to find the min/max flux values for each
     each reaction in `reaction_list`.
 
@@ -40,9 +41,11 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
 
     Returns
     -------
-    dict
-        A nested dictionary {reaction_id: {minimize/maximize: flux}} giving
-        the minimal and maximal flux for each reaction.
+    DataFrame
+        pandas.DataFrame
+        with reaction identifier as the index columns
+        - maximum: indicating the highest possible flux
+        - minimum: indicating the loweset possible flux
 
     Notes
     -----
@@ -65,8 +68,9 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
        Gudmundsson S, Thiele I.
        BMC Bioinformatics. 2010 Sep 29;11:489.
        doi: 10.1186/1471-2105-11-489, PMID: 20920235
+
     .. [2] CycleFreeFlux: efficient removal of thermodynamically infeasible
-           loops from flux distributions.
+       loops from flux distributions.
        Desouki AA, Jarre F, Gelius-Dietrich G, Lercher MJ.
        Bioinformatics. 2015 Jul 1;31(13):2159-65.
        doi: 10.1093/bioinformatics/btv096.
@@ -77,11 +81,12 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
         reaction_list = model.reactions
 
     if not legacy:
-        return _fva_optlang(model, reaction_list, fraction_of_optimum,
-                            loopless)
+        fva_result = _fva_optlang(model, reaction_list, fraction_of_optimum,
+                                  loopless)
     else:
-        return _fva_legacy(model, reaction_list, fraction_of_optimum,
-                           "maximize", solver, **solver_args)
+        fva_result = _fva_legacy(model, reaction_list, fraction_of_optimum,
+                                 "maximize", solver, **solver_args)
+    return pandas.DataFrame(fva_result).T
 
 
 def _fva_legacy(cobra_model, reaction_list, fraction_of_optimum,
@@ -92,7 +97,7 @@ def _fva_legacy(cobra_model, reaction_list, fraction_of_optimum,
 
     reaction_list : list of :class:`~cobra.core.Reaction`: or their id's
         The id's for which FVA should be run. If this is None, the bounds
-        will be comptued for all reactions in the model.
+        will be computed for all reactions in the model.
 
     fraction_of_optimum : fraction of optimum which must be maintained.
         The original objective reaction is constrained to be greater than
@@ -216,8 +221,8 @@ def find_blocked_reactions(cobra_model, reaction_list=None,
     reaction_list = [i for i in reaction_list
                      if abs(solution.x_dict[i.id]) < zero_cutoff]
     # run fva to find reactions where both max and min are 0
-    flux_span_dict = flux_variability_analysis(
+    flux_span = flux_variability_analysis(
         cobra_model, fraction_of_optimum=0., reaction_list=reaction_list,
         solver=solver, **solver_args)
-    return [k for k, v in iteritems(flux_span_dict)
-            if max(map(abs, v.values())) < zero_cutoff]
+    return [k for k, v in iteritems(flux_span.T)
+            if max(map(abs, v)) < zero_cutoff]

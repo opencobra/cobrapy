@@ -5,6 +5,7 @@ from __future__ import absolute_import
 import copy
 import os
 
+import numpy
 import optlang
 import pytest
 import six
@@ -15,18 +16,10 @@ from cobra.exceptions import UndefinedSolution
 from cobra.util.solver import SolverNotFound, set_objective, solvers
 
 try:
-    import numpy
-except ImportError:
-    numpy = None
-try:
     import scipy
 except ImportError:
     scipy = None
 
-try:
-    import pandas
-except ImportError:
-    pandas = None
 
 solver_trials = ['glpk',
                  pytest.mark.skipif('cplex' not in solvers,
@@ -797,7 +790,6 @@ class TestSolverBasedModel:
         assert round(abs(model_copy.optimize().f - 0.8739215069684306),
                      7) == 0
 
-    @pytest.mark.skipif(not numpy, reason='no numpy available')
     def test_copy_preserves_existing_solution(self, solved_model):
         solution, model = solved_model
         model_cp = copy.copy(model)

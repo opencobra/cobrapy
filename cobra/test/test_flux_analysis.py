@@ -6,24 +6,21 @@ import sys
 from contextlib import contextmanager
 from os import name
 
+import numpy
 import pytest
 from six import StringIO, iteritems
 
 import cobra.util.solver as sutil
-from cobra.core import Metabolite, Model, Reaction, Solution
+from cobra.core import Metabolite, Model, Reaction
 from cobra.core.solution import LegacySolution
 from cobra.exceptions import SolveError
 from cobra.flux_analysis import *
+from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 from cobra.manipulation import convert_to_irreversible
 from cobra.solvers import SolverNotFound, get_solver_name, solver_dict
 
 from .conftest import fva_results, large_model, model, solved_model
 
-try:
-    import numpy
-    from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
-except ImportError:
-    numpy = None
 try:
     import scipy
 except ImportError:
@@ -32,14 +29,7 @@ try:
     import matplotlib
 except ImportError:
     matplotlib = None
-try:
-    import pandas
-except ImportError:
-    pandas = None
-try:
-    import tabulate
-except ImportError:
-    tabulate = None
+
 
 # The scipt interface is currently unstable and may yield errors or infeasible
 # solutions
@@ -78,15 +68,14 @@ class TestCobraFluxAnalysis:
     def test_pfba(self, model, solver):
         expression = model.objective.expression
         n_constraints = len(model.solver.constraints)
-        optimize_minimal_flux(model, solver=solver)
-        abs_x = [abs(i) for i in model.solution.x]
+        df = optimize_minimal_flux(model, solver=solver)
+        assert numpy.all([df.columns.values == ['flux', 'objective_value']])
         assert model.solution.status == "optimal"
         if isinstance(model.solution, LegacySolution):
             assert abs(model.solution.f - 0.8739) < 0.001
         else:
-            assert abs(
-                model.solution.fluxes['Biomass_Ecoli_core'] - 0.8739) < 0.001
-        assert abs(sum(abs_x) - 518.4221) < 0.001
+            assert abs(df.flux['Biomass_Ecoli_core'] - 0.8739) < 0.001
+        assert abs(sum(abs(df.flux)) - 518.4221) < 0.001
 
         # test changes to model reverted
         assert expression == model.objective.expression
@@ -103,22 +92,21 @@ class TestCobraFluxAnalysis:
         # assert abs(sum(abs_x) - 476.1594) < 0.001
 
         # Test fraction_of_optimum
-        optimize_minimal_flux(model, solver=solver,
-                              fraction_of_optimum=0.95)
-        abs_x = [abs(i) for i in model.solution.x]
+        df = optimize_minimal_flux(model, solver=solver,
+                                   fraction_of_optimum=0.95)
         assert model.solution.status == "optimal"
         if isinstance(model.solution, LegacySolution):
             assert abs(model.solution.f - 0.95 * 0.8739) < 0.001
         else:
             assert abs(
-                model.solution.fluxes[
-                    'Biomass_Ecoli_core'] - 0.95 * 0.8739) < 0.001
-        assert abs(sum(abs_x) - 493.4400) < 0.001
+                df.flux['Biomass_Ecoli_core'] - 0.95 * 0.8739) < 0.001
+        assert abs(sum(abs(df.flux)) - 493.4400) < 0.001
 
         # Infeasible solution
-        model.reactions.ATPM.lower_bound = 500
-        with pytest.raises((SolveError, ValueError)):
-            optimize_minimal_flux(model, solver=solver)
+        with model:
+            model.reactions.ATPM.lower_bound = 500
+            with pytest.raises((SolveError, ValueError)):
+                optimize_minimal_flux(model, solver=solver)
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_single_gene_deletion_fba_benchmark(self, model, benchmark,
@@ -130,23 +118,22 @@ class TestCobraFluxAnalysis:
         # expected knockouts for textbook model
         growth_dict = {"b0008": 0.87, "b0114": 0.80, "b0116": 0.78,
                        "b2276": 0.21, "b1779": 0.00}
-        rates, statuses = single_gene_deletion(model,
-                                               gene_list=growth_dict.keys(),
-                                               method="fba",
-                                               solver=solver)
-        for gene, expected_value in iteritems(growth_dict):
-            assert statuses[gene] == 'optimal'
-            assert abs(rates[gene] - expected_value) < 0.01
+        df = single_gene_deletion(model, gene_list=growth_dict.keys(),
+                                  method="fba", solver=solver)
+        assert numpy.all([df.status == 'optimal'])
+        assert all(abs(df.flux[gene] - expected) < 0.01 for
+                   gene, expected in iteritems(growth_dict))
 
+    @pytest.mark.skipif(not scipy, reason="moma gene deletion requires scipy")
     def test_single_gene_deletion_moma_benchmark(self, model, benchmark):
         try:
             sutil.get_solver_name(qp=True)
         except sutil.SolverNotFound:
             pytest.skip("no qp support")
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
-        benchmark(single_gene_deletion, model, gene_list=genes,
-                  method="moma")
+        benchmark(single_gene_deletion, model, gene_list=genes, method="moma")
 
+    @pytest.mark.skipif(not scipy, reason="moma gene deletion requires scipy")
     def test_single_gene_deletion_moma(self, model):
         try:
             sutil.get_solver_name(qp=True)
@@ -157,12 +144,11 @@ class TestCobraFluxAnalysis:
         growth_dict = {"b0008": 0.87, "b0114": 0.71, "b0116": 0.56,
                        "b2276": 0.11, "b1779": 0.00}
 
-        rates, statuses = single_gene_deletion(model,
-                                               gene_list=growth_dict.keys(),
-                                               method="moma")
-        for gene, expected_value in iteritems(growth_dict):
-            assert statuses[gene] == 'optimal'
-            assert abs(rates[gene] - expected_value) < 0.01
+        df = single_gene_deletion(model, gene_list=growth_dict.keys(),
+                                  method="moma")
+        assert numpy.all([df.status == 'optimal'])
+        assert all(abs(df.flux[gene] - expected) < 0.01
+                   for gene, expected in iteritems(growth_dict))
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_single_gene_deletion_benchmark(self, model, benchmark,
@@ -174,14 +160,12 @@ class TestCobraFluxAnalysis:
         expected_results = {'FBA': 0.70404, 'FBP': 0.87392, 'CS': 0,
                             'FUM': 0.81430, 'GAPD': 0, 'GLUDy': 0.85139}
 
-        results, status = single_reaction_deletion(
+        df = single_reaction_deletion(
             model, reaction_list=expected_results.keys(), solver=solver)
-        assert len(results) == 6
-        assert len(status) == 6
-        for status_value in status.values():
-            assert status_value == "optimal"
-        for reaction, value in results.items():
-            assert abs(value - expected_results[reaction]) < 0.00001
+        assert len(df) == 6
+        assert numpy.all([df.status == 'optimal'])
+        assert all(abs(df.flux[gene] - expected) < 0.00001 for
+                   gene, expected in iteritems(expected_results))
 
     @classmethod
     def compare_matrices(cls, matrix1, matrix2, places=3):
@@ -193,13 +177,11 @@ class TestCobraFluxAnalysis:
             for j in range(ncols):
                 assert abs(matrix1[i][j] - matrix2[i][j]) < 10 ** -places
 
-    @pytest.mark.skipif(numpy is None, reason="double deletions require numpy")
     def test_double_gene_deletion_benchmark(self, large_model, benchmark):
         genes = ["b0726", "b4025", "b0724", "b0720", "b2935", "b2935", "b1276",
                  "b1241"]
         benchmark(double_gene_deletion, large_model, gene_list1=genes)
 
-    @pytest.mark.skipif(numpy is None, reason="double deletions require numpy")
     def test_double_gene_deletion(self, model):
         genes = ["b0726", "b4025", "b0724", "b0720", "b2935", "b2935", "b1276",
                  "b1241"]
@@ -225,7 +207,6 @@ class TestCobraFluxAnalysis:
         assert solution["y"] == genes
         self.compare_matrices(growth_list[:-1], solution["data"])
 
-    @pytest.mark.skipif(numpy is None, reason="double deletions require numpy")
     def test_double_reaction_deletion(self, model):
         reactions = ['FBA', 'ATPS4r', 'ENO', 'FRUpts2']
         growth_list = [[0.704, 0.135, 0.000, 0.704],
@@ -257,7 +238,7 @@ class TestCobraFluxAnalysis:
             pytest.skip("esolver too slow...")
         fva_out = flux_variability_analysis(
             model, solver=solver, reaction_list=model.reactions)
-        for name, result in iteritems(fva_out):
+        for name, result in iteritems(fva_out.T):
             for k, v in iteritems(result):
                 assert abs(fva_results[name][k] - v) < 0.00001
 
@@ -268,9 +249,13 @@ class TestCobraFluxAnalysis:
             reaction_list=model.reactions[1::10])
         # This works because textbook has no loops in the (unique)
         # optimal solution
-        for name, result in iteritems(fva_out):
+        for name, result in iteritems(fva_out.T):
             for k, v in iteritems(result):
                 assert abs(fva_results[name][k] - v) < 0.00001
+
+    def test_fva_data_frame(self, model):
+        df = flux_variability_analysis(model, return_frame=True)
+        assert numpy.all([df.columns.values == ['maximum', 'minimum']])
 
     def test_fva_infeasible(self, model):
         infeasible_model = model.copy()
@@ -363,7 +348,6 @@ class TestCobraFluxAnalysis:
         ll_fluxes = loopless_solution(model, fluxes=fluxes)
         assert ll_fluxes is None
 
-    @pytest.mark.skipif(numpy is None, reason="null space requires numpy")
     def test_add_loopless(self):
         test_model = self.construct_ll_test_model()
         add_loopless(test_model)
@@ -373,13 +357,11 @@ class TestCobraFluxAnalysis:
         assert feasible_status == "optimal"
         assert infeasible_status == "infeasible"
 
-    @pytest.mark.skipif(numpy is None, reason="phase plane require numpy")
     def test_phenotype_phase_plane_benchmark(self, model, benchmark):
         benchmark(calculate_phenotype_phase_plane,
                   model, "EX_glc__D_e", "EX_o2_e",
                   reaction1_npoints=20, reaction2_npoints=20)
 
-    @pytest.mark.skipif(numpy is None, reason="phase plane require numpy")
     def test_phenotype_phase_plane(self, model):
         data = calculate_phenotype_phase_plane(
             model, "EX_glc__D_e", "EX_o2_e",
@@ -398,8 +380,6 @@ class TestCobraFluxAnalysis:
         for item in desired_entries:
             assert re.sub('\s', '', item) in output_set
 
-    @pytest.mark.skipif((pandas is None) or (tabulate is None),
-                        reason="summary methods require pandas and tabulate")
     def test_summary_methods(self, model, solved_model):
         # Test model summary methods
         with pytest.raises(Exception):
@@ -488,7 +468,6 @@ class TestCobraFluxAnalysis:
             self.check_entries(out, desired_entries)
 
 
-@pytest.mark.skipif(numpy is None, reason="flux sampling requires numpy")
 class TestCobraFluxSampling:
     """Test and benchmark flux sampling"""
 
@@ -510,7 +489,7 @@ class TestCobraFluxSampling:
 
     def test_fixed_seed(self, model):
         s = sample(model, 1, seed=42)
-        assert numpy.allclose(s[0, 94], [8.38570846])
+        assert numpy.allclose(s.TPI[0], [8.38570846])
 
     def setup_class(self):
         from . import create_test_model

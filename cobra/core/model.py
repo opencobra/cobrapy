@@ -665,13 +665,9 @@ class Model(Object):
             format method for floats, passed to tabulate. Default is '.3g'.
 
         """
-
-        try:
-            from ..flux_analysis.summary import model_summary
-            return model_summary(self, threshold=threshold, fva=fva,
-                                 floatfmt=floatfmt, **kwargs)
-        except ImportError:
-            warn('Summary methods require pandas/tabulate')
+        from cobra.flux_analysis.summary import model_summary
+        return model_summary(self, threshold=threshold, fva=fva,
+                             floatfmt=floatfmt, **kwargs)
 
     def __enter__(self):
         """Record all future changes to the model, undoing them when a call to

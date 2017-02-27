@@ -13,6 +13,7 @@ from multiprocessing import Array, Pool
 from time import time
 
 import numpy as np
+import pandas
 from cobra.solvers import get_solver_name, solver_dict
 from cobra.util import create_stoichiometric_array, nullspace
 
@@ -535,16 +536,14 @@ def sample(model, n, method="optgp", processes=1, seed=None,
 
     Returns
     -------
-    numpy.matrix
+    pandas.DataFrame
         The generated flux samples. Each row corresponds to a sample of the
-        fluxes. Thus, the number of columns corresponds to the number of
-        reactions in the model. The order of columns is the same as the order
-        of reactions in the model.
+        fluxes and the columns are the reactions.
 
     Notes
     -----
     Currently, cobrapy does not support the definition of complex constraints
-    for a model. If you want to add additional contraints those have to be
+    for a model. If you want to add additional constraints those have to be
     implemented in your model with mock reactions.
 
     References
@@ -565,4 +564,5 @@ def sample(model, n, method="optgp", processes=1, seed=None,
     else:
         raise ValueError("method must be 'optgp' or 'arch'!")
 
-    return sampler.sample(n)
+    return pandas.DataFrame(columns=[rxn.id for rxn in model.reactions],
+                            data=sampler.sample(n))

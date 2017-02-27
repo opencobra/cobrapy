@@ -368,7 +368,7 @@ def fix_objective_as_constraint(model, fraction=1):
 
     Parameters
     ----------
-    model : cobra.core.Model
+    model : cobra.Model
         The model to operate on
     fraction : float
         The fraction of the optimum the objective is allowed to reach.
@@ -376,12 +376,12 @@ def fix_objective_as_constraint(model, fraction=1):
     fix_objective_name = 'Fixed_objective_{}'.format(model.objective.name)
     if fix_objective_name in model.solver.constraints:
         model.solver.remove(fix_objective_name)
-    model.optimize()
-    objective_value = model.solution.objective_value * fraction
+    model.solver.optimize()
+    objective_bound = model.solver.objective.value * fraction
     if model.objective.direction == 'max':
-        ub, lb = None, objective_value
+        ub, lb = None, objective_bound
     else:
-        ub, lb = objective_value, None
+        ub, lb = objective_bound, None
     constraint = model.solver.interface.Constraint(
         model.objective.expression,
         name=fix_objective_name, ub=ub, lb=lb)
