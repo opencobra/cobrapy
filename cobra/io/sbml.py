@@ -4,7 +4,6 @@ from __future__ import absolute_import
 
 import re
 from math import isinf, isnan
-from os import name as __name
 from os.path import isfile
 from warnings import warn
 
@@ -13,24 +12,10 @@ from six import iteritems
 from cobra.core import Metabolite, Model, Reaction
 from cobra.util.solver import set_objective
 
-if __name == 'java':
-    from org.sbml.jsbml import SBMLDocument, KineticLaw, Parameter
-    from org.sbml.jsbml import SBMLReader, SBMLWriter
-
-    __tmp_reader = SBMLReader()
-    __tmp_writer = SBMLWriter()
-    readSBML = __tmp_reader.readSBMLFromFile
-    writeSBML = __tmp_writer.writeSBMLToFile
-    from org.sbml.jsbml.Unit import Kind as __Kind
-
-    UNIT_KIND_MOLE = __Kind.MOLE
-    UNIT_KIND_GRAM = __Kind.GRAM
-    UNIT_KIND_SECOND = __Kind.SECOND
-    UNIT_KIND_DIMENSIONLESS = __Kind.DIMENSIONLESS
-else:
-    from libsbml import SBMLDocument, KineticLaw, Parameter
-    from libsbml import readSBML, writeSBML
-    from libsbml import UNIT_KIND_MOLE, UNIT_KIND_GRAM, UNIT_KIND_SECOND
+try:
+    import libsbml
+except ImportError:
+    libsbml = None
 
 
 def parse_legacy_id(the_id, the_compartment=None, the_type='metabolite',
@@ -92,6 +77,10 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
     -------
     Model : The parsed cobra model
     """
+    if not libsbml:
+        raise ImportError('create_cobra_model_from_sbml_file '
+                          'requires python-libsbml')
+
     __default_lower_bound = -1000
     __default_upper_bound = 1000
     __default_objective_coefficient = 0
@@ -104,7 +93,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
     compartment_re = re.compile('^C_')
     if print_time:
         warn("print_time is deprecated", DeprecationWarning)
-    model_doc = readSBML(sbml_filename)
+    model_doc = libsbml.readSBML(sbml_filename)
     if model_doc.getPlugin("fbc") is not None:
         from libsbml import ConversionProperties, LIBSBML_OPERATION_SUCCESS
         conversion_properties = ConversionProperties()
@@ -432,14 +421,16 @@ def write_cobra_model_to_sbml_file(cobra_model, sbml_filename,
     TODO: Update the NOTES to match the SBML standard and provide support for
     Level 2 Version 4
     """
-
+    if not libsbml:
+        raise ImportError('write_cobra_model_to_sbml_file '
+                          'requires python-libsbml')
     sbml_doc = get_libsbml_document(cobra_model,
                                     sbml_level=sbml_level,
                                     sbml_version=sbml_version,
                                     print_time=print_time,
                                     use_fbc_package=use_fbc_package)
 
-    writeSBML(sbml_doc, sbml_filename)
+    libsbml.writeSBML(sbml_doc, sbml_filename)
 
 
 def get_libsbml_document(cobra_model,
@@ -448,25 +439,24 @@ def get_libsbml_document(cobra_model,
                          use_fbc_package=True):
     """ Return a libsbml document object for writing to a file. This function
     is used by write_cobra_model_to_sbml_file(). """
-
     note_start_tag, note_end_tag = '<p>', '</p>'
     if sbml_level > 2 or (sbml_level == 2 and sbml_version == 4):
         note_start_tag, note_end_tag = '<html:p>', '</html:p>'
 
-    sbml_doc = SBMLDocument(sbml_level, sbml_version)
+    sbml_doc = libsbml.SBMLDocument(sbml_level, sbml_version)
     sbml_model = sbml_doc.createModel(cobra_model.id.split('.')[0])
     # Note need to set units
     reaction_units = 'mmol_per_gDW_per_hr'
     model_units = sbml_model.createUnitDefinition()
     model_units.setId(reaction_units)
     sbml_unit = model_units.createUnit()
-    sbml_unit.setKind(UNIT_KIND_MOLE)
+    sbml_unit.setKind(libsbml.UNIT_KIND_MOLE)
     sbml_unit.setScale(-3)
     sbml_unit = model_units.createUnit()
-    sbml_unit.setKind(UNIT_KIND_GRAM)
+    sbml_unit.setKind(libsbml.UNIT_KIND_GRAM)
     sbml_unit.setExponent(-1)
     sbml_unit = model_units.createUnit()
-    sbml_unit.setKind(UNIT_KIND_SECOND)
+    sbml_unit.setKind(libsbml.UNIT_KIND_SECOND)
     sbml_unit.setMultiplier(1.0 / 60 / 60)
     sbml_unit.setExponent(-1)
 
@@ -547,7 +537,7 @@ def get_libsbml_document(cobra_model,
             species_reference.setStoichiometry(abs(sbml_stoichiometry))
 
         # Add in the kineticLaw
-        sbml_law = KineticLaw(sbml_level, sbml_version)
+        sbml_law = libsbml.KineticLaw(sbml_level, sbml_version)
         if hasattr(sbml_law, 'setId'):
             sbml_law.setId('FLUX_VALUE')
         sbml_law.setFormula('FLUX_VALUE')
@@ -558,7 +548,7 @@ def get_libsbml_document(cobra_model,
             'OBJECTIVE_COEFFICIENT': [the_reaction.objective_coefficient,
                                       'dimensionless']}
         for k, v in reaction_parameter_dict.items():
-            sbml_parameter = Parameter(sbml_level, sbml_version)
+            sbml_parameter = libsbml.Parameter(sbml_level, sbml_version)
             sbml_parameter.setId(k)
             if hasattr(v, '__iter__'):
                 sbml_parameter.setValue(v[0])
