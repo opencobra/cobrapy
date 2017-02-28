@@ -27,18 +27,19 @@ class Solution(object):
 
     Attributes
     ----------
-    model : cobra.Model
-        The model used for finding a solution.
     objective_value : float
         The (optimal) value for the objective function.
     status : str
         The solver status related to the solution.
-    fluxes : OrderedDict
-        An ordered dictionary of fluxes.
-    reduced_costs : OrderedDict
-        An ordered dictionary of reduced costs.
-    shadow_prices : OrderedDict
-        An ordered dictionary of shadow prices.
+    fluxes : dict-like
+        A dict-like container that is indexable by `cobra.Reaction` objects or
+        their IDs, for example, `OrderedDict`, `cobra.DictList`,
+        `optlang.Container`, or eventually `pandas.Series`. Contains reaction
+        fluxes (primal values).
+    reduced_costs : dict-like
+        As with fluxes but contains reduced costs (dual values).
+    shadow_prices : dict-like
+        As with fluxes but contains shadow prices.
 
     Deprecated Attributes
     ---------------------
@@ -54,17 +55,32 @@ class Solution(object):
         Use `reduced_costs` instead.
     """
 
-    def __init__(self, objective_value, status, fluxes, reduced_costs=None,
-                 shadow_prices=None, **kwargs):
+    def __init__(self, reactions, objective_value, status, fluxes,
+                 reduced_costs=None, shadow_prices=None, **kwargs):
         """
         Initialize a unified solution interface from a model.
 
         Parameters
         ----------
-        model : cobra.Model
-            The model used for finding the solution.
+        reactions : iterable
+            A list of `cobra.Reaction` objects for which the solution is
+            retrieved.
+        objective_value : float
+            The (optimal) value for the objective function.
+        status : str
+            The solver status related to the solution.
+        fluxes : dict-like
+            A dict-like container that is indexable by `cobra.Reaction` objects or
+            their IDs, for example, `OrderedDict`, `cobra.DictList`,
+            `optlang.Container`, or eventually `pandas.Series`. Contains reaction
+            fluxes (primal values).
+        reduced_costs : dict-like
+            As with fluxes but contains reduced costs (dual values).
+        shadow_prices : dict-like
+            As with fluxes but contains shadow prices.
         """
         super(Solution, self).__init__(**kwargs)
+        self.reactions = reactions
         self.objective_value = objective_value
         self.status = status
         self.fluxes = fluxes
@@ -165,7 +181,9 @@ class LegacySolution(object):
     y_dict : dict
         A dictionary of reaction IDs that maps to the respective dual values.
 
-    .. warning :: deprecated
+    Warning
+    -------
+    The LegacySolution class and its interface is deprecated.
     """
 
     def __init__(self, f, x=None, x_dict=None, y=None, y_dict=None,

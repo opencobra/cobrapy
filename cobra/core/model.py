@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import
 
-import time
 import types
 from copy import copy, deepcopy
 from functools import partial
@@ -23,7 +22,7 @@ from cobra.solvers import optimize
 from cobra.util.context import HistoryManager, resettable, get_context
 from cobra.util.solver import (
     SolverNotFound, get_solver_name, interface_to_str, set_objective, solvers,
-    add_to_solver, remove_from_solver)
+    add_to_solver, remove_from_solver, choose_solver)
 from cobra.util.util import AutoVivification
 
 
@@ -94,7 +93,6 @@ class Model(Object):
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(S.Zero)
             self._populate_solver(self.reactions, self.metabolites)
-        self._timestamp_last_optimization = None
 
     @property
     def solver(self):
@@ -305,7 +303,6 @@ class Model(Object):
             new._solver = copy(self.solver)  # pragma: no cover
 
         # No use in copying it, also circular dependencies
-        new._timestamp_last_optimization = None
         return new
 
     def add_metabolites(self, metabolite_list):
@@ -652,32 +649,18 @@ class Model(Object):
         appropriate keyword argument.
 
         """
-        # TODO: Updating the solver attribute seems a bad side consequence of
-        # running this method with a solver argument. Indicator that this should
-        # be a function like fba? Maybe only use those functions?
-        current = interface_to_str(self.solver.interface.__name__)
-        so = kwargs.get('solver', 'optlang-' + current)
-        # after deprecation this can be checked with:
-        # if so in solvers:
-        if so in ('optlang-' + k for k in solvers):
-            if interface_to_str(so) != current:
-                self.solver = interface_to_str(so)
-            self._timestamp_last_optimization = time.time()
-            original_direction = self.solver.objective.direction
-            if objective_sense is not None:
-                self.solver.objective.direction = \
-                    {'minimize': 'min', 'maximize': 'max'}[objective_sense]
-            # Please note that the solution must always be extracted right
-            # after solver.optimize() since some solvers such as cplex
-            # invalidate their solution if the model is changed afterwards
-            self.solver.optimize()
-            # Not nice, but necessary until next optlang release
-            solution = solution_type(self)
-            if objective_sense is not None:
-                self.solver.objective.direction = original_direction
-        else:
+        (legacy, solver) = choose_solver(self)
+
+        if legacy:
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
+        else:
+            original_direction = self.solver.objective.direction
+            self.solver.objective.direction = \
+                {"maximize": "max", "minimize": "min"}[objective_sense]
+            self.solver.optimize()
+            solution = self.solver.create_solution()  # TODO: is this the way?
+            self.solver.objective.direction = original_direction
 
         if solution.status is not 'optimal':
             raise SolveError('no optimal solution')

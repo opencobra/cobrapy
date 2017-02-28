@@ -33,6 +33,11 @@ _OPTLANG_TO_EXCEPTIONS_DICT = dict((
     (optlang.interface.UNDEFINED, UndefinedSolution)))
 
 
+class OptimizationError(Exception):
+    def __init__(self, message):
+        super(SolveError, self).__init__(message)
+
+
 class DefunctError(Exception):
     """Exception for retired functionality
 

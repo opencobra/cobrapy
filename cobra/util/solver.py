@@ -21,6 +21,8 @@ import sympy
 
 import cobra.solvers as legacy_solvers
 from cobra.util.context import get_context
+from cobra.exceptions import OptimizationError
+from cobra.core import Solution
 
 
 class SolverNotFound(Exception):
@@ -29,16 +31,12 @@ class SolverNotFound(Exception):
     pass
 
 
+# Define all the solvers that are found in optlang.
 solvers = {match.split("_")[0]: getattr(optlang, match)
            for match in dir(optlang) if "_interface" in match}
-"""
-Defines all the solvers that were found in optlang.
-"""
 
+# Defines all the QP solvers implemented in optlang.
 qp_solvers = ["cplex"]  # QP in gurobi not implemented yet
-"""
-Defines all the QP solvers implemented in optlang.
-"""
 
 
 def linear_reaction_coefficients(model, reactions=None):
@@ -388,3 +386,40 @@ def fix_objective_as_constraint(model, fraction=1):
         model.objective.expression,
         name=fix_objective_name, ub=ub, lb=lb)
     add_to_solver(model, constraint)
+
+
+def get_solution(model, solver=None, reactions=None, reduced_costs=False,
+                 shadow_prices=False):
+    """
+    Generate a solution representation of the current solver state.
+
+    Paramters
+    ---------
+    model : cobra.Model
+        The model whose reactions to retrieve values for.
+    solver : optlang.interface, optional
+        The solver interface to retrieve solutions from. Uses the
+        `model.solver` attribute by default.
+    reactions : iterable, optional
+        An iterable of `cobra.Reaction` objects. Uses `model.reactions` by
+        default.
+    reduced_costs: bool, optional
+        Whether to add reduced costs to the solution.
+    shadow_prices: bool, optional
+        Whether to add shadow prices to the solution.
+
+    Note
+    ----
+    This is only intended for the `optlang` solver interfaces and not the legacy
+    solvers.
+    """
+    if solver is None:
+        solver = model.solver
+    if solver.status != "optimal":
+        raise OptimizationError(
+            "non-optimal solution state {}".format(solver.status))
+    if reactions is None:
+        reactions = model.reactions
+    index = [rxn.id for rxn in reactions]
+    fluxes = 
+    solution = Solution(reactions, solver.objective.value, solver.status
