@@ -49,6 +49,8 @@ def add_moma(model):
     "moma_old_objective" and this can be used to immediately extract the value
     of the former objective after MOMA optimization.
     """
+    if 'moma_old_objective' in model.solver.variables:
+        raise ValueError('model is already adjusted for MOMA')
 
     # Fall back to default QP solver if current one has no QP capability
     model.solver = sutil.choose_solver(model, qp=True)[1]
