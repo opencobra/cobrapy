@@ -6,6 +6,7 @@ from ast import NodeTransformer
 from itertools import chain
 
 from six import iteritems
+from warnings import warn
 
 from cobra.core import Gene, Metabolite, Reaction
 from cobra.core.gene import ast2str
@@ -121,6 +122,7 @@ def convert_to_irreversible(cobra_model):
     cobra_model: A Model object which will be modified in place.
 
     """
+    warn("deprecated, not applicable for optlang solvers", DeprecationWarning)
     reactions_to_add = []
     coefficients = {}
     for reaction in cobra_model.reactions:
@@ -160,6 +162,7 @@ def revert_to_reversible(cobra_model, update_solution=True):
     update_solution: bool
         This option is ignored since `model.solution` was removed.
     """
+    warn("deprecated, not applicable for optlang solvers", DeprecationWarning)
     reverse_reactions = [x for x in cobra_model.reactions
                          if "reflection" in x.notes and
                          x.id.endswith('_reverse')]
@@ -205,6 +208,7 @@ def canonical_form(model, objective_sense='maximize',
     copy: bool. Copy the model before making any modifications.
 
     """
+    warn("deprecated, not applicable for optlang solvers", DeprecationWarning)
     if copy:
         model = model.copy()
 
