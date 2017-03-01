@@ -179,7 +179,7 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
                     status = m.solver.status
                     status_dict[reaction.id] = status
                     if status == "optimal":
-                        growth = m.solver.variables.moma_old_objective.primal
+                        growth = m.variables.moma_old_objective.primal
                     else:
                         growth = 0.0
                     growth_rate_dict[reaction.id] = growth
@@ -354,7 +354,7 @@ def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
                     status = m.solver.status
                     status_dict[gene.id] = status
                     if status == "optimal":
-                        growth = m.solver.variables.moma_old_objective.primal
+                        growth = m.variables.moma_old_objective.primal
                     else:
                         growth = 0.0
                     growth_rate_dict[gene.id] = growth

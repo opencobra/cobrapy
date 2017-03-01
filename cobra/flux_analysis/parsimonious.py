@@ -51,7 +51,7 @@ def optimize_minimal_flux(model, already_irreversible=False,
         initial optimization result. Ignored for optlang solvers, instead,
         define your objective separately and pass using the `objective`
         argument.
-    objective : dict or model.solver.interface.Objective
+    objective : dict or model.problem.Objective
         A desired objective to use during optimization in addition to the
         pFBA objective. Dictionaries (reaction as key, coefficient as value)
         can be used for linear objectives. Not used for non-optlang solvers.
@@ -120,7 +120,7 @@ def add_pfba(model, objective=None, fraction_of_optimum=1.0):
     reaction_variables = ((rxn.forward_variable, rxn.reverse_variable)
                           for rxn in model.reactions)
     variables = chain(*reaction_variables)
-    pfba_objective = model.solver.interface.Objective(add(
+    pfba_objective = model.problem.Objective(add(
         [mul((sympy.singleton.S.One, variable))
          for variable in variables]), direction='min', sloppy=True)
     set_objective(model, pfba_objective)

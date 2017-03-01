@@ -71,7 +71,7 @@ class TestCobraFluxAnalysis:
         if solver in optlang_solvers:
             model.solver = solver
         expression = model.objective.expression
-        n_constraints = len(model.solver.constraints)
+        n_constraints = len(model.constraints)
         solution = optimize_minimal_flux(model, solver=solver)
         assert solution.status == "optimal"
         assert numpy.isclose(solution.x_dict["Biomass_Ecoli_core"],
@@ -80,7 +80,7 @@ class TestCobraFluxAnalysis:
         assert numpy.isclose(sum(abs_x), 518.4221, atol=1e-4, rtol=0.0)
         # test changes to model reverted
         assert expression == model.objective.expression
-        assert len(model.solver.constraints) == n_constraints
+        assert len(model.constraints) == n_constraints
 
         # needed?
         # Test desired_objective_value

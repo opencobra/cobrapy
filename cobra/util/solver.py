@@ -99,7 +99,7 @@ def set_objective(model, value, additive=False):
     ----------
     model : cobra model
        The model to set the objective for
-    value : model.solver.interface.Objective,
+    value : model.problem.Objective,
             e.g. optlang.glpk_interface.Objective, sympy.Basic or dict
 
         If the model objective is linear, the value can be a new Objective
@@ -113,7 +113,7 @@ def set_objective(model, value, additive=False):
         If true, add the terms to the current objective, otherwise start with
         an empty objective.
     """
-    interface = model.solver.interface
+    interface = model.problem
     reverse_value = model.solver.objective.expression
     reverse_value = interface.Objective(
         reverse_value, direction=model.solver.objective.direction,
@@ -123,7 +123,7 @@ def set_objective(model, value, additive=False):
         if not model.objective.is_Linear:
             raise ValueError('can only update non-linear objectives '
                              'additively using object of class '
-                             'model.solver.interface.Objective, not %s' %
+                             'model.problem.Objective, not %s' %
                              type(value))
 
         if not additive:
@@ -257,7 +257,7 @@ def choose_solver(model, solver=None, qp=False):
     """
     legacy = False
     if solver is None:
-        solver = model.solver.interface
+        solver = model.problem
     elif "optlang-" in solver:
         solver = interface_to_str(solver)
         solver = solvers[solver]
@@ -273,7 +273,7 @@ def choose_solver(model, solver=None, qp=False):
     return legacy, solver
 
 
-def add_to_solver(model, what, **kwargs):
+def add_cons_vars_to_problem(model, what, **kwargs):
     """Add variables and constraints to a Model's solver object.
 
     Useful for variables and constraints that can not be expressed with
@@ -286,8 +286,8 @@ def add_to_solver(model, what, **kwargs):
        The model to which to add the variables and constraints.
     what : list or tuple of optlang variables or constraints.
        The variables or constraints to add to the model. Must be of class
-       `model.solver.interface.Variable` or
-       `model.solver.interface.Constraint`.
+       `model.problem.Variable` or
+       `model.problem.Constraint`.
     **kwargs : keyword arguments
         passed to solver.add()
     """
@@ -298,7 +298,7 @@ def add_to_solver(model, what, **kwargs):
         context(partial(model.solver.remove, what))
 
 
-def remove_from_solver(model, what):
+def remove_cons_vars_from_problem(model, what):
     """Remove variables and constraints from a Model's solver object.
 
     Useful to temporarily remove variables and constraints from a Models's
@@ -310,8 +310,8 @@ def remove_from_solver(model, what):
        The model from which to remove the variables and constraints.
     what : list or tuple of optlang variables or constraints.
        The variables or constraints to remove from the model. Must be of
-       class `model.solver.interface.Variable` or
-       `model.solver.interface.Constraint`.
+       class `model.problem.Variable` or
+       `model.problem.Constraint`.
     """
     context = get_context(model)
 
@@ -338,17 +338,17 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
     ub : positive float
        The upper bound for the variable.
     """
-    variable = model.solver.interface.Variable(name, lb=0, ub=ub)
+    variable = model.problem.Variable(name, lb=0, ub=ub)
 
     # The following constraints enforce variable > expression and
     # variable > -expression
     constraints = [
-        model.solver.interface.Constraint(
+        model.problem.Constraint(
             expression - variable, ub=0, name="abs_pos_" + name),
-        model.solver.interface.Constraint(
+        model.problem.Constraint(
             expression + variable, lb=0, name="abs_neg_" + name)
     ]
-    add_to_solver(model, constraints + [variable])
+    add_cons_vars_to_problem(model, constraints + [variable])
 
 
 def fix_objective_as_constraint(model, fraction=1):
@@ -373,7 +373,7 @@ def fix_objective_as_constraint(model, fraction=1):
         The fraction of the optimum the objective is allowed to reach.
     """
     fix_objective_name = 'Fixed_objective_{}'.format(model.objective.name)
-    if fix_objective_name in model.solver.constraints:
+    if fix_objective_name in model.constraints:
         model.solver.remove(fix_objective_name)
     solution = model.optimize()
     objective_bound = solution.objective_value * fraction
@@ -381,10 +381,10 @@ def fix_objective_as_constraint(model, fraction=1):
         ub, lb = None, objective_bound
     else:
         ub, lb = objective_bound, None
-    constraint = model.solver.interface.Constraint(
+    constraint = model.problem.Constraint(
         model.objective.expression,
         name=fix_objective_name, ub=ub, lb=lb)
-    add_to_solver(model, constraint)
+    add_cons_vars_to_problem(model, constraint)
 
 
 def check_solver_status(status):

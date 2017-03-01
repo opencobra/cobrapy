@@ -138,7 +138,7 @@ class Reaction(Object):
         """
         if self.model is not None:
             if self._forward_variable is None:
-                self._forward_variable = self.model.solver.variables[
+                self._forward_variable = self.model.variables[
                     self._get_forward_id()]
             assert self._forward_variable.problem is self.model.solver
             return self._forward_variable
@@ -158,7 +158,7 @@ class Reaction(Object):
         model = self.model
         if model is not None:
             if self._reverse_variable is None:
-                self._reverse_variable = model.solver.variables[
+                self._reverse_variable = model.variables[
                     self._get_reverse_id()]
             assert self._reverse_variable.problem is self.model.solver
             return self._reverse_variable
@@ -766,7 +766,7 @@ class Reaction(Object):
                     else:
                         coefficient = coefficient + old_coefficient
 
-                model.solver.constraints[
+                model.constraints[
                     metabolite.id].set_linear_coefficients(
                     {self.forward_variable: coefficient,
                      self.reverse_variable: -coefficient

@@ -6,6 +6,7 @@ from copy import deepcopy
 
 import numpy
 import pytest
+from sympy import S
 
 import cobra.util.solver as su
 from cobra.core import Metabolite, Model, Reaction
@@ -649,6 +650,17 @@ class TestCobraModel:
                            reaction in [atpm, biomass]]
         assert su.linear_reaction_coefficients(model) == {atpm: 1.,
                                                           biomass: 1.}
+
+    def test_problem_properties(self, model):
+        new_variable = model.problem.Variable("test_variable")
+        new_constraint = model.problem.Constraint(S.Zero,
+                                                  name="test_constraint")
+        model.add_cons_vars([new_variable, new_constraint])
+        assert "test_variable" in model.variables.keys()
+        assert "test_constraint" in model.constraints.keys()
+        model.remove_cons_vars([new_constraint, new_variable])
+        assert "test_variable" not in model.variables.keys()
+        assert "test_constraint" not in model.variables.keys()
 
     def test_model_medium(self, model):
         # Add a dummy 'malformed' import reaction

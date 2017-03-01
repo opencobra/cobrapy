@@ -54,7 +54,7 @@ def add_moma(model):
     model.solver = sutil.choose_solver(model, qp=True)[1]
 
     solution = model.optimize()
-    prob = model.solver.interface
+    prob = model.problem
     v = prob.Variable("moma_old_objective")
     c = prob.Constraint(model.solver.objective.expression - v,
                         lb=0.0, ub=0.0, name="moma_old_objective_constraint")
@@ -67,7 +67,7 @@ def add_moma(model):
                                 name="moma_constraint_" + r.id)
         to_add.extend([dist, const])
         new_obj += dist**2
-    sutil.add_to_solver(model, to_add)
+    model.add_cons_vars(to_add)
     model.objective = prob.Objective(new_obj, direction='min')
 
 
