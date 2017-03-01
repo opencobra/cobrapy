@@ -18,11 +18,12 @@ from types import ModuleType
 
 import optlang
 import sympy
+from numpy import zeros
+from pandas import Series
 
 import cobra.solvers as legacy_solvers
 from cobra.util.context import get_context
-from cobra.exceptions import OptimizationError
-from cobra.core import Solution
+from cobra.core.solution import Solution
 
 
 class SolverNotFound(Exception):
@@ -376,8 +377,8 @@ def fix_objective_as_constraint(model, fraction=1):
     fix_objective_name = 'Fixed_objective_{}'.format(model.objective.name)
     if fix_objective_name in model.solver.constraints:
         model.solver.remove(fix_objective_name)
-    model.solver.optimize()
-    objective_bound = model.solver.objective.value * fraction
+    solution = model.optimize()
+    objective_value = solution.objective_value * fraction
     if model.objective.direction == 'max':
         ub, lb = None, objective_bound
     else:
@@ -388,8 +389,7 @@ def fix_objective_as_constraint(model, fraction=1):
     add_to_solver(model, constraint)
 
 
-def get_solution(model, solver=None, reactions=None, reduced_costs=False,
-                 shadow_prices=False):
+def get_solution(model, reactions=None, reduced_costs=False):
     """
     Generate a solution representation of the current solver state.
 
@@ -397,29 +397,42 @@ def get_solution(model, solver=None, reactions=None, reduced_costs=False,
     ---------
     model : cobra.Model
         The model whose reactions to retrieve values for.
-    solver : optlang.interface, optional
-        The solver interface to retrieve solutions from. Uses the
-        `model.solver` attribute by default.
     reactions : iterable, optional
         An iterable of `cobra.Reaction` objects. Uses `model.reactions` by
         default.
     reduced_costs: bool, optional
         Whether to add reduced costs to the solution.
-    shadow_prices: bool, optional
-        Whether to add shadow prices to the solution.
+
+    Returns
+    -------
+    cobra.Solution
 
     Note
     ----
     This is only intended for the `optlang` solver interfaces and not the legacy
     solvers.
     """
-    if solver is None:
-        solver = model.solver
-    if solver.status != "optimal":
-        raise OptimizationError(
-            "non-optimal solution state {}".format(solver.status))
     if reactions is None:
         reactions = model.reactions
+
     index = [rxn.id for rxn in reactions]
-    fluxes = 
-    solution = Solution(reactions, solver.objective.value, solver.status
+    fluxes = zeros(len(reactions))
+    var_primals = model.solver.primal_values
+    if reduced_costs:
+        reduced = zeros(len(reactions))
+        var_duals = model.solver.reduced_costs
+        for (i, rxn) in enumerate(reactions):
+            forward = rxn.forward_variable.name
+            reverse = rxn.reverse_variable.name
+            fluxes[i] = var_primals[forward] - var_primals[reverse]
+            reduced[i] = var_duals[forward] - var_duals[reverse]
+        return Solution(reactions, model.solver.objective.value, model.solver.status,
+                        Series(index=index, data=fluxes),
+                        Series(index=index, data=reduced))
+    else:
+        for (i, rxn) in enumerate(reactions):
+            forward = rxn.forward_variable.name
+            reverse = rxn.reverse_variable.name
+            fluxes[i] = var_primals[forward] - var_primals[reverse]
+        return Solution(reactions, model.solver.objective.value, model.solver.status,
+                        Series(index=index, data=fluxes))

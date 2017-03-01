@@ -146,9 +146,9 @@ class TestCobraIO:
             model2.reactions[-1].metabolites)
         assert len(model1.genes) == len(model2.genes)
         # ensure they have the same solution max
-        model1.optimize()
-        model2.optimize()
-        assert abs(model1.solution.f - model2.solution.f) < 0.001
+        solution1 = model1.optimize()
+        solution2 = model2.optimize()
+        assert abs(solution1.f - solution2.f) < 0.001
         # ensure the references are correct
         assert model2.metabolites[0]._model is model2
         assert model2.reactions[0]._model is model2

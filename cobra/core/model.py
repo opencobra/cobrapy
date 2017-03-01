@@ -17,12 +17,11 @@ from cobra.core.dictlist import DictList
 from cobra.core.object import Object
 from cobra.core.reaction import separate_forward_and_reverse_bounds
 from cobra.core.solution import Solution
-from cobra.exceptions import SolveError
 from cobra.solvers import optimize
 from cobra.util.context import HistoryManager, resettable, get_context
 from cobra.util.solver import (
     SolverNotFound, get_solver_name, interface_to_str, set_objective, solvers,
-    add_to_solver, remove_from_solver, choose_solver)
+    add_to_solver, remove_from_solver, choose_solver, get_solution)
 from cobra.util.util import AutoVivification
 
 
@@ -84,6 +83,7 @@ class Model(Object):
             # genes based on their ids {Gene.id: Gene}
             self.compartments = {}
             self._contexts = []
+            self._contexts_dirty = []
 
             # from cameo ...
 
@@ -93,6 +93,12 @@ class Model(Object):
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(S.Zero)
             self._populate_solver(self.reactions, self.metabolites)
+        self._is_dirty = True
+
+    @property
+    def is_dirty(self):
+        """Was the model modified and not re-optimized?"""
+        return self._is_dirty
 
     @property
     def solver(self):
@@ -140,6 +146,7 @@ class Model(Object):
         for reaction in self.reactions:
             reaction._reset_var_cache()
         self._solver = interface.Model.clone(self._solver)
+        self._is_dirty = True
 
     @property
     def description(self):
@@ -209,6 +216,8 @@ class Model(Object):
         for rxn_id in (boundary_rxns - media_rxns):
             set_active_bound(self.reactions.get_by_id(rxn_id), 0)
 
+        self._is_dirty = True
+
     def __add__(self, other_model):
         """Adds two models. +
 
@@ -238,6 +247,7 @@ class Model(Object):
         new_reactions = deepcopy(other_model.reactions)
         self.add_reactions(new_reactions)
         self.id = self.id + '_' + other_model.id
+        self._is_dirty = True
         return self
 
     def copy(self):
@@ -386,6 +396,8 @@ class Model(Object):
             for x in metabolite_list:
                 context(partial(setattr, x, '_model', self))
 
+        self._is_dirty = True
+
     def add_reaction(self, reaction):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
@@ -479,6 +491,7 @@ class Model(Object):
 
         # from cameo ...
         self._populate_solver(reaction_list)
+        self._is_dirty = True
 
     def remove_reactions(self, reactions, delete=True,
                          remove_orphans=False):
@@ -623,8 +636,9 @@ class Model(Object):
 
         Parameters
         ----------
-        objective_sense : {'maximize' 'minimize'}, optional
-            Whether fluxes should be maximized or minimized.
+        objective_sense : {'maximize' 'minimize', None}, optional
+            Whether fluxes should be maximized or minimized. In case of None,
+            the previous direction is used.
         solution_type : cobra.Solution, optional
             The type of solution that should be returned. The solution is a
             complete representation of solver state of the current model.
@@ -649,27 +663,27 @@ class Model(Object):
         appropriate keyword argument.
 
         """
-        (legacy, solver) = choose_solver(self)
+        (legacy, solver) = choose_solver(self, solver=kwargs.get("solver"))
 
         if legacy:
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
         else:
+            original_solver = self.solver
             original_direction = self.solver.objective.direction
+            self.solver = solver
             self.solver.objective.direction = \
-                {"maximize": "max", "minimize": "min"}[objective_sense]
+                {"maximize": "max", "minimize": "min"}.get(
+                objective_sense, original_direction)
             self.solver.optimize()
-            solution = self.solver.create_solution()  # TODO: is this the way?
+            solution = get_solution(self)
+            self.solver = original_solver
             self.solver.objective.direction = original_direction
 
-        if solution.status is not 'optimal':
-            raise SolveError('no optimal solution')
-            # TODO: make failing optimization raise suitable exception
-            # raise exceptions._OPTLANG_TO_EXCEPTIONS_DICT.get(solution.status,
-            #                                                  SolveError)(
-            #     'Solving model %s did not return an optimal solution. The '
-            #     'returned solution status is "%s"' % (
-            #         self, solution.status))
+        if solution.status != "optimal":
+            warn("non-optimal solution state {}".format(solution.status),
+                 UserWarning)
+        self._is_dirty = False
         return solution
 
     def repair(self, rebuild_index=True, rebuild_relationships=True):
@@ -701,6 +715,7 @@ class Model(Object):
         for l in (self.reactions, self.genes, self.metabolites):
             for e in l:
                 e._model = self
+        self._is_dirty = True
 
     @property
     def objective(self):
@@ -731,6 +746,7 @@ class Model(Object):
         if not isinstance(value, (dict, optlang.interface.Objective)):
             value = {rxn: 1 for rxn in self.reactions.get_by_any(value)}
         set_objective(self, value, additive=False)
+        self._is_dirty = True
 
     def summary(self, threshold=1E-8, fva=None, floatfmt='.3g', **kwargs):
         """Print a summary of the input and output fluxes of the model. This
@@ -763,9 +779,11 @@ class Model(Object):
         except AttributeError:
             self._contexts = [HistoryManager()]
 
+        self._contexts_dirty.append(self._is_dirty)
         return self
 
     def __exit__(self, type, value, traceback):
         """Pop the top context manager and trigger the undo functions"""
         context = self._contexts.pop()
         context.reset()
+        self._is_dirty = self._contexts_dirty.pop()

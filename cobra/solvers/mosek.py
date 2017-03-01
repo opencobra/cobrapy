@@ -5,6 +5,8 @@ import mosek
 from six import iteritems, string_types
 from six.moves import zip
 
+from cobra.core.solution import LegacySolution
+
 env = mosek.Env()
 
 # make sure the mosek environment works
@@ -199,8 +201,8 @@ def format_solution(lp, cobra_model):
     mosek_status = lp.getsolsta(soltype)
     status = status_dict.get(mosek_status, str(mosek_status))
     if status != "optimal":
-        return cobra_model.solution.__class__(None, status=status)
-    solution = cobra_model.solution.__class__(get_objective_value(lp))
+        return LegacySolution(None, status=status)
+    solution = LegacySolution(get_objective_value(lp))
     solution.status = status
     x = [0] * len(cobra_model.reactions)
     lp.getxx(soltype, x)

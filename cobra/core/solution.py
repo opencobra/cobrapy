@@ -31,27 +31,22 @@ class Solution(object):
         The (optimal) value for the objective function.
     status : str
         The solver status related to the solution.
-    fluxes : dict-like
-        A dict-like container that is indexable by `cobra.Reaction` objects or
-        their IDs, for example, `OrderedDict`, `cobra.DictList`,
-        `optlang.Container`, or eventually `pandas.Series`. Contains reaction
-        fluxes (primal values).
-    reduced_costs : dict-like
-        As with fluxes but contains reduced costs (dual values).
-    shadow_prices : dict-like
-        As with fluxes but contains shadow prices.
+    fluxes : pandas.Series
+        Contains the reaction fluxes (primal values of variables).
+    reduced_costs : pandas.Series
+        Contains reduced costs (dual values of variables).
 
     Deprecated Attributes
     ---------------------
     f : float
         Use `objective_value` instead.
     x : list
-        Use `fluxes.values()` instead.
-    x_dict : OrderedDict
+        Use `fluxes.values` instead.
+    x_dict : pandas.Series
         Use `fluxes` instead.
     y : list
-        Use `reduced_costs.values()` instead.
-    y_dict : OrderedDict
+        Use `reduced_costs.values` instead.
+    y_dict : pandas.Series
         Use `reduced_costs` instead.
     """
 
@@ -89,9 +84,9 @@ class Solution(object):
 
     def __repr__(self):
         """String representation of the solution instance."""
-        if self.objective_value is None:
+        if self.status != "optimal":
             return "<Solution {0:r} at 0x{1:x}>".format(self.status, id(self))
-        return "<Solution {0:.3g} at 0x{1:x}>".format(self.objective_value,
+        return "<Solution {0:g} at 0x{1:x}>".format(self.objective_value,
                                                       id(self))
 
     def __dir__(self):
@@ -140,7 +135,7 @@ class Solution(object):
     def x(self):
         """Deprecated property for getting flux values."""
         warn("use solution.fluxes.values() instead", DeprecationWarning)
-        return self.fluxes.values()
+        return self.fluxes.values
 
     @property
     def y_dict(self):
@@ -159,7 +154,7 @@ class Solution(object):
     def y(self):
         """Deprecated property for getting reduced cost values."""
         warn("use solution.reduced_costs.values() instead", DeprecationWarning)
-        return self.reduced_costs.values()
+        return self.reduced_costs.values
 
 
 class LegacySolution(object):
@@ -223,10 +218,10 @@ class LegacySolution(object):
 
     def __repr__(self):
         """String representation of the solution instance."""
-        if self.objective_value is None:
+        if self.status != "optimal":
             return "<LegacySolution {0:r} at 0x{1:x}>".format(
                 self.status, id(self))
-        return "<LegacySolution {0:.3g} at 0x{1:x}>".format(
+        return "<LegacySolution {0:g} at 0x{1:x}>".format(
             self.objective_value, id(self))
 
     def __getitem__(self, reaction_id):

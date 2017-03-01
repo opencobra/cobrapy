@@ -24,8 +24,11 @@
 
 from __future__ import absolute_import
 
+import logging
 from os import listdir, path
 from warnings import warn
+
+LOGGER = logging.getLogger(__name__)
 
 solver_dict = {}
 possible_solvers = set()
@@ -56,10 +59,14 @@ if "wrappers" in possible_solvers:
     possible_solvers.remove("wrappers")
 
 for solver in possible_solvers:
+    LOGGER.debug("adding '%s'...", solver)
     try:
         add_solver(solver)
-    except:
+    except Exception as err:
+        LOGGER.debug("addition failed: %s", str(err))
         pass
+    else:
+        LOGGER.debug("success!")
     del solver
 
 if len(solver_dict) == 0:

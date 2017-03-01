@@ -10,7 +10,7 @@ from warnings import warn
 from gurobipy import GRB, LinExpr, Model, QuadExpr
 from six import iteritems, string_types
 
-from ..core.solution import Solution
+from ..core.solution import LegacySolution
 
 try:
     # Import izip for python versions < 3.x
@@ -108,7 +108,7 @@ def get_objective_value(lp):
 def format_solution(lp, cobra_model, **kwargs):
     status = get_status(lp)
     if status not in ('optimal', 'time_limit'):
-        the_solution = Solution(None, status=status)
+        the_solution = LegacySolution(None, status=status)
     else:
         objective_value = lp.ObjVal
         x = [v.X for v in lp.getVars()]
@@ -119,7 +119,7 @@ def format_solution(lp, cobra_model, **kwargs):
             y = [c.Pi for c in lp.getConstrs()]
             y_dict = {m.id: value for m, value
                       in zip(cobra_model.metabolites, y)}
-        the_solution = Solution(objective_value, x=x, x_dict=x_dict, y=y,
+        the_solution = LegacySolution(objective_value, x=x, x_dict=x_dict, y=y,
                                 y_dict=y_dict, status=status)
     return(the_solution)
 

@@ -264,20 +264,32 @@ class Reaction(Object):
     @property
     def flux(self):
         """Reaction flux in the most recent solution."""
-        if self._model is None:
-            raise RuntimeError("not part of a model")
-        if self._model.solution is None:
-            raise RuntimeError("model has not been solved")
-        return self._model.solution[self.id]
+        try:
+            if self._model.is_dirty:
+                raise RuntimeError(
+                    "model was not optimized since last modification")
+            if self._model.solver.status != "optimal":
+                warn("Solver status is not optimal, please treat value with"
+                     " care!", UserWarning)
+            return self.forward_variable.primal - self.reverse_variable.primal
+        except AttributeError:
+            raise RuntimeError(
+                "reaction '{}' is not part of a model".format(self.id))
 
     @property
     def reduced_cost(self):
         """Reaction reduced cost in the most recent solution."""
-        if self._model is None:
-            raise RuntimeError("not part of a model")
-        if self._model.solution is None:
-            raise RuntimeError("model has not been solved")
-        return self.forward_variable.dual - self.reverse_variable.dual
+        try:
+            if self._model.is_dirty:
+                raise RuntimeError(
+                    "model was not optimized since last modification")
+            if self._model.solver.status != "optimal":
+                warn("Solver status is not optimal, please treat value with"
+                     " care!", UserWarning)
+            return self.forward_variable.dual - self.reverse_variable.dual
+        except AttributeError:
+            raise RuntimeError(
+                "reaction '{}' is not part of a model".format(self.id))
 
     # read-only
     @property
@@ -360,14 +372,23 @@ class Reaction(Object):
 
     @property
     def x(self):
-        """The flux through the reaction in the most recent solution
+        """The flux through the reaction in the most recent solution.
 
         Flux values are computed from the primal values of the variables in
         the solution.
-
         """
-        warn("use reaction.flux instead", DeprecationWarning)
+        warn("Please use reaction.flux instead.", DeprecationWarning)
         return self.flux
+
+    @property
+    def y(self):
+        """The reduced cost of the reaction in the most recent solution.
+
+        Reduced costs are computed from the dual values of the variables in
+        the solution.
+        """
+        warn("Please use reaction.reduced_cost instead.", DeprecationWarning)
+        return self.reduced_cost
 
     @property
     def reversibility(self):

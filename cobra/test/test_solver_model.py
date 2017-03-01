@@ -11,7 +11,7 @@ import pytest
 import six
 
 import cobra
-from cobra.core import Metabolite, Model, Reaction, Solution
+from cobra.core import Metabolite, Model, Reaction, Solution, LegacySolution
 from cobra.exceptions import UndefinedSolution
 from cobra.util.solver import SolverNotFound, set_objective, solvers
 
@@ -46,29 +46,17 @@ def solved_model(request, model):
 
 
 class TestSolution:
-    def test_self_invalidation(self, solved_model):
-        solution, model = solved_model
-        # TODO: use numpy.isclose or similar tolerance concept
-        assert abs(solution.f - 0.873921506968431) < 0.000001
-        model.optimize()
-        # get a previously unaccessed flux
-        with pytest.raises(UndefinedSolution):
-            solution[model.reactions[-1].id]
-
     def test_solution_contains_only_reaction_specific_values(self,
                                                              solved_model):
         solution, model = solved_model
+        assert set(model.reactions) == set(solution.reactions)
         reaction_ids = set([reaction.id for reaction in model.reactions])
-        assert set(solution.fluxes.keys()).difference(
-            reaction_ids) == set()
-        assert set(solution.reduced_costs.keys()).difference(
-            reaction_ids) == set()
-        assert set(solution.reduced_costs.keys()).difference(
-            reaction_ids) == set()
-        metabolite_ids = set(
-            [metabolite.id for metabolite in model.metabolites])
-        assert set(solution.shadow_prices.keys()).difference(
-            metabolite_ids) == set()
+        if isinstance(solution, Solution):
+            assert set(solution.fluxes.index) == reaction_ids
+#            assert set(solution.reduced_costs.index) == reaction_ids
+        else:
+            raise TypeError(
+                "solutions of type {0:r} are untested".format(type(solution)))
 
 
 class TestReaction:

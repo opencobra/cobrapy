@@ -132,41 +132,31 @@ class Metabolite(Species):
         the solution.
 
         """
-        warn("use metabolite.shadow_price instead", DeprecationWarning)
-        try:
-            return self._model.solution.y_dict[self.id]
-        except Exception as e:
-            if self._model is None:
-                raise Exception("not part of a model")
-            not_solved = (not hasattr(self._model, "solution") or
-                          self._model.solution is None or
-                          self._model.solution.status == "NA")
-            if not_solved:
-                raise Exception("model has not been solved")
-            if self._model.solution.status != "optimal":
-                raise Exception("model solution was not optimal")
-            raise e  # Not sure what the exact problem was
+        warn("Please use metabolite.shadow_price instead.", DeprecationWarning)
+        return self.shadow_price
 
     def shadow_price(self):
-        """The shadow price for the metabolite in the most recent solution
+        """The shadow price for the metabolite in the most recent solution.
 
-        Shadow prices are computed from the dual values of the bounds in
-        the solution.
+        Shadow prices are computed from the dual values of the model constraints
+        in the solution.
 
+        Warning
+        -------
+        You are responsible for checking the solver status. You might be
+        interested in values of non-optimal solutions
         """
         try:
-            return self._model.solution.shadow_prices[self.id]
-        except Exception as e:
-            if self._model is None:
-                raise Exception("not part of a model")
-            not_solved = (not hasattr(self._model, "solution") or
-                          self._model.solution is None or
-                          self._model.solution.status == "NA")
-            if not_solved:
-                raise Exception("model has not been solved")
-            if self._model.solution.status != "optimal":
-                raise Exception("model solution was not optimal")
-            raise e
+            if self._model.is_dirty:
+                raise RuntimeError(
+                    "model was not optimized since last modification")
+            if self._model.solver.status != "optimal":
+                warn("Solver status is not optimal, please treat value with"
+                     " care!", UserWarning)
+            return self._model.solver.constraints[self.id].dual
+        except AttributeError:
+            raise RuntimeError(
+                "metabolite '{}' is not part of a model".format(self.id))
 
     def remove_from_model(self, destructive=False):
         """Removes the association from self.model

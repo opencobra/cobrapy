@@ -49,8 +49,8 @@ def solved_model(data_directory):
     model = create_test_model("textbook")
     with open(join(data_directory, "textbook_solution.pickle"),
               "rb") as infile:
-        model.solution = _load(infile)
-    return model
+        solution = _load(infile)
+    return solution, model
 
 
 @pytest.fixture(scope="function")

@@ -3,11 +3,13 @@ from __future__ import absolute_import
 
 import re
 import sys
+import warnings
 from contextlib import contextmanager
 from os import name
 
 import numpy
 import pytest
+import numpy
 from six import StringIO, iteritems
 
 import cobra.util.solver as sutil
@@ -22,6 +24,13 @@ from cobra.solvers import SolverNotFound, get_solver_name, solver_dict
 from .conftest import fva_results, large_model, model, solved_model
 
 try:
+<<<<<<< 8d062ff7c0e2113028984621ee2dd3d5874b684c
+=======
+    from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
+except ImportError:
+    numpy = None
+try:
+>>>>>>> add the brunt of solution changes
     import scipy
 except ImportError:
     scipy = None
@@ -68,6 +77,7 @@ class TestCobraFluxAnalysis:
     def test_pfba(self, model, solver):
         expression = model.objective.expression
         n_constraints = len(model.solver.constraints)
+<<<<<<< 8d062ff7c0e2113028984621ee2dd3d5874b684c
         df = optimize_minimal_flux(model, solver=solver)
         assert numpy.all([df.columns.values == ['flux', 'objective_value']])
         assert model.solution.status == "optimal"
@@ -77,6 +87,14 @@ class TestCobraFluxAnalysis:
             assert abs(df.flux['Biomass_Ecoli_core'] - 0.8739) < 0.001
         assert abs(sum(abs(df.flux)) - 518.4221) < 0.001
 
+=======
+        solution = optimize_minimal_flux(model, solver=solver)
+        assert solution.status == "optimal"
+        assert numpy.isclose(solution.x_dict["Biomass_Ecoli_core"],
+                             0.8739, atol=1e-4, rtol=0.0)
+        abs_x = [abs(i) for i in solution.x]
+        assert numpy.isclose(sum(abs_x), 518.4221, atol=1e-4, rtol=0.0)
+>>>>>>> add the brunt of solution changes
         # test changes to model reverted
         assert expression == model.objective.expression
         assert len(model.solver.constraints) == n_constraints
@@ -91,7 +109,9 @@ class TestCobraFluxAnalysis:
         # assert abs(model.solution.f - desired_objective) < 0.001
         # assert abs(sum(abs_x) - 476.1594) < 0.001
 
+        # TODO: parametrize fraction (DRY it up)
         # Test fraction_of_optimum
+<<<<<<< 8d062ff7c0e2113028984621ee2dd3d5874b684c
         df = optimize_minimal_flux(model, solver=solver,
                                    fraction_of_optimum=0.95)
         assert model.solution.status == "optimal"
@@ -107,6 +127,24 @@ class TestCobraFluxAnalysis:
             model.reactions.ATPM.lower_bound = 500
             with pytest.raises((SolveError, ValueError)):
                 optimize_minimal_flux(model, solver=solver)
+=======
+        solution = optimize_minimal_flux(model, solver=solver,
+                              fraction_of_optimum=0.95)
+        assert solution.status == "optimal"
+        assert numpy.isclose(solution.x_dict["Biomass_Ecoli_core"],
+                             0.95 * 0.8739, atol=1e-4, rtol=0.0)
+        abs_x = [abs(i) for i in solution.x]
+        assert numpy.isclose(sum(abs_x), 493.4400, atol=1e-4, rtol=0.0)
+
+        # Infeasible solution
+        model.reactions.ATPM.lower_bound = 500
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            with pytest.raises((UserWarning, ValueError)):
+                optimize_minimal_flux(model, solver=solver)
+#        with pytest.raises(ValueError):
+#            optimize_minimal_flux(model, solver=solver)
+>>>>>>> add the brunt of solution changes
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_single_gene_deletion_fba_benchmark(self, model, benchmark,
@@ -328,8 +366,10 @@ class TestCobraFluxAnalysis:
         infeasible_mod = construct_loopless_model(test_model)
         assert feasible_sol.status == "optimal"
 
-        with pytest.raises(SolveError):
-            infeasible_mod.optimize(solver="cglpk")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            with pytest.raises((UserWarning, ValueError)):
+                infeasible_mod.optimize(solver="cglpk")
 
     def test_loopless_solution(self):
         test_model = self.construct_ll_test_model()
@@ -346,6 +386,7 @@ class TestCobraFluxAnalysis:
         assert len(ll_fluxes) == len(model.reactions)
         fluxes["Biomass_Ecoli_core"] = 1
         ll_fluxes = loopless_solution(model, fluxes=fluxes)
+        # TODO: should ll_fluxes be None when the model is infeasible?
         assert ll_fluxes is None
 
     def test_add_loopless(self):
@@ -405,8 +446,9 @@ class TestCobraFluxAnalysis:
             'acald_e      0    [0, 1.27]',
         ]
         for solver in solver_dict:
+            model.optimize(solver=solver)
             with captured_output() as (out, err):
-                solved_model.summary(fva=0.95, solver=solver)
+                model.summary(fva=0.95, solver=solver)
             self.check_entries(out, desired_entries)
 
         # test non-fva version (these should be fixed for textbook model
@@ -423,8 +465,9 @@ class TestCobraFluxAnalysis:
         # Need to use a different method here because
         # there are multiple entries per line.
         for solver in solver_dict:
+            model.optimize(solver=solver)
             with captured_output() as (out, err):
-                solved_model.summary()
+                model.summary()
 
             s = out.getvalue()
             for i in desired_entries:
@@ -444,8 +487,9 @@ class TestCobraFluxAnalysis:
         ]
 
         for solver in solver_dict:
+            model.optimize(solver=solver)
             with captured_output() as (out, err):
-                solved_model.metabolites.q8_c.summary()
+                model.metabolites.q8_c.summary()
             self.check_entries(out, desired_entries)
 
         desired_entries = [
@@ -463,8 +507,9 @@ class TestCobraFluxAnalysis:
         ]
 
         for solver in solver_dict:
+            model.optimize(solver=solver)
             with captured_output() as (out, err):
-                solved_model.metabolites.fdp_c.summary(fva=0.99, solver=solver)
+                model.metabolites.fdp_c.summary(fva=0.99, solver=solver)
             self.check_entries(out, desired_entries)
 
 

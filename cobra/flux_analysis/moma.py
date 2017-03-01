@@ -53,7 +53,7 @@ def add_moma(model):
     # Fall back to default QP solver if current one has no QP capability
     model.solver = sutil.choose_solver(model, qp=True)[1]
 
-    model.optimize()
+    solution = model.optimize()
     prob = model.solver.interface
     v = prob.Variable("moma_old_objective")
     c = prob.Constraint(model.solver.objective.expression - v,
@@ -61,7 +61,7 @@ def add_moma(model):
     to_add = [v, c]
     new_obj = S.Zero
     for r in model.reactions:
-        flux = model.solution.fluxes[r.id]
+        flux = solution.fluxes[r.id]
         dist = prob.Variable("moma_dist_" + r.id)
         const = prob.Constraint(r.flux_expression - dist, lb=flux, ub=flux,
                                 name="moma_constraint_" + r.id)
@@ -149,7 +149,6 @@ def solve_moma_model(moma_model, objective_id, solver=None, **solver_args):
     solution = solver.format_solution(lp, moma_model)
     solution.f = 0. if solution.x_dict is None \
         else solution.x_dict[objective_id]
-    moma_model.solution = solution
     return solution
 
 

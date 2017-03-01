@@ -9,10 +9,16 @@ from six import iteritems
 from sympy.core.singleton import S
 
 from cobra.core import Metabolite, Reaction
-from cobra.exceptions import SolveError
 from cobra.util import add_to_solver, linear_reaction_coefficients
 from cobra.manipulation.modify import convert_to_irreversible
-from cobra.util import nullspace
+from cobra.util.solver import get_solution
+
+try:
+    import numpy
+    from cobra.util import nullspace
+except ImportError:
+    numpy = None
+    nullspace = None
 
 
 def add_loopless(model, zero_cutoff=1e-12):
@@ -131,14 +137,16 @@ def loopless_solution(model, fluxes=None):
     """
     # Need to reoptimize otherwise spurious solution artifacts can cause
     # all kinds of havoc
-    if not fluxes:
+    # TODO: check solution status
+    if fluxes is None:
         sol = model.optimize(objective_sense=None)
         fluxes = sol.fluxes
-        obj_val = sol.f
+        obj_val = sol.objective_value
     else:
-        if not (isinstance(fluxes, dict) and
-                len(fluxes) == len(model.reactions)):
-            raise ValueError("`fluxes` must be a dictionary {rxn_id: flux}")
+        # rather rely on duck typing (want to use pandas.Series)
+#        if not (isinstance(fluxes, dict) and
+#                len(fluxes) == len(model.reactions)):
+#            raise ValueError("`fluxes` must be a dictionary {rxn_id: flux}")
         coefs = linear_reaction_coefficients(model)
         obj_val = sum(coefs[rxn] * fluxes[rxn.id] for rxn in coefs)
 
@@ -166,11 +174,11 @@ def loopless_solution(model, fluxes=None):
                     {rxn.forward_variable: -1, rxn.reverse_variable: 1})
 
         model.solver.objective.direction = "min"
-        try:
-            model.optimize(objective_sense=None)
-            fluxes = model.solution.fluxes
-        except SolveError:
-            fluxes = None
+
+        # optimize no longer raises but warns when the status is not optimal
+        # TODO: check solution status
+        solution = model.optimize(objective_sense=None)
+        fluxes = solution.fluxes
 
     return fluxes
 
@@ -210,7 +218,7 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-9):
     # boundary reactions can not be part of cycles
     if reaction.boundary:
         if all_fluxes:
-            return model.solution.fluxes
+            return get_solution(model).fluxes
         else:
             return current
 
@@ -251,9 +259,9 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-9):
             {model.solver.variables.fva_old_objective: 0,
              reaction.forward_variable: 1, reaction.reverse_variable: -1})
 
-    model.optimize(objective_sense=None)
+    solution = model.optimize(objective_sense=None)
     if all_fluxes:
-        best = model.solution.fluxes
+        best = solution.fluxes
     else:
         best = reaction.flux
     return best

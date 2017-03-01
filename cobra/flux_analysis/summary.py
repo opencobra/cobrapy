@@ -130,7 +130,7 @@ def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
 
     # Create a dataframe of objective fluxes
     objective_reactions = linear_reaction_coefficients(model)
-    obj_fluxes = pd.DataFrame({key: key.x * value for key, value in
+    obj_fluxes = pd.DataFrame({key: key.flux * value for key, value in
                                iteritems(objective_reactions)},
                               index=['flux']).T
     obj_fluxes['id'] = obj_fluxes.apply(

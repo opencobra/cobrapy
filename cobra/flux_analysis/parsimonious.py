@@ -7,7 +7,7 @@ from itertools import chain
 
 import pandas
 import sympy
-from six import iteritems
+#from six import iteritems
 
 from cobra.util import solver as sutil
 from cobra.exceptions import SolveError
@@ -239,13 +239,11 @@ def _optimize_minimal_flux_legacy(model, solver, already_irreversible=False,
     solution = solver.format_solution(lp, model)
 
     # Return the model to its original state
-    model.solution = solution
+#    model.solution = solution
     revert_to_reversible(model)
 
-    if solution.status == "optimal":
-        model.solution.f = sum([coeff * reaction.x for reaction, coeff in
-                                iteritems(objective_reactions)])
-    results = dict()
-    results['flux'] = {reaction.id: reaction.x for reaction in model.reactions}
-    results['objective_value'] = model.solution.f
-    return pandas.DataFrame(results)
+#    if solution.status == "optimal":
+#        model.solution.f = sum([coeff * reaction.x for reaction, coeff in
+#                                iteritems(objective_reactions)])
+
+    return solution
