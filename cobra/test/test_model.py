@@ -312,7 +312,7 @@ class TestCobraModel:
         test_metabolite = model.metabolites[4]
         test_reactions = test_metabolite.reactions
         with model:
-            model.remove_metabolites(test_metabolite, method='subtractive')
+            model.remove_metabolites(test_metabolite, destructive=False)
             assert test_metabolite._model is None
             assert test_metabolite not in model.metabolites
             assert test_metabolite.id not in model.solver.constraints
@@ -327,7 +327,7 @@ class TestCobraModel:
         test_metabolite = model.metabolites[4]
         test_reactions = test_metabolite.reactions
         with model:
-            model.remove_metabolites(test_metabolite, method='destructive')
+            model.remove_metabolites(test_metabolite, destructive=True)
             assert test_metabolite._model is None
             assert test_metabolite not in model.metabolites
             assert test_metabolite.id not in model.solver.constraints

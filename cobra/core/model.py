@@ -346,16 +346,15 @@ class Model(Object):
                 # Do we care?
                 context(partial(setattr, x, '_model', None))
 
-    def remove_metabolites(self, metabolite_list, method='subtractive'):
+    def remove_metabolites(self, metabolite_list, destructive=False):
         """Will remove a list of metabolites from the the object
 
         metabolite_list : A list of :class:`~cobra.core.Metabolite` objects
 
-        method : 'subtractive' or 'destructive'.
-            If 'subtractive' then the metabolite is removed from all
-            associated reactions.  If 'destructive' then all associated
-            reactions are removed from the Model
-            ** Need to do this.
+        destructive : bool
+            If False then the metabolite is removed from all
+            associated reactions.  If True then all associated
+            reactions are removed from the Model.
 
         """
         if not hasattr(metabolite_list, '__iter__'):
@@ -366,18 +365,14 @@ class Model(Object):
         for x in metabolite_list:
             x._model = None
 
-            if method == 'subtractive':
+            if not destructive:
                 for the_reaction in list(x._reaction):
                     the_coefficient = the_reaction._metabolites[x]
                     the_reaction.subtract_metabolites({x: the_coefficient})
 
-            elif method == 'destructive':
+            else:
                 for x in list(x._reaction):
                     x.remove_from_model()
-
-            else:
-                raise TypeError(
-                    method + " is not 'subtractive' or 'destructive'")
 
         self.metabolites -= metabolite_list
 

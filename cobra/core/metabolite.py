@@ -168,20 +168,17 @@ class Metabolite(Species):
                 raise Exception("model solution was not optimal")
             raise e
 
-    def remove_from_model(self, method='subtractive'):
+    def remove_from_model(self, destructive=False):
         """Removes the association from self.model
 
         Parameters
         ----------
-        method : 'subtractive' or 'destructive'.
-            If 'subtractive' then the metabolite is removed from all
-            associated reactions.  If 'destructive' then all associated
+        destructive : bool
+            If False then the metabolite is removed from all
+            associated reactions.  If True then all associated
             reactions are removed from the Model.
         """
-        # why is model being taken in as a parameter? This plays
-        # back to the question of allowing a Metabolite to be associated
-        # with multiple Models
-        self._model.remove_metabolites(self, method)
+        self._model.remove_metabolites(self, destructive)
 
     def summary(self, threshold=0.01, fva=False, floatfmt='.3g', **kwargs):
         """Print a summary of the reactions which produce and consume this
