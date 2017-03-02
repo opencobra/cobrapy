@@ -31,10 +31,18 @@ class Solution(object):
         The (optimal) value for the objective function.
     status : str
         The solver status related to the solution.
+    reactions : list
+        A list of `cobra.Reaction` objects for which the solution is
+        retrieved.
     fluxes : pandas.Series
         Contains the reaction fluxes (primal values of variables).
     reduced_costs : pandas.Series
-        Contains reduced costs (dual values of variables).
+        Contains reaction reduced costs (dual values of variables).
+    metabolites : list
+        A list of `cobra.Metabolite` objects for which the solution is
+        retrieved.
+    shadow_prices : pandas.Series
+        Contains metabolite shadow prices (dual values of constraints).
 
     Deprecated Attributes
     ---------------------
@@ -50,36 +58,38 @@ class Solution(object):
         Use `reduced_costs` instead.
     """
 
-    def __init__(self, reactions, objective_value, status, fluxes,
-                 reduced_costs=None, shadow_prices=None, **kwargs):
+    def __init__(self, objective_value, status, reactions, fluxes,
+                 reduced_costs=None, metabolites=None, shadow_prices=None,
+                 **kwargs):
         """
         Initialize a unified solution interface from a model.
 
         Parameters
         ----------
-        reactions : iterable
-            A list of `cobra.Reaction` objects for which the solution is
-            retrieved.
         objective_value : float
             The (optimal) value for the objective function.
         status : str
             The solver status related to the solution.
-        fluxes : dict-like
-            A dict-like container that is indexable by `cobra.Reaction` objects or
-            their IDs, for example, `OrderedDict`, `cobra.DictList`,
-            `optlang.Container`, or eventually `pandas.Series`. Contains reaction
-            fluxes (primal values).
-        reduced_costs : dict-like
-            As with fluxes but contains reduced costs (dual values).
-        shadow_prices : dict-like
-            As with fluxes but contains shadow prices.
+        reactions : list
+            A list of `cobra.Reaction` objects for which the solution is
+            retrieved.
+        fluxes : pandas.Series
+            Contains the reaction fluxes (primal values of variables).
+        reduced_costs : pandas.Series
+            Contains reaction reduced costs (dual values of variables).
+        metabolites : list
+            A list of `cobra.Metabolite` objects for which the solution is
+            retrieved.
+        shadow_prices : pandas.Series
+            Contains metabolite shadow prices (dual values of constraints).
         """
         super(Solution, self).__init__(**kwargs)
-        self.reactions = reactions
         self.objective_value = objective_value
         self.status = status
+        self.reactions = reactions
         self.fluxes = fluxes
         self.reduced_costs = reduced_costs
+        self.metabolites = metabolites
         self.shadow_prices = shadow_prices
 
     def __repr__(self):

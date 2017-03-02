@@ -389,7 +389,7 @@ def fix_objective_as_constraint(model, fraction=1):
     add_to_solver(model, constraint)
 
 
-def get_solution(model, reactions=None, reduced_costs=False):
+def get_solution(model, reactions=None, metabolites=None):
     """
     Generate a solution representation of the current solver state.
 
@@ -397,11 +397,12 @@ def get_solution(model, reactions=None, reduced_costs=False):
     ---------
     model : cobra.Model
         The model whose reactions to retrieve values for.
-    reactions : iterable, optional
+    reactions : list, optional
         An iterable of `cobra.Reaction` objects. Uses `model.reactions` by
         default.
-    reduced_costs: bool, optional
-        Whether to add reduced costs to the solution.
+    metabolites : list, optional
+        An iterable of `cobra.Metabolite` objects. Uses `model.metabolites` by
+        default.
 
     Returns
     -------
@@ -414,25 +415,27 @@ def get_solution(model, reactions=None, reduced_costs=False):
     """
     if reactions is None:
         reactions = model.reactions
+    if metabolites is None:
+        metabolites = model.metabolites
 
-    index = [rxn.id for rxn in reactions]
+    rxn_index = [rxn.id for rxn in reactions]
     fluxes = zeros(len(reactions))
     var_primals = model.solver.primal_values
-    if reduced_costs:
-        reduced = zeros(len(reactions))
-        var_duals = model.solver.reduced_costs
-        for (i, rxn) in enumerate(reactions):
-            forward = rxn.forward_variable.name
-            reverse = rxn.reverse_variable.name
-            fluxes[i] = var_primals[forward] - var_primals[reverse]
-            reduced[i] = var_duals[forward] - var_duals[reverse]
-        return Solution(reactions, model.solver.objective.value, model.solver.status,
-                        Series(index=index, data=fluxes),
-                        Series(index=index, data=reduced))
-    else:
-        for (i, rxn) in enumerate(reactions):
-            forward = rxn.forward_variable.name
-            reverse = rxn.reverse_variable.name
-            fluxes[i] = var_primals[forward] - var_primals[reverse]
-        return Solution(reactions, model.solver.objective.value, model.solver.status,
-                        Series(index=index, data=fluxes))
+    reduced = zeros(len(reactions))
+    var_duals = model.solver.reduced_costs
+    for (i, rxn) in enumerate(reactions):
+        forward = rxn.forward_variable.name
+        reverse = rxn.reverse_variable.name
+        fluxes[i] = var_primals[forward] - var_primals[reverse]
+        reduced[i] = var_duals[forward] - var_duals[reverse]
+    met_index = [met.id for met in metabolites]
+    shadow = zeros(len(reactions))
+    constr_duals = model.solver.shadow_prices
+    for (i, met) in enumerate(metabolites):
+        shadow[i] = constr_duals[met.id]
+    return Solution(model.solver.objective.value, model.solver.status,
+                    reactions,
+                    Series(index=rxn_index, data=fluxes),
+                    Series(index=rxn_index, data=reduced),
+                    metabolites,
+                    Series(index=met_index, data=shadow))
