@@ -386,7 +386,6 @@ class TestCobraFluxAnalysis:
         assert len(ll_fluxes) == len(model.reactions)
         fluxes["Biomass_Ecoli_core"] = 1
         ll_fluxes = loopless_solution(model, fluxes=fluxes)
-        # TODO: should ll_fluxes be None when the model is infeasible?
         assert ll_fluxes is None
 
     def test_add_loopless(self):
@@ -423,8 +422,10 @@ class TestCobraFluxAnalysis:
 
     def test_summary_methods(self, model, solved_model):
         # Test model summary methods
-        with pytest.raises(Exception):
-            model.summary()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            with pytest.raises((UserWarning, ValueError)):
+                model.summary()
 
         desired_entries = [
             'idFluxRangeidFluxRangeBiomass_Ecol...0.874',

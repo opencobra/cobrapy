@@ -429,7 +429,7 @@ def get_solution(model, reactions=None, metabolites=None):
         fluxes[i] = var_primals[forward] - var_primals[reverse]
         reduced[i] = var_duals[forward] - var_duals[reverse]
     met_index = [met.id for met in metabolites]
-    shadow = zeros(len(reactions))
+    shadow = zeros(len(metabolites))
     constr_duals = model.solver.shadow_prices
     for (i, met) in enumerate(metabolites):
         shadow[i] = constr_duals[met.id]

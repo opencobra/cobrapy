@@ -176,9 +176,11 @@ def loopless_solution(model, fluxes=None):
         model.solver.objective.direction = "min"
 
         # optimize no longer raises but warns when the status is not optimal
-        # TODO: check solution status
         solution = model.optimize(objective_sense=None)
-        fluxes = solution.fluxes
+        if solution.status == "optimal":
+            fluxes = solution.fluxes
+        else:
+            fluxes = None
 
     return fluxes
 

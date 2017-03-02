@@ -96,7 +96,7 @@ class Solution(object):
         """String representation of the solution instance."""
         if self.status != "optimal":
             return "<Solution {0:r} at 0x{1:x}>".format(self.status, id(self))
-        return "<Solution {0:g} at 0x{1:x}>".format(self.objective_value,
+        return "<Solution {0:.3f} at 0x{1:x}>".format(self.objective_value,
                                                       id(self))
 
     def __dir__(self):
@@ -231,7 +231,7 @@ class LegacySolution(object):
         if self.status != "optimal":
             return "<LegacySolution {0:r} at 0x{1:x}>".format(
                 self.status, id(self))
-        return "<LegacySolution {0:g} at 0x{1:x}>".format(
+        return "<LegacySolution {0:.3f} at 0x{1:x}>".format(
             self.objective_value, id(self))
 
     def __getitem__(self, reaction_id):
