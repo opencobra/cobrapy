@@ -265,9 +265,6 @@ class Reaction(Object):
     def flux(self):
         """Reaction flux in the most recent solution."""
         try:
-            if self._model.is_dirty:
-                raise RuntimeError(
-                    "model was not optimized since last modification")
             if self._model.solver.status != "optimal":
                 warn("Solver status is not optimal, please treat value with"
                      " care!", UserWarning)
@@ -280,9 +277,6 @@ class Reaction(Object):
     def reduced_cost(self):
         """Reaction reduced cost in the most recent solution."""
         try:
-            if self._model.is_dirty:
-                raise RuntimeError(
-                    "model was not optimized since last modification")
             if self._model.solver.status != "optimal":
                 warn("Solver status is not optimal, please treat value with"
                      " care!", UserWarning)

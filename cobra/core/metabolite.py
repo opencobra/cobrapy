@@ -147,9 +147,6 @@ class Metabolite(Species):
         interested in values of non-optimal solutions
         """
         try:
-            if self._model.is_dirty:
-                raise RuntimeError(
-                    "model was not optimized since last modification")
             if self._model.solver.status != "optimal":
                 warn("Solver status is not optimal, please treat value with"
                      " care!", UserWarning)

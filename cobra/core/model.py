@@ -83,7 +83,6 @@ class Model(Object):
             # genes based on their ids {Gene.id: Gene}
             self.compartments = {}
             self._contexts = []
-            self._contexts_dirty = []
 
             # from cameo ...
 
@@ -93,12 +92,6 @@ class Model(Object):
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(S.Zero)
             self._populate_solver(self.reactions, self.metabolites)
-        self._is_dirty = True
-
-    @property
-    def is_dirty(self):
-        """Was the model modified and not re-optimized?"""
-        return self._is_dirty
 
     @property
     def solver(self):
@@ -146,7 +139,6 @@ class Model(Object):
         for reaction in self.reactions:
             reaction._reset_var_cache()
         self._solver = interface.Model.clone(self._solver)
-        self._is_dirty = True
 
     @property
     def description(self):
@@ -216,8 +208,6 @@ class Model(Object):
         for rxn_id in (boundary_rxns - media_rxns):
             set_active_bound(self.reactions.get_by_id(rxn_id), 0)
 
-        self._is_dirty = True
-
     def __add__(self, other_model):
         """Adds two models. +
 
@@ -247,7 +237,6 @@ class Model(Object):
         new_reactions = deepcopy(other_model.reactions)
         self.add_reactions(new_reactions)
         self.id = self.id + '_' + other_model.id
-        self._is_dirty = True
         return self
 
     def copy(self):
@@ -396,8 +385,6 @@ class Model(Object):
             for x in metabolite_list:
                 context(partial(setattr, x, '_model', self))
 
-        self._is_dirty = True
-
     def add_reaction(self, reaction):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
@@ -491,7 +478,6 @@ class Model(Object):
 
         # from cameo ...
         self._populate_solver(reaction_list)
-        self._is_dirty = True
 
     def remove_reactions(self, reactions, delete=True,
                          remove_orphans=False):
@@ -683,7 +669,6 @@ class Model(Object):
         if solution.status != "optimal":
             warn("non-optimal solution state {}".format(solution.status),
                  UserWarning)
-        self._is_dirty = False
         return solution
 
     def repair(self, rebuild_index=True, rebuild_relationships=True):
@@ -715,7 +700,6 @@ class Model(Object):
         for l in (self.reactions, self.genes, self.metabolites):
             for e in l:
                 e._model = self
-        self._is_dirty = True
 
     @property
     def objective(self):
@@ -746,7 +730,6 @@ class Model(Object):
         if not isinstance(value, (dict, optlang.interface.Objective)):
             value = {rxn: 1 for rxn in self.reactions.get_by_any(value)}
         set_objective(self, value, additive=False)
-        self._is_dirty = True
 
     def summary(self, threshold=1E-8, fva=None, floatfmt='.3g', **kwargs):
         """Print a summary of the input and output fluxes of the model. This
@@ -779,11 +762,9 @@ class Model(Object):
         except AttributeError:
             self._contexts = [HistoryManager()]
 
-        self._contexts_dirty.append(self._is_dirty)
         return self
 
     def __exit__(self, type, value, traceback):
         """Pop the top context manager and trigger the undo functions"""
         context = self._contexts.pop()
         context.reset()
-        self._is_dirty = self._contexts_dirty.pop()
