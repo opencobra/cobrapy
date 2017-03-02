@@ -152,8 +152,15 @@ class TestReactions:
     def test_build_from_string(self, model):
         m = len(model.metabolites)
         pgi = model.reactions.get_by_id("PGI")
-        pgi.reaction = "g6p_c --> f6p_c"
-        assert pgi.lower_bound == 0
+
+        old_bounds = pgi.bounds
+
+        with model:
+            pgi.reaction = "g6p_c --> f6p_c"
+            assert pgi.lower_bound == 0
+
+        assert pgi.bounds == old_bounds
+
         pgi.bounds = (0, 1000)
         assert pgi.bounds == (0, 1000)
         assert not pgi.reversibility
@@ -162,11 +169,20 @@ class TestReactions:
         assert pgi.reaction.strip() == "g6p_c <-- f6p_c"
         pgi.reaction = "g6p_c --> f6p_c + h2o_c"
         assert model.metabolites.h2o_c, pgi._metabolites
-        pgi.build_reaction_from_string("g6p_c --> f6p_c + foo", verbose=False)
-        assert model.metabolites.h2o_c not in pgi._metabolites
-        assert "foo" in model.metabolites
-        assert model.metabolites.foo in pgi._metabolites
-        assert len(model.metabolites) == m + 1
+
+        with model:
+            pgi.build_reaction_from_string("g6p_c --> f6p_c + foo",
+                                           verbose=False)
+            assert model.metabolites.h2o_c not in pgi._metabolites
+            assert "foo" in model.metabolites
+            assert model.metabolites.foo in pgi._metabolites
+            assert len(model.metabolites) == m + 1
+
+        assert model.metabolites.h2o_c in pgi._metabolites
+        assert "foo" not in model.metabolites
+        with pytest.raises(AttributeError):
+            model.metabolites.foo
+        assert len(model.metabolites) == m
 
     def test_bounds_setter(self, model):
         rxn = model.reactions.get_by_id("PGI")
