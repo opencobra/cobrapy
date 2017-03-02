@@ -292,17 +292,37 @@ class TestCobraModel:
         assert new_metabolite not in model.metabolites
         assert new_metabolite.id not in model.solver.constraints
 
-    def test_remove_metabolite(self, model):
+    def test_remove_metabolite_subtractive(self, model):
         test_metabolite = model.metabolites[4]
+        test_reactions = test_metabolite.reactions
         with model:
-            model.remove_metabolites(test_metabolite)
+            model.remove_metabolites(test_metabolite, method='subtractive')
             assert test_metabolite._model is None
             assert test_metabolite not in model.metabolites
             assert test_metabolite.id not in model.solver.constraints
+            for reaction in test_reactions:
+                assert reaction in model.reactions
 
         assert test_metabolite._model is model
         assert test_metabolite in model.metabolites
         assert test_metabolite.id in model.solver.constraints
+
+    def test_remove_metabolite_destructive(self, model):
+        test_metabolite = model.metabolites[4]
+        test_reactions = test_metabolite.reactions
+        with model:
+            model.remove_metabolites(test_metabolite, method='destructive')
+            assert test_metabolite._model is None
+            assert test_metabolite not in model.metabolites
+            assert test_metabolite.id not in model.solver.constraints
+            for reaction in test_reactions:
+                assert reaction not in model.reactions
+
+        assert test_metabolite._model is model
+        assert test_metabolite in model.metabolites
+        assert test_metabolite.id in model.solver.constraints
+        for reaction in test_reactions:
+            assert reaction in model.reactions
 
     def test_add_reaction(self, model):
         old_reaction_count = len(model.reactions)

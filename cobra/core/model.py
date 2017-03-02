@@ -365,6 +365,20 @@ class Model(Object):
                            if x.id in self.metabolites]
         for x in metabolite_list:
             x._model = None
+
+            if method == 'subtractive':
+                for the_reaction in list(x._reaction):
+                    the_coefficient = the_reaction._metabolites[x]
+                    the_reaction.subtract_metabolites({x: the_coefficient})
+
+            elif method == 'destructive':
+                for x in list(x._reaction):
+                    x.remove_from_model()
+
+            else:
+                raise TypeError(
+                    method + " is not 'subtractive' or 'destructive'")
+
         self.metabolites -= metabolite_list
 
         # from cameo ...

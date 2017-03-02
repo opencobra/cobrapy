@@ -168,7 +168,7 @@ class Metabolite(Species):
                 raise Exception("model solution was not optimal")
             raise e
 
-    def remove_from_model(self, method='subtractive', **kwargs):
+    def remove_from_model(self, method='subtractive'):
         """Removes the association from self.model
 
         Parameters
@@ -181,21 +181,7 @@ class Metabolite(Species):
         # why is model being taken in as a parameter? This plays
         # back to the question of allowing a Metabolite to be associated
         # with multiple Models
-        if "model" in kwargs:
-            warn("model argument deprecated")
-        model = self._model
-        self._model.metabolites.remove(self)
-        self._model = None
-        if method.lower() == 'subtractive':
-            for the_reaction in list(self._reaction):
-                the_coefficient = the_reaction._metabolites[self]
-                the_reaction.subtract_metabolites({self: the_coefficient})
-        elif method.lower() == 'destructive':
-            for x in self._reaction:
-                x.remove_from_model()
-        else:
-            raise Exception(method + " is not 'subtractive' or 'destructive'")
-        model.solver.remove(model.solver.constraints[self.id])
+        self._model.remove_metabolites(self, method)
 
     def summary(self, threshold=0.01, fva=False, floatfmt='.3g', **kwargs):
         """Print a summary of the reactions which produce and consume this
