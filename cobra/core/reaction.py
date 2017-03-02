@@ -6,6 +6,7 @@ import hashlib
 import re
 from collections import defaultdict
 from copy import copy, deepcopy
+from functools import partial
 from warnings import warn
 
 from six import iteritems, string_types
@@ -13,7 +14,7 @@ from six import iteritems, string_types
 from cobra.core.gene import Gene, ast2str, parse_gpr
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
-from cobra.util.context import resettable
+from cobra.util.context import resettable, get_context
 from cobra.util.solver import linear_reaction_coefficients, set_objective
 from cobra.util.util import Frozendict, _is_positive
 
@@ -293,6 +294,12 @@ class Reaction(Object):
 
     @gene_reaction_rule.setter
     def gene_reaction_rule(self, new_rule):
+
+        # TODO: Do this :)
+        if get_context(self):
+            warn("Context management not implemeneted for "
+                 "gene reaction rules")
+
         self._gene_reaction_rule = new_rule.strip()
         try:
             _, gene_names = parse_gpr(self._gene_reaction_rule)
@@ -486,39 +493,6 @@ class Reaction(Object):
             i._model = model
         return new_reaction
 
-    def pop(self, metabolite_id):
-        """Remove a metabolite from the reaction and return the
-        stoichiometric coefficient.
-
-        Parameters
-        ----------
-        metabolite_id : str or cobra.core.Metabolite.Metabolite
-            The metabolite to remove
-        """
-        if self.model is None:
-            the_metabolite = metabolite_id
-            if isinstance(the_metabolite, string_types):
-                found_match = None
-                for possible_match in self._metabolites:
-                    if possible_match.id == the_metabolite:
-                        found_match = possible_match
-                        break
-                if found_match is None:
-                    raise KeyError("No metabolite named %s in the reaction" %
-                                   the_metabolite)
-                else:
-                    the_metabolite = found_match
-            the_coefficient = self._metabolites.pop(the_metabolite)
-            the_metabolite._reaction.remove(self)
-        else:
-            if isinstance(metabolite_id, string_types):
-                met = self.model.metabolites.get_by_id(metabolite_id)
-            else:
-                met = metabolite_id
-            the_coefficient = self.metabolites[met]
-            self.add_metabolites({met: -the_coefficient}, combine=True)
-        return the_coefficient
-
     def __add__(self, other):
         """Add two reactions
 
@@ -607,35 +581,27 @@ class Reaction(Object):
         """
         return map(self.get_coefficient, metabolite_ids)
 
-    def add_metabolites(self, metabolites, combine=True,
-                        add_to_container_model=True):
+    def add_metabolites(self, metabolites_to_add, combine=True):
         """Add metabolites and stoichiometric coefficients to the reaction.
         If the final coefficient for a metabolite is 0 then it is removed
         from the reaction.
 
         Parameters
         ----------
-        metabolites : dict
+        metabolites_to_add : dict
             {str or :class:`~cobra.core.Metabolite.Metabolite`: coefficient}
 
         combine : bool
             Describes behavior a metabolite already exists in the reaction.
             True causes the coefficients to be added.
             False causes the coefficient to be replaced.
-            True and a metabolite already exists in the
-
-        add_to_container_model : bool
-            Add the metabolite to the :class:`~cobra.core.Model.Model`
-            the reaction is associated with (i.e. self.model)
 
         """
-        # from cameo ...
-        old_coefficients = self.metabolites if combine else {}
-        # ...
-
-        _id_to_metabolites = {str(x): x for x in self._metabolites}
+        old_coefficients = self.metabolites
         new_metabolites = []
-        for metabolite, coefficient in iteritems(metabolites):
+        _id_to_metabolites = dict([(x.id, x) for x in self._metabolites])
+
+        for metabolite, coefficient in iteritems(metabolites_to_add):
             met_id = str(metabolite)
             # If a metabolite already exists in the reaction then
             # just add them.
@@ -666,19 +632,20 @@ class Reaction(Object):
                 # make the metabolite aware that it is involved in this
                 # reaction
                 metabolite._reaction.add(self)
+
         for metabolite, the_coefficient in list(self._metabolites.items()):
             if the_coefficient == 0:
                 # make the metabolite aware that it no longer participates
                 # in this reaction
                 metabolite._reaction.remove(self)
                 self._metabolites.pop(metabolite)
-        if add_to_container_model and hasattr(self._model, 'add_metabolites'):
-            self._model.add_metabolites(new_metabolites)
 
         # from cameo ...
         model = self.model
         if model is not None:
-            for metabolite, coefficient in metabolites.items():
+            model.add_metabolites(new_metabolites)
+
+            for metabolite, coefficient in metabolites_to_add.items():
 
                 if isinstance(metabolite,
                               str):  # support metabolites added as strings.
@@ -697,6 +664,12 @@ class Reaction(Object):
                      self.reverse_variable: -coefficient
                      })
 
+        context = get_context(self)
+        if context:
+            # Just subtact the metabolites that were added
+            context(partial(
+                self.subtract_metabolites, metabolites_to_add, combine=True))
+
     def subtract_metabolites(self, metabolites, combine=True):
         """This function will 'subtract' metabolites from a reaction, which
         means add the metabolites with -1*coefficient. If the final coefficient
@@ -709,16 +682,16 @@ class Reaction(Object):
             are the coefficients. These metabolites will be added to the
             reaction.
 
+        combine : bool
+            Describes behavior a metabolite already exists in the reaction.
+            True causes the coefficients to be added.
+            False causes the coefficient to be replaced.
+
         .. note:: A final coefficient < 0 implies a reactant.
 
         """
         self.add_metabolites({k: -v for k, v in iteritems(metabolites)},
                              combine=combine)
-
-    def clear_metabolites(self):
-        """Remove all metabolites from the reaction"""
-        for metabolite in list(self._metabolites.keys()):
-            self.pop(metabolite)
 
     @property
     def reaction(self):
@@ -879,7 +852,7 @@ class Reaction(Object):
         reactant_str = reaction_str[:arrow_match.start()].strip()
         product_str = reaction_str[arrow_match.end():].strip()
 
-        self.clear_metabolites()
+        self.subtract_metabolites(self.metabolites, combine=True)
 
         for substr, factor in ((reactant_str, -1), (product_str, 1)):
             if len(substr) == 0:

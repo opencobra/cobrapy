@@ -91,23 +91,35 @@ class TestReactions:
         benchmark(add_remove_metabolite)
 
     def test_add_metabolite(self, model):
-        reaction = model.reactions.get_by_id("PGI")
-        reaction.add_metabolites({model.metabolites[0]: 1})
-        assert model.metabolites[0] in reaction._metabolites
-        fake_metabolite = Metabolite("fake")
-        reaction.add_metabolites({fake_metabolite: 1})
-        assert fake_metabolite in reaction._metabolites
-        assert model.metabolites.has_id("fake")
-        assert model.metabolites.get_by_id("fake") is fake_metabolite
+
+        with model:
+            reaction = model.reactions.get_by_id("PGI")
+            reaction.add_metabolites({model.metabolites[0]: 1})
+            assert model.metabolites[0] in reaction._metabolites
+            fake_metabolite = Metabolite("fake")
+            reaction.add_metabolites({fake_metabolite: 1})
+            assert fake_metabolite in reaction._metabolites
+            assert model.metabolites.has_id("fake")
+            assert model.metabolites.get_by_id("fake") is fake_metabolite
+
+        assert fake_metabolite._model is None
+        assert fake_metabolite not in reaction._metabolites
+        assert "fake" not in model.metabolites
 
         # test adding by string
-        reaction.add_metabolites({"g6p_c": -1})  # already in reaction
+        with model:
+            reaction.add_metabolites({"g6p_c": -1})  # already in reaction
+            assert reaction._metabolites[
+                       model.metabolites.get_by_id("g6p_c")] == -2
+            reaction.add_metabolites({"h_c": 1})
+            assert reaction._metabolites[
+                model.metabolites.get_by_id("h_c")] == 1
+            with pytest.raises(KeyError):
+                reaction.add_metabolites({"missing": 1})
+
         assert reaction._metabolites[
-                   model.metabolites.get_by_id("g6p_c")] == -2
-        reaction.add_metabolites({"h_c": 1})
-        assert reaction._metabolites[model.metabolites.get_by_id("h_c")] == 1
-        with pytest.raises(KeyError):
-            reaction.add_metabolites({"missing": 1})
+                   model.metabolites.get_by_id("g6p_c")] == -1
+        assert model.metabolites.h_c not in reaction._metabolites
 
         # test adding to a new Reaction
         reaction = Reaction("test")
