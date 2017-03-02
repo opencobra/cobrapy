@@ -266,8 +266,9 @@ class Reaction(Object):
         """Reaction flux in the most recent solution."""
         try:
             if self._model.solver.status != "optimal":
-                warn("Solver status is not optimal, please treat value with"
-                     " care!", UserWarning)
+                warn("Solver status is not optimal ({}), please treat value"
+                     " with care!".format(self._model.solver.status),
+                     UserWarning)
             return self.forward_variable.primal - self.reverse_variable.primal
         except AttributeError:
             raise RuntimeError(
@@ -278,8 +279,9 @@ class Reaction(Object):
         """Reaction reduced cost in the most recent solution."""
         try:
             if self._model.solver.status != "optimal":
-                warn("Solver status is not optimal, please treat value with"
-                     " care!", UserWarning)
+                warn("Solver status is not optimal ({}), please treat value"
+                     " with care!".format(self._model.solver.status),
+                     UserWarning)
             return self.forward_variable.dual - self.reverse_variable.dual
         except AttributeError:
             raise RuntimeError(

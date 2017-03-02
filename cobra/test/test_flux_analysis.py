@@ -15,22 +15,19 @@ from six import StringIO, iteritems
 import cobra.util.solver as sutil
 from cobra.core import Metabolite, Model, Reaction
 from cobra.core.solution import LegacySolution
-from cobra.exceptions import SolveError
+from cobra.exceptions import SolveError, OptimizationError
 from cobra.flux_analysis import *
 from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 from cobra.manipulation import convert_to_irreversible
 from cobra.solvers import SolverNotFound, get_solver_name, solver_dict
 
-from .conftest import fva_results, large_model, model, solved_model
+#from .conftest import fva_results, large_model, model
 
 try:
-<<<<<<< 8d062ff7c0e2113028984621ee2dd3d5874b684c
-=======
     from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 except ImportError:
-    numpy = None
+    pass
 try:
->>>>>>> add the brunt of solution changes
     import scipy
 except ImportError:
     scipy = None
@@ -43,9 +40,9 @@ except ImportError:
 # The scipt interface is currently unstable and may yield errors or infeasible
 # solutions
 stable_optlang = ["glpk", "cplex", "gurobi"]
-all_solvers = ["optlang-" + s for s in stable_optlang if s in
-               sutil.solvers] + list(solver_dict)
-optlang_solvers = [s for s in all_solvers if "optlang-" in s]
+optlang_solvers = ["optlang-" + s for s in stable_optlang if s in
+                   sutil.solvers]
+all_solvers = optlang_solvers + list(solver_dict)
 
 
 @contextmanager
@@ -75,26 +72,16 @@ class TestCobraFluxAnalysis:
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_pfba(self, model, solver):
+        if solver in optlang_solvers:
+            model.solver = solver
         expression = model.objective.expression
         n_constraints = len(model.solver.constraints)
-<<<<<<< 8d062ff7c0e2113028984621ee2dd3d5874b684c
-        df = optimize_minimal_flux(model, solver=solver)
-        assert numpy.all([df.columns.values == ['flux', 'objective_value']])
-        assert model.solution.status == "optimal"
-        if isinstance(model.solution, LegacySolution):
-            assert abs(model.solution.f - 0.8739) < 0.001
-        else:
-            assert abs(df.flux['Biomass_Ecoli_core'] - 0.8739) < 0.001
-        assert abs(sum(abs(df.flux)) - 518.4221) < 0.001
-
-=======
         solution = optimize_minimal_flux(model, solver=solver)
         assert solution.status == "optimal"
         assert numpy.isclose(solution.x_dict["Biomass_Ecoli_core"],
                              0.8739, atol=1e-4, rtol=0.0)
         abs_x = [abs(i) for i in solution.x]
         assert numpy.isclose(sum(abs_x), 518.4221, atol=1e-4, rtol=0.0)
->>>>>>> add the brunt of solution changes
         # test changes to model reverted
         assert expression == model.objective.expression
         assert len(model.solver.constraints) == n_constraints
@@ -111,23 +98,6 @@ class TestCobraFluxAnalysis:
 
         # TODO: parametrize fraction (DRY it up)
         # Test fraction_of_optimum
-<<<<<<< 8d062ff7c0e2113028984621ee2dd3d5874b684c
-        df = optimize_minimal_flux(model, solver=solver,
-                                   fraction_of_optimum=0.95)
-        assert model.solution.status == "optimal"
-        if isinstance(model.solution, LegacySolution):
-            assert abs(model.solution.f - 0.95 * 0.8739) < 0.001
-        else:
-            assert abs(
-                df.flux['Biomass_Ecoli_core'] - 0.95 * 0.8739) < 0.001
-        assert abs(sum(abs(df.flux)) - 493.4400) < 0.001
-
-        # Infeasible solution
-        with model:
-            model.reactions.ATPM.lower_bound = 500
-            with pytest.raises((SolveError, ValueError)):
-                optimize_minimal_flux(model, solver=solver)
-=======
         solution = optimize_minimal_flux(model, solver=solver,
                               fraction_of_optimum=0.95)
         assert solution.status == "optimal"
@@ -144,7 +114,12 @@ class TestCobraFluxAnalysis:
                 optimize_minimal_flux(model, solver=solver)
 #        with pytest.raises(ValueError):
 #            optimize_minimal_flux(model, solver=solver)
->>>>>>> add the brunt of solution changes
+#        with warnings.catch_warnings():
+#            warnings.simplefilter("error", UserWarning)
+#            with pytest.raises((UserWarning, ValueError)):
+#                optimize_minimal_flux(model, solver=solver)
+        with pytest.raises((OptimizationError, ValueError)):
+            optimize_minimal_flux(model, solver=solver)
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_single_gene_deletion_fba_benchmark(self, model, benchmark,
@@ -385,8 +360,8 @@ class TestCobraFluxAnalysis:
         ll_fluxes = loopless_solution(model, fluxes=fluxes)
         assert len(ll_fluxes) == len(model.reactions)
         fluxes["Biomass_Ecoli_core"] = 1
-        ll_fluxes = loopless_solution(model, fluxes=fluxes)
-        assert ll_fluxes is None
+        with pytest.raises(OptimizationError):
+            loopless_solution(model, fluxes=fluxes)
 
     def test_add_loopless(self):
         test_model = self.construct_ll_test_model()
@@ -420,7 +395,10 @@ class TestCobraFluxAnalysis:
         for item in desired_entries:
             assert re.sub('\s', '', item) in output_set
 
-    def test_summary_methods(self, model, solved_model):
+    @pytest.mark.skipif((pandas is None) or (tabulate is None),
+                        reason="summary methods require pandas and tabulate")
+    @pytest.mark.parametrize("solver", list(solver_dict))
+    def test_summary_methods(self, model, solver):
         # Test model summary methods
         with warnings.catch_warnings():
             warnings.simplefilter("error", UserWarning)
@@ -446,11 +424,10 @@ class TestCobraFluxAnalysis:
             'etoh_e       0    [0, 1.11]',
             'acald_e      0    [0, 1.27]',
         ]
-        for solver in solver_dict:
-            model.optimize(solver=solver)
-            with captured_output() as (out, err):
-                model.summary(fva=0.95, solver=solver)
-            self.check_entries(out, desired_entries)
+        model.optimize(solver=solver)
+        with captured_output() as (out, err):
+            model.summary(fva=0.95, solver=solver)
+        self.check_entries(out, desired_entries)
 
         # test non-fva version (these should be fixed for textbook model
         desired_entries = [
@@ -465,14 +442,13 @@ class TestCobraFluxAnalysis:
         ]
         # Need to use a different method here because
         # there are multiple entries per line.
-        for solver in solver_dict:
-            model.optimize(solver=solver)
-            with captured_output() as (out, err):
-                model.summary()
+        model.optimize(solver=solver)
+        with captured_output() as (out, err):
+            model.summary()
 
-            s = out.getvalue()
-            for i in desired_entries:
-                assert i in s
+        s = out.getvalue()
+        for i in desired_entries:
+            assert i in s
 
         # Test metabolite summary methods
         desired_entries = [
@@ -487,11 +463,10 @@ class TestCobraFluxAnalysis:
             '12%     5.06  SUCDi     q8_c + succ_c --> fum_c + q8h2_c',
         ]
 
-        for solver in solver_dict:
-            model.optimize(solver=solver)
-            with captured_output() as (out, err):
-                model.metabolites.q8_c.summary()
-            self.check_entries(out, desired_entries)
+        model.optimize(solver=solver)
+        with captured_output() as (out, err):
+            model.metabolites.q8_c.summary()
+        self.check_entries(out, desired_entries)
 
         desired_entries = [
             'PRODUCING REACTIONS -- D-Fructose 1,6-bisphosphate (fdp_c)',
@@ -507,11 +482,10 @@ class TestCobraFluxAnalysis:
             'fdp_c + h2o_c --> f6p_c + pi_c',
         ]
 
-        for solver in solver_dict:
-            model.optimize(solver=solver)
-            with captured_output() as (out, err):
-                model.metabolites.fdp_c.summary(fva=0.99, solver=solver)
-            self.check_entries(out, desired_entries)
+        model.optimize(solver=solver)
+        with captured_output() as (out, err):
+            model.metabolites.fdp_c.summary(fva=0.99, solver=solver)
+        self.check_entries(out, desired_entries)
 
 
 class TestCobraFluxSampling:

@@ -35,7 +35,7 @@ _OPTLANG_TO_EXCEPTIONS_DICT = dict((
 
 class OptimizationError(Exception):
     def __init__(self, message):
-        super(SolveError, self).__init__(message)
+        super(OptimizationError, self).__init__(message)
 
 
 class DefunctError(Exception):

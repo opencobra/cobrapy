@@ -82,16 +82,17 @@ def optimize_minimal_flux(model, already_irreversible=False,
 
     """
     legacy, solver = sutil.choose_solver(model, solver)
-    if not legacy:
-        return _optimize_minimal_flux_optlang(
-            model, objective=objective,
-            fraction_of_optimum=fraction_of_optimum, reactions=reactions)
-    else:
+    if legacy:
         return _optimize_minimal_flux_legacy(
             model, already_irreversible=already_irreversible,
             fraction_of_optimum=fraction_of_optimum, solver=solver,
             desired_objective_value=desired_objective_value,
             **optimize_kwargs)
+    else:
+        model.solver = solver
+        return _optimize_minimal_flux_optlang(
+            model, objective=objective,
+            fraction_of_optimum=fraction_of_optimum)
 
 
 def add_pfba(model, objective=None, fraction_of_optimum=1.0):
@@ -139,13 +140,8 @@ def _optimize_minimal_flux_optlang(model, objective=None, reactions=None,
         The model to perform pFBA on
     objective :
         An objective to use in addition to the pFBA constraints.
-    reactions : iterable
-        List of reactions or reaction identifiers.
-
-    Returns
-    -------
-    dict
-        A dict with fluxes for each reaction and the objective value.
+    solver :
+        An objective to use in addition to the pFBA constraints.
 
     Updates everything in-place, returns model to original state at end.
     """

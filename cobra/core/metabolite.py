@@ -148,8 +148,9 @@ class Metabolite(Species):
         """
         try:
             if self._model.solver.status != "optimal":
-                warn("Solver status is not optimal, please treat value with"
-                     " care!", UserWarning)
+                warn("Solver status is not optimal ({}), please treat value"
+                     " with care!".format(self._model.solver.status),
+                     UserWarning)
             return self._model.solver.constraints[self.id].dual
         except AttributeError:
             raise RuntimeError(

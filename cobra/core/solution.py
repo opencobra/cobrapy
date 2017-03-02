@@ -232,7 +232,7 @@ class LegacySolution(object):
             return "<LegacySolution {0:r} at 0x{1:x}>".format(
                 self.status, id(self))
         return "<LegacySolution {0:.3f} at 0x{1:x}>".format(
-            self.objective_value, id(self))
+            self.f, id(self))
 
     def __getitem__(self, reaction_id):
         """
