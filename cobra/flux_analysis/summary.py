@@ -127,7 +127,6 @@ def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
         format method for floats, passed to tabulate. Default is '.3g'.
 
     """
-
     # Create a dataframe of objective fluxes
     objective_reactions = linear_reaction_coefficients(model)
     obj_fluxes = pd.DataFrame({key: key.flux * value for key, value in

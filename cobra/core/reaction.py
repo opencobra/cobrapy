@@ -269,10 +269,16 @@ class Reaction(Object):
                 warn("Solver status is not optimal ({}), please treat value"
                      " with care!".format(self._model.solver.status),
                      UserWarning)
-            return self.forward_variable.primal - self.reverse_variable.primal
+            flux = self.forward_variable.primal - self.reverse_variable.primal
         except AttributeError:
             raise RuntimeError(
                 "reaction '{}' is not part of a model".format(self.id))
+        # Would like to catch CplexSolverError and GurobiError here but can't do
+        # so if the packages are not available
+        except:
+            raise RuntimeError("model was not optimized yet")
+        else:
+            return flux
 
     @property
     def reduced_cost(self):
