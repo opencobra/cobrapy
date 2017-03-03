@@ -142,8 +142,8 @@ class Solution(object):
     @x_dict.setter
     def x_dict(self, fluxes):
         """Deprecated property for setting fluxes."""
-        warn("let Model.optimize create a solution instance, don't update yourself",
-             DeprecationWarning)
+        warn("let Model.optimize create a solution instance,"
+             " don't update yourself", DeprecationWarning)
         self.fluxes = fluxes
 
     @property
@@ -281,8 +281,8 @@ def get_solution(model, reactions=None, metabolites=None):
 
     Note
     ----
-    This is only intended for the `optlang` solver interfaces and not the legacy
-    solvers.
+    This is only intended for the `optlang` solver interfaces and not the
+    legacy solvers.
     """
     if model.solver.status != "optimal":
         raise OptimizationError(

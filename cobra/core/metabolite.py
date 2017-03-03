@@ -138,8 +138,8 @@ class Metabolite(Species):
     def shadow_price(self):
         """The shadow price for the metabolite in the most recent solution.
 
-        Shadow prices are computed from the dual values of the model constraints
-        in the solution.
+        Shadow prices are computed from the dual values of the model
+        constraints in the solution.
 
         Warning
         -------
@@ -151,10 +151,15 @@ class Metabolite(Species):
                 warn("Solver status is not optimal ({}), please treat value"
                      " with care!".format(self._model.solver.status),
                      UserWarning)
-            return self._model.solver.constraints[self.id].dual
+            price = self._model.solver.constraints[self.id].dual
         except AttributeError:
             raise RuntimeError(
                 "metabolite '{}' is not part of a model".format(self.id))
+        # catch Cplex and Gurobi
+        except:
+            raise RuntimeError("model was not optimized")
+        else:
+            return price
 
     def remove_from_model(self, destructive=False):
         """Removes the association from self.model

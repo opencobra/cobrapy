@@ -273,8 +273,8 @@ class Reaction(Object):
         except AttributeError:
             raise RuntimeError(
                 "reaction '{}' is not part of a model".format(self.id))
-        # Would like to catch CplexSolverError and GurobiError here but can't do
-        # so if the packages are not available
+        # Would like to catch CplexSolverError and GurobiError here but can't
+        # do so if the packages are not available.
         except:
             raise RuntimeError("model was not optimized yet")
         else:
@@ -288,10 +288,14 @@ class Reaction(Object):
                 warn("Solver status is not optimal ({}), please treat value"
                      " with care!".format(self._model.solver.status),
                      UserWarning)
-            return self.forward_variable.dual - self.reverse_variable.dual
+            cost = self.forward_variable.dual - self.reverse_variable.dual
         except AttributeError:
             raise RuntimeError(
                 "reaction '{}' is not part of a model".format(self.id))
+        except:
+            raise RuntimeError("model was not optimized yet")
+        else:
+            return cost
 
     # read-only
     @property

@@ -12,10 +12,8 @@ from cobra.util import add_to_solver, linear_reaction_coefficients
 from cobra.manipulation.modify import convert_to_irreversible
 
 try:
-    import numpy
     from cobra.util import nullspace
 except ImportError:
-    numpy = None
     nullspace = None
 
 
@@ -141,10 +139,6 @@ def loopless_solution(model, fluxes=None):
         fluxes = sol.fluxes
         obj_val = sol.objective_value
     else:
-        # rather rely on duck typing (want to use pandas.Series)
-#        if not (isinstance(fluxes, dict) and
-#                len(fluxes) == len(model.reactions)):
-#            raise ValueError("`fluxes` must be a dictionary {rxn_id: flux}")
         coefs = linear_reaction_coefficients(model)
         obj_val = sum(coefs[rxn] * fluxes[rxn.id] for rxn in coefs)
 

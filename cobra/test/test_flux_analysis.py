@@ -21,8 +21,6 @@ from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 from cobra.manipulation import convert_to_irreversible
 from cobra.solvers import SolverNotFound, get_solver_name, solver_dict
 
-#from .conftest import fva_results, large_model, model
-
 try:
     from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 except ImportError:
@@ -112,7 +110,7 @@ class TestCobraFluxAnalysis:
         # TODO: parametrize fraction (DRY it up)
         # Test fraction_of_optimum
         solution = optimize_minimal_flux(model, solver=solver,
-                              fraction_of_optimum=0.95)
+                                         fraction_of_optimum=0.95)
         assert solution.status == "optimal"
         assert numpy.isclose(solution.x_dict["Biomass_Ecoli_core"],
                              0.95 * 0.8739, atol=1e-4, rtol=0.0)
@@ -427,10 +425,8 @@ class TestCobraFluxAnalysis:
             'etoh_e       0    [0, 1.11]',
             'acald_e      0    [0, 1.27]',
         ]
-#        model.optimize()
         model.optimize(solver=solver)
         with captured_output() as (out, err):
-#            model.summary(fva=0.95)
             model.summary(fva=0.95, solver=solver)
         self.check_entries(out, desired_entries)
 
@@ -447,10 +443,8 @@ class TestCobraFluxAnalysis:
         ]
         # Need to use a different method here because
         # there are multiple entries per line.
-#        model.optimize()
         model.optimize(solver=solver)
         with captured_output() as (out, err):
-#            model.summary()
             model.summary(solver=solver)
 
         s = out.getvalue()
@@ -470,10 +464,8 @@ class TestCobraFluxAnalysis:
             '12%     5.06  SUCDi     q8_c + succ_c --> fum_c + q8h2_c',
         ]
 
-#        model.optimize()
         model.optimize(solver=solver)
         with captured_output() as (out, err):
-#            model.metabolites.q8_c.summary()
             model.metabolites.q8_c.summary(solver=solver)
         self.check_entries(out, desired_entries)
 
@@ -491,10 +483,8 @@ class TestCobraFluxAnalysis:
             'fdp_c + h2o_c --> f6p_c + pi_c',
         ]
 
-#        model.optimize()
         model.optimize(solver=solver)
         with captured_output() as (out, err):
-#            model.metabolites.fdp_c.summary(fva=0.99)
             model.metabolites.fdp_c.summary(fva=0.99, solver=solver)
         self.check_entries(out, desired_entries)
 

@@ -665,7 +665,7 @@ class Model(Object):
         self.solver = solver
         self.solver.objective.direction = \
             {"maximize": "max", "minimize": "min"}.get(
-            objective_sense, original_direction)
+                objective_sense, original_direction)
         self.solver.optimize()
         solution = get_solution(self)
         self.solver.objective.direction = original_direction
