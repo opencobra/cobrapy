@@ -375,7 +375,7 @@ def fix_objective_as_constraint(model, fraction=1):
     if fix_objective_name in model.solver.constraints:
         model.solver.remove(fix_objective_name)
     solution = model.optimize()
-    objective_value = solution.objective_value * fraction
+    objective_bound = solution.objective_value * fraction
     if model.objective.direction == 'max':
         ub, lb = None, objective_bound
     else:

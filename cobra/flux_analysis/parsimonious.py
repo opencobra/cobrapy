@@ -151,17 +151,20 @@ def _optimize_minimal_flux_optlang(model, objective=None, reactions=None,
     with model as m:
         add_pfba(m, objective=objective,
                  fraction_of_optimum=fraction_of_optimum)
-        try:
-            solution = m.optimize(objective_sense='minimize')
-        except SolveError as e:
-            LOGGER.error("pfba could not determine an optimal solution for "
-                         "objective %s" % m.objective)
-            raise e
-        else:
-            results = dict()
-            results['flux'] = {rxn.id: solution[rxn.id] for rxn in reactions}
-            results['objective_value'] = solution.objective_value
-            return pandas.DataFrame(results)
+        solution = m.optimize(objective_sense='minimize')
+    return solution
+
+#        try:
+#            solution = m.optimize(objective_sense='minimize')
+#        except SolveError as e:
+#            LOGGER.error("pfba could not determine an optimal solution for "
+#                         "objective %s" % m.objective)
+#            raise e
+#        else:
+#            results = dict()
+#            results['flux'] = {rxn.id: solution[rxn.id] for rxn in reactions}
+#            results['objective_value'] = solution.objective_value
+#            return pandas.DataFrame(results)
 
 
 def _optimize_minimal_flux_legacy(model, solver, already_irreversible=False,

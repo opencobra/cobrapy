@@ -121,16 +121,6 @@ class TestCobraFluxAnalysis:
 
         # Infeasible solution
         model.reactions.ATPM.lower_bound = 500
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", UserWarning)
-            with pytest.raises((UserWarning, ValueError)):
-                optimize_minimal_flux(model, solver=solver)
-#        with pytest.raises(ValueError):
-#            optimize_minimal_flux(model, solver=solver)
-#        with warnings.catch_warnings():
-#            warnings.simplefilter("error", UserWarning)
-#            with pytest.raises((UserWarning, ValueError)):
-#                optimize_minimal_flux(model, solver=solver)
         with pytest.raises((OptimizationError, ValueError)):
             optimize_minimal_flux(model, solver=solver)
 
