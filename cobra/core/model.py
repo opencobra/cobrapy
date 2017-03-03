@@ -16,12 +16,12 @@ from sympy import S
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
 from cobra.core.reaction import separate_forward_and_reverse_bounds
-from cobra.core.solution import Solution
+from cobra.core.solution import Solution, get_solution
 from cobra.solvers import optimize
 from cobra.util.context import HistoryManager, resettable, get_context
 from cobra.util.solver import (
     SolverNotFound, get_solver_name, interface_to_str, set_objective, solvers,
-    add_to_solver, remove_from_solver, choose_solver, get_solution)
+    add_to_solver, remove_from_solver, choose_solver)
 from cobra.util.util import AutoVivification
 
 

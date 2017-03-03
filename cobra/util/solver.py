@@ -18,13 +18,9 @@ from types import ModuleType
 
 import optlang
 import sympy
-from numpy import zeros
-from pandas import Series
 
 import cobra.solvers as legacy_solvers
-from cobra.exceptions import OptimizationError
 from cobra.util.context import get_context
-from cobra.core.solution import Solution
 
 
 class SolverNotFound(Exception):
@@ -388,59 +384,3 @@ def fix_objective_as_constraint(model, fraction=1):
         model.objective.expression,
         name=fix_objective_name, ub=ub, lb=lb)
     add_to_solver(model, constraint)
-
-
-def get_solution(model, reactions=None, metabolites=None):
-    """
-    Generate a solution representation of the current solver state.
-
-    Paramters
-    ---------
-    model : cobra.Model
-        The model whose reactions to retrieve values for.
-    reactions : list, optional
-        An iterable of `cobra.Reaction` objects. Uses `model.reactions` by
-        default.
-    metabolites : list, optional
-        An iterable of `cobra.Metabolite` objects. Uses `model.metabolites` by
-        default.
-
-    Returns
-    -------
-    cobra.Solution
-
-    Note
-    ----
-    This is only intended for the `optlang` solver interfaces and not the legacy
-    solvers.
-    """
-    if model.solver.status != "optimal":
-        raise OptimizationError(
-            "The solver status is '{0:s}'. Cannot reliably retrieve values."
-            .format(model.solver.status))
-    if reactions is None:
-        reactions = model.reactions
-    if metabolites is None:
-        metabolites = model.metabolites
-
-    rxn_index = [rxn.id for rxn in reactions]
-    fluxes = zeros(len(reactions))
-    var_primals = model.solver.primal_values
-    reduced = zeros(len(reactions))
-    var_duals = model.solver.reduced_costs
-    for (i, rxn) in enumerate(reactions):
-        forward = rxn.forward_variable.name
-        reverse = rxn.reverse_variable.name
-        fluxes[i] = var_primals[forward] - var_primals[reverse]
-        reduced[i] = var_duals[forward] - var_duals[reverse]
-    met_index = [met.id for met in metabolites]
-    shadow = zeros(len(metabolites))
-    constr_duals = model.solver.shadow_prices
-    for (i, met) in enumerate(metabolites):
-        shadow[i] = constr_duals[met.id]
-    return Solution(model.solver.objective.value, model.solver.status,
-                    reactions,
-                    Series(index=rxn_index, data=fluxes),
-                    Series(index=rxn_index, data=reduced),
-                    metabolites,
-                    Series(index=met_index, data=shadow))
