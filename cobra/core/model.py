@@ -13,6 +13,7 @@ import sympy
 from six import iteritems, string_types
 from sympy import S
 
+from cobra.exceptions import OptimizationError
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
 from cobra.core.reaction import separate_forward_and_reverse_bounds
@@ -649,26 +650,26 @@ class Model(Object):
         appropriate keyword argument.
 
         """
-        (legacy, solver) = choose_solver(self, solver=kwargs.get("solver"))
+        legacy, solver = choose_solver(self, solver=kwargs.get("solver"))
 
         if legacy:
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
-        else:
-            original_solver = self.solver
-            original_direction = self.solver.objective.direction
-            self.solver = solver
-            self.solver.objective.direction = \
-                {"maximize": "max", "minimize": "min"}.get(
-                objective_sense, original_direction)
-            self.solver.optimize()
-            solution = get_solution(self)
-            self.solver = original_solver
-            self.solver.objective.direction = original_direction
+            if solution.status != "optimal":
+                raise OptimizationError(
+                    "The solver status is '{0:s}'. Cannot reliably retrieve"
+                    " values.".format(solution.status))
+            return solution
+        with self as model:
+#            original_direction = model.solver.objective.direction
+            model.solver = solver
+            model.solver.objective.direction = \
+                {"maximize": "max", "minimize": "min"}[objective_sense]
+            model.solver.optimize()
+            solution = get_solution(model)
+#            model.solver = original_solver
+#            self.solver.objective.direction = original_direction
 
-        if solution.status != "optimal":
-            warn("non-optimal solution state {}".format(solution.status),
-                 UserWarning)
         return solution
 
     def repair(self, rebuild_index=True, rebuild_relationships=True):
