@@ -660,16 +660,15 @@ class Model(Object):
                     "The solver status is '{0:s}'. Cannot reliably retrieve"
                     " values.".format(solution.status))
             return solution
-        with self as model:
-#            original_direction = model.solver.objective.direction
-            model.solver = solver
-            model.solver.objective.direction = \
-                {"maximize": "max", "minimize": "min"}[objective_sense]
-            model.solver.optimize()
-            solution = get_solution(model)
-#            model.solver = original_solver
-#            self.solver.objective.direction = original_direction
 
+        original_direction = self.solver.objective.direction
+        self.solver = solver
+        self.solver.objective.direction = \
+            {"maximize": "max", "minimize": "min"}.get(
+            objective_sense, original_direction)
+        self.solver.optimize()
+        solution = get_solution(self)
+        self.solver.objective.direction = original_direction
         return solution
 
     def repair(self, rebuild_index=True, rebuild_relationships=True):

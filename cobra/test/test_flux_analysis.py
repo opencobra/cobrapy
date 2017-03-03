@@ -35,7 +35,20 @@ try:
     import matplotlib
 except ImportError:
     matplotlib = None
-
+try:
+    from matplotlib import pyplot
+    from mpl_toolkits.mplot3d import axes3d
+except ImportError:
+    pyplot = None
+    axes3d = None
+try:
+    import pandas
+except ImportError:
+    pandas = None
+try:
+    import tabulate
+except ImportError:
+    tabulate = None
 
 # The scipt interface is currently unstable and may yield errors or infeasible
 # solutions
@@ -337,14 +350,12 @@ class TestCobraFluxAnalysis:
         test_model = self.construct_ll_test_model()
         feasible_sol = construct_loopless_model(test_model).optimize(
             solver="cglpk")
+        assert feasible_sol.status == "optimal"
         test_model.reactions.v3.lower_bound = 1
         infeasible_mod = construct_loopless_model(test_model)
-        assert feasible_sol.status == "optimal"
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", UserWarning)
-            with pytest.raises((UserWarning, ValueError)):
-                infeasible_mod.optimize(solver="cglpk")
+        with pytest.raises(OptimizationError):
+            infeasible_mod.optimize(solver="cglpk")
 
     def test_loopless_solution(self):
         test_model = self.construct_ll_test_model()
@@ -384,8 +395,8 @@ class TestCobraFluxAnalysis:
         assert data.growth_rates.shape == (20, 20)
         assert abs(data.growth_rates.max() - 1.20898) < 0.0001
         assert abs(data.growth_rates[0, :].max()) < 0.0001
-        if matplotlib is None:
-            pytest.skip("can't test plots without matplotlib")
+        if pyplot is None or axes3d is None:
+            pytest.skip("can't test plots without 3D plotting")
         data.plot()
 
     def check_entries(self, out, desired_entries):
