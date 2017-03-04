@@ -616,19 +616,15 @@ class Model(Object):
         from .ArrayBasedModel import ArrayBasedModel
         return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
 
-    def optimize(self, objective_sense='maximize', solution_type=Solution,
-                 **kwargs):
+    def optimize(self, objective_sense=None, **kwargs):
         """
         Optimize the model using flux balance analysis.
 
         Parameters
         ----------
-        objective_sense : {'maximize' 'minimize', None}, optional
+        objective_sense : {None, 'maximize' 'minimize'}, optional
             Whether fluxes should be maximized or minimized. In case of None,
             the previous direction is used.
-        solution_type : cobra.Solution, optional
-            The type of solution that should be returned. The solution is a
-            complete representation of solver state of the current model.
         solver : {None, 'glpk', 'cglpk', 'gurobi', 'cplex'}, optional
             If unspecified will use the currently defined `self.solver`
             otherwise it will use the given solver and update the attribute.
@@ -651,8 +647,12 @@ class Model(Object):
 
         """
         legacy, solver = choose_solver(self, solver=kwargs.get("solver"))
+        original_direction = self.solver.objective.direction
 
         if legacy:
+            if objective_sense is None:
+                objective_sense = {
+                    "max": "maximize", "min": "minimize"}[original_direction]
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
             if solution.status != "optimal":
@@ -661,7 +661,6 @@ class Model(Object):
                     " values.".format(solution.status))
             return solution
 
-        original_direction = self.solver.objective.direction
         self.solver = solver
         self.solver.objective.direction = \
             {"maximize": "max", "minimize": "min"}.get(
