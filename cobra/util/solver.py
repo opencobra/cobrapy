@@ -276,7 +276,7 @@ def choose_solver(model, solver=None, qp=False):
     return legacy, solver
 
 
-def add_to_solver(model, what):
+def add_to_solver(model, what, **kwargs):
     """Add variables and constraints to a Model's solver object.
 
     Useful for variables and constraints that can not be expressed with
@@ -291,10 +291,12 @@ def add_to_solver(model, what):
        The variables or constraints to add to the model. Must be of class
        `model.solver.interface.Variable` or
        `model.solver.interface.Constraint`.
+    **kwargs : keyword arguments
+        passed to solver.add()
     """
     context = get_context(model)
 
-    model.solver.add(what)
+    model.solver.add(what, **kwargs)
     if context:
         context(partial(model.solver.remove, what))
 

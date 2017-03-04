@@ -91,23 +91,35 @@ class TestReactions:
         benchmark(add_remove_metabolite)
 
     def test_add_metabolite(self, model):
-        reaction = model.reactions.get_by_id("PGI")
-        reaction.add_metabolites({model.metabolites[0]: 1})
-        assert model.metabolites[0] in reaction._metabolites
-        fake_metabolite = Metabolite("fake")
-        reaction.add_metabolites({fake_metabolite: 1})
-        assert fake_metabolite in reaction._metabolites
-        assert model.metabolites.has_id("fake")
-        assert model.metabolites.get_by_id("fake") is fake_metabolite
+
+        with model:
+            reaction = model.reactions.get_by_id("PGI")
+            reaction.add_metabolites({model.metabolites[0]: 1})
+            assert model.metabolites[0] in reaction._metabolites
+            fake_metabolite = Metabolite("fake")
+            reaction.add_metabolites({fake_metabolite: 1})
+            assert fake_metabolite in reaction._metabolites
+            assert model.metabolites.has_id("fake")
+            assert model.metabolites.get_by_id("fake") is fake_metabolite
+
+        assert fake_metabolite._model is None
+        assert fake_metabolite not in reaction._metabolites
+        assert "fake" not in model.metabolites
 
         # test adding by string
-        reaction.add_metabolites({"g6p_c": -1})  # already in reaction
+        with model:
+            reaction.add_metabolites({"g6p_c": -1})  # already in reaction
+            assert reaction._metabolites[
+                       model.metabolites.get_by_id("g6p_c")] == -2
+            reaction.add_metabolites({"h_c": 1})
+            assert reaction._metabolites[
+                model.metabolites.get_by_id("h_c")] == 1
+            with pytest.raises(KeyError):
+                reaction.add_metabolites({"missing": 1})
+
         assert reaction._metabolites[
-                   model.metabolites.get_by_id("g6p_c")] == -2
-        reaction.add_metabolites({"h_c": 1})
-        assert reaction._metabolites[model.metabolites.get_by_id("h_c")] == 1
-        with pytest.raises(KeyError):
-            reaction.add_metabolites({"missing": 1})
+                   model.metabolites.get_by_id("g6p_c")] == -1
+        assert model.metabolites.h_c not in reaction._metabolites
 
         # test adding to a new Reaction
         reaction = Reaction("test")
@@ -140,8 +152,15 @@ class TestReactions:
     def test_build_from_string(self, model):
         m = len(model.metabolites)
         pgi = model.reactions.get_by_id("PGI")
-        pgi.reaction = "g6p_c --> f6p_c"
-        assert pgi.lower_bound == 0
+
+        old_bounds = pgi.bounds
+
+        with model:
+            pgi.reaction = "g6p_c --> f6p_c"
+            assert pgi.lower_bound == 0
+
+        assert pgi.bounds == old_bounds
+
         pgi.bounds = (0, 1000)
         assert pgi.bounds == (0, 1000)
         assert not pgi.reversibility
@@ -150,11 +169,20 @@ class TestReactions:
         assert pgi.reaction.strip() == "g6p_c <-- f6p_c"
         pgi.reaction = "g6p_c --> f6p_c + h2o_c"
         assert model.metabolites.h2o_c, pgi._metabolites
-        pgi.build_reaction_from_string("g6p_c --> f6p_c + foo", verbose=False)
-        assert model.metabolites.h2o_c not in pgi._metabolites
-        assert "foo" in model.metabolites
-        assert model.metabolites.foo in pgi._metabolites
-        assert len(model.metabolites) == m + 1
+
+        with model:
+            pgi.build_reaction_from_string("g6p_c --> f6p_c + foo",
+                                           verbose=False)
+            assert model.metabolites.h2o_c not in pgi._metabolites
+            assert "foo" in model.metabolites
+            assert model.metabolites.foo in pgi._metabolites
+            assert len(model.metabolites) == m + 1
+
+        assert model.metabolites.h2o_c in pgi._metabolites
+        assert "foo" not in model.metabolites
+        with pytest.raises(AttributeError):
+            model.metabolites.foo
+        assert len(model.metabolites) == m
 
     def test_bounds_setter(self, model):
         rxn = model.reactions.get_by_id("PGI")
@@ -267,6 +295,51 @@ class TestCobraModel:
 
         benchmark(benchmark_add_reaction)
 
+    def test_add_metabolite(self, model):
+        new_metabolite = Metabolite('test_met')
+        assert new_metabolite not in model.metabolites
+        with model:
+            model.add_metabolites(new_metabolite)
+            assert new_metabolite._model == model
+            assert new_metabolite in model.metabolites
+            assert new_metabolite.id in model.solver.constraints
+
+        assert new_metabolite._model is None
+        assert new_metabolite not in model.metabolites
+        assert new_metabolite.id not in model.solver.constraints
+
+    def test_remove_metabolite_subtractive(self, model):
+        test_metabolite = model.metabolites[4]
+        test_reactions = test_metabolite.reactions
+        with model:
+            model.remove_metabolites(test_metabolite, destructive=False)
+            assert test_metabolite._model is None
+            assert test_metabolite not in model.metabolites
+            assert test_metabolite.id not in model.solver.constraints
+            for reaction in test_reactions:
+                assert reaction in model.reactions
+
+        assert test_metabolite._model is model
+        assert test_metabolite in model.metabolites
+        assert test_metabolite.id in model.solver.constraints
+
+    def test_remove_metabolite_destructive(self, model):
+        test_metabolite = model.metabolites[4]
+        test_reactions = test_metabolite.reactions
+        with model:
+            model.remove_metabolites(test_metabolite, destructive=True)
+            assert test_metabolite._model is None
+            assert test_metabolite not in model.metabolites
+            assert test_metabolite.id not in model.solver.constraints
+            for reaction in test_reactions:
+                assert reaction not in model.reactions
+
+        assert test_metabolite._model is model
+        assert test_metabolite in model.metabolites
+        assert test_metabolite.id in model.solver.constraints
+        for reaction in test_reactions:
+            assert reaction in model.reactions
+
     def test_add_reaction(self, model):
         old_reaction_count = len(model.reactions)
         old_metabolite_count = len(model.metabolites)
@@ -308,6 +381,36 @@ class TestCobraModel:
         r2.add_metabolites({Metabolite(model.metabolites[0].id): 1})
         assert model.metabolites[0] is list(r2._metabolites)[0]
 
+    def test_add_reaction_context(self, model):
+        old_reaction_count = len(model.reactions)
+        old_metabolite_count = len(model.metabolites)
+        dummy_metabolite_1 = Metabolite("test_foo_1")
+        dummy_metabolite_2 = Metabolite("test_foo_2")
+        actual_metabolite = model.metabolites[0]
+        copy_metabolite = model.metabolites[1].copy()
+        dummy_reaction = Reaction("test_foo_reaction")
+        dummy_reaction.add_metabolites({dummy_metabolite_1: -1,
+                                        dummy_metabolite_2: 1,
+                                        copy_metabolite: -2,
+                                        actual_metabolite: 1})
+        dummy_reaction.gene_reaction_rule = 'dummy_gene'
+
+        with model:
+            model.add_reaction(dummy_reaction)
+            assert model.reactions.get_by_id(dummy_reaction.id) == \
+                dummy_reaction
+            assert len(model.reactions) == old_reaction_count + 1
+            assert len(model.metabolites) == old_metabolite_count + 2
+            assert dummy_metabolite_1._model == model
+            assert 'dummy_gene' in model.genes
+
+        assert len(model.reactions) == old_reaction_count
+        assert len(model.metabolites) == old_metabolite_count
+        with pytest.raises(KeyError):
+            model.reactions.get_by_id(dummy_reaction.id)
+        assert dummy_metabolite_1._model is None
+        assert 'dummy_gene' not in model.genes
+
     def test_add_reaction_from_other_model(self, model):
         other = model.copy()
         for i in other.reactions:
@@ -323,17 +426,28 @@ class TestCobraModel:
 
     def test_model_remove_reaction(self, model):
         old_reaction_count = len(model.reactions)
-        model.remove_reactions(["PGI"])
-        assert len(model.reactions) == old_reaction_count - 1
-        with pytest.raises(KeyError):
-            model.reactions.get_by_id("PGI")
-        model.remove_reactions(model.reactions[:1])
-        assert len(model.reactions) == old_reaction_count - 2
+
+        with model:
+            model.remove_reactions(["PGI"])
+            assert len(model.reactions) == old_reaction_count - 1
+            with pytest.raises(KeyError):
+                model.reactions.get_by_id("PGI")
+            model.remove_reactions(model.reactions[:1])
+            assert len(model.reactions) == old_reaction_count - 2
+
+        assert len(model.reactions) == old_reaction_count
+        assert "PGI" in model.reactions
+
         tmp_metabolite = Metabolite("testing")
         model.reactions[0].add_metabolites({tmp_metabolite: 1})
         assert tmp_metabolite in model.metabolites
         model.remove_reactions(model.reactions[:1],
                                remove_orphans=True)
+        assert tmp_metabolite not in model.metabolites
+
+        with model:
+            model.reactions[0].add_metabolites({tmp_metabolite: 1})
+            assert tmp_metabolite in model.metabolites
         assert tmp_metabolite not in model.metabolites
 
     def test_reaction_remove(self, model):

@@ -5,6 +5,7 @@ from __future__ import absolute_import
 import time
 import types
 from copy import copy, deepcopy
+from functools import partial
 from warnings import warn
 
 import optlang
@@ -19,9 +20,10 @@ from cobra.core.reaction import separate_forward_and_reverse_bounds
 from cobra.core.solution import Solution
 from cobra.exceptions import SolveError
 from cobra.solvers import optimize
-from cobra.util.context import HistoryManager, resettable
+from cobra.util.context import HistoryManager, resettable, get_context
 from cobra.util.solver import (
-    SolverNotFound, get_solver_name, interface_to_str, set_objective, solvers)
+    SolverNotFound, get_solver_name, interface_to_str, set_objective, solvers,
+    add_to_solver, remove_from_solver)
 from cobra.util.util import AutoVivification
 
 
@@ -313,6 +315,8 @@ class Model(Object):
         """Will add a list of metabolites to the model object and add new
         constraints accordingly.
 
+        The change is reverted upon exit when using the model as a context.
+
         Parameters
         ----------
         metabolite_list : A list of `cobra.core.Metabolite` objects
@@ -328,11 +332,65 @@ class Model(Object):
         self.metabolites += metabolite_list
 
         # from cameo ...
+        to_add = []
         for met in metabolite_list:
             if met.id not in self.solver.constraints:
                 constraint = self.solver.interface.Constraint(
                     S.Zero, name=met.id, lb=0, ub=0)
-                self.solver.add(constraint)
+                to_add += [constraint]
+
+        add_to_solver(self, to_add)
+
+        context = get_context(self)
+        if context:
+            context(partial(self.metabolites.__isub__, metabolite_list))
+            for x in metabolite_list:
+                # Do we care?
+                context(partial(setattr, x, '_model', None))
+
+    def remove_metabolites(self, metabolite_list, destructive=False):
+        """Remove a list of metabolites from the the object.
+
+        The change is reverted upon exit when using the model as a context.
+
+        Parameters
+        ----------
+        metabolite_list : list
+            A list with `cobra.Metabolite` objects as elements.
+
+        destructive : bool
+            If False then the metabolite is removed from all
+            associated reactions.  If True then all associated
+            reactions are removed from the Model.
+
+        """
+        if not hasattr(metabolite_list, '__iter__'):
+            metabolite_list = [metabolite_list]
+        # Make sure metabolites exist in model
+        metabolite_list = [x for x in metabolite_list
+                           if x.id in self.metabolites]
+        for x in metabolite_list:
+            x._model = None
+
+            if not destructive:
+                for the_reaction in list(x._reaction):
+                    the_coefficient = the_reaction._metabolites[x]
+                    the_reaction.subtract_metabolites({x: the_coefficient})
+
+            else:
+                for x in list(x._reaction):
+                    x.remove_from_model()
+
+        self.metabolites -= metabolite_list
+
+        to_remove = [self.solver.constraints[m.id] for m in metabolite_list]
+        remove_from_solver(self, to_remove)
+
+        context = get_context(self)
+        if context:
+            context(partial(self.metabolites.__iadd__, metabolite_list))
+            for x in metabolite_list:
+                context(partial(setattr, x, '_model', self))
 
     def add_reaction(self, reaction):
         """Will add a cobra.Reaction object to the model, if
@@ -340,37 +398,44 @@ class Model(Object):
 
         Parameters
         ----------
-        reaction : A `cobra.core.Reaction` object
+        reaction : cobra.Reaction
+            The reaction to add
 
+        Deprecated (0.6). Use `~cobra.Model.add_reactions` instead
         """
+        warn("add_reaction deprecated. Use add_reactions instead",
+             DeprecationWarning)
+
         self.add_reactions([reaction])
 
     def add_reactions(self, reaction_list):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
 
+        The change is reverted upon exit when using the model as a context.
+
         Parameters
         ----------
-        reaction_list : A list of `cobra.core.Reaction` objects
+        reaction_list : list
+            A list of `cobra.Reaction` objects
 
         """
 
         try:
             reaction_list = DictList(reaction_list)
         except TypeError:
-            # This function really should not used for single reactions
             reaction_list = DictList([reaction_list])
-            warn("Use add_reaction for single reactions")
 
         # Only add the reaction if one with the same ID is not already
         # present in the model.
-        reactions_in_model = [
-            i.id for i in reaction_list if self.reactions.has_id(
-                i.id)]
+        reactions_in_model = [i.id for i in reaction_list if i.id
+                              in self.reactions]
 
         if len(reactions_in_model) > 0:
             raise Exception("Reactions already in the model: " +
                             ", ".join(reactions_in_model))
+
+        context = get_context(self)
 
         # Add reactions. Also take care of genes and metabolites in the loop
         for reaction in reaction_list:
@@ -381,11 +446,8 @@ class Model(Object):
             for metabolite in list(reaction._metabolites.keys()):
                 # if the metabolite is not in the model, add it
                 # should we be adding a copy instead.
-                if not self.metabolites.has_id(metabolite.id):
-                    self.metabolites.append(metabolite)
-                    metabolite._model = self
-                    # this should already be the case. Is it necessary?
-                    metabolite._reaction = {reaction}
+                if metabolite not in self.metabolites:
+                    self.add_metabolites(metabolite)
                 # A copy of the metabolite exists in the model, the reaction
                 # needs to point to the metabolite in the model.
                 else:
@@ -394,14 +456,21 @@ class Model(Object):
                         metabolite.id)
                     reaction._metabolites[model_metabolite] = stoichiometry
                     model_metabolite._reaction.add(reaction)
+                    if context:
+                        context(partial(
+                            model_metabolite._reaction.remove, reaction))
 
             for gene in list(reaction._genes):
                 # If the gene is not in the model, add it
                 if not self.genes.has_id(gene.id):
-                    self.genes.append(gene)
+                    self.genes += [gene]
                     gene._model = self
-                    # this should already be the case. Is it necessary?
-                    gene._reaction = {reaction}
+
+                    if context:
+                        # Remove the gene later
+                        context(partial(self.genes.__isub__, [gene]))
+                        context(partial(setattr, gene, '_model', None))
+
                 # Otherwise, make the gene point to the one in the model
                 else:
                     model_gene = self.genes.get_by_id(gene.id)
@@ -411,20 +480,87 @@ class Model(Object):
 
         self.reactions += reaction_list
 
+        if context:
+            context(partial(self.reactions.__isub__, reaction_list))
+
         # from cameo ...
         self._populate_solver(reaction_list)
+
+    def remove_reactions(self, reactions, delete=True,
+                         remove_orphans=False):
+        """Remove reactions from the model.
+
+        The change is reverted upon exit when using the model as a context.
+
+        Parameters
+        ----------
+        reactions : list
+            A list with reactions (`cobra.Reaction`), or their id's, to remove
+
+        delete : bool
+            Whether or not the reactions should be deleted after removal.
+            If the reactions are not deleted, those objects will be
+            recreated with new metabolite and gene objects.
+
+        remove_orphans : bool
+            Remove orphaned genes and metabolites from the model as well
+
+        """
+        if isinstance(reactions, string_types) or hasattr(reactions, "id"):
+            warn("need to pass in a list")
+            reactions = [reactions]
+
+        context = get_context(self)
+
+        for reaction in reactions:
+            try:
+                reaction = self.reactions[self.reactions.index(reaction)]
+            except ValueError:
+                warn('%s not in %s' % (reaction, self))
+            else:
+                forward = reaction.forward_variable
+                reverse = reaction.reverse_variable
+                remove_from_solver(self, [forward, reverse])
+                self.reactions.remove(reaction)
+                reaction._model = None
+
+                if context:
+                    context(partial(setattr, reaction, '_model', self))
+                    context(partial(self.reactions.add, reaction))
+
+                for x in reaction._metabolites:
+                    if reaction in x._reaction:
+                        x._reaction.remove(reaction)
+                        if context:
+                            context(partial(x._reaction.add, reaction))
+                        if remove_orphans and len(x._reaction) == 0:
+                            self.remove_metabolites(x)
+
+                for x in reaction._genes:
+                    if reaction in x._reaction:
+                        x._reaction.remove(reaction)
+                        if context:
+                            context(partial(x._reaction.add, reaction))
+
+                        if remove_orphans and len(x._reaction) == 0:
+                            self.genes.remove(x)
+                            if context:
+                                context(partial(self.genes.add, x))
+
+                reaction._metabolites = {}
+                reaction._genes = set()
 
     def _populate_solver(self, reaction_list, metabolite_list=None):
         """Populate attached solver with constraints and variables that
         model the provided reactions.
         """
         constraint_terms = AutoVivification()
+        to_add = []
         if metabolite_list is not None:
             for met in metabolite_list:
-                constraint = self.solver.interface.Constraint(S.Zero,
-                                                              name=met.id,
-                                                              lb=0, ub=0)
-                self.solver.add(constraint)
+                to_add += [self.solver.interface.Constraint(
+                    S.Zero, name=met.id, lb=0, ub=0)]
+        add_to_solver(self, to_add)
 
         for reaction in reaction_list:
 
@@ -436,8 +572,7 @@ class Model(Object):
             reverse_variable = self.solver.interface.Variable(
                 reaction._get_reverse_id(), lb=reverse_lb, ub=reverse_ub)
 
-            self.solver.add(forward_variable)
-            self.solver.add(reverse_variable)
+            add_to_solver(self, [forward_variable, reverse_variable])
             self.solver.update()
 
             for metabolite, coeff in six.iteritems(reaction.metabolites):
@@ -448,7 +583,7 @@ class Model(Object):
                         S.Zero,
                         name=metabolite.id,
                         lb=0, ub=0)
-                    self.solver.add(constraint, sloppy=True)
+                    add_to_solver(self, constraint, sloppy=True)
 
                 constraint_terms[constraint][forward_variable] = coeff
                 constraint_terms[constraint][reverse_variable] = -coeff
@@ -555,36 +690,6 @@ class Model(Object):
             #     'returned solution status is "%s"' % (
             #         self, solution.status))
         return solution
-
-    def remove_reactions(self, reactions, delete=True,
-                         remove_orphans=False):
-        """remove reactions from the model
-
-        reactions: [:class:`~cobra.core.Reaction.Reaction`] or [str]
-            The reactions (or their id's) to remove
-
-        delete: Boolean
-            Whether or not the reactions should be deleted after removal.
-            If the reactions are not deleted, those objects will be
-            recreated with new metabolite and gene objects.
-
-        remove_orphans: Boolean
-            Remove orphaned genes and metabolites from the model as well
-
-        """
-        if isinstance(reactions, string_types) or hasattr(reactions, "id"):
-            warn("need to pass in a list")
-            reactions = [reactions]
-        for reaction in reactions:
-            try:
-                reaction = self.reactions[self.reactions.index(reaction)]
-            except ValueError:
-                warn('%s not in %s' % (reaction, self))
-            else:
-                if delete:
-                    reaction.delete(remove_orphans=remove_orphans)
-                else:
-                    reaction.remove_from_model(remove_orphans=remove_orphans)
 
     def repair(self, rebuild_index=True, rebuild_relationships=True):
         """Update all indexes and pointers in a model
