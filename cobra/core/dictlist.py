@@ -220,9 +220,10 @@ class DictList(list):
     def __sub__(self, other):
         """x.__sub__(y) <==> x - y
 
-        other: iterable
+        Parameters
+        ----------
+        other : iterable
             other must contain only unique id's present in the list
-
         """
         total = DictList()
         total.extend(self)
@@ -233,9 +234,10 @@ class DictList(list):
     def __isub__(self, other):
         """x.__sub__(y) <==> x -= y
 
-        other: iterable
+        Parameters
+        ----------
+        other : iterable
             other must contain only unique id's present in the list
-
         """
 
         for item in other:

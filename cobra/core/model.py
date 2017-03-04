@@ -315,6 +315,8 @@ class Model(Object):
         """Will add a list of metabolites to the model object and add new
         constraints accordingly.
 
+        The change is reverted upon exit when using the model as a context.
+
         Parameters
         ----------
         metabolite_list : A list of `cobra.core.Metabolite` objects
@@ -347,9 +349,14 @@ class Model(Object):
                 context(partial(setattr, x, '_model', None))
 
     def remove_metabolites(self, metabolite_list, destructive=False):
-        """Will remove a list of metabolites from the the object
+        """Remove a list of metabolites from the the object.
 
-        metabolite_list : A list of :class:`~cobra.core.Metabolite` objects
+        The change is reverted upon exit when using the model as a context.
+
+        Parameters
+        ----------
+        metabolite_list : list
+            A list with `cobra.Metabolite` objects as elements.
 
         destructive : bool
             If False then the metabolite is removed from all
@@ -376,7 +383,6 @@ class Model(Object):
 
         self.metabolites -= metabolite_list
 
-        # from cameo ...
         to_remove = [self.solver.constraints[m.id] for m in metabolite_list]
         remove_from_solver(self, to_remove)
 
@@ -392,10 +398,10 @@ class Model(Object):
 
         Parameters
         ----------
-        reaction : A `cobra.core.Reaction` object
+        reaction : cobra.Reaction
+            The reaction to add
 
         Deprecated (0.6). Use `~cobra.Model.add_reactions` instead
-
         """
         warn("add_reaction deprecated. Use add_reactions instead",
              DeprecationWarning)
@@ -406,9 +412,12 @@ class Model(Object):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
 
+        The change is reverted upon exit when using the model as a context.
+
         Parameters
         ----------
-        reaction_list : A list of `cobra.core.Reaction` objects
+        reaction_list : list
+            A list of `cobra.Reaction` objects
 
         """
 
@@ -479,17 +488,21 @@ class Model(Object):
 
     def remove_reactions(self, reactions, delete=True,
                          remove_orphans=False):
-        """remove reactions from the model
+        """Remove reactions from the model.
 
-        reactions: [:class:`~cobra.core.Reaction.Reaction`] or [str]
-            The reactions (or their id's) to remove
+        The change is reverted upon exit when using the model as a context.
 
-        delete: Boolean
+        Parameters
+        ----------
+        reactions : list
+            A list with reactions (`cobra.Reaction`), or their id's, to remove
+
+        delete : bool
             Whether or not the reactions should be deleted after removal.
             If the reactions are not deleted, those objects will be
             recreated with new metabolite and gene objects.
 
-        remove_orphans: Boolean
+        remove_orphans : bool
             Remove orphaned genes and metabolites from the model as well
 
         """
@@ -680,6 +693,7 @@ class Model(Object):
 
     def repair(self, rebuild_index=True, rebuild_relationships=True):
         """Update all indexes and pointers in a model
+
         Parameters
         ----------
         rebuild_index : bool

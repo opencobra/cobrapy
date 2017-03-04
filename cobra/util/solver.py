@@ -283,8 +283,6 @@ def add_to_solver(model, what, **kwargs):
     reactions and lower/upper bounds. Will integrate with the Model's context
     manager in order to revert changes upon leaving the context.
 
-    kwargs are passed to solver.add()
-
     Parameters
     ----------
     model : a cobra model
@@ -293,6 +291,8 @@ def add_to_solver(model, what, **kwargs):
        The variables or constraints to add to the model. Must be of class
        `model.solver.interface.Variable` or
        `model.solver.interface.Constraint`.
+    **kwargs : keyword arguments
+        passed to solver.add()
     """
     context = get_context(model)
 

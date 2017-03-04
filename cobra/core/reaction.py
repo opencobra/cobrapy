@@ -297,7 +297,7 @@ class Reaction(Object):
 
         # TODO: Do this :)
         if get_context(self):
-            warn("Context management not implemeneted for "
+            warn("Context management not implemented for "
                  "gene reaction rules")
 
         self._gene_reaction_rule = new_rule.strip()
@@ -409,6 +409,8 @@ class Reaction(Object):
     def remove_from_model(self, model=None, remove_orphans=False):
         """Removes the reaction from the model while keeping it intact
 
+        The change is reverted upon exit when using the model as a context.
+
         Parameters
         ----------
         remove_orphans : bool
@@ -433,6 +435,8 @@ class Reaction(Object):
         This removes all associations between a reaction the associated
         model, metabolites and genes (unlike remove_from_model which only
         dissociates the reaction from the model).
+
+        The change is reverted upon exit when using the model as a context.
 
         Parameters
         ----------
@@ -586,6 +590,8 @@ class Reaction(Object):
         If the final coefficient for a metabolite is 0 then it is removed
         from the reaction.
 
+        The change is reverted upon exit when using the model as a context.
+
         Parameters
         ----------
         metabolites_to_add : dict
@@ -674,6 +680,8 @@ class Reaction(Object):
         """This function will 'subtract' metabolites from a reaction, which
         means add the metabolites with -1*coefficient. If the final coefficient
         for a metabolite is 0 then the metabolite is removed from the reaction.
+
+        The change is reverted upon exit when using the model as a context.
 
         Parameters
         ----------
@@ -792,6 +800,9 @@ class Reaction(Object):
         arguments infers a set of metabolites, metabolite compartments and
         stoichiometries for the reaction.  It also infers the reversibility
         of the reaction from the reaction arrow.
+
+        Changes to the associated model are reverted upon exit when using
+        the model as a context.
 
         Parameters
         ----------

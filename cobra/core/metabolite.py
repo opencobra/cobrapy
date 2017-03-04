@@ -171,6 +171,8 @@ class Metabolite(Species):
     def remove_from_model(self, destructive=False):
         """Removes the association from self.model
 
+        The change is reverted upon exit when using the model as a context.
+
         Parameters
         ----------
         destructive : bool
