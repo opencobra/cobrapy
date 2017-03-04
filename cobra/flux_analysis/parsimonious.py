@@ -8,10 +8,10 @@ from itertools import chain
 import sympy
 
 from cobra.util import solver as sutil
-from cobra.exceptions import SolveError
 from cobra.manipulation.modify import (
     convert_to_irreversible, revert_to_reversible)
 from cobra.util import linear_reaction_coefficients, set_objective
+from cobra.core.solution import get_solution
 
 add = sympy.Add._from_args
 mul = sympy.Mul._from_args
@@ -90,7 +90,7 @@ def optimize_minimal_flux(model, already_irreversible=False,
         model.solver = solver
         return _optimize_minimal_flux_optlang(
             model, objective=objective,
-            fraction_of_optimum=fraction_of_optimum)
+            fraction_of_optimum=fraction_of_optimum, reactions=reactions)
 
 
 def add_pfba(model, objective=None, fraction_of_optimum=1.0):
@@ -138,8 +138,13 @@ def _optimize_minimal_flux_optlang(model, objective=None, reactions=None,
         The model to perform pFBA on
     objective :
         An objective to use in addition to the pFBA constraints.
-    solver :
-        An objective to use in addition to the pFBA constraints.
+    reactions : iterable
+        List of reactions or reaction identifiers.
+
+    Returns
+    -------
+    cobra.Solution
+        The solution to the pFBA optimization.
 
     Updates everything in-place, returns model to original state at end.
     """
@@ -149,20 +154,9 @@ def _optimize_minimal_flux_optlang(model, objective=None, reactions=None,
     with model as m:
         add_pfba(m, objective=objective,
                  fraction_of_optimum=fraction_of_optimum)
-        solution = m.optimize(objective_sense='minimize')
+        m.solver.optimize()
+        solution = get_solution(m, reactions=reactions)
     return solution
-
-#        try:
-#            solution = m.optimize(objective_sense='minimize')
-#        except SolveError as e:
-#            LOGGER.error("pfba could not determine an optimal solution for "
-#                         "objective %s" % m.objective)
-#            raise e
-#        else:
-#            results = dict()
-#            results['flux'] = {rxn.id: solution[rxn.id] for rxn in reactions}
-#            results['objective_value'] = solution.objective_value
-#            return pandas.DataFrame(results)
 
 
 def _optimize_minimal_flux_legacy(model, solver, already_irreversible=False,

@@ -7,24 +7,18 @@ import warnings
 from contextlib import contextmanager
 from os import name
 
-import numpy
 import pytest
 import numpy
 from six import StringIO, iteritems
 
 import cobra.util.solver as sutil
 from cobra.core import Metabolite, Model, Reaction
-from cobra.core.solution import LegacySolution
-from cobra.exceptions import SolveError, OptimizationError
+from cobra.exceptions import OptimizationError
 from cobra.flux_analysis import *
 from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 from cobra.manipulation import convert_to_irreversible
 from cobra.solvers import SolverNotFound, get_solver_name, solver_dict
 
-try:
-    from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
-except ImportError:
-    pass
 try:
     import scipy
 except ImportError:
@@ -39,14 +33,6 @@ try:
 except ImportError:
     pyplot = None
     axes3d = None
-try:
-    import pandas
-except ImportError:
-    pandas = None
-try:
-    import tabulate
-except ImportError:
-    tabulate = None
 
 # The scipt interface is currently unstable and may yield errors or infeasible
 # solutions
@@ -396,8 +382,6 @@ class TestCobraFluxAnalysis:
 
     @pytest.mark.xfail(run=False, reason="cannot work properly with the"
                        "current solver jamboree")
-    @pytest.mark.skipif((pandas is None) or (tabulate is None),
-                        reason="summary methods require pandas and tabulate")
     @pytest.mark.parametrize("solver", list(solver_dict))
     def test_summary_methods(self, model, solver):
         # Test model summary methods

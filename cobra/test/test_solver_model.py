@@ -11,8 +11,7 @@ import pytest
 import six
 
 import cobra
-from cobra.core import Metabolite, Model, Reaction, Solution, LegacySolution
-from cobra.exceptions import UndefinedSolution
+from cobra.core import Metabolite, Model, Reaction, Solution
 from cobra.util.solver import SolverNotFound, set_objective, solvers
 
 try:

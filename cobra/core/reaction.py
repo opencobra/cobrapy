@@ -341,7 +341,6 @@ class Reaction(Object):
 
         Examples
         --------
-        >>> import cobra
         >>> import cobra.test
         >>> model = cobra.test.create_test_model("textbook")
         >>> solution = model.optimize()

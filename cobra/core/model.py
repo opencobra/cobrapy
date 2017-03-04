@@ -628,15 +628,17 @@ class Model(Object):
             If unspecified will use the currently defined `self.solver`
             otherwise it will use the given solver and update the attribute.
         quadratic_component : {None, scipy.sparse.dok_matrix}, optional
-            The dimensions should be (n, n) where n is the number of reactions.
-            This sets the quadratic component (Q) of the objective coefficient,
-            adding :math:`\\frac{1}{2} v^T \cdot Q \cdot v` to the objective.
+            The dimensions should be (n, n) where n is the number of
+            reactions. This sets the quadratic component (Q) of the
+            objective coefficient, adding :math:`\\frac{1}{2} v^T \cdot Q
+            \cdot v` to the objective. Ignored for optlang based solvers.
         tolerance_feasibility : float
-            Solver tolerance for feasibility.
+            Solver tolerance for feasibility. Ignored for optlang based
+            solvers
         tolerance_markowitz : float
-            Solver threshold during pivot.
+            Solver threshold during pivot. Ignored for optlang based solvers
         time_limit : float
-            Maximum solver time (in seconds).
+            Maximum solver time (in seconds). Ignored for optlang based solvers
 
         Notes
         -----
