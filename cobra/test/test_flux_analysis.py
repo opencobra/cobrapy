@@ -481,7 +481,7 @@ class TestCobraFluxAnalysis:
                         reason="summary methods require pandas and tabulate")
     @pytest.mark.parametrize("fraction, met", [(0.99, "fdp_c")])
     def test_metabolite_summary_with_fva(self, model, opt_solver, fraction,
-            met):
+                                         met):
         if opt_solver in ("optlang-glpk", "optlang-cplex", "optlang-gurobi"):
             pytest.xfail("FVA currently buggy")
 

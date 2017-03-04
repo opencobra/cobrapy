@@ -60,7 +60,6 @@ def metabolite_summary(met, threshold=0.01, fva=False, floatfmt='.3g',
             flux_summary["fmax"] = imax if abs(imin) <= abs(imax) else imin
             flux_summary["fmin"] = imin if abs(imin) <= abs(imax) else imax
 
-
     assert flux_summary.flux.sum() < 1E-6, "Error in flux balance"
 
     flux_summary = _process_flux_dataframe(flux_summary, fva, threshold,
