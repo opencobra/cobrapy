@@ -19,7 +19,7 @@ from types import ModuleType
 import optlang
 import sympy
 
-import cobra.solvers as legacy_solvers
+from cobra.exceptions import OptimizationError
 from cobra.util.context import get_context
 
 
@@ -384,3 +384,16 @@ def fix_objective_as_constraint(model, fraction=1):
         model.objective.expression,
         name=fix_objective_name, ub=ub, lb=lb)
     add_to_solver(model, constraint)
+
+
+def check_solver_status(status):
+    """Perform recurring checks on the status."""
+    if status is None:
+        raise RuntimeError("model was not optimized yet")
+    if status != "optimal":
+        raise OptimizationError(
+            "solver status is '{0:s}': cannot reliably retrieve values"
+            .format(status))
+
+
+import cobra.solvers as legacy_solvers

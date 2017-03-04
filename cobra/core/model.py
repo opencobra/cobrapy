@@ -13,16 +13,15 @@ import sympy
 from six import iteritems, string_types
 from sympy import S
 
-from cobra.exceptions import OptimizationError
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
 from cobra.core.reaction import separate_forward_and_reverse_bounds
-from cobra.core.solution import Solution, get_solution
+from cobra.core.solution import get_solution
 from cobra.solvers import optimize
 from cobra.util.context import HistoryManager, resettable, get_context
 from cobra.util.solver import (
     SolverNotFound, get_solver_name, interface_to_str, set_objective, solvers,
-    add_to_solver, remove_from_solver, choose_solver)
+    add_to_solver, remove_from_solver, choose_solver, check_solver_status)
 from cobra.util.util import AutoVivification
 
 
@@ -655,10 +654,7 @@ class Model(Object):
                     "max": "maximize", "min": "minimize"}[original_direction]
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
-            if solution.status != "optimal":
-                raise OptimizationError(
-                    "The solver status is '{0:s}'. Cannot reliably retrieve"
-                    " values.".format(solution.status))
+            check_solver_status(solution.status)
             return solution
 
         self.solver = solver

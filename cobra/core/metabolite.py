@@ -9,6 +9,7 @@ from six import iteritems
 
 from cobra.core.formula import elements_and_molecular_weights
 from cobra.core.species import Species
+from cobra.util.solver import check_solver_status
 
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
@@ -147,17 +148,11 @@ class Metabolite(Species):
         interested in values of non-optimal solutions
         """
         try:
-            if self._model.solver.status != "optimal":
-                warn("Solver status is not optimal ({}), please treat value"
-                     " with care!".format(self._model.solver.status),
-                     UserWarning)
+            check_solver_status(self._model.solver.status)
             price = self._model.solver.constraints[self.id].dual
         except AttributeError:
             raise RuntimeError(
                 "metabolite '{}' is not part of a model".format(self.id))
-        # catch Cplex and Gurobi
-        except:
-            raise RuntimeError("model was not optimized")
         else:
             return price
 

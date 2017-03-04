@@ -15,7 +15,8 @@ from cobra.core.gene import Gene, ast2str, parse_gpr
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.util.context import resettable, get_context
-from cobra.util.solver import linear_reaction_coefficients, set_objective
+from cobra.util.solver import (
+    linear_reaction_coefficients, set_objective, check_solver_status)
 from cobra.util.util import Frozendict, _is_positive
 
 # precompiled regular expressions
@@ -265,18 +266,11 @@ class Reaction(Object):
     def flux(self):
         """Reaction flux in the most recent solution."""
         try:
-            if self._model.solver.status != "optimal":
-                warn("Solver status is not optimal ({}), please treat value"
-                     " with care!".format(self._model.solver.status),
-                     UserWarning)
+            check_solver_status(self._model.solver.status)
             flux = self.forward_variable.primal - self.reverse_variable.primal
         except AttributeError:
             raise RuntimeError(
                 "reaction '{}' is not part of a model".format(self.id))
-        # Would like to catch CplexSolverError and GurobiError here but can't
-        # do so if the packages are not available.
-        except:
-            raise RuntimeError("model was not optimized yet")
         else:
             return flux
 
@@ -284,16 +278,11 @@ class Reaction(Object):
     def reduced_cost(self):
         """Reaction reduced cost in the most recent solution."""
         try:
-            if self._model.solver.status != "optimal":
-                warn("Solver status is not optimal ({}), please treat value"
-                     " with care!".format(self._model.solver.status),
-                     UserWarning)
+            check_solver_status(self._model.solver.status)
             cost = self.forward_variable.dual - self.reverse_variable.dual
         except AttributeError:
             raise RuntimeError(
                 "reaction '{}' is not part of a model".format(self.id))
-        except:
-            raise RuntimeError("model was not optimized yet")
         else:
             return cost
 

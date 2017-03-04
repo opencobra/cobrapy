@@ -11,7 +11,7 @@ from warnings import warn
 from numpy import zeros
 from pandas import Series
 
-from cobra.exceptions import OptimizationError
+from cobra.util.solver import check_solver_status
 
 __all__ = ("Solution", "LegacySolution", "get_solution")
 
@@ -284,10 +284,7 @@ def get_solution(model, reactions=None, metabolites=None):
     This is only intended for the `optlang` solver interfaces and not the
     legacy solvers.
     """
-    if model.solver.status != "optimal":
-        raise OptimizationError(
-            "The solver status is '{0:s}'. Cannot reliably retrieve values."
-            .format(model.solver.status))
+    check_solver_status(model.solver.status)
     if reactions is None:
         reactions = model.reactions
     if metabolites is None:
