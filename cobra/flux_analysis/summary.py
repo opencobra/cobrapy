@@ -8,7 +8,7 @@ from six.moves import zip_longest
 from tabulate import tabulate
 
 from cobra.flux_analysis.variability import flux_variability_analysis
-from cobra.util.solver import linear_reaction_coefficients
+from cobra.util.solver import linear_reaction_coefficients, choose_solver
 
 
 def format_long_string(string, max_length):
@@ -127,6 +127,11 @@ def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
         format method for floats, passed to tabulate. Default is '.3g'.
 
     """
+    legacy, _ = choose_solver(model, solver=solver_args.get("solver"))
+    if legacy:
+        raise NotImplementedError(
+            "Summary support for legacy solvers was removed.")
+
     # Create a dataframe of objective fluxes
     objective_reactions = linear_reaction_coefficients(model)
     obj_fluxes = pd.DataFrame({key: key.flux * value for key, value in
@@ -138,12 +143,7 @@ def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
     # Build a dictionary of metabolite production from the boundary reactions
     boundary_reactions = model.reactions.query(lambda x: x, 'boundary')
 
-    # Calculate FVA results if requested
-    if fva:
-        fva_results = flux_variability_analysis(
-            model, reaction_list=boundary_reactions, fraction_of_optimum=fva,
-            **solver_args)
-
+    # collect rxn.x before fva which invalidates previous solver state
     metabolite_fluxes = {}
     for rxn in boundary_reactions:
         for met, stoich in iteritems(rxn.metabolites):
@@ -151,10 +151,16 @@ def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
                 'id': format_long_string(met.id, 15),
                 'flux': stoich * rxn.x}
 
-            if fva:
+    # Calculate FVA results if requested
+    if fva:
+        fva_results = flux_variability_analysis(
+            model, reaction_list=boundary_reactions, fraction_of_optimum=fva,
+            **solver_args)
+
+        for rxn in boundary_reactions:
+            for met, stoich in iteritems(rxn.metabolites):
                 imin = stoich * fva_results.loc[rxn.id]['minimum']
                 imax = stoich * fva_results.loc[rxn.id]['maximum']
-
                 # Correct 'max' and 'min' for negative values
                 metabolite_fluxes[met].update({
                     'fmin': imin if abs(imin) <= abs(imax) else imax,

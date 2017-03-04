@@ -6,7 +6,9 @@ import re
 from warnings import warn
 
 from six import iteritems
+from future.utils import raise_from
 
+from cobra.exceptions import OptimizationError
 from cobra.core.formula import elements_and_molecular_weights
 from cobra.core.species import Species
 from cobra.util.solver import check_solver_status
@@ -181,6 +183,11 @@ class Metabolite(Species):
         except AttributeError:
             raise RuntimeError(
                 "metabolite '{}' is not part of a model".format(self.id))
+        # Would love to catch CplexSolverError and GurobiError here.
+        except Exception as err:
+            raise_from(OptimizationError(
+                "Likely no solution exists. Original solver message: {}."
+                "".format(str(err))), err)
         else:
             return price
 

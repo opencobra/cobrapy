@@ -10,7 +10,9 @@ from functools import partial
 from warnings import warn
 
 from six import iteritems, string_types
+from future.utils import raise_from
 
+from cobra.exceptions import OptimizationError
 from cobra.core.gene import Gene, ast2str, parse_gpr
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
@@ -308,6 +310,11 @@ class Reaction(Object):
         except AttributeError:
             raise RuntimeError(
                 "reaction '{}' is not part of a model".format(self.id))
+        # Would love to catch CplexSolverError and GurobiError here.
+        except Exception as err:
+            raise_from(OptimizationError(
+                "Likely no solution exists. Original solver message: {}."
+                "".format(str(err))), err)
         else:
             return flux
 
@@ -356,6 +363,11 @@ class Reaction(Object):
         except AttributeError:
             raise RuntimeError(
                 "reaction '{}' is not part of a model".format(self.id))
+        # Would love to catch CplexSolverError and GurobiError here.
+        except Exception as err:
+            raise_from(OptimizationError(
+                "Likely no solution exists. Original solver message: {}."
+                "".format(str(err))), err)
         else:
             return cost
 
