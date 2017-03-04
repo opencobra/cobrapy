@@ -541,7 +541,7 @@ class TestSolverBasedModel:
         biomass_r = model.reactions.get_by_id('Biomass_Ecoli_core')
         pgi = model.reactions.PGI
         pgi.objective_coefficient = 2
-        coef_dict = model.solver.objective.expression.as_coefficients_dict()
+        coef_dict = model.objective.expression.as_coefficients_dict()
         # Check that objective has been updated
         assert coef_dict[pgi.forward_variable] == 2
         assert coef_dict[pgi.reverse_variable] == -2
@@ -578,7 +578,7 @@ class TestSolverBasedModel:
         assert model.reactions[-1] == r2
         assert isinstance(model.reactions[-2].reverse_variable,
                           model.problem.Variable)
-        coefficients_dict = model.solver.objective.expression. \
+        coefficients_dict = model.objective.expression. \
             as_coefficients_dict()
         biomass_r = model.reactions.get_by_id('Biomass_Ecoli_core')
         assert coefficients_dict[biomass_r.forward_variable] == 1.
@@ -653,7 +653,7 @@ class TestSolverBasedModel:
             assert reaction in model.reactions
 
     def test_objective(self, model):
-        obj = model.solver.objective
+        obj = model.objective
         assert {var.name: coef for var, coef in
                 obj.expression.as_coefficients_dict().items()} == {
                    'Biomass_Ecoli_core_reverse_2cdba': -1,
@@ -663,55 +663,55 @@ class TestSolverBasedModel:
     def test_change_objective(self, model):
         expression = 1.0 * model.variables['ENO'] + \
                      1.0 * model.variables['PFK']
-        model.solver.objective = model.problem.Objective(
+        model.objective = model.problem.Objective(
             expression)
-        assert model.solver.objective.expression == expression
+        assert model.objective.expression == expression
         model.objective = "ENO"
         eno_obj = model.problem.Objective(
             model.reactions.ENO.flux_expression, direction="max")
         pfk_obj = model.problem.Objective(
             model.reactions.PFK.flux_expression, direction="max")
-        assert model.solver.objective == eno_obj
+        assert model.objective == eno_obj
 
         with model:
             model.objective = "PFK"
-            assert model.solver.objective == pfk_obj
-        assert model.solver.objective == eno_obj
-        expression = model.solver.objective.expression
+            assert model.objective == pfk_obj
+        assert model.objective == eno_obj
+        expression = model.objective.expression
         atpm = model.reactions.get_by_id("ATPM")
         biomass = model.reactions.get_by_id("Biomass_Ecoli_core")
         with model:
             model.objective = atpm
-        assert model.solver.objective.expression == expression
+        assert model.objective.expression == expression
         with model:
             atpm.objective_coefficient = 1
             biomass.objective_coefficient = 2
-        assert model.solver.objective.expression == expression
+        assert model.objective.expression == expression
 
         with model:
             set_objective(model, model.problem.Objective(
                 atpm.flux_expression))
-            assert model.solver.objective.expression == atpm.flux_expression
-        assert model.solver.objective.expression == expression
+            assert model.objective.expression == atpm.flux_expression
+        assert model.objective.expression == expression
 
-        expression = model.solver.objective.expression
+        expression = model.objective.expression
         with model:
             with model:  # Test to make sure nested contexts are OK
                 set_objective(model, atpm.flux_expression,
                               additive=True)
-                assert (model.solver.objective.expression ==
+                assert (model.objective.expression ==
                         expression + atpm.flux_expression)
-        assert model.solver.objective.expression == expression
+        assert model.objective.expression == expression
 
     def test_set_reaction_objective(self, model):
         model.objective = model.reactions.ACALD
-        assert str(model.solver.objective.expression) == str(
+        assert str(model.objective.expression) == str(
             1.0 * model.reactions.ACALD.forward_variable -
             1.0 * model.reactions.ACALD.reverse_variable)
 
     def test_set_reaction_objective_str(self, model):
         model.objective = model.reactions.ACALD.id
-        assert str(model.solver.objective.expression) == str(
+        assert str(model.objective.expression) == str(
             1.0 * model.reactions.ACALD.forward_variable -
             1.0 * model.reactions.ACALD.reverse_variable)
 
