@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import pandas as pd
+from numpy import zeros
 from six import iteritems, print_
 from six.moves import zip_longest
 from tabulate import tabulate
@@ -35,36 +36,31 @@ def metabolite_summary(met, threshold=0.01, fva=False, floatfmt='.3g',
         format method for floats, passed to tabulate. Default is '.3g'.
 
     """
+    rxn_id = list()
+    flux = list()
+    reaction = list()
+    for rxn in met.reactions:
+        rxn_id.append(format_long_string(rxn.id, 10))
+        flux.append(rxn.flux * rxn.metabolites[met])
+        reaction.append(format_long_string(rxn.reaction, 40 if fva else 50))
 
-    def rxn_summary(r):
-        out = {
-            'id': format_long_string(r.id, 10),
-            'flux': r.x * r.metabolites[met],
-            'reaction': format_long_string(r.reaction, 40 if fva else 50),
-        }
-
-        if rxn_summary.fva_results is not False:
-            fmax = rxn_summary.fva_results.loc[r.id, 'maximum']
-            fmin = rxn_summary.fva_results.loc[r.id, 'minimum']
-            imax = r.metabolites[met] * fmax
-            imin = r.metabolites[met] * fmin
-
-            # Correct 'max' and 'min' for negative values
-            out.update({
-                'fmin': imin if abs(imin) <= abs(imax) else imax,
-                'fmax': imax if abs(imin) <= abs(imax) else imin,
-            })
-
-        return out
+    flux_summary = pd.DataFrame(data={
+        "id": rxn_id, "flux": flux, "reaction": reaction})
 
     if fva:
-        rxn_summary.fva_results = flux_variability_analysis(
+        fva_results = flux_variability_analysis(
             met.model, met.reactions, fraction_of_optimum=fva,
             **solver_args)
-    else:
-        rxn_summary.fva_results = False
+        flux_summary.index = flux_summary["id"]
+        flux_summary["maximum"] = zeros(len(rxn_id))
+        flux_summary["minimum"] = zeros(len(rxn_id))
+        for rxn in met.reactions:
+            imax = rxn.metabolites[met] * fva_results.loc[rxn.id, "maximum"]
+            imin = rxn.metabolites[met] * fva_results.loc[rxn.id, "minimum"]
+            flux_summary["fmax"] = imax if abs(imin) <= abs(imax) else imin
+            flux_summary["fmin"] = imin if abs(imin) <= abs(imax) else imax
 
-    flux_summary = pd.DataFrame((rxn_summary(r) for r in met.reactions))
+
     assert flux_summary.flux.sum() < 1E-6, "Error in flux balance"
 
     flux_summary = _process_flux_dataframe(flux_summary, fva, threshold,

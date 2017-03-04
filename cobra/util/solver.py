@@ -15,6 +15,7 @@ from __future__ import absolute_import
 import re
 from functools import partial
 from types import ModuleType
+from warnings import warn
 
 import optlang
 import sympy
@@ -390,8 +391,12 @@ def check_solver_status(status):
     """Perform standard checks on a solver's status."""
     if status is None:
         raise RuntimeError("model was not optimized yet")
-    if status != "optimal":
-        raise OptimizationError("solver status '{0:s}'".format(status))
+    elif status == "optimal":
+        return
+    elif status in ("non-optimal", "infeasible"):
+        warn("solver status is '{}'".format(status), UserWarning)
+    else:
+        raise OptimizationError("solver status is '{}'".format(status))
 
 
 import cobra.solvers as legacy_solvers  # noqa

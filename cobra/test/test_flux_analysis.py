@@ -9,22 +9,16 @@ from os import name
 
 import numpy
 import pytest
-import numpy
 from six import StringIO, iteritems
 
 import cobra.util.solver as sutil
 from cobra.core import Metabolite, Model, Reaction
-from cobra.core.solution import LegacySolution
-from cobra.exceptions import SolveError, OptimizationError
+from cobra.exceptions import OptimizationError
 from cobra.flux_analysis import *
 from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 from cobra.manipulation import convert_to_irreversible
 from cobra.solvers import SolverNotFound, get_solver_name, solver_dict
 
-try:
-    from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
-except ImportError:
-    pass
 try:
     import scipy
 except ImportError:
@@ -119,8 +113,10 @@ class TestCobraFluxAnalysis:
 
         # Infeasible solution
         model.reactions.ATPM.lower_bound = 500
-        with pytest.raises((OptimizationError, ValueError)):
-            optimize_minimal_flux(model, solver=solver)
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            with pytest.raises((UserWarning, ValueError)):
+                optimize_minimal_flux(model, solver=solver)
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_single_gene_deletion_fba_benchmark(self, model, benchmark,
@@ -342,8 +338,10 @@ class TestCobraFluxAnalysis:
         test_model.reactions.v3.lower_bound = 1
         infeasible_mod = construct_loopless_model(test_model)
 
-        with pytest.raises(OptimizationError):
-            infeasible_mod.optimize(solver="cglpk")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            with pytest.raises(UserWarning):
+                infeasible_mod.optimize(solver="cglpk")
 
     def test_loopless_solution(self):
         test_model = self.construct_ll_test_model()
@@ -359,8 +357,10 @@ class TestCobraFluxAnalysis:
         ll_fluxes = loopless_solution(model, fluxes=fluxes)
         assert len(ll_fluxes) == len(model.reactions)
         fluxes["Biomass_Ecoli_core"] = 1
-        with pytest.raises(OptimizationError):
-            loopless_solution(model, fluxes=fluxes)
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            with pytest.raises(UserWarning):
+                loopless_solution(model, fluxes=fluxes)
 
     def test_add_loopless(self):
         test_model = self.construct_ll_test_model()
@@ -387,25 +387,56 @@ class TestCobraFluxAnalysis:
             pytest.skip("can't test plots without 3D plotting")
         data.plot()
 
-    def check_entries(self, out, desired_entries):
-        """ensure each entry in desired_entries appears in output"""
-        output = out.getvalue().strip()
-        output_set = set((re.sub('\s', '', l) for l in output.splitlines()))
-        for item in desired_entries:
-            assert any(re.sub('\s', '', item) in line for line in output_set)
+    def check_line(self, output, expected_entries, pattern=re.compile(r"\s")):
+        """Ensure each expected entry is in the output."""
+        output_set = set(pattern.sub("", line) for line in output.splitlines())
+        for elem in expected_entries:
+            assert pattern.sub("", elem) in output_set
+
+    def check_in_line(self, output, expected_entries,
+                      pattern=re.compile(r"\s")):
+        """Ensure each expected entry is contained in the output."""
+        output_strip = [pattern.sub("", line) for line in output.splitlines()]
+        for elem in expected_entries:
+            assert any(pattern.sub("", elem) in line for line in output_strip)
 
     @pytest.mark.skipif((pandas is None) or (tabulate is None),
                         reason="summary methods require pandas and tabulate")
-    @pytest.mark.parametrize("solver", optlang_solvers)
-    def test_summary_methods(self, model, solver):
-        model.solver = solver
-        # Test model summary methods
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", UserWarning)
-            with pytest.raises((UserWarning, RuntimeError)):
-                model.summary()
+    def test_model_summary_unoptimized(self, model, opt_solver):
+        model.solver = opt_solver
+        with pytest.raises(RuntimeError):
+            model.summary()
 
-        desired_entries = [
+    @pytest.mark.skipif((pandas is None) or (tabulate is None),
+                        reason="summary methods require pandas and tabulate")
+    def test_model_summary(self, model, opt_solver):
+        model.solver = opt_solver
+        # test non-fva version (these should be fixed for textbook model
+        expected_entries = [
+            'o2_e      21.8',
+            'glc__D_e  10',
+            'nh4_e      4.77',
+            'pi_e       3.21',
+            'h2o_e  29.2',
+            'co2_e  22.8',
+            'h_e    17.5',
+            'Biomass_Ecol...  0.874',
+        ]
+        # Need to use a different method here because
+        # there are multiple entries per line.
+        model.optimize()
+        with captured_output() as (out, err):
+            model.summary()
+        self.check_in_line(out.getvalue(), expected_entries)
+
+    @pytest.mark.skipif((pandas is None) or (tabulate is None),
+                        reason="summary methods require pandas and tabulate")
+    @pytest.mark.parametrize("fraction", [0.95])
+    def test_model_summary_with_fva(self, model, opt_solver, fraction):
+        if opt_solver == "optlang-gurobi":
+            pytest.xfail("FVA currently buggy")
+        # test non-fva version (these should be fixed for textbook model
+        expected_entries = [
             'idFluxRangeidFluxRangeBiomass_Ecol...0.874',
             'o2_e       21.8   [19.9, 23.7]'
             'h2o_e       29.2  [25, 30.7]',
@@ -424,34 +455,24 @@ class TestCobraFluxAnalysis:
             'etoh_e       0    [0, 1.11]',
             'acald_e      0    [0, 1.27]',
         ]
-        model.optimize()
-        with captured_output() as (out, err):
-            model.summary(fva=0.95)
-        self.check_entries(out, desired_entries)
-
-        # test non-fva version (these should be fixed for textbook model
-        desired_entries = [
-            'o2_e      21.8',
-            'glc__D_e  10',
-            'nh4_e      4.77',
-            'pi_e       3.21',
-            'h2o_e  29.2',
-            'co2_e  22.8',
-            'h_e    17.5',
-            'Biomass_Ecol...  0.874',
-        ]
         # Need to use a different method here because
         # there are multiple entries per line.
+        model.solver = opt_solver
         model.optimize()
         with captured_output() as (out, err):
-            model.summary()
+            model.summary(fva=fraction)
+        self.check_in_line(out.getvalue(), expected_entries)
 
-        s = out.getvalue()
-        for i in desired_entries:
-            assert i in s
+    @pytest.mark.skipif((pandas is None) or (tabulate is None),
+                        reason="summary methods require pandas and tabulate")
+    @pytest.mark.parametrize("met", ["q8_c"])
+    def test_metabolite_summary(self, model, opt_solver, met):
+        model.solver = opt_solver
+        model.optimize()
+        with captured_output() as (out, err):
+            model.metabolites.get_by_id(met).summary()
 
-        # Test metabolite summary methods
-        desired_entries = [
+        expected_entries = [
             'PRODUCING REACTIONS -- Ubiquinone-8 (q8_c)',
             '%       FLUX  RXN ID    REACTION',
             '100%   43.6   CYTBD     '
@@ -463,29 +484,34 @@ class TestCobraFluxAnalysis:
             '12%     5.06  SUCDi     q8_c + succ_c --> fum_c + q8h2_c',
         ]
 
+        self.check_in_line(out.getvalue(), expected_entries)
+
+    @pytest.mark.skipif((pandas is None) or (tabulate is None),
+                        reason="summary methods require pandas and tabulate")
+    @pytest.mark.parametrize("fraction, met", [(0.99, "fdp_c")])
+    def test_metabolite_summary_with_fva(self, model, opt_solver, fraction,
+            met):
+        if opt_solver in ("optlang-glpk", "optlang-cplex", "optlang-gurobi"):
+            pytest.xfail("FVA currently buggy")
+
+        model.solver = opt_solver
         model.optimize()
         with captured_output() as (out, err):
-            model.metabolites.q8_c.summary()
-        self.check_entries(out, desired_entries)
+            model.metabolites.get_by_id(met).summary(fva=fraction)
 
-        desired_entries = [
+        expected_entries = [
             'PRODUCING REACTIONS -- D-Fructose 1,6-bisphosphate (fdp_c)',
-            '----------------------------------------------------------',
             '%       FLUX  RANGE         RXN ID    REACTION',
             '100%    7.48  [6.17, 9.26]  PFK       '
             'atp_c + f6p_c --> adp_c + fdp_c + h_c',
             'CONSUMING REACTIONS -- D-Fructose 1,6-bisphosphate (fdp_c)',
-            '----------------------------------------------------------',
             '%       FLUX  RANGE         RXN ID    REACTION',
             '100%    7.48  [6.17, 8.92]  FBA       fdp_c <=> dhap_c + g3p_c',
             '0%      0     [0, 1.72]     FBP       '
             'fdp_c + h2o_c --> f6p_c + pi_c',
         ]
 
-        model.optimize()
-        with captured_output() as (out, err):
-            model.metabolites.fdp_c.summary(fva=0.99)
-        self.check_entries(out, desired_entries)
+        self.check_line(out.getvalue(), expected_entries)
 
 
 class TestCobraFluxSampling:

@@ -13,6 +13,9 @@ try:
 except ImportError:
     from pickle import load as _load
 
+import cobra.util.solver as sutil
+from cobra.solvers import solver_dict
+
 
 def pytest_addoption(parser):
     try:
@@ -57,3 +60,19 @@ def solved_model(data_directory):
 def fva_results(data_directory):
     with open(join(data_directory, "textbook_fva.json"), "r") as infile:
         return json.load(infile)
+
+
+stable_optlang = ["glpk", "cplex", "gurobi"]
+optlang_solvers = ["optlang-" + s for s in stable_optlang if s in
+                   sutil.solvers]
+all_solvers = optlang_solvers + list(solver_dict)
+
+
+@pytest.fixture(params=optlang_solvers, scope="session")
+def opt_solver(request):
+    return request.param
+
+
+@pytest.fixture(params=list(solver_dict), scope="session")
+def legacy_solver(request):
+    return request.param

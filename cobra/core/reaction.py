@@ -10,7 +10,7 @@ from functools import partial
 from warnings import warn
 
 from six import iteritems, string_types
-from future.utils import raise_from
+from future.utils import raise_from, raise_with_traceback
 
 from cobra.exceptions import OptimizationError
 from cobra.core.gene import Gene, ast2str, parse_gpr
@@ -306,17 +306,18 @@ class Reaction(Object):
         """
         try:
             check_solver_status(self._model.solver.status)
-            flux = self.forward_variable.primal - self.reverse_variable.primal
+            return self.forward_variable.primal - self.reverse_variable.primal
         except AttributeError:
             raise RuntimeError(
                 "reaction '{}' is not part of a model".format(self.id))
+        # Due to below all-catch, which sucks, need to reraise these.
+        except (RuntimeError, OptimizationError) as err:
+            raise_with_traceback(err)
         # Would love to catch CplexSolverError and GurobiError here.
         except Exception as err:
             raise_from(OptimizationError(
                 "Likely no solution exists. Original solver message: {}."
                 "".format(str(err))), err)
-        else:
-            return flux
 
     @property
     def reduced_cost(self):
@@ -359,17 +360,18 @@ class Reaction(Object):
         """
         try:
             check_solver_status(self._model.solver.status)
-            cost = self.forward_variable.dual - self.reverse_variable.dual
+            return self.forward_variable.dual - self.reverse_variable.dual
         except AttributeError:
             raise RuntimeError(
                 "reaction '{}' is not part of a model".format(self.id))
+        # Due to below all-catch, which sucks, need to reraise these.
+        except (RuntimeError, OptimizationError) as err:
+            raise_with_traceback(err)
         # Would love to catch CplexSolverError and GurobiError here.
         except Exception as err:
             raise_from(OptimizationError(
                 "Likely no solution exists. Original solver message: {}."
                 "".format(str(err))), err)
-        else:
-            return cost
 
     # read-only
     @property
