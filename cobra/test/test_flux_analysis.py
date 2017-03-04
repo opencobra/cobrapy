@@ -7,7 +7,6 @@ import warnings
 from contextlib import contextmanager
 from os import name
 
-import numpy
 import pytest
 from six import StringIO, iteritems
 
@@ -33,14 +32,6 @@ try:
 except ImportError:
     pyplot = None
     axes3d = None
-try:
-    import pandas
-except ImportError:
-    pandas = None
-try:
-    import tabulate
-except ImportError:
-    tabulate = None
 
 # The scipt interface is currently unstable and may yield errors or infeasible
 # solutions
