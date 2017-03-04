@@ -387,13 +387,11 @@ def fix_objective_as_constraint(model, fraction=1):
 
 
 def check_solver_status(status):
-    """Perform recurring checks on the status."""
+    """Perform standard checks on a solver's status."""
     if status is None:
         raise RuntimeError("model was not optimized yet")
     if status != "optimal":
-        raise OptimizationError(
-            "solver status is '{0:s}': cannot reliably retrieve values"
-            .format(status))
+        raise OptimizationError("solver status '{0:s}'".format(status))
 
 
-import cobra.solvers as legacy_solvers
+import cobra.solvers as legacy_solvers  # noqa

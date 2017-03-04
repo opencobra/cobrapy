@@ -264,7 +264,44 @@ class Reaction(Object):
 
     @property
     def flux(self):
-        """Reaction flux in the most recent solution."""
+        """
+        The flux value in the most recent solution.
+
+        Flux is the primal value of the corresponding variable in the model.
+
+        Warnings
+        --------
+        * Accessing reaction fluxes through a `Solution` object is the safer,
+          preferred, and only guaranteed to be correct way. You can see how to
+          do so easily in the examples.
+        * Reaction flux is retrieved from the currently defined
+          `self._model.solver`. The solver status is checked but there are no
+          guarantees that the current solver state is the one you are looking
+          for.
+        * If you modify the underlying model after an optimization, you will
+          retrieve the old optimization values.
+
+        Raises
+        ------
+        RuntimeError
+            If the underlying model was never optimized beforehand or the
+            reaction is not part of a model.
+        OptimizationError
+            If the solver status is anything other than 'optimal'.
+        AssertionError
+            If the flux value is not within the bounds.
+
+        Examples
+        --------
+        >>> import cobra
+        >>> import cobra.test
+        >>> model = cobra.test.create_test_model("textbook")
+        >>> solution = model.optimize()
+        >>> model.reactions.PFK.flux
+        7.477381962160283
+        >>> solution.fluxes.PFK
+        7.4773819621602833
+        """
         try:
             check_solver_status(self._model.solver.status)
             flux = self.forward_variable.primal - self.reverse_variable.primal
@@ -276,7 +313,43 @@ class Reaction(Object):
 
     @property
     def reduced_cost(self):
-        """Reaction reduced cost in the most recent solution."""
+        """
+        The reduced cost in the most recent solution.
+
+        Reduced cost is the dual value of the corresponding variable in the
+        model.
+
+        Warnings
+        --------
+        * Accessing reduced costs through a `Solution` object is the safer,
+          preferred, and only guaranteed to be correct way. You can see how to
+          do so easily in the examples.
+        * Reduced cost is retrieved from the currently defined
+          `self._model.solver`. The solver status is checked but there are no
+          guarantees that the current solver state is the one you are looking
+          for.
+        * If you modify the underlying model after an optimization, you will
+          retrieve the old optimization values.
+
+        Raises
+        ------
+        RuntimeError
+            If the underlying model was never optimized beforehand or the
+            reaction is not part of a model.
+        OptimizationError
+            If the solver status is anything other than 'optimal'.
+
+        Examples
+        --------
+        >>> import cobra
+        >>> import cobra.test
+        >>> model = cobra.test.create_test_model("textbook")
+        >>> solution = model.optimize()
+        >>> model.reactions.PFK.reduced_cost
+        -8.673617379884035e-18
+        >>> solution.reduced_costs.PFK
+        -8.6736173798840355e-18
+        """
         try:
             check_solver_status(self._model.solver.status)
             cost = self.forward_variable.dual - self.reverse_variable.dual

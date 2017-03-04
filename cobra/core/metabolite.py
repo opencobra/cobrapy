@@ -136,16 +136,44 @@ class Metabolite(Species):
         warn("Please use metabolite.shadow_price instead.", DeprecationWarning)
         return self.shadow_price
 
+    @property
     def shadow_price(self):
-        """The shadow price for the metabolite in the most recent solution.
+        """
+        The shadow price in the most recent solution.
 
-        Shadow prices are computed from the dual values of the model
-        constraints in the solution.
+        Shadow price is the dual value of the corresponding constraint in the
+        model.
 
-        Warning
-        -------
-        You are responsible for checking the solver status. You might be
-        interested in values of non-optimal solutions
+        Warnings
+        --------
+        * Accessing shadow prices through a `Solution` object is the safer,
+          preferred, and only guaranteed to be correct way. You can see how to
+          do so easily in the examples.
+        * Shadow price is retrieved from the currently defined
+          `self._model.solver`. The solver status is checked but there are no
+          guarantees that the current solver state is the one you are looking
+          for.
+        * If you modify the underlying model after an optimization, you will
+          retrieve the old optimization values.
+
+        Raises
+        ------
+        RuntimeError
+            If the underlying model was never optimized beforehand or the
+            metabolite is not part of a model.
+        OptimizationError
+            If the solver status is anything other than 'optimal'.
+
+        Examples
+        --------
+        >>> import cobra
+        >>> import cobra.test
+        >>> model = cobra.test.create_test_model("textbook")
+        >>> solution = model.optimize()
+        >>> model.metabolites.glc__D_e.shadow_price
+        -0.09166474637510488
+        >>> solution.shadow_prices.glc__D_e
+        -0.091664746375104883
         """
         try:
             check_solver_status(self._model.solver.status)

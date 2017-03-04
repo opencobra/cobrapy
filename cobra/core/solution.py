@@ -20,15 +20,12 @@ LOGGER = logging.getLogger(__name__)
 
 class Solution(object):
     """
-    The base for a unified interface to a `cobra.Model` optimization solution.
+    A unified interface to a `cobra.Model` optimization solution.
 
     Notes
     -----
-    Solution values are lazily evaluated on a per request basis and thus
-    accessing all `fluxes` and the like is rather inefficient. The lazy
-    evaluation also means that all accessed values are stored for later use but
-    those values that were not accessed may be invalidated by further
-    optimizations of the same model.
+    Solution is meant to be constructed by `get_solution` please look at that
+    function to fully understand the `Solution` class.
 
     Attributes
     ----------
@@ -67,7 +64,7 @@ class Solution(object):
                  reduced_costs=None, metabolites=None, shadow_prices=None,
                  **kwargs):
         """
-        Initialize a unified solution interface from a model.
+        Initialize a `Solution` from its components.
 
         Parameters
         ----------
@@ -100,7 +97,7 @@ class Solution(object):
     def __repr__(self):
         """String representation of the solution instance."""
         if self.status != "optimal":
-            return "<Solution {0:r} at 0x{1:x}>".format(self.status, id(self))
+            return "<Solution {0:s} at 0x{1:x}>".format(self.status, id(self))
         return "<Solution {0:.3f} at 0x{1:x}>".format(self.objective_value,
                                                       id(self))
 
@@ -199,7 +196,7 @@ class LegacySolution(object):
     def __init__(self, f, x=None, x_dict=None, y=None, y_dict=None,
                  solver=None, the_time=0, status='NA', **kwargs):
         """
-        Initialize a legacy interface to a solution from an objective value.
+        Initialize a `LegacySolution` from an objective value.
 
         Parameters
         ----------
@@ -234,7 +231,7 @@ class LegacySolution(object):
     def __repr__(self):
         """String representation of the solution instance."""
         if self.status != "optimal":
-            return "<LegacySolution {0:r} at 0x{1:x}>".format(
+            return "<LegacySolution {0:s} at 0x{1:x}>".format(
                 self.status, id(self))
         return "<LegacySolution {0:.3f} at 0x{1:x}>".format(
             self.f, id(self))
