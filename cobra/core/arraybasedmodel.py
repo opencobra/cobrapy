@@ -368,7 +368,8 @@ class SMatrix_dok(dok_matrix):
             else:  # setting 0 means metabolites should be removed
                 metabolite = self._model.metabolites[index[0]]
                 if metabolite in reaction._metabolites:
-                    reaction.pop(metabolite)
+                    reaction.subtract_metabolites(
+                        {metabolite: reaction.get_coefficient(metabolite)})
 
     def tolil(self):
         new = SMatrix_lil(dok_matrix.tolil(self), model=self._model)
@@ -400,7 +401,8 @@ class SMatrix_lil(lil_matrix):
             for reaction in reactions:
                 to_remove = met_set.intersection(reaction._metabolites)
                 for i in to_remove:
-                    reaction.pop(i)
+                    reaction.subtract_metabolites(
+                        {i: reaction.get_coefficient(i)})
         else:  # add metabolites
             met_dict = {met: value for met in metabolites}
             for reaction in reactions:

@@ -85,7 +85,8 @@ class TestReactions:
                 solver_dict[solver].create_problem(model)
             for m, c in many_metabolites.items():
                 try:
-                    reaction.pop(m.id)
+                    reaction.subtract_metabolites(
+                        {m: reaction.get_coefficient(m)})
                 except KeyError:
                     pass
 
@@ -806,9 +807,6 @@ class TestStoichiometricMatrix:
         solution = model.optimize()
         mass_balance = S.dot(solution.fluxes)
         assert numpy.allclose(mass_balance, 0)
-
-        # Test model property
-        assert numpy.allclose(model.S, S)
 
     @pytest.mark.skipif(not scipy, reason='Sparse array methods require scipy')
     def test_sparse_matrix(self, model):
