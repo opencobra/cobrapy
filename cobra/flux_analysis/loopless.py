@@ -9,8 +9,7 @@ from six import iteritems
 from sympy.core.singleton import S
 
 from cobra.core import Metabolite, Reaction, get_solution
-from cobra.exceptions import SolveError
-from cobra.util import add_to_solver, linear_reaction_coefficients
+from cobra.util import linear_reaction_coefficients
 from cobra.manipulation.modify import convert_to_irreversible
 from cobra.util import nullspace
 

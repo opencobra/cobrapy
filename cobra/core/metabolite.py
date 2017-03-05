@@ -179,7 +179,7 @@ class Metabolite(Species):
         """
         try:
             check_solver_status(self._model.solver.status)
-            return self._model.solver.constraints[self.id].dual
+            return self._model.constraints[self.id].dual
         except AttributeError:
             raise RuntimeError(
                 "metabolite '{}' is not part of a model".format(self.id))

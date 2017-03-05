@@ -649,7 +649,7 @@ class Model(Object):
             forward_variable = self.problem.Variable(
                 reaction.id, lb=forward_lb, ub=forward_ub)
             reverse_variable = self.problem.Variable(
-                reaction._get_reverse_id(), lb=reverse_lb, ub=reverse_ub)
+                reaction.reverse_id, lb=reverse_lb, ub=reverse_ub)
 
             self.add_cons_vars([forward_variable, reverse_variable])
             self.solver.update()

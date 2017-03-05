@@ -97,18 +97,15 @@ class Reaction(Object):
         reverse_variable = self.reverse_variable
         self._id = value
         self.model.reactions._generate_index()
-        forward_variable.name = self._get_forward_id()
-        reverse_variable.name = self._get_reverse_id()
+        forward_variable.name = self.id
+        reverse_variable.name = self.reverse_id
 
-    def _get_reverse_id(self):
+    @property
+    def reverse_id(self):
         """Generate the id of reverse_variable from the reaction's id."""
         return '_'.join((self.id, 'reverse',
                          hashlib.md5(
                              self.id.encode('utf-8')).hexdigest()[0:5]))
-
-    def _get_forward_id(self):
-        """Generate the id of forward_variable from the reaction's id."""
-        return self.id
 
     @property
     def flux_expression(self):
@@ -139,7 +136,7 @@ class Reaction(Object):
         if self.model is not None:
             if self._forward_variable is None:
                 self._forward_variable = self.model.variables[
-                    self._get_forward_id()]
+                    self.id]
             assert self._forward_variable.problem is self.model.solver
             return self._forward_variable
         else:
@@ -159,7 +156,7 @@ class Reaction(Object):
         if model is not None:
             if self._reverse_variable is None:
                 self._reverse_variable = model.variables[
-                    self._get_reverse_id()]
+                    self.reverse_id]
             assert self._reverse_variable.problem is self.model.solver
             return self._reverse_variable
         else:
@@ -295,7 +292,6 @@ class Reaction(Object):
 
         Examples
         --------
-        >>> import cobra
         >>> import cobra.test
         >>> model = cobra.test.create_test_model("textbook")
         >>> solution = model.optimize()

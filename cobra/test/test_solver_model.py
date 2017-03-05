@@ -502,16 +502,16 @@ class TestReaction:
         pgi.remove_from_model()
         assert pgi.model is None
         assert not ("PGI" in model.reactions)
-        assert not (pgi._get_forward_id() in model.variables)
-        assert not (pgi._get_reverse_id() in model.variables)
+        assert not (pgi.id in model.variables)
+        assert not (pgi.reverse_id in model.variables)
 
     def test_delete(self, model):
         pgi = model.reactions.PGI
         pgi.delete()
         assert pgi.model is None
         assert not ("PGI" in model.reactions)
-        assert not (pgi._get_forward_id() in model.variables)
-        assert not (pgi._get_reverse_id() in model.variables)
+        assert not (pgi.id in model.variables)
+        assert not (pgi.reverse_id in model.variables)
 
     def test_change_id_is_reflected_in_solver(self, model):
         for i, reaction in enumerate(model.reactions):
@@ -523,10 +523,10 @@ class TestReaction:
             reaction.id = new_reaction_id
             assert reaction.id == new_reaction_id
             assert not (old_reaction_id in model.variables)
-            assert reaction._get_forward_id() in model.variables
-            assert reaction._get_reverse_id() in model.variables
-            name = model.variables[reaction._get_forward_id()].name
-            assert name == reaction._get_forward_id()
+            assert reaction.id in model.variables
+            assert reaction.reverse_id in model.variables
+            name = model.variables[reaction.id].name
+            assert name == reaction.id
 
 
 class TestSolverBasedModel:
