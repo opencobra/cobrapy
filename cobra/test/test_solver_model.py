@@ -68,29 +68,29 @@ class TestReaction:
         test_met = model.metabolites[0]
         pgi_reaction.add_metabolites({test_met: 42}, combine=False)
         assert pgi_reaction.metabolites[test_met] == 42
-        assert model.solver.constraints[
+        assert model.constraints[
                    test_met.id].expression.as_coefficients_dict()[
                    pgi_reaction.forward_variable] == 42
-        assert model.solver.constraints[
+        assert model.constraints[
                    test_met.id].expression.as_coefficients_dict()[
                    pgi_reaction.reverse_variable] == -42
 
         pgi_reaction.add_metabolites({test_met: -10}, combine=True)
         assert pgi_reaction.metabolites[test_met] == 32
-        assert model.solver.constraints[
+        assert model.constraints[
                    test_met.id].expression.as_coefficients_dict()[
                    pgi_reaction.forward_variable] == 32
-        assert model.solver.constraints[
+        assert model.constraints[
                    test_met.id].expression.as_coefficients_dict()[
                    pgi_reaction.reverse_variable] == -32
 
         pgi_reaction.add_metabolites({test_met: 0}, combine=False)
         with pytest.raises(KeyError):
             pgi_reaction.metabolites[test_met]
-        assert model.solver.constraints[
+        assert model.constraints[
                    test_met.id].expression.as_coefficients_dict()[
                    pgi_reaction.forward_variable] == 0
-        assert model.solver.constraints[
+        assert model.constraints[
                    test_met.id].expression.as_coefficients_dict()[
                    pgi_reaction.reverse_variable] == 0
 
@@ -433,9 +433,9 @@ class TestReaction:
         for reaction in model.reactions:
             reaction.add_metabolites({test_metabolite: -66}, combine=True)
             assert reaction.metabolites[test_metabolite] == -66
-            assert model.solver.constraints['test'].expression.has(
+            assert model.constraints['test'].expression.has(
                 -66. * reaction.forward_variable)
-            assert model.solver.constraints['test'].expression.has(
+            assert model.constraints['test'].expression.has(
                 66. * reaction.reverse_variable)
             already_included_metabolite = \
                 list(reaction.metabolites.keys())[0]
@@ -446,10 +446,10 @@ class TestReaction:
             new_coefficient = previous_coefficient + 10
             assert reaction.metabolites[
                        already_included_metabolite] == new_coefficient
-            assert model.solver.constraints[
+            assert model.constraints[
                 already_included_metabolite.id].expression.has(
                 new_coefficient * reaction.forward_variable)
-            assert model.solver.constraints[
+            assert model.constraints[
                 already_included_metabolite.id].expression.has(
                 -1 * new_coefficient * reaction.reverse_variable)
 
@@ -459,19 +459,19 @@ class TestReaction:
         for reaction in model.reactions:
             reaction.add_metabolites({test_metabolite: -66}, combine=False)
             assert reaction.metabolites[test_metabolite] == -66
-            assert model.solver.constraints['test'].expression.has(
+            assert model.constraints['test'].expression.has(
                 -66. * reaction.forward_variable)
-            assert model.solver.constraints['test'].expression.has(
+            assert model.constraints['test'].expression.has(
                 66. * reaction.reverse_variable)
             already_included_metabolite = \
                 list(reaction.metabolites.keys())[0]
             reaction.add_metabolites({already_included_metabolite: 10},
                                      combine=False)
             assert reaction.metabolites[already_included_metabolite] == 10
-            assert model.solver.constraints[
+            assert model.constraints[
                 already_included_metabolite.id].expression.has(
                 10 * reaction.forward_variable)
-            assert model.solver.constraints[
+            assert model.constraints[
                 already_included_metabolite.id].expression.has(
                 -10 * reaction.reverse_variable)
 
@@ -502,31 +502,31 @@ class TestReaction:
         pgi.remove_from_model()
         assert pgi.model is None
         assert not ("PGI" in model.reactions)
-        assert not (pgi._get_forward_id() in model.solver.variables)
-        assert not (pgi._get_reverse_id() in model.solver.variables)
+        assert not (pgi.id in model.variables)
+        assert not (pgi.reverse_id in model.variables)
 
     def test_delete(self, model):
         pgi = model.reactions.PGI
         pgi.delete()
         assert pgi.model is None
         assert not ("PGI" in model.reactions)
-        assert not (pgi._get_forward_id() in model.solver.variables)
-        assert not (pgi._get_reverse_id() in model.solver.variables)
+        assert not (pgi.id in model.variables)
+        assert not (pgi.reverse_id in model.variables)
 
     def test_change_id_is_reflected_in_solver(self, model):
         for i, reaction in enumerate(model.reactions):
             old_reaction_id = reaction.id
-            assert model.solver.variables[
+            assert model.variables[
                        old_reaction_id].name == old_reaction_id
-            assert old_reaction_id in model.solver.variables
+            assert old_reaction_id in model.variables
             new_reaction_id = reaction.id + '_' + str(i)
             reaction.id = new_reaction_id
             assert reaction.id == new_reaction_id
-            assert not (old_reaction_id in model.solver.variables)
-            assert reaction._get_forward_id() in model.solver.variables
-            assert reaction._get_reverse_id() in model.solver.variables
-            name = model.solver.variables[reaction._get_forward_id()].name
-            assert name == reaction._get_forward_id()
+            assert not (old_reaction_id in model.variables)
+            assert reaction.id in model.variables
+            assert reaction.reverse_id in model.variables
+            name = model.variables[reaction.id].name
+            assert name == reaction.id
 
 
 class TestSolverBasedModel:
@@ -541,7 +541,7 @@ class TestSolverBasedModel:
         biomass_r = model.reactions.get_by_id('Biomass_Ecoli_core')
         pgi = model.reactions.PGI
         pgi.objective_coefficient = 2
-        coef_dict = model.solver.objective.expression.as_coefficients_dict()
+        coef_dict = model.objective.expression.as_coefficients_dict()
         # Check that objective has been updated
         assert coef_dict[pgi.forward_variable] == 2
         assert coef_dict[pgi.reverse_variable] == -2
@@ -577,8 +577,8 @@ class TestSolverBasedModel:
         assert model.reactions[-2] == r1
         assert model.reactions[-1] == r2
         assert isinstance(model.reactions[-2].reverse_variable,
-                          model.solver.interface.Variable)
-        coefficients_dict = model.solver.objective.expression. \
+                          model.problem.Variable)
+        coefficients_dict = model.objective.expression. \
             as_coefficients_dict()
         biomass_r = model.reactions.get_by_id('Biomass_Ecoli_core')
         assert coefficients_dict[biomass_r.forward_variable] == 1.
@@ -646,14 +646,14 @@ class TestSolverBasedModel:
             [reaction.model is None for reaction in reactions_to_remove])
         for reaction in reactions_to_remove:
             assert reaction.id not in list(
-                model.solver.variables.keys())
+                model.variables.keys())
 
         model.add_reactions(reactions_to_remove)
         for reaction in reactions_to_remove:
             assert reaction in model.reactions
 
     def test_objective(self, model):
-        obj = model.solver.objective
+        obj = model.objective
         assert {var.name: coef for var, coef in
                 obj.expression.as_coefficients_dict().items()} == {
                    'Biomass_Ecoli_core_reverse_2cdba': -1,
@@ -661,57 +661,57 @@ class TestSolverBasedModel:
         assert obj.direction == "max"
 
     def test_change_objective(self, model):
-        expression = 1.0 * model.solver.variables['ENO'] + \
-                     1.0 * model.solver.variables['PFK']
-        model.solver.objective = model.solver.interface.Objective(
+        expression = 1.0 * model.variables['ENO'] + \
+                     1.0 * model.variables['PFK']
+        model.objective = model.problem.Objective(
             expression)
-        assert model.solver.objective.expression == expression
+        assert model.objective.expression == expression
         model.objective = "ENO"
-        eno_obj = model.solver.interface.Objective(
+        eno_obj = model.problem.Objective(
             model.reactions.ENO.flux_expression, direction="max")
-        pfk_obj = model.solver.interface.Objective(
+        pfk_obj = model.problem.Objective(
             model.reactions.PFK.flux_expression, direction="max")
-        assert model.solver.objective == eno_obj
+        assert model.objective == eno_obj
 
         with model:
             model.objective = "PFK"
-            assert model.solver.objective == pfk_obj
-        assert model.solver.objective == eno_obj
-        expression = model.solver.objective.expression
+            assert model.objective == pfk_obj
+        assert model.objective == eno_obj
+        expression = model.objective.expression
         atpm = model.reactions.get_by_id("ATPM")
         biomass = model.reactions.get_by_id("Biomass_Ecoli_core")
         with model:
             model.objective = atpm
-        assert model.solver.objective.expression == expression
+        assert model.objective.expression == expression
         with model:
             atpm.objective_coefficient = 1
             biomass.objective_coefficient = 2
-        assert model.solver.objective.expression == expression
+        assert model.objective.expression == expression
 
         with model:
-            set_objective(model, model.solver.interface.Objective(
+            set_objective(model, model.problem.Objective(
                 atpm.flux_expression))
-            assert model.solver.objective.expression == atpm.flux_expression
-        assert model.solver.objective.expression == expression
+            assert model.objective.expression == atpm.flux_expression
+        assert model.objective.expression == expression
 
-        expression = model.solver.objective.expression
+        expression = model.objective.expression
         with model:
             with model:  # Test to make sure nested contexts are OK
                 set_objective(model, atpm.flux_expression,
                               additive=True)
-                assert (model.solver.objective.expression ==
+                assert (model.objective.expression ==
                         expression + atpm.flux_expression)
-        assert model.solver.objective.expression == expression
+        assert model.objective.expression == expression
 
     def test_set_reaction_objective(self, model):
         model.objective = model.reactions.ACALD
-        assert str(model.solver.objective.expression) == str(
+        assert str(model.objective.expression) == str(
             1.0 * model.reactions.ACALD.forward_variable -
             1.0 * model.reactions.ACALD.reverse_variable)
 
     def test_set_reaction_objective_str(self, model):
         model.objective = model.reactions.ACALD.id
-        assert str(model.solver.objective.expression) == str(
+        assert str(model.objective.expression) == str(
             1.0 * model.reactions.ACALD.forward_variable -
             1.0 * model.reactions.ACALD.reverse_variable)
 
@@ -781,9 +781,9 @@ class TestSolverBasedModel:
         solution, model = solved_model
         model_cp = copy.copy(model)
         primals_original = [variable.primal for variable in
-                            model.solver.variables]
+                            model.variables]
         primals_copy = [variable.primal for variable in
-                        model_cp.solver.variables]
+                        model_cp.variables]
         abs_diff = abs(
             numpy.array(primals_copy) - numpy.array(primals_original))
         assert not any(abs_diff > 1e-6)
@@ -807,4 +807,4 @@ class TestMetabolite:
         met = model.metabolites.get_by_id("g6p_c")
         met.remove_from_model()
         assert not (met.id in model.metabolites)
-        assert not (met.id in model.solver.constraints)
+        assert not (met.id in model.constraints)

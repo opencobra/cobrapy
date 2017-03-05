@@ -51,7 +51,7 @@ class TestObjectiveHelpers:
     def test_fail_non_linear_reaction_coefficients(self, model, solver):
         model.solver = solver
         try:
-            model.objective = model.solver.interface.Objective(
+            model.objective = model.problem.Objective(
                 model.reactions.ATPM.flux_expression ** 2
             )
         except ValueError:
@@ -65,67 +65,67 @@ class TestObjectiveHelpers:
 
 class TestSolverMods:
     def test_add_remove(self, model):
-        v = model.solver.variables
-        new_var = model.solver.interface.Variable("test_var", lb=-10, ub=-10)
-        new_constraint = model.solver.interface.Constraint(
+        v = model.variables
+        new_var = model.problem.Variable("test_var", lb=-10, ub=-10)
+        new_constraint = model.problem.Constraint(
             v.PGK - new_var, name="test_constraint", lb=0)
 
-        su.add_to_solver(model, [new_var, new_constraint])
-        assert "test_var" in model.solver.variables.keys()
-        assert "test_constraint" in model.solver.constraints.keys()
+        su.add_cons_vars_to_problem(model, [new_var, new_constraint])
+        assert "test_var" in model.variables.keys()
+        assert "test_constraint" in model.constraints.keys()
 
-        su.remove_from_solver(model, [new_var, new_constraint])
-        assert "test_var" not in model.solver.variables.keys()
-        assert "test_constraint" not in model.solver.constraints.keys()
+        su.remove_cons_vars_from_problem(model, [new_var, new_constraint])
+        assert "test_var" not in model.variables.keys()
+        assert "test_constraint" not in model.constraints.keys()
 
     def test_add_remove_in_context(self, model):
-        v = model.solver.variables
-        new_var = model.solver.interface.Variable("test_var", lb=-10, ub=-10)
+        v = model.variables
+        new_var = model.problem.Variable("test_var", lb=-10, ub=-10)
 
         with model:
-            su.add_to_solver(model, [new_var])
-            su.remove_from_solver(model, [v.PGM])
-            assert "test_var" in model.solver.variables.keys()
-            assert "PGM" not in model.solver.variables.keys()
+            su.add_cons_vars_to_problem(model, [new_var])
+            su.remove_cons_vars_from_problem(model, [v.PGM])
+            assert "test_var" in model.variables.keys()
+            assert "PGM" not in model.variables.keys()
 
-        assert "test_var" not in model.solver.variables.keys()
-        assert "PGM" in model.solver.variables.keys()
+        assert "test_var" not in model.variables.keys()
+        assert "PGM" in model.variables.keys()
 
     def test_absolute_expression(self, model):
-        v = model.solver.variables
+        v = model.variables
         with model:
             su.add_absolute_expression(model, 2 * v.PGM, name="test", ub=100)
-            assert "test" in model.solver.variables.keys()
-            assert "abs_pos_test" in model.solver.constraints.keys()
-            assert "abs_neg_test" in model.solver.constraints.keys()
-        assert "test" not in model.solver.variables.keys()
-        assert "abs_pos_test" not in model.solver.constraints.keys()
-        assert "abs_neg_test" not in model.solver.constraints.keys()
+            assert "test" in model.variables.keys()
+            assert "abs_pos_test" in model.constraints.keys()
+            assert "abs_neg_test" in model.constraints.keys()
+        assert "test" not in model.variables.keys()
+        assert "abs_pos_test" not in model.constraints.keys()
+        assert "abs_neg_test" not in model.constraints.keys()
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_fix_objective_as_constraint(self, solver, model):
         model.solver = solver
         with model as m:
             su.fix_objective_as_constraint(model, 1.0)
-            constraint_name = m.solver.constraints[-1]
-            assert abs(m.solver.constraints[-1].expression -
+            constraint_name = m.constraints[-1]
+            assert abs(m.constraints[-1].expression -
                        m.objective.expression) < 1e-6
-        assert constraint_name not in m.solver.constraints
+        assert constraint_name not in m.constraints
         su.fix_objective_as_constraint(model)
-        constraint_name = model.solver.constraints[-1]
-        assert abs(model.solver.constraints[-1].expression -
+        constraint_name = model.constraints[-1]
+        assert abs(model.constraints[-1].expression -
                    model.objective.expression) < 1e-6
-        assert constraint_name in model.solver.constraints
+        assert constraint_name in model.constraints
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_fix_objective_as_constraint_minimize(self, solver, model):
         model.reactions.Biomass_Ecoli_core.bounds = (0.1, 0.1)
-        minimize_glucose = model.solver.interface.Objective(
+        minimize_glucose = model.problem.Objective(
             model.reactions.EX_glc__D_e.flux_expression,
             direction='min')
         su.set_objective(model, minimize_glucose)
         su.fix_objective_as_constraint(model)
         fx_name = 'Fixed_objective_{}'.format(model.objective.name)
-        constr = model.solver.constraints
+        constr = model.constraints
         assert (constr[fx_name].lb, constr[fx_name].ub) == (
             None, model.solver.objective.value)

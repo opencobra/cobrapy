@@ -7,14 +7,11 @@ from __future__ import absolute_import
 import numpy
 from six import iteritems
 from sympy.core.singleton import S
-from cobra.core import Metabolite, Reaction, get_solution
-from cobra.util import add_to_solver, linear_reaction_coefficients
-from cobra.manipulation.modify import convert_to_irreversible
 
-try:
-    from cobra.util import nullspace
-except ImportError:
-    nullspace = None
+from cobra.core import Metabolite, Reaction, get_solution
+from cobra.util import linear_reaction_coefficients
+from cobra.manipulation.modify import convert_to_irreversible
+from cobra.util import nullspace
 
 
 def add_loopless(model, zero_cutoff=1e-12):
@@ -51,7 +48,7 @@ def add_loopless(model, zero_cutoff=1e-12):
     s_int = model.S[:, numpy.array(internal)]
     n_int = nullspace(s_int).T
     max_bound = max(max(abs(b) for b in r.bounds) for r in model.reactions)
-    prob = model.solver.interface
+    prob = model.problem
 
     # Add indicator variables and new constraints
     to_add = []
@@ -70,18 +67,18 @@ def add_loopless(model, zero_cutoff=1e-12):
             lb=1, ub=max_bound, name="delta_g_range_" + rxn.id)
         to_add.extend([indicator, on_off_constraint, delta_g, delta_g_range])
 
-    add_to_solver(model, to_add)
+    model.add_cons_vars(to_add)
 
     # Add nullspace constraints for G_i
     for i, row in enumerate(n_int):
         name = "nullspace_constraint_" + str(i)
         nullspace_constraint = prob.Constraint(S.Zero, lb=0, ub=0, name=name)
-        add_to_solver(model, [nullspace_constraint])
-        coefs = {model.solver.variables[
+        model.add_cons_vars([nullspace_constraint])
+        coefs = {model.variables[
                  "delta_g_" + model.reactions[ridx].id]: row[i]
                  for i, ridx in enumerate(internal) if
                  abs(row[i]) > zero_cutoff}
-        model.solver.constraints[name].set_linear_coefficients(coefs)
+        model.constraints[name].set_linear_coefficients(coefs)
 
 
 def loopless_solution(model, fluxes=None):
@@ -142,14 +139,14 @@ def loopless_solution(model, fluxes=None):
         coefs = linear_reaction_coefficients(model)
         obj_val = sum(coefs[rxn] * fluxes[rxn.id] for rxn in coefs)
 
-    prob = model.solver.interface
+    prob = model.problem
     with model:
         loopless_old_obj = prob.Variable("loopless_old_objective",
                                          lb=obj_val, ub=obj_val)
         loopless_obj_constraint = prob.Constraint(
             model.solver.objective.expression - loopless_old_obj,
             lb=0, ub=0, name="loopless_obj_constraint")
-        add_to_solver(model, [loopless_old_obj, loopless_obj_constraint])
+        model.add_cons_vars([loopless_old_obj, loopless_obj_constraint])
         model.objective = S.Zero
         for rxn in model.reactions:
             flux = fluxes[rxn.id]
@@ -214,7 +211,7 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-9):
 
     # Reset objective to original one and get a loopless solution
     model.solver.objective.set_linear_coefficients(
-        {model.solver.variables.fva_old_objective: 1,
+        {model.variables.fva_old_objective: 1,
          reaction.forward_variable: 0, reaction.reverse_variable: 0})
 
     loopless = loopless_solution(model)
@@ -225,7 +222,7 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-9):
         # Reset the objective to the one used in the iteration, walk around
         # the context manager for speed
         model.solver.objective.set_linear_coefficients(
-            {model.solver.variables.fva_old_objective: 0,
+            {model.variables.fva_old_objective: 0,
              reaction.forward_variable: 1, reaction.reverse_variable: -1})
         if all_fluxes:
             current = loopless
@@ -246,7 +243,7 @@ def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-9):
 
         # Globally reset the objective to the one used in the FVA iteration
         model.solver.objective.set_linear_coefficients(
-            {model.solver.variables.fva_old_objective: 0,
+            {model.variables.fva_old_objective: 0,
              reaction.forward_variable: 1, reaction.reverse_variable: -1})
 
     solution = model.optimize(objective_sense=None)

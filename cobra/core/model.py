@@ -21,7 +21,8 @@ from cobra.solvers import optimize
 from cobra.util.context import HistoryManager, resettable, get_context
 from cobra.util.solver import (
     SolverNotFound, get_solver_name, interface_to_str, set_objective, solvers,
-    add_to_solver, remove_from_solver, choose_solver, check_solver_status)
+    add_cons_vars_to_problem, remove_cons_vars_from_problem, choose_solver,
+    check_solver_status)
 from cobra.util.util import AutoVivification
 
 
@@ -107,7 +108,7 @@ class Model(Object):
         --------
         >>> import cobra.test
         >>> model = cobra.test.create_test_model("textbook")
-        >>> new = model.solver.interface.Constraint(model.objective.expression,
+        >>> new = model.problem.Constraint(model.objective.expression,
         >>> lb=0.99)
         >>> model.solver.add(new)
         """
@@ -133,7 +134,7 @@ class Model(Object):
             raise not_valid_interface
 
         # Do nothing if the solver did not change
-        if self.solver.interface == interface:
+        if self.problem == interface:
             return
 
         for reaction in self.reactions:
@@ -301,7 +302,6 @@ class Model(Object):
         except Exception:  # pragma: no cover
             new._solver = copy(self.solver)  # pragma: no cover
 
-        # No use in copying it, also circular dependencies
         return new
 
     def add_metabolites(self, metabolite_list):
@@ -327,12 +327,12 @@ class Model(Object):
         # from cameo ...
         to_add = []
         for met in metabolite_list:
-            if met.id not in self.solver.constraints:
-                constraint = self.solver.interface.Constraint(
+            if met.id not in self.constraints:
+                constraint = self.problem.Constraint(
                     S.Zero, name=met.id, lb=0, ub=0)
                 to_add += [constraint]
 
-        add_to_solver(self, to_add)
+        self.add_cons_vars(to_add)
 
         context = get_context(self)
         if context:
@@ -377,7 +377,7 @@ class Model(Object):
         self.metabolites -= metabolite_list
 
         to_remove = [self.solver.constraints[m.id] for m in metabolite_list]
-        remove_from_solver(self, to_remove)
+        self.remove_cons_vars(to_remove)
 
         context = get_context(self)
         if context:
@@ -513,7 +513,7 @@ class Model(Object):
             else:
                 forward = reaction.forward_variable
                 reverse = reaction.reverse_variable
-                remove_from_solver(self, [forward, reverse])
+                self.remove_cons_vars([forward, reverse])
                 self.reactions.remove(reaction)
                 reaction._model = None
 
@@ -543,6 +543,92 @@ class Model(Object):
                 reaction._metabolites = {}
                 reaction._genes = set()
 
+    def add_cons_vars(self, what, **kwargs):
+        """Add constraints and variables to the model's mathematical problem.
+
+        Useful for variables and constraints that can not be expressed with
+        reactions and simple lower and upper bounds.
+
+        Additions are reversed upon exit if the model itself is used as
+        context.
+
+        Parameters
+        ----------
+        what : list or tuple of optlang variables or constraints.
+           The variables or constraints to add to the model. Must be of
+           class `optlang.interface.Variable` or
+           `optlang.interface.Constraint`.
+        **kwargs : keyword arguments
+           Passed to solver.add()
+        """
+        add_cons_vars_to_problem(self, what, **kwargs)
+
+    def remove_cons_vars(self, what):
+        """Remove variables and constraints from the model's mathematical
+        problem.
+
+        Remove variables and constraints that were added directly to the
+        model's underlying mathematical problem. Removals are reversed
+        upon exit if the model itself is used as context.
+
+        Parameters
+        ----------
+        what : list or tuple of optlang variables or constraints.
+           The variables or constraints to add to the model. Must be of
+           class `optlang.interface.Variable` or
+           `optlang.interface.Constraint`.
+        """
+        remove_cons_vars_from_problem(self, what)
+
+    @property
+    def problem(self):
+        """The interface to the model's underlying mathematical problem.
+
+        Solutions to cobra models are obtained by formulating a mathematical
+        problem and solving it. Cobrapy uses the optlang package to
+        accomplish that and with this property you can get access to the
+        problem interface directly.
+
+        Returns
+        -------
+        optlang.interface
+            The problem interface that defines methods for interacting with
+            the problem and associated solver directly.
+        """
+        return self.solver.interface
+
+    @property
+    def variables(self):
+        """The mathematical variables in the cobra model.
+
+        In a cobra model, most variables are reactions. However,
+        for specific use cases, it may also be useful to have other types of
+        variables. This property defines all variables currently associated
+        with the model's problem.
+
+        Returns
+        -------
+        optlang.container.Container
+            A container with all associated variables.
+        """
+        return self.solver.variables
+
+    @property
+    def constraints(self):
+        """The constraints in the cobra model.
+
+        In a cobra model, most constraints are metabolites and their
+        stoichiometries. However, for specific use cases, it may also be
+        useful to have other types of constraints. This property defines all
+        constraints currently associated with the model's problem.
+
+        Returns
+        -------
+        optlang.container.Container
+            A container with all associated constraints.
+        """
+        return self.solver.constraints
+
     def _populate_solver(self, reaction_list, metabolite_list=None):
         """Populate attached solver with constraints and variables that
         model the provided reactions.
@@ -551,32 +637,32 @@ class Model(Object):
         to_add = []
         if metabolite_list is not None:
             for met in metabolite_list:
-                to_add += [self.solver.interface.Constraint(
+                to_add += [self.problem.Constraint(
                     S.Zero, name=met.id, lb=0, ub=0)]
-        add_to_solver(self, to_add)
+        self.add_cons_vars(to_add)
 
         for reaction in reaction_list:
 
             reverse_lb, reverse_ub, forward_lb, forward_ub = \
                 separate_forward_and_reverse_bounds(*reaction.bounds)
 
-            forward_variable = self.solver.interface.Variable(
+            forward_variable = self.problem.Variable(
                 reaction.id, lb=forward_lb, ub=forward_ub)
-            reverse_variable = self.solver.interface.Variable(
-                reaction._get_reverse_id(), lb=reverse_lb, ub=reverse_ub)
+            reverse_variable = self.problem.Variable(
+                reaction.reverse_id, lb=reverse_lb, ub=reverse_ub)
 
-            add_to_solver(self, [forward_variable, reverse_variable])
+            self.add_cons_vars([forward_variable, reverse_variable])
             self.solver.update()
 
             for metabolite, coeff in six.iteritems(reaction.metabolites):
-                if metabolite.id in self.solver.constraints:
-                    constraint = self.solver.constraints[metabolite.id]
+                if metabolite.id in self.constraints:
+                    constraint = self.constraints[metabolite.id]
                 else:
-                    constraint = self.solver.interface.Constraint(
+                    constraint = self.problem.Constraint(
                         S.Zero,
                         name=metabolite.id,
                         lb=0, ub=0)
-                    add_to_solver(self, constraint, sloppy=True)
+                    self.add_cons_vars(constraint, sloppy=True)
 
                 constraint_terms[constraint][forward_variable] = coeff
                 constraint_terms[constraint][reverse_variable] = -coeff
@@ -602,7 +688,7 @@ class Model(Object):
     def to_array_based_model(self, deepcopy_model=False, **kwargs):
         """Makes a :class:`~cobra.core.ArrayBasedModel` from a cobra.Model
         which may be used to perform linear algebra operations with the
-        stoichiomatric matrix.
+        stoichiometric matrix.
 
         Deprecated (0.6). Use `~cobra.util.array.create_stoichiometric_array`
         or `model.S` instead.
@@ -648,7 +734,7 @@ class Model(Object):
 
         """
         legacy, solver = choose_solver(self, solver=kwargs.get("solver"))
-        original_direction = self.solver.objective.direction
+        original_direction = self.objective.direction
 
         if legacy:
             if objective_sense is None:
@@ -660,12 +746,12 @@ class Model(Object):
             return solution
 
         self.solver = solver
-        self.solver.objective.direction = \
+        self.objective.direction = \
             {"maximize": "max", "minimize": "min"}.get(
                 objective_sense, original_direction)
         self.solver.optimize()
         solution = get_solution(self)
-        self.solver.objective.direction = original_direction
+        self.objective.direction = original_direction
         return solution
 
     def repair(self, rebuild_index=True, rebuild_relationships=True):
@@ -702,7 +788,7 @@ class Model(Object):
     def objective(self):
         """Get or set the solver objective
 
-        Before introduction of the optlang based solver interfaces,
+        Before introduction of the optlang based problems,
         this function returned the objective reactions as a list. With
         optlang, the objective is not limited a simple linear summation of
         individual reaction fluxes, making that return value ambiguous.
@@ -712,7 +798,7 @@ class Model(Object):
 
         The set value can be dictionary (reactions as keys, linear
         coefficients as values), string (reaction identifier), int (reaction
-        index), Reaction or solver.interface.Objective or sympy expression
+        index), Reaction or problem.Objective or sympy expression
         directly interpreted as objectives.
 
         When using a `HistoryManager` context, this attribute can be set
@@ -723,7 +809,7 @@ class Model(Object):
     @objective.setter
     def objective(self, value):
         if isinstance(value, sympy.Basic):
-            value = self.solver.interface.Objective(value, sloppy=False)
+            value = self.problem.Objective(value, sloppy=False)
         if not isinstance(value, (dict, optlang.interface.Objective)):
             value = {rxn: 1 for rxn in self.reactions.get_by_any(value)}
         set_objective(self, value, additive=False)

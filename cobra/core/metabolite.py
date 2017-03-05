@@ -53,7 +53,7 @@ class Metabolite(Species):
         if value in self.model.metabolites:
             raise ValueError("The model already contains a metabolite with "
                              "the id:", value)
-        self.model.solver.constraints[self.id].name = value
+        self.model.constraints[self.id].name = value
         self._id = value
         self.model.metabolites._generate_index()
 
@@ -67,7 +67,7 @@ class Metabolite(Species):
             the optlang constraint for this metabolite
         """
         if self.model is not None:
-            return self.model.solver.constraints[self.id]
+            return self.model.constraints[self.id]
 
     @property
     def elements(self):
@@ -179,7 +179,7 @@ class Metabolite(Species):
         """
         try:
             check_solver_status(self._model.solver.status)
-            return self._model.solver.constraints[self.id].dual
+            return self._model.constraints[self.id].dual
         except AttributeError:
             raise RuntimeError(
                 "metabolite '{}' is not part of a model".format(self.id))

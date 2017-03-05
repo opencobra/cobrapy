@@ -156,7 +156,7 @@ def _fva_optlang(model, reaction_list, fraction, loopless):
         A dictionary containing the results.
     """
     fva_results = {str(rxn): {} for rxn in reaction_list}
-    prob = model.solver.interface
+    prob = model.problem
     with model as m:
         m.solver.optimize()
         if m.solver.status != "optimal":
@@ -170,7 +170,7 @@ def _fva_optlang(model, reaction_list, fraction, loopless):
         fva_old_obj_constraint = prob.Constraint(
             m.solver.objective.expression - fva_old_objective, lb=0, ub=0,
             name="fva_old_objective_constraint")
-        sutil.add_to_solver(m, [fva_old_objective, fva_old_obj_constraint])
+        m.add_cons_vars([fva_old_objective, fva_old_obj_constraint])
         model.objective = S.Zero  # This will trigger the reset as well
         for what in ("minimum", "maximum"):
             sense = "min" if what == "minimum" else "max"
