@@ -8,11 +8,11 @@ from contextlib import contextmanager
 from os import name
 
 import pytest
+import numpy
 from six import StringIO, iteritems
 
 import cobra.util.solver as sutil
 from cobra.core import Metabolite, Model, Reaction
-from cobra.exceptions import OptimizationError
 from cobra.flux_analysis import *
 from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 from cobra.manipulation import convert_to_irreversible
@@ -125,7 +125,7 @@ class TestCobraFluxAnalysis:
         assert all(abs(df.flux[gene] - expected) < 0.01 for
                    gene, expected in iteritems(growth_dict))
 
-    @pytest.mark.skipif(not scipy, reason="moma gene deletion requires scipy")
+    @pytest.mark.skipif(scipy is None, reason="moma gene deletion requires scipy")
     def test_single_gene_deletion_moma_benchmark(self, model, benchmark):
         try:
             sutil.get_solver_name(qp=True)
@@ -134,7 +134,7 @@ class TestCobraFluxAnalysis:
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
         benchmark(single_gene_deletion, model, gene_list=genes, method="moma")
 
-    @pytest.mark.skipif(not scipy, reason="moma gene deletion requires scipy")
+    @pytest.mark.skipif(scipy is None, reason="moma gene deletion requires scipy")
     def test_single_gene_deletion_moma(self, model):
         try:
             sutil.get_solver_name(qp=True)
@@ -391,15 +391,11 @@ class TestCobraFluxAnalysis:
         for elem in expected_entries:
             assert any(pattern.sub("", elem) in line for line in output_strip)
 
-    @pytest.mark.skipif((pandas is None) or (tabulate is None),
-                        reason="summary methods require pandas and tabulate")
     def test_model_summary_unoptimized(self, model, opt_solver):
         model.solver = opt_solver
         with pytest.raises(RuntimeError):
             model.summary()
 
-    @pytest.mark.skipif((pandas is None) or (tabulate is None),
-                        reason="summary methods require pandas and tabulate")
     def test_model_summary(self, model, opt_solver):
         model.solver = opt_solver
         # test non-fva version (these should be fixed for textbook model
@@ -420,8 +416,6 @@ class TestCobraFluxAnalysis:
             model.summary()
         self.check_in_line(out.getvalue(), expected_entries)
 
-    @pytest.mark.skipif((pandas is None) or (tabulate is None),
-                        reason="summary methods require pandas and tabulate")
     @pytest.mark.parametrize("fraction", [0.95])
     def test_model_summary_with_fva(self, model, opt_solver, fraction):
         if opt_solver == "optlang-gurobi":
@@ -454,8 +448,6 @@ class TestCobraFluxAnalysis:
             model.summary(fva=fraction)
         self.check_in_line(out.getvalue(), expected_entries)
 
-    @pytest.mark.skipif((pandas is None) or (tabulate is None),
-                        reason="summary methods require pandas and tabulate")
     @pytest.mark.parametrize("met", ["q8_c"])
     def test_metabolite_summary(self, model, opt_solver, met):
         model.solver = opt_solver
@@ -477,8 +469,6 @@ class TestCobraFluxAnalysis:
 
         self.check_in_line(out.getvalue(), expected_entries)
 
-    @pytest.mark.skipif((pandas is None) or (tabulate is None),
-                        reason="summary methods require pandas and tabulate")
     @pytest.mark.parametrize("fraction, met", [(0.99, "fdp_c")])
     def test_metabolite_summary_with_fva(self, model, opt_solver, fraction,
                                          met):
