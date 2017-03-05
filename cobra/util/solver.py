@@ -389,12 +389,13 @@ def fix_objective_as_constraint(model, fraction=1):
 
 def check_solver_status(status):
     """Perform standard checks on a solver's status."""
-    if status is None:
-        raise RuntimeError("model was not optimized yet")
-    elif status == "optimal":
+    if status == "optimal":
         return
     elif status in ("non-optimal", "infeasible"):
         warn("solver status is '{}'".format(status), UserWarning)
+    elif status is None:
+        raise RuntimeError(
+            "model was not optimized yet or solver context switched")
     else:
         raise OptimizationError("solver status is '{}'".format(status))
 
