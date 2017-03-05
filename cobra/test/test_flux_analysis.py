@@ -575,5 +575,5 @@ class TestProductionEnvelope:
                                  objective="EX_ac_e",
                                  c_source="EX_glc__D_e")
         assert abs(numpy.sum(df.carbon_yield) - 83.579) < 0.001
-        assert abs(numpy.sum(df.flux) - 1737.466) < 0.001
+assert abs(numpy.sum(df.flux) - 1737.466) < 0.001
         assert abs(numpy.sum(df.mass_yield) - 82.176) < 0.001
