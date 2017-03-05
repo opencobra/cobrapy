@@ -442,13 +442,9 @@ def _carbon_flux(reaction):
                  metabolite in reaction.reactants)
 
     try:
-        return flux(reaction) * carbon
+        return reaction.flux * carbon
     except AssertionError:
         return nan
-
-
-def flux(rxn):
-    return rxn.forward_variable.primal - rxn.reverse_variable.primal
 
 
 def _carbon_yield(c_input_output):
@@ -495,7 +491,7 @@ def _mass_yield(c_input_output):
     source_mass = sum(met.formula_weight for met in c_input.reactants)
     product_mass = sum(met.formula_weight for met in c_output.reactants)
     try:
-        mol_prod_mol_src = flux(c_output) / (flux(c_input) * -1)
+        mol_prod_mol_src = c_output.flux / (c_input.flux * -1)
     except AssertionError:
         return nan
     return (mol_prod_mol_src * product_mass) / source_mass

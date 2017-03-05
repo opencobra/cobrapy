@@ -313,6 +313,7 @@ class TestCobraFluxAnalysis:
             with test_model:
                 add_loopless(test_model)
                 test_model.optimize(solver="optlang-glpk")
+
         benchmark(_)
 
     def test_loopless_benchmark_after(self, benchmark):
@@ -567,12 +568,12 @@ class TestProductionEnvelope:
 
     def test_envelope_one(self, model):
         df = production_envelope(model, ["EX_o2_e"])
-        assert abs(sum(df.flux) - 9.34) < 0.01
+        assert abs(sum(df.flux) - 9.342) < 0.001
 
     def test_envelope_two(self, model):
         df = production_envelope(model, ["EX_glc__D_e", "EX_o2_e"],
                                  objective="EX_ac_e",
                                  c_source="EX_glc__D_e")
-        assert abs(numpy.sum(df.carbon_yield) - 83.5) < 0.1
-        assert abs(numpy.sum(df.flux) - 1737.4) < 0.1
-        assert abs(numpy.sum(df.mass_yield) - 82.2) < 0.1
+        assert abs(numpy.sum(df.carbon_yield) - 83.579) < 0.001
+        assert abs(numpy.sum(df.flux) - 1737.466) < 0.001
+        assert abs(numpy.sum(df.mass_yield) - 82.176) < 0.001
