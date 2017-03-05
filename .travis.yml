@@ -11,6 +11,8 @@ addons:
     packages:
       - libfreetype6-dev
       - libpng12-dev
+git:
+  depth: 1
 
 branches:
  only:
@@ -32,52 +34,66 @@ matrix:
     - python: 3.5
   include:
     - os: linux
+      python: 3.5
+      env:
+        - TOXENV=pep8
+    - os: linux
+      python: 3.5
+      env:
+        - TOXENV=rstcheck
+    - os: linux
       env:
         - MB_PYTHON_VERSION=2.7
+        - TOXENV=py27
     - os: linux
       env:
         - MB_PYTHON_VERSION=3.4
+        - TOXENV=py34
     - os: linux
       env:
         - MB_PYTHON_VERSION=3.5
+        - TOXENV=py35
     - os: linux
       env:
         - MB_PYTHON_VERSION=3.6
+        - TOXENV=py36
     - os: osx
       language: objective-c
       env:
         - MB_PYTHON_VERSION=2.7
+        - TOXENV=py27
     - os: osx
       language: objective-c
       env:
         - MB_PYTHON_VERSION=3.4
+        - TOXENV=py34
     - os: osx
       language: objective-c
       env:
         - MB_PYTHON_VERSION=3.5
+        - TOXENV=py35
     - os: osx
       language: objective-c
       env:
         - MB_PYTHON_VERSION=3.6
+        - TOXENV=py36
 
 before_install:
-  - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout e6ebbfa)
-  # matplotlib non-compatible as testing runs in venv (non-framework)
-  - TEST_DEPENDS="swiglpk optlang sympy decorator cython codecov coverage numpy scipy python-libsbml jsonschema six pytest pytest-cov pytest-benchmark tabulate"
-  - BUILD_DEPENDS="swiglpk optlang sympy cython numpy scipy"
-  - source multibuild/common_utils.sh
-  - source multibuild/travis_steps.sh
-  - before_install
+  - if [ -z "${MB_PYTHON_VERSION}" ]; then travis_retry source scripts/setup.sh; fi
+  - pip install -U pip setuptools wheel tox
 
 before_cache:
   - set +e
 
 install:
-  - build_wheel . $PLAT
+  - if [ -z "${MB_PYTHON_VERSION}" ]; then travis_retry build_wheel . $PLAT; fi
 
 script:
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install 'sphinx>=1.5' rstcheck pep8; pep8 cobra --exclude=solvers --show-source; rstcheck *.rst; fi
-  - install_run $PLAT
+  - if [ -z "${MB_PYTHON_VERSION}" ]; then
+      travis_retry install_run $PLAT;
+    else
+      tox -e "${TOX_ENV}";
+    fi
 
 deploy:
   provider: script
@@ -88,4 +104,4 @@ deploy:
     tags: true
 
 after_success:
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install codecov; codecov; fi
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install codecov; codecov; fi
