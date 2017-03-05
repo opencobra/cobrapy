@@ -38,36 +38,26 @@ matrix:
       env:
         - TOX_ENV=pep8
     - os: linux
-      python: 3.5
-      env:
-        - TOX_ENV=rstcheck
-    - os: linux
       env:
         - MB_PYTHON_VERSION=2.7
-        - TOX_ENV=py27
     - os: linux
       env:
         - MB_PYTHON_VERSION=3.5
-        - TOX_ENV=py35
     - os: linux
       env:
         - MB_PYTHON_VERSION=3.6
-        - TOX_ENV=py36
     - os: osx
       language: objective-c
       env:
         - MB_PYTHON_VERSION=2.7
-        - TOX_ENV=py27
     - os: osx
       language: objective-c
       env:
         - MB_PYTHON_VERSION=3.5
-        - TOX_ENV=py35
     - os: osx
       language: objective-c
       env:
         - MB_PYTHON_VERSION=3.6
-        - TOX_ENV=py36
 
 before_install:
   - if [ -z "${MB_PYTHON_VERSION}" ]; then travis_retry source scripts/setup.sh; fi
@@ -83,6 +73,7 @@ script:
   - if [ -z "${MB_PYTHON_VERSION}" ]; then
       travis_retry install_run $PLAT;
     else
+      find . -name "*.rst" -exec rstcheck {} +;
       tox -e "${TOX_ENV}";
     fi
 
