@@ -125,7 +125,8 @@ class TestCobraFluxAnalysis:
         assert all(abs(df.flux[gene] - expected) < 0.01 for
                    gene, expected in iteritems(growth_dict))
 
-    @pytest.mark.skipif(scipy is None, reason="moma gene deletion requires scipy")
+    @pytest.mark.skipif(scipy is None,
+                        reason="moma gene deletion requires scipy")
     def test_single_gene_deletion_moma_benchmark(self, model, benchmark):
         try:
             sutil.get_solver_name(qp=True)
@@ -134,7 +135,8 @@ class TestCobraFluxAnalysis:
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
         benchmark(single_gene_deletion, model, gene_list=genes, method="moma")
 
-    @pytest.mark.skipif(scipy is None, reason="moma gene deletion requires scipy")
+    @pytest.mark.skipif(scipy is None,
+                        reason="moma gene deletion requires scipy")
     def test_single_gene_deletion_moma(self, model):
         try:
             sutil.get_solver_name(qp=True)
