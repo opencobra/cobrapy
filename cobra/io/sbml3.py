@@ -26,7 +26,6 @@ try:
         ParseError, XPath)
     _with_lxml = True
 except ImportError:
-    warn("Install lxml for faster SBML I/O")
     _with_lxml = False
     try:
         from xml.etree.cElementTree import (
@@ -49,7 +48,7 @@ else:
 
 try:
     from sympy import Basic
-except:
+except ImportError:
     class Basic:
         pass
 
@@ -553,13 +552,15 @@ def model_to_xml(cobra_model, units=True):
 
 
 def read_sbml_model(filename, number=float, **kwargs):
+    if not _with_lxml:
+        warn("Install lxml for faster SBML I/O", ImportWarning)
     xmlfile = parse_stream(filename)
     xml = xmlfile.getroot()
     # use libsbml if not l3v1 with fbc v2
     if xml.get("level") != "3" or xml.get("version") != "1" or \
             get_attrib(xml, "fbc:required") is None:
         if libsbml is None:
-            raise Exception("libSBML required for fbc < 2")
+            raise ImportError("libSBML required for fbc < 2")
         # libsbml needs a file string, so write to temp file if a file handle
         if hasattr(filename, "read"):
             with NamedTemporaryFile(suffix=".xml", delete=False) as outfile:
@@ -694,9 +695,11 @@ def validate_sbml_model(filename, check_model=True):
 
 
 def write_sbml_model(cobra_model, filename, use_fbc_package=True, **kwargs):
+    if not _with_lxml:
+        warn("Install lxml for faster SBML I/O", ImportWarning)
     if not use_fbc_package:
         if libsbml is None:
-            raise Exception("libSBML required to write non-fbc models")
+            raise ImportError("libSBML required to write non-fbc models")
         write_sbml2(cobra_model, filename, use_fbc_package=False, **kwargs)
         return
     # create xml

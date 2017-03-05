@@ -103,6 +103,28 @@ trials = [IOTrial('fbc2', 'mini.pickle', 'mini_fbc2.xml',
 trial_names = [node.name for node in trials]
 
 
+@pytest.mark.skipif(scipy is not None, reason='scipy available')
+def raise_scipy_errors():
+    with pytest.raises(ImportError):
+        io.save_matlab_model(None, 'test')
+    with pytest.raises(ImportError):
+        io.load_matlab_model('test')
+
+
+@pytest.mark.skipif(libsbml is not None, reason='libsbml available')
+def raise_libsbml_errors():
+    with pytest.raises(ImportError):
+        io.read_sbml_model('test')
+    with pytest.raises(ImportError):
+        io.write_sbml_model(None, 'test')
+    with pytest.raises(ImportError):
+        io.load_matlab_model('test')
+    with pytest.raises(ImportError):
+        io.write_legacy_sbml(None, 'test')
+    with pytest.raises(ImportError):
+        io.read_legacy_sbml(None, 'test')
+
+
 @pytest.fixture(scope="module", params=trials, ids=trial_names)
 def io_trial(request, data_directory):
     with open(join(data_directory, request.param.reference_file),

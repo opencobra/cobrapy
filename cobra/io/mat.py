@@ -3,32 +3,23 @@
 from __future__ import absolute_import
 
 import re
+from collections import OrderedDict
 from uuid import uuid4
 from warnings import warn
 
 from numpy import object as np_object
 from numpy import array, inf, isinf
-from scipy.io import loadmat, savemat
-from scipy.sparse import coo_matrix, dok_matrix
 
 from cobra.core import Metabolite, Model, Reaction
 from cobra.util import create_stoichiometric_array
 from cobra.util.solver import set_objective
 
-# try to use an ordered dict
 try:
-    from scipy.version import short_version
-    scipy_version = int(short_version.split(".")[1])
-    # if scipy version is earlier than 0.11, OrderedDict will not work, so use
-    # a dict instead
-    if scipy_version < 11:
-        DictClass = dict
-    else:
-        from collections import OrderedDict as DictClass
-    del short_version, scipy_version
+    import scipy.sparse as scipy_sparse
+    import scipy.io as scipy_io
 except ImportError:
-    DictClass = dict
-    short_version = None
+    scipy_sparse = None
+    scipy_io = None
 
 
 # precompiled regular expressions
@@ -74,7 +65,10 @@ def load_matlab_model(infile_path, variable_name=None, inf=inf):
         The resulting cobra model
 
     """
-    data = loadmat(infile_path)
+    if not scipy_io:
+        raise ImportError('load_matlab_model requires scipy')
+
+    data = scipy_io.loadmat(infile_path)
     possible_names = []
     if variable_name is None:
         # skip meta variables
@@ -109,13 +103,16 @@ def save_matlab_model(model, file_name, varname=None):
     varname : string
        The name of the variable within the workspace
     """
+    if not scipy_io:
+        raise ImportError('load_matlab_model requires scipy')
+
     if varname is None:
         varname = str(model.id) \
             if model.id is not None and len(model.id) > 0 \
             else "exported_model"
     mat = create_mat_dict(model)
-    savemat(file_name, {varname: mat},
-            appendmat=True, oned_as="column")
+    scipy_io.savemat(file_name, {varname: mat},
+                     appendmat=True, oned_as="column")
 
 
 def create_mat_metabolite_id(model):
@@ -131,7 +128,7 @@ def create_mat_dict(model):
     """create a dict mapping model attributes to arrays"""
     rxns = model.reactions
     mets = model.metabolites
-    mat = DictClass()
+    mat = OrderedDict()
     mat["mets"] = _cell([met_id for met_id in create_mat_metabolite_id(model)])
     mat["metNames"] = _cell(mets.list_attr("name"))
     mat["metFormulas"] = _cell([str(m.formula) for m in mets])
@@ -143,12 +140,13 @@ def create_mat_dict(model):
     mat["genes"] = _cell(model.genes.list_attr("id"))
     # make a matrix for rxnGeneMat
     # reactions are rows, genes are columns
-    rxnGene = dok_matrix((len(model.reactions), len(model.genes)))
-    if min(rxnGene.shape) > 0:
+    rxn_gene = scipy_sparse.dok_matrix((len(model.reactions),
+                                        len(model.genes)))
+    if min(rxn_gene.shape) > 0:
         for i, reaction in enumerate(model.reactions):
             for gene in reaction.genes:
-                rxnGene[i, model.genes.index(gene)] = 1
-        mat["rxnGeneMat"] = rxnGene
+                rxn_gene[i, model.genes.index(gene)] = 1
+        mat["rxnGeneMat"] = rxn_gene
     mat["grRules"] = _cell(rxns.list_attr("gene_reaction_rule"))
     mat["rxns"] = _cell(rxns.list_attr("id"))
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
@@ -204,7 +202,6 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
             comp_index = m["metComps"][0, 0][i][0] - 1
             new_metabolite.compartment = m['comps'][0, 0][comp_index][0][0]
             if new_metabolite.compartment not in model.compartments:
-
                 comp_name = m['compNames'][0, 0][comp_index][0][0]
                 model.compartments[new_metabolite.compartment] = comp_name
         else:
@@ -256,7 +253,7 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
     set_objective(model, coefficients)
-    coo = coo_matrix(m["S"][0, 0])
+    coo = scipy_sparse.coo_matrix(m["S"][0, 0])
     for i, j, v in zip(coo.row, coo.col, coo.data):
         model.reactions[j].add_metabolites({model.metabolites[i]: v})
     return model
