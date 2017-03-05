@@ -721,10 +721,9 @@ class TestStoichiometricMatrix:
         assert numpy.allclose(S.stoichiometry.max(), [59])
 
         S = create_stoichiometric_array(model, array_type='dense', dtype=float)
-        model.optimize()
-        # Is this really the best way to get a vector of fluxes?
-        mass_balance = S.dot(numpy.array(list(model.solution.fluxes.values())))
-        assert numpy.allclose(mass_balance, [0])
+        solution = model.optimize()
+        mass_balance = S.dot(solution.fluxes)
+        assert numpy.allclose(mass_balance, 0)
 
         # Test model property
         assert numpy.allclose(model.S, S)
@@ -733,11 +732,10 @@ class TestStoichiometricMatrix:
     def test_sparse_matrix(self, model):
         sparse_types = ['dok', 'lil']
 
-        model.optimize()
-        fluxes = numpy.array(list(model.solution.fluxes.values()))
+        solution = model.optimize()
         for sparse_type in sparse_types:
             S = create_stoichiometric_array(model, array_type=sparse_type)
-            mass_balance = S.dot(fluxes)
-            assert numpy.allclose(mass_balance, [0])
+            mass_balance = S.dot(solution.fluxes)
+            assert numpy.allclose(mass_balance, 0)
 
             # Is this really the best way to get a vector of fluxes?

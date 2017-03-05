@@ -5,15 +5,13 @@ from __future__ import absolute_import
 import logging
 from itertools import chain
 
-import pandas
 import sympy
-from six import iteritems
 
 from cobra.util import solver as sutil
-from cobra.exceptions import SolveError
 from cobra.manipulation.modify import (
     convert_to_irreversible, revert_to_reversible)
 from cobra.util import linear_reaction_coefficients, set_objective
+from cobra.core.solution import get_solution
 
 add = sympy.Add._from_args
 mul = sympy.Mul._from_args
@@ -82,16 +80,17 @@ def optimize_minimal_flux(model, already_irreversible=False,
 
     """
     legacy, solver = sutil.choose_solver(model, solver)
-    if not legacy:
-        return _optimize_minimal_flux_optlang(
-            model, objective=objective,
-            fraction_of_optimum=fraction_of_optimum, reactions=reactions)
-    else:
+    if legacy:
         return _optimize_minimal_flux_legacy(
             model, already_irreversible=already_irreversible,
             fraction_of_optimum=fraction_of_optimum, solver=solver,
             desired_objective_value=desired_objective_value,
             **optimize_kwargs)
+    else:
+        model.solver = solver
+        return _optimize_minimal_flux_optlang(
+            model, objective=objective,
+            fraction_of_optimum=fraction_of_optimum, reactions=reactions)
 
 
 def add_pfba(model, objective=None, fraction_of_optimum=1.0):
@@ -144,8 +143,8 @@ def _optimize_minimal_flux_optlang(model, objective=None, reactions=None,
 
     Returns
     -------
-    dict
-        A dict with fluxes for each reaction and the objective value.
+    cobra.Solution
+        The solution to the pFBA optimization.
 
     Updates everything in-place, returns model to original state at end.
     """
@@ -155,17 +154,9 @@ def _optimize_minimal_flux_optlang(model, objective=None, reactions=None,
     with model as m:
         add_pfba(m, objective=objective,
                  fraction_of_optimum=fraction_of_optimum)
-        try:
-            solution = m.optimize(objective_sense='minimize')
-        except SolveError as e:
-            LOGGER.error("pfba could not determine an optimal solution for "
-                         "objective %s" % m.objective)
-            raise e
-        else:
-            results = dict()
-            results['flux'] = {rxn.id: solution[rxn.id] for rxn in reactions}
-            results['objective_value'] = solution.objective_value
-            return pandas.DataFrame(results)
+        m.solver.optimize()
+        solution = get_solution(m, reactions=reactions)
+    return solution
 
 
 def _optimize_minimal_flux_legacy(model, solver, already_irreversible=False,
@@ -239,13 +230,11 @@ def _optimize_minimal_flux_legacy(model, solver, already_irreversible=False,
     solution = solver.format_solution(lp, model)
 
     # Return the model to its original state
-    model.solution = solution
+#    model.solution = solution
     revert_to_reversible(model)
 
-    if solution.status == "optimal":
-        model.solution.f = sum([coeff * reaction.x for reaction, coeff in
-                                iteritems(objective_reactions)])
-    results = dict()
-    results['flux'] = {reaction.id: reaction.x for reaction in model.reactions}
-    results['objective_value'] = model.solution.f
-    return pandas.DataFrame(results)
+#    if solution.status == "optimal":
+#        model.solution.f = sum([coeff * reaction.x for reaction, coeff in
+#                                iteritems(objective_reactions)])
+
+    return solution

@@ -10,12 +10,15 @@ from functools import partial
 from warnings import warn
 
 from six import iteritems, string_types
+from future.utils import raise_from, raise_with_traceback
 
+from cobra.exceptions import OptimizationError
 from cobra.core.gene import Gene, ast2str, parse_gpr
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.util.context import resettable, get_context
-from cobra.util.solver import linear_reaction_coefficients, set_objective
+from cobra.util.solver import (
+    linear_reaction_coefficients, set_objective, check_solver_status)
 from cobra.util.util import Frozendict, _is_positive
 
 # precompiled regular expressions
@@ -263,21 +266,111 @@ class Reaction(Object):
 
     @property
     def flux(self):
-        """Reaction flux in the most recent solution."""
-        if self._model is None:
-            raise RuntimeError("not part of a model")
-        if self._model.solution is None:
-            raise RuntimeError("model has not been solved")
-        return self._model.solution[self.id]
+        """
+        The flux value in the most recent solution.
+
+        Flux is the primal value of the corresponding variable in the model.
+
+        Warnings
+        --------
+        * Accessing reaction fluxes through a `Solution` object is the safer,
+          preferred, and only guaranteed to be correct way. You can see how to
+          do so easily in the examples.
+        * Reaction flux is retrieved from the currently defined
+          `self._model.solver`. The solver status is checked but there are no
+          guarantees that the current solver state is the one you are looking
+          for.
+        * If you modify the underlying model after an optimization, you will
+          retrieve the old optimization values.
+
+        Raises
+        ------
+        RuntimeError
+            If the underlying model was never optimized beforehand or the
+            reaction is not part of a model.
+        OptimizationError
+            If the solver status is anything other than 'optimal'.
+        AssertionError
+            If the flux value is not within the bounds.
+
+        Examples
+        --------
+        >>> import cobra
+        >>> import cobra.test
+        >>> model = cobra.test.create_test_model("textbook")
+        >>> solution = model.optimize()
+        >>> model.reactions.PFK.flux
+        7.477381962160283
+        >>> solution.fluxes.PFK
+        7.4773819621602833
+        """
+        try:
+            check_solver_status(self._model.solver.status)
+            return self.forward_variable.primal - self.reverse_variable.primal
+        except AttributeError:
+            raise RuntimeError(
+                "reaction '{}' is not part of a model".format(self.id))
+        # Due to below all-catch, which sucks, need to reraise these.
+        except (RuntimeError, OptimizationError) as err:
+            raise_with_traceback(err)
+        # Would love to catch CplexSolverError and GurobiError here.
+        except Exception as err:
+            raise_from(OptimizationError(
+                "Likely no solution exists. Original solver message: {}."
+                "".format(str(err))), err)
 
     @property
     def reduced_cost(self):
-        """Reaction reduced cost in the most recent solution."""
-        if self._model is None:
-            raise RuntimeError("not part of a model")
-        if self._model.solution is None:
-            raise RuntimeError("model has not been solved")
-        return self.forward_variable.dual - self.reverse_variable.dual
+        """
+        The reduced cost in the most recent solution.
+
+        Reduced cost is the dual value of the corresponding variable in the
+        model.
+
+        Warnings
+        --------
+        * Accessing reduced costs through a `Solution` object is the safer,
+          preferred, and only guaranteed to be correct way. You can see how to
+          do so easily in the examples.
+        * Reduced cost is retrieved from the currently defined
+          `self._model.solver`. The solver status is checked but there are no
+          guarantees that the current solver state is the one you are looking
+          for.
+        * If you modify the underlying model after an optimization, you will
+          retrieve the old optimization values.
+
+        Raises
+        ------
+        RuntimeError
+            If the underlying model was never optimized beforehand or the
+            reaction is not part of a model.
+        OptimizationError
+            If the solver status is anything other than 'optimal'.
+
+        Examples
+        --------
+        >>> import cobra.test
+        >>> model = cobra.test.create_test_model("textbook")
+        >>> solution = model.optimize()
+        >>> model.reactions.PFK.reduced_cost
+        -8.673617379884035e-18
+        >>> solution.reduced_costs.PFK
+        -8.6736173798840355e-18
+        """
+        try:
+            check_solver_status(self._model.solver.status)
+            return self.forward_variable.dual - self.reverse_variable.dual
+        except AttributeError:
+            raise RuntimeError(
+                "reaction '{}' is not part of a model".format(self.id))
+        # Due to below all-catch, which sucks, need to reraise these.
+        except (RuntimeError, OptimizationError) as err:
+            raise_with_traceback(err)
+        # Would love to catch CplexSolverError and GurobiError here.
+        except Exception as err:
+            raise_from(OptimizationError(
+                "Likely no solution exists. Original solver message: {}."
+                "".format(str(err))), err)
 
     # read-only
     @property
@@ -360,14 +453,23 @@ class Reaction(Object):
 
     @property
     def x(self):
-        """The flux through the reaction in the most recent solution
+        """The flux through the reaction in the most recent solution.
 
         Flux values are computed from the primal values of the variables in
         the solution.
-
         """
-        warn("use reaction.flux instead", DeprecationWarning)
+        warn("Please use reaction.flux instead.", DeprecationWarning)
         return self.flux
+
+    @property
+    def y(self):
+        """The reduced cost of the reaction in the most recent solution.
+
+        Reduced costs are computed from the dual values of the variables in
+        the solution.
+        """
+        warn("Please use reaction.reduced_cost instead.", DeprecationWarning)
+        return self.reduced_cost
 
     @property
     def reversibility(self):

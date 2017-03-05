@@ -12,7 +12,7 @@ from cplex.exceptions import CplexError
 from six import iteritems, string_types
 from six.moves import zip
 
-from cobra.core import Solution
+from cobra.core.solution import LegacySolution
 
 try:
     from sympy import Basic, Number
@@ -95,7 +95,7 @@ def format_solution(lp, cobra_model, **kwargs):
     else:
         x = y = x_dict = y_dict = objective_value = None
 
-    return Solution(objective_value, x=x, x_dict=x_dict, status=status,
+    return LegacySolution(objective_value, x=x, x_dict=x_dict, status=status,
                     y=y, y_dict=y_dict)
 
 

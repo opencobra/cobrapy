@@ -15,11 +15,12 @@ from __future__ import absolute_import
 import re
 from functools import partial
 from types import ModuleType
+from warnings import warn
 
 import optlang
 import sympy
 
-import cobra.solvers as legacy_solvers
+from cobra.exceptions import OptimizationError
 from cobra.util.context import get_context
 
 
@@ -29,16 +30,12 @@ class SolverNotFound(Exception):
     pass
 
 
+# Define all the solvers that are found in optlang.
 solvers = {match.split("_")[0]: getattr(optlang, match)
            for match in dir(optlang) if "_interface" in match}
-"""
-Defines all the solvers that were found in optlang.
-"""
 
+# Defines all the QP solvers implemented in optlang.
 qp_solvers = ["cplex"]  # QP in gurobi not implemented yet
-"""
-Defines all the QP solvers implemented in optlang.
-"""
 
 
 def linear_reaction_coefficients(model, reactions=None):
@@ -378,8 +375,8 @@ def fix_objective_as_constraint(model, fraction=1):
     fix_objective_name = 'Fixed_objective_{}'.format(model.objective.name)
     if fix_objective_name in model.solver.constraints:
         model.solver.remove(fix_objective_name)
-    model.solver.optimize()
-    objective_bound = model.solver.objective.value * fraction
+    solution = model.optimize()
+    objective_bound = solution.objective_value * fraction
     if model.objective.direction == 'max':
         ub, lb = None, objective_bound
     else:
@@ -388,3 +385,19 @@ def fix_objective_as_constraint(model, fraction=1):
         model.objective.expression,
         name=fix_objective_name, ub=ub, lb=lb)
     add_to_solver(model, constraint)
+
+
+def check_solver_status(status):
+    """Perform standard checks on a solver's status."""
+    if status == "optimal":
+        return
+    elif status in ("non-optimal", "infeasible"):
+        warn("solver status is '{}'".format(status), UserWarning)
+    elif status is None:
+        raise RuntimeError(
+            "model was not optimized yet or solver context switched")
+    else:
+        raise OptimizationError("solver status is '{}'".format(status))
+
+
+import cobra.solvers as legacy_solvers  # noqa

@@ -5,93 +5,100 @@
 from __future__ import absolute_import
 
 import logging
-from builtins import dict, object, super
-from collections import OrderedDict
+from builtins import object, super
 from warnings import warn
 
-from cobra.exceptions import UndefinedSolution
+from numpy import zeros, asarray
+from pandas import Series
 
-__all__ = ("Solution",)
+from cobra.util.solver import check_solver_status
+
+__all__ = ("Solution", "LegacySolution", "get_solution")
 
 LOGGER = logging.getLogger(__name__)
 
 
 class Solution(object):
     """
-    The base for a unified interface to a `cobra.Model` optimization solution.
+    A unified interface to a `cobra.Model` optimization solution.
 
     Notes
     -----
-    Solution values are lazily evaluated on a per request basis and thus
-    accessing all `fluxes` and the like is rather inefficient. The lazy
-    evaluation also means that all accessed values are stored for later use but
-    those values that were not accessed may be invalidated by further
-    optimizations of the same model.
+    Solution is meant to be constructed by `get_solution` please look at that
+    function to fully understand the `Solution` class.
 
     Attributes
     ----------
-    model : cobra.Model
-        The model used for finding a solution.
     objective_value : float
         The (optimal) value for the objective function.
     status : str
         The solver status related to the solution.
-    fluxes : OrderedDict
-        An ordered dictionary of fluxes.
-    reduced_costs : OrderedDict
-        An ordered dictionary of reduced costs.
-    shadow_prices : OrderedDict
-        An ordered dictionary of shadow prices.
+    reactions : list
+        A list of `cobra.Reaction` objects for which the solution is
+        retrieved.
+    fluxes : pandas.Series
+        Contains the reaction fluxes (primal values of variables).
+    reduced_costs : pandas.Series
+        Contains reaction reduced costs (dual values of variables).
+    metabolites : list
+        A list of `cobra.Metabolite` objects for which the solution is
+        retrieved.
+    shadow_prices : pandas.Series
+        Contains metabolite shadow prices (dual values of constraints).
 
     Deprecated Attributes
     ---------------------
     f : float
         Use `objective_value` instead.
     x : list
-        Use `fluxes.values()` instead.
-    x_dict : OrderedDict
+        Use `fluxes.values` instead.
+    x_dict : pandas.Series
         Use `fluxes` instead.
     y : list
-        Use `reduced_costs.values()` instead.
-    y_dict : OrderedDict
+        Use `reduced_costs.values` instead.
+    y_dict : pandas.Series
         Use `reduced_costs` instead.
     """
 
-    def __new__(cls, *args, **kwargs):
-        """Create either LegacySolution or Solution type."""
-        # Prevent a circular import between Solution and Model.
-        from cobra.core.model import Model
-        # this is a cobrapy compatibility hack
-        if len(args) == 1 and not isinstance(args[0], Model):
-            cobrapy_solution = super(Solution, cls).__new__(LegacySolution)
-            cobrapy_solution.__init__(*args, **kwargs)
-            return cobrapy_solution
-        else:
-            return super(Solution, cls).__new__(cls)
-
-    def __init__(self, model, **kwargs):
+    def __init__(self, objective_value, status, reactions, fluxes,
+                 reduced_costs=None, metabolites=None, shadow_prices=None,
+                 **kwargs):
         """
-        Initialize a unified solution interface from a model.
+        Initialize a `Solution` from its components.
 
         Parameters
         ----------
-        model : cobra.Model
-            The model used for finding the solution.
+        objective_value : float
+            The (optimal) value for the objective function.
+        status : str
+            The solver status related to the solution.
+        reactions : list
+            A list of `cobra.Reaction` objects for which the solution is
+            retrieved.
+        fluxes : pandas.Series
+            Contains the reaction fluxes (primal values of variables).
+        reduced_costs : pandas.Series
+            Contains reaction reduced costs (dual values of variables).
+        metabolites : list
+            A list of `cobra.Metabolite` objects for which the solution is
+            retrieved.
+        shadow_prices : pandas.Series
+            Contains metabolite shadow prices (dual values of constraints).
         """
         super(Solution, self).__init__(**kwargs)
-        self._model = model
-        self._objective_value = None
-        self._status = None
-        self._fluxes = None
-        self._reduced_costs = None
-        self._shadow_prices = None
-        self._store = dict()
+        self.objective_value = objective_value
+        self.status = status
+        self.reactions = reactions
+        self.fluxes = fluxes
+        self.reduced_costs = reduced_costs
+        self.metabolites = metabolites
+        self.shadow_prices = shadow_prices
 
     def __repr__(self):
         """String representation of the solution instance."""
-        if self.objective_value is None:
-            return "<Solution {0:r} at 0x{1:x}>".format(self.status, id(self))
-        return "<Solution {0:.3g} at 0x{1:x}>".format(self.objective_value,
+        if self.status != "optimal":
+            return "<Solution {0:s} at 0x{1:x}>".format(self.status, id(self))
+        return "<Solution {0:.3f} at 0x{1:x}>".format(self.objective_value,
                                                       id(self))
 
     def __dir__(self):
@@ -113,122 +120,9 @@ class Solution(object):
         reaction : str
             A model reaction ID.
         """
-        flux = self._store.get(reaction_id)
-        if flux is not None:
-            return flux
-        self._is_current()
-        reaction = self._model.reactions.get_by_id(reaction_id)
-        self._store[reaction_id] = flux = reaction.forward_variable.primal -\
-            reaction.reverse_variable.primal
-        return flux
+        return self.fluxes[reaction_id]
 
     get_primal_by_id = __getitem__
-
-    def _is_current(self):
-        """
-        Ensure that the solution is current.
-
-        Raises
-        ------
-        UndefinedSolution
-            If the solution has become invalid due to re-optimization of the
-            underlying model.
-        """
-        if self is not self._model.solution:
-            raise UndefinedSolution(
-                "The solution {0:s} was invalidated by a more recent"
-                " optimization solution {1:s}. Previously accesssed values are"
-                " still available.".format(repr(self),
-                                           repr(self._model.solution))
-            )
-
-    @property
-    def objective_value(self):
-        """Access the objective value."""
-        if self._objective_value is not None:
-            return self._objective_value
-        self._is_current()
-        self._objective_value = self._model.solver.objective.value
-        return self._objective_value
-
-    @property
-    def status(self):
-        """Access the solver status after optimization."""
-        if self._status is not None:
-            return self._status
-        self._is_current()
-        self._status = self._model.solver.status
-        return self._status
-
-    @property
-    def fluxes(self):
-        """
-        Get the map of reaction IDs to fluxes.
-
-        Warning
-        -------
-        Accessing all fluxes in this way is not recommended since it defeats
-        the purpose of lazy evaluation.
-
-        Returns
-        -------
-        OrderedDict
-            All fluxes in the model as an ordered dictionary keyed by
-            reaction ID.
-        """
-        if self._fluxes is not None:
-            return self._fluxes
-        self._is_current()
-        self._fluxes = OrderedDict(
-            (rxn.id, rxn.forward_variable.primal - rxn.reverse_variable.primal)
-            for rxn in self._model.reactions)
-        return self._fluxes
-
-    @property
-    def reduced_costs(self):
-        """
-        Get the map of reaction IDs to reduced costs.
-
-        Warning
-        -------
-        Accessing all reduced costs in this way is not recommended since it
-        defeats the purpose of lazy evaluation.
-
-        Returns
-        -------
-        OrderedDict
-            All reduced costs in the model as an ordered dictionary keyed by
-            reaction ID.
-        """
-        if self._reduced_costs is not None:
-            return self._reduced_costs
-        self._is_current()
-        self._reduced_costs = OrderedDict(
-            (rxn.id, rxn.forward_variable.dual - rxn.reverse_variable.dual)
-            for rxn in self._model.reactions)
-        return self._reduced_costs
-
-    @property
-    def shadow_prices(self):
-        """
-        Get the map of reaction IDs to shadow prices.
-
-        Warning
-        -------
-        Accessing all shadow prices in this way is not recommended since it
-        defeats the purpose of lazy evaluation.
-
-        Returns
-        -------
-        OrderedDict
-            All shadow prices in the model as an ordered dictionary keyed by
-            reaction ID.
-        """
-        if self._shadow_prices is not None:
-            return self._shadow_prices
-        self._is_current()
-        self._shadow_prices = self._model.solver.shadow_prices
-        return self._shadow_prices
 
     @property
     def f(self):
@@ -245,15 +139,15 @@ class Solution(object):
     @x_dict.setter
     def x_dict(self, fluxes):
         """Deprecated property for setting fluxes."""
-        warn("let Model create a solution instance, don't update yourself",
-             DeprecationWarning)
-        self._fluxes = fluxes
+        warn("let Model.optimize create a solution instance,"
+             " don't update yourself", DeprecationWarning)
+        self.fluxes = fluxes
 
     @property
     def x(self):
         """Deprecated property for getting flux values."""
         warn("use solution.fluxes.values() instead", DeprecationWarning)
-        return self.fluxes.values()
+        return self.fluxes.values
 
     @property
     def y_dict(self):
@@ -266,13 +160,13 @@ class Solution(object):
         """Deprecated property for setting reduced costs."""
         warn("let Model create a solution instance, don't update yourself",
              DeprecationWarning)
-        self._reduced_costs = costs
+        self.reduced_costs = costs
 
     @property
     def y(self):
         """Deprecated property for getting reduced cost values."""
         warn("use solution.reduced_costs.values() instead", DeprecationWarning)
-        return self.reduced_costs.values()
+        return self.reduced_costs.values
 
 
 class LegacySolution(object):
@@ -294,13 +188,15 @@ class LegacySolution(object):
     y_dict : dict
         A dictionary of reaction IDs that maps to the respective dual values.
 
-    .. warning :: deprecated
+    Warning
+    -------
+    The LegacySolution class and its interface is deprecated.
     """
 
     def __init__(self, f, x=None, x_dict=None, y=None, y_dict=None,
                  solver=None, the_time=0, status='NA', **kwargs):
         """
-        Initialize a legacy interface to a solution from an objective value.
+        Initialize a `LegacySolution` from an objective value.
 
         Parameters
         ----------
@@ -334,11 +230,11 @@ class LegacySolution(object):
 
     def __repr__(self):
         """String representation of the solution instance."""
-        if self.objective_value is None:
-            return "<LegacySolution {0:r} at 0x{1:x}>".format(
+        if self.status != "optimal":
+            return "<LegacySolution {0:s} at 0x{1:x}>".format(
                 self.status, id(self))
-        return "<LegacySolution {0:.3g} at 0x{1:x}>".format(
-            self.objective_value, id(self))
+        return "<LegacySolution {0:.3f} at 0x{1:x}>".format(
+            self.f, id(self))
 
     def __getitem__(self, reaction_id):
         """
@@ -359,3 +255,54 @@ class LegacySolution(object):
         """
         warn("unnecessary to call this deprecated function",
              DeprecationWarning)
+
+
+def get_solution(model, reactions=None, metabolites=None):
+    """
+    Generate a solution representation of the current solver state.
+
+    Paramters
+    ---------
+    model : cobra.Model
+        The model whose reactions to retrieve values for.
+    reactions : list, optional
+        An iterable of `cobra.Reaction` objects. Uses `model.reactions` by
+        default.
+    metabolites : list, optional
+        An iterable of `cobra.Metabolite` objects. Uses `model.metabolites` by
+        default.
+
+    Returns
+    -------
+    cobra.Solution
+
+    Note
+    ----
+    This is only intended for the `optlang` solver interfaces and not the
+    legacy solvers.
+    """
+    check_solver_status(model.solver.status)
+    if reactions is None:
+        reactions = model.reactions
+    if metabolites is None:
+        metabolites = model.metabolites
+
+    rxn_index = [rxn.id for rxn in reactions]
+    fluxes = zeros(len(reactions))
+    var_primals = model.solver.primal_values
+    reduced = zeros(len(reactions))
+    var_duals = model.solver.reduced_costs
+    for (i, rxn) in enumerate(reactions):
+        forward = rxn.forward_variable.name
+        reverse = rxn.reverse_variable.name
+        fluxes[i] = var_primals[forward] - var_primals[reverse]
+        reduced[i] = var_duals[forward] - var_duals[reverse]
+    met_index = [met.id for met in metabolites]
+    constr_duals = model.solver.shadow_prices
+    shadow = asarray([constr_duals[met.id] for met in metabolites])
+    return Solution(model.solver.objective.value, model.solver.status,
+                    reactions,
+                    Series(index=rxn_index, data=fluxes),
+                    Series(index=rxn_index, data=reduced),
+                    metabolites,
+                    Series(index=met_index, data=shadow))

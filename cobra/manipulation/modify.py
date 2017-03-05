@@ -155,8 +155,10 @@ def revert_to_reversible(cobra_model, update_solution=True):
     """This function will convert an irreversible model made by
     convert_to_irreversible into a reversible model.
 
-    cobra_model: A cobra.Model which will be modified in place.
-
+    cobra_model : cobra.Model
+        A model which will be modified in place.
+    update_solution: bool
+        This option is ignored since `model.solution` was removed.
     """
     reverse_reactions = [x for x in cobra_model.reactions
                          if "reflection" in x.notes and
@@ -166,23 +168,12 @@ def revert_to_reversible(cobra_model, update_solution=True):
     if len(reverse_reactions) == 0:
         return
 
-    update_solution = update_solution and cobra_model.solution is not None \
-        and cobra_model.solution.status != "NA"
-
-    if update_solution:
-        x_dict = cobra_model.solution.x_dict
-
     for reverse in reverse_reactions:
         forward_id = reverse.notes.pop("reflection")
         forward = cobra_model.reactions.get_by_id(forward_id)
         forward.lower_bound = -reverse.upper_bound
         if forward.upper_bound == 0:
             forward.upper_bound = -reverse.lower_bound
-
-        # update the solution dict
-        if update_solution:
-            if reverse.id in x_dict:
-                x_dict[forward_id] -= x_dict.pop(reverse.id)
 
         if "reflection" in forward.notes:
             forward.notes.pop("reflection")
@@ -191,10 +182,6 @@ def revert_to_reversible(cobra_model, update_solution=True):
     # use we can do this faster removal step.  We can
     # probably speed things up here.
     cobra_model.remove_reactions(reverse_reactions)
-
-    # update the solution vector
-    if update_solution:
-        cobra_model.solution.x_dict = x_dict
 
 
 def canonical_form(model, objective_sense='maximize',

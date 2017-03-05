@@ -3,12 +3,13 @@
 from __future__ import absolute_import
 
 import pandas as pd
+from numpy import zeros
 from six import iteritems, print_
 from six.moves import zip_longest
 from tabulate import tabulate
 
 from cobra.flux_analysis.variability import flux_variability_analysis
-from cobra.util.solver import linear_reaction_coefficients
+from cobra.util.solver import linear_reaction_coefficients, choose_solver
 
 
 def format_long_string(string, max_length):
@@ -35,36 +36,30 @@ def metabolite_summary(met, threshold=0.01, fva=False, floatfmt='.3g',
         format method for floats, passed to tabulate. Default is '.3g'.
 
     """
+    rxn_id = list()
+    flux = list()
+    reaction = list()
+    for rxn in met.reactions:
+        rxn_id.append(format_long_string(rxn.id, 10))
+        flux.append(rxn.flux * rxn.metabolites[met])
+        reaction.append(format_long_string(rxn.reaction, 40 if fva else 50))
 
-    def rxn_summary(r):
-        out = {
-            'id': format_long_string(r.id, 10),
-            'flux': r.x * r.metabolites[met],
-            'reaction': format_long_string(r.reaction, 40 if fva else 50),
-        }
-
-        if rxn_summary.fva_results is not False:
-            fmax = rxn_summary.fva_results.loc[r.id, 'maximum']
-            fmin = rxn_summary.fva_results.loc[r.id, 'minimum']
-            imax = r.metabolites[met] * fmax
-            imin = r.metabolites[met] * fmin
-
-            # Correct 'max' and 'min' for negative values
-            out.update({
-                'fmin': imin if abs(imin) <= abs(imax) else imax,
-                'fmax': imax if abs(imin) <= abs(imax) else imin,
-            })
-
-        return out
+    flux_summary = pd.DataFrame(data={
+        "id": rxn_id, "flux": flux, "reaction": reaction})
 
     if fva:
-        rxn_summary.fva_results = flux_variability_analysis(
+        fva_results = flux_variability_analysis(
             met.model, met.reactions, fraction_of_optimum=fva,
             **solver_args)
-    else:
-        rxn_summary.fva_results = False
+        flux_summary.index = flux_summary["id"]
+        flux_summary["maximum"] = zeros(len(rxn_id))
+        flux_summary["minimum"] = zeros(len(rxn_id))
+        for rxn in met.reactions:
+            imax = rxn.metabolites[met] * fva_results.loc[rxn.id, "maximum"]
+            imin = rxn.metabolites[met] * fva_results.loc[rxn.id, "minimum"]
+            flux_summary["fmax"] = imax if abs(imin) <= abs(imax) else imin
+            flux_summary["fmin"] = imin if abs(imin) <= abs(imax) else imax
 
-    flux_summary = pd.DataFrame((rxn_summary(r) for r in met.reactions))
     assert flux_summary.flux.sum() < 1E-6, "Error in flux balance"
 
     flux_summary = _process_flux_dataframe(flux_summary, fva, threshold,
@@ -127,10 +122,14 @@ def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
         format method for floats, passed to tabulate. Default is '.3g'.
 
     """
+    legacy, _ = choose_solver(model, solver=solver_args.get("solver"))
+    if legacy:
+        raise NotImplementedError(
+            "Summary support for legacy solvers was removed.")
 
     # Create a dataframe of objective fluxes
     objective_reactions = linear_reaction_coefficients(model)
-    obj_fluxes = pd.DataFrame({key: key.x * value for key, value in
+    obj_fluxes = pd.DataFrame({key: key.flux * value for key, value in
                                iteritems(objective_reactions)},
                               index=['flux']).T
     obj_fluxes['id'] = obj_fluxes.apply(
@@ -139,12 +138,7 @@ def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
     # Build a dictionary of metabolite production from the boundary reactions
     boundary_reactions = model.reactions.query(lambda x: x, 'boundary')
 
-    # Calculate FVA results if requested
-    if fva:
-        fva_results = flux_variability_analysis(
-            model, reaction_list=boundary_reactions, fraction_of_optimum=fva,
-            **solver_args)
-
+    # collect rxn.x before fva which invalidates previous solver state
     metabolite_fluxes = {}
     for rxn in boundary_reactions:
         for met, stoich in iteritems(rxn.metabolites):
@@ -152,10 +146,16 @@ def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
                 'id': format_long_string(met.id, 15),
                 'flux': stoich * rxn.x}
 
-            if fva:
+    # Calculate FVA results if requested
+    if fva:
+        fva_results = flux_variability_analysis(
+            model, reaction_list=boundary_reactions, fraction_of_optimum=fva,
+            **solver_args)
+
+        for rxn in boundary_reactions:
+            for met, stoich in iteritems(rxn.metabolites):
                 imin = stoich * fva_results.loc[rxn.id]['minimum']
                 imax = stoich * fva_results.loc[rxn.id]['maximum']
-
                 # Correct 'max' and 'min' for negative values
                 metabolite_fluxes[met].update({
                     'fmin': imin if abs(imin) <= abs(imax) else imax,

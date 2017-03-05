@@ -6,9 +6,12 @@ import re
 from warnings import warn
 
 from six import iteritems
+from future.utils import raise_from, raise_with_traceback
 
+from cobra.exceptions import OptimizationError
 from cobra.core.formula import elements_and_molecular_weights
 from cobra.core.species import Species
+from cobra.util.solver import check_solver_status
 
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
@@ -132,41 +135,62 @@ class Metabolite(Species):
         the solution.
 
         """
-        warn("use metabolite.shadow_price instead", DeprecationWarning)
-        try:
-            return self._model.solution.y_dict[self.id]
-        except Exception as e:
-            if self._model is None:
-                raise Exception("not part of a model")
-            not_solved = (not hasattr(self._model, "solution") or
-                          self._model.solution is None or
-                          self._model.solution.status == "NA")
-            if not_solved:
-                raise Exception("model has not been solved")
-            if self._model.solution.status != "optimal":
-                raise Exception("model solution was not optimal")
-            raise e  # Not sure what the exact problem was
+        warn("Please use metabolite.shadow_price instead.", DeprecationWarning)
+        return self.shadow_price
 
+    @property
     def shadow_price(self):
-        """The shadow price for the metabolite in the most recent solution
+        """
+        The shadow price in the most recent solution.
 
-        Shadow prices are computed from the dual values of the bounds in
-        the solution.
+        Shadow price is the dual value of the corresponding constraint in the
+        model.
 
+        Warnings
+        --------
+        * Accessing shadow prices through a `Solution` object is the safer,
+          preferred, and only guaranteed to be correct way. You can see how to
+          do so easily in the examples.
+        * Shadow price is retrieved from the currently defined
+          `self._model.solver`. The solver status is checked but there are no
+          guarantees that the current solver state is the one you are looking
+          for.
+        * If you modify the underlying model after an optimization, you will
+          retrieve the old optimization values.
+
+        Raises
+        ------
+        RuntimeError
+            If the underlying model was never optimized beforehand or the
+            metabolite is not part of a model.
+        OptimizationError
+            If the solver status is anything other than 'optimal'.
+
+        Examples
+        --------
+        >>> import cobra
+        >>> import cobra.test
+        >>> model = cobra.test.create_test_model("textbook")
+        >>> solution = model.optimize()
+        >>> model.metabolites.glc__D_e.shadow_price
+        -0.09166474637510488
+        >>> solution.shadow_prices.glc__D_e
+        -0.091664746375104883
         """
         try:
-            return self._model.solution.shadow_prices[self.id]
-        except Exception as e:
-            if self._model is None:
-                raise Exception("not part of a model")
-            not_solved = (not hasattr(self._model, "solution") or
-                          self._model.solution is None or
-                          self._model.solution.status == "NA")
-            if not_solved:
-                raise Exception("model has not been solved")
-            if self._model.solution.status != "optimal":
-                raise Exception("model solution was not optimal")
-            raise e
+            check_solver_status(self._model.solver.status)
+            return self._model.solver.constraints[self.id].dual
+        except AttributeError:
+            raise RuntimeError(
+                "metabolite '{}' is not part of a model".format(self.id))
+        # Due to below all-catch, which sucks, need to reraise these.
+        except (RuntimeError, OptimizationError) as err:
+            raise_with_traceback(err)
+        # Would love to catch CplexSolverError and GurobiError here.
+        except Exception as err:
+            raise_from(OptimizationError(
+                "Likely no solution exists. Original solver message: {}."
+                "".format(str(err))), err)
 
     def remove_from_model(self, destructive=False):
         """Removes the association from self.model

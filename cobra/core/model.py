@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import
 
-import time
 import types
 from copy import copy, deepcopy
 from functools import partial
@@ -17,13 +16,12 @@ from sympy import S
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
 from cobra.core.reaction import separate_forward_and_reverse_bounds
-from cobra.core.solution import Solution
-from cobra.exceptions import SolveError
+from cobra.core.solution import get_solution
 from cobra.solvers import optimize
 from cobra.util.context import HistoryManager, resettable, get_context
 from cobra.util.solver import (
     SolverNotFound, get_solver_name, interface_to_str, set_objective, solvers,
-    add_to_solver, remove_from_solver)
+    add_to_solver, remove_from_solver, choose_solver, check_solver_status)
 from cobra.util.util import AutoVivification
 
 
@@ -84,7 +82,6 @@ class Model(Object):
             self.metabolites = DictList()  # A list of cobra.Metabolites
             # genes based on their ids {Gene.id: Gene}
             self.compartments = {}
-            # self.solution = Solution(None)
             self._contexts = []
 
             # from cameo ...
@@ -95,8 +92,6 @@ class Model(Object):
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(S.Zero)
             self._populate_solver(self.reactions, self.metabolites)
-        self._timestamp_last_optimization = None
-        self.solution = None
 
     @property
     def solver(self):
@@ -307,8 +302,6 @@ class Model(Object):
             new._solver = copy(self.solver)  # pragma: no cover
 
         # No use in copying it, also circular dependencies
-        new._timestamp_last_optimization = None
-        new.solution = Solution(self)
         return new
 
     def add_metabolites(self, metabolite_list):
@@ -622,73 +615,57 @@ class Model(Object):
         from .ArrayBasedModel import ArrayBasedModel
         return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
 
-    def optimize(self, objective_sense='maximize', solution_type=Solution,
-                 **kwargs):
-        """Optimize model using flux balance analysis
+    def optimize(self, objective_sense=None, **kwargs):
+        """
+        Optimize the model using flux balance analysis.
 
         Parameters
         ----------
-        objective_sense: 'maximize' or 'minimize'
+        objective_sense : {None, 'maximize' 'minimize'}, optional
+            Whether fluxes should be maximized or minimized. In case of None,
+            the previous direction is used.
+        solver : {None, 'glpk', 'cglpk', 'gurobi', 'cplex'}, optional
+            If unspecified will use the currently defined `self.solver`
+            otherwise it will use the given solver and update the attribute.
+        quadratic_component : {None, scipy.sparse.dok_matrix}, optional
+            The dimensions should be (n, n) where n is the number of
+            reactions. This sets the quadratic component (Q) of the
+            objective coefficient, adding :math:`\\frac{1}{2} v^T \cdot Q
+            \cdot v` to the objective. Ignored for optlang based solvers.
+        tolerance_feasibility : float
+            Solver tolerance for feasibility. Ignored for optlang based
+            solvers
+        tolerance_markowitz : float
+            Solver threshold during pivot. Ignored for optlang based solvers
+        time_limit : float
+            Maximum solver time (in seconds). Ignored for optlang based solvers
 
-        solution_type: Solution
-            The type of solution that should be returned. A Solution
-            only fetches attributes from the solver when requested in order
-            to reduce unnecessary communication.
-
-        solver : 'glpk', 'cglpk', 'gurobi', 'cplex' or None
-
-        quadratic_component : None or :class:`scipy.sparse.dok_matrix`
-            The dimensions should be (n, n) where n is the number of reactions.
-
-            This sets the quadratic component (Q) of the objective coefficient,
-            adding :math:`\\frac{1}{2} v^T \cdot Q \cdot v` to the objective.
-
-        tolerance_feasibility : Solver tolerance for feasibility.
-
-        tolerance_markowitz : Solver threshold during pivot
-
-        time_limit : Maximum solver time (in seconds)
-
-        .. NOTE :: Only the most commonly used parameters are presented here.
-                   Additional parameters for cobra.solvers may be available and
-                   specified with the appropriate keyword argument.
+        Notes
+        -----
+        Only the most commonly used parameters are presented here.  Additional
+        parameters for cobra.solvers may be available and specified with the
+        appropriate keyword argument.
 
         """
-        current = interface_to_str(self.solver.interface.__name__)
-        so = kwargs.get('solver', 'optlang-' + current)
-        # after deprecation this can be checked with:
-        # if so in solvers:
-        if so in ('optlang-' + k for k in solvers):
-            if interface_to_str(so) != current:
-                self.solver = interface_to_str(so)
-            self._timestamp_last_optimization = time.time()
-            original_direction = self.solver.objective.direction
-            if objective_sense is not None:
-                self.solver.objective.direction = \
-                    {'minimize': 'min', 'maximize': 'max'}[objective_sense]
-            # Please note that the solution must always be extracted right
-            # after solver.optimize() since some solvers such as cplex
-            # invalidate their solution if the model is changed afterwards
-            self.solver.optimize()
-            # Not nice, but necessary until next optlang release
-            solution = solution_type(self)
-            # solution = (solution_type(self) if
-            #             self.solver.status == 'optimal' else self.solution)
-            if objective_sense is not None:
-                self.solver.objective.direction = original_direction
-        else:
+        legacy, solver = choose_solver(self, solver=kwargs.get("solver"))
+        original_direction = self.solver.objective.direction
+
+        if legacy:
+            if objective_sense is None:
+                objective_sense = {
+                    "max": "maximize", "min": "minimize"}[original_direction]
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
-        self.solution = solution
+            check_solver_status(solution.status)
+            return solution
 
-        if solution.status is not 'optimal':
-            raise SolveError('no optimal solution')
-            # TODO: make failing optimization raise suitable exception
-            # raise exceptions._OPTLANG_TO_EXCEPTIONS_DICT.get(solution.status,
-            #                                                  SolveError)(
-            #     'Solving model %s did not return an optimal solution. The '
-            #     'returned solution status is "%s"' % (
-            #         self, solution.status))
+        self.solver = solver
+        self.solver.objective.direction = \
+            {"maximize": "max", "minimize": "min"}.get(
+                objective_sense, original_direction)
+        self.solver.optimize()
+        solution = get_solution(self)
+        self.solver.objective.direction = original_direction
         return solution
 
     def repair(self, rebuild_index=True, rebuild_relationships=True):
@@ -720,8 +697,6 @@ class Model(Object):
         for l in (self.reactions, self.genes, self.metabolites):
             for e in l:
                 e._model = self
-        if self.solution is None:
-            self.solution = Solution(None)
 
     @property
     def objective(self):

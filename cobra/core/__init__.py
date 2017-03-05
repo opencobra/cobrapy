@@ -8,5 +8,5 @@ from cobra.core.metabolite import Metabolite
 from cobra.core.model import Model
 from cobra.core.object import Object
 from cobra.core.reaction import Reaction
-from cobra.core.solution import Solution
+from cobra.core.solution import Solution, LegacySolution, get_solution
 from cobra.core.species import Species

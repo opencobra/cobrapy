@@ -10,7 +10,7 @@ from six import iteritems
 
 from glpk import LPX
 
-from ..core.solution import Solution
+from cobra.core.solution import LegacySolution
 
 try:
     # Import izip for python versions < 3.x
@@ -48,7 +48,7 @@ def get_objective_value(lp):
 def format_solution(lp, cobra_model, **kwargs):
     status = get_status(lp)
     if status == 'optimal':
-        sol = Solution(lp.obj.value, status=status)
+        sol = LegacySolution(lp.obj.value, status=status)
         sol.x = [float(c.primal) for c in lp.cols]
         sol.x_dict = {c.name: c.primal for c in lp.cols}
 
@@ -58,7 +58,7 @@ def format_solution(lp, cobra_model, **kwargs):
             sol.y_dict = {c.name: c.dual for c in lp.rows}
         return sol
 
-    return Solution(None, status=status)
+    return LegacySolution(None, status=status)
 
 def set_parameter(lp, parameter_name, parameter_value):
     """with pyglpk the parameters are set during the solve phase, with
@@ -233,7 +233,7 @@ def solve(cobra_model, **kwargs):
     """Smart interface to optimization solver functions that will convert
     the cobra_model to a solver object, set the parameters, and try multiple
     methods to get an optimal solution before returning the solver object and
-    a cobra.solution (which is attached to cobra_model.solution)
+    a cobra.LegacySolution
 
     cobra_model: a cobra.Model
 

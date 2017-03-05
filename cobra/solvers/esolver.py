@@ -10,7 +10,7 @@ from tempfile import NamedTemporaryFile
 
 from six.moves import zip
 
-from cobra.core.solution import Solution
+from cobra.core.solution import LegacySolution
 from cobra.solvers import cglpk
 from cobra.solvers.wrappers import *
 
@@ -126,7 +126,7 @@ class Esolver(cglpk.GLP):
 
     def format_solution(self, cobra_model):
         m = cobra_model
-        solution = Solution(None)
+        solution = LegacySolution(None)
         with open(self.solution_filepath) as infile:
             solution.status = infile.readline().split("=")[1].strip().lower()
             if solution.status != "optimal":

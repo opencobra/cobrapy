@@ -44,28 +44,28 @@ class TestManipulation:
     def test_modify_reversible(self, model):
         solver = 'cglpk'
         model1 = model.copy()
-        model1.optimize(solver=solver)
+        solution1 = model1.optimize(solver=solver)
         model2 = model.copy()
         convert_to_irreversible(model2)
-        model2.optimize(solver=solver)
-        assert abs(model1.solution.f - model2.solution.f) < 10 ** -3
+        solution2 = model2.optimize(solver=solver)
+        assert abs(solution1.f - solution2.f) < 10 ** -3
         revert_to_reversible(model2)
-        model2.optimize(solver=solver)
-        assert abs(model1.solution.f - model2.solution.f) < 10 ** -3
+        solution2_rev = model2.optimize(solver=solver)
+        assert abs(solution1.f - solution2_rev.f) < 10 ** -3
         # Ensure revert_to_reversible is robust to solutions generated both
         # before and after reversibility conversion, or not solved at all.
         model3 = model.copy()
-        model3.optimize(solver=solver)
+        solution3 = model3.optimize(solver=solver)
         convert_to_irreversible(model3)
         revert_to_reversible(model3)
-        assert abs(model1.solution.f - model3.solution.f) < 10 ** -3
+        assert abs(solution1.f - solution3.f) < 10 ** -3
         # test reaction where both bounds are negative
         model4 = model.copy()
         glc = model4.reactions.get_by_id("EX_glc__D_e")
         glc.upper_bound = -1
         convert_to_irreversible(model4)
-        model4.optimize(solver=solver)
-        assert abs(model1.solution.f - model4.solution.f) < 10 ** -3
+        solution4 = model4.optimize(solver=solver)
+        assert abs(solution1.f - solution4.f) < 10 ** -3
         glc_rev = model4.reactions.get_by_id(glc.notes["reflection"])
         assert glc_rev.lower_bound == 1
         assert glc.upper_bound == 0

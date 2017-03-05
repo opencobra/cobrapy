@@ -20,7 +20,7 @@ except:
         pass
     Number = Basic
 
-from cobra.core.solution import Solution
+from cobra.core.solution import LegacySolution
 
 __glpk_version__ = str(glp_version())
 _SUPPORTS_MILP = True
@@ -452,8 +452,8 @@ cdef class GLP:
         cdef glp_prob *glp = self.glp
         status = self.get_status()
         if status != "optimal":  # todo handle other possible
-            return Solution(None, status=status)
-        solution = Solution(self.get_objective_value(), status=status)
+            return LegacySolution(None, status=status)
+        solution = LegacySolution(self.get_objective_value(), status=status)
         m = glp_get_num_rows(glp)
         n = glp_get_num_cols(glp)
         x = [0] * n
