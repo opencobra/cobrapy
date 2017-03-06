@@ -292,15 +292,17 @@ def get_solution(model, reactions=None, metabolites=None):
     var_primals = model.solver.primal_values
     reduced = zeros(len(reactions))
     var_duals = model.solver.reduced_costs
+    # reduced costs are not always defined, e.g. for integer problems
+    if var_duals[0] is None:
+        reduced.fill(nan)
+        for (i, rxn) in enumerate(reactions):
+            fluxes[i] = var_primals[rxn.id] - var_primals[rxn.reverse_id]
+    else:
     for (i, rxn) in enumerate(reactions):
-        forward = rxn.forward_variable.name
-        reverse = rxn.reverse_variable.name
+        forward = rxn.id
+        reverse = rxn.reverse_id
         fluxes[i] = var_primals[forward] - var_primals[reverse]
-        try:
-            reduced[i] = var_duals[forward] - var_duals[reverse]
-        except TypeError:
-            # reduced costs are not always defined, e.g. for integer problems
-            reduced[i] = nan
+        reduced[i] = var_duals[forward] - var_duals[reverse]
     met_index = [met.id for met in metabolites]
     constr_duals = model.solver.shadow_prices
     shadow = asarray([constr_duals[met.id] for met in metabolites])
