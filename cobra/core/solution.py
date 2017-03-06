@@ -261,7 +261,7 @@ def get_solution(model, reactions=None, metabolites=None):
     """
     Generate a solution representation of the current solver state.
 
-    Paramters
+    Parameters
     ---------
     model : cobra.Model
         The model whose reactions to retrieve values for.
@@ -296,7 +296,11 @@ def get_solution(model, reactions=None, metabolites=None):
         forward = rxn.forward_variable.name
         reverse = rxn.reverse_variable.name
         fluxes[i] = var_primals[forward] - var_primals[reverse]
-        reduced[i] = var_duals[forward] - var_duals[reverse]
+        try:
+            reduced[i] = var_duals[forward] - var_duals[reverse]
+        except TypeError:
+            # reduced costs are not always defined, e.g. for integer problems
+            pass
     met_index = [met.id for met in metabolites]
     constr_duals = model.solver.shadow_prices
     shadow = asarray([constr_duals[met.id] for met in metabolites])
