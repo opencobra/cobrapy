@@ -14,14 +14,17 @@ from six import StringIO, iteritems
 import cobra.util.solver as sutil
 from cobra.core import Metabolite, Model, Reaction
 from cobra.flux_analysis import *
+from cobra.flux_analysis.parsimonious import add_pfba
 from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 from cobra.manipulation import convert_to_irreversible
 from cobra.solvers import SolverNotFound, get_solver_name, solver_dict
 
 try:
     import scipy
+    from cobra.flux_analysis.moma import add_moma
 except ImportError:
     scipy = None
+    add_moma = None
 try:
     import matplotlib
 except ImportError:
@@ -68,6 +71,11 @@ class TestCobraFluxAnalysis:
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_pfba(self, model, solver):
+        with model:
+            add_pfba(model)
+            with pytest.raises(ValueError):
+                add_pfba(model)
+
         if solver in optlang_solvers:
             model.solver = solver
         expression = model.objective.expression
@@ -152,6 +160,10 @@ class TestCobraFluxAnalysis:
         assert numpy.all([df.status == 'optimal'])
         assert all(abs(df.flux[gene] - expected) < 0.01
                    for gene, expected in iteritems(growth_dict))
+        with model:
+            add_moma(model)
+            with pytest.raises(ValueError):
+                add_moma(model)
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_single_gene_deletion_benchmark(self, model, benchmark,

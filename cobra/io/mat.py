@@ -183,15 +183,15 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
         c_vec = None
         warn("objective vector 'c' not found")
     model = Model()
-    if "description" in m.dtype.names:
+    if model_id is not None:
+        model.id = model_id
+    elif "description" in m.dtype.names:
         description = m["description"][0, 0][0]
         if len(description) > 1:
             model.id = description[0]
             warn("Several IDs detected, only using the first.")
         else:
             model.id = description
-    elif model_id is not None:
-        model.id = model_id
     else:
         model.id = "imported_model"
     for i, name in enumerate(m["mets"][0, 0]):

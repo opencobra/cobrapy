@@ -14,7 +14,7 @@ def prune_unused_metabolites(cobra_model):
 
     Parameters
     ----------
-    cobra_model: cobra.core.Model
+    cobra_model: cobra.Model
         the model to remove unused metabolites from
 
     Returns
@@ -38,7 +38,7 @@ def prune_unused_reactions(cobra_model):
 
     Parameters
     ----------
-    cobra_model: cobra.core.Model
+    cobra_model: cobra.Model
         the model to remove unused reactions from
 
     Returns

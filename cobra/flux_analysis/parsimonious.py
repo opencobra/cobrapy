@@ -22,8 +22,8 @@ def optimize_minimal_flux(model, already_irreversible=False,
                           fraction_of_optimum=1.0, solver=None,
                           desired_objective_value=None, objective=None,
                           reactions=None, **optimize_kwargs):
-    """Perform basic pFBA (parsimonious Enzyme Usage Flux Balance Analysi)
-    and minimize total flux.
+    """Perform basic pFBA (parsimonious Enzyme Usage Flux Balance Analysis)
+    to minimize total flux.
 
     pFBA [1] adds the minimization of all fluxes the the objective of the
     model. This approach is motivated by the idea that high fluxes have a
@@ -67,9 +67,8 @@ def optimize_minimal_flux(model, already_irreversible=False,
 
     Returns
     -------
-    pandas.DataFrame
-        A data frame with reaction identifiers as index and fluxes and the
-        objective value as columns.
+    cobra.Solution
+        The solution object to the optimized model with pFBA constraints added.
 
     References
     ----------
@@ -117,13 +116,16 @@ def add_pfba(model, objective=None, fraction_of_optimum=1.0):
     """
     if objective is not None:
         model.objective = objective
+    if model.solver.objective.name == '_pfba_objective':
+        raise ValueError('model already has pfba objective')
     sutil.fix_objective_as_constraint(model, fraction=fraction_of_optimum)
     reaction_variables = ((rxn.forward_variable, rxn.reverse_variable)
                           for rxn in model.reactions)
     variables = chain(*reaction_variables)
     pfba_objective = model.problem.Objective(add(
         [mul((sympy.singleton.S.One, variable))
-         for variable in variables]), direction='min', sloppy=True)
+         for variable in variables]), direction='min', sloppy=True,
+        name="_pfba_objective")
     set_objective(model, pfba_objective)
 
 
@@ -151,7 +153,6 @@ def _optimize_minimal_flux_optlang(model, objective=None, reactions=None,
     """
     reactions = model.reactions if reactions is None \
         else model.reactions.get_by_any(reactions)
-    # TODO: review/adjust when Solution class is fixed
     with model as m:
         add_pfba(m, objective=objective,
                  fraction_of_optimum=fraction_of_optimum)
@@ -231,11 +232,11 @@ def _optimize_minimal_flux_legacy(model, solver, already_irreversible=False,
     solution = solver.format_solution(lp, model)
 
     # Return the model to its original state
-#    model.solution = solution
+    #    model.solution = solution
     revert_to_reversible(model)
 
-#    if solution.status == "optimal":
-#        model.solution.f = sum([coeff * reaction.x for reaction, coeff in
-#                                iteritems(objective_reactions)])
+    #    if solution.status == "optimal":
+    #        model.solution.f = sum([coeff * reaction.x for reaction, coeff in
+    #                                iteritems(objective_reactions)])
 
     return solution
