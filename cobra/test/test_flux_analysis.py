@@ -351,17 +351,17 @@ class TestCobraFluxAnalysis:
 
     def test_loopless_solution(self):
         test_model = self.construct_ll_test_model()
-        fluxes_feasible = loopless_solution(test_model)
+        solution_feasible = loopless_solution(test_model)
         test_model.reactions.v3.lower_bound = 1
         test_model.optimize()
-        fluxes_infeasible = loopless_solution(test_model)
-        assert fluxes_feasible["v3"] == 0.0
-        assert fluxes_infeasible["v3"] == 1.0
+        solution_infeasible = loopless_solution(test_model)
+        assert solution_feasible.fluxes["v3"] == 0.0
+        assert solution_infeasible.fluxes["v3"] == 1.0
 
     def test_loopless_solution_fluxes(self, model):
         fluxes = model.optimize().fluxes
-        ll_fluxes = loopless_solution(model, fluxes=fluxes)
-        assert len(ll_fluxes) == len(model.reactions)
+        ll_solution = loopless_solution(model, fluxes=fluxes)
+        assert len(ll_solution.fluxes) == len(model.reactions)
         fluxes["Biomass_Ecoli_core"] = 1
         with warnings.catch_warnings():
             warnings.simplefilter("error", UserWarning)
