@@ -105,8 +105,8 @@ def loopless_solution(model, fluxes=None):
 
     Returns
     -------
-    dict
-        A dictionary {rid: flux} containing the fluxes with the least amount of
+    cobra.Solution
+        A solution object containing the fluxes with the least amount of
         loops possible or None if the optimization failed (usually happening
         if the flux distribution in `fluxes` is infeasible).
 
@@ -166,9 +166,8 @@ def loopless_solution(model, fluxes=None):
         model.solver.objective.direction = "min"
 
         solution = model.optimize(objective_sense=None)
-        fluxes = solution.fluxes
 
-    return fluxes
+    return solution
 
 
 def loopless_fva_iter(model, reaction, all_fluxes=False, zero_cutoff=1e-9):
