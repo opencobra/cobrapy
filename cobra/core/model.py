@@ -49,8 +49,6 @@ class Model(Object):
     genes : DictList
         A DictList where the key is the gene identifier and the value a
         Gene
-    compartments : dict
-        A dictionary with abbreviations for compartments and their full names.
     solution : Solution
         The last obtained solution from optimizing the model.
     """
@@ -82,7 +80,7 @@ class Model(Object):
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
             # genes based on their ids {Gene.id: Gene}
-            self.compartments = {}
+            self.compartments = dict()
             self._contexts = []
 
             # from cameo ...
@@ -150,6 +148,11 @@ class Model(Object):
     def description(self, value):
         self.name = value
         warn("description deprecated", DeprecationWarning)
+
+    def get_metabolite_compartments(self):
+        """Return all metabolites' compartments."""
+        return {met.compartment for met in self.metabolites
+                if met.compartment is not None}
 
     @property
     def medium(self):

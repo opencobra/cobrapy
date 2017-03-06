@@ -39,7 +39,7 @@ _OPTIONAL_GENE_ATTRIBUTES = {
 _OPTIONAL_MODEL_ATTRIBUTES = {
     "name": None,
     #  "description": None, should not actually be included
-    "compartments": {},
+    "compartments": [],
     "notes": {},
     "annotation": {},
 }
@@ -54,6 +54,8 @@ def _fix_type(value):
         return float(value)
     if isinstance(value, bool_):
         return bool(value)
+    if isinstance(value, set):
+        return list(value)
     # handle legacy Formula type
     if value.__class__.__name__ == "Formula":
         return str(value)
