@@ -391,7 +391,7 @@ def check_solver_status(status):
     """Perform standard checks on a solver's status."""
     if status == "optimal":
         return
-    elif status in ("non-optimal", "infeasible"):
+    elif status == "infeasible":
         warn("solver status is '{}'".format(status), UserWarning)
     elif status is None:
         raise RuntimeError(

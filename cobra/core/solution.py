@@ -8,7 +8,7 @@ import logging
 from builtins import object, super
 from warnings import warn
 
-from numpy import zeros, asarray
+from numpy import zeros, asarray, nan
 from pandas import Series
 
 from cobra.util.solver import check_solver_status
@@ -300,7 +300,7 @@ def get_solution(model, reactions=None, metabolites=None):
             reduced[i] = var_duals[forward] - var_duals[reverse]
         except TypeError:
             # reduced costs are not always defined, e.g. for integer problems
-            pass
+            reduced[i] = nan
     met_index = [met.id for met in metabolites]
     constr_duals = model.solver.shadow_prices
     shadow = asarray([constr_duals[met.id] for met in metabolites])
