@@ -298,11 +298,11 @@ def get_solution(model, reactions=None, metabolites=None):
         for (i, rxn) in enumerate(reactions):
             fluxes[i] = var_primals[rxn.id] - var_primals[rxn.reverse_id]
     else:
-    for (i, rxn) in enumerate(reactions):
-        forward = rxn.id
-        reverse = rxn.reverse_id
-        fluxes[i] = var_primals[forward] - var_primals[reverse]
-        reduced[i] = var_duals[forward] - var_duals[reverse]
+        for (i, rxn) in enumerate(reactions):
+            forward = rxn.id
+            reverse = rxn.reverse_id
+            fluxes[i] = var_primals[forward] - var_primals[reverse]
+            reduced[i] = var_duals[forward] - var_duals[reverse]
     met_index = [met.id for met in metabolites]
     constr_duals = model.solver.shadow_prices
     shadow = asarray([constr_duals[met.id] for met in metabolites])
