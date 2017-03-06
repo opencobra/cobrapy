@@ -293,7 +293,7 @@ def get_solution(model, reactions=None, metabolites=None):
     reduced = zeros(len(reactions))
     var_duals = model.solver.reduced_costs
     # reduced costs are not always defined, e.g. for integer problems
-    if var_duals[0] is None:
+    if var_duals[rxn_index[0]] is None:
         reduced.fill(nan)
         for (i, rxn) in enumerate(reactions):
             fluxes[i] = var_primals[rxn.id] - var_primals[rxn.reverse_id]
