@@ -169,10 +169,8 @@ class Model(Object):
             elif reaction.products:
                 return reaction.upper_bound
 
-        active_reactions = (self.reactions.query(lambda x: x.boundary)
-                            .query(is_active))
-
-        return {rxn.id: get_active_bound(rxn) for rxn in active_reactions}
+        return {rxn.id: get_active_bound(rxn) for rxn in self.exchanges
+                if is_active(rxn)}
 
     @medium.setter
     def medium(self, medium):
@@ -198,16 +196,18 @@ class Model(Object):
                 reaction.upper_bound = bound
 
         # Set the given media bounds
+        media_rxns = list()
         for rxn_id, bound in iteritems(medium):
-            set_active_bound(self.reactions.get_by_id(rxn_id), bound)
+            rxn = self.reactions.get_by_id(rxn_id)
+            media_rxns.append(rxn)
+            set_active_bound(rxn, bound)
 
-        boundary_rxns = set((
-            r.id for r in self.reactions.query(lambda x: x.boundary)))
-        media_rxns = set(medium.keys())
+        boundary_rxns = set(self.exchanges)
+        media_rxns = set(media_rxns)
 
         # Turn off reactions not present in media
-        for rxn_id in (boundary_rxns - media_rxns):
-            set_active_bound(self.reactions.get_by_id(rxn_id), 0)
+        for rxn in (boundary_rxns - media_rxns):
+            set_active_bound(rxn, 0)
 
     def __add__(self, other_model):
         """Adds two models. +

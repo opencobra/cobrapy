@@ -136,9 +136,8 @@ def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
         lambda x: format_long_string(x.name.id, 15), 1)
 
     # Build a dictionary of metabolite production from the boundary reactions
-    boundary_reactions = model.reactions.query(lambda x: x, 'boundary')
-
     # collect rxn.x before fva which invalidates previous solver state
+    boundary_reactions = model.exchanges
     metabolite_fluxes = {}
     for rxn in boundary_reactions:
         for met, stoich in iteritems(rxn.metabolites):
