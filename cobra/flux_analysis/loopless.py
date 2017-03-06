@@ -307,4 +307,3 @@ def construct_loopless_model(cobra_model):
             {model.metabolites.get_by_id(k): v
              for k, v in iteritems(thermo_stoic[metabolite_var.id])})
     return model
-
