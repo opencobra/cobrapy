@@ -12,7 +12,6 @@ import cobra.util.solver as su
 from cobra.core import Metabolite, Model, Reaction
 from cobra.solvers import solver_dict
 from cobra.util import create_stoichiometric_array
-from cobra.test.conftest import model
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
@@ -341,6 +340,9 @@ class TestCobraModel:
         assert test_metabolite.id in model.solver.constraints
         for reaction in test_reactions:
             assert reaction in model.reactions
+
+    def test_compartments(self, model):
+        assert set(model.compartments) == set(["c", "e"])
 
     def test_add_reaction(self, model):
         old_reaction_count = len(model.reactions)
