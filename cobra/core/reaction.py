@@ -67,6 +67,9 @@ class Reaction(Object):
         # this reaction.
         self._metabolites = {}
 
+        # The set of compartments that partaking metabolites are in.
+        self._compartments = None
+
         # self.model is None or refers to the cobra.Model that
         # contains self
         self._model = None
@@ -486,8 +489,8 @@ class Reaction(Object):
 
         Returns `True` if the reaction has either no products or reactants.
         """
-
-        return (not self.reactants) or (not self.products)
+        return len(self.metabolites) == 1 and\
+            not (self.reactants and self.products)
 
     @property
     def model(self):
@@ -858,9 +861,17 @@ class Reaction(Object):
         # filter out 0 values
         return {k: v for k, v in iteritems(reaction_element_dict) if v != 0}
 
+    @property
+    def compartments(self):
+        """lists compartments the metabolites are in"""
+        if self._compartments is None:
+            self._compartments = {met.compartment for met in self._metabolites
+                                  if met.compartment is not None}
+        return self._compartments
+
     def get_compartments(self):
         """lists compartments the metabolites are in"""
-        return list({x.compartment for x in self._metabolites})
+        return list(self.compartments)
 
     def _associate_gene(self, cobra_gene):
         """Associates a cobra.Gene object with a cobra.Reaction.

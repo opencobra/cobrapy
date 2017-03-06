@@ -255,7 +255,7 @@ class TestCobraFluxAnalysis:
             model, solver=solver, reaction_list=model.reactions)
         for name, result in iteritems(fva_out.T):
             for k, v in iteritems(result):
-                assert abs(fva_results[name][k] - v) < 0.00001
+                assert abs(fva_results[k][name] - v) < 0.00001
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_flux_variability_loopless(self, model, fva_results, solver):
@@ -266,7 +266,7 @@ class TestCobraFluxAnalysis:
         # optimal solution
         for name, result in iteritems(fva_out.T):
             for k, v in iteritems(result):
-                assert abs(fva_results[name][k] - v) < 0.00001
+                assert abs(fva_results[k][name] - v) < 0.00001
 
     def test_fva_data_frame(self, model):
         df = flux_variability_analysis(model, return_frame=True)

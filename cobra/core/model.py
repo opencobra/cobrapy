@@ -49,8 +49,6 @@ class Model(Object):
     genes : DictList
         A DictList where the key is the gene identifier and the value a
         Gene
-    compartments : dict
-        A dictionary with abbreviations for compartments and their full names.
     solution : Solution
         The last obtained solution from optimizing the model.
     """
@@ -82,7 +80,7 @@ class Model(Object):
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
             # genes based on their ids {Gene.id: Gene}
-            self.compartments = {}
+            self.compartments = dict()
             self._contexts = []
 
             # from cameo ...
@@ -151,6 +149,11 @@ class Model(Object):
         self.name = value
         warn("description deprecated", DeprecationWarning)
 
+    def get_metabolite_compartments(self):
+        """Return all metabolites' compartments."""
+        return {met.compartment for met in self.metabolites
+                if met.compartment is not None}
+
     @property
     def medium(self):
 
@@ -169,10 +172,8 @@ class Model(Object):
             elif reaction.products:
                 return reaction.upper_bound
 
-        active_reactions = (self.reactions.query(lambda x: x.boundary)
-                            .query(is_active))
-
-        return {rxn.id: get_active_bound(rxn) for rxn in active_reactions}
+        return {rxn.id: get_active_bound(rxn) for rxn in self.exchanges
+                if is_active(rxn)}
 
     @medium.setter
     def medium(self, medium):
@@ -198,16 +199,18 @@ class Model(Object):
                 reaction.upper_bound = bound
 
         # Set the given media bounds
+        media_rxns = list()
         for rxn_id, bound in iteritems(medium):
-            set_active_bound(self.reactions.get_by_id(rxn_id), bound)
+            rxn = self.reactions.get_by_id(rxn_id)
+            media_rxns.append(rxn)
+            set_active_bound(rxn, bound)
 
-        boundary_rxns = set((
-            r.id for r in self.reactions.query(lambda x: x.boundary)))
-        media_rxns = set(medium.keys())
+        boundary_rxns = set(self.exchanges)
+        media_rxns = set(media_rxns)
 
         # Turn off reactions not present in media
-        for rxn_id in (boundary_rxns - media_rxns):
-            set_active_bound(self.reactions.get_by_id(rxn_id), 0)
+        for rxn in (boundary_rxns - media_rxns):
+            set_active_bound(rxn, 0)
 
     def __add__(self, other_model):
         """Adds two models. +
@@ -628,6 +631,14 @@ class Model(Object):
             A container with all associated constraints.
         """
         return self.solver.constraints
+
+    @property
+    def exchanges(self):
+        """Exchange reactions in model.
+
+        Reactions that either don't have products or substrates.
+        """
+        return [rxn for rxn in self.reactions if rxn.boundary]
 
     def _populate_solver(self, reaction_list, metabolite_list=None):
         """Populate attached solver with constraints and variables that

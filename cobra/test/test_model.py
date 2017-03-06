@@ -12,7 +12,6 @@ import cobra.util.solver as su
 from cobra.core import Metabolite, Model, Reaction
 from cobra.solvers import solver_dict
 from cobra.util import create_stoichiometric_array
-from cobra.test.conftest import model
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
@@ -342,6 +341,9 @@ class TestCobraModel:
         for reaction in test_reactions:
             assert reaction in model.reactions
 
+    def test_compartments(self, model):
+        assert set(model.compartments) == set(["c", "e"])
+
     def test_add_reaction(self, model):
         old_reaction_count = len(model.reactions)
         old_metabolite_count = len(model.metabolites)
@@ -531,6 +533,10 @@ class TestCobraModel:
         # ensure the old reactions no longer have a record of the gene
         for reaction in gene_reactions:
             assert target_gene not in reaction.genes
+
+    def test_exchange_reactions(self, model):
+        assert set(model.exchanges) == set([rxn for rxn in model.reactions
+                                            if rxn.id.startswith("EX")])
 
     @pytest.mark.parametrize("solver", list(solver_dict))
     def test_copy_benchmark(self, model, solver, benchmark):
