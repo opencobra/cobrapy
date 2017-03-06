@@ -85,7 +85,8 @@ class TestReactions:
                 solver_dict[solver].create_problem(model)
             for m, c in many_metabolites.items():
                 try:
-                    reaction.pop(m.id)
+                    reaction.subtract_metabolites(
+                        {m: reaction.get_coefficient(m)})
                 except KeyError:
                     pass
 
@@ -722,6 +723,76 @@ class TestCobraModel:
 class TestStoichiometricMatrix:
     """Test the simple replacement for ArrayBasedModel"""
 
+    @pytest.mark.skipif(not scipy, reason='Sparse array methods require scipy')
+    def test_array_model(self, model):
+        """ legacy test """
+        for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
+            array_model = model.to_array_based_model(matrix_type=matrix_type)
+            assert array_model.S[7, 0] == -1
+            assert array_model.S[43, 0] == 0
+            array_model.S[43, 0] = 1
+            assert array_model.S[43, 0] == 1
+            assert array_model.reactions[0]._metabolites[
+                       array_model.metabolites[43]] == 1
+            array_model.S[43, 0] = 0
+            assert array_model.lower_bounds[0] == array_model.reactions[
+                0].lower_bound
+            assert array_model.lower_bounds[5] == array_model.reactions[
+                5].lower_bound
+            assert array_model.upper_bounds[0] == array_model.reactions[
+                0].upper_bound
+            assert array_model.upper_bounds[5] == array_model.reactions[
+                5].upper_bound
+            array_model.lower_bounds[6] = 2
+            assert array_model.lower_bounds[6] == 2
+            assert array_model.reactions[6].lower_bound == 2
+            # this should fail because it is the wrong size
+            with pytest.raises(Exception):
+                array_model.upper_bounds = [0, 1]
+            array_model.upper_bounds = [0] * len(array_model.reactions)
+            assert max(array_model.upper_bounds) == 0
+            # test something for all the attributes
+            array_model.lower_bounds[2] = -1
+            assert array_model.reactions[2].lower_bound == -1
+            assert array_model.lower_bounds[2] == -1
+            array_model.objective_coefficients[2] = 1
+            assert array_model.reactions[2].objective_coefficient == 1
+            assert array_model.objective_coefficients[2] == 1
+            array_model.b[2] = 1
+            assert array_model.metabolites[2]._bound == 1
+            assert array_model.b[2] == 1
+            array_model.constraint_sense[2] = "L"
+            assert array_model.metabolites[2]._constraint_sense == "L"
+            assert array_model.constraint_sense[2] == "L"
+            # test resize matrix on reaction removal
+            m, n = array_model.S.shape
+            array_model.remove_reactions([array_model.reactions[2]],
+                                         remove_orphans=False)
+            assert len(array_model.metabolites) == array_model.S.shape[0]
+            assert len(array_model.reactions) == array_model.S.shape[1]
+            assert array_model.S.shape == (m, n - 1)
+
+    @pytest.mark.skipif(not scipy, reason='Sparse array methods require scipy')
+    def test_array_based_model_add(self, model):
+        """ legacy test """
+        array_model = model.to_array_based_model()
+        m = len(array_model.metabolites)
+        n = len(array_model.reactions)
+        for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
+            test_model = model.copy().to_array_based_model(
+                matrix_type=matrix_type)
+            test_reaction = Reaction("test")
+            test_reaction.add_metabolites({test_model.metabolites[0]: 4})
+            test_reaction.lower_bound = -3.14
+            test_model.add_reaction(test_reaction)
+            assert len(test_model.reactions) == n + 1
+            assert test_model.S.shape == (m, n + 1)
+            assert len(test_model.lower_bounds) == n + 1
+            assert len(test_model.upper_bounds) == n + 1
+            assert test_model.S[0, n] == 4
+            assert test_model.S[7, 0] == -1
+            assert test_model.lower_bounds[n] == -3.14
+
     def test_dense_matrix(self, model):
         S = create_stoichiometric_array(model, array_type='dense', dtype=int)
         assert S.dtype == int
@@ -736,9 +807,6 @@ class TestStoichiometricMatrix:
         solution = model.optimize()
         mass_balance = S.dot(solution.fluxes)
         assert numpy.allclose(mass_balance, 0)
-
-        # Test model property
-        assert numpy.allclose(model.S, S)
 
     @pytest.mark.skipif(not scipy, reason='Sparse array methods require scipy')
     def test_sparse_matrix(self, model):

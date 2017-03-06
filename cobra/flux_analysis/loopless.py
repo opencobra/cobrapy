@@ -9,7 +9,8 @@ from six import iteritems
 from sympy.core.singleton import S
 
 from cobra.core import Metabolite, Reaction, get_solution
-from cobra.util import linear_reaction_coefficients
+from cobra.util import (linear_reaction_coefficients,
+                        create_stoichiometric_array)
 from cobra.manipulation.modify import convert_to_irreversible
 from cobra.util import nullspace
 
@@ -45,7 +46,7 @@ def add_loopless(model, zero_cutoff=1e-12):
        in: Biophys J. 2011 Mar 2;100(5):1381.
     """
     internal = [i for i, r in enumerate(model.reactions) if not r.boundary]
-    s_int = model.S[:, numpy.array(internal)]
+    s_int = create_stoichiometric_array(model)[:, numpy.array(internal)]
     n_int = nullspace(s_int).T
     max_bound = max(max(abs(b) for b in r.bounds) for r in model.reactions)
     prob = model.problem
