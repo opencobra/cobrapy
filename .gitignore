@@ -93,4 +93,4 @@ manylinux_builder/wheelhouse
 *~
 venv/
 .benchmarks/
-/glpk-4.*
+glpk-4.*

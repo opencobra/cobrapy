@@ -32,6 +32,8 @@ def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
     reaction_list : iterable
         List of reaction IDs or cobra.Reaction. If None (default) will use all
         reactions in the model.
+    method : str, optional
+        The method used to obtain fluxes. Must be one of "fba" or "moma".
     solver : str, optional
         Name of the solver to be used.
     method : str, optional

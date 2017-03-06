@@ -2,12 +2,20 @@
 
 from __future__ import absolute_import
 
+from warnings import warn
+from collections import defaultdict
+from itertools import product
 from multiprocessing import Pool
+import pandas as pd
 
 from numpy import (
-    abs, arange, dtype, empty, int32, linspace, meshgrid, unravel_index, zeros)
+    nan, abs, arange, dtype, empty, int32, linspace, meshgrid, unravel_index,
+    zeros, array)
 
 from cobra.solvers import get_solver_name, solver_dict
+import cobra.util.solver as sutil
+from cobra.exceptions import SolveError
+from cobra.flux_analysis import flux_variability_analysis as fva
 
 # attempt to import plotting libraries
 try:
@@ -243,6 +251,8 @@ def calculate_phenotype_phase_plane(
     >>> ppp = calculate_phenotype_phase_plane(model, "EX_glc__D_e", "EX_o2_e")
     >>> ppp.plot()
     """
+    warn('calculate_phenotype_phase_plane is deprecated, consider using '
+         'production_envelope instead', DeprecationWarning)
     if solver is None:
         solver = get_solver_name()
     data = phenotypePhasePlaneData(
@@ -292,3 +302,196 @@ def calculate_phenotype_phase_plane(
             data.shadow_prices2[i, j] = result[4]
     data.segment()
     return data
+
+
+def production_envelope(model, reactions, objective=None, c_source=None,
+                        points=20, solver=None):
+    """Calculate the objective value conditioned on all combinations of
+    fluxes for a set of chosen reactions
+
+    The production envelope can be used to analyze a models ability to
+    produce a given compound conditional on the fluxes for another set of
+    reaction, such as the uptake rates. The model is alternately optimize
+    with respect to minimizing and maximizing the objective and record the
+    obtained fluxes. Ranges to compute production is set to the effective
+    bounds, i.e. the minimum / maximum fluxes that can be obtained given
+    current reaction bounds.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to compute the production envelope for.
+    reactions : list or string
+        A list of reactions, reaction identifiers or single reaction
+    objective : string, dict, model.solver.interface.Objective
+        The objective (reaction) to use for the production envelope. Use the
+        model's current objective is left missing.
+    c_source : cobra.Reaction or string
+       A reaction or reaction identifier that is the source of carbon for
+       computing carbon (mol carbon in output over mol carbon in input) and
+       mass yield (gram product over gram output). Only objectives with a
+       carbon containing input and output metabolite is supported.
+    points : int
+       The number of points to calculate production for.
+    solver : string
+       The solver to use - only here for consistency with older
+       implementations (this argument will be removed in the future). The
+       solver should be set using `model.solver` directly. Only optlang
+       based solvers are supported.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with one row per evaluated point and
+
+        - reaction id : one column per input reaction indicating the flux at
+          each given point,
+        - flux: the objective flux
+
+        - carbon_yield: if carbon source is defined and the product is a
+          single metabolite (mol carbon product per mol carbon feeding source)
+
+        - _mass_yield: if carbon source is defined and the product is a
+          single metabolite (gram product per 1 g of feeding source)
+
+        - direction: the direction of the optimization.
+
+        Only points that give a valid solution are returned.
+
+    Examples
+    --------
+    >>> import cobra.test
+    >>> from cobra.flux_analysis import production_envelope
+    >>> model = cobra.test.create_test_model("textbook")
+    >>> production_envelope(model, ["EX_glc__D_e", "EX_o2_e"])
+    """
+    legacy, solver = sutil.choose_solver(model, solver)
+    if legacy:
+        raise ValueError('production_envelope is only implemented for optlang '
+                         'based solver interfaces.')
+    reactions = model.reactions.get_by_any(reactions)
+    objective = model.solver.objective if objective is None else objective
+    with model:
+        model.objective = objective
+        carbon_io = _c_input_output(model, c_source)
+        min_max = fva(model, reactions, fraction_of_optimum=0)
+        grid = [linspace(min_max.minimum[rxn.id], min_max.maximum[rxn.id],
+                         points, endpoint=True) for rxn in reactions]
+        grid_list = list(product(*grid))
+        result = _envelope_for_points(model, reactions, grid_list, carbon_io)
+
+    return pd.DataFrame(result)
+
+
+def _c_input_output(model, c_source=None):
+    if c_source is None:
+        return None, None
+    c_input = _carbon_reaction(model.reactions.get_by_any(c_source))
+    objective_coefficients = sutil.linear_reaction_coefficients(model)
+    c_output = _carbon_reaction(list(objective_coefficients))
+    return c_input, c_output
+
+
+def _carbon_reaction(reactions):
+    exchanges = [rxn for rxn in reactions if len(rxn.reactants) == 1 and
+                 rxn.reactants[0].elements.get('C', 0) > 1]
+    if len(exchanges) != 1:
+        raise ValueError('cannot calculate yields for %s' % reactions)
+    return exchanges[0]
+
+
+def _envelope_for_points(model, reactions, grid, carbon_io):
+    results = defaultdict(list)
+    for direction in ('minimum', 'maximum'):
+        sense = "min" if direction == "minimum" else "max"
+        for point in grid:
+            with model:
+                model.solver.objective.direction = sense
+                for reaction, coordinate in zip(reactions, point):
+                    reaction.bounds = (coordinate, coordinate)
+                model.solver.optimize()
+                if model.solver.status == 'optimal':
+                    for reaction, coordinate in zip(reactions, point):
+                        results[reaction.id].append(coordinate)
+                    results['direction'].append(direction)
+                    results['flux'].append(model.solver.objective.value)
+                    if carbon_io[0] is not None:
+                        results['carbon_yield'].append(
+                            _carbon_yield(carbon_io))
+                        results['mass_yield'].append(_mass_yield(carbon_io))
+    for key, value in results.items():
+        results[key] = array(value)
+    if carbon_io[0] is not None:
+        results['carbon_source'] = carbon_io[0].id
+    return results
+
+
+def _carbon_flux(reaction):
+    """Carbon flux for a reaction
+
+    Parameters
+    ----------
+    reaction : cobra.Reaction
+        the reaction to carbon return flux for
+
+    Returns
+    -------
+    float
+        reaction flux multiplied by number of carbon in reactants"""
+    carbon = sum(metabolite.elements.get('C', 0) for
+                 metabolite in reaction.reactants)
+
+    try:
+        return reaction.flux * carbon
+    except AssertionError:
+        return nan
+
+
+def _carbon_yield(c_input_output):
+    """Mol product per mol carbon input
+
+    Parameters
+    ----------
+    c_input_output : tuple
+        Two reactions, the one that feeds carbon to the system and the one
+        that produces carbon containing compound.
+
+    Returns
+    -------
+    float
+        the mol carbon atoms in the product (as defined by the model
+        objective) divided by the mol carbon in the input reactions (as
+        defined by the model medium) or zero in case of division by zero
+        arises
+    """
+    c_input, c_output = c_input_output
+    carbon_input_flux = _carbon_flux(c_input)
+    carbon_output_flux = _carbon_flux(c_output)
+    try:
+        return carbon_output_flux / (carbon_input_flux * -1)
+    except ZeroDivisionError:
+        return nan
+
+
+def _mass_yield(c_input_output):
+    """Gram product divided by gram of carbon input source
+
+    Parameters
+    ----------
+    c_input_output : tuple
+        Two reactions, the one that feeds carbon to the system and the one
+        that produces carbon containing compound.
+
+    Returns
+    -------
+    float
+        gram product per 1 g of feeding source
+    """
+    c_input, c_output = c_input_output
+    source_mass = sum(met.formula_weight for met in c_input.reactants)
+    product_mass = sum(met.formula_weight for met in c_output.reactants)
+    try:
+        mol_prod_mol_src = c_output.flux / (c_input.flux * -1)
+    except AssertionError:
+        return nan
+    return (mol_prod_mol_src * product_mass) / source_mass

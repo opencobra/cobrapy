@@ -16,5 +16,5 @@ from cobra.flux_analysis.variability import (
 from cobra.flux_analysis.double_deletion import (
     double_reaction_deletion, double_gene_deletion)
 from cobra.flux_analysis.phenotype_phase_plane import (
-    calculate_phenotype_phase_plane)
+    calculate_phenotype_phase_plane, production_envelope)
 from cobra.flux_analysis.sampling import sample
