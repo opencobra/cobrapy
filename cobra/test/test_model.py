@@ -534,6 +534,10 @@ class TestCobraModel:
         for reaction in gene_reactions:
             assert target_gene not in reaction.genes
 
+    def test_exchange_reactions(self, model):
+        assert set(model.exchanges) == set([rxn for rxn in model.reactions
+                                            if rxn.id.startswith("EX")])
+
     @pytest.mark.parametrize("solver", list(solver_dict))
     def test_copy_benchmark(self, model, solver, benchmark):
         def _():
