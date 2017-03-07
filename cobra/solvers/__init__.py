@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Solvers are expected to follow the following interface
 # create_problem: makes a solver problem object from a cobra.model and
 # sets parameters (if possible)
@@ -21,8 +23,12 @@
 # This attempts to import all working solvers in this directory
 
 from __future__ import absolute_import
-from warnings import warn
+
+import logging
 from os import listdir, path
+from warnings import warn
+
+LOGGER = logging.getLogger(__name__)
 
 solver_dict = {}
 possible_solvers = set()
@@ -39,7 +45,7 @@ def add_solver(solver_name, use_name=None):
             use_name = solver_name
     solver_dict[use_name] = eval(solver_name)
 
-    
+
 for i in listdir(path.dirname(path.abspath(__file__))):
     if i.startswith("_") or i.startswith(".") or i.startswith('legacy'):
         continue
@@ -53,10 +59,14 @@ if "wrappers" in possible_solvers:
     possible_solvers.remove("wrappers")
 
 for solver in possible_solvers:
+    LOGGER.debug("adding '%s'...", solver)
     try:
         add_solver(solver)
-    except:
+    except Exception as err:
+        LOGGER.debug("addition failed: %s", str(err))
         pass
+    else:
+        LOGGER.debug("success!")
     del solver
 
 if len(solver_dict) == 0:

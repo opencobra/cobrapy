@@ -1,17 +1,24 @@
+# -*- coding: utf-8 -*-
 ##cobra.solvers.glpk_solver
 #This script provides wrappers for pyglpk 0.3
-from warnings import warn
+from __future__ import absolute_import
+
 from copy import deepcopy
+from warnings import warn
+
+from six import iteritems
+
+from glpk import LPX
+
+from cobra.core.solution import LegacySolution
+
 try:
     # Import izip for python versions < 3.x
     from itertools import izip as zip
 except ImportError:
     pass
 
-from six import iteritems
-from glpk import LPX
 
-from ..core.Solution import Solution
 
 solver_name = 'glpk'
 _SUPPORTS_MILP = True
@@ -41,7 +48,7 @@ def get_objective_value(lp):
 def format_solution(lp, cobra_model, **kwargs):
     status = get_status(lp)
     if status == 'optimal':
-        sol = Solution(lp.obj.value, status=status)
+        sol = LegacySolution(lp.obj.value, status=status)
         sol.x = [float(c.primal) for c in lp.cols]
         sol.x_dict = {c.name: c.primal for c in lp.cols}
 
@@ -51,7 +58,7 @@ def format_solution(lp, cobra_model, **kwargs):
             sol.y_dict = {c.name: c.dual for c in lp.rows}
         return sol
 
-    return Solution(None, status=status)
+    return LegacySolution(None, status=status)
 
 def set_parameter(lp, parameter_name, parameter_value):
     """with pyglpk the parameters are set during the solve phase, with
@@ -226,12 +233,12 @@ def solve(cobra_model, **kwargs):
     """Smart interface to optimization solver functions that will convert
     the cobra_model to a solver object, set the parameters, and try multiple
     methods to get an optimal solution before returning the solver object and
-    a cobra.Solution (which is attached to cobra_model.solution)
+    a cobra.LegacySolution
 
     cobra_model: a cobra.Model
 
     returns a dict: {'the_problem': solver specific object, 'the_solution':
-    cobra.Solution for the optimization problem'}
+    cobra.solution for the optimization problem'}
 
 
     """

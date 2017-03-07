@@ -17,11 +17,10 @@ be viewed at `nbviewer
     simulating
     deletions
     phenotype_phase_plane
-    milp
-    qp
+    sampling
     loopless
-    gapfilling
-    solvers
+	solvers
+	constraints-objectives
     pymatbridge
     faq
     cobra

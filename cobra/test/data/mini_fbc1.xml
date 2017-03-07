@@ -192,21 +192,21 @@
           </html>
         </notes>
       </species>
-      <species id="M_glc__D_e" name="D-Glucose" compartment="e" substanceUnits="substance" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:chemicalFormula="C6H12O6">
+      <species id="M_glc__D_e" name="D-Glucose" compartment="e" substanceUnits="substance" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C6H12O6">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>FORMULA: C6H12O6</p>
           </html>
         </notes>
       </species>
-      <species id="M_h2o_c" name="H2O" compartment="c" substanceUnits="substance" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:chemicalFormula="H2O">
+      <species id="M_h2o_c" name="H2O" compartment="c" substanceUnits="substance" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="H2O">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>FORMULA: H2O</p>
           </html>
         </notes>
       </species>
-      <species id="M_h2o_e" name="H2O" compartment="e" substanceUnits="substance" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:chemicalFormula="H2O">
+      <species id="M_h2o_e" name="H2O" compartment="e" substanceUnits="substance" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="H2O">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>FORMULA: H2O</p>
@@ -283,7 +283,7 @@
           </html>
         </notes>
       </species>
-      <species id="M_glc__D_e_boundary" name="D-Glucose" compartment="e" substanceUnits="substance" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false" fbc:chemicalFormula="C6H12O6">
+      <species id="M_glc__D_e_boundary" name="D-Glucose" compartment="e" substanceUnits="substance" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false" fbc:charge="0" fbc:chemicalFormula="C6H12O6">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>FORMULA: C6H12O6</p>
@@ -342,8 +342,8 @@
           <speciesReference species="M_2pg_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_h2o_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_pep_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h2o_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_EX_glc__D_e" name="D-Glucose exchange" reversible="true" fast="false">
@@ -380,8 +380,8 @@
           <speciesReference species="M_fdp_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_dhap_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_g3p_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_dhap_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_GAPD" name="glyceraldehyde-3-phosphate dehydrogenase" reversible="true" fast="false">
@@ -391,9 +391,9 @@
           </html>
         </notes>
         <listOfReactants>
+          <speciesReference species="M_g3p_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_nad_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
-          <speciesReference species="M_g3p_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
           <speciesReference species="M_13dpg_c" stoichiometry="1" constant="true"/>
@@ -408,8 +408,8 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_glc__D_e" stoichiometry="1" constant="true"/>
           <speciesReference species="M_pep_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_glc__D_e" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
           <speciesReference species="M_g6p_c" stoichiometry="1" constant="true"/>
@@ -436,12 +436,12 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_nad_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_lac__D_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_nad_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_pyr_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_nadh_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
@@ -456,9 +456,9 @@
           <speciesReference species="M_atp_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
+          <speciesReference species="M_fdp_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_adp_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
-          <speciesReference species="M_fdp_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_PGI" name="glucose-6-phosphate isomerase" reversible="true" fast="false">
@@ -485,8 +485,8 @@
           <speciesReference species="M_atp_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_13dpg_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_adp_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_13dpg_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_PGM" name="phosphoglycerate mutase" reversible="true" fast="false">
@@ -513,8 +513,8 @@
           <speciesReference species="M_pi_e" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_PYK" name="pyruvate kinase" reversible="false" fast="false">
@@ -524,8 +524,8 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_adp_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_pep_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>

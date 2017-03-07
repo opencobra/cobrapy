@@ -1,20 +1,14 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 
 import json
-from warnings import warn
 
-from .. import Model, Metabolite, Reaction, Gene
+from numpy import bool_, float_
 from six import iteritems, string_types
 
-# Detect numpy types to replace them.
-try:
-    from numpy import float_, bool_
-except ImportError:
-    class float_:
-        pass
-
-    class bool_:
-        pass
+from cobra.core import Gene, Metabolite, Model, Reaction
+from cobra.util.solver import set_objective
 
 _REQUIRED_REACTION_ATTRIBUTES = {"id", "name", "metabolites", "lower_bound",
                                  "upper_bound", "gene_reaction_rule"}
@@ -45,7 +39,7 @@ _OPTIONAL_GENE_ATTRIBUTES = {
 _OPTIONAL_MODEL_ATTRIBUTES = {
     "name": None,
     #  "description": None, should not actually be included
-    "compartments": {},
+    "compartments": [],
     "notes": {},
     "annotation": {},
 }
@@ -60,6 +54,8 @@ def _fix_type(value):
         return float(value)
     if isinstance(value, bool_):
         return bool(value)
+    if isinstance(value, set):
+        return list(value)
     # handle legacy Formula type
     if value.__class__.__name__ == "Formula":
         return str(value)
@@ -80,6 +76,12 @@ def _from_dict(obj):
     model.add_reactions(
         [reaction_from_dict(reaction, model) for reaction in obj['reactions']]
     )
+    objective_reactions = [rxn for rxn in obj['reactions'] if
+                           rxn.get('objective_coefficient', 0) != 0]
+    coefficients = {
+        model.reactions.get_by_id(rxn['id']): rxn['objective_coefficient'] for
+        rxn in objective_reactions}
+    set_objective(model, coefficients)
     for k, v in iteritems(obj):
         if k in {'id', 'name', 'notes', 'compartments', 'annotation'}:
             setattr(model, k, v)
@@ -89,7 +91,7 @@ def _from_dict(obj):
 def reaction_from_dict(reaction, model):
     new_reaction = Reaction()
     for k, v in iteritems(reaction):
-        if k == 'reversibility' or k == "reaction":
+        if k in {'objective_coefficient', 'reversibility', 'reaction'}:
             continue
         elif k == 'metabolites':
             new_reaction.add_metabolites(
@@ -178,8 +180,14 @@ def from_json(jsons):
 def load_json_model(file_name):
     """Load a cobra model stored as a json file
 
+    Parameters
+    ----------
     file_name : str or file-like object
 
+    Returns
+    -------
+    cobra.Model
+       The loaded model
     """
     # open the file
     should_close = False
@@ -198,10 +206,12 @@ def load_json_model(file_name):
 def save_json_model(model, file_name, pretty=False):
     """Save the cobra model as a json file.
 
-    model : :class:`~cobra.core.Model.Model` object
-
+    Parameters
+    ----------
+    model : cobra.core.Model.Model
+        The model to save
     file_name : str or file-like object
-
+        The file to save to
     """
     # open the file
     should_close = False

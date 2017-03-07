@@ -1,26 +1,31 @@
+# -*- coding: utf-8 -*-
 # PLEASE NOTE THAT JYTHON SUPPORT (and this jython-only-solver) is deprecated
 #This script provides wrappers for libglpk-java 1.0.22 and pyglpk 0.3
-from __future__ import print_function
-from warnings import warn
-from copy import deepcopy
-###solver specific parameters
-from .parameters import status_dict, variable_kind_dict, \
-     sense_dict, parameter_mappings, parameter_defaults, \
-     objective_senses, default_objective_sense
+from __future__ import absolute_import, print_function
 
-from ..core.Solution import Solution
+from copy import deepcopy
+from os import name
 from time import time
+from warnings import warn
+
 from six import iteritems
+
+from org.gnu.glpk import GLPK, GLPKConstants, glp_iocp, glp_smcp
+
+from ..core.solution import Solution
+###solver specific parameters
+from .parameters import (
+    default_objective_sense, objective_senses, parameter_defaults,
+    parameter_mappings, sense_dict, status_dict, variable_kind_dict)
+
 solver_name = 'glpk'
 sense_dict = eval(sense_dict[solver_name])
 #Functions that are different for java implementation of a solver
 
-from os import name
 if name != "java":
     raise Exception("jython only")
 
 warn("cobra.solvers.glpk_solver isn't mature.  consider using gurobi or cplex")
-from org.gnu.glpk import GLPK, GLPKConstants, glp_smcp, glp_iocp
 variable_kind_dict = eval(variable_kind_dict['%s_%s'%(solver_name,
                                             __name)])
 status_dict = eval(status_dict['%s_%s'%(solver_name,
@@ -308,12 +313,12 @@ def solve(cobra_model, **kwargs):
     """Smart interface to optimization solver functions that will convert
     the cobra_model to a solver object, set the parameters, and try multiple
     methods to get an optimal solution before returning the solver object and
-    a cobra.Solution (which is attached to cobra_model.solution)
+    a cobra.solution (which is attached to cobra_model.solution)
 
     cobra_model: a cobra.Model
 
     returns a dict: {'the_problem': solver specific object, 'the_solution':
-    cobra.Solution for the optimization problem'}
+    cobra.solution for the optimization problem'}
     
 
     """

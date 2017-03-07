@@ -1,11 +1,30 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
+import json
 from os.path import join
-from . import create_test_model, data_dir
+
 import pytest
+
+from . import create_test_model, data_dir
+
 try:
     from cPickle import load as _load
 except ImportError:
     from pickle import load as _load
-import json
+
+import cobra.util.solver as sutil
+from cobra.solvers import solver_dict
+
+
+def pytest_addoption(parser):
+    try:
+        parser.addoption("--run-slow", action="store_true",
+                         help="run slow tests")
+        parser.addoption("--run-non-deterministic", action="store_true",
+                         help="run tests that sometimes (rarely) fail")
+    except ValueError:
+        pass
 
 
 @pytest.fixture(scope="session")
@@ -24,11 +43,6 @@ def large_model():
 
 
 @pytest.fixture(scope="function")
-def array_model():
-    return create_test_model("textbook").to_array_based_model()
-
-
-@pytest.fixture(scope="function")
 def salmonella():
     return create_test_model("salmonella")
 
@@ -38,11 +52,27 @@ def solved_model(data_directory):
     model = create_test_model("textbook")
     with open(join(data_directory, "textbook_solution.pickle"),
               "rb") as infile:
-        model.solution = _load(infile)
-    return model
+        solution = _load(infile)
+    return solution, model
 
 
 @pytest.fixture(scope="function")
 def fva_results(data_directory):
     with open(join(data_directory, "textbook_fva.json"), "r") as infile:
         return json.load(infile)
+
+
+stable_optlang = ["glpk", "cplex", "gurobi"]
+optlang_solvers = ["optlang-" + s for s in stable_optlang if s in
+                   sutil.solvers]
+all_solvers = optlang_solvers + list(solver_dict)
+
+
+@pytest.fixture(params=optlang_solvers, scope="session")
+def opt_solver(request):
+    return request.param
+
+
+@pytest.fixture(params=list(solver_dict), scope="session")
+def legacy_solver(request):
+    return request.param

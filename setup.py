@@ -1,36 +1,10 @@
-from os.path import isfile, abspath, dirname, join
-from sys import argv, path
+# -*- coding: utf-8 -*-
 
-# To temporarily modify sys.path
-SETUP_DIR = abspath(dirname(__file__))
+from os.path import abspath, dirname, isfile, join
+from sys import argv
+from warnings import warn
 
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    path.insert(0, SETUP_DIR)
-    import ez_setup
-    path.pop(0)
-    ez_setup.use_setuptools()
-    from setuptools import setup, find_packages
-
-
-# for running parallel tests due to a bug in python 2.7.3
-# http://bugs.python.org/issue15881#msg170215
-try:
-    import multiprocessing
-except:
-    None
-
-# import version to get the version string
-path.insert(0, join(SETUP_DIR, "cobra"))
-from version import get_version, update_release_version
-path.pop(0)
-version = get_version(pep440=True)
-
-# If building something for distribution, ensure the VERSION
-# file is up to date
-if "sdist" in argv or "bdist_wheel" in argv:
-    update_release_version()
+from setuptools import setup, find_packages
 
 # cython is optional for building. The c file can be used directly. However,
 # for certain functions, the c file must be generated, which requires cython.
@@ -132,12 +106,16 @@ except Exception as e:
     print('Could not build CGLPK: {}'.format(e))
     ext_modules = None
 
+setup_requirements = []
+# prevent pytest-runner from being installed on every invocation
+if {'pytest', 'test', 'ptr'}.intersection(argv):
+    setup_requirements.append("pytest-runner")
+
 extras = {
     'matlab': ["pymatbridge"],
     'sbml': ["python-libsbml", "lxml"],
-    'array': ["numpy>=1.6", "scipy>=0.11.0"],
-    'test': ["pytest", "pytest-benchmark"],
-    'display': ["matplotlib", "palettable", "pandas>=0.17.0", "tabulate"]
+    'array': ["scipy>=0.11.0"],
+    'display': ["matplotlib", "palettable"]
 }
 
 all_extras = {'Cython>=0.21'}
@@ -166,11 +144,12 @@ except:
 
 setup(
     name="cobra",
-    version=version,
-    packages=find_packages(exclude=['cobra.oven', 'cobra.oven*']),
-    setup_requires=[],
-    install_requires=["six"],
-    tests_require=["jsonschema > 2.5"],
+    version="0.5.11",
+    packages=find_packages(),
+    setup_requires=setup_requirements,
+    install_requires=["future", "swiglpk", "optlang",
+                      "pandas>=0.17.0", "numpy>=1.6", "tabulate"],
+    tests_require=["jsonschema > 2.5", "pytest", "pytest-benchmark"],
     extras_require=extras,
     ext_modules=ext_modules,
 
@@ -202,6 +181,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Cython',
         'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: Scientific/Engineering',

@@ -5,14 +5,7 @@ source = cobra
 omit =
     cobra/solvers/*
     cobra/test/data/*
-    cobra/test_all.py
-    cobra/version.py
-    cobra/oven/*
-    # deprecated code
-    cobra/core/Formula.py
-    # can not be run with free solver
-    cobra/flux_analysis/moma.py
-
+    cobra/test_*
 
 [report]
 # Regexes for lines to exclude from consideration

@@ -1,8 +1,12 @@
-from ast import NodeTransformer, And
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
+from ast import And, NodeTransformer
 
 from six import iteritems, string_types
 
-from cobra.core.Gene import eval_gpr, parse_gpr, ast2str
+from cobra.core.gene import ast2str, eval_gpr, parse_gpr
 
 
 def prune_unused_metabolites(cobra_model):
@@ -10,7 +14,7 @@ def prune_unused_metabolites(cobra_model):
 
     Parameters
     ----------
-    cobra_model: cobra.core.Model
+    cobra_model: cobra.Model
         the model to remove unused metabolites from
 
     Returns
@@ -34,7 +38,7 @@ def prune_unused_reactions(cobra_model):
 
     Parameters
     ----------
-    cobra_model: cobra.core.Model
+    cobra_model: cobra.Model
         the model to remove unused reactions from
 
     Returns

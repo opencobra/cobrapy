@@ -1,6 +1,11 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
+import pytest
+
 from cobra.core import Metabolite, Model, Reaction
 from cobra.manipulation import *
-import pytest
+
 from .conftest import model, salmonella
 
 
@@ -8,53 +13,59 @@ class TestManipulation:
     """Test functions in cobra.manipulation"""
 
     def test_canonical_form(self, model):
+        solver = 'cglpk'
         # add G constraint to test
         g_constr = Metabolite("SUCCt2_2__test_G_constraint")
         g_constr._constraint_sense = "G"
         g_constr._bound = 5.0
         model.reactions.get_by_id("SUCCt2_2").add_metabolites({g_constr: 1})
-        assert abs(model.optimize("maximize").f - 0.855) < 0.001
+        assert abs(model.optimize("maximize", solver=solver).f - 0.855) < 0.001
         # convert to canonical form
         model = canonical_form(model)
-        assert abs(model.optimize("maximize").f - 0.855) < 10 ** -3
+        assert abs(
+            model.optimize("maximize", solver=solver).f - 0.855) < 10 ** -3
 
     def test_canonical_form_minimize(self, model):
+        solver = 'cglpk'
         # make a minimization problem
         model.reactions.get_by_id("Biomass_Ecoli_core").lower_bound = 0.5
         for reaction in model.reactions:
             reaction.objective_coefficient = reaction.id == "GAPD"
-        assert abs(model.optimize("minimize").f - 6.27) < 10 ** -3
+        assert abs(
+            model.optimize("minimize", solver=solver).f - 6.27) < 10 ** -3
         # convert to canonical form. Convert minimize to maximize
         model = canonical_form(model, objective_sense="minimize")
-        assert abs(model.optimize("maximize").f + 6.27) < 10 ** -3
+        assert abs(
+            model.optimize("maximize", solver=solver).f + 6.27) < 10 ** -3
         # lower bounds should now be <= constraints
         assert model.reactions.get_by_id(
             "Biomass_Ecoli_core").lower_bound == 0.0
 
     def test_modify_reversible(self, model):
+        solver = 'cglpk'
         model1 = model.copy()
-        model1.optimize()
+        solution1 = model1.optimize(solver=solver)
         model2 = model.copy()
         convert_to_irreversible(model2)
-        model2.optimize()
-        assert abs(model1.solution.f - model2.solution.f) < 10 ** -3
+        solution2 = model2.optimize(solver=solver)
+        assert abs(solution1.f - solution2.f) < 10 ** -3
         revert_to_reversible(model2)
-        model2.optimize()
-        assert abs(model1.solution.f - model2.solution.f) < 10 ** -3
+        solution2_rev = model2.optimize(solver=solver)
+        assert abs(solution1.f - solution2_rev.f) < 10 ** -3
         # Ensure revert_to_reversible is robust to solutions generated both
         # before and after reversibility conversion, or not solved at all.
         model3 = model.copy()
-        model3.optimize()
+        solution3 = model3.optimize(solver=solver)
         convert_to_irreversible(model3)
         revert_to_reversible(model3)
-        assert abs(model1.solution.f - model3.solution.f) < 10 ** -3
+        assert abs(solution1.f - solution3.f) < 10 ** -3
         # test reaction where both bounds are negative
         model4 = model.copy()
         glc = model4.reactions.get_by_id("EX_glc__D_e")
         glc.upper_bound = -1
         convert_to_irreversible(model4)
-        model4.optimize()
-        assert abs(model1.solution.f - model4.solution.f) < 10 ** -3
+        solution4 = model4.optimize(solver=solver)
+        assert abs(solution1.f - solution4.f) < 10 ** -3
         glc_rev = model4.reactions.get_by_id(glc.notes["reflection"])
         assert glc_rev.lower_bound == 1
         assert glc.upper_bound == 0
@@ -213,14 +224,6 @@ class TestManipulation:
         assert rxns.DM_h_c.annotation["SBO"] == "SBO:0000628"
         assert rxns.EX_h_e.annotation["SBO"] == "SBO:0000628"
 
-    def test_validate_reaction_bounds(self, model):
-        model.reactions[0].lower_bound = float("-inf")
-        model.reactions[1].lower_bound = float("nan")
-        model.reactions[0].upper_bound = float("inf")
-        model.reactions[1].upper_bound = float("nan")
-        errors = check_reaction_bounds(model)
-        assert len(errors) == 4
-
     def test_validate_formula_compartment(self, model):
         model.metabolites[1].compartment = "fake"
         model.metabolites[1].formula = "(a*.bcde)"
@@ -232,7 +235,7 @@ class TestManipulation:
         # if we remove the SBO term which marks the reaction as
         # mass balanced, then the reaction should be detected as
         # no longer mass balanced
-        EX_rxn = model.reactions.query("EX")[0]
+        EX_rxn = model.reactions.query(lambda r: r.boundary)[0]
         EX_rxn.annotation.pop("SBO")
         balance = check_mass_balance(model)
         assert len(balance) == 1

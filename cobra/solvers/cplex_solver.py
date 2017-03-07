@@ -1,15 +1,18 @@
+# -*- coding: utf-8 -*-
+
 # Interface to ilog/cplex 12.4 python interface
 
-from copy import deepcopy
-from warnings import warn
+from __future__ import absolute_import
+
 import sys
+from warnings import warn
 
 from cplex import Cplex, SparsePair
 from cplex.exceptions import CplexError
-
-from ..core.Solution import Solution
+from six import iteritems, string_types
 from six.moves import zip
-from six import string_types, iteritems
+
+from cobra.core.solution import LegacySolution
 
 try:
     from sympy import Basic, Number
@@ -92,7 +95,7 @@ def format_solution(lp, cobra_model, **kwargs):
     else:
         x = y = x_dict = y_dict = objective_value = None
 
-    return Solution(objective_value, x=x, x_dict=x_dict, status=status,
+    return LegacySolution(objective_value, x=x, x_dict=x_dict, status=status,
                     y=y, y_dict=y_dict)
 
 

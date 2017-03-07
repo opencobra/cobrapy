@@ -4,82 +4,82 @@ cobra.core package
 Submodules
 ----------
 
-cobra.core.ArrayBasedModel module
+cobra.core.arraybasedmodel module
 ---------------------------------
 
-.. automodule:: cobra.core.ArrayBasedModel
+.. automodule:: cobra.core.arraybasedmodel
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.core.DictList module
+cobra.core.dictlist module
 --------------------------
 
-.. automodule:: cobra.core.DictList
+.. automodule:: cobra.core.dictlist
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.core.Formula module
+cobra.core.formula module
 -------------------------
 
-.. automodule:: cobra.core.Formula
+.. automodule:: cobra.core.formula
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.core.Gene module
+cobra.core.gene module
 ----------------------
 
-.. automodule:: cobra.core.Gene
+.. automodule:: cobra.core.gene
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.core.Metabolite module
+cobra.core.metabolite module
 ----------------------------
 
-.. automodule:: cobra.core.Metabolite
+.. automodule:: cobra.core.metabolite
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.core.Model module
+cobra.core.model module
 -----------------------
 
-.. automodule:: cobra.core.Model
+.. automodule:: cobra.core.model
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.core.Object module
+cobra.core.object module
 ------------------------
 
-.. automodule:: cobra.core.Object
+.. automodule:: cobra.core.object
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.core.Reaction module
+cobra.core.reaction module
 --------------------------
 
-.. automodule:: cobra.core.Reaction
+.. automodule:: cobra.core.reaction
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.core.Solution module
+cobra.core.solution module
 --------------------------
 
-.. automodule:: cobra.core.Solution
+.. automodule:: cobra.core.solution
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.core.Species module
+cobra.core.species module
 -------------------------
 
-.. automodule:: cobra.core.Species
+.. automodule:: cobra.core.species
     :members:
     :undoc-members:
     :show-inheritance:

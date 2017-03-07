@@ -1,20 +1,18 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import, print_function
+
 # set the warning format to be on a single line
 import warnings as _warnings
-from os.path import abspath as _abspath, dirname as _dirname
 from os import name as _name
+from os.path import abspath as _abspath
+from os.path import dirname as _dirname
 
-from .version import get_version
-from .core import Object, Metabolite, Gene, Reaction, Model, \
-    DictList, Species
-from . import io, flux_analysis, design
+from cobra import design, flux_analysis, io
+from cobra.core import (
+    DictList, Gene, Metabolite, Model, Object, Reaction, Species)
 
-try:
-    from .core import ArrayBasedModel
-except ImportError:
-    None
-
-__version__ = get_version()
-del get_version
+__version__ = "0.5.11"
 
 # set the warning format to be prettier and fit on one line
 _cobra_path = _dirname(_abspath(__file__))

@@ -14,4 +14,9 @@ tabulate
 tox
 pep8
 pytest
+optlang
+swiglpk
 pytest-benchmark
+bumpversion
+flake8
+pydocstyle

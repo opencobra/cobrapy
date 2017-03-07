@@ -12,6 +12,13 @@ addons:
       - libfreetype6-dev
       - libpng12-dev
 
+branches:
+ only:
+ - master
+ - devel
+ - devel-2
+ - /^[0-9]+\.[0-9]+\.[0-9]+[.0-9ab]*$/
+
 env:
   global:
     - secure: "hkKBaGLvoDVgktSKR3BmX+mYlGzHw9EO11MRHtiH8D9BbdygOR9p9aSV/OxkaRWhnkSP5/0SXqVgBrvU1g5OsR6cc85UQSpJ5H5jVnLoWelIbTxMCikjxDSkZlseD7ZEWrKZjRo/ZN2qym0HRWpsir3qLpl8W25xHRv/sK7Z6g8="
@@ -20,15 +27,16 @@ env:
     - UNICODE_WIDTH=32
 
 matrix:
+  fast_finish: true
   exclude:
       - python: 3.5
   include:
     - os: linux
       env:
         - MB_PYTHON_VERSION=2.7
-    - os: linux
-      env:
-        - MB_PYTHON_VERSION=3.4
+    # - os: linux
+    #   env:
+    #     - MB_PYTHON_VERSION=3.4
     - os: linux
       env:
         - MB_PYTHON_VERSION=3.5
@@ -39,10 +47,10 @@ matrix:
       language: objective-c
       env:
         - MB_PYTHON_VERSION=2.7
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=3.4
+    # - os: osx
+    #   language: objective-c
+    #   env:
+    #     - MB_PYTHON_VERSION=3.4
     - os: osx
       language: objective-c
       env:
@@ -55,8 +63,8 @@ matrix:
 before_install:
   - (git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout e6ebbfa)
   # matplotlib non-compatible as testing runs in venv (non-framework)
-  - TEST_DEPENDS="cython codecov coverage numpy scipy python-libsbml jsonschema six pytest pytest-cov pytest-benchmark pandas tabulate"
-  - BUILD_DEPENDS="cython numpy scipy"
+  - TEST_DEPENDS="swiglpk optlang sympy decorator cython codecov coverage numpy scipy python-libsbml jsonschema six pytest pytest-cov pytest-benchmark tabulate"
+  - BUILD_DEPENDS="swiglpk optlang sympy cython numpy scipy"
   - source multibuild/common_utils.sh
   - source multibuild/travis_steps.sh
   - before_install
@@ -68,7 +76,7 @@ install:
   - build_wheel . $PLAT
 
 script:
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install 'sphinx>=1.5' rstcheck pep8; pep8 cobra --exclude=oven,solvers,sbml.py --show-source; rstcheck *.rst; fi
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install pip --upgrade; pip install 'sphinx>=1.5' rstcheck pep8; pep8 cobra --exclude=solvers --show-source; rstcheck *.rst; fi
   - install_run $PLAT
 
 deploy:

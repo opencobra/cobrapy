@@ -1,18 +1,25 @@
+# -*- coding: utf-8 -*-
 # PLEASE NOTE THAT JYTHON SUPPORT (and this jython-only-solver) is deprecated
 #Interface to the gurobi 5.0.1 python and java solvers
 #QPs are not yet supported on java
-from __future__ import print_function
-from warnings import warn
-from os import name as __name
-from copy import deepcopy
-from six import iteritems
-###solver specific parameters
-from .parameters import status_dict, variable_kind_dict, \
-     sense_dict, parameter_mappings, parameter_defaults, \
-     objective_senses, default_objective_sense
+from __future__ import absolute_import, print_function
 
-from ..core.Solution import Solution
+from copy import deepcopy
+from os import name as __name
 from time import time
+from warnings import warn
+
+from six import iteritems
+
+from gurobi import GRBQuadExpr as QuadExpr
+from gurobi import GRB, GRBEnv, GRBLinExpr, GRBModel
+
+from ..core.solution import Solution
+###solver specific parameters
+from .parameters import (
+    default_objective_sense, objective_senses, parameter_defaults,
+    parameter_mappings, sense_dict, status_dict, variable_kind_dict)
+
 solver_name = 'gurobi'
 objective_senses = objective_senses[solver_name]
 parameter_mappings = parameter_mappings[solver_name]
@@ -22,13 +29,9 @@ parameter_defaults = parameter_defaults[solver_name]
 ## def array(x, variable_type='d'):
 ##     return j_array(x, variable_type)
 
-from gurobi import GRB
 variable_kind_dict = eval(variable_kind_dict[solver_name])
 status_dict = eval(status_dict[solver_name])
 
-from gurobi import GRBModel, GRBEnv
-from gurobi import GRBLinExpr
-from gurobi import GRBQuadExpr as QuadExpr
 __solver_class = GRBModel
 #TODO: Create a pythonesqe class similar to in glpk_solver
 def Model(name=''):

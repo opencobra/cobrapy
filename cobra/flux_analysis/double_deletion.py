@@ -1,13 +1,19 @@
-from warnings import warn
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 from itertools import chain, product
+from warnings import warn
 
-from six import iteritems
 import numpy
+from pandas import DataFrame
+from six import iteritems
 
-from ..solvers import get_solver_name, solver_dict
-from ..manipulation.delete import (find_gene_knockout_reactions,
-                                   get_compiled_gene_reaction_rules)
-from .deletion_worker import CobraDeletionPool, CobraDeletionMockPool
+from cobra.flux_analysis.deletion_worker import (
+    CobraDeletionMockPool, CobraDeletionPool)
+from cobra.manipulation.delete import (
+    find_gene_knockout_reactions, get_compiled_gene_reaction_rules)
+from cobra.solvers import get_solver_name, solver_dict
 
 try:
     import scipy
@@ -15,11 +21,6 @@ except ImportError:
     moma = None
 else:
     from . import moma
-
-try:
-    from pandas import DataFrame
-except:
-    DataFrame = None
 
 
 # Utility functions
@@ -89,11 +90,10 @@ def format_results_frame(row_ids, column_ids, matrix, return_frame=False):
 
     Otherwise returns a dict of
     {"x": row_ids, "y": column_ids", "data": result_matrx}"""
-    if return_frame and DataFrame:
+    if return_frame:
         return DataFrame(data=matrix, index=row_ids, columns=column_ids)
-    elif return_frame and not DataFrame:
-        warn("could not import pandas.DataFrame")
-    return {"x": row_ids, "y": column_ids, "data": matrix}
+    else:
+        return {"x": row_ids, "y": column_ids, "data": matrix}
 
 
 def double_deletion(cobra_model, element_list_1=None, element_list_2=None,

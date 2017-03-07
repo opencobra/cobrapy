@@ -93,5 +93,4 @@ manylinux_builder/wheelhouse
 *~
 venv/
 .benchmarks/
-/glpk-4.60.tar.gz
-glpk-4.60
+glpk-4.*

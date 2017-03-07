@@ -1,27 +1,25 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 import re
+from collections import OrderedDict
 from uuid import uuid4
 from warnings import warn
 
-from numpy import isinf, inf, array, object as np_object
-from scipy.io import loadmat, savemat
-from scipy.sparse import coo_matrix, dok_matrix
+from numpy import object as np_object
+from numpy import array, inf, isinf
 
-from .. import Model, Metabolite, Reaction
+from cobra.core import Metabolite, Model, Reaction
+from cobra.util import create_stoichiometric_array
+from cobra.util.solver import set_objective
 
-# try to use an ordered dict
 try:
-    from scipy.version import short_version
-    scipy_version = int(short_version.split(".")[1])
-    # if scipy version is earlier than 0.11, OrderedDict will not work, so use
-    # a dict instead
-    if scipy_version < 11:
-        DictClass = dict
-    else:
-        from collections import OrderedDict as DictClass
-    del short_version, scipy_version
+    import scipy.sparse as scipy_sparse
+    import scipy.io as scipy_io
 except ImportError:
-    DictClass = dict
-    short_version = None
+    scipy_sparse = None
+    scipy_io = None
 
 
 # precompiled regular expressions
@@ -67,7 +65,10 @@ def load_matlab_model(infile_path, variable_name=None, inf=inf):
         The resulting cobra model
 
     """
-    data = loadmat(infile_path)
+    if not scipy_io:
+        raise ImportError('load_matlab_model requires scipy')
+
+    data = scipy_io.loadmat(infile_path)
     possible_names = []
     if variable_name is None:
         # skip meta variables
@@ -93,18 +94,25 @@ def save_matlab_model(model, file_name, varname=None):
 
     This .mat file can be used directly in the MATLAB version of COBRA.
 
-    model : :class:`~cobra.core.Model.Model` object
-
+    Parameters
+    ----------
+    model : cobra.core.Model.Model object
+        The model to save
     file_name : str or file-like object
-
+        The file to save to
+    varname : string
+       The name of the variable within the workspace
     """
+    if not scipy_io:
+        raise ImportError('load_matlab_model requires scipy')
+
     if varname is None:
         varname = str(model.id) \
             if model.id is not None and len(model.id) > 0 \
             else "exported_model"
     mat = create_mat_dict(model)
-    savemat(file_name, {varname: mat},
-            appendmat=True, oned_as="column")
+    scipy_io.savemat(file_name, {varname: mat},
+                     appendmat=True, oned_as="column")
 
 
 def create_mat_metabolite_id(model):
@@ -118,10 +126,9 @@ def create_mat_metabolite_id(model):
 
 def create_mat_dict(model):
     """create a dict mapping model attributes to arrays"""
-    model = model.to_array_based_model(deepcopy_model=True)
     rxns = model.reactions
     mets = model.metabolites
-    mat = DictClass()
+    mat = OrderedDict()
     mat["mets"] = _cell([met_id for met_id in create_mat_metabolite_id(model)])
     mat["metNames"] = _cell(mets.list_attr("name"))
     mat["metFormulas"] = _cell([str(m.formula) for m in mets])
@@ -133,18 +140,21 @@ def create_mat_dict(model):
     mat["genes"] = _cell(model.genes.list_attr("id"))
     # make a matrix for rxnGeneMat
     # reactions are rows, genes are columns
-    rxnGene = dok_matrix((len(model.reactions), len(model.genes)))
-    if min(rxnGene.shape) > 0:
+    rxn_gene = scipy_sparse.dok_matrix((len(model.reactions),
+                                        len(model.genes)))
+    if min(rxn_gene.shape) > 0:
         for i, reaction in enumerate(model.reactions):
             for gene in reaction.genes:
-                rxnGene[i, model.genes.index(gene)] = 1
-        mat["rxnGeneMat"] = rxnGene
+                rxn_gene[i, model.genes.index(gene)] = 1
+        mat["rxnGeneMat"] = rxn_gene
     mat["grRules"] = _cell(rxns.list_attr("gene_reaction_rule"))
     mat["rxns"] = _cell(rxns.list_attr("id"))
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
     mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
-    mat["csense"] = "".join(model._constraint_sense)
-    mat["S"] = model.S if model.S is not None else [[]]
+    mat["csense"] = "".join((
+        met._constraint_sense for met in model.metabolites))
+    stoich_mat = create_stoichiometric_array(model)
+    mat["S"] = stoich_mat if stoich_mat is not None else [[]]
     # multiply by 1 to convert to float, working around scipy bug
     # https://github.com/scipy/scipy/issues/4537
     mat["lb"] = array(rxns.list_attr("lower_bound")) * 1.
@@ -173,15 +183,15 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
         c_vec = None
         warn("objective vector 'c' not found")
     model = Model()
-    if "description" in m.dtype.names:
+    if model_id is not None:
+        model.id = model_id
+    elif "description" in m.dtype.names:
         description = m["description"][0, 0][0]
         if len(description) > 1:
             model.id = description[0]
             warn("Several IDs detected, only using the first.")
         else:
             model.id = description
-    elif model_id is not None:
-        model.id = model_id
     else:
         model.id = "imported_model"
     for i, name in enumerate(m["mets"][0, 0]):
@@ -192,7 +202,6 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
             comp_index = m["metComps"][0, 0][i][0] - 1
             new_metabolite.compartment = m['comps'][0, 0][comp_index][0][0]
             if new_metabolite.compartment not in model.compartments:
-
                 comp_name = m['compNames'][0, 0][comp_index][0][0]
                 model.compartments[new_metabolite.compartment] = comp_name
         else:
@@ -217,6 +226,7 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
             pass
         model.add_metabolites([new_metabolite])
     new_reactions = []
+    coefficients = {}
     for i, name in enumerate(m["rxns"][0, 0]):
         new_reaction = Reaction()
         new_reaction.id = str(name[0][0])
@@ -227,7 +237,7 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
         if isinf(new_reaction.upper_bound) and new_reaction.upper_bound > 0:
             new_reaction.upper_bound = inf
         if c_vec is not None:
-            new_reaction.objective_coefficient = float(c_vec[i][0])
+            coefficients[new_reaction] = float(c_vec[i][0])
         try:
             new_reaction.gene_reaction_rule = str(m['grRules'][0, 0][i][0][0])
         except (IndexError, ValueError):
@@ -242,7 +252,8 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
             pass
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
-    coo = coo_matrix(m["S"][0, 0])
+    set_objective(model, coefficients)
+    coo = scipy_sparse.coo_matrix(m["S"][0, 0])
     for i, j, v in zip(coo.row, coo.col, coo.data):
         model.reactions[j].add_metabolites({model.metabolites[i]: v})
     return model
@@ -259,11 +270,13 @@ def model_to_pymatbridge(model, variable_name="model", matlab=None):
 
     This model can then be manipulated through the COBRA toolbox
 
-    variable_name: str
+    Parameters
+    ----------
+    variable_name : str
         The variable name to which the model will be assigned in the
         MATLAB workspace
 
-    matlab: None or pymatbridge.Matlab instance
+    matlab : None or pymatbridge.Matlab instance
         The MATLAB workspace to which the variable will be sent. If
         this is None, then this will be sent to the same environment
         used in IPython magics.

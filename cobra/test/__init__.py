@@ -1,5 +1,8 @@
-from os.path import join, abspath, dirname
+# -*- coding: utf-8 -*-
+from os.path import abspath, dirname, join
+
 from cobra.io import read_sbml_model
+
 try:
     import pytest
     import pytest_benchmark
@@ -39,11 +42,15 @@ def create_test_model(model_name="salmonella"):
         return _load(infile)
 
 
-def test_all():
+def test_all(args=None):
     """ alias for running all unit-tests on installed cobra
     """
     if pytest:
+        args = args if args else []
+
         return pytest.main(
-            ['--pyargs', 'cobra', '--benchmark-skip', '-v', '-rs']) == 0
+            ['--pyargs', 'cobra', '--benchmark-skip', '-v', '-rs'] + args
+        ) != 0
     else:
-        raise ImportError('missing package pytest required for testing')
+        raise ImportError('missing package pytest and pytest_benchmark'
+                          ' required for testing')

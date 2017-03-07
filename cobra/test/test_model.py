@@ -1,9 +1,21 @@
-from copy import deepcopy
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import warnings
+from copy import deepcopy
+
+import numpy
 import pytest
-from cobra.core import Model, Metabolite, Reaction
+from sympy import S
+
+import cobra.util.solver as su
+from cobra.core import Metabolite, Model, Reaction
 from cobra.solvers import solver_dict
-from .conftest import model, array_model
+from cobra.util import create_stoichiometric_array
+
+stable_optlang = ["glpk", "cplex", "gurobi"]
+optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
+
 
 try:
     import scipy
@@ -72,29 +84,43 @@ class TestReactions:
                 solver_dict[solver].create_problem(model)
             for m, c in many_metabolites.items():
                 try:
-                    reaction.pop(m.id)
+                    reaction.subtract_metabolites(
+                        {m: reaction.get_coefficient(m)})
                 except KeyError:
                     pass
+
         benchmark(add_remove_metabolite)
 
     def test_add_metabolite(self, model):
-        reaction = model.reactions.get_by_id("PGI")
-        reaction.add_metabolites({model.metabolites[0]: 1})
-        assert model.metabolites[0] in reaction._metabolites
-        fake_metabolite = Metabolite("fake")
-        reaction.add_metabolites({fake_metabolite: 1})
-        assert fake_metabolite in reaction._metabolites
-        assert model.metabolites.has_id("fake")
-        assert model.metabolites.get_by_id("fake") is fake_metabolite
+
+        with model:
+            reaction = model.reactions.get_by_id("PGI")
+            reaction.add_metabolites({model.metabolites[0]: 1})
+            assert model.metabolites[0] in reaction._metabolites
+            fake_metabolite = Metabolite("fake")
+            reaction.add_metabolites({fake_metabolite: 1})
+            assert fake_metabolite in reaction._metabolites
+            assert model.metabolites.has_id("fake")
+            assert model.metabolites.get_by_id("fake") is fake_metabolite
+
+        assert fake_metabolite._model is None
+        assert fake_metabolite not in reaction._metabolites
+        assert "fake" not in model.metabolites
 
         # test adding by string
-        reaction.add_metabolites({"g6p_c": -1})  # already in reaction
+        with model:
+            reaction.add_metabolites({"g6p_c": -1})  # already in reaction
+            assert reaction._metabolites[
+                       model.metabolites.get_by_id("g6p_c")] == -2
+            reaction.add_metabolites({"h_c": 1})
+            assert reaction._metabolites[
+                model.metabolites.get_by_id("h_c")] == 1
+            with pytest.raises(KeyError):
+                reaction.add_metabolites({"missing": 1})
+
         assert reaction._metabolites[
-                   model.metabolites.get_by_id("g6p_c")] == -2
-        reaction.add_metabolites({"h_c": 1})
-        assert reaction._metabolites[model.metabolites.get_by_id("h_c")] == 1
-        with pytest.raises(KeyError):
-            reaction.add_metabolites({"missing": 1})
+                   model.metabolites.get_by_id("g6p_c")] == -1
+        assert model.metabolites.h_c not in reaction._metabolites
 
         # test adding to a new Reaction
         reaction = Reaction("test")
@@ -127,8 +153,15 @@ class TestReactions:
     def test_build_from_string(self, model):
         m = len(model.metabolites)
         pgi = model.reactions.get_by_id("PGI")
-        pgi.reaction = "g6p_c --> f6p_c"
-        assert pgi.lower_bound == 0
+
+        old_bounds = pgi.bounds
+
+        with model:
+            pgi.reaction = "g6p_c --> f6p_c"
+            assert pgi.lower_bound == 0
+
+        assert pgi.bounds == old_bounds
+
         pgi.bounds = (0, 1000)
         assert pgi.bounds == (0, 1000)
         assert not pgi.reversibility
@@ -137,11 +170,25 @@ class TestReactions:
         assert pgi.reaction.strip() == "g6p_c <-- f6p_c"
         pgi.reaction = "g6p_c --> f6p_c + h2o_c"
         assert model.metabolites.h2o_c, pgi._metabolites
-        pgi.build_reaction_from_string("g6p_c --> f6p_c + foo", verbose=False)
-        assert model.metabolites.h2o_c not in pgi._metabolites
-        assert "foo" in model.metabolites
-        assert model.metabolites.foo in pgi._metabolites
-        assert len(model.metabolites) == m + 1
+
+        with model:
+            pgi.build_reaction_from_string("g6p_c --> f6p_c + foo",
+                                           verbose=False)
+            assert model.metabolites.h2o_c not in pgi._metabolites
+            assert "foo" in model.metabolites
+            assert model.metabolites.foo in pgi._metabolites
+            assert len(model.metabolites) == m + 1
+
+        assert model.metabolites.h2o_c in pgi._metabolites
+        assert "foo" not in model.metabolites
+        with pytest.raises(AttributeError):
+            model.metabolites.foo
+        assert len(model.metabolites) == m
+
+    def test_bounds_setter(self, model):
+        rxn = model.reactions.get_by_id("PGI")
+        with pytest.raises(AssertionError):
+            rxn.bounds = (1, 0)
 
     def test_copy(self, model):
         PGI = model.reactions.PGI
@@ -246,7 +293,56 @@ class TestCobraModel:
             if not getattr(model, 'solver', None):
                 solver_dict[solver].create_problem(model)
             model.remove_reactions([dummy_reaction], delete=False)
+
         benchmark(benchmark_add_reaction)
+
+    def test_add_metabolite(self, model):
+        new_metabolite = Metabolite('test_met')
+        assert new_metabolite not in model.metabolites
+        with model:
+            model.add_metabolites(new_metabolite)
+            assert new_metabolite._model == model
+            assert new_metabolite in model.metabolites
+            assert new_metabolite.id in model.solver.constraints
+
+        assert new_metabolite._model is None
+        assert new_metabolite not in model.metabolites
+        assert new_metabolite.id not in model.solver.constraints
+
+    def test_remove_metabolite_subtractive(self, model):
+        test_metabolite = model.metabolites[4]
+        test_reactions = test_metabolite.reactions
+        with model:
+            model.remove_metabolites(test_metabolite, destructive=False)
+            assert test_metabolite._model is None
+            assert test_metabolite not in model.metabolites
+            assert test_metabolite.id not in model.solver.constraints
+            for reaction in test_reactions:
+                assert reaction in model.reactions
+
+        assert test_metabolite._model is model
+        assert test_metabolite in model.metabolites
+        assert test_metabolite.id in model.solver.constraints
+
+    def test_remove_metabolite_destructive(self, model):
+        test_metabolite = model.metabolites[4]
+        test_reactions = test_metabolite.reactions
+        with model:
+            model.remove_metabolites(test_metabolite, destructive=True)
+            assert test_metabolite._model is None
+            assert test_metabolite not in model.metabolites
+            assert test_metabolite.id not in model.solver.constraints
+            for reaction in test_reactions:
+                assert reaction not in model.reactions
+
+        assert test_metabolite._model is model
+        assert test_metabolite in model.metabolites
+        assert test_metabolite.id in model.solver.constraints
+        for reaction in test_reactions:
+            assert reaction in model.reactions
+
+    def test_compartments(self, model):
+        assert set(model.compartments) == set(["c", "e"])
 
     def test_add_reaction(self, model):
         old_reaction_count = len(model.reactions)
@@ -289,6 +385,36 @@ class TestCobraModel:
         r2.add_metabolites({Metabolite(model.metabolites[0].id): 1})
         assert model.metabolites[0] is list(r2._metabolites)[0]
 
+    def test_add_reaction_context(self, model):
+        old_reaction_count = len(model.reactions)
+        old_metabolite_count = len(model.metabolites)
+        dummy_metabolite_1 = Metabolite("test_foo_1")
+        dummy_metabolite_2 = Metabolite("test_foo_2")
+        actual_metabolite = model.metabolites[0]
+        copy_metabolite = model.metabolites[1].copy()
+        dummy_reaction = Reaction("test_foo_reaction")
+        dummy_reaction.add_metabolites({dummy_metabolite_1: -1,
+                                        dummy_metabolite_2: 1,
+                                        copy_metabolite: -2,
+                                        actual_metabolite: 1})
+        dummy_reaction.gene_reaction_rule = 'dummy_gene'
+
+        with model:
+            model.add_reaction(dummy_reaction)
+            assert model.reactions.get_by_id(dummy_reaction.id) == \
+                dummy_reaction
+            assert len(model.reactions) == old_reaction_count + 1
+            assert len(model.metabolites) == old_metabolite_count + 2
+            assert dummy_metabolite_1._model == model
+            assert 'dummy_gene' in model.genes
+
+        assert len(model.reactions) == old_reaction_count
+        assert len(model.metabolites) == old_metabolite_count
+        with pytest.raises(KeyError):
+            model.reactions.get_by_id(dummy_reaction.id)
+        assert dummy_metabolite_1._model is None
+        assert 'dummy_gene' not in model.genes
+
     def test_add_reaction_from_other_model(self, model):
         other = model.copy()
         for i in other.reactions:
@@ -304,17 +430,28 @@ class TestCobraModel:
 
     def test_model_remove_reaction(self, model):
         old_reaction_count = len(model.reactions)
-        model.remove_reactions(["PGI"])
-        assert len(model.reactions) == old_reaction_count - 1
-        with pytest.raises(KeyError):
-            model.reactions.get_by_id("PGI")
-        model.remove_reactions(model.reactions[:1])
-        assert len(model.reactions) == old_reaction_count - 2
+
+        with model:
+            model.remove_reactions(["PGI"])
+            assert len(model.reactions) == old_reaction_count - 1
+            with pytest.raises(KeyError):
+                model.reactions.get_by_id("PGI")
+            model.remove_reactions(model.reactions[:1])
+            assert len(model.reactions) == old_reaction_count - 2
+
+        assert len(model.reactions) == old_reaction_count
+        assert "PGI" in model.reactions
+
         tmp_metabolite = Metabolite("testing")
         model.reactions[0].add_metabolites({tmp_metabolite: 1})
         assert tmp_metabolite in model.metabolites
         model.remove_reactions(model.reactions[:1],
                                remove_orphans=True)
+        assert tmp_metabolite not in model.metabolites
+
+        with model:
+            model.reactions[0].add_metabolites({tmp_metabolite: 1})
+            assert tmp_metabolite in model.metabolites
         assert tmp_metabolite not in model.metabolites
 
     def test_reaction_remove(self, model):
@@ -397,12 +534,17 @@ class TestCobraModel:
         for reaction in gene_reactions:
             assert target_gene not in reaction.genes
 
+    def test_exchange_reactions(self, model):
+        assert set(model.exchanges) == set([rxn for rxn in model.reactions
+                                            if rxn.id.startswith("EX")])
+
     @pytest.mark.parametrize("solver", list(solver_dict))
     def test_copy_benchmark(self, model, solver, benchmark):
         def _():
             model.copy()
             if not getattr(model, 'solver', None):
                 solver_dict[solver].create_problem(model)
+
         benchmark(_)
 
     @pytest.mark.parametrize("solver", list(solver_dict))
@@ -411,6 +553,7 @@ class TestCobraModel:
             large_model.copy()
             if not getattr(large_model, 'solver', None):
                 solver_dict[solver].create_problem(large_model)
+
         benchmark(_)
 
     def test_copy(self, model):
@@ -473,15 +616,27 @@ class TestCobraModel:
             model.objective = atpm.id
             if not getattr(model, 'solver', None):
                 solver_dict[solver].create_problem(model)
+
         benchmark(benchmark_change_objective)
 
     def test_change_objective(self, model):
+        # Test for correct optimization behavior
+        model.optimize()
+        assert model.reactions.Biomass_Ecoli_core.x > 0.5
+        with model:
+            model.objective = model.reactions.EX_etoh_e
+            model.optimize()
+        assert model.reactions.Biomass_Ecoli_core.x < 0.5
+        assert model.reactions.Biomass_Ecoli_core.objective_coefficient == 1
+        model.optimize()
+        assert model.reactions.Biomass_Ecoli_core.x > 0.5
+        # test changing objective
         biomass = model.reactions.get_by_id("Biomass_Ecoli_core")
         atpm = model.reactions.get_by_id("ATPM")
         model.objective = atpm.id
         assert atpm.objective_coefficient == 1.
         assert biomass.objective_coefficient == 0.
-        assert model.objective == {atpm: 1.}
+        assert su.linear_reaction_coefficients(model) == {atpm: 1.}
         # change it back using object itself
         model.objective = biomass
         assert atpm.objective_coefficient == 0.
@@ -492,19 +647,91 @@ class TestCobraModel:
         assert biomass.objective_coefficient == 1.
         # set both using a dict
         model.objective = {atpm: 0.2, biomass: 0.3}
-        assert atpm.objective_coefficient == 0.2
-        assert biomass.objective_coefficient == 0.3
+        assert abs(atpm.objective_coefficient - 0.2) < 10 ** -9
+        assert abs(biomass.objective_coefficient - 0.3) < 10 ** -9
         # test setting by index
         model.objective = model.reactions.index(atpm)
-        assert model.objective == {atpm: 1.}
+        assert su.linear_reaction_coefficients(model) == {atpm: 1.}
         # test by setting list of indexes
-        model.objective = map(model.reactions.index, [atpm, biomass])
-        assert model.objective == {atpm: 1., biomass: 1.}
+        model.objective = [model.reactions.index(reaction) for
+                           reaction in [atpm, biomass]]
+        assert su.linear_reaction_coefficients(model) == {atpm: 1.,
+                                                          biomass: 1.}
+
+    def test_problem_properties(self, model):
+        new_variable = model.problem.Variable("test_variable")
+        new_constraint = model.problem.Constraint(S.Zero,
+                                                  name="test_constraint")
+        model.add_cons_vars([new_variable, new_constraint])
+        assert "test_variable" in model.variables.keys()
+        assert "test_constraint" in model.constraints.keys()
+        model.remove_cons_vars([new_constraint, new_variable])
+        assert "test_variable" not in model.variables.keys()
+        assert "test_constraint" not in model.variables.keys()
+
+    def test_model_medium(self, model):
+        # Add a dummy 'malformed' import reaction
+        bad_import = Reaction('bad_import')
+        bad_import.add_metabolites({model.metabolites.pyr_c: 1})
+        bad_import.bounds = (0, 42)
+        model.add_reaction(bad_import)
+
+        # Test basic setting and getting methods
+        medium = model.medium
+        model.medium = medium
+        assert model.medium == medium
+
+        # Test context management
+        with model:
+            # Ensure the bounds are correct beforehand
+            assert model.reactions.EX_glc__D_e.lower_bound == -10
+            assert model.reactions.bad_import.upper_bound == 42
+            assert model.reactions.EX_co2_e.lower_bound == -1000
+
+            # Make changes to the media
+            new_medium = model.medium
+            new_medium['EX_glc__D_e'] = 20
+            new_medium['bad_import'] = 24
+            del new_medium['EX_co2_e']
+
+            # Change the medium, make sure changes work
+            model.medium = new_medium
+            assert model.reactions.EX_glc__D_e.lower_bound == -20
+            assert model.reactions.bad_import.upper_bound == 24
+            assert model.reactions.EX_co2_e.lower_bound == 0
+
+        # Make sure changes revert after the contex
+        assert model.reactions.EX_glc__D_e.lower_bound == -10
+        assert model.reactions.bad_import.upper_bound == 42
+        assert model.reactions.EX_co2_e.lower_bound == -1000
+
+        new_medium['bogus_rxn'] = 0
+        with pytest.raises(KeyError):
+            model.medium = new_medium
+
+    def test_context_manager(self, model):
+        bounds0 = model.reactions[0].bounds
+        bounds1 = (1, 2)
+        bounds2 = (3, 4)
+
+        # Trigger a nested model context, ensuring that bounds are
+        # preserved at each level
+        with model:
+            model.reactions[0].bounds = bounds1
+            with model:
+                model.reactions[0].bounds = bounds2
+
+                assert model.reactions[0].bounds == bounds2
+            assert model.reactions[0].bounds == bounds1
+        assert model.reactions[0].bounds == bounds0
 
 
-@pytest.mark.skipif(scipy is None, reason="scipy required for ArrayBasedModel")
-class TestCobraArrayModel:
+class TestStoichiometricMatrix:
+    """Test the simple replacement for ArrayBasedModel"""
+
+    @pytest.mark.skipif(not scipy, reason='Sparse array methods require scipy')
     def test_array_model(self, model):
+        """ legacy test """
         for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
             array_model = model.to_array_based_model(matrix_type=matrix_type)
             assert array_model.S[7, 0] == -1
@@ -551,7 +778,9 @@ class TestCobraArrayModel:
             assert len(array_model.reactions) == array_model.S.shape[1]
             assert array_model.S.shape == (m, n - 1)
 
+    @pytest.mark.skipif(not scipy, reason='Sparse array methods require scipy')
     def test_array_based_model_add(self, model):
+        """ legacy test """
         array_model = model.to_array_based_model()
         m = len(array_model.metabolites)
         n = len(array_model.reactions)
@@ -570,28 +799,29 @@ class TestCobraArrayModel:
             assert test_model.S[7, 0] == -1
             assert test_model.lower_bounds[n] == -3.14
 
-    def test_array_based_select(self, array_model):
-        atpm_select = array_model.reactions[array_model.lower_bounds > 0]
-        assert len(atpm_select) == 1
-        assert atpm_select[0].id == "ATPM"
-        assert len(
-            array_model.reactions[array_model.lower_bounds <= 0]) == len(
-            array_model.reactions) - 1
-        # mismatched dimensions should give an error
-        with pytest.raises(TypeError):
-            array_model.reactions[[True, False]]
+    def test_dense_matrix(self, model):
+        S = create_stoichiometric_array(model, array_type='dense', dtype=int)
+        assert S.dtype == int
+        assert numpy.allclose(S.max(), [59])
 
-    def test_array_based_bounds_setting(self, array_model):
-        model = array_model
-        bounds = [0.0] * len(model.reactions)
-        model.lower_bounds = bounds
-        assert type(model.reactions[0].lower_bound) == float
-        assert abs(model.reactions[0].lower_bound) < 10 ** -5
-        model.upper_bounds[1] = 1234.0
-        assert abs(model.reactions[1].upper_bound - 1234.0) < 10 ** -5
-        model.upper_bounds[9:11] = [100.0, 200.0]
-        assert abs(model.reactions[9].upper_bound - 100.0) < 10 ** -5
-        assert abs(model.reactions[10].upper_bound - 200.0) < 10 ** -5
-        model.upper_bounds[9:11] = 123.0
-        assert abs(model.reactions[9].upper_bound - 123.0) < 10 ** -5
-        assert abs(model.reactions[10].upper_bound - 123.0) < 10 ** -5
+        S = create_stoichiometric_array(model, array_type='data_frame',
+                                        dtype=int)
+        assert S.stoichiometry.dtype == int
+        assert numpy.allclose(S.stoichiometry.max(), [59])
+
+        S = create_stoichiometric_array(model, array_type='dense', dtype=float)
+        solution = model.optimize()
+        mass_balance = S.dot(solution.fluxes)
+        assert numpy.allclose(mass_balance, 0)
+
+    @pytest.mark.skipif(not scipy, reason='Sparse array methods require scipy')
+    def test_sparse_matrix(self, model):
+        sparse_types = ['dok', 'lil']
+
+        solution = model.optimize()
+        for sparse_type in sparse_types:
+            S = create_stoichiometric_array(model, array_type=sparse_type)
+            mass_balance = S.dot(solution.fluxes)
+            assert numpy.allclose(mass_balance, 0)
+
+            # Is this really the best way to get a vector of fluxes?

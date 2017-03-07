@@ -1,21 +1,12 @@
-from .DictList import DictList
-from .Object import Object
-from .Gene import Gene
-from .Metabolite import Metabolite
-from .Reaction import Reaction
-from .Solution import Solution
-from .Model import Model
-from .Species import Species
+# -*- coding: utf-8 -*-
 
-try:
-    import scipy
-except:
-    scipy = None
+from __future__ import absolute_import
 
-if scipy:
-    from .ArrayBasedModel import ArrayBasedModel
-else:
-    from warnings import warn
-    warn("ArrayBasedModel requires scipy")
-    del warn
-del scipy
+from cobra.core.dictlist import DictList
+from cobra.core.gene import Gene
+from cobra.core.metabolite import Metabolite
+from cobra.core.model import Model
+from cobra.core.object import Object
+from cobra.core.reaction import Reaction
+from cobra.core.solution import Solution, LegacySolution, get_solution
+from cobra.core.species import Species

@@ -1,25 +1,30 @@
+# -*- coding: utf-8 -*-
 # PLEASE NOTE THAT JYTHON SUPPORT (and this jython-only-solver) is deprecated
 #Interface to ilog/cplex 12.4 python / jython interfaces
 #QPs are not yet supported under jython
-from __future__ import print_function
-from os import name as __name
-from copy import deepcopy
-from warnings import warn
-###solver specific parameters
-from .parameters import status_dict, variable_kind_dict, \
-     sense_dict, parameter_mappings, parameter_defaults, \
-     objective_senses, default_objective_sense
+from __future__ import absolute_import, print_function
 
-from ..core.Solution import Solution
+from copy import deepcopy
+from os import name as __name
 from time import time
+from warnings import warn
+
 from six import iteritems
+
+from ilog.concert import IloNumVarType, IloObjectiveSense
+from ilog.cplex import IloCplex
+from ilog.cplex.IloCplex import DoubleParam, IntParam, StringParam
+
+from ..core.solution import Solution
+###solver specific parameters
+from .parameters import (
+    default_objective_sense, objective_senses, parameter_defaults,
+    parameter_mappings, sense_dict, status_dict, variable_kind_dict)
+
 solver_name = 'cplex'
 parameter_defaults = parameter_defaults[solver_name]
 sense_dict = eval(sense_dict[solver_name])
 
-from ilog.cplex import IloCplex
-from ilog.cplex.IloCplex import DoubleParam, IntParam, StringParam
-from ilog.concert import IloNumVarType, IloObjectiveSense 
 #__solver_class = IloCplex
 status_dict = eval(status_dict[solver_name])
 class Problem(IloCplex):

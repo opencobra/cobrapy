@@ -7,25 +7,27 @@ function pre_build {
     if [ -n "$IS_OSX" ]; then
         export CC=clang
         export CXX=clang++
-		export CFLAGS="-fPIC -O3 -arch i386 -arch x86_64 -g -DNDEBUG -mmacosx-version-min=10.6"
-	else
-		yum install -y libxslt libxml2 libxml2-devel libxslt-devel
-	fi
-	curl -O http://ftp.gnu.org/gnu/glpk/glpk-4.60.tar.gz
-	tar xzf glpk-4.60.tar.gz
-	(cd glpk-4.60 \
-			&& ./configure \
-			&& make \
-			&& make install)
-	pip install cython
-	cython -a cobra/solvers/cglpk.pyx
-	export PATH="$PATH:/usr/local/bin"
+        export CFLAGS="-fPIC -O3 -arch i386 -arch x86_64 -g -DNDEBUG -mmacosx-version-min=10.6"
+    else
+        yum install -y libxslt libxml2 libxml2-devel libxslt-devel
+    fi
+    curl -O http://ftp.gnu.org/gnu/glpk/glpk-4.61.tar.gz
+    tar xzf glpk-4.61.tar.gz
+    (cd glpk-4.61 \
+            && ./configure --disable-reentrant \
+            && make \
+            && make install)
+    pip install cython
+    cython -a cobra/solvers/cglpk.pyx
+    export PATH="$PATH:/usr/local/bin"
 }
 
 function build_wheel {
     # Set default building method to pip
     build_bdist_wheel $@
-	(cd glpk-4.60 && make uninstall)
+    # since swiglpk doesn't have wheels, we currently must keep glpk
+    # installed for testing
+	# (cd glpk-4.60 && make uninstall)
 }
 
 function run_tests_in_repo {
@@ -45,8 +47,11 @@ function run_tests_in_repo {
 	fi
 	mkdir -p $HOME/.config/matplotlib
 	echo 'backend: Agg' >> $HOME/.config/matplotlib/matplotlibrc
-	(pytest --pyargs -v -rsx --cov=cobra --cov-report=xml --cov-config=../.coveragerc --benchmark-skip cobra &&
-			mv coverage.xml ..)
+	COVERAGEXML=`python -c "import os,sys; print(os.path.realpath('coverage.xml'))"`
+	COVERAGERC=`python -c "import os,sys; print(os.path.realpath('../.coveragerc'))"`
+	(pytest --pyargs -v -rsx --cov=cobra --cov-report=xml:${COVERAGEXML} \
+			--cov-config=${COVERAGERC} --benchmark-skip cobra &&
+			mv ${COVERAGEXML} ..)
 }
 
 function run_tests {

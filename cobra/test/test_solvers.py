@@ -1,6 +1,11 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import pytest
-from cobra.core import Model, Reaction, Metabolite
+
 from cobra import solvers
+from cobra.core import Metabolite, Model, Reaction
+
 from .conftest import model
 
 try:
@@ -110,13 +115,13 @@ class TestCobraSolver:
         constraint._bound = 2.5
         x = Reaction("x")
         x.lower_bound = 0.
-        x.objective_coefficient = 1.
         x.add_metabolites({constraint: 2.5})
         y = Reaction("y")
         y.lower_bound = 0.
-        y.objective_coefficient = 1.
         y.add_metabolites({constraint: 1.})
         cobra_model.add_reactions([x, y])
+        x.objective_coefficient = 1.
+        y.objective_coefficient = 1.
         float_sol = solver.solve(cobra_model)
         # add an integer constraint
         y.variable_kind = "integer"
@@ -156,9 +161,9 @@ class TestCobraSolver:
         x.add_metabolites({c: 1})
         z = Reaction("z")
         z.add_metabolites({c: 1})
-        z.objective_coefficient = 1
         m = Model("test_model")
         m.add_reactions([x, y, z])
+        z.objective_coefficient = 1
         # change an existing coefficient
         lp = solver.create_problem(m)
         solver.solve_problem(lp)
@@ -218,15 +223,15 @@ class TestCobraSolver:
         c = Metabolite("c")
         c._bound = 2
         x = Reaction("x")
-        x.objective_coefficient = -0.5
         x.lower_bound = 0.
         y = Reaction("y")
-        y.objective_coefficient = -0.5
         y.lower_bound = 0.
         x.add_metabolites({c: 1})
         y.add_metabolites({c: 1})
         m = Model()
         m.add_reactions([x, y])
+        x.objective_coefficient = -0.5
+        y.objective_coefficient = -0.5
         lp = solver.create_problem(m)
         quadratic_obj = scipy.sparse.eye(2) * 2
         solver.set_quadratic_objective(lp, quadratic_obj)

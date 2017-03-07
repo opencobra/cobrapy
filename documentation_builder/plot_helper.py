@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from matplotlib.pyplot import figure, xlim, ylim, gca, arrow, text, scatter
 from mpl_toolkits.axes_grid.axislines import SubplotZero
 from numpy import linspace, arange, sqrt, pi, sin, cos, sign
@@ -45,11 +46,12 @@ def plot_qp2():
     ax.plot([0.5], [1.5], 'bo')
 
     yrange = linspace(1, 2, 11)
-    for r in (yrange ** 2 / 2. - yrange):
+    for r in [y ** 2 / 2. - y for y in yrange]:
         t = linspace(-sqrt(2 * r + 1) + 0.000001,
                      sqrt(2 * r + 1) - 0.000001, 1000)
-        ax.plot(abs(t), 1 + sqrt(2 * r + 1 - t ** 2) * sign(t), '-.',
-                color="gray")
+        ax.plot(abs(t), [1 + sqrt(abs(2 * r + 1 - x ** 2)) *
+                         sign(x) for x in t],
+                '-.', color="gray")
 
 
 def plot_loop():

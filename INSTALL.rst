@@ -133,4 +133,4 @@ Then start python and type the following into the Python shell
     test_all()
 
 You should see some skipped tests and expected failures, and the
-function should return ``True``.
+function should return ``False``.
