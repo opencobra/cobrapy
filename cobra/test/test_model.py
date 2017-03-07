@@ -11,7 +11,7 @@ from sympy import S
 import cobra.util.solver as su
 from cobra.core import Metabolite, Model, Reaction
 from cobra.solvers import solver_dict
-from cobra.util import create_stoichiometric_array
+from cobra.util import create_stoichiometric_matrix
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
@@ -800,16 +800,19 @@ class TestStoichiometricMatrix:
             assert test_model.lower_bounds[n] == -3.14
 
     def test_dense_matrix(self, model):
-        S = create_stoichiometric_array(model, array_type='dense', dtype=int)
+        S = create_stoichiometric_matrix(model, array_type='dense', dtype=int)
         assert S.dtype == int
         assert numpy.allclose(S.max(), [59])
 
-        S = create_stoichiometric_array(model, array_type='data_frame',
-                                        dtype=int)
-        assert S.stoichiometry.dtype == int
-        assert numpy.allclose(S.stoichiometry.max(), [59])
+        S_df = create_stoichiometric_matrix(
+            model, array_type='DataFrame', dtype=int)
+        assert S_df.values.dtype == int
+        assert numpy.all(S_df.columns == [r.id for r in model.reactions])
+        assert numpy.all(S_df.index == [m.id for m in model.metabolites])
+        assert numpy.allclose(S_df.values, S)
 
-        S = create_stoichiometric_array(model, array_type='dense', dtype=float)
+        S = create_stoichiometric_matrix(model, array_type='dense',
+                                         dtype=float)
         solution = model.optimize()
         mass_balance = S.dot(solution.fluxes)
         assert numpy.allclose(mass_balance, 0)
@@ -820,7 +823,7 @@ class TestStoichiometricMatrix:
 
         solution = model.optimize()
         for sparse_type in sparse_types:
-            S = create_stoichiometric_array(model, array_type=sparse_type)
+            S = create_stoichiometric_matrix(model, array_type=sparse_type)
             mass_balance = S.dot(solution.fluxes)
             assert numpy.allclose(mass_balance, 0)
 

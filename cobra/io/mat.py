@@ -11,7 +11,7 @@ from numpy import object as np_object
 from numpy import array, inf, isinf
 
 from cobra.core import Metabolite, Model, Reaction
-from cobra.util import create_stoichiometric_array
+from cobra.util import create_stoichiometric_matrix
 from cobra.util.solver import set_objective
 
 try:
@@ -153,7 +153,7 @@ def create_mat_dict(model):
     mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
     mat["csense"] = "".join((
         met._constraint_sense for met in model.metabolites))
-    stoich_mat = create_stoichiometric_array(model)
+    stoich_mat = create_stoichiometric_matrix(model)
     mat["S"] = stoich_mat if stoich_mat is not None else [[]]
     # multiply by 1 to convert to float, working around scipy bug
     # https://github.com/scipy/scipy/issues/4537

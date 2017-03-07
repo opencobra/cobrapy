@@ -687,7 +687,7 @@ class Model(Object):
         which may be used to perform linear algebra operations with the
         stoichiometric matrix.
 
-        Deprecated (0.6). Use `cobra.util.array.create_stoichiometric_array`
+        Deprecated (0.6). Use `cobra.util.array.create_stoichiometric_matrix`
         instead.
 
         Parameters
@@ -697,7 +697,7 @@ class Model(Object):
 
         """
         warn("to_array_based_model is deprecated. "
-             "use cobra.util.array.create_stoichiometric_array instead",
+             "use cobra.util.array.create_stoichiometric_matrix instead",
              DeprecationWarning)
         from cobra.core.arraybasedmodel import ArrayBasedModel
         return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
