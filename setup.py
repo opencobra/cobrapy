@@ -144,7 +144,7 @@ except:
 
 setup(
     name="cobra",
-    version="0.5.11",
+    version="0.6.0a1",
     packages=find_packages(),
     setup_requires=setup_requirements,
     install_requires=["future", "swiglpk", "optlang",
