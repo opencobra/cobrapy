@@ -20,14 +20,6 @@ cobra.flux_analysis.double_deletion module
     :undoc-members:
     :show-inheritance:
 
-cobra.flux_analysis.essentiality module
----------------------------------------
-
-.. automodule:: cobra.flux_analysis.essentiality
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 cobra.flux_analysis.gapfilling module
 -------------------------------------
 
@@ -72,6 +64,14 @@ cobra.flux_analysis.reaction module
 -----------------------------------
 
 .. automodule:: cobra.flux_analysis.reaction
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cobra.flux_analysis.sampling module
+-----------------------------------
+
+.. automodule:: cobra.flux_analysis.sampling
     :members:
     :undoc-members:
     :show-inheritance:

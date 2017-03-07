@@ -41,11 +41,11 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
 
     Returns
     -------
-    DataFrame
-        pandas.DataFrame
-        with reaction identifier as the index columns
+    pandas.DataFrame
+        DataFrame with reaction identifier as the index columns
+
         - maximum: indicating the highest possible flux
-        - minimum: indicating the loweset possible flux
+        - minimum: indicating the lowest possible flux
 
     Notes
     -----
