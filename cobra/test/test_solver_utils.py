@@ -125,7 +125,7 @@ class TestSolverMods:
             direction='min')
         su.set_objective(model, minimize_glucose)
         su.fix_objective_as_constraint(model)
-        fx_name = 'Fixed_objective_{}'.format(model.objective.name)
+        fx_name = 'fixed_objective_{}'.format(model.objective.name)
         constr = model.constraints
         assert (constr[fx_name].lb, constr[fx_name].ub) == (
             None, model.solver.objective.value)

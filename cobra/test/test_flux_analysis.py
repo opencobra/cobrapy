@@ -259,14 +259,15 @@ class TestCobraFluxAnalysis:
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_flux_variability_loopless(self, model, fva_results, solver):
-        fva_out = flux_variability_analysis(
-            model, loopless=True, solver=solver,
-            reaction_list=model.reactions[1::10])
-        # This works because textbook has no loops in the (unique)
-        # optimal solution
-        for name, result in iteritems(fva_out.T):
-            for k, v in iteritems(result):
-                assert abs(fva_results[k][name] - v) < 0.00001
+        loop_reactions = [model.reactions.get_by_id(rid)
+                          for rid in ("FRD7", "SUCDi")]
+        fva_normal = flux_variability_analysis(
+            model, solver=solver, reaction_list=loop_reactions)
+        fva_loopless = flux_variability_analysis(
+            model, solver=solver, reaction_list=loop_reactions, loopless=True)
+
+        assert not numpy.allclose(fva_normal["maximum"], fva_normal["minimum"])
+        assert numpy.allclose(fva_loopless["maximum"], fva_loopless["minimum"])
 
     def test_fva_data_frame(self, model):
         df = flux_variability_analysis(model, return_frame=True)
