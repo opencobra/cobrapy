@@ -15,7 +15,7 @@ from time import time
 import numpy as np
 import pandas
 from cobra.solvers import get_solver_name, solver_dict
-from cobra.util import create_stoichiometric_array, nullspace
+from cobra.util import create_stoichiometric_matrix, nullspace
 
 BTOL = np.finfo(np.float32).eps
 """The tolerance used for checking bounds feasibility."""
@@ -87,7 +87,7 @@ class HRSampler(object):
         self.model = model
         self.thinning = thinning
         self.n_samples = 0
-        self.S = create_stoichiometric_array(model, array_type='dense')
+        self.S = create_stoichiometric_matrix(model, array_type='dense')
         self.NS = nullspace(self.S)
         self.bounds = np.array([[r.lower_bound, r.upper_bound]
                                for r in model.reactions]).T
