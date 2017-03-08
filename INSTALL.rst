@@ -65,13 +65,11 @@ yum).
    -  Use ``sudo pip install python-libsbml`` on Mac/Linux
 
 2. `lxml <http://lxml.de/>`_ to speed up read/write of SBML level 3 files.
-3. `numpy <http://numpy.org>`_ >= 1.6.1 for double deletions
 
-   -  `Windows numpy installer <http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy>`_
-4. `scipy <http://scipy.org>`_ >= 0.11 for ArrayBasedModel and saving to \*.mat files.
-
+3. `scipy <http://scipy.org>`_ >= 0.11 for MOMA and saving to \*.mat files.
    -  `Windows scipy installer <http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy>`_
-5. `pytest <http://docs.pytest.org/en/latest/>`_ and `pytest-benchmark
+
+4. `pytest <http://docs.pytest.org/en/latest/>`_ and `pytest-benchmark
    <http://pytest-benchmark.readthedocs.io/en/latest/>`_ are required
    for testing
 
@@ -81,13 +79,12 @@ You can install all packages directly by
 
     pip install "cobra[all]"
 
-Other solvers
+Solvers
 ~~~~~~~~~~~~~
 
-cobrapy comes with bindings to the GNU Linear Programming Kit ([glpk]
-(http://www.gnu.org/software/glpk/)) using its own bindings called
-"cglpk" in cobrapy. In addition, cobrapy currently supports these linear
-programming solvers:
+cobrapy uses `optlang <http://optlang.readthedocs.io>`_ to interface
+the mathematical solvers used to optimize the created COBRA models,
+which at the time of writing
 
 -  ILOG/CPLEX (available with
    `Academic <https://www.ibm.com/developerworks/university/academicinitiative/>`_
@@ -95,19 +92,7 @@ programming solvers:
    `Commercial <http://www.ibm.com/software/integration/optimization/cplex-optimizer/>`_
    licenses).
 -  `gurobi <http://gurobi.com>`_
--  `QSopt\_ex
-   esolver <http://www.dii.uchile.cl/~daespino/ESolver_doc/main.html>`_
--  `MOSEK <http://www.mosek.com/>`_
--  `coin-or clp and cbc <http://coin-or.org/>`_ through
-   `cylp <https://github.com/coin-or/CyLP>`_.
-
-ILOG/CPLEX, MOSEK, and Gurobi are commercial software packages that
-currently provide free licenses for academics and support both linear
-and quadratic programming. GLPK and clp are open source linear
-programming solvers; however, they may not be as robust as the
-commercial solvers for mixed-integer and quadratic programming.
-QSopt\_ex esolver is also open source, and can solve linear programs
-using rational operations, giving exact solutions.
+-  `glpk <http://www.gnu.org/software/glpk/>`_
 
 Testing your installation
 =========================
