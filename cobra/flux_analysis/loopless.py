@@ -188,7 +188,7 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
     reaction : cobra.Reaction
         The reaction currently minimized/maximized.
     solution : boolean, optional
-        Whether to return the entire solution only the minimum/maximum for
+        Whether to return the entire solution or only the minimum/maximum for
         `reaction`.
     zero_cutoff : positive float, optional
         Cutoff used for loop removal. Fluxes with an absolute value smaller
