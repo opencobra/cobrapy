@@ -106,7 +106,7 @@ features or changes that you can implement yourself.
     (cobrapy)$ pip install -r develop-requirements.txt
 
    If you want to work on the Matlab interface, please also install
-   ``pymatbridge``::   
+   ``pymatbridge``::
 
     (cobrapy)$ pip install pymatbridge
 
@@ -132,7 +132,7 @@ features or changes that you can implement yourself.
 
 10. When you are done making changes, check that your changes pass pep8
     and the tests with tox for your local Python version::
- 
+
      (cobrapy)$ tox -e pep8
 
     and likely one of::
@@ -141,13 +141,13 @@ features or changes that you can implement yourself.
      (cobrapy)$ tox -e py34
      (cobrapy)$ tox -e py35
 
-10. Commit your changes and push your branch to GitHub::
+11. Commit your changes and push your branch to GitHub::
 
     (cobrapy)$ git add .
     (cobrapy)$ git commit -m "Your detailed description of your changes."
     (cobrapy)$ git push origin name-of-your-bugfix-or-feature
 
-11. Submit a pull request through the GitHub website. Once you submit a pull
+12. Submit a pull request through the GitHub website. Once you submit a pull
     request your changes will be tested automatically against multiple Python
     versions and operating systems. Further errors might appear during those
     tests.
