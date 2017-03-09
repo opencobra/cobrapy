@@ -67,7 +67,14 @@ matrix:
         - MB_PYTHON_VERSION=3.6
 
 before_install:
-  - if [[ -n "${MB_PYTHON_VERSION}" ]]; then travis_retry source scripts/setup.sh; fi
+  - if [[ -n "${MB_PYTHON_VERSION}" ]];
+      (travis_retry git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout e6ebbfa)
+      TEST_DEPENDS="swiglpk optlang sympy decorator cython codecov coverage numpy scipy python-libsbml jsonschema six pytest pytest-cov pytest-benchmark tabulate"
+      BUILD_DEPENDS="swiglpk optlang sympy cython numpy scipy"
+      source multibuild/common_utils.sh
+      source multibuild/travis_steps.sh
+      before_install
+    fi
   - pip install -U pip setuptools wheel tox
 
 before_cache:
@@ -80,7 +87,7 @@ script:
   - if [[ -n "${MB_PYTHON_VERSION}" ]]; then
       travis_retry install_run $PLAT;
     else
-      pip install rstcheck;
+      pip install rstcheck Cython;
       find . -name "*.rst" -exec rstcheck {} +;
       tox -e "${TOXENV}";
     fi
