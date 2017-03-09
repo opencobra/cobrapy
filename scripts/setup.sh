@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-if [ "${TOX_ENV}" == "pep8" | "${TOX_ENV}" == "rstcheck" ];then
-    exit 0
+if [[ -z "${MB_PYTHON_VERSION}" ]];then
+    echo "Environment variable MB_PYTHON_VERSION must be defined!"
+    exit 2
 fi
 
 

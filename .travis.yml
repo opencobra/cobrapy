@@ -67,21 +67,22 @@ matrix:
         - MB_PYTHON_VERSION=3.6
 
 before_install:
-  - if [ -n "${MB_PYTHON_VERSION}" ]; then travis_retry source scripts/setup.sh; fi
+  - if [[ -n "${MB_PYTHON_VERSION}" ]]; then travis_retry source scripts/setup.sh; fi
   - pip install -U pip setuptools wheel tox
 
 before_cache:
   - set +e
 
 install:
-  - if [ -n "${MB_PYTHON_VERSION}" ]; then travis_retry build_wheel . $PLAT; fi
+  - if [[ -n "${MB_PYTHON_VERSION}" ]]; then travis_retry build_wheel . $PLAT; fi
 
 script:
-  - if [ -n "${MB_PYTHON_VERSION}" ]; then
+  - if [[ -n "${MB_PYTHON_VERSION}" ]]; then
       travis_retry install_run $PLAT;
     else
+      pip install rstcheck;
       find . -name "*.rst" -exec rstcheck {} +;
-      tox -e "${TOX_ENV}";
+      tox -e "${TOXENV}";
     fi
 
 deploy:
