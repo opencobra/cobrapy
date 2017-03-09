@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 
 echo -e " starting deploy for branch ${TRAVIS_BRANCH} .."

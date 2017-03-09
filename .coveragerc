@@ -4,8 +4,7 @@ branch = True
 source = cobra
 omit =
     cobra/solvers/*
-    cobra/test/data/*
-    cobra/test_*
+    cobra/test/*
 
 [report]
 # Regexes for lines to exclude from consideration
