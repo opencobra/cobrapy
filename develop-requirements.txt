@@ -8,7 +8,6 @@ lxml
 matplotlib
 palettable
 zmq
-pymatbridge
 pandas>=0.17.0
 tabulate
 tox
@@ -18,5 +17,4 @@ optlang
 swiglpk
 pytest-benchmark
 bumpversion
-flake8
 pydocstyle
