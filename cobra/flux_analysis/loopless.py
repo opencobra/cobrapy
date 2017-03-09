@@ -81,7 +81,7 @@ def add_loopless(model, zero_cutoff=1e-12):
         model.constraints[name].set_linear_coefficients(coefs)
 
 
-def __add_cycle_free(model, fluxes):
+def _add_cycle_free(model, fluxes):
     """Add constraints for CycleFreeFlux."""
     model.objective = S.Zero
     for rxn in model.reactions:
@@ -165,7 +165,7 @@ def loopless_solution(model, fluxes=None):
             model.objective.expression,
             lb=obj_val, ub=obj_val, name="loopless_obj_constraint")
         model.add_cons_vars([loopless_obj_constraint])
-        __add_cycle_free(model, fluxes)
+        _add_cycle_free(model, fluxes)
         solution = model.optimize(objective_sense=None)
 
     return solution
@@ -213,7 +213,7 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
 
     with model:
         model.objective = 1.0 * model.variables.fva_old_objective
-        __add_cycle_free(model, sol.fluxes)
+        _add_cycle_free(model, sol.fluxes)
         model.solver.optimize()
         flux = reaction.flux
 
@@ -242,8 +242,7 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
                 rxn.bounds = max(0, rxn.lower_bound), min(0, rxn.upper_bound)
 
         if solution:
-            solution = model.optimize(objective_sense=None)
-            best = solution.fluxes
+            best = model.optimize(objective_sense=None)
         else:
             model.solver.optimize()
             best = reaction.flux
