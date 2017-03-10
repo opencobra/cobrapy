@@ -351,7 +351,7 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
     add_cons_vars_to_problem(model, constraints + [variable])
 
 
-def fix_objective_as_constraint(model, fraction=1):
+def fix_objective_as_constraint(model, fraction=1, name='fixed_objective_{}'):
     """Fix current objective as an additional constraint.
 
     When adding constraints to a model, such as done in pFBA which
@@ -371,8 +371,11 @@ def fix_objective_as_constraint(model, fraction=1):
         The model to operate on
     fraction : float
         The fraction of the optimum the objective is allowed to reach.
+    name : str
+        Name of the objective. May contain one `{}` placeholder which is filled
+        with the name of the old objective.
     """
-    fix_objective_name = 'Fixed_objective_{}'.format(model.objective.name)
+    fix_objective_name = name.format(model.objective.name)
     if fix_objective_name in model.constraints:
         model.solver.remove(fix_objective_name)
     solution = model.optimize()
