@@ -14,6 +14,41 @@
   </url>
   
   <url>
+    <loc>https://opencobra.github.io/cobrapy/releases/0.6.0a2/</loc>
+    <lastmod>2017-03-13T14:28:15-06:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/PM28163785/</loc>
+    <lastmod>2017-02-07T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/PM28133437/</loc>
+    <lastmod>2017-01-31T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/releases/0.5.11/</loc>
+    <lastmod>2017-01-30T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/PM28129330/</loc>
+    <lastmod>2017-01-28T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/PM28098205/</loc>
+    <lastmod>2017-01-18T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/PM28082911/</loc>
+    <lastmod>2017-01-14T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://opencobra.github.io/cobrapy/packages/mminte/</loc>
     <lastmod>2017-01-13T11:00:05-06:00</lastmod>
   </url>
@@ -226,7 +261,13 @@
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/</loc>
-    <lastmod>2016-12-03T00:00:00+00:00</lastmod>
+    <lastmod>2017-02-07T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/releases/</loc>
+    <lastmod>2017-03-13T14:28:15-06:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -237,7 +278,7 @@
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/</loc>
-    <lastmod>2017-01-13T11:00:05-06:00</lastmod>
+    <lastmod>2017-03-13T14:28:15-06:00</lastmod>
     <priority>0</priority>
   </url>
   

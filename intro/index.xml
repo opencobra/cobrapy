@@ -14,7 +14,11 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/intro/description/</guid>
-      <description>&lt;p&gt;&lt;strong&gt;cobrapy&lt;/strong&gt; is a python package that provides a simple interface to metabolic constraint-based reconstruction and analysis.&lt;/p&gt;
+      <description>&lt;p&gt;&lt;a href=&#34;https://github.com/opencobra/cobrapy&#34;&gt;&lt;img src=&#34;https://img.shields.io/github/stars/opencobra/cobrapy.svg?style=social&amp;amp;label=Star&#34; alt=&#34;GitHub stars&#34; /&gt;&lt;/a&gt;
+&lt;a href=&#34;https://github.com/opencobra/cobrapy/graphs/contributors&#34;&gt;&lt;img src=&#34;https://img.shields.io/github/contributors/opencobra/cobrapy.svg&#34; alt=&#34;GitHub contributors&#34; /&gt;&lt;/a&gt;
+&lt;a href=&#34;../releases&#34;&gt;&lt;img src=&#34;https://img.shields.io/github/release/opencobra/cobrapy.svg&#34; alt=&#34;GitHub release&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;cobrapy&lt;/strong&gt; is a python package that provides a simple interface to metabolic constraint-based reconstruction and analysis.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import cobra
 &amp;gt;&amp;gt;&amp;gt; model = cobra.io.read_sbml_model(&#39;Ec_core_flux1.xml&#39;)
