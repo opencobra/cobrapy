@@ -19,8 +19,8 @@ be viewed at `nbviewer
     phenotype_phase_plane
     sampling
     loopless
-	solvers
-	constraints-objectives
+    solvers
+    constraints_objectives
     pymatbridge
     faq
     cobra

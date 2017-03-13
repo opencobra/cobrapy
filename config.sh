@@ -56,5 +56,6 @@ function run_tests_in_repo {
 
 function run_tests {
     # Runs tests on installed distribution from an empty directory
+    pip install python-libsbml==5.12.1 -f https://s3.eu-central-1.amazonaws.com/moonlight-science/wheelhouse/index.html --no-cache-dir
     run_tests_in_repo
 }
