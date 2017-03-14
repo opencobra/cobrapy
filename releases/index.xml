@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Releases on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/releases/index.xml</link>
+    <description>Recent content in Releases on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 13 Mar 2017 14:28:15 -0600</lastBuildDate>
+    <atom:link href="https://opencobra.github.io/cobrapy/releases/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>0.6.0a2</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.6.0a2/</link>
+      <pubDate>Mon, 13 Mar 2017 14:28:15 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.6.0a2/</guid>
+      <description>
+
+&lt;p&gt;In this release we have made major changes to pretty much all corners
+of cobrapy and we hope that you will enjoy the new features as much as
+we do, and that any negative impacts on existing workflows will be
+limited.&lt;/p&gt;
+
+&lt;p&gt;The major change is the ongoing move away from cobrapy&amp;rsquo;s internal
+solver interfaces to those provided by
+&lt;a href=&#34;https://github.com/biosustain/optlang&#34;&gt;optlang&lt;/a&gt; which provides a
+single unified interface to glpk, cplex and gurobi enhanced by the
+ability to deal with symbolic expressions. This means formulating
+complex constraints no longer implies defining the necessary matrix
+algebra, but instead simply writing the expression and assigning that
+as an objective to the model.&lt;/p&gt;
+
+&lt;p&gt;We feel that this, and the clarified scope and focus attained by
+separating the topic of linear programming (optlang) and metabolic
+flux analysis (cobrapy) to two packages is natural and makes both of
+these tasks less confusing and more fun. We hope that you after
+trying, feel the same and that in any case you let us know what you
+think by
+&lt;a href=&#34;https://github.com/opencobra/cobrapy/issues&#34;&gt;raising an issue&lt;/a&gt; or
+talking directly to us on &lt;a href=&#34;gitter.im/opencobra/cobrapy&#34;&gt;gitter&lt;/a&gt; or
+&lt;a href=&#34;https://groups.google.com/forum/#!forum/cobra-pie&#34;&gt;google groups&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;
+
+&lt;h3 id=&#34;the-optlang-solver-interface&#34;&gt;The optlang solver interface&lt;/h3&gt;
+
+&lt;p&gt;The main change is the addition of &lt;code&gt;model.solver&lt;/code&gt; which is the optlang
+interface to the chosen solver (cplex and glpk are currently well
+supported, gurobi interface is at the time of writing mostly working
+but improvements are still expected). The solver interface manages
+variables, constraints and the objective of the model and the task of
+turning these into a model formulation to be optimized by the
+solver. From cobrapy&amp;rsquo;s point-of-view, this means that all aspects
+concerning generating problems, configuring solvers are handed over to
+optlang and consequently the whole &lt;code&gt;cobra.solver&lt;/code&gt; has been deprecated,
+slated for removal in the next major release of cobrapy.&lt;/p&gt;
+
+&lt;p&gt;Importantly, configuring the solver by passing &lt;code&gt;**solver_args&lt;/code&gt; or
+&lt;code&gt;solver=&#39;solver&#39;&lt;/code&gt; is now instead done by assigning solver to
+&lt;code&gt;model.solver&lt;/code&gt; and then configuring via &lt;code&gt;model.solver.configuration&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Creating new algorithms has been greatly facilitated as it no longer
+requires formulating objectives and constraints by matrix algebra but
+instead directly by expressions, e.g. see the implementation of
+&lt;code&gt;cobra.flux_analysis.moma.add_moma&lt;/code&gt; and
+&lt;code&gt;cobra.flux_analysis.loopless.loopless_solution&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Instead of having only reactions as variables and metabolites as
+constraints, with optlang, cobrapy now supports arbitrary constraints
+and variables and these can be added/removed by &lt;code&gt;model.add_cons_vars&lt;/code&gt;
+and &lt;code&gt;model.remove_cons_vars&lt;/code&gt; which take care of adding these to
+&lt;code&gt;model.problem&lt;/code&gt; which is the optlang&amp;rsquo;s mathematical model associated
+with the cobra model.&lt;/p&gt;
+
+&lt;p&gt;Reactions are now modeled by two variables, forward and reverse, and
+these can be seen by accessing &lt;code&gt;reaction.{forward,reverse}_variable&lt;/code&gt;
+and the combined &lt;code&gt;reaction.flux_expression&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Objectives can now easily be made quite advanced by simply crafting
+the right expression and assigning this as usual to &lt;code&gt;model.objective&lt;/code&gt;,
+see the
+&lt;a href=&#34;http://cobrapy.readthedocs.io/en/latest/constraints_objectives.html&#34;&gt;contraints and objectives notebook&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;temporary-changes-to-a-model&#34;&gt;Temporary changes to a model&lt;/h3&gt;
+
+&lt;p&gt;Models are large complex objects and copying such objects is
+inevitably slow. To avoid that, cobrapy has drawn on the experience
+from the development of cameo to introduce the &lt;code&gt;HistoryManager&lt;/code&gt; class
+and the concept of models as contexts. Now, most changes that can be
+made to a model such as changing the objective, setting reaction
+bounds, adding and removing reactions, is reversed upon exit when done
+inside a context, see the updated
+&lt;a href=&#34;http://cobrapy.readthedocs.io/en/latest/getting_started.html&#34;&gt;getting started notebook&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;improved-solution-handling&#34;&gt;Improved solution handling&lt;/h3&gt;
+
+&lt;p&gt;Previously, cobra models lugged around their latest solution to enable
+providing &lt;code&gt;reaction.{flux,reduced_cost}&lt;/code&gt; (formerly
+&lt;code&gt;reaction.{x,y}&lt;/code&gt;). This was problematic because if the model had
+changed since last optimization, then this would effectively give the
+wrong result. On top of that, it was not easy to make a change,
+optimize and get values, and then undo that change to the model
+without having to copy the whole model object. To solve this, and many
+similar problem, we have completely refactored &lt;code&gt;cobra.Solution&lt;/code&gt; so
+that &lt;code&gt;model.optimize()&lt;/code&gt; now returns a solution and it is the user&amp;rsquo;s
+responsibility to manage this object. &lt;code&gt;reaction.flux&lt;/code&gt; gets its values
+directly from the &lt;code&gt;model.problem&lt;/code&gt;. To sugar the new solution class,
+fluxes, reduced costs, and shadow prices are now pandas series!&lt;/p&gt;
+
+&lt;h2 id=&#34;sampling&#34;&gt;Sampling&lt;/h2&gt;
+
+&lt;p&gt;Cobrapy now has flux sampling supported by
+&lt;code&gt;cobra.flux_analysis.sampling&lt;/code&gt; see
+&lt;a href=&#34;http://cobrapy.readthedocs.io/en/latest/sampling.html&#34;&gt;the sampling notebook&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;loopless-models-and-solutions&#34;&gt;Loopless models and solutions&lt;/h2&gt;
+
+&lt;p&gt;Added implementations of
+&lt;a href=&#34;http://dx.doi.org/10.1093/bioinformatics/btv096&#34;&gt;CycleFreeFlux&lt;/a&gt; and
+the loopless model of
+&lt;a href=&#34;http://dx.doi.org/10.1016/j.bpj.2010.12.3707&#34;&gt;Schellenberger et al.&lt;/a&gt;. See
+the
+&lt;a href=&#34;http://cobrapy.readthedocs.io/en/latest/loopless.html&#34;&gt;notebook on loopless&lt;/a&gt;
+and &lt;a href=&#34;http://cobrapy.readthedocs.io/en/latest/simulating.html&#34;&gt;simulating&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;dataframes-as-return-values&#34;&gt;DataFrames as return values&lt;/h2&gt;
+
+&lt;p&gt;&lt;code&gt;flux_variability_analysis&lt;/code&gt;, &lt;code&gt;single_{gene,reaction}_deletion&lt;/code&gt;,
+&lt;code&gt;cobra.flux_analysis.sampling&lt;/code&gt; and
+&lt;code&gt;cobra.util.create_stoichiometric_matrix&lt;/code&gt; now return pandas data frames
+instead of nested dicts as these are more convenient and fun to work
+with. Pandas (and numpy) are therefore now hard requirements for
+cobrapy, which should not be a problem for neither linux, windows or
+mac users as there are reliable wheels for these packages now.&lt;/p&gt;
+
+&lt;h3 id=&#34;model-medium&#34;&gt;Model medium&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;model.medium&lt;/code&gt; is now a dict and setter for getting boundary feeding
+reactions and their bounds&lt;/p&gt;
+
+&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Handle multiple IDs in Matlab models
+&lt;a href=&#34;https://github.com/opencobra/cobrapy/issues&#34;&gt;#345&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DictList.query&lt;/code&gt; behavior changed so that attribute is &lt;code&gt;None&lt;/code&gt; if the
+search parameter is not a regex or string, to enable
+&lt;code&gt;reactions.query(lambda x: x.boundary)&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Set charge from notes if not defined elsewhere
+&lt;a href=&#34;https://github.com/opencobra/cobrapy/issues&#34;&gt;#352&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Warnings are no longer issued on package import if soft requirement
+scipy, python-libsbml is not available.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;deprecated-features&#34;&gt;Deprecated features&lt;/h2&gt;
+
+&lt;p&gt;These features are now deprecated and slated for complete removal in
+the next major cobrapy release.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;The whole &lt;code&gt;cobra.solver&lt;/code&gt; module is now deprecated, see New features.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ArrayBasedModel&lt;/code&gt; / &lt;code&gt;Model.to_array_based_model&lt;/code&gt; are
+deprecated. This formulation makes little sense when handing over
+the matrix algebra to optlang, for the stoichiometry matrix (aka S),
+see &lt;code&gt;cobra.util.array.create_stoichiometric_matrix&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Metabolite.y&lt;/code&gt; in favor of &lt;code&gt;Metabolite.shadow_price&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Model.add_reaction&lt;/code&gt; in favor of &lt;code&gt;Model.add_reactions&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Reaction.x&lt;/code&gt; in favor of &lt;code&gt;Reaction.flux&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Reaction.y&lt;/code&gt; in favor of &lt;code&gt;Reaction.reduced_cost&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Solution.{x, y, x_dict, y_dict, f}&lt;/code&gt; in favor of &lt;code&gt;Solution.{fluxes,
+reduced_costs}&lt;/code&gt;. The setters are also deprecated.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;phenotype_phase_plane&lt;/code&gt; in favor of &lt;code&gt;production_envelope&lt;/code&gt;. The
+plotting capabilities are deprecated, to be re-implemented somewhere
+else.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;convert_to_irreverible&lt;/code&gt;, &lt;code&gt;revert_to_irreversible&lt;/code&gt;, &lt;code&gt;canonical_form&lt;/code&gt;
+deprecated without replacement.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;check_reaction_bounds&lt;/code&gt; deprecated without replacement.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;backwards-incompatible-changes&#34;&gt;Backwards incompatible changes&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;optknock was completely removed, users are advised to use cameo for
+this functionality&lt;/li&gt;
+&lt;li&gt;dual_problem was removed&lt;/li&gt;
+&lt;li&gt;gapfilling algorithms were removed without replacement, to be
+re-introduced in a different package&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cobra.topology&lt;/code&gt; was removed, possibly to be reintroduced in a
+different package&lt;/li&gt;
+&lt;li&gt;flux_variability_analysis results must be transformed to have them
+work as the previous nested dict,
+i.e. &lt;code&gt;flux_variability_analysis(model).T&lt;/code&gt; should give behavior as
+previously.&lt;/li&gt;
+&lt;li&gt;In a major linting effort we renamed capitalized modules to lower-case,
+e.g. &lt;code&gt;cobra.core.Model&lt;/code&gt; to &lt;code&gt;cobra.core.model&lt;/code&gt;. Imports from &lt;code&gt;cobra&lt;/code&gt;
+are unchanged though.&lt;/li&gt;
+&lt;li&gt;objective coefficients of reactions can now only be set once the
+reaction is attached to a model.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Reaction.{x,y}&lt;/code&gt;, &lt;code&gt;Metabolite.y&lt;/code&gt; are defunct for legacy solvers.&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>0.5.11</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.5.11/</link>
+      <pubDate>Mon, 30 Jan 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.5.11/</guid>
+      <description>&lt;p&gt;This is the current stable release for COBRApy. For a list of features please
+see the &lt;a href=&#34;https://https://cobrapy.readthedocs.org/en/stable/&#34;&gt;documentation&lt;/a&gt;.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

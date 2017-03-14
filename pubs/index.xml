@@ -6,8 +6,58 @@
     <description>Recent content in Pubs on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 03 Dec 2016 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 07 Feb 2017 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://opencobra.github.io/cobrapy/pubs/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Efficient estimation of the maximum metabolic productivity of batch systems.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM28163785/</link>
+      <pubDate>Tue, 07 Feb 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM28163785/</guid>
+      <description>&lt;p&gt;Production of chemicals from engineered organisms in a batch culture involves an inherent trade-off between productivity, yield, and titer. Existing strategies for strain design typically focus on designing mutations that achieve the highest yield possible while maintaining growth viability. While these methods are computationally tractable, an optimum productivity could be achieved by a dynamic strategy in which the intracellular division of resources is permitted to change with time. New methods for the design and implementation of dynamic microbial processes, both computational and experimental, have therefore been explored to maximize productivity. However, solving for the optimal metabolic behavior under the assumption that all fluxes in the cell are free to vary is a challenging numerical task. Previous studies have therefore typically focused on simpler strategies that are more feasible to implement in practice, such as the time-dependent control of a single flux or control variable.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Genome-Scale Metabolic Modeling of Archaea Lends Insight into Diversity of Metabolic Function.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM28133437/</link>
+      <pubDate>Tue, 31 Jan 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM28133437/</guid>
+      <description>&lt;p&gt;Decades of biochemical, bioinformatic, and sequencing data are currently being systematically compiled into genome-scale metabolic reconstructions (GEMs). Such reconstructions are knowledge-bases useful for engineering, modeling, and comparative analysis. Here we review the fifteen GEMs of archaeal species that have been constructed to date. They represent primarily members of the Euryarchaeota with three-quarters comprising representative of methanogens. Unlike other reviews on GEMs, we specially focus on archaea. We briefly review the GEM construction process and the genealogy of the archaeal models. The major insights gained during the construction of these models are then reviewed with specific focus on novel metabolic pathway predictions and growth characteristics. Metabolic pathway usage is discussed in the context of the composition of each organism&amp;rsquo;s biomass and their specific energy and growth requirements. We show how the metabolic models can be used to study the evolution of metabolism in archaea. Conservation of particular metabolic pathways can be studied by comparing reactions using the genes associated with their enzymes. This demonstrates the utility of GEMs to evolutionary studies, far beyond their original purpose of metabolic modeling; however, much needs to be done before archaeal models are as extensively complete as those for bacteria.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Meneco, a Topology-Based Gap-Filling Tool Applicable to Degraded Genome-Wide Metabolic Networks.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM28129330/</link>
+      <pubDate>Sat, 28 Jan 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM28129330/</guid>
+      <description>&lt;p&gt;Increasing amounts of sequence data are becoming available for a wide range of non-model organisms. Investigating and modelling the metabolic behaviour of those organisms is highly relevant to understand their biology and ecology. As sequences are often incomplete and poorly annotated, draft networks of their metabolism largely suffer from incompleteness. Appropriate gap-filling methods to identify and add missing reactions are therefore required to address this issue. However, current tools rely on phenotypic or taxonomic information, or are very sensitive to the stoichiometric balance of metabolic reactions, especially concerning the co-factors. This type of information is often not available or at least prone to errors for newly-explored organisms. Here we introduce Meneco, a tool dedicated to the topological gap-filling of genome-scale draft metabolic networks. Meneco reformulates gap-filling as a qualitative combinatorial optimization problem, omitting constraints raised by the stoichiometry of a metabolic network considered in other methods, and solves this problem using Answer Set Programming. Run on several artificial test sets gathering 10,800 degraded Escherichia coli networks Meneco was able to efficiently identify essential reactions missing in networks at high degradation rates, outperforming the stoichiometry-based tools in scalability. To demonstrate the utility of Meneco we applied it to two case studies. Its application to recent metabolic networks reconstructed for the brown algal model Ectocarpus siliculosus and an associated bacterium Candidatus Phaeomarinobacter ectocarpi revealed several candidate metabolic pathways for algal-bacterial interactions. Then Meneco was used to reconstruct, from transcriptomic and metabolomic data, the first metabolic network for the microalga Euglena mutabilis. These two case studies show that Meneco is a versatile tool to complete draft genome-scale metabolic networks produced from heterogeneous data, and to suggest relevant reactions that explain the metabolic capacity of a biological system.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Reliable and efficient solution of genome-scale models of Metabolism and macromolecular Expression.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM28098205/</link>
+      <pubDate>Wed, 18 Jan 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM28098205/</guid>
+      <description>&lt;p&gt;Constraint-Based Reconstruction and Analysis (COBRA) is currently the only methodology that permits integrated modeling of Metabolism and macromolecular Expression (ME) at genome-scale. Linear optimization computes steady-state flux solutions to ME models, but flux values are spread over many orders of magnitude. Data values also have greatly varying magnitudes. Standard double-precision solvers may return inaccurate solutions or report that no solution exists. Exact simplex solvers based on rational arithmetic require a near-optimal warm start to be practical on large problems (current ME models have 70,000 constraints and variables and will grow larger). We have developed a quadruple-precision version of our linear and nonlinear optimizer MINOS, and a solution procedure (DQQ) involving Double and Quad MINOS that achieves reliability and efficiency for ME models and other challenging problems tested here. DQQ will enable extensive use of large linear and nonlinear models in systems biology and other applications involving multiscale data.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Personalized Prediction of Proliferation Rates and Metabolic Liabilities in Cancer Biopsies.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM28082911/</link>
+      <pubDate>Sat, 14 Jan 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM28082911/</guid>
+      <description>&lt;p&gt;Cancer is a heterogeneous disease and its genetic and metabolic mechanism may manifest differently in each patient. This creates a demand for studies that can characterize phenotypic traits of cancer on a per-sample basis. Combining two large data sets, the NCI60 cancer cell line panel, and The Cancer Genome Atlas, we used a linear interaction model to predict proliferation rates for more than 12,000 cancer samples across 33 different cancers from The Cancer Genome Atlas. The predicted proliferation rates are associated with patient survival and cancer stage and show a strong heterogeneity in proliferative capacity within and across different cancer panels. We also show how the obtained proliferation rates can be incorporated into genome-scale metabolic reconstructions to obtain the metabolic fluxes for more than 3000 cancer samples that identified specific metabolic liabilities for nine cancer panels. Here we found that affected pathways coincided with the literature, with pentose phosphate pathway, retinol, and branched-chain amino acid metabolism being the most panel-specific alterations and fatty acid metabolism and ROS detoxification showing homogeneous metabolic activities across all cancer panels. The presented strategy has potential applications in personalized medicine since it can leverage gene expression signatures for cell line based prediction of additional metabolic properties which might help in constraining personalized metabolic models and improve the identification of metabolic alterations in cancer for individual patients.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Unique attributes of cyanobacterial metabolism revealed by improved genome-scale metabolic modeling and essential gene analysis.</title>
@@ -106,56 +156,6 @@
       
       <guid>https://opencobra.github.io/cobrapy/pubs/PM27286824/</guid>
       <description>&lt;p&gt;Staphylococcus aureus is a preeminent bacterial pathogen capable of colonizing diverse ecological niches within its human host. We describe here the pangenome of S. aureus based on analysis of genome sequences from 64 strains of S. aureus spanning a range of ecological niches, host types, and antibiotic resistance profiles. Based on this set, S. aureus is expected to have an open pangenome composed of 7,411 genes and a core genome composed of 1,441 genes. Metabolism was highly conserved in this core genome; however, differences were identified in amino acid and nucleotide biosynthesis pathways between the strains. Genome-scale models (GEMs) of metabolism were constructed for the 64 strains of S. aureus These GEMs enabled a systems approach to characterizing the core metabolic and panmetabolic capabilities of the S. aureus species. All models were predicted to be auxotrophic for the vitamins niacin (vitamin B3) and thiamin (vitamin B1), whereas strain-specific auxotrophies were predicted for riboflavin (vitamin B2), guanosine, leucine, methionine, and cysteine, among others. GEMs were used to systematically analyze growth capabilities in more than 300 different growth-supporting environments. The results identified metabolic capabilities linked to pathogenic traits and virulence acquisitions. Such traits can be used to differentiate strains responsible for mild vs. severe infections and preference for hosts (e.g., animals vs. humans). Genome-scale analysis of multiple strains of a species can thus be used to identify metabolic determinants of virulence and increase our understanding of why certain strains of this deadly pathogen have spread rapidly throughout the world.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Systems biology of the structural proteome.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM26969117/</link>
-      <pubDate>Sun, 13 Mar 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM26969117/</guid>
-      <description>&lt;p&gt;The success of genome-scale models (GEMs) can be attributed to the high-quality, bottom-up reconstructions of metabolic, protein synthesis, and transcriptional regulatory networks on an organism-specific basis. Such reconstructions are biochemically, genetically, and genomically structured knowledge bases that can be converted into a mathematical format to enable a myriad of computational biological studies. In recent years, genome-scale reconstructions have been extended to include protein structural information, which has opened up new vistas in systems biology research and empowered applications in structural systems biology and systems pharmacology.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Global characterization of in vivo enzyme catalytic rates and their correspondence to in vitro kcat measurements.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM26951675/</link>
-      <pubDate>Thu, 10 Mar 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM26951675/</guid>
-      <description>&lt;p&gt;Turnover numbers, also known as kcat values, are fundamental properties of enzymes. However, kcat data are scarce and measured in vitro, thus may not faithfully represent the in vivo situation. A basic question that awaits elucidation is: how representative are kcat values for the maximal catalytic rates of enzymes in vivo? Here, we harness omics data to calculate kmax(vivo), the observed maximal catalytic rate of an enzyme inside cells. Comparison with kcat values from Escherichia coli, yields a correlation ofr(2)= 0.62 in log scale (p &amp;lt; 10(-10)), with a root mean square difference of 0.54 (3.5-fold in linear scale), indicating that in vivo and in vitro maximal rates generally concur. By accounting for the degree of saturation of enzymes and the backward flux dictated by thermodynamics, we further refine the correspondence between kmax(vivo) and kcat values. The approach we present here characterizes the quantitative relationship between enzymatic catalysis in vitro and in vivo and offers a high-throughput method for extracting enzyme kinetic constants from omics data.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>What Makes a Bacterial Species Pathogenic?:Comparative Genomic Analysis of the Genus Leptospira.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM26890609/</link>
-      <pubDate>Sat, 20 Feb 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM26890609/</guid>
-      <description>&lt;p&gt;Leptospirosis, caused by spirochetes of the genus Leptospira, is a globally widespread, neglected and emerging zoonotic disease. While whole genome analysis of individual pathogenic, intermediately pathogenic and saprophytic Leptospira species has been reported, comprehensive cross-species genomic comparison of all known species of infectious and non-infectious Leptospira, with the goal of identifying genes related to pathogenesis and mammalian host adaptation, remains a key gap in the field. Infectious Leptospira, comprised of pathogenic and intermediately pathogenic Leptospira, evolutionarily diverged from non-infectious, saprophytic Leptospira, as demonstrated by the following computational biology analyses: 1) the definitive taxonomy and evolutionary relatedness among all known Leptospira species; 2) genomically-predicted metabolic reconstructions that indicate novel adaptation of infectious Leptospira to mammals, including sialic acid biosynthesis, pathogen-specific porphyrin metabolism and the first-time demonstration of cobalamin (B12) autotrophy as a bacterial virulence factor; 3) CRISPR/Cas systems demonstrated only to be present in pathogenic Leptospira, suggesting a potential mechanism for this clade&amp;rsquo;s refractoriness to gene targeting; 4) finding Leptospira pathogen-specific specialized protein secretion systems; 5) novel virulence-related genes/gene families such as the Virulence Modifying (VM) (PF07598 paralogs) proteins and pathogen-specific adhesins; 6) discovery of novel, pathogen-specific protein modification and secretion mechanisms including unique lipoprotein signal peptide motifs, Sec-independent twin arginine protein secretion motifs, and the absence of certain canonical signal recognition particle proteins from all Leptospira; and 7) and demonstration of infectious Leptospira-specific signal-responsive gene expression, motility and chemotaxis systems. By identifying large scale changes in infectious (pathogenic and intermediately pathogenic) vs. non-infectious Leptospira, this work provides new insights into the evolution of a genus of bacterial pathogens. This work will be a comprehensive roadmap for understanding leptospirosis pathogenesis. More generally, it provides new insights into mechanisms by which bacterial pathogens adapt to mammalian hosts.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>PSAMM: A Portable System for the Analysis of Metabolic Models.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM26828591/</link>
-      <pubDate>Tue, 02 Feb 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM26828591/</guid>
-      <description>&lt;p&gt;The genome-scale models of metabolic networks have been broadly applied in phenotype prediction, evolutionary reconstruction, community functional analysis, and metabolic engineering. Despite the development of tools that support individual steps along the modeling procedure, it is still difficult to associate mathematical simulation results with the annotation and biological interpretation of metabolic models. In order to solve this problem, here we developed a Portable System for the Analysis of Metabolic Models (PSAMM), a new open-source software package that supports the integration of heterogeneous metadata in model annotations and provides a user-friendly interface for the analysis of metabolic models. PSAMM is independent of paid software environments like MATLAB, and all its dependencies are freely available for academic users. Compared to existing tools, PSAMM significantly reduced the running time of constraint-based analysis and enabled flexible settings of simulation parameters using simple one-line commands. The integration of heterogeneous, model-specific annotation information in PSAMM is achieved with a novel format of YAML-based model representation, which has several advantages, such as providing a modular organization of model components and simulation settings, enabling model version tracking, and permitting the integration of multiple simulation problems. PSAMM also includes a number of quality checking procedures to examine stoichiometric balance and to identify blocked reactions. Applying PSAMM to 57 models collected from current literature, we demonstrated how the software can be used for managing and simulating metabolic models. We identified a number of common inconsistencies in existing models and constructed an updated model repository to document the resolution of these inconsistencies.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>FlexFlux: combining metabolic flux and regulatory network analyses.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM26666757/</link>
-      <pubDate>Thu, 17 Dec 2015 00:00:00 +0000</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM26666757/</guid>
-      <description>&lt;p&gt;Expression of cell phenotypes highly depends on metabolism that supplies matter and energy. To achieve proper utilisation of the different metabolic pathways, metabolism is tightly regulated by a complex regulatory network composed of diverse biological entities (genes, transcripts, proteins, signalling molecules…). The integrated analysis of both regulatory and metabolic networks appears very insightful but is not straightforward because of the distinct characteristics of both networks. The classical method used for metabolic flux analysis is Flux Balance Analysis (FBA), which is constraint-based and relies on the assumption of steady-state metabolite concentrations throughout the network. Regarding regulatory networks, a broad spectrum of methods are dedicated to their analysis although logical modelling remains the major method to take charge of large-scale networks.&lt;/p&gt;
 </description>
     </item>
     

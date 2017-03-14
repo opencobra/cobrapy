@@ -28,7 +28,7 @@ a {
     max-width: 700px;
 }
 
-.highlight p, li, code {
+.highlight p, .highlight li, .highlight code {
     font-weight: 300;
     font-size: 1.5em;
     line-height: 150%;
@@ -97,20 +97,24 @@ a {
 .mdl-card__supporting-text h1 {
     font-size: 18px;
     line-height: normal;
-    margin: 0.25em 0;
+    margin: 0.75em 0;
 }
 
 .mdl-card__supporting-text h2 {
     font-size: 16px;
     margin: 0;
     line-height: normal;
-    margin: 0.25em 0;
+    margin: 0.75em 0;
 }
 
 .mdl-card__supporting-text h3 {
     font-size: 14px;
     font-weight: bold;
     line-height: normal;
+    margin: 0.75em 0;
+}
+
+.mdl-card__supporting-text .header {
     margin: 0.25em 0;
 }
 
