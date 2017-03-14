@@ -27,12 +27,12 @@ except ImportError:
     add_moma = None
 try:
     import matplotlib
-except ImportError:
+except (ImportError, RuntimeError):
     matplotlib = None
 try:
     from matplotlib import pyplot
     from mpl_toolkits.mplot3d import axes3d
-except ImportError:
+except (ImportError, RuntimeError):
     pyplot = None
     axes3d = None
 
@@ -64,8 +64,8 @@ class TestCobraFluxAnalysis:
         convert_to_irreversible(large_model)
 
         def do_pfba(solver):
-            optimize_minimal_flux(large_model, solver=solver,
-                                  already_irreversible=True)
+            pfba(large_model, solver=solver,
+                 already_irreversible=True)
 
         benchmark(do_pfba, solver)
 
@@ -80,7 +80,7 @@ class TestCobraFluxAnalysis:
             model.solver = solver
         expression = model.objective.expression
         n_constraints = len(model.constraints)
-        solution = optimize_minimal_flux(model, solver=solver)
+        solution = pfba(model, solver=solver)
         assert solution.status == "optimal"
         assert numpy.isclose(solution.x_dict["Biomass_Ecoli_core"],
                              0.8739, atol=1e-4, rtol=0.0)
@@ -93,7 +93,7 @@ class TestCobraFluxAnalysis:
         # needed?
         # Test desired_objective_value
         # desired_objective = 0.8
-        # optimize_minimal_flux(model, solver=solver,
+        # pfba(model, solver=solver,
         #                       desired_objective_value=desired_objective)
         # abs_x = [abs(i) for i in model.solution.x]
         # assert model.solution.status == "optimal"
@@ -102,8 +102,8 @@ class TestCobraFluxAnalysis:
 
         # TODO: parametrize fraction (DRY it up)
         # Test fraction_of_optimum
-        solution = optimize_minimal_flux(model, solver=solver,
-                                         fraction_of_optimum=0.95)
+        solution = pfba(model, solver=solver,
+                        fraction_of_optimum=0.95)
         assert solution.status == "optimal"
         assert numpy.isclose(solution.x_dict["Biomass_Ecoli_core"],
                              0.95 * 0.8739, atol=1e-4, rtol=0.0)
@@ -115,7 +115,7 @@ class TestCobraFluxAnalysis:
         with warnings.catch_warnings():
             warnings.simplefilter("error", UserWarning)
             with pytest.raises((UserWarning, ValueError)):
-                optimize_minimal_flux(model, solver=solver)
+                pfba(model, solver=solver)
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_single_gene_deletion_fba_benchmark(self, model, benchmark,

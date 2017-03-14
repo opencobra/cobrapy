@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import logging
+from warnings import warn
 from itertools import chain
 
 import sympy
@@ -18,10 +19,15 @@ mul = sympy.Mul._from_args
 LOGGER = logging.getLogger(__name__)
 
 
-def optimize_minimal_flux(model, already_irreversible=False,
-                          fraction_of_optimum=1.0, solver=None,
-                          desired_objective_value=None, objective=None,
-                          reactions=None, **optimize_kwargs):
+def optimize_minimal_flux(*args, **kwargs):
+    warn("optimize_minimal_flux has been renamed to pfba", DeprecationWarning)
+    return pfba(*args, **kwargs)
+
+
+def pfba(model, already_irreversible=False,
+         fraction_of_optimum=1.0, solver=None,
+         desired_objective_value=None, objective=None,
+         reactions=None, **optimize_kwargs):
     """Perform basic pFBA (parsimonious Enzyme Usage Flux Balance Analysis)
     to minimize total flux.
 
@@ -81,14 +87,14 @@ def optimize_minimal_flux(model, already_irreversible=False,
     """
     legacy, solver = sutil.choose_solver(model, solver)
     if legacy:
-        return _optimize_minimal_flux_legacy(
+        return _pfba_legacy(
             model, already_irreversible=already_irreversible,
             fraction_of_optimum=fraction_of_optimum, solver=solver,
             desired_objective_value=desired_objective_value,
             **optimize_kwargs)
     else:
         model.solver = solver
-        return _optimize_minimal_flux_optlang(
+        return _pfba_optlang(
             model, objective=objective,
             fraction_of_optimum=fraction_of_optimum, reactions=reactions)
 
@@ -101,7 +107,7 @@ def add_pfba(model, objective=None, fraction_of_optimum=1.0):
 
     See Also
     -------
-    optimize_minimal_flux
+    pfba
 
     Parameters
     ----------
@@ -129,8 +135,8 @@ def add_pfba(model, objective=None, fraction_of_optimum=1.0):
     set_objective(model, pfba_objective)
 
 
-def _optimize_minimal_flux_optlang(model, objective=None, reactions=None,
-                                   fraction_of_optimum=1.0):
+def _pfba_optlang(model, objective=None, reactions=None,
+                  fraction_of_optimum=1.0):
     """Helper function to perform pFBA with the optlang interface
 
     Not meant to be used directly.
@@ -161,10 +167,10 @@ def _optimize_minimal_flux_optlang(model, objective=None, reactions=None,
     return solution
 
 
-def _optimize_minimal_flux_legacy(model, solver, already_irreversible=False,
-                                  fraction_of_optimum=1.0,
-                                  desired_objective_value=None,
-                                  **optimize_kwargs):
+def _pfba_legacy(model, solver, already_irreversible=False,
+                 fraction_of_optimum=1.0,
+                 desired_objective_value=None,
+                 **optimize_kwargs):
     """Perform basic pFBA (parsimonious FBA) and minimize total flux.
 
     The function attempts to act as a drop-in replacement for optimize. It
@@ -195,13 +201,13 @@ def _optimize_minimal_flux_legacy(model, solver, already_irreversible=False,
     """
     objective_reactions = linear_reaction_coefficients(model)
     if len(objective_reactions) > 1:
-        raise ValueError('optimize_minimal_flux only supports models with'
+        raise ValueError('pfba only supports models with'
                          ' a single objective function')
 
     if 'objective_sense' in optimize_kwargs:
         if optimize_kwargs['objective_sense'] == 'minimize':
             raise ValueError(
-                'Minimization not supported in optimize_minimal_flux')
+                'Minimization not supported in pfba')
         optimize_kwargs.pop('objective_sense', None)
 
     if not already_irreversible:

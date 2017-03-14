@@ -100,6 +100,6 @@ with open("textbook_fva.json", "w") as outfile:
 
 # textbook solution
 # TODO: this needs a reference solution rather than circular solution checking!
-solution = cobra.flux_analysis.parsimonious.optimize_minimal_flux(textbook)
+solution = cobra.flux_analysis.parsimonious.pfba(textbook)
 with open('textbook_solution.pickle', 'wb') as f:
     dump(solution, f, protocol=2)

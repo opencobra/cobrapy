@@ -14,20 +14,19 @@ from numpy import (
 
 from cobra.solvers import get_solver_name, solver_dict
 import cobra.util.solver as sutil
-from cobra.exceptions import SolveError
 from cobra.flux_analysis import flux_variability_analysis as fva
 
 # attempt to import plotting libraries
 try:
     from matplotlib import pyplot
     from mpl_toolkits.mplot3d import axes3d
-except ImportError:
+except (ImportError, RuntimeError):
     pyplot = None
     axes3d = None
 mlab = None  # mayavi may crash python
 try:  # for prettier colors
     from palettable.colorbrewer import get_map
-except ImportError:
+except (ImportError, RuntimeError):
     try:
         from brewer2mpl import get_map
     except ImportError:
