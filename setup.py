@@ -155,7 +155,6 @@ setup(
 
     package_data={
          '': ['test/data/*',
-              'VERSION',
               'mlab/matlab_scripts/*m']},
 
     author="Daniel Robert Hyduke <danielhyduke@gmail.com>, "
