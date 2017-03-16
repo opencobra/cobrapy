@@ -3,11 +3,10 @@
 from __future__ import absolute_import
 
 import pandas
-from six import iteritems
 from sympy.core.singleton import S
 
 from cobra.flux_analysis.loopless import loopless_fva_iter
-from cobra.solvers import get_solver_name, solver_dict
+from cobra.core import get_solution
 from cobra.util import solver as sutil
 
 
@@ -201,7 +200,7 @@ def find_blocked_reactions(model, reaction_list=None,
                            solver=None, zero_cutoff=1e-9,
                            open_exchanges=False, **solver_args):
     """Finds reactions that cannot carry a flux with the current
-    exchange reaction settings for cobra_model, using flux variability
+    exchange reaction settings for a cobra model, using flux variability
     analysis.
 
     Parameters
@@ -242,11 +241,12 @@ def find_blocked_reactions(model, reaction_list=None,
         else:
             model.solver = solver
             model.solver.optimize()
+            solution = get_solution(model, reactions=reaction_list)
             reaction_list = [rxn for rxn in reaction_list if
-                             abs(rxn.flux) < zero_cutoff]
+                             abs(solution.fluxes[rxn.id]) < zero_cutoff]
         # run fva to find reactions where both max and min are 0
         flux_span = flux_variability_analysis(
             model, fraction_of_optimum=0., reaction_list=reaction_list,
             solver=solver, **solver_args)
-        return [k for k, v in iteritems(flux_span.T) if
-                max(abs(v)) < zero_cutoff]
+        return [rxn_id for rxn_id, min_max in flux_span.iterrows() if
+                max(abs(min_max)) < zero_cutoff]
