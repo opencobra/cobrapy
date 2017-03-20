@@ -6,6 +6,7 @@ from copy import deepcopy
 
 import numpy
 import pytest
+import pandas as pd
 from sympy import S
 
 import cobra.util.solver as su
@@ -732,6 +733,12 @@ class TestCobraModel:
         model.remove_cons_vars([new_constraint, new_variable])
         assert "test_variable" not in model.variables.keys()
         assert "test_constraint" not in model.variables.keys()
+
+    def test_solution_data_frame(self, model):
+        solution = model.optimize().to_frame()
+        assert isinstance(solution, pd.DataFrame)
+        assert 'fluxes' in solution
+        assert 'reduced_costs' in solution
 
     def test_model_medium(self, model):
         # Add a dummy 'malformed' import reaction
