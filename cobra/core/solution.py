@@ -10,7 +10,7 @@ from warnings import warn
 
 from numpy import empty, nan
 from optlang.interface import OPTIMAL
-from pandas import Series
+from pandas import Series, DataFrame
 
 from cobra.util.solver import check_solver_status
 
@@ -168,6 +168,11 @@ class Solution(object):
         """Deprecated property for getting reduced cost values."""
         warn("use solution.reduced_costs.values() instead", DeprecationWarning)
         return self.reduced_costs.values
+
+    def to_frame(self):
+        """Return the fluxes and reduced costs as a data frame"""
+        return DataFrame({'fluxes': self.fluxes,
+                          'reduced_costs': self.reduced_costs})
 
 
 class LegacySolution(object):
