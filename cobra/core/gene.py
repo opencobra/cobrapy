@@ -10,6 +10,7 @@ from keyword import kwlist
 from warnings import warn
 
 from cobra.core.species import Species
+from cobra.util import resettable
 
 keywords = list(kwlist)
 keywords.remove("and")
@@ -182,7 +183,35 @@ class Gene(Species):
 
     def __init__(self, id=None, name="", functional=True):
         Species.__init__(self, id=id, name=name)
-        self.functional = functional
+        self._functional = functional
+
+    @property
+    def functional(self):
+        """A flag indicating if the gene is functional.
+
+        Changing the flag is reverted upon exit if executed within the model
+        as context.
+        """
+        return self._functional
+
+    @functional.setter
+    @resettable
+    def functional(self, value):
+        if not isinstance(value, bool):
+            raise ValueError('expected boolean')
+        self._functional = value
+
+    def knock_out(self):
+        """Knockout gene by marking it as non-functional and setting all
+        associated reactions bounds to zero.
+
+        The change is reverted upon exit if executed within the model as
+        context.
+        """
+        self.functional = False
+        for reaction in self.reactions:
+            if not reaction.functional:
+                reaction.bounds = (0, 0)
 
     def remove_from_model(self, model=None,
                           make_dependent_reactions_nonfunctional=True):
