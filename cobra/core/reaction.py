@@ -13,7 +13,7 @@ from six import iteritems, string_types
 from future.utils import raise_from, raise_with_traceback
 
 from cobra.exceptions import OptimizationError
-from cobra.core.gene import Gene, ast2str, parse_gpr
+from cobra.core.gene import Gene, ast2str, parse_gpr, eval_gpr
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.util.context import resettable, get_context
@@ -451,6 +451,23 @@ class Reaction(Object):
         return ast2str(ast, names=names)
 
     @property
+    def functional(self):
+        """All required enzymes for reaction are functional.
+
+        Returns
+        -------
+        bool
+            True if the gene-protein-reaction (GPR) rule is fulfilled for
+            this reaction, or if reaction is not associated to a model,
+            otherwise False.
+        """
+        if self._model:
+            tree, _ = parse_gpr(self.gene_reaction_rule)
+            return eval_gpr(tree, {gene.id for gene in self.genes if
+                                   not gene.functional})
+        return True
+
+    @property
     def x(self):
         """The flux through the reaction in the most recent solution.
 
@@ -489,8 +506,8 @@ class Reaction(Object):
 
         Returns `True` if the reaction has either no products or reactants.
         """
-        return len(self.metabolites) == 1 and\
-            not (self.reactants and self.products)
+        return (len(self.metabolites) == 1 and
+                not (self.reactants and self.products))
 
     @property
     def model(self):

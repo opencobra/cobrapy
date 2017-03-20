@@ -73,6 +73,25 @@ class TestReactions:
         fake_gene.name = "foo_gene"
         assert reaction.gene_name_reaction_rule == fake_gene.name
 
+    def test_gene_knock_out(self, model):
+        rxn = Reaction('rxn')
+        rxn.add_metabolites({Metabolite('A'): -1, Metabolite('B'): 1})
+        rxn.gene_reaction_rule = 'A2B1 or A2B2 and A2B3'
+        assert hasattr(list(rxn.genes)[0], 'knock_out')
+        model.add_reaction(rxn)
+        with model:
+            model.genes.A2B1.knock_out()
+            assert not model.genes.A2B1.functional
+            model.genes.A2B3.knock_out()
+            assert not rxn.functional
+        assert model.genes.A2B3.functional
+        assert rxn.functional
+        model.genes.A2B1.knock_out()
+        assert not model.genes.A2B1.functional
+        assert model.reactions.rxn.functional
+        model.genes.A2B3.knock_out()
+        assert not model.reactions.rxn.functional
+
     @pytest.mark.parametrize("solver", list(solver_dict))
     def test_add_metabolite_benchmark(self, model, benchmark, solver):
         reaction = model.reactions.get_by_id("PGI")
