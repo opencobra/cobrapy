@@ -64,8 +64,29 @@ def _fix_type(value):
     return value
 
 
-def _from_dict(obj):
-    """build a model from a dict"""
+def model_from_dict(obj):
+    """Build a model from a dict.
+
+    Models stored in json are first formulated as a dict that can be read to
+    cobra model using this function.
+
+    Parameters
+    ----------
+    obj : dict
+        A dictionary with elements, 'genes', 'compartments', 'id',
+        'metabolites', 'notes' and 'reqctions' where 'metabolites', 'genes'
+        and 'metabolites' are in turn lists with dictionaries holding all
+        attributes to form the corresponding object.
+
+    Returns
+    -------
+    cora.core.Model
+        The generated model.
+
+    See Also
+    --------
+    cobra.io.json.model_to_dict
+    """
     if 'reactions' not in obj:
         raise Exception('JSON object has no reactions attribute. Cannot load.')
     model = Model()
@@ -124,8 +145,26 @@ def _update_optional(cobra_object, new_dict, optional_attribute_dict):
             new_dict[key] = _fix_type(value)
 
 
-def _to_dict(model):
-    """convert the model to a dict"""
+def model_to_dict(model):
+    """Convert model to a dict.
+
+    Parameters
+    ----------
+    model : cobra.core.Model
+        The model to reformulate as a dict
+
+    Returns
+    -------
+    dict
+        A dictionary with elements, 'genes', 'compartments', 'id',
+        'metabolites', 'notes' and 'reqctions' where 'metabolites', 'genes'
+        and 'metabolites' are in turn lists with dictionaries holding all
+        attributes to form the corresponding object.
+
+    See Also
+    --------
+    cora.io.json.model_from_dict
+    """
     obj = dict(
         reactions=[reaction_to_dict(reaction) for reaction in model.reactions],
         metabolites=[
@@ -169,12 +208,12 @@ def reaction_to_dict(reaction):
 
 def to_json(model):
     """Save the cobra model as a json string"""
-    return json.dumps(_to_dict(model), allow_nan=False)
+    return json.dumps(model_to_dict(model), allow_nan=False)
 
 
 def from_json(jsons):
     """Load cobra model from a json string"""
-    return _from_dict(json.loads(jsons))
+    return model_from_dict(json.loads(jsons))
 
 
 def load_json_model(file_name):
@@ -195,7 +234,7 @@ def load_json_model(file_name):
         file_name = open(file_name, 'r')
         should_close = True
 
-    model = _from_dict(json.load(file_name))
+    model = model_from_dict(json.load(file_name))
 
     if should_close:
         file_name.close()
@@ -224,7 +263,7 @@ def save_json_model(model, file_name, pretty=False):
     else:
         dump_opts = {}
 
-    json.dump(_to_dict(model), file_name, allow_nan=False, **dump_opts)
+    json.dump(model_to_dict(model), file_name, allow_nan=False, **dump_opts)
 
     if should_close:
         file_name.close()
