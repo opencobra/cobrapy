@@ -3,11 +3,10 @@
 from __future__ import absolute_import
 
 import pandas
-from six import iteritems
 from sympy.core.singleton import S
 
 from cobra.flux_analysis.loopless import loopless_fva_iter
-from cobra.solvers import get_solver_name, solver_dict
+from cobra.core import get_solution
 from cobra.util import solver as sutil
 
 
@@ -197,33 +196,57 @@ def _fva_optlang(model, reaction_list, fraction, loopless):
     return fva_results
 
 
-def find_blocked_reactions(cobra_model, reaction_list=None,
+def find_blocked_reactions(model, reaction_list=None,
                            solver=None, zero_cutoff=1e-9,
                            open_exchanges=False, **solver_args):
     """Finds reactions that cannot carry a flux with the current
-    exchange reaction settings for cobra_model, using flux variability
+    exchange reaction settings for a cobra model, using flux variability
     analysis.
 
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to analyze
+    reaction_list : list
+        List of reactions to consider, use all if left missing
+    solver : string
+        The name of the solver to use
+    zero_cutoff : float
+        Flux value which is considered to effectively be zero.
+    open_exchanges : bool
+        If true, set bounds on exchange reactions to very high values to
+        avoid that being the bottle-neck.
+    **solver_args :
+        Additional arguments to the solver. Ignored for optlang based solvers.
+
+    Returns
+    -------
+    list
+        List with the blocked reactions
     """
-    if solver is None:
-        solver = get_solver_name()
-    if open_exchanges:
-        # should not unnecessarily change model
-        cobra_model = cobra_model.copy()
-        for reaction in cobra_model.reactions:
-            if reaction.boundary:
-                reaction.lower_bound = min(reaction.lower_bound, -1000)
-                reaction.upper_bound = max(reaction.upper_bound, 1000)
-    if reaction_list is None:
-        reaction_list = cobra_model.reactions
-    # limit to reactions which are already 0. If the reactions alread
-    # carry flux in this solution, then they can not be blocked.
-    solution = solver_dict[solver].solve(cobra_model, **solver_args)
-    reaction_list = [i for i in reaction_list
-                     if abs(solution.x_dict[i.id]) < zero_cutoff]
-    # run fva to find reactions where both max and min are 0
-    flux_span = flux_variability_analysis(
-        cobra_model, fraction_of_optimum=0., reaction_list=reaction_list,
-        solver=solver, **solver_args)
-    return [k for k, v in iteritems(flux_span.T)
-            if max(map(abs, v)) < zero_cutoff]
+    legacy, solver_interface = sutil.choose_solver(model, solver)
+    with model:
+        if open_exchanges:
+            for reaction in model.exchanges:
+                reaction.bounds = (min(reaction.lower_bound, -1000),
+                                   max(reaction.upper_bound, 1000))
+        if reaction_list is None:
+            reaction_list = model.reactions
+        # limit to reactions which are already 0. If the reactions already
+        # carry flux in this solution, then they can not be blocked.
+        if legacy:
+            solution = solver_interface.solve(model, **solver_args)
+            reaction_list = [i for i in reaction_list
+                             if abs(solution.x_dict[i.id]) < zero_cutoff]
+        else:
+            model.solver = solver
+            model.solver.optimize()
+            solution = get_solution(model, reactions=reaction_list)
+            reaction_list = [rxn for rxn in reaction_list if
+                             abs(solution.fluxes[rxn.id]) < zero_cutoff]
+        # run fva to find reactions where both max and min are 0
+        flux_span = flux_variability_analysis(
+            model, fraction_of_optimum=0., reaction_list=reaction_list,
+            solver=solver, **solver_args)
+        return [rxn_id for rxn_id, min_max in flux_span.iterrows() if
+                max(abs(min_max)) < zero_cutoff]
