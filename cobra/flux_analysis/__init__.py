@@ -8,7 +8,7 @@ except ImportError:
 from cobra.flux_analysis.gapfilling import growMatch
 from cobra.flux_analysis.loopless import (
     construct_loopless_model, loopless_solution, add_loopless)
-from cobra.flux_analysis.parsimonious import optimize_minimal_flux
+from cobra.flux_analysis.parsimonious import pfba
 from cobra.flux_analysis.single_deletion import (
     single_gene_deletion, single_reaction_deletion)
 from cobra.flux_analysis.variability import (
