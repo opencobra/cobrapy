@@ -54,7 +54,8 @@ class Model(Object):
     """
 
     def __setstate__(self, state):
-        """Make sure all cobra.Objects in the model point to the model"""
+        """Make sure all cobra.Objects in the model point to the model.
+        """
         self.__dict__.update(state)
         for y in ['reactions', 'genes', 'metabolites']:
             for x in getattr(self, y):
@@ -63,6 +64,16 @@ class Model(Object):
                     x._reset_var_cache()
         if not hasattr(self, "name"):
             self.name = None
+
+    def __getstate__(self):
+        """Get state for serialization.
+
+        Ensures that the context stack is cleared prior to serialization,
+        since partial functions cannot be pickled reliably.
+        """
+        odict = self.__dict__.copy()
+        odict['_contexts'] = []
+        return odict
 
     def __init__(self, id_or_model=None, name=None):
         if isinstance(id_or_model, Model):
