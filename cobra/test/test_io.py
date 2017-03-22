@@ -134,7 +134,10 @@ def io_trial(request, data_directory):
                                                   request.param.test_file))
     test_output_filename = join(gettempdir(),
                                 split(request.param.test_file)[-1])
-    request.param.write_function(test_model, test_output_filename)
+    # test writing the model within a context with a non-empty stack
+    with test_model:
+        test_model.objective = test_model.objective
+        request.param.write_function(test_model, test_output_filename)
     reread_model = request.param.read_function(test_output_filename)
     unlink(test_output_filename)
     return request.param.name, reference_model, test_model, reread_model
