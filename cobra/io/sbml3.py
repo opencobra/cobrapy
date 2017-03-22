@@ -366,6 +366,7 @@ def parse_xml_into_model(xml, number=float):
         return model
     target_objective = get_attrib(obj_list, "fbc:activeObjective")
     obj_query = OBJECTIVES_XPATH % target_objective
+    coefficients = {}
     for sbml_objective in obj_list.findall(obj_query):
         rxn_id = clip(get_attrib(sbml_objective, "fbc:reaction"), "R_")
         try:
@@ -373,12 +374,11 @@ def parse_xml_into_model(xml, number=float):
         except KeyError:
             raise CobraSBMLError("Objective reaction '%s' not found" % rxn_id)
         try:
-            coefficients = {objective_reaction: get_attrib(
-                sbml_objective, "fbc:coefficient", type=number)}
+            coefficients[objective_reaction] = get_attrib(
+                sbml_objective, "fbc:coefficient", type=number)
         except ValueError as e:
             warn(str(e))
-        else:
-            set_objective(model, coefficients)
+    set_objective(model, coefficients)
     return model
 
 
