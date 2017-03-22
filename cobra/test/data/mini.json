@@ -1268,6 +1268,7 @@
                 "h_c": 1.0
             },
             "name": "phosphofructokinase",
+            "objective_coefficient": 1.0,
             "upper_bound": 1000.0
         },
         {
