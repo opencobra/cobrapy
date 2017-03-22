@@ -826,7 +826,11 @@ class Model(Object):
         if isinstance(value, sympy.Basic):
             value = self.problem.Objective(value, sloppy=False)
         if not isinstance(value, (dict, optlang.interface.Objective)):
-            value = {rxn: 1 for rxn in self.reactions.get_by_any(value)}
+            try:
+                reactions = self.reactions.get_by_any(value)
+            except KeyError:
+                raise ValueError('invalid objective')
+            value = {rxn: 1 for rxn in reactions}
         set_objective(self, value, additive=False)
 
     def summary(self, threshold=1E-8, fva=None, floatfmt='.3g', **kwargs):

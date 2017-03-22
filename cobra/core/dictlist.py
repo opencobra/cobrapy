@@ -77,10 +77,7 @@ class DictList(list):
             if isinstance(item, int):
                 return self[item]
             elif isinstance(item, string_types):
-                try:
-                    return self.get_by_id(item)
-                except KeyError:
-                    raise ValueError('%s not a member' % item)
+                return self.get_by_id(item)
             elif item in self:
                 return item
             else:

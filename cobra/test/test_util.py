@@ -64,7 +64,7 @@ class TestDictList:
         obj, test_list = dict_list
         assert test_list.get_by_any(0) == [obj]
         assert test_list.get_by_any('test1') == [obj]
-        with pytest.raises(ValueError):
+        with pytest.raises(KeyError):
             test_list.get_by_any('not-in-list')
         with pytest.raises(TypeError):
             test_list.get_by_any(1.1)
