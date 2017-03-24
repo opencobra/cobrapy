@@ -15,7 +15,7 @@ from sympy import S
 
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
-from cobra.core.reaction import separate_forward_and_reverse_bounds
+from cobra.core.reaction import separate_forward_and_reverse_bounds, Reaction
 from cobra.core.solution import get_solution
 from cobra.solvers import optimize
 from cobra.util.context import HistoryManager, resettable, get_context
@@ -418,6 +418,74 @@ class Model(Object):
 
         self.add_reactions([reaction])
 
+    def add_boundary(self, metabolite, type="exchange", reaction_id=None,
+                     lb=None, ub=1000.0):
+        """Add a boundary reaction for a given metabolite.
+
+        There are three different types of pre-defined boundary reactions:
+        exchange, demand, and sink reactions.
+        An exchange reaction is a reversible, imbalanced reaction that adds
+        to or removes an extracellular metabolite from the extracellular
+        compartment.
+        A demand reaction is an irreversible reaction that consumes an
+        intracellular metabolite.
+        A sink is similar to an exchange but specifically for intracellular
+        metabolites.
+
+        If you set the reaction `type` to something else, you must specify the
+        desired identifier of the created reaction along with its upper and
+         lower bound. The name will be given by the metabolite name and the
+         given `type`.
+
+        Parameters
+        ----------
+        metabolite : cobra.Metabolite
+            Any given metabolite. The compartment is not checked but you are
+            encouraged to stick to the definition of exchanges and sinks.
+        type : str, {"exchange", "demand", "sink"}
+            Using one of the pre-defined reaction types is easiest. If you
+            want to create your own kind of boundary reaction choose
+            any other string, e.g., 'my-boundary'.
+        reaction_id : str, optional
+            The ID of the resulting reaction. Only used for custom reactions.
+        lb : float, optional
+            The lower bound of the resulting reaction. Only used for custom
+            reactions.
+        ub : float, optional
+            The upper bound of the resulting reaction. For the pre-defined
+            reactions this default value determines all bounds.
+
+        Returns
+        -------
+        cobra.Reaction
+            The created boundary reaction.
+
+        Examples
+        --------
+        >>> import cobra.test
+        >>> model = cobra.test.create_test_model("textbook")
+        >>> demand = model.add_boundary(model.metabolites.atp_c, type="demand")
+        >>> demand.id
+        'DM_atp_c'
+        >>> demand.name
+        'ATP demand'
+        >>> demand.bounds
+        (0, 1000.0)
+        >>> demand.build_reaction_string()
+        'atp_c --> '
+        """
+        types = dict(exchange=("EX", -ub, ub), demand=("DM", 0, ub),
+                     sink=("SK", -ub, ub))
+        if type in types:
+            prefix, lb, ub = types[type]
+            reaction_id = "{}_{}".format(prefix, metabolite.id)
+        name = "{} {}".format(metabolite.name, type)
+        rxn = Reaction(id=reaction_id, name=name, lower_bound=lb,
+                       upper_bound=ub)
+        rxn.add_metabolites({metabolite: -1})
+        self.add_reactions([rxn])
+        return rxn
+
     def add_reactions(self, reaction_list):
         """Will add a cobra.Reaction object to the model, if
         reaction.id is not in self.reactions.
@@ -442,8 +510,9 @@ class Model(Object):
                               in self.reactions]
 
         if len(reactions_in_model) > 0:
-            raise Exception("Reactions already in the model: " +
-                            ", ".join(reactions_in_model))
+            raise ValueError(
+                "The following reactions are already in the model: {}"
+                "".format(", ".join(reactions_in_model)))
 
         context = get_context(self)
 

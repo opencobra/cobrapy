@@ -76,3 +76,21 @@ def opt_solver(request):
 @pytest.fixture(params=list(solver_dict), scope="session")
 def legacy_solver(request):
     return request.param
+
+
+@pytest.fixture(scope="function")
+def metabolites(model, request):
+    if request.param == "exchange":
+        return [
+            met for met in model.metabolites if
+            met.compartment == 'e' and "EX_" + met.id not in model.reactions]
+    elif request.param == "demand":
+        return [
+            met for met in model.metabolites if
+            met.compartment == 'c' and "DM_" + met.id not in model.reactions]
+    elif request.param == "sink":
+        return [
+            met for met in model.metabolites if
+            met.compartment == 'c' and "SK_" + met.id not in model.reactions]
+    else:
+        raise ValueError("unknown metabolites {}".format(request.param))
