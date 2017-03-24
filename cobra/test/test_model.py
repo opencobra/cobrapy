@@ -92,16 +92,17 @@ class TestReactions:
         benchmark(add_remove_metabolite)
 
     def test_add_metabolite(self, model):
-
         with model:
-            reaction = model.reactions.get_by_id("PGI")
-            reaction.add_metabolites({model.metabolites[0]: 1})
-            assert model.metabolites[0] in reaction._metabolites
-            fake_metabolite = Metabolite("fake")
-            reaction.add_metabolites({fake_metabolite: 1})
-            assert fake_metabolite in reaction._metabolites
-            assert model.metabolites.has_id("fake")
-            assert model.metabolites.get_by_id("fake") is fake_metabolite
+            with model:
+                reaction = model.reactions.get_by_id("PGI")
+                reaction.add_metabolites({model.metabolites[0]: 1})
+                assert model.metabolites[0] in reaction._metabolites
+                fake_metabolite = Metabolite("fake")
+                reaction.add_metabolites({fake_metabolite: 1})
+                assert fake_metabolite in reaction._metabolites
+                assert model.metabolites.has_id("fake")
+                assert model.metabolites.get_by_id("fake") is fake_metabolite
+            assert len(model._contexts[0]._history) == 0
 
         assert fake_metabolite._model is None
         assert fake_metabolite not in reaction._metabolites

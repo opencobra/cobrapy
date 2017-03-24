@@ -686,7 +686,8 @@ class Reaction(Object):
         """
         return map(self.get_coefficient, metabolite_ids)
 
-    def add_metabolites(self, metabolites_to_add, combine=True):
+    def add_metabolites(self, metabolites_to_add, combine=True,
+                        reversibly=True):
         """Add metabolites and stoichiometric coefficients to the reaction.
         If the final coefficient for a metabolite is 0 then it is removed
         from the reaction.
@@ -696,12 +697,18 @@ class Reaction(Object):
         Parameters
         ----------
         metabolites_to_add : dict
-            {str or :class:`~cobra.core.Metabolite.Metabolite`: coefficient}
+            Dictionary with metabolite objects or metabolite identifiers as
+            keys and coefficients as values.
+
 
         combine : bool
             Describes behavior a metabolite already exists in the reaction.
             True causes the coefficients to be added.
             False causes the coefficient to be replaced.
+
+        reversibly : bool
+            Whether to add the change to the context to make the change
+            reversibly or not (primarily intended for internal use).
 
         """
         old_coefficients = self.metabolites
@@ -772,12 +779,13 @@ class Reaction(Object):
                      })
 
         context = get_context(self)
-        if context:
-            # Just subtact the metabolites that were added
+        if context and reversibly:
+            # Just subtract the metabolites that were added
             context(partial(
-                self.subtract_metabolites, metabolites_to_add, combine=True))
+                self.subtract_metabolites, metabolites_to_add, combine=True,
+                reversibly=False))
 
-    def subtract_metabolites(self, metabolites, combine=True):
+    def subtract_metabolites(self, metabolites, combine=True, reversibly=True):
         """This function will 'subtract' metabolites from a reaction, which
         means add the metabolites with -1*coefficient. If the final coefficient
         for a metabolite is 0 then the metabolite is removed from the reaction.
@@ -796,11 +804,15 @@ class Reaction(Object):
             True causes the coefficients to be added.
             False causes the coefficient to be replaced.
 
+        reversibly : bool
+            Whether to add the change to the context to make the change
+            reversibly or not (primarily intended for internal use).
+
         .. note:: A final coefficient < 0 implies a reactant.
 
         """
         self.add_metabolites({k: -v for k, v in iteritems(metabolites)},
-                             combine=combine)
+                             combine=combine, reversibly=reversibly)
 
     @property
     def reaction(self):
