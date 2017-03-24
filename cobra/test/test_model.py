@@ -16,7 +16,6 @@ from cobra.util import create_stoichiometric_matrix
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
 
-
 try:
     import scipy
 except ImportError:
@@ -557,6 +556,51 @@ class TestCobraModel:
     def test_exchange_reactions(self, model):
         assert set(model.exchanges) == set([rxn for rxn in model.reactions
                                             if rxn.id.startswith("EX")])
+
+    @pytest.mark.parametrize("metabolites, reaction_type, prefix", [
+        ("exchange", "exchange", "EX_"),
+        ("demand", "demand", "DM_"),
+        ("sink", "sink", "SK_")
+    ], indirect=["metabolites"])
+    def test_add_boundary(self, model, metabolites, reaction_type, prefix):
+        for metabolite in metabolites:
+            reaction = model.add_boundary(metabolite, reaction_type)
+            assert model.reactions.get_by_id(
+                reaction.id) == reaction
+            assert reaction.reactants == [metabolite]
+            assert model.constraints[metabolite.id].expression.has(
+                model.variables[prefix + metabolite.id])
+
+    @pytest.mark.parametrize("metabolites, reaction_type, prefix", [
+        ("exchange", "exchange", "EX_"),
+        ("demand", "demand", "DM_"),
+        ("sink", "sink", "SK_")
+    ], indirect=["metabolites"])
+    def test_add_boundary_context(self, model, metabolites, reaction_type,
+                                  prefix):
+        with model:
+            for metabolite in metabolites:
+                reaction = model.add_boundary(metabolite, reaction_type)
+                assert model.reactions.get_by_id(
+                    reaction.id) == reaction
+                assert reaction.reactants == [metabolite]
+                assert -model.constraints[
+                    metabolite.id].expression.has(
+                    model.variables[prefix + metabolite.id])
+        for metabolite in metabolites:
+            assert prefix + metabolite.id not in model.reactions
+            assert prefix + metabolite.id not in model.variables.keys()
+
+    @pytest.mark.parametrize("metabolites, reaction_type", [
+        ("exchange", "exchange"),
+        ("demand", "demand"),
+        ("sink", "sink")
+    ], indirect=["metabolites"])
+    def test_add_existing_boundary(self, model, metabolites, reaction_type):
+        for metabolite in metabolites:
+            model.add_boundary(metabolite, reaction_type)
+            with pytest.raises(ValueError):
+                model.add_boundary(metabolite, reaction_type)
 
     @pytest.mark.parametrize("solver", list(solver_dict))
     def test_copy_benchmark(self, model, solver, benchmark):
