@@ -26,7 +26,6 @@ from cobra.util.solver import (
     check_solver_status, assert_optimal)
 from cobra.util.util import AutoVivification
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -1020,3 +1019,35 @@ class Model(Object):
             sum=self.objective.expression + right.objective.expression
         )[objective]
         return new_model
+
+    def _repr_html_(self):
+        return """
+        <table>
+            <tr>
+                <td><strong>Name</strong></td>
+                <td>{name}</td>
+            </tr><tr>
+                <td><strong>Memory address</strong></td>
+                <td>{address}</td>
+            </tr><tr>
+                <td><strong>Number of metabolites</strong></td>
+                <td>{num_metabolites}</td>
+            </tr><tr>
+                <td><strong>Number of reactions</strong></td>
+                <td>{num_reactions}</td>
+            </tr><tr>
+                <td><strong>Objective expression</strong></td>
+                <td>{objective}</td>
+            </tr><tr>
+                <td><strong>Compartments</strong></td>
+                <td>{compartments}</td>
+            </tr>
+          </table>""".format(
+            name=self.id,
+            address='0x0%x' % id(self),
+            num_metabolites=len(self.metabolites),
+            num_reactions=len(self.reactions),
+            objective=str(self.objective.expression),
+            compartments=", ".join(
+                v if v else k for k, v in iteritems(self.compartments)
+            ))

@@ -9,6 +9,9 @@
   `Model.optimize` when repeatedly doing optimizations and only making
   use of the objective value as avoiding the need to fetch all values
   from the solver object.
+- solution, model, metabolite and reaction now have html
+  representation so they give more informative prints in jupyter
+  notebooks.
 
 ## Deprecated features
 

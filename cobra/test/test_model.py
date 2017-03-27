@@ -289,6 +289,9 @@ class TestReactions:
         assert new._model is not model
         assert len(new.metabolites) == 3
 
+    def test_repr_html_(self, model):
+        assert '<table>' in model.reactions[0]._repr_html_()
+
 
 class TestCobraMetabolites:
     def test_metabolite_formula(self):
@@ -305,6 +308,14 @@ class TestCobraMetabolites:
         assert met.elements == {}
         met.elements = orig_elements
         assert met.formula == orig_formula
+
+    def test_repr_html_(self, model):
+        assert '<table>' in model.metabolites.h2o_c._repr_html_()
+
+
+class TestCobraGenes:
+    def test_repr_html_(self, model):
+        assert '<table>' in model.genes[0]._repr_html_()
 
 
 class TestCobraModel:
@@ -867,6 +878,9 @@ class TestCobraModel:
                 assert model.reactions[0].bounds == bounds2
             assert model.reactions[0].bounds == bounds1
         assert model.reactions[0].bounds == bounds0
+
+    def test_repr_html_(self, model):
+        assert '<table>' in model._repr_html_()
 
 
 class TestStoichiometricMatrix:
