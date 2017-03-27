@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>algorithms on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/algorithms/index.xml</link>
+    <description>Recent content in algorithms on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <atom:link href="https://opencobra.github.io/cobrapy/tags/algorithms/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>minspan</title>
+      <link>https://opencobra.github.io/cobrapy/packages/minspan/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:42 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/minspan/</guid>
+      <description>&lt;p&gt;This project calculates the minimal spanning vectors of the null space.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

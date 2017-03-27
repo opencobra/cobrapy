@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>reconstruction on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/reconstruction/index.xml</link>
+    <description>Recent content in reconstruction on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <atom:link href="https://opencobra.github.io/cobrapy/tags/reconstruction/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>corda</title>
+      <link>https://opencobra.github.io/cobrapy/packages/corda/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:47 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/corda/</guid>
+      <description>&lt;p&gt;CORDA, short for Cost Optimization Reaction Dependency Assessment is a method
+for the reconstruction of metabolic networks from a given reference model (a
+database of all known reactions) and a confidence mapping for reactions
+developed by A. Schultz and A. Qutub. It allows you to quickly reconstruct
+metabolic models for tissues, patients or specific experimental conditions from
+a set of transcription or proteome measurements.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
