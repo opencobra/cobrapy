@@ -1036,6 +1036,37 @@ class Reaction(Object):
                     met = Metabolite(met_id)
                 self.add_metabolites({met: num})
 
+    def _repr_html_(self):
+        return """
+        <table>
+            <tr>
+                <td><strong>Reaction identifier</strong></td><td>{id}</td>
+            </tr><tr>
+                <td><strong>Name</strong></td><td>{name}</td>
+            </tr><tr>
+                <td><strong>Memory address</strong></td>
+                <td>{address}</td>
+            </tr><tr>
+                <td><strong>Stoichiometry</strong></td>
+                <td>
+                    <p style='text-align:right'>{stoich_id}</p>
+                    <p style='text-align:right'>{stoich_name}</p>
+                </td>
+            </tr><tr>
+                <td><strong>GPR</strong></td><td>{gpr}</td>
+            </tr><tr>
+                <td><strong>Lower bound</strong></td><td>{lb}</td>
+            </tr><tr>
+                <td><strong>Upper bound</strong></td><td>{ub}</td>
+            </tr>
+        </table>
+        """.format(id=self.id, name=self.name,
+                   address='0x0%x' % id(self),
+                   stoich_id=self.build_reaction_string(),
+                   stoich_name=self.build_reaction_string(True),
+                   gpr=self.gene_reaction_rule,
+                   lb=self.lower_bound, ub=self.upper_bound)
+
 
 def separate_forward_and_reverse_bounds(lower_bound, upper_bound):
     """Split a given (lower_bound, upper_bound) interval into a negative

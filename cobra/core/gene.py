@@ -268,3 +268,25 @@ class Gene(Species):
                 the_reaction.lower_bound = 0
                 the_reaction.upper_bound = 0
         self._reaction.clear()
+
+    def _repr_html_(self):
+        return """
+        <table>
+            <tr>
+                <td><strong>Gene identifier</strong></td><td>{id}</td>
+            </tr><tr>
+                <td><strong>Name</strong></td><td>{name}</td>
+            </tr><tr>
+                <td><strong>Memory address</strong></td>
+                <td>{address}</td>
+            </tr><tr>
+                <td><strong>Functional</strong></td><td>{functional}</td>
+            </tr><tr>
+                <td><strong>In {n_reactions} reaction(s)</strong></td><td>
+                    {reactions}</td>
+            </tr>
+        </table>""".format(id=self.id, name=self.name,
+                           functional=self.functional,
+                           address='0x0%x' % id(self),
+                           n_reactions=len(self.reactions),
+                           reactions=', '.join(r.id for r in self.reactions))
