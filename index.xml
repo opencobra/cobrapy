@@ -6,7 +6,7 @@
     <description>Recent content on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 13 Mar 2017 14:28:15 -0600</lastBuildDate>
+    <lastBuildDate>Mon, 27 Mar 2017 12:13:48 -0600</lastBuildDate>
     <atom:link href="https://opencobra.github.io/cobrapy/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
@@ -91,6 +91,73 @@ and discussions about cobrapy (faster response times).&lt;/p&gt;
 
 &lt;p&gt;If you use cobrapy in a scientific publication, please cite
 &lt;a href=&#34;http://dx.doi.org/doi:10.1186/1752-0509-7-74&#34;&gt;our publication&lt;/a&gt; 😄&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>escher</title>
+      <link>https://opencobra.github.io/cobrapy/packages/escher/</link>
+      <pubDate>Mon, 27 Mar 2017 12:13:48 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/escher/</guid>
+      <description>&lt;p&gt;Escher is a web-based tool for building, viewing, and sharing visualizations of
+biological pathways. These &amp;lsquo;pathway maps&amp;rsquo; are a great way to contextualize data
+about metabolism.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>micom</title>
+      <link>https://opencobra.github.io/cobrapy/packages/micom/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:51 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/micom/</guid>
+      <description>&lt;p&gt;micom is a Python package for metabolic modeling of microbial communities.&lt;/p&gt;
+
+&lt;p&gt;micom allows you to construct a community model from a list on input COBRA
+models and manages exchange fluxes between individuals and individuals with the
+environment. It explicitly accounts for different abundances of individuals in
+the community and can thus incorporate data from 16S rRNA sequencing
+experiments.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>corda</title>
+      <link>https://opencobra.github.io/cobrapy/packages/corda/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:47 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/corda/</guid>
+      <description>&lt;p&gt;CORDA, short for Cost Optimization Reaction Dependency Assessment is a method
+for the reconstruction of metabolic networks from a given reference model (a
+database of all known reactions) and a confidence mapping for reactions
+developed by A. Schultz and A. Qutub. It allows you to quickly reconstruct
+metabolic models for tissues, patients or specific experimental conditions from
+a set of transcription or proteome measurements.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>minspan</title>
+      <link>https://opencobra.github.io/cobrapy/packages/minspan/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:42 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/minspan/</guid>
+      <description>&lt;p&gt;This project calculates the minimal spanning vectors of the null space.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>dd-decaf</title>
+      <link>https://opencobra.github.io/cobrapy/packages/dd-decaf/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:33 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/dd-decaf/</guid>
+      <description>&lt;p&gt;Large EU-backed project bringing together leading academic partners from five
+European universities with five innovative European companies to address the
+challenge of building a comprehensive design tool. &lt;strong&gt;DD-DeCaF&lt;/strong&gt; aims to develop
+cutting edge methods for using large scale data to design cell factories and
+communities for biotechnological applications.&lt;/p&gt;
 </description>
     </item>
     
@@ -314,7 +381,7 @@ reaction is attached to a model.&lt;/li&gt;
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.5.11/</guid>
       <description>&lt;p&gt;This is the current stable release for COBRApy. For a list of features please
-see the &lt;a href=&#34;https://https://cobrapy.readthedocs.org/en/stable/&#34;&gt;documentation&lt;/a&gt;.&lt;/p&gt;
+see the &lt;a href=&#34;https://cobrapy.readthedocs.org/en/stable/&#34;&gt;documentation&lt;/a&gt;.&lt;/p&gt;
 </description>
     </item>
     
@@ -345,60 +412,6 @@ see the &lt;a href=&#34;https://https://cobrapy.readthedocs.org/en/stable/&#34;&
       
       <guid>https://opencobra.github.io/cobrapy/pubs/PM28082911/</guid>
       <description>&lt;p&gt;Cancer is a heterogeneous disease and its genetic and metabolic mechanism may manifest differently in each patient. This creates a demand for studies that can characterize phenotypic traits of cancer on a per-sample basis. Combining two large data sets, the NCI60 cancer cell line panel, and The Cancer Genome Atlas, we used a linear interaction model to predict proliferation rates for more than 12,000 cancer samples across 33 different cancers from The Cancer Genome Atlas. The predicted proliferation rates are associated with patient survival and cancer stage and show a strong heterogeneity in proliferative capacity within and across different cancer panels. We also show how the obtained proliferation rates can be incorporated into genome-scale metabolic reconstructions to obtain the metabolic fluxes for more than 3000 cancer samples that identified specific metabolic liabilities for nine cancer panels. Here we found that affected pathways coincided with the literature, with pentose phosphate pathway, retinol, and branched-chain amino acid metabolism being the most panel-specific alterations and fatty acid metabolism and ROS detoxification showing homogeneous metabolic activities across all cancer panels. The presented strategy has potential applications in personalized medicine since it can leverage gene expression signatures for cell line based prediction of additional metabolic properties which might help in constraining personalized metabolic models and improve the identification of metabolic alterations in cancer for individual patients.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>MMinte</title>
-      <link>https://opencobra.github.io/cobrapy/packages/mminte/</link>
-      <pubDate>Fri, 13 Jan 2017 11:00:05 -0600</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/packages/mminte/</guid>
-      <description>&lt;p&gt;MMinte (pronounced /‘minti/) is an integrated pipeline that allows users to explore the pairwise interactions (positive or negative) that occur in a microbial network. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. Our application is composed of seven widgets that run sequentially, and each widget may also be run as independent modules.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>D3flux</title>
-      <link>https://opencobra.github.io/cobrapy/packages/d3flux/</link>
-      <pubDate>Fri, 13 Jan 2017 11:00:03 -0600</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/packages/d3flux/</guid>
-      <description>&lt;p&gt;This package implements a d3.js based visualization tool for cobrapy models.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>cameo</title>
-      <link>https://opencobra.github.io/cobrapy/packages/cameo/</link>
-      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/packages/cameo/</guid>
-      <description>&lt;p&gt;Cameo is a high-level python library developed to aid the strain design process in metabolic engineering projects. The library provides a modular framework of simulation methods, strain design methods, access to models, that targets developers that want custom analysis workflows.&lt;/p&gt;
-
-&lt;p&gt;Computationally heavy methods have been parallelized and can be run on a clusters using the IPython parallelization framework (see example and documentation for more details). The default fallback is python&amp;rsquo;s multiprocessing library.&lt;/p&gt;
-
-&lt;p&gt;Furthermore, it exposes a high-level API to users that just want to compute promising strain designs.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Unique attributes of cyanobacterial metabolism revealed by improved genome-scale metabolic modeling and essential gene analysis.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM27911809/</link>
-      <pubDate>Sat, 03 Dec 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM27911809/</guid>
-      <description>&lt;p&gt;The model cyanobacterium, Synechococcus elongatus PCC 7942, is a genetically tractable obligate phototroph that is being developed for the bioproduction of high-value chemicals. Genome-scale models (GEMs) have been successfully used to assess and engineer cellular metabolism; however, GEMs of phototrophic metabolism have been limited by the lack of experimental datasets for model validation and the challenges of incorporating photon uptake. Here, we develop a GEM of metabolism in S. elongatus using random barcode transposon site sequencing (RB-TnSeq) essential gene and physiological data specific to photoautotrophic metabolism. The model explicitly describes photon absorption and accounts for shading, resulting in the characteristic linear growth curve of photoautotrophs. GEM predictions of gene essentiality were compared with data obtained from recent dense-transposon mutagenesis experiments. This dataset allowed major improvements to the accuracy of the model. Furthermore, discrepancies between GEM predictions and the in vivo dataset revealed biological characteristics, such as the importance of a truncated, linear TCA pathway, low flux toward amino acid synthesis from photorespiration, and knowledge gaps within nucleotide metabolism. Coupling of strong experimental support and photoautotrophic modeling methods thus resulted in a highly accurate model of S. elongatus metabolism that highlights previously unknown areas of S. elongatus biology.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Modelling microbial metabolic rewiring during growth in a complex medium.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM27881075/</link>
-      <pubDate>Fri, 25 Nov 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM27881075/</guid>
-      <description>&lt;p&gt;In their natural environment, bacteria face a wide range of environmental conditions that change over time and that impose continuous rearrangements at all the cellular levels (e.g. gene expression, metabolism). When facing a nutritionally rich environment, for example, microbes first use the preferred compound(s) and only later start metabolizing the other one(s). A systemic re-organization of the overall microbial metabolic network in response to a variation in the composition/concentration of the surrounding nutrients has been suggested, although the range and the entity of such modifications in organisms other than a few model microbes has been scarcely described up to now.&lt;/p&gt;
 </description>
     </item>
     

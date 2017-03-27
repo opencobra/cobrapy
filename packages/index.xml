@@ -6,11 +6,78 @@
     <description>Recent content in Packages on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 13 Jan 2017 11:00:05 -0600</lastBuildDate>
+    <lastBuildDate>Mon, 27 Mar 2017 12:13:48 -0600</lastBuildDate>
     <atom:link href="https://opencobra.github.io/cobrapy/packages/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>MMinte</title>
+      <title>escher</title>
+      <link>https://opencobra.github.io/cobrapy/packages/escher/</link>
+      <pubDate>Mon, 27 Mar 2017 12:13:48 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/escher/</guid>
+      <description>&lt;p&gt;Escher is a web-based tool for building, viewing, and sharing visualizations of
+biological pathways. These &amp;lsquo;pathway maps&amp;rsquo; are a great way to contextualize data
+about metabolism.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>micom</title>
+      <link>https://opencobra.github.io/cobrapy/packages/micom/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:51 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/micom/</guid>
+      <description>&lt;p&gt;micom is a Python package for metabolic modeling of microbial communities.&lt;/p&gt;
+
+&lt;p&gt;micom allows you to construct a community model from a list on input COBRA
+models and manages exchange fluxes between individuals and individuals with the
+environment. It explicitly accounts for different abundances of individuals in
+the community and can thus incorporate data from 16S rRNA sequencing
+experiments.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>corda</title>
+      <link>https://opencobra.github.io/cobrapy/packages/corda/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:47 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/corda/</guid>
+      <description>&lt;p&gt;CORDA, short for Cost Optimization Reaction Dependency Assessment is a method
+for the reconstruction of metabolic networks from a given reference model (a
+database of all known reactions) and a confidence mapping for reactions
+developed by A. Schultz and A. Qutub. It allows you to quickly reconstruct
+metabolic models for tissues, patients or specific experimental conditions from
+a set of transcription or proteome measurements.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>minspan</title>
+      <link>https://opencobra.github.io/cobrapy/packages/minspan/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:42 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/minspan/</guid>
+      <description>&lt;p&gt;This project calculates the minimal spanning vectors of the null space.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>dd-decaf</title>
+      <link>https://opencobra.github.io/cobrapy/packages/dd-decaf/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:33 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/dd-decaf/</guid>
+      <description>&lt;p&gt;Large EU-backed project bringing together leading academic partners from five
+European universities with five innovative European companies to address the
+challenge of building a comprehensive design tool. &lt;strong&gt;DD-DeCaF&lt;/strong&gt; aims to develop
+cutting edge methods for using large scale data to design cell factories and
+communities for biotechnological applications.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>mminte</title>
       <link>https://opencobra.github.io/cobrapy/packages/mminte/</link>
       <pubDate>Fri, 13 Jan 2017 11:00:05 -0600</pubDate>
       
@@ -20,7 +87,7 @@
     </item>
     
     <item>
-      <title>D3flux</title>
+      <title>d3flux</title>
       <link>https://opencobra.github.io/cobrapy/packages/d3flux/</link>
       <pubDate>Fri, 13 Jan 2017 11:00:03 -0600</pubDate>
       
@@ -40,6 +107,51 @@
 &lt;p&gt;Computationally heavy methods have been parallelized and can be run on a clusters using the IPython parallelization framework (see example and documentation for more details). The default fallback is python&amp;rsquo;s multiprocessing library.&lt;/p&gt;
 
 &lt;p&gt;Furthermore, it exposes a high-level API to users that just want to compute promising strain designs.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>cobrame</title>
+      <link>https://opencobra.github.io/cobrapy/packages/cobrame/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/cobrame/</guid>
+      <description>&lt;p&gt;COBRA Toolbox for constructing and manipulating genome-scale models of metabolism and expression (ME-models).&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>mackinac</title>
+      <link>https://opencobra.github.io/cobrapy/packages/mackinac/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/mackinac/</guid>
+      <description>&lt;p&gt;Mackinac combines the ability of &lt;a href=&#34;http://modelseed.org&#34;&gt;ModelSEED&lt;/a&gt; to
+automatically reconstruct metabolic models with the advanced analysis
+capabilities in cobrapy to bridge the differences between the two
+frameworks. Mackinac provides support for using the ModelSEED web
+service to create draft genome-scale models from genomes available in
+the
+&lt;a href=&#34;https://www.patricbrc.org/portal/portal/patric/Home&#34;&gt;Pathosystems Resource Integration Center (PATRIC)&lt;/a&gt;
+and creates a COBRA model from a ModelSEED model.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>optlang</title>
+      <link>https://opencobra.github.io/cobrapy/packages/optlang/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/optlang/</guid>
+      <description>&lt;p&gt;Optlang is a Python package for solving mathematical optimization
+problems, i.e. maximizing or minimizing an objective function over a
+set of variables subject to a number of constraints. Optlang provides
+a common interface to a series of optimization tools, so different
+solver backends can be changed in a transparent way. Optlang&amp;rsquo;s
+object-oriented API takes advantage of the symbolic math library
+&lt;a href=&#34;http://sympy.org/en/index.html&#34;&gt;sympy&lt;/a&gt; to allow objective functions
+and constraints to be easily formulated from symbolic expressions of
+variables&lt;/p&gt;
 </description>
     </item>
     

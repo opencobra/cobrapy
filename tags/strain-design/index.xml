@@ -9,6 +9,20 @@
     <atom:link href="https://opencobra.github.io/cobrapy/tags/strain-design/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>dd-decaf</title>
+      <link>https://opencobra.github.io/cobrapy/packages/dd-decaf/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:33 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/dd-decaf/</guid>
+      <description>&lt;p&gt;Large EU-backed project bringing together leading academic partners from five
+European universities with five innovative European companies to address the
+challenge of building a comprehensive design tool. &lt;strong&gt;DD-DeCaF&lt;/strong&gt; aims to develop
+cutting edge methods for using large scale data to design cell factories and
+communities for biotechnological applications.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>cameo</title>
       <link>https://opencobra.github.io/cobrapy/packages/cameo/</link>
       <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
