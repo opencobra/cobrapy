@@ -331,6 +331,9 @@ class Model(Object):
         """
         if not hasattr(metabolite_list, '__iter__'):
             metabolite_list = [metabolite_list]
+        if len(metabolite_list) == 0:
+            return None
+
         # First check whether the metabolites exist in the model
         metabolite_list = [x for x in metabolite_list
                            if x.id not in self.metabolites]
