@@ -157,11 +157,11 @@ table {
 .tags {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-around;
+    justify-content: center;
 }
 
 .tags a {
-    margin: 1em 0.5em;
+    margin: 1em;
 }
 
 .mdl-badge[data-badge]:after {

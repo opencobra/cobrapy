@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>mathematical-modeling on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/mathematical-modeling/index.xml</link>
+    <description>Recent content in mathematical-modeling on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <atom:link href="https://opencobra.github.io/cobrapy/tags/mathematical-modeling/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>optlang</title>
+      <link>https://opencobra.github.io/cobrapy/packages/optlang/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/optlang/</guid>
+      <description>&lt;p&gt;Optlang is a Python package for solving mathematical optimization
+problems, i.e. maximizing or minimizing an objective function over a
+set of variables subject to a number of constraints. Optlang provides
+a common interface to a series of optimization tools, so different
+solver backends can be changed in a transparent way. Optlang&amp;rsquo;s
+object-oriented API takes advantage of the symbolic math library
+&lt;a href=&#34;http://sympy.org/en/index.html&#34;&gt;sympy&lt;/a&gt; to allow objective functions
+and constraints to be easily formulated from symbolic expressions of
+variables&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

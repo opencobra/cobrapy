@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>microbiota on cobrapy - constraint-based metabolic modeling in Python</title>
-    <link>https://opencobra.github.io/cobrapy/tags/microbiota/index.xml</link>
-    <description>Recent content in microbiota on cobrapy - constraint-based metabolic modeling in Python</description>
+    <title>micobiome on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/micobiome/index.xml</link>
+    <description>Recent content in micobiome on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <atom:link href="https://opencobra.github.io/cobrapy/tags/microbiota/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://opencobra.github.io/cobrapy/tags/micobiome/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>micom</title>

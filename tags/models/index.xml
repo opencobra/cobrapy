@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>models on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/models/index.xml</link>
+    <description>Recent content in models on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <atom:link href="https://opencobra.github.io/cobrapy/tags/models/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>mackinac</title>
+      <link>https://opencobra.github.io/cobrapy/packages/mackinac/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/mackinac/</guid>
+      <description>&lt;p&gt;Mackinac combines the ability of &lt;a href=&#34;http://modelseed.org&#34;&gt;ModelSEED&lt;/a&gt; to
+automatically reconstruct metabolic models with the advanced analysis
+capabilities in cobrapy to bridge the differences between the two
+frameworks. Mackinac provides support for using the ModelSEED web
+service to create draft genome-scale models from genomes available in
+the
+&lt;a href=&#34;https://www.patricbrc.org/portal/portal/patric/Home&#34;&gt;Pathosystems Resource Integration Center (PATRIC)&lt;/a&gt;
+and creates a COBRA model from a ModelSEED model.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

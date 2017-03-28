@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>community-modeling on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/community-modeling/index.xml</link>
+    <description>Recent content in community-modeling on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <atom:link href="https://opencobra.github.io/cobrapy/tags/community-modeling/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>micom</title>
+      <link>https://opencobra.github.io/cobrapy/packages/micom/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:51 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/micom/</guid>
+      <description>&lt;p&gt;micom is a Python package for metabolic modeling of microbial communities.&lt;/p&gt;
+
+&lt;p&gt;micom allows you to construct a community model from a list on input COBRA
+models and manages exchange fluxes between individuals and individuals with the
+environment. It explicitly accounts for different abundances of individuals in
+the community and can thus incorporate data from 16S rRNA sequencing
+experiments.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
