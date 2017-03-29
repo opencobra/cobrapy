@@ -9,6 +9,7 @@ from os import name
 
 import pytest
 import numpy
+from optlang.interface import OPTIMAL, INFEASIBLE
 from six import StringIO, iteritems
 
 import cobra.util.solver as sutil
@@ -18,6 +19,7 @@ from cobra.flux_analysis.parsimonious import add_pfba
 from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
 from cobra.manipulation import convert_to_irreversible
 from cobra.solvers import SolverNotFound, get_solver_name, solver_dict
+from cobra.exceptions import Infeasible
 
 try:
     import scipy
@@ -144,7 +146,7 @@ class TestCobraFluxAnalysis:
         model.reactions.ATPM.lower_bound = 500
         with warnings.catch_warnings():
             warnings.simplefilter("error", UserWarning)
-            with pytest.raises((UserWarning, ValueError)):
+            with pytest.raises((UserWarning, Infeasible, ValueError)):
                 pfba(model, solver=solver)
 
     @pytest.mark.parametrize("solver", all_solvers)
@@ -307,7 +309,7 @@ class TestCobraFluxAnalysis:
         infeasible_model = model.copy()
         infeasible_model.reactions.get_by_id("EX_glc__D_e").lower_bound = 0
         # ensure that an infeasible model does not run FVA
-        with pytest.raises(ValueError):
+        with pytest.raises(Infeasible):
             flux_variability_analysis(infeasible_model)
 
     @pytest.mark.parametrize("solver", all_solvers)
@@ -385,8 +387,8 @@ class TestCobraFluxAnalysis:
         ll_test_model.reactions.v3.lower_bound = 1
         ll_test_model.solver.optimize()
         infeasible_status = ll_test_model.solver.status
-        assert feasible_status == "optimal"
-        assert infeasible_status == "infeasible"
+        assert feasible_status == OPTIMAL
+        assert infeasible_status == INFEASIBLE
 
     def test_phenotype_phase_plane_benchmark(self, model, benchmark):
         benchmark(calculate_phenotype_phase_plane,

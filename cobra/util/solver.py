@@ -20,7 +20,7 @@ from warnings import warn
 import optlang
 import sympy
 
-from cobra.exceptions import OptimizationError
+from cobra.exceptions import OptimizationError, OPTLANG_TO_EXCEPTIONS_DICT
 from cobra.util.context import get_context
 
 
@@ -378,8 +378,9 @@ def fix_objective_as_constraint(model, fraction=1, name='fixed_objective_{}'):
     fix_objective_name = name.format(model.objective.name)
     if fix_objective_name in model.constraints:
         model.solver.remove(fix_objective_name)
-    solution = model.optimize()
-    objective_bound = solution.objective_value * fraction
+    model.solver.optimize()
+    assert_optimal(model)
+    objective_bound = model.solver.objective.value * fraction
     if model.objective.direction == 'max':
         ub, lb = None, objective_bound
     else:
@@ -392,15 +393,32 @@ def fix_objective_as_constraint(model, fraction=1, name='fixed_objective_{}'):
 
 def check_solver_status(status):
     """Perform standard checks on a solver's status."""
-    if status == "optimal":
+    if status == optlang.interface.OPTIMAL:
         return
-    elif status == "infeasible":
+    elif status == optlang.interface.INFEASIBLE:
         warn("solver status is '{}'".format(status), UserWarning)
     elif status is None:
         raise RuntimeError(
             "model was not optimized yet or solver context switched")
     else:
         raise OptimizationError("solver status is '{}'".format(status))
+
+
+def assert_optimal(model, message='optimization failed'):
+    """Assert model solver status is optimal.
+
+    Do nothing if model solver status is optimal, otherwise throw
+    appropriate exception depending on the status.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to check the solver status for.
+    message : str (optional)
+        Message to for the exception if solver status was not optimal.
+    """
+    if model.solver.status != optlang.interface.OPTIMAL:
+        raise OPTLANG_TO_EXCEPTIONS_DICT[model.solver.status](message)
 
 
 import cobra.solvers as legacy_solvers  # noqa

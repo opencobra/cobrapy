@@ -7,6 +7,7 @@ from collections import defaultdict
 from itertools import product
 from multiprocessing import Pool
 import pandas as pd
+from optlang.interface import OPTIMAL
 
 from numpy import (
     nan, abs, arange, dtype, empty, int32, linspace, meshgrid, unravel_index,
@@ -409,7 +410,7 @@ def _envelope_for_points(model, reactions, grid, carbon_io):
                 for reaction, coordinate in zip(reactions, point):
                     reaction.bounds = (coordinate, coordinate)
                 model.solver.optimize()
-                if model.solver.status == 'optimal':
+                if model.solver.status == OPTIMAL:
                     for reaction, coordinate in zip(reactions, point):
                         results[reaction.id].append(coordinate)
                     results['direction'].append(direction)

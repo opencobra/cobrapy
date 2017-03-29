@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 import pandas
 from six import iteritems, string_types
+from optlang.interface import OPTIMAL
 
 import cobra.solvers as legacy_solvers
 import cobra.util.solver as solvers
@@ -110,7 +111,7 @@ def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
                     status = m.solver.status
                     status_dict[reaction.id] = status
                     growth_rate_dict[reaction.id] = m.solver.objective.value \
-                        if status == "optimal" else 0.
+                        if status == OPTIMAL else 0.
     else:
         # This entire block can be removed once the legacy solvers are
         # deprecated
@@ -180,7 +181,7 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
                     m.solver.optimize()
                     status = m.solver.status
                     status_dict[reaction.id] = status
-                    if status == "optimal":
+                    if status == OPTIMAL:
                         growth = m.variables.moma_old_objective.primal
                     else:
                         growth = 0.0
@@ -285,7 +286,7 @@ def single_gene_deletion_fba(cobra_model, gene_list, solver=None,
                     status = m.solver.status
                     status_dict[gene.id] = status
                     growth_rate_dict[gene.id] = m.solver.objective.value if \
-                        status == "optimal" else 0.
+                        status == OPTIMAL else 0.
     else:
         for gene in gene_list:
             old_bounds = {}
