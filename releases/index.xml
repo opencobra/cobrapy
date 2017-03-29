@@ -10,11 +10,11 @@
     <atom:link href="https://opencobra.github.io/cobrapy/releases/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>0.6.0a2</title>
-      <link>https://opencobra.github.io/cobrapy/releases/0.6.0a2/</link>
+      <title>0.6 alpha</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.6_alpha/</link>
       <pubDate>Mon, 13 Mar 2017 14:28:15 -0600</pubDate>
       
-      <guid>https://opencobra.github.io/cobrapy/releases/0.6.0a2/</guid>
+      <guid>https://opencobra.github.io/cobrapy/releases/0.6_alpha/</guid>
       <description>
 
 &lt;p&gt;In this release we have made major changes to pretty much all corners
@@ -203,13 +203,15 @@ reaction is attached to a model.&lt;/li&gt;
     </item>
     
     <item>
-      <title>0.5.11</title>
-      <link>https://opencobra.github.io/cobrapy/releases/0.5.11/</link>
+      <title>0.5</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.5/</link>
       <pubDate>Mon, 30 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://opencobra.github.io/cobrapy/releases/0.5.11/</guid>
-      <description>&lt;p&gt;This is the current stable release for COBRApy. For a list of features please
-see the &lt;a href=&#34;https://cobrapy.readthedocs.org/en/stable/&#34;&gt;documentation&lt;/a&gt;.&lt;/p&gt;
+      <guid>https://opencobra.github.io/cobrapy/releases/0.5/</guid>
+      <description>&lt;p&gt;This is the current stable release for COBRApy. The final release is &lt;strong&gt;0.5.11&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;For a list of features please see the
+&lt;a href=&#34;https://cobrapy.readthedocs.org/en/stable/&#34;&gt;documentation&lt;/a&gt;.&lt;/p&gt;
 </description>
     </item>
     

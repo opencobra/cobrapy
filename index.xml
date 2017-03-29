@@ -162,11 +162,11 @@ communities for biotechnological applications.&lt;/p&gt;
     </item>
     
     <item>
-      <title>0.6.0a2</title>
-      <link>https://opencobra.github.io/cobrapy/releases/0.6.0a2/</link>
+      <title>0.6 alpha</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.6_alpha/</link>
       <pubDate>Mon, 13 Mar 2017 14:28:15 -0600</pubDate>
       
-      <guid>https://opencobra.github.io/cobrapy/releases/0.6.0a2/</guid>
+      <guid>https://opencobra.github.io/cobrapy/releases/0.6_alpha/</guid>
       <description>
 
 &lt;p&gt;In this release we have made major changes to pretty much all corners
@@ -357,7 +357,7 @@ reaction is attached to a model.&lt;/li&gt;
     <item>
       <title>Efficient estimation of the maximum metabolic productivity of batch systems.</title>
       <link>https://opencobra.github.io/cobrapy/pubs/PM28163785/</link>
-      <pubDate>Tue, 07 Feb 2017 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 31 Jan 2017 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/pubs/PM28163785/</guid>
       <description>&lt;p&gt;Production of chemicals from engineered organisms in a batch culture involves an inherent trade-off between productivity, yield, and titer. Existing strategies for strain design typically focus on designing mutations that achieve the highest yield possible while maintaining growth viability. While these methods are computationally tractable, an optimum productivity could be achieved by a dynamic strategy in which the intracellular division of resources is permitted to change with time. New methods for the design and implementation of dynamic microbial processes, both computational and experimental, have therefore been explored to maximize productivity. However, solving for the optimal metabolic behavior under the assumption that all fluxes in the cell are free to vary is a challenging numerical task. Previous studies have therefore typically focused on simpler strategies that are more feasible to implement in practice, such as the time-dependent control of a single flux or control variable.&lt;/p&gt;
@@ -365,30 +365,22 @@ reaction is attached to a model.&lt;/li&gt;
     </item>
     
     <item>
-      <title>Genome-Scale Metabolic Modeling of Archaea Lends Insight into Diversity of Metabolic Function.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM28133437/</link>
-      <pubDate>Tue, 31 Jan 2017 00:00:00 +0000</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM28133437/</guid>
-      <description>&lt;p&gt;Decades of biochemical, bioinformatic, and sequencing data are currently being systematically compiled into genome-scale metabolic reconstructions (GEMs). Such reconstructions are knowledge-bases useful for engineering, modeling, and comparative analysis. Here we review the fifteen GEMs of archaeal species that have been constructed to date. They represent primarily members of the Euryarchaeota with three-quarters comprising representative of methanogens. Unlike other reviews on GEMs, we specially focus on archaea. We briefly review the GEM construction process and the genealogy of the archaeal models. The major insights gained during the construction of these models are then reviewed with specific focus on novel metabolic pathway predictions and growth characteristics. Metabolic pathway usage is discussed in the context of the composition of each organism&amp;rsquo;s biomass and their specific energy and growth requirements. We show how the metabolic models can be used to study the evolution of metabolism in archaea. Conservation of particular metabolic pathways can be studied by comparing reactions using the genes associated with their enzymes. This demonstrates the utility of GEMs to evolutionary studies, far beyond their original purpose of metabolic modeling; however, much needs to be done before archaeal models are as extensively complete as those for bacteria.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>0.5.11</title>
-      <link>https://opencobra.github.io/cobrapy/releases/0.5.11/</link>
+      <title>0.5</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.5/</link>
       <pubDate>Mon, 30 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://opencobra.github.io/cobrapy/releases/0.5.11/</guid>
-      <description>&lt;p&gt;This is the current stable release for COBRApy. For a list of features please
-see the &lt;a href=&#34;https://cobrapy.readthedocs.org/en/stable/&#34;&gt;documentation&lt;/a&gt;.&lt;/p&gt;
+      <guid>https://opencobra.github.io/cobrapy/releases/0.5/</guid>
+      <description>&lt;p&gt;This is the current stable release for COBRApy. The final release is &lt;strong&gt;0.5.11&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;For a list of features please see the
+&lt;a href=&#34;https://cobrapy.readthedocs.org/en/stable/&#34;&gt;documentation&lt;/a&gt;.&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>Meneco, a Topology-Based Gap-Filling Tool Applicable to Degraded Genome-Wide Metabolic Networks.</title>
       <link>https://opencobra.github.io/cobrapy/pubs/PM28129330/</link>
-      <pubDate>Sat, 28 Jan 2017 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 27 Jan 2017 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/pubs/PM28129330/</guid>
       <description>&lt;p&gt;Increasing amounts of sequence data are becoming available for a wide range of non-model organisms. Investigating and modelling the metabolic behaviour of those organisms is highly relevant to understand their biology and ecology. As sequences are often incomplete and poorly annotated, draft networks of their metabolism largely suffer from incompleteness. Appropriate gap-filling methods to identify and add missing reactions are therefore required to address this issue. However, current tools rely on phenotypic or taxonomic information, or are very sensitive to the stoichiometric balance of metabolic reactions, especially concerning the co-factors. This type of information is often not available or at least prone to errors for newly-explored organisms. Here we introduce Meneco, a tool dedicated to the topological gap-filling of genome-scale draft metabolic networks. Meneco reformulates gap-filling as a qualitative combinatorial optimization problem, omitting constraints raised by the stoichiometry of a metabolic network considered in other methods, and solves this problem using Answer Set Programming. Run on several artificial test sets gathering 10,800 degraded Escherichia coli networks Meneco was able to efficiently identify essential reactions missing in networks at high degradation rates, outperforming the stoichiometry-based tools in scalability. To demonstrate the utility of Meneco we applied it to two case studies. Its application to recent metabolic networks reconstructed for the brown algal model Ectocarpus siliculosus and an associated bacterium Candidatus Phaeomarinobacter ectocarpi revealed several candidate metabolic pathways for algal-bacterial interactions. Then Meneco was used to reconstruct, from transcriptomic and metabolomic data, the first metabolic network for the microalga Euglena mutabilis. These two case studies show that Meneco is a versatile tool to complete draft genome-scale metabolic networks produced from heterogeneous data, and to suggest relevant reactions that explain the metabolic capacity of a biological system.&lt;/p&gt;
@@ -406,12 +398,22 @@ see the &lt;a href=&#34;https://cobrapy.readthedocs.org/en/stable/&#34;&gt;docum
     </item>
     
     <item>
-      <title>Personalized Prediction of Proliferation Rates and Metabolic Liabilities in Cancer Biopsies.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM28082911/</link>
-      <pubDate>Sat, 14 Jan 2017 00:00:00 +0000</pubDate>
+      <title>mminte</title>
+      <link>https://opencobra.github.io/cobrapy/packages/mminte/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:05 -0600</pubDate>
       
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM28082911/</guid>
-      <description>&lt;p&gt;Cancer is a heterogeneous disease and its genetic and metabolic mechanism may manifest differently in each patient. This creates a demand for studies that can characterize phenotypic traits of cancer on a per-sample basis. Combining two large data sets, the NCI60 cancer cell line panel, and The Cancer Genome Atlas, we used a linear interaction model to predict proliferation rates for more than 12,000 cancer samples across 33 different cancers from The Cancer Genome Atlas. The predicted proliferation rates are associated with patient survival and cancer stage and show a strong heterogeneity in proliferative capacity within and across different cancer panels. We also show how the obtained proliferation rates can be incorporated into genome-scale metabolic reconstructions to obtain the metabolic fluxes for more than 3000 cancer samples that identified specific metabolic liabilities for nine cancer panels. Here we found that affected pathways coincided with the literature, with pentose phosphate pathway, retinol, and branched-chain amino acid metabolism being the most panel-specific alterations and fatty acid metabolism and ROS detoxification showing homogeneous metabolic activities across all cancer panels. The presented strategy has potential applications in personalized medicine since it can leverage gene expression signatures for cell line based prediction of additional metabolic properties which might help in constraining personalized metabolic models and improve the identification of metabolic alterations in cancer for individual patients.&lt;/p&gt;
+      <guid>https://opencobra.github.io/cobrapy/packages/mminte/</guid>
+      <description>&lt;p&gt;MMinte (pronounced /‘minti/) is an integrated pipeline that allows users to explore the pairwise interactions (positive or negative) that occur in a microbial network. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. Our application is composed of seven widgets that run sequentially, and each widget may also be run as independent modules.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>d3flux</title>
+      <link>https://opencobra.github.io/cobrapy/packages/d3flux/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:03 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/d3flux/</guid>
+      <description>&lt;p&gt;This package implements a d3.js based visualization tool for cobrapy models.&lt;/p&gt;
 </description>
     </item>
     

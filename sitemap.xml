@@ -39,38 +39,28 @@
   </url>
   
   <url>
-    <loc>https://opencobra.github.io/cobrapy/releases/0.6.0a2/</loc>
+    <loc>https://opencobra.github.io/cobrapy/releases/0.6_alpha/</loc>
     <lastmod>2017-03-13T14:28:15-06:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM28163785/</loc>
-    <lastmod>2017-02-07T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://opencobra.github.io/cobrapy/pubs/PM28133437/</loc>
     <lastmod>2017-01-31T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://opencobra.github.io/cobrapy/releases/0.5.11/</loc>
+    <loc>https://opencobra.github.io/cobrapy/releases/0.5/</loc>
     <lastmod>2017-01-30T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM28129330/</loc>
-    <lastmod>2017-01-28T00:00:00+00:00</lastmod>
+    <lastmod>2017-01-27T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM28098205/</loc>
     <lastmod>2017-01-18T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://opencobra.github.io/cobrapy/pubs/PM28082911/</loc>
-    <lastmod>2017-01-14T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -104,123 +94,133 @@
   </url>
   
   <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/PM28133437/</loc>
+    <lastmod>2017-01-04T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/PM28082911/</loc>
+    <lastmod>2016-12-27T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM27911809/</loc>
-    <lastmod>2016-12-03T00:00:00+00:00</lastmod>
+    <lastmod>2016-12-01T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM27881075/</loc>
-    <lastmod>2016-11-25T00:00:00+00:00</lastmod>
+    <lastmod>2016-11-24T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM27782110/</loc>
-    <lastmod>2016-10-27T00:00:00+00:00</lastmod>
+    <lastmod>2016-10-26T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM27667363/</loc>
-    <lastmod>2016-09-27T00:00:00+00:00</lastmod>
+    <lastmod>2016-09-22T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM27659412/</loc>
-    <lastmod>2016-09-24T00:00:00+00:00</lastmod>
+    <lastmod>2016-09-22T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM27590448/</loc>
-    <lastmod>2016-09-04T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://opencobra.github.io/cobrapy/pubs/PM27379044/</loc>
-    <lastmod>2016-07-06T00:00:00+00:00</lastmod>
+    <lastmod>2016-09-02T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM27372244/</loc>
-    <lastmod>2016-07-04T00:00:00+00:00</lastmod>
+    <lastmod>2016-07-02T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM27336167/</loc>
-    <lastmod>2016-06-24T00:00:00+00:00</lastmod>
+    <lastmod>2016-06-23T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/PM27379044/</loc>
+    <lastmod>2016-06-17T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM27286824/</loc>
-    <lastmod>2016-06-12T00:00:00+00:00</lastmod>
+    <lastmod>2016-06-10T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM26969117/</loc>
-    <lastmod>2016-03-13T00:00:00+00:00</lastmod>
+    <lastmod>2016-03-11T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM26951675/</loc>
-    <lastmod>2016-03-10T00:00:00+00:00</lastmod>
+    <lastmod>2016-03-07T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM26890609/</loc>
-    <lastmod>2016-02-20T00:00:00+00:00</lastmod>
+    <lastmod>2016-02-18T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM26828591/</loc>
-    <lastmod>2016-02-02T00:00:00+00:00</lastmod>
+    <lastmod>2016-02-01T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM26666757/</loc>
-    <lastmod>2015-12-17T00:00:00+00:00</lastmod>
+    <lastmod>2015-12-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM26629901/</loc>
-    <lastmod>2015-12-03T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://opencobra.github.io/cobrapy/pubs/PM26621749/</loc>
     <lastmod>2015-12-02T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://opencobra.github.io/cobrapy/pubs/PM26531810/</loc>
-    <lastmod>2015-11-05T00:00:00+00:00</lastmod>
+    <loc>https://opencobra.github.io/cobrapy/pubs/PM26621749/</loc>
+    <lastmod>2015-11-30T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://opencobra.github.io/cobrapy/pubs/PM26527732/</loc>
+    <loc>https://opencobra.github.io/cobrapy/pubs/PM26531810/</loc>
     <lastmod>2015-11-04T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://opencobra.github.io/cobrapy/pubs/PM26500611/</loc>
-    <lastmod>2015-10-27T00:00:00+00:00</lastmod>
+    <loc>https://opencobra.github.io/cobrapy/pubs/PM26527732/</loc>
+    <lastmod>2015-11-02T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM26476456/</loc>
-    <lastmod>2015-10-18T00:00:00+00:00</lastmod>
+    <lastmod>2015-10-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/PM26500611/</loc>
+    <lastmod>2015-10-06T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM26441892/</loc>
-    <lastmod>2015-10-07T00:00:00+00:00</lastmod>
+    <lastmod>2015-09-23T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM26313928/</loc>
-    <lastmod>2015-08-28T00:00:00+00:00</lastmod>
+    <lastmod>2015-08-27T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM26082651/</loc>
-    <lastmod>2015-06-18T00:00:00+00:00</lastmod>
+    <lastmod>2015-06-04T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -230,62 +230,62 @@
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM25806817/</loc>
-    <lastmod>2015-03-26T00:00:00+00:00</lastmod>
+    <lastmod>2015-03-25T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM25566296/</loc>
-    <lastmod>2015-01-08T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://opencobra.github.io/cobrapy/pubs/PM25538939/</loc>
-    <lastmod>2014-12-30T00:00:00+00:00</lastmod>
+    <lastmod>2014-12-19T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM25538941/</loc>
-    <lastmod>2014-12-30T00:00:00+00:00</lastmod>
+    <lastmod>2014-12-09T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/PM25538939/</loc>
+    <lastmod>2014-12-08T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM25379142/</loc>
-    <lastmod>2014-11-08T00:00:00+00:00</lastmod>
+    <lastmod>2014-08-27T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM26989262/</loc>
-    <lastmod>2014-08-01T00:00:00+00:00</lastmod>
+    <lastmod>2014-07-31T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM24974895/</loc>
-    <lastmod>2014-07-01T00:00:00+00:00</lastmod>
+    <lastmod>2014-06-30T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM24402049/</loc>
-    <lastmod>2014-01-10T00:00:00+00:00</lastmod>
+    <lastmod>2014-01-08T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM24224957/</loc>
-    <lastmod>2013-11-15T00:00:00+00:00</lastmod>
+    <lastmod>2013-11-13T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM24180668/</loc>
-    <lastmod>2013-11-05T00:00:00+00:00</lastmod>
+    <lastmod>2013-11-01T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM24176055/</loc>
-    <lastmod>2013-11-02T00:00:00+00:00</lastmod>
+    <lastmod>2013-10-31T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/PM23975765/</loc>
-    <lastmod>2013-08-27T00:00:00+00:00</lastmod>
+    <lastmod>2013-08-23T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -301,7 +301,7 @@
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/</loc>
-    <lastmod>2017-02-07T00:00:00+00:00</lastmod>
+    <lastmod>2017-01-31T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
