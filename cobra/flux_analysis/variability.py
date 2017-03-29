@@ -158,9 +158,8 @@ def _fva_optlang(model, reaction_list, fraction, loopless):
     prob = model.problem
     with model as m:
         m.solver.optimize()
-        if m.solver.status != "optimal":
-            raise ValueError("There is no optimal solution "
-                             "for the chosen objective!")
+        sutil.assert_optimal(m, message="There is no optimal solution for "
+                                        "the chosen objective!")
         # Add objective as a variable to the model than set to zero
         # This also uses the fraction to create the lower bound for the
         # old objective

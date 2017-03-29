@@ -9,6 +9,7 @@ from builtins import object, super
 from warnings import warn
 
 from numpy import zeros, asarray, nan
+from optlang.interface import OPTIMAL
 from pandas import Series
 
 from cobra.util.solver import check_solver_status
@@ -96,7 +97,7 @@ class Solution(object):
 
     def __repr__(self):
         """String representation of the solution instance."""
-        if self.status != "optimal":
+        if self.status != OPTIMAL:
             return "<Solution {0:s} at 0x{1:x}>".format(self.status, id(self))
         return "<Solution {0:.3f} at 0x{1:x}>".format(self.objective_value,
                                                       id(self))
