@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+from collections import namedtuple
 
 import numpy as np
 import pandas as pd
@@ -109,3 +110,93 @@ def nullspace(A, atol=1e-13, rtol=0):
     nnz = (s >= tol).sum()
     ns = vh[nnz:].conj().T
     return ns
+
+
+def constraint_matrices(model, array_type='dense', include_vars=False,
+                        zero_tol=1e-6):
+    """Create a matrix representation of the problem.
+
+    This is used for alternative solution approaches that do not use optlang.
+    The function will construct the equality matrix, inequality matrix and
+    bounds for the complete problem.
+
+    Notes
+    -----
+    To accomodate non-zero equalities the problem will add the variable
+    "const_one" which is a variable that equals one.
+
+    Arguments
+    ---------
+    model : cobra.Model
+        The model from which to obtain the LP problem.
+    array_type : string
+        The type of array to construct. if 'dense', return a standard
+        numpy.array, 'dok', or 'lil' will construct a sparse array using
+        scipy of the corresponding type and 'DataFrame' will give a
+        pandas `DataFrame` with metabolite indices and reaction columns.
+    include_vars : boolean
+        Whether to include variable bounds in the matrices as well.
+    zero_tol : float
+        The zero tolerance used to judge whether two bounds are the same.
+
+    Returns
+    -------
+    collections.namedtuple
+        A named tuple consisting of three matrices:
+        - "equalities" is a matrix S such that S*vars = 0. It includes a row
+          for each constraint and one column for each variables as well as one
+          column (the last one) containing the vector -b such that S*vars = b.
+        - "inequalities" is a matrix M such that lb <= M*vars <= ub.
+          It contains a row for each inequality and as many columns as
+          variables.
+        - "bounds" is a compound matrix [lb ub] constaining the lower and upper
+          bounds for the inequality constraints in M.
+    """
+    if array_type not in ('DataFrame', 'dense') and not dok_matrix:
+        raise ValueError('Sparse matrices require scipy')
+
+    array_builder = {
+        'dense': np.array, 'dok': dok_matrix, 'lil': lil_matrix,
+        'DataFrame': pd.DataFrame,
+    }[array_type]
+
+    Constraint = namedtuple("equalities", "inequalities", "bounds")
+    equality_rows = []
+    inequality_rows = []
+    inequality_bounds = []
+
+    for const in model.contraints:
+        lb = const.lb if const.lb else -np.inf
+        ub = const.ub if const.ub else np.inf
+        equality = ub - lb < zero_tol
+        coefs = list(const.get_linear_coefficients(model.variables).values())
+        if equality:
+            coefs.append(lb if abs(lb) > zero_tol else 0.0)
+            equality_rows.append(coefs)
+        else:
+            inequality_rows.append(coefs)
+            inequality_bounds.append([lb, ub])
+
+    if include_vars:
+        n_var = len(model.variables)
+        for idx, va in enumerate(model.variables):
+            lb = va.lb if va.lb else -np.inf
+            ub = va.ub if va.ub else np.inf
+            equality = ub - lb < zero_tol
+            if equality:
+                coefs = np.zeros(n_var + 1)
+                coefs[idx] = 1
+                coefs.append(va.lb if abs(lb) > zero_tol else 0.0)
+                equality_rows.append(coefs)
+            else:
+                coefs = np.zeros(n_var)
+                coefs[idx] = 1
+                inequality_rows.append(coefs)
+                inequality_bounds.append([lb, ub])
+
+    results = Constraint(
+        equalities=array_builder(equality_rows),
+        inequalities=array_builder(inequality_rows),
+        bounds=array_builder(inequality_bounds))
+
+    return results
