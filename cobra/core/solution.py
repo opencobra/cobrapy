@@ -8,7 +8,7 @@ import logging
 from builtins import object, super
 from warnings import warn
 
-from numpy import zeros, asarray, nan
+from numpy import empty, nan
 from optlang.interface import OPTIMAL
 from pandas import Series
 
@@ -288,36 +288,35 @@ def get_solution(model, reactions=None, metabolites=None):
     if metabolites is None:
         metabolites = model.metabolites
 
-    rxn_index = [rxn.id for rxn in reactions]
-    fluxes = zeros(len(reactions))
+    rxn_index = list()
+    fluxes = empty(len(reactions))
+    reduced = empty(len(reactions))
     var_primals = model.solver.primal_values
-    reduced = zeros(len(reactions))
-    try:
-        # cplex throws error trying if accessing this attribute and not defined
-        var_duals = model.solver.reduced_costs
-    except Exception:  # CplexSolverError
-        var_duals = Series([None] * len(reactions), index=rxn_index)
-    # reduced costs are not always defined, e.g. for integer problems
-    if var_duals[rxn_index[0]] is None:
+    shadow = empty(len(metabolites))
+    if model.solver.is_integer:
         reduced.fill(nan)
+        shadow.fill(nan)
         for (i, rxn) in enumerate(reactions):
+            rxn_index.append(rxn.id)
             fluxes[i] = var_primals[rxn.id] - var_primals[rxn.reverse_id]
+        met_index = [met.id for met in metabolites]
     else:
+        var_duals = model.solver.reduced_costs
         for (i, rxn) in enumerate(reactions):
             forward = rxn.id
             reverse = rxn.reverse_id
+            rxn_index.append(forward)
             fluxes[i] = var_primals[forward] - var_primals[reverse]
             reduced[i] = var_duals[forward] - var_duals[reverse]
-    met_index = [met.id for met in metabolites]
-    try:
-        # cplex throws error trying if accessing this attribute and not defined
+        met_index = list()
         constr_duals = model.solver.shadow_prices
-    except Exception:  # CplexSolverError
-        constr_duals = Series([None] * len(metabolites), index=met_index)
-    shadow = asarray([constr_duals[met.id] for met in metabolites])
+        for (i, met) in enumerate(metabolites):
+            met_index.append(met.id)
+            shadow[i] = constr_duals[met.id]
     return Solution(model.solver.objective.value, model.solver.status,
                     reactions,
-                    Series(index=rxn_index, data=fluxes),
-                    Series(index=rxn_index, data=reduced),
+                    Series(index=rxn_index, data=fluxes, name="fluxes"),
+                    Series(index=rxn_index, data=reduced,
+                           name="reduced_costs"),
                     metabolites,
-                    Series(index=met_index, data=shadow))
+                    Series(index=met_index, data=shadow, name="shadow_prices"))
