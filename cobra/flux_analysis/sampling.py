@@ -14,14 +14,18 @@ from time import time
 
 import numpy as np
 import pandas
-from cobra.solvers import get_solver_name, solver_dict
-from cobra.util import create_stoichiometric_matrix, nullspace
+from sympy.core.singleton import S
+from cobra.util import (create_stoichiometric_matrix, constraint_matrices,
+                        nullspace)
 
 BTOL = np.finfo(np.float32).eps
 """The tolerance used for checking bounds feasibility."""
 
 FTOL = BTOL
 """The tolerance used for checking equalities feasibility."""
+
+NPROJ = 100000
+"""Reproject the solution into the feasibility space every NPROJ iterations."""
 
 bad_x = None
 bad_delta = None
@@ -33,8 +37,18 @@ def _step(sampler, x, delta, fraction=None):
     """Samples a new feasible point from the point `x` in direction `delta`."""
     # delta = delta / np.sqrt((delta * delta).sum())
     nonzero = np.abs(delta) > 0.0
-    alphas = ((1.0 - BTOL) * sampler.bounds - x)[:, nonzero]
-    alphas = (alphas / delta[nonzero]).flatten()
+    # permissible alphas for staying in variable bounds
+    valphas = ((1.0 - BTOL) * sampler.var_bounds - x)[:, nonzero]
+    valphas = (valphas / delta[nonzero]).flatten()
+    if sampler.ieq_bounds.shape[0] > 0:
+        # permissible alphas for staying in constraint bounds
+        balphas = ((1.0 - BTOL) * sampler.ieq_bounds -
+                   sampler.M.dot(x))
+        balphas = (balphas / sampler.M.dot(delta)).flatten()
+        # combined alphas
+        alphas = np.hstack([valphas, balphas])
+    else:
+        alphas = valphas
     alpha_range = (alphas[alphas > 0.0].min(), alphas[alphas <= 0.0].max())
     if fraction:
         alpha = alpha_range[0] + fraction * (alpha_range[1] - alpha_range[0])
@@ -84,14 +98,35 @@ class HRSampler(object):
     """
 
     def __init__(self, model, thinning, seed=None):
-        self.model = model
+        # This currently has to be done to reset the solver basis which is
+        # required to get deterministic warmup point generation
+        # (in turn required for a working `seed` arg)
+        self.model = model.copy()
         self.thinning = thinning
         self.n_samples = 0
-        self.S = create_stoichiometric_matrix(model, array_type='dense')
+        prob = constraint_matrices(model)
+        self.S = prob.equalities
+        self.b = prob.b
+        # check if there any non-zero equality constraints
+        self.zero_b = all(np.abs(prob.b) < FTOL)
+        fixed_non_zero = np.abs(prob.variable_b) > FTOL
+        # check if there are any non-zero fixed variables, add them as
+        # equalities to the stoichiometric matrix
+        if any(fixed_non_zero):
+            self.S = np.vstack(
+                [self.S, prob.variable_equalities[fixed_non_zero, :]])
+            self.b = np.hstack([self.b, prob.variable_b[fixed_non_zero]])
+            self.zero_b = False
         self.NS = nullspace(self.S)
-        self.bounds = np.array([[r.lower_bound, r.upper_bound]
-                               for r in model.reactions]).T
-        self.fixed = np.diff(self.bounds, axis=0).flatten() < 2 * BTOL
+        self.M = prob.inequalities
+        self.ieq_bounds = np.atleast_2d(prob.bounds).T
+        self.var_bounds = np.array([[v.lb, v.ub] for v in model.variables]).T
+        self.fixed = np.diff(self.var_bounds, axis=0).flatten() < 2 * BTOL
+        var_idx = {v: idx for idx, v in enumerate(model.variables)}
+        self.fwd_idx = np.array([var_idx[r.forward_variable]
+                                 for r in model.reactions])
+        self.rev_idx = np.array([var_idx[r.reverse_variable]
+                                 for r in model.reactions])
         self.warmup = None
         if seed is None:
             self._seed = int(time())
@@ -100,7 +135,7 @@ class HRSampler(object):
         # Avoid overflow
         self._seed = self._seed % np.iinfo(np.int32).max
 
-    def generate_fva_warmup(self, solver=None, **solver_args):
+    def generate_fva_warmup(self):
         """Generates the warmup points for the sampler.
 
         Generates warmup points by setting each flux as the sole objective
@@ -113,33 +148,29 @@ class HRSampler(object):
         **solver_args
             Additional arguments passed to the solver.
         """
-
-        solver = solver_dict[get_solver_name() if solver is None else solver]
-        lp = solver.create_problem(self.model)
-        for i, r in enumerate(self.model.reactions):
-            solver.change_variable_objective(lp, i, 0.0)
-
         self.n_warmup = 0
-        self.warmup = np.zeros((2 * len(self.model.reactions),
-                                len(self.model.reactions)))
-
-        for sense in ("minimize", "maximize"):
-            for i, r in enumerate(self.model.reactions):
-                # Omit fixed reactions
-                if self.fixed[i]:
-                    pass
-                solver.change_variable_objective(lp, i, 1.0)
-                solver.solve_problem(lp, objective_sense=sense, **solver_args)
-                sol = solver.format_solution(lp, self.model).x
-                if not sol:
-                    pass
-                # some solvers do not enforce bounds too much -> we reconstrain
-                sol = np.maximum(sol, self.bounds[0, ])
-                sol = np.minimum(sol, self.bounds[1, ])
-                self.warmup[self.n_warmup, ] = sol
-                self.n_warmup += 1
-                # revert objective
-                solver.change_variable_objective(lp, i, 0.)
+        idx = np.hstack([self.fwd_idx, self.rev_idx])
+        self.warmup = np.zeros((len(idx), len(self.model.variables)))
+        self.model.objective = S.Zero
+        self.model.objective.direction = "max"
+        variables = self.model.variables
+        for i in idx:
+            # Omit fixed reactions
+            if self.fixed[i]:
+                pass
+            self.model.objective.set_linear_coefficients({variables[i]: 1})
+            self.model.solver.optimize()
+            if self.model.solver.status != "optimal":
+                pass
+            primals = self.model.solver.primal_values
+            sol = [primals[v.name] for v in self.model.variables]
+            # some solvers do not enforce bounds too much -> we reconstrain
+            sol = np.maximum(sol, self.var_bounds[0, ])
+            sol = np.minimum(sol, self.var_bounds[1, ])
+            self.warmup[self.n_warmup, ] = sol
+            self.n_warmup += 1
+            # revert objective
+            self.model.objective.set_linear_coefficients({variables[i]: 0})
         # Shrink warmup points to measure
         self.warmup = self.warmup[0:self.n_warmup, ]
 
@@ -149,8 +180,14 @@ class HRSampler(object):
 
     def _bounds_dist(self, p):
         """Get the lower and upper bound distances. Negative is bad."""
-        lb_dist = (p - self.bounds[0, ]).min()
-        ub_dist = (self.bounds[1, ] - p).min()
+        lb_dist = (p - self.var_bounds[0, ]).min()
+        ub_dist = (self.var_bounds[1, ] - p).min()
+        if self.ieq_bounds.shape[0] > 0:
+            const = self.M.dot(p)
+            const_lb_dist = (const - self.ieq_bounds[0, ]).min()
+            const_ub_dist = (self.ieq_bounds[1, ] - const).min()
+            lb_dist = min(lb_dist, const_lb_dist)
+            ub_dist = min(ub_dist, const_ub_dist)
         return np.array([lb_dist, ub_dist])
 
     def sample(self, n):
@@ -204,11 +241,15 @@ class HRSampler(object):
             - 'u' means a lower bound validation
             - 'e' means and equality constraint violation
         """
+        S = create_stoichiometric_matrix(self.model)
+        b = np.array([self.model.constraints[m.id].lb for m in
+                      self.model.metabolites])
+        bounds = np.array([r.bounds for r in self.model.reactions]).T
         samples = np.atleast_2d(samples)
-        feasibility = np.abs(self.S.dot(samples.T))
-        feasibility = feasibility.max(axis=0)
-        lb_error = (samples - self.bounds[0, ]).min(axis=1)
-        ub_error = (self.bounds[1, ] - samples).min(axis=1)
+        feasibility = np.abs(S.dot(samples.T).T - b)
+        feasibility = feasibility.max(axis=1)
+        lb_error = (samples - bounds[0, ]).min(axis=1)
+        ub_error = (bounds[1, ] - samples).min(axis=1)
         valid = (feasibility < FTOL) & (lb_error > -BTOL) & (ub_error > -BTOL)
         codes = np.repeat("", valid.shape[0]).astype(np.dtype((str, 3)))
         codes[valid] = "v"
@@ -279,10 +320,9 @@ class ARCHSampler(HRSampler):
     .. [2] https://github.com/opencobra/cobratoolbox
     """
 
-    def __init__(self, model, thinning=100, solver=None,
-                 seed=None, **solver_kwargs):
+    def __init__(self, model, thinning=100, seed=None):
         super(ARCHSampler, self).__init__(model, thinning, seed=seed)
-        self.generate_fva_warmup(solver, **solver_kwargs)
+        self.generate_fva_warmup()
         self.prev = self.center = self.warmup.mean(axis=0)
         np.random.seed(self._seed)
 
@@ -291,8 +331,10 @@ class ARCHSampler(HRSampler):
         # mix in the original warmup points to not get stuck
         p = self.warmup[pi, ]
         delta = p - self.center
+        if not self.zero_b:
+            delta = self._reproject(delta)
         self.prev = _step(self, self.prev, delta)
-        if (self.n_samples * self.thinning % 1000 == 0):
+        if self.zero_b and (self.n_samples * self.thinning % NPROJ == 0):
             self.prev = self._reproject(self.prev)
         self.center = (self.n_samples * self.center + self.prev) / (
                        self.n_samples + 1)
@@ -318,14 +360,12 @@ class ARCHSampler(HRSampler):
         Performance of this function linearly depends on the number
         of reactions in your model and the thinning factor.
         """
-        samples = np.zeros((n, len(self.model.reactions)))
+        samples = np.zeros((n, self.warmup.shape[1]))
         for i in range(1, self.thinning * n + 1):
             self.__single_iteration()
-            if (self.n_samples * self.thinning % 1000 == 0):
-                self.prev = self.NS.dot(self.NS.T.dot(self.prev))
             if i % self.thinning == 0:
                 samples[i//self.thinning - 1, ] = self.prev
-        return samples
+        return samples[:, self.fwd_idx] - samples[:, self.rev_idx]
 
 
 # Unfortunately this has to be outside the class to be usable with
@@ -348,8 +388,10 @@ def _sample_chain(args):
         p = sampler.warmup[pi, ]
 
         delta = p - center
+        if not sampler.zero_b:
+            delta = sampler._reproject(delta)
         prev = _step(sampler, prev, delta)
-        if (n_samples * sampler.thinning % 1000 == 0):
+        if sampler.zero_b and (n_samples * sampler.thinning % NPROJ == 0):
             prev = sampler._reproject(prev)
         if i % sampler.thinning == 0:
             samples[i//sampler.thinning - 1, ] = prev
@@ -427,15 +469,14 @@ class OptGPSampler(HRSampler):
        https://doi.org/10.1371/journal.pone.0086587
     """
 
-    def __init__(self, model, processes, thinning=100, solver=None,
-                 seed=None, **solver_kwargs):
+    def __init__(self, model, processes, thinning=100, seed=None):
         super(OptGPSampler, self).__init__(model, thinning, seed=seed)
-        self.generate_fva_warmup(solver, **solver_kwargs)
+        self.generate_fva_warmup()
         self.np = processes
 
         # This maps our saved center into shared memory,
         # meaning they are synchronized across processes
-        shared_center = Array(ctypes.c_double, len(model.reactions))
+        shared_center = Array(ctypes.c_double, len(model.variables))
         self.center = np.frombuffer(shared_center.get_obj())
         # Has to be like this because we want a copy
         self.center[:] = self.warmup.mean(axis=0)
@@ -475,10 +516,9 @@ class OptGPSampler(HRSampler):
             mp = Pool(self.np)
             chains = mp.map(
                 _sample_chain,
-                zip([self] * self.np, [n_process] * self.np, range(self.np))
-                )
+                zip([self] * self.np, [n_process] * self.np, range(self.np)),
+                chunksize=1)
             chains = np.vstack(chains)
-            mp.terminate()
         else:
             chains = _sample_chain((self, n, 0))
 
@@ -487,7 +527,7 @@ class OptGPSampler(HRSampler):
                        n * np.atleast_2d(chains).mean(axis=0)) / (
                        self.n_samples + n)
         self.n_samples += n
-        return chains
+        return chains[:, self.fwd_idx] - chains[:, self.rev_idx]
 
     # Models can be large so don't pass them around during multiprocessing
     def __getstate__(self):
@@ -496,8 +536,7 @@ class OptGPSampler(HRSampler):
         return d
 
 
-def sample(model, n, method="optgp", processes=1, seed=None,
-           solver=None, **solver_kwargs):
+def sample(model, n, method="optgp", processes=1, seed=None):
     """Samples valid flux distribution from a cobra model.
 
     The function samples valid flux distributions from a cobra model.
@@ -525,14 +564,9 @@ def sample(model, n, method="optgp", processes=1, seed=None,
     processes : int, optional
         Only used for 'optgp'. The number of processes used to generate
         samples.
-    solver : str or cobra solver interface, optional
-        The solver used for the arising LP problems during warmup point
-        generation.
     seed : positive integer, optional
         The random number seed to be used. Initialized to current time stamp
         if None.
-    **solver_args
-        Additional arguments passed to the solver.
 
     Returns
     -------
@@ -557,10 +591,9 @@ def sample(model, n, method="optgp", processes=1, seed=None,
        Operations Research 199846:1 , 84-95
     """
     if method == "optgp":
-        sampler = OptGPSampler(model, processes, solver=solver, seed=seed,
-                               **solver_kwargs)
+        sampler = OptGPSampler(model, processes, seed=seed)
     elif method == "arch":
-        sampler = ARCHSampler(model, solver=solver, seed=seed, **solver_kwargs)
+        sampler = ARCHSampler(model, seed=seed)
     else:
         raise ValueError("method must be 'optgp' or 'arch'!")
 

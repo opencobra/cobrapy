@@ -134,23 +134,31 @@ def constraint_matrices(model, array_type='dense', include_vars=False,
         numpy.array, 'dok', or 'lil' will construct a sparse array using
         scipy of the corresponding type and 'DataFrame' will give a
         pandas `DataFrame` with metabolite indices and reaction columns.
-    include_vars : boolean
-        Whether to include variable bounds in the matrices as well.
     zero_tol : float
         The zero tolerance used to judge whether two bounds are the same.
 
     Returns
     -------
     collections.namedtuple
-        A named tuple consisting of three matrices:
-        - "equalities" is a matrix S such that S*vars = 0. It includes a row
-          for each constraint and one column for each variables as well as one
-          column (the last one) containing the vector -b such that S*vars = b.
+        A named tuple consisting of 6 matrices and 2 vectors:
+        - "equalities" is a matrix S such that S*vars = b. It includes a row
+          for each constraint and one column for each variable.
+        - "b" the right side of the equality equation such that S*vars = b.
         - "inequalities" is a matrix M such that lb <= M*vars <= ub.
           It contains a row for each inequality and as many columns as
           variables.
         - "bounds" is a compound matrix [lb ub] constaining the lower and upper
           bounds for the inequality constraints in M.
+        - "variable_equalities" is a partial diagnoal matrix S_v such that
+          S_v*vars = b. It includes a row for each fixed variable and one
+          column for each variable.
+        - "variable_b" the right side of the equality equation such that
+          S_v*vars = var_b.
+        - "variable_inequalities" is a matrix M_v such that
+          lb <= M_v*vars <= ub. It contains a row for each bounded variable
+          and as many columns as variables.
+        - "variable_bounds" is a compound matrix [lb ub] constaining the
+          lower and upper bounds for the non-fixed variables.
     """
     if array_type not in ('DataFrame', 'dense') and not dok_matrix:
         raise ValueError('Sparse matrices require scipy')
@@ -160,43 +168,58 @@ def constraint_matrices(model, array_type='dense', include_vars=False,
         'DataFrame': pd.DataFrame,
     }[array_type]
 
-    Constraint = namedtuple("equalities", "inequalities", "bounds")
+    Constraint = namedtuple("Constraint",
+                            ["equalities", "b", "inequalities", "bounds",
+                             "variable_equalities", "variable_b",
+                             "variable_inequalities", "variable_bounds"])
     equality_rows = []
     inequality_rows = []
     inequality_bounds = []
+    b = []
+    var_equality_rows = []
+    var_inequality_rows = []
+    var_inequality_bounds = []
+    var_b = []
+    n_var = len(model.variables)
 
-    for const in model.contraints:
-        lb = const.lb if const.lb else -np.inf
-        ub = const.ub if const.ub else np.inf
-        equality = ub - lb < zero_tol
-        coefs = list(const.get_linear_coefficients(model.variables).values())
+    for const in model.constraints:
+        lb = -np.inf if const.lb is None else const.lb
+        ub = np.inf if const.ub is None else const.ub
+        equality = (ub - lb) < zero_tol
+        coefs = dict.fromkeys(model.variables, 0.0)
+        coefs.update(const.get_linear_coefficients(model.variables))
+        # To ensure ordering
+        coefs = [coefs[k] for k in model.variables]
         if equality:
-            coefs.append(lb if abs(lb) > zero_tol else 0.0)
+            b.append(lb if abs(lb) > zero_tol else 0.0)
             equality_rows.append(coefs)
         else:
             inequality_rows.append(coefs)
             inequality_bounds.append([lb, ub])
 
-    if include_vars:
-        n_var = len(model.variables)
-        for idx, va in enumerate(model.variables):
-            lb = va.lb if va.lb else -np.inf
-            ub = va.ub if va.ub else np.inf
-            equality = ub - lb < zero_tol
-            if equality:
-                coefs = np.zeros(n_var + 1)
-                coefs[idx] = 1
-                coefs.append(va.lb if abs(lb) > zero_tol else 0.0)
-                equality_rows.append(coefs)
-            else:
-                coefs = np.zeros(n_var)
-                coefs[idx] = 1
-                inequality_rows.append(coefs)
-                inequality_bounds.append([lb, ub])
+    for idx, va in enumerate(model.variables):
+        lb = -np.inf if va.lb is None else va.lb
+        ub = np.inf if va.ub is None else va.ub
+        equality = ub - lb < zero_tol
+        if equality:
+            coefs = np.zeros(n_var)
+            coefs[idx] = 1
+            var_b.append(va.lb if abs(lb) > zero_tol else 0.0)
+            var_equality_rows.append(coefs)
+        else:
+            coefs = np.zeros(n_var)
+            coefs[idx] = 1
+            var_inequality_rows.append(coefs)
+            var_inequality_bounds.append([lb, ub])
 
     results = Constraint(
         equalities=array_builder(equality_rows),
+        b=np.array(b),
         inequalities=array_builder(inequality_rows),
-        bounds=array_builder(inequality_bounds))
+        bounds=array_builder(inequality_bounds),
+        variable_equalities=array_builder(var_equality_rows),
+        variable_b=np.array(var_b),
+        variable_inequalities=array_builder(var_inequality_rows),
+        variable_bounds=array_builder(var_inequality_bounds))
 
     return results
