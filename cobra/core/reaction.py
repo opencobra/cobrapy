@@ -1072,11 +1072,14 @@ def update_forward_and_reverse_bounds(reaction, direction='both'):
             reaction.reverse_variable._ub = None
             reaction.forward_variable._lb = None
 
-        if direction in {'both', 'upper'}:
+            reaction.forward_variable.set_bounds(lb=forward_lb, ub=forward_ub)
+            reaction.reverse_variable.set_bounds(lb=reverse_lb, ub=reverse_ub)
+
+        elif direction == 'upper':
             reaction.forward_variable.ub = forward_ub
             reaction.reverse_variable.lb = reverse_lb
 
-        if direction in {'both', 'lower'}:
+        elif direction == 'lower':
             reaction.reverse_variable.ub = reverse_ub
             reaction.forward_variable.lb = forward_lb
 
