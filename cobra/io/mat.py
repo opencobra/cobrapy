@@ -9,6 +9,7 @@ from warnings import warn
 
 from numpy import object as np_object
 from numpy import array, inf, isinf
+from six import string_types
 
 from cobra.core import Metabolite, Model, Reaction
 from cobra.util import create_stoichiometric_matrix
@@ -187,7 +188,7 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
         model.id = model_id
     elif "description" in m.dtype.names:
         description = m["description"][0, 0][0]
-        if len(description) > 1:
+        if not isinstance(description, string_types) and len(description) > 1:
             model.id = description[0]
             warn("Several IDs detected, only using the first.")
         else:
