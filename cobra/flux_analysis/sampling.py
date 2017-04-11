@@ -101,6 +101,8 @@ class HRSampler(object):
         # This currently has to be done to reset the solver basis which is
         # required to get deterministic warmup point generation
         # (in turn required for a working `seed` arg)
+        if model.solver.is_integer:
+            raise TypeError("sampling does not work with integer problems :(")
         self.model = model.copy()
         self.thinning = thinning
         self.n_samples = 0
@@ -190,14 +192,14 @@ class HRSampler(object):
             ub_dist = min(ub_dist, const_ub_dist)
         return np.array([lb_dist, ub_dist])
 
-    def sample(self, n):
+    def sample(self, n, fluxes=True):
         """Abstract sampling function.
 
         Should be overwritten by child classes.
         """
         pass
 
-    def batch(self, batch_size, batch_num):
+    def batch(self, batch_size, batch_num, fluxes=True):
         """Generates a batch generator.
 
         This is useful to generate n batches of m samples each.
@@ -208,15 +210,21 @@ class HRSampler(object):
             The number of samples contained in each batch (m).
         batch_num : int
             The number of batches in the generator (n).
+        fluxes : boolean
+            Whether to return fluxes or the internal solver variables. If set
+            to False will return a variable for each forward and backward flux
+            as well as all additional variables you might have defined in the
+            model.
 
         Yields
         ------
-        numpy.matrix
-            A matrix containing with dimensions (batch_size x n_r) containing
-            a valid flux sample for a total of n_r reactions in each row.
+        pandas.DataFrame
+            A DataFrame with dimensions (batch_size x n_r) containing
+            a valid flux sample for a total of n_r reactions (or variables if
+            fluxes=False) in each row.
         """
         for i in range(batch_num):
-            yield self.sample(batch_size)
+            yield self.sample(batch_size, fluxes=fluxes)
 
     def validate(self, samples):
         """Validates a set of samples for equality and inequality feasibility.
@@ -228,7 +236,7 @@ class HRSampler(object):
         ----------
         samples : numpy.matrix
             Must be of dimension (n_samples x n_reactions). Contains the
-            samples to be validated.
+            samples to be validated. Samples must be from fluxes.
 
         Returns
         -------
@@ -241,15 +249,37 @@ class HRSampler(object):
             - 'u' means a lower bound validation
             - 'e' means and equality constraint violation
         """
-        S = create_stoichiometric_matrix(self.model)
-        b = np.array([self.model.constraints[m.id].lb for m in
-                      self.model.metabolites])
-        bounds = np.array([r.bounds for r in self.model.reactions]).T
         samples = np.atleast_2d(samples)
+
+        if samples.shape[1] == len(self.model.reactions):
+            S = create_stoichiometric_matrix(self.model)
+            b = np.array([self.model.constraints[m.id].lb for m in
+                          self.model.metabolites])
+            bounds = np.array([r.bounds for r in self.model.reactions]).T
+        elif samples.shape[1] == len(self.model.variables):
+            S = self.S
+            b = self.b
+            bounds = self.var_bounds
+        else:
+            raise ValueError("Wrong number of columns. samples must have a "
+                             "column for each flux or variable defined in the "
+                             "model!")
+
         feasibility = np.abs(S.dot(samples.T).T - b)
         feasibility = feasibility.max(axis=1)
         lb_error = (samples - bounds[0, ]).min(axis=1)
         ub_error = (bounds[1, ] - samples).min(axis=1)
+
+        if samples.shape[1] == len(self.model.variables) and self.M.shape[0]:
+            consts = self.M.dot(samples.T)
+            lb_error = np.minimum(
+                lb_error,
+                (consts - self.ieq_bounds[0, ]).min(axis=1))
+            ub_error = np.minimum(
+                ub_error,
+                (self.ieq_bounds[1, ] - consts).min(axis=1)
+            )
+
         valid = (feasibility < FTOL) & (lb_error > -BTOL) & (ub_error > -BTOL)
         codes = np.repeat("", valid.shape[0]).astype(np.dtype((str, 3)))
         codes[valid] = "v"
@@ -340,7 +370,7 @@ class ARCHSampler(HRSampler):
                        self.n_samples + 1)
         self.n_samples += 1
 
-    def sample(self, n):
+    def sample(self, n, fluxes=True):
         """Generate a set of samples.
 
         This is the basic sampling function for all hit-and-run samplers.
@@ -349,6 +379,11 @@ class ARCHSampler(HRSampler):
         ---------
         n : int
             The number of samples that are generated at once.
+        fluxes : boolean
+            Whether to return fluxes or the internal solver variables. If set
+            to False will return a variable for each forward and backward flux
+            as well as all additional variables you might have defined in the
+            model.
 
         Returns
         -------
@@ -365,7 +400,15 @@ class ARCHSampler(HRSampler):
             self.__single_iteration()
             if i % self.thinning == 0:
                 samples[i//self.thinning - 1, ] = self.prev
-        return samples[:, self.fwd_idx] - samples[:, self.rev_idx]
+
+        if fluxes:
+            names = [r.id for r in self.model.reactions]
+            return pandas.DataFrame(
+                samples[:, self.fwd_idx] - samples[:, self.rev_idx],
+                columns=names)
+        else:
+            names = [v.name for v in self.model.variables]
+            return pandas.DataFrame(samples, columns=names)
 
 
 # Unfortunately this has to be outside the class to be usable with
@@ -481,7 +524,7 @@ class OptGPSampler(HRSampler):
         # Has to be like this because we want a copy
         self.center[:] = self.warmup.mean(axis=0)
 
-    def sample(self, n):
+    def sample(self, n, fluxes=True):
         """Generate a set of samples.
 
         This is the basic sampling function for all hit-and-run samplers.
@@ -491,6 +534,11 @@ class OptGPSampler(HRSampler):
         n : int
             The minimum number of samples that are generated at once
             (see Notes).
+        fluxes : boolean
+            Whether to return fluxes or the internal solver variables. If set
+            to False will return a variable for each forward and backward flux
+            as well as all additional variables you might have defined in the
+            model.
 
         Returns
         -------
@@ -527,7 +575,15 @@ class OptGPSampler(HRSampler):
                        n * np.atleast_2d(chains).mean(axis=0)) / (
                        self.n_samples + n)
         self.n_samples += n
-        return chains[:, self.fwd_idx] - chains[:, self.rev_idx]
+
+        if fluxes:
+            names = [r.id for r in self.model.reactions]
+            return pandas.DataFrame(
+                chains[:, self.fwd_idx] - chains[:, self.rev_idx],
+                columns=names)
+        else:
+            names = [v.name for v in self.model.variables]
+            return pandas.DataFrame(chains, columns=names)
 
     # Models can be large so don't pass them around during multiprocessing
     def __getstate__(self):

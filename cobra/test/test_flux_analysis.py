@@ -602,6 +602,12 @@ class TestCobraFluxSampling:
         with pytest.raises(ValueError):
             sample(model, 1, method="schwupdiwupp")
 
+    def test_validate_wrong_sample(self, model):
+        s = self.arch.sample(10)
+        s["hello"] = 1
+        with pytest.raises(ValueError):
+            self.arch.validate(s)
+
     def test_fixed_seed(self, model):
         s = sample(model, 1, seed=42)
         assert numpy.allclose(s.TPI[0], 5.6918488269)
@@ -624,15 +630,13 @@ class TestCobraFluxSampling:
         arch = ARCHSampler(model, thinning=1)
         assert ((arch.n_warmup > 0) and
                 (arch.n_warmup <= 2 * len(model.variables)))
-        fluxes = arch.warmup[:, arch.fwd_idx] - arch.warmup[:, arch.rev_idx]
-        assert all(arch.validate(fluxes) == "v")
+        assert all(arch.validate(arch.warmup) == "v")
         self.arch = arch
 
         optgp = OptGPSampler(model, processes=1, thinning=1)
         assert ((optgp.n_warmup > 0) and
                 (optgp.n_warmup <= 2 * len(model.variables)))
-        fluxes = optgp.warmup[:, arch.fwd_idx] - optgp.warmup[:, arch.rev_idx]
-        assert all(optgp.validate(fluxes) == "v")
+        assert all(optgp.validate(optgp.warmup) == "v")
         self.optgp = optgp
 
     def test_arch_init_benchmark(self, model, benchmark):
