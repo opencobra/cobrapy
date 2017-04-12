@@ -238,7 +238,7 @@ def find_blocked_reactions(model, reaction_list=None,
             reaction_list = [i for i in reaction_list
                              if abs(solution.x_dict[i.id]) < zero_cutoff]
         else:
-            model.solver = solver
+            model.solver = solver_interface
             model.solver.optimize()
             solution = get_solution(model, reactions=reaction_list)
             reaction_list = [rxn for rxn in reaction_list if

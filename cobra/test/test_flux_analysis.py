@@ -312,6 +312,10 @@ class TestCobraFluxAnalysis:
         with pytest.raises(Infeasible):
             flux_variability_analysis(infeasible_model)
 
+    def test_find_blocked_reactions_solver_none(self, model):
+        result = find_blocked_reactions(model, model.reactions[40:46])
+        assert result == ['FRUpts2']
+
     @pytest.mark.parametrize("solver", all_solvers)
     def test_find_blocked_reactions(self, model, solver):
         result = find_blocked_reactions(model, model.reactions[40:46],
