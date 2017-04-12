@@ -89,6 +89,9 @@ SPECIES_XPATH = ns("sbml:listOfSpecies/sbml:species[@boundaryCondition='%s']")
 OBJECTIVES_XPATH = ns("fbc:objective[@fbc:id='%s']/"
                       "fbc:listOfFluxObjectives/"
                       "fbc:fluxObjective")
+LONG_SHORT_DIRECTION = {'maximize': 'max', 'minimize': 'min'}
+SHORT_LONG_DIRECTION = {'min': 'minimize', 'max': 'maximize'}
+
 if _with_lxml:
     RDF_ANNOTATION_XPATH = ("sbml:annotation/rdf:RDF/"
                             "rdf:Description[@rdf:about=$metaid]/"
@@ -365,8 +368,13 @@ def parse_xml_into_model(xml, number=float):
     if obj_list is None:
         warn("listOfObjectives element not found")
         return model
-    target_objective = get_attrib(obj_list, "fbc:activeObjective")
-    obj_query = OBJECTIVES_XPATH % target_objective
+    target_objective_id = get_attrib(obj_list, "fbc:activeObjective")
+    target_objective = obj_list.find(
+        ns("fbc:objective[@fbc:id='{}']".format(target_objective_id)))
+    obj_direction_long = get_attrib(target_objective, "fbc:type")
+    obj_direction = LONG_SHORT_DIRECTION[obj_direction_long]
+
+    obj_query = OBJECTIVES_XPATH % target_objective_id
     coefficients = {}
     for sbml_objective in obj_list.findall(obj_query):
         rxn_id = clip(get_attrib(sbml_objective, "fbc:reaction"), "R_")
@@ -380,6 +388,7 @@ def parse_xml_into_model(xml, number=float):
         except ValueError as e:
             warn(str(e))
     set_objective(model, coefficients)
+    model.solver.objective.direction = obj_direction
     return model
 
 
@@ -412,7 +421,8 @@ def model_to_xml(cobra_model, units=True):
     set_attrib(obj_list_tmp, "fbc:activeObjective", "obj")
     obj_list_tmp = SubElement(obj_list_tmp, ns("fbc:objective"))
     set_attrib(obj_list_tmp, "fbc:id", "obj")
-    set_attrib(obj_list_tmp, "fbc:type", "maximize")
+    set_attrib(obj_list_tmp, "fbc:type",
+               SHORT_LONG_DIRECTION[cobra_model.objective.direction])
     flux_objectives_list = SubElement(obj_list_tmp,
                                       ns("fbc:listOfFluxObjectives"))
 
