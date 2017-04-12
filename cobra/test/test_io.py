@@ -148,6 +148,7 @@ class TestCobraIO:
     def compare_models(cls, name, model1, model2):
         assert len(model1.reactions) == len(model2.reactions)
         assert len(model1.metabolites) == len(model2.metabolites)
+        assert model1.objective.direction == model2.objective.direction
         for attr in ("id", "name", "lower_bound", "upper_bound",
                      "objective_coefficient", "gene_reaction_rule"):
             assert getattr(model1.reactions[0], attr) == getattr(
