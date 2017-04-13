@@ -16,14 +16,14 @@ from six import iteritems, string_types
 from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.core.gene import parse_gpr
 from cobra.manipulation.modify import _renames
-from cobra.manipulation.validate import (
-    check_metabolite_compartment_formula, check_reaction_bounds)
+from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import set_objective
 
 try:
     from lxml.etree import (
         parse, Element, SubElement, ElementTree, register_namespace,
         ParseError, XPath)
+
     _with_lxml = True
 except ImportError:
     _with_lxml = False
@@ -32,6 +32,7 @@ except ImportError:
             parse, Element, SubElement, ElementTree, register_namespace,
             ParseError)
     except ImportError:
+        XPath = None
         from xml.etree.ElementTree import (
             parse, Element, SubElement, ElementTree, register_namespace,
             ParseError)
@@ -52,7 +53,6 @@ except ImportError:
     class Basic:
         pass
 
-
 # deal with namespaces
 namespaces = {"fbc": "http://www.sbml.org/sbml/level3/version1/fbc/version2",
               "sbml": "http://www.sbml.org/sbml/level3/version1/core",
@@ -67,6 +67,7 @@ def ns(query):
     for prefix, uri in iteritems(namespaces):
         query = query.replace(prefix + ":", "{" + uri + "}")
     return query
+
 
 # XPATH query wrappers
 fbc_prefix = "{" + namespaces["fbc"] + "}"
@@ -105,8 +106,8 @@ else:
         search_xpath = RDF_ANNOTATION_XPATH % metaid
         for i in sbml_element.iterfind(search_xpath):
             yield get_attrib(i, "rdf:resource")
-        for i in sbml_element.iterfind(search_xpath
-                                       .replace("isEncodedBy", "is")):
+        for i in sbml_element.iterfind(search_xpath.replace(
+                "isEncodedBy", "is")):
             yield get_attrib(i, "rdf:resource")
 
 
@@ -118,7 +119,7 @@ def get_attrib(tag, attribute, type=lambda x: x, require=False):
     value = tag.get(ns(attribute))
     if require and value is None:
         msg = "required attribute '%s' not found in tag '%s'" % \
-                             (attribute, tag.tag)
+              (attribute, tag.tag)
         if tag.get("id") is not None:
             msg += " with id '%s'" % tag.get("id")
         elif tag.get("name") is not None:
@@ -313,7 +314,7 @@ def parse_xml_into_model(xml, number=float):
             reaction.upper_bound = bounds[ub_id]
             reaction.lower_bound = bounds[lb_id]
         except KeyError as e:
-            raise CobraSBMLError("No constant bound with id '%s'" % e.message)
+            raise CobraSBMLError("No constant bound with id '%s'" % str(e))
         reactions.append(reaction)
 
         stoichiometry = defaultdict(lambda: 0)
@@ -346,7 +347,7 @@ def parse_xml_into_model(xml, number=float):
         # set gene reaction rule
         gpr_xml = sbml_reaction.find(GPR_TAG)
         if gpr_xml is not None and len(gpr_xml) != 1:
-            warn("ignoring invalid geneAssocation for " + repr(reaction))
+            warn("ignoring invalid geneAssociation for " + repr(reaction))
             gpr_xml = None
         gpr = process_gpr(gpr_xml[0]) if gpr_xml is not None else ''
         # remove outside parenthesis, if any
@@ -420,7 +421,7 @@ def model_to_xml(cobra_model, units=True):
     param_attr = {"constant": "true"}
     if units:
         param_attr["units"] = "mmol_per_gDW_per_hr"
-    # the most common bounds are the minimum, maxmium, and 0
+    # the most common bounds are the minimum, maximum, and 0
     if len(cobra_model.reactions) > 0:
         min_value = min(cobra_model.reactions.list_attr("lower_bound"))
         max_value = max(cobra_model.reactions.list_attr("upper_bound"))
@@ -478,16 +479,16 @@ def model_to_xml(cobra_model, units=True):
     # add in genes
     if len(cobra_model.genes) > 0:
         genes_list = SubElement(xml_model, GENELIST_TAG)
-    for gene in cobra_model.genes:
-        gene_id = gene.id.replace(".", SBML_DOT)
-        sbml_gene = SubElement(genes_list, GENE_TAG)
-        set_attrib(sbml_gene, "fbc:id", "G_" + gene_id)
-        name = gene.name
-        if name is None or len(name) == 0:
-            name = gene.id
-        set_attrib(sbml_gene, "fbc:label", gene_id)
-        set_attrib(sbml_gene, "fbc:name", gene.name)
-        annotate_sbml_from_cobra(sbml_gene, gene)
+        for gene in cobra_model.genes:
+            gene_id = gene.id.replace(".", SBML_DOT)
+            sbml_gene = SubElement(genes_list, GENE_TAG)
+            set_attrib(sbml_gene, "fbc:id", "G_" + gene_id)
+            name = gene.name
+            if name is None or len(name) == 0:
+                name = gene.id
+            set_attrib(sbml_gene, "fbc:label", gene_id)
+            set_attrib(sbml_gene, "fbc:name", name)
+            annotate_sbml_from_cobra(sbml_gene, gene)
 
     # add in reactions
     reactions_list = SubElement(xml_model, "listOfReactions")
@@ -541,7 +542,7 @@ def model_to_xml(cobra_model, units=True):
             gpr = gpr.replace(".", SBML_DOT)
             gpr_xml = SubElement(sbml_reaction, GPR_TAG)
             try:
-                parsed = parse_gpr(gpr)[0]
+                parsed, _ = parse_gpr(gpr)
                 construct_gpr_xml(gpr_xml, parsed.body)
             except Exception as e:
                 print("failed on '%s' in %s" %
@@ -557,8 +558,9 @@ def read_sbml_model(filename, number=float, **kwargs):
     xmlfile = parse_stream(filename)
     xml = xmlfile.getroot()
     # use libsbml if not l3v1 with fbc v2
-    if xml.get("level") != "3" or xml.get("version") != "1" or \
-            get_attrib(xml, "fbc:required") is None:
+    use_libsbml = (xml.get("level") != "3" or xml.get("version") != "1" or
+                   get_attrib(xml, "fbc:required") is None)
+    if use_libsbml:
         if libsbml is None:
             raise ImportError("libSBML required for fbc < 2")
         # libsbml needs a file string, so write to temp file if a file handle
@@ -568,7 +570,7 @@ def read_sbml_model(filename, number=float, **kwargs):
             filename = outfile.name
         return read_sbml2(filename, **kwargs)
     try:
-        return parse_xml_into_model(xml, number=number, **kwargs)
+        return parse_xml_into_model(xml, number=number)
     except Exception:
         raise CobraSBMLError(
             "Something went wrong reading the model. You can get a detailed "
@@ -578,7 +580,7 @@ def read_sbml_model(filename, number=float, **kwargs):
 
 id_required = {ns(i) for i in ("sbml:model", "sbml:reaction:", "sbml:species",
                                "fbc:geneProduct", "sbml:compartment",
-                               "sbml:paramter", "sbml:UnitDefinition",
+                               "sbml:parameter", "sbml:UnitDefinition",
                                "fbc:objective")}
 invalid_id_detector = re.compile("|".join(re.escape(i[0]) for i in _renames))
 
@@ -610,8 +612,9 @@ def validate_sbml_model(filename, check_model=True):
     xmlfile = parse_stream(filename)
     xml = xmlfile.getroot()
     # use libsbml if not l3v1 with fbc v2
-    if xml.get("level") != "3" or xml.get("version") != "1" or \
-            get_attrib(xml, "fbc:required") is None:
+    use_libsbml = (xml.get("level") != "3" or xml.get("version") != "1" or
+                   get_attrib(xml, "fbc:required") is None)
+    if use_libsbml:
         raise CobraSBMLError("XML is not SBML level 3 v1 with fbc v2")
 
     errors = {k: [] for k in ("validator", "warnings", "SBML errors", "other")}
@@ -621,12 +624,11 @@ def validate_sbml_model(filename, check_model=True):
 
     # make sure there is exactly one model
     xml_models = xml.findall(ns("sbml:model"))
+    if len(xml_models) == 0:
+        raise CobraSBMLError("No SBML model detected in file")
     if len(xml_models) > 1:
         err("More than 1 SBML model detected in file")
-    elif len(xml_models) == 0:
-        err("No SBML model detected in file")
-    else:
-        xml_model = xml_models[0]
+    xml_model = xml_models[0]
 
     # make sure all sbml id's are valid
     all_ids = set()
@@ -673,10 +675,10 @@ def validate_sbml_model(filename, check_model=True):
             model = parse_xml_into_model(xml)
         except CobraSBMLError as e:
             err(str(e), "SBML errors")
-            return (None, errors)
+            return None, errors
         except Exception as e:
             err(str(e), "other")
-            return (None, errors)
+            return None, errors
     errors["warnings"].extend(str(i.message) for i in warning_list)
 
     # check genes
@@ -688,7 +690,6 @@ def validate_sbml_model(filename, check_model=True):
             err("No gene specfied with id 'G_%s'" % gene.id)
 
     if check_model:
-        errors["validator"].extend(check_reaction_bounds(model))
         errors["validator"].extend(check_metabolite_compartment_formula(model))
 
     return model, errors
