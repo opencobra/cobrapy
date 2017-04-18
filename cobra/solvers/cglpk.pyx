@@ -285,6 +285,8 @@ cdef class GLP:
             # if a duplicate exists replace that value and exit
             if indexes[i + 1] == met_index:
                 values[i + 1] = value
+                free(indexes)
+                free(values)
                 glp_set_mat_col(self.glp, rxn_index, col_length, indexes, values)
                 free(indexes)
                 free(values)
