@@ -553,8 +553,8 @@ class TestSolverBasedModel:
         new_mod = Model("new model")
         new_mod.add_reactions(model.reactions)
         new_mod.objective = model.objective
-        assert (str(new_mod.objective.expression) ==
-                str(model.objective.expression))
+        assert (set(str(x) for x in model.objective.expression.args) == set(
+            str(x) for x in new_mod.objective.expression.args))
         new_mod.solver.optimize()
         assert abs(new_mod.objective.value - 0.874) < 0.001
 
