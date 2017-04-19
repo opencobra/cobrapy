@@ -32,9 +32,14 @@ def data_directory():
     return data_dir
 
 
-@pytest.fixture(scope="function")
-def model():
+@pytest.fixture(scope="session")
+def small_model():
     return create_test_model("textbook")
+
+
+@pytest.fixture(scope="function")
+def model(small_model):
+    return small_model.copy()
 
 
 @pytest.fixture(scope="function")
