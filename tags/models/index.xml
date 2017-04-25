@@ -14,14 +14,7 @@
       <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/mackinac/</guid>
-      <description>&lt;p&gt;Mackinac combines the ability of &lt;a href=&#34;http://modelseed.org&#34;&gt;ModelSEED&lt;/a&gt; to
-automatically reconstruct metabolic models with the advanced analysis
-capabilities in cobrapy to bridge the differences between the two
-frameworks. Mackinac provides support for using the ModelSEED web
-service to create draft genome-scale models from genomes available in
-the
-&lt;a href=&#34;https://www.patricbrc.org/portal/portal/patric/Home&#34;&gt;Pathosystems Resource Integration Center (PATRIC)&lt;/a&gt;
-and creates a COBRA model from a ModelSEED model.&lt;/p&gt;
+      <description>&lt;p&gt;Reconstructing and analyzing a large number of genome-scale metabolic models is a fundamental part of the integrated study of microbial communities; however, two of the most widely used frameworks for building and analyzing models use different metabolic network representations. Mackinac is a Python package that combines ModelSEED’s ability to automatically reconstruct metabolic models with COBRApy’s advanced analysis capabilities to bridge the differences between the two frameworks and facilitate the study of the metabolic potential of microorganisms.&lt;/p&gt;
 </description>
     </item>
     

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>community-modeling on cobrapy - constraint-based metabolic modeling in Python</title>
-    <link>https://opencobra.github.io/cobrapy/tags/community-modeling/index.xml</link>
-    <description>Recent content in community-modeling on cobrapy - constraint-based metabolic modeling in Python</description>
+    <title>microbiome on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/microbiome/index.xml</link>
+    <description>Recent content in microbiome on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <atom:link href="https://opencobra.github.io/cobrapy/tags/community-modeling/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://opencobra.github.io/cobrapy/tags/microbiome/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>mminte</title>

@@ -6,8 +6,18 @@
     <description>Recent content in Pubs on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 31 Jan 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 30 Mar 2017 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://opencobra.github.io/cobrapy/pubs/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Mackinac: a bridge between ModelSEED and COBRApy to generate and analyze genome-scale metabolic models.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/PM28379466/</link>
+      <pubDate>Thu, 30 Mar 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/PM28379466/</guid>
+      <description>&lt;p&gt;Reconstructing and analyzing a large number of genome-scale metabolic models is a fundamental part of the integrated study of microbial communities; however, two of the most widely used frameworks for building and analyzing models use different metabolic network representations. Here we describe Mackinac, a Python package that combines ModelSEED’s ability to automatically reconstruct metabolic models with COBRApy’s advanced analysis capabilities to bridge the differences between the two frameworks and facilitate the study of the metabolic potential of microorganisms.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Efficient estimation of the maximum metabolic productivity of batch systems.</title>
@@ -146,16 +156,6 @@
       
       <guid>https://opencobra.github.io/cobrapy/pubs/PM27379044/</guid>
       <description>&lt;p&gt;Microbiological studies are increasingly relying on in silico methods to perform exploration and rapid analysis of genomic data, and functional genomics studies are supplemented by the new perspectives that genome-scale metabolic models offer. A mathematical model consisting of a microbe&amp;rsquo;s entire metabolic map can be rapidly determined from whole-genome sequencing and annotating the genomic material encoded in its DNA. Flux-balance analysis (FBA), a linear programming technique that uses metabolic models to predict the phenotypic responses imposed by environmental elements and factors, is the leading method to simulate and manipulate cellular growth in silico. However, the process of creating an accurate model to use in FBA consists of a series of steps involving a multitude of connections between bioinformatics databases, enzyme resources, and metabolic pathways. We present the methodology and procedure to obtain a metabolic model using PyFBA, an extensible Python-based open-source software package aimed to provide a platform where functional annotations are used to build metabolic models (&lt;a href=&#34;http://linsalrob.github.io/PyFBA&#34;&gt;http://linsalrob.github.io/PyFBA&lt;/a&gt;). Backed by the Model SEED biochemistry database, PyFBA contains methods to reconstruct a microbe&amp;rsquo;s metabolic map, run FBA upon different media conditions, and gap-fill its metabolism. The extensibility of PyFBA facilitates novel techniques in creating accurate genome-scale metabolic models.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Comparative genome-scale modelling of Staphylococcus aureus strains identifies strain-specific metabolic capabilities linked to pathogenicity.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM27286824/</link>
-      <pubDate>Fri, 10 Jun 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM27286824/</guid>
-      <description>&lt;p&gt;Staphylococcus aureus is a preeminent bacterial pathogen capable of colonizing diverse ecological niches within its human host. We describe here the pangenome of S. aureus based on analysis of genome sequences from 64 strains of S. aureus spanning a range of ecological niches, host types, and antibiotic resistance profiles. Based on this set, S. aureus is expected to have an open pangenome composed of 7,411 genes and a core genome composed of 1,441 genes. Metabolism was highly conserved in this core genome; however, differences were identified in amino acid and nucleotide biosynthesis pathways between the strains. Genome-scale models (GEMs) of metabolism were constructed for the 64 strains of S. aureus These GEMs enabled a systems approach to characterizing the core metabolic and panmetabolic capabilities of the S. aureus species. All models were predicted to be auxotrophic for the vitamins niacin (vitamin B3) and thiamin (vitamin B1), whereas strain-specific auxotrophies were predicted for riboflavin (vitamin B2), guanosine, leucine, methionine, and cysteine, among others. GEMs were used to systematically analyze growth capabilities in more than 300 different growth-supporting environments. The results identified metabolic capabilities linked to pathogenic traits and virulence acquisitions. Such traits can be used to differentiate strains responsible for mild vs. severe infections and preference for hosts (e.g., animals vs. humans). Genome-scale analysis of multiple strains of a species can thus be used to identify metabolic determinants of virulence and increase our understanding of why certain strains of this deadly pathogen have spread rapidly throughout the world.&lt;/p&gt;
 </description>
     </item>
     
