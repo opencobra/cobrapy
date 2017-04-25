@@ -23,5 +23,15 @@ a set of transcription or proteome measurements.&lt;/p&gt;
 </description>
     </item>
     
+    <item>
+      <title>mackinac</title>
+      <link>https://opencobra.github.io/cobrapy/packages/mackinac/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/mackinac/</guid>
+      <description>&lt;p&gt;Reconstructing and analyzing a large number of genome-scale metabolic models is a fundamental part of the integrated study of microbial communities; however, two of the most widely used frameworks for building and analyzing models use different metabolic network representations. Mackinac is a Python package that combines ModelSEED’s ability to automatically reconstruct metabolic models with COBRApy’s advanced analysis capabilities to bridge the differences between the two frameworks and facilitate the study of the metabolic potential of microorganisms.&lt;/p&gt;
+</description>
+    </item>
+    
   </channel>
 </rss>

@@ -6,8 +6,18 @@
     <description>Recent content in Packages on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 27 Mar 2017 12:13:48 -0600</lastBuildDate>
+    <lastBuildDate>Mon, 24 Apr 2017 11:00:05 -0600</lastBuildDate>
     <atom:link href="https://opencobra.github.io/cobrapy/packages/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>mminte</title>
+      <link>https://opencobra.github.io/cobrapy/packages/mminte/</link>
+      <pubDate>Mon, 24 Apr 2017 11:00:05 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/mminte/</guid>
+      <description>&lt;p&gt;MMinte (pronounced /‘minti/) is a set of widgets that allows you to explore the pairwise interactions (positive or negative) that occur in a microbial community. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. You can run the MMinte widgets as an integrated pipeline or run each widget independently.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>escher</title>
@@ -77,16 +87,6 @@ communities for biotechnological applications.&lt;/p&gt;
     </item>
     
     <item>
-      <title>mminte</title>
-      <link>https://opencobra.github.io/cobrapy/packages/mminte/</link>
-      <pubDate>Fri, 13 Jan 2017 11:00:05 -0600</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/packages/mminte/</guid>
-      <description>&lt;p&gt;MMinte (pronounced /‘minti/) is an integrated pipeline that allows users to explore the pairwise interactions (positive or negative) that occur in a microbial network. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. Our application is composed of seven widgets that run sequentially, and each widget may also be run as independent modules.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
       <title>d3flux</title>
       <link>https://opencobra.github.io/cobrapy/packages/d3flux/</link>
       <pubDate>Fri, 13 Jan 2017 11:00:03 -0600</pubDate>
@@ -126,14 +126,7 @@ communities for biotechnological applications.&lt;/p&gt;
       <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/mackinac/</guid>
-      <description>&lt;p&gt;Mackinac combines the ability of &lt;a href=&#34;http://modelseed.org&#34;&gt;ModelSEED&lt;/a&gt; to
-automatically reconstruct metabolic models with the advanced analysis
-capabilities in cobrapy to bridge the differences between the two
-frameworks. Mackinac provides support for using the ModelSEED web
-service to create draft genome-scale models from genomes available in
-the
-&lt;a href=&#34;https://www.patricbrc.org/portal/portal/patric/Home&#34;&gt;Pathosystems Resource Integration Center (PATRIC)&lt;/a&gt;
-and creates a COBRA model from a ModelSEED model.&lt;/p&gt;
+      <description>&lt;p&gt;Reconstructing and analyzing a large number of genome-scale metabolic models is a fundamental part of the integrated study of microbial communities; however, two of the most widely used frameworks for building and analyzing models use different metabolic network representations. Mackinac is a Python package that combines ModelSEED’s ability to automatically reconstruct metabolic models with COBRApy’s advanced analysis capabilities to bridge the differences between the two frameworks and facilitate the study of the metabolic potential of microorganisms.&lt;/p&gt;
 </description>
     </item>
     

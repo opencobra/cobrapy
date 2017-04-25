@@ -9,6 +9,16 @@
     <atom:link href="https://opencobra.github.io/cobrapy/tags/microbiota/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>mminte</title>
+      <link>https://opencobra.github.io/cobrapy/packages/mminte/</link>
+      <pubDate>Mon, 24 Apr 2017 11:00:05 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/mminte/</guid>
+      <description>&lt;p&gt;MMinte (pronounced /‘minti/) is a set of widgets that allows you to explore the pairwise interactions (positive or negative) that occur in a microbial community. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. You can run the MMinte widgets as an integrated pipeline or run each widget independently.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>micom</title>
       <link>https://opencobra.github.io/cobrapy/packages/micom/</link>
       <pubDate>Mon, 27 Mar 2017 11:52:51 -0600</pubDate>
@@ -21,16 +31,6 @@ models and manages exchange fluxes between individuals and individuals with the
 environment. It explicitly accounts for different abundances of individuals in
 the community and can thus incorporate data from 16S rRNA sequencing
 experiments.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>mminte</title>
-      <link>https://opencobra.github.io/cobrapy/packages/mminte/</link>
-      <pubDate>Fri, 13 Jan 2017 11:00:05 -0600</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/packages/mminte/</guid>
-      <description>&lt;p&gt;MMinte (pronounced /‘minti/) is an integrated pipeline that allows users to explore the pairwise interactions (positive or negative) that occur in a microbial network. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. Our application is composed of seven widgets that run sequentially, and each widget may also be run as independent modules.&lt;/p&gt;
 </description>
     </item>
     
