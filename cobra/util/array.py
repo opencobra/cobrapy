@@ -147,9 +147,9 @@ def constraint_matrices(model, array_type='dense', include_vars=False,
         - "inequalities" is a matrix M such that lb <= M*vars <= ub.
           It contains a row for each inequality and as many columns as
           variables.
-        - "bounds" is a compound matrix [lb ub] constaining the lower and upper
-          bounds for the inequality constraints in M.
-        - "variable_equalities" is a partial diagnoal matrix S_v such that
+        - "bounds" is a compound matrix [lb ub] containing the lower and
+          upper bounds for the inequality constraints in M.
+        - "variable_equalities" is a partial diagonal matrix S_v such that
           S_v*vars = b. It includes a row for each fixed variable and one
           column for each variable.
         - "variable_b" the right side of the equality equation such that
@@ -157,7 +157,7 @@ def constraint_matrices(model, array_type='dense', include_vars=False,
         - "variable_inequalities" is a matrix M_v such that
           lb <= M_v*vars <= ub. It contains a row for each bounded variable
           and as many columns as variables.
-        - "variable_bounds" is a compound matrix [lb ub] constaining the
+        - "variable_bounds" is a compound matrix [lb ub] containing the
           lower and upper bounds for the non-fixed variables.
     """
     if array_type not in ('DataFrame', 'dense') and not dok_matrix:
