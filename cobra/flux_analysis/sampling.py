@@ -190,7 +190,6 @@ class HRSampler(object):
             self.model.solver.optimize()
             try:
                 assert_optimal(self.model)
-                print(self.model.solver.status)
             except Exception:
                 continue
             primals = self.model.solver.primal_values
