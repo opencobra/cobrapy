@@ -118,4 +118,5 @@ Then start python and type the following into the Python shell
     test_all()
 
 You should see some skipped tests and expected failures, and the
-function should return ``False``.
+function should return ``0``. If you see a value other than ``0`` please file
+an `issue report <CONTRIBUTING.rst>`_.
