@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 from os.path import abspath, dirname, join
 
 from cobra.io import read_sbml_model
@@ -50,7 +53,7 @@ def test_all(args=None):
 
         return pytest.main(
             ['--pyargs', 'cobra', '--benchmark-skip', '-v', '-rs'] + args
-        ) != 0
+        )
     else:
         raise ImportError('missing package pytest and pytest_benchmark'
                           ' required for testing')

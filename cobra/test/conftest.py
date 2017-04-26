@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 
 import json
@@ -6,7 +7,7 @@ from os.path import join
 
 import pytest
 
-from . import create_test_model, data_dir
+from cobra.test import create_test_model, data_dir
 
 try:
     from cPickle import load as _load
