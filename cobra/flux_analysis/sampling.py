@@ -34,12 +34,13 @@ bad_alpha = None
 
 class Problem:
     """A simple placeholder for the problem formulation."""
+
     pass
 
 
 # Has to be declared outside of class to be used for multiprocessing :(
 def _step(sampler, x, delta, fraction=None):
-    """Samples a new feasible point from the point `x` in direction `delta`."""
+    """Sample a new feasible point from the point `x` in direction `delta`."""
     prob = sampler.problem
     nonzero = np.abs(delta) > 0.0
     # permissible alphas for staying in variable bounds
@@ -119,6 +120,7 @@ class HRSampler(object):
     """
 
     def __init__(self, model, thinning, seed=None):
+        """Initialize a new sampler object."""
         # This currently has to be done to reset the solver basis which is
         # required to get deterministic warmup point generation
         # (in turn required for a working `seed` arg)
@@ -172,7 +174,7 @@ class HRSampler(object):
         self._seed = self._seed % np.iinfo(np.int32).max
 
     def generate_fva_warmup(self):
-        """Generates the warmup points for the sampler.
+        """Generate the warmup points for the sampler.
 
         Generates warmup points by setting each flux as the sole objective
         and minimizing/maximizing it.
@@ -213,7 +215,7 @@ class HRSampler(object):
         self.warmup = self.warmup[0:self.n_warmup, ]
 
     def _reproject(self, p):
-        """Reprojects a point into the feasibility region"""
+        """Reproject a point into the feasibility region."""
         return self.problem.projection.dot(p)
 
     def _bounds_dist(self, p):
@@ -237,7 +239,7 @@ class HRSampler(object):
         pass
 
     def batch(self, batch_size, batch_num, fluxes=True):
-        """Generates a batch generator.
+        """Create a batch generator.
 
         This is useful to generate n batches of m samples each.
 
@@ -264,7 +266,7 @@ class HRSampler(object):
             yield self.sample(batch_size, fluxes=fluxes)
 
     def validate(self, samples):
-        """Validates a set of samples for equality and inequality feasibility.
+        """Validate a set of samples for equality and inequality feasibility.
 
         Can be used to check whether the generated samples and warmup points
         are feasible.
@@ -411,6 +413,7 @@ class ARCHSampler(HRSampler):
     """
 
     def __init__(self, model, thinning=100, seed=None):
+        """Initialize a new ARCHSampler."""
         super(ARCHSampler, self).__init__(model, thinning, seed=seed)
         self.generate_fva_warmup()
         self.prev = self.center = self.warmup.mean(axis=0)
@@ -437,7 +440,7 @@ class ARCHSampler(HRSampler):
         This is the basic sampling function for all hit-and-run samplers.
 
         Parameters
-        ---------
+        ----------
         n : int
             The number of samples that are generated at once.
         fluxes : boolean
@@ -475,7 +478,7 @@ class ARCHSampler(HRSampler):
 # Unfortunately this has to be outside the class to be usable with
 # multiprocessing :()
 def _sample_chain(args):
-    """samples a single chain for OptGPSampler.
+    """Sample a single chain for OptGPSampler.
 
     center and n_samples are updated locally and forgotten afterwards.
     """
@@ -588,6 +591,7 @@ class OptGPSampler(HRSampler):
     """
 
     def __init__(self, model, processes, thinning=100, seed=None):
+        """Initialize a new OptGPSampler."""
         super(OptGPSampler, self).__init__(model, thinning, seed=seed)
         self.generate_fva_warmup()
         self.np = processes
@@ -662,13 +666,14 @@ class OptGPSampler(HRSampler):
 
     # Models can be large so don't pass them around during multiprocessing
     def __getstate__(self):
+        """Return the object for serialization."""
         d = dict(self.__dict__)
         del d['model']
         return d
 
 
 def sample(model, n, method="optgp", processes=1, seed=None):
-    """Samples valid flux distribution from a cobra model.
+    """Sample valid flux distributions from a cobra model.
 
     The function samples valid flux distributions from a cobra model.
     Currently we support two methods:
