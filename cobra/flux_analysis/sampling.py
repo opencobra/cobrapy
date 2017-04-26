@@ -11,7 +11,6 @@ from __future__ import absolute_import, division
 import ctypes
 from multiprocessing import Array, Pool
 from time import time
-from types import SimpleNamespace
 
 import numpy as np
 import pandas
@@ -31,6 +30,11 @@ nproj = 100000
 bad_x = None
 bad_delta = None
 bad_alpha = None
+
+
+class Problem:
+    """A simple placeholder for the problem formulation."""
+    pass
 
 
 # Has to be declared outside of class to be used for multiprocessing :(
@@ -123,8 +127,12 @@ class HRSampler(object):
         self.model = model.copy()
         self.thinning = thinning
         self.n_samples = 0
+        # Set up the mathematical problem
         prob = constraint_matrices(model)
-        self.problem = SimpleNamespace(**prob._asdict())
+        self.problem = Problem()
+        self.problem.equalities = prob.equalities
+        self.problem.inequalities = prob.inequalities
+        self.problem.b = prob.b
         # check if there any non-zero equality constraints
         self.problem.zero_b = all(np.abs(prob.b) < feasibility_tol)
         fixed_non_zero = np.abs(prob.variable_b) > feasibility_tol
