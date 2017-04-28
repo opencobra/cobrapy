@@ -1,0 +1,1148 @@
+!!omap
+- reactions:
+  - !!omap
+    - id: ATPM
+    - name: ATP maintenance requirement
+    - metabolites: !!omap
+      - adp_c: 1.0
+      - atp_c: -1.0
+      - h_c: 1.0
+      - h2o_c: -1.0
+      - pi_c: 1.0
+    - lower_bound: 8.39
+    - upper_bound: 1000.0
+    - gene_reaction_rule: ''
+    - objective_coefficient: 1.0
+    - annotation:
+        bigg.reaction: ATPM
+  - !!omap
+    - id: D_LACt2
+    - name: ''
+    - metabolites: !!omap
+      - h_e: -1
+      - lac__D_e: -1
+      - h_c: 1
+      - lac__D_c: 1
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b3603 or b2975
+  - !!omap
+    - id: ENO
+    - name: enolase
+    - metabolites: !!omap
+      - pep_c: 1.0
+      - h2o_c: 1.0
+      - 2pg_c: -1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b2779
+    - annotation:
+        bigg.reaction: ENO
+  - !!omap
+    - id: EX_glc__D_e
+    - name: D-Glucose exchange
+    - metabolites: !!omap
+      - glc__D_e: -1.0
+    - lower_bound: -10.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: ''
+    - annotation:
+        bigg.reaction: glc
+        SBO: SBO:0000627
+  - !!omap
+    - id: EX_h_e
+    - name: H+ exchange
+    - metabolites: !!omap
+      - h_e: -1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: ''
+    - annotation:
+        bigg.reaction: h
+        SBO: SBO:0000627
+  - !!omap
+    - id: EX_lac__D_e
+    - name: D-lactate exchange
+    - metabolites: !!omap
+      - lac__D_e: -1.0
+    - lower_bound: 0.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: ''
+  - !!omap
+    - id: FBA
+    - name: fructose-bisphosphate aldolase
+    - metabolites: !!omap
+      - dhap_c: 1.0
+      - fdp_c: -1.0
+      - g3p_c: 1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b1773 or b2097 or b2925
+    - annotation:
+        bigg.reaction: FBA
+  - !!omap
+    - id: GAPD
+    - name: glyceraldehyde-3-phosphate dehydrogenase
+    - metabolites: !!omap
+      - nad_c: -1.0
+      - 13dpg_c: 1.0
+      - g3p_c: -1.0
+      - nadh_c: 1.0
+      - h_c: 1.0
+      - pi_c: -1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b1779
+    - annotation:
+        bigg.reaction: GAPD
+  - !!omap
+    - id: GLCpts
+    - name: D-glucose transport via PEP:Pyr PTS
+    - metabolites: !!omap
+      - pep_c: -1.0
+      - g6p_c: 1.0
+      - glc__D_e: -1.0
+      - pyr_c: 1.0
+    - lower_bound: 0.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: ( b2417 and b1621 and b2415 and b2416 ) or ( b2417 and b1101
+        and b2415 and b2416 ) or ( b1817 and b1818 and b1819 and b2415 and b2416 )
+    - annotation:
+        bigg.reaction: GLCpts
+  - !!omap
+    - id: H2Ot
+    - name: R H2O transport via - diffusion
+    - metabolites: !!omap
+      - h2o_e: -1.0
+      - h2o_c: 1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b0875 or s0001
+    - annotation:
+        bigg.reaction: H2Ot
+  - !!omap
+    - id: LDH_D
+    - name: D-lactate dehydrogenase
+    - metabolites: !!omap
+      - nad_c: -1.0
+      - lac__D_c: -1.0
+      - h_c: 1.0
+      - nadh_c: 1.0
+      - pyr_c: 1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b2133 or b1380
+  - !!omap
+    - id: PFK
+    - name: phosphofructokinase
+    - metabolites: !!omap
+      - f6p_c: -1.0
+      - atp_c: -1.0
+      - fdp_c: 1.0
+      - h_c: 1.0
+      - adp_c: 1.0
+    - lower_bound: 0.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b3916 or b1723
+    - objective_coefficient: 1.0
+    - annotation:
+        bigg.reaction: PFK
+  - !!omap
+    - id: PGI
+    - name: glucose-6-phosphate isomerase
+    - metabolites: !!omap
+      - f6p_c: 1.0
+      - g6p_c: -1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b4025
+    - annotation:
+        bigg.reaction: PGI
+  - !!omap
+    - id: PGK
+    - name: phosphoglycerate kinase
+    - metabolites: !!omap
+      - 3pg_c: -1.0
+      - atp_c: -1.0
+      - 13dpg_c: 1.0
+      - adp_c: 1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b2926
+    - annotation:
+        bigg.reaction: PGK
+  - !!omap
+    - id: PGM
+    - name: phosphoglycerate mutase
+    - metabolites: !!omap
+      - 3pg_c: 1.0
+      - 2pg_c: -1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b4395 or b3612 or b0755
+    - annotation:
+        bigg.reaction: PGM
+  - !!omap
+    - id: PIt2r
+    - name: R phosphate reversible transport via - symport
+    - metabolites: !!omap
+      - h_c: 1.0
+      - pi_e: -1.0
+      - h_e: -1.0
+      - pi_c: 1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b2987 or b3493
+    - annotation:
+        bigg.reaction: PIt2r
+  - !!omap
+    - id: PYK
+    - name: pyruvate kinase
+    - metabolites: !!omap
+      - pep_c: -1.0
+      - h_c: -1.0
+      - atp_c: 1.0
+      - pyr_c: 1.0
+      - adp_c: -1.0
+    - lower_bound: 0.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b1854 or b1676
+    - annotation:
+        bigg.reaction: PYK
+  - !!omap
+    - id: TPI
+    - name: triose-phosphate isomerase
+    - metabolites: !!omap
+      - dhap_c: -1.0
+      - g3p_c: 1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b3919
+    - annotation:
+        bigg.reaction: TPI
+- metabolites:
+  - !!omap
+    - id: 13dpg_c
+    - name: 3-Phospho-D-glyceroyl phosphate
+    - compartment: c
+    - charge: -4
+    - formula: C3H4O10P2
+    - annotation:
+        pubchem.substance: '3535'
+        biocyc: DPG
+        kegg.compound: C00236
+        seed.compound: cpd00203
+        reactome: REACT_29800
+        bigg.metabolite: 13dpg
+        hmdb: HMDB01270
+        chebi:
+        - CHEBI:16001
+        - CHEBI:1658
+        - CHEBI:20189
+        - CHEBI:57604
+        - CHEBI:11881
+        unipathway.compound: UPC00236
+  - !!omap
+    - id: 2pg_c
+    - name: D-Glycerate 2-phosphate
+    - compartment: c
+    - charge: -3
+    - formula: C3H4O7P
+    - annotation:
+        pubchem.substance: '3904'
+        biocyc: 2-PG
+        kegg.compound: C00631
+        seed.compound: cpd00482
+        reactome: REACT_30485
+        bigg.metabolite: 2pg
+        hmdb:
+        - HMDB03391
+        - HMDB00362
+        chebi:
+        - CHEBI:1267
+        - CHEBI:58289
+        - CHEBI:17835
+        - CHEBI:21028
+        - CHEBI:11651
+        - CHEBI:12986
+        - CHEBI:24344
+        - CHEBI:39868
+        unipathway.compound: UPC00631
+  - !!omap
+    - id: 3pg_c
+    - name: 3-Phospho-D-glycerate
+    - compartment: c
+    - charge: -3
+    - formula: C3H4O7P
+    - annotation:
+        pubchem.substance: '3497'
+        biocyc: G3P
+        kegg.compound:
+        - C00197
+        - C00597
+        seed.compound: cpd00169
+        reactome: REACT_29728
+        bigg.metabolite: 3pg
+        hmdb: HMDB00807
+        chebi:
+        - CHEBI:40016
+        - CHEBI:58272
+        - CHEBI:57998
+        - CHEBI:11879
+        - CHEBI:1657
+        - CHEBI:1659
+        - CHEBI:17050
+        - CHEBI:21029
+        - CHEBI:11882
+        - CHEBI:11880
+        - CHEBI:12987
+        - CHEBI:17794
+        - CHEBI:24345
+        unipathway.compound:
+        - UPC00597
+        - UPC00197
+  - !!omap
+    - id: adp_c
+    - name: ADP
+    - compartment: c
+    - charge: -3
+    - formula: C10H12N5O10P2
+    - annotation:
+        kegg.glycan: G11113
+        biocyc:
+        - ADP
+        - ADP-GROUP
+        chebi:
+        - CHEBI:13222
+        - CHEBI:16761
+        - CHEBI:2342
+        - CHEBI:22244
+        - CHEBI:40553
+        - CHEBI:456216
+        unipathway.compound: UPC00008
+        seed.compound: cpd00008
+        reactome:
+        - REACT_190072
+        - REACT_481002
+        - REACT_211606
+        - REACT_429160
+        - REACT_29370
+        - REACT_196180
+        - REACT_113581
+        - REACT_113582
+        - REACT_114564
+        - REACT_114565
+        - REACT_429153
+        bigg.metabolite: adp
+        hmdb: HMDB01341
+        pubchem.substance: '3310'
+        cas:
+        - 58-64-0
+        - 58-64-0
+        kegg.compound: C00008
+  - !!omap
+    - id: atp_c
+    - name: ATP
+    - compartment: c
+    - charge: -4
+    - formula: C10H12N5O13P3
+    - annotation:
+        pubchem.substance: '3304'
+        biocyc: ATP
+        chebi:
+        - CHEBI:40938
+        - CHEBI:15422
+        - CHEBI:57299
+        - CHEBI:13236
+        - CHEBI:10789
+        - CHEBI:30616
+        - CHEBI:22249
+        - CHEBI:10841
+        - CHEBI:2359
+        unipathway.compound: UPC00002
+        seed.compound: cpd00002
+        reactome:
+        - REACT_190078
+        - REACT_113592
+        - REACT_113593
+        - REACT_114570
+        - REACT_29358
+        - REACT_389573
+        - REACT_139836
+        - REACT_211579
+        bigg.metabolite: atp
+        hmdb: HMDB00538
+        kegg.drug: D08646
+        cas:
+        - 56-65-5
+        - 56-65-5
+        kegg.compound: C00002
+  - !!omap
+    - id: dhap_c
+    - name: Dihydroxyacetone phosphate
+    - compartment: c
+    - charge: -2
+    - formula: C3H5O6P
+    - annotation:
+        pubchem.substance: '3411'
+        biocyc: DIHYDROXY-ACETONE-PHOSPHATE
+        chebi:
+        - CHEBI:14341
+        - CHEBI:57642
+        - CHEBI:14342
+        - CHEBI:16108
+        - CHEBI:5454
+        - CHEBI:24355
+        - CHEBI:39571
+        unipathway.compound: UPC00111
+        seed.compound: cpd00095
+        reactome:
+        - REACT_188451
+        - REACT_75970
+        - REACT_390404
+        bigg.metabolite: dhap
+        hmdb:
+        - HMDB01473
+        - HMDB11735
+        cas:
+        - 57-04-5
+        - 57-04-5
+        kegg.compound: C00111
+  - !!omap
+    - id: f6p_c
+    - name: D-Fructose 6-phosphate
+    - compartment: c
+    - charge: -2
+    - formula: C6H11O9P
+    - annotation:
+        pubchem.substance: '3385'
+        biocyc: FRUCTOSE-6P
+        chebi:
+        - CHEBI:57634
+        - CHEBI:12352
+        - CHEBI:45804
+        - CHEBI:61527
+        - CHEBI:61553
+        - CHEBI:10375
+        - CHEBI:16084
+        - CHEBI:42378
+        - CHEBI:22768
+        unipathway.compound:
+        - UPC05345
+        - UPC00085
+        seed.compound: cpd00072
+        bigg.metabolite: f6p
+        hmdb: HMDB03971
+        cas:
+        - 643-13-0
+        - 643-13-0
+        kegg.compound:
+        - C05345
+        - C00085
+  - !!omap
+    - id: fdp_c
+    - name: D-Fructose 1,6-bisphosphate
+    - compartment: c
+    - charge: -4
+    - formula: C6H10O12P2
+    - annotation:
+        pubchem.substance: '3647'
+        biocyc: FRUCTOSE-16-DIPHOSPHATE
+        chebi:
+        - CHEBI:32968
+        - CHEBI:49299
+        - CHEBI:42553
+        - CHEBI:32966
+        - CHEBI:37736
+        - CHEBI:28013
+        - CHEBI:32967
+        - CHEBI:41014
+        - CHEBI:22767
+        - CHEBI:10374
+        - CHEBI:40595
+        - CHEBI:40591
+        unipathway.compound: UPC00354
+        seed.compound: cpd00290
+        bigg.metabolite: fdp
+        cas:
+        - 488-69-7
+        - 488-69-7
+        kegg.compound:
+        - C05378
+        - C00354
+  - !!omap
+    - id: g3p_c
+    - name: Glyceraldehyde 3-phosphate
+    - compartment: c
+    - charge: -2
+    - formula: C3H5O6P
+    - annotation:
+        pubchem.substance: '3930'
+        chebi:
+        - CHEBI:17138
+        - CHEBI:14333
+        - CHEBI:5446
+        - CHEBI:58027
+        unipathway.compound:
+        - UPC00661
+        - UPC00118
+        seed.compound: cpd00102
+        bigg.metabolite: g3p
+        hmdb: HMDB01112
+        cas:
+        - 142-10-9
+        - 142-10-9
+        kegg.compound:
+        - C00661
+        - C00118
+  - !!omap
+    - id: g6p_c
+    - name: D-Glucose 6-phosphate
+    - compartment: c
+    - charge: -2
+    - formula: C6H11O9P
+    - annotation:
+        pubchem.substance: '3392'
+        biocyc:
+        - D-glucose-6-phosphate
+        - GLC-6-P
+        chebi:
+        - CHEBI:10399
+        - CHEBI:22797
+        - CHEBI:41041
+        - CHEBI:17719
+        - CHEBI:4170
+        - CHEBI:61548
+        - CHEBI:58247
+        - CHEBI:12375
+        unipathway.compound: UPC00092
+        seed.compound: cpd00079
+        reactome: REACT_1629756
+        bigg.metabolite: g6p
+        hmdb:
+        - HMDB03498
+        - HMDB06793
+        - HMDB01401
+        - HMDB01549
+        cas:
+        - 56-73-5
+        - 56-73-5
+        kegg.compound:
+        - C00092
+        - C01172
+  - !!omap
+    - id: glc__D_e
+    - name: D-Glucose
+    - compartment: e
+    - charge: 0
+    - formula: C6H12O6
+    - annotation:
+        bigg.metabolite: glc__D
+        pubchem.substance: '3333'
+        cas:
+        - 50-99-7
+        - 50-99-7
+        kegg.compound: C00031
+  - !!omap
+    - id: h2o_c
+    - name: H2O
+    - compartment: c
+    - charge: 0
+    - formula: H2O
+    - annotation:
+        pubchem.substance: '3303'
+        biocyc:
+        - WATER
+        - OH
+        - OXONIUM
+        chebi:
+        - CHEBI:15377
+        - CHEBI:13365
+        - CHEBI:41979
+        - CHEBI:16234
+        - CHEBI:36385
+        - CHEBI:42857
+        - CHEBI:27313
+        - CHEBI:44819
+        - CHEBI:29373
+        - CHEBI:10743
+        - CHEBI:5594
+        - CHEBI:29356
+        - CHEBI:53442
+        - CHEBI:29375
+        - CHEBI:29374
+        - CHEBI:13419
+        - CHEBI:43228
+        - CHEBI:44292
+        - CHEBI:13352
+        - CHEBI:41981
+        - CHEBI:29412
+        - CHEBI:42043
+        - CHEBI:33811
+        - CHEBI:33813
+        - CHEBI:35511
+        - CHEBI:5585
+        - CHEBI:44641
+        - CHEBI:44701
+        unipathway.compound:
+        - UPC00001
+        - UPC01328
+        seed.compound:
+        - cpd15275
+        - cpd00001
+        reactome:
+        - REACT_947593
+        - REACT_189422
+        - REACT_141343
+        - REACT_113518
+        - REACT_1605715
+        - REACT_109276
+        - REACT_113521
+        - REACT_113519
+        - REACT_2022884
+        - REACT_351603
+        - REACT_29356
+        bigg.metabolite: h2o
+        hmdb:
+        - HMDB01039
+        - HMDB02111
+        kegg.drug:
+        - D00001
+        - D06322
+        - D03703
+        cas:
+        - 7732-18-5
+        - 7732-18-5
+        kegg.compound:
+        - C01328
+        - C00001
+        - C18714
+        - C18712
+  - !!omap
+    - id: h2o_e
+    - name: H2O
+    - compartment: e
+    - charge: 0
+    - formula: H2O
+    - annotation:
+        pubchem.substance: '3303'
+        biocyc:
+        - WATER
+        - OH
+        - OXONIUM
+        chebi:
+        - CHEBI:15377
+        - CHEBI:13365
+        - CHEBI:41979
+        - CHEBI:16234
+        - CHEBI:36385
+        - CHEBI:42857
+        - CHEBI:27313
+        - CHEBI:44819
+        - CHEBI:29373
+        - CHEBI:10743
+        - CHEBI:5594
+        - CHEBI:29356
+        - CHEBI:53442
+        - CHEBI:29375
+        - CHEBI:29374
+        - CHEBI:13419
+        - CHEBI:43228
+        - CHEBI:44292
+        - CHEBI:13352
+        - CHEBI:41981
+        - CHEBI:29412
+        - CHEBI:42043
+        - CHEBI:33811
+        - CHEBI:33813
+        - CHEBI:35511
+        - CHEBI:5585
+        - CHEBI:44641
+        - CHEBI:44701
+        unipathway.compound:
+        - UPC00001
+        - UPC01328
+        seed.compound:
+        - cpd15275
+        - cpd00001
+        reactome:
+        - REACT_947593
+        - REACT_189422
+        - REACT_141343
+        - REACT_113518
+        - REACT_1605715
+        - REACT_109276
+        - REACT_113521
+        - REACT_113519
+        - REACT_2022884
+        - REACT_351603
+        - REACT_29356
+        bigg.metabolite: h2o
+        hmdb:
+        - HMDB01039
+        - HMDB02111
+        kegg.drug:
+        - D00001
+        - D06322
+        - D03703
+        cas:
+        - 7732-18-5
+        - 7732-18-5
+        kegg.compound:
+        - C01328
+        - C00001
+        - C18714
+        - C18712
+  - !!omap
+    - id: h_c
+    - name: H+
+    - compartment: c
+    - charge: 1
+    - formula: H
+    - annotation:
+        pubchem.substance: '3380'
+        biocyc: PROTON
+        chebi:
+        - CHEBI:24636
+        - CHEBI:15378
+        - CHEBI:10744
+        - CHEBI:13357
+        - CHEBI:5584
+        unipathway.compound: UPC00080
+        seed.compound: cpd00067
+        reactome:
+        - REACT_194688
+        - REACT_425978
+        - REACT_193465
+        - REACT_374900
+        - REACT_74722
+        - REACT_425999
+        - REACT_428040
+        - REACT_163953
+        - REACT_372511
+        - REACT_2000349
+        - REACT_70106
+        - REACT_1470067
+        - REACT_113529
+        - REACT_425969
+        - REACT_428548
+        - REACT_156540
+        - REACT_1614597
+        - REACT_351626
+        - REACT_427899
+        bigg.metabolite: h
+        cas:
+        - 12408-02-5
+        - 12408-02-5
+        kegg.compound: C00080
+  - !!omap
+    - id: h_e
+    - name: H+
+    - compartment: e
+    - charge: 1
+    - formula: H
+    - annotation:
+        pubchem.substance: '3380'
+        biocyc: PROTON
+        chebi:
+        - CHEBI:24636
+        - CHEBI:15378
+        - CHEBI:10744
+        - CHEBI:13357
+        - CHEBI:5584
+        unipathway.compound: UPC00080
+        seed.compound: cpd00067
+        reactome:
+        - REACT_194688
+        - REACT_425978
+        - REACT_193465
+        - REACT_374900
+        - REACT_74722
+        - REACT_425999
+        - REACT_428040
+        - REACT_163953
+        - REACT_372511
+        - REACT_2000349
+        - REACT_70106
+        - REACT_1470067
+        - REACT_113529
+        - REACT_425969
+        - REACT_428548
+        - REACT_156540
+        - REACT_1614597
+        - REACT_351626
+        - REACT_427899
+        bigg.metabolite: h
+        cas:
+        - 12408-02-5
+        - 12408-02-5
+        kegg.compound: C00080
+  - !!omap
+    - id: lac__D_c
+    - name: D-Lactate
+    - compartment: c
+    - charge: -1
+    - formula: C3H5O3
+  - !!omap
+    - id: lac__D_e
+    - name: D-Lactate
+    - compartment: e
+    - charge: -1
+    - formula: C3H5O3
+  - !!omap
+    - id: nad_c
+    - name: Nicotinamide adenine dinucleotide
+    - compartment: c
+    - charge: -1
+    - formula: C21H26N7O14P2
+    - annotation:
+        pubchem.substance: '3305'
+        biocyc: NAD
+        chebi:
+        - CHEBI:21901
+        - CHEBI:7422
+        - CHEBI:44214
+        - CHEBI:15846
+        - CHEBI:13394
+        - CHEBI:13393
+        - CHEBI:44215
+        - CHEBI:13389
+        - CHEBI:57540
+        - CHEBI:44281
+        unipathway.compound: UPC00003
+        seed.compound: cpd00003
+        reactome:
+        - REACT_192307
+        - REACT_29360
+        - REACT_427523
+        - REACT_194653
+        - REACT_113526
+        bigg.metabolite: nad
+        hmdb: HMDB00902
+        kegg.drug: D00002
+        cas:
+        - 53-84-9
+        - 53-84-9
+        kegg.compound: C00003
+  - !!omap
+    - id: nadh_c
+    - name: Nicotinamide adenine dinucleotide - reduced
+    - compartment: c
+    - charge: -2
+    - formula: C21H27N7O14P2
+    - annotation:
+        pubchem.substance: '3306'
+        biocyc: NADH
+        chebi:
+        - CHEBI:13395
+        - CHEBI:21902
+        - CHEBI:16908
+        - CHEBI:7423
+        - CHEBI:44216
+        - CHEBI:57945
+        - CHEBI:13396
+        unipathway.compound: UPC00004
+        seed.compound: cpd00004
+        reactome:
+        - REACT_192305
+        - REACT_73473
+        - REACT_194697
+        - REACT_29362
+        bigg.metabolite: nadh
+        hmdb: HMDB01487
+        cas:
+        - 58-68-4
+        - 58-68-4
+        kegg.compound: C00004
+  - !!omap
+    - id: pep_c
+    - name: Phosphoenolpyruvate
+    - compartment: c
+    - charge: -3
+    - formula: C3H2O6P
+    - annotation:
+        pubchem.substance: '3374'
+        biocyc: PHOSPHO-ENOL-PYRUVATE
+        chebi:
+        - CHEBI:44897
+        - CHEBI:44894
+        - CHEBI:14812
+        - CHEBI:8147
+        - CHEBI:26055
+        - CHEBI:26054
+        - CHEBI:58702
+        - CHEBI:18021
+        unipathway.compound: UPC00074
+        seed.compound: cpd00061
+        reactome:
+        - REACT_29492
+        - REACT_372364
+        bigg.metabolite: pep
+        hmdb: HMDB00263
+        cas:
+        - 138-08-9
+        - 138-08-9
+        kegg.compound: C00074
+  - !!omap
+    - id: pi_c
+    - name: Phosphate
+    - compartment: c
+    - charge: -2
+    - formula: HO4P
+    - annotation:
+        pubchem.substance: '3311'
+        biocyc:
+        - Pi
+        - PHOSPHATE-GROUP
+        - CPD0-1421
+        chebi:
+        - CHEBI:37583
+        - CHEBI:7793
+        - CHEBI:37585
+        - CHEBI:34683
+        - CHEBI:14791
+        - CHEBI:34855
+        - CHEBI:29137
+        - CHEBI:29139
+        - CHEBI:63036
+        - CHEBI:26020
+        - CHEBI:39739
+        - CHEBI:32597
+        - CHEBI:32596
+        - CHEBI:43474
+        - CHEBI:63051
+        - CHEBI:43470
+        - CHEBI:9679
+        - CHEBI:35433
+        - CHEBI:4496
+        - CHEBI:45024
+        - CHEBI:18367
+        - CHEBI:26078
+        - CHEBI:39745
+        - CHEBI:24838
+        unipathway.compound: UPC00009
+        seed.compound:
+        - cpd09464
+        - cpd09463
+        - cpd00009
+        reactome:
+        - REACT_947590
+        - REACT_109277
+        - REACT_113548
+        - REACT_2255331
+        - REACT_29372
+        - REACT_113550
+        - REACT_113551
+        bigg.metabolite: pi
+        hmdb: HMDB02142
+        kegg.drug: D05467
+        cas:
+        - 14265-44-2
+        - 14265-44-2
+        kegg.compound:
+        - C13556
+        - C13558
+        - C00009
+  - !!omap
+    - id: pi_e
+    - name: Phosphate
+    - compartment: e
+    - charge: -2
+    - formula: HO4P
+    - annotation:
+        pubchem.substance: '3311'
+        biocyc:
+        - Pi
+        - PHOSPHATE-GROUP
+        - CPD0-1421
+        chebi:
+        - CHEBI:37583
+        - CHEBI:7793
+        - CHEBI:37585
+        - CHEBI:34683
+        - CHEBI:14791
+        - CHEBI:34855
+        - CHEBI:29137
+        - CHEBI:29139
+        - CHEBI:63036
+        - CHEBI:26020
+        - CHEBI:39739
+        - CHEBI:32597
+        - CHEBI:32596
+        - CHEBI:43474
+        - CHEBI:63051
+        - CHEBI:43470
+        - CHEBI:9679
+        - CHEBI:35433
+        - CHEBI:4496
+        - CHEBI:45024
+        - CHEBI:18367
+        - CHEBI:26078
+        - CHEBI:39745
+        - CHEBI:24838
+        unipathway.compound: UPC00009
+        seed.compound:
+        - cpd09464
+        - cpd09463
+        - cpd00009
+        reactome:
+        - REACT_947590
+        - REACT_109277
+        - REACT_113548
+        - REACT_2255331
+        - REACT_29372
+        - REACT_113550
+        - REACT_113551
+        bigg.metabolite: pi
+        hmdb: HMDB02142
+        kegg.drug: D05467
+        cas:
+        - 14265-44-2
+        - 14265-44-2
+        kegg.compound:
+        - C13556
+        - C13558
+        - C00009
+  - !!omap
+    - id: pyr_c
+    - name: Pyruvate
+    - compartment: c
+    - charge: -1
+    - formula: C3H3O3
+    - annotation:
+        pubchem.substance: '3324'
+        biocyc: PYRUVATE
+        chebi:
+        - CHEBI:15361
+        - CHEBI:14987
+        - CHEBI:8685
+        - CHEBI:32816
+        - CHEBI:45253
+        - CHEBI:26466
+        - CHEBI:26462
+        lipidmaps: LMFA01060077
+        seed.compound: cpd00020
+        kegg.compound: C00022
+        reactome:
+        - REACT_113557
+        - REACT_389680
+        - REACT_29398
+        bigg.metabolite: pyr
+        hmdb: HMDB00243
+        cas:
+        - 127-17-3
+        - 127-17-3
+        unipathway.compound: UPC00022
+- genes:
+  - !!omap
+    - id: b0755
+    - name: gpmA
+  - !!omap
+    - id: b0875
+    - name: aqpZ
+  - !!omap
+    - id: b1101
+    - name: ptsG
+  - !!omap
+    - id: b1380
+    - name: ldhA
+  - !!omap
+    - id: b1621
+    - name: malX
+  - !!omap
+    - id: b1676
+    - name: pykF
+    - annotation:
+        ncbigi:
+        - GI:1208453
+        - GI:1652654
+  - !!omap
+    - id: b1723
+    - name: pfkB
+  - !!omap
+    - id: b1773
+    - name: ydjI
+  - !!omap
+    - id: b1779
+    - name: gapA
+  - !!omap
+    - id: b1817
+    - name: manX
+  - !!omap
+    - id: b1818
+    - name: manY
+  - !!omap
+    - id: b1819
+    - name: manZ
+  - !!omap
+    - id: b1854
+    - name: pykA
+  - !!omap
+    - id: b2097
+    - name: fbaB
+  - !!omap
+    - id: b2133
+    - name: dld
+  - !!omap
+    - id: b2415
+    - name: ptsH
+  - !!omap
+    - id: b2416
+    - name: ptsI
+  - !!omap
+    - id: b2417
+    - name: crr
+  - !!omap
+    - id: b2779
+    - name: eno
+    - annotation:
+        ncbigi: GI:1653839
+  - !!omap
+    - id: b2925
+    - name: fbaA
+  - !!omap
+    - id: b2926
+    - name: pgk
+    - annotation:
+        ncbigi: GI:1653609
+  - !!omap
+    - id: b2975
+    - name: glcA
+  - !!omap
+    - id: b2987
+    - name: pitB
+  - !!omap
+    - id: b3493
+    - name: pitA
+  - !!omap
+    - id: b3603
+    - name: lldP
+  - !!omap
+    - id: b3612
+    - name: gpmM
+  - !!omap
+    - id: b3916
+    - name: pfkA
+    - annotation:
+        ncbigi:
+        - GI:1006614
+        - GI:1651919
+  - !!omap
+    - id: b3919
+    - name: tpiA
+  - !!omap
+    - id: b4025
+    - name: pgi
+    - annotation:
+        ncbigi: GI:1653253
+  - !!omap
+    - id: b4395
+    - name: ytjC
+  - !!omap
+    - id: s0001
+    - name: G_s0001
+- id: mini_textbook
+- compartments:
+    e: extracellular
+    c: cytosol
+- version: 1
