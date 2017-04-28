@@ -38,7 +38,7 @@ def ordered_dump(data, stream=None, Dumper=yaml.Dumper, **kwds):
     return yaml.dump(data, stream, OrderedDumper, **kwds)
 
 
-def to_yaml(model, ordered=True):
+def to_yaml(model):
     """
     Return the model as a YAML string.
     
@@ -49,7 +49,7 @@ def to_yaml(model, ordered=True):
         Whether to create YAML representation with deterministic order (
         default true).
     """
-    return ordered_dump(model_to_dict(model, ordered), Dumper=yaml.SafeDumper)
+    return ordered_dump(model_to_dict(model), Dumper=yaml.SafeDumper)
 
 
 def from_yaml(document):
@@ -64,8 +64,8 @@ def from_yaml(document):
     return model_from_dict(ordered_load(document, yaml.SafeLoader))
 
 
-def save_yaml_model(model, filename, ordered=True):
-    document = to_yaml(model, ordered)
+def save_yaml_model(model, filename):
+    document = to_yaml(model)
     if isinstance(filename, string_types):
         with io.open(filename, "w") as file_h:
             file_h.write(document)

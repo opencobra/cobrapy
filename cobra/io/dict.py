@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 from collections import OrderedDict
+from operator import attrgetter
 
 from numpy import bool_, float_
 from six import iteritems, string_types
@@ -10,11 +11,9 @@ from six import iteritems, string_types
 from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.util.solver import set_objective
 
-_ORDERED_REACTION_KEYS = [
+_REQUIRED_REACTION_ATTRIBUTES = [
     "id", "name", "metabolites", "lower_bound", "upper_bound",
     "gene_reaction_rule"]
-_REQUIRED_REACTION_ATTRIBUTES = {"id", "name", "metabolites", "lower_bound",
-                                 "upper_bound", "gene_reaction_rule"}
 _ORDERED_OPTIONAL_REACTION_KEYS = [
     "objective_coefficient", "variable_kind", "subsystem", "notes",
     "annotation"]
@@ -26,9 +25,7 @@ _OPTIONAL_REACTION_ATTRIBUTES = {
     "annotation": {},
 }
 
-_ORDERED_METABOLITE_KEYS = [
-    "id", "name", "compartment"]
-_REQUIRED_METABOLITE_ATTRIBUTES = {"id", "name", "compartment"}
+_REQUIRED_METABOLITE_ATTRIBUTES = ["id", "name", "compartment"]
 _ORDERED_OPTIONAL_METABOLITE_KEYS = [
     "charge", "formula", "_bound", "_constraint_sense", "notes", "annotation"]
 _OPTIONAL_METABOLITE_ATTRIBUTES = {
@@ -40,8 +37,7 @@ _OPTIONAL_METABOLITE_ATTRIBUTES = {
     "annotation": {},
 }
 
-_ORDERED_GENE_KEYS = ["id", "name"]
-_REQUIRED_GENE_ATTRIBUTES = {"id", "name"}
+_REQUIRED_GENE_ATTRIBUTES = ["id", "name"]
 _ORDERED_OPTIONAL_GENE_KEYS = ["notes", "annotation"]
 _OPTIONAL_GENE_ATTRIBUTES = {
     "notes": {},
@@ -73,35 +69,27 @@ def _fix_type(value):
     if value.__class__.__name__ == "Formula":
         return str(value)
     if value is None:
-        return ''
+        return ""
     return value
 
 
 def _update_optional(cobra_object, new_dict, optional_attribute_dict,
-                     ordered_keys=None):
+                     ordered_keys):
     """update new_dict with optional attributes from cobra_object"""
-    if ordered_keys is not None:
-        items = ((key, optional_attribute_dict[key]) for key in ordered_keys)
-    else:
-        items = iteritems(optional_attribute_dict)
-    for key, default in items:
+    for key in ordered_keys:
+        default = optional_attribute_dict[key]
         value = getattr(cobra_object, key)
         if value is None or value == default:
             continue
         new_dict[key] = _fix_type(value)
 
 
-def metabolite_to_dict(metabolite, ordered=False):
-    if ordered:
-        new_met = OrderedDict()
-        for key in _ORDERED_METABOLITE_KEYS:
-            new_met[key] = _fix_type(getattr(metabolite, key))
-        _update_optional(metabolite, new_met, _OPTIONAL_METABOLITE_ATTRIBUTES,
-                         _ORDERED_OPTIONAL_METABOLITE_KEYS)
-    else:
-        new_met = {key: _fix_type(getattr(metabolite, key))
-                   for key in _REQUIRED_METABOLITE_ATTRIBUTES}
-        _update_optional(metabolite, new_met, _OPTIONAL_METABOLITE_ATTRIBUTES)
+def metabolite_to_dict(metabolite):
+    new_met = OrderedDict()
+    for key in _REQUIRED_METABOLITE_ATTRIBUTES:
+        new_met[key] = _fix_type(getattr(metabolite, key))
+    _update_optional(metabolite, new_met, _OPTIONAL_METABOLITE_ATTRIBUTES,
+                     _ORDERED_OPTIONAL_METABOLITE_KEYS)
     return new_met
 
 
@@ -112,17 +100,12 @@ def metabolite_from_dict(metabolite):
     return new_metabolite
 
 
-def gene_to_dict(gene, ordered=False):
-    if ordered:
-        new_gene = OrderedDict()
-        for key in _ORDERED_GENE_KEYS:
-            new_gene[key] = str(getattr(gene, key))
-        _update_optional(gene, new_gene, _OPTIONAL_GENE_ATTRIBUTES,
-                         _ORDERED_OPTIONAL_GENE_KEYS)
-    else:
-        new_gene = {key: str(getattr(gene, key))
-                    for key in _REQUIRED_GENE_ATTRIBUTES}
-        _update_optional(gene, new_gene, _OPTIONAL_GENE_ATTRIBUTES)
+def gene_to_dict(gene):
+    new_gene = OrderedDict()
+    for key in _REQUIRED_GENE_ATTRIBUTES:
+        new_gene[key] = str(getattr(gene, key))
+    _update_optional(gene, new_gene, _OPTIONAL_GENE_ATTRIBUTES,
+                     _ORDERED_OPTIONAL_GENE_KEYS)
     return new_gene
 
 
@@ -133,28 +116,18 @@ def gene_from_dict(gene):
     return new_gene
 
 
-def reaction_to_dict(reaction, ordered=False):
-    if ordered:
-        new_reaction = OrderedDict()
-        for key in _ORDERED_REACTION_KEYS:
-            if key != "metabolites":
-                new_reaction[key] = _fix_type(getattr(reaction, key))
-                continue
-            mets = OrderedDict()
-            for met, coeff in iteritems(reaction.metabolites):
-                mets[str(met)] = coeff
-            new_reaction["metabolites"] = mets
-        _update_optional(reaction, new_reaction, _OPTIONAL_REACTION_ATTRIBUTES,
-                         _ORDERED_OPTIONAL_REACTION_KEYS)
-    else:
-        new_reaction = {key: _fix_type(getattr(reaction, key))
-                        for key in _REQUIRED_REACTION_ATTRIBUTES
-                        if key != "metabolites"}
-        _update_optional(reaction, new_reaction, _OPTIONAL_REACTION_ATTRIBUTES)
-        # set metabolites
-        mets = {str(met): coeff for met, coeff
-                in iteritems(reaction.metabolites)}
+def reaction_to_dict(reaction):
+    new_reaction = OrderedDict()
+    for key in _REQUIRED_REACTION_ATTRIBUTES:
+        if key != "metabolites":
+            new_reaction[key] = _fix_type(getattr(reaction, key))
+            continue
+        mets = OrderedDict()
+        for met in sorted(reaction.metabolites, key=attrgetter("id")):
+            mets[str(met)] = reaction.metabolites[met]
         new_reaction["metabolites"] = mets
+    _update_optional(reaction, new_reaction, _OPTIONAL_REACTION_ATTRIBUTES,
+                     _ORDERED_OPTIONAL_REACTION_KEYS)
     return new_reaction
 
 
@@ -172,20 +145,17 @@ def reaction_from_dict(reaction, model):
     return new_reaction
 
 
-def model_to_dict(model, ordered=False):
+def model_to_dict(model):
     """Convert model to a dict.
 
     Parameters
     ----------
     model : cobra.Model
         The model to reformulate as a dict
-    ordered : bool, optional
-        Whether to use ordered keys as determined by the JSON spec and
-        elements being sorted by ID (default is arbitrary order).
 
     Returns
     -------
-    dict
+    OrderedDict
         A dictionary with elements, 'genes', 'compartments', 'id',
         'metabolites', 'notes' and 'reactions'; where 'metabolites', 'genes'
         and 'metabolites' are in turn lists with dictionaries holding all
@@ -195,29 +165,18 @@ def model_to_dict(model, ordered=False):
     --------
     cobra.io.model_from_dict
     """
-    if ordered:
-        # Currently rely on model.reactions and others having a specific order.
-        # May need to sort by ID if this is not the case.
-        obj = OrderedDict()
-        obj["reactions"] = [
-            reaction_to_dict(reaction, True) for reaction in model.reactions]
-        obj["metabolites"] = [
-            metabolite_to_dict(metabolite, True)
-            for metabolite in model.metabolites]
-        obj["genes"] = [gene_to_dict(gene, True) for gene in model.genes]
-        obj["id"] = model.id
-        _update_optional(model, obj, _OPTIONAL_MODEL_ATTRIBUTES,
-                         _ORDERED_OPTIONAL_MODEL_KEYS)
-    else:
-        obj = dict(
-            reactions=[reaction_to_dict(reaction)
-                       for reaction in model.reactions],
-            metabolites=[metabolite_to_dict(metabolite)
-                         for metabolite in model.metabolites],
-            genes=[gene_to_dict(gene) for gene in model.genes],
-            id=model.id
-        )
-        _update_optional(model, obj, _OPTIONAL_MODEL_ATTRIBUTES)
+    obj = OrderedDict()
+    obj["reactions"] = [
+        reaction_to_dict(reaction)
+        for reaction in sorted(model.reactions, key=attrgetter("id"))]
+    obj["metabolites"] = [
+        metabolite_to_dict(metabolite)
+        for metabolite in sorted(model.metabolites, key=attrgetter("id"))]
+    obj["genes"] = [gene_to_dict(gene)
+                    for gene in sorted(model.genes, key=attrgetter("id"))]
+    obj["id"] = model.id
+    _update_optional(model, obj, _OPTIONAL_MODEL_ATTRIBUTES,
+                     _ORDERED_OPTIONAL_MODEL_KEYS)
     # add in the YAML version
     obj["version"] = 1
     return obj
@@ -247,7 +206,7 @@ def model_from_dict(obj):
     cobra.io.model_to_dict
     """
     if 'reactions' not in obj:
-        raise Exception('JSON object has no reactions attribute. Cannot load.')
+        raise ValueError('Object has no reactions attribute. Cannot load.')
     model = Model()
     model.add_metabolites(
         [metabolite_from_dict(metabolite) for metabolite in obj['metabolites']]
