@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 
 from collections import OrderedDict
-from operator import attrgetter
 
 from numpy import bool_, float_
 from six import iteritems, string_types
@@ -103,7 +102,7 @@ def metabolite_from_dict(metabolite):
 def gene_to_dict(gene):
     new_gene = OrderedDict()
     for key in _REQUIRED_GENE_ATTRIBUTES:
-        new_gene[key] = str(getattr(gene, key))
+        new_gene[key] = _fix_type(getattr(gene, key))
     _update_optional(gene, new_gene, _OPTIONAL_GENE_ATTRIBUTES,
                      _ORDERED_OPTIONAL_GENE_KEYS)
     return new_gene
@@ -123,7 +122,7 @@ def reaction_to_dict(reaction):
             new_reaction[key] = _fix_type(getattr(reaction, key))
             continue
         mets = OrderedDict()
-        for met in sorted(reaction.metabolites, key=attrgetter("id")):
+        for met in reaction.metabolites:
             mets[str(met)] = reaction.metabolites[met]
         new_reaction["metabolites"] = mets
     _update_optional(reaction, new_reaction, _OPTIONAL_REACTION_ATTRIBUTES,
@@ -166,14 +165,12 @@ def model_to_dict(model):
     cobra.io.model_from_dict
     """
     obj = OrderedDict()
-    obj["reactions"] = [
-        reaction_to_dict(reaction)
-        for reaction in sorted(model.reactions, key=attrgetter("id"))]
-    obj["metabolites"] = [
-        metabolite_to_dict(metabolite)
-        for metabolite in sorted(model.metabolites, key=attrgetter("id"))]
+    obj["reactions"] = [reaction_to_dict(reaction)
+                        for reaction in model.reactions]
+    obj["metabolites"] = [metabolite_to_dict(metabolite)
+                          for metabolite in model.metabolites]
     obj["genes"] = [gene_to_dict(gene)
-                    for gene in sorted(model.genes, key=attrgetter("id"))]
+                    for gene in model.genes]
     obj["id"] = model.id
     _update_optional(model, obj, _OPTIONAL_MODEL_ATTRIBUTES,
                      _ORDERED_OPTIONAL_MODEL_KEYS)
