@@ -48,7 +48,7 @@ def large_model():
     return create_test_model("ecoli")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def salmonella():
     return create_test_model("salmonella")
 
