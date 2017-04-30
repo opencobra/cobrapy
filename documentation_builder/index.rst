@@ -19,6 +19,7 @@ be viewed at `nbviewer
     phenotype_phase_plane
     sampling
     loopless
+    gapfilling
     solvers
     constraints_objectives
     pymatbridge

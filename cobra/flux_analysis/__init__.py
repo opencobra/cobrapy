@@ -5,7 +5,7 @@ try:
 except ImportError:
     scipy = None
 
-from cobra.flux_analysis.gapfilling import growMatch
+from cobra.flux_analysis.gapfilling import gapfill, growMatch
 from cobra.flux_analysis.loopless import (
     construct_loopless_model, loopless_solution, add_loopless)
 from cobra.flux_analysis.parsimonious import pfba

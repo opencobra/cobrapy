@@ -166,7 +166,7 @@ def interface_to_str(interface):
 
     Parameters
     ----------
-    interface : string
+    interface : string, ModuleType
         Full name of the interface in optlang or cobra representation.
         For instance 'optlang.glpk_interface' or 'optlang-glpk'.
 
@@ -351,7 +351,8 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None):
     add_cons_vars_to_problem(model, constraints + [variable])
 
 
-def fix_objective_as_constraint(model, fraction=1, name='fixed_objective_{}'):
+def fix_objective_as_constraint(model, fraction=1, bound=None,
+                                name='fixed_objective_{}'):
     """Fix current objective as an additional constraint.
 
     When adding constraints to a model, such as done in pFBA which
@@ -371,6 +372,9 @@ def fix_objective_as_constraint(model, fraction=1, name='fixed_objective_{}'):
         The model to operate on
     fraction : float
         The fraction of the optimum the objective is allowed to reach.
+    bound : float, None
+        The bound to use instead of fraction of maximum optimal value. If
+        not None, fraction is ignored.
     name : str
         Name of the objective. May contain one `{}` placeholder which is filled
         with the name of the old objective.
@@ -378,17 +382,18 @@ def fix_objective_as_constraint(model, fraction=1, name='fixed_objective_{}'):
     fix_objective_name = name.format(model.objective.name)
     if fix_objective_name in model.constraints:
         model.solver.remove(fix_objective_name)
-    model.solver.optimize()
-    assert_optimal(model)
-    objective_bound = model.solver.objective.value * fraction
+    if bound is None:
+        model.solver.optimize()
+        assert_optimal(model)
+        bound = model.solver.objective.value * fraction
     if model.objective.direction == 'max':
-        ub, lb = None, objective_bound
+        ub, lb = None, bound
     else:
-        ub, lb = objective_bound, None
+        ub, lb = bound, None
     constraint = model.problem.Constraint(
         model.objective.expression,
         name=fix_objective_name, ub=ub, lb=lb)
-    add_cons_vars_to_problem(model, constraint)
+    add_cons_vars_to_problem(model, constraint, sloppy=True)
 
 
 def check_solver_status(status):
