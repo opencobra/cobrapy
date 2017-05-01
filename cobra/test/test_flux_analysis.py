@@ -477,7 +477,8 @@ class TestCobraFluxAnalysis:
         """Ensure each expected entry is contained in the output."""
         output_strip = [pattern.sub("", line) for line in output.splitlines()]
         for elem in expected_entries:
-            assert any(pattern.sub("", elem) in line for line in output_strip),\
+            assert any(
+                pattern.sub("", elem) in line for line in output_strip), \
                 "Not found: {} in:\n{}".format(pattern.sub("", elem),
                                                "\n".join(output_strip))
 

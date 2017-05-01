@@ -49,7 +49,7 @@ def from_json(document):
     ----------
     document : str
         The JSON document representation of a cobra model.
-        
+
     Returns
     -------
     cobra.Model
@@ -114,7 +114,7 @@ def load_json_model(filename):
     filename : str or file-like
         File path or descriptor that contains the JSON document describing the
         cobra model.
-        
+
     Returns
     -------
     cobra.Model

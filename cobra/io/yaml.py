@@ -46,12 +46,12 @@ def from_yaml(document):
     ----------
     document : str
         The YAML document representation of a cobra model.
-        
+
     Returns
     -------
     cobra.Model
         The cobra model as represented in the YAML document.
-        
+
     See Also
     --------
     load_yaml_model : Load directly from a file.
@@ -96,7 +96,7 @@ def load_yaml_model(filename):
     filename : str or file-like
         File path or descriptor that contains the YAML document describing the
         cobra model.
-        
+
     Returns
     -------
     cobra.Model
@@ -108,6 +108,7 @@ def load_yaml_model(filename):
     """
     if isinstance(filename, string_types):
         with io.open(filename, "r") as file_handle:
-            return model_from_dict(yaml.load(file_handle, yaml.RoundTripLoader))
+            return model_from_dict(yaml.load(file_handle,
+                                             yaml.RoundTripLoader))
     else:
         return model_from_dict(yaml.load(filename, yaml.RoundTripLoader))
