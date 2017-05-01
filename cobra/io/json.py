@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import
 
+import io
+
 try:
     import simplejson as json
 except ImportError:
@@ -13,71 +15,120 @@ from cobra.io.dict import model_to_dict, model_from_dict
 JSON_SPEC = "1"
 
 
-def to_json(model):
-    """Save the cobra model as a json string"""
-    obj = model_to_dict(model)
-    obj["version"] = JSON_SPEC
-    return json.dumps(obj, allow_nan=False)
+def to_json(model, **kwargs):
+    """
+    Return the model as a JSON document.
 
-
-def from_json(jsons):
-    """Load cobra model from a json string"""
-    return model_from_dict(json.loads(jsons))
-
-
-def load_json_model(file_name):
-    """Load a cobra model stored as a json file
+    ``kwargs`` are passed on to ``json.dumps``.
 
     Parameters
     ----------
-    file_name : str or file-like object
+    model : cobra.Model
+        The cobra model to represent.
 
     Returns
     -------
-    cobra.Model
-       The loaded model
+    str
+        String representation of the cobra model as a JSON document.
+
+    See Also
+    --------
+    save_json_model : Write directly to a file.
+    json.dumps : Base function.
     """
-    # open the file
-    should_close = False
-    if isinstance(file_name, string_types):
-        file_name = open(file_name, 'r')
-        should_close = True
-
-    model = model_from_dict(json.load(file_name))
-
-    if should_close:
-        file_name.close()
-
-    return model
+    obj = model_to_dict(model)
+    obj["version"] = JSON_SPEC
+    return json.dumps(obj, allow_nan=False, **kwargs)
 
 
-def save_json_model(model, file_name, pretty=False):
-    """Save the cobra model as a json file.
+def from_json(document):
+    """
+    Load a cobra model from a JSON document.
 
     Parameters
     ----------
-    model : cobra.core.Model.Model
-        The model to save
-    file_name : str or file-like object
-        The file to save to
+    document : str
+        The JSON document representation of a cobra model.
+        
+    Returns
+    -------
+    cobra.Model
+        The cobra model as represented in the JSON document.
+
+    See Also
+    --------
+    load_json_model : Load directly from a file.
     """
-    # open the file
+    return model_from_dict(json.loads(document))
+
+
+def save_json_model(model, filename, pretty=False, **kwargs):
+    """
+    Write the cobra model to a file in JSON format.
+
+    ``kwargs`` are passed on to ``json.dump``.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The cobra model to represent.
+    filename : str or file-like
+        File path or descriptor that the JSON representation should be
+        written to.
+    pretty : bool, optional
+        Whether to format the JSON more compactly (default) or in a more
+        verbose but easier to read fashion. Can be partially overwritten by the
+        ``kwargs``.
+
+    See Also
+    --------
+    to_json : Return a string representation.
+    json.dump : Base function.
+    """
     obj = model_to_dict(model)
     obj["version"] = JSON_SPEC
-    should_close = False
-    if isinstance(file_name, string_types):
-        file_name = open(file_name, 'w')
-        should_close = True
 
     if pretty:
-        dump_opts = {"indent": 4, "separators": (",", ": "), "sort_keys": True}
+        dump_opts = {
+            "indent": 4, "separators": (",", ": "), "sort_keys": True,
+            "allow_nan": False}
     else:
-        dump_opts = {}
+        dump_opts = {
+            "indent": 0, "separators": (",", ":"), "sort_keys": False,
+            "allow_nan": False}
+    dump_opts.update(**kwargs)
 
-    json.dump(obj, file_name, allow_nan=False, **dump_opts)
+    if isinstance(filename, string_types):
+        with io.open(filename, "w") as file_handle:
+            json.dump(obj, file_handle, **dump_opts)
+    else:
+        json.dump(obj, filename, **dump_opts)
 
-    if should_close:
-        file_name.close()
+
+def load_json_model(filename):
+    """
+    Load a cobra model from a file in JSON format.
+
+    Parameters
+    ----------
+    filename : str or file-like
+        File path or descriptor that contains the JSON document describing the
+        cobra model.
+        
+    Returns
+    -------
+    cobra.Model
+        The cobra model as represented in the JSON document.
+
+    See Also
+    --------
+    from_json : Load from a string.
+    """
+    if isinstance(filename, string_types):
+        with io.open(filename, "r") as file_handle:
+            return model_from_dict(json.load(file_handle))
+    else:
+        return model_from_dict(json.load(filename))
 
 
 json_schema = {
