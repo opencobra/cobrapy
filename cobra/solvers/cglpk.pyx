@@ -6,13 +6,13 @@ from libc.stdlib cimport malloc, free
 from cpython cimport bool
 from cpython.version cimport PY_MAJOR_VERSION
 
+import sys
 from tempfile import NamedTemporaryFile as _NamedTemporaryFile  # for pickling
 from os import unlink as _unlink
-import sys
 from contextlib import contextmanager as _contextmanager
 from warnings import warn as _warn
 
-from six import StringIO
+from six import StringIO, iteritems
 try:
     from sympy import Basic, Number
 except:
@@ -210,7 +210,7 @@ cdef class GLP:
             else:
                 raise ValueError("unsupported bound type: %s" % c)
             glp_set_row_bnds(glp, index, bound_type, b, b)
-        
+
         # set reaction/varaiable bounds
         for index, reaction in enumerate(cobra_model.reactions, 1):
             if reaction.variable_kind == "integer":
@@ -228,12 +228,12 @@ cdef class GLP:
             glp_set_obj_coef(glp, index,
                              _to_double(reaction.objective_coefficient))
 
-            for metabolite, coefficient in reaction._metabolites.iteritems():
+            for metabolite, coefficient in iteritems(reaction.metabolites):
                 linear_constraint_rows.append(
                     metabolite_id_to_index[metabolite.id])
                 linear_constraint_cols.append(index)
                 linear_constraint_values.append(coefficient)
-        
+
         # set constraint marix
         # first copy the python lists to c arrays
         n_values = downcast_pos_size(len(linear_constraint_rows))
@@ -317,7 +317,7 @@ cdef class GLP:
         self.parameters.tm_lim = min(500, time_limit)
         fast_status = glp_simplex(glp, &self.parameters)
         self.parameters.tm_lim = time_limit
-        
+
         if fast_status != 0:
             with quiet(self.parameters.msg_lev):
                 glp_adv_basis(glp, 0)
