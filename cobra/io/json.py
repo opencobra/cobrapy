@@ -37,7 +37,7 @@ def to_json(model, **kwargs):
     json.dumps : Base function.
     """
     obj = model_to_dict(model)
-    obj["version"] = JSON_SPEC
+    obj[u"version"] = JSON_SPEC
     return json.dumps(obj, allow_nan=False, **kwargs)
 
 
@@ -86,7 +86,7 @@ def save_json_model(model, filename, pretty=False, **kwargs):
     json.dump : Base function.
     """
     obj = model_to_dict(model)
-    obj["version"] = JSON_SPEC
+    obj[u"version"] = JSON_SPEC
 
     if pretty:
         dump_opts = {
@@ -99,7 +99,7 @@ def save_json_model(model, filename, pretty=False, **kwargs):
     dump_opts.update(**kwargs)
 
     if isinstance(filename, string_types):
-        with io.open(filename, "w") as file_handle:
+        with open(filename, "w") as file_handle:
             json.dump(obj, file_handle, **dump_opts)
     else:
         json.dump(obj, filename, **dump_opts)
@@ -125,7 +125,7 @@ def load_json_model(filename):
     from_json : Load from a string.
     """
     if isinstance(filename, string_types):
-        with io.open(filename, "r") as file_handle:
+        with open(filename, "r") as file_handle:
             return model_from_dict(json.load(file_handle))
     else:
         return model_from_dict(json.load(filename))
