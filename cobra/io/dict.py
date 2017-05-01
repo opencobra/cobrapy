@@ -174,8 +174,6 @@ def model_to_dict(model):
     obj["id"] = model.id
     _update_optional(model, obj, _OPTIONAL_MODEL_ATTRIBUTES,
                      _ORDERED_OPTIONAL_MODEL_KEYS)
-    # add in the YAML version
-    obj["version"] = 1
     return obj
 
 

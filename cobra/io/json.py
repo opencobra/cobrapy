@@ -10,10 +10,14 @@ from six import string_types
 
 from cobra.io.dict import model_to_dict, model_from_dict
 
+JSON_SPEC = "1"
+
 
 def to_json(model):
     """Save the cobra model as a json string"""
-    return json.dumps(model_to_dict(model), allow_nan=False)
+    obj = model_to_dict(model)
+    obj["version"] = JSON_SPEC
+    return json.dumps(obj, allow_nan=False)
 
 
 def from_json(jsons):
@@ -58,6 +62,8 @@ def save_json_model(model, file_name, pretty=False):
         The file to save to
     """
     # open the file
+    obj = model_to_dict(model)
+    obj["version"] = JSON_SPEC
     should_close = False
     if isinstance(file_name, string_types):
         file_name = open(file_name, 'w')
@@ -68,7 +74,7 @@ def save_json_model(model, file_name, pretty=False):
     else:
         dump_opts = {}
 
-    json.dump(model_to_dict(model), file_name, allow_nan=False, **dump_opts)
+    json.dump(obj, file_name, allow_nan=False, **dump_opts)
 
     if should_close:
         file_name.close()

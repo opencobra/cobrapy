@@ -10,6 +10,8 @@ from ruamel import yaml
 
 from cobra.io.dict import model_to_dict, model_from_dict
 
+YAML_SPEC = "1"
+
 
 def to_yaml(model, **kwargs):
     """
@@ -19,8 +21,9 @@ def to_yaml(model, **kwargs):
     ----------
     model : cobra.Model
     """
-    return yaml.dump(model_to_dict(model), Dumper=yaml.RoundTripDumper,
-                     **kwargs)
+    obj = model_to_dict(model)
+    obj["version"] = YAML_SPEC
+    return yaml.dump(obj, Dumper=yaml.RoundTripDumper, **kwargs)
 
 
 def from_yaml(document):
@@ -36,14 +39,13 @@ def from_yaml(document):
 
 
 def save_yaml_model(model, filename, **kwargs):
-    document = to_yaml(model)
+    obj = model_to_dict(model)
+    obj["version"] = YAML_SPEC
     if isinstance(filename, string_types):
         with io.open(filename, "w") as file_h:
-            yaml.dump(model_to_dict(model), file_h,
-                      Dumper=yaml.RoundTripDumper, **kwargs)
+            yaml.dump(obj, file_h, Dumper=yaml.RoundTripDumper, **kwargs)
     else:
-        yaml.dump(model_to_dict(model), filename, Dumper=yaml.RoundTripDumper,
-                  **kwargs)
+        yaml.dump(obj, filename, Dumper=yaml.RoundTripDumper, **kwargs)
 
 
 def load_yaml_model(filename):
