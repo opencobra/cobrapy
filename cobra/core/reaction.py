@@ -7,6 +7,7 @@ import re
 from collections import defaultdict, OrderedDict
 from copy import copy, deepcopy
 from functools import partial
+from operator import attrgetter
 from warnings import warn
 
 from six import iteritems, string_types
@@ -854,8 +855,9 @@ class Reaction(Object):
             id_type = 'name'
         reactant_bits = []
         product_bits = []
-        for the_metabolite, coefficient in iteritems(self._metabolites):
-            name = str(getattr(the_metabolite, id_type))
+        for met in sorted(self._metabolites, key=attrgetter("id")):
+            coefficient = self._metabolites[met]
+            name = str(getattr(met, id_type))
             if coefficient >= 0:
                 product_bits.append(format(coefficient) + name)
             else:
