@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 from collections import OrderedDict
+from operator import attrgetter
 
 from numpy import bool_, float_
 from six import iteritems, string_types
@@ -122,7 +123,7 @@ def reaction_to_dict(reaction):
             new_reaction[key] = _fix_type(getattr(reaction, key))
             continue
         mets = OrderedDict()
-        for met in reaction.metabolites:
+        for met in sorted(reaction.metabolites, key=attrgetter("id")):
             mets[str(met)] = reaction.metabolites[met]
         new_reaction["metabolites"] = mets
     _update_optional(reaction, new_reaction, _OPTIONAL_REACTION_ATTRIBUTES,
