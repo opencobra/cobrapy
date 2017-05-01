@@ -136,9 +136,9 @@ def reaction_from_dict(reaction, model):
         if k in {'objective_coefficient', 'reversibility', 'reaction'}:
             continue
         elif k == 'metabolites':
-            new_reaction.add_metabolites(
-                {model.metabolites.get_by_id(str(met)): coeff
-                 for met, coeff in iteritems(v)})
+            new_reaction.add_metabolites(OrderedDict(
+                (model.metabolites.get_by_id(str(met)), coeff)
+                for met, coeff in iteritems(v)))
         else:
             setattr(new_reaction, k, v)
     return new_reaction
