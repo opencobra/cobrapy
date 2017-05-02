@@ -149,16 +149,11 @@ def constraint_matrices(model, array_type='dense', include_vars=False,
           variables.
         - "bounds" is a compound matrix [lb ub] containing the lower and
           upper bounds for the inequality constraints in M.
-        - "variable_equalities" is a partial diagonal matrix S_v such that
-          S_v*vars = b. It includes a row for each fixed variable and one
-          column for each variable.
-        - "variable_b" the right side of the equality equation such that
-          S_v*vars = var_b.
-        - "variable_inequalities" is a matrix M_v such that
-          lb <= M_v*vars <= ub. It contains a row for each bounded variable
-          and as many columns as variables.
+        - "variable_fixed" is a boolean vector indicating whether the variable
+          at that index is fixed (lower bound == upper_bound) and
+          is thus bounded by an equality constraint.
         - "variable_bounds" is a compound matrix [lb ub] containing the
-          lower and upper bounds for the non-fixed variables.
+          lower and upper bounds for all variables.
     """
     if array_type not in ('DataFrame', 'dense') and not dok_matrix:
         raise ValueError('Sparse matrices require scipy')
@@ -168,28 +163,20 @@ def constraint_matrices(model, array_type='dense', include_vars=False,
         'DataFrame': pd.DataFrame,
     }[array_type]
 
-    Constraint = namedtuple("Constraint",
-                            ["equalities", "b", "inequalities", "bounds",
-                             "variable_equalities", "variable_b",
-                             "variable_inequalities", "variable_bounds"])
+    Problem = namedtuple("Problem",
+                         ["equalities", "b", "inequalities", "bounds",
+                          "variable_fixed", "variable_bounds"])
     equality_rows = []
     inequality_rows = []
     inequality_bounds = []
     b = []
-    var_equality_rows = []
-    var_inequality_rows = []
-    var_inequality_bounds = []
-    var_b = []
-    n_var = len(model.variables)
 
     for const in model.constraints:
         lb = -np.inf if const.lb is None else const.lb
         ub = np.inf if const.ub is None else const.ub
         equality = (ub - lb) < zero_tol
-        coefs = dict.fromkeys(model.variables, 0.0)
-        coefs.update(const.get_linear_coefficients(model.variables))
-        # To ensure ordering
-        coefs = [coefs[k] for k in model.variables]
+        coefs = const.get_linear_coefficients(model.variables)
+        coefs = [coefs[v] for v in model.variables]
         if equality:
             b.append(lb if abs(lb) > zero_tol else 0.0)
             equality_rows.append(coefs)
@@ -197,29 +184,15 @@ def constraint_matrices(model, array_type='dense', include_vars=False,
             inequality_rows.append(coefs)
             inequality_bounds.append([lb, ub])
 
-    for idx, va in enumerate(model.variables):
-        lb = -np.inf if va.lb is None else va.lb
-        ub = np.inf if va.ub is None else va.ub
-        equality = ub - lb < zero_tol
-        if equality:
-            coefs = np.zeros(n_var)
-            coefs[idx] = 1
-            var_b.append(va.lb if abs(lb) > zero_tol else 0.0)
-            var_equality_rows.append(coefs)
-        else:
-            coefs = np.zeros(n_var)
-            coefs[idx] = 1
-            var_inequality_rows.append(coefs)
-            var_inequality_bounds.append([lb, ub])
+    var_bounds = np.array([[v.lb, v.ub] for v in model.variables])
+    fixed = var_bounds[:, 1] - var_bounds[:, 0] < zero_tol
 
-    results = Constraint(
+    results = Problem(
         equalities=array_builder(equality_rows),
         b=np.array(b),
         inequalities=array_builder(inequality_rows),
         bounds=array_builder(inequality_bounds),
-        variable_equalities=array_builder(var_equality_rows),
-        variable_b=np.array(var_b),
-        variable_inequalities=array_builder(var_inequality_rows),
-        variable_bounds=array_builder(var_inequality_bounds))
+        variable_fixed=np.array(fixed),
+        variable_bounds=array_builder(var_bounds))
 
     return results

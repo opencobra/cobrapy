@@ -16,7 +16,7 @@ import cobra.util.solver as sutil
 from cobra.core import Metabolite, Model, Reaction
 from cobra.flux_analysis import *
 from cobra.flux_analysis.parsimonious import add_pfba
-from cobra.flux_analysis.sampling import ARCHSampler, OptGPSampler
+from cobra.flux_analysis.sampling import ACHRSampler, OptGPSampler
 from cobra.manipulation import convert_to_irreversible
 from cobra.solvers import SolverNotFound, get_solver_name, solver_dict
 from cobra.exceptions import Infeasible
@@ -586,8 +586,8 @@ class TestCobraFluxAnalysis:
 class TestCobraFluxSampling:
     """Test and benchmark flux sampling"""
 
-    def test_single_arch(self, model):
-        s = sample(model, 10, method="arch")
+    def test_single_achr(self, model):
+        s = sample(model, 10, method="achr")
         assert s.shape == (10, len(model.reactions))
 
     def test_single_optgp(self, model):
@@ -603,14 +603,14 @@ class TestCobraFluxSampling:
             sample(model, 1, method="schwupdiwupp")
 
     def test_validate_wrong_sample(self, model):
-        s = self.arch.sample(10)
+        s = self.achr.sample(10)
         s["hello"] = 1
         with pytest.raises(ValueError):
-            self.arch.validate(s)
+            self.achr.validate(s)
 
     def test_fixed_seed(self, model):
         s = sample(model, 1, seed=42)
-        assert numpy.allclose(s.TPI[0], 5.6918488269)
+        assert numpy.allclose(s.TPI[0], 8.94197599534)
 
     def test_equality_constraint(self, model):
         model.reactions.ACALD.bounds = (-1.5, -1.5)
@@ -627,11 +627,11 @@ class TestCobraFluxSampling:
     def setup_class(self):
         from . import create_test_model
         model = create_test_model("textbook")
-        arch = ARCHSampler(model, thinning=1)
-        assert ((arch.n_warmup > 0) and
-                (arch.n_warmup <= 2 * len(model.variables)))
-        assert all(arch.validate(arch.warmup) == "v")
-        self.arch = arch
+        achr = ACHRSampler(model, thinning=1)
+        assert ((achr.n_warmup > 0) and
+                (achr.n_warmup <= 2 * len(model.variables)))
+        assert all(achr.validate(achr.warmup) == "v")
+        self.achr = achr
 
         optgp = OptGPSampler(model, processes=1, thinning=1)
         assert ((optgp.n_warmup > 0) and
@@ -639,28 +639,28 @@ class TestCobraFluxSampling:
         assert all(optgp.validate(optgp.warmup) == "v")
         self.optgp = optgp
 
-    def test_arch_init_benchmark(self, model, benchmark):
-        benchmark(lambda: ARCHSampler(model))
+    def test_achr_init_benchmark(self, model, benchmark):
+        benchmark(lambda: ACHRSampler(model))
 
     def test_optgp_init_benchmark(self, model, benchmark):
         benchmark(lambda: OptGPSampler(model, processes=2))
 
     def test_sampling(self):
-        s = self.arch.sample(10)
-        assert all(self.arch.validate(s) == "v")
+        s = self.achr.sample(10)
+        assert all(self.achr.validate(s) == "v")
 
         s = self.optgp.sample(10)
         assert all(self.optgp.validate(s) == "v")
 
-    def test_arch_sample_benchmark(self, benchmark):
-        benchmark(self.arch.sample, 1)
+    def test_achr_sample_benchmark(self, benchmark):
+        benchmark(self.achr.sample, 1)
 
     def test_optgp_sample_benchmark(self, benchmark):
         benchmark(self.optgp.sample, 1)
 
     def test_batch_sampling(self):
-        for b in self.arch.batch(5, 4):
-            assert all(self.arch.validate(b) == "v")
+        for b in self.achr.batch(5, 4):
+            assert all(self.achr.validate(b) == "v")
 
         for b in self.optgp.batch(5, 4):
             assert all(self.optgp.validate(b) == "v")
