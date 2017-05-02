@@ -15,9 +15,10 @@ from time import time
 
 import numpy as np
 import pandas
+from optlang.interface import OPTIMAL
 from sympy.core.singleton import S
 from cobra.util import (create_stoichiometric_matrix, constraint_matrices,
-                        nullspace, assert_optimal)
+                        nullspace)
 
 bounds_tol = np.finfo(np.float32).eps
 """The tolerance used for checking bounds feasibility."""
@@ -210,9 +211,7 @@ class HRSampler(object):
                 continue
             self.model.objective.set_linear_coefficients({variables[i]: 1})
             self.model.solver.optimize()
-            try:
-                assert_optimal(self.model)
-            except Exception:
+            if not self.model.solver.status == OPTIMAL:
                 continue
             primals = self.model.solver.primal_values
             sol = [primals[v.name] for v in self.model.variables]
