@@ -10,9 +10,9 @@ from collections import Mapping, OrderedDict
 from six.moves import reduce
 
 
-class Frozendict(dict):
+class FrozenDict(dict):
     def __init__(self, iterable, **kwargs):
-        super(Frozendict, self).__init__(iterable, **kwargs)
+        super(FrozenDict, self).__init__(iterable, **kwargs)
 
     def popitem(self):
         raise AttributeError("'Frozendict' object has no attribute 'popitem")

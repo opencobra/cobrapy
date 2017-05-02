@@ -9,7 +9,7 @@ import pytest
 from six.moves import range
 
 from cobra import DictList, Object
-from cobra.util import Frozendict
+from cobra.util import FrozenDict
 
 
 @pytest.fixture(scope="session")
@@ -19,7 +19,7 @@ def seed():
 
 @pytest.fixture(scope="session")
 def frozen_dict():
-    return Frozendict({"A": 1, "B": 2, "C": 3, "D": 4, "E": [2, 3, 4, 5]})
+    return FrozenDict({"A": 1, "B": 2, "C": 3, "D": 4, "E": [2, 3, 4, 5]})
 
 
 @pytest.fixture(scope="function")
@@ -306,7 +306,7 @@ class TestDictList:
         assert test_list.index("test2") == 1
 
 
-class FrozendictTestCase:
+class FrozenDictTestCase:
     def test_frozen_attributes(self, frozen_dict):
         with pytest.raises(AttributeError):
             frozen_dict.popitem()

@@ -20,7 +20,7 @@ from cobra.core.object import Object
 from cobra.util.context import resettable, get_context
 from cobra.util.solver import (
     linear_reaction_coefficients, set_objective, check_solver_status)
-from cobra.util.util import FrozenOrderedDict
+from cobra.util.util import FrozenDict
 
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
@@ -66,7 +66,7 @@ class Reaction(Object):
 
         # A dictionary of metabolites and their stoichiometric coefficients in
         # this reaction.
-        self._metabolites = OrderedDict()
+        self._metabolites = dict()
 
         # The set of compartments that partaking metabolites are in.
         self._compartments = None
@@ -375,7 +375,7 @@ class Reaction(Object):
     # read-only
     @property
     def metabolites(self):
-        return FrozenOrderedDict(self._metabolites)
+        return FrozenDict(self._metabolites)
 
     @property
     def genes(self):
@@ -538,8 +538,8 @@ class Reaction(Object):
         model : deprecated argument, must be None
         """
 
-        new_metabolites = OrderedDict(
-            (copy(met), value) for met, value in iteritems(self._metabolites))
+        new_metabolites = {
+            copy(met): value for met, value in iteritems(self._metabolites)}
 
         new_genes = {copy(i) for i in self._genes}
 
@@ -658,9 +658,9 @@ class Reaction(Object):
 
         E.g. A -> B becomes 2A -> 2B
         """
-        self._metabolites = OrderedDict(
-            (met, value * coefficient)
-            for met, value in iteritems(self._metabolites))
+        self._metabolites = {
+            met: value * coefficient
+            for met, value in iteritems(self._metabolites)}
         return self
 
     def __mul__(self, coefficient):
@@ -679,19 +679,18 @@ class Reaction(Object):
         return [k for k, v in iteritems(self._metabolites) if v >= 0]
 
     def get_coefficient(self, metabolite_id):
-        """Return the stoichiometric coefficient for a metabolite in
-        the reaction.
+        """
+        Return the stoichiometric coefficient of a metabolite.
 
         Parameters
         ----------
-        metabolite_id : str or cobra.core.Metabolite.Metabolite
+        metabolite_id : str or cobra.Metabolite
 
         """
-        _id_to_metabolites = dict([(x.id, x)
-                                   for x in self._metabolites])
+        if isinstance(metabolite_id, Metabolite):
+            return self._metabolites[metabolite_id]
 
-        if hasattr(metabolite_id, 'id'):
-            metabolite_id = metabolite_id.id
+        _id_to_metabolites = {m.id: m for m in self._metabolites}
         return self._metabolites[_id_to_metabolites[metabolite_id]]
 
     def get_coefficients(self, metabolite_ids):
@@ -701,7 +700,7 @@ class Reaction(Object):
         Parameters
         ----------
         metabolite_ids : iterable
-            Containing str or :class:`~cobra.core.Metabolite.Metabolite`
+            Containing ``str`` or ``cobra.Metabolite``s.
 
         """
         return map(self.get_coefficient, metabolite_ids)
