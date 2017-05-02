@@ -316,6 +316,10 @@ class Model(Object):
         except Exception:  # pragma: no cover
             new._solver = copy(self.solver)  # pragma: no cover
 
+        # it doesn't make sense to retain the context of a copied model so
+        # assign a new empty context
+        new._contexts = list()
+
         return new
 
     def add_metabolites(self, metabolite_list):
