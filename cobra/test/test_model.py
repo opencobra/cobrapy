@@ -634,6 +634,12 @@ class TestCobraModel:
         model_copy.remove_reactions(model_copy.reactions[0:5])
         assert old_reaction_count == len(model.reactions)
         assert len(model.reactions) != len(model_copy.reactions)
+        # copying a model should not copy its context
+        with model:
+            model.remove_reactions([model.reactions.ACALD])
+            cp_model = model.copy()
+            assert len(cp_model._contexts) == 0
+        assert 'ACALD' not in cp_model.reactions
 
     def test_deepcopy_benchmark(self, model, benchmark):
         benchmark(deepcopy, model)
