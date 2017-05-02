@@ -4,7 +4,7 @@ from __future__ import absolute_import, print_function
 
 import hashlib
 import re
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 from copy import copy, deepcopy
 from functools import partial
 from operator import attrgetter
@@ -830,8 +830,8 @@ class Reaction(Object):
         .. note:: A final coefficient < 0 implies a reactant.
 
         """
-        self.add_metabolites(OrderedDict(
-            (k, -v) for k, v in iteritems(metabolites)),
+        self.add_metabolites({
+            k: -v for k, v in iteritems(metabolites)},
             combine=combine, reversibly=reversibly)
 
     @property
