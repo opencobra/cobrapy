@@ -730,9 +730,9 @@ def sample(model, n, method="optgp", thinning=100, processes=1, seed=None):
        Operations Research 199846:1 , 84-95
     """
     if method == "optgp":
-        sampler = OptGPSampler(model, processes, seed=seed)
+        sampler = OptGPSampler(model, processes, thinning=thinning, seed=seed)
     elif method == "achr":
-        sampler = ACHRSampler(model, seed=seed)
+        sampler = ACHRSampler(model, thinning=thinning, seed=seed)
     else:
         raise ValueError("method must be 'optgp' or 'achr'!")
 
