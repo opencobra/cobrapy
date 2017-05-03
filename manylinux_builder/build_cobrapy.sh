@@ -1,7 +1,6 @@
 #!/bin/bash
 
 for PYBIN in /opt/python/*/bin; do
-    ${PYBIN}/pip install pyelftools==0.23
     ${PYBIN}/pip wheel cobra --pre
 done
 

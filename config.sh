@@ -27,7 +27,7 @@ function build_wheel {
     build_bdist_wheel $@
     # since swiglpk doesn't have wheels, we currently must keep glpk
     # installed for testing
-	# (cd glpk-4.60 && make uninstall)
+	(cd glpk-4.61 && make uninstall)
 }
 
 function run_tests_in_repo {
