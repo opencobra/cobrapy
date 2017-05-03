@@ -7,6 +7,7 @@ import re
 from collections import defaultdict
 from copy import copy, deepcopy
 from functools import partial
+from operator import attrgetter
 from warnings import warn
 
 from six import iteritems, string_types
@@ -19,7 +20,7 @@ from cobra.core.object import Object
 from cobra.util.context import resettable, get_context
 from cobra.util.solver import (
     linear_reaction_coefficients, set_objective, check_solver_status)
-from cobra.util.util import Frozendict, _is_positive
+from cobra.util.util import FrozenDict
 
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
@@ -65,7 +66,7 @@ class Reaction(Object):
 
         # A dictionary of metabolites and their stoichiometric coefficients in
         # this reaction.
-        self._metabolites = {}
+        self._metabolites = dict()
 
         # The set of compartments that partaking metabolites are in.
         self._compartments = None
@@ -374,7 +375,7 @@ class Reaction(Object):
     # read-only
     @property
     def metabolites(self):
-        return Frozendict(self._metabolites)
+        return FrozenDict(self._metabolites)
 
     @property
     def genes(self):
@@ -537,8 +538,9 @@ class Reaction(Object):
         model : deprecated argument, must be None
         """
 
-        new_metabolites = {copy(met): value for met, value
-                           in iteritems(self._metabolites)}
+        new_metabolites = {
+            copy(met): value for met, value in iteritems(self._metabolites)}
+
         new_genes = {copy(i) for i in self._genes}
 
         self._model.remove_reactions([self], remove_orphans=remove_orphans)
@@ -656,8 +658,9 @@ class Reaction(Object):
 
         E.g. A -> B becomes 2A -> 2B
         """
-        self._metabolites = {k: coefficient * v for k, v in
-                             iteritems(self._metabolites)}
+        self._metabolites = {
+            met: value * coefficient
+            for met, value in iteritems(self._metabolites)}
         return self
 
     def __mul__(self, coefficient):
@@ -668,27 +671,26 @@ class Reaction(Object):
     @property
     def reactants(self):
         """Return a list of reactants for the reaction."""
-        return [k for k, v in self._metabolites.items() if not _is_positive(v)]
+        return [k for k, v in iteritems(self._metabolites) if v < 0]
 
     @property
     def products(self):
         """Return a list of products for the reaction"""
-        return [k for k, v in self._metabolites.items() if _is_positive(v)]
+        return [k for k, v in iteritems(self._metabolites) if v >= 0]
 
     def get_coefficient(self, metabolite_id):
-        """Return the stoichiometric coefficient for a metabolite in
-        the reaction.
+        """
+        Return the stoichiometric coefficient of a metabolite.
 
         Parameters
         ----------
-        metabolite_id : str or cobra.core.Metabolite.Metabolite
+        metabolite_id : str or cobra.Metabolite
 
         """
-        _id_to_metabolites = dict([(x.id, x)
-                                   for x in self._metabolites])
+        if isinstance(metabolite_id, Metabolite):
+            return self._metabolites[metabolite_id]
 
-        if hasattr(metabolite_id, 'id'):
-            metabolite_id = metabolite_id.id
+        _id_to_metabolites = {m.id: m for m in self._metabolites}
         return self._metabolites[_id_to_metabolites[metabolite_id]]
 
     def get_coefficients(self, metabolite_ids):
@@ -698,7 +700,7 @@ class Reaction(Object):
         Parameters
         ----------
         metabolite_ids : iterable
-            Containing str or :class:`~cobra.core.Metabolite.Metabolite`
+            Containing ``str`` or ``cobra.Metabolite``s.
 
         """
         return map(self.get_coefficient, metabolite_ids)
@@ -828,8 +830,9 @@ class Reaction(Object):
         .. note:: A final coefficient < 0 implies a reactant.
 
         """
-        self.add_metabolites({k: -v for k, v in iteritems(metabolites)},
-                             combine=combine, reversibly=reversibly)
+        self.add_metabolites({
+            k: -v for k, v in iteritems(metabolites)},
+            combine=combine, reversibly=reversibly)
 
     @property
     def reaction(self):
@@ -851,10 +854,10 @@ class Reaction(Object):
             id_type = 'name'
         reactant_bits = []
         product_bits = []
-        for the_metabolite, coefficient in sorted(
-                iteritems(self._metabolites), key=lambda x: x[0].id):
-            name = str(getattr(the_metabolite, id_type))
-            if _is_positive(coefficient):
+        for met in sorted(self._metabolites, key=attrgetter("id")):
+            coefficient = self._metabolites[met]
+            name = str(getattr(met, id_type))
+            if coefficient >= 0:
                 product_bits.append(format(coefficient) + name)
             else:
                 reactant_bits.append(format(abs(coefficient)) + name)
@@ -878,7 +881,7 @@ class Reaction(Object):
         This should be empty for balanced reactions.
         """
         reaction_element_dict = defaultdict(int)
-        for metabolite, coefficient in self._metabolites.items():
+        for metabolite, coefficient in iteritems(self._metabolites):
             if metabolite.charge is not None:
                 reaction_element_dict["charge"] += \
                     coefficient * metabolite.charge

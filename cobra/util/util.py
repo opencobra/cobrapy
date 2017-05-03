@@ -1,53 +1,50 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import
 
 import sympy
 import logging
+import operator
+from collections import Mapping
 
-import cobra
-
-logger = logging.getLogger(__name__)
-
-
-def _is_positive(n):
-    """Robustly test if n is positive, yielding True on Exceptions"""
-    try:
-        if n >= 0:
-            return True
-        else:
-            return False
-    except Exception:
-        return True
+from six import iteritems
 
 
-class Frozendict(dict):
-    def __init__(self, iterable, **kwargs):
-        super(Frozendict, self).__init__(iterable, **kwargs)
+class FrozenDict(Mapping):
+    def __init__(self, *args, **kwargs):
+        super(FrozenDict, self).__init__()
+        self.__dict = dict(*args, **kwargs)
+        self.__hash = None
+        self.__items = None
 
-    def popitem(self):
-        raise AttributeError("'Frozendict' object has no attribute 'popitem")
+    def __getitem__(self, item):
+        return self.__dict[item]
 
-    def pop(self, k, d=None):
-        raise AttributeError("'Frozendict' object has no attribute 'pop")
+    def __iter__(self):
+        return iter(self.__dict)
 
-    def __setitem__(self, key, value):
-        raise AttributeError(
-            "'Frozendict' object has no attribute '__setitem__")
-
-    def setdefault(self, k, d=None):
-        raise AttributeError(
-            "'Frozendict' object has no attribute 'setdefault")
-
-    def __delitem__(self, key):
-        raise AttributeError(
-            "'Frozendict' object has no attribute '__delitem__")
+    def __len__(self):
+        return len(self.__dict)
 
     def __hash__(self):
-        return hash(tuple(sorted(self.items())))
+        if self.__items is None:
+            self.__items = sorted(iteritems(self.__dict))
+        if self.__hash is None:
+            self.__hash = hash(self.__items)
+        return self.__hash
 
-    def update(self, E=None, **F):
-        raise AttributeError("'Frozendict' object has no attribute 'update")
+    def __repr__(self):
+        if self.__items is None:
+            self.__items = sorted(iteritems(self.__dict))
+        return '{}({!r})'.format(self.__class__.__name__, self.__items)
+
+    def copy(self, *args, **kwargs):
+        new_dict = self.__dict.copy()
+
+        if args or kwargs:
+            new_dict.update(dict(*args, **kwargs))
+
+        return self.__class__(new_dict)
 
 
 class AutoVivification(dict):

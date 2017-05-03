@@ -93,6 +93,8 @@ trials = [IOTrial('fbc2', 'mini.pickle', 'mini_fbc2.xml',
                       io.load_matlab_model, io.save_matlab_model, None)),
           IOTrial('json', 'mini.pickle', 'mini.json',
                   io.load_json_model, io.save_json_model, validate_json),
+          IOTrial('yaml', 'mini.pickle', 'mini.yml',
+                  io.load_yaml_model, io.save_yaml_model, None),
           IOTrial('pickle', 'mini.pickle', 'mini.pickle',
                   read_pickle, write_pickle, None),
           pytest.mark.skipif("not cPickle")(
