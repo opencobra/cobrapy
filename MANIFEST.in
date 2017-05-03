@@ -1,2 +1,2 @@
-include README.rst INSTALL.rst LICENSE ez_setup.py
+include README.rst INSTALL.rst LICENSE
 include cobra/solvers/cglpk.pyx cobra/solvers/glpk.pxd
