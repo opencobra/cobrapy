@@ -40,7 +40,8 @@ class Mock(object):
 MOCK_MODULES = ['numpy', 'scipy', 'scipy.optimize', 'scipy.sparse', 'scipy.io',
                 'scipy.stats', 'pp', 'libsbml', 'pandas', 'tabulate',
                 'optlang', 'optlang.interface', 'sympy', 'sympy.core',
-                'sympy.core.singleton', 'future', 'future.utils']
+                'sympy.core.singleton', 'future', 'future.utils', 'ruamel',
+                'ruamel.yaml']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
 
@@ -57,7 +58,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'cobra'
-copyright = u'2016, Daniel Robert Hyduke and Ali Ebrahim'
+copyright = u'2016, The cobrapy core team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -93,7 +94,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
     ('index', 'cobra.tex', u'cobra Documentation',
-     u'Daniel Robert Hyduke and Ali Ebrahim', 'manual'),
+     u'The cobrapy core team', 'manual'),
 ]
 
 # -- Options for manual page output --------------------------------------------
@@ -102,7 +103,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'cobra', u'cobra Documentation',
-     [u'Daniel Robert Hyduke and Ali Ebrahim'], 1)
+     [u'The cobrapy core team'], 1)
 ]
 
 # -- Options for Texinfo output ------------------------------------------------
@@ -112,7 +113,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'cobra', u'cobra Documentation',
-     u'Daniel Robert Hyduke and Ali Ebrahim', 'cobra',
+     u'The cobrapy core team', 'cobra',
      'A package for constraints-based modeling of biological networks',
      'Miscellaneous'),
 ]

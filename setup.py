@@ -147,7 +147,7 @@ setup(
     version="0.6.0b0",
     packages=find_packages(),
     setup_requires=setup_requirements,
-    install_requires=["future", "swiglpk", "optlang>=1.1.4", "ruamel.yaml",
+    install_requires=["future", "swiglpk", "optlang>=1.1.5", "ruamel.yaml",
                       "pandas>=0.17.0", "numpy>=1.6", "tabulate"],
     tests_require=["jsonschema > 2.5", "pytest", "pytest-benchmark"],
     extras_require=extras,
@@ -157,9 +157,8 @@ setup(
          '': ['test/data/*',
               'mlab/matlab_scripts/*m']},
 
-    author="Daniel Robert Hyduke <danielhyduke@gmail.com>, "
-    "Ali Ebrahim <aebrahim@ucsd.edu>",
-    author_email="aebrahim@ucsd.edu",
+    author="The cobrapy core team",
+    author_email="cobra-pie@googlegroups.com",
     description="COBRApy is a package for constraints-based modeling of "
     "biological networks",
     license="LGPL/GPL v2+",
