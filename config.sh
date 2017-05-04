@@ -25,8 +25,7 @@ function pre_build {
 function build_wheel {
     # Set default building method to pip
     build_bdist_wheel $@
-    # since swiglpk doesn't have wheels, we currently must keep glpk
-    # installed for testing
+    # remove glpk installation to ensure using the packaged binaries
 	(cd glpk-4.61 && make uninstall)
 }
 
