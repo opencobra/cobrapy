@@ -142,6 +142,18 @@ class TestReactions:
                    model.metabolites.get_by_id("g6p_c")] == -1
         assert model.metabolites.h_c not in reaction._metabolites
 
+        # Test combine=False
+        reaction = model.reactions.get_by_id("ATPM")
+        old_stoich = reaction._metabolites[
+            model.metabolites.get_by_id("h2o_c")]
+        with model:
+            reaction.add_metabolites({'h2o_c': 2.5}, combine=False)
+            assert reaction._metabolites[
+                model.metabolites.get_by_id("h2o_c")] == 2.5
+
+        assert reaction._metabolites[
+            model.metabolites.get_by_id("h2o_c")] == old_stoich
+
         # test adding to a new Reaction
         reaction = Reaction("test")
         assert len(reaction._metabolites) == 0

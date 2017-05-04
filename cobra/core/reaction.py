@@ -10,7 +10,7 @@ from functools import partial
 from operator import attrgetter
 from warnings import warn
 
-from six import iteritems, string_types
+from six import iteritems, iterkeys, string_types
 from future.utils import raise_from, raise_with_traceback
 
 from cobra.exceptions import OptimizationError
@@ -799,10 +799,20 @@ class Reaction(Object):
 
         context = get_context(self)
         if context and reversibly:
-            # Just subtract the metabolites that were added
-            context(partial(
-                self.subtract_metabolites, metabolites_to_add, combine=True,
-                reversibly=False))
+            if combine:
+                # Just subtract the metabolites that were added
+                context(partial(
+                    self.subtract_metabolites, metabolites_to_add,
+                    combine=True, reversibly=False))
+            else:
+                # Reset them with add_metabolites
+                mets_to_reset = {
+                    key: old_coefficients[model.metabolites.get_by_any(key)[0]]
+                    for key in iterkeys(metabolites_to_add)}
+
+                context(partial(
+                    self.add_metabolites, mets_to_reset,
+                    combine=False, reversibly=False))
 
     def subtract_metabolites(self, metabolites, combine=True, reversibly=True):
         """This function will 'subtract' metabolites from a reaction, which
