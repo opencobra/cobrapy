@@ -144,7 +144,7 @@ except:
 
 setup(
     name="cobra",
-    version="0.6.0b0",
+    version="0.6.0",
     packages=find_packages(),
     setup_requires=setup_requirements,
     install_requires=["future", "swiglpk", "optlang>=1.1.5", "ruamel.yaml",
