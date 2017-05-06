@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import
 
 import re
 from copy import copy, deepcopy
@@ -9,17 +9,6 @@ import pytest
 from six.moves import range
 
 from cobra import DictList, Object
-from cobra.util import FrozenDict
-
-
-@pytest.fixture(scope="session")
-def seed():
-    return 1234
-
-
-@pytest.fixture(scope="session")
-def frozen_dict():
-    return FrozenDict({"A": 1, "B": 2, "C": 3, "D": 4, "E": [2, 3, 4, 5]})
 
 
 @pytest.fixture(scope="function")
@@ -304,21 +293,3 @@ class TestDictList:
         # should only add 1 element
         assert len(test_list) == 2
         assert test_list.index("test2") == 1
-
-
-class FrozenDictTestCase:
-    def test_frozen_attributes(self, frozen_dict):
-        with pytest.raises(AttributeError):
-            frozen_dict.popitem()
-        with pytest.raises(AttributeError):
-            frozen_dict.pop("A")
-        with pytest.raises(AttributeError):
-            frozen_dict.__setitem__("C", 1)
-        with pytest.raises(AttributeError):
-            frozen_dict.setdefault("K")
-        with pytest.raises(AttributeError):
-            frozen_dict.__delitem__("A")
-        with pytest.raises(AttributeError):
-            frozen_dict.update()
-
-        assert hasattr(frozen_dict, "__hash__")

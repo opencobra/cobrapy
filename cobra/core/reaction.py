@@ -20,7 +20,6 @@ from cobra.core.object import Object
 from cobra.util.context import resettable, get_context
 from cobra.util.solver import (
     linear_reaction_coefficients, set_objective, check_solver_status)
-from cobra.util.util import FrozenDict
 
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
@@ -375,7 +374,7 @@ class Reaction(Object):
     # read-only
     @property
     def metabolites(self):
-        return FrozenDict(self._metabolites)
+        return self._metabolites.copy()
 
     @property
     def genes(self):
