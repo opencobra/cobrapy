@@ -12,7 +12,7 @@ addons:
       - libfreetype6-dev
       - libpng12-dev
 git:
-  depth: 1
+  depth: 3
 
 branches:
  only:
