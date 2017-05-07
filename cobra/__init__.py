@@ -12,7 +12,7 @@ from cobra import design, flux_analysis, io
 from cobra.core import (
     DictList, Gene, Metabolite, Model, Object, Reaction, Species)
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 # set the warning format to be prettier and fit on one line
 _cobra_path = _dirname(_abspath(__file__))
