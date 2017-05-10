@@ -509,7 +509,8 @@ class TestReaction:
         assert ("PGI" in model.reactions)
         assert (pgi.id in model.variables)
         assert (pgi.reverse_id in model.variables)
-        pgi.forward_variable
+        assert pgi._forward_variable.problem is model.solver
+        
 
     def test_delete(self, model):
         pgi = model.reactions.PGI
