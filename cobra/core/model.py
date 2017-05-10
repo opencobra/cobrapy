@@ -608,6 +608,7 @@ class Model(Object):
                 reaction._model = None
 
                 if context:
+                    context(reaction._reset_var_cache)
                     context(partial(setattr, reaction, '_model', self))
                     context(partial(self.reactions.add, reaction))
 
