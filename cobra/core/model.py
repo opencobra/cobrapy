@@ -596,10 +596,13 @@ class Model(Object):
         context = get_context(self)
 
         for reaction in reactions:
+
+            # Make sure the reaction is in the model
             try:
                 reaction = self.reactions[self.reactions.index(reaction)]
             except ValueError:
                 warn('%s not in %s' % (reaction, self))
+
             else:
                 forward = reaction.forward_variable
                 reverse = reaction.reverse_variable
@@ -612,27 +615,24 @@ class Model(Object):
                     context(partial(setattr, reaction, '_model', self))
                     context(partial(self.reactions.add, reaction))
 
-                for x in reaction._metabolites:
-                    if reaction in x._reaction:
-                        x._reaction.remove(reaction)
+                for met in reaction._metabolites:
+                    if reaction in met._reaction:
+                        met._reaction.remove(reaction)
                         if context:
-                            context(partial(x._reaction.add, reaction))
-                        if remove_orphans and len(x._reaction) == 0:
-                            self.remove_metabolites(x)
+                            context(partial(met._reaction.add, reaction))
+                        if remove_orphans and len(met._reaction) == 0:
+                            self.remove_metabolites(met)
 
-                for x in reaction._genes:
-                    if reaction in x._reaction:
-                        x._reaction.remove(reaction)
+                for gene in reaction._genes:
+                    if reaction in gene._reaction:
+                        gene._reaction.remove(reaction)
                         if context:
-                            context(partial(x._reaction.add, reaction))
+                            context(partial(gene._reaction.add, reaction))
 
-                        if remove_orphans and len(x._reaction) == 0:
-                            self.genes.remove(x)
+                        if remove_orphans and len(gene._reaction) == 0:
+                            self.genes.remove(gene)
                             if context:
-                                context(partial(self.genes.add, x))
-
-                reaction._metabolites = {}
-                reaction._genes = set()
+                                context(partial(self.genes.add, gene))
 
     def add_cons_vars(self, what, **kwargs):
         """Add constraints and variables to the model's mathematical problem.
