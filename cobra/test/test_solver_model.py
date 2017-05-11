@@ -498,12 +498,18 @@ class TestReaction:
     #            ).as_coefficients_dict()
 
     def test_remove_from_model(self, model):
-        pgi = model.reactions.PGI
-        pgi.remove_from_model()
-        assert pgi.model is None
-        assert not ("PGI" in model.reactions)
-        assert not (pgi.id in model.variables)
-        assert not (pgi.reverse_id in model.variables)
+        with model:
+            pgi = model.reactions.PGI
+            pgi.remove_from_model()
+            assert pgi.model is None
+            assert not ("PGI" in model.reactions)
+            assert not (pgi.id in model.variables)
+            assert not (pgi.reverse_id in model.variables)
+
+        assert ("PGI" in model.reactions)
+        assert (pgi.id in model.variables)
+        assert (pgi.reverse_id in model.variables)
+        assert pgi.forward_variable.problem is model.solver
 
     def test_delete(self, model):
         pgi = model.reactions.PGI
