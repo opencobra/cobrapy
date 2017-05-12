@@ -524,36 +524,11 @@ class Reaction(Object):
         for x in self._genes:
             x._reaction.add(self)
 
-    def remove_from_model(self, model=None, remove_orphans=False):
-        """Removes the reaction from the model while keeping it intact
-
-        The change is reverted upon exit when using the model as a context.
-
-        Parameters
-        ----------
-        remove_orphans : bool
-            Remove orphaned genes and metabolites from the model as well
-
-        model : deprecated argument, must be None
-        """
-
-        new_metabolites = {
-            copy(met): value for met, value in iteritems(self._metabolites)}
-
-        new_genes = {copy(i) for i in self._genes}
-
-        self._model.remove_reactions([self], remove_orphans=remove_orphans)
-
-        self.add_metabolites(new_metabolites)
-        for k in new_genes:
-            self._associate_gene(k)
-
-    def delete(self, remove_orphans=False):
-        """Completely delete a reaction
+    def remove_from_model(self, remove_orphans=False):
+        """Removes the reaction from a model.
 
         This removes all associations between a reaction the associated
-        model, metabolites and genes (unlike remove_from_model which only
-        dissociates the reaction from the model).
+        model, metabolites and genes.
 
         The change is reverted upon exit when using the model as a context.
 
@@ -564,6 +539,25 @@ class Reaction(Object):
 
         """
         self._model.remove_reactions([self], remove_orphans=remove_orphans)
+
+    def delete(self, remove_orphans=False):
+        """Removes the reaction from a model.
+
+        This removes all associations between a reaction the associated
+        model, metabolites and genes.
+
+        The change is reverted upon exit when using the model as a context.
+
+        Deprecated, use `reaction.remove_from_model` instead.
+
+        Parameters
+        ----------
+        remove_orphans : bool
+            Remove orphaned genes and metabolites from the model as well
+
+        """
+        warn("delete is deprecated. Use reaction.remove_from_model instead")
+        self.remove_from_model(remove_orphans=remove_orphans)
 
     def __setstate__(self, state):
         """Probably not necessary to set _model as the cobra.Model that
