@@ -548,7 +548,7 @@ class Reaction(Object):
 
         The change is reverted upon exit when using the model as a context.
 
-        Deprecated (0.6.2). Use `reaction.remove_from_model` instead.
+        Deprecated, use `reaction.remove_from_model` instead.
 
         Parameters
         ----------

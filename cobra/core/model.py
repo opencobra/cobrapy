@@ -569,8 +569,7 @@ class Model(Object):
         # from cameo ...
         self._populate_solver(reaction_list)
 
-    def remove_reactions(self, reactions, delete=True,
-                         remove_orphans=False):
+    def remove_reactions(self, reactions, remove_orphans=False):
         """Remove reactions from the model.
 
         The change is reverted upon exit when using the model as a context.
@@ -579,11 +578,6 @@ class Model(Object):
         ----------
         reactions : list
             A list with reactions (`cobra.Reaction`), or their id's, to remove
-
-        delete : bool
-            Whether or not the reactions should be deleted after removal.
-            If the reactions are not deleted, those objects will be
-            recreated with new metabolite and gene objects.
 
         remove_orphans : bool
             Remove orphaned genes and metabolites from the model as well
