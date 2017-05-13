@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>web-app on cobrapy - constraint-based metabolic modeling in Python</title>
-    <link>https://opencobra.github.io/cobrapy/tags/web-app/index.xml</link>
-    <description>Recent content in web-app on cobrapy - constraint-based metabolic modeling in Python</description>
+    <title>Web app on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/web-app/</link>
+    <description>Recent content in Web app on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <atom:link href="https://opencobra.github.io/cobrapy/tags/web-app/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 24 Apr 2017 11:00:05 -0600</lastBuildDate>
+    
+	<atom:link href="https://opencobra.github.io/cobrapy/tags/web-app/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>mminte</title>
@@ -14,8 +17,7 @@
       <pubDate>Mon, 24 Apr 2017 11:00:05 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/mminte/</guid>
-      <description>&lt;p&gt;MMinte (pronounced /‘minti/) is a set of widgets that allows you to explore the pairwise interactions (positive or negative) that occur in a microbial community. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. You can run the MMinte widgets as an integrated pipeline or run each widget independently.&lt;/p&gt;
-</description>
+      <description>MMinte (pronounced /‘minti/) is a set of widgets that allows you to explore the pairwise interactions (positive or negative) that occur in a microbial community. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. You can run the MMinte widgets as an integrated pipeline or run each widget independently.</description>
     </item>
     
     <item>
@@ -24,12 +26,7 @@
       <pubDate>Mon, 27 Mar 2017 11:52:33 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/dd-decaf/</guid>
-      <description>&lt;p&gt;Large EU-backed project bringing together leading academic partners from five
-European universities with five innovative European companies to address the
-challenge of building a comprehensive design tool. &lt;strong&gt;DD-DeCaF&lt;/strong&gt; aims to develop
-cutting edge methods for using large scale data to design cell factories and
-communities for biotechnological applications.&lt;/p&gt;
-</description>
+      <description>Large EU-backed project bringing together leading academic partners from five European universities with five innovative European companies to address the challenge of building a comprehensive design tool. DD-DeCaF aims to develop cutting edge methods for using large scale data to design cell factories and communities for biotechnological applications.</description>
     </item>
     
   </channel>

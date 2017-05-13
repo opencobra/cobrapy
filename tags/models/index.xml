@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>models on cobrapy - constraint-based metabolic modeling in Python</title>
-    <link>https://opencobra.github.io/cobrapy/tags/models/index.xml</link>
-    <description>Recent content in models on cobrapy - constraint-based metabolic modeling in Python</description>
+    <title>Models on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/models/</link>
+    <description>Recent content in Models on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <atom:link href="https://opencobra.github.io/cobrapy/tags/models/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 13 Jan 2017 11:00:01 -0600</lastBuildDate>
+    
+	<atom:link href="https://opencobra.github.io/cobrapy/tags/models/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>mackinac</title>
@@ -14,8 +17,7 @@
       <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/mackinac/</guid>
-      <description>&lt;p&gt;Reconstructing and analyzing a large number of genome-scale metabolic models is a fundamental part of the integrated study of microbial communities; however, two of the most widely used frameworks for building and analyzing models use different metabolic network representations. Mackinac is a Python package that combines ModelSEED’s ability to automatically reconstruct metabolic models with COBRApy’s advanced analysis capabilities to bridge the differences between the two frameworks and facilitate the study of the metabolic potential of microorganisms.&lt;/p&gt;
-</description>
+      <description>Reconstructing and analyzing a large number of genome-scale metabolic models is a fundamental part of the integrated study of microbial communities; however, two of the most widely used frameworks for building and analyzing models use different metabolic network representations. Mackinac is a Python package that combines ModelSEED’s ability to automatically reconstruct metabolic models with COBRApy’s advanced analysis capabilities to bridge the differences between the two frameworks and facilitate the study of the metabolic potential of microorganisms.</description>
     </item>
     
   </channel>
