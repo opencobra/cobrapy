@@ -2,12 +2,14 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>cobrapy - constraint-based metabolic modeling in Python</title>
-    <link>https://opencobra.github.io/cobrapy/index.xml</link>
+    <link>https://opencobra.github.io/cobrapy/</link>
     <description>Recent content on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 24 Apr 2017 11:00:05 -0600</lastBuildDate>
-    <atom:link href="https://opencobra.github.io/cobrapy/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 07 May 2017 12:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://opencobra.github.io/cobrapy/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title></title>
@@ -15,35 +17,8 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/intro/description/</guid>
-      <description>&lt;p&gt;&lt;a href=&#34;https://github.com/opencobra/cobrapy&#34;&gt;&lt;img src=&#34;https://img.shields.io/github/stars/opencobra/cobrapy.svg?style=social&amp;amp;label=Star&#34; alt=&#34;GitHub stars&#34; /&gt;&lt;/a&gt;
-&lt;a href=&#34;https://github.com/opencobra/cobrapy/graphs/contributors&#34;&gt;&lt;img src=&#34;https://img.shields.io/github/contributors/opencobra/cobrapy.svg&#34; alt=&#34;GitHub contributors&#34; /&gt;&lt;/a&gt;
-&lt;a href=&#34;./releases&#34;&gt;&lt;img src=&#34;https://img.shields.io/github/release/opencobra/cobrapy.svg&#34; alt=&#34;GitHub release&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;cobrapy&lt;/strong&gt; is a python package that provides a simple interface to metabolic constraint-based reconstruction and analysis.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import cobra
-&amp;gt;&amp;gt;&amp;gt; model = cobra.io.read_sbml_model(&#39;Ec_core_flux1.xml&#39;)
-&amp;gt;&amp;gt;&amp;gt; model.metabolites[:3]
-[&amp;lt;Metabolite 13dpg_c at 0x112b2d160&amp;gt;,
- &amp;lt;Metabolite 2pg_c at 0x1024eb048&amp;gt;,
- &amp;lt;Metabolite 3pg_c at 0x112b2d748&amp;gt;]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;The package includes simple, object-oriented interfaces for model construction (including reading to/from sbml, matlab, and json formats) and implements commonly used COBRA methods such as flux balance analysis, flux variability analysis, and gene deletion analyses.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; model.optimize()
-&amp;lt;Solution 0.86 at 0x11272c2b0&amp;gt;
-&amp;gt;&amp;gt;&amp;gt; model.summary()
-IN FLUXES       OUT FLUXES    OBJECTIVES
---------------  ------------  ----------------------
-o2_e     22.3   h2o_e  24.9   Biomass_Ecol...  0.861
-glc_D_e  10     co2_e  23.3
-pi_e      3.17  h_e     9.11
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;strong&gt;cobrapy&lt;/strong&gt; is a community-supported effort under active development and is licensed under
-the GPL.&lt;/p&gt;
-</description>
+      <description>cobrapy is a python package that provides a simple interface to metabolic constraint-based reconstruction and analysis.
+&amp;gt;&amp;gt;&amp;gt; import cobra &amp;gt;&amp;gt;&amp;gt; model = cobra.io.read_sbml_model(&#39;Ec_core_flux1.xml&#39;) &amp;gt;&amp;gt;&amp;gt; model.metabolites[:3] [&amp;lt;Metabolite 13dpg_c at 0x112b2d160&amp;gt;, &amp;lt;Metabolite 2pg_c at 0x1024eb048&amp;gt;, &amp;lt;Metabolite 3pg_c at 0x112b2d748&amp;gt;]  The package includes simple, object-oriented interfaces for model construction (including reading to/from sbml, matlab, and json formats) and implements commonly used COBRA methods such as flux balance analysis, flux variability analysis, and gene deletion analyses.</description>
     </item>
     
     <item>
@@ -52,22 +27,11 @@ the GPL.&lt;/p&gt;
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/intro/installation/</guid>
-      <description>&lt;p&gt;You can install cobrapy on linux, Mac OSX and Windows with pip.&lt;/p&gt;
-
-&lt;p&gt;On Linux and Mac a simple:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ pip install cobra
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;will be enough. On Windows substitute pip with pip.exe.&lt;/p&gt;
-
-&lt;p&gt;If you want to install all optional dependencies as well just install with&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ pip install cobra[all]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;For futher help refer to the &lt;a href=&#34;https://github.com/opencobra/cobrapy/blob/devel/INSTALL.rst&#34;&gt;detailed installation instructions&lt;/a&gt;.&lt;/p&gt;
-</description>
+      <description>You can install cobrapy on linux, Mac OSX and Windows with pip.
+On Linux and Mac a simple:
+$ pip install cobra  will be enough. On Windows substitute pip with pip.exe.
+If you want to install all optional dependencies as well just install with
+$ pip install cobra[all]  For futher help refer to the detailed installation instructions.</description>
     </item>
     
     <item>
@@ -76,22 +40,29 @@ the GPL.&lt;/p&gt;
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/intro/help/</guid>
-      <description>&lt;p&gt;The documentation is browsable online at
-&lt;a href=&#34;https://cobrapy.readthedocs.org/en/stable/&#34;&gt;readthedocs&lt;/a&gt; and can
-also be
-&lt;a href=&#34;https://readthedocs.org/projects/cobrapy/downloads/&#34;&gt;downloaded&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;Please use the &lt;a href=&#34;http://groups.google.com/group/cobra-pie&#34;&gt;Google
-Group&lt;/a&gt; for help.
-Alternatively, you can use
-&lt;a href=&#34;https://gitter.im/opencobra/cobrapy&#34;&gt;gitter.im&lt;/a&gt; for quick questions
-and discussions about cobrapy (faster response times).&lt;/p&gt;
-
-&lt;p&gt;File bug reports and contribute to development on our &lt;a href=&#34;https://github.com/opencobra/cobrapy&#34;&gt;github page&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;If you use cobrapy in a scientific publication, please cite
-&lt;a href=&#34;http://dx.doi.org/doi:10.1186/1752-0509-7-74&#34;&gt;our publication&lt;/a&gt; 😄&lt;/p&gt;
-</description>
+      <description>The documentation is browsable online at readthedocs and can also be downloaded.
+Please use the Google Group for help. Alternatively, you can use gitter.im for quick questions and discussions about cobrapy (faster response times).
+File bug reports and contribute to development on our github page.
+If you use cobrapy in a scientific publication, please cite our publication 😄</description>
+    </item>
+    
+    <item>
+      <title>0.6.1</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.6.1/</link>
+      <pubDate>Sun, 07 May 2017 12:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.6.1/</guid>
+      <description> Fixes  Debug metabolite.add_metabolites with combine=False #503 Fix broken printing of metabolites (#502), by removing unnecessary Frozendict  </description>
+    </item>
+    
+    <item>
+      <title>0.6</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.6.0/</link>
+      <pubDate>Thu, 04 May 2017 12:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.6.0/</guid>
+      <description>In this release we have made major changes to pretty much all corners of cobrapy and we hope that you will enjoy the new features as much as we do, and that any negative impacts on existing workflows will be limited.
+The major change is the ongoing move away from cobrapy&amp;rsquo;s internal solver interfaces to those provided by optlang which provides a single unified interface to glpk, cplex and gurobi enhanced by the ability to deal with symbolic expressions.</description>
     </item>
     
     <item>
@@ -100,18 +71,16 @@ and discussions about cobrapy (faster response times).&lt;/p&gt;
       <pubDate>Mon, 24 Apr 2017 11:00:05 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/mminte/</guid>
-      <description>&lt;p&gt;MMinte (pronounced /‘minti/) is a set of widgets that allows you to explore the pairwise interactions (positive or negative) that occur in a microbial community. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. You can run the MMinte widgets as an integrated pipeline or run each widget independently.&lt;/p&gt;
-</description>
+      <description>MMinte (pronounced /‘minti/) is a set of widgets that allows you to explore the pairwise interactions (positive or negative) that occur in a microbial community. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. You can run the MMinte widgets as an integrated pipeline or run each widget independently.</description>
     </item>
     
     <item>
       <title>Mackinac: a bridge between ModelSEED and COBRApy to generate and analyze genome-scale metabolic models.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM28379466/</link>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28379466/</link>
       <pubDate>Thu, 30 Mar 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM28379466/</guid>
-      <description>&lt;p&gt;Reconstructing and analyzing a large number of genome-scale metabolic models is a fundamental part of the integrated study of microbial communities; however, two of the most widely used frameworks for building and analyzing models use different metabolic network representations. Here we describe Mackinac, a Python package that combines ModelSEED’s ability to automatically reconstruct metabolic models with COBRApy’s advanced analysis capabilities to bridge the differences between the two frameworks and facilitate the study of the metabolic potential of microorganisms.&lt;/p&gt;
-</description>
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28379466/</guid>
+      <description>Reconstructing and analyzing a large number of genome-scale metabolic models is a fundamental part of the integrated study of microbial communities; however, two of the most widely used frameworks for building and analyzing models use different metabolic network representations. Here we describe Mackinac, a Python package that combines ModelSEED’s ability to automatically reconstruct metabolic models with COBRApy’s advanced analysis capabilities to bridge the differences between the two frameworks and facilitate the study of the metabolic potential of microorganisms.</description>
     </item>
     
     <item>
@@ -120,10 +89,7 @@ and discussions about cobrapy (faster response times).&lt;/p&gt;
       <pubDate>Mon, 27 Mar 2017 12:13:48 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/escher/</guid>
-      <description>&lt;p&gt;Escher is a web-based tool for building, viewing, and sharing visualizations of
-biological pathways. These &amp;lsquo;pathway maps&amp;rsquo; are a great way to contextualize data
-about metabolism.&lt;/p&gt;
-</description>
+      <description>Escher is a web-based tool for building, viewing, and sharing visualizations of biological pathways. These &amp;lsquo;pathway maps&amp;rsquo; are a great way to contextualize data about metabolism.</description>
     </item>
     
     <item>
@@ -132,14 +98,8 @@ about metabolism.&lt;/p&gt;
       <pubDate>Mon, 27 Mar 2017 11:52:51 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/micom/</guid>
-      <description>&lt;p&gt;micom is a Python package for metabolic modeling of microbial communities.&lt;/p&gt;
-
-&lt;p&gt;micom allows you to construct a community model from a list on input COBRA
-models and manages exchange fluxes between individuals and individuals with the
-environment. It explicitly accounts for different abundances of individuals in
-the community and can thus incorporate data from 16S rRNA sequencing
-experiments.&lt;/p&gt;
-</description>
+      <description>micom is a Python package for metabolic modeling of microbial communities.
+micom allows you to construct a community model from a list on input COBRA models and manages exchange fluxes between individuals and individuals with the environment. It explicitly accounts for different abundances of individuals in the community and can thus incorporate data from 16S rRNA sequencing experiments.</description>
     </item>
     
     <item>
@@ -148,13 +108,7 @@ experiments.&lt;/p&gt;
       <pubDate>Mon, 27 Mar 2017 11:52:47 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/corda/</guid>
-      <description>&lt;p&gt;CORDA, short for Cost Optimization Reaction Dependency Assessment is a method
-for the reconstruction of metabolic networks from a given reference model (a
-database of all known reactions) and a confidence mapping for reactions
-developed by A. Schultz and A. Qutub. It allows you to quickly reconstruct
-metabolic models for tissues, patients or specific experimental conditions from
-a set of transcription or proteome measurements.&lt;/p&gt;
-</description>
+      <description>CORDA, short for Cost Optimization Reaction Dependency Assessment is a method for the reconstruction of metabolic networks from a given reference model (a database of all known reactions) and a confidence mapping for reactions developed by A. Schultz and A. Qutub. It allows you to quickly reconstruct metabolic models for tissues, patients or specific experimental conditions from a set of transcription or proteome measurements.</description>
     </item>
     
     <item>
@@ -163,8 +117,7 @@ a set of transcription or proteome measurements.&lt;/p&gt;
       <pubDate>Mon, 27 Mar 2017 11:52:42 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/minspan/</guid>
-      <description>&lt;p&gt;This project calculates the minimal spanning vectors of the null space.&lt;/p&gt;
-</description>
+      <description>This project calculates the minimal spanning vectors of the null space.</description>
     </item>
     
     <item>
@@ -173,12 +126,7 @@ a set of transcription or proteome measurements.&lt;/p&gt;
       <pubDate>Mon, 27 Mar 2017 11:52:33 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/dd-decaf/</guid>
-      <description>&lt;p&gt;Large EU-backed project bringing together leading academic partners from five
-European universities with five innovative European companies to address the
-challenge of building a comprehensive design tool. &lt;strong&gt;DD-DeCaF&lt;/strong&gt; aims to develop
-cutting edge methods for using large scale data to design cell factories and
-communities for biotechnological applications.&lt;/p&gt;
-</description>
+      <description>Large EU-backed project bringing together leading academic partners from five European universities with five innovative European companies to address the challenge of building a comprehensive design tool. DD-DeCaF aims to develop cutting edge methods for using large scale data to design cell factories and communities for biotechnological applications.</description>
     </item>
     
     <item>
@@ -187,201 +135,17 @@ communities for biotechnological applications.&lt;/p&gt;
       <pubDate>Mon, 13 Mar 2017 14:28:15 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.6_alpha/</guid>
-      <description>
-
-&lt;p&gt;In this release we have made major changes to pretty much all corners
-of cobrapy and we hope that you will enjoy the new features as much as
-we do, and that any negative impacts on existing workflows will be
-limited.&lt;/p&gt;
-
-&lt;p&gt;The major change is the ongoing move away from cobrapy&amp;rsquo;s internal
-solver interfaces to those provided by
-&lt;a href=&#34;https://github.com/biosustain/optlang&#34;&gt;optlang&lt;/a&gt; which provides a
-single unified interface to glpk, cplex and gurobi enhanced by the
-ability to deal with symbolic expressions. This means formulating
-complex constraints no longer implies defining the necessary matrix
-algebra, but instead simply writing the expression and assigning that
-as an objective to the model.&lt;/p&gt;
-
-&lt;p&gt;We feel that this, and the clarified scope and focus attained by
-separating the topic of linear programming (optlang) and metabolic
-flux analysis (cobrapy) to two packages is natural and makes both of
-these tasks less confusing and more fun. We hope that you after
-trying, feel the same and that in any case you let us know what you
-think by
-&lt;a href=&#34;https://github.com/opencobra/cobrapy/issues&#34;&gt;raising an issue&lt;/a&gt; or
-talking directly to us on &lt;a href=&#34;gitter.im/opencobra/cobrapy&#34;&gt;gitter&lt;/a&gt; or
-&lt;a href=&#34;https://groups.google.com/forum/#!forum/cobra-pie&#34;&gt;google groups&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;
-
-&lt;h3 id=&#34;the-optlang-solver-interface&#34;&gt;The optlang solver interface&lt;/h3&gt;
-
-&lt;p&gt;The main change is the addition of &lt;code&gt;model.solver&lt;/code&gt; which is the optlang
-interface to the chosen solver (cplex and glpk are currently well
-supported, gurobi interface is at the time of writing mostly working
-but improvements are still expected). The solver interface manages
-variables, constraints and the objective of the model and the task of
-turning these into a model formulation to be optimized by the
-solver. From cobrapy&amp;rsquo;s point-of-view, this means that all aspects
-concerning generating problems, configuring solvers are handed over to
-optlang and consequently the whole &lt;code&gt;cobra.solver&lt;/code&gt; has been deprecated,
-slated for removal in the next major release of cobrapy.&lt;/p&gt;
-
-&lt;p&gt;Importantly, configuring the solver by passing &lt;code&gt;**solver_args&lt;/code&gt; or
-&lt;code&gt;solver=&#39;solver&#39;&lt;/code&gt; is now instead done by assigning solver to
-&lt;code&gt;model.solver&lt;/code&gt; and then configuring via &lt;code&gt;model.solver.configuration&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;Creating new algorithms has been greatly facilitated as it no longer
-requires formulating objectives and constraints by matrix algebra but
-instead directly by expressions, e.g. see the implementation of
-&lt;code&gt;cobra.flux_analysis.moma.add_moma&lt;/code&gt; and
-&lt;code&gt;cobra.flux_analysis.loopless.loopless_solution&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;Instead of having only reactions as variables and metabolites as
-constraints, with optlang, cobrapy now supports arbitrary constraints
-and variables and these can be added/removed by &lt;code&gt;model.add_cons_vars&lt;/code&gt;
-and &lt;code&gt;model.remove_cons_vars&lt;/code&gt; which take care of adding these to
-&lt;code&gt;model.problem&lt;/code&gt; which is the optlang&amp;rsquo;s mathematical model associated
-with the cobra model.&lt;/p&gt;
-
-&lt;p&gt;Reactions are now modeled by two variables, forward and reverse, and
-these can be seen by accessing &lt;code&gt;reaction.{forward,reverse}_variable&lt;/code&gt;
-and the combined &lt;code&gt;reaction.flux_expression&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;Objectives can now easily be made quite advanced by simply crafting
-the right expression and assigning this as usual to &lt;code&gt;model.objective&lt;/code&gt;,
-see the
-&lt;a href=&#34;http://cobrapy.readthedocs.io/en/latest/constraints_objectives.html&#34;&gt;contraints and objectives notebook&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h3 id=&#34;temporary-changes-to-a-model&#34;&gt;Temporary changes to a model&lt;/h3&gt;
-
-&lt;p&gt;Models are large complex objects and copying such objects is
-inevitably slow. To avoid that, cobrapy has drawn on the experience
-from the development of cameo to introduce the &lt;code&gt;HistoryManager&lt;/code&gt; class
-and the concept of models as contexts. Now, most changes that can be
-made to a model such as changing the objective, setting reaction
-bounds, adding and removing reactions, is reversed upon exit when done
-inside a context, see the updated
-&lt;a href=&#34;http://cobrapy.readthedocs.io/en/latest/getting_started.html&#34;&gt;getting started notebook&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h3 id=&#34;improved-solution-handling&#34;&gt;Improved solution handling&lt;/h3&gt;
-
-&lt;p&gt;Previously, cobra models lugged around their latest solution to enable
-providing &lt;code&gt;reaction.{flux,reduced_cost}&lt;/code&gt; (formerly
-&lt;code&gt;reaction.{x,y}&lt;/code&gt;). This was problematic because if the model had
-changed since last optimization, then this would effectively give the
-wrong result. On top of that, it was not easy to make a change,
-optimize and get values, and then undo that change to the model
-without having to copy the whole model object. To solve this, and many
-similar problem, we have completely refactored &lt;code&gt;cobra.Solution&lt;/code&gt; so
-that &lt;code&gt;model.optimize()&lt;/code&gt; now returns a solution and it is the user&amp;rsquo;s
-responsibility to manage this object. &lt;code&gt;reaction.flux&lt;/code&gt; gets its values
-directly from the &lt;code&gt;model.problem&lt;/code&gt;. To sugar the new solution class,
-fluxes, reduced costs, and shadow prices are now pandas series!&lt;/p&gt;
-
-&lt;h2 id=&#34;sampling&#34;&gt;Sampling&lt;/h2&gt;
-
-&lt;p&gt;Cobrapy now has flux sampling supported by
-&lt;code&gt;cobra.flux_analysis.sampling&lt;/code&gt; see
-&lt;a href=&#34;http://cobrapy.readthedocs.io/en/latest/sampling.html&#34;&gt;the sampling notebook&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h2 id=&#34;loopless-models-and-solutions&#34;&gt;Loopless models and solutions&lt;/h2&gt;
-
-&lt;p&gt;Added implementations of
-&lt;a href=&#34;http://dx.doi.org/10.1093/bioinformatics/btv096&#34;&gt;CycleFreeFlux&lt;/a&gt; and
-the loopless model of
-&lt;a href=&#34;http://dx.doi.org/10.1016/j.bpj.2010.12.3707&#34;&gt;Schellenberger et al.&lt;/a&gt;. See
-the
-&lt;a href=&#34;http://cobrapy.readthedocs.io/en/latest/loopless.html&#34;&gt;notebook on loopless&lt;/a&gt;
-and &lt;a href=&#34;http://cobrapy.readthedocs.io/en/latest/simulating.html&#34;&gt;simulating&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&#34;dataframes-as-return-values&#34;&gt;DataFrames as return values&lt;/h2&gt;
-
-&lt;p&gt;&lt;code&gt;flux_variability_analysis&lt;/code&gt;, &lt;code&gt;single_{gene,reaction}_deletion&lt;/code&gt;,
-&lt;code&gt;cobra.flux_analysis.sampling&lt;/code&gt; and
-&lt;code&gt;cobra.util.create_stoichiometric_matrix&lt;/code&gt; now return pandas data frames
-instead of nested dicts as these are more convenient and fun to work
-with. Pandas (and numpy) are therefore now hard requirements for
-cobrapy, which should not be a problem for neither linux, windows or
-mac users as there are reliable wheels for these packages now.&lt;/p&gt;
-
-&lt;h3 id=&#34;model-medium&#34;&gt;Model medium&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;model.medium&lt;/code&gt; is now a dict and setter for getting boundary feeding
-reactions and their bounds&lt;/p&gt;
-
-&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Handle multiple IDs in Matlab models
-&lt;a href=&#34;https://github.com/opencobra/cobrapy/issues&#34;&gt;#345&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DictList.query&lt;/code&gt; behavior changed so that attribute is &lt;code&gt;None&lt;/code&gt; if the
-search parameter is not a regex or string, to enable
-&lt;code&gt;reactions.query(lambda x: x.boundary)&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;Set charge from notes if not defined elsewhere
-&lt;a href=&#34;https://github.com/opencobra/cobrapy/issues&#34;&gt;#352&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Warnings are no longer issued on package import if soft requirement
-scipy, python-libsbml is not available.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;deprecated-features&#34;&gt;Deprecated features&lt;/h2&gt;
-
-&lt;p&gt;These features are now deprecated and slated for complete removal in
-the next major cobrapy release.&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;The whole &lt;code&gt;cobra.solver&lt;/code&gt; module is now deprecated, see New features.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;ArrayBasedModel&lt;/code&gt; / &lt;code&gt;Model.to_array_based_model&lt;/code&gt; are
-deprecated. This formulation makes little sense when handing over
-the matrix algebra to optlang, for the stoichiometry matrix (aka S),
-see &lt;code&gt;cobra.util.array.create_stoichiometric_matrix&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Metabolite.y&lt;/code&gt; in favor of &lt;code&gt;Metabolite.shadow_price&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Model.add_reaction&lt;/code&gt; in favor of &lt;code&gt;Model.add_reactions&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Reaction.x&lt;/code&gt; in favor of &lt;code&gt;Reaction.flux&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Reaction.y&lt;/code&gt; in favor of &lt;code&gt;Reaction.reduced_cost&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Solution.{x, y, x_dict, y_dict, f}&lt;/code&gt; in favor of &lt;code&gt;Solution.{fluxes,
-reduced_costs}&lt;/code&gt;. The setters are also deprecated.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;phenotype_phase_plane&lt;/code&gt; in favor of &lt;code&gt;production_envelope&lt;/code&gt;. The
-plotting capabilities are deprecated, to be re-implemented somewhere
-else.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;convert_to_irreverible&lt;/code&gt;, &lt;code&gt;revert_to_irreversible&lt;/code&gt;, &lt;code&gt;canonical_form&lt;/code&gt;
-deprecated without replacement.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;check_reaction_bounds&lt;/code&gt; deprecated without replacement.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;backwards-incompatible-changes&#34;&gt;Backwards incompatible changes&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;optknock was completely removed, users are advised to use cameo for
-this functionality&lt;/li&gt;
-&lt;li&gt;dual_problem was removed&lt;/li&gt;
-&lt;li&gt;gapfilling algorithms were removed without replacement, to be
-re-introduced in a different package&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;cobra.topology&lt;/code&gt; was removed, possibly to be reintroduced in a
-different package&lt;/li&gt;
-&lt;li&gt;flux_variability_analysis results must be transformed to have them
-work as the previous nested dict,
-i.e. &lt;code&gt;flux_variability_analysis(model).T&lt;/code&gt; should give behavior as
-previously.&lt;/li&gt;
-&lt;li&gt;In a major linting effort we renamed capitalized modules to lower-case,
-e.g. &lt;code&gt;cobra.core.Model&lt;/code&gt; to &lt;code&gt;cobra.core.model&lt;/code&gt;. Imports from &lt;code&gt;cobra&lt;/code&gt;
-are unchanged though.&lt;/li&gt;
-&lt;li&gt;objective coefficients of reactions can now only be set once the
-reaction is attached to a model.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Reaction.{x,y}&lt;/code&gt;, &lt;code&gt;Metabolite.y&lt;/code&gt; are defunct for legacy solvers.&lt;/li&gt;
-&lt;/ul&gt;
-</description>
+      <description>In this release we have made major changes to pretty much all corners of cobrapy and we hope that you will enjoy the new features as much as we do, and that any negative impacts on existing workflows will be limited.
+The major change is the ongoing move away from cobrapy&amp;rsquo;s internal solver interfaces to those provided by optlang which provides a single unified interface to glpk, cplex and gurobi enhanced by the ability to deal with symbolic expressions.</description>
     </item>
     
     <item>
       <title>Efficient estimation of the maximum metabolic productivity of batch systems.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM28163785/</link>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28163785/</link>
       <pubDate>Tue, 31 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM28163785/</guid>
-      <description>&lt;p&gt;Production of chemicals from engineered organisms in a batch culture involves an inherent trade-off between productivity, yield, and titer. Existing strategies for strain design typically focus on designing mutations that achieve the highest yield possible while maintaining growth viability. While these methods are computationally tractable, an optimum productivity could be achieved by a dynamic strategy in which the intracellular division of resources is permitted to change with time. New methods for the design and implementation of dynamic microbial processes, both computational and experimental, have therefore been explored to maximize productivity. However, solving for the optimal metabolic behavior under the assumption that all fluxes in the cell are free to vary is a challenging numerical task. Previous studies have therefore typically focused on simpler strategies that are more feasible to implement in practice, such as the time-dependent control of a single flux or control variable.&lt;/p&gt;
-</description>
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28163785/</guid>
+      <description>Production of chemicals from engineered organisms in a batch culture involves an inherent trade-off between productivity, yield, and titer. Existing strategies for strain design typically focus on designing mutations that achieve the highest yield possible while maintaining growth viability. While these methods are computationally tractable, an optimum productivity could be achieved by a dynamic strategy in which the intracellular division of resources is permitted to change with time. New methods for the design and implementation of dynamic microbial processes, both computational and experimental, have therefore been explored to maximize productivity.</description>
     </item>
     
     <item>
@@ -390,31 +154,423 @@ reaction is attached to a model.&lt;/li&gt;
       <pubDate>Mon, 30 Jan 2017 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.5/</guid>
-      <description>&lt;p&gt;This is the current stable release for COBRApy. The final release is &lt;strong&gt;0.5.11&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;p&gt;For a list of features please see the
-&lt;a href=&#34;https://cobrapy.readthedocs.org/en/stable/&#34;&gt;documentation&lt;/a&gt;.&lt;/p&gt;
-</description>
+      <description>This is a former stable release for COBRApy. The final release for the 0.5 series was 0.5.11.
+For a list of features please see the documentation.</description>
     </item>
     
     <item>
       <title>Meneco, a Topology-Based Gap-Filling Tool Applicable to Degraded Genome-Wide Metabolic Networks.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM28129330/</link>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28129330/</link>
       <pubDate>Fri, 27 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM28129330/</guid>
-      <description>&lt;p&gt;Increasing amounts of sequence data are becoming available for a wide range of non-model organisms. Investigating and modelling the metabolic behaviour of those organisms is highly relevant to understand their biology and ecology. As sequences are often incomplete and poorly annotated, draft networks of their metabolism largely suffer from incompleteness. Appropriate gap-filling methods to identify and add missing reactions are therefore required to address this issue. However, current tools rely on phenotypic or taxonomic information, or are very sensitive to the stoichiometric balance of metabolic reactions, especially concerning the co-factors. This type of information is often not available or at least prone to errors for newly-explored organisms. Here we introduce Meneco, a tool dedicated to the topological gap-filling of genome-scale draft metabolic networks. Meneco reformulates gap-filling as a qualitative combinatorial optimization problem, omitting constraints raised by the stoichiometry of a metabolic network considered in other methods, and solves this problem using Answer Set Programming. Run on several artificial test sets gathering 10,800 degraded Escherichia coli networks Meneco was able to efficiently identify essential reactions missing in networks at high degradation rates, outperforming the stoichiometry-based tools in scalability. To demonstrate the utility of Meneco we applied it to two case studies. Its application to recent metabolic networks reconstructed for the brown algal model Ectocarpus siliculosus and an associated bacterium Candidatus Phaeomarinobacter ectocarpi revealed several candidate metabolic pathways for algal-bacterial interactions. Then Meneco was used to reconstruct, from transcriptomic and metabolomic data, the first metabolic network for the microalga Euglena mutabilis. These two case studies show that Meneco is a versatile tool to complete draft genome-scale metabolic networks produced from heterogeneous data, and to suggest relevant reactions that explain the metabolic capacity of a biological system.&lt;/p&gt;
-</description>
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28129330/</guid>
+      <description>Increasing amounts of sequence data are becoming available for a wide range of non-model organisms. Investigating and modelling the metabolic behaviour of those organisms is highly relevant to understand their biology and ecology. As sequences are often incomplete and poorly annotated, draft networks of their metabolism largely suffer from incompleteness. Appropriate gap-filling methods to identify and add missing reactions are therefore required to address this issue. However, current tools rely on phenotypic or taxonomic information, or are very sensitive to the stoichiometric balance of metabolic reactions, especially concerning the co-factors.</description>
     </item>
     
     <item>
       <title>Reliable and efficient solution of genome-scale models of Metabolism and macromolecular Expression.</title>
-      <link>https://opencobra.github.io/cobrapy/pubs/PM28098205/</link>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28098205/</link>
       <pubDate>Wed, 18 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://opencobra.github.io/cobrapy/pubs/PM28098205/</guid>
-      <description>&lt;p&gt;Constraint-Based Reconstruction and Analysis (COBRA) is currently the only methodology that permits integrated modeling of Metabolism and macromolecular Expression (ME) at genome-scale. Linear optimization computes steady-state flux solutions to ME models, but flux values are spread over many orders of magnitude. Data values also have greatly varying magnitudes. Standard double-precision solvers may return inaccurate solutions or report that no solution exists. Exact simplex solvers based on rational arithmetic require a near-optimal warm start to be practical on large problems (current ME models have 70,000 constraints and variables and will grow larger). We have developed a quadruple-precision version of our linear and nonlinear optimizer MINOS, and a solution procedure (DQQ) involving Double and Quad MINOS that achieves reliability and efficiency for ME models and other challenging problems tested here. DQQ will enable extensive use of large linear and nonlinear models in systems biology and other applications involving multiscale data.&lt;/p&gt;
-</description>
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28098205/</guid>
+      <description>Constraint-Based Reconstruction and Analysis (COBRA) is currently the only methodology that permits integrated modeling of Metabolism and macromolecular Expression (ME) at genome-scale. Linear optimization computes steady-state flux solutions to ME models, but flux values are spread over many orders of magnitude. Data values also have greatly varying magnitudes. Standard double-precision solvers may return inaccurate solutions or report that no solution exists. Exact simplex solvers based on rational arithmetic require a near-optimal warm start to be practical on large problems (current ME models have 70,000 constraints and variables and will grow larger).</description>
+    </item>
+    
+    <item>
+      <title>d3flux</title>
+      <link>https://opencobra.github.io/cobrapy/packages/d3flux/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:03 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/d3flux/</guid>
+      <description>This package implements a d3.js based visualization tool for cobrapy models.</description>
+    </item>
+    
+    <item>
+      <title>cameo</title>
+      <link>https://opencobra.github.io/cobrapy/packages/cameo/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/cameo/</guid>
+      <description>Cameo is a high-level python library developed to aid the strain design process in metabolic engineering projects. The library provides a modular framework of simulation methods, strain design methods, access to models, that targets developers that want custom analysis workflows.
+Computationally heavy methods have been parallelized and can be run on a clusters using the IPython parallelization framework (see example and documentation for more details). The default fallback is python&amp;rsquo;s multiprocessing library.</description>
+    </item>
+    
+    <item>
+      <title>cobrame</title>
+      <link>https://opencobra.github.io/cobrapy/packages/cobrame/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/cobrame/</guid>
+      <description>COBRA Toolbox for constructing and manipulating genome-scale models of metabolism and expression (ME-models).</description>
+    </item>
+    
+    <item>
+      <title>mackinac</title>
+      <link>https://opencobra.github.io/cobrapy/packages/mackinac/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/mackinac/</guid>
+      <description>Reconstructing and analyzing a large number of genome-scale metabolic models is a fundamental part of the integrated study of microbial communities; however, two of the most widely used frameworks for building and analyzing models use different metabolic network representations. Mackinac is a Python package that combines ModelSEED’s ability to automatically reconstruct metabolic models with COBRApy’s advanced analysis capabilities to bridge the differences between the two frameworks and facilitate the study of the metabolic potential of microorganisms.</description>
+    </item>
+    
+    <item>
+      <title>optlang</title>
+      <link>https://opencobra.github.io/cobrapy/packages/optlang/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/optlang/</guid>
+      <description>Optlang is a Python package for solving mathematical optimization problems, i.e. maximizing or minimizing an objective function over a set of variables subject to a number of constraints. Optlang provides a common interface to a series of optimization tools, so different solver backends can be changed in a transparent way. Optlang&amp;rsquo;s object-oriented API takes advantage of the symbolic math library sympy to allow objective functions and constraints to be easily formulated from symbolic expressions of variables</description>
+    </item>
+    
+    <item>
+      <title>Genome-Scale Metabolic Modeling of Archaea Lends Insight into Diversity of Metabolic Function.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28133437/</link>
+      <pubDate>Wed, 04 Jan 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28133437/</guid>
+      <description>Decades of biochemical, bioinformatic, and sequencing data are currently being systematically compiled into genome-scale metabolic reconstructions (GEMs). Such reconstructions are knowledge-bases useful for engineering, modeling, and comparative analysis. Here we review the fifteen GEMs of archaeal species that have been constructed to date. They represent primarily members of the Euryarchaeota with three-quarters comprising representative of methanogens. Unlike other reviews on GEMs, we specially focus on archaea. We briefly review the GEM construction process and the genealogy of the archaeal models.</description>
+    </item>
+    
+    <item>
+      <title>Personalized Prediction of Proliferation Rates and Metabolic Liabilities in Cancer Biopsies.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28082911/</link>
+      <pubDate>Tue, 27 Dec 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28082911/</guid>
+      <description>Cancer is a heterogeneous disease and its genetic and metabolic mechanism may manifest differently in each patient. This creates a demand for studies that can characterize phenotypic traits of cancer on a per-sample basis. Combining two large data sets, the NCI60 cancer cell line panel, and The Cancer Genome Atlas, we used a linear interaction model to predict proliferation rates for more than 12,000 cancer samples across 33 different cancers from The Cancer Genome Atlas.</description>
+    </item>
+    
+    <item>
+      <title>Unique attributes of cyanobacterial metabolism revealed by improved genome-scale metabolic modeling and essential gene analysis.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm27911809/</link>
+      <pubDate>Thu, 01 Dec 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm27911809/</guid>
+      <description>The model cyanobacterium, Synechococcus elongatus PCC 7942, is a genetically tractable obligate phototroph that is being developed for the bioproduction of high-value chemicals. Genome-scale models (GEMs) have been successfully used to assess and engineer cellular metabolism; however, GEMs of phototrophic metabolism have been limited by the lack of experimental datasets for model validation and the challenges of incorporating photon uptake. Here, we develop a GEM of metabolism in S. elongatus using random barcode transposon site sequencing (RB-TnSeq) essential gene and physiological data specific to photoautotrophic metabolism.</description>
+    </item>
+    
+    <item>
+      <title>Modelling microbial metabolic rewiring during growth in a complex medium.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm27881075/</link>
+      <pubDate>Thu, 24 Nov 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm27881075/</guid>
+      <description>In their natural environment, bacteria face a wide range of environmental conditions that change over time and that impose continuous rearrangements at all the cellular levels (e.g. gene expression, metabolism). When facing a nutritionally rich environment, for example, microbes first use the preferred compound(s) and only later start metabolizing the other one(s). A systemic re-organization of the overall microbial metabolic network in response to a variation in the composition/concentration of the surrounding nutrients has been suggested, although the range and the entity of such modifications in organisms other than a few model microbes has been scarcely described up to now.</description>
+    </item>
+    
+    <item>
+      <title>Multi-omic data integration enables discovery of hidden biological regularities.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm27782110/</link>
+      <pubDate>Wed, 26 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm27782110/</guid>
+      <description>Rapid growth in size and complexity of biological data sets has led to the &amp;lsquo;Big Data to Knowledge&amp;rsquo; challenge. We develop advanced data integration methods for multi-level analysis of genomic, transcriptomic, ribosomal profiling, proteomic and fluxomic data. First, we show that pairwise integration of primary omics data reveals regularities that tie cellular processes together in Escherichia coli: the number of protein molecules made per mRNA transcript and the number of ribosomes required per translated protein molecule.</description>
+    </item>
+    
+    <item>
+      <title>Multi-omics Quantification of Species Variation of Escherichia coli Links Molecular Features with Strain Phenotypes.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm27667363/</link>
+      <pubDate>Thu, 22 Sep 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm27667363/</guid>
+      <description>Escherichia coli strains are widely used in academic research and biotechnology. New technologies for quantifying strain-specific differences and their underlying contributing factors promise greater understanding of how these differences significantly impact physiology, synthetic biology, metabolic engineering, and process design. Here, we quantified strain-specific differences in seven widely used strains of E. coli (BL21, C, Crooks, DH5a, K-12 MG1655, K-12 W3110, and W) using genomics, phenomics, transcriptomics, and genome-scale modeling. Metabolic physiology and gene expression varied widely with downstream implications for productivity, product yield, and titer.</description>
+    </item>
+    
+    <item>
+      <title>solveME: fast and reliable solution of nonlinear ME models.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm27659412/</link>
+      <pubDate>Thu, 22 Sep 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm27659412/</guid>
+      <description>Genome-scale models of metabolism and macromolecular expression (ME) significantly expand the scope and predictive capabilities of constraint-based modeling. ME models present considerable computational challenges: they are much (&amp;gt;30 times) larger than corresponding metabolic reconstructions (M models), are multiscale, and growth maximization is a nonlinear programming (NLP) problem, mainly due to macromolecule dilution constraints.</description>
+    </item>
+    
+    <item>
+      <title>MMinte: an application for predicting metabolic interactions among the microbial species in a community.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm27590448/</link>
+      <pubDate>Fri, 02 Sep 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm27590448/</guid>
+      <description>The explosive growth of microbiome research has yielded great quantities of data. These data provide us with many answers, but raise just as many questions. 16S rDNA-the backbone of microbiome analyses-allows us to assess α-diversity, β-diversity, and microbe-microbe associations, which characterize the overall properties of an ecosystem. However, we are still unable to use 16S rDNA data to directly assess the microbe-microbe and microbe-environment interactions that determine the broader ecology of that system.</description>
+    </item>
+    
+    <item>
+      <title>Genome-Scale Metabolic Model for the Green Alga Chlorella vulgaris UTEX 395 Accurately Predicts Phenotypes under Autotrophic, Heterotrophic, and Mixotrophic Growth Conditions.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm27372244/</link>
+      <pubDate>Sat, 02 Jul 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm27372244/</guid>
+      <description>The green microalga Chlorella vulgaris has been widely recognized as a promising candidate for biofuel production due to its ability to store high lipid content and its natural metabolic versatility. Compartmentalized genome-scale metabolic models constructed from genome sequences enable quantitative insight into the transport and metabolism of compounds within a target organism. These metabolic models have long been utilized to generate optimized design strategies for an improved production process. Here, we describe the reconstruction, validation, and application of a genome-scale metabolic model for C.</description>
+    </item>
+    
+    <item>
+      <title>Integrated In Silico Analysis of Pathway Designs for Synthetic Photo-Electro-Autotrophy.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm27336167/</link>
+      <pubDate>Thu, 23 Jun 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm27336167/</guid>
+      <description>The strong advances in synthetic biology enable the engineering of novel functions and complex biological features in unprecedented ways, such as implementing synthetic autotrophic metabolism into heterotrophic hosts. A key challenge for the sustainable production of fuels and chemicals entails the engineering of synthetic autotrophic organisms that can effectively and efficiently fix carbon dioxide by using sustainable energy sources. This challenge involves the integration of carbon fixation and energy uptake systems.</description>
+    </item>
+    
+    <item>
+      <title>From DNA to FBA: How to Build Your Own Genome-Scale Metabolic Model.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm27379044/</link>
+      <pubDate>Fri, 17 Jun 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm27379044/</guid>
+      <description>Microbiological studies are increasingly relying on in silico methods to perform exploration and rapid analysis of genomic data, and functional genomics studies are supplemented by the new perspectives that genome-scale metabolic models offer. A mathematical model consisting of a microbe&amp;rsquo;s entire metabolic map can be rapidly determined from whole-genome sequencing and annotating the genomic material encoded in its DNA. Flux-balance analysis (FBA), a linear programming technique that uses metabolic models to predict the phenotypic responses imposed by environmental elements and factors, is the leading method to simulate and manipulate cellular growth in silico.</description>
+    </item>
+    
+    <item>
+      <title>Comparative genome-scale modelling of Staphylococcus aureus strains identifies strain-specific metabolic capabilities linked to pathogenicity.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm27286824/</link>
+      <pubDate>Fri, 10 Jun 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm27286824/</guid>
+      <description>Staphylococcus aureus is a preeminent bacterial pathogen capable of colonizing diverse ecological niches within its human host. We describe here the pangenome of S. aureus based on analysis of genome sequences from 64 strains of S. aureus spanning a range of ecological niches, host types, and antibiotic resistance profiles. Based on this set, S. aureus is expected to have an open pangenome composed of 7,411 genes and a core genome composed of 1,441 genes.</description>
+    </item>
+    
+    <item>
+      <title>Systems biology of the structural proteome.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26969117/</link>
+      <pubDate>Fri, 11 Mar 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26969117/</guid>
+      <description>The success of genome-scale models (GEMs) can be attributed to the high-quality, bottom-up reconstructions of metabolic, protein synthesis, and transcriptional regulatory networks on an organism-specific basis. Such reconstructions are biochemically, genetically, and genomically structured knowledge bases that can be converted into a mathematical format to enable a myriad of computational biological studies. In recent years, genome-scale reconstructions have been extended to include protein structural information, which has opened up new vistas in systems biology research and empowered applications in structural systems biology and systems pharmacology.</description>
+    </item>
+    
+    <item>
+      <title>Global characterization of in vivo enzyme catalytic rates and their correspondence to in vitro kcat measurements.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26951675/</link>
+      <pubDate>Mon, 07 Mar 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26951675/</guid>
+      <description>Turnover numbers, also known as kcat values, are fundamental properties of enzymes. However, kcat data are scarce and measured in vitro, thus may not faithfully represent the in vivo situation. A basic question that awaits elucidation is: how representative are kcat values for the maximal catalytic rates of enzymes in vivo? Here, we harness omics data to calculate kmax(vivo), the observed maximal catalytic rate of an enzyme inside cells. Comparison with kcat values from Escherichia coli, yields a correlation ofr(2)= 0.</description>
+    </item>
+    
+    <item>
+      <title>What Makes a Bacterial Species Pathogenic?:Comparative Genomic Analysis of the Genus Leptospira.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26890609/</link>
+      <pubDate>Thu, 18 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26890609/</guid>
+      <description>Leptospirosis, caused by spirochetes of the genus Leptospira, is a globally widespread, neglected and emerging zoonotic disease. While whole genome analysis of individual pathogenic, intermediately pathogenic and saprophytic Leptospira species has been reported, comprehensive cross-species genomic comparison of all known species of infectious and non-infectious Leptospira, with the goal of identifying genes related to pathogenesis and mammalian host adaptation, remains a key gap in the field. Infectious Leptospira, comprised of pathogenic and intermediately pathogenic Leptospira, evolutionarily diverged from non-infectious, saprophytic Leptospira, as demonstrated by the following computational biology analyses: 1) the definitive taxonomy and evolutionary relatedness among all known Leptospira species; 2) genomically-predicted metabolic reconstructions that indicate novel adaptation of infectious Leptospira to mammals, including sialic acid biosynthesis, pathogen-specific porphyrin metabolism and the first-time demonstration of cobalamin (B12) autotrophy as a bacterial virulence factor; 3) CRISPR/Cas systems demonstrated only to be present in pathogenic Leptospira, suggesting a potential mechanism for this clade&amp;rsquo;s refractoriness to gene targeting; 4) finding Leptospira pathogen-specific specialized protein secretion systems; 5) novel virulence-related genes/gene families such as the Virulence Modifying (VM) (PF07598 paralogs) proteins and pathogen-specific adhesins; 6) discovery of novel, pathogen-specific protein modification and secretion mechanisms including unique lipoprotein signal peptide motifs, Sec-independent twin arginine protein secretion motifs, and the absence of certain canonical signal recognition particle proteins from all Leptospira; and 7) and demonstration of infectious Leptospira-specific signal-responsive gene expression, motility and chemotaxis systems.</description>
+    </item>
+    
+    <item>
+      <title>PSAMM: A Portable System for the Analysis of Metabolic Models.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26828591/</link>
+      <pubDate>Mon, 01 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26828591/</guid>
+      <description>The genome-scale models of metabolic networks have been broadly applied in phenotype prediction, evolutionary reconstruction, community functional analysis, and metabolic engineering. Despite the development of tools that support individual steps along the modeling procedure, it is still difficult to associate mathematical simulation results with the annotation and biological interpretation of metabolic models. In order to solve this problem, here we developed a Portable System for the Analysis of Metabolic Models (PSAMM), a new open-source software package that supports the integration of heterogeneous metadata in model annotations and provides a user-friendly interface for the analysis of metabolic models.</description>
+    </item>
+    
+    <item>
+      <title>FlexFlux: combining metabolic flux and regulatory network analyses.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26666757/</link>
+      <pubDate>Tue, 15 Dec 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26666757/</guid>
+      <description>Expression of cell phenotypes highly depends on metabolism that supplies matter and energy. To achieve proper utilisation of the different metabolic pathways, metabolism is tightly regulated by a complex regulatory network composed of diverse biological entities (genes, transcripts, proteins, signalling molecules…). The integrated analysis of both regulatory and metabolic networks appears very insightful but is not straightforward because of the distinct characteristics of both networks. The classical method used for metabolic flux analysis is Flux Balance Analysis (FBA), which is constraint-based and relies on the assumption of steady-state metabolite concentrations throughout the network.</description>
+    </item>
+    
+    <item>
+      <title>Consistency Analysis of Genome-Scale Models of Bacterial Metabolism: A Metamodel Approach.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26629901/</link>
+      <pubDate>Wed, 02 Dec 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26629901/</guid>
+      <description>Genome-scale metabolic models usually contain inconsistencies that manifest as blocked reactions and gap metabolites. With the purpose to detect recurrent inconsistencies in metabolic models, a large-scale analysis was performed using a previously published dataset of 130 genome-scale models. The results showed that a large number of reactions (~22%) are blocked in all the models where they are present. To unravel the nature of such inconsistencies a metamodel was construed by joining the 130 models in a single network.</description>
+    </item>
+    
+    <item>
+      <title>Networks of energetic and metabolic interactions define dynamics in microbial communities.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26621749/</link>
+      <pubDate>Mon, 30 Nov 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26621749/</guid>
+      <description>Microorganisms form diverse communities that have a profound impact on the environment and human health. Recent technological advances have enabled elucidation of community diversity at high resolution. Investigation of microbial communities has revealed that they often contain multiple members with complementing and seemingly redundant metabolic capabilities. An understanding of the communal impacts of redundant metabolic capabilities is currently lacking; specifically, it is not known whether metabolic redundancy will foster competition or motivate cooperation.</description>
+    </item>
+    
+    <item>
+      <title>Systems biology-guided identification of synthetic lethal gene pairs and its potential use to discover antibiotic combinations.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26531810/</link>
+      <pubDate>Wed, 04 Nov 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26531810/</guid>
+      <description>Mathematical models of metabolism from bacterial systems biology have proven their utility across multiple fields, for example metabolic engineering, growth phenotype simulation, and biological discovery. The usefulness of the models stems from their ability to compute a link between genotype and phenotype, but their ability to accurately simulate gene-gene interactions has not been investigated extensively. Here we assess how accurately a metabolic model for Escherichia coli computes one particular type of gene-gene interaction, synthetic lethality, and find that the accuracy rate is between 25% and 43%.</description>
+    </item>
+    
+    <item>
+      <title>The MetaCyc database of metabolic pathways and enzymes and the BioCyc collection of pathway/genome databases.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26527732/</link>
+      <pubDate>Mon, 02 Nov 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26527732/</guid>
+      <description>The MetaCyc database (MetaCyc.org) is a freely accessible comprehensive database describing metabolic pathways and enzymes from all domains of life. The majority of MetaCyc pathways are small-molecule metabolic pathways that have been experimentally determined. MetaCyc contains more than 2400 pathways derived from &amp;gt;46,000 publications, and is the largest curated collection of metabolic pathways. BioCyc (BioCyc.org) is a collection of 5700 organism-specific Pathway/Genome Databases (PGDBs), each containing the full genome and predicted metabolic network of one organism, including metabolites, enzymes, reactions, metabolic pathways, predicted operons, transport systems, and pathway-hole fillers.</description>
+    </item>
+    
+    <item>
+      <title>BiGG Models: A platform for integrating, standardizing and sharing genome-scale models.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26476456/</link>
+      <pubDate>Sat, 17 Oct 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26476456/</guid>
+      <description>Genome-scale metabolic models are mathematically-structured knowledge bases that can be used to predict metabolic pathway usage and growth phenotypes. Furthermore, they can generate and test hypotheses when integrated with experimental data. To maximize the value of these models, centralized repositories of high-quality models must be established, models must adhere to established standards and model components must be linked to relevant databases. Tools for model visualization further enhance their utility. To meet these needs, we present BiGG Models (http://bigg.</description>
+    </item>
+    
+    <item>
+      <title>Cell scale host-pathogen modeling: another branch in the evolution of constraint-based methods.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26500611/</link>
+      <pubDate>Tue, 06 Oct 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26500611/</guid>
+      <description>Constraint-based models have become popular methods for systems biology as they enable the integration of complex, disparate datasets in a biologically cohesive framework that also supports the description of biological processes in terms of basic physicochemical constraints and relationships. The scope, scale, and application of genome scale models have grown from single cell bacteria to multi-cellular interaction modeling; host-pathogen modeling represents one of these examples at the current horizon of constraint-based methods.</description>
+    </item>
+    
+    <item>
+      <title>Model-driven discovery of synergistic inhibitors against E. coli and S. enterica serovar Typhimurium targeting a novel synthetic lethal pair, aldA and prpC.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26441892/</link>
+      <pubDate>Wed, 23 Sep 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26441892/</guid>
+      <description>Mathematical models of biochemical networks form a cornerstone of bacterial systems biology. Inconsistencies between simulation output and experimental data point to gaps in knowledge about the fundamental biology of the organism. One such inconsistency centers on the gene aldA in Escherichia coli: it is essential in a computational model of E. coli metabolism, but experimentally it is not. Here, we reconcile this disparity by providing evidence that aldA and prpC form a synthetic lethal pair, as the double knockout could only be created through complementation with a plasmid-borne copy of aldA.</description>
+    </item>
+    
+    <item>
+      <title>Escher: A Web Application for Building, Sharing, and Embedding Data-Rich Visualizations of Biological Pathways.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26313928/</link>
+      <pubDate>Thu, 27 Aug 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26313928/</guid>
+      <description>Escher is a web application for visualizing data on biological pathways. Three key features make Escher a uniquely effective tool for pathway visualization. First, users can rapidly design new pathway maps. Escher provides pathway suggestions based on user data and genome-scale models, so users can draw pathways in a semi-automated way. Second, users can visualize data related to genes or proteins on the associated reactions and pathways, using rules that define which enzymes catalyze each reaction.</description>
+    </item>
+    
+    <item>
+      <title>Tools for visualization and analysis of molecular networks, pathways, and -omics data.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26082651/</link>
+      <pubDate>Thu, 04 Jun 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26082651/</guid>
+      <description>Biological pathways have become the standard way to represent the coordinated reactions and actions of a series of molecules in a cell. A series of interconnected pathways is referred to as a biological network, which denotes a more holistic view on the entanglement of cellular reactions. Biological pathways and networks are not only an appropriate approach to visualize molecular reactions. They have also become one leading method in -omics data analysis and visualization.</description>
+    </item>
+    
+    <item>
+      <title>Using Genome-scale Models to Predict Biological Capabilities.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26000478/</link>
+      <pubDate>Sat, 23 May 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26000478/</guid>
+      <description>Constraint-based reconstruction and analysis (COBRA) methods at the genome scale have been under development since the first whole-genome sequences appeared in the mid-1990s. A few years ago, this approach began to demonstrate the ability to predict a range of cellular functions, including cellular growth capabilities on various substrates and the effect of gene knockouts at the genome scale. Thus, much interest has developed in understanding and applying these methods to areas such as metabolic engineering, antibiotic design, and organismal and enzyme evolution.</description>
+    </item>
+    
+    <item>
+      <title>Using bioconductor package BiGGR for metabolic flux estimation based on gene expression changes in brain.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm25806817/</link>
+      <pubDate>Wed, 25 Mar 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm25806817/</guid>
+      <description>Predicting the distribution of metabolic fluxes in biochemical networks is of major interest in systems biology. Several databases provide metabolic reconstructions for different organisms. Software to analyze flux distributions exists, among others for the proprietary MATLAB environment. Given the large user community for the R computing environment, a simple implementation of flux analysis in R appears desirable and will facilitate easy interaction with computational tools to handle gene expression data. We extended the R software package BiGGR, an implementation of metabolic flux analysis in R.</description>
+    </item>
+    
+    <item>
+      <title>Integration of a constraint-based metabolic model of Brassica napus developing seeds with (13)C-metabolic flux analysis.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm25566296/</link>
+      <pubDate>Fri, 19 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm25566296/</guid>
+      <description>The use of large-scale or genome-scale metabolic reconstructions for modeling and simulation of plant metabolism and integration of those models with large-scale omics and experimental flux data is becoming increasingly important in plant metabolic research. Here we report an updated version of bna572, a bottom-up reconstruction of oilseed rape (Brassica napus L.; Brassicaceae) developing seeds with emphasis on representation of biomass-component biosynthesis. New features include additional seed-relevant pathways for isoprenoid, sterol, phenylpropanoid, flavonoid, and choline biosynthesis.</description>
+    </item>
+    
+    <item>
+      <title>Synthetic biology outside the cell: linking computational tools to cell-free systems.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm25538941/</link>
+      <pubDate>Tue, 09 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm25538941/</guid>
+      <description>As mathematical models become more commonly integrated into the study of biology, a common language for describing biological processes is manifesting. Many tools have emerged for the simulation of in vivo synthetic biological systems, with only a few examples of prominent work done on predicting the dynamics of cell-free synthetic systems. At the same time, experimental biologists have begun to study dynamics of in vitro systems encapsulated by amphiphilic molecules, opening the door for the development of a new generation of biomimetic systems.</description>
+    </item>
+    
+    <item>
+      <title>Improving collaboration by standardization efforts in systems biology.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm25538939/</link>
+      <pubDate>Mon, 08 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm25538939/</guid>
+      <description>Collaborative genome-scale reconstruction endeavors of metabolic networks would not be possible without a common, standardized formal representation of these systems. The ability to precisely define biological building blocks together with their dynamic behavior has even been considered a prerequisite for upcoming synthetic biology approaches. Driven by the requirements of such ambitious research goals, standardization itself has become an active field of research on nearly all levels of granularity in biology. In addition to the originally envisaged exchange of computational models and tool interoperability, new standards have been suggested for an unambiguous graphical display of biological phenomena, to annotate, archive, as well as to rank models, and to describe execution and the outcomes of simulation experiments.</description>
+    </item>
+    
+    <item>
+      <title>Current advances in systems and integrative biology.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm25379142/</link>
+      <pubDate>Wed, 27 Aug 2014 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm25379142/</guid>
+      <description>Systems biology has gained a tremendous amount of interest in the last few years. This is partly due to the realization that traditional approaches focusing only on a few molecules at a time cannot describe the impact of aberrant or modulated molecular environments across a whole system. Furthermore, a hypothesis-driven study aims to prove or disprove its postulations, whereas a hypothesis-free systems approach can yield an unbiased and novel testable hypothesis as an end-result.</description>
+    </item>
+    
+    <item>
+      <title>Whole Cell Modeling: From Single Cells to Colonies.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26989262/</link>
+      <pubDate>Thu, 31 Jul 2014 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26989262/</guid>
+      <description>A great deal of research over the last several years has focused on how the inherent randomness in movements and reactivity of biomolecules can give rise to unexpected large-scale differences in the behavior of otherwise identical cells. Our own research has approached this problem from two vantage points - a microscopic kinetic view of the individual molecules (nucleic acids, proteins, etc.) diffusing and interacting in a crowded cellular environment; and a broader systems-level view of how enzyme variability can give rise to well-defined metabolic phenotypes.</description>
+    </item>
+    
+    <item>
+      <title>A genome-scale metabolic flux model of Escherichia coli K-12 derived from the EcoCyc database.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm24974895/</link>
+      <pubDate>Mon, 30 Jun 2014 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm24974895/</guid>
+      <description>Constraint-based models of Escherichia coli metabolic flux have played a key role in computational studies of cellular metabolism at the genome scale. We sought to develop a next-generation constraint-based E. coli model that achieved improved phenotypic prediction accuracy while being frequently updated and easy to use. We also sought to compare model predictions with experimental data to highlight open questions in E. coli biology.</description>
+    </item>
+    
+    <item>
+      <title>A data integration and visualization resource for the metabolic network of Synechocystis sp. PCC 6803.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm24402049/</link>
+      <pubDate>Wed, 08 Jan 2014 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm24402049/</guid>
+      <description>Data integration is a central activity in systems biology. The integration of genomic, transcript, protein, metabolite, flux, and computational data yields unprecedented information about the system level functioning of organisms. Often, data integration is done purely computationally, leaving the user with little insight in addition to statistical information. In this article, we present a visualization tool for the metabolic network of Synechocystis sp. PCC 6803, an important model cyanobacterium for sustainable biofuel production.</description>
+    </item>
+    
+    <item>
+      <title>Sybil--efficient constraint-based modelling in R.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm24224957/</link>
+      <pubDate>Wed, 13 Nov 2013 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm24224957/</guid>
+      <description>Constraint-based analyses of metabolic networks are widely used to simulate the properties of genome-scale metabolic networks. Publicly available implementations tend to be slow, impeding large scale analyses such as the genome-wide computation of pairwise gene knock-outs, or the automated search for model improvements. Furthermore, available implementations cannot easily be extended or adapted by users.</description>
+    </item>
+    
+    <item>
+      <title>Path2Models: large-scale generation of computational models from biochemical pathway maps.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm24180668/</link>
+      <pubDate>Fri, 01 Nov 2013 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm24180668/</guid>
+      <description>Systems biology projects and omics technologies have led to a growing number of biochemical pathway models and reconstructions. However, the majority of these models are still created de novo, based on literature mining and the manual processing of pathway data.</description>
+    </item>
+    
+    <item>
+      <title>Solving gap metabolites and blocked reactions in genome-scale models: application to the metabolic network of Blattabacterium cuenoti.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm24176055/</link>
+      <pubDate>Thu, 31 Oct 2013 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm24176055/</guid>
+      <description>Metabolic reconstruction is the computational-based process that aims to elucidate the network of metabolites interconnected through reactions catalyzed by activities assigned to one or more genes. Reconstructed models may contain inconsistencies that appear as gap metabolites and blocked reactions. Although automatic methods for solving this problem have been previously developed, there are many situations where manual curation is still needed.</description>
+    </item>
+    
+    <item>
+      <title>GIM3E: condition-specific models of cellular metabolism developed from metabolomics and expression data.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm23975765/</link>
+      <pubDate>Fri, 23 Aug 2013 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm23975765/</guid>
+      <description>Genome-scale metabolic models have been used extensively to investigate alterations in cellular metabolism. The accuracy of these models to represent cellular metabolism in specific conditions has been improved by constraining the model with omics data sources. However, few practical methods for integrating metabolomics data with other omics data sources into genome-scale models of metabolism have been developed.</description>
     </item>
     
   </channel>

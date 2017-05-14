@@ -5,7 +5,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="description" content="My personal website incuding Posts and my CV.">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-	<meta name="generator" content="Hugo 0.19-DEV" />
+	<meta name="generator" content="Hugo 0.20.7" />
 	<title>cobrapy - constraint-based metabolic modeling in Python</title>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
@@ -55,6 +55,52 @@
 <div class="mdl-cell mdl-cell--6-col">
 <div class="mdl-card mdl-shadow--4dp">
 <div class="mdl-card__supporting-text">
+<span class="spaced"><h1 class="mdl-color-text--accent header">0.6.1</h1>
+<h2 class="mdl-color-text--indigo-800">patch release</h2></span>
+<p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable and does not include
+new features. All changes are backwards-compatible.
+</p>
+
+
+<h2 id="fixes">Fixes</h2>
+
+<ul>
+<li>Debug <code>metabolite.add_metabolites</code> with <code>combine=False</code>
+<a href="https://github.com/opencobra/cobrapy/issues/503">#503</a></li>
+<li>Fix broken printing of metabolites
+(<a href="https://github.com/opencobra/cobrapy/issues/502">#502</a>), by
+removing unnecessary <code>Frozendict</code></li>
+</ul>
+
+</div>
+<div class="mdl-card__actions mdl-card--border">
+    
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="https://github.com/opencobra/cobrapy/releases/tag/0.6.1">See on Github</a>
+</div>
+</div></div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+<div class="mdl-card mdl-shadow--4dp">
+<div class="mdl-card__supporting-text">
+<span class="spaced"><h1 class="mdl-color-text--accent header">0.6</h1>
+<h2 class="mdl-color-text--teal-600">minor release</h2></span>
+<p class="mdl-typography--caption mdl-color-text--grey-500">Currently, this is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+<p>In this release we have made major changes to pretty much all corners of cobrapy and we hope that you will enjoy the new features as much as we do, and that any negative impacts on existing workflows will be limited.
+The major change is the ongoing move away from cobrapy&rsquo;s internal solver interfaces to those provided by optlang which provides a single unified interface to glpk, cplex and gurobi enhanced by the ability to deal with symbolic expressions.</p>
+</div>
+<div class="mdl-card__actions mdl-card--border">
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="https://opencobra.github.io/cobrapy/releases/0.6.0/">Read more</a>
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="https://github.com/opencobra/cobrapy/releases/tag/0.6">See on Github</a>
+</div>
+</div></div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+<div class="mdl-card mdl-shadow--4dp">
+<div class="mdl-card__supporting-text">
 <span class="spaced"><h1 class="mdl-color-text--accent header">0.6 alpha</h1>
 <h2 class="mdl-color-text--deep-orange-600">alpha release</h2></span>
 <p class="mdl-typography--caption mdl-color-text--grey-500">This is an experimental release. It may still lack features or fixes.
@@ -79,7 +125,7 @@ The major change is the ongoing move away from cobrapy&rsquo;s internal solver i
 <p class="mdl-typography--caption mdl-color-text--grey-500">Currently, this is a stable release. It may include new functionality
 or backwards-incompatible changes.
 </p>
-<p>This is the current stable release for COBRApy. The final release is <strong>0.5.11</strong>.</p>
+<p>This is a former stable release for COBRApy. The final release for the 0.5 series was <strong>0.5.11</strong>.</p>
 
 <p>For a list of features please see the
 <a href="https://cobrapy.readthedocs.org/en/stable/">documentation</a>.</p>
