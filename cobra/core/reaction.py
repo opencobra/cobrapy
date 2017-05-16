@@ -710,8 +710,9 @@ class Reaction(Object):
         ----------
         metabolites_to_add : dict
             Dictionary with metabolite objects or metabolite identifiers as
-            keys and coefficients as values.
-
+            keys and coefficients as values. If keys are strings (name of a
+            metabolite) the reaction must already be part of a model and a
+            metabolite with the given name must exist in the model.
 
         combine : bool
             Describes behavior a metabolite already exists in the reaction.
@@ -752,7 +753,10 @@ class Reaction(Object):
                             raise e
                 elif isinstance(metabolite, string_types):
                     # if we want to handle creation, this should be changed
-                    raise ValueError("reaction '%s' does not belong to a model"
+                    raise ValueError("Reaction '%s' does not belong to a "
+                                     "model. Either add the reaction to a "
+                                     "model or use Metabolite objects instead "
+                                     "of strings as keys."
                                      % self.id)
                 self._metabolites[metabolite] = coefficient
                 # make the metabolite aware that it is involved in this
