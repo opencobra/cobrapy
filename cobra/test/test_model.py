@@ -324,7 +324,7 @@ class TestCobraModel:
             model.add_reaction(dummy_reaction)
             if not getattr(model, 'solver', None):
                 solver_dict[solver].create_problem(model)
-            model.remove_reactions([dummy_reaction], delete=False)
+            model.remove_reactions([dummy_reaction])
 
         benchmark(benchmark_add_reaction)
 
