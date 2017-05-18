@@ -17,11 +17,11 @@
       <pubDate>Sun, 07 May 2017 12:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.6.1/</guid>
-      <description> Fixes  Debug metabolite.add_metabolites with combine=False #503 Fix broken printing of metabolites (#502), by removing unnecessary Frozendict  </description>
+      <description> Fixes  Debug metabolite.add_metabolites with combine=False (#503) Fix broken printing of metabolites (#502), by removing unnecessary Frozendict  </description>
     </item>
     
     <item>
-      <title>0.6</title>
+      <title>0.6.0</title>
       <link>https://opencobra.github.io/cobrapy/releases/0.6.0/</link>
       <pubDate>Thu, 04 May 2017 12:00:00 +0000</pubDate>
       
@@ -31,22 +31,12 @@ The major change is the ongoing move away from cobrapy&amp;rsquo;s internal solv
     </item>
     
     <item>
-      <title>0.6 alpha</title>
-      <link>https://opencobra.github.io/cobrapy/releases/0.6_alpha/</link>
-      <pubDate>Mon, 13 Mar 2017 14:28:15 -0600</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/releases/0.6_alpha/</guid>
-      <description>In this release we have made major changes to pretty much all corners of cobrapy and we hope that you will enjoy the new features as much as we do, and that any negative impacts on existing workflows will be limited.
-The major change is the ongoing move away from cobrapy&amp;rsquo;s internal solver interfaces to those provided by optlang which provides a single unified interface to glpk, cplex and gurobi enhanced by the ability to deal with symbolic expressions.</description>
-    </item>
-    
-    <item>
-      <title>0.5</title>
-      <link>https://opencobra.github.io/cobrapy/releases/0.5/</link>
+      <title>0.5.11</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.5.11/</link>
       <pubDate>Mon, 30 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://opencobra.github.io/cobrapy/releases/0.5/</guid>
-      <description>This is a former stable release for COBRApy. The final release for the 0.5 series was 0.5.11.
+      <guid>https://opencobra.github.io/cobrapy/releases/0.5.11/</guid>
+      <description>This was the last release of the 0.5 series which was based on cobrapy&amp;rsquo;s own solver interfaces.
 For a list of features please see the documentation.</description>
     </item>
     
