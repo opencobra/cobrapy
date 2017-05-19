@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import types
+import logging
 from copy import copy, deepcopy
 from functools import partial
 from warnings import warn
@@ -24,6 +25,9 @@ from cobra.util.solver import (
     add_cons_vars_to_problem, remove_cons_vars_from_problem, choose_solver,
     check_solver_status)
 from cobra.util.util import AutoVivification
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Model(Object):
@@ -483,6 +487,8 @@ class Model(Object):
         if type in types:
             prefix, lb, ub = types[type]
             reaction_id = "{}_{}".format(prefix, metabolite.id)
+        if reaction_id in self.reactions:
+            raise ValueError('boundary %s already exists' % reaction_id)
         name = "{} {}".format(metabolite.name, type)
         rxn = Reaction(id=reaction_id, name=name, lower_bound=lb,
                        upper_bound=ub)
@@ -491,8 +497,10 @@ class Model(Object):
         return rxn
 
     def add_reactions(self, reaction_list):
-        """Will add a cobra.Reaction object to the model, if
-        reaction.id is not in self.reactions.
+        """Add reactions to the model.
+
+        Reactions with identifiers identical to a reaction already in the
+        model are ignored.
 
         The change is reverted upon exit when using the model as a context.
 
@@ -508,15 +516,12 @@ class Model(Object):
         except TypeError:
             reaction_list = DictList([reaction_list])
 
-        # Only add the reaction if one with the same ID is not already
-        # present in the model.
-        reactions_in_model = [i.id for i in reaction_list if i.id
-                              in self.reactions]
-
-        if len(reactions_in_model) > 0:
-            raise ValueError(
-                "The following reactions are already in the model: {}"
-                "".format(", ".join(reactions_in_model)))
+        # First check whether the metabolites exist in the model
+        existing = [rxn for rxn in reaction_list if rxn.id in self.reactions]
+        for rxn in existing:
+            LOGGER.info('skip adding reaction %s as already existing' % rxn.id)
+        reaction_list = [rxn for rxn in reaction_list
+                         if rxn.id not in existing]
 
         context = get_context(self)
 
