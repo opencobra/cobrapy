@@ -32,7 +32,7 @@ class TestReactions:
         assert reaction.gene_reaction_rule == "(g1 or g2) and g3"
         assert len(reaction.genes) == 3
         # adding reaction with a GPR propagates to the model
-        model.add_reaction(reaction)
+        model.add_reactions([reaction])
         assert len(model.genes) == 3
         # ensure the gene objects are the same in the model and reaction
         reaction_gene = list(reaction.genes)[0]
@@ -134,7 +134,7 @@ class TestReactions:
                        model.metabolites.get_by_id("g6p_c")] == -2
             reaction.add_metabolites({"h_c": 1})
             assert reaction._metabolites[
-                model.metabolites.get_by_id("h_c")] == 1
+                       model.metabolites.get_by_id("h_c")] == 1
             with pytest.raises(KeyError):
                 reaction.add_metabolites({"missing": 1})
 
@@ -149,10 +149,10 @@ class TestReactions:
         with model:
             reaction.add_metabolites({'h2o_c': 2.5}, combine=False)
             assert reaction._metabolites[
-                model.metabolites.get_by_id("h2o_c")] == 2.5
+                       model.metabolites.get_by_id("h2o_c")] == 2.5
 
         assert reaction._metabolites[
-            model.metabolites.get_by_id("h2o_c")] == old_stoich
+                   model.metabolites.get_by_id("h2o_c")] == old_stoich
 
         # test adding to a new Reaction
         reaction = Reaction("test")
@@ -214,7 +214,7 @@ class TestReactions:
         assert model.metabolites.h2o_c in pgi._metabolites
         assert "foo" not in model.metabolites
         with pytest.raises(AttributeError):
-            model.metabolites.foo
+            assert model.metabolites.foo
         assert len(model.metabolites) == m
 
     def test_bounds_setter(self, model):
@@ -374,7 +374,7 @@ class TestCobraModel:
             assert reaction in model.reactions
 
     def test_compartments(self, model):
-        assert set(model.compartments) == set(["c", "e"])
+        assert set(model.compartments) == {"c", "e"}
 
     def test_add_reaction(self, model):
         old_reaction_count = len(model.reactions)
@@ -433,8 +433,8 @@ class TestCobraModel:
 
         with model:
             model.add_reaction(dummy_reaction)
-            assert model.reactions.get_by_id(dummy_reaction.id) == \
-                dummy_reaction
+            assert model.reactions.get_by_id(
+                dummy_reaction.id) == dummy_reaction
             assert len(model.reactions) == old_reaction_count + 1
             assert len(model.metabolites) == old_metabolite_count + 2
             assert dummy_metabolite_1._model == model
@@ -690,6 +690,49 @@ class TestCobraModel:
         assert len(orphan_genes) == 0
         # 'check not dangling metabolites when running Model.add_reactions
         assert len(orphan_metabolites) == 0
+
+    def test_merge_models(self, model, tiny_toy_model):
+        with model, tiny_toy_model:
+            # add some cons/vars to tiny_toy_model for testing merging
+            tiny_toy_model.add_reactions([Reaction('EX_glc__D_e')])
+            variable = tiny_toy_model.problem.Variable('foo')
+            constraint = tiny_toy_model.problem.Constraint(
+                variable, ub=0, lb=0, name='constraint')
+            tiny_toy_model.add_cons_vars([variable, constraint])
+
+            # test merging to new model
+            merged = model.merge(tiny_toy_model, inplace=False,
+                                 objective='sum', prefix_existing='tiny_')
+            assert 'ex1' in merged.reactions
+            assert 'ex1' not in model.reactions
+            assert merged.reactions.ex1.objective_coefficient == 1
+            assert merged.reactions.get_by_id(
+                'Biomass_Ecoli_core').objective_coefficient == 1
+            assert 'tiny_EX_glc__D_e' in merged.reactions
+            assert 'foo' in merged.variables
+
+            # test reversible in-place model merging
+            with model:
+                model.merge(tiny_toy_model, inplace=True, objective='left',
+                            prefix_existing='tiny_')
+                assert 'ex1' in model.reactions
+                assert 'constraint' in model.constraints
+                assert 'foo' in model.variables
+                assert 'tiny_EX_glc__D_e' in model.reactions
+                assert model.objective.expression == model.reactions.get_by_id(
+                    'Biomass_Ecoli_core').flux_expression
+            assert 'ex1' not in model.reactions
+            assert 'constraint' not in model.constraints
+            assert 'foo' not in model.variables
+            assert 'tiny_EX_glc__D_e' not in model.reactions
+
+        # test the deprecated operator overloading
+        with model:
+            merged = model + tiny_toy_model
+            assert 'ex1' in merged.reactions
+        with model:
+            model += tiny_toy_model
+            assert 'ex1' in model.reactions
 
     @pytest.mark.parametrize("solver", list(solver_dict))
     def test_change_objective_benchmark(self, model, benchmark, solver):

@@ -25,18 +25,6 @@ solver_trials = ['glpk',
                                     reason='no cplex')]
 
 
-@pytest.fixture(scope="function")
-def tiny_toy_model():
-    model = Model("Toy Model")
-    m1 = Metabolite("M1")
-    d1 = Reaction("ex1")
-    d1.add_metabolites({m1: -1})
-    d1.upper_bound = 0
-    d1.lower_bound = -1000
-    model.add_reactions([d1])
-    return model
-
-
 @pytest.fixture(scope="function", params=solver_trials)
 def solved_model(request, model):
     model.solver = request.param

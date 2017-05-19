@@ -228,35 +228,25 @@ class Model(Object):
             set_active_bound(rxn, 0)
 
     def __add__(self, other_model):
-        """Adds two models. +
+        """Add the content of another model to this model (+).
 
-        The issue of reactions being able to exists in multiple Models now
-        arises, the same for metabolites and such.  This might be a little
-        difficult as a reaction with the same name / id in two models might
-        have different coefficients for their metabolites due to pH and whatnot
-        making them different reactions.
-
+        The model is copied as a new object, with a new model identifier,
+        and copies of all the reactions in the other model are added to this
+        model. The objective is the sum of the objective expressions for the
+        two models.
         """
-        new_model = self.copy()
-        new_reactions = deepcopy(other_model.reactions)
-        new_model.add_reactions(new_reactions)
-        new_model.id = self.id + '_' + other_model.id
-        return new_model
+        warn('use model.merge instead', DeprecationWarning)
+        return self.merge(other_model, objective='sum', inplace=False)
 
     def __iadd__(self, other_model):
-        """Adds a Model to this model +=
+        """Incrementally add the content of another model to this model (+=).
 
-        The issue of reactions being able to exists in multiple Models now
-        arises, the same for metabolites and such.  This might be a little
-        difficult as a reaction with the same name / id in two models might
-        have different coefficients for their metabolites due to pH and whatnot
-        making them different reactions.
-
+        Copies of all the reactions in the other model are added to this
+        model. The objective is the sum of the objective expressions for the
+        two models.
         """
-        new_reactions = deepcopy(other_model.reactions)
-        self.add_reactions(new_reactions)
-        self.id = self.id + '_' + other_model.id
-        return self
+        warn('use model.merge instead', DeprecationWarning)
+        return self.merge(other_model, objective='sum', inplace=True)
 
     def copy(self):
         """Provides a partial 'deepcopy' of the Model.  All of the Metabolite,
@@ -508,7 +498,6 @@ class Model(Object):
         ----------
         reaction_list : list
             A list of `cobra.Reaction` objects
-
         """
 
         try:
@@ -519,7 +508,7 @@ class Model(Object):
         # First check whether the metabolites exist in the model
         existing = [rxn for rxn in reaction_list if rxn.id in self.reactions]
         for rxn in existing:
-            LOGGER.info('skip adding reaction %s as already existing' % rxn.id)
+            LOGGER.info('skip adding reaction %s as already existing', rxn.id)
         reaction_list = [rxn for rxn in reaction_list
                          if rxn.id not in existing]
 
@@ -943,3 +932,54 @@ class Model(Object):
         """Pop the top context manager and trigger the undo functions"""
         context = self._contexts.pop()
         context.reset()
+
+    def merge(self, right, prefix_existing=None, inplace=True,
+              objective='left'):
+        """Merge two models to create a model with the reactions from both
+        models.
+
+        Custom constraints and variables from right models are also copied
+        to left model, however note that, constraints and variables are
+        assumed to be the same if they have the same name.
+
+        right : cobra.Model
+            The model to add reactions from
+        prefix_existing : string
+            Prefix the reaction identifier in the right that already exist
+            in the left model with this string.
+        inplace : bool
+            Add reactions from right directly to left model object.
+            Otherwise, create a new model leaving the left model untouched.
+            When done within the model as context, changes to the models are
+            reverted upon exit.
+        objective : string
+            One of 'left', 'right' or 'sum' for setting the objective of the
+            resulting model to that of the corresponding model or the sum of
+            both.
+        """
+        if inplace:
+            new_model = self
+        else:
+            new_model = self.copy()
+            new_model.id = '{}_{}'.format(self.id, right.id)
+        new_reactions = deepcopy(right.reactions)
+        if prefix_existing is not None:
+            existing = new_reactions.query(
+                lambda rxn: rxn.id in self.reactions)
+            for reaction in existing:
+                reaction.id = '{}{}'.format(prefix_existing, reaction.id)
+        new_model.add_reactions(new_reactions)
+        interface = new_model.problem
+        new_vars = [interface.Variable.clone(v) for v in right.variables if
+                    v.name not in new_model.variables]
+        new_model.add_cons_vars(new_vars)
+        new_cons = [interface.Constraint.clone(c, model=new_model.solver)
+                    for c in right.constraints if
+                    c.name not in new_model.constraints]
+        new_model.add_cons_vars(new_cons, sloppy=True)
+        new_model.objective = dict(
+            left=self.objective,
+            right=right.objective,
+            sum=self.objective.expression + right.objective.expression
+        )[objective]
+        return new_model
