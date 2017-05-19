@@ -16,6 +16,7 @@ except ImportError:
 
 import cobra.util.solver as sutil
 from cobra.solvers import solver_dict
+from cobra import Model, Metabolite, Reaction
 
 
 def pytest_addoption(parser):
@@ -60,6 +61,19 @@ def solved_model(data_directory):
               "rb") as infile:
         solution = _load(infile)
     return solution, model
+
+
+@pytest.fixture(scope="session")
+def tiny_toy_model():
+    tiny = Model("Toy Model")
+    m1 = Metabolite("M1")
+    d1 = Reaction("ex1")
+    d1.add_metabolites({m1: -1})
+    d1.upper_bound = 0
+    d1.lower_bound = -1000
+    tiny.add_reactions([d1])
+    tiny.objective = 'ex1'
+    return tiny
 
 
 @pytest.fixture(scope="function")
