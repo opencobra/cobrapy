@@ -147,7 +147,7 @@ setup(
     version="0.6.1",
     packages=find_packages(),
     setup_requires=setup_requirements,
-    install_requires=["future", "swiglpk", "optlang>=1.1.5", "ruamel.yaml",
+    install_requires=["future", "swiglpk", "optlang>=1.1.5", "ruamel.yaml<0.15",
                       "pandas>=0.17.0", "numpy>=1.6", "tabulate"],
     tests_require=["jsonschema > 2.5", "pytest", "pytest-benchmark"],
     extras_require=extras,
