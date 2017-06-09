@@ -56,6 +56,34 @@ projection : numpy.matrix
 """
 
 
+def shared_np_array(shape, data=None):
+    """Create a new numpy array that resides in shared memory.
+
+    Parameters:
+    ----------
+    shape : tuple of ints
+        The shape of the new array.
+    data : numpy.array
+        Data to copy to the new array. Has to have the same shape.
+    """
+    N = np.prod(shape)
+    array = Array(ctypes.c_double, int(N))
+    np_array = np.frombuffer(array.get_obj())
+    np_array.reshape(shape)
+
+    if data is not None:
+        if len(shape) != len(data.shape):
+            raise ValueError("`data` must have the same dimensions"
+                             "as the created array.")
+        same = all(x == y for x, y in zip(shape, data.shape))
+        if not same:
+            raise ValueError("`data` must have the same shape"
+                             "as the created array.")
+        np_array = data[:]
+
+    return np_array
+
+
 # Has to be declared outside of class to be used for multiprocessing :(
 def _step(sampler, x, delta, fraction=None):
     """Sample a new feasible point from the point `x` in direction `delta`."""
@@ -159,6 +187,8 @@ class HRSampler(object):
         # check if there any non-zero equality constraints
         equalities = prob.equalities
         b = prob.b
+        bounds = np.atleast_2d(prob.bounds).T
+        var_bounds = np.atleast_2d(prob.variable_bounds).T
         homogeneous = all(np.abs(b) < feasibility_tol)
         fixed_non_zero = np.abs(prob.variable_bounds[:, 1]) > feasibility_tol
         fixed_non_zero &= prob.variable_fixed
@@ -177,14 +207,17 @@ class HRSampler(object):
         projection = nulls.dot(nulls.T)
         # convert bounds to a matrix and add variable bounds as well
         return Problem(
-            equalities=equalities,
-            b=b,
-            inequalities=prob.inequalities,
-            bounds=np.atleast_2d(prob.bounds).T,
-            variable_fixed=prob.variable_fixed,
-            variable_bounds=np.atleast_2d(prob.variable_bounds).T,
-            projection=projection,
-            homogeneous=homogeneous)
+            equalities=shared_np_array(equalities.shape, equalities),
+            b=shared_np_array(b.shape, b),
+            inequalities=shared_np_array(prob.inequalities.shape,
+                                         prob.inequalities),
+            bounds=shared_np_array(bounds.shape, bounds),
+            variable_fixed=shared_np_array(prob.variable_fixed.shape,
+                                           prob.variable_fixed),
+            variable_bounds=shared_np_array(var_bounds.shape, var_bounds),
+            projection=shared_np_array(projection.shape, projection),
+            homogeneous=homogeneous
+        )
 
     def generate_fva_warmup(self):
         """Generate the warmup points for the sampler.
@@ -220,10 +253,12 @@ class HRSampler(object):
             # revert objective
             self.model.objective.set_linear_coefficients({variables[i]: 0})
         # Shrink warmup points to measure
-        self.warmup = self.warmup[0:self.n_warmup, ]
+        self.warmup = shared_np_array((self.n_warmup, len(variables)),
+                                      self.warmup[0:self.n_warmup, ])
         # Save projection into nullspace for non-zero right hand sides
         if not self.problem.homogeneous:
-            self._zero_warmup = self._reproject(self.warmup.T).T
+            self._zero_warmup = shared_np_array(
+                self.warmup.shape, self._reproject(self.warmup.T).T)
 
     def _reproject(self, p):
         """Reproject a point into the feasibility region."""
@@ -404,6 +439,10 @@ class ACHRSampler(HRSampler):
     the space in a wide manner. This also makes the generated sampling chain
     quasi-markovian since the center converges rapidly.
 
+    Memory usage is roughly in the order of (2 * number reactions)^2
+    due to the required projection matrices and warmup points. So large
+    models easily take up a few GB of RAM.
+
     References
     ----------
     .. [1] Direction Choice for Accelerated Convergence in Hit-and-Run Sampling
@@ -484,7 +523,7 @@ def _sample_chain(args):
 
     center and n_samples are updated locally and forgotten afterwards.
     """
-    sampler, n, idx = args       # has to be this way to work in Python 2.7
+    n, idx = args       # has to be this way to work in Python 2.7
     center = sampler.center
     np.random.seed((sampler._seed + idx) % np.iinfo(np.int32).max)
     pi = np.random.randint(sampler.n_warmup)
@@ -578,6 +617,12 @@ class OptGPSampler(HRSampler):
     processes larger than the requested sample number. For instance, if you
     have 3 processes and request 8 samples you will receive 9.
 
+    Memory usage is roughly in the order of (2 * number reactions)^2
+    due to the required projection matrices and warmup points. So large
+    models easily take up a few GB of RAM. However, most of the large matrices
+    are kept in shared memory. So the RAM usage is independent of the number
+    of processes.
+
     References
     ----------
     .. [1] Megchelenbrink W, Huynen M, Marchiori E (2014)
@@ -595,10 +640,8 @@ class OptGPSampler(HRSampler):
 
         # This maps our saved center into shared memory,
         # meaning they are synchronized across processes
-        shared_center = Array(ctypes.c_double, len(model.variables))
-        self.center = np.frombuffer(shared_center.get_obj())
-        # Has to be like this because we want a copy
-        self.center[:] = self.warmup.mean(axis=0)
+        self.center = shared_np_array((len(model.variables), ),
+                                      self.warmup.mean(axis=0))
 
     def sample(self, n, fluxes=True):
         """Generate a set of samples.
@@ -632,19 +675,26 @@ class OptGPSampler(HRSampler):
         we recommend to calculate large numbers of samples at once
         (`n` > 1000).
         """
+        def init():
+            global sampler
+            sampler = self
+
         if self.np > 1:
             n_process = np.ceil(n / self.np).astype(int)
             n = n_process * self.np
             # No with statement or starmap here since Python 2.x
             # does not support it :(
-            mp = Pool(self.np)
+            mp = Pool(self.np, initializer=init)
             chains = mp.map(
                 _sample_chain,
-                zip([self] * self.np, [n_process] * self.np, range(self.np)),
+                zip([n_process] * self.np, range(self.np)),
                 chunksize=1)
+            mp.close()
+            mp.join()
             chains = np.vstack(chains)
         else:
-            chains = _sample_chain((self, n, 0))
+            init()
+            chains = _sample_chain((n, 0))
 
         # Update the global center
         self.center = (self.n_samples * self.center +
