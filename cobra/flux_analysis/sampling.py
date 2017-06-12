@@ -56,6 +56,12 @@ projection : numpy.matrix
 """
 
 
+def mp_init(obj):
+    """Initialize the multiprocessing pool."""
+    global sampler
+    sampler = obj
+
+
 def shared_np_array(shape, data=None):
     """Create a new numpy array that resides in shared memory.
 
@@ -675,16 +681,12 @@ class OptGPSampler(HRSampler):
         we recommend to calculate large numbers of samples at once
         (`n` > 1000).
         """
-        def init():
-            global sampler
-            sampler = self
-
         if self.np > 1:
             n_process = np.ceil(n / self.np).astype(int)
             n = n_process * self.np
             # No with statement or starmap here since Python 2.x
             # does not support it :(
-            mp = Pool(self.np, initializer=init)
+            mp = Pool(self.np, initializer=mp_init, initargs=(self,))
             chains = mp.map(
                 _sample_chain,
                 zip([n_process] * self.np, range(self.np)),
@@ -693,7 +695,7 @@ class OptGPSampler(HRSampler):
             mp.join()
             chains = np.vstack(chains)
         else:
-            init()
+            mp_init(self)
             chains = _sample_chain((n, 0))
 
         # Update the global center
