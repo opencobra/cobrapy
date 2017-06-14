@@ -72,8 +72,8 @@ def shared_np_array(shape, data=None):
     data : numpy.array
         Data to copy to the new array. Has to have the same shape.
     """
-    N = np.prod(shape)
-    array = Array(ctypes.c_double, int(N))
+    size = np.prod(shape)
+    array = Array(ctypes.c_double, int(size))
     np_array = np.frombuffer(array.get_obj())
     np_array.reshape(shape)
 
@@ -229,14 +229,9 @@ class HRSampler(object):
         """Generate the warmup points for the sampler.
 
         Generates warmup points by setting each flux as the sole objective
-        and minimizing/maximizing it.
-
-        Parameters
-        ----------
-        solver : str or cobra solver interface, optional
-            The solver used for the arising LP problems.
-        **solver_args
-            Additional arguments passed to the solver.
+        and minimizing/maximizing it. Also caches the projection of the
+        warmup points into the nullspace for non-homogeneous problems (only
+        if necessary).
         """
         self.n_warmup = 0
         idx = np.hstack([self.fwd_idx, self.rev_idx])
