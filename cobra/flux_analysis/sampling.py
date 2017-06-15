@@ -75,7 +75,7 @@ def shared_np_array(shape, data=None):
     size = np.prod(shape)
     array = Array(ctypes.c_double, int(size))
     np_array = np.frombuffer(array.get_obj())
-    np_array.reshape(shape)
+    np_array = np_array.reshape(shape)
 
     if data is not None:
         if len(shape) != len(data.shape):
