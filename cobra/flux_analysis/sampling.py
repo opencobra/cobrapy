@@ -85,7 +85,7 @@ def shared_np_array(shape, data=None):
         if not same:
             raise ValueError("`data` must have the same shape"
                              "as the created array.")
-        np_array = data[:]
+        np_array[:] = data
 
     return np_array
 
