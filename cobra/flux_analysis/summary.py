@@ -54,11 +54,11 @@ def metabolite_summary(met, threshold=0.01, fva=False, floatfmt='.3g',
         flux_summary.index = flux_summary["id"]
         flux_summary["maximum"] = zeros(len(rxn_id))
         flux_summary["minimum"] = zeros(len(rxn_id))
-        for rxn in met.reactions:
+        for rid, rxn in zip(rxn_id, met.reactions):
             imax = rxn.metabolites[met] * fva_results.loc[rxn.id, "maximum"]
             imin = rxn.metabolites[met] * fva_results.loc[rxn.id, "minimum"]
-            flux_summary["fmax"] = imax if abs(imin) <= abs(imax) else imin
-            flux_summary["fmin"] = imin if abs(imin) <= abs(imax) else imax
+            flux_summary.loc[rid, "fmax"] = imax if abs(imin) <= abs(imax) else imin
+            flux_summary.loc[rid, "fmin"] = imin if abs(imin) <= abs(imax) else imax
 
     assert flux_summary.flux.sum() < 1E-6, "Error in flux balance"
 
