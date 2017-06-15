@@ -206,11 +206,13 @@ def _process_flux_dataframe(flux_dataframe, fva, threshold, floatfmt):
             (flux_dataframe.fmin.abs() > threshold) |
             (flux_dataframe.fmax.abs() > threshold)].copy()
 
+        flux_dataframe.loc[flux_dataframe.flux.abs() < threshold, 'flux'] = 0
+
     # Make all fluxes positive
     if not fva:
         flux_dataframe['is_input'] = flux_dataframe.flux >= 0
         flux_dataframe.flux = \
-            flux_dataframe.flux.abs().astype('float').round(6)
+            flux_dataframe.flux.abs().astype('float')
     else:
 
         def get_direction(flux, fmin, fmax):
