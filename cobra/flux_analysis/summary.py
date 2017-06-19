@@ -54,11 +54,13 @@ def metabolite_summary(met, threshold=0.01, fva=False, floatfmt='.3g',
         flux_summary.index = flux_summary["id"]
         flux_summary["maximum"] = zeros(len(rxn_id))
         flux_summary["minimum"] = zeros(len(rxn_id))
-        for rxn in met.reactions:
+        for rid, rxn in zip(rxn_id, met.reactions):
             imax = rxn.metabolites[met] * fva_results.loc[rxn.id, "maximum"]
             imin = rxn.metabolites[met] * fva_results.loc[rxn.id, "minimum"]
-            flux_summary["fmax"] = imax if abs(imin) <= abs(imax) else imin
-            flux_summary["fmin"] = imin if abs(imin) <= abs(imax) else imax
+            flux_summary.loc[rid, "fmax"] = (imax if abs(imin) <= abs(imax)
+                                             else imin)
+            flux_summary.loc[rid, "fmin"] = (imin if abs(imin) <= abs(imax)
+                                             else imax)
 
     assert flux_summary.flux.sum() < 1E-6, "Error in flux balance"
 
@@ -206,11 +208,13 @@ def _process_flux_dataframe(flux_dataframe, fva, threshold, floatfmt):
             (flux_dataframe.fmin.abs() > threshold) |
             (flux_dataframe.fmax.abs() > threshold)].copy()
 
+        flux_dataframe.loc[flux_dataframe.flux.abs() < threshold, 'flux'] = 0
+
     # Make all fluxes positive
     if not fva:
         flux_dataframe['is_input'] = flux_dataframe.flux >= 0
         flux_dataframe.flux = \
-            flux_dataframe.flux.abs().astype('float').round(6)
+            flux_dataframe.flux.abs().astype('float')
     else:
 
         def get_direction(flux, fmin, fmax):
