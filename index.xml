@@ -6,7 +6,7 @@
     <description>Recent content on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 07 May 2017 12:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 21 Jun 2017 11:09:08 -0500</lastBuildDate>
     
 	<atom:link href="https://opencobra.github.io/cobrapy/index.xml" rel="self" type="application/rss+xml" />
     
@@ -47,6 +47,21 @@ If you use cobrapy in a scientific publication, please cite our publication 😄
     </item>
     
     <item>
+      <title>0.6.2</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.6.2/</link>
+      <pubDate>Wed, 21 Jun 2017 11:09:08 -0500</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.6.2/</guid>
+      <description>&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix in the ordering and rounding of FVA summary
+&lt;a href=&#34;https://github.com/opencobra/cobrapy/pull/525&#34;&gt;#525&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Shared memory, improve speed during sampling
+&lt;a href=&#34;https://github.com/opencobra/cobrapy/pull/521&#34;&gt;#521&lt;/a&gt;</description>
+    </item>
+    
+    <item>
       <title>0.6.1</title>
       <link>https://opencobra.github.io/cobrapy/releases/0.6.1/</link>
       <pubDate>Sun, 07 May 2017 12:00:00 +0000</pubDate>
@@ -66,12 +81,39 @@ The major change is the ongoing move away from cobrapy&amp;rsquo;s internal solv
     </item>
     
     <item>
+      <title>DistributedFBA.jl: high-level, high-performance flux balance analysis in Julia.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28453682/</link>
+      <pubDate>Sun, 30 Apr 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28453682/</guid>
+      <description>Flux balance analysis and its variants are widely used methods for predicting steady-state reaction rates in biochemical reaction networks. The exploration of high dimensional networks with such methods is currently hampered by software performance limitations.</description>
+    </item>
+    
+    <item>
       <title>mminte</title>
       <link>https://opencobra.github.io/cobrapy/packages/mminte/</link>
       <pubDate>Mon, 24 Apr 2017 11:00:05 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/mminte/</guid>
       <description>MMinte (pronounced /‘minti/) is a set of widgets that allows you to explore the pairwise interactions (positive or negative) that occur in a microbial community. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. You can run the MMinte widgets as an integrated pipeline or run each widget independently.</description>
+    </item>
+    
+    <item>
+      <title>The JBEI quantitative metabolic modeling library (jQMM): a python library for modeling microbial metabolism.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28381205/</link>
+      <pubDate>Wed, 05 Apr 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28381205/</guid>
+      <description>Modeling of microbial metabolism is a topic of growing importance in biotechnology. Mathematical modeling helps provide a mechanistic understanding for the studied process, separating the main drivers from the circumstantial ones, bounding the outcomes of experiments and guiding engineering approaches. Among different modeling schemes, the quantification of intracellular metabolic fluxes (i.e. the rate of each reaction in cellular metabolism) is of particular interest for metabolic engineering because it describes how carbon and energy flow throughout the cell.</description>
+    </item>
+    
+    <item>
+      <title>Systems approach to characterize the metabolism of liver cancer stem cells expressing CD133.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28367990/</link>
+      <pubDate>Mon, 03 Apr 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28367990/</guid>
+      <description>Liver cancer stem cells (LCSCs) have attracted attention because they cause therapeutic resistance in hepatocellular carcinoma (HCC). Understanding the metabolism of LCSCs can be a key to developing therapeutic strategy, but metabolic characteristics have not yet been studied. Here, we systematically analyzed and compared the global metabolic phenotype between LCSCs and non-LCSCs using transcriptome and metabolome data. We also reconstructed genome-scale metabolic models (GEMs) for LCSC and non-LCSC to comparatively examine differences in their metabolism at genome-scale.</description>
     </item>
     
     <item>
@@ -126,7 +168,7 @@ micom allows you to construct a community model from a list on input COBRA model
       <pubDate>Mon, 27 Mar 2017 11:52:33 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/dd-decaf/</guid>
-      <description>Large EU-backed project bringing together leading academic partners from five European universities with five innovative European companies to address the challenge of building a comprehensive design tool. DD-DeCaF aims to develop cutting edge methods for using large scale data to design cell factories and communities for biotechnological applications.</description>
+      <description>DD-DeCaF is a Horizon 2020 project (grant agreement No 686070) bringing together leading academic partners from five European universities with five innovative European companies to address the challenge of building a comprehensive design tool. DD-DeCaF aims to develop cutting edge methods in order to use large scale data to design cell factories and communities for biotechnological applications. The project is built as a number of micro-services which can be used separately and via the web-based user-interface.</description>
     </item>
     
     <item>
