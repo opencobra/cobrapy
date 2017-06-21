@@ -36,10 +36,14 @@ also be
 `downloaded <https://readthedocs.org/projects/cobrapy/downloads/>`_.
 
 Please use the `Google
-Group <http://groups.google.com/group/cobra-pie>`_ for help.
+Group <http://groups.google.com/group/cobra-pie>`_ for help. When posting
+questions, please refer to these `StackOverflow
+guidelines <https://stackoverflow.com/help/how-to-ask>`_. You will make our
+life easier and thus receive better answers!
 Alternatively, you can use
 `gitter.im <https://gitter.im/opencobra/cobrapy>`_ for quick questions
-and discussions about cobrapy (faster response times).
+and discussions about cobrapy (faster response times). Please keep in mind that
+answers are given on a volunteer basis.
 
 More information about opencobra is available at the
 `website <http://opencobra.github.io/>`_.
