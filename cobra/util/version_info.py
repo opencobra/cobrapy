@@ -9,9 +9,6 @@ from __future__ import absolute_import, print_function
 from builtins import dict
 
 import platform
-import sys
-import codecs
-import importlib
 
 import pip
 
