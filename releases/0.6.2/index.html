@@ -52,23 +52,46 @@
 <p></p>
 <div class="mdl-card mdl-shadow--4dp">
 <div class="mdl-card__supporting-text">
-<h1 class="mdl-color-text--accent header">0.6.1</h1>
+<h1 class="mdl-color-text--accent header">0.6.2</h1>
 <h2 class="mdl-color-text--primary header">by The COBRApy Team</h2><br>
-<div>
-
-<h2 id="fixes">Fixes</h2>
+<div><h2 id="fixes">Fixes</h2>
 
 <ul>
-<li>Debug <code>metabolite.add_metabolites</code> with <code>combine=False</code>
-(<a href="https://github.com/opencobra/cobrapy/issues/503">#503</a>)</li>
-<li>Fix broken printing of metabolites
-(<a href="https://github.com/opencobra/cobrapy/issues/502">#502</a>), by
-removing unnecessary <code>Frozendict</code></li>
+<li>Fix in the ordering and rounding of FVA summary
+<a href="https://github.com/opencobra/cobrapy/pull/525">#525</a></li>
+<li>Shared memory, improve speed during sampling
+<a href="https://github.com/opencobra/cobrapy/pull/521">#521</a>
+</li>
+<li>Debug <code>model.remove_reactions</code> to properly work with context manager.
+This lead to the deprecation of <code>reaction.delete</code> as this was not compatible
+with the concept of being able to later revert the change.
+<a href="https://github.com/opencobra/cobrapy/issues/506">#506</a>,
+<a href="https://github.com/opencobra/cobrapy/pull/508">#508</a>.</li>
+<li>Adding two models (<code>modela + modelb</code>) again results in a model with
+the objective set to the sum of the two models objectives
+<a href="https://github.com/opencobra/cobrapy/issues/505">#505</a>.</li>
+<li>When adding reactions to a model, the reactions with identifiers
+identical to those in the model are
+ignored. <a href="https://github.com/opencobra/cobrapy/issues/511">#511</a></li>
 </ul>
-</div>
+
+<h2 id="new-features">New features</h2>
+
+<ul>
+<li><code>model.merge</code> can be used to merge two models, more flexibly than
+the overloaded + and += operators.</li>
+</ul>
+
+<h2 id="deprecated-features">Deprecated features</h2>
+
+<ul>
+<li><code>reaction.delete</code> has been deprecated in favor of <code>reaction.remove_from_model</code></li>
+<li>overloaded <code>+</code> and <code>+=</code> for <code>cobra.Model</code> are deprecated in favor of
+<code>model.merge</code></li>
+</ul></div>
 </div>
 <div class="mdl-card__actions mdl-card--border">
-    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="https://github.com/opencobra/cobrapy/releases/tag/0.6.1">See on Github</a>
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="https://github.com/opencobra/cobrapy/releases/tag/0.6.2">See on Github</a>
 </div>
 </div></div>
 	</main>

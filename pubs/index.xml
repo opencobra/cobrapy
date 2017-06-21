@@ -6,10 +6,37 @@
     <description>Recent content in Pubs on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 30 Mar 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 30 Apr 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://opencobra.github.io/cobrapy/pubs/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>DistributedFBA.jl: high-level, high-performance flux balance analysis in Julia.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28453682/</link>
+      <pubDate>Sun, 30 Apr 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28453682/</guid>
+      <description>Flux balance analysis and its variants are widely used methods for predicting steady-state reaction rates in biochemical reaction networks. The exploration of high dimensional networks with such methods is currently hampered by software performance limitations.</description>
+    </item>
+    
+    <item>
+      <title>The JBEI quantitative metabolic modeling library (jQMM): a python library for modeling microbial metabolism.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28381205/</link>
+      <pubDate>Wed, 05 Apr 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28381205/</guid>
+      <description>Modeling of microbial metabolism is a topic of growing importance in biotechnology. Mathematical modeling helps provide a mechanistic understanding for the studied process, separating the main drivers from the circumstantial ones, bounding the outcomes of experiments and guiding engineering approaches. Among different modeling schemes, the quantification of intracellular metabolic fluxes (i.e. the rate of each reaction in cellular metabolism) is of particular interest for metabolic engineering because it describes how carbon and energy flow throughout the cell.</description>
+    </item>
+    
+    <item>
+      <title>Systems approach to characterize the metabolism of liver cancer stem cells expressing CD133.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28367990/</link>
+      <pubDate>Mon, 03 Apr 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28367990/</guid>
+      <description>Liver cancer stem cells (LCSCs) have attracted attention because they cause therapeutic resistance in hepatocellular carcinoma (HCC). Understanding the metabolism of LCSCs can be a key to developing therapeutic strategy, but metabolic characteristics have not yet been studied. Here, we systematically analyzed and compared the global metabolic phenotype between LCSCs and non-LCSCs using transcriptome and metabolome data. We also reconstructed genome-scale metabolic models (GEMs) for LCSC and non-LCSC to comparatively examine differences in their metabolism at genome-scale.</description>
+    </item>
     
     <item>
       <title>Mackinac: a bridge between ModelSEED and COBRApy to generate and analyze genome-scale metabolic models.</title>

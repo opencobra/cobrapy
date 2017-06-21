@@ -6,10 +6,25 @@
     <description>Recent content in Releases on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 07 May 2017 12:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 21 Jun 2017 11:09:08 -0500</lastBuildDate>
     
 	<atom:link href="https://opencobra.github.io/cobrapy/releases/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>0.6.2</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.6.2/</link>
+      <pubDate>Wed, 21 Jun 2017 11:09:08 -0500</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.6.2/</guid>
+      <description>&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix in the ordering and rounding of FVA summary
+&lt;a href=&#34;https://github.com/opencobra/cobrapy/pull/525&#34;&gt;#525&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Shared memory, improve speed during sampling
+&lt;a href=&#34;https://github.com/opencobra/cobrapy/pull/521&#34;&gt;#521&lt;/a&gt;</description>
+    </item>
     
     <item>
       <title>0.6.1</title>
