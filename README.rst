@@ -18,7 +18,7 @@ for:
 
 - creating and managing metabolic models
 - accessing popular solvers
-- analyzing models with methods such as FVA, FBA, pFBA, MOMA etc. 
+- analyzing models with methods such as FVA, FBA, pFBA, MOMA etc.
 - inspecting models and drawing conclusions on gene essentiality,
   testing consequences of knock-outs etc.
 
@@ -68,7 +68,7 @@ Contributing
 ~~~~~~~~~~~~
 
 Contributions are always welcome! Please read the `contributions
-guideline <CONTRIBUTING.rst>`_ to get started.
+guideline <.github/CONTRIBUTING.rst>`_ to get started.
 
 License
 -------
@@ -100,5 +100,5 @@ Public License for more details.
 .. |Gitter| image:: https://badges.gitter.im/opencobra/cobrapy.svg
    :target: https://gitter.im/opencobra/cobrapy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 .. |Waffle| image:: https://badge.waffle.io/opencobra/cobrapy.png?label=ready&title=Ready
-   :target: https://waffle.io/opencobra/cobrapy 
+   :target: https://waffle.io/opencobra/cobrapy
    :alt: 'Stories in Ready'
