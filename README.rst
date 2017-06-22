@@ -18,7 +18,7 @@ for:
 
 - creating and managing metabolic models
 - accessing popular solvers
-- analyzing models with methods such as FVA, FBA, pFBA, MOMA etc. 
+- analyzing models with methods such as FVA, FBA, pFBA, MOMA etc.
 - inspecting models and drawing conclusions on gene essentiality,
   testing consequences of knock-outs etc.
 
@@ -36,10 +36,12 @@ also be
 `downloaded <https://readthedocs.org/projects/cobrapy/downloads/>`_.
 
 Please use the `Google
-Group <http://groups.google.com/group/cobra-pie>`_ for help.
-Alternatively, you can use
-`gitter.im <https://gitter.im/opencobra/cobrapy>`_ for quick questions
-and discussions about cobrapy (faster response times).
+Group <http://groups.google.com/group/cobra-pie>`_ for help. By writing a well formulated question, with sufficient
+detail, you are much more likely to quickly receive a good answer! Please refer to these `StackOverflow
+guidelines <https://stackoverflow.com/help/how-to-ask>`_ on how to ask questions.
+Alternatively, you can use `gitter.im <https://gitter.im/opencobra/cobrapy>`_ for quick questions
+and discussions about cobrapy (faster response times). Please keep in mind that answers are provided on a volunteer
+basis.
 
 More information about opencobra is available at the
 `website <http://opencobra.github.io/>`_.
@@ -68,7 +70,7 @@ Contributing
 ~~~~~~~~~~~~
 
 Contributions are always welcome! Please read the `contributions
-guideline <CONTRIBUTING.rst>`_ to get started.
+guideline <.github/CONTRIBUTING.rst>`_ to get started.
 
 License
 -------
@@ -100,5 +102,5 @@ Public License for more details.
 .. |Gitter| image:: https://badges.gitter.im/opencobra/cobrapy.svg
    :target: https://gitter.im/opencobra/cobrapy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 .. |Waffle| image:: https://badge.waffle.io/opencobra/cobrapy.png?label=ready&title=Ready
-   :target: https://waffle.io/opencobra/cobrapy 
+   :target: https://waffle.io/opencobra/cobrapy
    :alt: 'Stories in Ready'

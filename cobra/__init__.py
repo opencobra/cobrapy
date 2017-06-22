@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import
 
 # set the warning format to be on a single line
 import warnings as _warnings
@@ -11,6 +11,7 @@ from os.path import dirname as _dirname
 from cobra import design, flux_analysis, io
 from cobra.core import (
     DictList, Gene, Metabolite, Model, Object, Reaction, Species)
+from cobra.util.version_info import show_versions
 
 __version__ = "0.6.2"
 
