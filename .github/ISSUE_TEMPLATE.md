@@ -1,3 +1,11 @@
+#### Problem description
+
+Please explain:
+* **what** you tried to achieve,
+* **how** you went about it (referring to the code sample), and
+* **why** the current behaviour is a problem and what output
+  you expected instead.
+
 #### Code Sample
 
 Create a [minimal, complete, verifiable example
@@ -11,11 +19,6 @@ Create a [minimal, complete, verifiable example
 #### Actual Output
 
 #### Expected Output
-
-#### Problem description
-
-Explain **why** the current behaviour is a problem and why the expected output
-is a better solution.
 
 #### Output of `cobra.show_versions()`
 
