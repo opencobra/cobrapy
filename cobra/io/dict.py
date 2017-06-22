@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 
 from collections import OrderedDict
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 
 from numpy import bool_, float_
 from six import iteritems, string_types
@@ -166,12 +166,14 @@ def model_to_dict(model):
     cobra.io.model_from_dict
     """
     obj = OrderedDict()
-    obj["reactions"] = [reaction_to_dict(reaction)
-                        for reaction in model.reactions]
-    obj["metabolites"] = [metabolite_to_dict(metabolite)
-                          for metabolite in model.metabolites]
-    obj["genes"] = [gene_to_dict(gene)
-                    for gene in model.genes]
+    obj["reactions"] = sorted(
+        (reaction_to_dict(reaction) for reaction in model.reactions),
+        key=itemgetter("id"))
+    obj["metabolites"] = sorted(
+        (metabolite_to_dict(metabolite) for metabolite in model.metabolites),
+        key=itemgetter("id"))
+    obj["genes"] = sorted(
+        (gene_to_dict(gene) for gene in model.genes), key=itemgetter("id"))
     obj["id"] = model.id
     _update_optional(model, obj, _OPTIONAL_MODEL_ATTRIBUTES,
                      _ORDERED_OPTIONAL_MODEL_KEYS)
