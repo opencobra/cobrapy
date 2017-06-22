@@ -12,7 +12,7 @@ import platform
 
 import pip
 
-__all__ = ("print_info",)
+__all__ = ("show_versions",)
 
 SYS_ORDER = [
     "OS",
@@ -75,4 +75,5 @@ def show_versions():
     print("\nPackage Versions")
     print("================")
     for name in PKG_ORDER:
-        print(format_str.format(name, info[name]))
+        if name in info:
+            print(format_str.format(name, info[name]))
