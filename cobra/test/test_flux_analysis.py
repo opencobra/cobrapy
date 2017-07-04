@@ -699,10 +699,15 @@ class TestProductionEnvelope:
         df = production_envelope(model, ["EX_o2_e"])
         assert abs(sum(df.flux) - 9.342) < 0.001
 
+    def test_envelope_multi_reaction_objective(self, model):
+        obj = {model.reactions.EX_ac_e: 1,
+               model.reactions.EX_co2_e: 1}
+        with pytest.raises(ValueError):
+            production_envelope(model, "EX_o2_e", obj)
+
     def test_envelope_two(self, model):
         df = production_envelope(model, ["EX_glc__D_e", "EX_o2_e"],
-                                 objective="EX_ac_e",
-                                 c_source="EX_glc__D_e")
+                                 objective="EX_ac_e")
         assert abs(numpy.sum(df.carbon_yield) - 83.579) < 0.001
         assert abs(numpy.sum(df.flux) - 1737.466) < 0.001
         assert abs(numpy.sum(df.mass_yield) - 82.176) < 0.001
