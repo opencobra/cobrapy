@@ -280,6 +280,28 @@ class TestCobraFluxAnalysis:
         benchmark(flux_variability_analysis, model, loopless=True,
                   solver=solver, reaction_list=model.reactions[1::3])
 
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_pfba_flux_variability(self, model, pfba_fva_results,
+                                   fva_results, solver):
+        with pytest.warns(UserWarning):
+            flux_variability_analysis(
+                model, pfba_factor=0.1, solver=solver,
+                reaction_list=model.reactions[1::3])
+        fva_out = flux_variability_analysis(
+            model, pfba_factor=1.1, solver=solver,
+            reaction_list=model.reactions)
+        for name, result in iteritems(fva_out.T):
+            for k, v in iteritems(result):
+                assert abs(pfba_fva_results[k][name] - v) < 0.00001
+                assert abs(pfba_fva_results[k][name]) <= abs(
+                    fva_results[k][name])
+        loop_reactions = [model.reactions.get_by_id(rid)
+                          for rid in ("FRD7", "SUCDi")]
+        fva_loopless = flux_variability_analysis(
+            model, solver=solver, pfba_factor=1.1,
+            reaction_list=loop_reactions, loopless=True)
+        assert numpy.allclose(fva_loopless["maximum"], fva_loopless["minimum"])
+
     @pytest.mark.parametrize("solver", all_solvers)
     def test_flux_variability(self, model, fva_results, solver):
         if solver == "esolver":
@@ -291,7 +313,7 @@ class TestCobraFluxAnalysis:
                 assert abs(fva_results[k][name] - v) < 0.00001
 
     @pytest.mark.parametrize("solver", optlang_solvers)
-    def test_flux_variability_loopless(self, model, fva_results, solver):
+    def test_flux_variability_loopless(self, model, solver):
         loop_reactions = [model.reactions.get_by_id(rid)
                           for rid in ("FRD7", "SUCDi")]
         fva_normal = flux_variability_analysis(

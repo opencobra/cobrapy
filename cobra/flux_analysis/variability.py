@@ -4,14 +4,16 @@ from __future__ import absolute_import
 
 import pandas
 from sympy.core.singleton import S
+from warnings import warn
 
 from cobra.flux_analysis.loopless import loopless_fva_iter
+from cobra.flux_analysis.parsimonious import add_pfba
 from cobra.core import get_solution
 from cobra.util import solver as sutil
 
 
 def flux_variability_analysis(model, reaction_list=None, loopless=False,
-                              fraction_of_optimum=1.0,
+                              fraction_of_optimum=1.0, pfba_factor=None,
                               solver=None, **solver_args):
     """Runs flux variability analysis to find the min/max flux values for each
     each reaction in `reaction_list`.
@@ -29,7 +31,16 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
     fraction_of_optimum : float, optional
         Must be <= 1.0. Requires that the objective value is at least
         fraction * max_objective_value. A value of 0.85 for instance means that
-        the objective has to be at least at 95% percent of its maximum.
+        the objective has to be at least at 85% percent of its maximum.
+    pfba_factor : float, optional
+        Add additional constraint to the model that the total sum of
+        absolute fluxes must not be larger than this value times the
+        smallest possible sum of absolute fluxes, i.e., by setting the value
+        to 1.1 then the total sum of absolute fluxes must not be more than
+        10% larger than the pfba solution. Since the pfba solution is the
+        one that optimally minimizes the total flux sum, the pfba_factor
+        should, if set, be larger than one. Setting this value may lead to
+        more realistic predictions of the effective flux bounds.
     solver : str, optional
         Name of the solver to be used. If None it will respect the solver set
         in the model (model.solver).
@@ -81,8 +92,10 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
 
     if not legacy:
         fva_result = _fva_optlang(model, reaction_list, fraction_of_optimum,
-                                  loopless)
+                                  loopless, pfba_factor)
     else:
+        if pfba_factor is not None:
+            ValueError('pfba_factor only supported for optlang interfaces')
         fva_result = _fva_legacy(model, reaction_list, fraction_of_optimum,
                                  "maximize", solver, **solver_args)
     return pandas.DataFrame(fva_result).T
@@ -141,21 +154,34 @@ def calculate_lp_variability(lp, solver, cobra_model, reaction_list,
     return fva_results
 
 
-def _fva_optlang(model, reaction_list, fraction, loopless):
+def _fva_optlang(model, reaction_list, fraction, loopless, pfba_factor):
     """Helper function to perform FVA with the optlang interface.
 
     Parameters
     ----------
     model : a cobra model
     reaction_list : list of reactions
+    fraction : float, optional
+        Must be <= 1.0. Requires that the objective value is at least
+        fraction * max_objective_value. A value of 0.85 for instance means that
+        the objective has to be at least at 85% percent of its maximum.
+    loopless : boolean, optional
+        Whether to return only loopless solutions.
+    pfba_factor : float, optional
+        Add additional constraint to the model that the total sum of
+        absolute fluxes must not be larger than this value times the
+        smallest possible sum of absolute fluxes, i.e., by setting the value
+        to 1.1 then the total sum of absolute fluxes must not be more than
+        10% larger than the pfba solution. Setting this value may lead to
+        more realistic predictions of the effective flux bounds.
 
     Returns
     -------
     dict
         A dictionary containing the results.
     """
-    fva_results = {str(rxn): {} for rxn in reaction_list}
     prob = model.problem
+    fva_results = {str(rxn): {} for rxn in reaction_list}
     with model as m:
         m.solver.optimize()
         sutil.assert_optimal(m, message="There is no optimal solution for "
@@ -169,7 +195,22 @@ def _fva_optlang(model, reaction_list, fraction, loopless):
             m.solver.objective.expression - fva_old_objective, lb=0, ub=0,
             name="fva_old_objective_constraint")
         m.add_cons_vars([fva_old_objective, fva_old_obj_constraint])
-        model.objective = S.Zero  # This will trigger the reset as well
+
+        if pfba_factor is not None:
+            if pfba_factor < 1.:
+                warn('pfba_factor should be larger or equal to 1', UserWarning)
+            with m:
+                add_pfba(m, fraction_of_optimum=0)
+                m.solver.optimize()
+                sutil.assert_optimal(m)
+                ub = m.solver.objective.value
+                flux_sum = prob.Variable("flux_sum", ub=pfba_factor * ub)
+                flux_sum_constraint = prob.Constraint(
+                    m.solver.objective.expression - flux_sum, lb=0, ub=0,
+                    name="flux_sum_constraint")
+            m.add_cons_vars([flux_sum, flux_sum_constraint])
+
+        m.objective = S.Zero  # This will trigger the reset as well
         for what in ("minimum", "maximum"):
             sense = "min" if what == "minimum" else "max"
             for rxn in reaction_list:
