@@ -90,6 +90,8 @@ raven = load_matlab_model("raven.mat")
 with open("raven.pickle", "wb") as outfile:
     dump(raven, outfile, protocol=2)
 
+# TODO:these need a reference solutions rather than circular solution checking!
+
 # fva results
 fva_result = cobra.flux_analysis.flux_variability_analysis(textbook)
 clean_result = OrderedDict()
@@ -98,8 +100,16 @@ for key in sorted(fva_result):
 with open("textbook_fva.json", "w") as outfile:
     json_dump(clean_result, outfile)
 
+# fva with pfba constraint
+fva_result = cobra.flux_analysis.flux_variability_analysis(textbook,
+                                                           pfba_factor=1.1)
+clean_result = OrderedDict()
+for key in sorted(fva_result):
+    clean_result[key] = {k: round(v, 5) for k, v in fva_result[key].items()}
+with open("textbook_pfba_fva.json", "w") as outfile:
+    json_dump(clean_result, outfile)
+
 # textbook solution
-# TODO: this needs a reference solution rather than circular solution checking!
 solution = cobra.flux_analysis.parsimonious.pfba(textbook)
 with open('textbook_solution.pickle', 'wb') as f:
     dump(solution, f, protocol=2)

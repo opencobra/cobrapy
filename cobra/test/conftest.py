@@ -76,9 +76,15 @@ def tiny_toy_model():
     return tiny
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def fva_results(data_directory):
     with open(join(data_directory, "textbook_fva.json"), "r") as infile:
+        return json.load(infile)
+
+
+@pytest.fixture(scope="session")
+def pfba_fva_results(data_directory):
+    with open(join(data_directory, "textbook_pfba_fva.json"), "r") as infile:
         return json.load(infile)
 
 

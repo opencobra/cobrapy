@@ -1,4 +1,4 @@
-# Release notes for cobrapy 0.6.3
+# Release notes for cobrapy x.y.z
 
 ## Fixes
 
@@ -8,6 +8,9 @@
   unit tests).
 
 ## New features
+- `flux_variability_analysis` now has the `pfba_factor` parameter
+  which enables the inclusion of a constraint on the max sum of
+  absolute fluxes when doing FVA.
 
 ## Deprecated features
 
