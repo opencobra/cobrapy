@@ -283,6 +283,8 @@ def model_to_pymatbridge(model, variable_name="model", matlab=None):
         used in IPython magics.
 
     """
+    if scipy_sparse is None:
+        raise ImportError("`model_to_pymatbridge` requires scipy!")
     if matlab is None:  # assumed to be running an IPython magic
         from IPython import get_ipython
         matlab = get_ipython().magics_manager.registry["MatlabMagics"].Matlab
