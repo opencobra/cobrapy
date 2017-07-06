@@ -17,6 +17,7 @@ from cobra.core import Metabolite, Model, Reaction
 from cobra.flux_analysis import *
 from cobra.flux_analysis.parsimonious import add_pfba
 from cobra.flux_analysis.sampling import ACHRSampler, OptGPSampler
+from cobra.flux_analysis.reaction import assess
 from cobra.manipulation import convert_to_irreversible
 from cobra.solvers import SolverNotFound, get_solver_name, solver_dict
 from cobra.exceptions import Infeasible
@@ -683,3 +684,23 @@ class TestProductionEnvelope:
         assert abs(numpy.sum(df.carbon_yield) - 83.579) < 0.001
         assert abs(numpy.sum(df.flux) - 1737.466) < 0.001
         assert abs(numpy.sum(df.mass_yield) - 82.176) < 0.001
+
+
+class TestReactionUtils:
+    """test the assess_ functions in reactions.py"""
+
+    @pytest.mark.parametrize("solver", all_solvers)
+    def test_assess(self, model, solver):
+        with model:
+            assert assess(model, model.reactions.GLCpts, solver=solver) is True
+            pyr = model.metabolites.pyr_c
+            a = Metabolite('a')
+            b = Metabolite('b')
+            model.add_metabolites([a, b])
+            pyr_a2b = Reaction('pyr_a2b')
+            pyr_a2b.add_metabolites({pyr: -1, a: -1, b: 1})
+            model.add_reactions([pyr_a2b])
+            res = assess(model, pyr_a2b, 0.01, solver=solver)
+            expected = {'precursors': {a: {'required': 0.01, 'produced': 0.0}},
+                        'products': {b: {'required': 0.01, 'capacity': 0.0}}}
+            assert res == expected
