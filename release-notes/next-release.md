@@ -16,6 +16,9 @@
   `cobra.flux_analysis.find_essential_reactions`.
 - `Model.optimize` has new parameter `raise_error` to enable option to
   get trigger exception if no feasible solution could be found.
+- `str(reaction)` now gives the more useful reaction id and the
+  reaction string.
 
 ## Deprecated features
 
+- `str(reaction)` no longer gives `reaction.id`.

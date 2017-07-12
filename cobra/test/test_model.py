@@ -94,6 +94,11 @@ class TestReactions:
         model.genes.A2B3.knock_out()
         assert not model.reactions.rxn.functional
 
+    def test_str(self):
+        rxn = Reaction('rxn')
+        rxn.add_metabolites({Metabolite('A'): -1, Metabolite('B'): 1})
+        assert str(rxn) == 'rxn: A --> B'
+
     @pytest.mark.parametrize("solver", list(solver_dict))
     def test_add_metabolite_benchmark(self, model, benchmark, solver):
         reaction = model.reactions.get_by_id("PGI")
