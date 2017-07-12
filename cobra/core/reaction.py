@@ -1036,6 +1036,10 @@ class Reaction(Object):
                     met = Metabolite(met_id)
                 self.add_metabolites({met: num})
 
+    def __str__(self):
+        return "{id}: {stoichiometry}".format(
+            id=self.id, stoichiometry=self.build_reaction_string())
+
     def _repr_html_(self):
         return """
         <table>

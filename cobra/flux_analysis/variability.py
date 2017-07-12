@@ -141,11 +141,11 @@ def _fva_legacy(cobra_model, reaction_list, fraction_of_optimum,
 def calculate_lp_variability(lp, solver, cobra_model, reaction_list,
                              **solver_args):
     """calculate max and min of selected variables in an LP"""
-    fva_results = {str(r): {} for r in reaction_list}
+    fva_results = {r.id: {} for r in reaction_list}
     for what in ("minimum", "maximum"):
         sense = "minimize" if what == "minimum" else "maximize"
         for r in reaction_list:
-            r_id = str(r)
+            r_id = r.id
             i = cobra_model.reactions.index(r_id)
             solver.change_variable_objective(lp, i, 1.)
             solver.solve_problem(lp, objective_sense=sense, **solver_args)
@@ -182,7 +182,7 @@ def _fva_optlang(model, reaction_list, fraction, loopless, pfba_factor):
         A dictionary containing the results.
     """
     prob = model.problem
-    fva_results = {str(rxn): {} for rxn in reaction_list}
+    fva_results = {rxn.id: {} for rxn in reaction_list}
     with model as m:
         m.slim_optimize(error_value=None,
                         message="There is no optimal solution for the "
@@ -213,7 +213,7 @@ def _fva_optlang(model, reaction_list, fraction, loopless, pfba_factor):
         for what in ("minimum", "maximum"):
             sense = "min" if what == "minimum" else "max"
             for rxn in reaction_list:
-                r_id = str(rxn)
+                r_id = rxn.id
                 rxn = m.reactions.get_by_id(r_id)
                 # The previous objective assignment already triggers a reset
                 # so directly update coefs here to not trigger redundant resets
