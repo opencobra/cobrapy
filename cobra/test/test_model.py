@@ -5,6 +5,7 @@ import warnings
 from copy import deepcopy
 
 import numpy
+from math import isnan
 import pytest
 import pandas as pd
 from sympy import S
@@ -13,6 +14,7 @@ import cobra.util.solver as su
 from cobra.core import Metabolite, Model, Reaction
 from cobra.solvers import solver_dict
 from cobra.util import create_stoichiometric_matrix
+from cobra.exceptions import OptimizationError
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
@@ -744,6 +746,14 @@ class TestCobraModel:
                 solver_dict[solver].create_problem(model)
 
         benchmark(benchmark_change_objective)
+
+    def test_slim_optimize(self, model):
+        with model:
+            assert model.slim_optimize() > 0.872
+            model.reactions.Biomass_Ecoli_core.lower_bound = 10
+            assert isnan(model.slim_optimize())
+            with pytest.raises(OptimizationError):
+                model.slim_optimize(error_value=None)
 
     def test_change_objective(self, model):
         # Test for correct optimization behavior

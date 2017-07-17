@@ -214,7 +214,7 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
     with model:
         model.objective = 1.0 * model.variables.fva_old_objective
         _add_cycle_free(model, sol.fluxes)
-        model.solver.optimize()
+        model.slim_optimize()
         flux = reaction.flux
 
         # If the previous optimum is maintained in the loopless solution it was
@@ -230,7 +230,7 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
         ll_sol = get_solution(model).fluxes
         bounds = reaction.bounds
         reaction.bounds = (current, current)
-        model.solver.optimize()
+        model.slim_optimize()
         almost_ll_sol = get_solution(model).fluxes
         reaction.bounds = bounds
         # find the reactions with loops using the current reaction and remove
@@ -244,7 +244,7 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
         if solution:
             best = model.optimize(objective_sense=None)
         else:
-            model.solver.optimize()
+            model.slim_optimize()
             best = reaction.flux
     return best
 

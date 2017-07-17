@@ -4,5 +4,11 @@
 
 ## New features
 
+- `Model.slim_optimize()` can be used perform optimization without
+  creating a solution. Can lead to significant speedup compared to
+  `Model.optimize` when repeatedly doing optimizations and only making
+  use of the objective value as avoiding the need to fetch all values
+  from the solver object.
+
 ## Deprecated features
 

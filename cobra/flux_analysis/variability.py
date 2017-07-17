@@ -183,9 +183,9 @@ def _fva_optlang(model, reaction_list, fraction, loopless, pfba_factor):
     prob = model.problem
     fva_results = {str(rxn): {} for rxn in reaction_list}
     with model as m:
-        m.solver.optimize()
-        sutil.assert_optimal(m, message="There is no optimal solution for "
-                                        "the chosen objective!")
+        m.slim_optimize(error_value=None,
+                        message="There is no optimal solution for the "
+                                "chosen objective!")
         # Add objective as a variable to the model than set to zero
         # This also uses the fraction to create the lower bound for the
         # old objective
@@ -201,9 +201,7 @@ def _fva_optlang(model, reaction_list, fraction, loopless, pfba_factor):
                 warn('pfba_factor should be larger or equal to 1', UserWarning)
             with m:
                 add_pfba(m, fraction_of_optimum=0)
-                m.solver.optimize()
-                sutil.assert_optimal(m)
-                ub = m.solver.objective.value
+                ub = m.slim_optimize(error_value=None)
                 flux_sum = prob.Variable("flux_sum", ub=pfba_factor * ub)
                 flux_sum_constraint = prob.Constraint(
                     m.solver.objective.expression - flux_sum, lb=0, ub=0,
@@ -223,7 +221,7 @@ def _fva_optlang(model, reaction_list, fraction, loopless, pfba_factor):
                 m.solver.objective.set_linear_coefficients(
                     {rxn.forward_variable: 1, rxn.reverse_variable: -1})
                 m.solver.objective.direction = sense
-                m.solver.optimize()
+                m.slim_optimize()
                 sutil.check_solver_status(m.solver.status)
                 if loopless:
                     value = loopless_fva_iter(m, rxn)
@@ -280,7 +278,7 @@ def find_blocked_reactions(model, reaction_list=None,
                              if abs(solution.x_dict[i.id]) < zero_cutoff]
         else:
             model.solver = solver_interface
-            model.solver.optimize()
+            model.slim_optimize()
             solution = get_solution(model, reactions=reaction_list)
             reaction_list = [rxn for rxn in reaction_list if
                              abs(solution.fluxes[rxn.id]) < zero_cutoff]

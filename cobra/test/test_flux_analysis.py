@@ -412,7 +412,7 @@ class TestCobraFluxAnalysis:
         add_loopless(ll_test_model)
         feasible_status = ll_test_model.optimize().status
         ll_test_model.reactions.v3.lower_bound = 1
-        ll_test_model.solver.optimize()
+        ll_test_model.slim_optimize()
         infeasible_status = ll_test_model.solver.status
         assert feasible_status == OPTIMAL
         assert infeasible_status == INFEASIBLE
