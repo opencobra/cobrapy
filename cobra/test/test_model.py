@@ -833,7 +833,7 @@ class TestCobraModel:
         # Test basic setting and getting methods
         medium = model.medium
         model.medium = medium
-        assert model.medium == medium
+        assert model.medium.to_dict() == medium.to_dict()
 
         # Test context management
         with model:

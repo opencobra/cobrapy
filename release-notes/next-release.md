@@ -12,6 +12,7 @@
 - solution, model, metabolite and reaction now have html
   representation so they give more informative prints in jupyter
   notebooks.
+- `Model.medium` now returns a data frame instead of dictionary.
 
 ## Deprecated features
 
