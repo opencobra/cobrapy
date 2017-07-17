@@ -243,7 +243,7 @@ class TestManipulation:
         m1 = Metabolite('m1', formula='()')
         r1 = Reaction('r1')
         r1.add_metabolites({m1: 1})
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError), pytest.warns(UserWarning):
             r1.check_mass_balance()
 
     def test_prune_unused(self, model):
