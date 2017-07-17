@@ -504,14 +504,6 @@ class TestReaction:
         assert pgi in g6p.reactions
         assert g6p in pgi.metabolites
 
-    def test_delete(self, model):
-        pgi = model.reactions.PGI
-        pgi.delete()
-        assert pgi.model is None
-        assert not ("PGI" in model.reactions)
-        assert not (pgi.id in model.variables)
-        assert not (pgi.reverse_id in model.variables)
-
     def test_change_id_is_reflected_in_solver(self, model):
         for i, reaction in enumerate(model.reactions):
             old_reaction_id = reaction.id

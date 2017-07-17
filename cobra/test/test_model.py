@@ -532,7 +532,8 @@ class TestCobraModel:
         # Delete without removing orphan
         model.reactions[0].add_metabolites({tmp_metabolite: 1})
         assert len(tmp_metabolite.reactions) == 1
-        model.reactions[0].delete(remove_orphans=False)
+        with pytest.warns(DeprecationWarning):
+            model.reactions[0].delete(remove_orphans=False)
         # make sure it's still in the model
         assert tmp_metabolite in model.metabolites
         assert len(tmp_metabolite.reactions) == 0

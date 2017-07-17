@@ -556,7 +556,8 @@ class Reaction(Object):
             Remove orphaned genes and metabolites from the model as well
 
         """
-        warn("delete is deprecated. Use reaction.remove_from_model instead")
+        warn("delete is deprecated. Use reaction.remove_from_model instead",
+             DeprecationWarning)
         self.remove_from_model(remove_orphans=remove_orphans)
 
     def __setstate__(self, state):
