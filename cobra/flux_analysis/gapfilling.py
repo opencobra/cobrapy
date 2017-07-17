@@ -7,7 +7,7 @@ from warnings import warn
 
 from optlang.interface import OPTIMAL
 from cobra.core import Model
-from cobra.util import assert_optimal, fix_objective_as_constraint
+from cobra.util import fix_objective_as_constraint
 
 
 class GapFiller(object):
@@ -227,8 +227,8 @@ class GapFiller(object):
         """
         used_reactions = list()
         for i in range(iterations):
-            self.model.solver.optimize()
-            assert_optimal(self.model, 'gapfilling optimization failed')
+            self.model.slim_optimize(error_value=None,
+                                     message='gapfilling optimization failed')
             solution = [self.model.reactions.get_by_id(ind.rxn_id)
                         for ind in self.indicators if
                         ind._get_primal() > self.integer_threshold]
@@ -242,7 +242,7 @@ class GapFiller(object):
     def validate(self, reactions):
         with self.original_model as model:
             model.add_reactions(reactions)
-            model.solver.optimize()
+            model.slim_optimize()
             return (model.solver.status == OPTIMAL and
                     model.solver.objective.value >= self.lower_bound)
 

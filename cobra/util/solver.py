@@ -383,9 +383,7 @@ def fix_objective_as_constraint(model, fraction=1, bound=None,
     if fix_objective_name in model.constraints:
         model.solver.remove(fix_objective_name)
     if bound is None:
-        model.solver.optimize()
-        assert_optimal(model)
-        bound = model.solver.objective.value * fraction
+        bound = model.slim_optimize(error_value=None) * fraction
     if model.objective.direction == 'max':
         ub, lb = None, bound
     else:

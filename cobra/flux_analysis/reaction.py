@@ -137,17 +137,11 @@ def assess_component(model, reaction, side, flux_coefficient_cutoff=0.001,
 
 
 def _optimize_or_value(model, value=0., solver=None):
-    # TODO: should be added to model class with some suitable name..
     legacy, _ = choose_solver(model, solver=solver)
     if legacy:
         return model.optimize(solver=solver).f
     else:
-        model.solver.optimize()
-        try:
-            assert_optimal(model)
-            return model.solver.objective.value
-        except OptimizationError:
-            return value
+        return model.slim_optimize(error_value=value)
 
 
 def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001,

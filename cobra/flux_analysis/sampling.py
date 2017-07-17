@@ -244,7 +244,7 @@ class HRSampler(object):
             if self.problem.variable_fixed[i]:
                 continue
             self.model.objective.set_linear_coefficients({variables[i]: 1})
-            self.model.solver.optimize()
+            self.model.slim_optimize()
             if not self.model.solver.status == OPTIMAL:
                 continue
             primals = self.model.solver.primal_values

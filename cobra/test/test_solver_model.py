@@ -554,7 +554,7 @@ class TestSolverBasedModel:
         new_mod.objective = model.objective
         assert (set(str(x) for x in model.objective.expression.args) == set(
             str(x) for x in new_mod.objective.expression.args))
-        new_mod.solver.optimize()
+        new_mod.slim_optimize()
         assert abs(new_mod.objective.value - 0.874) < 0.001
 
     def test_model_from_other_model(self, model):

@@ -162,7 +162,7 @@ def _pfba_optlang(model, objective=None, reactions=None,
     with model as m:
         add_pfba(m, objective=objective,
                  fraction_of_optimum=fraction_of_optimum)
-        m.solver.optimize()
+        m.slim_optimize(error_value=None)
         solution = get_solution(m, reactions=reactions)
     return solution
 

@@ -403,8 +403,8 @@ def envelope_for_points(model, reactions, grid, carbon_io):
             with model:
                 model.solver.objective.direction = sense
                 for reaction, coordinate in zip(reactions, point):
-                    reaction.bounds = (coordinate, coordinate)
-                model.solver.optimize()
+                    reaction.bounds = coordinate, coordinate
+                model.slim_optimize()
                 if model.solver.status == OPTIMAL:
                     for reaction, coordinate in zip(reactions, point):
                         results[reaction.id].append(coordinate)
@@ -526,8 +526,7 @@ def get_c_input(model):
        The medium reaction with highest input carbon flux
     """
     try:
-        model.solver.optimize()
-        sutil.assert_optimal(model)
+        model.slim_optimize(error_value=None)
     except OptimizationError:
         return None
 
