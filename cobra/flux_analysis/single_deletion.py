@@ -309,7 +309,7 @@ def single_gene_deletion_fba(cobra_model, gene_list, solver=None,
     return growth_rate_dict, status_dict
 
 
-def single_gene_deletion_moma(cobra_model, gene_list, linear=False, 
+def single_gene_deletion_moma(cobra_model, gene_list, linear=False,
                               solver=None, **solver_args):
     """Sequentially knocks out each gene in a model using MOMA.
 
