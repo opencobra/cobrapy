@@ -12,6 +12,8 @@
 - solution, model, metabolite and reaction now have html
   representation so they give more informative prints in jupyter
   notebooks.
+- New convenience functions `cobra.flux_analysis.find_essential_genes` and
+  `cobra.flux_analysis.find_essential_reactions`.
 
 ## Deprecated features
 

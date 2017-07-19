@@ -339,6 +339,21 @@ class TestCobraFluxAnalysis:
         result = find_blocked_reactions(model, model.reactions[40:46])
         assert result == ['FRUpts2']
 
+    def test_essential_genes(self, model):
+        essential_genes = {'b2779', 'b1779', 'b0720', 'b2416',
+                           'b2926', 'b1136', 'b2415'}
+        observed_essential_genes = {g.id for g in find_essential_genes(model)}
+        assert observed_essential_genes == essential_genes
+
+    def test_essential_reactions(self, model):
+        essential_reactions = {'GLNS', 'Biomass_Ecoli_core', 'PIt2r', 'GAPD',
+                               'ACONTb', 'EX_nh4_e', 'ENO', 'EX_h_e',
+                               'EX_glc__D_e', 'ICDHyr', 'CS', 'NH4t', 'GLCpts',
+                               'PGM', 'EX_pi_e', 'PGK', 'RPI', 'ACONTa'}
+        observed_essential_reactions = {r.id for r in
+                                        find_essential_reactions(model)}
+        assert observed_essential_reactions == essential_reactions
+
     @pytest.mark.parametrize("solver", all_solvers)
     def test_find_blocked_reactions(self, model, solver):
         result = find_blocked_reactions(model, model.reactions[40:46],

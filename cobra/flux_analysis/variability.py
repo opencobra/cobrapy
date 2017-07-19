@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 import pandas
 from sympy.core.singleton import S
+from six import iteritems
 from warnings import warn
 
 from cobra.flux_analysis.loopless import loopless_fva_iter
@@ -288,3 +289,66 @@ def find_blocked_reactions(model, reaction_list=None,
             solver=solver, **solver_args)
         return [rxn_id for rxn_id, min_max in flux_span.iterrows() if
                 max(abs(min_max)) < zero_cutoff]
+
+
+def find_essential_genes(model, threshold=0.01):
+    """Return a set of essential genes.
+
+    A gene is considered essential if restricting the flux of all reactions
+    that depends on it to zero causes the objective (e.g. the growth rate)
+    to also be zero.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to find the essential genes for.
+    threshold : float (default 0.01)
+        Minimal objective flux to be considered viable.
+
+    Returns
+    -------
+    set
+        Set of essential genes
+    """
+    essential = set()
+    solution = model.optimize(raise_error=True)
+    genes_to_check = set()
+    for reaction_id, flux in iteritems(solution.fluxes):
+        if abs(flux) > 0.:
+            genes_to_check.update(model.reactions.get_by_id(reaction_id).genes)
+    for gene in genes_to_check:
+        with model:
+            gene.knock_out()
+            if model.slim_optimize(error_value=0.) < threshold:
+                essential.add(gene)
+    return essential
+
+
+def find_essential_reactions(model, threshold=0.01):
+    """Return a set of essential reactions.
+
+    A reaction is considered essential if restricting its flux to zero
+    causes the objective (e.g. the growth rate) to also be zero.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to find the essential reactions for.
+    threshold : float (default 0.01)
+        Minimal objective flux to be considered viable.
+
+    Returns
+    -------
+    set
+        Set of essential reactions
+    """
+    essential = set()
+    solution = model.optimize(raise_error=True)
+    for reaction_id, flux in iteritems(solution.fluxes):
+        if abs(flux) > 0:
+            reaction = model.reactions.get_by_id(reaction_id)
+            with model:
+                reaction.knock_out()
+                if model.slim_optimize(error_value=0.) < threshold:
+                    essential.add(reaction)
+    return essential
