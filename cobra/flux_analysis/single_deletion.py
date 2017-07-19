@@ -4,7 +4,6 @@ from __future__ import absolute_import
 
 import pandas
 from six import iteritems, string_types
-from optlang.interface import OPTIMAL
 
 import cobra.solvers as legacy_solvers
 import cobra.util.solver as solvers
