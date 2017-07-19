@@ -173,8 +173,16 @@ class TestCobraFluxAnalysis:
             sutil.get_solver_name(qp=True)
         except sutil.SolverNotFound:
             pytest.skip("no qp support")
+
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
         benchmark(single_gene_deletion, model, gene_list=genes, method="moma")
+
+    @pytest.mark.skipif(scipy is None,
+                        reason="moma gene deletion requires scipy")
+    def test_single_deletion_linear_moma_benchmark(self, model, benchmark):
+        genes = ['b0008', 'b0114', 'b2276', 'b1779']
+        benchmark(single_gene_deletion, model, gene_list=genes, 
+                  method="linear moma")
 
     @pytest.mark.skipif(scipy is None,
                         reason="moma gene deletion requires scipy")
@@ -195,6 +203,23 @@ class TestCobraFluxAnalysis:
                    for gene, expected in iteritems(growth_dict))
         with model:
             add_moma(model)
+            with pytest.raises(ValueError):
+                add_moma(model)
+
+    @pytest.mark.skipif(scipy is None,
+                        reason="moma gene deletion requires scipy")
+    def test_single_gene_deletion_linear_moma(self, model):
+        # expected knockouts for textbook model
+        growth_dict = {"b0008": 0.87, "b0114": 0.76, "b0116": 0.65,
+                       "b2276": 0.08, "b1779": 0.00}
+
+        df = single_gene_deletion(model, gene_list=growth_dict.keys(),
+                                  method="linear moma")
+        assert numpy.all([df.status == 'optimal'])
+        assert all(abs(df.flux[gene] - expected) < 0.01
+                   for gene, expected in iteritems(growth_dict))
+        with model:
+            add_moma(model, linear=True)
             with pytest.raises(ValueError):
                 add_moma(model)
 

@@ -9,7 +9,7 @@ import cobra.util.solver as sutil
 from cobra.solvers import get_solver_name, solver_dict
 
 
-def add_moma(model):
+def add_moma(model, linear=False):
     """Add constraints and objective representing a MOMA
     (minimization of metabolic adjustment) model.
 
@@ -53,7 +53,8 @@ def add_moma(model):
         raise ValueError('model is already adjusted for MOMA')
 
     # Fall back to default QP solver if current one has no QP capability
-    model.solver = sutil.choose_solver(model, qp=True)[1]
+    if not linear:
+        model.solver = sutil.choose_solver(model, qp=True)[1]
 
     solution = model.optimize()
     prob = model.problem
@@ -64,11 +65,19 @@ def add_moma(model):
     new_obj = S.Zero
     for r in model.reactions:
         flux = solution.fluxes[r.id]
-        dist = prob.Variable("moma_dist_" + r.id)
-        const = prob.Constraint(r.flux_expression - dist, lb=flux, ub=flux,
-                                name="moma_constraint_" + r.id)
-        to_add.extend([dist, const])
-        new_obj += dist**2
+        if linear:
+            components = sutil.add_absolute_expression(
+                model, r.flux_expression, name="moma_dist_" + r.id,
+                difference=flux, add=False)
+            to_add.extend(components)
+            # First component is the dist variable
+            new_obj += components[0]
+        else:
+            dist = prob.Variable("moma_dist_" + r.id)
+            const = prob.Constraint(r.flux_expression - dist, lb=flux, ub=flux,
+                                    name="moma_constraint_" + r.id)
+            to_add.extend([dist, const])
+            new_obj += dist**2
     model.add_cons_vars(to_add)
     model.objective = prob.Objective(new_obj, direction='min')
 

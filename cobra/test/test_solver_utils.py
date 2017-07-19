@@ -94,7 +94,9 @@ class TestSolverMods:
     def test_absolute_expression(self, model):
         v = model.variables
         with model:
-            su.add_absolute_expression(model, 2 * v.PGM, name="test", ub=100)
+            parts = su.add_absolute_expression(
+                model, 2 * v.PGM, name="test", ub=100)
+            assert len(parts) == 3
             assert "test" in model.variables.keys()
             assert "abs_pos_test" in model.constraints.keys()
             assert "abs_neg_test" in model.constraints.keys()

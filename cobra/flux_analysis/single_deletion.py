@@ -63,6 +63,10 @@ def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
     elif method == "moma":
         result = single_reaction_deletion_moma(cobra_model, reaction_list,
                                                solver=solver, **solver_args)
+    elif method == "linear moma":
+        result = single_reaction_deletion_moma(cobra_model, reaction_list,
+                                               linear=True, solver=solver, 
+                                               **solver_args)
     else:
         raise ValueError("Unknown deletion method '%s'" % method)
     return pandas.DataFrame({'flux': result[0], 'status': result[1]})
@@ -129,8 +133,8 @@ def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
     return growth_rate_dict, status_dict
 
 
-def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
-                                  **solver_args):
+def single_reaction_deletion_moma(cobra_model, reaction_list, linear=False, 
+                                  solver=None, **solver_args):
     """Sequentially knocks out each reaction in a model using MOMA.
 
     Not supposed to be called directly use
@@ -140,6 +144,8 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
     ----------
     reaction_list : iterable
         List of reaction IDs or cobra.Reaction.
+    linear : bool
+        Whether to use linear MOMA.
     solver: str, optional
         The name of the solver to be used.
 
@@ -172,7 +178,7 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
     if not legacy:
         with cobra_model as m:
             m.solver = solver
-            moma.add_moma(m)
+            moma.add_moma(m, linear)
             for reaction in reaction_list:
                 with m:
                     reaction.knock_out()
@@ -232,6 +238,9 @@ def single_gene_deletion(cobra_model, gene_list=None, solver=None,
                                           solver=solver, **solver_args)
     elif method == "moma":
         result = single_gene_deletion_moma(cobra_model, gene_list,
+                                           solver=solver, **solver_args)
+    elif method == "linear moma":
+        result = single_gene_deletion_moma(cobra_model, gene_list, linear=True,
                                            solver=solver, **solver_args)
     else:
         raise ValueError("Unknown deletion method '%s'" % method)
@@ -300,7 +309,7 @@ def single_gene_deletion_fba(cobra_model, gene_list, solver=None,
     return growth_rate_dict, status_dict
 
 
-def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
+def single_gene_deletion_moma(cobra_model, gene_list, linear=False, solver=None,
                               **solver_args):
     """Sequentially knocks out each gene in a model using MOMA.
 
@@ -311,7 +320,9 @@ def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
     ----------
     gene_list : iterable
         List of gene IDs or cobra.Reaction.
-    solver: str, optional
+    linear : bool
+        Whether to use linear MOMA.
+    solver : str, optional
         The name of the solver to be used.
 
     Returns
@@ -340,7 +351,7 @@ def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
     if not legacy:
         with cobra_model as m:
             m.solver = solver
-            moma.add_moma(m)
+            moma.add_moma(m, linear)
             for gene in gene_list:
                 with m:
                     gene.knock_out()
