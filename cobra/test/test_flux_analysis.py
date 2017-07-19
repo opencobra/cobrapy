@@ -181,7 +181,7 @@ class TestCobraFluxAnalysis:
                         reason="moma gene deletion requires scipy")
     def test_single_deletion_linear_moma_benchmark(self, model, benchmark):
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
-        benchmark(single_gene_deletion, model, gene_list=genes, 
+        benchmark(single_gene_deletion, model, gene_list=genes,
                   method="linear moma")
 
     @pytest.mark.skipif(scipy is None,

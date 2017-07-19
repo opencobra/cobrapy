@@ -65,7 +65,7 @@ def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
                                                solver=solver, **solver_args)
     elif method == "linear moma":
         result = single_reaction_deletion_moma(cobra_model, reaction_list,
-                                               linear=True, solver=solver, 
+                                               linear=True, solver=solver,
                                                **solver_args)
     else:
         raise ValueError("Unknown deletion method '%s'" % method)
@@ -133,7 +133,7 @@ def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
     return growth_rate_dict, status_dict
 
 
-def single_reaction_deletion_moma(cobra_model, reaction_list, linear=False, 
+def single_reaction_deletion_moma(cobra_model, reaction_list, linear=False,
                                   solver=None, **solver_args):
     """Sequentially knocks out each reaction in a model using MOMA.
 
@@ -309,8 +309,8 @@ def single_gene_deletion_fba(cobra_model, gene_list, solver=None,
     return growth_rate_dict, status_dict
 
 
-def single_gene_deletion_moma(cobra_model, gene_list, linear=False, solver=None,
-                              **solver_args):
+def single_gene_deletion_moma(cobra_model, gene_list, linear=False, 
+                              solver=None, **solver_args):
     """Sequentially knocks out each gene in a model using MOMA.
 
     Not supposed to be called directly use
