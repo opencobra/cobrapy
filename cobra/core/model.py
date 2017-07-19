@@ -814,7 +814,7 @@ class Model(Object):
         else:
             assert_optimal(self, message)
 
-    def optimize(self, objective_sense=None, **kwargs):
+    def optimize(self, objective_sense=None, raise_error=False, **kwargs):
         """
         Optimize the model using flux balance analysis.
 
@@ -823,6 +823,9 @@ class Model(Object):
         objective_sense : {None, 'maximize' 'minimize'}, optional
             Whether fluxes should be maximized or minimized. In case of None,
             the previous direction is used.
+        raise_error : bool
+            If true, raise an OptimizationError if solver status is not
+             optimal.
         solver : {None, 'glpk', 'cglpk', 'gurobi', 'cplex'}, optional
             If unspecified will use the currently defined `self.solver`
             otherwise it will use the given solver and update the attribute.
@@ -855,7 +858,7 @@ class Model(Object):
                     "max": "maximize", "min": "minimize"}[original_direction]
             solution = optimize(self, objective_sense=objective_sense,
                                 **kwargs)
-            check_solver_status(solution.status)
+            check_solver_status(solution.status, raise_error=raise_error)
             return solution
 
         self.solver = solver
@@ -863,7 +866,7 @@ class Model(Object):
             {"maximize": "max", "minimize": "min"}.get(
                 objective_sense, original_direction)
         self.slim_optimize()
-        solution = get_solution(self)
+        solution = get_solution(self, raise_error=raise_error)
         self.objective.direction = original_direction
         return solution
 

@@ -14,6 +14,8 @@
   notebooks.
 - New convenience functions `cobra.flux_analysis.find_essential_genes` and
   `cobra.flux_analysis.find_essential_reactions`.
+- `Model.optimize` has new parameter `raise_error` to enable option to
+  get trigger exception if no feasible solution could be found.
 
 ## Deprecated features
 

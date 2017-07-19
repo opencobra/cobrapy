@@ -767,6 +767,17 @@ class TestCobraModel:
             with pytest.raises(OptimizationError):
                 model.slim_optimize(error_value=None)
 
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_optimize(self, model, solver):
+        model.solver = solver
+        with model:
+            assert model.optimize().objective_value > 0.872
+            model.reactions.Biomass_Ecoli_core.lower_bound = 10
+            with pytest.warns(UserWarning):
+                model.optimize()
+            with pytest.raises(OptimizationError):
+                model.optimize(raise_error=True)
+
     def test_change_objective(self, model):
         # Test for correct optimization behavior
         model.optimize()
