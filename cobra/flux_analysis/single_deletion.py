@@ -177,12 +177,12 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
                 with m:
                     reaction.knock_out()
                     status = m.solver.optimize()
-                    status_dict[gene.id] = status
+                    status_dict[reaction.id] = status
                     if status == OPTIMAL:
                         growth = m.variables.moma_old_objective.primal
                     else:
                         growth = float("nan")
-                    growth_rate_dict[gene.id] = growth
+                    growth_rate_dict[reaction.id] = growth
     else:
         for reaction in reaction_list:
             index = cobra_model.reactions.index(reaction)
