@@ -9,6 +9,7 @@ from functools import partial
 from warnings import warn
 
 import optlang
+import pandas as pd
 import six
 import sympy
 from six import iteritems, string_types
@@ -186,8 +187,9 @@ class Model(Object):
             elif reaction.products:
                 return reaction.upper_bound
 
-        return {rxn.id: get_active_bound(rxn) for rxn in self.exchanges
-                if is_active(rxn)}
+        return pd.DataFrame({rxn.id: get_active_bound(rxn) for rxn
+                             in self.exchanges if is_active(rxn)},
+                            index=['bound'])
 
     @medium.setter
     def medium(self, medium):
@@ -217,7 +219,7 @@ class Model(Object):
         for rxn_id, bound in iteritems(medium):
             rxn = self.reactions.get_by_id(rxn_id)
             media_rxns.append(rxn)
-            set_active_bound(rxn, bound)
+            set_active_bound(rxn, float(bound))
 
         boundary_rxns = set(self.exchanges)
         media_rxns = set(media_rxns)
