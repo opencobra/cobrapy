@@ -106,12 +106,10 @@ def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
             m.solver = solver
             for reaction in reaction_list:
                 with m:
-                    reaction.bounds = (0.0, 0.0)
-                    m.slim_optimize()
-                    status = m.solver.status
-                    status_dict[reaction.id] = status
-                    growth_rate_dict[reaction.id] = m.solver.objective.value \
-                        if status == OPTIMAL else 0.
+                    reaction.knock_out()
+                    obj_value = m.slim_optimize()
+                    status_dict[reaction.id] = m.solver.status
+                    growth_rate_dict[reaction.id] = obj_value
     else:
         # This entire block can be removed once the legacy solvers are
         # deprecated
@@ -177,15 +175,10 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
             moma.add_moma(m)
             for reaction in reaction_list:
                 with m:
-                    reaction.bounds = (0.0, 0.0)
-                    m.slim_optimize()
-                    status = m.solver.status
-                    status_dict[reaction.id] = status
-                    if status == OPTIMAL:
-                        growth = m.variables.moma_old_objective.primal
-                    else:
-                        growth = 0.0
-                    growth_rate_dict[reaction.id] = growth
+                    reaction.knock_out()
+                    obj_value = m.slim_optimize()
+                    status_dict[reaction.id] = m.solver.status
+                    growth_rate_dict[reaction.id] = obj_value
     else:
         for reaction in reaction_list:
             index = cobra_model.reactions.index(reaction)
@@ -278,15 +271,11 @@ def single_gene_deletion_fba(cobra_model, gene_list, solver=None,
         with cobra_model as m:
             m.solver = solver
             for gene in gene_list:
-                ko = find_gene_knockout_reactions(cobra_model, [gene])
                 with m:
-                    for reaction in ko:
-                        reaction.bounds = (0.0, 0.0)
-                    m.slim_optimize()
-                    status = m.solver.status
-                    status_dict[gene.id] = status
-                    growth_rate_dict[gene.id] = m.solver.objective.value if \
-                        status == OPTIMAL else 0.
+                    gene.knock_out()
+                    obj_value = m.slim_optimize()
+                    status_dict[gene.id] = m.solver.status
+                    growth_rate_dict[gene.id] = obj_value
     else:
         for gene in gene_list:
             old_bounds = {}
@@ -349,18 +338,11 @@ def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
             m.solver = solver
             moma.add_moma(m)
             for gene in gene_list:
-                ko = find_gene_knockout_reactions(cobra_model, [gene])
                 with m:
-                    for reaction in ko:
-                        reaction.bounds = (0.0, 0.0)
-                    m.slim_optimize()
-                    status = m.solver.status
-                    status_dict[gene.id] = status
-                    if status == "optimal":
-                        growth = m.variables.moma_old_objective.primal
-                    else:
-                        growth = 0.0
-                    growth_rate_dict[gene.id] = growth
+                    gene.knock_out()
+                    obj_value = m.slim_optimize()
+                    status_dict[gene.id] = m.solver.status
+                    growth_rate_dict[gene.id] = obj_value
     else:
         for gene in gene_list:
             delete_model_genes(moma_model, [gene.id])
