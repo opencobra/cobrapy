@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 import pandas
 from six import iteritems, string_types
+from optlang.interface import OPTIMAL
 
 import cobra.solvers as legacy_solvers
 import cobra.util.solver as solvers
@@ -175,9 +176,13 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, solver=None,
             for reaction in reaction_list:
                 with m:
                     reaction.knock_out()
-                    obj_value = m.slim_optimize()
-                    status_dict[reaction.id] = m.solver.status
-                    growth_rate_dict[reaction.id] = obj_value
+                    status = m.solver.optimize()
+                    status_dict[gene.id] = status
+                    if status == OPTIMAL:
+                        growth = m.variables.moma_old_objective.primal
+                    else:
+                        growth = 0.0
+                    growth_rate_dict[gene.id] = growth
     else:
         for reaction in reaction_list:
             index = cobra_model.reactions.index(reaction)
@@ -339,9 +344,13 @@ def single_gene_deletion_moma(cobra_model, gene_list, solver=None,
             for gene in gene_list:
                 with m:
                     gene.knock_out()
-                    obj_value = m.slim_optimize()
-                    status_dict[gene.id] = m.solver.status
-                    growth_rate_dict[gene.id] = obj_value
+                    status = m.solver.optimize()
+                    status_dict[gene.id] = status
+                    if status == OPTIMAL:
+                        growth = m.variables.moma_old_objective.primal
+                    else:
+                        growth = 0.0
+                    growth_rate_dict[gene.id] = growth
     else:
         for gene in gene_list:
             delete_model_genes(moma_model, [gene.id])
