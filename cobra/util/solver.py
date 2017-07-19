@@ -394,11 +394,11 @@ def fix_objective_as_constraint(model, fraction=1, bound=None,
     add_cons_vars_to_problem(model, constraint, sloppy=True)
 
 
-def check_solver_status(status):
+def check_solver_status(status, raise_error=False):
     """Perform standard checks on a solver's status."""
     if status == optlang.interface.OPTIMAL:
         return
-    elif status == optlang.interface.INFEASIBLE:
+    elif status == optlang.interface.INFEASIBLE and not raise_error:
         warn("solver status is '{}'".format(status), UserWarning)
     elif status is None:
         raise RuntimeError(

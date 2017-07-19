@@ -273,7 +273,7 @@ class LegacySolution(object):
              DeprecationWarning)
 
 
-def get_solution(model, reactions=None, metabolites=None):
+def get_solution(model, reactions=None, metabolites=None, raise_error=False):
     """
     Generate a solution representation of the current solver state.
 
@@ -287,6 +287,8 @@ def get_solution(model, reactions=None, metabolites=None):
     metabolites : list, optional
         An iterable of `cobra.Metabolite` objects. Uses `model.metabolites` by
         default.
+    raise_error : bool
+        If true, raise an OptimizationError if solver status is not optimal.
 
     Returns
     -------
@@ -297,7 +299,7 @@ def get_solution(model, reactions=None, metabolites=None):
     This is only intended for the `optlang` solver interfaces and not the
     legacy solvers.
     """
-    check_solver_status(model.solver.status)
+    check_solver_status(model.solver.status, raise_error=raise_error)
     if reactions is None:
         reactions = model.reactions
     if metabolites is None:
