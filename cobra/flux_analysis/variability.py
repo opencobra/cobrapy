@@ -4,11 +4,13 @@ from __future__ import absolute_import
 
 import pandas
 from sympy.core.singleton import S
-from six import iteritems
 from warnings import warn
+from itertools import chain
 
 from cobra.flux_analysis.loopless import loopless_fva_iter
 from cobra.flux_analysis.parsimonious import add_pfba
+from cobra.flux_analysis.single_deletion import (single_gene_deletion,
+                                                 single_reaction_deletion)
 from cobra.core import get_solution
 from cobra.util import solver as sutil
 
@@ -310,18 +312,18 @@ def find_essential_genes(model, threshold=0.01):
     set
         Set of essential genes
     """
-    essential = set()
     solution = model.optimize(raise_error=True)
-    genes_to_check = set()
-    for reaction_id, flux in iteritems(solution.fluxes):
-        if abs(flux) > 0.:
-            genes_to_check.update(model.reactions.get_by_id(reaction_id).genes)
-    for gene in genes_to_check:
-        with model:
-            gene.knock_out()
-            if model.slim_optimize(error_value=0.) < threshold:
-                essential.add(gene)
-    return essential
+    tolerance = model.solver.configuration.tolerances.feasibility
+    non_zero_flux_reactions = list(
+        solution[solution.fluxes.abs() > tolerance].index)
+    genes_to_check = set(chain.from_iterable(
+        model.reactions.get_by_id(rid).genes for rid in
+        non_zero_flux_reactions))
+    deletions = single_gene_deletion(model, gene_list=genes_to_check,
+                                     method='fba')
+    gene_ids = list(deletions[(pandas.isnull(deletions.flux)) |
+                              (deletions.flux < threshold)].index)
+    return set(model.genes.get_by_any(gene_ids))
 
 
 def find_essential_reactions(model, threshold=0.01):
@@ -342,13 +344,13 @@ def find_essential_reactions(model, threshold=0.01):
     set
         Set of essential reactions
     """
-    essential = set()
     solution = model.optimize(raise_error=True)
-    for reaction_id, flux in iteritems(solution.fluxes):
-        if abs(flux) > 0:
-            reaction = model.reactions.get_by_id(reaction_id)
-            with model:
-                reaction.knock_out()
-                if model.slim_optimize(error_value=0.) < threshold:
-                    essential.add(reaction)
-    return essential
+    tolerance = model.solver.configuration.tolerances.feasibility
+    non_zero_flux_reactions = list(
+        solution[solution.fluxes.abs() > tolerance].index)
+    deletions = single_reaction_deletion(model,
+                                         reaction_list=non_zero_flux_reactions,
+                                         method='fba')
+    reaction_ids = list(deletions[(pandas.isnull(deletions.flux)) |
+                                  (deletions.flux < threshold)].index)
+    return set(model.reactions.get_by_any(reaction_ids))
