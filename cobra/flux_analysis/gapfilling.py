@@ -89,17 +89,8 @@ class GapFiller(object):
         self.original_model = model
         self.lower_bound = lower_bound
         self.model = model.copy()
-        # TODO: adjust once optlang supports integrality constraint settings
-        try:
-            self.model.solver.configuration._iocp.tol_int = integer_threshold
-        except AttributeError:
-            try:
-                self.model.solver.problem.parameters.mip.tolerances. \
-                    integrality.set(integer_threshold)
-            except AttributeError:
-                warn("tried to set integrality constraint, but don't know "
-                     "how to do that for "
-                     "solver {}".format(self.model.problem.__name__))
+        tolerances = self.model.solver.configuration.tolerances
+        tolerances.integrality = integer_threshold
         self.universal = universal.copy() if universal else Model('universal')
         self.penalties = dict(universal=1, exchange=100, demand=1)
         if penalties is not None:
