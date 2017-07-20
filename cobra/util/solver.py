@@ -14,6 +14,7 @@ from __future__ import absolute_import
 
 import re
 from functools import partial
+from collections import namedtuple
 from types import ModuleType
 from warnings import warn
 
@@ -345,22 +346,23 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None,
 
     Returns
     -------
-    list
-        A list of one variable and two constraints describing the new variable
-        and the constraints that assign the absolute value of the expression
-        to it.
+    namedtuple
+        A named tuple with variable and two constraints (upper_constraint,
+        lower_constraint) describing the new variable and the constraints
+        that assign the absolute value of the expression to it.
     """
+    Components = namedtuple('Components', ['variable', 'upper_constraint',
+                                           'lower_constraint'])
     variable = model.problem.Variable(name, lb=0, ub=ub)
-
     # The following constraints enforce variable > expression and
     # variable > -expression
-    constraints = [
-        model.problem.Constraint(
-            expression - variable, ub=difference, name="abs_pos_" + name),
-        model.problem.Constraint(
-            expression + variable, lb=difference, name="abs_neg_" + name)
-    ]
-    to_add = [variable] + constraints
+    upper_constraint = model.problem.Constraint(expression - variable,
+                                                ub=difference,
+                                                name="abs_pos_" + name),
+    lower_constraint = model.problem.Constraint(expression + variable,
+                                                lb=difference,
+                                                name="abs_neg_" + name)
+    to_add = Components(variable, upper_constraint, lower_constraint)
     if add:
         add_cons_vars_to_problem(model, to_add)
     return to_add

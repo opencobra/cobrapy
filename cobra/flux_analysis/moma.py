@@ -10,13 +10,16 @@ from cobra.solvers import get_solver_name, solver_dict
 
 
 def add_moma(model, linear=False):
-    """Add constraints and objective representing a MOMA
-    (minimization of metabolic adjustment) model.
+    """Add constraints and objective representing a MOMA (minimization of
+    metabolic adjustment) model.
 
     Parameters:
     -----------
 
-    model : a cobra model
+    model : cobra.Model
+        The model to add MOMA constraints and objective to.
+    linear : bool
+        Whether to use the linear MOMA formulation or not.
 
     Returns:
     --------
@@ -36,7 +39,7 @@ def add_moma(model, linear=False):
     Here, we use a variable transformation v^t := v^d_i - v_i. Substituting
     and using the fact that Sv = 0 gives:
 
-    minimize \sum (v^t_i)^2
+    minimize \sum_i (v^t_i)^2
     s.t. Sv^d = 0
          v^t = v^d_i - v_i
          lb_i <= v^d_i <= ub_i
@@ -44,6 +47,9 @@ def add_moma(model, linear=False):
     So basically we just re-center the flux space at the old solution and than
     find the flux distribution closest to the new zero (center). This is the
     same strategy as used in cameo.
+
+    In the case of linear MOMA, we instead minimize \sum_i abs(v^t_i). The
+    linear MOMA is typically significantly faster.
 
     The former objective function is saved in the optlang solver interface as
     "moma_old_objective" and this can be used to immediately extract the value
@@ -70,8 +76,7 @@ def add_moma(model, linear=False):
                 model, r.flux_expression, name="moma_dist_" + r.id,
                 difference=flux, add=False)
             to_add.extend(components)
-            # First component is the dist variable
-            new_obj += components[0]
+            new_obj += components.variable
         else:
             dist = prob.Variable("moma_dist_" + r.id)
             const = prob.Constraint(r.flux_expression - dist, lb=flux, ub=flux,

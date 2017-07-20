@@ -27,18 +27,17 @@ def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
 
     Parameters
     ----------
-    cobra_model : a cobra model
+    cobra_model : cobra.Model
         The model from which to delete the reactions. The model will not be
         modified.
     reaction_list : iterable
         List of reaction IDs or cobra.Reaction. If None (default) will use all
         reactions in the model.
     method : str, optional
-        The method used to obtain fluxes. Must be one of "fba" or "moma".
+        The method used to obtain fluxes. Must be one of "fba", "moma" or
+        "linear moma"
     solver : str, optional
         Name of the solver to be used.
-    method : str, optional
-        The method used to obtain fluxes. Must be one of "fba" or "moma".
     solver_args : optional
         Additional arguments for the solver. Ignored for optlang solver, please
         use `model.solver.configuration` instead.
@@ -81,6 +80,9 @@ def single_reaction_deletion_fba(cobra_model, reaction_list, solver=None,
 
     Parameters
     ----------
+    cobra_model : cobra.Model
+        The model from which to delete the reactions. The model will not be
+        modified.
     reaction_list : iterable
         List of reaction Ids or cobra.Reaction.
     solver: str, optional
@@ -142,6 +144,9 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, linear=False,
 
     Parameters
     ----------
+    cobra_model : cobra.Model
+        The model from which to delete the reactions. The model will not be
+        modified.
     reaction_list : iterable
         List of reaction IDs or cobra.Reaction.
     linear : bool
@@ -212,7 +217,8 @@ def single_gene_deletion(cobra_model, gene_list=None, solver=None,
         List of gene IDs or cobra.Gene. If None (default) will use all genes in
         the model.
     method : str, optional
-        The method used to obtain fluxes. Must be one of "fba" or "moma".
+        The method used to obtain fluxes. Must be one of "fba", "moma" or
+        "linear moma".
     solver : str, optional
         Name of the solver to be used.
     solver_args : optional
