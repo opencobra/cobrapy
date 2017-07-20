@@ -79,7 +79,7 @@ def ll_test_model(request):
 
 @contextmanager
 def captured_output():
-    """ A context manager to test the IO summary methods """
+    """A context manager to test the IO summary methods."""
     new_out, new_err = StringIO(), StringIO()
     old_out, old_err = sys.stdout, sys.stderr
     try:
@@ -90,7 +90,7 @@ def captured_output():
 
 
 class TestCobraFluxAnalysis:
-    """Test the simulation functions in cobra.flux_analysis"""
+    """Test the simulation functions in cobra.flux_analysis."""
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_pfba_benchmark(self, large_model, benchmark, solver):
@@ -186,6 +186,30 @@ class TestCobraFluxAnalysis:
 
     @pytest.mark.skipif(scipy is None,
                         reason="moma gene deletion requires scipy")
+    def test_moma_sanity(self, model):
+        """Test optimization criterion and optimality."""
+        try:
+            sutil.get_solver_name(qp=True)
+        except sutil.SolverNotFound:
+            pytest.skip("no qp support")
+
+        sol = model.optimize()
+        with model:
+            model.reactions.PFK.knock_out()
+            knock_sol = model.optimize()
+            ssq = (knock_sol.fluxes - sol.fluxes).pow(2).sum()
+
+        with model:
+            add_moma(model)
+            model.reactions.PFK.knock_out()
+            moma_sol = model.optimize()
+            moma_ssq = (moma_sol.fluxes - sol.fluxes).pow(2).sum()
+
+        assert numpy.allclose(moma_sol.objective_value, moma_ssq)
+        assert moma_ssq < ssq
+
+    @pytest.mark.skipif(scipy is None,
+                        reason="moma gene deletion requires scipy")
     def test_single_gene_deletion_moma(self, model):
         try:
             sutil.get_solver_name(qp=True)
@@ -198,13 +222,32 @@ class TestCobraFluxAnalysis:
 
         df = single_gene_deletion(model, gene_list=growth_dict.keys(),
                                   method="moma")
-        assert numpy.all([df.status == 'optimal'])
+        assert (df.status == 'optimal').all()
         assert all(abs(df.flux[gene] - expected) < 0.01
                    for gene, expected in iteritems(growth_dict))
         with model:
             add_moma(model)
             with pytest.raises(ValueError):
                 add_moma(model)
+
+    @pytest.mark.skipif(scipy is None,
+                        reason="moma gene deletion requires scipy")
+    def test_linear_moma_sanity(self, model):
+        """Test optimization criterion and optimality."""
+        sol = model.optimize()
+        with model:
+            model.reactions.PFK.knock_out()
+            knock_sol = model.optimize()
+            sabs = (knock_sol.fluxes - sol.fluxes).abs().sum()
+
+        with model:
+            add_moma(model, linear=True)
+            model.reactions.PFK.knock_out()
+            moma_sol = model.optimize()
+            moma_sabs = (moma_sol.fluxes - sol.fluxes).abs().sum()
+
+        assert numpy.allclose(moma_sol.objective_value, moma_sabs)
+        assert moma_sabs < sabs
 
     @pytest.mark.skipif(scipy is None,
                         reason="moma gene deletion requires scipy")
@@ -650,7 +693,7 @@ class TestCobraFluxAnalysis:
 
 
 class TestCobraFluxSampling:
-    """Test and benchmark flux sampling"""
+    """Tests and benchmark flux sampling."""
 
     def test_single_achr(self, model):
         s = sample(model, 10, method="achr")
@@ -733,7 +776,7 @@ class TestCobraFluxSampling:
 
 
 class TestProductionEnvelope:
-    """Test the production envelope"""
+    """Test the production envelope."""
 
     def test_envelope_one(self, model):
         df = production_envelope(model, ["EX_o2_e"])
@@ -754,7 +797,7 @@ class TestProductionEnvelope:
 
 
 class TestReactionUtils:
-    """test the assess_ functions in reactions.py"""
+    """Test the assess_ functions in reactions.py."""
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_assess(self, model, solver):
