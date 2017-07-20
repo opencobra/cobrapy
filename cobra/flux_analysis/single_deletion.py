@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+"""Bundles functions for successively deleting a set of genes or reactions."""
+
 from __future__ import absolute_import
 
 import pandas
@@ -35,7 +37,7 @@ def single_reaction_deletion(cobra_model, reaction_list=None, solver=None,
         reactions in the model.
     method : str, optional
         The method used to obtain fluxes. Must be one of "fba", "moma" or
-        "linear moma"
+        "linear moma".
     solver : str, optional
         Name of the solver to be used.
     solver_args : optional
@@ -181,9 +183,10 @@ def single_reaction_deletion_moma(cobra_model, reaction_list, linear=False,
     status_dict = {}
 
     if not legacy:
+        solution = cobra_model.optimize()
         with cobra_model as m:
             m.solver = solver
-            moma.add_moma(m, linear)
+            moma.add_moma(m, solution=solution, linear=linear)
             for reaction in reaction_list:
                 with m:
                     reaction.knock_out()
@@ -355,9 +358,10 @@ def single_gene_deletion_moma(cobra_model, gene_list, linear=False,
     status_dict = {}
 
     if not legacy:
+        solution = cobra_model.optimize()
         with cobra_model as m:
             m.solver = solver
-            moma.add_moma(m, linear)
+            moma.add_moma(m, solution=solution, linear=linear)
             for gene in gene_list:
                 with m:
                     gene.knock_out()

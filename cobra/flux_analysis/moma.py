@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+"""Contains functions to run minimization of metabolic adjustment (MOMA)."""
+
 from __future__ import absolute_import
 
 from scipy.sparse import dok_matrix
@@ -9,25 +11,27 @@ import cobra.util.solver as sutil
 from cobra.solvers import get_solver_name, solver_dict
 
 
-def add_moma(model, linear=False):
-    """Add constraints and objective representing a MOMA (minimization of
-    metabolic adjustment) model.
+def add_moma(model, solution=None, linear=False):
+    r"""Add constraints and objective representing for MOMA.
 
-    Parameters:
-    -----------
+    This adds variables and constraints for the minimization of metabolic
+    adjustment (MOMA) to the model.
 
+    Parameters
+    ----------
     model : cobra.Model
         The model to add MOMA constraints and objective to.
+    solution : cobra.Solution
+        A previous solution to use as a reference.
     linear : bool
         Whether to use the linear MOMA formulation or not.
 
-    Returns:
-    --------
+    Returns
+    -------
     Nothing.
 
     Notes
     -----
-
     In the original MOMA specification one looks for the flux distribution
     of the deletion (v^d) closest to the fluxes without the deletion (v).
     In math this means:
@@ -49,7 +53,11 @@ def add_moma(model, linear=False):
     same strategy as used in cameo.
 
     In the case of linear MOMA, we instead minimize \sum_i abs(v^t_i). The
-    linear MOMA is typically significantly faster.
+    linear MOMA is typically significantly faster. Also quadratic MOMA tends
+    to give flux distributions in which all fluxes deviate from the reference
+    fluxes a little bit whereas linear MOMA tends to give flux distributions
+    where the majority of fluxes are the same reference which few fluxes
+    deviating a lot (typical effect of L2 norm vs L1 norm).
 
     The former objective function is saved in the optlang solver interface as
     "moma_old_objective" and this can be used to immediately extract the value
@@ -62,7 +70,8 @@ def add_moma(model, linear=False):
     if not linear:
         model.solver = sutil.choose_solver(model, qp=True)[1]
 
-    solution = model.optimize()
+    if solution is None:
+        solution = model.optimize()
     prob = model.problem
     v = prob.Variable("moma_old_objective")
     c = prob.Constraint(model.solver.objective.expression - v,
@@ -88,6 +97,7 @@ def add_moma(model, linear=False):
 
 
 def create_euclidian_moma_model(cobra_model, wt_model=None, **solver_args):
+    """Create a new moma model (legacy function)."""
     # make the wild type copy if none was supplied
     if wt_model is None:
         wt_model = cobra_model.copy()
@@ -127,7 +137,7 @@ def create_euclidian_moma_model(cobra_model, wt_model=None, **solver_args):
 
 
 def create_euclidian_distance_objective(n_moma_reactions):
-    """returns a matrix which will minimze the euclidian distance
+    """Return a matrix which will minimize the euclidian distance (legacy).
 
     This matrix has the structure
     [ I  -I]
@@ -135,9 +145,17 @@ def create_euclidian_distance_objective(n_moma_reactions):
     where I is the identity matrix the same size as the number of
     reactions in the original model.
 
+    Parameters
+    ----------
     n_moma_reactions: int
         This is the number of reactions in the MOMA model, which should
-        be twice the number of reactions in the original model"""
+        be twice the number of reactions in the original model
+
+    Returns
+    -------
+    scipy.sparse.dok_matrix
+        A matrix describing the distance objective.
+    """
     if n_moma_reactions % 2 != 0:
         raise ValueError("must be even")
     n_reactions = n_moma_reactions // 2
@@ -151,6 +169,7 @@ def create_euclidian_distance_objective(n_moma_reactions):
 
 
 def create_euclidian_distance_lp(moma_model, solver):
+    """Create the distance linear program (legacy method)."""
     Q = create_euclidian_distance_objective(len(moma_model.reactions))
     lp = solver.create_problem(moma_model, objective_sense="minimize",
                                quadratic_component=Q)
@@ -158,6 +177,7 @@ def create_euclidian_distance_lp(moma_model, solver):
 
 
 def solve_moma_model(moma_model, objective_id, solver=None, **solver_args):
+    """Solve the MOMA LP (legacy method)."""
     solver = solver_dict[solver if solver and isinstance(solver, str)
                          else get_solver_name(qp=True)]
     lp = create_euclidian_distance_lp(moma_model, solver=solver)
@@ -169,6 +189,7 @@ def solve_moma_model(moma_model, objective_id, solver=None, **solver_args):
 
 
 def moma(wt_model, mutant_model, solver=None, **solver_args):
+    """Run MOMA on models (legacy method)."""
     if "norm_type" in solver_args:
         print("only euclidian norm type supported for moma")
         solver_args.pop("norm_type")
@@ -179,7 +200,7 @@ def moma(wt_model, mutant_model, solver=None, **solver_args):
 
 
 def moma_knockout(moma_model, moma_objective, reaction_indexes, **moma_args):
-    """computes result of reaction_knockouts using moma"""
+    """Compute result of reaction_knockouts using moma."""
     n = len(moma_model.reactions) // 2
     # knock out the reaction
     for i in reaction_indexes:
