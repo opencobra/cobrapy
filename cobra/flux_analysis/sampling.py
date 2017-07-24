@@ -10,6 +10,7 @@ from __future__ import absolute_import, division
 
 import ctypes
 from collections import namedtuple
+from logging import getLogger
 from multiprocessing import Array, Pool
 from time import time
 
@@ -19,6 +20,9 @@ from optlang.interface import OPTIMAL
 from sympy.core.singleton import S
 from cobra.util import (create_stoichiometric_matrix, constraint_matrices,
                         nullspace)
+
+LOGGER = getLogger(__name__)
+"""The logger for the package."""
 
 bounds_tol = np.finfo(np.float32).eps
 """The tolerance used for checking bounds feasibility."""
@@ -31,7 +35,7 @@ nproj = 1000000
 
 Problem = namedtuple("Problem",
                      ["equalities", "b", "inequalities", "bounds",
-                      "variable_fixed", "variable_bounds", "projection",
+                      "variable_fixed", "variable_bounds", "nullspace",
                       "homogeneous"])
 """Defines the matrix representation of a sampling problem.
 
@@ -50,9 +54,9 @@ variable_bounds : numpy.array
 homogeneous: boolean
     Indicates whether the sampling problem is homogenous, e.g. whether there
     exist no non-zero fixed variables or constraints.
-projection : numpy.matrix
-    A projection matrix that projects an arbitrary point into the nullspace of
-    the problem.
+nullspace : numpy.matrix
+    A matrix containing the nullspace of the equality constraints. Each column
+    is one basis vector.
 """
 
 
@@ -65,7 +69,7 @@ def mp_init(obj):
 def shared_np_array(shape, data=None):
     """Create a new numpy array that resides in shared memory.
 
-    Parameters:
+    Parameters
     ----------
     shape : tuple of ints
         The shape of the new array.
@@ -118,7 +122,13 @@ def _step(sampler, x, delta, fraction=None):
     # reset sampler and sample from one of the original warmup directions
     # if that occurs
     if np.any(sampler._bounds_dist(p) < -bounds_tol):
-        newdir = sampler.warmup[np.random.randint(sampler.n_warmup)]
+        LOGGER.info("found bounds infeasibility in sample, "
+                    "resetting to center")
+        if sampler.problem.homogeneous:
+            warmup = sampler.warmup
+        else:
+            warmup = sampler._zero_warmup
+        newdir = warmup[np.random.randint(sampler.n_warmup)]
         return _step(sampler, sampler.center, newdir - sampler.center)
     return p
 
@@ -210,7 +220,6 @@ class HRSampler(object):
             homogeneous = False
         # Set up a projection that can cast point into the nullspace
         nulls = nullspace(prob.equalities)
-        projection = nulls.dot(nulls.T)
         # convert bounds to a matrix and add variable bounds as well
         return Problem(
             equalities=shared_np_array(equalities.shape, equalities),
@@ -221,7 +230,7 @@ class HRSampler(object):
             variable_fixed=shared_np_array(prob.variable_fixed.shape,
                                            prob.variable_fixed),
             variable_bounds=shared_np_array(var_bounds.shape, var_bounds),
-            projection=shared_np_array(projection.shape, projection),
+            nullspace=shared_np_array(nulls.shape, nulls),
             homogeneous=homogeneous
         )
 
@@ -242,10 +251,14 @@ class HRSampler(object):
         for i in idx:
             # Omit fixed reactions
             if self.problem.variable_fixed[i]:
+                LOGGER.info("skipping fixed variable %s" %
+                            variables[i].name)
                 continue
             self.model.objective.set_linear_coefficients({variables[i]: 1})
             self.model.slim_optimize()
             if not self.model.solver.status == OPTIMAL:
+                LOGGER.info("can not maximize variable %s, skipping it" %
+                            variables[i].name)
                 continue
             primals = self.model.solver.primal_values
             sol = [primals[v.name] for v in self.model.variables]
@@ -263,7 +276,8 @@ class HRSampler(object):
 
     def _reproject(self, p):
         """Reproject a point into the feasibility region."""
-        return self.problem.projection.dot(p)
+        nulls = self.problem.nullspace
+        return nulls.dot(nulls.T.dot(p))
 
     def _bounds_dist(self, p):
         """Get the lower and upper bound distances. Negative is bad."""
@@ -441,7 +455,7 @@ class ACHRSampler(HRSampler):
     quasi-markovian since the center converges rapidly.
 
     Memory usage is roughly in the order of (2 * number reactions)^2
-    due to the required projection matrices and warmup points. So large
+    due to the required nullspace matrices and warmup points. So large
     models easily take up a few GB of RAM.
 
     References
@@ -619,7 +633,7 @@ class OptGPSampler(HRSampler):
     have 3 processes and request 8 samples you will receive 9.
 
     Memory usage is roughly in the order of (2 * number reactions)^2
-    due to the required projection matrices and warmup points. So large
+    due to the required nullspace matrices and warmup points. So large
     models easily take up a few GB of RAM. However, most of the large matrices
     are kept in shared memory. So the RAM usage is independent of the number
     of processes.
