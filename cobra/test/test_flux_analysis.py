@@ -725,12 +725,16 @@ class TestCobraFluxSampling:
         model.reactions.ACALD.bounds = (-1.5, -1.5)
         s = sample(model, 10)
         assert numpy.allclose(s.ACALD, -1.5, atol=1e-6, rtol=0)
+        s = sample(model, 10, method="achr")
+        assert numpy.allclose(s.ACALD, -1.5, atol=1e-6, rtol=0)
 
     def test_inequality_constraint(self, model):
         co = model.problem.Constraint(
             model.reactions.ACALD.flux_expression, lb=-0.5)
         model.add_cons_vars(co)
         s = sample(model, 10)
+        assert all(s.ACALD > -0.5 - 1e-6)
+        s = sample(model, 10, method="achr")
         assert all(s.ACALD > -0.5 - 1e-6)
 
     def setup_class(self):
@@ -773,6 +777,18 @@ class TestCobraFluxSampling:
 
         for b in self.optgp.batch(5, 4):
             assert all(self.optgp.validate(b) == "v")
+
+    def test_variables_samples(self):
+        vnames = numpy.array([v.name for v in self.achr.model.variables])
+        s = self.achr.sample(10, fluxes=False)
+        assert s.shape == (10, self.achr.warmup.shape[1])
+        assert (s.columns == vnames).all()
+        assert (self.achr.validate(s) == "v").all()
+        s = self.optgp.sample(10, fluxes=False)
+        assert s.shape == (10, self.optgp.warmup.shape[1])
+        assert (s.columns == vnames).all()
+        assert (self.optgp.validate(s) == "v").all()
+
 
 
 class TestProductionEnvelope:
