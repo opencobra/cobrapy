@@ -137,14 +137,8 @@ def _step(sampler, x, delta, fraction=None):
     if np.any(sampler._bounds_dist(p) < -bounds_tol):
         LOGGER.info("found bounds infeasibility in sample, "
                     "resetting to center")
-        if sampler.problem.homogeneous:
-            warmup = sampler.warmup
-            newdir = (warmup[np.random.randint(sampler.n_warmup)] -
-                      sampler.center)
-        else:
-            warmup = sampler._zero_warmup
-            newdir = warmup[np.random.randint(sampler.n_warmup)]
-        return _step(sampler, sampler.center, newdir)
+        newdir = sampler.warmup[np.random.randint(sampler.n_warmup)]
+        return _step(sampler, sampler.center, newdir - sampler.center)
     return p
 
 
@@ -284,11 +278,6 @@ class HRSampler(object):
         # Shrink warmup points to measure
         self.warmup = shared_np_array((self.n_warmup, len(variables)),
                                       self.warmup[0:self.n_warmup, ])
-        # Save projection into nullspace for non-zero right hand sides
-        if not self.problem.homogeneous:
-            self._zero_warmup = shared_np_array(
-                self.warmup.shape,
-                self._reproject(self.warmup.T).T)
 
     def _reproject(self, p):
         """Reproject a point into the feasibility region."""
@@ -488,23 +477,16 @@ class ACHRSampler(HRSampler):
         super(ACHRSampler, self).__init__(model, thinning, seed=seed)
         self.generate_fva_warmup()
         self.prev = self.center = self.warmup.mean(axis=0)
-        self._zero_center = self._reproject(self.center)
         np.random.seed(self._seed)
 
     def __single_iteration(self):
         pi = np.random.randint(self.n_warmup)
         # mix in the original warmup points to not get stuck
-        if self.problem.homogeneous:
-            delta = self.warmup[pi, ] - self.center
-        else:
-            # For a given projection P: P(a-b) = Pa - Pb
-            delta = self._zero_warmup[pi, ] - self._zero_center
+        delta = self.warmup[pi, ] - self.center
         self.prev = _step(self, self.prev, delta)
         if self.problem.homogeneous and (self.n_samples *
                                          self.thinning % nproj == 0):
             self.prev = self._reproject(self.prev)
-        elif self.n_samples * self.thinning % nproj_center == 0:
-            self._zero_center = self._reproject(self.center)
         self.center = (self.n_samples * self.center + self.prev) / (
                        self.n_samples + 1)
         self.n_samples += 1
@@ -559,31 +541,21 @@ def _sample_chain(args):
     """
     n, idx = args       # has to be this way to work in Python 2.7
     center = sampler.center
-    if not sampler.problem.homogeneous:
-        zero_center = sampler._zero_center
     np.random.seed((sampler._seed + idx) % np.iinfo(np.int32).max)
     pi = np.random.randint(sampler.n_warmup)
-    if sampler.problem.homogeneous:
-        prev = sampler.warmup[pi, ]
-    else:
-        prev = sampler._zero_warmup[pi, ]
+    prev = sampler.warmup[pi, ]
     prev = _step(sampler, center, prev - center, 0.95)
     n_samples = max(sampler.n_samples, 1)
     samples = np.zeros((n, center.shape[0]))
 
     for i in range(1, sampler.thinning * n + 1):
         pi = np.random.randint(sampler.n_warmup)
-        if sampler.problem.homogeneous:
-            delta = sampler.warmup[pi, ] - center
-        else:
-            delta = sampler._zero_warmup[pi, ] - zero_center
+        delta = sampler.warmup[pi, ] - center
 
         prev = _step(sampler, prev, delta)
         if sampler.problem.homogeneous and (n_samples *
                                             sampler.thinning % nproj == 0):
             prev = sampler._reproject(prev)
-        elif n_samples * sampler.thinning % nproj_center == 0:
-            zero_center = sampler._reproject(center)
         if i % sampler.thinning == 0:
             samples[i//sampler.thinning - 1, ] = prev
             center = (n_samples * center + prev) / (n_samples + 1)
@@ -679,8 +651,6 @@ class OptGPSampler(HRSampler):
         # meaning they are synchronized across processes
         self.center = shared_np_array((len(model.variables), ),
                                       self.warmup.mean(axis=0))
-        self._zero_center = shared_np_array(
-            (len(model.variables), ), self._reproject(self.center))
 
     def sample(self, n, fluxes=True):
         """Generate a set of samples.
