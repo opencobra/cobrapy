@@ -719,7 +719,7 @@ class TestCobraFluxSampling:
 
     def test_fixed_seed(self, model):
         s = sample(model, 1, seed=42)
-        assert numpy.allclose(s.TPI[0], 8.94197599534)
+        assert numpy.allclose(s.TPI[0], 8.9516392250671544)
 
     def test_equality_constraint(self, model):
         model.reactions.ACALD.bounds = (-1.5, -1.5)
@@ -789,6 +789,22 @@ class TestCobraFluxSampling:
         assert (s.columns == vnames).all()
         assert (self.optgp.validate(s) == "v").all()
 
+    def test_inhomogeneous_sanity(self, model):
+        """Test whether inhomogeneous sampling gives approximately the same
+           standard deviation as a homogeneous version."""
+        model.reactions.ACALD.bounds = (-1.5, -1.5)
+        s_inhom = sample(model, 64)
+        model.reactions.ACALD.bounds = (-1.5 - 1e-3, -1.5 + 1e-3)
+        s_hom = sample(model, 64)
+        relative_diff = (s_inhom.std() + 1e-12)/(s_hom.std() + 1e-12)
+        assert 0.5 < relative_diff.abs().mean() < 2
+
+        model.reactions.ACALD.bounds = (-1.5, -1.5)
+        s_inhom = sample(model, 64, method="achr")
+        model.reactions.ACALD.bounds = (-1.5 - 1e-3, -1.5 + 1e-3)
+        s_hom = sample(model, 64, method="achr")
+        relative_diff = (s_inhom.std() + 1e-12)/(s_hom.std() + 1e-12)
+        assert 0.5 < relative_diff.abs().mean() < 2
 
 
 class TestProductionEnvelope:

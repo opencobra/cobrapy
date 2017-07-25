@@ -33,6 +33,10 @@ feasibility_tol = bounds_tol
 nproj = 1000000
 """Reproject the solution into the feasibility space every nproj iterations."""
 
+nproj_center = 10000
+"""Reproject the center into the nullspace every nproj_center iterations.
+   Only used for inhomogeneous problems."""
+
 Problem = namedtuple("Problem",
                      ["equalities", "b", "inequalities", "bounds",
                       "variable_fixed", "variable_bounds", "nullspace",
@@ -66,7 +70,7 @@ def mp_init(obj):
     sampler = obj
 
 
-def shared_np_array(shape, data=None):
+def shared_np_array(shape, data=None, integer=False):
     """Create a new numpy array that resides in shared memory.
 
     Parameters
@@ -75,10 +79,17 @@ def shared_np_array(shape, data=None):
         The shape of the new array.
     data : numpy.array
         Data to copy to the new array. Has to have the same shape.
+    integer : boolean
+        Whether to use an integer array. Defaults to False which means
+        float array.
     """
     size = np.prod(shape)
-    array = Array(ctypes.c_double, int(size))
-    np_array = np.frombuffer(array.get_obj())
+    if integer:
+        array = Array(ctypes.c_int64, int(size))
+        np_array = np.frombuffer(array.get_obj(), dtype="int64")
+    else:
+        array = Array(ctypes.c_double, int(size))
+        np_array = np.frombuffer(array.get_obj())
     np_array = np_array.reshape(shape)
 
     if data is not None:
@@ -98,10 +109,11 @@ def shared_np_array(shape, data=None):
 def _step(sampler, x, delta, fraction=None):
     """Sample a new feasible point from the point `x` in direction `delta`."""
     prob = sampler.problem
-    nonzero = np.abs(delta) > 0.0
+    valid = ((np.abs(delta) > feasibility_tol) &
+             np.logical_not(prob.variable_fixed))
     # permissible alphas for staying in variable bounds
-    valphas = ((1.0 - bounds_tol) * prob.variable_bounds - x)[:, nonzero]
-    valphas = (valphas / delta[nonzero]).flatten()
+    valphas = ((1.0 - bounds_tol) * prob.variable_bounds - x)[:, valid]
+    valphas = (valphas / delta[valid]).flatten()
     if prob.bounds.shape[0] > 0:
         # permissible alphas for staying in constraint bounds
         balphas = ((1.0 - bounds_tol) * prob.bounds -
@@ -112,6 +124,7 @@ def _step(sampler, x, delta, fraction=None):
     else:
         alphas = valphas
     alpha_range = (alphas[alphas > 0.0].min(), alphas[alphas <= 0.0].max())
+
     if fraction:
         alpha = alpha_range[0] + fraction * (alpha_range[1] - alpha_range[0])
     else:
@@ -126,10 +139,12 @@ def _step(sampler, x, delta, fraction=None):
                     "resetting to center")
         if sampler.problem.homogeneous:
             warmup = sampler.warmup
+            newdir = (warmup[np.random.randint(sampler.n_warmup)] -
+                      sampler.center)
         else:
             warmup = sampler._zero_warmup
-        newdir = warmup[np.random.randint(sampler.n_warmup)]
-        return _step(sampler, sampler.center, newdir - sampler.center)
+            newdir = warmup[np.random.randint(sampler.n_warmup)]
+        return _step(sampler, sampler.center, newdir)
     return p
 
 
@@ -219,7 +234,7 @@ class HRSampler(object):
             b = np.hstack([b, var_b[fixed_non_zero]])
             homogeneous = False
         # Set up a projection that can cast point into the nullspace
-        nulls = nullspace(prob.equalities)
+        nulls = nullspace(equalities)
         # convert bounds to a matrix and add variable bounds as well
         return Problem(
             equalities=shared_np_array(equalities.shape, equalities),
@@ -228,7 +243,7 @@ class HRSampler(object):
                                          prob.inequalities),
             bounds=shared_np_array(bounds.shape, bounds),
             variable_fixed=shared_np_array(prob.variable_fixed.shape,
-                                           prob.variable_fixed),
+                                           prob.variable_fixed, integer=True),
             variable_bounds=shared_np_array(var_bounds.shape, var_bounds),
             nullspace=shared_np_array(nulls.shape, nulls),
             homogeneous=homogeneous
@@ -272,7 +287,8 @@ class HRSampler(object):
         # Save projection into nullspace for non-zero right hand sides
         if not self.problem.homogeneous:
             self._zero_warmup = shared_np_array(
-                self.warmup.shape, self._reproject(self.warmup.T).T)
+                self.warmup.shape,
+                self._reproject(self.warmup.T).T)
 
     def _reproject(self, p):
         """Reproject a point into the feasibility region."""
@@ -400,7 +416,7 @@ class HRSampler(object):
 class ACHRSampler(HRSampler):
     """Artificial Centering Hit-and-Run sampler.
 
-    A sampler with low memory foot print and good convergence.
+    A sampler with low memory footprint and good convergence.
 
     Parameters
     ----------
@@ -472,20 +488,23 @@ class ACHRSampler(HRSampler):
         super(ACHRSampler, self).__init__(model, thinning, seed=seed)
         self.generate_fva_warmup()
         self.prev = self.center = self.warmup.mean(axis=0)
+        self._zero_center = self._reproject(self.center)
         np.random.seed(self._seed)
 
     def __single_iteration(self):
         pi = np.random.randint(self.n_warmup)
         # mix in the original warmup points to not get stuck
         if self.problem.homogeneous:
-            p = self.warmup[pi, ]
+            delta = self.warmup[pi, ] - self.center
         else:
-            p = self._zero_warmup[pi, ]
-        delta = p - self.center
+            # For a given projection P: P(a-b) = Pa - Pb
+            delta = self._zero_warmup[pi, ] - self._zero_center
         self.prev = _step(self, self.prev, delta)
         if self.problem.homogeneous and (self.n_samples *
                                          self.thinning % nproj == 0):
             self.prev = self._reproject(self.prev)
+        elif self.n_samples * self.thinning % nproj_center == 0:
+            self._zero_center = self._reproject(self.center)
         self.center = (self.n_samples * self.center + self.prev) / (
                        self.n_samples + 1)
         self.n_samples += 1
@@ -540,6 +559,8 @@ def _sample_chain(args):
     """
     n, idx = args       # has to be this way to work in Python 2.7
     center = sampler.center
+    if not sampler.problem.homogeneous:
+        zero_center = sampler._zero_center
     np.random.seed((sampler._seed + idx) % np.iinfo(np.int32).max)
     pi = np.random.randint(sampler.n_warmup)
     if sampler.problem.homogeneous:
@@ -553,15 +574,16 @@ def _sample_chain(args):
     for i in range(1, sampler.thinning * n + 1):
         pi = np.random.randint(sampler.n_warmup)
         if sampler.problem.homogeneous:
-            p = sampler.warmup[pi, ]
+            delta = sampler.warmup[pi, ] - center
         else:
-            p = sampler._zero_warmup[pi, ]
+            delta = sampler._zero_warmup[pi, ] - zero_center
 
-        delta = p - center
         prev = _step(sampler, prev, delta)
         if sampler.problem.homogeneous and (n_samples *
                                             sampler.thinning % nproj == 0):
             prev = sampler._reproject(prev)
+        elif n_samples * sampler.thinning % nproj_center == 0:
+            zero_center = sampler._reproject(center)
         if i % sampler.thinning == 0:
             samples[i//sampler.thinning - 1, ] = prev
             center = (n_samples * center + prev) / (n_samples + 1)
@@ -657,6 +679,8 @@ class OptGPSampler(HRSampler):
         # meaning they are synchronized across processes
         self.center = shared_np_array((len(model.variables), ),
                                       self.warmup.mean(axis=0))
+        self._zero_center = shared_np_array(
+            (len(model.variables), ), self._reproject(self.center))
 
     def sample(self, n, fluxes=True):
         """Generate a set of samples.
@@ -693,13 +717,13 @@ class OptGPSampler(HRSampler):
         if self.np > 1:
             n_process = np.ceil(n / self.np).astype(int)
             n = n_process * self.np
+            # The cast to list is weird but not doing it gives recursion
+            # limit errors, something weird going on with multiprocessing
+            args = list(zip([n_process] * self.np, range(self.np)))
             # No with statement or starmap here since Python 2.x
             # does not support it :(
             mp = Pool(self.np, initializer=mp_init, initargs=(self,))
-            chains = mp.map(
-                _sample_chain,
-                zip([n_process] * self.np, range(self.np)),
-                chunksize=1)
+            chains = mp.map(_sample_chain, args, chunksize=1)
             mp.close()
             mp.join()
             chains = np.vstack(chains)
