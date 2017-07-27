@@ -5,7 +5,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="description" content="My personal website incuding Posts and my CV.">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-	<meta name="generator" content="Hugo 0.23" />
+	<meta name="generator" content="Hugo 0.25.1" />
 	<title>cobrapy - constraint-based metabolic modeling in Python</title>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
@@ -55,6 +55,83 @@
 <div class="mdl-cell mdl-cell--6-col">
 <div class="mdl-card mdl-shadow--4dp">
 <div class="mdl-card__supporting-text">
+<span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.8.1"><h1 class="mdl-color-text--accent header">0.8.1</h1></a>
+<h2 class="mdl-color-text--indigo-800 header">patch release</h2></span>
+<p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+
+
+<h2 id="fixes">Fixes</h2>
+
+<ul>
+<li>Fix bug related to inhomogeneous sampling <a href="https://github.com/opencobra/cobrapy/issues/558">#558</a>.<br /></li>
+<li>During flux sampling, store the nullspace rather than the entire projection
+(N * N.T) which reduces the memory footprint since it uses memory in
+the order of <code>2 * n_reaction * n_metabolites</code> instead of <code>4 *
+n_reactions^2</code> (no change in speed). <a href="https://github.com/opencobra/cobrapy/pull/556">PR #556</a>.</li>
+</ul>
+
+</div>
+
+</div></div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+<div class="mdl-card mdl-shadow--4dp">
+<div class="mdl-card__supporting-text">
+<span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.8.0"><h1 class="mdl-color-text--accent header">0.8.0</h1></a>
+<h2 class="mdl-color-text--teal-600 header">minor release</h2></span>
+<p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+<p><h2 id="fixes">Fixes</h2>
+
+<ul>
+<li>Tests no longer generates warnings about using deprecated functions.</li>
+<li>Gapfilling integrality thresholds now supported for all optlang solvers.</li>
+</ul>
+
+<p></p></p>
+</div>
+
+<div class="mdl-card__actions">
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="0.8.0">Read more</a>
+</div>
+
+</div></div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+<div class="mdl-card mdl-shadow--4dp">
+<div class="mdl-card__supporting-text">
+<span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.7.0"><h1 class="mdl-color-text--accent header">0.7.0</h1></a>
+<h2 class="mdl-color-text--teal-600 header">minor release</h2></span>
+<p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+<p><h2 id="fixes">Fixes</h2>
+
+<ul>
+<li><code>cobra.flux_analysis.reaction.assess</code>
+<a href="https://github.com/opencobra/cobrapy/issues/537">was broken</a>
+following the release of 0.6.0 and has now been fixed (and now with
+unit tests).</li>
+</ul>
+
+<p></p></p>
+</div>
+
+<div class="mdl-card__actions">
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="0.7.0">Read more</a>
+</div>
+
+</div></div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+<div class="mdl-card mdl-shadow--4dp">
+<div class="mdl-card__supporting-text">
 <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.6.2"><h1 class="mdl-color-text--accent header">0.6.2</h1></a>
 <h2 class="mdl-color-text--indigo-800 header">patch release</h2></span>
 <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
@@ -70,7 +147,7 @@ any significant new features. All changes are backwards-compatible.
 </div>
 
 <div class="mdl-card__actions">
-    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="https://opencobra.github.io/cobrapy/releases/0.6.2/">Read more</a>
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="0.6.2">Read more</a>
 </div>
 
 </div></div>
@@ -114,7 +191,7 @@ The major change is the ongoing move away from cobrapy&rsquo;s internal solver i
 </div>
 
 <div class="mdl-card__actions">
-    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="https://opencobra.github.io/cobrapy/releases/0.6.0/">Read more</a>
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="0.6.0">Read more</a>
 </div>
 
 </div></div>

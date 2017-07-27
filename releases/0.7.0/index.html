@@ -52,46 +52,44 @@
 <p></p>
 <div class="mdl-card mdl-shadow--4dp">
 <div class="mdl-card__supporting-text">
-<h1 class="mdl-color-text--accent header">0.6.2</h1>
+<h1 class="mdl-color-text--accent header">0.7.0</h1>
 <h2 class="mdl-color-text--primary header">by The COBRApy Team</h2><br>
 <div><h2 id="fixes">Fixes</h2>
 
 <ul>
-<li>Fix in the ordering and rounding of FVA summary
-<a href="https://github.com/opencobra/cobrapy/pull/525">#525</a></li>
-<li>Shared memory, improve speed during sampling
-<a href="https://github.com/opencobra/cobrapy/pull/521">#521</a>
-</li>
-<li>Debug <code>model.remove_reactions</code> to properly work with context manager.
-This lead to the deprecation of <code>reaction.delete</code> as this was not compatible
-with the concept of being able to later revert the change.
-<a href="https://github.com/opencobra/cobrapy/issues/506">#506</a>,
-<a href="https://github.com/opencobra/cobrapy/pull/508">#508</a>.</li>
-<li>Adding two models (<code>modela + modelb</code>) again results in a model with
-the objective set to the sum of the two models objectives
-<a href="https://github.com/opencobra/cobrapy/issues/505">#505</a>.</li>
-<li>When adding reactions to a model, the reactions with identifiers
-identical to those in the model are
-ignored. <a href="https://github.com/opencobra/cobrapy/issues/511">#511</a></li>
+<li><code>cobra.flux_analysis.reaction.assess</code>
+<a href="https://github.com/opencobra/cobrapy/issues/537">was broken</a>
+following the release of 0.6.0 and has now been fixed (and now with
+unit tests).</li>
+</ul>
+
+<p></p>
+
+<ul>
+<li><code>production_envelope</code> failed when model C-source was formulated as
+-&gt; x instead of x &lt;-. Fixed added option to guess the C-source by
+taking the medium reaction with the highest input C flux.</li>
+<li><code>model_to_pymatbridge</code> needs scipy and that&rsquo;s correctly handled now.</li>
 </ul>
 
 <h2 id="new-features">New features</h2>
 
 <ul>
-<li><code>model.merge</code> can be used to merge two models, more flexibly than
-the overloaded + and += operators.</li>
+<li><code>flux_variability_analysis</code> now has the <code>pfba_factor</code> parameter
+which enables the inclusion of a constraint on the max sum of
+absolute fluxes when doing FVA.</li>
 </ul>
 
 <h2 id="deprecated-features">Deprecated features</h2>
 
 <ul>
-<li><code>reaction.delete</code> has been deprecated in favor of <code>reaction.remove_from_model</code></li>
-<li>overloaded <code>+</code> and <code>+=</code> for <code>cobra.Model</code> are deprecated in favor of
-<code>model.merge</code></li>
+<li><code>cobra.flux_analysis.reaction.assess_{precursors,products}</code> were
+essentially copies of each other and have been merged to
+<code>cobra.flux_analysis.reaction.assess_component</code></li>
 </ul></div>
 </div>
 <div class="mdl-card__actions mdl-card--border">
-    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="https://github.com/opencobra/cobrapy/releases/tag/0.6.2">See on Github</a>
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="https://github.com/opencobra/cobrapy/releases/tag/0.7.0">See on Github</a>
 </div>
 </div><br></div>
 	</main>
