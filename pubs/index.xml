@@ -6,10 +6,19 @@
     <description>Recent content in Pubs on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 30 Apr 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 16 Jun 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://opencobra.github.io/cobrapy/pubs/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Constraint-based modeling identifies new putative targets to fight colistin-resistant A. baumannii infections.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28623298/</link>
+      <pubDate>Fri, 16 Jun 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28623298/</guid>
+      <description>Acinetobacter baumannii is a clinical threat to human health, causing major infection outbreaks worldwide. As new drugs against Gram-negative bacteria do not seem to be forthcoming, and due to the microbial capability of acquiring multi-resistance, there is an urgent need for novel therapeutic targets. Here we have derived a list of new potential targets by means of metabolic reconstruction and modelling of A. baumannii ATCC 19606. By integrating constraint-based modelling with gene expression data, we simulated microbial growth in normal and stressful conditions (i.</description>
+    </item>
     
     <item>
       <title>DistributedFBA.jl: high-level, high-performance flux balance analysis in Julia.</title>

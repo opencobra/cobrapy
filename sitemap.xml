@@ -15,8 +15,28 @@
   </url>
   
   <url>
+    <loc>https://opencobra.github.io/cobrapy/releases/0.8.1/</loc>
+    <lastmod>2017-07-26T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/releases/0.8.0/</loc>
+    <lastmod>2017-07-21T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/releases/0.7.0/</loc>
+    <lastmod>2017-07-14T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://opencobra.github.io/cobrapy/releases/0.6.2/</loc>
     <lastmod>2017-06-21T11:09:08-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/pm28623298/</loc>
+    <lastmod>2017-06-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -404,7 +424,7 @@
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/</loc>
-    <lastmod>2017-04-30T00:00:00+00:00</lastmod>
+    <lastmod>2017-06-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -416,7 +436,7 @@
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/releases/</loc>
-    <lastmod>2017-06-21T11:09:08-05:00</lastmod>
+    <lastmod>2017-07-26T12:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -452,7 +472,7 @@
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/</loc>
-    <lastmod>2017-06-21T11:09:08-05:00</lastmod>
+    <lastmod>2017-07-26T12:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
