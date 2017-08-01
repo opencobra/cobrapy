@@ -814,6 +814,7 @@ class TestCobraFluxSampling:
         proj = numpy.apply_along_axis(self.optgp._reproject, 1, s)
         assert all(self.optgp.validate(proj) == "v")
 
+
 class TestProductionEnvelope:
     """Test the production envelope."""
 
