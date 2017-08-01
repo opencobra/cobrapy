@@ -806,6 +806,13 @@ class TestCobraFluxSampling:
         relative_diff = (s_inhom.std() + 1e-12)/(s_hom.std() + 1e-12)
         assert 0.5 < relative_diff.abs().mean() < 2
 
+    def test_reproject(self):
+        s = self.optgp.sample(10, fluxes=False).as_matrix()
+        proj = numpy.apply_along_axis(self.optgp._reproject, 1, s)
+        assert all(self.optgp.validate(proj) == "v")
+        s = numpy.random.rand(10, self.optgp.warmup.shape[1])
+        proj = numpy.apply_along_axis(self.optgp._reproject, 1, s)
+        assert all(self.optgp.validate(proj) == "v")
 
 class TestProductionEnvelope:
     """Test the production envelope."""
