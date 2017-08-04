@@ -38,9 +38,6 @@ class Solution(object):
         Contains the reaction fluxes (primal values of variables).
     reduced_costs : pandas.Series
         Contains reaction reduced costs (dual values of variables).
-    metabolites : list
-        A list of `cobra.Metabolite` objects for which the solution is
-        retrieved.
     shadow_prices : pandas.Series
         Contains metabolite shadow prices (dual values of constraints).
 
@@ -58,9 +55,8 @@ class Solution(object):
         Use `reduced_costs` instead.
     """
 
-    def __init__(self, objective_value, status, fluxes,
-                 reduced_costs=None, metabolites=None, shadow_prices=None,
-                 **kwargs):
+    def __init__(self, objective_value, status, fluxes, reduced_costs=None,
+                 shadow_prices=None, **kwargs):
         """
         Initialize a `Solution` from its components.
 
