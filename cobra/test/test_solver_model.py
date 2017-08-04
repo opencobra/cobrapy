@@ -36,7 +36,6 @@ class TestSolution:
     def test_solution_contains_only_reaction_specific_values(self,
                                                              solved_model):
         solution, model = solved_model
-        assert set(model.reactions) == set(solution.reactions)
         reaction_ids = set([reaction.id for reaction in model.reactions])
         if isinstance(solution, Solution):
             assert set(solution.fluxes.index) == reaction_ids

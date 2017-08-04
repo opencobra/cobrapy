@@ -34,9 +34,6 @@ class Solution(object):
         The (optimal) value for the objective function.
     status : str
         The solver status related to the solution.
-    reactions : list
-        A list of `cobra.Reaction` objects for which the solution is
-        retrieved.
     fluxes : pandas.Series
         Contains the reaction fluxes (primal values of variables).
     reduced_costs : pandas.Series
@@ -61,7 +58,7 @@ class Solution(object):
         Use `reduced_costs` instead.
     """
 
-    def __init__(self, objective_value, status, reactions, fluxes,
+    def __init__(self, objective_value, status, fluxes,
                  reduced_costs=None, metabolites=None, shadow_prices=None,
                  **kwargs):
         """
@@ -73,26 +70,18 @@ class Solution(object):
             The (optimal) value for the objective function.
         status : str
             The solver status related to the solution.
-        reactions : list
-            A list of `cobra.Reaction` objects for which the solution is
-            retrieved.
         fluxes : pandas.Series
             Contains the reaction fluxes (primal values of variables).
         reduced_costs : pandas.Series
             Contains reaction reduced costs (dual values of variables).
-        metabolites : list
-            A list of `cobra.Metabolite` objects for which the solution is
-            retrieved.
         shadow_prices : pandas.Series
             Contains metabolite shadow prices (dual values of constraints).
         """
         super(Solution, self).__init__(**kwargs)
         self.objective_value = objective_value
         self.status = status
-        self.reactions = reactions
         self.fluxes = fluxes
         self.reduced_costs = reduced_costs
-        self.metabolites = metabolites
         self.shadow_prices = shadow_prices
 
     def __repr__(self):
@@ -331,9 +320,7 @@ def get_solution(model, reactions=None, metabolites=None, raise_error=False):
             met_index.append(met.id)
             shadow[i] = constr_duals[met.id]
     return Solution(model.solver.objective.value, model.solver.status,
-                    reactions,
                     Series(index=rxn_index, data=fluxes, name="fluxes"),
                     Series(index=rxn_index, data=reduced,
                            name="reduced_costs"),
-                    metabolites,
                     Series(index=met_index, data=shadow, name="shadow_prices"))
