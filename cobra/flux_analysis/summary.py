@@ -19,29 +19,36 @@ def format_long_string(string, max_length):
     return string
 
 
-def metabolite_summary(met, threshold=0.01, fva=False, floatfmt='.3g',
-                       **solver_args):
+def metabolite_summary(met, solution=None, threshold=0.01, fva=False,
+                       floatfmt='.3g', **solver_args):
     """Print a summary of the reactions which produce and consume this
     metabolite
 
+    solution: cobra.core.solution
+        A previously solved model solution to use for generating the summary.
+        If none provided (default), the summary method will resolve the model.
+
     threshold: float
-    a value below which to ignore reaction fluxes
+        a value below which to ignore reaction fluxes
 
     fva: float (0->1), or None
-    Whether or not to include flux variability analysis in the output.
-    If given, fva should be a float between 0 and 1, representing the
-    fraction of the optimum objective to be searched.
+        Whether or not to include flux variability analysis in the output.
+        If given, fva should be a float between 0 and 1, representing the
+        fraction of the optimum objective to be searched.
 
     floatfmt: string
         format method for floats, passed to tabulate. Default is '.3g'.
 
     """
+    if solution is None:
+        solution = met.model.optimize(reactions=met.reactions, **solver_args)
+
     rxn_id = list()
     flux = list()
     reaction = list()
     for rxn in met.reactions:
         rxn_id.append(format_long_string(rxn.id, 10))
-        flux.append(rxn.flux * rxn.metabolites[met])
+        flux.append(solution.fluxes[rxn.id] * rxn.metabolites[met])
         reaction.append(format_long_string(rxn.reaction, 40 if fva else 50))
 
     flux_summary = pd.DataFrame(data={
@@ -109,9 +116,13 @@ def metabolite_summary(met, threshold=0.01, fva=False, floatfmt='.3g',
         pd.np.array(flux_table[2:])[~flux_summary.is_input.values]))
 
 
-def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
-                  **solver_args):
+def model_summary(model, solution=None, threshold=1E-8, fva=None,
+                  floatfmt='.3g', **solver_args):
     """Print a summary of the input and output fluxes of the model.
+
+    solution: cobra.core.solution
+        A previously solved model solution to use for generating the summary.
+        If none provided (default), the summary method will resolve the model.
 
     threshold: float
         tolerance for determining if a flux is zero (not printed)
@@ -129,23 +140,29 @@ def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
         raise NotImplementedError(
             "Summary support for legacy solvers was removed.")
 
-    # Create a dataframe of objective fluxes
     objective_reactions = linear_reaction_coefficients(model)
-    obj_fluxes = pd.DataFrame({key: key.flux * value for key, value in
-                               iteritems(objective_reactions)},
+    boundary_reactions = model.exchanges
+
+    if solution is None:
+        solution = model.optimize(
+            reactions=(list(objective_reactions.keys()) + boundary_reactions),
+            **solver_args)
+
+    # Create a dataframe of objective fluxes
+
+    obj_fluxes = pd.DataFrame({key: solution.fluxes[key.id] * value for key,
+                               value in iteritems(objective_reactions)},
                               index=['flux']).T
     obj_fluxes['id'] = obj_fluxes.apply(
         lambda x: format_long_string(x.name.id, 15), 1)
 
     # Build a dictionary of metabolite production from the boundary reactions
-    # collect rxn.flux before fva which invalidates previous solver state
-    boundary_reactions = model.exchanges
     metabolite_fluxes = {}
     for rxn in boundary_reactions:
         for met, stoich in iteritems(rxn.metabolites):
             metabolite_fluxes[met] = {
                 'id': format_long_string(met.id, 15),
-                'flux': stoich * rxn.flux}
+                'flux': stoich * solution.fluxes[rxn.id]}
 
     # Calculate FVA results if requested
     if fva:
