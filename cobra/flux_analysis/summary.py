@@ -24,19 +24,22 @@ def metabolite_summary(met, solution=None, threshold=0.01, fva=False,
     """Print a summary of the reactions which produce and consume this
     metabolite
 
-    solution: cobra.core.solution
-        A previously solved model solution to use for generating the summary.
-        If none provided (default), the summary method will resolve the model.
+    solution : cobra.core.Solution
+        A previously solved model solution to use for generating the
+        summary. If none provided (default), the summary method will resolve
+        the model. Note that the solution object must match the model, i.e.,
+        changes to the model such as changed bounds, added or removed
+        reactions are not taken into account by this method.
 
-    threshold: float
+    threshold : float
         a value below which to ignore reaction fluxes
 
-    fva: float (0->1), or None
+    fva : float (0->1), or None
         Whether or not to include flux variability analysis in the output.
         If given, fva should be a float between 0 and 1, representing the
         fraction of the optimum objective to be searched.
 
-    floatfmt: string
+    floatfmt : string
         format method for floats, passed to tabulate. Default is '.3g'.
 
     """
@@ -120,18 +123,21 @@ def model_summary(model, solution=None, threshold=1E-8, fva=None,
                   floatfmt='.3g', **solver_args):
     """Print a summary of the input and output fluxes of the model.
 
-    solution: cobra.core.solution
-        A previously solved model solution to use for generating the summary.
-        If none provided (default), the summary method will resolve the model.
+    solution : cobra.core.Solution
+        A previously solved model solution to use for generating the
+        summary. If none provided (default), the summary method will resolve
+        the model. Note that the solution object must match the model, i.e.,
+        changes to the model such as changed bounds, added or removed
+        reactions are not taken into account by this method.
 
-    threshold: float
+    threshold : float
         tolerance for determining if a flux is zero (not printed)
 
-    fva: int or None
+    fva : int or None
         Whether or not to calculate and report flux variability in the
         output summary
 
-    floatfmt: string
+    floatfmt : string
         format method for floats, passed to tabulate. Default is '.3g'.
 
     """

@@ -216,10 +216,13 @@ class Metabolite(Species):
 
         Parameters
         ----------
-        solution: cobra.core.solution
+        solution : cobra.core.Solution
             A previously solved model solution to use for generating the
             summary. If none provided (default), the summary method will
-            resolve the model.
+            resolve the model. Note that the solution object must match the
+            model, i.e., changes to the model such as changed bounds,
+            added or removed reactions are not taken into account by this
+            method.
 
         threshold : float
             a value below which to ignore reaction fluxes

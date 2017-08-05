@@ -941,10 +941,13 @@ class Model(Object):
 
         Parameters
         ----------
-        solution: cobra.core.solution
+        solution: cobra.core.Solution
             A previously solved model solution to use for generating the
             summary. If none provided (default), the summary method will
-            resolve the model.
+            resolve the model. Note that the solution object must match the
+            model, i.e., changes to the model such as changed bounds,
+            added or removed reactions are not taken into account by this
+            method.
 
         threshold : float
             tolerance for determining if a flux is zero (not printed)
