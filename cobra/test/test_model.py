@@ -118,6 +118,8 @@ class TestReactions:
         benchmark(add_remove_metabolite)
 
     def test_add_metabolite(self, model):
+        with pytest.raises(ValueError):
+            model.add_metabolites(Metabolite())
         with model:
             with model:
                 reaction = model.reactions.get_by_id("PGI")
