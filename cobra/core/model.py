@@ -934,8 +934,7 @@ class Model(Object):
             value = {rxn: 1 for rxn in reactions}
         set_objective(self, value, additive=False)
 
-    def summary(self, solution=None, threshold=1E-8, fva=None, floatfmt='.3g',
-                **kwargs):
+    def summary(self, solution=None, threshold=1E-8, fva=None, floatfmt='.3g'):
         """Print a summary of the input and output fluxes of the model. This
         method requires the model to have been previously solved.
 
@@ -962,7 +961,7 @@ class Model(Object):
         """
         from cobra.flux_analysis.summary import model_summary
         return model_summary(self, solution=solution, threshold=threshold,
-                             fva=fva, floatfmt=floatfmt, **kwargs)
+                             fva=fva, floatfmt=floatfmt)
 
     def __enter__(self):
         """Record all future changes to the model, undoing them when a call to

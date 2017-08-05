@@ -206,8 +206,8 @@ class Metabolite(Species):
         """
         self._model.remove_metabolites(self, destructive)
 
-    def summary(self, solution=None, threshold=0.01, fva=False, floatfmt='.3g',
-                **kwargs):
+    def summary(self, solution=None, threshold=0.01, fva=False,
+                floatfmt='.3g'):
         """Print a summary of the reactions which produce and consume this
         metabolite.
 
@@ -237,7 +237,7 @@ class Metabolite(Species):
         """
         from cobra.flux_analysis.summary import metabolite_summary
         return metabolite_summary(self, solution=solution, threshold=threshold,
-                                  fva=fva, floatfmt=floatfmt, **kwargs)
+                                  fva=fva, floatfmt=floatfmt)
 
     def _repr_html_(self):
         return """
