@@ -354,9 +354,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
 
 
 def parse_legacy_sbml_notes(note_string, note_delimiter=':'):
-    """Deal with legacy SBML format issues arising from the
-    COBRA Toolbox for MATLAB and BiGG.ucsd.edu developers.
-
+    """Deal with various legacy SBML format issues.
     """
     note_dict = {}
     start_tag = '<p>'
@@ -564,7 +562,7 @@ def get_libsbml_document(cobra_model,
         # they are set to be identical
         note_dict = the_reaction.notes.copy()
         if the_reaction.gene_reaction_rule:
-            note_dict['GENE_ASSOCIATION'] = [
+            note_dict['GENE ASSOCIATION'] = [
                 str(the_reaction.gene_reaction_rule)]
         if the_reaction.subsystem:
             note_dict['SUBSYSTEM'] = [str(the_reaction.subsystem)]
