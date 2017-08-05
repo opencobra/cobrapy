@@ -334,6 +334,12 @@ class Model(Object):
         # First check whether the metabolites exist in the model
         metabolite_list = [x for x in metabolite_list
                            if x.id not in self.metabolites]
+
+        bad_ids = [m for m in metabolite_list
+                   if not isinstance(m.id, string_types) or len(m.id) < 1]
+        if len(bad_ids) != 0:
+            raise ValueError('invalid identifiers in {}'.format(repr(bad_ids)))
+
         for x in metabolite_list:
             x._model = self
         self.metabolites += metabolite_list
