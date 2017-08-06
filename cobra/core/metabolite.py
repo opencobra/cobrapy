@@ -206,7 +206,8 @@ class Metabolite(Species):
         """
         self._model.remove_metabolites(self, destructive)
 
-    def summary(self, threshold=0.01, fva=False, floatfmt='.3g', **kwargs):
+    def summary(self, solution=None, threshold=0.01, fva=False,
+                floatfmt='.3g'):
         """Print a summary of the reactions which produce and consume this
         metabolite.
 
@@ -215,6 +216,14 @@ class Metabolite(Species):
 
         Parameters
         ----------
+        solution : cobra.core.Solution
+            A previously solved model solution to use for generating the
+            summary. If none provided (default), the summary method will
+            resolve the model. Note that the solution object must match the
+            model, i.e., changes to the model such as changed bounds,
+            added or removed reactions are not taken into account by this
+            method.
+
         threshold : float
             a value below which to ignore reaction fluxes
 
@@ -227,8 +236,8 @@ class Metabolite(Species):
             format method for floats, passed to tabulate. Default is '.3g'.
         """
         from cobra.flux_analysis.summary import metabolite_summary
-        return metabolite_summary(self, threshold=threshold, fva=fva,
-                                  floatfmt=floatfmt, **kwargs)
+        return metabolite_summary(self, solution=solution, threshold=threshold,
+                                  fva=fva, floatfmt=floatfmt)
 
     def _repr_html_(self):
         return """

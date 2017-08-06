@@ -9,7 +9,8 @@ from six.moves import zip_longest
 from tabulate import tabulate
 
 from cobra.flux_analysis.variability import flux_variability_analysis
-from cobra.util.solver import linear_reaction_coefficients, choose_solver
+from cobra.util.solver import linear_reaction_coefficients
+from cobra.core import get_solution
 
 
 def format_long_string(string, max_length):
@@ -19,29 +20,40 @@ def format_long_string(string, max_length):
     return string
 
 
-def metabolite_summary(met, threshold=0.01, fva=False, floatfmt='.3g',
-                       **solver_args):
+def metabolite_summary(met, solution=None, threshold=0.01, fva=False,
+                       floatfmt='.3g'):
     """Print a summary of the reactions which produce and consume this
     metabolite
 
-    threshold: float
-    a value below which to ignore reaction fluxes
+    solution : cobra.core.Solution
+        A previously solved model solution to use for generating the
+        summary. If none provided (default), the summary method will resolve
+        the model. Note that the solution object must match the model, i.e.,
+        changes to the model such as changed bounds, added or removed
+        reactions are not taken into account by this method.
 
-    fva: float (0->1), or None
-    Whether or not to include flux variability analysis in the output.
-    If given, fva should be a float between 0 and 1, representing the
-    fraction of the optimum objective to be searched.
+    threshold : float
+        a value below which to ignore reaction fluxes
 
-    floatfmt: string
+    fva : float (0->1), or None
+        Whether or not to include flux variability analysis in the output.
+        If given, fva should be a float between 0 and 1, representing the
+        fraction of the optimum objective to be searched.
+
+    floatfmt : string
         format method for floats, passed to tabulate. Default is '.3g'.
 
     """
+    if solution is None:
+        met.model.slim_optimize(error_value=None)
+        solution = get_solution(met.model, reactions=met.reactions)
+
     rxn_id = list()
     flux = list()
     reaction = list()
     for rxn in met.reactions:
         rxn_id.append(format_long_string(rxn.id, 10))
-        flux.append(rxn.flux * rxn.metabolites[met])
+        flux.append(solution.fluxes[rxn.id] * rxn.metabolites[met])
         reaction.append(format_long_string(rxn.reaction, 40 if fva else 50))
 
     flux_summary = pd.DataFrame(data={
@@ -49,8 +61,8 @@ def metabolite_summary(met, threshold=0.01, fva=False, floatfmt='.3g',
 
     if fva:
         fva_results = flux_variability_analysis(
-            met.model, met.reactions, fraction_of_optimum=fva,
-            **solver_args)
+            met.model, met.reactions, fraction_of_optimum=fva)
+
         flux_summary.index = flux_summary["id"]
         flux_summary["maximum"] = zeros(len(rxn_id))
         flux_summary["minimum"] = zeros(len(rxn_id))
@@ -109,49 +121,55 @@ def metabolite_summary(met, threshold=0.01, fva=False, floatfmt='.3g',
         pd.np.array(flux_table[2:])[~flux_summary.is_input.values]))
 
 
-def model_summary(model, threshold=1E-8, fva=None, floatfmt='.3g',
-                  **solver_args):
+def model_summary(model, solution=None, threshold=1E-8, fva=None,
+                  floatfmt='.3g'):
     """Print a summary of the input and output fluxes of the model.
 
-    threshold: float
+    solution : cobra.core.Solution
+        A previously solved model solution to use for generating the
+        summary. If none provided (default), the summary method will resolve
+        the model. Note that the solution object must match the model, i.e.,
+        changes to the model such as changed bounds, added or removed
+        reactions are not taken into account by this method.
+
+    threshold : float
         tolerance for determining if a flux is zero (not printed)
 
-    fva: int or None
+    fva : int or None
         Whether or not to calculate and report flux variability in the
         output summary
 
-    floatfmt: string
+    floatfmt : string
         format method for floats, passed to tabulate. Default is '.3g'.
 
     """
-    legacy, _ = choose_solver(model, solver=solver_args.get("solver"))
-    if legacy:
-        raise NotImplementedError(
-            "Summary support for legacy solvers was removed.")
+    objective_reactions = linear_reaction_coefficients(model)
+    boundary_reactions = model.exchanges
+    summary_rxns = list(objective_reactions.keys()) + boundary_reactions
+
+    if solution is None:
+        model.slim_optimize(error_value=None)
+        solution = get_solution(model, reactions=summary_rxns)
 
     # Create a dataframe of objective fluxes
-    objective_reactions = linear_reaction_coefficients(model)
-    obj_fluxes = pd.DataFrame({key: key.flux * value for key, value in
-                               iteritems(objective_reactions)},
+    obj_fluxes = pd.DataFrame({key: solution.fluxes[key.id] * value for key,
+                               value in iteritems(objective_reactions)},
                               index=['flux']).T
     obj_fluxes['id'] = obj_fluxes.apply(
         lambda x: format_long_string(x.name.id, 15), 1)
 
     # Build a dictionary of metabolite production from the boundary reactions
-    # collect rxn.flux before fva which invalidates previous solver state
-    boundary_reactions = model.exchanges
     metabolite_fluxes = {}
     for rxn in boundary_reactions:
         for met, stoich in iteritems(rxn.metabolites):
             metabolite_fluxes[met] = {
                 'id': format_long_string(met.id, 15),
-                'flux': stoich * rxn.flux}
+                'flux': stoich * solution.fluxes[rxn.id]}
 
     # Calculate FVA results if requested
     if fva:
         fva_results = flux_variability_analysis(
-            model, reaction_list=boundary_reactions, fraction_of_optimum=fva,
-            **solver_args)
+            model, reaction_list=boundary_reactions, fraction_of_optimum=fva)
 
         for rxn in boundary_reactions:
             for met, stoich in iteritems(rxn.metabolites):

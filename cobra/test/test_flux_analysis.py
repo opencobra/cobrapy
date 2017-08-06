@@ -588,10 +588,17 @@ class TestCobraFluxAnalysis:
                 "Not found: {} in:\n{}".format(pattern.sub("", elem),
                                                "\n".join(output_strip))
 
-    def test_model_summary_unoptimized(self, model, opt_solver):
+    def test_model_summary_previous_solution(self, model, opt_solver):
         model.solver = opt_solver
-        with pytest.raises(RuntimeError):
-            model.summary()
+        solution = model.optimize()
+        rxn_test = model.exchanges[0]
+        met_test = list(rxn_test.metabolites.keys())[0].id
+
+        solution.fluxes[rxn_test.id] = 321
+
+        with captured_output() as (out, err):
+            model.summary(solution)
+        self.check_in_line(out.getvalue(), [met_test + '321'])
 
     def test_model_summary(self, model, opt_solver):
         model.solver = opt_solver
@@ -640,10 +647,17 @@ class TestCobraFluxAnalysis:
         # Need to use a different method here because
         # there are multiple entries per line.
         model.solver = opt_solver
-        model.optimize()
+        solution = model.optimize()
         with captured_output() as (out, err):
-            model.summary(fva=fraction)
+            model.summary(solution, fva=fraction)
         self.check_in_line(out.getvalue(), expected_entries)
+
+    @pytest.mark.parametrize("met", ["q8_c"])
+    def test_metabolite_summary_previous_solution(
+            self, model, opt_solver, met):
+        model.solver = opt_solver
+        solution = pfba(model)
+        model.metabolites.get_by_id(met).summary(solution)
 
     @pytest.mark.parametrize("met", ["q8_c"])
     def test_metabolite_summary(self, model, opt_solver, met):
