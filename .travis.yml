@@ -81,7 +81,9 @@ before_cache:
   - set +e
 
 install:
-  - if [[ -n "${MB_PYTHON_VERSION}" ]]; then travis_retry build_wheel . $PLAT; fi
+  - if [[ -n "${MB_PYTHON_VERSION}" ]]; then
+      travis_retry build_wheel . $PLAT;
+    fi
 
 script:
   - if [[ -n "${MB_PYTHON_VERSION}" ]]; then
@@ -91,6 +93,7 @@ script:
       find . -name "*.rst" -exec rstcheck {} +;
       tox -e "${TOXENV}";
     fi
+  - ls ${TRAVIS_BUILD_DIR}/wheelhouse/ || echo "no wheelhouse"
 
 deploy:
   provider: script
