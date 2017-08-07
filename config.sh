@@ -25,6 +25,14 @@ function pre_build {
 function build_wheel {
     # Set default building method to pip
     build_bdist_wheel $@
+    # setup.py sdist fails with
+    # error: [Errno 2] No such file or directory: 'venv/lib/python3.5/_dummy_thread.py'
+    # for python less than 3.5
+    if [[ `python -c 'import sys; print(sys.version.split()[0] >= "3.6.0")'` == "True" ]]; then
+        python setup.py sdist --dist-dir $(abspath ${WHEEL_SDIR:-wheelhouse})
+    else
+        echo "skip sdist"
+    fi
     # remove glpk installation to ensure using the packaged binaries
 	(cd glpk-4.61 && make uninstall)
 }
