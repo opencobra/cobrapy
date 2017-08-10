@@ -137,11 +137,7 @@ class Reaction(Object):
             not associated with a model.
         """
         if self.model is not None:
-            if self._forward_variable is None:
-                self._forward_variable = self.model.variables[
-                    self.id]
-            assert self._forward_variable.problem is self.model.solver
-            return self._forward_variable
+            return self.model.variables[self.id]
         else:
             return None
 
@@ -155,19 +151,11 @@ class Reaction(Object):
             An optlang variable for the reverse flux or None if reaction is
             not associated with a model.
         """
-        model = self.model
-        if model is not None:
-            if self._reverse_variable is None:
-                self._reverse_variable = model.variables[
-                    self.reverse_id]
-            assert self._reverse_variable.problem is self.model.solver
-            return self._reverse_variable
+
+        if self.model is not None:
+            return self.model.variables[self.reverse_id]
         else:
             return None
-
-    def _reset_var_cache(self):
-        self._forward_variable = None
-        self._reverse_variable = None
 
     @property
     def objective_coefficient(self):
@@ -190,12 +178,10 @@ class Reaction(Object):
 
     def __copy__(self):
         cop = copy(super(Reaction, self))
-        cop._reset_var_cache()
         return cop
 
     def __deepcopy__(self, memo):
         cop = deepcopy(super(Reaction, self), memo)
-        cop._reset_var_cache()
         return cop
 
     @property
