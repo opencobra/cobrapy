@@ -4,6 +4,8 @@ import argparse
 import re
 from os.path import basename
 
+pd.set_option('display.width', 200)
+
 
 def benchmark_to_df(json_file):
     with open(json_file) as jf:
@@ -18,9 +20,13 @@ def benchmark_to_df(json_file):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="""
-    compare cobrapy benchmarks.""")
-    parser.add_argument('first', help='first branch to compare')
-    parser.add_argument('second', help='second branch to compare')
+    compare cobrapy benchmarks.
+    Run pytest with
+    pytest --benchmark-save=without-cache --benchmark-min-rounds=20
+    then compare saved json files with this script.
+    """)
+    parser.add_argument('first', help='first json file')
+    parser.add_argument('second', help='second json file')
     args = parser.parse_args()
 
     first = benchmark_to_df(args.first)
@@ -31,5 +37,5 @@ if __name__ == "__main__":
     both = pd.merge(first, second, how="inner", on="test",
                     suffixes=(first_name, second_name))
     both["fraction"] = both.iloc[:, 2] / both.iloc[:, 1]
-    both.sort_values(by="fraction")
-    print(both)
+    print(both.sort_values(by="fraction"))
+
