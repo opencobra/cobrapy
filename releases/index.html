@@ -5,7 +5,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="description" content="My personal website incuding Posts and my CV.">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-	<meta name="generator" content="Hugo 0.25.1" />
+	<meta name="generator" content="Hugo 0.26" />
 	<title>cobrapy - constraint-based metabolic modeling in Python</title>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
@@ -50,6 +50,33 @@
     <div class="mdl-card__title mdl-color--indigo-900" style="height:auto">
     <div class="mdl-card__title-text mdl-color-text--white">Releases</div>
 </div></div></div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+<div class="mdl-card mdl-shadow--4dp">
+<div class="mdl-card__supporting-text">
+<span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.8.2"><h1 class="mdl-color-text--accent header">0.8.2</h1></a>
+<h2 class="mdl-color-text--indigo-800 header">patch release</h2></span>
+<p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+<p><h2 id="fixes">Fixes</h2>
+
+<ul>
+<li>Guarantee that sampler._reproject always returns a feasible point
+and will not attempt to reproject already feasible
+points. <a href="https://github.com/opencobra/cobrapy/pull/564">#564</a></li>
+<li><code>Model.summary</code> no longer fails when calling after the model has
+changed. Fixed by letting the summary function re-compute a solution
+(default) or letting user supply a prior computed solution
+object. <a href="https://github.com/opencobra/cobrapy/pull/566">#566</a></p>
+</div>
+
+<div class="mdl-card__actions">
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="0.8.2">Read more</a>
+</div>
+
+</div></div>
 
 
 <div class="mdl-cell mdl-cell--6-col">

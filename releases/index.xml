@@ -6,10 +6,28 @@
     <description>Recent content in Releases on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 26 Jul 2017 12:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 10 Aug 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://opencobra.github.io/cobrapy/releases/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>0.8.2</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.8.2/</link>
+      <pubDate>Thu, 10 Aug 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.8.2/</guid>
+      <description>&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Guarantee that sampler._reproject always returns a feasible point
+and will not attempt to reproject already feasible
+points. &lt;a href=&#34;https://github.com/opencobra/cobrapy/pull/564&#34;&gt;#564&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Model.summary&lt;/code&gt; no longer fails when calling after the model has
+changed. Fixed by letting the summary function re-compute a solution
+(default) or letting user supply a prior computed solution
+object. &lt;a href=&#34;https://github.com/opencobra/cobrapy/pull/566&#34;&gt;#566&lt;/a&gt;</description>
+    </item>
     
     <item>
       <title>0.8.1</title>

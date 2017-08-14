@@ -52,23 +52,40 @@
 <p></p>
 <div class="mdl-card mdl-shadow--4dp">
 <div class="mdl-card__supporting-text">
-<h1 class="mdl-color-text--accent header">0.6.1</h1>
+<h1 class="mdl-color-text--accent header">0.8.2</h1>
 <h2 class="mdl-color-text--primary header">by The COBRApy Team</h2><br>
-<div>
-
-<h2 id="fixes">Fixes</h2>
+<div><h2 id="fixes">Fixes</h2>
 
 <ul>
-<li>Debug <code>metabolite.add_metabolites</code> with <code>combine=False</code>
-(<a href="https://github.com/opencobra/cobrapy/issues/503">#503</a>)</li>
-<li>Fix broken printing of metabolites
-(<a href="https://github.com/opencobra/cobrapy/issues/502">#502</a>), by
-removing unnecessary <code>Frozendict</code></li>
+<li>Guarantee that sampler._reproject always returns a feasible point
+and will not attempt to reproject already feasible
+points. <a href="https://github.com/opencobra/cobrapy/pull/564">#564</a></li>
+<li><code>Model.summary</code> no longer fails when calling after the model has
+changed. Fixed by letting the summary function re-compute a solution
+(default) or letting user supply a prior computed solution
+object. <a href="https://github.com/opencobra/cobrapy/pull/566">#566</a>
+</li>
+<li>Metabolites must now have valid identifiers before being added to a
+model or <code>ValueError</code> is raised.</li>
+<li>Fix use of underscores in key/value pairs in legacy sbml
+notes. <a href="https://github.com/opencobra/cobrapy/issues/547">#547</a></li>
 </ul>
-</div>
+
+<h2 id="backwards-incompatible-changes">Backwards incompatible changes</h2>
+
+<ul>
+<li>the Solution class no longer contains links progenitor model&rsquo;s
+reactions and metabolites. Removed since it those can change after
+the solution has been computed making them erroneous. This of course
+implies that <code>Solution</code> constructor changes to:
+<code>
+  def __init__(self, objective_value, status, fluxes, reduced_costs=None,
+             shadow_prices=None, **kwargs):
+</code></li>
+</ul></div>
 </div>
 <div class="mdl-card__actions mdl-card--border">
-    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="https://github.com/opencobra/cobrapy/releases/tag/0.6.1">See on Github</a>
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="https://github.com/opencobra/cobrapy/releases/tag/0.8.2">See on Github</a>
 </div>
 </div><br></div>
 	</main>
