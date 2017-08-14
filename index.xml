@@ -6,7 +6,7 @@
     <description>Recent content on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 26 Jul 2017 12:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 10 Aug 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://opencobra.github.io/cobrapy/index.xml" rel="self" type="application/rss+xml" />
     
@@ -44,6 +44,24 @@ $ pip install cobra[all]  For futher help refer to the detailed installation ins
 Please use the Google Group for help. Alternatively, you can use gitter.im for quick questions and discussions about cobrapy (faster response times).
 File bug reports and contribute to development on our github page.
 If you use cobrapy in a scientific publication, please cite our publication 😄</description>
+    </item>
+    
+    <item>
+      <title>0.8.2</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.8.2/</link>
+      <pubDate>Thu, 10 Aug 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.8.2/</guid>
+      <description>&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Guarantee that sampler._reproject always returns a feasible point
+and will not attempt to reproject already feasible
+points. &lt;a href=&#34;https://github.com/opencobra/cobrapy/pull/564&#34;&gt;#564&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Model.summary&lt;/code&gt; no longer fails when calling after the model has
+changed. Fixed by letting the summary function re-compute a solution
+(default) or letting user supply a prior computed solution
+object. &lt;a href=&#34;https://github.com/opencobra/cobrapy/pull/566&#34;&gt;#566&lt;/a&gt;</description>
     </item>
     
     <item>
@@ -193,8 +211,8 @@ The major change is the ongoing move away from cobrapy&amp;rsquo;s internal solv
       <pubDate>Mon, 27 Mar 2017 11:52:51 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/micom/</guid>
-      <description>micom is a Python package for metabolic modeling of microbial communities.
-micom allows you to construct a community model from a list on input COBRA models and manages exchange fluxes between individuals and individuals with the environment. It explicitly accounts for different abundances of individuals in the community and can thus incorporate data from 16S rRNA sequencing experiments.</description>
+      <description>micom is a Python package for metabolic modeling of microbial communities and is developed in the Human Systems Biology Group at the INMEGEN, Mexico.
+micom allows you to construct a community model from a list on input COBRA models and manages exchange fluxes between individuals and individuals with the environment. It explicitly accounts for different abundances of individuals in the community and can thus incorporate data from 16S rRNA sequencing or metagenomic shotgun experiments.</description>
     </item>
     
     <item>
@@ -203,7 +221,7 @@ micom allows you to construct a community model from a list on input COBRA model
       <pubDate>Mon, 27 Mar 2017 11:52:47 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/corda/</guid>
-      <description>CORDA, short for Cost Optimization Reaction Dependency Assessment is a method for the reconstruction of metabolic networks from a given reference model (a database of all known reactions) and a confidence mapping for reactions developed by A. Schultz and A. Qutub. It allows you to quickly reconstruct metabolic models for tissues, patients or specific experimental conditions from a set of transcription or proteome measurements.</description>
+      <description>CORDA, short for Cost Optimization Reaction Dependency Assessment is a method for the reconstruction of metabolic networks from a given reference model (a database of all known reactions) and a confidence mapping for reactions developed by A. Schultz and A. Qutub. The package allows you to quickly reconstruct metabolic models for tissues, patients or specific experimental conditions from a set of transcription or proteome measurements and is developed in the Human Systems Biology Group at the INMEGEN, Mexico.</description>
     </item>
     
     <item>

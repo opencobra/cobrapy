@@ -17,7 +17,7 @@
       <pubDate>Mon, 27 Mar 2017 11:52:47 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/packages/corda/</guid>
-      <description>CORDA, short for Cost Optimization Reaction Dependency Assessment is a method for the reconstruction of metabolic networks from a given reference model (a database of all known reactions) and a confidence mapping for reactions developed by A. Schultz and A. Qutub. It allows you to quickly reconstruct metabolic models for tissues, patients or specific experimental conditions from a set of transcription or proteome measurements.</description>
+      <description>CORDA, short for Cost Optimization Reaction Dependency Assessment is a method for the reconstruction of metabolic networks from a given reference model (a database of all known reactions) and a confidence mapping for reactions developed by A. Schultz and A. Qutub. The package allows you to quickly reconstruct metabolic models for tissues, patients or specific experimental conditions from a set of transcription or proteome measurements and is developed in the Human Systems Biology Group at the INMEGEN, Mexico.</description>
     </item>
     
     <item>
