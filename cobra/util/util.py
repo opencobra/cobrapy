@@ -3,6 +3,13 @@
 from __future__ import absolute_import
 
 
+def format_long_string(string, max_length=50):
+    if len(string) > max_length:
+        string = string[:max_length - 3]
+        string += '...'
+    return string
+
+
 class AutoVivification(dict):
     """Implementation of perl's autovivification feature. Checkout
     http://stackoverflow.com/a/652284/280182 """

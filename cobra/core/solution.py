@@ -10,7 +10,7 @@ from warnings import warn
 
 from numpy import empty, nan
 from optlang.interface import OPTIMAL
-from pandas import Series, DataFrame
+from pandas import Series, DataFrame, option_context
 
 from cobra.util.solver import check_solver_status
 
@@ -89,10 +89,11 @@ class Solution(object):
 
     def _repr_html_(self):
         if self.status == OPTIMAL:
-            html = ('<strong><em>Optimal</em> solution with objective value '
-                    '{:.3f}</strong><br>{}'
-                    .format(self.objective_value,
-                            self.to_frame()._repr_html_()))
+            with option_context('display.max_rows', 10):
+                html = ('<strong><em>Optimal</em> solution with objective '
+                        'value {:.3f}</strong><br>{}'
+                        .format(self.objective_value,
+                                self.to_frame()._repr_html_()))
         else:
             html = '<strong><em>{}</em> solution</strong>'.format(self.status)
         return html
