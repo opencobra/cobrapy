@@ -395,6 +395,15 @@ class TestCobraModel:
 
     def test_compartments(self, model):
         assert set(model.compartments) == {"c", "e"}
+        model = Model("test", "test")
+        met_c = Metabolite("a_c", compartment="c")
+        met_e = Metabolite("a_e", compartment="e")
+        rxn = Reaction("foo")
+        rxn.add_metabolites({met_e: -1, met_c: 1})
+        model.add_reactions([rxn])
+        assert model.compartments == {'c': '', 'e': ''}
+        model.compartments = {'c': 'cytosol'}
+        assert model.compartments == {'c': 'cytosol', 'e': ''}
 
     def test_add_reaction(self, model):
         old_reaction_count = len(model.reactions)
