@@ -911,6 +911,7 @@ class Reaction(Object):
 
     def get_compartments(self):
         """lists compartments the metabolites are in"""
+        warn('use Reaction.compartments instead', DeprecationWarning)
         return list(self.compartments)
 
     def _associate_gene(self, cobra_gene):

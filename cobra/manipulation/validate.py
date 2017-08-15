@@ -50,10 +50,6 @@ def check_reaction_bounds(model):
 def check_metabolite_compartment_formula(model):
     errors = []
     for met in model.metabolites:
-        if met.compartment is not None and \
-                met.compartment not in model.compartments:
-            errors.append("Metabolite '%s' compartment '%s' not found" %
-                          (met.id, met.compartment))
         if met.formula is not None and len(met.formula) > 0:
             if not met.formula.isalnum():
                 errors.append("Metabolite '%s' formula '%s' not alphanumeric" %

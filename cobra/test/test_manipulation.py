@@ -225,10 +225,9 @@ class TestManipulation:
         assert rxns.EX_h_e.annotation["SBO"] == "SBO:0000628"
 
     def test_validate_formula_compartment(self, model):
-        model.metabolites[1].compartment = "fake"
         model.metabolites[1].formula = "(a*.bcde)"
         errors = check_metabolite_compartment_formula(model)
-        assert len(errors) == 2
+        assert len(errors) == 1
 
     def test_validate_mass_balance(self, model):
         assert len(check_mass_balance(model)) == 0

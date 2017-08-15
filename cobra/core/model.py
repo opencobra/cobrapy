@@ -94,7 +94,7 @@ class Model(Object):
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
             # genes based on their ids {Gene.id: Gene}
-            self.compartments = dict()
+            self._compartments = dict()
             self._contexts = []
 
             # from cameo ...
@@ -165,8 +165,35 @@ class Model(Object):
 
     def get_metabolite_compartments(self):
         """Return all metabolites' compartments."""
+        warn('use Model.compartments instead', DeprecationWarning)
         return {met.compartment for met in self.metabolites
                 if met.compartment is not None}
+
+    @property
+    def compartments(self):
+        return {met.compartment: self._compartments.get(met.compartment, '')
+                for met in self.metabolites if met.compartment is not None}
+
+    @compartments.setter
+    def compartments(self, value):
+        """Get or set the dictionary of current compartment descriptions.
+
+        Assigning a dictionary to this property updates the model's
+        dictionary of compartment descriptions with the new values.
+
+        Parameters
+        ----------
+        value : dict
+            Dictionary mapping compartments abbreviations to full names.
+
+        Examples
+        --------
+        >>> import cobra.test
+        >>> model = cobra.test.create_test_model("textbook")
+        >>> model.compartments = {'c': 'the cytosol'}
+        {'c': 'the cytosol', 'e': 'extracellular'}
+        """
+        self._compartments.update(value)
 
     @property
     def medium(self):
