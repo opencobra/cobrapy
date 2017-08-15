@@ -11,6 +11,7 @@ from warnings import warn
 
 from cobra.core.species import Species
 from cobra.util import resettable
+from cobra.util.util import format_long_string
 
 keywords = list(kwlist)
 keywords.remove("and")
@@ -289,4 +290,5 @@ class Gene(Species):
                            functional=self.functional,
                            address='0x0%x' % id(self),
                            n_reactions=len(self.reactions),
-                           reactions=', '.join(r.id for r in self.reactions))
+                           reactions=format_long_string(
+                               ', '.join(r.id for r in self.reactions), 200))
