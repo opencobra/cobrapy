@@ -12,6 +12,7 @@ from cobra.exceptions import OptimizationError
 from cobra.core.formula import elements_and_molecular_weights
 from cobra.core.species import Species
 from cobra.util.solver import check_solver_status
+from cobra.util.util import format_long_string
 
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
@@ -257,8 +258,10 @@ class Metabolite(Species):
                 <td><strong>In {n_reactions} reaction(s)</strong></td><td>
                     {reactions}</td>
             </tr>
-        </table>""".format(id=self.id, name=self.name, formula=self.formula,
+        </table>""".format(id=self.id, name=format_long_string(self.name),
+                           formula=self.formula,
                            address='0x0%x' % id(self),
                            compartment=self.compartment,
                            n_reactions=len(self.reactions),
-                           reactions=', '.join(r.id for r in self.reactions))
+                           reactions=format_long_string(
+                               ', '.join(r.id for r in self.reactions), 200))

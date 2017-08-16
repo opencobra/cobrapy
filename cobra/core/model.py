@@ -24,7 +24,7 @@ from cobra.util.solver import (
     SolverNotFound, get_solver_name, interface_to_str, set_objective, solvers,
     add_cons_vars_to_problem, remove_cons_vars_from_problem, choose_solver,
     check_solver_status, assert_optimal)
-from cobra.util.util import AutoVivification
+from cobra.util.util import AutoVivification, format_long_string
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1091,7 +1091,7 @@ class Model(Object):
             address='0x0%x' % id(self),
             num_metabolites=len(self.metabolites),
             num_reactions=len(self.reactions),
-            objective=str(self.objective.expression),
+            objective=format_long_string(str(self.objective.expression), 100),
             compartments=", ".join(
                 v if v else k for k, v in iteritems(self.compartments)
             ))

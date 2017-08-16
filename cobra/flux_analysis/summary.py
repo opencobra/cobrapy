@@ -10,14 +10,8 @@ from tabulate import tabulate
 
 from cobra.flux_analysis.variability import flux_variability_analysis
 from cobra.util.solver import linear_reaction_coefficients
+from cobra.util.util import format_long_string
 from cobra.core import get_solution
-
-
-def format_long_string(string, max_length):
-    if len(string) > max_length:
-        string = string[:max_length - 3]
-        string += '...'
-    return string
 
 
 def metabolite_summary(met, solution=None, threshold=0.01, fva=False,

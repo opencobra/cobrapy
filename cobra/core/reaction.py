@@ -20,6 +20,7 @@ from cobra.core.object import Object
 from cobra.util.context import resettable, get_context
 from cobra.util.solver import (
     linear_reaction_coefficients, set_objective, check_solver_status)
+from cobra.util.util import format_long_string
 
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
@@ -1065,11 +1066,14 @@ class Reaction(Object):
                 <td><strong>Upper bound</strong></td><td>{ub}</td>
             </tr>
         </table>
-        """.format(id=self.id, name=self.name,
+        """.format(id=format_long_string(self.id, 100),
+                   name=format_long_string(self.name, 100),
                    address='0x0%x' % id(self),
-                   stoich_id=self.build_reaction_string(),
-                   stoich_name=self.build_reaction_string(True),
-                   gpr=self.gene_reaction_rule,
+                   stoich_id=format_long_string(
+                       self.build_reaction_string(), 200),
+                   stoich_name=format_long_string(
+                       self.build_reaction_string(True), 200),
+                   gpr=format_long_string(self.gene_reaction_rule, 100),
                    lb=self.lower_bound, ub=self.upper_bound)
 
 
