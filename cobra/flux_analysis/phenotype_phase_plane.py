@@ -374,20 +374,21 @@ def production_envelope(model, reactions, objective=None, c_source=None,
                          'based solver interfaces.')
     reactions = model.reactions.get_by_any(reactions)
     objective = model.solver.objective if objective is None else objective
+    objective_reactions = list(sutil.linear_reaction_coefficients(model))
+    if len(objective_reactions) != 1:
+        raise ValueError('cannot calculate yields for objectives with '
+                         'multiple reactions')
+    if c_source is None:
+        c_input = get_c_input(model)
+    else:
+        c_input = model.reactions.get_by_any(c_source)[0]
+    carbon_io = c_input, objective_reactions[0]
     result = None
     with model:
         model.objective = objective
-        if c_source is None:
-            c_input = get_c_input(model)
-        else:
-            c_input = model.reactions.get_by_any(c_source)[0]
-        objective_reactions = list(sutil.linear_reaction_coefficients(model))
-        if len(objective_reactions) != 1:
-            raise ValueError('cannot calculate yields for objectives with '
-                             'multiple reactions')
-        carbon_io = c_input, objective_reactions[0]
         min_max = fva(model, reactions, fraction_of_optimum=0)
-        grid = [linspace(min_max.minimum[rxn.id], min_max.maximum[rxn.id],
+        grid = [linspace(min_max.at[rxn.id, "minimum"],
+                         min_max.at[rxn.id, "maximum"],
                          points, endpoint=True) for rxn in reactions]
         grid_list = list(product(*grid))
         result = envelope_for_points(model, reactions, grid_list, carbon_io)
@@ -465,9 +466,12 @@ def mass_yield(c_input_output):
         c_product, product_flux = single_flux(c_output, consumption=False)
     except ValueError:
         return nan
-    mol_prod_mol_src = product_flux / source_flux
-    x = mol_prod_mol_src * c_product.formula_weight
-    return x / c_source.formula_weight
+    try:
+        mol_prod_mol_src = product_flux / source_flux
+        x = mol_prod_mol_src * c_product.formula_weight
+        return x / c_source.formula_weight
+    except ZeroDivisionError:
+        return nan
 
 
 def total_carbon_flux(reaction, consumption=True):
