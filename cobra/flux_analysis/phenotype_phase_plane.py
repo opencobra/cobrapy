@@ -400,7 +400,8 @@ def production_envelope(model, reactions, objective=None, carbon_sources=None,
                              'multiple reactions')
         c_output = objective_reactions[0]
         min_max = fva(model, reactions, fraction_of_optimum=0)
-        # TODO: use solver threshold to cut-off
+        min_max[min_max.abs() <
+                model.solver.configuration.tolerances.feasibility] = 0.0
         points = list(product(*[
             linspace(min_max.at[rxn.id, "minimum"],
                      min_max.at[rxn.id, "maximum"],
@@ -439,9 +440,12 @@ def add_envelope(model, reactions, grid, c_input, c_output):
                     model.slim_optimize()
                     if model.solver.status != OPTIMAL:
                         continue
-                    # TODO: use solver threshold to cut-off
-                    grid.at[i, 'flux_{}'.format(direction)] = \
-                        model.solver.objective.value
+                    if abs(model.solver.objective.value) < \
+                            model.solver.configuration.tolerances.feasibility:
+                        grid.at[i, 'flux_{}'.format(direction)] = 0.0
+                    else:
+                        grid.at[i, 'flux_{}'.format(direction)] = \
+                            model.solver.objective.value
                     if c_input is not None:
                         grid.at[i, 'carbon_yield_{}'.format(direction)] = \
                             total_yield([rxn.flux for rxn in c_input],

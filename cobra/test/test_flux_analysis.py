@@ -842,6 +842,15 @@ class TestProductionEnvelope:
         with pytest.raises(ValueError):
             production_envelope(model, "EX_o2_e", obj)
 
+    @pytest.mark.parametrize("variables, num", [
+        (["EX_glc__D_e"], 30),
+        (["EX_glc__D_e", "EX_o2_e"], 20),
+        (["EX_glc__D_e", "EX_o2_e", "EX_ac_e"], 10)
+    ])
+    def test_multi_variable_envelope(self, model, variables, num):
+        df = production_envelope(model, variables, points=num)
+        assert len(df) == num ** len(variables)
+
     def test_envelope_two(self, model):
         df = production_envelope(model, ["EX_glc__D_e", "EX_o2_e"],
                                  objective="EX_ac_e")
