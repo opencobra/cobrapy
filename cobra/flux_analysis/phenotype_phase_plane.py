@@ -306,7 +306,7 @@ def calculate_phenotype_phase_plane(
 
 
 def production_envelope(model, reactions, objective=None, carbon_sources=None,
-                        points=20, solver=None):
+                        points=20, threshold=1e-7, solver=None):
     """Calculate the objective value conditioned on all combinations of
     fluxes for a set of chosen reactions
 
@@ -336,6 +336,8 @@ def production_envelope(model, reactions, objective=None, carbon_sources=None,
        Will identify active carbon sources in the medium if none are specified.
     points : int, optional
        The number of points to calculate production for.
+    threshold : float, optional
+        A cut-off under which flux values will be considered to be zero.
     solver : string, optional
        The solver to use - only here for consistency with older
        implementations (this argument will be removed in the future). The
@@ -400,22 +402,21 @@ def production_envelope(model, reactions, objective=None, carbon_sources=None,
                              'multiple reactions')
         c_output = objective_reactions[0]
         min_max = fva(model, reactions, fraction_of_optimum=0)
-        min_max[min_max.abs() <
-                model.solver.configuration.tolerances.feasibility] = 0.0
+        min_max[min_max.abs() < threshold] = 0.0
         points = list(product(*[
             linspace(min_max.at[rxn.id, "minimum"],
                      min_max.at[rxn.id, "maximum"],
                      points, endpoint=True) for rxn in reactions]))
         tmp = pd.DataFrame(points, columns=[rxn.id for rxn in reactions])
         grid = pd.concat([grid, tmp], axis=1, copy=False)
-        add_envelope(model, reactions, grid, c_input, c_output)
+        add_envelope(model, reactions, grid, c_input, c_output, threshold)
     return grid
 
 
-def add_envelope(model, reactions, grid, c_input, c_output):
+def add_envelope(model, reactions, grid, c_input, c_output, threshold):
     if c_input is not None:
-        input_components = [reaction_components(rxn) for rxn in c_input]
-        output_components = reaction_components(c_output)
+        input_components = [reaction_elements(rxn) for rxn in c_input]
+        output_components = reaction_elements(c_output)
         try:
             input_weights = [reaction_weight(rxn) for rxn in c_input]
             output_weight = reaction_weight(c_output)
@@ -437,15 +438,11 @@ def add_envelope(model, reactions, grid, c_input, c_output):
                     for rxn in reactions:
                         point = grid.at[i, rxn.id]
                         rxn.bounds = point, point
-                    model.slim_optimize()
+                    obj_val = model.slim_optimize()
                     if model.solver.status != OPTIMAL:
                         continue
-                    if abs(model.solver.objective.value) < \
-                            model.solver.configuration.tolerances.feasibility:
-                        grid.at[i, 'flux_{}'.format(direction)] = 0.0
-                    else:
-                        grid.at[i, 'flux_{}'.format(direction)] = \
-                            model.solver.objective.value
+                    grid.at[i, 'flux_{}'.format(direction)] = \
+                        0.0 if abs(obj_val) < threshold else obj_val
                     if c_input is not None:
                         grid.at[i, 'carbon_yield_{}'.format(direction)] = \
                             total_yield([rxn.flux for rxn in c_input],
@@ -495,7 +492,7 @@ def total_yield(input_fluxes, input_elements, output_flux, output_elements):
         return nan
 
 
-def reaction_components(reaction, atom='C'):
+def reaction_elements(reaction):
     """
     Split metabolites into the atoms times their stoichiometric coefficients.
 
@@ -503,16 +500,14 @@ def reaction_components(reaction, atom='C'):
     ----------
     reaction : Reaction
         The metabolic reaction whose components are desired.
-    atom : str, optional
-        The desired atom (typically 'C' for carbon).
 
     Returns
     -------
     list
-        Each of the reaction's metabolites desired atoms (if any) times that
-        metabolites stoichiometric coefficient.
+        Each of the reaction's metabolites' desired carbon elements (if any)
+        times that metabolite's stoichiometric coefficient.
     """
-    c_elements = [coeff * met.elements.get(atom, 0)
+    c_elements = [coeff * met.elements.get('C', 0)
                   for met, coeff in iteritems(reaction.metabolites)]
     return [elem for elem in c_elements if elem != 0]
 
@@ -567,6 +562,6 @@ def find_carbon_sources(model):
 
     reactions = model.reactions.get_by_any(list(model.medium))
     reactions_fluxes = [
-        (rxn, total_components_flux(rxn.flux, reaction_components(rxn),
+        (rxn, total_components_flux(rxn.flux, reaction_elements(rxn),
                                     consumption=True)) for rxn in reactions]
     return [rxn for rxn, c_flux in reactions_fluxes if c_flux > 0]
