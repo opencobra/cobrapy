@@ -979,21 +979,15 @@ class Model(Object):
         return self.solver.objective.direction
 
     @objective_direction.setter
+    @resettable
     def objective_direction(self, value):
         """"""
-        reverse_value = self.solver.objective.direction
         if value.lower().startswith("max"):
             self.solver.objective.direction = "max"
         elif value.lower().startswith("min"):
             self.solver.objective.direction = "min"
         else:
             raise ValueError("Unknown objective direction '{}'.".format(value))
-        context = get_context(self)
-        if context:
-            def reset():
-                self.solver.objective.direction = reverse_value
-
-            context(reset)
 
     def summary(self, solution=None, threshold=1E-8, fva=None, floatfmt='.3g'):
         """Print a summary of the input and output fluxes of the model. This
