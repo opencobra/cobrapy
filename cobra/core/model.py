@@ -981,7 +981,6 @@ class Model(Object):
     @objective_direction.setter
     @resettable
     def objective_direction(self, value):
-        """"""
         if value.lower().startswith("max"):
             self.solver.objective.direction = "max"
         elif value.lower().startswith("min"):
