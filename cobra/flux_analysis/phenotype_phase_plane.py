@@ -430,9 +430,8 @@ def add_envelope(model, reactions, grid, c_input, c_output, threshold):
         output_weight = []
 
     for direction in ('minimum', 'maximum'):
-        sense = "min" if direction == "minimum" else "max"
         with model:
-            model.solver.objective.direction = sense
+            model.objective_direction = direction
             for i in range(len(grid)):
                 with model:
                     for rxn in reactions:
