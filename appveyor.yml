@@ -84,7 +84,7 @@ install:
           python -m pip install pip setuptools>=24.0 wheel --upgrade }
   - if not defined CONDA %WITH_COMPILER% python -m pip install --upgrade pytest
   - if defined CONDA conda install -q setuptools pytest numpy scipy
-  - python -m pip install pytest-cov pytest-benchmark pandas swiglpk optlang python-libsbml decorator Cython jsonschema twine pypandoc==1.1.3
+  - python -m pip install pytest-cov pytest-benchmark pandas swiglpk optlang python-libsbml decorator Cython jsonschema twine pypandoc
   - "%WITH_COMPILER% python appveyor/build_glpk.py"
 
 build: off
