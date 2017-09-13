@@ -446,12 +446,12 @@ def add_envelope(model, reactions, grid, c_input, c_output, threshold):
                         grid.at[i, 'carbon_yield_{}'.format(direction)] = \
                             total_yield([rxn.flux for rxn in c_input],
                                         input_components,
-                                        model.solver.objective.value,
+                                        obj_val,
                                         output_components)
                         grid.at[i, 'mass_yield_{}'.format(direction)] = \
                             total_yield([rxn.flux for rxn in c_input],
                                         input_weights,
-                                        model.solver.objective.value,
+                                        obj_val,
                                         output_weight)
 
 
