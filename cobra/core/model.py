@@ -967,6 +967,27 @@ class Model(Object):
             value = {rxn: 1 for rxn in reactions}
         set_objective(self, value, additive=False)
 
+    @property
+    def objective_direction(self):
+        """
+        Get or set the objective direction.
+
+        When using a `HistoryManager` context, this attribute can be set
+        temporarily, reversed when exiting the context.
+
+        """
+        return self.solver.objective.direction
+
+    @objective_direction.setter
+    @resettable
+    def objective_direction(self, value):
+        if value.lower().startswith("max"):
+            self.solver.objective.direction = "max"
+        elif value.lower().startswith("min"):
+            self.solver.objective.direction = "min"
+        else:
+            raise ValueError("Unknown objective direction '{}'.".format(value))
+
     def summary(self, solution=None, threshold=1E-8, fva=None, floatfmt='.3g'):
         """Print a summary of the input and output fluxes of the model. This
         method requires the model to have been previously solved.

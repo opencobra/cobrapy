@@ -775,6 +775,19 @@ class TestCobraModel:
 
         benchmark(benchmark_change_objective)
 
+    def test_get_objective_direction(self, model):
+        assert model.objective_direction == "max"
+        value = model.slim_optimize()
+        assert numpy.isclose(value, 0.874, 1e-3)
+
+    def test_set_objective_direction(self, model):
+        with model:
+            model.objective_direction = "min"
+            assert model.objective_direction == "min"
+            value = model.slim_optimize()
+            assert value == 0.0
+        assert model.objective_direction == "max"
+
     def test_slim_optimize(self, model):
         with model:
             assert model.slim_optimize() > 0.872
