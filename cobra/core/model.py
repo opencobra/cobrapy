@@ -981,9 +981,10 @@ class Model(Object):
     @objective_direction.setter
     @resettable
     def objective_direction(self, value):
-        if value.lower().startswith("max"):
+        value = value.lower()
+        if value.startswith("max"):
             self.solver.objective.direction = "max"
-        elif value.lower().startswith("min"):
+        elif value.startswith("min"):
             self.solver.objective.direction = "min"
         else:
             raise ValueError("Unknown objective direction '{}'.".format(value))

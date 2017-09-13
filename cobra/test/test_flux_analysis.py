@@ -834,7 +834,7 @@ class TestProductionEnvelope:
 
     def test_envelope_one(self, model):
         df = production_envelope(model, ["EX_o2_e"])
-        assert abs(sum(df.flux) - 9.342) < 0.001
+        assert numpy.isclose(df["flux_maximum"].sum(), 9.342, atol=1e-3)
 
     def test_envelope_multi_reaction_objective(self, model):
         obj = {model.reactions.EX_ac_e: 1,
@@ -842,12 +842,22 @@ class TestProductionEnvelope:
         with pytest.raises(ValueError):
             production_envelope(model, "EX_o2_e", obj)
 
+    @pytest.mark.parametrize("variables, num", [
+        (["EX_glc__D_e"], 30),
+        (["EX_glc__D_e", "EX_o2_e"], 20),
+        (["EX_glc__D_e", "EX_o2_e", "EX_ac_e"], 10)
+    ])
+    def test_multi_variable_envelope(self, model, variables, num):
+        df = production_envelope(model, variables, points=num)
+        assert len(df) == num ** len(variables)
+
     def test_envelope_two(self, model):
         df = production_envelope(model, ["EX_glc__D_e", "EX_o2_e"],
                                  objective="EX_ac_e")
-        assert abs(numpy.sum(df.carbon_yield) - 83.579) < 0.001
-        assert abs(numpy.sum(df.flux) - 1737.466) < 0.001
-        assert abs(numpy.sum(df.mass_yield) - 82.176) < 0.001
+        assert numpy.isclose(df["flux_maximum"].sum(), 1737.466, atol=1e-3)
+        assert numpy.isclose(df["carbon_yield_maximum"].sum(), 83.579,
+                             atol=1e-3)
+        assert numpy.isclose(df["mass_yield_maximum"].sum(), 82.176, atol=1e-3)
 
 
 class TestReactionUtils:
