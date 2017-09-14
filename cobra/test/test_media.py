@@ -36,8 +36,9 @@ class TestMinimalMedia:
         medium = media.minimal_medium(model, 0.8, minimize_components=5,
                                       open_exchanges=True)
         assert isinstance(medium, pd.DataFrame)
+        assert medium.shape[0] >= 5
         assert medium.shape[1] == 5
-        assert all((medium > 0).sum() <= 4)
+        assert all((medium > 0).sum() == 3)
         assert all(medium.sum(axis=1) > 1e-6)
 
     def test_benchmark_medium_linear(self, model, benchmark):
