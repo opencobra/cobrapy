@@ -191,12 +191,14 @@ def minimal_medium(model, min_growth=0.1, exports=False,
 
     Returns
     -------
-    pandas.Series or None
+    pandas.Series, pandas.DataFrame or None
         A series {rid: flux} giving the import flux for each required import
         reaction and (optionally) the associated export fluxes. All exchange
         fluxes are oriented into the import reaction e.g. positive fluxes
-        denote imports and negative fluxes exports. Returns None if the
-        minimization is infeasible.
+        denote imports and negative fluxes exports. If `minimize_components`
+        is a number larger 1 may return a DataFrame where each column is a
+        minimal medium. Returns None if the minimization is infeasible
+        (for instance if min_growth > maximum growth rate).
 
     Notes
     -----
@@ -252,7 +254,7 @@ def minimal_medium(model, min_growth=0.1, exports=False,
                 if len(seen) > 0:
                     exclusion.set_linear_coefficients(
                         dict.fromkeys(vars, 1))
-                    exclusion.ub = len(seen) - 1
+                    exclusion.ub = best - 1
                 num_components = mod.slim_optimize()
                 if mod.solver.status != OPTIMAL or num_components > best:
                     break
