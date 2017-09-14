@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+import pandas as pd
 import cobra.media.media as media
 
 
@@ -31,6 +32,14 @@ class TestMinimalMedia:
         assert len(medium) <= 3
         assert all(medium > 1e-6)
 
+    def test_medium_alternative_mip(self, model):
+        medium = media.minimal_medium(model, 0.8, minimize_components=5,
+                                      open_exchanges=True)
+        assert isinstance(medium, pd.DataFrame)
+        assert medium.shape[1] == 5
+        assert all((medium > 0).sum() <= 4)
+        assert all(medium.sum(axis=1) > 1e-6)
+
     def test_benchmark_medium_linear(self, model, benchmark):
         benchmark(media.minimal_medium, model, 0.8)
 
@@ -46,6 +55,8 @@ class TestMinimalMedia:
     def test_open_exchanges(self, model):
         model.reactions.EX_glc__D_e.bounds = 0, 0
         medium = media.minimal_medium(model, 0.8)
+        assert medium is None
+        medium = media.minimal_medium(model, 0.8, minimize_components=True)
         assert medium is None
 
         medium = media.minimal_medium(model, 0.8, open_exchanges=True)
