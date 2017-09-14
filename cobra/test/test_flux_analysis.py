@@ -620,6 +620,10 @@ class TestCobraFluxAnalysis:
             model.summary()
         self.check_in_line(out.getvalue(), expected_entries)
 
+        with model:
+            model.objective = model.exchanges[0]
+            model.summary()
+
     @pytest.mark.parametrize("fraction", [0.95])
     def test_model_summary_with_fva(self, model, opt_solver, fraction):
         if opt_solver == "optlang-gurobi":

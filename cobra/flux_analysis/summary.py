@@ -139,7 +139,7 @@ def model_summary(model, solution=None, threshold=1E-8, fva=None,
     """
     objective_reactions = linear_reaction_coefficients(model)
     boundary_reactions = model.exchanges
-    summary_rxns = set(list(objective_reactions.keys()) + boundary_reactions)
+    summary_rxns = set(objective_reactions.keys()).union(boundary_reactions)
 
     if solution is None:
         model.slim_optimize(error_value=None)
