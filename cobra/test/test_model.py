@@ -287,6 +287,11 @@ class TestReactions:
             assert gene is not model.genes.get_by_id(gene.id)
             assert gene.model is not model
 
+    def test_radd(self, model):
+        new = sum([model.reactions.PGI, model.reactions.EX_h2o_e])
+        assert new._model is not model
+        assert len(new.metabolites) == 3
+
     def test_mul(self, model):
         new = model.reactions.PGI * 2
         assert set(new.metabolites.values()) == {-2, 2}

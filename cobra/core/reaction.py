@@ -608,8 +608,14 @@ class Reaction(Object):
 
         """
         new_reaction = self.copy()
-        new_reaction += other
+        if other == 0:
+            return new_reaction
+        else:
+            new_reaction += other
+
         return new_reaction
+
+    __radd__ = __add__
 
     def __iadd__(self, other):
         self.add_metabolites(other._metabolites, combine=True)
