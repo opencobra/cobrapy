@@ -15,6 +15,16 @@
   </url>
   
   <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/pm28903046/</loc>
+    <lastmod>2017-09-14T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/pm28820904/</loc>
+    <lastmod>2017-08-18T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://opencobra.github.io/cobrapy/releases/0.8.2/</loc>
     <lastmod>2017-08-10T00:00:00+00:00</lastmod>
   </url>
@@ -42,6 +52,11 @@
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/pm28623298/</loc>
     <lastmod>2017-06-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opencobra.github.io/cobrapy/pubs/pm28744485/</loc>
+    <lastmod>2017-06-06T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -429,7 +444,7 @@
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/pubs/</loc>
-    <lastmod>2017-06-16T00:00:00+00:00</lastmod>
+    <lastmod>2017-09-14T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -477,7 +492,7 @@
   
   <url>
     <loc>https://opencobra.github.io/cobrapy/</loc>
-    <lastmod>2017-08-10T00:00:00+00:00</lastmod>
+    <lastmod>2017-09-14T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   

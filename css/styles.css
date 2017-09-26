@@ -18,30 +18,31 @@ a {
     width: 100%;
 }
 
-.mdl-cell .highlight {
+.mdl-cell .intro {
     padding: 2em;
-}
-
-.highlight {
     text-align: center;
     margin: auto;
     max-width: 700px;
 }
 
-.highlight p, .highlight li, .highlight code {
+.intro p, .intro li {
     font-weight: 300;
     font-size: 1.5em;
     line-height: 150%;
 }
 
-.highlight code.language-python {
-    font-weight: 300;
-    font-size: 1.0em;
-    line-height: 100%;
+.intro pre {
+    font-size: 1.2em;
 }
 
-.highlight pre.language-python {
-    margin-bottom: 2em;
+.highlight pre {
+    padding: 1em;
+    margin: 0.5em auto;
+    max-width: 600px;
+    display: block;
+    white-space: pre;
+    overflow: auto;
+    text-align: left;
 }
 
 .dark, .dark a {

@@ -17,7 +17,7 @@
       
       <guid>https://opencobra.github.io/cobrapy/intro/description/</guid>
       <description>cobrapy is a python package that provides a simple interface to metabolic constraint-based reconstruction and analysis.
-&amp;gt;&amp;gt;&amp;gt; import cobra &amp;gt;&amp;gt;&amp;gt; model = cobra.io.read_sbml_model(&#39;Ec_core_flux1.xml&#39;) &amp;gt;&amp;gt;&amp;gt; model.metabolites[:3] [&amp;lt;Metabolite 13dpg_c at 0x112b2d160&amp;gt;, &amp;lt;Metabolite 2pg_c at 0x1024eb048&amp;gt;, &amp;lt;Metabolite 3pg_c at 0x112b2d748&amp;gt;]  The package includes simple, object-oriented interfaces for model construction (including reading to/from sbml, matlab, and json formats) and implements commonly used COBRA methods such as flux balance analysis, flux variability analysis, and gene deletion analyses.</description>
+&amp;gt;&amp;gt;&amp;gt; import cobra &amp;gt;&amp;gt;&amp;gt; model = cobra.io.read_sbml_model(&amp;#39;Ec_core_flux1.xml&amp;#39;) &amp;gt;&amp;gt;&amp;gt; model.metabolites[:3] [&amp;lt;Metabolite 13dpg_c at 0x112b2d160&amp;gt;, &amp;lt;Metabolite 2pg_c at 0x1024eb048&amp;gt;, &amp;lt;Metabolite 3pg_c at 0x112b2d748&amp;gt;]  The package includes simple, object-oriented interfaces for model construction (including reading to/from sbml, matlab, and json formats) and implements commonly used COBRA methods such as flux balance analysis, flux variability analysis, and gene deletion analyses.</description>
     </item>
     
     <item>

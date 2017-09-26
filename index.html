@@ -5,16 +5,14 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="description" content="My personal website incuding Posts and my CV.">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-	<meta name="generator" content="Hugo 0.26" />
+	<meta name="generator" content="Hugo 0.28" />
 	<title>cobrapy - constraint-based metabolic modeling in Python</title>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.3.0/material.teal-indigo.min.css">
 	<link rel="stylesheet" href="./css/styles.css">
-    <link href="./css/prism.css" rel="stylesheet" />
     <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
-    <script defer src="./js/prism.js"></script>
     <link rel="icon" type="image/png" href="./media/favicon.png" />
 </head>
 <body>
@@ -52,34 +50,30 @@
 
 <div class="mdl-cell mdl-cell--12-col mdl-cell--4-col-phone mdl-cell--8-col-tablet
             ">
-<div class="highlight">
+<div class="intro">
 <h3></h3>
 <p><a href="https://github.com/opencobra/cobrapy"><img src="https://img.shields.io/github/stars/opencobra/cobrapy.svg?style=social&amp;label=Star" alt="GitHub stars" /></a>
 <a href="https://github.com/opencobra/cobrapy/graphs/contributors"><img src="https://img.shields.io/github/contributors/opencobra/cobrapy.svg" alt="GitHub contributors" /></a>
 <a href="./releases"><img src="https://img.shields.io/github/release/opencobra/cobrapy.svg" alt="GitHub release" /></a></p>
 
 <p><strong>cobrapy</strong> is a python package that provides a simple interface to metabolic constraint-based reconstruction and analysis.</p>
-
-<pre><code class="language-python">&gt;&gt;&gt; import cobra
-&gt;&gt;&gt; model = cobra.io.read_sbml_model('Ec_core_flux1.xml')
-&gt;&gt;&gt; model.metabolites[:3]
-[&lt;Metabolite 13dpg_c at 0x112b2d160&gt;,
- &lt;Metabolite 2pg_c at 0x1024eb048&gt;,
- &lt;Metabolite 3pg_c at 0x112b2d748&gt;]
-</code></pre>
-
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#333">&gt;&gt;&gt;</span> <span style="color:#080;font-weight:bold">import</span> <span style="color:#0e84b5;font-weight:bold">cobra</span>
+<span style="color:#333">&gt;&gt;&gt;</span> model <span style="color:#333">=</span> cobra<span style="color:#333">.</span>io<span style="color:#333">.</span>read_sbml_model(<span style="background-color:#fff0f0"></span><span style="background-color:#fff0f0">&#39;Ec_core_flux1.xml&#39;</span>)
+<span style="color:#333">&gt;&gt;&gt;</span> model<span style="color:#333">.</span>metabolites[:<span style="color:#00d;font-weight:bold">3</span>]
+[<span style="color:#333">&lt;</span>Metabolite <span style="color:#00d;font-weight:bold">13</span>dpg_c at <span style="color:#058;font-weight:bold">0x112b2d160</span><span style="color:#333">&gt;</span>,
+ <span style="color:#333">&lt;</span>Metabolite <span style="color:#00d;font-weight:bold">2</span>pg_c at <span style="color:#058;font-weight:bold">0x1024eb048</span><span style="color:#333">&gt;</span>,
+ <span style="color:#333">&lt;</span>Metabolite <span style="color:#00d;font-weight:bold">3</span>pg_c at <span style="color:#058;font-weight:bold">0x112b2d748</span><span style="color:#333">&gt;</span>]</code></pre>
+</div>
 <p>The package includes simple, object-oriented interfaces for model construction (including reading to/from sbml, matlab, and json formats) and implements commonly used COBRA methods such as flux balance analysis, flux variability analysis, and gene deletion analyses.</p>
-
-<pre><code class="language-python">&gt;&gt;&gt; model.optimize()
-&lt;Solution 0.86 at 0x11272c2b0&gt;
-&gt;&gt;&gt; model.summary()
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#333">&gt;&gt;&gt;</span> model<span style="color:#333">.</span>optimize()
+<span style="color:#333">&lt;</span>Solution <span style="color:#60e;font-weight:bold">0.86</span> at <span style="color:#058;font-weight:bold">0x11272c2b0</span><span style="color:#333">&gt;</span>
+<span style="color:#333">&gt;&gt;&gt;</span> model<span style="color:#333">.</span>summary()
 IN FLUXES       OUT FLUXES    OBJECTIVES
---------------  ------------  ----------------------
-o2_e     22.3   h2o_e  24.9   Biomass_Ecol...  0.861
-glc_D_e  10     co2_e  23.3
-pi_e      3.17  h_e     9.11
-</code></pre>
-
+<span style="color:#333">--------------</span>  <span style="color:#333">------------</span>  <span style="color:#333">----------------------</span>
+o2_e     <span style="color:#60e;font-weight:bold">22.3</span>   h2o_e  <span style="color:#60e;font-weight:bold">24.9</span>   Biomass_Ecol<span style="color:#333">...</span>  <span style="color:#60e;font-weight:bold">0.861</span>
+glc_D_e  <span style="color:#00d;font-weight:bold">10</span>     co2_e  <span style="color:#60e;font-weight:bold">23.3</span>
+pi_e      <span style="color:#60e;font-weight:bold">3.17</span>  h_e     <span style="color:#60e;font-weight:bold">9.11</span></code></pre>
+</div>
 <p><strong>cobrapy</strong> is a community-supported effort under active development and is licensed under
 the GPL.</p>
 
@@ -87,7 +81,7 @@ the GPL.</p>
 
 <div class="mdl-cell mdl-cell--12-col mdl-cell--4-col-phone mdl-cell--8-col-tablet
             mdl-shadow--4dp dark mdl-color--primary">
-<div class="highlight">
+<div class="intro">
 <h3>Installation</h3>
 <p>You can install cobrapy on linux, Mac OSX and Windows with pip.</p>
 
@@ -109,7 +103,7 @@ the GPL.</p>
 
 <div class="mdl-cell mdl-cell--12-col mdl-cell--4-col-phone mdl-cell--8-col-tablet
             ">
-<div class="highlight">
+<div class="intro">
 <h3>Getting Help</h3>
 <p>The documentation is browsable online at
 <a href="https://cobrapy.readthedocs.org/en/stable/">readthedocs</a> and can

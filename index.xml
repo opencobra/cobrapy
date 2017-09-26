@@ -6,7 +6,7 @@
     <description>Recent content on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 10 Aug 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 14 Sep 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://opencobra.github.io/cobrapy/index.xml" rel="self" type="application/rss+xml" />
     
@@ -18,7 +18,7 @@
       
       <guid>https://opencobra.github.io/cobrapy/intro/description/</guid>
       <description>cobrapy is a python package that provides a simple interface to metabolic constraint-based reconstruction and analysis.
-&amp;gt;&amp;gt;&amp;gt; import cobra &amp;gt;&amp;gt;&amp;gt; model = cobra.io.read_sbml_model(&#39;Ec_core_flux1.xml&#39;) &amp;gt;&amp;gt;&amp;gt; model.metabolites[:3] [&amp;lt;Metabolite 13dpg_c at 0x112b2d160&amp;gt;, &amp;lt;Metabolite 2pg_c at 0x1024eb048&amp;gt;, &amp;lt;Metabolite 3pg_c at 0x112b2d748&amp;gt;]  The package includes simple, object-oriented interfaces for model construction (including reading to/from sbml, matlab, and json formats) and implements commonly used COBRA methods such as flux balance analysis, flux variability analysis, and gene deletion analyses.</description>
+&amp;gt;&amp;gt;&amp;gt; import cobra &amp;gt;&amp;gt;&amp;gt; model = cobra.io.read_sbml_model(&amp;#39;Ec_core_flux1.xml&amp;#39;) &amp;gt;&amp;gt;&amp;gt; model.metabolites[:3] [&amp;lt;Metabolite 13dpg_c at 0x112b2d160&amp;gt;, &amp;lt;Metabolite 2pg_c at 0x1024eb048&amp;gt;, &amp;lt;Metabolite 3pg_c at 0x112b2d748&amp;gt;]  The package includes simple, object-oriented interfaces for model construction (including reading to/from sbml, matlab, and json formats) and implements commonly used COBRA methods such as flux balance analysis, flux variability analysis, and gene deletion analyses.</description>
     </item>
     
     <item>
@@ -44,6 +44,24 @@ $ pip install cobra[all]  For futher help refer to the detailed installation ins
 Please use the Google Group for help. Alternatively, you can use gitter.im for quick questions and discussions about cobrapy (faster response times).
 File bug reports and contribute to development on our github page.
 If you use cobrapy in a scientific publication, please cite our publication 😄</description>
+    </item>
+    
+    <item>
+      <title>Genome-Scale Architecture of Small Molecule Regulatory Networks and the Fundamental Trade-Off between Regulation and Enzymatic Activity.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28903046/</link>
+      <pubDate>Thu, 14 Sep 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28903046/</guid>
+      <description>Metabolic flux is in part regulated by endogenous small molecules that modulate the catalytic activity of an enzyme, e.g., allosteric inhibition. In contrast to transcriptional regulation of enzymes, technical limitations have hindered the production of a genome-scale atlas of small molecule-enzyme regulatory interactions. Here, we develop a framework leveraging the vast, but fragmented, biochemical literature to reconstruct and analyze the small molecule regulatory network (SMRN) of the model organism Escherichia coli, including the primary metabolite regulators and enzyme targets.</description>
+    </item>
+    
+    <item>
+      <title>Parametric studies of metabolic cooperativity in Escherichia coli colonies: Strain and geometric confinement effects.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28820904/</link>
+      <pubDate>Fri, 18 Aug 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28820904/</guid>
+      <description>Characterizing the complex spatial and temporal interactions among cells in a biological system (i.e. bacterial colony, microbiome, tissue, etc.) remains a challenge. Metabolic cooperativity in these systems can arise due to the subtle interplay between microenvironmental conditions and the cells&amp;rsquo; regulatory machinery, often involving cascades of intra- and extracellular signalling molecules. In the simplest of cases, as demonstrated in a recent study of the model organism Escherichia coli, metabolic cross-feeding can arise in monoclonal colonies of bacteria driven merely by spatial heterogeneity in the availability of growth substrates; namely, acetate, glucose and oxygen.</description>
     </item>
     
     <item>
@@ -130,6 +148,15 @@ unit tests).&lt;/li&gt;
       
       <guid>https://opencobra.github.io/cobrapy/pubs/pm28623298/</guid>
       <description>Acinetobacter baumannii is a clinical threat to human health, causing major infection outbreaks worldwide. As new drugs against Gram-negative bacteria do not seem to be forthcoming, and due to the microbial capability of acquiring multi-resistance, there is an urgent need for novel therapeutic targets. Here we have derived a list of new potential targets by means of metabolic reconstruction and modelling of A. baumannii ATCC 19606. By integrating constraint-based modelling with gene expression data, we simulated microbial growth in normal and stressful conditions (i.</description>
+    </item>
+    
+    <item>
+      <title>Combining Genome-Scale Experimental and Computational Methods To Identify Essential Genes in Rhodobacter sphaeroides.</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm28744485/</link>
+      <pubDate>Tue, 06 Jun 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm28744485/</guid>
+      <description>Rhodobacter sphaeroides is one of the best-studied alphaproteobacteria from biochemical, genetic, and genomic perspectives. To gain a better systems-level understanding of this organism, we generated a large transposon mutant library and used transposon sequencing (Tn-seq) to identify genes that are essential under several growth conditions. Using newly developed Tn-seq analysis software (TSAS), we identified 493 genes as essential for aerobic growth on a rich medium. We then used the mutant library to identify conditionally essential genes under two laboratory growth conditions, identifying 85 additional genes required for aerobic growth in a minimal medium and 31 additional genes required for photosynthetic growth.</description>
     </item>
     
     <item>
