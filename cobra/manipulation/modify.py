@@ -80,8 +80,9 @@ def rename_genes(cobra_model, rename_dict):
         new_gene_present = new_name in cobra_model.genes
         if old_gene_present and new_gene_present:
             old_gene = cobra_model.genes.get_by_id(old_name)
-            remove_genes.append(old_gene)
-            recompute_reactions.update(old_gene._reaction)
+            if old_gene != cobra_model.genes.get_by_id(new_name): # MAC Sept 2017 edit: Added in case not renaming all genes
+                remove_genes.append(old_gene) # indented
+                recompute_reactions.update(old_gene._reaction) # indented
         elif old_gene_present and not new_gene_present:
             # rename old gene to new gene
             gene = cobra_model.genes[gene_index]
@@ -93,7 +94,8 @@ def rename_genes(cobra_model, rename_dict):
             pass
         else:  # not old gene_present and not new_gene_present
             # the new gene's _model will be set by repair
-            cobra_model.genes.append(Gene(new_name))
+            # cobra_model.genes.append(Gene(new_name)) # MAC Sept 2017 edit: Removed, otherwise, adds genes that are unassigned to reactions
+            pass
     cobra_model.repair()
 
     class Renamer(NodeTransformer):
