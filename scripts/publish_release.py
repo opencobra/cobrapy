@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Insert TOML headers into release notes so Hugo can publish them."""
+"""Insert a TOML header into the latest release note."""
 
 from __future__ import absolute_import, print_function
 
-import re
 import sys
 from datetime import date
 from glob import glob
@@ -13,18 +12,19 @@ from builtins import open
 from os.path import join, basename
 from shutil import copy
 
-ALPHA = re.compile(r"^\d+\.\d+\.\d+a\d+$")
-BETA = re.compile(r"^\d+\.\d+\.\d+b\d+$")
-
 
 def insert_header(filename, tag, bump):
     """
+    Insert the required TOML header with specific values.
 
     Parameters
     ----------
     filename : str, path
+        The release notes file.
     tag : str
-    bump : str
+        The tag, following semantic versioning, of the current release.
+    bump : {"major", "minor", "patch", "alpha", "beta"}
+        The type of release.
 
     """
     header = [
@@ -76,10 +76,16 @@ def find_bump(target, tag):
 
 
 def main(argv):
+    """
+    Identify the release type and create a new target file with TOML header.
+
+    Requires three arguments.
+
+    """
     source, target, tag = argv
-    if ALPHA.match(tag) is not None:
+    if "a" in tag:
         bump = "alpha"
-    elif BETA.match(tag) is not None:
+    if "b" in tag:
         bump = "beta"
     else:
         bump = find_bump(target, tag)
