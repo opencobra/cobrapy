@@ -10,7 +10,8 @@ import sys
 from datetime import date
 from glob import glob
 from builtins import open
-from os.path import join
+from os.path import join, basename
+from shutil import copy
 
 ALPHA = re.compile(r"^\d+\.\d+\.\d+a\d+$")
 BETA = re.compile(r"^\d+\.\d+\.\d+b\d+$")
@@ -64,7 +65,7 @@ def intify(filename):
 def find_bump(target, tag):
     """Identify the kind of release by comparing to existing ones."""
     tmp = tag.split(".")
-    existing = [intify(f) for f in glob(join(target, "[0-9]*.md"))]
+    existing = [intify(basename(f)) for f in glob(join(target, "[0-9]*.md"))]
     latest = max(existing)
     if int(tmp[0]) > latest[0]:
         return "major"
@@ -83,13 +84,13 @@ def main(argv):
     else:
         bump = find_bump(target, tag)
     filename = "{}.md".format(tag)
-    copy(join(source, filename), target)
-    insert_header(join(target, filename), tag, bump)
+    destination = copy(join(source, filename), target)
+    insert_header(destination, tag, bump)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print("Usage:\n{} <source dir> <target dir> <tag>"
               "".format(sys.argv[0]))
         sys.exit(2)
-    sys.exit(main(argv[1:]))
+    sys.exit(main(sys.argv[1:]))
