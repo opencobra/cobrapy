@@ -106,6 +106,7 @@ deploy:
     on:
       tags: true
       repo: opencobra/cobrapy
+      condition: $TRAVIS_OS_NAME == "linux" && $MB_PYTHON_VERSION == "3.6"
 
 after_success:
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install codecov; codecov; fi

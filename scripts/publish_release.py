@@ -13,7 +13,7 @@ from os.path import join, basename
 from shutil import copy
 
 
-def insert_break(lines):
+def insert_break(lines, break_pos=9):
     """
     Insert a <!-- more --> tag for larger release notes.
 
@@ -21,6 +21,8 @@ def insert_break(lines):
     ----------
     lines : list of str
         The content of the release note.
+    break_pos : int
+        Line number before which a break should approximately be inserted.
 
     Returns
     -------
@@ -28,16 +30,21 @@ def insert_break(lines):
         The text with the inserted tag or no modification if it was
         sufficiently short.
     """
-    if len(lines) < 9:
+    def line_filter(line):
+        if len(line) == 0:
+            return True
+        if any(line.startswith(c) for c in "-*+"):
+            return True
+        return False
+
+    if len(lines) <= break_pos:
         return lines
-    newlines = [i for i in range(len(lines))
-                if (lines[i].strip() == "" or
-                    lines[i].strip().startswith("-")) and i >= 8]
+    newlines = [
+        i for i, line in enumerate(lines[break_pos:], start=break_pos)
+        if line_filter(line.strip())]
     if len(newlines) > 0:
-        insert_at = newlines[0] - 1
-    else:
-        insert_at = 8
-    lines = lines[0:insert_at] + ["<!-- more -->\n"] + lines[(insert_at + 1):]
+        break_pos = newlines[0]
+    lines.insert(break_pos, "<!-- more -->\n")
     return lines
 
 
