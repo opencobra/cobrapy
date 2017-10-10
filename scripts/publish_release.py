@@ -13,9 +13,40 @@ from os.path import join, basename
 from shutil import copy
 
 
-def insert_header(filename, tag, bump):
+def insert_break(lines):
     """
-    Insert the required TOML header with specific values.
+    Insert a <!-- more --> tag for larger release notes.
+
+    Parameters
+    ----------
+    lines : list of str
+        The content of the release note.
+
+    Returns
+    -------
+    list of str
+        The text with the inserted tag or no modification if it was
+        sufficiently short.
+    """
+    if len(lines) < 9:
+        return lines
+    newlines = [i for i in range(len(lines))
+                if (lines[i].strip() == "" or
+                    lines[i].strip().startswith("-")) and i >= 8]
+    if len(newlines) > 0:
+        insert_at = newlines[0] - 1
+    else:
+        insert_at = 8
+    lines = lines[0:insert_at] + ["<!-- more -->\n"] + lines[(insert_at + 1):]
+    return lines
+
+
+def build_hugo_md(filename, tag, bump):
+    """
+    Build the markdown release notes for Hugo.
+
+    Inserts the required TOML header with specific values and adds a break
+    for long release notes.
 
     Parameters
     ----------
@@ -37,7 +68,7 @@ def insert_header(filename, tag, bump):
         '\n'
     ]
     with open(filename, "r") as file_h:
-        content = file_h.readlines()
+        content = insert_break(file_h.readlines())
     header.extend(content)
     with open(filename, "w") as file_h:
         file_h.writelines(header)
@@ -91,7 +122,7 @@ def main(argv):
         bump = find_bump(target, tag)
     filename = "{}.md".format(tag)
     destination = copy(join(source, filename), target)
-    insert_header(destination, tag, bump)
+    build_hugo_md(destination, tag, bump)
 
 
 if __name__ == "__main__":
