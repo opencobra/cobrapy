@@ -2,7 +2,6 @@ branches:
  only:
  - master
  - devel
- - devel-2
  - /^[0-9]+\.[0-9]+\.[0-9]+[.0-9ab]*$/
 
 environment:
@@ -65,7 +64,7 @@ environment:
 matrix:
   fast_finish: true
 
-clone_depth: 25
+clone_depth: 2
 
 init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%bit"
