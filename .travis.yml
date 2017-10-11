@@ -95,12 +95,18 @@ script:
   - ls ${TRAVIS_BUILD_DIR}/wheelhouse/ || echo "no wheelhouse"
 
 deploy:
-  provider: script
-  skip_cleanup: true
-  script: scripts/deploy.sh
-  on:
-    branch: master
-    tags: true
+  - provider: script
+    skip_cleanup: true
+    script: scripts/deploy_cobra.sh
+    on:
+      tags: true
+      repo: opencobra/cobrapy
+  - provider: script
+    script: scripts/deploy_website.sh
+    on:
+      tags: true
+      repo: opencobra/cobrapy
+      condition: $TRAVIS_OS_NAME == "linux" && $MB_PYTHON_VERSION == "3.6"
 
 after_success:
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install codecov; codecov; fi
