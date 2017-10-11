@@ -29,22 +29,6 @@ environment:
       PYTHON_ARCH: "64"
       CONDA: true
 
-    # - PYTHON: "C:\\Python27"
-    #   PYTHON_VERSION: "2.7.12"
-    #   PYTHON_ARCH: "32"
-
-    # - PYTHON: "C:\\Python34"
-    #   PYTHON_VERSION: "3.4.5"
-    #   PYTHON_ARCH: "32"
-
-    # - PYTHON: "C:\\Python35"
-    #   PYTHON_VERSION: "3.5.2"
-    #   PYTHON_ARCH: "32"
-
-    # - PYTHON: "C:\\Python36"
-    #   PYTHON_VERSION: "3.6.0"
-    #   PYTHON_ARCH: "32"
-
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.12"
       PYTHON_ARCH: "64"
@@ -101,8 +85,6 @@ artifacts:
 deploy_script:
   - ps: |
       if($env:appveyor_repo_tag -eq "True" -And $env:CONDA -ne "true") {
-          Invoke-Expression "twine upload dist/* --username $env:PYPI_USERNAME --password $env:PYPI_PASSWORD"
+          Invoke-Expression "twine upload dist/* --username $env:PYPI_USERNAME --password $env:PYPI_PASSWORD 2>&1 | out-null"
       }
 
-#on_success:
-#  - TODO: upload the content of dist/*.whl to a public wheelhouse
