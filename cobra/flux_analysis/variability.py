@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 
 import pandas
-from sympy.core.singleton import S
+from optlang.symbolics import Zero
 from warnings import warn
 from itertools import chain
 
@@ -211,7 +211,7 @@ def _fva_optlang(model, reaction_list, fraction, loopless, pfba_factor):
                     name="flux_sum_constraint")
             m.add_cons_vars([flux_sum, flux_sum_constraint])
 
-        m.objective = S.Zero  # This will trigger the reset as well
+        m.objective = Zero  # This will trigger the reset as well
         for what in ("minimum", "maximum"):
             sense = "min" if what == "minimum" else "max"
             for rxn in reaction_list:

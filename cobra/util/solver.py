@@ -19,7 +19,7 @@ from types import ModuleType
 from warnings import warn
 
 import optlang
-import sympy
+from optlang.symbolics import Basic, Zero
 
 from cobra.exceptions import OptimizationError, OPTLANG_TO_EXCEPTIONS_DICT
 from cobra.util.context import get_context
@@ -129,14 +129,14 @@ def set_objective(model, value, additive=False):
 
         if not additive:
             model.solver.objective = interface.Objective(
-                sympy.S.Zero, direction=model.solver.objective.direction)
+                Zero, direction=model.solver.objective.direction)
         for reaction, coef in value.items():
             model.solver.objective.set_linear_coefficients(
                 {reaction.forward_variable: coef,
                  reaction.reverse_variable: -coef})
 
-    elif isinstance(value, (sympy.Basic, optlang.interface.Objective)):
-        if isinstance(value, sympy.Basic):
+    elif isinstance(value, (Basic, optlang.interface.Objective)):
+        if isinstance(value, Basic):
             value = interface.Objective(
                 value, direction=model.solver.objective.direction,
                 sloppy=False)

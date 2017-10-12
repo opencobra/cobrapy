@@ -6,7 +6,7 @@ import logging
 from warnings import warn
 from itertools import chain
 
-import sympy
+from optlang.symbolics import Zero
 
 from cobra.util import solver as sutil
 from cobra.manipulation.modify import (
@@ -14,8 +14,6 @@ from cobra.manipulation.modify import (
 from cobra.util import linear_reaction_coefficients, set_objective
 from cobra.core.solution import get_solution
 
-add = sympy.Add._from_args
-mul = sympy.Mul._from_args
 LOGGER = logging.getLogger(__name__)
 
 
@@ -128,11 +126,10 @@ def add_pfba(model, objective=None, fraction_of_optimum=1.0):
     reaction_variables = ((rxn.forward_variable, rxn.reverse_variable)
                           for rxn in model.reactions)
     variables = chain(*reaction_variables)
-    pfba_objective = model.problem.Objective(add(
-        [mul((sympy.singleton.S.One, variable))
-         for variable in variables]), direction='min', sloppy=True,
+    model.objective = model.problem.Objective(
+        Zero, direction='min', sloppy=True,
         name="_pfba_objective")
-    set_objective(model, pfba_objective)
+    model.objective.set_linear_coefficients(dict.fromkeys(variables, 1.0))
 
 
 def _pfba_optlang(model, objective=None, reactions=None,

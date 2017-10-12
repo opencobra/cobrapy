@@ -39,8 +39,8 @@ class Mock(object):
 
 MOCK_MODULES = ['numpy', 'scipy', 'scipy.optimize', 'scipy.sparse', 'scipy.io',
                 'scipy.stats', 'pp', 'libsbml', 'pandas', 'tabulate',
-                'optlang', 'optlang.interface', 'sympy', 'sympy.core',
-                'sympy.core.singleton', 'future', 'future.utils', 'ruamel',
+                'optlang', 'optlang.interface', 'optlang.symbolics',
+                'optlang.symbolics.core', 'future', 'future.utils', 'ruamel',
                 'ruamel.yaml']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
