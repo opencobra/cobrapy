@@ -95,8 +95,9 @@ script:
     fi
   - ls ${TRAVIS_BUILD_DIR}/wheelhouse/ || echo "no wheelhouse"
 
-before_deploy:
-  - source scripts/prepare_notes.sh
+# N.B.: Currently, Travis mangles (escapes) the tag body badly.
+    #before_deploy:
+    #  - source scripts/prepare_notes.sh
 
 deploy:
   - provider: script
@@ -113,7 +114,7 @@ deploy:
       condition: $TRAVIS_OS_NAME == "linux" && $MB_PYTHON_VERSION == "3.6"
   - provider: releases
     api_key: $GITHUB_TOKEN
-    body: $TAG_NOTES
+    body: "Please see https://github.com/opencobra/cobrapy/tree/devel/release-notes/${TRAVIS_TAG}.md for the full release notes."
     on:
       tags: true
       repo: $GITHUB_REPO
