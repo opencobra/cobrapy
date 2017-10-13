@@ -114,7 +114,7 @@ deploy:
       condition: $TRAVIS_OS_NAME == "linux" && $MB_PYTHON_VERSION == "3.6"
   - provider: releases
     api_key: $GITHUB_TOKEN
-    body: "Please see https://github.com/opencobra/cobrapy/tree/devel/release-notes/${TRAVIS_TAG}.md for the full release notes."
+    body: "Please see https://github.com/opencobra/cobrapy/tree/${TRAVIS_TAG}/release-notes/${TRAVIS_TAG}.md for the full release notes."
     on:
       tags: true
       repo: $GITHUB_REPO
