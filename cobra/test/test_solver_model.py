@@ -578,6 +578,28 @@ class TestSolverBasedModel:
         assert coefficients_dict[
                    model.reactions.r2.reverse_variable] == -3.
 
+    def test_add_reactions_single_existing(self, model):
+        rxn = model.reactions[0]
+        r1 = Reaction(rxn.id)
+        r1.add_metabolites({Metabolite('A'): -1, Metabolite('B'): 1})
+        r1.lower_bound, r1.upper_bound = -999999., 999999.
+        model.add_reactions([r1])
+        assert rxn in model.reactions
+        assert r1 is not model.reactions.get_by_id(rxn.id)
+
+    def test_add_reactions_duplicate(self, model):
+        rxn = model.reactions[0]
+        r1 = Reaction('r1')
+        r1.add_metabolites({Metabolite('A'): -1, Metabolite('B'): 1})
+        r1.lower_bound, r1.upper_bound = -999999., 999999.
+        r2 = Reaction(rxn.id)
+        r2.add_metabolites(
+            {Metabolite('A'): -1, Metabolite('C'): 1, Metabolite('D'): 1})
+        model.add_reactions([r1, r2])
+        assert r1 in model.reactions
+        assert rxn in model.reactions
+        assert r2 is not model.reactions.get_by_id(rxn.id)
+
     def test_add_cobra_reaction(self, model):
         r = cobra.Reaction(id="c1")
         model.add_reaction(r)
