@@ -523,34 +523,30 @@ class Model(Object):
         reaction_list : list
             A list of `cobra.Reaction` objects
         """
+        def existing_filter(rxn):
+            if rxn.id in self.reactions:
+                LOGGER.warning(
+                    "Ignoring reaction '%s' since it already exists.", rxn.id)
+                return False
+            return True
 
-        try:
-            reaction_list = DictList(reaction_list)
-        except TypeError:
-            reaction_list = DictList([reaction_list])
-
-        # First check whether the metabolites exist in the model
-        existing = [rxn for rxn in reaction_list if rxn.id in self.reactions]
-        for rxn in existing:
-            LOGGER.info('skip adding reaction %s as already existing', rxn.id)
-        reaction_list = [rxn for rxn in reaction_list
-                         if rxn.id not in existing]
+        # First check whether the reactions exist in the model.
+        pruned = DictList(filter(existing_filter, reaction_list))
 
         context = get_context(self)
 
-        # Add reactions. Also take care of genes and metabolites in the loop
-        for reaction in reaction_list:
-            reaction._model = self  # the reaction now points to the model
-            # keys() is necessary because the dict will be modified during
-            # the loop
-            for metabolite in list(reaction._metabolites.keys()):
-                # if the metabolite is not in the model, add it
-                # should we be adding a copy instead.
+        # Add reactions. Also take care of genes and metabolites in the loop.
+        for reaction in pruned:
+            reaction._model = self
+            # Build a `list()` because the dict will be modified in the loop.
+            for metabolite in list(reaction.metabolites):
+                # TODO: Should we add a copy of the metabolite instead?
                 if metabolite not in self.metabolites:
                     self.add_metabolites(metabolite)
                 # A copy of the metabolite exists in the model, the reaction
                 # needs to point to the metabolite in the model.
                 else:
+                    # FIXME: Modifying 'private' attributes is horrible.
                     stoichiometry = reaction._metabolites.pop(metabolite)
                     model_metabolite = self.metabolites.get_by_id(
                         metabolite.id)
@@ -578,13 +574,13 @@ class Model(Object):
                         reaction._dissociate_gene(gene)
                         reaction._associate_gene(model_gene)
 
-        self.reactions += reaction_list
+        self.reactions += pruned
 
         if context:
-            context(partial(self.reactions.__isub__, reaction_list))
+            context(partial(self.reactions.__isub__, pruned))
 
         # from cameo ...
-        self._populate_solver(reaction_list)
+        self._populate_solver(pruned)
 
     def remove_reactions(self, reactions, remove_orphans=False):
         """Remove reactions from the model.
