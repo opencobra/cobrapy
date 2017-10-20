@@ -444,8 +444,8 @@ class TestReaction:
                     new_coefficient)
             assert (model.constraints[
                     already_included_metabolite.id].get_linear_coefficients(
-                    [reaction.reverse_variable])[reaction.reverse_variable] ==
-                    -new_coefficient)
+                    [reaction.reverse_variable])[
+                        reaction.reverse_variable] == -new_coefficient)
 
     @pytest.mark.xfail(reason='non-deterministic test')
     def test_add_metabolites_combine_false(self, model):
