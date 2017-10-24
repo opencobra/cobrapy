@@ -6,7 +6,7 @@ from __future__ import absolute_import
 
 import numpy
 from six import iteritems
-from sympy.core.singleton import S
+from optlang.symbolics import Zero
 
 from cobra.core import Metabolite, Reaction, get_solution
 from cobra.util import (linear_reaction_coefficients,
@@ -72,7 +72,7 @@ def add_loopless(model, zero_cutoff=1e-12):
     # Add nullspace constraints for G_i
     for i, row in enumerate(n_int):
         name = "nullspace_constraint_" + str(i)
-        nullspace_constraint = prob.Constraint(S.Zero, lb=0, ub=0, name=name)
+        nullspace_constraint = prob.Constraint(Zero, lb=0, ub=0, name=name)
         model.add_cons_vars([nullspace_constraint])
         coefs = {model.variables[
                  "delta_g_" + model.reactions[ridx].id]: row[i]
@@ -83,7 +83,7 @@ def add_loopless(model, zero_cutoff=1e-12):
 
 def _add_cycle_free(model, fluxes):
     """Add constraints for CycleFreeFlux."""
-    model.objective = S.Zero
+    model.objective = Zero
     for rxn in model.reactions:
         flux = fluxes[rxn.id]
         if rxn.boundary:

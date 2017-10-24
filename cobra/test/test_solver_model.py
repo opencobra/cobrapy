@@ -32,6 +32,11 @@ def solved_model(request, model):
     return solution, model
 
 
+def same_ex(ex1, ex2):
+    """Compare to expressions for mathematical equality."""
+    return ex1.simplify() == ex2.simplify()
+
+
 class TestSolution:
     def test_solution_contains_only_reaction_specific_values(self,
                                                              solved_model):
@@ -54,22 +59,22 @@ class TestReaction:
         pgi_reaction = model.reactions.PGI
         test_met = model.metabolites[0]
         pgi_reaction.add_metabolites({test_met: 42}, combine=False)
-        assert pgi_reaction.metabolites[test_met] == 42
+        assert pgi_reaction.metabolites[test_met] == 42.0
         assert model.constraints[
                    test_met.id].expression.as_coefficients_dict()[
-                   pgi_reaction.forward_variable] == 42
+                   pgi_reaction.forward_variable] == 42.0
         assert model.constraints[
                    test_met.id].expression.as_coefficients_dict()[
-                   pgi_reaction.reverse_variable] == -42
+                   pgi_reaction.reverse_variable] == -42.0
 
         pgi_reaction.add_metabolites({test_met: -10}, combine=True)
-        assert pgi_reaction.metabolites[test_met] == 32
+        assert pgi_reaction.metabolites[test_met] == 32.0
         assert model.constraints[
                    test_met.id].expression.as_coefficients_dict()[
-                   pgi_reaction.forward_variable] == 32
+                   pgi_reaction.forward_variable] == 32.0
         assert model.constraints[
                    test_met.id].expression.as_coefficients_dict()[
-                   pgi_reaction.reverse_variable] == -32
+                   pgi_reaction.reverse_variable] == -32.0
 
         pgi_reaction.add_metabolites({test_met: 0}, combine=False)
         with pytest.raises(KeyError):
@@ -420,10 +425,10 @@ class TestReaction:
         for reaction in model.reactions:
             reaction.add_metabolites({test_metabolite: -66}, combine=True)
             assert reaction.metabolites[test_metabolite] == -66
-            assert model.constraints['test'].expression.has(
-                -66. * reaction.forward_variable)
-            assert model.constraints['test'].expression.has(
-                66. * reaction.reverse_variable)
+            assert model.constraints['test'].get_linear_coefficients(
+                [reaction.forward_variable])[reaction.forward_variable] == -66
+            assert model.constraints['test'].get_linear_coefficients(
+                [reaction.reverse_variable])[reaction.reverse_variable] == 66
             already_included_metabolite = \
                 list(reaction.metabolites.keys())[0]
             previous_coefficient = reaction.get_coefficient(
@@ -433,12 +438,14 @@ class TestReaction:
             new_coefficient = previous_coefficient + 10
             assert reaction.metabolites[
                        already_included_metabolite] == new_coefficient
-            assert model.constraints[
-                already_included_metabolite.id].expression.has(
-                new_coefficient * reaction.forward_variable)
-            assert model.constraints[
-                already_included_metabolite.id].expression.has(
-                -1 * new_coefficient * reaction.reverse_variable)
+            assert (model.constraints[
+                    already_included_metabolite.id].get_linear_coefficients(
+                    [reaction.forward_variable])[reaction.forward_variable] ==
+                    new_coefficient)
+            assert (model.constraints[
+                    already_included_metabolite.id].get_linear_coefficients(
+                    [reaction.reverse_variable])[
+                        reaction.reverse_variable] == -new_coefficient)
 
     @pytest.mark.xfail(reason='non-deterministic test')
     def test_add_metabolites_combine_false(self, model):
@@ -533,11 +540,11 @@ class TestSolverBasedModel:
         pgi.objective_coefficient = 2
         coef_dict = model.objective.expression.as_coefficients_dict()
         # Check that objective has been updated
-        assert coef_dict[pgi.forward_variable] == 2
-        assert coef_dict[pgi.reverse_variable] == -2
+        assert coef_dict[pgi.forward_variable] == 2.0
+        assert coef_dict[pgi.reverse_variable] == -2.0
         # Check that original objective is still in there
-        assert coef_dict[biomass_r.forward_variable] == 1
-        assert coef_dict[biomass_r.reverse_variable] == -1
+        assert coef_dict[biomass_r.forward_variable] == 1.0
+        assert coef_dict[biomass_r.reverse_variable] == -1.0
 
     def test_transfer_objective(self, model):
         new_mod = Model("new model")
@@ -666,10 +673,9 @@ class TestSolverBasedModel:
 
     def test_objective(self, model):
         obj = model.objective
-        assert {var.name: coef for var, coef in
-                obj.expression.as_coefficients_dict().items()} == {
-                   'Biomass_Ecoli_core_reverse_2cdba': -1,
-                   'Biomass_Ecoli_core': 1}
+        assert obj.get_linear_coefficients(obj.variables) == {
+                   model.variables["Biomass_Ecoli_core_reverse_2cdba"]: -1,
+                   model.variables["Biomass_Ecoli_core"]: 1}
         assert obj.direction == "max"
 
     def test_change_objective(self, model):
@@ -677,43 +683,43 @@ class TestSolverBasedModel:
                      1.0 * model.variables['PFK']
         model.objective = model.problem.Objective(
             expression)
-        assert model.objective.expression == expression
+        assert same_ex(model.objective.expression, expression)
         model.objective = "ENO"
         eno_obj = model.problem.Objective(
             model.reactions.ENO.flux_expression, direction="max")
         pfk_obj = model.problem.Objective(
             model.reactions.PFK.flux_expression, direction="max")
-        assert model.objective == eno_obj
+        assert same_ex(model.objective.expression, eno_obj.expression)
 
         with model:
             model.objective = "PFK"
-            assert model.objective == pfk_obj
-        assert model.objective == eno_obj
+            assert same_ex(model.objective.expression, pfk_obj.expression)
+        assert same_ex(model.objective.expression, eno_obj.expression)
         expression = model.objective.expression
         atpm = model.reactions.get_by_id("ATPM")
         biomass = model.reactions.get_by_id("Biomass_Ecoli_core")
         with model:
             model.objective = atpm
-        assert model.objective.expression == expression
+        assert same_ex(model.objective.expression, expression)
         with model:
             atpm.objective_coefficient = 1
             biomass.objective_coefficient = 2
-        assert model.objective.expression == expression
+        assert same_ex(model.objective.expression, expression)
 
         with model:
             set_objective(model, model.problem.Objective(
                 atpm.flux_expression))
-            assert model.objective.expression == atpm.flux_expression
-        assert model.objective.expression == expression
+            assert same_ex(model.objective.expression, atpm.flux_expression)
+        assert same_ex(model.objective.expression, expression)
 
         expression = model.objective.expression
         with model:
             with model:  # Test to make sure nested contexts are OK
                 set_objective(model, atpm.flux_expression,
                               additive=True)
-                assert (model.objective.expression ==
-                        expression + atpm.flux_expression)
-        assert model.objective.expression == expression
+                assert same_ex(model.objective.expression,
+                               expression + atpm.flux_expression)
+        assert same_ex(model.objective.expression, expression)
 
     def test_set_reaction_objective(self, model):
         model.objective = model.reactions.ACALD

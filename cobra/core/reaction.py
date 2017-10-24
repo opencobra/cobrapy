@@ -118,7 +118,7 @@ class Reaction(Object):
         Returns
         -------
         sympy expression
-            The expression represeenting the the forward flux (if associated
+            The expression representing the the forward flux (if associated
             with model), otherwise None. Representing the net flux if
             model.reversible_encoding == 'unsplit' or None if reaction is
             not associated with a model """

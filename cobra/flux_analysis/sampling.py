@@ -17,7 +17,7 @@ from time import time
 import numpy as np
 import pandas
 from optlang.interface import OPTIMAL
-from sympy.core.singleton import S
+from optlang.symbolics import Zero
 from cobra.util import (create_stoichiometric_matrix, constraint_matrices,
                         nullspace)
 
@@ -254,7 +254,7 @@ class HRSampler(object):
         self.n_warmup = 0
         idx = np.hstack([self.fwd_idx, self.rev_idx])
         self.warmup = np.zeros((len(idx), len(self.model.variables)))
-        self.model.objective = S.Zero
+        self.model.objective = Zero
         self.model.objective.direction = "max"
         variables = self.model.variables
         for i in idx:

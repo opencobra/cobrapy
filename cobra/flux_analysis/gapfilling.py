@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-from sympy import Add
+from optlang.symbolics import Add
 from warnings import warn
 
 from optlang.interface import OPTIMAL

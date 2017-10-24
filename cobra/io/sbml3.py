@@ -48,7 +48,7 @@ else:
     from cobra.io.sbml import write_cobra_model_to_sbml_file as write_sbml2
 
 try:
-    from sympy import Basic
+    from optlang.symbolics import Basic
 except ImportError:
     class Basic:
         pass

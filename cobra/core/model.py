@@ -9,10 +9,9 @@ from functools import partial
 from warnings import warn
 
 import optlang
+from optlang.symbolics import Basic, Zero
 import six
-import sympy
 from six import iteritems, string_types
-from sympy import S
 
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
@@ -101,7 +100,7 @@ class Model(Object):
             # with older cobrapy pickles?
             interface = solvers[get_solver_name()]
             self._solver = interface.Model()
-            self._solver.objective = interface.Objective(S.Zero)
+            self._solver.objective = interface.Objective(Zero)
             self._populate_solver(self.reactions, self.metabolites)
 
     @property
@@ -368,7 +367,7 @@ class Model(Object):
         for met in metabolite_list:
             if met.id not in self.constraints:
                 constraint = self.problem.Constraint(
-                    S.Zero, name=met.id, lb=0, ub=0)
+                    Zero, name=met.id, lb=0, ub=0)
                 to_add += [constraint]
 
         self.add_cons_vars(to_add)
@@ -743,7 +742,7 @@ class Model(Object):
         if metabolite_list is not None:
             for met in metabolite_list:
                 to_add += [self.problem.Constraint(
-                    S.Zero, name=met.id, lb=0, ub=0)]
+                    Zero, name=met.id, lb=0, ub=0)]
         self.add_cons_vars(to_add)
 
         for reaction in reaction_list:
@@ -764,7 +763,7 @@ class Model(Object):
                     constraint = self.constraints[metabolite.id]
                 else:
                     constraint = self.problem.Constraint(
-                        S.Zero,
+                        Zero,
                         name=metabolite.id,
                         lb=0, ub=0)
                     self.add_cons_vars(constraint, sloppy=True)
@@ -943,7 +942,7 @@ class Model(Object):
 
     @objective.setter
     def objective(self, value):
-        if isinstance(value, sympy.Basic):
+        if isinstance(value, Basic):
             value = self.problem.Objective(value, sloppy=False)
         if not isinstance(value, (dict, optlang.interface.Objective)):
             try:

@@ -5,7 +5,7 @@
 from __future__ import absolute_import
 
 from scipy.sparse import dok_matrix
-from sympy.core.singleton import S
+from optlang.symbolics import Zero
 
 import cobra.util.solver as sutil
 from cobra.solvers import get_solver_name, solver_dict
@@ -77,7 +77,7 @@ def add_moma(model, solution=None, linear=False):
     c = prob.Constraint(model.solver.objective.expression - v,
                         lb=0.0, ub=0.0, name="moma_old_objective_constraint")
     to_add = [v, c]
-    new_obj = S.Zero
+    new_obj = Zero
     for r in model.reactions:
         flux = solution.fluxes[r.id]
         if linear:

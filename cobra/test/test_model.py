@@ -8,7 +8,7 @@ import numpy
 from math import isnan
 import pytest
 import pandas as pd
-from sympy import S
+from optlang.symbolics import Zero
 
 import cobra.util.solver as su
 from cobra.core import Metabolite, Model, Reaction
@@ -754,8 +754,9 @@ class TestCobraModel:
                 assert 'constraint' in model.constraints
                 assert 'foo' in model.variables
                 assert 'tiny_EX_glc__D_e' in model.reactions
-                assert model.objective.expression == model.reactions.get_by_id(
-                    'Biomass_Ecoli_core').flux_expression
+                assert (model.objective.expression.simplify() ==
+                        model.reactions.get_by_id(
+                            'Biomass_Ecoli_core').flux_expression.simplify())
             assert 'ex1' not in model.reactions
             assert 'constraint' not in model.constraints
             assert 'foo' not in model.variables
@@ -853,7 +854,7 @@ class TestCobraModel:
 
     def test_problem_properties(self, model):
         new_variable = model.problem.Variable("test_variable")
-        new_constraint = model.problem.Constraint(S.Zero,
+        new_constraint = model.problem.Constraint(Zero,
                                                   name="test_constraint")
         model.add_cons_vars([new_variable, new_constraint])
         assert "test_variable" in model.variables.keys()

@@ -40,7 +40,7 @@ if platform.system() != "Windows":
 
 
 try:
-    from sympy import Basic, Number
+    from optlang.symbolics import Basic, Number
 except:
     class Basic:
         pass
