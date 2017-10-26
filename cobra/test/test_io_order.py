@@ -2,14 +2,17 @@
 
 from __future__ import absolute_import
 
+import logging
 from operator import attrgetter
-from os.path import join, dirname
+from os.path import join
 from random import sample
 
 import pytest
 
 import cobra.io as cio
-from cobra import DictList
+from cobra import DictList, Model
+
+LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="module")
@@ -18,19 +21,19 @@ def tmp_path(tmpdir_factory):
 
 
 @pytest.fixture(scope="module")
-def minimized_core():
-    model = cio.read_sbml_model(join(dirname(__file__), "data",
-                                "textbook.xml.gz"))
-    model.id = "minimized_core"
-    chosen = sample(model.reactions, 10)
-    model.remove_reactions(set(model.reactions).difference(chosen),
-                           remove_orphans=True)
-    return model
+def minimized_shuffle(small_model):
+    model = small_model.copy()
+    chosen = sample(list(set(model.reactions) - set(model.exchanges)), 10)
+    new = Model("minimized_shuffle")
+    new.add_reactions(chosen)
+    LOGGER.debug("'%s' has %d metabolites, %d reactions, and %d genes.",
+                 new.id, new.metabolites, new.reactions, new.genes)
+    return new
 
 
 @pytest.fixture(scope="module")
-def minimized_sorted(minimized_core):
-    model = minimized_core.copy()
+def minimized_sorted(minimized_shuffle):
+    model = minimized_shuffle.copy()
     model.id = "minimized_sorted"
     model.metabolites = DictList(
         sorted(model.metabolites, key=attrgetter("id")))
@@ -40,8 +43,8 @@ def minimized_sorted(minimized_core):
 
 
 @pytest.fixture(scope="module")
-def minimized_reverse(minimized_core):
-    model = minimized_core.copy()
+def minimized_reverse(minimized_shuffle):
+    model = minimized_shuffle.copy()
     model.id = "minimized_reverse"
     model.metabolites = DictList(
         sorted(model.metabolites, key=attrgetter("id"), reverse=True))
@@ -53,8 +56,8 @@ def minimized_reverse(minimized_core):
 
 
 @pytest.fixture(scope="module", params=[
-    "minimized_core", "minimized_reverse", "minimized_sorted"])
-def template(request, minimized_core, minimized_reverse, minimized_sorted):
+    "minimized_shuffle", "minimized_reverse", "minimized_sorted"])
+def template(request, minimized_shuffle, minimized_reverse, minimized_sorted):
     return locals()[request.param]
 
 
