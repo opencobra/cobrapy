@@ -58,33 +58,31 @@ def template(request, minimized_core, minimized_reverse, minimized_sorted):
     return locals()[request.param]
 
 
-def get_attr(iterable, attr="id"):
-    get = attrgetter(attr)
-    return [get(x) for x in iterable]
+@pytest.fixture(scope="module", params=["metabolites", "reactions", "genes"])
+def attribute(request):
+    return request.param
+
+
+def get_ids(iterable):
+    return [x.id for x in iterable]
 
 
 @pytest.mark.parametrize("read, write, ext", [
-    (cio.read_sbml_model, cio.write_sbml_model, ".xml"),
-    (cio.read_legacy_sbml, cio.write_legacy_sbml, ".xml"),
-    (cio.load_matlab_model, cio.save_matlab_model, ".mat"),
-    (cio.load_json_model, cio.save_json_model, ".json"),
-    (cio.load_yaml_model, cio.save_yaml_model, ".yml"),
+    ("read_sbml_model", "write_sbml_model", ".xml"),
+    ("read_legacy_sbml", "write_legacy_sbml", ".xml"),
+    ("load_matlab_model", "save_matlab_model", ".mat"),
+    ("load_json_model", "save_json_model", ".json"),
+    ("load_yaml_model", "save_yaml_model", ".yml"),
 ])
-def test_io_order(read, write, ext, template, tmp_path):
+def test_io_order(attribute, read, write, ext, template, tmp_path):
+    read = getattr(cio, read)
+    write = getattr(cio, write)
     filename = join(tmp_path, "template" + ext)
     write(template, filename)
     model = read(filename)
-    # test metabolite order
-    assert len(model.metabolites) == len(template.metabolites)
-    assert set(get_attr(model.metabolites)) == set(
-        get_attr(template.metabolites))
-    assert get_attr(model.metabolites) == get_attr(template.metabolites)
-    # test reaction order
-    assert len(model.reactions) == len(template.reactions)
-    assert set(get_attr(model.reactions)) == set(get_attr(template.reactions))
-    assert get_attr(model.reactions) == get_attr(template.reactions)
-    # test gene order
-    assert len(model.genes) == len(template.genes)
-    assert set(get_attr(model.genes)) == set(get_attr(template.genes))
-    assert get_attr(model.genes) == get_attr(template.genes)
+    model_elements = get_ids(getattr(model, attribute))
+    template_elements = get_ids(getattr(template, attribute))
+    assert len(model_elements) == len(template_elements)
+    assert set(model_elements) == set(template_elements)
+    assert model_elements == template_elements
 
