@@ -15,7 +15,7 @@ from cobra.io.dict import model_to_dict, model_from_dict
 JSON_SPEC = "1"
 
 
-def to_json(model, **kwargs):
+def to_json(model, sort=False, **kwargs):
     """
     Return the model as a JSON document.
 
@@ -25,6 +25,9 @@ def to_json(model, **kwargs):
     ----------
     model : cobra.Model
         The cobra model to represent.
+    sort : bool, optional
+        Whether to sort the metabolites, reactions, and genes or maintain the
+        order defined in the model.
 
     Returns
     -------
@@ -36,7 +39,7 @@ def to_json(model, **kwargs):
     save_json_model : Write directly to a file.
     json.dumps : Base function.
     """
-    obj = model_to_dict(model)
+    obj = model_to_dict(model, sort=sort)
     obj[u"version"] = JSON_SPEC
     return json.dumps(obj, allow_nan=False, **kwargs)
 
@@ -62,7 +65,7 @@ def from_json(document):
     return model_from_dict(json.loads(document))
 
 
-def save_json_model(model, filename, pretty=False, **kwargs):
+def save_json_model(model, filename, sort=False, pretty=False, **kwargs):
     """
     Write the cobra model to a file in JSON format.
 
@@ -75,6 +78,9 @@ def save_json_model(model, filename, pretty=False, **kwargs):
     filename : str or file-like
         File path or descriptor that the JSON representation should be
         written to.
+    sort : bool, optional
+        Whether to sort the metabolites, reactions, and genes or maintain the
+        order defined in the model.
     pretty : bool, optional
         Whether to format the JSON more compactly (default) or in a more
         verbose but easier to read fashion. Can be partially overwritten by the
@@ -85,7 +91,7 @@ def save_json_model(model, filename, pretty=False, **kwargs):
     to_json : Return a string representation.
     json.dump : Base function.
     """
-    obj = model_to_dict(model)
+    obj = model_to_dict(model, sort=sort)
     obj[u"version"] = JSON_SPEC
 
     if pretty:

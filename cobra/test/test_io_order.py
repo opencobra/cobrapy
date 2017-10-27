@@ -72,8 +72,10 @@ def get_ids(iterable):
 
 @pytest.mark.parametrize("read, write, ext", [
     ("read_sbml_model", "write_sbml_model", ".xml"),
-    ("read_legacy_sbml", "write_legacy_sbml", ".xml"),
-    ("load_matlab_model", "save_matlab_model", ".mat"),
+    pytest.mark.skip(("read_legacy_sbml", "write_legacy_sbml", ".xml"),
+                     reason="Order for legacy SBML I/O is uninteresting."),
+    pytest.mark.skip(("load_matlab_model", "save_matlab_model", ".mat"),
+                     reason="Order for Matlab model I/O is uninteresting."),
     ("load_json_model", "save_json_model", ".json"),
     ("load_yaml_model", "save_yaml_model", ".yml"),
 ])
@@ -88,4 +90,3 @@ def test_io_order(attribute, read, write, ext, template, tmp_path):
     assert len(model_elements) == len(template_elements)
     assert set(model_elements) == set(template_elements)
     assert model_elements == template_elements
-
