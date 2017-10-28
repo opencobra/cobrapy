@@ -65,6 +65,8 @@ def _fix_type(value):
         return bool(value)
     if isinstance(value, set):
         return list(value)
+    if isinstance(value, dict):
+        return OrderedDict((key, value[key]) for key in sorted(value))
     # handle legacy Formula type
     if value.__class__.__name__ == "Formula":
         return str(value)
@@ -145,13 +147,16 @@ def reaction_from_dict(reaction, model):
     return new_reaction
 
 
-def model_to_dict(model):
+def model_to_dict(model, sort=False):
     """Convert model to a dict.
 
     Parameters
     ----------
     model : cobra.Model
-        The model to reformulate as a dict
+        The model to reformulate as a dict.
+    sort : bool, optional
+        Whether to sort the metabolites, reactions, and genes or maintain the
+        order defined in the model.
 
     Returns
     -------
@@ -166,17 +171,17 @@ def model_to_dict(model):
     cobra.io.model_from_dict
     """
     obj = OrderedDict()
-    obj["reactions"] = sorted(
-        (reaction_to_dict(reaction) for reaction in model.reactions),
-        key=itemgetter("id"))
-    obj["metabolites"] = sorted(
-        (metabolite_to_dict(metabolite) for metabolite in model.metabolites),
-        key=itemgetter("id"))
-    obj["genes"] = sorted(
-        (gene_to_dict(gene) for gene in model.genes), key=itemgetter("id"))
+    obj["metabolites"] = list(map(metabolite_to_dict, model.metabolites))
+    obj["reactions"] = list(map(reaction_to_dict, model.reactions))
+    obj["genes"] = list(map(gene_to_dict, model.genes))
     obj["id"] = model.id
     _update_optional(model, obj, _OPTIONAL_MODEL_ATTRIBUTES,
                      _ORDERED_OPTIONAL_MODEL_KEYS)
+    if sort:
+        get_id = itemgetter("id")
+        obj["metabolites"].sort(key=get_id)
+        obj["reactions"].sort(key=get_id)
+        obj["genes"].sort(key=get_id)
     return obj
 
 

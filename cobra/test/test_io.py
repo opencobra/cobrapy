@@ -185,10 +185,12 @@ class TestCobraIO:
     @classmethod
     def extra_comparisons(cls, name, model1, model2):
         assert model1.compartments == model2.compartments
-        assert model1.metabolites[4].annotation == model2.metabolites[
-            4].annotation
-        assert model1.reactions[4].annotation == model2.reactions[4].annotation
-        assert model1.genes[5].annotation == model2.genes[5].annotation
+        assert dict(model1.metabolites[4].annotation) == dict(
+            model2.metabolites[4].annotation)
+        assert dict(model1.reactions[4].annotation) == dict(
+            model2.reactions[4].annotation)
+        assert dict(model1.genes[5].annotation) == dict(
+            model2.genes[5].annotation)
         for attr in ("id", "name"):
             assert getattr(model1.genes[0], attr) == getattr(model2.genes[0],
                                                              attr)

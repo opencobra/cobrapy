@@ -66,7 +66,7 @@ install:
           conda install -q pip } else {
           python -m pip install pip setuptools>=24.0 wheel --upgrade }
   - if not defined CONDA %WITH_COMPILER% python -m pip install --upgrade pytest
-  - if defined CONDA conda install -q setuptools pytest numpy scipy
+  - if defined CONDA conda install -q setuptools pytest numpy scipy==0.19.1
   - python -m pip install pytest-cov pytest-benchmark pandas swiglpk optlang python-libsbml decorator Cython jsonschema twine pypandoc
   - "%WITH_COMPILER% python appveyor/build_glpk.py"
 

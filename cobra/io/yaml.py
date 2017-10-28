@@ -12,7 +12,7 @@ from cobra.io.dict import model_to_dict, model_from_dict
 YAML_SPEC = "1"
 
 
-def to_yaml(model, **kwargs):
+def to_yaml(model, sort=False, **kwargs):
     """
     Return the model as a YAML document.
 
@@ -22,6 +22,9 @@ def to_yaml(model, **kwargs):
     ----------
     model : cobra.Model
         The cobra model to represent.
+    sort : bool, optional
+        Whether to sort the metabolites, reactions, and genes or maintain the
+        order defined in the model.
 
     Returns
     -------
@@ -33,7 +36,7 @@ def to_yaml(model, **kwargs):
     save_yaml_model : Write directly to a file.
     ruamel.yaml.dump : Base function.
     """
-    obj = model_to_dict(model)
+    obj = model_to_dict(model, sort=sort)
     obj["version"] = YAML_SPEC
     return yaml.dump(obj, Dumper=yaml.RoundTripDumper, **kwargs)
 
@@ -59,7 +62,7 @@ def from_yaml(document):
     return model_from_dict(yaml.load(document, yaml.RoundTripLoader))
 
 
-def save_yaml_model(model, filename, **kwargs):
+def save_yaml_model(model, filename, sort=False, **kwargs):
     """
     Write the cobra model to a file in YAML format.
 
@@ -72,13 +75,16 @@ def save_yaml_model(model, filename, **kwargs):
     filename : str or file-like
         File path or descriptor that the YAML representation should be
         written to.
+    sort : bool, optional
+        Whether to sort the metabolites, reactions, and genes or maintain the
+        order defined in the model.
 
     See Also
     --------
     to_yaml : Return a string representation.
     ruamel.yaml.dump : Base function.
     """
-    obj = model_to_dict(model)
+    obj = model_to_dict(model, sort=sort)
     obj["version"] = YAML_SPEC
     if isinstance(filename, string_types):
         with io.open(filename, "w") as file_handle:

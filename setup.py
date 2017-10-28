@@ -114,7 +114,7 @@ if {'pytest', 'test', 'ptr'}.intersection(argv):
 extras = {
     'matlab': ["pymatbridge"],
     'sbml': ["python-libsbml", "lxml"],
-    'array': ["scipy>=0.11.0"],
+    'array': ["scipy==0.19.1"],
     'display': ["matplotlib", "palettable"]
 }
 
