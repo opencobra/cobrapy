@@ -15,7 +15,7 @@ from shutil import copy
 
 def insert_break(lines, break_pos=9):
     """
-    Insert a <!-- more --> tag for larger release notes.
+    Insert a <!--more--> tag for larger release notes.
 
     Parameters
     ----------
@@ -42,7 +42,7 @@ def insert_break(lines, break_pos=9):
         if line_filter(line.strip())]
     if len(newlines) > 0:
         break_pos = newlines[0]
-    lines.insert(break_pos, "<!-- more -->\n")
+    lines.insert(break_pos, "<!--more-->\n")
     return lines
 
 
