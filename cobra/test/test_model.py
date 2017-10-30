@@ -932,7 +932,8 @@ class TestCobraModel:
 class TestStoichiometricMatrix:
     """Test the simple replacement for ArrayBasedModel"""
 
-    @pytest.mark.skipif(not scipy, reason='Sparse array methods require scipy')
+    @pytest.mark.skipif(not scipy or scipy.__version__ >= "0.19",
+                        reason='Sparse array methods require scipy<=0.19')
     def test_array_model(self, model):
         """ legacy test """
         for matrix_type in ["scipy.dok_matrix", "scipy.lil_matrix"]:
@@ -981,7 +982,8 @@ class TestStoichiometricMatrix:
             assert len(array_model.reactions) == array_model.S.shape[1]
             assert array_model.S.shape == (m, n - 1)
 
-    @pytest.mark.skipif(not scipy, reason='Sparse array methods require scipy')
+    @pytest.mark.skipif(not scipy or scipy.__version__ >= "0.19",
+                        reason='Sparse array methods require scipy<=0.19')
     def test_array_based_model_add(self, model):
         """ legacy test """
         array_model = model.to_array_based_model()
