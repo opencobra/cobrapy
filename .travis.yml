@@ -107,12 +107,14 @@ deploy:
       tags: true
       repo: $GITHUB_REPO
   - provider: script
+    skip_cleanup: true
     script: scripts/deploy_website.sh
     on:
       tags: true
       repo: $GITHUB_REPO
       condition: $TRAVIS_OS_NAME == "linux" && $MB_PYTHON_VERSION == "3.6"
   - provider: releases
+    skip_cleanup: true
     api_key: $GITHUB_TOKEN
     body: "Please see https://github.com/opencobra/cobrapy/tree/${TRAVIS_TAG}/release-notes/${TRAVIS_TAG}.md for the full release notes."
     on:
