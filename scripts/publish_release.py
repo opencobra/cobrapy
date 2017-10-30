@@ -33,7 +33,7 @@ def insert_break(lines, break_pos=9):
     def line_filter(line):
         if len(line) == 0:
             return True
-        return any(line.startswith(c) for c in "-*+"):
+        return any(line.startswith(c) for c in "-*+")
 
     if len(lines) <= break_pos:
         return lines
