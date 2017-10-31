@@ -485,11 +485,6 @@ class TestCobraFluxAnalysis:
         fluxes = model.optimize().fluxes
         ll_solution = loopless_solution(model, fluxes=fluxes)
         assert len(ll_solution.fluxes) == len(model.reactions)
-        fluxes["Biomass_Ecoli_core"] = 1
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", UserWarning)
-            with pytest.raises(UserWarning):
-                loopless_solution(model, fluxes=fluxes)
 
     def test_add_loopless(self, ll_test_model):
         add_loopless(ll_test_model)
