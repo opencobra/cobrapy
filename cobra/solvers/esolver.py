@@ -75,7 +75,7 @@ class Esolver(cglpk.GLP):
         with NamedTemporaryFile(suffix=".sol") as f:
             self.solution_filepath = f.name
         command = [ESOLVER_COMMAND, "-b", self.basis_filepath,
-                   "-O", self.solution_filepath[:-4]]
+                   "-O", self.solution_filepath]
         if existing_basis is not None and isfile(existing_basis):
             command.extend(["-B", existing_basis])
         command.extend(["-L", lp_filepath])
