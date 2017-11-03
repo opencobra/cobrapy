@@ -160,11 +160,12 @@ class TestCobraFluxAnalysis:
         # expected knockouts for textbook model
         growth_dict = {"b0008": 0.87, "b0114": 0.80, "b0116": 0.78,
                        "b2276": 0.21, "b1779": 0.00}
-        df = single_gene_deletion(model, gene_list=growth_dict.keys(),
-                                  method="fba", solver=solver)
-        assert numpy.all([df.status == 'optimal'])
-        assert all(abs(df.flux[gene] - expected) < 0.01 for
-                   gene, expected in iteritems(growth_dict))
+        rates = single_gene_deletion(model,
+                                     gene_list=list(growth_dict.keys()),
+                                     method="fba",
+                                     solver=solver)
+        for gene, expected_value in iteritems(growth_dict):
+            assert abs(rates[gene] - expected_value) < 0.01
 
     @pytest.mark.skipif(scipy is None,
                         reason="moma gene deletion requires scipy")
@@ -220,15 +221,11 @@ class TestCobraFluxAnalysis:
         growth_dict = {"b0008": 0.87, "b0114": 0.71, "b0116": 0.56,
                        "b2276": 0.11, "b1779": 0.00}
 
-        df = single_gene_deletion(model, gene_list=growth_dict.keys(),
-                                  method="moma")
-        assert (df.status == 'optimal').all()
-        assert all(abs(df.flux[gene] - expected) < 0.01
-                   for gene, expected in iteritems(growth_dict))
-        with model:
-            add_moma(model)
-            with pytest.raises(ValueError):
-                add_moma(model)
+        rates = single_gene_deletion(model,
+                                     gene_list=list(growth_dict.keys()),
+                                     method="moma")
+        for gene, expected_value in iteritems(growth_dict):
+            assert abs(rates[gene] - expected_value) < 0.01
 
     @pytest.mark.skipif(scipy is None,
                         reason="moma gene deletion requires scipy")
@@ -276,12 +273,10 @@ class TestCobraFluxAnalysis:
         expected_results = {'FBA': 0.70404, 'FBP': 0.87392, 'CS': 0,
                             'FUM': 0.81430, 'GAPD': 0, 'GLUDy': 0.85139}
 
-        df = single_reaction_deletion(
-            model, reaction_list=expected_results.keys(), solver=solver)
-        assert len(df) == 6
-        assert numpy.all([df.status == 'optimal'])
-        assert all(abs(df.flux[gene] - expected) < 0.00001 for
-                   gene, expected in iteritems(expected_results))
+        results = single_reaction_deletion(
+            model, reaction_list=list(expected_results.keys()), solver=solver)
+        for reaction, value in results.items():
+            assert abs(value - expected_results[reaction]) < 0.00001
 
     @classmethod
     def compare_matrices(cls, matrix1, matrix2, places=3):
@@ -301,34 +296,66 @@ class TestCobraFluxAnalysis:
     def test_double_gene_deletion(self, model):
         genes = ["b0726", "b4025", "b0724", "b0720", "b2935", "b2935", "b1276",
                  "b1241"]
-        growth_list = [
-            [0.858, 0.857, 0.814, 0.000, 0.858, 0.858, 0.858, 0.858],
-            [0.857, 0.863, 0.739, 0.000, 0.863, 0.863, 0.863, 0.863],
-            [0.814, 0.739, 0.814, 0.000, 0.814, 0.814, 0.814, 0.814],
-            [0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000],
-            [0.858, 0.863, 0.814, 0.000, 0.874, 0.874, 0.874, 0.874],
-            [0.858, 0.863, 0.814, 0.000, 0.874, 0.874, 0.874, 0.874],
-            [0.858, 0.863, 0.814, 0.000, 0.874, 0.874, 0.874, 0.874],
-            [0.858, 0.863, 0.814, 0.000, 0.874, 0.874, 0.874, 0.874]]
-        opts = {"number_of_processes": 1} if name == "nt" else {}
-        solution = double_gene_deletion(model, gene_list1=genes, **opts)
-        assert solution["x"] == genes
-        assert solution["y"] == genes
-        self.compare_matrices(growth_list, solution["data"])
-        # test when lists differ slightly
-        solution = double_gene_deletion(model, gene_list1=genes[:-1],
-                                        gene_list2=genes,
-                                        number_of_processes=1)
-        assert solution["x"] == genes[:-1]
-        assert solution["y"] == genes
-        self.compare_matrices(growth_list[:-1], solution["data"])
+        growth_dict = {'b0720': {'b0720': 0.0,
+                                 'b0724': 0.0,
+                                 'b0726': 0.0,
+                                 'b1241': 0.0,
+                                 'b1276': 0.0,
+                                 'b2935': 0.0,
+                                 'b4025': 0.0},
+                       'b0724': {'b0720': 0.0,
+                                 'b0724': 0.814,
+                                 'b0726': 0.814,
+                                 'b1241': 0.814,
+                                 'b1276': 0.814,
+                                 'b2935': 0.814,
+                                 'b4025': 0.739},
+                       'b0726': {'b0720': 0.0,
+                                 'b0724': 0.814,
+                                 'b0726': 0.858,
+                                 'b1241': 0.858,
+                                 'b1276': 0.858,
+                                 'b2935': 0.858,
+                                 'b4025': 0.857},
+                       'b1241': {'b0720': 0.0,
+                                 'b0724': 0.814,
+                                 'b0726': 0.858,
+                                 'b1241': 0.874,
+                                 'b1276': 0.874,
+                                 'b2935': 0.874,
+                                 'b4025': 0.863},
+                       'b1276': {'b0720': 0.0,
+                                 'b0724': 0.814,
+                                 'b0726': 0.858,
+                                 'b1241': 0.874,
+                                 'b1276': 0.874,
+                                 'b2935': 0.874,
+                                 'b4025': 0.863},
+                       'b2935': {'b0720': 0.0,
+                                 'b0724': 0.814,
+                                 'b0726': 0.858,
+                                 'b1241': 0.874,
+                                 'b1276': 0.874,
+                                 'b2935': 0.874,
+                                 'b4025': 0.863},
+                       'b4025': {'b0720': 0.0,
+                                 'b0724': 0.739,
+                                 'b0726': 0.857,
+                                 'b1241': 0.863,
+                                 'b1276': 0.863,
+                                 'b2935': 0.863,
+                                 'b4025': 0.863}}
+        solution = double_gene_deletion(model, gene_list1=genes, number_of_processes=4)
+        solution_one_process = double_gene_deletion(model, gene_list1=genes, number_of_processes=1)
+        for (rxn_a, sub) in growth_dict.items():
+            for rxn_b, growth in sub.items():
+                assert round(solution[rxn_a][rxn_b], 3) == growth, \
+                    "unexpected {}-{} double knock-out growth".format(rxn_a, rxn_b)
+                assert round(solution_one_process[rxn_a][rxn_b], 3) == growth, \
+                    "unexpected {}-{} double knock-out growth".format(rxn_a, rxn_b)
 
     def test_double_reaction_deletion(self, model):
         reactions = ['FBA', 'ATPS4r', 'ENO', 'FRUpts2']
-        growth_list = [[0.704, 0.135, 0.000, 0.704],
-                       [0.135, 0.374, 0.000, 0.374],
-                       [0.000, 0.000, 0.000, 0.000],
-                       [0.704, 0.374, 0.000, 0.874]]
         growth_dict = {
             "FBA": {
                 "ATPS4r": 0.135,
@@ -346,19 +373,26 @@ class TestCobraFluxAnalysis:
 
         solution = double_reaction_deletion(model,
                                             reaction_list1=reactions,
-                                            number_of_processes=1)
+                                            number_of_processes=4)
+        solution_one_process = double_reaction_deletion(model,
+                                                        reaction_list1=reactions,
+                                                        number_of_processes=1)
         for (rxn_a, sub) in growth_dict.items():
             for rxn_b, growth in sub.items():
                 if growth is None:
-                    assert solution[rxn_a][rxn_b] is growth,\
+                    assert solution[rxn_a][rxn_b] is growth, \
+                        "unexpected {}-{} double knock-out growth".format(rxn_a, rxn_b)
+                    assert solution[rxn_a][rxn_b] is growth, \
                         "unexpected {}-{} double knock-out growth".format(rxn_a, rxn_b)
                 else:
-                    assert round(solution[rxn_a][rxn_b], 3) == growth,\
+                    assert round(solution[rxn_a][rxn_b], 3) == growth, \
+                        "unexpected {}-{} double knock-out growth".format(rxn_a, rxn_b)
+                    assert round(solution_one_process[rxn_a][rxn_b], 3) == growth, \
                         "unexpected {}-{} double knock-out growth".format(rxn_a, rxn_b)
 
-#        assert solution["x"] == reactions
-#        assert solution["y"] == reactions
-#        self.compare_matrices(growth_list, solution["data"])
+    def test_double_reaction_deletion_benchmark(self, large_model, benchmark):
+        reactions = large_model.reactions[1::100]
+        benchmark(double_reaction_deletion, large_model, reaction_list1=reactions)
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_flux_variability_benchmark(self, large_model, benchmark, solver):
