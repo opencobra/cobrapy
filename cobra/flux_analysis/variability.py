@@ -321,8 +321,7 @@ def find_essential_genes(model, threshold=0.01):
         non_zero_flux_reactions))
     deletions = single_gene_deletion(model, gene_list=genes_to_check,
                                      method='fba')
-    gene_ids = list(deletions[(pandas.isnull(deletions.flux)) |
-                              (deletions.flux < threshold)].index)
+    gene_ids = [k for k, v in deletions.items() if not v]
     return set(model.genes.get_by_any(gene_ids))
 
 
@@ -351,6 +350,5 @@ def find_essential_reactions(model, threshold=0.01):
     deletions = single_reaction_deletion(model,
                                          reaction_list=non_zero_flux_reactions,
                                          method='fba')
-    reaction_ids = list(deletions[(pandas.isnull(deletions.flux)) |
-                                  (deletions.flux < threshold)].index)
+    reaction_ids = [k for k, v in deletions.items() if not v]
     return set(model.reactions.get_by_any(reaction_ids))

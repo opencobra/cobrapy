@@ -44,7 +44,7 @@ except (ImportError, RuntimeError):
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in
                    sutil.solvers]
-all_solvers = optlang_solvers + list(solver_dict)
+all_solvers = optlang_solvers
 
 
 def construct_ll_test_model():
@@ -161,7 +161,7 @@ class TestCobraFluxAnalysis:
         growth_dict = {"b0008": 0.87, "b0114": 0.80, "b0116": 0.78,
                        "b2276": 0.21, "b1779": 0.00}
         rates = single_gene_deletion(model,
-                                     gene_list=list(growth_dict.keys()),
+                                     gene_list=growth_dict.keys(),
                                      method="fba",
                                      solver=solver)
         for gene, expected_value in iteritems(growth_dict):
@@ -222,7 +222,7 @@ class TestCobraFluxAnalysis:
                        "b2276": 0.11, "b1779": 0.00}
 
         rates = single_gene_deletion(model,
-                                     gene_list=list(growth_dict.keys()),
+                                     gene_list=growth_dict.keys(),
                                      method="moma")
         for gene, expected_value in iteritems(growth_dict):
             assert abs(rates[gene] - expected_value) < 0.01
@@ -255,8 +255,8 @@ class TestCobraFluxAnalysis:
 
         df = single_gene_deletion(model, gene_list=growth_dict.keys(),
                                   method="linear moma")
-        assert numpy.all([df.status == 'optimal'])
-        assert all(abs(df.flux[gene] - expected) < 0.01
+        assert growth_dict == df
+        assert all(abs(df[gene] - expected) < 0.01
                    for gene, expected in iteritems(growth_dict))
         with model:
             add_moma(model, linear=True)
@@ -274,7 +274,7 @@ class TestCobraFluxAnalysis:
                             'FUM': 0.81430, 'GAPD': 0, 'GLUDy': 0.85139}
 
         results = single_reaction_deletion(
-            model, reaction_list=list(expected_results.keys()), solver=solver)
+            model, reaction_list=expected_results.keys(), solver=solver)
         for reaction, value in results.items():
             assert abs(value - expected_results[reaction]) < 0.00001
 
