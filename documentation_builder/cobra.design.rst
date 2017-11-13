@@ -1,11 +1,11 @@
-cobra.design package
-====================
+cobra\.design package
+=====================
 
 Submodules
 ----------
 
-cobra.design.design_algorithms module
--------------------------------------
+cobra\.design\.design\_algorithms module
+----------------------------------------
 
 .. automodule:: cobra.design.design_algorithms
     :members:

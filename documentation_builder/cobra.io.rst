@@ -1,37 +1,53 @@
-cobra.io package
-================
+cobra\.io package
+=================
 
 Submodules
 ----------
 
-cobra.io.json module
---------------------
+cobra\.io\.dict module
+----------------------
+
+.. automodule:: cobra.io.dict
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cobra\.io\.json module
+----------------------
 
 .. automodule:: cobra.io.json
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.io.mat module
--------------------
+cobra\.io\.mat module
+---------------------
 
 .. automodule:: cobra.io.mat
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.io.sbml module
---------------------
+cobra\.io\.sbml module
+----------------------
 
 .. automodule:: cobra.io.sbml
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.io.sbml3 module
----------------------
+cobra\.io\.sbml3 module
+-----------------------
 
 .. automodule:: cobra.io.sbml3
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cobra\.io\.yaml module
+----------------------
+
+.. automodule:: cobra.io.yaml
     :members:
     :undoc-members:
     :show-inheritance:
