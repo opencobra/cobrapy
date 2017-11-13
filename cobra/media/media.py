@@ -1,7 +1,7 @@
 """Manages functions for growth media analysis and manipulation."""
 
 from collections import Counter
-from sympy.core.singleton import S
+from optlang.symbolics import Zero
 from optlang.interface import OPTIMAL
 import numpy as np
 import pandas as pd
@@ -231,7 +231,7 @@ def minimal_medium(model, min_growth=0.1, exports=False,
             name="medium_obj_constraint")
         mod.add_cons_vars([obj_const])
         mod.solver.update()
-        mod.objective = S.Zero
+        mod.objective = Zero
         LOGGER.info("adding new media objective")
         tol = mod.solver.configuration.tolerances.feasibility
 
@@ -244,7 +244,7 @@ def minimal_medium(model, min_growth=0.1, exports=False,
             if mod.solver.status != OPTIMAL:
                 LOGGER.warning("minimization of medium was infeasible")
                 return None
-            exclusion = mod.problem.Constraint(S.Zero, ub=0)
+            exclusion = mod.problem.Constraint(Zero, ub=0)
             mod.add_cons_vars([exclusion])
             mod.solver.update()
             media = []
