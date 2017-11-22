@@ -3,15 +3,18 @@
 import sys
 import multiprocessing
 import logging
+import optlang
+import math
+from six import iteritems, string_types
 from warnings import warn
 from itertools import product
-from operator import attrgetter
 from collections import defaultdict
 from builtins import (map, dict)
 from future.utils import raise_
 
 from ..manipulation.delete import (find_gene_knockout_reactions)
 import cobra.util.solver as sutil
+from cobra.core import get_solution
 
 try:
     import scipy
@@ -35,26 +38,42 @@ def infinite_defaultdict():
 def defaultdict_to_dict(def_dict):
     if not isinstance(def_dict, defaultdict):
         return def_dict
-    for k, v in def_dict.items():
+    for k, v in iteritems(def_dict):
         def_dict[k] = defaultdict_to_dict(v)
     return dict(def_dict)
 
 
+def biomass_reaction(model):
+    return model.objective.expression.as_coefficients_dict()
+
+
+def restore_biomass(fluxes, biomass_expression):
+    result = 0
+    for k, v in iteritems(biomass_expression):
+        if v > 0:
+            result += fluxes[k.name]*v
+    return result
+
+
 def _reactions_knockouts_with_restore(model, reactions):
-    to_restore = {}
-    growth = None
-    for reaction in reactions:
-        to_restore[reaction] = reaction.bounds
-        reaction.knock_out()
-    try:
-        solution = model.optimize()
-        if solution.status != 'infeasible':
-            growth = solution.objective_value
-    except:
-        pass
-    for reaction in reactions:
-        reaction.bounds = to_restore[reaction]
+    with model:
+        for reaction in reactions:
+            reaction.knock_out()
+        growth = _get_growth(model)
     return (growth, [r.id for r in reactions])
+
+
+def _get_growth(model):
+    try:
+        if 'moma_old_objective' in model.solver.variables:
+            growth = restore_biomass(get_solution(model).fluxes, model.notes['biomass_reaction'])
+        else:
+            growth = model.slim_optimize()
+        if math.isnan(growth):
+            growth = None
+    except optlang.exceptions.SolverError:
+        growth = None
+    return growth
 
 
 def _reaction_deletion_worker(ids):
@@ -75,7 +94,7 @@ def _gene_deletion_worker(ids):
 
 
 def _multi_deletion(cobra_model, entity, element_lists, method="fba",
-                    num_cpu=None, solver=None, zero_cutoff=1e-12, **kwargs):
+                    number_of_processes=None, solver=None, zero_cutoff=1e-12):
     """
     Helper function that provides the common interface for sequential knockouts
 
@@ -105,8 +124,7 @@ def _multi_deletion(cobra_model, entity, element_lists, method="fba",
         deletions without replacements.
     """
     with cobra_model as model:
-        WORKERS = dict(gene=_gene_deletion_worker, reaction=_reaction_deletion_worker)
-        worker_function = WORKERS[entity]
+        worker_function = dict(gene=_gene_deletion_worker, reaction=_reaction_deletion_worker)[entity]
 
         try:
             (legacy, solver) = sutil.choose_solver(model, solver, qp=(method == "moma"))
@@ -118,69 +136,64 @@ def _multi_deletion(cobra_model, entity, element_lists, method="fba",
             else:
                 (err_type, err_val, err_tb) = sys.exc_info()
                 raise_(err_type, err_val, err_tb)  # reraise for Python2&3
-
         if legacy:
             raise ValueError(
                 "Legacy solvers are not supported any longer. Please use one of"
                 " the optlang solver interfaces instead.")
 
-        if num_cpu is None:
-            num_cpu = kwargs.get("number_of_processes")
-        if num_cpu is None:
+        if number_of_processes is None:
             try:
                 num_cpu = multiprocessing.cpu_count()
             except NotImplementedError:
                 warn("Number of cores could not be detected - assuming 1.")
                 num_cpu = 1
-
-        # Reactions with 0 flux in the current conditions have no impact on
-        # deletion. Determine those reactions now to speed up computation later.
-        if method == 'moma':
-            moma.add_moma(model)
-        if method == 'linear moma':
-            moma.add_moma(model, linear=True)
-        solution = model.optimize()
-        if solution.status == "optimal":
-            kwargs["growth"] = solution.objective_value
-            kwargs["zero_flux_reactions"] = \
-                {rxn for (rxn, flux) in solution.fluxes.items()
-                 if abs(flux) < zero_cutoff}
         else:
-            warn("Non-optimal ({0:s}) base solution.".format(solution.status))
+            num_cpu = number_of_processes
 
-        def unordered_combination(reactions):
-            return frozenset([i.id for i in reactions if i.id not in kwargs["zero_flux_reactions"]])
+        if 'moma' in method:
+            model.notes['biomass_reaction'] = biomass_reaction(model)
+            moma.add_moma(model, linear='linear' in method)
 
-        args = set([unordered_combination(comb) for comb in product(*element_lists)])
+        args = set([frozenset(comb) for comb in product(*element_lists)])
         worker_function.model = model
+
+        def extract_knockout_results(results):
+            return {frozenset(ids): 0.0 if growth and abs(growth) < zero_cutoff else growth
+                    for (growth, ids) in results}
+
         if num_cpu > 1:
             chunk_size = len(args) // num_cpu
-            pool = multiprocessing.Pool(num_cpu)
-            results = pool.imap_unordered(worker_function, args, chunksize=chunk_size)
+            with multiprocessing.Pool(num_cpu) as pool:
+                results = extract_knockout_results(pool.imap_unordered(worker_function, args, chunksize=chunk_size))
         else:
-            results = map(worker_function, args)
-        knockout_results = {frozenset(ids): 0.0
-            if growth and abs(growth) < zero_cutoff else growth for (growth, ids) in results}
+            results = extract_knockout_results(map(worker_function, args))
         double = infinite_defaultdict()
         for comb in product(*element_lists):
-            growth = knockout_results[unordered_combination(comb)]
+            growth = results[frozenset(comb)]
             current = double
             for v in comb[:-1]:
-                current = current[v.id]
-            current[comb[-1].id] = growth
+                current = current[v]
+            current[comb[-1]] = growth
         return defaultdict_to_dict(double)
+
+
+def _entities_ids(entities):
+    try:
+        return [e.id for e in entities]
+    except AttributeError:
+        return list(entities)
 
 
 def _element_lists(entities, *ids):
     lists = list(ids)
     if lists[0] is None:
-        lists[0] = sorted(entities, key=attrgetter("id"))
-    result = [entities.get_by_any(list(lists[0]))]
+        lists[0] = entities
+    result = [_entities_ids(lists[0])]
     for l in lists[1:]:
         if l is None:
             result.append(result[-1])
         else:
-            result.append(list(entities.get_by_any(l)))
+            result.append(_entities_ids(l))
     return result
 
 

@@ -44,8 +44,8 @@ except (ImportError, RuntimeError):
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in
                    sutil.solvers]
-all_solvers = optlang_solvers
-
+all_solvers = ["optlang-" + s for s in stable_optlang if s in sutil.solvers] +\
+              list(solver_dict)
 
 def construct_ll_test_model():
     test_model = Model()
@@ -494,10 +494,10 @@ class TestCobraFluxAnalysis:
                                         open_exchanges=True)
         assert result == []
 
-    def test_legacy_loopless_benchmark(self, benchmark):
-        test_model = construct_ll_test_model()
-        benchmark(lambda: construct_loopless_model(test_model).optimize(
-            solver="cglpk"))
+    # def test_legacy_loopless_benchmark(self, benchmark):
+    #     test_model = construct_ll_test_model()
+    #     benchmark(lambda: construct_loopless_model(test_model).optimize(
+    #         solver="cglpk"))
 
     def test_loopless_benchmark_before(self, benchmark):
         test_model = construct_ll_test_model()
