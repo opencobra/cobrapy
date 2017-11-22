@@ -255,7 +255,6 @@ class TestCobraFluxAnalysis:
 
         df = single_gene_deletion(model, gene_list=growth_dict.keys(),
                                   method="linear moma")
-        assert growth_dict == df
         assert all(abs(df[gene] - expected) < 0.01
                    for gene, expected in iteritems(growth_dict))
         with model:

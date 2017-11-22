@@ -5,7 +5,7 @@ import multiprocessing
 import logging
 import optlang
 import math
-from six import iteritems, string_types
+from six import iteritems
 from warnings import warn
 from itertools import product
 from collections import defaultdict
@@ -66,7 +66,8 @@ def _reactions_knockouts_with_restore(model, reactions):
 def _get_growth(model):
     try:
         if 'moma_old_objective' in model.solver.variables:
-            growth = restore_biomass(get_solution(model).fluxes, model.notes['biomass_reaction'])
+            solution = model.optimize()
+            growth = restore_biomass(solution.fluxes, model.notes['biomass_reaction'])
         else:
             growth = model.slim_optimize()
         if math.isnan(growth):
