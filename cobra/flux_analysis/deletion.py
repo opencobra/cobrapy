@@ -51,7 +51,7 @@ def restore_biomass(fluxes, biomass_expression):
     result = 0
     for k, v in iteritems(biomass_expression):
         if v > 0:
-            result += fluxes[k.name]*v
+            result += fluxes[k.name] * v
     return result
 
 
@@ -67,7 +67,8 @@ def _get_growth(model):
     try:
         if 'moma_old_objective' in model.solver.variables:
             solution = model.optimize()
-            growth = restore_biomass(solution.fluxes, model.notes['biomass_reaction'])
+            growth = restore_biomass(solution.fluxes,
+                                     model.notes['biomass_reaction'])
         else:
             growth = model.slim_optimize()
         if math.isnan(growth):
@@ -89,15 +90,21 @@ def _gene_deletion_worker(ids):
     model = _gene_deletion_worker.model
     all_reactions = []
     for g_id in ids:
-        all_reactions.extend(find_gene_knockout_reactions(model, (model.genes.get_by_id(g_id),)))
+        all_reactions.extend(
+            find_gene_knockout_reactions(
+                model, (model.genes.get_by_id(g_id),)
+            )
+        )
     growth, _ = _reactions_knockouts_with_restore(model, all_reactions)
     return (growth, ids)
 
 
 def _multi_deletion(cobra_model, entity, element_lists, method="fba",
-                    number_of_processes=None, solver=None, zero_cutoff=1e-12):
+                    number_of_processes=None, solver=None,
+                    zero_cutoff=1e-12):
     """
-    Helper function that provides the common interface for sequential knockouts
+    Helper function that provides the common interface for sequential
+    knockouts
 
     Parameters
     ----------
@@ -125,22 +132,25 @@ def _multi_deletion(cobra_model, entity, element_lists, method="fba",
         deletions without replacements.
     """
     with cobra_model as model:
-        worker_function = dict(gene=_gene_deletion_worker, reaction=_reaction_deletion_worker)[entity]
+        worker_function = dict(gene=_gene_deletion_worker,
+                               reaction=_reaction_deletion_worker)[entity]
 
         try:
-            (legacy, solver) = sutil.choose_solver(model, solver, qp=(method == "moma"))
+            (legacy, solver) = sutil.choose_solver(model, solver,
+                                                   qp=(method == "moma"))
         except sutil.SolverNotFound:
             if method == "moma":
-                warn("Cannot use MOMA since no QP-capable solver was found. Falling"
-                     " back to FBA.")
+                warn(
+                    "Cannot use MOMA since no QP-capable solver was found. "
+                    "Falling back to FBA.")
                 (legacy, solver) = sutil.choose_solver(model, solver)
             else:
                 (err_type, err_val, err_tb) = sys.exc_info()
                 raise_(err_type, err_val, err_tb)  # reraise for Python2&3
         if legacy:
             raise ValueError(
-                "Legacy solvers are not supported any longer. Please use one of"
-                " the optlang solver interfaces instead.")
+                "Legacy solvers are not supported any longer. "
+                "Please use one of the optlang solver interfaces instead.")
 
         if number_of_processes is None:
             try:
@@ -159,13 +169,16 @@ def _multi_deletion(cobra_model, entity, element_lists, method="fba",
         worker_function.model = model
 
         def extract_knockout_results(results):
-            return {frozenset(ids): 0.0 if growth and abs(growth) < zero_cutoff else growth
+            return {frozenset(ids): 0.0 if growth and abs(
+                growth) < zero_cutoff else growth
                     for (growth, ids) in results}
 
         if num_cpu > 1:
             chunk_size = len(args) // num_cpu
             with multiprocessing.Pool(num_cpu) as pool:
-                results = extract_knockout_results(pool.imap_unordered(worker_function, args, chunksize=chunk_size))
+                results = extract_knockout_results(
+                    pool.imap_unordered(worker_function, args,
+                                        chunksize=chunk_size))
         else:
             results = extract_knockout_results(map(worker_function, args))
         double = infinite_defaultdict()
@@ -299,8 +312,12 @@ def double_reaction_deletion(model,
         deletions without replacements.
     """
 
-    reaction_list1, reaction_list2 = _element_lists(model.reactions, reaction_list1, reaction_list2)
-    return _multi_deletion(model, 'reaction', element_lists=[reaction_list1, reaction_list2], **kwargs)
+    reaction_list1, reaction_list2 = _element_lists(model.reactions,
+                                                    reaction_list1,
+                                                    reaction_list2)
+    return _multi_deletion(model, 'reaction',
+                           element_lists=[reaction_list1, reaction_list2],
+                           **kwargs)
 
 
 def double_gene_deletion(model, gene_list1=None, gene_list2=None, **kwargs):
@@ -340,8 +357,10 @@ def double_gene_deletion(model, gene_list1=None, gene_list2=None, **kwargs):
         {"x": row_labels, "y": column_labels", "data": 2D matrix}
     """
 
-    gene_list1, gene_list2 = _element_lists(model.genes, gene_list1, gene_list2)
-    return _multi_deletion(model, 'gene', element_lists=[gene_list1, gene_list2], **kwargs)
+    gene_list1, gene_list2 = _element_lists(model.genes, gene_list1,
+                                            gene_list2)
+    return _multi_deletion(model, 'gene',
+                           element_lists=[gene_list1, gene_list2], **kwargs)
 
 
 def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
@@ -351,7 +370,8 @@ def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
     .. deprecated :: 0.4
         Use double_reaction_deletion and double_gene_deletion
     """
-    warn("deprecated - use single_reaction_deletion and single_gene_deletion")
+    warn(
+        "deprecated - use single_reaction_deletion and single_gene_deletion")
     if element_type == "reaction":
         return double_reaction_deletion(cobra_model, element_list_1,
                                         element_list_2, **kwargs)
