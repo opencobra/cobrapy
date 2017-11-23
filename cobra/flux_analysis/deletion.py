@@ -175,10 +175,11 @@ def _multi_deletion(cobra_model, entity, element_lists, method="fba",
 
         if num_cpu > 1:
             chunk_size = len(args) // num_cpu
-            with multiprocessing.Pool(num_cpu) as pool:
-                results = extract_knockout_results(
-                    pool.imap_unordered(worker_function, args,
-                                        chunksize=chunk_size))
+            pool = multiprocessing.Pool(num_cpu)
+            results = extract_knockout_results(
+                pool.imap_unordered(worker_function, args,
+                                    chunksize=chunk_size))
+            pool.close()
         else:
             results = extract_knockout_results(map(worker_function, args))
         double = infinite_defaultdict()
