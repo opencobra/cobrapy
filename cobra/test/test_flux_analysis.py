@@ -152,12 +152,12 @@ class TestCobraFluxAnalysis:
             with pytest.raises((UserWarning, Infeasible, ValueError)):
                 pfba(model, solver=solver)
 
-    @pytest.mark.parametrize("solver", all_solvers)
+    @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_gene_deletion_fba_benchmark(self, model, benchmark,
                                                 solver):
         benchmark(single_gene_deletion, model, solver=solver)
 
-    @pytest.mark.parametrize("solver", all_solvers)
+    @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_gene_deletion_fba(self, model, solver):
         # expected knockouts for textbook model
         growth_dict = {"b0008": 0.87, "b0114": 0.80, "b0116": 0.78,
@@ -265,12 +265,12 @@ class TestCobraFluxAnalysis:
             with pytest.raises(ValueError):
                 add_moma(model)
 
-    @pytest.mark.parametrize("solver", all_solvers)
+    @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_gene_deletion_benchmark(self, model, benchmark,
                                             solver):
         benchmark(single_reaction_deletion, model, solver=solver)
 
-    @pytest.mark.parametrize("solver", all_solvers)
+    @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_reaction_deletion(self, model, solver):
         expected_results = {'FBA': 0.70404, 'FBP': 0.87392, 'CS': 0,
                             'FUM': 0.81430, 'GAPD': 0, 'GLUDy': 0.85139}
