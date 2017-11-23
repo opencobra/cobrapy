@@ -14,7 +14,6 @@ from future.utils import raise_
 
 from ..manipulation.delete import (find_gene_knockout_reactions)
 import cobra.util.solver as sutil
-from cobra.core import get_solution
 
 try:
     import scipy
@@ -99,6 +98,10 @@ def _gene_deletion_worker(ids):
     return (growth, ids)
 
 
+def _init_worker(function, model):
+    function.model = model
+
+
 def _multi_deletion(cobra_model, entity, element_lists, method="fba",
                     number_of_processes=None, solver=None,
                     zero_cutoff=1e-12):
@@ -166,7 +169,6 @@ def _multi_deletion(cobra_model, entity, element_lists, method="fba",
             moma.add_moma(model, linear='linear' in method)
 
         args = set([frozenset(comb) for comb in product(*element_lists)])
-        worker_function.model = model
 
         def extract_knockout_results(results):
             return {frozenset(ids): 0.0 if growth and abs(
@@ -175,7 +177,11 @@ def _multi_deletion(cobra_model, entity, element_lists, method="fba",
 
         if num_cpu > 1:
             chunk_size = len(args) // num_cpu
-            pool = multiprocessing.Pool(num_cpu)
+            pool = multiprocessing.Pool(
+                num_cpu,
+                initializer=_init_worker,
+                initargs=(worker_function, model)
+            )
             results = extract_knockout_results(
                 pool.imap_unordered(worker_function, args,
                                     chunksize=chunk_size))
