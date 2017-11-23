@@ -29,7 +29,6 @@ except:
     DataFrame = None
 
 LOGGER = logging.getLogger(__name__)
-model = None
 
 
 def infinite_defaultdict():
@@ -79,38 +78,38 @@ def _get_growth(model):
     return growth
 
 
-def _reaction_deletion_worker(ids):
-    global _model
+def _reaction_deletion(model, ids):
     return _reactions_knockouts_with_restore(
-        _model,
-        [_model.reactions.get_by_id(r_id) for r_id in ids]
+        model,
+        [model.reactions.get_by_id(r_id) for r_id in ids]
     )
 
 
-def _gene_deletion_worker(ids):
-    global _model
+def _gene_deletion(model, ids):
     all_reactions = []
     for g_id in ids:
         all_reactions.extend(
             find_gene_knockout_reactions(
-                _model, (_model.genes.get_by_id(g_id),)
+                model, (model.genes.get_by_id(g_id),)
             )
         )
-    growth, _ = _reactions_knockouts_with_restore(_model, all_reactions)
+    growth, _ = _reactions_knockouts_with_restore(model, all_reactions)
     return (growth, ids)
 
 
-# class Worker(object):
-#     def __init__(self, function, model):
-#         self.function = function
-#         self.model = model
-#
-#     def __call__(self, args):
-#         return self.function(self.model, args)
-
-def init_worker(w_model):
+def _reaction_deletion_worker(ids):
     global _model
-    _model = w_model
+    return _reaction_deletion(_model, ids)
+
+
+def _gene_deletion_worker(ids):
+    global _model
+    return _gene_deletion(_model, ids)
+
+
+def _init_worker(model):
+    global _model
+    _model = model
 
 
 def _multi_deletion(cobra_model, entity, element_lists, method="fba",
@@ -146,9 +145,6 @@ def _multi_deletion(cobra_model, entity, element_lists, method="fba",
         deletions without replacements.
     """
     with cobra_model as model:
-        worker_function = dict(gene=_gene_deletion_worker,
-                               reaction=_reaction_deletion_worker)[entity]
-
         try:
             (legacy, solver) = sutil.choose_solver(model, solver,
                                                    qp=(method == "moma"))
@@ -187,17 +183,25 @@ def _multi_deletion(cobra_model, entity, element_lists, method="fba",
                     for (growth, ids) in results}
 
         if num_cpu > 1:
+            WORKER_FUNCTIONS = dict(
+                gene=_gene_deletion_worker,
+                reaction=_reaction_deletion_worker
+            )
             chunk_size = len(args) // num_cpu
-            pool = multiprocessing.Pool(num_cpu, initializer=init_worker, initargs=(model,))
+            pool = multiprocessing.Pool(
+                num_cpu, initializer=_init_worker, initargs=(model,)
+            )
             results = extract_knockout_results(
-                pool.imap_unordered(worker_function, args,
+                pool.imap_unordered(WORKER_FUNCTIONS[entity], args,
                                     chunksize=chunk_size))
             pool.close()
         else:
-            global _model
-            _model = model
+            WORKER_FUNCTIONS = dict(
+                gene=_gene_deletion,
+                reaction=_reaction_deletion
+            )
             results = extract_knockout_results(map(
-                worker_function, args
+                partial(WORKER_FUNCTIONS[entity], model), args
             ))
         double = infinite_defaultdict()
         for comb in product(*element_lists):
