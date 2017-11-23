@@ -9,6 +9,7 @@ from six import iteritems
 from warnings import warn
 from itertools import product
 from collections import defaultdict
+from functools import partial
 from builtins import (map, dict)
 from future.utils import raise_
 
@@ -28,6 +29,7 @@ except:
     DataFrame = None
 
 LOGGER = logging.getLogger(__name__)
+model = None
 
 
 def infinite_defaultdict():
@@ -77,32 +79,38 @@ def _get_growth(model):
     return growth
 
 
-def _reaction_deletion_worker(model, ids):
+def _reaction_deletion_worker(ids):
+    global _model
     return _reactions_knockouts_with_restore(
-        model,
-        [model.reactions.get_by_id(r_id) for r_id in ids]
+        _model,
+        [_model.reactions.get_by_id(r_id) for r_id in ids]
     )
 
 
-def _gene_deletion_worker(model, ids):
+def _gene_deletion_worker(ids):
+    global _model
     all_reactions = []
     for g_id in ids:
         all_reactions.extend(
             find_gene_knockout_reactions(
-                model, (model.genes.get_by_id(g_id),)
+                _model, (_model.genes.get_by_id(g_id),)
             )
         )
-    growth, _ = _reactions_knockouts_with_restore(model, all_reactions)
+    growth, _ = _reactions_knockouts_with_restore(_model, all_reactions)
     return (growth, ids)
 
 
-class Worker(object):
-    def __init__(self, function, model):
-        self.function = function
-        self.model = model
+# class Worker(object):
+#     def __init__(self, function, model):
+#         self.function = function
+#         self.model = model
+#
+#     def __call__(self, args):
+#         return self.function(self.model, args)
 
-    def __call__(self, args):
-        return self.function(self.model, args)
+def init_worker(w_model):
+    global _model
+    _model = w_model
 
 
 def _multi_deletion(cobra_model, entity, element_lists, method="fba",
@@ -180,13 +188,17 @@ def _multi_deletion(cobra_model, entity, element_lists, method="fba",
 
         if num_cpu > 1:
             chunk_size = len(args) // num_cpu
-            pool = multiprocessing.Pool(num_cpu)
+            pool = multiprocessing.Pool(num_cpu, initializer=init_worker, initargs=(model,))
             results = extract_knockout_results(
-                pool.imap_unordered(Worker(worker_function, model), args,
+                pool.imap_unordered(worker_function, args,
                                     chunksize=chunk_size))
             pool.close()
         else:
-            results = extract_knockout_results(map(worker_function, args))
+            global _model
+            _model = model
+            results = extract_knockout_results(map(
+                worker_function, args
+            ))
         double = infinite_defaultdict()
         for comb in product(*element_lists):
             growth = results[frozenset(comb)]
