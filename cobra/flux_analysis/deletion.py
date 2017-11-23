@@ -77,16 +77,14 @@ def _get_growth(model):
     return growth
 
 
-def _reaction_deletion_worker(ids):
-    model = _reaction_deletion_worker.model
+def _reaction_deletion_worker(model, ids):
     return _reactions_knockouts_with_restore(
         model,
         [model.reactions.get_by_id(r_id) for r_id in ids]
     )
 
 
-def _gene_deletion_worker(ids):
-    model = _gene_deletion_worker.model
+def _gene_deletion_worker(model, ids):
     all_reactions = []
     for g_id in ids:
         all_reactions.extend(
@@ -98,8 +96,13 @@ def _gene_deletion_worker(ids):
     return (growth, ids)
 
 
-def _init_worker(function, model):
-    function.model = model
+class Worker(object):
+    def __init__(self, function, model):
+        self.function = function
+        self.model = model
+
+    def __call__(self, args):
+        return self.function(self.model, args)
 
 
 def _multi_deletion(cobra_model, entity, element_lists, method="fba",
@@ -177,13 +180,9 @@ def _multi_deletion(cobra_model, entity, element_lists, method="fba",
 
         if num_cpu > 1:
             chunk_size = len(args) // num_cpu
-            pool = multiprocessing.Pool(
-                num_cpu,
-                initializer=_init_worker,
-                initargs=(worker_function, model)
-            )
+            pool = multiprocessing.Pool(num_cpu)
             results = extract_knockout_results(
-                pool.imap_unordered(worker_function, args,
+                pool.imap_unordered(Worker(worker_function, model), args,
                                     chunksize=chunk_size))
             pool.close()
         else:
