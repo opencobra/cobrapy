@@ -14,19 +14,9 @@ from builtins import (map, dict)
 from future.utils import raise_
 
 from ..manipulation.delete import (find_gene_knockout_reactions)
+from cobra.flux_analysis import moma
 import cobra.util.solver as sutil
 
-try:
-    import scipy
-except ImportError:
-    moma = None
-else:
-    from . import moma
-
-try:
-    from pandas import DataFrame
-except:
-    DataFrame = None
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,11 +37,13 @@ def biomass_reaction(model):
     return model.objective.expression.as_coefficients_dict()
 
 
-def restore_biomass(fluxes, biomass_expression):
+def restore_biomass(model):
     result = 0
-    for k, v in iteritems(biomass_expression):
-        if v > 0:
-            result += fluxes[k.name] * v
+    for k, v in iteritems(model.notes['biomass_reaction']):
+        try:
+            result += model.reactions.get_by_id(k.name).flux * v
+        except KeyError:
+            pass
     return result
 
 
@@ -66,9 +58,8 @@ def _reactions_knockouts_with_restore(model, reactions):
 def _get_growth(model):
     try:
         if 'moma_old_objective' in model.solver.variables:
-            solution = model.optimize()
-            growth = restore_biomass(solution.fluxes,
-                                     model.notes['biomass_reaction'])
+            model.slim_optimize()
+            growth = restore_biomass(model)
         else:
             growth = model.slim_optimize()
         if math.isnan(growth):
