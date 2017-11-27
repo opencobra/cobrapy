@@ -12,7 +12,7 @@ from collections import defaultdict
 from functools import partial
 from builtins import (map, dict)
 from future.utils import raise_
-from ..manipulation.delete import (find_gene_knockout_reactions)
+from cobra.manipulation.delete import find_gene_knockout_reactions
 import cobra.util.solver as sutil
 
 
@@ -21,7 +21,7 @@ try:
 except ImportError:
     moma = None
 else:
-    from . import moma
+    from cobra.flux_analysis import moma
 
 LOGGER = logging.getLogger(__name__)
 
