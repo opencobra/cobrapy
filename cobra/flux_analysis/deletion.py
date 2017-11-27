@@ -12,11 +12,16 @@ from collections import defaultdict
 from functools import partial
 from builtins import (map, dict)
 from future.utils import raise_
-
 from ..manipulation.delete import (find_gene_knockout_reactions)
-from cobra.flux_analysis import moma
 import cobra.util.solver as sutil
 
+
+try:
+    import scipy
+except ImportError:
+    moma = None
+else:
+    from . import moma
 
 LOGGER = logging.getLogger(__name__)
 
