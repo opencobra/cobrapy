@@ -14,6 +14,13 @@ class TestExchangeDetection:
         ex = media.exchanges(model)
         assert all(r.id.startswith("EX_") for r in ex)
 
+    def test_sbo_terms(Self, model):
+        assert not media.is_exchange(model.reactions.ATPM, "e")
+        model.reactions.ATPM.annotation["SBO"] = "SBO:0000627"
+        assert media.is_exchange(model.reactions.ATPM, "bla")
+        model.reactions.ATPM.annotation["SBO"] = "SBO:0000632"
+        assert not media.is_exchange(model.reactions.ATPM, "e")
+
 
 class TestMinimalMedia:
 

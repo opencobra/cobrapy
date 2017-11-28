@@ -2,4 +2,5 @@
 
 """Imports for the media module."""
 
-from cobra.media.media import exchanges, minimal_medium
+from cobra.media.media import (exchanges, minimal_medium,
+                               external_compartment, is_exchange)

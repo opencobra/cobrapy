@@ -11,8 +11,12 @@ LOGGER = logging.getLogger(__name__)
 
 default_excludes = ["biosynthesis", "transcription", "replication", "sink",
                     "demand", "DM_", "SN_", "SK_"]
-"""A list of sub-strings in reaction IDs that usually indicate that
-the reaction is *not* an exchange reaction."""
+sbo_excludes = ["SBO:0000628",  # DEMAND
+                "SBO:0000629",  # BIOMASS
+                "SBO:0000631",  # PSEUDOREACTION
+                "SBO:0000632"]  # SINK
+"""A list of sub-strings in reaction IDs and SBO terms that usually indicate
+that the reaction is *not* an exchange reaction."""
 
 
 def external_compartment(model):
@@ -31,8 +35,34 @@ def external_compartment(model):
     str
         The putative external compartment.
     """
-    counts = Counter(tuple(r.compartments)[0] for r in model.exchanges)
+    counts = Counter(tuple(r.compartments)[0] for r in model.boundary)
     return counts.most_common(1)[0][0]
+
+
+def is_exchange(reaction, ext_compartment):
+    """Check whether a reaction is an exchange reaction.
+
+    Arguments
+    ---------
+    reaction : cobra.Reaction
+        The reaction to check.
+    ext_compartment : str
+        The id for the external compartment.
+
+    Returns
+    -------
+    boolean
+        Whether the reaction looks like an exchange reaction. Might be based
+        on a heuristic.
+    """
+    sbo_term = reaction.annotation.get("SBO", "").upper()
+    if sbo_term == "SBO:0000627":
+        return True
+    if sbo_term in sbo_excludes:
+        return False
+    return (reaction.boundary and not
+            any(ex in reaction.id for ex in default_excludes) and
+            ext_compartment in reaction.compartments)
 
 
 def exchanges(model, ext_compartment=None):
@@ -43,7 +73,7 @@ def exchanges(model, ext_compartment=None):
     model : cobra.Model
         A cobra model.
     ext_compartment : str or None
-        The id for the external compartment. If None will be detected
+        The id for the external compartment. If None it will be detected
         automatically.
 
     Returns
@@ -53,11 +83,7 @@ def exchanges(model, ext_compartment=None):
     """
     if ext_compartment is None:
         ext_compartment = external_compartment(model)
-    exchange_reactions = model.reactions.query(
-            lambda r: (r.boundary and not
-                       any(ex in r.id for ex in default_excludes) and
-                       ext_compartment in r.compartments))
-    return exchange_reactions
+    return model.reactions.query(lambda r: is_exchange(r, ext_compartment))
 
 
 def add_linear_obj(model):
