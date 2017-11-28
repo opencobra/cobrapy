@@ -32,7 +32,7 @@ class SolverNotFound(Exception):
 
 
 # Define all the solvers that are found in optlang.
-solvers = {match.split("_")[0]: getattr(optlang, match)
+solvers = {match.split("_interface")[0]: getattr(optlang, match)
            for match in dir(optlang) if "_interface" in match}
 
 # Defines all the QP solvers implemented in optlang.
