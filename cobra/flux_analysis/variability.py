@@ -2,10 +2,13 @@
 
 from __future__ import absolute_import
 
-import pandas
-from optlang.symbolics import Zero
+import math
 from warnings import warn
 from itertools import chain
+
+import pandas
+from optlang.symbolics import Zero
+from six import iteritems
 
 from cobra.flux_analysis.loopless import loopless_fva_iter
 from cobra.flux_analysis.parsimonious import add_pfba
@@ -212,7 +215,7 @@ def find_blocked_reactions(model, reaction_list=None,
                 max(abs(min_max)) < zero_cutoff]
 
 
-def find_essential_genes(model):
+def find_essential_genes(model, threshold=None):
     """Return a set of essential genes.
 
     A gene is considered essential if restricting the flux of all reactions
@@ -223,26 +226,24 @@ def find_essential_genes(model):
     ----------
     model : cobra.Model
         The model to find the essential genes for.
+    threshold : float, optional
+        Minimal objective flux to be considered viable. By default this is
+        0.01 times the growth rate.
 
     Returns
     -------
     set
         Set of essential genes
     """
-    solution = model.optimize(raise_error=True)
-    tolerance = model.solver.configuration.tolerances.feasibility
-    non_zero_flux_reactions = list(
-        solution[solution.fluxes.abs() > tolerance].index)
-    genes_to_check = set(chain.from_iterable(
-        model.reactions.get_by_id(rid).genes for rid in
-        non_zero_flux_reactions))
-    deletions = single_gene_deletion(model, gene_list=genes_to_check,
-                                     method='fba')
-    gene_ids = [k for k, v in deletions.items() if not v]
-    return set(model.genes.get_by_any(gene_ids))
+    if threshold is None:
+        threshold = model.slim_optimize(error_value=None) * 1E-02
+    deletions = single_gene_deletion(model, method='fba')
+    essential = deletions.loc[deletions['growth'].isna() |
+                              (deletions['growth'] < threshold), :].index
+    return set(model.genes.get_by_id(g) for ids in essential for g in ids)
 
 
-def find_essential_reactions(model):
+def find_essential_reactions(model, threshold=None):
     """Return a set of essential reactions.
 
     A reaction is considered essential if restricting its flux to zero
@@ -252,18 +253,18 @@ def find_essential_reactions(model):
     ----------
     model : cobra.Model
         The model to find the essential reactions for.
+    threshold : float, optional
+        Minimal objective flux to be considered viable. By default this is
+        0.01 times the growth rate.
 
     Returns
     -------
     set
         Set of essential reactions
     """
-    solution = model.optimize(raise_error=True)
-    tolerance = model.solver.configuration.tolerances.feasibility
-    non_zero_flux_reactions = list(
-        solution[solution.fluxes.abs() > tolerance].index)
-    deletions = single_reaction_deletion(model,
-                                         reaction_list=non_zero_flux_reactions,
-                                         method='fba')
-    reaction_ids = [k for k, v in deletions.items() if not v]
-    return set(model.reactions.get_by_any(reaction_ids))
+    if threshold is None:
+        threshold = model.slim_optimize(error_value=None) * 1E-02
+    deletions = single_reaction_deletion(model, method='fba')
+    essential = deletions.loc[deletions['growth'].isna() |
+                              (deletions['growth'] < threshold), :].index
+    return set(model.reactions.get_by_id(r) for ids in essential for r in ids)
