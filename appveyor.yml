@@ -11,7 +11,7 @@ environment:
 
   matrix:
     - PYTHON: "C:\\Miniconda-x64"
-      PYTHON_VERSION: "2.7.12"
+      PYTHON_VERSION: "2.7.13"
       CONDA: true
 
     - PYTHON: "C:\\Miniconda35-x64"
@@ -52,10 +52,8 @@ install:
   - ps: |
       if ($env:CONDA -eq "true") {
         conda config --set always_yes yes --set changeps1 no;
-        "conda create -q --name testenv python=%PYTHON_VERSION% pip";
-        activate testenv;
-        conda install -q numpy scipy;
-        pip install -r develop-requirements.txt
+        conda install -q pip numpy scipy;
+        pip install -r develop-requirements.txt;
         pip install .[matlab,array,sbml]
       } else {
         pip install --upgrade setuptools wheel tox
