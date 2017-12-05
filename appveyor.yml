@@ -51,7 +51,7 @@ install:
         conda config --set always_yes yes --set changeps1 no;
         conda install -q pip setuptools wheel numpy scipy;
         pip install -r develop-requirements.txt;
-        pip install .[matlab,array,sbml]
+        pip install .[array,sbml]
       } else {
         pip install --upgrade setuptools wheel tox
       }

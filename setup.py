@@ -14,7 +14,6 @@ if {'pytest', 'test', 'ptr'}.intersection(argv):
     setup_requirements.append("pytest-runner")
 
 extras = {
-    'matlab': ["pymatbridge", "scipy"],
     'array': ["scipy"],
     'sbml': ["python-libsbml", "lxml"]
 }

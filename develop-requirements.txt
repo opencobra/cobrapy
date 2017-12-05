@@ -1,5 +1,4 @@
 # Requirements for developing cobrapy
-zmq
 pytest
 pytest-benchmark
 pytest-cov
