@@ -49,7 +49,7 @@ install:
   - ps: |
       if ($env:CONDA -eq "true") {
         conda config --set always_yes yes --set changeps1 no;
-        conda install -q pip setuptools wheel numpy scipy zmq;
+        conda install -q pip setuptools wheel numpy scipy;
         pip install -r develop-requirements.txt;
         pip install .[matlab,array,sbml]
       } else {
