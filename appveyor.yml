@@ -65,9 +65,11 @@ install:
   - ps: |
       if ($env:CONDA -eq "true") {
           conda config --set always_yes yes --set changeps1 no;
-          conda install -q pip setuptools wheel tox scipy
+          conda create --name testenv python=%PYTHON_VERSION pip
+          activate testenv
+          pip install --upgrade setuptools wheel tox
       } else {
-          python -m pip install pip setuptools wheel tox --upgrade
+          python -m pip install --upgrade setuptools wheel tox
       }
 
 build: off

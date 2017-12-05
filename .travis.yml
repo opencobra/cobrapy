@@ -48,11 +48,11 @@ before_cache:
   - set +e
 
 script:
-  - tox
+  - travis_wait tox
 
-# N.B.: Currently, Travis mangles (escapes) the tag body badly.
-    #before_deploy:
-    #  - source scripts/prepare_notes.sh
+# N.B.: Currently, Travis mangles (escapes) the release tag body badly.
+#before_deploy:
+#  - source scripts/prepare_notes.sh
 
 deploy:
   - provider: pypi
