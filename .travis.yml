@@ -43,6 +43,9 @@ matrix:
     - os: linux
       python: 3.5
       env: TOXENV=sbml
+    - os: linux
+      python: 3.5
+      env: TOXENV=array
     #    - os: osx
     #      language: generic
     #      before_install:
