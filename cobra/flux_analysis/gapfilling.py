@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 
 from optlang.symbolics import Add
-from warnings import warn
 
 from optlang.interface import OPTIMAL
 from cobra.core import Model
@@ -296,35 +295,3 @@ def gapfill(model, universal=None, lower_bound=0.05,
                           demand_reactions=demand_reactions,
                           exchange_reactions=exchange_reactions)
     return gapfiller.fill(iterations=iterations)
-
-
-def growMatch(model, Universal, dm_rxns=False, ex_rxns=False,
-              penalties=None, iterations=1, **solver_parameters):
-    """runs (partial implementation of) growMatch. Legacy function,
-    to be removed in future version of cobrapy in favor of gapfill. """
-
-    warn('use gapfill instead', DeprecationWarning)
-    if 'solver' in dict(**solver_parameters):
-        raise ValueError('growMatch implementation for cobra legacy solvers'
-                         ' is defunct. Choose optlang solver with '
-                         'model.solver = "solver"')
-    return gapfill(model, universal=Universal,
-                   iterations=iterations, penalties=penalties,
-                   demand_reactions=dm_rxns, exchange_reactions=ex_rxns)
-
-
-def SMILEY(model, metabolite_id, Universal,
-           dm_rxns=False, ex_rxns=False, penalties=None, **solver_parameters):
-    """runs the SMILEY algorithm. Legacy function,
-    to be removed in future version of cobrapy in favor of gapfill. """
-
-    warn('use gapfill instead', DeprecationWarning)
-    if 'solver' in dict(**solver_parameters):
-        raise ValueError('SMILEY implementation for cobra legacy solvers'
-                         ' is defunct. Choose optlang solver with '
-                         'model.solver = "solver"')
-    with model:
-        metabolite = model.metabolites.get_by_id(metabolite_id)
-        model.objective = model.add_boundary(metabolite, type='demand')
-        return gapfill(model, universal=Universal, penalties=penalties,
-                       demand_reactions=dm_rxns, exchange_reactions=ex_rxns)

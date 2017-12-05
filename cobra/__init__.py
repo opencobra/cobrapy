@@ -8,7 +8,7 @@ from os import name as _name
 from os.path import abspath as _abspath
 from os.path import dirname as _dirname
 
-from cobra import design, flux_analysis, io
+from cobra import flux_analysis, io
 from cobra.core import (
     DictList, Gene, Metabolite, Model, Object, Reaction, Species)
 from cobra.util.version_info import show_versions

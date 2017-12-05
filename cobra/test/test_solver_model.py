@@ -14,12 +14,6 @@ import cobra
 from cobra.core import Metabolite, Model, Reaction, Solution
 from cobra.util.solver import SolverNotFound, set_objective, solvers
 
-try:
-    import scipy
-except ImportError:
-    scipy = None
-
-
 solver_trials = ['glpk',
                  pytest.mark.skipif('cplex' not in solvers,
                                     reason='no cplex')]
@@ -28,7 +22,7 @@ solver_trials = ['glpk',
 @pytest.fixture(scope="function", params=solver_trials)
 def solved_model(request, model):
     model.solver = request.param
-    solution = model.optimize(solution_type=Solution)
+    solution = model.optimize()
     return solution, model
 
 
@@ -295,7 +289,7 @@ class TestReaction:
         assert rxn.reverse_variable.ub == 1000.
 
     def test_model_less_reaction(self, model):
-        model.optimize(solution_type=Solution)
+        model.slim_optimize()
         for reaction in model.reactions:
             assert isinstance(reaction.flux, float)
             assert isinstance(reaction.reduced_cost, float)

@@ -21,14 +21,9 @@ from warnings import warn
 import optlang
 from optlang.symbolics import Basic, Zero
 
-from cobra.exceptions import OptimizationError, OPTLANG_TO_EXCEPTIONS_DICT
+from cobra.exceptions import OptimizationError, SolverNotFound,\
+    OPTLANG_TO_EXCEPTIONS_DICT
 from cobra.util.context import get_context
-
-
-class SolverNotFound(Exception):
-    """A simple Exception when a solver can not be found."""
-
-    pass
 
 
 # Define all the solvers that are found in optlang.
@@ -110,7 +105,7 @@ def set_objective(model, value, additive=False):
         If the objective is not linear and `additive` is true, only values
         of class Objective.
 
-    additive : bool
+    additive : boolmodel.reactions.Biomass_Ecoli_core.bounds = (0.1, 0.1)
         If true, add the terms to the current objective, otherwise start with
         an empty objective.
     """
@@ -237,41 +232,30 @@ def choose_solver(model, solver=None, qp=False):
     model : a cobra model
         The model for which to choose the solver.
     solver : str, optional
-        The name of the solver to be used. Optlang solvers should be prefixed
-        by "optlang-", for instance "optlang-glpk".
+        The name of the solver to be used.
     qp : boolean, optional
         Whether the solver needs Quadratic Programming capabilities.
 
     Returns
     -------
-    legacy : boolean
-        Whether the returned solver is a legacy (old cobra solvers) version or
-        an optlang solver (legacy = False).
-    solver : a cobra or optlang solver interface
-        Returns a valid solver for the problem. May be a cobra solver or an
-        optlang interface.
+    solver : an optlang solver interface
+        Returns a valid solver for the problem.
 
     Raises
     ------
     SolverNotFound
         If no suitable solver could be found.
     """
-    legacy = False
     if solver is None:
         solver = model.problem
-    elif "optlang-" in solver:
-        solver = interface_to_str(solver)
-        solver = solvers[solver]
     else:
-        legacy = True
-        solver = legacy_solvers.solver_dict[solver]
+        model.solver = solver
 
     # Check for QP, raise error if no QP solver found
-    # optlang only since old interface interprets None differently
     if qp and interface_to_str(solver) not in qp_solvers:
         solver = solvers[get_solver_name(qp=True)]
 
-    return legacy, solver
+    return solver
 
 
 def add_cons_vars_to_problem(model, what, **kwargs):
@@ -439,6 +423,3 @@ def assert_optimal(model, message='optimization failed'):
     """
     if model.solver.status != optlang.interface.OPTIMAL:
         raise OPTLANG_TO_EXCEPTIONS_DICT[model.solver.status](message)
-
-
-import cobra.solvers as legacy_solvers  # noqa

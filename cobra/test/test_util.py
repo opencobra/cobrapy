@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from builtins import zip
-
 import re
 from copy import copy, deepcopy
 from pickle import HIGHEST_PROTOCOL, dumps, loads

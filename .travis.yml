@@ -1,18 +1,11 @@
 language: python
 python: 3.5
-sudo: required
-dist: trusty
-services: docker
+sudo: false
 cache:
   directories:
     - $HOME/.cache/pip
-addons:
-  apt:
-    packages:
-      - libfreetype6-dev
-      - libpng12-dev
 git:
-  depth: 3
+  depth: 2
 
 branches:
  only:
@@ -24,8 +17,6 @@ env:
   global:
     - secure: "hkKBaGLvoDVgktSKR3BmX+mYlGzHw9EO11MRHtiH8D9BbdygOR9p9aSV/OxkaRWhnkSP5/0SXqVgBrvU1g5OsR6cc85UQSpJ5H5jVnLoWelIbTxMCikjxDSkZlseD7ZEWrKZjRo/ZN2qym0HRWpsir3qLpl8W25xHRv/sK7Z6g8="
     - secure: "DflyBz+QiyhlhBxn4wN00xu248EJUMjKTxUZQN6wq22qV55xO3ToGJTy9i4D6OBfZGAlSXxjjKCJ2+0sAjsghBSDEK56ud3EEg/08TIo7/T8ex/C58FsGoGFz3yDBATmquClEWN8vAMrLdxwniHmQVCBZCP/phdt5dct0AUuDc8="
-    - PLAT=x86_64
-    - UNICODE_WIDTH=32
     - GITHUB_REPO=opencobra/cobrapy
 
 matrix:
@@ -38,81 +29,70 @@ matrix:
       env:
         - TOXENV=pep8
     - os: linux
-      env:
-        - MB_PYTHON_VERSION=2.7
+      python: 2.7
+      env: TOXENV=py27
     - os: linux
-      env:
-        - MB_PYTHON_VERSION=3.4
+      python: 3.4
+      env: TOXENV=py34
     - os: linux
-      env:
-        - MB_PYTHON_VERSION=3.5
+      python: 3.5
+      env: TOXENV=py35
     - os: linux
-      env:
-        - MB_PYTHON_VERSION=3.6
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=2.7
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=3.4
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=3.5
-    - os: osx
-      language: objective-c
-      env:
-        - MB_PYTHON_VERSION=3.6
+      python: 3.6
+      env: TOXENV=py36
+    - os: linux
+      python: 3.5
+      env: TOXENV=sbml
+    - os: linux
+      python: 3.5
+      env: TOXENV=array
+    #    - os: osx
+    #      language: generic
+    #      before_install:
+    #        - brew update
+    #        - brew install --without-readline --without-xz --without-gdbm --without-sqlite python3
+    #        - virtualenv env -p python3
+    #        - source env/bin/activate
+    #    - os: osx
+    #      language: generic
+    #      before_install:
+    #        - brew update
+    #        - brew install --without-readline --without-xz --without-gdbm --without-sqlite python2
+    #        - virtualenv env -p python2
+    #        - source env/bin/activate
 
 before_install:
-  - if [[ -n "${MB_PYTHON_VERSION}" ]]; then
-      (travis_retry git clone https://github.com/matthew-brett/multibuild.git && cd multibuild && git checkout 37040e31b1044468027bd86991c805006a92bf09);
-      TEST_DEPENDS="swiglpk optlang sympy decorator cython codecov coverage numpy scipy==0.19.1 jsonschema six pytest pytest-cov pytest-benchmark tabulate";
-      BUILD_DEPENDS="swiglpk optlang sympy cython numpy scipy";
-      source multibuild/common_utils.sh;
-      source multibuild/travis_steps.sh;
-      before_install;
-    fi
-  - pip install -U pip setuptools wheel tox
+  - travis_retry pip install -U pip setuptools wheel tox
 
 before_cache:
   - set +e
 
-install:
-  - if [[ -n "${MB_PYTHON_VERSION}" ]]; then
-      travis_retry build_wheel . $PLAT;
-    fi
-
 script:
-  - if [[ -n "${MB_PYTHON_VERSION}" ]]; then
-      travis_retry install_run $PLAT;
-    else
-      pip install rstcheck Cython;
-      find . -name "*.rst" -exec rstcheck {} +;
-      tox -e "${TOXENV}";
-    fi
-  - ls ${TRAVIS_BUILD_DIR}/wheelhouse/ || echo "no wheelhouse"
+  - travis_wait tox
 
-# N.B.: Currently, Travis mangles (escapes) the tag body badly.
-    #before_deploy:
-    #  - source scripts/prepare_notes.sh
+# N.B.: Currently, Travis mangles (escapes) the release tag body badly.
+#before_deploy:
+#  - source scripts/prepare_notes.sh
 
 deploy:
-  - provider: script
+  - provider: pypi
     skip_cleanup: true
-    script: scripts/deploy_cobra.sh
+    distributions: sdist bdist_wheel
     on:
       tags: true
       repo: $GITHUB_REPO
+      python: '3.6'
+      condition: $TRAVIS_OS_NAME == "linux"
+    user: $PYPI_USERNAME
+    password: $PYPI_PASSWORD
   - provider: script
     skip_cleanup: true
     script: scripts/deploy_website.sh
     on:
       tags: true
       repo: $GITHUB_REPO
-      condition: $TRAVIS_OS_NAME == "linux" && $MB_PYTHON_VERSION == "3.6"
+      python: '3.6'
+      condition: $TRAVIS_OS_NAME == "linux"
   - provider: releases
     skip_cleanup: true
     api_key: $GITHUB_TOKEN
@@ -120,7 +100,5 @@ deploy:
     on:
       tags: true
       repo: $GITHUB_REPO
-      condition: $TRAVIS_OS_NAME == "linux" && $MB_PYTHON_VERSION == "3.6"
-
-after_success:
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then pip install codecov; codecov; fi
+      python: '3.6'
+      condition: $TRAVIS_OS_NAME == "linux"

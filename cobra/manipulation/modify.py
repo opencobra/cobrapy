@@ -8,7 +8,7 @@ from itertools import chain
 from six import iteritems
 from warnings import warn
 
-from cobra.core import Gene, Metabolite, Reaction
+from cobra.core import Gene, Reaction
 from cobra.core.gene import ast2str
 from cobra.manipulation.delete import get_compiled_gene_reaction_rules
 from cobra.util.solver import set_objective
@@ -185,76 +185,3 @@ def revert_to_reversible(cobra_model, update_solution=True):
     # use we can do this faster removal step.  We can
     # probably speed things up here.
     cobra_model.remove_reactions(reverse_reactions)
-
-
-def canonical_form(model, objective_sense='maximize',
-                   already_irreversible=False, copy=True):
-    """Return a model (problem in canonical_form).
-
-    Converts a minimization problem to a maximization, makes all variables
-    positive by making reactions irreversible, and converts all constraints to
-    <= constraints.
-
-
-    model: class:`~cobra.core.Model`. The model/problem to convert.
-
-    objective_sense: str. The objective sense of the starting problem, either
-    'maximize' or 'minimize'. A minimization problems will be converted to a
-    maximization.
-
-    already_irreversible: bool. If the model is already irreversible, then pass
-    True.
-
-    copy: bool. Copy the model before making any modifications.
-
-    """
-    warn("deprecated, not applicable for optlang solvers", DeprecationWarning)
-    if copy:
-        model = model.copy()
-
-    if not already_irreversible:
-        convert_to_irreversible(model)
-
-    if objective_sense == "minimize":
-        # if converting min to max, reverse all the objective coefficients
-        for reaction in model.reactions:
-            reaction.objective_coefficient = - reaction.objective_coefficient
-    elif objective_sense != "maximize":
-        raise Exception("Invalid objective sense '%s'. "
-                        "Must be 'minimize' or 'maximize'." % objective_sense)
-
-    # convert G and E constraints to L constraints
-    for metabolite in model.metabolites:
-        if metabolite._constraint_sense == "G":
-            metabolite._constraint_sense = "L"
-            metabolite._bound = - metabolite._bound
-            for reaction in metabolite.reactions:
-                coeff = reaction.get_coefficient(metabolite)
-                # reverse the coefficient
-                reaction.add_metabolites({metabolite: -2 * coeff})
-        elif metabolite._constraint_sense == "E":
-            # change existing constraint to L
-            metabolite._constraint_sense = "L"
-            # add new constraint
-            new_constr = Metabolite("%s__GE_constraint" % metabolite.id)
-            new_constr._constraint_sense = "L"
-            new_constr._bound = - metabolite._bound
-            for reaction in metabolite.reactions:
-                coeff = reaction.get_coefficient(metabolite)
-                reaction.add_metabolites({new_constr: -coeff})
-
-    # convert lower bounds to LE constraints
-    for reaction in model.reactions:
-        if reaction.lower_bound < 0:
-            raise Exception("Bounds of irreversible reactions should be >= 0,"
-                            " for %s" % reaction.id)
-        elif reaction.lower_bound == 0:
-            continue
-        # new constraint for lower bound
-        lb_constr = Metabolite("%s__LB_constraint" % reaction.id)
-        lb_constr._constraint_sense = "L"
-        lb_constr._bound = - reaction.lower_bound
-        reaction.add_metabolites({lb_constr: -1})
-        reaction.lower_bound = 0
-
-    return model

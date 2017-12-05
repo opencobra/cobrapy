@@ -7,6 +7,7 @@ from os.path import join
 
 import pytest
 
+import cobra.util.solver as sutil
 from cobra.test import create_test_model, data_dir
 
 try:
@@ -14,8 +15,6 @@ try:
 except ImportError:
     from pickle import load as _load
 
-import cobra.util.solver as sutil
-from cobra.solvers import solver_dict
 from cobra import Model, Metabolite, Reaction
 
 
@@ -44,14 +43,24 @@ def model(small_model):
     return small_model.copy()
 
 
-@pytest.fixture(scope="function")
-def large_model():
+@pytest.fixture(scope="session")
+def large_once():
     return create_test_model("ecoli")
 
 
+@pytest.fixture(scope="function")
+def large_model(large_once):
+    return large_once.copy()
+
+
 @pytest.fixture(scope="session")
-def salmonella():
+def medium_model():
     return create_test_model("salmonella")
+
+
+@pytest.fixture(scope="function")
+def salmonella(medium_model):
+    return medium_model.copy()
 
 
 @pytest.fixture(scope="function")
@@ -89,18 +98,12 @@ def pfba_fva_results(data_directory):
 
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
-optlang_solvers = ["optlang-" + s for s in stable_optlang if s in
-                   sutil.solvers]
-all_solvers = optlang_solvers + list(solver_dict)
+all_solvers = ["optlang-" + s for s in stable_optlang if
+               s in sutil.solvers]
 
 
-@pytest.fixture(params=optlang_solvers, scope="session")
+@pytest.fixture(params=all_solvers, scope="session")
 def opt_solver(request):
-    return request.param
-
-
-@pytest.fixture(params=list(solver_dict), scope="session")
-def legacy_solver(request):
     return request.param
 
 
