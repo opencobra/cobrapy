@@ -1,6 +1,8 @@
 # Requirements for developing cobrapy
-scipy
-python-libsbml
-lxml
+pytest
+pytest-benchmark
+pytest-cov
+codecov
+jsonschema
 tox
 bumpversion

@@ -12,40 +12,26 @@ environment:
   matrix:
     - PYTHON: "C:\\Miniconda-x64"
       PYTHON_VERSION: "2.7.12"
-      PYTHON_ARCH: "64"
-      TOXENV: py27
       CONDA: true
 
     - PYTHON: "C:\\Miniconda35-x64"
       PYTHON_VERSION: "3.5.2"
-      PYTHON_ARCH: "64"
-      TOXENV: py35
       CONDA: true
 
     - PYTHON: "C:\\Miniconda35-x64"
       PYTHON_VERSION: "3.6.0"
-      PYTHON_ARCH: "64"
-      TOXENV: py36
       CONDA: true
 
     - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.12"
-      PYTHON_ARCH: "64"
       TOXENV: py27
 
     - PYTHON: "C:\\Python34-x64"
-      PYTHON_VERSION: "3.4.5"
-      PYTHON_ARCH: "64"
       TOXENV: py34
 
     - PYTHON: "C:\\Python35-x64"
-      PYTHON_VERSION: "3.5.2"
-      PYTHON_ARCH: "64"
       TOXENV: py35
 
     - PYTHON: "C:\\Python36-x64"
-      PYTHON_VERSION: "3.6.0"
-      PYTHON_ARCH: "64"
       TOXENV: py36
 
 matrix:
@@ -54,25 +40,33 @@ matrix:
 clone_depth: 2
 
 init:
-  - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%bit"
+  - "ECHO %PYTHON%"
+  - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - python -V
 
 cache:
     - pip_cache -> appveyor.yml
 
 
 install:
-  - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - ps: |
       if ($env:CONDA -eq "true") {
-          conda config --set always_yes yes --set changeps1 no;
-          conda create --name testenv python=%PYTHON_VERSION pip
-          activate testenv
-          pip install --upgrade setuptools wheel tox
+        conda config --set always_yes yes --set changeps1 no;
+        "conda create -q --name testenv python=%PYTHON_VERSION% pip";
+        activate testenv;
+        conda install -q numpy scipy;
+        pip install -r develop-requirements.txt
+        pip install .[matlab,array,sbml]
       } else {
-          python -m pip install --upgrade setuptools wheel tox
+        pip install --upgrade setuptools wheel tox
       }
 
 build: off
 
 test_script:
-  - tox
+  - ps: |
+      if ($env:CONDA -eq "true") {
+        pytest --benchmark-skip cobra/test
+      } else {
+        tox
+      }

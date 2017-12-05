@@ -14,9 +14,9 @@ if {'pytest', 'test', 'ptr'}.intersection(argv):
     setup_requirements.append("pytest-runner")
 
 extras = {
-    'matlab': ["pymatbridge"],
-    'sbml': ["python-libsbml", "lxml"],
-    'display': ["matplotlib", "palettable"]
+    'matlab': ["pymatbridge", "scipy"],
+    'array': ["scipy"],
+    'sbml': ["python-libsbml", "lxml"]
 }
 extras["all"] = sorted(list(extras))
 
