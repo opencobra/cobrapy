@@ -14,8 +14,6 @@ from six import iteritems
 
 from cobra import io
 
-from .conftest import data_directory
-
 
 def write_legacy_sbml_placeholder():
     pass

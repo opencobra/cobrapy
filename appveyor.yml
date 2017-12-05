@@ -7,43 +7,46 @@ branches:
 environment:
 
   global:
-    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
-    # /E:ON and /V:ON options are not enabled in the batch script intepreter
-    # See: http://stackoverflow.com/a/13751649/163740
-    WITH_COMPILER: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
     PIP_CACHE_DIR: "pip_cache"
 
   matrix:
     - PYTHON: "C:\\Miniconda-x64"
       PYTHON_VERSION: "2.7.12"
       PYTHON_ARCH: "64"
+      TOXENV: py27
       CONDA: true
 
     - PYTHON: "C:\\Miniconda35-x64"
       PYTHON_VERSION: "3.5.2"
       PYTHON_ARCH: "64"
+      TOXENV: py35
       CONDA: true
 
     - PYTHON: "C:\\Miniconda35-x64"
       PYTHON_VERSION: "3.6.0"
       PYTHON_ARCH: "64"
+      TOXENV: py36
       CONDA: true
 
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.12"
       PYTHON_ARCH: "64"
+      TOXENV: py27
 
     - PYTHON: "C:\\Python34-x64"
       PYTHON_VERSION: "3.4.5"
       PYTHON_ARCH: "64"
+      TOXENV: py34
 
     - PYTHON: "C:\\Python35-x64"
       PYTHON_VERSION: "3.5.2"
       PYTHON_ARCH: "64"
+      TOXENV: py35
 
     - PYTHON: "C:\\Python36-x64"
       PYTHON_VERSION: "3.6.0"
       PYTHON_ARCH: "64"
+      TOXENV: py36
 
 matrix:
   fast_finish: true
@@ -54,7 +57,6 @@ init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%bit"
 
 cache:
-    - glpk_build -> appveyor/build_glpk.py
     - pip_cache -> appveyor.yml
 
 
@@ -63,28 +65,12 @@ install:
   - ps: |
       if ($env:CONDA -eq "true") {
           conda config --set always_yes yes --set changeps1 no;
-          conda install -q pip } else {
-          python -m pip install pip setuptools>=24.0 wheel --upgrade }
-  - if not defined CONDA %WITH_COMPILER% python -m pip install --upgrade pytest
-  - if defined CONDA conda install -q setuptools pytest numpy scipy==0.19.1
-  - python -m pip install pytest-cov pytest-benchmark pandas swiglpk optlang python-libsbml decorator Cython jsonschema twine pypandoc
-  - "%WITH_COMPILER% python appveyor/build_glpk.py"
+          conda install -q pip setuptools wheel tox scipy
+      } else {
+          python -m pip install pip setuptools wheel tox --upgrade
+      }
 
 build: off
 
 test_script:
-  - "%WITH_COMPILER% python setup.py develop"
-  - "%WITH_COMPILER% python -m pytest --cov=cobra --benchmark-skip"
-
-after_test:
-  - if not defined CONDA %WITH_COMPILER% python setup.py bdist_wheel bdist_wininst
-
-artifacts:
-  - path: dist\*
-
-deploy_script:
-  - ps: |
-      if($env:appveyor_repo_tag -eq "True" -And $env:CONDA -ne "true") {
-          Invoke-Expression "twine upload dist/* --username $env:PYPI_USERNAME --password $env:PYPI_PASSWORD 2>&1 | out-null"
-      }
-
+  - tox

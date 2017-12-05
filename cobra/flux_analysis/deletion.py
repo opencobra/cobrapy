@@ -14,14 +14,7 @@ from builtins import (map, dict)
 from future.utils import raise_
 from cobra.manipulation.delete import find_gene_knockout_reactions
 import cobra.util.solver as sutil
-
-
-try:
-    import scipy
-except ImportError:
-    moma = None
-else:
-    from cobra.flux_analysis import moma
+from cobra.flux_analysis import moma
 
 LOGGER = logging.getLogger(__name__)
 
@@ -142,21 +135,16 @@ def _multi_deletion(cobra_model, entity, element_lists, method="fba",
     """
     with cobra_model as model:
         try:
-            (legacy, solver) = sutil.choose_solver(model, solver,
-                                                   qp=(method == "moma"))
+            solver = sutil.choose_solver(model, solver, qp=(method == "moma"))
         except sutil.SolverNotFound:
             if method == "moma":
                 warn(
                     "Cannot use MOMA since no QP-capable solver was found. "
                     "Falling back to FBA.")
-                (legacy, solver) = sutil.choose_solver(model, solver)
+                solver = sutil.choose_solver(model, solver)
             else:
                 (err_type, err_val, err_tb) = sys.exc_info()
                 raise_(err_type, err_val, err_tb)  # reraise for Python2&3
-        if legacy:
-            raise ValueError(
-                "Legacy solvers are not supported any longer. "
-                "Please use one of the optlang solver interfaces instead.")
 
         if number_of_processes is None:
             try:
@@ -179,6 +167,7 @@ def _multi_deletion(cobra_model, entity, element_lists, method="fba",
                     for (growth, ids) in results}
 
         if num_cpu > 1:
+            num_cpu = min(num_cpu, len(args))
             WORKER_FUNCTIONS = dict(
                 gene=_gene_deletion_worker,
                 reaction=_reaction_deletion_worker
@@ -379,22 +368,3 @@ def double_gene_deletion(model, gene_list1=None, gene_list2=None, **kwargs):
                                             gene_list2)
     return _multi_deletion(model, 'gene',
                            element_lists=[gene_list1, gene_list2], **kwargs)
-
-
-def double_deletion(cobra_model, element_list_1=None, element_list_2=None,
-                    element_type='gene', **kwargs):
-    """Wrapper for double_gene_deletion and double_reaction_deletion
-
-    .. deprecated :: 0.4
-        Use double_reaction_deletion and double_gene_deletion
-    """
-    warn(
-        "deprecated - use single_reaction_deletion and single_gene_deletion")
-    if element_type == "reaction":
-        return double_reaction_deletion(cobra_model, element_list_1,
-                                        element_list_2, **kwargs)
-    elif element_type == "gene":
-        return double_gene_deletion(cobra_model, element_list_1,
-                                    element_list_2, **kwargs)
-    else:
-        raise Exception("unknown element type")

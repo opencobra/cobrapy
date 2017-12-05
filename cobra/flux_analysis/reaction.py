@@ -8,8 +8,6 @@ from warnings import warn
 from operator import attrgetter
 
 from cobra.core import Reaction
-from cobra.util import assert_optimal, choose_solver
-from cobra.exceptions import OptimizationError
 
 
 def assess(model, reaction, flux_coefficient_cutoff=0.001, solver=None):
@@ -137,11 +135,7 @@ def assess_component(model, reaction, side, flux_coefficient_cutoff=0.001,
 
 
 def _optimize_or_value(model, value=0., solver=None):
-    legacy, _ = choose_solver(model, solver=solver)
-    if legacy:
-        return model.optimize(solver=solver).f
-    else:
-        return model.slim_optimize(error_value=value)
+    return model.slim_optimize(error_value=value)
 
 
 def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001,

@@ -13,16 +13,15 @@ from optlang.symbolics import Basic, Zero
 import six
 from six import iteritems, string_types
 
+from cobra.exceptions import SolverNotFound
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
 from cobra.core.reaction import separate_forward_and_reverse_bounds, Reaction
 from cobra.core.solution import get_solution
-from cobra.solvers import optimize
 from cobra.util.context import HistoryManager, resettable, get_context
 from cobra.util.solver import (
-    SolverNotFound, get_solver_name, interface_to_str, set_objective, solvers,
-    add_cons_vars_to_problem, remove_cons_vars_from_problem, choose_solver,
-    check_solver_status, assert_optimal)
+    get_solver_name, interface_to_str, set_objective, solvers,
+    add_cons_vars_to_problem, remove_cons_vars_from_problem, assert_optimal)
 from cobra.util.util import AutoVivification, format_long_string
 
 LOGGER = logging.getLogger(__name__)
@@ -127,9 +126,8 @@ class Model(Object):
     @resettable
     def solver(self, value):
         not_valid_interface = SolverNotFound(
-            '%s is not a valid solver interface. Pick from %s, or specify an '
-            'optlang interface (e.g. optlang.glpk_interface).' % (
-                value, list(solvers.keys())))
+            '%s is not a valid solver interface. Pick from %s.' % (
+                value, list(solvers)))
         if isinstance(value, six.string_types):
             try:
                 interface = solvers[interface_to_str(value)]
@@ -775,26 +773,6 @@ class Model(Object):
         for constraint, terms in six.iteritems(constraint_terms):
             constraint.set_linear_coefficients(terms)
 
-    def to_array_based_model(self, deepcopy_model=False, **kwargs):
-        """Makes a `cobra.core.ArrayBasedModel` from a cobra.Model
-        which may be used to perform linear algebra operations with the
-        stoichiometric matrix.
-
-        Deprecated (0.6). Use `cobra.util.array.create_stoichiometric_matrix`
-        instead.
-
-        Parameters
-        ----------
-        deepcopy_model : bool
-            If False then the ArrayBasedModel points to the Model
-
-        """
-        warn("to_array_based_model is deprecated. "
-             "use cobra.util.array.create_stoichiometric_matrix instead",
-             DeprecationWarning)
-        from cobra.core.arraybasedmodel import ArrayBasedModel
-        return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
-
     def slim_optimize(self, error_value=float('nan'), message=None):
         """Optimize model without creating a solution object.
 
@@ -832,7 +810,7 @@ class Model(Object):
         else:
             assert_optimal(self, message)
 
-    def optimize(self, objective_sense=None, raise_error=False, **kwargs):
+    def optimize(self, objective_sense=None, raise_error=False):
         """
         Optimize the model using flux balance analysis.
 
@@ -844,21 +822,6 @@ class Model(Object):
         raise_error : bool
             If true, raise an OptimizationError if solver status is not
              optimal.
-        solver : {None, 'glpk', 'cglpk', 'gurobi', 'cplex'}, optional
-            If unspecified will use the currently defined `self.solver`
-            otherwise it will use the given solver and update the attribute.
-        quadratic_component : {None, scipy.sparse.dok_matrix}, optional
-            The dimensions should be (n, n) where n is the number of
-            reactions. This sets the quadratic component (Q) of the
-            objective coefficient, adding :math:`\\frac{1}{2} v^T \cdot Q
-            \cdot v` to the objective. Ignored for optlang based solvers.
-        tolerance_feasibility : float
-            Solver tolerance for feasibility. Ignored for optlang based
-            solvers
-        tolerance_markowitz : float
-            Solver threshold during pivot. Ignored for optlang based solvers
-        time_limit : float
-            Maximum solver time (in seconds). Ignored for optlang based solvers
 
         Notes
         -----
@@ -867,19 +830,7 @@ class Model(Object):
         appropriate keyword argument.
 
         """
-        legacy, solver = choose_solver(self, solver=kwargs.get("solver"))
         original_direction = self.objective.direction
-
-        if legacy:
-            if objective_sense is None:
-                objective_sense = {
-                    "max": "maximize", "min": "minimize"}[original_direction]
-            solution = optimize(self, objective_sense=objective_sense,
-                                **kwargs)
-            check_solver_status(solution.status, raise_error=raise_error)
-            return solution
-
-        self.solver = solver
         self.objective.direction = \
             {"maximize": "max", "minimize": "min"}.get(
                 objective_sense, original_direction)

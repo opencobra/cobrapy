@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 
-import optlang
 import pytest
 
 import cobra.util.solver as su
-from cobra.test.conftest import model
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
@@ -25,17 +24,13 @@ class TestHelpers:
         assert su.get_solver_name() == "glpk"
 
     def test_choose_solver(self, model):
-        legacy, so = su.choose_solver(model)
-        assert not legacy
+        so = su.choose_solver(model)
         assert su.interface_to_str(so) == "glpk"
-        legacy, so = su.choose_solver(model, "optlang-glpk")
-        assert not legacy
+        so = su.choose_solver(model, "glpk")
         assert su.interface_to_str(so) == "glpk"
-        assert su.choose_solver(model, "cglpk")[0]
 
         if any(s in su.solvers for s in su.qp_solvers):
-            legacy, qp_choice = su.choose_solver(model, qp=True)
-            assert not legacy
+            qp_choice = su.choose_solver(model, qp=True)
             assert su.interface_to_str(qp_choice) in su.qp_solvers
         else:
             with pytest.raises(su.SolverNotFound):
@@ -120,7 +115,8 @@ class TestSolverMods:
         assert constraint_name in model.constraints
 
     @pytest.mark.parametrize("solver", optlang_solvers)
-    def test_fix_objective_as_constraint_minimize(self, solver, model):
+    def test_fix_objective_as_constraint_minimize(self, model, solver):
+        model.solver = solver
         model.reactions.Biomass_Ecoli_core.bounds = (0.1, 0.1)
         minimize_glucose = model.problem.Objective(
             model.reactions.EX_glc__D_e.flux_expression,
@@ -129,5 +125,7 @@ class TestSolverMods:
         su.fix_objective_as_constraint(model)
         fx_name = 'fixed_objective_{}'.format(model.objective.name)
         constr = model.constraints
+        # Ensure that a solution exists on non-GLPK solvers.
+        model.slim_optimize()
         assert (constr[fx_name].lb, constr[fx_name].ub) == (
             None, model.solver.objective.value)
