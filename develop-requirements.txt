@@ -1,15 +1,6 @@
 # Requirements for developing cobrapy
-numpy>=1.6
-scipy>=0.11.0
+scipy
 python-libsbml
 lxml
-pandas>=0.17.0
-tabulate
 tox
-pep8
-pytest
-optlang
-swiglpk
-pytest-benchmark
 bumpversion
-pydocstyle
