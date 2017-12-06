@@ -54,7 +54,10 @@ class TestManipulation:
                        "b2465": "b3919", "bar": "2935"}
         modify.rename_genes(model, rename_dict)
         for i in rename_dict:
-            assert i not in model.genes
+            if i == rename_dict[i]:
+                continue
+            else:
+                assert i not in model.genes
         assert "foo" in model.genes
         # make sure the object name was preserved
         assert model.genes.foo.name == original_name
@@ -69,6 +72,8 @@ class TestManipulation:
         assert model.genes.b3919.reactions == {model.reactions.get_by_id(i)
                                                for i in
                                                ("TKT1", "TKT2", "TPI")}
+        assert "world" not in model.genes
+        assert "b1849" in model.genes
 
     def test_gene_knockout_computation(self, salmonella):
         def find_gene_knockout_reactions_fast(cobra_model, gene_list):

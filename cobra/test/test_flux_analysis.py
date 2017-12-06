@@ -560,7 +560,7 @@ class TestCobraFluxAnalysis:
         assert len(result[0]) == 1
         assert len(result[1]) == 1
         assert {i[0].id for i in result} == {"EX_b", "EX_c"}
-
+        
         # somewhat bigger model
         universal = Model("universal_reactions")
         with salmonella as model:
