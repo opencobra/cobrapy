@@ -75,8 +75,7 @@ def _init_worker(model):
 
 def _multi_deletion(model, entity, element_lists, method="fba", num_jobs=None):
     """
-    Helper function that provides the common interface for sequential
-    knockouts
+    Provide a common interface for single or multiple knockouts.
 
     Parameters
     ----------
@@ -84,31 +83,32 @@ def _multi_deletion(model, entity, element_lists, method="fba", num_jobs=None):
         The metabolic model to perform deletions in.
 
     entity : 'gene' or 'reaction'
-        The entity to knockout (`cobra.Gene` or `cobra.Reaction`)
+        The entity to knockout (``cobra.Gene`` or ``cobra.Reaction``).
 
     element_lists : list
-        List of iterables `cobra.Reaction`s or `cobra.Gene`s (or their IDs)
+        List of iterables ``cobra.Reaction``s or ``cobra.Gene``s (or their IDs)
         to be deleted.
 
     method: {"fba", "moma", "linear-moma"}, optional
-        Procedure used to predict the growth rate.
+        Method used to predict the growth rate.
 
     num_jobs : int, optional
-        Number of parallel processes to run. Can speed up the computations
-        if number of knockouts to perform is large. If not passed,
-        will be set to the number of CPUs
+        The number of parallel processes to run. Can speed up the computations
+        if the number of knockouts to perform is large. If not passed,
+        will be set to the number of CPUs found.
 
     Returns
     -------
     pandas.DataFrame
-        A sparse representation of all combinations of entities
-        deletions. The columns are ['ids', 'growth', 'status'], where
-        ids : frozenset([str])
-            all the knockouts performed for one case
+        A representation of all combinations of entity deletions. The
+        columns are 'growth' and 'status', where
+
+        index : frozenset([str])
+            The gene or reaction identifiers that were knocked out.
         growth : float
-            growth rate of optimized model
+            The growth rate of the adjusted model.
         status : str
-            solver status
+            The solution's status.
     """
     solver = sutil.interface_to_str(model.problem.__name__)
     if "moma" in method and solver not in sutil.qp_solvers:
@@ -154,6 +154,7 @@ def _multi_deletion(model, entity, element_lists, method="fba", num_jobs=None):
                 chunksize=chunk_size
             ))
             pool.close()
+            pool.join()
         else:
             worker = dict(gene=_gene_deletion,
                           reaction=_reaction_deletion)[entity]
@@ -184,7 +185,8 @@ def _element_lists(entities, *ids):
 
 def single_reaction_deletion(model, reaction_list=None, method="fba",
                              num_jobs=None):
-    """Sequentially knocks out each reaction from a given reaction list.
+    """
+    Knock out each reaction from a given list.
 
     Parameters
     ----------
@@ -192,28 +194,30 @@ def single_reaction_deletion(model, reaction_list=None, method="fba",
         The metabolic model to perform deletions in.
 
     reaction_list : iterable
-        Iterable `cobra.Reaction`s to be deleted. If not passed,
+        ``cobra.Reaction``s to be deleted. If not passed,
         all the reactions from the model are used.
 
     method: {"fba", "moma", "linear-moma"}, optional
-        Procedure used to predict the growth rate.
+        Method used to predict the growth rate.
 
     num_jobs : int, optional
-        Number of parallel processes to run. Can speed up the computations
-        if number of knockouts to perform is large. If not passed,
-        will be set to the number of CPUs
+        The number of parallel processes to run. Can speed up the computations
+        if the number of knockouts to perform is large. If not passed,
+        will be set to the number of CPUs found.
 
     Returns
     -------
     pandas.DataFrame
-        A sparse representation of all combinations of entities
-        deletions. The columns are ['ids', 'growth', 'status'], where
-        ids : frozenset([str])
-            all the knockouts performed for one case
+        A representation of all single reaction deletions. The columns are
+        'growth' and 'status', where
+
+        index : frozenset([str])
+            The reaction identifier that was knocked out.
         growth : float
-            growth rate of optimized model
+            The growth rate of the adjusted model.
         status : str
-            solver status
+            The solution's status.
+
     """
     return _multi_deletion(
         model, 'reaction',
@@ -222,7 +226,8 @@ def single_reaction_deletion(model, reaction_list=None, method="fba",
 
 
 def single_gene_deletion(model, gene_list=None, method="fba", num_jobs=None):
-    """Sequentially knocks out each gene from a given gene list.
+    """
+    Knock out each gene from a given list.
 
     Parameters
     ----------
@@ -230,28 +235,30 @@ def single_gene_deletion(model, gene_list=None, method="fba", num_jobs=None):
         The metabolic model to perform deletions in.
 
     gene_list : iterable
-        Iterable `cobra.Gene`s to be deleted. If not passed,
+        ``cobra.Gene``s to be deleted. If not passed,
         all the genes from the model are used.
 
     method: {"fba", "moma", "linear-moma"}, optional
-        Procedure used to predict the growth rate.
+        Method used to predict the growth rate.
 
     num_jobs : int, optional
-        Number of parallel processes to run. Can speed up the computations
-        if number of knockouts to perform is large. If not passed,
-        will be set to the number of CPUs
+        The number of parallel processes to run. Can speed up the computations
+        if the number of knockouts to perform is large. If not passed,
+        will be set to the number of CPUs found.
 
     Returns
     -------
     pandas.DataFrame
-        A sparse representation of all combinations of entities
-        deletions. The columns are ['ids', 'growth', 'status'], where
-        ids : frozenset([str])
-            all the knockouts performed for one case
+        A representation of all single gene deletions. The columns are
+        'growth' and 'status', where
+
+        index : frozenset([str])
+            The gene identifier that was knocked out.
         growth : float
-            growth rate of optimized model
+            The growth rate of the adjusted model.
         status : str
-            solver status
+            The solution's status.
+
     """
     return _multi_deletion(
         model, 'gene', element_lists=_element_lists(model.genes, gene_list),
@@ -261,7 +268,7 @@ def single_gene_deletion(model, gene_list=None, method="fba", num_jobs=None):
 def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
                              method="fba", num_jobs=None):
     """
-    Sequentially delete pairs of reactions and record the objective value.
+    Knock out each reaction pair from two given lists.
 
     Parameters
     ----------
@@ -269,33 +276,35 @@ def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
         The metabolic model to perform deletions in.
 
     reaction_list1 : iterable, optional
-        First iterable of `cobra.Reaction`s to be deleted. If not passed,
+        First iterable of ``cobra.Reaction``s to be deleted. If not passed,
         all the reactions from the model are used.
 
     reaction_list2 : iterable, optional
-        Second iterable of `cobra.Reaction`s to be deleted. If not passed,
-        all the reactions from the model are used. The product of two
-        reactions lists will be used to perform the knockouts.
+        Second iterable of ``cobra.Reaction``s to be deleted. If not passed,
+        all the reactions from the model are used. The order independent
+        pairs of reactions will be used to perform the knockouts.
 
     method: {"fba", "moma", "linear-moma"}, optional
-        Procedure used to predict the growth rate.
+        Method used to predict the growth rate.
 
     num_jobs : int, optional
-        Number of parallel processes to run. Can speed up the computations
-        if number of knockouts to perform is large. If not passed,
-        will be set to the number of CPUs
+        The number of parallel processes to run. Can speed up the computations
+        if the number of knockouts to perform is large. If not passed,
+        will be set to the number of CPUs found.
 
     Returns
     -------
     pandas.DataFrame
-        A sparse representation of all combinations of entities
-        deletions. The columns are ['ids', 'growth', 'status'], where
-        ids : frozenset([str])
-            all the knockouts performed for one case
+        A representation of all combinations of reaction deletions. The
+        columns are 'growth' and 'status', where
+
+        index : frozenset([str])
+            The reaction identifiers that were knocked out.
         growth : float
-            growth rate of optimized model
+            The growth rate of the adjusted model.
         status : str
-            solver status
+            The solution's status.
+
     """
 
     reaction_list1, reaction_list2 = _element_lists(model.reactions,
@@ -308,7 +317,8 @@ def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
 
 def double_gene_deletion(model, gene_list1=None, gene_list2=None,
                          method="fba", num_jobs=None):
-    """Sequentially knocks out pairs of genes in a model
+    """
+    Knock out each gene pair from two given lists.
 
     Parameters
     ----------
@@ -316,33 +326,35 @@ def double_gene_deletion(model, gene_list1=None, gene_list2=None,
         The metabolic model to perform deletions in.
 
     gene_list1 : iterable, optional
-        First iterable of `cobra.Gene`s to be deleted. If not passed,
+        First iterable of ``cobra.Gene``s to be deleted. If not passed,
         all the genes from the model are used.
 
     gene_list2 : iterable, optional
-        Second iterable of `cobra.Gene`s to be deleted. If not passed,
-        all the genes from the model are used. The product of two
-        genes lists will be used to perform the knockouts.
+        Second iterable of ``cobra.Gene``s to be deleted. If not passed,
+        all the genes from the model are used. The order independent
+        pairs of genes will be used to perform the knockouts.
 
     method: {"fba", "moma", "linear-moma"}, optional
-        Procedure used to predict the growth rate.
+        Method used to predict the growth rate.
 
     num_jobs : int, optional
-        Number of parallel processes to run. Can speed up the computations
-        if number of knockouts to perform is large. If not passed,
-        will be set to the number of CPUs
+        The number of parallel processes to run. Can speed up the computations
+        if the number of knockouts to perform is large. If not passed,
+        will be set to the number of CPUs found.
 
     Returns
     -------
     pandas.DataFrame
-        A sparse representation of all combinations of entities
-        deletions. The columns are ['ids', 'growth', 'status'], where
-        ids : frozenset([str])
-            all the knockouts performed for one case
+        A representation of all combinations of gene deletions. The
+        columns are 'growth' and 'status', where
+
+        index : frozenset([str])
+            The gene identifiers that were knocked out.
         growth : float
-            growth rate of optimized model
+            The growth rate of the adjusted model.
         status : str
-            solver status
+            The solution's status.
+
     """
 
     gene_list1, gene_list2 = _element_lists(model.genes, gene_list1,
