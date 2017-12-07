@@ -1,48 +1,20 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import multiprocessing
 import logging
 import optlang
-import math
-from six import iteritems
 from warnings import warn
 from itertools import product
-from collections import defaultdict
 from functools import partial
 from builtins import (map, dict)
-from future.utils import raise_
+
+import pandas as pd
+
 from cobra.manipulation.delete import find_gene_knockout_reactions
 import cobra.util.solver as sutil
-from cobra.flux_analysis import moma
+from cobra.flux_analysis.moma import add_moma
 
 LOGGER = logging.getLogger(__name__)
-
-
-def infinite_defaultdict():
-    return defaultdict(infinite_defaultdict)
-
-
-def defaultdict_to_dict(def_dict):
-    if not isinstance(def_dict, defaultdict):
-        return def_dict
-    for k, v in iteritems(def_dict):
-        def_dict[k] = defaultdict_to_dict(v)
-    return dict(def_dict)
-
-
-def biomass_reaction(model):
-    return model.objective.expression.as_coefficients_dict()
-
-
-def restore_biomass(model):
-    result = 0
-    for k, v in iteritems(model.notes['biomass_reaction']):
-        try:
-            result += model.reactions.get_by_id(k.name).flux * v
-        except KeyError:
-            pass
-    return result
 
 
 def _reactions_knockouts_with_restore(model, reactions):
@@ -50,20 +22,18 @@ def _reactions_knockouts_with_restore(model, reactions):
         for reaction in reactions:
             reaction.knock_out()
         growth = _get_growth(model)
-    return (growth, [r.id for r in reactions])
+    return [r.id for r in reactions], growth, model.solver.status
 
 
 def _get_growth(model):
     try:
         if 'moma_old_objective' in model.solver.variables:
             model.slim_optimize()
-            growth = restore_biomass(model)
+            growth = model.solver.variables.moma_old_objective.primal
         else:
             growth = model.slim_optimize()
-        if math.isnan(growth):
-            growth = None
     except optlang.exceptions.SolverError:
-        growth = None
+        growth = float('nan')
     return growth
 
 
@@ -82,8 +52,8 @@ def _gene_deletion(model, ids):
                 model, (model.genes.get_by_id(g_id),)
             )
         )
-    growth, _ = _reactions_knockouts_with_restore(model, all_reactions)
-    return (growth, ids)
+    _, growth, status = _reactions_knockouts_with_restore(model, all_reactions)
+    return (ids, growth, status)
 
 
 def _reaction_deletion_worker(ids):
@@ -101,101 +71,94 @@ def _init_worker(model):
     _model = model
 
 
-def _multi_deletion(cobra_model, entity, element_lists, method="fba",
-                    number_of_processes=None, solver=None,
-                    zero_cutoff=1e-12):
+def _multi_deletion(model, entity, element_lists, method="fba", num_jobs=None):
     """
-    Helper function that provides the common interface for sequential
-    knockouts
+    Provide a common interface for single or multiple knockouts.
 
     Parameters
     ----------
-    cobra_model : cobra.Model
+    model : cobra.Model
         The metabolic model to perform deletions in.
 
+    entity : 'gene' or 'reaction'
+        The entity to knockout (``cobra.Gene`` or ``cobra.Reaction``).
+
     element_lists : list
-        List of lists `cobra.Reaction`s or `cobra.Gene`s (or their IDs)
+        List of iterables ``cobra.Reaction``s or ``cobra.Gene``s (or their IDs)
         to be deleted.
 
-    method: {"fba", "moma"}, optional
-        Procedure used to predict the growth rate.
+    method: {"fba", "moma", "linear moma"}, optional
+        Method used to predict the growth rate.
 
-    solver: str, optional
-        This must be a QP-capable solver for MOMA. If left unspecified,
-        a suitable solver will be automatically chosen.
-
-    zero_cutoff: float, optional
-        When checking to see if a value is 0, this threshold is used.
+    num_jobs : int, optional
+        The number of parallel processes to run. Can speed up the computations
+        if the number of knockouts to perform is large. If not passed,
+        will be set to the number of CPUs found.
 
     Returns
     -------
-    dict of dict
-        A sparse representation of all combinations of pairs of reaction
-        deletions without replacements.
+    pandas.DataFrame
+        A representation of all combinations of entity deletions. The
+        columns are 'growth' and 'status', where
+
+        index : frozenset([str])
+            The gene or reaction identifiers that were knocked out.
+        growth : float
+            The growth rate of the adjusted model.
+        status : str
+            The solution's status.
     """
-    with cobra_model as model:
+    solver = sutil.interface_to_str(model.problem.__name__)
+    if "moma" in method and solver not in sutil.qp_solvers:
+        raise RuntimeError(
+            "Cannot use MOMA since '{}' is not QP-capable."
+            "Please choose a different solver or use FBA only.".format(solver))
+
+    if num_jobs is None:
         try:
-            solver = sutil.choose_solver(model, solver, qp=(method == "moma"))
-        except sutil.SolverNotFound:
-            if method == "moma":
-                warn(
-                    "Cannot use MOMA since no QP-capable solver was found. "
-                    "Falling back to FBA.")
-                solver = sutil.choose_solver(model, solver)
-            else:
-                (err_type, err_val, err_tb) = sys.exc_info()
-                raise_(err_type, err_val, err_tb)  # reraise for Python2&3
+            num_cpu = multiprocessing.cpu_count()
+        except NotImplementedError:
+            warn("Number of cores could not be detected - assuming 1.")
+            num_cpu = 1
+    else:
+        num_cpu = num_jobs
 
-        if number_of_processes is None:
-            try:
-                num_cpu = multiprocessing.cpu_count()
-            except NotImplementedError:
-                warn("Number of cores could not be detected - assuming 1.")
-                num_cpu = 1
-        else:
-            num_cpu = number_of_processes
-
-        if 'moma' in method:
-            model.notes['biomass_reaction'] = biomass_reaction(model)
-            moma.add_moma(model, linear='linear' in method)
+    with model:
+        if "moma" in method:
+            add_moma(model, linear="linear" in method)
 
         args = set([frozenset(comb) for comb in product(*element_lists)])
+        num_cpu = min(num_cpu, len(args))
 
-        def extract_knockout_results(results):
-            return {frozenset(ids): 0.0 if growth and abs(
-                growth) < zero_cutoff else growth
-                    for (growth, ids) in results}
+        def extract_knockout_results(result_iter):
+            result = pd.DataFrame([
+                (frozenset(ids), growth, status)
+                for (ids, growth, status) in result_iter
+            ], columns=['ids', 'growth', 'status'])
+            result.set_index('ids', inplace=True)
+            return result
 
         if num_cpu > 1:
             num_cpu = min(num_cpu, len(args))
-            WORKER_FUNCTIONS = dict(
-                gene=_gene_deletion_worker,
-                reaction=_reaction_deletion_worker
-            )
+            worker = dict(gene=_gene_deletion_worker,
+                          reaction=_reaction_deletion_worker)[entity]
             chunk_size = len(args) // num_cpu
             pool = multiprocessing.Pool(
                 num_cpu, initializer=_init_worker, initargs=(model,)
             )
-            results = extract_knockout_results(
-                pool.imap_unordered(WORKER_FUNCTIONS[entity], args,
-                                    chunksize=chunk_size))
-            pool.close()
-        else:
-            WORKER_FUNCTIONS = dict(
-                gene=_gene_deletion,
-                reaction=_reaction_deletion
-            )
-            results = extract_knockout_results(map(
-                partial(WORKER_FUNCTIONS[entity], model), args
+            results = extract_knockout_results(pool.imap_unordered(
+                worker,
+                args,
+                chunksize=chunk_size
             ))
-        double = infinite_defaultdict()
-        for comb in product(*element_lists):
-            growth = results[frozenset(comb)]
-            current = double
-            for v in comb[:-1]:
-                current = current[v]
-            current[comb[-1]] = growth
-        return defaultdict_to_dict(double)
+            pool.close()
+            pool.join()
+        else:
+            worker = dict(gene=_gene_deletion,
+                          reaction=_reaction_deletion)[entity]
+            results = extract_knockout_results(map(
+                partial(worker, model), args))
+        return results
 
 
 def _entities_ids(entities):
@@ -218,153 +181,184 @@ def _element_lists(entities, *ids):
     return result
 
 
-def single_reaction_deletion(model, reaction_list=None, **kwargs):
-    """Sequentially knocks out each reaction from a given reaction list.
-
-    Parameters
-    ----------
-    model : a cobra model
-        The model from which to delete the reactions. The model will not be
-        modified.
-    reaction_list : iterable
-        List of reaction IDs or cobra.Reaction. If None (default) will use all
-        reactions in the model.
-    method : str, optional
-        The method used to obtain fluxes. Must be one of "fba" or "moma".
-    solver : str, optional
-        Name of the solver to be used.
-    solver_args : optional
-        Additional arguments for the solver. Ignored for optlang solver, please
-        use `model.solver.configuration` instead.
-
-    Returns
-    -------
-    tuple of 2 dictionaries
-        The first dictionary maps each reaction id to its growth rate after
-        the knockout. The second tuple reports the solutions status (for
-        instance "optimal" for each knockout).
+def single_reaction_deletion(model, reaction_list=None, method="fba",
+                             num_jobs=None):
     """
-    return _multi_deletion(
-        model,
-        'reaction',
-        element_lists=_element_lists(model.reactions, reaction_list),
-        **kwargs
-    )
-
-
-def single_gene_deletion(model, gene_list=None, **kwargs):
-    """Sequentially knocks out each gene from a given gene list.
-
-    Parameters
-    ----------
-    cobra_model : a cobra model
-        The model from which to delete the genes. The model will not be
-        modified.
-    gene_list : iterable
-        List of gene IDs or cobra.Gene. If None (default) will use all genes in
-        the model.
-    method : str, optional
-        The method used to obtain fluxes. Must be one of "fba" or "moma".
-    solver : str, optional
-        Name of the solver to be used.
-    solver_args : optional
-        Additional arguments for the solver. Ignored for optlang solver, please
-        use `model.solver.configuration` instead.
-
-    Returns
-    -------
-    tuple of 2 dictionaries
-        The first dictionary maps each gene id to its growth rate after
-        the knockout. The second tuple reports the solutions status (for
-        instance "optimal" for each knockout).
-    """
-    return _multi_deletion(
-        model,
-        'gene',
-        element_lists=_element_lists(model.genes, gene_list),
-        **kwargs
-    )
-
-
-def double_reaction_deletion(model,
-                             reaction_list1=None, reaction_list2=None,
-                             **kwargs):
-    """
-    Sequentially delete pairs of reactions and record the objective value.
+    Knock out each reaction from a given list.
 
     Parameters
     ----------
     model : cobra.Model
-        The metabolic model to perform double deletions in.
+        The metabolic model to perform deletions in.
 
-    reaction_list1, reaction_list2 : list, optional
-        Lists of `cobra.Reaction`s (or their IDs) to be deleted. If not
-        provided, all reactions in the model sorted by ID will be used.
-        `reaction_list2` will use `reaction_list1` by default.
+    reaction_list : iterable
+        ``cobra.Reaction``s to be deleted. If not passed,
+        all the reactions from the model are used.
 
-    method: {"fba", "moma"}, optional
-        Procedure used to predict the growth rate.
+    method: {"fba", "moma", "linear moma"}, optional
+        Method used to predict the growth rate.
 
-    solver: str, optional
-        This must be a QP-capable solver for MOMA. If left unspecified,
-        a suitable solver will be automatically chosen.
-
-    zero_cutoff: float, optional
-        When checking to see if a value is 0, this threshold is used.
+    num_jobs : int, optional
+        The number of parallel processes to run. Can speed up the computations
+        if the number of knockouts to perform is large. If not passed,
+        will be set to the number of CPUs found.
 
     Returns
     -------
-    dict of dict
-        A sparse representation of all combinations of pairs of reaction
-        deletions without replacements.
+    pandas.DataFrame
+        A representation of all single reaction deletions. The columns are
+        'growth' and 'status', where
+
+        index : frozenset([str])
+            The reaction identifier that was knocked out.
+        growth : float
+            The growth rate of the adjusted model.
+        status : str
+            The solution's status.
+
+    """
+    return _multi_deletion(
+        model, 'reaction',
+        element_lists=_element_lists(model.reactions, reaction_list),
+        method=method, num_jobs=num_jobs)
+
+
+def single_gene_deletion(model, gene_list=None, method="fba", num_jobs=None):
+    """
+    Knock out each gene from a given list.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The metabolic model to perform deletions in.
+
+    gene_list : iterable
+        ``cobra.Gene``s to be deleted. If not passed,
+        all the genes from the model are used.
+
+    method: {"fba", "moma", "linear moma"}, optional
+        Method used to predict the growth rate.
+
+    num_jobs : int, optional
+        The number of parallel processes to run. Can speed up the computations
+        if the number of knockouts to perform is large. If not passed,
+        will be set to the number of CPUs found.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A representation of all single gene deletions. The columns are
+        'growth' and 'status', where
+
+        index : frozenset([str])
+            The gene identifier that was knocked out.
+        growth : float
+            The growth rate of the adjusted model.
+        status : str
+            The solution's status.
+
+    """
+    return _multi_deletion(
+        model, 'gene', element_lists=_element_lists(model.genes, gene_list),
+        method=method, num_jobs=num_jobs)
+
+
+def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
+                             method="fba", num_jobs=None):
+    """
+    Knock out each reaction pair from the combinations of two given lists.
+
+    We say 'pair' here but the order order does not matter.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The metabolic model to perform deletions in.
+
+    reaction_list1 : iterable, optional
+        First iterable of ``cobra.Reaction``s to be deleted. If not passed,
+        all the reactions from the model are used.
+
+    reaction_list2 : iterable, optional
+        Second iterable of ``cobra.Reaction``s to be deleted. If not passed,
+        all the reactions from the model are used.
+
+    method: {"fba", "moma", "linear moma"}, optional
+        Method used to predict the growth rate.
+
+    num_jobs : int, optional
+        The number of parallel processes to run. Can speed up the computations
+        if the number of knockouts to perform is large. If not passed,
+        will be set to the number of CPUs found.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A representation of all combinations of reaction deletions. The
+        columns are 'growth' and 'status', where
+
+        index : frozenset([str])
+            The reaction identifiers that were knocked out.
+        growth : float
+            The growth rate of the adjusted model.
+        status : str
+            The solution's status.
+
     """
 
     reaction_list1, reaction_list2 = _element_lists(model.reactions,
                                                     reaction_list1,
                                                     reaction_list2)
-    return _multi_deletion(model, 'reaction',
-                           element_lists=[reaction_list1, reaction_list2],
-                           **kwargs)
+    return _multi_deletion(
+        model, 'reaction', element_lists=[reaction_list1, reaction_list2],
+        method=method, num_jobs=num_jobs)
 
 
-def double_gene_deletion(model, gene_list1=None, gene_list2=None, **kwargs):
-    """Sequentially knocks out pairs of genes in a model
+def double_gene_deletion(model, gene_list1=None, gene_list2=None,
+                         method="fba", num_jobs=None):
+    """
+    Knock out each gene pair from the combination of two given lists.
 
-    model : :class:`~cobra.core.Model.Model`
-        cobra model in which to perform deletions
+    We say 'pair' here but the order order does not matter.
 
-    gene_list1 : [:class:`~cobra.core.Gene.Gene`:] (or their id's)
-        Genes to be deleted. These will be the keys in the resulting dict.
-        If not provided, all genes will be used.
+    Parameters
+    ----------
+    model : cobra.Model
+        The metabolic model to perform deletions in.
 
-    gene_list1 : [:class:`~cobra.core.Gene.Gene`:] (or their id's)
-        Genes to be deleted. These will be the keys in the resulting dict.
-        If not provided, gene_list1 will be used.
+    gene_list1 : iterable, optional
+        First iterable of ``cobra.Gene``s to be deleted. If not passed,
+        all the genes from the model are used.
 
-    method: "fba" or "moma"
-        Procedure used to predict the growth rate
+    gene_list2 : iterable, optional
+        Second iterable of ``cobra.Gene``s to be deleted. If not passed,
+        all the genes from the model are used.
 
-    solver: str for solver name
-        This must be a QP-capable solver for MOMA. If left unspecified,
-        a suitable solver will be automatically chosen.
+    method: {"fba", "moma", "linear moma"}, optional
+        Method used to predict the growth rate.
 
-    zero_cutoff: float
-        When checking to see if a value is 0, this threshold is used.
+    num_jobs : int, optional
+        The number of parallel processes to run. Can speed up the computations
+        if the number of knockouts to perform is large. If not passed,
+        will be set to the number of CPUs found.
 
-    number_of_processes: int for number of processes to use.
-        If unspecified, the number of parallel processes to use will be
-        automatically determined. Setting this to 1 explicitly disables used
-        of the multiprocessing library.
+    Returns
+    -------
+    pandas.DataFrame
+        A representation of all combinations of gene deletions. The
+        columns are 'growth' and 'status', where
 
-    .. note:: multiprocessing is not supported with method=moma
+        index : frozenset([str])
+            The gene identifiers that were knocked out.
+        growth : float
+            The growth rate of the adjusted model.
+        status : str
+            The solution's status.
 
-    return_frame: bool
-        If true, formats the results as a pandas.Dataframe. Otherwise
-        returns a dict of the form:
-        {"x": row_labels, "y": column_labels", "data": 2D matrix}
     """
 
     gene_list1, gene_list2 = _element_lists(model.genes, gene_list1,
                                             gene_list2)
-    return _multi_deletion(model, 'gene',
-                           element_lists=[gene_list1, gene_list2], **kwargs)
+    return _multi_deletion(
+        model, 'gene', element_lists=[gene_list1, gene_list2],
+        method=method, num_jobs=num_jobs)

@@ -737,27 +737,12 @@ class TestSolverBasedModel:
     def test_solver_change(self, model):
         solver_id = id(model.solver)
         problem_id = id(model.solver.problem)
-        solution = model.optimize(solution_type=Solution).fluxes
+        solution = model.optimize().fluxes
         model.solver = "cplex"
         assert id(model.solver) != solver_id
         assert id(model.solver.problem) != problem_id
-        new_solution = model.optimize(solution_type=Solution).fluxes
-        for key in list(solution.keys()):
-            assert round(abs(new_solution[key] - solution[key]),
-                         7) == 0
-
-    @pytest.mark.skipif("cplex" not in solvers, reason="need cplex")
-    def test_solver_change_with_optlang_interface(self, model):
-        solver_id = id(model.solver)
-        problem_id = id(model.solver.problem)
-        solution = model.optimize(solution_type=Solution).fluxes
-        model.solver = optlang.cplex_interface
-        assert id(model.solver) != solver_id
-        assert id(model.solver.problem) != problem_id
-        new_solution = model.optimize(solution_type=Solution).fluxes
-        for key in list(solution.keys()):
-            assert round(abs(new_solution[key] - solution[key]),
-                         7) == 0
+        new_solution = model.optimize().fluxes
+        assert numpy.allclose(solution, new_solution, rtol=0, atol=1E-06)
 
     def test_no_change_for_same_solver(self, model):
         solver_id = id(model.solver)
