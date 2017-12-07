@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import multiprocessing
 import logging
 import optlang
@@ -10,7 +9,6 @@ from functools import partial
 from builtins import (map, dict)
 
 import pandas as pd
-from future.utils import raise_
 
 from cobra.manipulation.delete import find_gene_knockout_reactions
 import cobra.util.solver as sutil
@@ -24,7 +22,7 @@ def _reactions_knockouts_with_restore(model, reactions):
         for reaction in reactions:
             reaction.knock_out()
         growth = _get_growth(model)
-    return ([r.id for r in reactions], growth, model.solver.status)
+    return [r.id for r in reactions], growth, model.solver.status
 
 
 def _get_growth(model):
@@ -89,7 +87,7 @@ def _multi_deletion(model, entity, element_lists, method="fba", num_jobs=None):
         List of iterables ``cobra.Reaction``s or ``cobra.Gene``s (or their IDs)
         to be deleted.
 
-    method: {"fba", "moma", "linear-moma"}, optional
+    method: {"fba", "moma", "linear moma"}, optional
         Method used to predict the growth rate.
 
     num_jobs : int, optional
@@ -197,7 +195,7 @@ def single_reaction_deletion(model, reaction_list=None, method="fba",
         ``cobra.Reaction``s to be deleted. If not passed,
         all the reactions from the model are used.
 
-    method: {"fba", "moma", "linear-moma"}, optional
+    method: {"fba", "moma", "linear moma"}, optional
         Method used to predict the growth rate.
 
     num_jobs : int, optional
@@ -238,7 +236,7 @@ def single_gene_deletion(model, gene_list=None, method="fba", num_jobs=None):
         ``cobra.Gene``s to be deleted. If not passed,
         all the genes from the model are used.
 
-    method: {"fba", "moma", "linear-moma"}, optional
+    method: {"fba", "moma", "linear moma"}, optional
         Method used to predict the growth rate.
 
     num_jobs : int, optional
@@ -268,7 +266,9 @@ def single_gene_deletion(model, gene_list=None, method="fba", num_jobs=None):
 def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
                              method="fba", num_jobs=None):
     """
-    Knock out each reaction pair from two given lists.
+    Knock out each reaction pair from the combinations of two given lists.
+
+    We say 'pair' here but the order order does not matter.
 
     Parameters
     ----------
@@ -281,10 +281,9 @@ def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
 
     reaction_list2 : iterable, optional
         Second iterable of ``cobra.Reaction``s to be deleted. If not passed,
-        all the reactions from the model are used. The order independent
-        pairs of reactions will be used to perform the knockouts.
+        all the reactions from the model are used.
 
-    method: {"fba", "moma", "linear-moma"}, optional
+    method: {"fba", "moma", "linear moma"}, optional
         Method used to predict the growth rate.
 
     num_jobs : int, optional
@@ -318,7 +317,9 @@ def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
 def double_gene_deletion(model, gene_list1=None, gene_list2=None,
                          method="fba", num_jobs=None):
     """
-    Knock out each gene pair from two given lists.
+    Knock out each gene pair from the combination of two given lists.
+
+    We say 'pair' here but the order order does not matter.
 
     Parameters
     ----------
@@ -331,10 +332,9 @@ def double_gene_deletion(model, gene_list1=None, gene_list2=None,
 
     gene_list2 : iterable, optional
         Second iterable of ``cobra.Gene``s to be deleted. If not passed,
-        all the genes from the model are used. The order independent
-        pairs of genes will be used to perform the knockouts.
+        all the genes from the model are used.
 
-    method: {"fba", "moma", "linear-moma"}, optional
+    method: {"fba", "moma", "linear moma"}, optional
         Method used to predict the growth rate.
 
     num_jobs : int, optional
