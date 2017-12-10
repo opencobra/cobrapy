@@ -319,11 +319,8 @@ class Model(Object):
                 new_gene = new.genes.get_by_id(gene.id)
                 new_reaction._genes.add(new_gene)
                 new_gene._reaction.add(new_reaction)
-        try:
-            new._solver = deepcopy(self.solver)
-            # Cplex has an issue with deep copies
-        except Exception:  # pragma: no cover
-            new._solver = copy(self.solver)  # pragma: no cover
+
+        new._solver = self._solver.clone(self._solver)
 
         # it doesn't make sense to retain the context of a copied model so
         # assign a new empty context
