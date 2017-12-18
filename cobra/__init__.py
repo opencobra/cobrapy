@@ -8,12 +8,12 @@ from os import name as _name
 from os.path import abspath as _abspath
 from os.path import dirname as _dirname
 
-from cobra import design, flux_analysis, io
+from cobra import flux_analysis, io
 from cobra.core import (
     DictList, Gene, Metabolite, Model, Object, Reaction, Species)
 from cobra.util.version_info import show_versions
 
-__version__ = "0.9.0"
+__version__ = "0.10.0a1"
 
 # set the warning format to be prettier and fit on one line
 _cobra_path = _dirname(_abspath(__file__))

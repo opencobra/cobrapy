@@ -9,21 +9,19 @@ from functools import partial
 from warnings import warn
 
 import optlang
+from optlang.symbolics import Basic, Zero
 import six
-import sympy
 from six import iteritems, string_types
-from sympy import S
 
+from cobra.exceptions import SolverNotFound
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
 from cobra.core.reaction import separate_forward_and_reverse_bounds, Reaction
 from cobra.core.solution import get_solution
-from cobra.solvers import optimize
 from cobra.util.context import HistoryManager, resettable, get_context
 from cobra.util.solver import (
-    SolverNotFound, get_solver_name, interface_to_str, set_objective, solvers,
-    add_cons_vars_to_problem, remove_cons_vars_from_problem, choose_solver,
-    check_solver_status, assert_optimal)
+    get_solver_name, interface_to_str, set_objective, solvers,
+    add_cons_vars_to_problem, remove_cons_vars_from_problem, assert_optimal)
 from cobra.util.util import AutoVivification, format_long_string
 
 LOGGER = logging.getLogger(__name__)
@@ -101,7 +99,7 @@ class Model(Object):
             # with older cobrapy pickles?
             interface = solvers[get_solver_name()]
             self._solver = interface.Model()
-            self._solver.objective = interface.Objective(S.Zero)
+            self._solver.objective = interface.Objective(Zero)
             self._populate_solver(self.reactions, self.metabolites)
 
     @property
@@ -128,9 +126,8 @@ class Model(Object):
     @resettable
     def solver(self, value):
         not_valid_interface = SolverNotFound(
-            '%s is not a valid solver interface. Pick from %s, or specify an '
-            'optlang interface (e.g. optlang.glpk_interface).' % (
-                value, list(solvers.keys())))
+            '%s is not a valid solver interface. Pick from %s.' % (
+                value, list(solvers)))
         if isinstance(value, six.string_types):
             try:
                 interface = solvers[interface_to_str(value)]
@@ -368,7 +365,7 @@ class Model(Object):
         for met in metabolite_list:
             if met.id not in self.constraints:
                 constraint = self.problem.Constraint(
-                    S.Zero, name=met.id, lb=0, ub=0)
+                    Zero, name=met.id, lb=0, ub=0)
                 to_add += [constraint]
 
         self.add_cons_vars(to_add)
@@ -523,34 +520,30 @@ class Model(Object):
         reaction_list : list
             A list of `cobra.Reaction` objects
         """
+        def existing_filter(rxn):
+            if rxn.id in self.reactions:
+                LOGGER.warning(
+                    "Ignoring reaction '%s' since it already exists.", rxn.id)
+                return False
+            return True
 
-        try:
-            reaction_list = DictList(reaction_list)
-        except TypeError:
-            reaction_list = DictList([reaction_list])
-
-        # First check whether the metabolites exist in the model
-        existing = [rxn for rxn in reaction_list if rxn.id in self.reactions]
-        for rxn in existing:
-            LOGGER.info('skip adding reaction %s as already existing', rxn.id)
-        reaction_list = [rxn for rxn in reaction_list
-                         if rxn.id not in existing]
+        # First check whether the reactions exist in the model.
+        pruned = DictList(filter(existing_filter, reaction_list))
 
         context = get_context(self)
 
-        # Add reactions. Also take care of genes and metabolites in the loop
-        for reaction in reaction_list:
-            reaction._model = self  # the reaction now points to the model
-            # keys() is necessary because the dict will be modified during
-            # the loop
-            for metabolite in list(reaction._metabolites.keys()):
-                # if the metabolite is not in the model, add it
-                # should we be adding a copy instead.
+        # Add reactions. Also take care of genes and metabolites in the loop.
+        for reaction in pruned:
+            reaction._model = self
+            # Build a `list()` because the dict will be modified in the loop.
+            for metabolite in list(reaction.metabolites):
+                # TODO: Should we add a copy of the metabolite instead?
                 if metabolite not in self.metabolites:
                     self.add_metabolites(metabolite)
                 # A copy of the metabolite exists in the model, the reaction
                 # needs to point to the metabolite in the model.
                 else:
+                    # FIXME: Modifying 'private' attributes is horrible.
                     stoichiometry = reaction._metabolites.pop(metabolite)
                     model_metabolite = self.metabolites.get_by_id(
                         metabolite.id)
@@ -578,13 +571,13 @@ class Model(Object):
                         reaction._dissociate_gene(gene)
                         reaction._associate_gene(model_gene)
 
-        self.reactions += reaction_list
+        self.reactions += pruned
 
         if context:
-            context(partial(self.reactions.__isub__, reaction_list))
+            context(partial(self.reactions.__isub__, pruned))
 
         # from cameo ...
-        self._populate_solver(reaction_list)
+        self._populate_solver(pruned)
 
     def remove_reactions(self, reactions, remove_orphans=False):
         """Remove reactions from the model.
@@ -747,7 +740,7 @@ class Model(Object):
         if metabolite_list is not None:
             for met in metabolite_list:
                 to_add += [self.problem.Constraint(
-                    S.Zero, name=met.id, lb=0, ub=0)]
+                    Zero, name=met.id, lb=0, ub=0)]
         self.add_cons_vars(to_add)
 
         for reaction in reaction_list:
@@ -768,7 +761,7 @@ class Model(Object):
                     constraint = self.constraints[metabolite.id]
                 else:
                     constraint = self.problem.Constraint(
-                        S.Zero,
+                        Zero,
                         name=metabolite.id,
                         lb=0, ub=0)
                     self.add_cons_vars(constraint, sloppy=True)
@@ -779,26 +772,6 @@ class Model(Object):
         self.solver.update()
         for constraint, terms in six.iteritems(constraint_terms):
             constraint.set_linear_coefficients(terms)
-
-    def to_array_based_model(self, deepcopy_model=False, **kwargs):
-        """Makes a `cobra.core.ArrayBasedModel` from a cobra.Model
-        which may be used to perform linear algebra operations with the
-        stoichiometric matrix.
-
-        Deprecated (0.6). Use `cobra.util.array.create_stoichiometric_matrix`
-        instead.
-
-        Parameters
-        ----------
-        deepcopy_model : bool
-            If False then the ArrayBasedModel points to the Model
-
-        """
-        warn("to_array_based_model is deprecated. "
-             "use cobra.util.array.create_stoichiometric_matrix instead",
-             DeprecationWarning)
-        from cobra.core.arraybasedmodel import ArrayBasedModel
-        return ArrayBasedModel(self, deepcopy_model=deepcopy_model, **kwargs)
 
     def slim_optimize(self, error_value=float('nan'), message=None):
         """Optimize model without creating a solution object.
@@ -837,7 +810,7 @@ class Model(Object):
         else:
             assert_optimal(self, message)
 
-    def optimize(self, objective_sense=None, raise_error=False, **kwargs):
+    def optimize(self, objective_sense=None, raise_error=False):
         """
         Optimize the model using flux balance analysis.
 
@@ -849,21 +822,6 @@ class Model(Object):
         raise_error : bool
             If true, raise an OptimizationError if solver status is not
              optimal.
-        solver : {None, 'glpk', 'cglpk', 'gurobi', 'cplex'}, optional
-            If unspecified will use the currently defined `self.solver`
-            otherwise it will use the given solver and update the attribute.
-        quadratic_component : {None, scipy.sparse.dok_matrix}, optional
-            The dimensions should be (n, n) where n is the number of
-            reactions. This sets the quadratic component (Q) of the
-            objective coefficient, adding :math:`\\frac{1}{2} v^T \cdot Q
-            \cdot v` to the objective. Ignored for optlang based solvers.
-        tolerance_feasibility : float
-            Solver tolerance for feasibility. Ignored for optlang based
-            solvers
-        tolerance_markowitz : float
-            Solver threshold during pivot. Ignored for optlang based solvers
-        time_limit : float
-            Maximum solver time (in seconds). Ignored for optlang based solvers
 
         Notes
         -----
@@ -872,19 +830,7 @@ class Model(Object):
         appropriate keyword argument.
 
         """
-        legacy, solver = choose_solver(self, solver=kwargs.get("solver"))
         original_direction = self.objective.direction
-
-        if legacy:
-            if objective_sense is None:
-                objective_sense = {
-                    "max": "maximize", "min": "minimize"}[original_direction]
-            solution = optimize(self, objective_sense=objective_sense,
-                                **kwargs)
-            check_solver_status(solution.status, raise_error=raise_error)
-            return solution
-
-        self.solver = solver
         self.objective.direction = \
             {"maximize": "max", "minimize": "min"}.get(
                 objective_sense, original_direction)
@@ -947,7 +893,7 @@ class Model(Object):
 
     @objective.setter
     def objective(self, value):
-        if isinstance(value, sympy.Basic):
+        if isinstance(value, Basic):
             value = self.problem.Objective(value, sloppy=False)
         if not isinstance(value, (dict, optlang.interface.Objective)):
             try:

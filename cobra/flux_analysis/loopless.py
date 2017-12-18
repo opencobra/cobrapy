@@ -6,11 +6,10 @@ from __future__ import absolute_import
 
 import numpy
 from six import iteritems
-from sympy.core.singleton import S
+from optlang.symbolics import Zero
 
 from cobra.core import Metabolite, Reaction, get_solution
-from cobra.util import (linear_reaction_coefficients,
-                        create_stoichiometric_matrix, nullspace)
+from cobra.util import create_stoichiometric_matrix, nullspace
 from cobra.manipulation.modify import convert_to_irreversible
 
 
@@ -72,7 +71,7 @@ def add_loopless(model, zero_cutoff=1e-12):
     # Add nullspace constraints for G_i
     for i, row in enumerate(n_int):
         name = "nullspace_constraint_" + str(i)
-        nullspace_constraint = prob.Constraint(S.Zero, lb=0, ub=0, name=name)
+        nullspace_constraint = prob.Constraint(Zero, lb=0, ub=0, name=name)
         model.add_cons_vars([nullspace_constraint])
         coefs = {model.variables[
                  "delta_g_" + model.reactions[ridx].id]: row[i]
@@ -83,7 +82,8 @@ def add_loopless(model, zero_cutoff=1e-12):
 
 def _add_cycle_free(model, fluxes):
     """Add constraints for CycleFreeFlux."""
-    model.objective = S.Zero
+    model.objective = Zero
+    objective_vars = []
     for rxn in model.reactions:
         flux = fluxes[rxn.id]
         if rxn.boundary:
@@ -91,14 +91,13 @@ def _add_cycle_free(model, fluxes):
             continue
         if flux >= 0:
             rxn.lower_bound = max(0, rxn.lower_bound)
-            model.objective.set_linear_coefficients(
-                {rxn.forward_variable: 1, rxn.reverse_variable: -1})
+            objective_vars.append(rxn.forward_variable)
         else:
             rxn.upper_bound = min(0, rxn.upper_bound)
-            model.objective.set_linear_coefficients(
-                {rxn.forward_variable: -1, rxn.reverse_variable: 1})
+            objective_vars.append(rxn.reverse_variable)
 
-    model.solver.objective.direction = "min"
+    model.objective.set_linear_coefficients(dict.fromkeys(objective_vars, 1.0))
+    model.objective.direction = "min"
 
 
 def loopless_solution(model, fluxes=None):
@@ -117,10 +116,6 @@ def loopless_solution(model, fluxes=None):
         A dictionary {rxn_id: flux} that assigns a flux to each reaction. If
         not None will use the provided flux values to obtain a close loopless
         solution.
-        Note that this requires a linear objective function involving
-        only the model reactions. This is the case if
-        `linear_reaction_coefficients(model)` is a correct representation of
-        the objective.
 
     Returns
     -------
@@ -131,12 +126,13 @@ def loopless_solution(model, fluxes=None):
 
     Notes
     -----
-
     The returned flux solution has the following properties:
 
     - it contains the minimal number of loops possible and no loops at all if
       all flux bounds include zero
-    - it has the same exact objective value as the previous solution
+    - it has an objective value close to the original one and the same
+      objective value id the objective expression can not form a cycle
+      (which is usually true since it consumes metabolites)
     - it has the same exact exchange fluxes as the previous solution
     - all fluxes have the same sign (flow in the same direction) as the
       previous solution
@@ -154,19 +150,17 @@ def loopless_solution(model, fluxes=None):
     if fluxes is None:
         sol = model.optimize(objective_sense=None)
         fluxes = sol.fluxes
-        obj_val = sol.objective_value
-    else:
-        coefs = linear_reaction_coefficients(model)
-        obj_val = sum(coefs[rxn] * fluxes[rxn.id] for rxn in coefs)
 
     with model:
         prob = model.problem
+        # Needs one fixed bound for cplex...
         loopless_obj_constraint = prob.Constraint(
             model.objective.expression,
-            lb=obj_val, ub=obj_val, name="loopless_obj_constraint")
+            lb=-1e32, name="loopless_obj_constraint")
         model.add_cons_vars([loopless_obj_constraint])
         _add_cycle_free(model, fluxes)
         solution = model.optimize(objective_sense=None)
+        solution.objective_value = loopless_obj_constraint.primal
 
     return solution
 
@@ -203,6 +197,7 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
     """
     current = model.objective.value
     sol = get_solution(model)
+    objective_dir = model.objective.direction
 
     # boundary reactions can not be part of cycles
     if reaction.boundary:
@@ -212,10 +207,8 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
             return current
 
     with model:
-        model.objective = 1.0 * model.variables.fva_old_objective
         _add_cycle_free(model, sol.fluxes)
-        model.slim_optimize()
-        flux = reaction.flux
+        flux = model.slim_optimize()
 
         # If the previous optimum is maintained in the loopless solution it was
         # loopless and we are done
@@ -242,10 +235,11 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
                 rxn.bounds = max(0, rxn.lower_bound), min(0, rxn.upper_bound)
 
         if solution:
-            best = model.optimize(objective_sense=None)
+            best = model.optimize()
         else:
             model.slim_optimize()
             best = reaction.flux
+    model.objective.direction = objective_dir
     return best
 
 

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 
 import re
 import sys
 import warnings
-from contextlib import contextmanager
-from os import name
-
+import math
 import pytest
 import numpy
+from contextlib import contextmanager
 from optlang.interface import OPTIMAL, INFEASIBLE
 from six import StringIO, iteritems
 
@@ -18,33 +18,17 @@ from cobra.flux_analysis import *
 from cobra.flux_analysis.parsimonious import add_pfba
 from cobra.flux_analysis.sampling import ACHRSampler, OptGPSampler
 from cobra.flux_analysis.reaction import assess
-from cobra.manipulation import convert_to_irreversible
-from cobra.solvers import SolverNotFound, get_solver_name, solver_dict
 from cobra.exceptions import Infeasible
+from cobra.flux_analysis.moma import add_moma
 
-try:
-    import scipy
-    from cobra.flux_analysis.moma import add_moma
-except ImportError:
-    scipy = None
-    add_moma = None
-try:
-    import matplotlib
-except (ImportError, RuntimeError):
-    matplotlib = None
-try:
-    from matplotlib import pyplot
-    from mpl_toolkits.mplot3d import axes3d
-except (ImportError, RuntimeError):
-    pyplot = None
-    axes3d = None
-
-# The scipt interface is currently unstable and may yield errors or infeasible
-# solutions
+# The scipy interface is currently unstable and may yield errors or infeasible
+# solutions.
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in
                    sutil.solvers]
-all_solvers = optlang_solvers + list(solver_dict)
+all_solvers = ["optlang-" + s for s in stable_optlang if
+               s in sutil.solvers]
+qp_solvers = ["cplex"]
 
 
 def construct_ll_test_model():
@@ -94,26 +78,20 @@ class TestCobraFluxAnalysis:
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_pfba_benchmark(self, large_model, benchmark, solver):
-        convert_to_irreversible(large_model)
-
-        def do_pfba(solver):
-            pfba(large_model, solver=solver,
-                 already_irreversible=True)
-
-        benchmark(do_pfba, solver)
+        large_model.solver = solver
+        benchmark(pfba, large_model)
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_pfba(self, model, solver):
+        model.solver = solver
         with model:
             add_pfba(model)
             with pytest.raises(ValueError):
                 add_pfba(model)
 
-        if solver in optlang_solvers:
-            model.solver = solver
         expression = model.objective.expression
         n_constraints = len(model.constraints)
-        solution = pfba(model, solver=solver)
+        solution = pfba(model)
         assert solution.status == "optimal"
         assert numpy.isclose(solution.x_dict["Biomass_Ecoli_core"],
                              0.8739, atol=1e-4, rtol=0.0)
@@ -135,8 +113,7 @@ class TestCobraFluxAnalysis:
 
         # TODO: parametrize fraction (DRY it up)
         # Test fraction_of_optimum
-        solution = pfba(model, solver=solver,
-                        fraction_of_optimum=0.95)
+        solution = pfba(model, fraction_of_optimum=0.95)
         assert solution.status == "optimal"
         assert numpy.isclose(solution.x_dict["Biomass_Ecoli_core"],
                              0.95 * 0.8739, atol=1e-4, rtol=0.0)
@@ -148,48 +125,53 @@ class TestCobraFluxAnalysis:
         with warnings.catch_warnings():
             warnings.simplefilter("error", UserWarning)
             with pytest.raises((UserWarning, Infeasible, ValueError)):
-                pfba(model, solver=solver)
+                pfba(model)
 
-    @pytest.mark.parametrize("solver", all_solvers)
+    @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_gene_deletion_fba_benchmark(self, model, benchmark,
                                                 solver):
-        benchmark(single_gene_deletion, model, solver=solver)
+        model.solver = solver
+        benchmark(single_gene_deletion, model)
 
-    @pytest.mark.parametrize("solver", all_solvers)
+    @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_gene_deletion_fba(self, model, solver):
         # expected knockouts for textbook model
+        model.solver = solver
         growth_dict = {"b0008": 0.87, "b0114": 0.80, "b0116": 0.78,
                        "b2276": 0.21, "b1779": 0.00}
-        df = single_gene_deletion(model, gene_list=growth_dict.keys(),
-                                  method="fba", solver=solver)
-        assert numpy.all([df.status == 'optimal'])
-        assert all(abs(df.flux[gene] - expected) < 0.01 for
-                   gene, expected in iteritems(growth_dict))
+        rates = single_gene_deletion(model,
+                                     gene_list=growth_dict.keys(),
+                                     method="fba")["growth"]
+        for gene, expected_value in iteritems(growth_dict):
+            assert abs(rates[frozenset([gene])] - expected_value) < 0.01
 
-    @pytest.mark.skipif(scipy is None,
-                        reason="moma gene deletion requires scipy")
     def test_single_gene_deletion_moma_benchmark(self, model, benchmark):
         try:
-            sutil.get_solver_name(qp=True)
+            solver = sutil.get_solver_name(qp=True)
+            model.solver = solver
         except sutil.SolverNotFound:
             pytest.skip("no qp support")
 
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
-        benchmark(single_gene_deletion, model, gene_list=genes, method="moma")
+        benchmark(single_gene_deletion, model, gene_list=genes,
+                  method="moma")
 
-    @pytest.mark.skipif(scipy is None,
-                        reason="moma gene deletion requires scipy")
     def test_single_deletion_linear_moma_benchmark(self, model, benchmark):
+        try:
+            solver = sutil.get_solver_name(qp=True)
+            model.solver = solver
+        except sutil.SolverNotFound:
+            pytest.skip("no qp support")
+
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
         benchmark(single_gene_deletion, model, gene_list=genes,
                   method="linear moma")
 
-    @pytest.mark.skipif(scipy is None,
-                        reason="moma gene deletion requires scipy")
     def test_moma_sanity(self, model):
         """Test optimization criterion and optimality."""
         try:
-            sutil.get_solver_name(qp=True)
+            solver = sutil.get_solver_name(qp=True)
+            model.solver = solver
         except sutil.SolverNotFound:
             pytest.skip("no qp support")
 
@@ -208,11 +190,10 @@ class TestCobraFluxAnalysis:
         assert numpy.allclose(moma_sol.objective_value, moma_ssq)
         assert moma_ssq < ssq
 
-    @pytest.mark.skipif(scipy is None,
-                        reason="moma gene deletion requires scipy")
     def test_single_gene_deletion_moma(self, model):
         try:
-            sutil.get_solver_name(qp=True)
+            solver = sutil.get_solver_name(qp=True)
+            model.solver = solver
         except sutil.SolverNotFound:
             pytest.skip("no qp support")
 
@@ -220,20 +201,19 @@ class TestCobraFluxAnalysis:
         growth_dict = {"b0008": 0.87, "b0114": 0.71, "b0116": 0.56,
                        "b2276": 0.11, "b1779": 0.00}
 
-        df = single_gene_deletion(model, gene_list=growth_dict.keys(),
-                                  method="moma")
-        assert (df.status == 'optimal').all()
-        assert all(abs(df.flux[gene] - expected) < 0.01
-                   for gene, expected in iteritems(growth_dict))
-        with model:
-            add_moma(model)
-            with pytest.raises(ValueError):
-                add_moma(model)
+        result = single_gene_deletion(
+            model, gene_list=growth_dict.keys(), method="moma")["growth"]
+        for gene, expected_value in iteritems(growth_dict):
+            assert abs(result[frozenset([gene])] - expected_value) < 0.01
 
-    @pytest.mark.skipif(scipy is None,
-                        reason="moma gene deletion requires scipy")
     def test_linear_moma_sanity(self, model):
         """Test optimization criterion and optimality."""
+        try:
+            solver = sutil.get_solver_name(qp=True)
+            model.solver = solver
+        except sutil.SolverNotFound:
+            pytest.skip("no qp support")
+
         sol = model.optimize()
         with model:
             model.reactions.PFK.knock_out()
@@ -249,39 +229,43 @@ class TestCobraFluxAnalysis:
         assert numpy.allclose(moma_sol.objective_value, moma_sabs)
         assert moma_sabs < sabs
 
-    @pytest.mark.skipif(scipy is None,
-                        reason="moma gene deletion requires scipy")
     def test_single_gene_deletion_linear_moma(self, model):
+        try:
+            solver = sutil.get_solver_name(qp=True)
+            model.solver = solver
+        except sutil.SolverNotFound:
+            pytest.skip("no qp support")
+
         # expected knockouts for textbook model
         growth_dict = {"b0008": 0.87, "b0114": 0.76, "b0116": 0.65,
                        "b2276": 0.08, "b1779": 0.00}
 
-        df = single_gene_deletion(model, gene_list=growth_dict.keys(),
-                                  method="linear moma")
-        assert numpy.all([df.status == 'optimal'])
-        assert all(abs(df.flux[gene] - expected) < 0.01
+        result = single_gene_deletion(
+            model, gene_list=growth_dict.keys(),
+            method="linear moma")['growth']
+        assert all(abs(result[frozenset([gene])] - expected) < 0.01
                    for gene, expected in iteritems(growth_dict))
         with model:
             add_moma(model, linear=True)
             with pytest.raises(ValueError):
                 add_moma(model)
 
-    @pytest.mark.parametrize("solver", all_solvers)
+    @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_gene_deletion_benchmark(self, model, benchmark,
                                             solver):
-        benchmark(single_reaction_deletion, model, solver=solver)
+        model.solver = solver
+        benchmark(single_reaction_deletion, model)
 
-    @pytest.mark.parametrize("solver", all_solvers)
+    @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_reaction_deletion(self, model, solver):
         expected_results = {'FBA': 0.70404, 'FBP': 0.87392, 'CS': 0,
                             'FUM': 0.81430, 'GAPD': 0, 'GLUDy': 0.85139}
 
-        df = single_reaction_deletion(
-            model, reaction_list=expected_results.keys(), solver=solver)
-        assert len(df) == 6
-        assert numpy.all([df.status == 'optimal'])
-        assert all(abs(df.flux[gene] - expected) < 0.00001 for
-                   gene, expected in iteritems(expected_results))
+        model.solver = solver
+        results = single_reaction_deletion(
+            model, reaction_list=expected_results.keys()).to_dict()['growth']
+        for reaction, value in iteritems(expected_results):
+            assert abs(results[frozenset([reaction])] - value) < 1E-05
 
     @classmethod
     def compare_matrices(cls, matrix1, matrix2, places=3):
@@ -294,70 +278,136 @@ class TestCobraFluxAnalysis:
                 assert abs(matrix1[i][j] - matrix2[i][j]) < 10 ** -places
 
     def test_double_gene_deletion_benchmark(self, large_model, benchmark):
-        genes = ["b0726", "b4025", "b0724", "b0720", "b2935", "b2935", "b1276",
+        genes = ["b0726", "b4025", "b0724", "b0720", "b2935", "b2935",
+                 "b1276",
                  "b1241"]
         benchmark(double_gene_deletion, large_model, gene_list1=genes)
 
     def test_double_gene_deletion(self, model):
-        genes = ["b0726", "b4025", "b0724", "b0720", "b2935", "b2935", "b1276",
+        genes = ["b0726", "b4025", "b0724", "b0720", "b2935", "b2935",
+                 "b1276",
                  "b1241"]
-        growth_list = [
-            [0.858, 0.857, 0.814, 0.000, 0.858, 0.858, 0.858, 0.858],
-            [0.857, 0.863, 0.739, 0.000, 0.863, 0.863, 0.863, 0.863],
-            [0.814, 0.739, 0.814, 0.000, 0.814, 0.814, 0.814, 0.814],
-            [0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000],
-            [0.858, 0.863, 0.814, 0.000, 0.874, 0.874, 0.874, 0.874],
-            [0.858, 0.863, 0.814, 0.000, 0.874, 0.874, 0.874, 0.874],
-            [0.858, 0.863, 0.814, 0.000, 0.874, 0.874, 0.874, 0.874],
-            [0.858, 0.863, 0.814, 0.000, 0.874, 0.874, 0.874, 0.874]]
-        opts = {"number_of_processes": 1} if name == "nt" else {}
-        solution = double_gene_deletion(model, gene_list1=genes, **opts)
-        assert solution["x"] == genes
-        assert solution["y"] == genes
-        self.compare_matrices(growth_list, solution["data"])
-        # test when lists differ slightly
-        solution = double_gene_deletion(model, gene_list1=genes[:-1],
-                                        gene_list2=genes,
-                                        number_of_processes=1)
-        assert solution["x"] == genes[:-1]
-        assert solution["y"] == genes
-        self.compare_matrices(growth_list[:-1], solution["data"])
+        growth_dict = {'b0720': {'b0720': 0.0,
+                                 'b0724': 0.0,
+                                 'b0726': 0.0,
+                                 'b1241': 0.0,
+                                 'b1276': 0.0,
+                                 'b2935': 0.0,
+                                 'b4025': 0.0},
+                       'b0724': {'b0720': 0.0,
+                                 'b0724': 0.814,
+                                 'b0726': 0.814,
+                                 'b1241': 0.814,
+                                 'b1276': 0.814,
+                                 'b2935': 0.814,
+                                 'b4025': 0.739},
+                       'b0726': {'b0720': 0.0,
+                                 'b0724': 0.814,
+                                 'b0726': 0.858,
+                                 'b1241': 0.858,
+                                 'b1276': 0.858,
+                                 'b2935': 0.858,
+                                 'b4025': 0.857},
+                       'b1241': {'b0720': 0.0,
+                                 'b0724': 0.814,
+                                 'b0726': 0.858,
+                                 'b1241': 0.874,
+                                 'b1276': 0.874,
+                                 'b2935': 0.874,
+                                 'b4025': 0.863},
+                       'b1276': {'b0720': 0.0,
+                                 'b0724': 0.814,
+                                 'b0726': 0.858,
+                                 'b1241': 0.874,
+                                 'b1276': 0.874,
+                                 'b2935': 0.874,
+                                 'b4025': 0.863},
+                       'b2935': {'b0720': 0.0,
+                                 'b0724': 0.814,
+                                 'b0726': 0.858,
+                                 'b1241': 0.874,
+                                 'b1276': 0.874,
+                                 'b2935': 0.874,
+                                 'b4025': 0.863},
+                       'b4025': {'b0720': 0.0,
+                                 'b0724': 0.739,
+                                 'b0726': 0.857,
+                                 'b1241': 0.863,
+                                 'b1276': 0.863,
+                                 'b2935': 0.863,
+                                 'b4025': 0.863}}
+        solution = double_gene_deletion(
+            model, gene_list1=genes, num_jobs=4)['growth']
+        solution_one_process = double_gene_deletion(
+            model, gene_list1=genes, num_jobs=1)['growth']
+        for (rxn_a, sub) in iteritems(growth_dict):
+            for rxn_b, growth in iteritems(sub):
+                sol = solution[frozenset([rxn_a, rxn_b])]
+                sol_one = solution_one_process[frozenset([rxn_a, rxn_b])]
+                assert round(sol, 3) == growth
+                assert round(sol_one, 3) == growth
 
     def test_double_reaction_deletion(self, model):
         reactions = ['FBA', 'ATPS4r', 'ENO', 'FRUpts2']
-        growth_list = [[0.704, 0.135, 0.000, 0.704],
-                       [0.135, 0.374, 0.000, 0.374],
-                       [0.000, 0.000, 0.000, 0.000],
-                       [0.704, 0.374, 0.000, 0.874]]
+        growth_dict = {
+            "FBA": {
+                "ATPS4r": 0.135,
+                "ENO": float('nan'),
+                "FRUpts2": 0.704
+            },
+            "ATPS4r": {
+                "ENO": float('nan'),
+                "FRUpts2": 0.374
+            },
+            "ENO": {
+                "FRUpts2": 0.0
+            },
+        }
 
-        solution = double_reaction_deletion(model,
-                                            reaction_list1=reactions,
-                                            number_of_processes=1)
-        assert solution["x"] == reactions
-        assert solution["y"] == reactions
-        self.compare_matrices(growth_list, solution["data"])
+        solution = double_reaction_deletion(
+            model, reaction_list1=reactions, num_jobs=3)['growth']
+        solution_one_process = double_reaction_deletion(
+            model, reaction_list1=reactions, num_jobs=1)['growth']
+        for (rxn_a, sub) in iteritems(growth_dict):
+            for rxn_b, growth in iteritems(sub):
+                sol = solution[frozenset([rxn_a, rxn_b])]
+                sol_one = solution_one_process[frozenset([rxn_a, rxn_b])]
+                if math.isnan(growth):
+                    assert math.isnan(sol)
+                    assert math.isnan(sol_one)
+                else:
+                    assert round(sol, 3) == growth
+                    assert round(sol_one, 3) == growth
+
+    def test_double_reaction_deletion_benchmark(self, large_model,
+                                                benchmark):
+        reactions = large_model.reactions[1::100]
+        benchmark(double_reaction_deletion, large_model,
+                  reaction_list1=reactions)
 
     @pytest.mark.parametrize("solver", all_solvers)
-    def test_flux_variability_benchmark(self, large_model, benchmark, solver):
-        benchmark(flux_variability_analysis, large_model, solver=solver,
+    def test_flux_variability_benchmark(self, large_model, benchmark,
+                                        solver):
+        large_model.solver = solver
+        benchmark(flux_variability_analysis, large_model,
                   reaction_list=large_model.reactions[1::3])
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_flux_variability_loopless_benchmark(self, model, benchmark,
                                                  solver):
+        model.solver = solver
         benchmark(flux_variability_analysis, model, loopless=True,
-                  solver=solver, reaction_list=model.reactions[1::3])
+                  reaction_list=model.reactions[1::3])
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_pfba_flux_variability(self, model, pfba_fva_results,
                                    fva_results, solver):
+        model.solver = solver
         with pytest.warns(UserWarning):
             flux_variability_analysis(
-                model, pfba_factor=0.1, solver=solver,
-                reaction_list=model.reactions[1::3])
+                model, pfba_factor=0.1, reaction_list=model.reactions[1::3])
         fva_out = flux_variability_analysis(
-            model, pfba_factor=1.1, solver=solver,
-            reaction_list=model.reactions)
+            model, pfba_factor=1.1, reaction_list=model.reactions)
         for name, result in iteritems(fva_out.T):
             for k, v in iteritems(result):
                 assert abs(pfba_fva_results[k][name] - v) < 0.00001
@@ -366,34 +416,37 @@ class TestCobraFluxAnalysis:
         loop_reactions = [model.reactions.get_by_id(rid)
                           for rid in ("FRD7", "SUCDi")]
         fva_loopless = flux_variability_analysis(
-            model, solver=solver, pfba_factor=1.1,
-            reaction_list=loop_reactions, loopless=True)
-        assert numpy.allclose(fva_loopless["maximum"], fva_loopless["minimum"])
+            model, pfba_factor=1.1, reaction_list=loop_reactions,
+            loopless=True)
+        assert numpy.allclose(fva_loopless["maximum"],
+                              fva_loopless["minimum"])
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_flux_variability(self, model, fva_results, solver):
-        if solver == "esolver":
-            pytest.skip("esolver too slow...")
+        model.solver = solver
         fva_out = flux_variability_analysis(
-            model, solver=solver, reaction_list=model.reactions)
+            model, reaction_list=model.reactions)
         for name, result in iteritems(fva_out.T):
             for k, v in iteritems(result):
                 assert abs(fva_results[k][name] - v) < 0.00001
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_flux_variability_loopless(self, model, solver):
+        model.solver = solver
         loop_reactions = [model.reactions.get_by_id(rid)
                           for rid in ("FRD7", "SUCDi")]
         fva_normal = flux_variability_analysis(
-            model, solver=solver, reaction_list=loop_reactions)
+            model, reaction_list=loop_reactions)
         fva_loopless = flux_variability_analysis(
-            model, solver=solver, reaction_list=loop_reactions, loopless=True)
+            model, reaction_list=loop_reactions, loopless=True)
 
-        assert not numpy.allclose(fva_normal["maximum"], fva_normal["minimum"])
-        assert numpy.allclose(fva_loopless["maximum"], fva_loopless["minimum"])
+        assert not numpy.allclose(fva_normal["maximum"],
+                                  fva_normal["minimum"])
+        assert numpy.allclose(fva_loopless["maximum"],
+                              fva_loopless["minimum"])
 
     def test_fva_data_frame(self, model):
-        df = flux_variability_analysis(model, return_frame=True)
+        df = flux_variability_analysis(model)
         assert numpy.all([df.columns.values == ['maximum', 'minimum']])
 
     def test_fva_infeasible(self, model):
@@ -410,13 +463,16 @@ class TestCobraFluxAnalysis:
     def test_essential_genes(self, model):
         essential_genes = {'b2779', 'b1779', 'b0720', 'b2416',
                            'b2926', 'b1136', 'b2415'}
-        observed_essential_genes = {g.id for g in find_essential_genes(model)}
+        observed_essential_genes = {g.id for g in
+                                    find_essential_genes(model)}
         assert observed_essential_genes == essential_genes
 
     def test_essential_reactions(self, model):
-        essential_reactions = {'GLNS', 'Biomass_Ecoli_core', 'PIt2r', 'GAPD',
+        essential_reactions = {'GLNS', 'Biomass_Ecoli_core', 'PIt2r',
+                               'GAPD',
                                'ACONTb', 'EX_nh4_e', 'ENO', 'EX_h_e',
-                               'EX_glc__D_e', 'ICDHyr', 'CS', 'NH4t', 'GLCpts',
+                               'EX_glc__D_e', 'ICDHyr', 'CS', 'NH4t',
+                               'GLCpts',
                                'PGM', 'EX_pi_e', 'PGK', 'RPI', 'ACONTa'}
         observed_essential_reactions = {r.id for r in
                                         find_essential_reactions(model)}
@@ -424,23 +480,16 @@ class TestCobraFluxAnalysis:
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_find_blocked_reactions(self, model, solver):
-        result = find_blocked_reactions(model, model.reactions[40:46],
-                                        solver=solver)
+        model.solver = solver
+        result = find_blocked_reactions(model, model.reactions[40:46])
         assert result == ['FRUpts2']
 
-        result = find_blocked_reactions(model, model.reactions[42:48],
-                                        solver=solver)
+        result = find_blocked_reactions(model, model.reactions[42:48])
         assert set(result) == {'FUMt2_2', 'FRUpts2'}
 
         result = find_blocked_reactions(model, model.reactions[30:50],
-                                        solver=solver,
                                         open_exchanges=True)
         assert result == []
-
-    def test_legacy_loopless_benchmark(self, benchmark):
-        test_model = construct_ll_test_model()
-        benchmark(lambda: construct_loopless_model(test_model).optimize(
-            solver="cglpk"))
 
     def test_loopless_benchmark_before(self, benchmark):
         test_model = construct_ll_test_model()
@@ -448,30 +497,13 @@ class TestCobraFluxAnalysis:
         def _():
             with test_model:
                 add_loopless(test_model)
-                test_model.optimize(solver="optlang-glpk")
+                test_model.optimize()
 
         benchmark(_)
 
     def test_loopless_benchmark_after(self, benchmark):
         test_model = construct_ll_test_model()
         benchmark(loopless_solution, test_model)
-
-    def test_legacy_loopless(self):
-        try:
-            get_solver_name(mip=True)
-        except SolverNotFound:
-            pytest.skip("no MILP solver found")
-        test_model = construct_ll_test_model()
-        feasible_sol = construct_loopless_model(test_model).optimize(
-            solver="cglpk")
-        assert feasible_sol.status == "optimal"
-        test_model.reactions.v3.lower_bound = 1
-        infeasible_mod = construct_loopless_model(test_model)
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", UserWarning)
-            with pytest.raises(UserWarning):
-                infeasible_mod.optimize(solver="cglpk")
 
     def test_loopless_solution(self, ll_test_model):
         solution_feasible = loopless_solution(ll_test_model)
@@ -485,11 +517,6 @@ class TestCobraFluxAnalysis:
         fluxes = model.optimize().fluxes
         ll_solution = loopless_solution(model, fluxes=fluxes)
         assert len(ll_solution.fluxes) == len(model.reactions)
-        fluxes["Biomass_Ecoli_core"] = 1
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", UserWarning)
-            with pytest.raises(UserWarning):
-                loopless_solution(model, fluxes=fluxes)
 
     def test_add_loopless(self, ll_test_model):
         add_loopless(ll_test_model)
@@ -556,32 +583,19 @@ class TestCobraFluxAnalysis:
             assert 'TKT2' not in {r.id for r in solution[0]}
             assert gf.validate(solution[0])
 
-    def test_phenotype_phase_plane_benchmark(self, model, benchmark):
-        benchmark(calculate_phenotype_phase_plane,
-                  model, "EX_glc__D_e", "EX_o2_e",
-                  reaction1_npoints=20, reaction2_npoints=20)
-
-    def test_phenotype_phase_plane(self, model):
-        data = calculate_phenotype_phase_plane(
-            model, "EX_glc__D_e", "EX_o2_e",
-            reaction1_npoints=20, reaction2_npoints=20)
-        assert data.growth_rates.shape == (20, 20)
-        assert abs(data.growth_rates.max() - 1.20898) < 0.0001
-        assert abs(data.growth_rates[0, :].max()) < 0.0001
-        if pyplot is None or axes3d is None:
-            pytest.skip("can't test plots without 3D plotting")
-        data.plot()
-
-    def check_line(self, output, expected_entries, pattern=re.compile(r"\s")):
+    def check_line(self, output, expected_entries,
+                   pattern=re.compile(r"\s")):
         """Ensure each expected entry is in the output."""
-        output_set = set(pattern.sub("", line) for line in output.splitlines())
+        output_set = set(
+            pattern.sub("", line) for line in output.splitlines())
         for elem in expected_entries:
             assert pattern.sub("", elem) in output_set
 
     def check_in_line(self, output, expected_entries,
                       pattern=re.compile(r"\s")):
         """Ensure each expected entry is contained in the output."""
-        output_strip = [pattern.sub("", line) for line in output.splitlines()]
+        output_strip = [pattern.sub("", line) for line in
+                        output.splitlines()]
         for elem in expected_entries:
             assert any(
                 pattern.sub("", elem) in line for line in output_strip), \
@@ -687,7 +701,8 @@ class TestCobraFluxAnalysis:
     @pytest.mark.parametrize("fraction, met", [(0.99, "fdp_c")])
     def test_metabolite_summary_with_fva(self, model, opt_solver, fraction,
                                          met):
-        if opt_solver in ("optlang-glpk", "optlang-cplex", "optlang-gurobi"):
+        if opt_solver in (
+                "optlang-glpk", "optlang-cplex", "optlang-gurobi"):
             pytest.xfail("FVA currently buggy")
 
         model.solver = opt_solver
@@ -814,14 +829,14 @@ class TestCobraFluxSampling:
         s_inhom = sample(model, 64)
         model.reactions.ACALD.bounds = (-1.5 - 1e-3, -1.5 + 1e-3)
         s_hom = sample(model, 64)
-        relative_diff = (s_inhom.std() + 1e-12)/(s_hom.std() + 1e-12)
+        relative_diff = (s_inhom.std() + 1e-12) / (s_hom.std() + 1e-12)
         assert 0.5 < relative_diff.abs().mean() < 2
 
         model.reactions.ACALD.bounds = (-1.5, -1.5)
         s_inhom = sample(model, 64, method="achr")
         model.reactions.ACALD.bounds = (-1.5 - 1e-3, -1.5 + 1e-3)
         s_hom = sample(model, 64, method="achr")
-        relative_diff = (s_inhom.std() + 1e-12)/(s_hom.std() + 1e-12)
+        relative_diff = (s_inhom.std() + 1e-12) / (s_hom.std() + 1e-12)
         assert 0.5 < relative_diff.abs().mean() < 2
 
     def test_reproject(self):
@@ -861,7 +876,8 @@ class TestProductionEnvelope:
         assert numpy.isclose(df["flux_maximum"].sum(), 1737.466, atol=1e-3)
         assert numpy.isclose(df["carbon_yield_maximum"].sum(), 83.579,
                              atol=1e-3)
-        assert numpy.isclose(df["mass_yield_maximum"].sum(), 82.176, atol=1e-3)
+        assert numpy.isclose(df["mass_yield_maximum"].sum(), 82.176,
+                             atol=1e-3)
 
 
 class TestReactionUtils:
@@ -870,7 +886,8 @@ class TestReactionUtils:
     @pytest.mark.parametrize("solver", all_solvers)
     def test_assess(self, model, solver):
         with model:
-            assert assess(model, model.reactions.GLCpts, solver=solver) is True
+            assert assess(model, model.reactions.GLCpts,
+                          solver=solver) is True
             pyr = model.metabolites.pyr_c
             a = Metabolite('a')
             b = Metabolite('b')
@@ -879,6 +896,7 @@ class TestReactionUtils:
             pyr_a2b.add_metabolites({pyr: -1, a: -1, b: 1})
             model.add_reactions([pyr_a2b])
             res = assess(model, pyr_a2b, 0.01, solver=solver)
-            expected = {'precursors': {a: {'required': 0.01, 'produced': 0.0}},
-                        'products': {b: {'required': 0.01, 'capacity': 0.0}}}
+            expected = {
+                'precursors': {a: {'required': 0.01, 'produced': 0.0}},
+                'products': {b: {'required': 0.01, 'capacity': 0.0}}}
             assert res == expected

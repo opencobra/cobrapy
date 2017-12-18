@@ -6,56 +6,26 @@ import pytest
 from cobra.core import Metabolite, Model, Reaction
 from cobra.manipulation import *
 
-from .conftest import model, salmonella
-
 
 class TestManipulation:
     """Test functions in cobra.manipulation"""
 
-    def test_canonical_form(self, model):
-        solver = 'cglpk'
-        # add G constraint to test
-        g_constr = Metabolite("SUCCt2_2__test_G_constraint")
-        g_constr._constraint_sense = "G"
-        g_constr._bound = 5.0
-        model.reactions.get_by_id("SUCCt2_2").add_metabolites({g_constr: 1})
-        assert abs(model.optimize("maximize", solver=solver).f - 0.855) < 0.001
-        # convert to canonical form
-        model = canonical_form(model)
-        assert abs(
-            model.optimize("maximize", solver=solver).f - 0.855) < 10 ** -3
-
-    def test_canonical_form_minimize(self, model):
-        solver = 'cglpk'
-        # make a minimization problem
-        model.reactions.get_by_id("Biomass_Ecoli_core").lower_bound = 0.5
-        for reaction in model.reactions:
-            reaction.objective_coefficient = reaction.id == "GAPD"
-        assert abs(
-            model.optimize("minimize", solver=solver).f - 6.27) < 10 ** -3
-        # convert to canonical form. Convert minimize to maximize
-        model = canonical_form(model, objective_sense="minimize")
-        assert abs(
-            model.optimize("maximize", solver=solver).f + 6.27) < 10 ** -3
-        # lower bounds should now be <= constraints
-        assert model.reactions.get_by_id(
-            "Biomass_Ecoli_core").lower_bound == 0.0
-
     def test_modify_reversible(self, model):
-        solver = 'cglpk'
+        solver = 'glpk'
+        model.solver = solver
         model1 = model.copy()
-        solution1 = model1.optimize(solver=solver)
+        solution1 = model1.optimize()
         model2 = model.copy()
         convert_to_irreversible(model2)
-        solution2 = model2.optimize(solver=solver)
+        solution2 = model2.optimize()
         assert abs(solution1.f - solution2.f) < 10 ** -3
         revert_to_reversible(model2)
-        solution2_rev = model2.optimize(solver=solver)
+        solution2_rev = model2.optimize()
         assert abs(solution1.f - solution2_rev.f) < 10 ** -3
         # Ensure revert_to_reversible is robust to solutions generated both
         # before and after reversibility conversion, or not solved at all.
         model3 = model.copy()
-        solution3 = model3.optimize(solver=solver)
+        solution3 = model3.optimize()
         convert_to_irreversible(model3)
         revert_to_reversible(model3)
         assert abs(solution1.f - solution3.f) < 10 ** -3
@@ -64,7 +34,7 @@ class TestManipulation:
         glc = model4.reactions.get_by_id("EX_glc__D_e")
         glc.upper_bound = -1
         convert_to_irreversible(model4)
-        solution4 = model4.optimize(solver=solver)
+        solution4 = model4.optimize()
         assert abs(solution1.f - solution4.f) < 10 ** -3
         glc_rev = model4.reactions.get_by_id(glc.notes["reflection"])
         assert glc_rev.lower_bound == 1

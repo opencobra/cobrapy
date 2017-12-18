@@ -2,22 +2,24 @@
 
 from __future__ import absolute_import
 
-import pandas
-from sympy.core.singleton import S
+import math
 from warnings import warn
 from itertools import chain
 
+import pandas
+from optlang.symbolics import Zero
+from six import iteritems
+
 from cobra.flux_analysis.loopless import loopless_fva_iter
 from cobra.flux_analysis.parsimonious import add_pfba
-from cobra.flux_analysis.single_deletion import (single_gene_deletion,
-                                                 single_reaction_deletion)
+from cobra.flux_analysis.deletion import (
+    single_gene_deletion, single_reaction_deletion)
 from cobra.core import get_solution
 from cobra.util import solver as sutil
 
 
 def flux_variability_analysis(model, reaction_list=None, loopless=False,
-                              fraction_of_optimum=1.0, pfba_factor=None,
-                              solver=None, **solver_args):
+                              fraction_of_optimum=1.0, pfba_factor=None):
     """Runs flux variability analysis to find the min/max flux values for each
     each reaction in `reaction_list`.
 
@@ -44,13 +46,6 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
         one that optimally minimizes the total flux sum, the pfba_factor
         should, if set, be larger than one. Setting this value may lead to
         more realistic predictions of the effective flux bounds.
-    solver : str, optional
-        Name of the solver to be used. If None it will respect the solver set
-        in the model (model.solver).
-    **solver_args : additional arguments for legacy solver, optional
-        Additional arguments passed to the legacy solver. Ignored for
-        optlang solver (those can be configured using
-        model.solver.configuration).
 
     Returns
     -------
@@ -88,73 +83,12 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
        Bioinformatics. 2015 Jul 1;31(13):2159-65.
        doi: 10.1093/bioinformatics/btv096.
     """
-    legacy, solver = sutil.choose_solver(model, solver)
-
     if reaction_list is None:
         reaction_list = model.reactions
 
-    if not legacy:
-        fva_result = _fva_optlang(model, reaction_list, fraction_of_optimum,
-                                  loopless, pfba_factor)
-    else:
-        if pfba_factor is not None:
-            ValueError('pfba_factor only supported for optlang interfaces')
-        fva_result = _fva_legacy(model, reaction_list, fraction_of_optimum,
-                                 "maximize", solver, **solver_args)
+    fva_result = _fva_optlang(model, reaction_list, fraction_of_optimum,
+                              loopless, pfba_factor)
     return pandas.DataFrame(fva_result).T
-
-
-def _fva_legacy(cobra_model, reaction_list, fraction_of_optimum,
-                objective_sense, solver, **solver_args):
-    """Runs flux variability analysis to find max/min flux values
-
-    cobra_model : :class:`~cobra.core.Model`:
-
-    reaction_list : list of :class:`~cobra.core.Reaction`: or their id's
-        The id's for which FVA should be run. If this is None, the bounds
-        will be computed for all reactions in the model.
-
-    fraction_of_optimum : fraction of optimum which must be maintained.
-        The original objective reaction is constrained to be greater than
-        maximal_value * fraction_of_optimum
-
-    solver : string of solver name
-        If None is given, the default solver will be used.
-
-    """
-    lp = solver.create_problem(cobra_model)
-    solver.solve_problem(lp, objective_sense=objective_sense)
-    solution = solver.format_solution(lp, cobra_model)
-    if solution.status != "optimal":
-        raise ValueError("FVA requires the solution status to be optimal, "
-                         "not " + solution.status)
-    # set all objective coefficients to 0
-    for i, r in enumerate(cobra_model.reactions):
-        if r.objective_coefficient != 0:
-            f = solution.x_dict[r.id]
-            new_bounds = (f * fraction_of_optimum, f)
-            solver.change_variable_bounds(lp, i,
-                                          min(new_bounds), max(new_bounds))
-            solver.change_variable_objective(lp, i, 0.)
-    return calculate_lp_variability(lp, solver, cobra_model, reaction_list,
-                                    **solver_args)
-
-
-def calculate_lp_variability(lp, solver, cobra_model, reaction_list,
-                             **solver_args):
-    """calculate max and min of selected variables in an LP"""
-    fva_results = {r.id: {} for r in reaction_list}
-    for what in ("minimum", "maximum"):
-        sense = "minimize" if what == "minimum" else "maximize"
-        for r in reaction_list:
-            r_id = r.id
-            i = cobra_model.reactions.index(r_id)
-            solver.change_variable_objective(lp, i, 1.)
-            solver.solve_problem(lp, objective_sense=sense, **solver_args)
-            fva_results[r_id][what] = solver.get_objective_value(lp)
-            # revert the problem to how it was before
-            solver.change_variable_objective(lp, i, 0.)
-    return fva_results
 
 
 def _fva_optlang(model, reaction_list, fraction, loopless, pfba_factor):
@@ -211,7 +145,7 @@ def _fva_optlang(model, reaction_list, fraction, loopless, pfba_factor):
                     name="flux_sum_constraint")
             m.add_cons_vars([flux_sum, flux_sum_constraint])
 
-        m.objective = S.Zero  # This will trigger the reset as well
+        m.objective = Zero  # This will trigger the reset as well
         for what in ("minimum", "maximum"):
             sense = "min" if what == "minimum" else "max"
             for rxn in reaction_list:
@@ -238,8 +172,8 @@ def _fva_optlang(model, reaction_list, fraction, loopless, pfba_factor):
 
 
 def find_blocked_reactions(model, reaction_list=None,
-                           solver=None, zero_cutoff=1e-9,
-                           open_exchanges=False, **solver_args):
+                           zero_cutoff=1e-9,
+                           open_exchanges=False):
     """Finds reactions that cannot carry a flux with the current
     exchange reaction settings for a cobra model, using flux variability
     analysis.
@@ -250,22 +184,17 @@ def find_blocked_reactions(model, reaction_list=None,
         The model to analyze
     reaction_list : list
         List of reactions to consider, use all if left missing
-    solver : string
-        The name of the solver to use
     zero_cutoff : float
         Flux value which is considered to effectively be zero.
     open_exchanges : bool
         If true, set bounds on exchange reactions to very high values to
         avoid that being the bottle-neck.
-    **solver_args :
-        Additional arguments to the solver. Ignored for optlang based solvers.
 
     Returns
     -------
     list
         List with the blocked reactions
     """
-    legacy, solver_interface = sutil.choose_solver(model, solver)
     with model:
         if open_exchanges:
             for reaction in model.exchanges:
@@ -275,25 +204,18 @@ def find_blocked_reactions(model, reaction_list=None,
             reaction_list = model.reactions
         # limit to reactions which are already 0. If the reactions already
         # carry flux in this solution, then they can not be blocked.
-        if legacy:
-            solution = solver_interface.solve(model, **solver_args)
-            reaction_list = [i for i in reaction_list
-                             if abs(solution.x_dict[i.id]) < zero_cutoff]
-        else:
-            model.solver = solver_interface
-            model.slim_optimize()
-            solution = get_solution(model, reactions=reaction_list)
-            reaction_list = [rxn for rxn in reaction_list if
-                             abs(solution.fluxes[rxn.id]) < zero_cutoff]
+        model.slim_optimize()
+        solution = get_solution(model, reactions=reaction_list)
+        reaction_list = [rxn for rxn in reaction_list if
+                         abs(solution.fluxes[rxn.id]) < zero_cutoff]
         # run fva to find reactions where both max and min are 0
         flux_span = flux_variability_analysis(
-            model, fraction_of_optimum=0., reaction_list=reaction_list,
-            solver=solver, **solver_args)
+            model, fraction_of_optimum=0., reaction_list=reaction_list)
         return [rxn_id for rxn_id, min_max in flux_span.iterrows() if
                 max(abs(min_max)) < zero_cutoff]
 
 
-def find_essential_genes(model, threshold=0.01):
+def find_essential_genes(model, threshold=None):
     """Return a set of essential genes.
 
     A gene is considered essential if restricting the flux of all reactions
@@ -304,29 +226,24 @@ def find_essential_genes(model, threshold=0.01):
     ----------
     model : cobra.Model
         The model to find the essential genes for.
-    threshold : float (default 0.01)
-        Minimal objective flux to be considered viable.
+    threshold : float, optional
+        Minimal objective flux to be considered viable. By default this is
+        0.01 times the growth rate.
 
     Returns
     -------
     set
         Set of essential genes
     """
-    solution = model.optimize(raise_error=True)
-    tolerance = model.solver.configuration.tolerances.feasibility
-    non_zero_flux_reactions = list(
-        solution[solution.fluxes.abs() > tolerance].index)
-    genes_to_check = set(chain.from_iterable(
-        model.reactions.get_by_id(rid).genes for rid in
-        non_zero_flux_reactions))
-    deletions = single_gene_deletion(model, gene_list=genes_to_check,
-                                     method='fba')
-    gene_ids = list(deletions[(pandas.isnull(deletions.flux)) |
-                              (deletions.flux < threshold)].index)
-    return set(model.genes.get_by_any(gene_ids))
+    if threshold is None:
+        threshold = model.slim_optimize(error_value=None) * 1E-02
+    deletions = single_gene_deletion(model, method='fba')
+    essential = deletions.loc[deletions['growth'].isna() |
+                              (deletions['growth'] < threshold), :].index
+    return set(model.genes.get_by_id(g) for ids in essential for g in ids)
 
 
-def find_essential_reactions(model, threshold=0.01):
+def find_essential_reactions(model, threshold=None):
     """Return a set of essential reactions.
 
     A reaction is considered essential if restricting its flux to zero
@@ -336,21 +253,18 @@ def find_essential_reactions(model, threshold=0.01):
     ----------
     model : cobra.Model
         The model to find the essential reactions for.
-    threshold : float (default 0.01)
-        Minimal objective flux to be considered viable.
+    threshold : float, optional
+        Minimal objective flux to be considered viable. By default this is
+        0.01 times the growth rate.
 
     Returns
     -------
     set
         Set of essential reactions
     """
-    solution = model.optimize(raise_error=True)
-    tolerance = model.solver.configuration.tolerances.feasibility
-    non_zero_flux_reactions = list(
-        solution[solution.fluxes.abs() > tolerance].index)
-    deletions = single_reaction_deletion(model,
-                                         reaction_list=non_zero_flux_reactions,
-                                         method='fba')
-    reaction_ids = list(deletions[(pandas.isnull(deletions.flux)) |
-                                  (deletions.flux < threshold)].index)
-    return set(model.reactions.get_by_any(reaction_ids))
+    if threshold is None:
+        threshold = model.slim_optimize(error_value=None) * 1E-02
+    deletions = single_reaction_deletion(model, method='fba')
+    essential = deletions.loc[deletions['growth'].isna() |
+                              (deletions['growth'] < threshold), :].index
+    return set(model.reactions.get_by_id(r) for ids in essential for r in ids)
