@@ -1,7 +1,7 @@
-cobrapy - constraint-based reconstruction and analysis in python
+cobrapy - Constraint-Based Reconstruction and Analysis in Python
 ================================================================
 
-|Build Status| |Coverage Status| |Build status| |PyPI| |Gitter| |Waffle|
+|Build Status| |Coverage Status| |Build status| |PyPI| |Gitter|
 
 What is cobrapy?
 ~~~~~~~~~~~~~~~~
@@ -52,8 +52,8 @@ If you use cobrapy in a scientific publication, please cite
 Installation
 ~~~~~~~~~~~~
 
-Use pip to install cobrapy from
-`PyPI <https://pypi.python.org/pypi/cameo>`_ (we recommend doing this
+Use pip to `install cobrapy from
+PyPI <https://pypi.python.org/pypi/cobra>`_ (we recommend doing this
 inside a `virtual
 environment <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_)::
 
@@ -95,12 +95,9 @@ Public License for more details.
    :target: https://travis-ci.org/opencobra/cobrapy
 .. |Coverage Status| image:: https://codecov.io/github/opencobra/cobrapy/coverage.svg?branch=master
    :target: https://codecov.io/github/opencobra/cobrapy
-.. |Build status| image:: https://ci.appveyor.com/api/projects/status/2o549lhjyukke8nd/branch/master?svg=true
-   :target: https://ci.appveyor.com/project/hredestig/cobrapy/branch/master
+.. |Build status| image:: https://ci.appveyor.com/api/projects/status/qmqdy67jbwbc3ds7/branch/master?svg=true
+   :target: https://ci.appveyor.com/project/cobrapy39491/cobrapy/branch/master
 .. |PyPI| image:: https://img.shields.io/pypi/v/cobra.svg
    :target: https://pypi.python.org/pypi/cobra
 .. |Gitter| image:: https://badges.gitter.im/opencobra/cobrapy.svg
    :target: https://gitter.im/opencobra/cobrapy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
-.. |Waffle| image:: https://badge.waffle.io/opencobra/cobrapy.png?label=ready&title=Ready
-   :target: https://waffle.io/opencobra/cobrapy
-   :alt: 'Stories in Ready'
