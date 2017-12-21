@@ -1,11 +1,11 @@
-cobra.topology package
-======================
+cobra\.topology package
+=======================
 
 Submodules
 ----------
 
-cobra.topology.reporter_metabolites module
-------------------------------------------
+cobra\.topology\.reporter\_metabolites module
+---------------------------------------------
 
 .. automodule:: cobra.topology.reporter_metabolites
     :members:

@@ -23,6 +23,7 @@ from cobra.util.solver import (
     get_solver_name, interface_to_str, set_objective, solvers,
     add_cons_vars_to_problem, remove_cons_vars_from_problem, assert_optimal)
 from cobra.util.util import AutoVivification, format_long_string
+from cobra.media import exchanges
 
 LOGGER = logging.getLogger(__name__)
 
@@ -231,18 +232,21 @@ class Model(Object):
             elif reaction.products:
                 reaction.upper_bound = bound
 
+        exchange_rxns = set(self.exchanges)
+
         # Set the given media bounds
         media_rxns = list()
         for rxn_id, bound in iteritems(medium):
             rxn = self.reactions.get_by_id(rxn_id)
+            if rxn not in exchange_rxns:
+                LOGGER.warn("%s does not seem to be an" % rxn.id +
+                            " an exchange reaction. Applying bounds anyway.")
             media_rxns.append(rxn)
             set_active_bound(rxn, bound)
-
-        boundary_rxns = set(self.exchanges)
         media_rxns = set(media_rxns)
 
         # Turn off reactions not present in media
-        for rxn in (boundary_rxns - media_rxns):
+        for rxn in (exchange_rxns - media_rxns):
             set_active_bound(rxn, 0)
 
     def __add__(self, other_model):
@@ -727,7 +731,16 @@ class Model(Object):
     def exchanges(self):
         """Exchange reactions in model.
 
-        Reactions that either don't have products or substrates.
+        Reactions that exchange mass with the exterior. Uses annotations
+        and heuristics to exclude non-exchanges such as sink reactions.
+        """
+        return exchanges(self, ext_compartment=None)
+
+    @property
+    def boundary(self):
+        """Boundary reactions in the model.
+
+        Reactions that either have no substrate or product.
         """
         return [rxn for rxn in self.reactions if rxn.boundary]
 

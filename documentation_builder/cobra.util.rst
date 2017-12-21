@@ -1,37 +1,45 @@
-cobra.util package
-==================
+cobra\.util package
+===================
 
 Submodules
 ----------
 
-cobra.util.array module
------------------------
+cobra\.util\.array module
+-------------------------
 
 .. automodule:: cobra.util.array
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.util.context module
--------------------------
+cobra\.util\.context module
+---------------------------
 
 .. automodule:: cobra.util.context
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.util.solver module
-------------------------
+cobra\.util\.solver module
+--------------------------
 
 .. automodule:: cobra.util.solver
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.util.util module
-----------------------
+cobra\.util\.util module
+------------------------
 
 .. automodule:: cobra.util.util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cobra\.util\.version\_info module
+---------------------------------
+
+.. automodule:: cobra.util.version_info
     :members:
     :undoc-members:
     :show-inheritance:

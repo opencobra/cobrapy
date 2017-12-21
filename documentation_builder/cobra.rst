@@ -11,22 +11,23 @@ Subpackages
     cobra.flux_analysis
     cobra.io
     cobra.manipulation
+    cobra.media
     cobra.topology
     cobra.util
 
 Submodules
 ----------
 
-cobra.config module
--------------------
+cobra\.config module
+--------------------
 
 .. automodule:: cobra.config
     :members:
     :undoc-members:
     :show-inheritance:
 
-cobra.exceptions module
------------------------
+cobra\.exceptions module
+------------------------
 
 .. automodule:: cobra.exceptions
     :members:

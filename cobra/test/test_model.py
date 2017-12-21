@@ -606,6 +606,10 @@ class TestCobraModel:
         assert set(model.exchanges) == set([rxn for rxn in model.reactions
                                             if rxn.id.startswith("EX")])
 
+    def test_boundary_reactions(self, model):
+        assert set(model.boundary) == set(model.reactions.query(
+            lambda r: r.boundary))
+
     @pytest.mark.parametrize("metabolites, reaction_type, prefix", [
         ("exchange", "exchange", "EX_"),
         ("demand", "demand", "DM_"),
