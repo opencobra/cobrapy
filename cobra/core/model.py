@@ -615,6 +615,8 @@ class Model(Object):
                 reaction._model = None
 
                 if context:
+                    context(self.solver.update)
+                    context(partial(self._populate_solver, [reaction]))
                     context(partial(setattr, reaction, '_model', self))
                     context(partial(self.reactions.add, reaction))
 
@@ -745,16 +747,24 @@ class Model(Object):
 
         for reaction in reaction_list:
 
-            reverse_lb, reverse_ub, forward_lb, forward_ub = \
-                separate_forward_and_reverse_bounds(*reaction.bounds)
+            if reaction.id not in self.variables:
 
-            forward_variable = self.problem.Variable(
-                reaction.id, lb=forward_lb, ub=forward_ub)
-            reverse_variable = self.problem.Variable(
-                reaction.reverse_id, lb=reverse_lb, ub=reverse_ub)
+                reverse_lb, reverse_ub, forward_lb, forward_ub = \
+                    separate_forward_and_reverse_bounds(*reaction.bounds)
 
-            self.add_cons_vars([forward_variable, reverse_variable])
-            self.solver.update()
+                forward_variable = self.problem.Variable(
+                    reaction.id, lb=forward_lb, ub=forward_ub)
+                reverse_variable = self.problem.Variable(
+                    reaction.reverse_id, lb=reverse_lb, ub=reverse_ub)
+
+                self.add_cons_vars([forward_variable, reverse_variable])
+                self.solver.update()
+
+            else:
+
+                reaction = self.reactions.get_by_id(reaction.id)
+                forward_variable = reaction.forward_variable
+                reverse_variable = reaction.reverse_variable
 
             for metabolite, coeff in six.iteritems(reaction.metabolites):
                 if metabolite.id in self.constraints:
