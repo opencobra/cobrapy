@@ -488,6 +488,7 @@ class TestReaction:
     def test_remove_from_model(self, model):
         pgi = model.reactions.PGI
         g6p = model.metabolites.g6p_c
+        pgi_flux = model.optimize().fluxes['PGI']
 
         with model:
             pgi.remove_from_model()
@@ -496,6 +497,7 @@ class TestReaction:
             assert pgi.id not in model.variables
             assert pgi.reverse_id not in model.variables
             assert pgi not in g6p.reactions
+            model.optimize()
 
         assert "PGI" in model.reactions
         assert pgi.id in model.variables
@@ -503,6 +505,7 @@ class TestReaction:
         assert pgi.forward_variable.problem is model.solver
         assert pgi in g6p.reactions
         assert g6p in pgi.metabolites
+        assert numpy.isclose(pgi_flux, model.optimize().fluxes['PGI'])
 
     def test_change_id_is_reflected_in_solver(self, model):
         for i, reaction in enumerate(model.reactions):

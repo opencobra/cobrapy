@@ -610,15 +610,16 @@ class Model(Object):
             else:
                 forward = reaction.forward_variable
                 reverse = reaction.reverse_variable
-                self.remove_cons_vars([forward, reverse])
-                self.reactions.remove(reaction)
-                reaction._model = None
 
                 if context:
                     context(self.solver.update)
                     context(partial(self._populate_solver, [reaction]))
                     context(partial(setattr, reaction, '_model', self))
                     context(partial(self.reactions.add, reaction))
+
+                self.remove_cons_vars([forward, reverse])
+                self.reactions.remove(reaction)
+                reaction._model = None
 
                 for met in reaction._metabolites:
                     if reaction in met._reaction:
