@@ -337,9 +337,9 @@ class TestCobraFluxAnalysis:
                                  'b2935': 0.863,
                                  'b4025': 0.863}}
         solution = double_gene_deletion(
-            model, gene_list1=genes, num_jobs=4)['growth']
+            model, gene_list1=genes, num_cpu=4)['growth']
         solution_one_process = double_gene_deletion(
-            model, gene_list1=genes, num_jobs=1)['growth']
+            model, gene_list1=genes, num_cpu=1)['growth']
         for (rxn_a, sub) in iteritems(growth_dict):
             for rxn_b, growth in iteritems(sub):
                 sol = solution[frozenset([rxn_a, rxn_b])]
@@ -365,9 +365,9 @@ class TestCobraFluxAnalysis:
         }
 
         solution = double_reaction_deletion(
-            model, reaction_list1=reactions, num_jobs=3)['growth']
+            model, reaction_list1=reactions, num_cpu=3)['growth']
         solution_one_process = double_reaction_deletion(
-            model, reaction_list1=reactions, num_jobs=1)['growth']
+            model, reaction_list1=reactions, num_cpu=1)['growth']
         for (rxn_a, sub) in iteritems(growth_dict):
             for rxn_b, growth in iteritems(sub):
                 sol = solution[frozenset([rxn_a, rxn_b])]
