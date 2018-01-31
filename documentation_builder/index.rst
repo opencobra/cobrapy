@@ -1,5 +1,6 @@
 Documentation for COBRApy
 =========================
+
 For installation instructions, please see `INSTALL.rst
 <https://github.com/opencobra/cobrapy/blob/master/INSTALL.rst>`_.
 
@@ -24,7 +25,7 @@ be viewed at `nbviewer
     constraints_objectives
     pymatbridge
     faq
-    cobra
+    _autogen/modules
 
 
 Indices and tables
