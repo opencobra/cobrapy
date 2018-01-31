@@ -453,8 +453,8 @@ class Model(Object):
 
         If you set the reaction `type` to something else, you must specify the
         desired identifier of the created reaction along with its upper and
-         lower bound. The name will be given by the metabolite name and the
-         given `type`.
+        lower bound. The name will be given by the metabolite name and the
+        given `type`.
 
         Parameters
         ----------
