@@ -612,7 +612,6 @@ class Model(Object):
                 reverse = reaction.reverse_variable
 
                 if context:
-                    context(self.solver.update)
                     context(partial(self._populate_solver, [reaction]))
                     context(partial(setattr, reaction, '_model', self))
                     context(partial(self.reactions.add, reaction))

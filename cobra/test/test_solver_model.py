@@ -489,6 +489,7 @@ class TestReaction:
         pgi = model.reactions.PGI
         g6p = model.metabolites.g6p_c
         pgi_flux = model.optimize().fluxes['PGI']
+        assert abs(pgi_flux) > 1E-6
 
         with model:
             pgi.remove_from_model()
