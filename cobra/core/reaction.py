@@ -681,8 +681,8 @@ class Reaction(Object):
         return self._metabolites[_id_to_metabolites[metabolite_id]]
 
     def get_coefficients(self, metabolite_ids):
-        """Return the stoichiometric coefficients for a list of
-        metabolites in the reaction.
+        """
+        Return the stoichiometric coefficients for a list of metabolites.
 
         Parameters
         ----------
@@ -806,11 +806,16 @@ class Reaction(Object):
                     combine=False, reversibly=False))
 
     def subtract_metabolites(self, metabolites, combine=True, reversibly=True):
-        """This function will 'subtract' metabolites from a reaction, which
-        means add the metabolites with -1*coefficient. If the final coefficient
-        for a metabolite is 0 then the metabolite is removed from the reaction.
+        """Subtract metabolites from a reaction.
 
-        The change is reverted upon exit when using the model as a context.
+        That means add the metabolites with -1*coefficient. If the final
+        coefficient for a metabolite is 0 then the metabolite is removed from
+        the reaction.
+
+        Notes
+        -----
+        * A final coefficient < 0 implies a reactant.
+        * The change is reverted upon exit when using the model as a context.
 
         Parameters
         ----------
@@ -827,8 +832,6 @@ class Reaction(Object):
         reversibly : bool
             Whether to add the change to the context to make the change
             reversibly or not (primarily intended for internal use).
-
-        .. note:: A final coefficient < 0 implies a reactant.
 
         """
         self.add_metabolites({

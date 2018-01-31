@@ -15,13 +15,17 @@ class DictList(list):
     This object behaves like a list, but has the O(1) speed
     benefits of a dict when looking up elements by their id.
 
-    Parameters
-    ----------
-    *args : iterable
-        iterable as single argument to create new DictList from
     """
 
     def __init__(self, *args):
+        """Instantiate a combined dict and list.
+
+        Parameters
+        ----------
+        args : iterable
+            iterable as single argument to create new DictList from
+
+        """
         if len(args) > 2:
             raise TypeError("takes at most 1 argument (%d given)" % len(args))
         super(DictList, self).__init__(self)
@@ -93,13 +97,12 @@ class DictList(list):
         Parameters
         ----------
         search_function : a string, regular expression or function
-            used to find the matching elements in the list.
-
+            Used to find the matching elements in the list.
             - a regular expression (possibly compiled), in which case the
             given attribute of the object should match the regular expression.
-
             - a function which takes one argument and returns True for
             desired values
+
         attribute : string or None
             the name attribute of the object to passed as argument to the
             `search_function`. If this is None, the object itself is used.
