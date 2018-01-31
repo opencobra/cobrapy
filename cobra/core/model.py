@@ -758,7 +758,6 @@ class Model(Object):
                     reaction.reverse_id, lb=reverse_lb, ub=reverse_ub)
 
                 self.add_cons_vars([forward_variable, reverse_variable])
-                self.solver.update()
 
             else:
 
