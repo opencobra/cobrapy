@@ -13,12 +13,15 @@
 # serve to show the default.
 
 import sys
-import os
+from os.path import dirname, join
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('..'))
+DOCS_ROOT = dirname(__file__)
+PROJECT_ROOT = dirname(DOCS_ROOT)
+
+sys.path.insert(0, PROJECT_ROOT)
 
 
 # In order to build documentation that requires libraries to import
@@ -37,11 +40,19 @@ class Mock(object):
             return Mock()
 
 
-MOCK_MODULES = ['numpy', 'scipy', 'scipy.optimize', 'scipy.sparse', 'scipy.io',
-                'scipy.stats', 'pp', 'libsbml', 'pandas', 'tabulate',
-                'optlang', 'optlang.interface', 'optlang.symbolics',
-                'optlang.symbolics.core', 'future', 'future.utils', 'ruamel',
-                'ruamel.yaml']
+# These modules should correspond to the importable Python packages.
+MOCK_MODULES = [
+    'numpy',
+    'scipy', 'scipy.optimize', 'scipy.sparse', 'scipy.io', 'scipy.stats',
+    'pp',
+    'libsbml',
+    'pandas',
+    'tabulate',
+    'optlang', 'optlang.interface', 'optlang.symbolics',
+    'optlang.symbolics.core',
+    'future', 'future.utils',
+    'ruamel.yaml'
+]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
 
@@ -55,6 +66,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
+    'sphinx.ext.autosummary',
     'nbsphinx'
 ]
 
@@ -131,3 +143,17 @@ intersphinx_mapping = {"http://docs.python.org/": None,
                        "http://docs.scipy.org/doc/numpy/": None,
                        "http://docs.scipy.org/doc/scipy/reference": None}
 intersphinx_cache_limit = 10  # days to keep the cached inventories
+
+# -- sphinx-apidoc calling ---------------------------------------------
+
+
+def run_apidoc(_):
+    from sphinx.apidoc import main
+
+    mod_path = join(PROJECT_ROOT, 'cobra')
+    auto_path = join(DOCS_ROOT, '_autogen')
+    main([None, '-f', '-d', '2', '-e', '-o', auto_path, mod_path])
+
+
+def setup(app):
+    app.connect('builder-inited', run_apidoc)
