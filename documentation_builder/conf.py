@@ -51,7 +51,7 @@ MOCK_MODULES = [
     'optlang', 'optlang.interface', 'optlang.symbolics',
     'optlang.symbolics.core',
     'future', 'future.utils',
-    'ruamel.yaml'
+    'ruamel', 'ruamel.yaml'
 ]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
