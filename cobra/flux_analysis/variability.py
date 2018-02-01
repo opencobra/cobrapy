@@ -272,7 +272,8 @@ def find_essential_reactions(model, threshold=None, num_proc=None):
     """
     if threshold is None:
         threshold = model.slim_optimize(error_value=None) * 1E-02
-    deletions = single_reaction_deletion(model, method='fba', num_proc=num_proc)
+    deletions = single_reaction_deletion(model, method='fba',
+                                         num_proc=num_proc)
     essential = deletions.loc[deletions['growth'].isna() |
                               (deletions['growth'] < threshold), :].index
     return set(model.reactions.get_by_id(r) for ids in essential for r in ids)
