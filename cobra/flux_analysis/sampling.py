@@ -676,7 +676,7 @@ class OptGPSampler(HRSampler):
         """Initialize a new OptGPSampler."""
         super(OptGPSampler, self).__init__(model, thinning, seed=seed)
         self.generate_fva_warmup()
-        self.np = processes
+        self.processes = processes
 
         # This maps our saved center into shared memory,
         # meaning they are synchronized across processes
@@ -715,15 +715,16 @@ class OptGPSampler(HRSampler):
         we recommend to calculate large numbers of samples at once
         (`n` > 1000).
         """
-        if self.np > 1:
-            n_process = np.ceil(n / self.np).astype(int)
-            n = n_process * self.np
+        if self.processes > 1:
+            n_process = np.ceil(n / self.processes).astype(int)
+            n = n_process * self.processes
             # The cast to list is weird but not doing it gives recursion
             # limit errors, something weird going on with multiprocessing
-            args = list(zip([n_process] * self.np, range(self.np)))
+            args = list(zip(
+                [n_process] * self.processes, range(self.processes)))
             # No with statement or starmap here since Python 2.x
             # does not support it :(
-            mp = Pool(self.np, initializer=mp_init, initargs=(self,))
+            mp = Pool(self.processes, initializer=mp_init, initargs=(self,))
             chains = mp.map(_sample_chain, args, chunksize=1)
             mp.close()
             mp.join()
