@@ -337,9 +337,9 @@ class TestCobraFluxAnalysis:
                                  'b2935': 0.863,
                                  'b4025': 0.863}}
         solution = double_gene_deletion(
-            model, gene_list1=genes, num_cpu=4)['growth']
+            model, gene_list1=genes, num_proc=4)['growth']
         solution_one_process = double_gene_deletion(
-            model, gene_list1=genes, num_cpu=1)['growth']
+            model, gene_list1=genes, num_proc=1)['growth']
         for (rxn_a, sub) in iteritems(growth_dict):
             for rxn_b, growth in iteritems(sub):
                 sol = solution[frozenset([rxn_a, rxn_b])]
@@ -365,9 +365,9 @@ class TestCobraFluxAnalysis:
         }
 
         solution = double_reaction_deletion(
-            model, reaction_list1=reactions, num_cpu=3)['growth']
+            model, reaction_list1=reactions, num_proc=3)['growth']
         solution_one_process = double_reaction_deletion(
-            model, reaction_list1=reactions, num_cpu=1)['growth']
+            model, reaction_list1=reactions, num_proc=1)['growth']
         for (rxn_a, sub) in iteritems(growth_dict):
             for rxn_b, growth in iteritems(sub):
                 sol = solution[frozenset([rxn_a, rxn_b])]
@@ -733,11 +733,11 @@ class TestCobraFluxSampling:
         assert s.shape == (10, len(model.reactions))
 
     def test_single_optgp(self, model):
-        s = sample(model, 10, processes=1)
+        s = sample(model, 10, num_proc=1)
         assert s.shape == (10, len(model.reactions))
 
     def test_multi_optgp(self, model):
-        s = sample(model, 10, processes=2)
+        s = sample(model, 10, num_proc=2)
         assert s.shape == (10, len(model.reactions))
 
     def test_wrong_method(self, model):
@@ -779,7 +779,7 @@ class TestCobraFluxSampling:
         assert all(achr.validate(achr.warmup) == "v")
         self.achr = achr
 
-        optgp = OptGPSampler(model, processes=1, thinning=1)
+        optgp = OptGPSampler(model, num_proc=1, thinning=1)
         assert ((optgp.n_warmup > 0) and
                 (optgp.n_warmup <= 2 * len(model.variables)))
         assert all(optgp.validate(optgp.warmup) == "v")
@@ -789,7 +789,7 @@ class TestCobraFluxSampling:
         benchmark(lambda: ACHRSampler(model))
 
     def test_optgp_init_benchmark(self, model, benchmark):
-        benchmark(lambda: OptGPSampler(model, processes=2))
+        benchmark(lambda: OptGPSampler(model, num_proc=2))
 
     def test_sampling(self):
         s = self.achr.sample(10)

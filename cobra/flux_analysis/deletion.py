@@ -71,7 +71,7 @@ def _init_worker(model):
     _model = model
 
 
-def _multi_deletion(model, entity, element_lists, method="fba", num_cpu=None):
+def _multi_deletion(model, entity, element_lists, method="fba", num_proc=None):
     """
     Provide a common interface for single or multiple knockouts.
 
@@ -90,7 +90,7 @@ def _multi_deletion(model, entity, element_lists, method="fba", num_cpu=None):
     method: {"fba", "moma", "linear moma"}, optional
         Method used to predict the growth rate.
 
-    num_cpu : int, optional
+    num_proc : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
@@ -114,19 +114,19 @@ def _multi_deletion(model, entity, element_lists, method="fba", num_cpu=None):
             "Cannot use MOMA since '{}' is not QP-capable."
             "Please choose a different solver or use FBA only.".format(solver))
 
-    if num_cpu is None:
+    if num_proc is None:
         try:
-            num_cpu = multiprocessing.cpu_count()
+            num_proc = multiprocessing.cpu_count()
         except NotImplementedError:
             warn("Number of cores could not be detected - assuming 1.")
-            num_cpu = 1
+            num_proc = 1
 
     with model:
         if "moma" in method:
             add_moma(model, linear="linear" in method)
 
         args = set([frozenset(comb) for comb in product(*element_lists)])
-        num_cpu = min(num_cpu, len(args))
+        num_proc = min(num_proc, len(args))
 
         def extract_knockout_results(result_iter):
             result = pd.DataFrame([
@@ -136,12 +136,12 @@ def _multi_deletion(model, entity, element_lists, method="fba", num_cpu=None):
             result.set_index('ids', inplace=True)
             return result
 
-        if num_cpu > 1:
+        if num_proc > 1:
             worker = dict(gene=_gene_deletion_worker,
                           reaction=_reaction_deletion_worker)[entity]
-            chunk_size = len(args) // num_cpu
+            chunk_size = len(args) // num_proc
             pool = multiprocessing.Pool(
-                num_cpu, initializer=_init_worker, initargs=(model,)
+                num_proc, initializer=_init_worker, initargs=(model,)
             )
             results = extract_knockout_results(pool.imap_unordered(
                 worker,
@@ -179,7 +179,7 @@ def _element_lists(entities, *ids):
 
 
 def single_reaction_deletion(model, reaction_list=None, method="fba",
-                             num_cpu=None):
+                             num_proc=None):
     """
     Knock out each reaction from a given list.
 
@@ -195,7 +195,7 @@ def single_reaction_deletion(model, reaction_list=None, method="fba",
     method: {"fba", "moma", "linear moma"}, optional
         Method used to predict the growth rate.
 
-    num_cpu : int, optional
+    num_proc : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
@@ -217,10 +217,10 @@ def single_reaction_deletion(model, reaction_list=None, method="fba",
     return _multi_deletion(
         model, 'reaction',
         element_lists=_element_lists(model.reactions, reaction_list),
-        method=method, num_cpu=num_cpu)
+        method=method, num_proc=num_proc)
 
 
-def single_gene_deletion(model, gene_list=None, method="fba", num_cpu=None):
+def single_gene_deletion(model, gene_list=None, method="fba", num_proc=None):
     """
     Knock out each gene from a given list.
 
@@ -236,7 +236,7 @@ def single_gene_deletion(model, gene_list=None, method="fba", num_cpu=None):
     method: {"fba", "moma", "linear moma"}, optional
         Method used to predict the growth rate.
 
-    num_cpu : int, optional
+    num_proc : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
@@ -257,11 +257,11 @@ def single_gene_deletion(model, gene_list=None, method="fba", num_cpu=None):
     """
     return _multi_deletion(
         model, 'gene', element_lists=_element_lists(model.genes, gene_list),
-        method=method, num_cpu=num_cpu)
+        method=method, num_proc=num_proc)
 
 
 def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
-                             method="fba", num_cpu=None):
+                             method="fba", num_proc=None):
     """
     Knock out each reaction pair from the combinations of two given lists.
 
@@ -283,7 +283,7 @@ def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
     method: {"fba", "moma", "linear moma"}, optional
         Method used to predict the growth rate.
 
-    num_cpu : int, optional
+    num_proc : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
@@ -308,11 +308,11 @@ def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
                                                     reaction_list2)
     return _multi_deletion(
         model, 'reaction', element_lists=[reaction_list1, reaction_list2],
-        method=method, num_cpu=num_cpu)
+        method=method, num_proc=num_proc)
 
 
 def double_gene_deletion(model, gene_list1=None, gene_list2=None,
-                         method="fba", num_cpu=None):
+                         method="fba", num_proc=None):
     """
     Knock out each gene pair from the combination of two given lists.
 
@@ -334,7 +334,7 @@ def double_gene_deletion(model, gene_list1=None, gene_list2=None,
     method: {"fba", "moma", "linear moma"}, optional
         Method used to predict the growth rate.
 
-    num_cpu : int, optional
+    num_proc : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
@@ -358,4 +358,4 @@ def double_gene_deletion(model, gene_list1=None, gene_list2=None,
                                             gene_list2)
     return _multi_deletion(
         model, 'gene', element_lists=[gene_list1, gene_list2],
-        method=method, num_cpu=num_cpu)
+        method=method, num_proc=num_proc)

@@ -672,11 +672,11 @@ class OptGPSampler(HRSampler):
        https://doi.org/10.1371/journal.pone.0086587
     """
 
-    def __init__(self, model, processes, thinning=100, seed=None):
+    def __init__(self, model, num_proc, thinning=100, seed=None):
         """Initialize a new OptGPSampler."""
         super(OptGPSampler, self).__init__(model, thinning, seed=seed)
         self.generate_fva_warmup()
-        self.np = processes
+        self.num_proc = num_proc
 
         # This maps our saved center into shared memory,
         # meaning they are synchronized across processes
@@ -715,15 +715,15 @@ class OptGPSampler(HRSampler):
         we recommend to calculate large numbers of samples at once
         (`n` > 1000).
         """
-        if self.np > 1:
-            n_process = np.ceil(n / self.np).astype(int)
-            n = n_process * self.np
+        if self.num_proc > 1:
+            n_process = np.ceil(n / self.num_proc).astype(int)
+            n = n_process * self.num_proc
             # The cast to list is weird but not doing it gives recursion
             # limit errors, something weird going on with multiprocessing
-            args = list(zip([n_process] * self.np, range(self.np)))
+            args = list(zip([n_process] * self.num_proc, range(self.num_proc)))
             # No with statement or starmap here since Python 2.x
             # does not support it :(
-            mp = Pool(self.np, initializer=mp_init, initargs=(self,))
+            mp = Pool(self.num_proc, initializer=mp_init, initargs=(self,))
             chains = mp.map(_sample_chain, args, chunksize=1)
             mp.close()
             mp.join()
@@ -755,7 +755,7 @@ class OptGPSampler(HRSampler):
         return d
 
 
-def sample(model, n, method="optgp", thinning=100, processes=1, seed=None):
+def sample(model, n, method="optgp", thinning=100, num_proc=1, seed=None):
     """Sample valid flux distributions from a cobra model.
 
     The function samples valid flux distributions from a cobra model.
@@ -785,7 +785,7 @@ def sample(model, n, method="optgp", thinning=100, processes=1, seed=None):
         means samples are returned every 10 steps. Defaults to 100 which in
         benchmarks gives approximately uncorrelated samples. If set to one
         will return all iterates.
-    processes : int, optional
+    num_proc : int, optional
         Only used for 'optgp'. The number of processes used to generate
         samples.
     seed : positive integer, optional
@@ -816,7 +816,7 @@ def sample(model, n, method="optgp", thinning=100, processes=1, seed=None):
        Operations Research 199846:1 , 84-95
     """
     if method == "optgp":
-        sampler = OptGPSampler(model, processes, thinning=thinning, seed=seed)
+        sampler = OptGPSampler(model, num_proc, thinning=thinning, seed=seed)
     elif method == "achr":
         sampler = ACHRSampler(model, thinning=thinning, seed=seed)
     else:
