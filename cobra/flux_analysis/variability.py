@@ -37,8 +37,8 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
         means that the objective has to be at least at 85% percent of its
         maximum.
     pfba_factor : float, optional
-        Add an additional constraint to the model that requires the total sum of
-        absolute fluxes must not be larger than this value times the
+        Add an additional constraint to the model that requires the total sum
+        of absolute fluxes must not be larger than this value times the
         smallest possible sum of absolute fluxes, i.e., by setting the value
         to 1.1 the total sum of absolute fluxes must not be more than
         10% larger than the pFBA solution. Since the pFBA solution is the
