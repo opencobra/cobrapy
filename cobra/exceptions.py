@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import
 
+from collections import defaultdict
+
 import optlang.interface
 
 
@@ -32,8 +34,8 @@ class SolverNotFound(Exception):
     pass
 
 
-OPTLANG_TO_EXCEPTIONS_DICT = dict((
-    (optlang.interface.INFEASIBLE, Infeasible),
-    (optlang.interface.UNBOUNDED, Unbounded),
-    (optlang.interface.FEASIBLE, FeasibleButNotOptimal),
-    (optlang.interface.UNDEFINED, UndefinedSolution)))
+OPTLANG_TO_EXCEPTIONS_DICT = defaultdict(lambda: OptimizationError)
+OPTLANG_TO_EXCEPTIONS_DICT[optlang.interface.INFEASIBLE] = Infeasible
+OPTLANG_TO_EXCEPTIONS_DICT[optlang.interface.UNBOUNDED] = Unbounded
+OPTLANG_TO_EXCEPTIONS_DICT[optlang.interface.FEASIBLE] = FeasibleButNotOptimal
+OPTLANG_TO_EXCEPTIONS_DICT[optlang.interface.UNDEFINED] = UndefinedSolution
