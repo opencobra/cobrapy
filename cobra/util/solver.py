@@ -422,4 +422,5 @@ def assert_optimal(model, message='optimization failed'):
         Message to for the exception if solver status was not optimal.
     """
     if model.solver.status != optlang.interface.OPTIMAL:
-        raise OPTLANG_TO_EXCEPTIONS_DICT[model.solver.status](message)
+        exception_cls = OPTLANG_TO_EXCEPTIONS_DICT.get(model.solver.status, OptimizationError)
+        raise exception_cls("%s (%s)" % (message, model.solver.status))
