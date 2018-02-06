@@ -655,7 +655,8 @@ class Reaction(Object):
         if coefficient < 0:
             self.bounds = (-self.upper_bound, -self.lower_bound)
 
-        self._model._populate_solver([self])
+        if self._model:
+            self._model._populate_solver([self])
 
         context = get_context(self)
         if context:
