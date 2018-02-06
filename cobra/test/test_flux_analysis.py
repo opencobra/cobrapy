@@ -456,6 +456,13 @@ class TestCobraFluxAnalysis:
         with pytest.raises(Infeasible):
             flux_variability_analysis(infeasible_model)
 
+    def test_fva_minimization(self, model):
+        model.objective = model.reactions.EX_glc__D_e
+        model.objective_direction = 'min'
+        solution = flux_variability_analysis(model, fraction_of_optimum=.95)
+        assert solution.at['EX_glc__D_e', 'minimum'] == -10.0
+        assert solution.at['EX_glc__D_e', 'maximum'] == -9.5
+
     def test_find_blocked_reactions_solver_none(self, model):
         result = find_blocked_reactions(model, model.reactions[40:46])
         assert result == ['FRUpts2']

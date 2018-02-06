@@ -94,7 +94,7 @@ def add_pfba(model, objective=None, fraction_of_optimum=1.0):
     if objective is not None:
         model.objective = objective
     if model.solver.objective.name == '_pfba_objective':
-        raise ValueError('model already has pfba objective')
+        raise ValueError('The model already has a pFBA objective.')
     sutil.fix_objective_as_constraint(model, fraction=fraction_of_optimum)
     reaction_variables = ((rxn.forward_variable, rxn.reverse_variable)
                           for rxn in model.reactions)

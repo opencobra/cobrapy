@@ -2,13 +2,11 @@
 
 from __future__ import absolute_import
 
-import math
 from warnings import warn
-from itertools import chain
 
-import pandas
+from numpy import zeros
 from optlang.symbolics import Zero
-from six import iteritems
+from pandas import DataFrame
 
 from cobra.flux_analysis.loopless import loopless_fva_iter
 from cobra.flux_analysis.parsimonious import add_pfba
@@ -20,38 +18,38 @@ from cobra.util import solver as sutil
 
 def flux_variability_analysis(model, reaction_list=None, loopless=False,
                               fraction_of_optimum=1.0, pfba_factor=None):
-    """Runs flux variability analysis to find the min/max flux values for each
-    each reaction in `reaction_list`.
+    """
+    Determine the minimum and maximum possible flux value for each reaction.
 
     Parameters
     ----------
-    model : a cobra model
+    model : cobra.Model
         The model for which to run the analysis. It will *not* be modified.
     reaction_list : list of cobra.Reaction or str, optional
         The reactions for which to obtain min/max fluxes. If None will use
-        all reactions in the model.
+        all reactions in the model (default).
     loopless : boolean, optional
-        Whether to return only loopless solutions. Ignored for legacy solvers,
-        also see `Notes`.
+        Whether to return only loopless solutions. This is significantly
+        slower. Please also refer to the notes.
     fraction_of_optimum : float, optional
-        Must be <= 1.0. Requires that the objective value is at least
-        fraction * max_objective_value. A value of 0.85 for instance means that
-        the objective has to be at least at 85% percent of its maximum.
+        Must be <= 1.0. Requires that the objective value is at least the
+        fraction times maximum objective value. A value of 0.85 for instance
+        means that the objective has to be at least at 85% percent of its
+        maximum.
     pfba_factor : float, optional
-        Add additional constraint to the model that the total sum of
-        absolute fluxes must not be larger than this value times the
+        Add an additional constraint to the model that requires the total sum
+        of absolute fluxes must not be larger than this value times the
         smallest possible sum of absolute fluxes, i.e., by setting the value
-        to 1.1 then the total sum of absolute fluxes must not be more than
-        10% larger than the pfba solution. Since the pfba solution is the
-        one that optimally minimizes the total flux sum, the pfba_factor
+        to 1.1 the total sum of absolute fluxes must not be more than
+        10% larger than the pFBA solution. Since the pFBA solution is the
+        one that optimally minimizes the total flux sum, the ``pfba_factor``
         should, if set, be larger than one. Setting this value may lead to
         more realistic predictions of the effective flux bounds.
 
     Returns
     -------
     pandas.DataFrame
-        DataFrame with reaction identifier as the index columns
-
+        A data frame with reaction identifiers as the index and two columns:
         - maximum: indicating the highest possible flux
         - minimum: indicating the lowest possible flux
 
@@ -66,7 +64,7 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
     Using the loopless option will lead to a significant increase in
     computation time (about a factor of 100 for large models). However, the
     algorithm used here (see [2]_) is still more than 1000x faster than the
-    "naive" version using `add_loopless(model)`. Also note that if you have
+    "naive" version using ``add_loopless(model)``. Also note that if you have
     included constraints that force a loop (for instance by setting all fluxes
     in a loop to be non-zero) this loop will be included in the solution.
 
@@ -85,87 +83,67 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
     """
     if reaction_list is None:
         reaction_list = model.reactions
+    else:
+        reaction_list = model.reactions.get_by_any(reaction_list)
 
-    fva_result = _fva_optlang(model, reaction_list, fraction_of_optimum,
-                              loopless, pfba_factor)
-    return pandas.DataFrame(fva_result).T
-
-
-def _fva_optlang(model, reaction_list, fraction, loopless, pfba_factor):
-    """Helper function to perform FVA with the optlang interface.
-
-    Parameters
-    ----------
-    model : a cobra model
-    reaction_list : list of reactions
-    fraction : float, optional
-        Must be <= 1.0. Requires that the objective value is at least
-        fraction * max_objective_value. A value of 0.85 for instance means that
-        the objective has to be at least at 85% percent of its maximum.
-    loopless : boolean, optional
-        Whether to return only loopless solutions.
-    pfba_factor : float, optional
-        Add additional constraint to the model that the total sum of
-        absolute fluxes must not be larger than this value times the
-        smallest possible sum of absolute fluxes, i.e., by setting the value
-        to 1.1 then the total sum of absolute fluxes must not be more than
-        10% larger than the pfba solution. Setting this value may lead to
-        more realistic predictions of the effective flux bounds.
-
-    Returns
-    -------
-    dict
-        A dictionary containing the results.
-    """
     prob = model.problem
-    fva_results = {rxn.id: {} for rxn in reaction_list}
-    with model as m:
-        m.slim_optimize(error_value=None,
-                        message="There is no optimal solution for the "
-                                "chosen objective!")
-        # Add objective as a variable to the model than set to zero
-        # This also uses the fraction to create the lower bound for the
-        # old objective
-        fva_old_objective = prob.Variable(
-            "fva_old_objective", lb=fraction * m.solver.objective.value)
+    fva_results = DataFrame({
+        "minimum": zeros(len(reaction_list), dtype=float),
+        "maximum": zeros(len(reaction_list), dtype=float)
+    }, index=[r.id for r in reaction_list])
+    with model:
+        # Safety check before setting up FVA.
+        model.slim_optimize(error_value=None,
+                            message="There is no optimal solution for the "
+                                    "chosen objective!")
+        # Add the previous objective as a variable to the model then set it to
+        # zero. This also uses the fraction to create the lower/upper bound for
+        # the old objective.
+        if model.solver.objective.direction == "max":
+            fva_old_objective = prob.Variable(
+                "fva_old_objective",
+                lb=fraction_of_optimum * model.solver.objective.value)
+        else:
+            fva_old_objective = prob.Variable(
+                "fva_old_objective",
+                ub=fraction_of_optimum * model.solver.objective.value)
         fva_old_obj_constraint = prob.Constraint(
-            m.solver.objective.expression - fva_old_objective, lb=0, ub=0,
+            model.solver.objective.expression - fva_old_objective, lb=0, ub=0,
             name="fva_old_objective_constraint")
-        m.add_cons_vars([fva_old_objective, fva_old_obj_constraint])
+        model.add_cons_vars([fva_old_objective, fva_old_obj_constraint])
 
         if pfba_factor is not None:
             if pfba_factor < 1.:
-                warn('pfba_factor should be larger or equal to 1', UserWarning)
-            with m:
-                add_pfba(m, fraction_of_optimum=0)
-                ub = m.slim_optimize(error_value=None)
+                warn("The 'pfba_factor' should be larger or equal to 1.",
+                     UserWarning)
+            with model:
+                add_pfba(model, fraction_of_optimum=0)
+                ub = model.slim_optimize(error_value=None)
                 flux_sum = prob.Variable("flux_sum", ub=pfba_factor * ub)
                 flux_sum_constraint = prob.Constraint(
-                    m.solver.objective.expression - flux_sum, lb=0, ub=0,
+                    model.solver.objective.expression - flux_sum, lb=0, ub=0,
                     name="flux_sum_constraint")
-            m.add_cons_vars([flux_sum, flux_sum_constraint])
+            model.add_cons_vars([flux_sum, flux_sum_constraint])
 
-        m.objective = Zero  # This will trigger the reset as well
+        model.objective = Zero  # This will trigger the reset as well
         for what in ("minimum", "maximum"):
             sense = "min" if what == "minimum" else "max"
             for rxn in reaction_list:
-                r_id = rxn.id
-                rxn = m.reactions.get_by_id(r_id)
                 # The previous objective assignment already triggers a reset
                 # so directly update coefs here to not trigger redundant resets
                 # in the history manager which can take longer than the actual
                 # FVA for small models
-                m.solver.objective.set_linear_coefficients(
+                model.solver.objective.set_linear_coefficients(
                     {rxn.forward_variable: 1, rxn.reverse_variable: -1})
-                m.solver.objective.direction = sense
-                m.slim_optimize()
-                sutil.check_solver_status(m.solver.status)
+                model.solver.objective.direction = sense
+                model.slim_optimize()
+                sutil.check_solver_status(model.solver.status)
                 if loopless:
-                    value = loopless_fva_iter(m, rxn)
+                    value = loopless_fva_iter(model, rxn)
                 else:
-                    value = m.solver.objective.value
-                fva_results[r_id][what] = value
-                m.solver.objective.set_linear_coefficients(
+                    value = model.solver.objective.value
+                fva_results.at[rxn.id, what] = value
+                model.solver.objective.set_linear_coefficients(
                     {rxn.forward_variable: 0, rxn.reverse_variable: 0})
 
     return fva_results
