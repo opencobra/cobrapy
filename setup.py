@@ -36,7 +36,7 @@ except IOError:
 
 setup(
     name="cobra",
-    version="0.11.0",
+    version="0.11.1",
     packages=find_packages(),
     setup_requires=setup_requirements,
     install_requires=[
