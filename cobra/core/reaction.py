@@ -420,7 +420,7 @@ class Reaction(Object):
             if g not in self._genes:  # if an old gene is not a new gene
                 try:
                     g._reaction.remove(self)
-                except:
+                except KeyError:
                     warn("could not remove old gene %s from reaction %s" %
                          (g.id, self.id))
 
@@ -643,11 +643,25 @@ class Reaction(Object):
     def __imul__(self, coefficient):
         """Scale coefficients in a reaction by a given value
 
-        E.g. A -> B becomes 2A -> 2B
+        E.g. A -> B becomes 2A -> 2B.
+
+        If coefficient is less than zero, the reaction is reversed and the
+        bounds are swapped.
         """
         self._metabolites = {
             met: value * coefficient
             for met, value in iteritems(self._metabolites)}
+
+        if coefficient < 0:
+            self.bounds = (-self.upper_bound, -self.lower_bound)
+
+        self._model._populate_solver([self])
+
+        context = get_context(self)
+        if context:
+            context(partial(self._model._populate_solver, [self]))
+            context(partial(self.__imul__, 1./coefficient))
+
         return self
 
     def __mul__(self, coefficient):

@@ -463,6 +463,32 @@ class TestReaction:
                 already_included_metabolite.id].expression.has(
                 -10 * reaction.reverse_variable)
 
+
+    def test_reaction_imul(self, model):
+        with model:
+            model.reactions.EX_glc__D_e *= 100
+            assert model.constraints.glc__D_e.expression.coeff(model.variables.EX_glc__D_e) == -100
+            assert model.reactions.EX_glc__D_e.reaction == '100.0 glc__D_e <=> '
+
+        assert model.constraints.glc__D_e.expression.coeff(model.variables.EX_glc__D_e) == -1
+        assert model.reactions.EX_glc__D_e.reaction == 'glc__D_e <=> '
+
+        with model:
+            model.reactions.EX_glc__D_e *= -2
+            assert model.reactions.EX_glc__D_e.bounds == (-1000.0, 10.0)
+            assert model.reactions.EX_glc__D_e.reaction == ' <=> 2.0 glc__D_e'
+
+        assert model.reactions.EX_glc__D_e.bounds == (-10, 1000.0)
+        assert model.reactions.EX_glc__D_e.reaction == 'glc__D_e <=> '
+
+
+
+
+
+
+            
+
+
     # def test_pop(self, model):
     #     pgi = model.reactions.PGI
     #     g6p = model.metabolites.get_by_id("g6p_c")
