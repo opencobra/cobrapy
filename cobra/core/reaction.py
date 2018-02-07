@@ -618,6 +618,10 @@ class Reaction(Object):
     __radd__ = __add__
 
     def __iadd__(self, other):
+
+        # if self == other:
+        #     other = other.copy()
+
         self.add_metabolites(other._metabolites, combine=True)
         gpr1 = self.gene_reaction_rule.strip()
         gpr2 = other.gene_reaction_rule.strip()
@@ -772,36 +776,24 @@ class Reaction(Object):
                 # reaction
                 metabolite._reaction.add(self)
 
+        # from cameo ...
+        model = self.model
+        if model is not None:
+            model.add_metabolites(new_metabolites)
+
+            for metabolite, coefficient in self._metabolites.items():
+                model.constraints[
+                    metabolite.id].set_linear_coefficients(
+                    {self.forward_variable: coefficient,
+                     self.reverse_variable: -coefficient
+                     })
+
         for metabolite, the_coefficient in list(self._metabolites.items()):
             if the_coefficient == 0:
                 # make the metabolite aware that it no longer participates
                 # in this reaction
                 metabolite._reaction.remove(self)
                 self._metabolites.pop(metabolite)
-
-        # from cameo ...
-        model = self.model
-        if model is not None:
-            model.add_metabolites(new_metabolites)
-
-            for metabolite, coefficient in metabolites_to_add.items():
-
-                if isinstance(metabolite,
-                              str):  # support metabolites added as strings.
-                    metabolite = model.metabolites.get_by_id(metabolite)
-                if combine:
-                    try:
-                        old_coefficient = old_coefficients[metabolite]
-                    except KeyError:
-                        pass
-                    else:
-                        coefficient = coefficient + old_coefficient
-
-                model.constraints[
-                    metabolite.id].set_linear_coefficients(
-                    {self.forward_variable: coefficient,
-                     self.reverse_variable: -coefficient
-                     })
 
         context = get_context(self)
         if context and reversibly:
