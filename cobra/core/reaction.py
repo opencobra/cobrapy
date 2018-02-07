@@ -420,7 +420,7 @@ class Reaction(Object):
             if g not in self._genes:  # if an old gene is not a new gene
                 try:
                     g._reaction.remove(self)
-                except:
+                except KeyError:
                     warn("could not remove old gene %s from reaction %s" %
                          (g.id, self.id))
 
@@ -618,6 +618,7 @@ class Reaction(Object):
     __radd__ = __add__
 
     def __iadd__(self, other):
+
         self.add_metabolites(other._metabolites, combine=True)
         gpr1 = self.gene_reaction_rule.strip()
         gpr2 = other.gene_reaction_rule.strip()
@@ -643,11 +644,26 @@ class Reaction(Object):
     def __imul__(self, coefficient):
         """Scale coefficients in a reaction by a given value
 
-        E.g. A -> B becomes 2A -> 2B
+        E.g. A -> B becomes 2A -> 2B.
+
+        If coefficient is less than zero, the reaction is reversed and the
+        bounds are swapped.
         """
         self._metabolites = {
             met: value * coefficient
             for met, value in iteritems(self._metabolites)}
+
+        if coefficient < 0:
+            self.bounds = (-self.upper_bound, -self.lower_bound)
+
+        if self._model:
+            self._model._populate_solver([self])
+
+        context = get_context(self)
+        if context:
+            context(partial(self._model._populate_solver, [self]))
+            context(partial(self.__imul__, 1./coefficient))
+
         return self
 
     def __mul__(self, coefficient):
@@ -757,36 +773,24 @@ class Reaction(Object):
                 # reaction
                 metabolite._reaction.add(self)
 
+        # from cameo ...
+        model = self.model
+        if model is not None:
+            model.add_metabolites(new_metabolites)
+
+            for metabolite, coefficient in self._metabolites.items():
+                model.constraints[
+                    metabolite.id].set_linear_coefficients(
+                    {self.forward_variable: coefficient,
+                     self.reverse_variable: -coefficient
+                     })
+
         for metabolite, the_coefficient in list(self._metabolites.items()):
             if the_coefficient == 0:
                 # make the metabolite aware that it no longer participates
                 # in this reaction
                 metabolite._reaction.remove(self)
                 self._metabolites.pop(metabolite)
-
-        # from cameo ...
-        model = self.model
-        if model is not None:
-            model.add_metabolites(new_metabolites)
-
-            for metabolite, coefficient in metabolites_to_add.items():
-
-                if isinstance(metabolite,
-                              str):  # support metabolites added as strings.
-                    metabolite = model.metabolites.get_by_id(metabolite)
-                if combine:
-                    try:
-                        old_coefficient = old_coefficients[metabolite]
-                    except KeyError:
-                        pass
-                    else:
-                        coefficient = coefficient + old_coefficient
-
-                model.constraints[
-                    metabolite.id].set_linear_coefficients(
-                    {self.forward_variable: coefficient,
-                     self.reverse_variable: -coefficient
-                     })
 
         context = get_context(self)
         if context and reversibly:
