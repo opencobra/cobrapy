@@ -619,9 +619,6 @@ class Reaction(Object):
 
     def __iadd__(self, other):
 
-        # if self == other:
-        #     other = other.copy()
-
         self.add_metabolites(other._metabolites, combine=True)
         gpr1 = self.gene_reaction_rule.strip()
         gpr2 = other.gene_reaction_rule.strip()
