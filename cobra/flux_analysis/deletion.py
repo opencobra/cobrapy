@@ -110,7 +110,7 @@ def _multi_deletion(model, entity, element_lists, method="fba",
             The solution's status.
     """
     solver = sutil.interface_to_str(model.problem.__name__)
-    if "moma" in method and solver not in sutil.qp_solvers:
+    if "moma" == method and solver not in sutil.qp_solvers:
         raise RuntimeError(
             "Cannot use MOMA since '{}' is not QP-capable."
             "Please choose a different solver or use FBA only.".format(solver))
