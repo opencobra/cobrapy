@@ -759,7 +759,7 @@ class TestCobraFluxSampling:
 
     def test_fixed_seed(self, model):
         s = sample(model, 1, seed=42)
-        assert numpy.allclose(s.TPI[0], 8.9516392250671544)
+        assert numpy.allclose(s.TPI[0], 9.24835243987)
 
     def test_equality_constraint(self, model):
         model.reactions.ACALD.bounds = (-1.5, -1.5)
@@ -854,6 +854,34 @@ class TestCobraFluxSampling:
         proj = numpy.apply_along_axis(self.optgp._reproject, 1, s)
         assert all(self.optgp.validate(proj) == "v")
 
+    def test_complicated_model(self):
+        """Difficult model since the online mean calculation is numerically
+        unstable so many samples weakly violate the equality constraints."""
+        model=Model('flux_split')
+        reaction1 = Reaction('V1')
+        reaction2 = Reaction('V2')
+        reaction3 = Reaction('V3')
+        reaction1.lower_bound = 0
+        reaction2.lower_bound = 0
+        reaction3.lower_bound = 0
+        reaction1.upper_bound = 6
+        reaction2.upper_bound = 8
+        reaction3.upper_bound = 10
+        A=Metabolite('A')
+        reaction1.add_metabolites({A:-1})
+        reaction2.add_metabolites({A:-1})
+        reaction3.add_metabolites({A:1})
+        model.add_reactions([reaction1])
+        model.add_reactions([reaction2])
+        model.add_reactions([reaction3])
+
+        optgp = OptGPSampler(model, 1)
+        achr = ACHRSampler(model)
+        optgp_samples = optgp.sample(100)
+        achr_samples = optgp.sample(100)
+        # Check if >95% of the samples are valid
+        assert(sum(optgp.validate(optgp_samples) == "v") > 95)
+        assert(sum(achr.validate(achr_samples) == "v") > 95)
 
 class TestProductionEnvelope:
     """Test the production envelope."""
