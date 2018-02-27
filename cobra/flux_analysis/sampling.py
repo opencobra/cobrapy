@@ -360,9 +360,7 @@ class HRSampler(object):
         """Find an approximately random point in the flux cone."""
         idx = np.random.randint(self.n_warmup,
                                 size=min(2, np.ceil(np.sqrt(self.n_warmup))))
-        weights = np.random.random(len(idx))
-        weights /= sum(weights)
-        return self.warmup[idx, :].T.dot(weights)
+        return self.warmup[idx, :].mean(axis=0)
 
     def _bounds_dist(self, p):
         """Get the lower and upper bound distances. Negative is bad."""

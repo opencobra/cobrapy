@@ -875,11 +875,11 @@ class TestCobraFluxSampling:
         model.add_reactions([reaction2])
         model.add_reactions([reaction3])
 
-        optgp = OptGPSampler(model, 1)
-        achr = ACHRSampler(model)
+        optgp = OptGPSampler(model, 1, nproj=100, seed=42)
+        achr = ACHRSampler(model, nproj=100, seed=42)
         optgp_samples = optgp.sample(100)
         achr_samples = optgp.sample(100)
-        # Check if >95% of the samples are valid
+        # > 80% are valid
         assert(sum(optgp.validate(optgp_samples) == "v") > 95)
         assert(sum(achr.validate(achr_samples) == "v") > 95)
 
