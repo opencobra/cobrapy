@@ -857,7 +857,7 @@ class TestCobraFluxSampling:
     def test_complicated_model(self):
         """Difficult model since the online mean calculation is numerically
         unstable so many samples weakly violate the equality constraints."""
-        model=Model('flux_split')
+        model = Model('flux_split')
         reaction1 = Reaction('V1')
         reaction2 = Reaction('V2')
         reaction3 = Reaction('V3')
@@ -867,10 +867,10 @@ class TestCobraFluxSampling:
         reaction1.upper_bound = 6
         reaction2.upper_bound = 8
         reaction3.upper_bound = 10
-        A=Metabolite('A')
-        reaction1.add_metabolites({A:-1})
-        reaction2.add_metabolites({A:-1})
-        reaction3.add_metabolites({A:1})
+        A = Metabolite('A')
+        reaction1.add_metabolites({A: -1})
+        reaction2.add_metabolites({A: -1})
+        reaction3.add_metabolites({A: 1})
         model.add_reactions([reaction1])
         model.add_reactions([reaction2])
         model.add_reactions([reaction3])
@@ -882,6 +882,7 @@ class TestCobraFluxSampling:
         # > 80% are valid
         assert(sum(optgp.validate(optgp_samples) == "v") > 95)
         assert(sum(achr.validate(achr_samples) == "v") > 95)
+
 
 class TestProductionEnvelope:
     """Test the production envelope."""
