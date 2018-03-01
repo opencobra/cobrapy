@@ -105,16 +105,18 @@ def shared_np_array(shape, data=None, integer=False):
 def _step(sampler, x, delta, fraction=None, tries=0):
     """Sample a new feasible point from the point `x` in direction `delta`."""
     prob = sampler.problem
-    valid = ((np.abs(delta) > bounds_tol) &
+    valid = ((np.abs(delta) > feasibility_tol) &
              np.logical_not(prob.variable_fixed))
     # permissible alphas for staying in variable bounds
     valphas = ((1.0 - bounds_tol) * prob.variable_bounds - x)[:, valid]
     valphas = (valphas / delta[valid]).flatten()
     if prob.bounds.shape[0] > 0:
         # permissible alphas for staying in constraint bounds
+        ineqs = prob.inequalities.dot(delta)
+        valid = np.abs(ineqs) > feasibility_tol
         balphas = ((1.0 - bounds_tol) * prob.bounds -
-                   prob.inequalities.dot(x))
-        balphas = (balphas / prob.inequalities.dot(delta)).flatten()
+                   prob.inequalities.dot(x))[:, valid]
+        balphas = (balphas / ineqs[valid]).flatten()
         # combined alphas
         alphas = np.hstack([valphas, balphas])
     else:
@@ -132,9 +134,9 @@ def _step(sampler, x, delta, fraction=None, tries=0):
 
     # Numerical instabilities may cause bounds invalidation
     # reset sampler and sample from one of the original warmup directions
-    # if that occurs
+    # if that occurs. Also reset if we got stuck.
     if (np.any(sampler._bounds_dist(p) < -bounds_tol) or
-            np.abs(alpha * delta).max() < bounds_tol):
+            np.abs(np.abs(alpha_range).max() * delta).max() < bounds_tol):
         if tries > max_tries:
             raise RuntimeError("Can not escape sampling region, model seems"
                                " numerically unstable :( Reporting the "
@@ -303,19 +305,21 @@ class HRSampler(object):
         # Remove duplicate and zero rows
         non_zero = np.abs(self.warmup).sum(axis=1) > bounds_tol
         self.warmup = self.warmup[non_zero, :]
-        self.warmup = np.unique(self.warmup, axis=0)
+        keep = np.logical_not(self._is_redundant(
+            self.warmup, 1.0 - feasibility_tol))
+        self.warmup = self.warmup[keep, :]
         self.n_warmup = self.warmup.shape[0]
 
         # Catch some special cases
-        if len(self.warmup.shape) == 1:
+        if len(self.warmup.shape) == 1 or self.warmup.shape[0] == 1:
             raise ValueError("Your flux cone consists only of a single point!")
         elif self.n_warmup == 2:
+            if not self.problem.homogeneous:
+                raise ValueError("Can not sample from an inhomogenous problem"
+                                 " with only 2 search directions :(")
             LOGGER.info("All search directions on a line, adding another one.")
             newdir = self.warmup.T.dot([0.25, 0.25])
-            newdir[self.problem.variable_fixed] = self.warmup[
-                0, self.problem.variable_fixed]
-            self.warmup = np.vstack(
-                [self.warmup, self.warmup.T.dot([0.25, 0.25])])
+            self.warmup = np.vstack([self.warmup, newdir])
             self.n_warmup += 1
 
         # Shrink warmup points to measure
@@ -361,6 +365,11 @@ class HRSampler(object):
         idx = np.random.randint(self.n_warmup,
                                 size=min(2, np.ceil(np.sqrt(self.n_warmup))))
         return self.warmup[idx, :].mean(axis=0)
+
+    def _is_redundant(self, matrix, cutoff=1.0):
+        """Identify correlated rows in a matrix that can be removed."""
+        corr = np.tril(np.corrcoef(matrix), -1)
+        return (np.abs(corr) > cutoff).any(axis=1)
 
     def _bounds_dist(self, p):
         """Get the lower and upper bound distances. Negative is bad."""

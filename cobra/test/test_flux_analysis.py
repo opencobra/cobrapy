@@ -759,7 +759,7 @@ class TestCobraFluxSampling:
 
     def test_fixed_seed(self, model):
         s = sample(model, 1, seed=42)
-        assert numpy.allclose(s.TPI[0], 9.24835243987)
+        assert numpy.allclose(s.TPI[0], 7.79191827)
 
     def test_equality_constraint(self, model):
         model.reactions.ACALD.bounds = (-1.5, -1.5)
@@ -875,13 +875,24 @@ class TestCobraFluxSampling:
         model.add_reactions([reaction2])
         model.add_reactions([reaction3])
 
-        optgp = OptGPSampler(model, 1, nproj=100, seed=42)
-        achr = ACHRSampler(model, nproj=100, seed=42)
+        optgp = OptGPSampler(model, 1, seed=42)
+        achr = ACHRSampler(model, seed=42)
         optgp_samples = optgp.sample(100)
-        achr_samples = optgp.sample(100)
-        # > 80% are valid
+        achr_samples = achr.sample(100)
+        # > 95% are valid
         assert(sum(optgp.validate(optgp_samples) == "v") > 95)
         assert(sum(achr.validate(achr_samples) == "v") > 95)
+
+    def test_single_point_space(self, model):
+        """Model where constraints reduce the sampling space to one point."""
+        pfba_sol = pfba(model)
+        pfba_const = model.problem.Constraint(
+            sum(model.variables), ub=pfba_sol.objective_value)
+        model.add_cons_vars(pfba_const)
+        model.reactions.Biomass_Ecoli_core.lower_bound = \
+            pfba_sol.fluxes.Biomass_Ecoli_core
+        with pytest.raises(ValueError):
+            s = sample(model, 1)
 
 
 class TestProductionEnvelope:
