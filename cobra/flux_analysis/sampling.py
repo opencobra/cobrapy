@@ -279,33 +279,37 @@ class HRSampler(object):
         if necessary).
         """
         self.n_warmup = 0
-        idx = np.hstack([self.fwd_idx, self.rev_idx])
-        self.warmup = np.zeros((len(idx), len(self.model.variables)))
+        reactions = self.model.reactions
+        self.warmup = np.zeros((2 * len(reactions), len(self.model.variables)))
         self.model.objective = Zero
-        self.model.objective.direction = "max"
-        variables = self.model.variables
-        for i in idx:
-            # Omit fixed reactions
-            if self.problem.variable_fixed[i]:
-                LOGGER.info("skipping fixed variable %s" %
-                            variables[i].name)
-                continue
-            self.model.objective.set_linear_coefficients({variables[i]: 1})
-            self.model.slim_optimize()
-            if not self.model.solver.status == OPTIMAL:
-                LOGGER.info("can not maximize variable %s, skipping it" %
-                            variables[i].name)
-                continue
-            primals = self.model.solver.primal_values
-            sol = [primals[v.name] for v in self.model.variables]
-            self.warmup[self.n_warmup, ] = sol
-            self.n_warmup += 1
-            # revert objective
-            self.model.objective.set_linear_coefficients({variables[i]: 0})
+        for sense in ("min", "max"):
+            self.model.objective_direction = sense
+            for i, r in enumerate(reactions):
+                variables = (self.model.variables[self.fwd_idx[i]],
+                             self.model.variables[self.rev_idx[i]])
+                # Omit fixed reactions if they are non-homogeneous
+                if r.upper_bound - r.lower_bound < bounds_tol:
+                    LOGGER.info("skipping fixed reaction %s" % r.id)
+                    continue
+                self.model.objective.set_linear_coefficients(
+                    {variables[0]: 1, variables[1]: -1})
+                self.model.slim_optimize()
+                if not self.model.solver.status == OPTIMAL:
+                    LOGGER.info("can not maximize reaction %s, skipping it" %
+                                r.id)
+                    continue
+                primals = self.model.solver.primal_values
+                sol = [primals[v.name] for v in self.model.variables]
+                self.warmup[self.n_warmup, ] = sol
+                self.n_warmup += 1
+                # Reset objective
+                self.model.objective.set_linear_coefficients(
+                    {variables[0]: 0, variables[1]: 0})
         # Shrink to measure
-        self.warmup = self.warmup[0:self.n_warmup, ]
+        self.warmup = self.warmup[0:self.n_warmup, :]
         # Remove redundant search directions
-        self.warmup = self.warmup[self._non_redundant(self.warmup), :]
+        keep = np.logical_not(self._is_redundant(self.warmup))
+        self.warmup = self.warmup[keep, :]
         self.n_warmup = self.warmup.shape[0]
 
         # Catch some special cases
@@ -314,14 +318,14 @@ class HRSampler(object):
         elif self.n_warmup == 2:
             if not self.problem.homogeneous:
                 raise ValueError("Can not sample from an inhomogenous problem"
-                                 " with only 2 search directions :(")
+                                " with only 2 search directions :(")
             LOGGER.info("All search directions on a line, adding another one.")
             newdir = self.warmup.T.dot([0.25, 0.25])
             self.warmup = np.vstack([self.warmup, newdir])
             self.n_warmup += 1
 
         # Shrink warmup points to measure
-        self.warmup = shared_np_array((self.n_warmup, len(variables)),
+        self.warmup = shared_np_array((self.n_warmup, len(self.model.variables)),
                                       self.warmup)
 
     def _reproject(self, p):
@@ -364,12 +368,15 @@ class HRSampler(object):
                                 size=min(2, np.ceil(np.sqrt(self.n_warmup))))
         return self.warmup[idx, :].mean(axis=0)
 
-    def _non_redundant(self, matrix):
-        """Identify a non-redundant subset of rows in a matrix."""
-        norm = (matrix ** 2).sum(axis=1)
-        norm[norm == 0] = 1
-        keep = np.unique((matrix.T / norm).T, return_index=True, axis=0)[1]
-        return keep
+    def _is_redundant(self, matrix, cutoff=1.0 - feasibility_tol):
+        """Identify rdeundant rows in a matrix that can be removed."""
+        # Avoid zero variances
+        extra_col = matrix[:, 0] + 1
+        # Avoid zero rows being correlated with constant rows
+        extra_col[matrix.sum(axis=1) == 0] = 2
+        corr = np.corrcoef(np.c_[matrix, extra_col])
+        corr = np.tril(corr, -1)
+        return (np.abs(corr) > cutoff).any(axis=1)
 
     def _bounds_dist(self, p):
         """Get the lower and upper bound distances. Negative is bad."""

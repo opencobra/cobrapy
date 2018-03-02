@@ -759,7 +759,7 @@ class TestCobraFluxSampling:
 
     def test_fixed_seed(self, model):
         s = sample(model, 1, seed=42)
-        assert numpy.allclose(s.TPI[0], 7.79191827)
+        assert numpy.allclose(s.TPI[0], 9.12037487)
 
     def test_equality_constraint(self, model):
         model.reactions.ACALD.bounds = (-1.5, -1.5)
@@ -879,6 +879,8 @@ class TestCobraFluxSampling:
         achr = ACHRSampler(model, seed=42)
         optgp_samples = optgp.sample(100)
         achr_samples = achr.sample(100)
+        assert any(optgp_samples.corr().abs() < 1.0)
+        assert any(achr_samples.corr().abs() < 1.0)
         # > 95% are valid
         assert(sum(optgp.validate(optgp_samples) == "v") > 95)
         assert(sum(achr.validate(achr_samples) == "v") > 95)
