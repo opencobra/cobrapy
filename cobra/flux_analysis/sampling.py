@@ -318,15 +318,15 @@ class HRSampler(object):
         elif self.n_warmup == 2:
             if not self.problem.homogeneous:
                 raise ValueError("Can not sample from an inhomogenous problem"
-                                " with only 2 search directions :(")
+                                 " with only 2 search directions :(")
             LOGGER.info("All search directions on a line, adding another one.")
             newdir = self.warmup.T.dot([0.25, 0.25])
             self.warmup = np.vstack([self.warmup, newdir])
             self.n_warmup += 1
 
         # Shrink warmup points to measure
-        self.warmup = shared_np_array((self.n_warmup, len(self.model.variables)),
-                                      self.warmup)
+        self.warmup = shared_np_array(
+            (self.n_warmup, len(self.model.variables)), self.warmup)
 
     def _reproject(self, p):
         """Reproject a point into the feasibility region.
