@@ -302,10 +302,10 @@ class HRSampler(object):
             self.n_warmup += 1
             # revert objective
             self.model.objective.set_linear_coefficients({variables[i]: 0})
+        # Shrink to measure
+        self.warmup = self.warmup[0:self.n_warmup, ]
         # Remove redundant search directions
-        keep = np.logical_not(self._is_redundant(
-            self.warmup, 1.0 - feasibility_tol))
-        self.warmup = self.warmup[keep, :]
+        self.warmup = self.warmup[self._non_redundant(self.warmup), :]
         self.n_warmup = self.warmup.shape[0]
 
         # Catch some special cases
@@ -322,7 +322,7 @@ class HRSampler(object):
 
         # Shrink warmup points to measure
         self.warmup = shared_np_array((self.n_warmup, len(variables)),
-                                      self.warmup[0:self.n_warmup, ])
+                                      self.warmup)
 
     def _reproject(self, p):
         """Reproject a point into the feasibility region.
@@ -364,10 +364,12 @@ class HRSampler(object):
                                 size=min(2, np.ceil(np.sqrt(self.n_warmup))))
         return self.warmup[idx, :].mean(axis=0)
 
-    def _is_redundant(self, matrix, cutoff=1.0):
-        """Identify correlated rows in a matrix that can be removed."""
-        corr = np.tril(np.corrcoef(matrix), -1)
-        return (np.abs(corr) > cutoff).any(axis=1)
+    def _non_redundant(self, matrix):
+        """Identify a non-redundant subset of rows in a matrix."""
+        norm = (matrix ** 2).sum(axis=1)
+        norm[norm == 0] = 1
+        keep = np.unique((matrix.T / norm).T, return_index=True, axis=0)[1]
+        return keep
 
     def _bounds_dist(self, p):
         """Get the lower and upper bound distances. Negative is bad."""
