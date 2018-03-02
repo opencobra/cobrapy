@@ -302,9 +302,7 @@ class HRSampler(object):
             self.n_warmup += 1
             # revert objective
             self.model.objective.set_linear_coefficients({variables[i]: 0})
-        # Remove duplicate and zero rows
-        non_zero = np.abs(self.warmup).sum(axis=1) > bounds_tol
-        self.warmup = self.warmup[non_zero, :]
+        # Remove redundant search directions
         keep = np.logical_not(self._is_redundant(
             self.warmup, 1.0 - feasibility_tol))
         self.warmup = self.warmup[keep, :]
