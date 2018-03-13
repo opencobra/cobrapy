@@ -739,6 +739,14 @@ class Reaction(Object):
         _id_to_metabolites = dict([(x.id, x) for x in self._metabolites])
 
         for metabolite, coefficient in iteritems(metabolites_to_add):
+
+            # Make sure metabolites being added belong to the same model, or
+            # else copy them.
+            if isinstance(metabolite, Metabolite):
+                if ((metabolite.model is not None) and
+                        (metabolite.model is not self._model)):
+                    metabolite = metabolite.copy()
+
             met_id = str(metabolite)
             # If a metabolite already exists in the reaction then
             # just add them.
