@@ -743,8 +743,8 @@ class Reaction(Object):
             # Make sure metabolites being added belong to the same model, or
             # else copy them.
             if isinstance(metabolite, Metabolite):
-                if ((metabolite.model is not None) &
-                        (metabolite.model != self._model)):
+                if ((metabolite.model is not None) and
+                        (metabolite.model is not self._model)):
                     metabolite = metabolite.copy()
 
             met_id = str(metabolite)
