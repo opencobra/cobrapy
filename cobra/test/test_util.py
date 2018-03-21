@@ -9,8 +9,7 @@ import pytest
 from six.moves import range
 
 from cobra import DictList, Object
-from cobra.util.version_info import (
-    get_sys_info, get_pkg_info, show_versions, SYS_ORDER, PKG_ORDER)
+from cobra.util.version_info import get_sys_info, show_versions, SYS_ORDER
 
 
 @pytest.fixture(scope="function")
@@ -306,10 +305,6 @@ class TestVersionInfo:
     def sys_info(self):
         return get_sys_info()
 
-    @pytest.fixture(scope="module")
-    def pkg_info(self):
-        return get_pkg_info()
-
     @pytest.mark.parametrize("key", SYS_ORDER)
     def test_sys_info_key(self, key, sys_info):
         assert key in sys_info
@@ -318,19 +313,7 @@ class TestVersionInfo:
     def test_sys_info_value(self, key, sys_info):
         assert len(sys_info[key]) > 0
 
-    @pytest.mark.parametrize("key", PKG_ORDER)
-    def test_pkg_info_key(self, key, pkg_info):
-        if key in self.SKIP_OPTIONAL:
-            pytest.skip()
-        assert key in pkg_info
-
-    @pytest.mark.parametrize("key", PKG_ORDER)
-    def test_pkg_info_value(self, key, pkg_info):
-        if key in self.SKIP_OPTIONAL:
-            pytest.skip()
-        assert len(pkg_info[key]) > 0
-
-    def test_show_versions(self, sys_info, pkg_info, capsys):
+    def test_show_versions(self, sys_info, capsys):
         show_versions()
         out, err = capsys.readouterr()
         lines = out.split("\n")
@@ -341,12 +324,3 @@ class TestVersionInfo:
             assert line.endswith(sys_info[key])
             i += 1
         i += 3
-        for key in PKG_ORDER:
-            line = lines[i]
-            if key in self.SKIP_OPTIONAL:
-                if line.startswith(key):
-                    i += 1
-                continue
-            assert line.startswith(key)
-            assert line.endswith(pkg_info[key])
-            i += 1
