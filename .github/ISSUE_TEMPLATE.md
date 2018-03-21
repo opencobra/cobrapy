@@ -20,9 +20,9 @@ Create a [minimal, complete, verifiable example
 
 #### Expected Output
 
-#### Output of `cobra.show_versions()`
+#### Version information
 
-<details>
-# Paste the output of `import cobra;cobra.show_versions()` here.
+Paste the output of the following commands here:
 
-</details>
+* `import cobra;cobra.show_versions()`
+* `pip list --format=columns`
