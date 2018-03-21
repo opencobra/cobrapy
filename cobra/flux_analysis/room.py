@@ -37,7 +37,8 @@ def add_room(model, solution=None, delta=0.03, epsilon=0.001, linear=False):
         solution = model.optimize()
 
     problem = model.problem
-    variable = problem.Variable("room_old_objective")
+    variable = problem.Variable("room_old_objective",
+                                ub=solution.objective_value)
     constraint = problem.Constraint(
         model.solver.objective.expression - variable,
         ub=0.0,
