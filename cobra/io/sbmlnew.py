@@ -1,5 +1,14 @@
 """
 SBML import and export using libsbml.
+
+
+TODO: converters
+- COBRA to FBCV2
+- FBCV2 to COBRA
+- FBCV1 to FBCV2
+
+- SBMLIdConverter
+
 """
 from __future__ import absolute_import
 
@@ -171,7 +180,8 @@ def _parse_sbml_into_model(doc, number=float):
             object_stoichiometry[metabolite] = stoichiometry[met_id]
         reaction.add_metabolites(object_stoichiometry)
 
-        # set gene reaction rule
+
+        # GPR rules
         # TODO
         '''
         def process_gpr(sub_xml):
@@ -185,25 +195,49 @@ def _parse_sbml_into_model(doc, number=float):
                 return clip(gene_id, "G_")
             else:
                 raise Exception("unsupported tag " + sub_xml.tag)
-        '''
+        
 
+        def process_association(association):
+            """ Recursively convert gpr xml to a gpr string. """
+            type_code = association.getTypeCode()
+            if association.isFbcOr():
+                association.get
+
+                return "( " + ' or '.join(process_gpa(i) for i in gpa.getCh) + " )"
+            elif sub_xml.tag == AND_TAG:
+                return "( " + ' and '.join(process_gpr(i) for i in sub_xml) + " )"
+            elif sub_xml.tag == GENEREF_TAG:
+                gene_id = get_attrib(sub_xml, "fbc:geneProduct", require=True)
+                return clip(gene_id, "G_")
+            else:
+                raise Exception("unsupported tag " + sub_xml.tag)
         '''
-        gpr_xml = sbml_reaction.find(GPR_TAG)
-        if gpr_xml is not None and len(gpr_xml) != 1:
-            warn("ignoring invalid geneAssociation for " + repr(reaction))
-            gpr_xml = None
-        gpr = process_gpr(gpr_xml[0]) if gpr_xml is not None else ''
+        gpa = r_fbc.getGeneProductAssociation()  # type: libsbml.GeneProductAssociation
+        print(gpa)
+
+        association = None
+        if gpa is not None:
+            association = gpa.getAssociation()  # type: libsbml.FbcAssociation
+            print(association)
+            print(association.getListOfAllElements())
+            print(gpa.)
+            print(association.getListOfFbcAssociations())
+
+
+
+        # gpr = process_association(association) if association is not None else ''
+
         # remove outside parenthesis, if any
         if gpr.startswith("(") and gpr.endswith(")"):
             gpr = gpr[1:-1].strip()
-        gpr = gpr.replace(SBML_DOT, ".")
-        reaction.gene_reaction_rule = gpr
-        '''
 
-    try:
-        cmodel.add_reactions(reactions)
-    except ValueError as e:
-        warn(str(e))
+        # gpr = gpr.replace(SBML_DOT, ".")
+        reaction.gene_reaction_rule = gpr
+
+        try:
+            cmodel.add_reactions(reactions)
+        except ValueError as e:
+            warn(str(e))
 
     # Objective
     obj_list = model_fbc.getListOfObjectives()  # type: libsbml.ListOfObjectives
