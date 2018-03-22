@@ -35,6 +35,7 @@ try:
 except IOError:
     setup_kwargs["long_description"] = ''
 
+
 if __name__ == "__main__":
     setup(
         name="cobra",
@@ -51,6 +52,7 @@ if __name__ == "__main__":
             "optlang>=1.4.2",
             "tabulate",
             "depinfo"
+            "python-libsbml-experimental>=5.17.2",
         ],
         tests_require=[
             "jsonschema > 2.5",
