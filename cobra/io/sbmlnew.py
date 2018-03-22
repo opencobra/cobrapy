@@ -220,12 +220,11 @@ def _parse_sbml_into_model(doc, number=float):
             association = gpa.getAssociation()  # type: libsbml.FbcAssociation
             print(association)
             print(association.getListOfAllElements())
-            print(gpa.)
-            print(association.getListOfFbcAssociations())
 
 
 
         # gpr = process_association(association) if association is not None else ''
+        gpr = ''
 
         # remove outside parenthesis, if any
         if gpr.startswith("(") and gpr.endswith(")"):
