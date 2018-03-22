@@ -47,7 +47,8 @@ setup(
         "numpy>=1.13",
         "pandas>=0.17.0",
         "optlang>=1.2.5",
-        "tabulate"
+        "tabulate",
+        "python-libsbml>=5.16.0",
     ],
     tests_require=[
         "jsonschema > 2.5",
