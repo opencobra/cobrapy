@@ -6,19 +6,14 @@ from __future__ import absolute_import
 import tempfile
 from warnings import warn
 from six import string_types
+from collections import defaultdict
 
 import libsbml
 from cobra.core import Gene, Metabolite, Model, Reaction
+from cobra.util.solver import set_objective
 
-
-'''
-try:
-    from optlang.symbolics import Basic
-except ImportError:
-    class Basic:
-        pass
-'''
-
+LONG_SHORT_DIRECTION = {'maximize': 'max', 'minimize': 'min'}
+SHORT_LONG_DIRECTION = {'min': 'minimize', 'max': 'maximize'}
 
 class CobraSBMLError(Exception):
     pass
@@ -55,25 +50,6 @@ def read_sbml_model(filename):
     return None
 
 
-def _get_required_attrib(sbase, attribute):
-    value = getattr(sbase, attribute, None)
-    if value is None:
-        msg = "required attribute '%s' not found in '%s'" % \
-              (attribute, sbase)
-        if sbase.id is not None:
-            msg += " with id '%s'" % sbase.id
-        elif sbase.name is not None:
-            msg += " with name '%s'" % tag.get("name")
-        raise CobraSBMLError(msg)
-    return value
-
-def annotate_cobra_from_sbase(cobj, sbase):
-
-    # TODO: implement
-    pass
-
-
-
 # clip ids
 # TODO: clip(met, "M_")
 # clip_prefixes = {'compartment': None, 'specie': 'M_', 'gene': 'G_'}
@@ -81,10 +57,11 @@ def annotate_cobra_from_sbase(cobj, sbase):
 # get_attrib(sbml_gene, "fbc:id").replace(SBML_DOT, ".")
 
 
-def _parse_sbml_into_model(doc):
+def _parse_sbml_into_model(doc, number=float):
     """
 
     :param doc: libsbml.SBMLDocument
+    'param number: data type of stoichiometry
     :return: cobrapy model
     """
     # SBML model
@@ -108,7 +85,7 @@ def _parse_sbml_into_model(doc):
     # Species
     boundary_ids = set()
     for s in model.species:  # type: libsbml.Species
-        sid = _get_required_attrib(s, "id")
+        sid = _check_required(s, s.id, "id")
         met = Metabolite(sid)
         met.name = s.name
         met.compartment = s.compartment
@@ -135,69 +112,82 @@ def _parse_sbml_into_model(doc):
         annotate_cobra_from_sbase(gene, gp)
         cmodel.genes.append(gene)
 
-
-    def process_gpr(sub_xml):
-        """recursively convert gpr xml to a gpr string"""
-        if sub_xml.tag == OR_TAG:
-            return "( " + ' or '.join(process_gpr(i) for i in sub_xml) + " )"
-        elif sub_xml.tag == AND_TAG:
-            return "( " + ' and '.join(process_gpr(i) for i in sub_xml) + " )"
-        elif sub_xml.tag == GENEREF_TAG:
-            gene_id = get_attrib(sub_xml, "fbc:geneProduct", require=True)
-            return clip(gene_id, "G_")
-        else:
-            raise Exception("unsupported tag " + sub_xml.tag)
-
-
     # Reactions
     reactions = []
     for r in model.reactions:  # type: libsbml.Reaction
-        rid = _get_required_attrib(r, "id")
+        rid = _check_required(r, r.id, "id")
         reaction = Reaction(rid)
         reaction.name = r.name
-        annotate_cobra_from_sbml(reaction, sbml_reaction)
+        annotate_cobra_from_sbase(r, reaction)
 
         # set bounds
-        lb_id = get_attrib(sbml_reaction, "fbc:lowerFluxBound", require=True)
-        ub_id = get_attrib(sbml_reaction, "fbc:upperFluxBound", require=True)
-        try:
-            reaction.upper_bound = bounds[ub_id]
-            reaction.lower_bound = bounds[lb_id]
-        except KeyError as e:
-            raise CobraSBMLError("No constant bound with id '%s'" % str(e))
+        r_fbc = r.getPlugin("fbc")  # type: libsbml.FbcReactionPlugin
+        if r_fbc is None:
+            raise CobraSBMLError("No flux bounds on reaction '%s'" % r)
+        else:
+            # FIXME: remove code duplication in this section
+            lb_id = _check_required(r_fbc, r_fbc.getLowerFluxBound(), "lowerFluxBound")
+            ub_id = _check_required(r_fbc, r_fbc.getUpperFluxBound(), "upperFluxBound")
+            p_lb = model.getParameter(lb_id)
+            p_ub = model.getParameter(ub_id)
 
+            if p_lb.constant and (p_lb.value is not None):
+                reaction.lower_bound = p_lb.value
+            else:
+                raise CobraSBMLError("No constant bound '%s' for reaction '%s" % (p_lb, r))
 
+            if p_ub.constant and (p_ub.value is not None):
+                reaction.upper_bound = p_ub.value
+            else:
+                raise CobraSBMLError("No constant bound '%s' for reaction '%s" % (p_ub, r))
+                bounds.append(p.value)
 
         reactions.append(reaction)
 
+        # parse equation
         stoichiometry = defaultdict(lambda: 0)
-        for species_reference in sbml_reaction.findall(
-                ns("sbml:listOfReactants/sbml:speciesReference")):
-            met_name = clip(species_reference.get("species"), "M_")
-            stoichiometry[met_name] -= \
-                number(species_reference.get("stoichiometry"))
-        for species_reference in sbml_reaction.findall(
-                ns("sbml:listOfProducts/sbml:speciesReference")):
-            met_name = clip(species_reference.get("species"), "M_")
-            stoichiometry[met_name] += \
-                get_attrib(species_reference, "stoichiometry",
-                           type=number, require=True)
+        for sref in r.getListOfReactants():  # type: libsbml.SpeciesReference
+            sid = sref.getSpecies()
+            # FIXME: clip
+            stoichiometry[sid] -= number(_check_required(sref, sref.stoichiometry, "stoichiometry"))
+
+        for sref in r.getListOfProducts():  # type: libsbml.SpeciesReference
+            sid = sref.getSpecies()
+            stoichiometry[sid] += number(_check_required(sref, sref.stoichiometry, "stoichiometry"))
+
         # needs to have keys of metabolite objects, not ids
         object_stoichiometry = {}
         for met_id in stoichiometry:
-            if met_id in boundary_metabolites:
+            if met_id in boundary_ids:
                 warn("Boundary metabolite '%s' used in reaction '%s'" %
                      (met_id, reaction.id))
                 continue
             try:
-                metabolite = model.metabolites.get_by_id(met_id)
+                metabolite = cmodel.metabolites.get_by_id(met_id)
             except KeyError:
                 warn("ignoring unknown metabolite '%s' in reaction %s" %
                      (met_id, reaction.id))
                 continue
             object_stoichiometry[metabolite] = stoichiometry[met_id]
         reaction.add_metabolites(object_stoichiometry)
+
         # set gene reaction rule
+        # TODO
+        '''
+        def process_gpr(sub_xml):
+            """recursively convert gpr xml to a gpr string"""
+            if sub_xml.tag == OR_TAG:
+                return "( " + ' or '.join(process_gpr(i) for i in sub_xml) + " )"
+            elif sub_xml.tag == AND_TAG:
+                return "( " + ' and '.join(process_gpr(i) for i in sub_xml) + " )"
+            elif sub_xml.tag == GENEREF_TAG:
+                gene_id = get_attrib(sub_xml, "fbc:geneProduct", require=True)
+                return clip(gene_id, "G_")
+            else:
+                raise Exception("unsupported tag " + sub_xml.tag)
+        '''
+
+        '''
         gpr_xml = sbml_reaction.find(GPR_TAG)
         if gpr_xml is not None and len(gpr_xml) != 1:
             warn("ignoring invalid geneAssociation for " + repr(reaction))
@@ -208,38 +198,64 @@ def _parse_sbml_into_model(doc):
             gpr = gpr[1:-1].strip()
         gpr = gpr.replace(SBML_DOT, ".")
         reaction.gene_reaction_rule = gpr
+        '''
+
     try:
-        model.add_reactions(reactions)
+        cmodel.add_reactions(reactions)
     except ValueError as e:
         warn(str(e))
 
-    # objective coefficients are handled after all reactions are added
-    obj_list = xml_model.find(ns("fbc:listOfObjectives"))
+    # Objective
+    obj_list = model_fbc.getListOfObjectives()  # type: libsbml.ListOfObjectives
     if obj_list is None:
         warn("listOfObjectives element not found")
-        return model
-    target_objective_id = get_attrib(obj_list, "fbc:activeObjective")
-    target_objective = obj_list.find(
-        ns("fbc:objective[@fbc:id='{}']".format(target_objective_id)))
-    obj_direction_long = get_attrib(target_objective, "fbc:type")
-    obj_direction = LONG_SHORT_DIRECTION[obj_direction_long]
+    else:
+        obj_id = obj_list.getActiveObjective()
+        obj = model_fbc.getObjective(obj_id)  # type: libsbml.Objective
+        obj_direction = LONG_SHORT_DIRECTION[obj.getType()]
 
-    obj_query = OBJECTIVES_XPATH % target_objective_id
-    coefficients = {}
-    for sbml_objective in obj_list.findall(obj_query):
-        rxn_id = clip(get_attrib(sbml_objective, "fbc:reaction"), "R_")
-        try:
-            objective_reaction = model.reactions.get_by_id(rxn_id)
-        except KeyError:
-            raise CobraSBMLError("Objective reaction '%s' not found" % rxn_id)
-        try:
-            coefficients[objective_reaction] = get_attrib(
-                sbml_objective, "fbc:coefficient", type=number)
-        except ValueError as e:
-            warn(str(e))
-    set_objective(model, coefficients)
-    model.solver.objective.direction = obj_direction
-    return model
+        coefficients = {}
+
+        for flux_obj in obj.getListOfFluxObjectives():  # type: libsbml.FluxObjective
+            # FIXME: clip id
+            rid = flux_obj.getReaction()
+            try:
+                objective_reaction = cmodel.reactions.get_by_id(rid)
+            except KeyError:
+                raise CobraSBMLError("Objective reaction '%s' not found" % rid)
+            try:
+                coefficients[objective_reaction] = number(flux_obj.getCoefficient())
+            except ValueError as e:
+                warn(str(e))
+        set_objective(cmodel, coefficients)
+        cmodel.solver.objective.direction = obj_direction
+
+    return cmodel
+
+
+def _check_required(sbase, value, attribute):
+    """ Get required attribute from the SBase.
+
+    :param sbase:
+    :param attribute:
+    :return:
+    """
+    if value is None:
+        msg = "required attribute '%s' not found in '%s'" % \
+              (attribute, sbase)
+        if sbase.id is not None:
+            msg += " with id '%s'" % sbase.id
+        elif sbase.name is not None:
+            msg += " with name '%s'" % sbase.get("name")
+        raise CobraSBMLError(msg)
+    return value
+
+
+def annotate_cobra_from_sbase(cobj, sbase):
+
+    # TODO: implement
+    pass
+
 
 
 def write_sbml_model(path, legacy=True):
