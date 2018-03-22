@@ -118,7 +118,7 @@ def _parse_sbml_into_model(doc, number=float):
         rid = _check_required(r, r.id, "id")
         reaction = Reaction(rid)
         reaction.name = r.name
-        annotate_cobra_from_sbase(r, reaction)
+        annotate_cobra_from_sbase(reaction, r)
 
         # set bounds
         r_fbc = r.getPlugin("fbc")  # type: libsbml.FbcReactionPlugin
@@ -252,10 +252,46 @@ def _check_required(sbase, value, attribute):
 
 
 def annotate_cobra_from_sbase(cobj, sbase):
+    """ Read annotations from SBase into dictionary.
 
-    # TODO: implement
-    pass
+    :param cobj:
+    :param sbase:
+    :return:
+    """
+    annotation = cobj.annotation
 
+    # SBO term
+    if sbase.isSetSBOTerm():
+        annotation["SBO"] = sbase.getSBOTerm()
+
+    # RDF annotation
+
+    cvterms = sbase.getCVTerms()
+    if cvterms is None:
+        return
+
+    for cvterm in cvterms:  # type: libsbml.CVTerm
+        # FIXME: currently only the terms, but not the qualifier
+        # are stored (only subset of identifiers.org parsed)
+        for k in range(cvterm.getNumResources()):
+            uri = cvterm.getResourceURI(k)
+            if not uri.startswith("http://identifiers.org/"):
+                warn("%s does not start with http://identifiers.org/" % uri)
+                continue
+            try:
+                provider, identifier = uri[23:].split("/", 1)
+            except ValueError:
+                warn("%s does not conform to http://identifiers.org/provider/id"
+                     % uri)
+                continue
+
+            # handle multiple by same provider (create list)
+            if provider in annotation:
+                if isinstance(annotation[provider], string_types):
+                    annotation[provider] = [annotation[provider]]
+                annotation[provider].append(identifier)
+            else:
+                annotation[provider] = identifier
 
 
 def write_sbml_model(path, legacy=True):
