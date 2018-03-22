@@ -96,3 +96,6 @@ venv/
 .benchmarks/
 glpk-4.*
 /.testmondata
+
+# oven
+cobra/oven/
