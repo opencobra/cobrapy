@@ -175,6 +175,9 @@ def _sbml_to_model(doc, number=float):
         if not model_fbc.isSetStrict():
             warn('Loading SBML model without fbc:strict="true"')
 
+    # TODO: convert fbc-v1 to fbc-v2git 
+
+
     # Model
     cmodel = Model(model.id)
     cmodel.name = model.name
