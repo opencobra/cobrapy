@@ -28,13 +28,14 @@ TODO: converters
 from __future__ import absolute_import
 
 import os
-from warnings import warn
+from warnings import catch_warnings, simplefilter, warn
 from six import string_types, iteritems
 from collections import defaultdict, namedtuple
 
 import libsbml
 from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.util.solver import set_objective
+from cobra.manipulation.validate import check_metabolite_compartment_formula
 
 try:
     from lxml.etree import (
@@ -64,9 +65,9 @@ SBO_FLUX_BOUND = "SBO:0000625"
 
 Unit = namedtuple('Unit', ['kind', 'scale', 'multiplier', 'exponent'])
 UNITS_FLUX = ("mmol_per_gDW_per_hr",
-              [Unit(kind='mole', scale=-3, multiplier=1, exponent=1),
-               Unit(kind='gram', scale=0, multiplier=1, exponent=-1),
-               Unit(kind='second', scale=0, multiplier=3600, exponent=-1)]
+              [Unit(kind=libsbml.UNIT_KIND_MOLE, scale=-3, multiplier=1, exponent=1),
+               Unit(kind=libsbml.UNIT_KIND_GRAM, scale=0, multiplier=1, exponent=-1),
+               Unit(kind=libsbml.UNIT_KIND_SECOND, scale=0, multiplier=3600, exponent=-1)]
               )
 # ----------------------------------------------------------
 
@@ -74,8 +75,6 @@ UNITS_FLUX = ("mmol_per_gDW_per_hr",
 class CobraSBMLError(Exception):
     """ SBML error class. """
     pass
-
-# TODO: check
 
 
 def read_sbml_model(filename):
@@ -101,28 +100,32 @@ def read_sbml_model(filename):
     :return:
     """
     try:
-        if os.path.exists(filename):
-            doc = libsbml.readSBMLFromFile(filename)  # type: libsbml.SBMLDocument
-        elif isinstance(filename, string_types):
-            # SBML as string representation
-            doc = libsbml.readSBMLFromString(filename)
-        elif hasattr(filename, "read"):
-            # File handle
-            doc = libsbml.readSBMLFromString(filename.read())
-        else:
-            raise CobraSBMLError(
-                "Input format is not supported."
-            )
-        # FIXME: check SBML parser errors
-
+        doc = _get_doc_from_filename(filename)
         return _sbml_to_model(doc)
-
     except Exception:
         raise CobraSBMLError(
             "Something went wrong reading the model. You can get a detailed "
             "report using the `cobra.io.sbml3.validate_sbml_model` function "
             "or using the online validator at http://sbml.org/validator")
 
+
+def _get_doc_from_filename(filename):
+    """ SBMLDocument from given filename.
+
+    :param filename:
+    :return:
+    """
+    if os.path.exists(filename):
+        doc = libsbml.readSBMLFromFile(filename)  # type: libsbml.SBMLDocument
+    elif isinstance(filename, string_types):
+        # SBML as string representation
+        doc = libsbml.readSBMLFromString(filename)
+    elif hasattr(filename, "read"):
+        # File handle
+        doc = libsbml.readSBMLFromString(filename.read())
+    else:
+        raise CobraSBMLError("Input format is not supported.")
+    return doc
 
 def write_sbml_model(cobra_model, filename, **kwargs):
     """ Writes cobra model to filename.
@@ -170,8 +173,9 @@ def _sbml_to_model(doc, number=float):
     :return: cobrapy model
     """
     # SBML model
-    doc_fbc = doc.getPlugin("fbc")  # type: libsbml.FbcSBMLDocumentPlugin
     model = doc.getModel()  # type: libsbml.Model
+    if model is None:
+        raise CobraSBMLError("No SBML model detected in file.")
     model_fbc = model.getPlugin("fbc")  # type: libsbml.FbcModelPlugin
 
     if not model_fbc:
@@ -377,16 +381,16 @@ def _model_to_sbml(cobra_model, units=True):
     model_fbc.setStrict(True)
 
     if cobra_model.id is not None:
-        model.set("id", cobra_model.id)
+        model.setId(cobra_model.id)
     if cobra_model.name is not None:
-        model.set("name", cobra_model.name)
+        model.setName(cobra_model.name)
 
     # Units
     if units:
-        unit_def = model.createUnitDefinition()  # type: libsbml.UnitDefinition
-        unit_def.setId(UNITS_FLUX[0])
+        flux_udef = model.createUnitDefinition()  # type: libsbml.UnitDefinition
+        flux_udef.setId(UNITS_FLUX[0])
         for u in UNITS_FLUX[1]:
-            unit = unit_def.createUnit()  # type: libsbml.Unit
+            unit = flux_udef.createUnit()  # type: libsbml.Unit
             unit.setKind(u.kind)
             unit.setExponent(u.exponent)
             unit.setScale(u.scale)
@@ -423,7 +427,7 @@ def _model_to_sbml(cobra_model, units=True):
         if sbo:
             p.setSBOTerm(sbo)
         if units:
-            p.setUnits(UNITS_FLUX)
+            p.setUnits(flux_udef.getId())
 
     # minimum and maximum from model
     if len(cobra_model.reactions) > 0:
@@ -452,13 +456,15 @@ def _model_to_sbml(cobra_model, units=True):
         s.setConstant(True)
         s.setBoundaryCondition(True)
         s.setHasOnlySubstanceUnits(False)
-        s.unsetName(met.name)
+        s.setName(met.name)
         s.setCompartment(met.compartment)
         s_fbc = s.getPlugin("fbc")  # type: libsbml.FbcSpeciesPlugin
-        s_fbc.setCharge(met.charge)
-        s_fbc.setChemicalFormula(met.formula)
+        if met.charge is not None:
+            s_fbc.setCharge(met.charge)
+        if met.formula is not None:
+            s_fbc.setChemicalFormula(met.formula)
 
-        annotate_sbase_from_cobra(species, met)
+        annotate_sbase_from_cobra(s, met)
 
     # Genes
     for gene in cobra_model.genes:
@@ -509,20 +515,14 @@ def _model_to_sbml(cobra_model, units=True):
         r_fbc.setLowerFluxBound(_create_bound(model, reaction, "lower_bound"))
         r_fbc.setUpperFluxBound(_create_bound(model, reaction, "upper_bound"))
 
-        '''
-        # gene reaction rule
+        # GPR
         gpr = reaction.gene_reaction_rule
         if gpr is not None and len(gpr) > 0:
-            gpr = gpr.replace(".", SBML_DOT)
-            gpr_xml = SubElement(sbml_reaction, GPR_TAG)
-            try:
-                parsed, _ = parse_gpr(gpr)
-                construct_gpr_xml(gpr_xml, parsed.body)
-            except Exception as e:
-                print("failed on '%s' in %s" %
-                      (reaction.gene_reaction_rule, repr(reaction)))
-                raise e
-        '''
+            gpa = r_fbc.createGeneProductAssociation()  # type: libsbml.GeneProductAssociation
+            # This is a helper method that allows a user to set the
+            # GeneProductAssociation via a string such as "a1 AND b1 OR C2" and
+            # have the method work out the correct XML structure.
+            gpa.setAssociation(gpr)
 
         # objective coefficient
         if reaction.objective_coefficient != 0:
@@ -530,7 +530,7 @@ def _model_to_sbml(cobra_model, units=True):
             flux_obj.setReaction(rid)
             flux_obj.setCoefficient(reaction.objective_coefficient)
 
-    return xml
+    return doc
 
 
 def _check_required(sbase, value, attribute):
@@ -665,9 +665,8 @@ def _add_cv_to_sbase(sbase, qualifier, resource):
     :param resource:
     :return:
     """
-    cv = libsbml.CVTerm()
+    cv = libsbml.CVTerm()  # type: libsbml.CVTerm
 
-    # set correct type of qualifier
     if qualifier.startswith('BQB'):
         cv.setQualifierType(libsbml.BIOLOGICAL_QUALIFIER)
         cv.setBiologicalQualifierType(libsbml.__dict__.get(qualifier))
@@ -678,16 +677,106 @@ def _add_cv_to_sbase(sbase, qualifier, resource):
         raise CobraSBMLError('Unsupported qualifier: {}'.format(qualifier))
 
     cv.addResource(resource)
-    success = sbase.addCVTerm(cv)
-
-    if success != 0:
-        warn("CV could not be written: " + libsbml.OperationReturnValue_toString(success))
+    sbase.addCVTerm(cv)
 
 
-def validate_sbml_model(path):
-    """ Validate given SBML model.
+def validate_sbml_model(filename, use_libsbml=False, check_model=True, ucheck=False, internalConsistency=True,
+                        check_units_consistency=False,
+                        check_modeling_practice=False):
+    """Returns the model along with a list of errors.
 
-    :param path:
+    Parameters
+    ----------
+    filename : str
+        The filename of the SBML model to be validated.
+    check_model: bool, optional
+        Whether to also check some basic model properties such as reaction
+        boundaries and compartment formulas.
+
+    Returns
+    -------
+    model : :class:`~cobra.core.Model.Model` object
+        The cobra model if the file could be read succesfully or None
+        otherwise.
+    errors : dict
+        Warnings and errors grouped by their respective types.
+
+    Raises
+    ------
+    CobraSBMLError
+        If the file is not a valid SBML Level 3 file with FBC.
+    """
+
+    errors = {k: [] for k in ("validator", "warnings", "other", "SBML errors",
+                              "SBML_FATAL", "SBML ERROR", "SBML_SCHEMA_ERROR", "SBML_WARNING")}
+
+    def err(err_msg, group="validator"):
+        errors[group].append(err_msg)
+
+    # make sure there is exactly one model
+    doc = _get_doc_from_filename(filename)
+    model = doc.getModel()  # type: libsbml.Model
+    if model is None:
+        raise CobraSBMLError("No SBML model detected in file.")
+
+    if use_libsbml:
+        # set the unit checking, similar for the other settings
+        doc.setConsistencyChecks(libsbml.LIBSBML_CAT_UNITS_CONSISTENCY, check_units_consistency)
+        doc.setConsistencyChecks(libsbml.LIBSBML_CAT_MODELING_PRACTICE, check_modeling_practice)
+
+        # validate the document
+        if internalConsistency:
+            doc.checkInternalConsistency()
+        doc.checkConsistency()
+
+        for k in range(doc.getNumErrors()):
+            e = doc.getError(k)
+            sev = e.getSeverity()
+            if sev == libsbml.LIBSBML_SEV_FATAL:
+                err(error_string(e), "SBML_FATAL")
+            elif sev == libsbml.LIBSBML_SEV_ERROR:
+                err(error_string(e), "SBML_ERROR")
+            elif sev == libsbml.LIBSBML_SEV_SCHEMA_ERROR:
+                err(error_string(e), "SBML_SCHEMA_ERROR")
+            elif sev == libsbml.LIBSBML_SEV_WARNING:
+                err(error_string(e), "SBML_WARNING")
+
+    # ensure can be made into model
+    # all warnings generated while loading will be logged as errors
+    with catch_warnings(record=True) as warning_list:
+        simplefilter("always")
+        try:
+            model = _sbml_to_model(doc)
+        except CobraSBMLError as e:
+            err(str(e), "SBML errors")
+            return None, errors
+        except Exception as e:
+            err(str(e), "other")
+            return None, errors
+    errors["warnings"].extend(str(i.message) for i in warning_list)
+
+    if check_model:
+        errors["validator"].extend(check_metabolite_compartment_formula(model))
+
+    return model, errors
+
+
+def error_string(error, k=None):
+    """ String representation of SBMLError.
+
+    :param error:
     :return:
     """
-    assert 0 == 1
+    package = error.getPackage()
+    if package == '':
+        package = 'core'
+
+    error_str = 'E{}: {} ({}, L{}, {})  \n' \
+                '{}\n' \
+                '[{}] {}\n' \
+                '{}\n'.format(
+                    k, error.getCategoryAsString(), package, error.getLine(), 'code',
+                    '-' * 60,
+                    error.getSeverityAsString(), error.getShortMessage(),
+                    error.getMessage())
+    return error_str
