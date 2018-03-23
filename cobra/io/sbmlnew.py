@@ -61,7 +61,8 @@ UPPER_BOUND_ID = "cobra_default_ub"
 ZERO_BOUND_ID = "cobra_0_bound"
 
 SBO_FBA_FRAMEWORK = "SBO:0000624"
-SBO_FLUX_BOUND = "SBO:0000626"
+SBO_DEFAULT_FLUX_BOUND = "SBO:0000626"
+SBO_FLUX_BOUND = "SBO:0000625"
 
 Unit = namedtuple('Unit', ['kind', 'scale', 'multiplier', 'exponent'])
 UNITS_FLUX = ("mmol_per_gDW_per_hr",
@@ -394,6 +395,51 @@ def _model_to_sbml(cobra_model, units=True):
             unit.setScale(u.scale)
             unit.setMultiplier(u.multiplier)
 
+    # Flux bounds
+    def _create_bound(model, reaction, bound_type):
+        """ Creates bound parameter.
+
+        :param model: SBML model
+        :param reaction: cobra reaction
+        :param bound_type:
+        :return: parameter id of bound
+        """
+        value = getattr(reaction, bound_type)
+        if value == LOWER_BOUND:
+            return LOWER_BOUND_ID
+        elif value == 0:
+            return ZERO_BOUND_ID
+        elif value == UPPER_BOUND:
+            return UPPER_BOUND_ID
+        else:
+            # new parameter
+            pid = reaction.id + "_" + bound_type  # FIXME: R_ prefix
+            _create_parameter(model, pid=pid, value=value, sbo=SBO_FLUX_BOUND)
+            return pid
+
+    def _create_parameter(model, pid, value, sbo=None, constant=True):
+        """ Create parameter in SBML model. """
+        p = model.createParameter()  # type: libsbml.Parameter
+        p.setId(pid)
+        p.setValue(value)
+        p.setConstant(constant)
+        if sbo:
+            p.setSBOTerm(sbo)
+        if units:
+            p.setUnits(UNITS_FLUX)
+
+    # minimum and maximum from model
+    if len(cobra_model.reactions) > 0:
+        min_value = min(cobra_model.reactions.list_attr("lower_bound"))
+        max_value = max(cobra_model.reactions.list_attr("upper_bound"))
+    else:
+        min_value = LOWER_BOUND
+        max_value = UPPER_BOUND
+
+    _create_parameter(model, pid=LOWER_BOUND_ID, value=min_value, sbo=SBO_DEFAULT_FLUX_BOUND, units=units)
+    _create_parameter(model, pid=UPPER_BOUND_ID, value=max_value, sbo=SBO_DEFAULT_FLUX_BOUND, units=units)
+    _create_parameter(model, pid=ZERO_BOUND_ID, value=0, sbo=SBO_DEFAULT_FLUX_BOUND, units = units)
+
     # Compartments
     for cid, name in iteritems(cobra_model.compartments):
         c = model.createCompartment()  # type: libsbml.Compartment
@@ -403,59 +449,48 @@ def _model_to_sbml(cobra_model, units=True):
 
     # Species
     for met in cobra_model.metabolites:
-
-
         s = model.createSpecies()  # type: libsbml.Species
-        s.setId(met.id)  # FIXME: id replacement
+        mid = met.id
+        s.setId(mid)  # FIXME: id replacement (R_prefix)
         s.setConstant(True)
         s.setBoundaryCondition(True)
         s.setHasOnlySubstanceUnits(False)
         s.unsetName(met.name)
-        annotate_sbml_from_cobra(species, met)
+        s.setCompartment(met.compartment)
+        s_fbc = s.getPlugin("fbc")  # type: libsbml.FbcSpeciesPlugin
+        s_fbc.setCharge(met.charge)
+        s_fbc.setChemicalFormula(met.formula)
 
-        set_attrib(species, "compartment", met.compartment)
-        set_attrib(species, "fbc:charge", met.charge)
-        set_attrib(species, "fbc:chemicalFormula", met.formula)
+        annotate_sbase_from_cobra(species, met)
 
-    # add in genes
-    if len(cobra_model.genes) > 0:
-        genes_list = SubElement(xml_model, GENELIST_TAG)
-        for gene in cobra_model.genes:
-            gene_id = gene.id.replace(".", SBML_DOT)
-            sbml_gene = SubElement(genes_list, GENE_TAG)
-            set_attrib(sbml_gene, "fbc:id", "G_" + gene_id)
-            name = gene.name
-            if name is None or len(name) == 0:
-                name = gene.id
-            set_attrib(sbml_gene, "fbc:label", gene_id)
-            set_attrib(sbml_gene, "fbc:name", name)
-            annotate_sbml_from_cobra(sbml_gene, gene)
+    # Genes
+    for gene in cobra_model.genes:
+        gp = model_fbc.createGeneProduct()  # type: libsbml.GeneProduct
+        gid = gene.id  # FIXME: id replacement (SBML_DOT, G_ prefix)
+        gp.setId(gid)
+        gname = gene.name
+        if gname is None or len(gname) == 0:
+            gname = gid
+        gp.setName(gname)
+        gp.setLabel(gid)
+
+        annotate_sbase_from_cobra(gp, gene)
 
     # add in reactions
-    reactions_list = SubElement(xml_model, "listOfReactions")
     for reaction in cobra_model.reactions:
-        id = "R_" + reaction.id
-        sbml_reaction = SubElement(
-            reactions_list, "reaction",
-            id=id,
-            # Useless required SBML parameters
-            fast="false",
-            reversible=str(reaction.lower_bound < 0).lower())
-        set_attrib(sbml_reaction, "name", reaction.name)
-        annotate_sbml_from_cobra(sbml_reaction, reaction)
-        # add in bounds
-        set_attrib(sbml_reaction, "fbc:upperFluxBound",
-                   create_bound(reaction, "upper_bound"))
-        set_attrib(sbml_reaction, "fbc:lowerFluxBound",
-                   create_bound(reaction, "lower_bound"))
+        rid = reaction.id  # FIXME: id replacement (R_prefix)
+        r = model.createReaction()  # type: libsbml.Reaction
+        r.setId(rid)
+        r.setName(reaction.name)
+        r.setFast(False)
+        r.setReversible((reaction.lower_bound < 0))
 
-        # objective coefficient
-        if reaction.objective_coefficient != 0:
-            objective = SubElement(flux_objectives_list,
-                                   ns("fbc:fluxObjective"))
-            set_attrib(objective, "fbc:reaction", id)
-            set_attrib(objective, "fbc:coefficient",
-                       strnum(reaction.objective_coefficient))
+        annotate_sbase_from_cobra(r, reaction)
+        # bounds
+        r_fbc = r.getPlugin("fbc")  # type: libsbml.FbcReactionPlugin
+        r_fbc.setLowerFluxBound(_create_bound(model, reaction, "lower_bound"))
+        r_fbc.setUpperFluxBound(_create_bound(model, reaction, "upper_bound"))
+
 
         # stoichiometry
         reactants = {}
@@ -477,6 +512,7 @@ def _model_to_sbml(cobra_model, units=True):
                 SubElement(product_list, "speciesReference", species=met_id,
                            stoichiometry=stoichiomety, constant="true")
 
+        '''
         # gene reaction rule
         gpr = reaction.gene_reaction_rule
         if gpr is not None and len(gpr) > 0:
@@ -489,6 +525,15 @@ def _model_to_sbml(cobra_model, units=True):
                 print("failed on '%s' in %s" %
                       (reaction.gene_reaction_rule, repr(reaction)))
                 raise e
+        '''
+
+        # objective coefficient
+        if reaction.objective_coefficient != 0:
+            objective = SubElement(flux_objectives_list,
+                                   ns("fbc:fluxObjective"))
+            set_attrib(objective, "fbc:reaction", id)
+            set_attrib(objective, "fbc:coefficient",
+                       strnum(reaction.objective_coefficient))
 
 
     '''
@@ -502,48 +547,9 @@ def _model_to_sbml(cobra_model, units=True):
     flux_objectives_list = SubElement(obj_list_tmp,
                                       ns("fbc:listOfFluxObjectives"))
 
-    # create the element for the flux bound parameters
-    parameter_list = SubElement(xml_model, "listOfParameters")
-    param_attr = {"constant": "true"}
-    if units:
-        param_attr["units"] = "mmol_per_gDW_per_hr"
-    # the most common bounds are the minimum, maximum, and 0
-    if len(cobra_model.reactions) > 0:
-        min_value = min(cobra_model.reactions.list_attr("lower_bound"))
-        max_value = max(cobra_model.reactions.list_attr("upper_bound"))
-    else:
-        min_value = -1000
-        max_value = 1000
-
-    SubElement(parameter_list, "parameter", value=strnum(min_value),
-               id="cobra_default_lb", sboTerm="SBO:0000626", **param_attr)
-    SubElement(parameter_list, "parameter", value=strnum(max_value),
-               id="cobra_default_ub", sboTerm="SBO:0000626", **param_attr)
-    SubElement(parameter_list, "parameter", value="0",
-               id="cobra_0_bound", sboTerm="SBO:0000626", **param_attr)
-
-    def create_bound(reaction, bound_type):
-        """returns the str id of the appropriate bound for the reaction
-
-        The bound will also be created if necessary"""
-        value = getattr(reaction, bound_type)
-        if value == min_value:
-            return "cobra_default_lb"
-        elif value == 0:
-            return "cobra_0_bound"
-        elif value == max_value:
-            return "cobra_default_ub"
-        else:
-            param_id = "R_" + reaction.id + "_" + bound_type
-            SubElement(parameter_list, "parameter", id=param_id,
-                       value=strnum(value), sboTerm="SBO:0000625",
-                       **param_attr)
-            return param_id
     '''
 
-
     return xml
-
 
 
 def _check_required(sbase, value, attribute):
