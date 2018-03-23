@@ -20,6 +20,7 @@ TODO: converters
 # replace ids
 # get_attrib(sbml_gene, "fbc:id").replace(SBML_DOT, ".")
 
+
 # [2] Legacy format and COBRA format support
 # [3] Conversion of FBCv1 to FBCv2
 
@@ -28,7 +29,7 @@ from __future__ import absolute_import
 
 import os
 from warnings import warn
-from six import string_types
+from six import string_types, iteritems
 from collections import defaultdict, namedtuple
 
 import libsbml
@@ -48,11 +49,19 @@ except ImportError:
 LONG_SHORT_DIRECTION = {'maximize': 'max', 'minimize': 'min'}
 SHORT_LONG_DIRECTION = {'min': 'minimize', 'max': 'maximize'}
 
+
+
+# ----------------------------------------------------------
+# Defaults for writing SBML
+# ----------------------------------------------------------
 LOWER_BOUND = -1000
 UPPER_BOUND = 1000
 LOWER_BOUND_ID = "cobra_default_lb"
 UPPER_BOUND_ID = "cobra_default_ub"
 ZERO_BOUND_ID = "cobra_0_bound"
+
+SBO_FBA_FRAMEWORK = "SBO:0000624"
+SBO_FLUX_BOUND = "SBO:0000626"
 
 Unit = namedtuple('Unit', ['kind', 'scale', 'multiplier', 'exponent'])
 UNITS_FLUX = ("mmol_per_gDW_per_hr",
@@ -60,6 +69,7 @@ UNITS_FLUX = ("mmol_per_gDW_per_hr",
                Unit(kind='gram', scale=0, multiplier=1, exponent=-1),
                Unit(kind='second', scale=0, multiplier=3600, exponent=-1)]
               )
+# ----------------------------------------------------------
 
 
 class CobraSBMLError(Exception):
@@ -115,6 +125,9 @@ def read_sbml_model(filename):
 
 def write_sbml_model(cobra_model, filename, **kwargs):
     """ Writes cobra model to filename.
+
+    The created model is SBML level 3 version 1 (L1V3) with
+    fbc package v2 (fbc-v2).
 
     If the given filename ends with the suffix ".gz" (for example,
     "myfile.xml.gz"), libSBML assumes the caller wants the file to be
@@ -348,11 +361,6 @@ def _sbml_to_model(doc, number=float):
     return cmodel
 
 
-
-SBO_FBA_FRAMEWORK = "SBO:0000624"
-SBO_FLUX_BOUND = "SBO:0000626"
-
-
 def _model_to_sbml(cobra_model, units=True):
     """
 
@@ -363,109 +371,48 @@ def _model_to_sbml(cobra_model, units=True):
     sbmlns = libsbml.SBMLNamespaces(3, 1)
     sbmlns.addPackageNamespace("fbc", 2)
 
-    doc = libsbml.SBMLDocument(sbmlns)
+    doc = libsbml.SBMLDocument(sbmlns)  # type: libsbml.SBMLDocument
     doc.setPackageRequired("fbc", False)
     doc.setSBOTerm(SBO_FBA_FRAMEWORK)
-    model = doc.createModel()
-    model_fbc = model.getPlugin("fbc")
+    model = doc.createModel()  # type: libsbml.Model
+    model_fbc = model.getPlugin("fbc")  # type: libsbml.FbcModelPlugin
     model_fbc.setStrict(True)
 
-    # model
-    model.setId('{}_fba'.format(model_id))
-    model.setName('{} (FBA)'.format(model_id))
-    model.setSBOTerm(comp.SBO_FLUX_BALANCE_FRAMEWORK)
-    return doc
-
-
-    xml = Element("sbml", xmlns=namespaces["sbml"], level="3", version="1",
-                  sboTerm="SBO:0000624")
-    set_attrib(xml, "fbc:required", "false")
-    xml_model = SubElement(xml, "model")
-    set_attrib(xml_model, "fbc:strict", "true")
     if cobra_model.id is not None:
-        xml_model.set("id", cobra_model.id)
+        model.set("id", cobra_model.id)
     if cobra_model.name is not None:
-        xml_model.set("name", cobra_model.name)
+        model.set("name", cobra_model.name)
 
-    # if using units, add in mmol/gdw/hr
+    # Units
     if units:
-        unit_def = SubElement(
-            SubElement(xml_model, "listOfUnitDefinitions"),
-            "unitDefinition", id="mmol_per_gDW_per_hr")
-        list_of_units = SubElement(unit_def, "listOfUnits")
-        SubElement(list_of_units, "unit", kind="mole", scale="-3",
-                   multiplier="1", exponent="1")
-        SubElement(list_of_units, "unit", kind="gram", scale="0",
-                   multiplier="1", exponent="-1")
-        SubElement(list_of_units, "unit", kind="second", scale="0",
-                   multiplier="3600", exponent="-1")
+        unit_def = model.createUnitDefinition()  # type: libsbml.UnitDefinition
+        unit_def.setId(UNITS_FLUX[0])
+        for u in UNITS_FLUX[1]:
+            unit = unit_def.createUnit()  # type: libsbml.Unit
+            unit.setKind(u.kind)
+            unit.setExponent(u.exponent)
+            unit.setScale(u.scale)
+            unit.setMultiplier(u.multiplier)
 
-    # create the element for the flux objective
-    obj_list_tmp = SubElement(xml_model, ns("fbc:listOfObjectives"))
-    set_attrib(obj_list_tmp, "fbc:activeObjective", "obj")
-    obj_list_tmp = SubElement(obj_list_tmp, ns("fbc:objective"))
-    set_attrib(obj_list_tmp, "fbc:id", "obj")
-    set_attrib(obj_list_tmp, "fbc:type",
-               SHORT_LONG_DIRECTION[cobra_model.objective.direction])
-    flux_objectives_list = SubElement(obj_list_tmp,
-                                      ns("fbc:listOfFluxObjectives"))
+    # Compartments
+    for cid, name in iteritems(cobra_model.compartments):
+        c = model.createCompartment()  # type: libsbml.Compartment
+        c.setId(cid)
+        c.setName(name)
+        c.setConstant(True)
 
-    # create the element for the flux bound parameters
-    parameter_list = SubElement(xml_model, "listOfParameters")
-    param_attr = {"constant": "true"}
-    if units:
-        param_attr["units"] = "mmol_per_gDW_per_hr"
-    # the most common bounds are the minimum, maximum, and 0
-    if len(cobra_model.reactions) > 0:
-        min_value = min(cobra_model.reactions.list_attr("lower_bound"))
-        max_value = max(cobra_model.reactions.list_attr("upper_bound"))
-    else:
-        min_value = -1000
-        max_value = 1000
-
-    SubElement(parameter_list, "parameter", value=strnum(min_value),
-               id="cobra_default_lb", sboTerm="SBO:0000626", **param_attr)
-    SubElement(parameter_list, "parameter", value=strnum(max_value),
-               id="cobra_default_ub", sboTerm="SBO:0000626", **param_attr)
-    SubElement(parameter_list, "parameter", value="0",
-               id="cobra_0_bound", sboTerm="SBO:0000626", **param_attr)
-
-    def create_bound(reaction, bound_type):
-        """returns the str id of the appropriate bound for the reaction
-
-        The bound will also be created if necessary"""
-        value = getattr(reaction, bound_type)
-        if value == min_value:
-            return "cobra_default_lb"
-        elif value == 0:
-            return "cobra_0_bound"
-        elif value == max_value:
-            return "cobra_default_ub"
-        else:
-            param_id = "R_" + reaction.id + "_" + bound_type
-            SubElement(parameter_list, "parameter", id=param_id,
-                       value=strnum(value), sboTerm="SBO:0000625",
-                       **param_attr)
-            return param_id
-
-    # add in compartments
-    compartments_list = SubElement(xml_model, "listOfCompartments")
-    compartments = cobra_model.compartments
-    for compartment, name in iteritems(compartments):
-        SubElement(compartments_list, "compartment", id=compartment, name=name,
-                   constant="true")
-
-    # add in metabolites
-    species_list = SubElement(xml_model, "listOfSpecies")
+    # Species
     for met in cobra_model.metabolites:
-        species = SubElement(species_list, "species",
-                             id="M_" + met.id,
-                             # Useless required SBML parameters
-                             constant="false",
-                             boundaryCondition="false",
-                             hasOnlySubstanceUnits="false")
-        set_attrib(species, "name", met.name)
+
+
+        s = model.createSpecies()  # type: libsbml.Species
+        s.setId(met.id)  # FIXME: id replacement
+        s.setConstant(True)
+        s.setBoundaryCondition(True)
+        s.setHasOnlySubstanceUnits(False)
+        s.unsetName(met.name)
         annotate_sbml_from_cobra(species, met)
+
         set_attrib(species, "compartment", met.compartment)
         set_attrib(species, "fbc:charge", met.charge)
         set_attrib(species, "fbc:chemicalFormula", met.formula)
@@ -543,7 +490,60 @@ def _model_to_sbml(cobra_model, units=True):
                       (reaction.gene_reaction_rule, repr(reaction)))
                 raise e
 
+
+    '''
+    # create the element for the flux objective
+    obj_list_tmp = SubElement(xml_model, ns("fbc:listOfObjectives"))
+    set_attrib(obj_list_tmp, "fbc:activeObjective", "obj")
+    obj_list_tmp = SubElement(obj_list_tmp, ns("fbc:objective"))
+    set_attrib(obj_list_tmp, "fbc:id", "obj")
+    set_attrib(obj_list_tmp, "fbc:type",
+               SHORT_LONG_DIRECTION[cobra_model.objective.direction])
+    flux_objectives_list = SubElement(obj_list_tmp,
+                                      ns("fbc:listOfFluxObjectives"))
+
+    # create the element for the flux bound parameters
+    parameter_list = SubElement(xml_model, "listOfParameters")
+    param_attr = {"constant": "true"}
+    if units:
+        param_attr["units"] = "mmol_per_gDW_per_hr"
+    # the most common bounds are the minimum, maximum, and 0
+    if len(cobra_model.reactions) > 0:
+        min_value = min(cobra_model.reactions.list_attr("lower_bound"))
+        max_value = max(cobra_model.reactions.list_attr("upper_bound"))
+    else:
+        min_value = -1000
+        max_value = 1000
+
+    SubElement(parameter_list, "parameter", value=strnum(min_value),
+               id="cobra_default_lb", sboTerm="SBO:0000626", **param_attr)
+    SubElement(parameter_list, "parameter", value=strnum(max_value),
+               id="cobra_default_ub", sboTerm="SBO:0000626", **param_attr)
+    SubElement(parameter_list, "parameter", value="0",
+               id="cobra_0_bound", sboTerm="SBO:0000626", **param_attr)
+
+    def create_bound(reaction, bound_type):
+        """returns the str id of the appropriate bound for the reaction
+
+        The bound will also be created if necessary"""
+        value = getattr(reaction, bound_type)
+        if value == min_value:
+            return "cobra_default_lb"
+        elif value == 0:
+            return "cobra_0_bound"
+        elif value == max_value:
+            return "cobra_default_ub"
+        else:
+            param_id = "R_" + reaction.id + "_" + bound_type
+            SubElement(parameter_list, "parameter", id=param_id,
+                       value=strnum(value), sboTerm="SBO:0000625",
+                       **param_attr)
+            return param_id
+    '''
+
+
     return xml
+
 
 
 def _check_required(sbase, value, attribute):
@@ -564,6 +564,48 @@ def _check_required(sbase, value, attribute):
     return value
 
 
+# ----------------------
+# Annotations
+# ----------------------
+# FIXME: currently only the terms, but not the qualifier are parsed
+# FIXME: migration to https, both should be supported
+# (better parsing of collection & id via regular expression)
+
+URL_IDENTIFIERS = "http://identifiers.org/"
+
+QualifierType = {
+    0: "MODEL_QUALIFIER",
+    1: "BIOLOGICAL_QUALIFIER",
+    2: "UNKNOWN_QUALIFIER"
+}
+
+ModelQualifierType = {
+    0: "BQM_IS",
+    1: "BQM_IS_DESCRIBED_BY",
+    2: "BQM_IS_DERIVED_FROM",
+    3: "BQM_IS_INSTANCE_OF",
+    4: "BQM_HAS_INSTANCE",
+    5: "BQM_UNKNOWN",
+}
+
+BiologicalQualifierType = {
+    0: "BQB_IS",
+    1: "BQB_HAS_PART",
+    2: "BQB_IS_PART_OF",
+    3: "BQB_IS_VERSION_OF",
+    4: "BQB_HAS_VERSION",
+    5: "BQB_IS_HOMOLOG_TO",
+    6: "BQB_IS_DESCRIBED_BY",
+    7: "BQB_IS_ENCODED_BY",
+    8: "BQB_ENCODES",
+    9: "BQB_OCCURS_IN",
+    10: "BQB_HAS_PROPERTY",
+    11: "BQB_IS_PROPERTY_OF",
+    12: "BQB_HAS_TAXON",
+    13: "BQB_UNKNOWN",
+}
+
+
 def annotate_cobra_from_sbase(cobj, sbase):
     """ Read annotations from SBase into dictionary.
 
@@ -578,23 +620,20 @@ def annotate_cobra_from_sbase(cobj, sbase):
         annotation["SBO"] = sbase.getSBOTerm()
 
     # RDF annotation
-
     cvterms = sbase.getCVTerms()
     if cvterms is None:
         return
 
     for cvterm in cvterms:  # type: libsbml.CVTerm
-        # FIXME: currently only the terms, but not the qualifier
-        # are stored (only subset of identifiers.org parsed)
         for k in range(cvterm.getNumResources()):
             uri = cvterm.getResourceURI(k)
-            if not uri.startswith("http://identifiers.org/"):
-                warn("%s does not start with http://identifiers.org/" % uri)
+            if not uri.startswith(URL_IDENTIFIERS):
+                warn("%s does not start with %s" % (uri, URL_IDENTIFIERS))
                 continue
             try:
                 provider, identifier = uri[23:].split("/", 1)
             except ValueError:
-                warn("%s does not conform to http://identifiers.org/provider/id"
+                warn("%s does not conform to http://identifiers.org/collection/id"
                      % uri)
                 continue
 
@@ -605,6 +644,57 @@ def annotate_cobra_from_sbase(cobj, sbase):
                 annotation[provider].append(identifier)
             else:
                 annotation[provider] = identifier
+
+
+def annotate_sbase_from_cobra(sbase, cobj):
+    """ Set cobra annotations on SBase into.
+
+    :param sbase:
+    :param cobj: cobra object
+
+    :return:
+    """
+    if len(cobj.annotation) == 0:
+        return
+
+    sbase.setMetaId("meta_{}".format(sbase.id))
+    for provider, identifiers in sorted(iteritems(cobj.annotation)):
+        if provider == "SBO":
+            sbase.setSBOTerm(identifiers)
+        else:
+            if isinstance(identifiers, string_types):
+                identifiers = (identifiers,)
+
+            for identifier in identifiers:
+                _add_cv_to_sbase(sbase, qualifier="BQB_IS",
+                                 resource="%s/%s/%s" % (URL_IDENTIFIERS, provider, identifier))
+
+
+def _add_cv_to_sbase(sbase, qualifier, resource):
+    """ Adds RDF information to given element.
+
+    :param sbase:
+    :param qualifier:
+    :param resource:
+    :return:
+    """
+    cv = libsbml.CVTerm()
+
+    # set correct type of qualifier
+    if qualifier.startswith('BQB'):
+        cv.setQualifierType(libsbml.BIOLOGICAL_QUALIFIER)
+        cv.setBiologicalQualifierType(libsbml.__dict__.get(qualifier))
+    elif qualifier.startswith('BQM'):
+        cv.setQualifierType(libsbml.MODEL_QUALIFIER)
+        cv.setModelQualifierType(libsbml.__dict__.get(qualifier))
+    else:
+        raise CobraSBMLError('Unsupported qualifier: {}'.format(qualifier))
+
+    cv.addResource(resource)
+    success = sbase.addCVTerm(cv)
+
+    if success != 0:
+        warn("CV could not be written: " + libsbml.OperationReturnValue_toString(success))
 
 
 def validate_sbml_model(path):
