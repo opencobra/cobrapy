@@ -512,6 +512,7 @@ def _model_to_sbml(cobra_model, units=True):
 
         # bounds
         r_fbc = r.getPlugin("fbc")  # type: libsbml.FbcReactionPlugin
+
         r_fbc.setLowerFluxBound(_create_bound(model, reaction, "lower_bound"))
         r_fbc.setUpperFluxBound(_create_bound(model, reaction, "upper_bound"))
 
@@ -680,6 +681,9 @@ def _add_cv_to_sbase(sbase, qualifier, resource):
     sbase.addCVTerm(cv)
 
 
+# -----------------------------------
+# Validation
+# -----------------------------------
 def validate_sbml_model(filename, use_libsbml=False, check_model=True, ucheck=False, internalConsistency=True,
                         check_units_consistency=False,
                         check_modeling_practice=False):
@@ -706,9 +710,11 @@ def validate_sbml_model(filename, use_libsbml=False, check_model=True, ucheck=Fa
     CobraSBMLError
         If the file is not a valid SBML Level 3 file with FBC.
     """
-
-    errors = {k: [] for k in ("validator", "warnings", "other", "SBML errors",
-                              "SBML_FATAL", "SBML ERROR", "SBML_SCHEMA_ERROR", "SBML_WARNING")}
+    # store errors
+    errors = {key: [] for key in ("validator", "warnings", "other", "SBML errors")}
+    if use_libsbml:
+        for key in ["SBML_FATAL", "SBML ERROR", "SBML_SCHEMA_ERROR", "SBML_WARNING"]:
+            errors[key] = []
 
     def err(err_msg, group="validator"):
         errors[group].append(err_msg)
