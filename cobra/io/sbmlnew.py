@@ -28,6 +28,7 @@ TODO: converters
 from __future__ import absolute_import
 
 import os
+import re
 from warnings import catch_warnings, simplefilter, warn
 from six import string_types, iteritems
 from collections import defaultdict, namedtuple
@@ -37,14 +38,7 @@ from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.util.solver import set_objective
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 
-try:
-    from lxml.etree import (
-        parse, Element, SubElement, ElementTree, register_namespace,
-        ParseError, XPath)
-
-    _with_lxml = True
-except ImportError:
-    _with_lxml = False
+from .sbml import write_cobra_model_to_sbml_file as write_sbml2
 
 
 LONG_SHORT_DIRECTION = {'maximize': 'max', 'minimize': 'min'}
@@ -127,7 +121,8 @@ def _get_doc_from_filename(filename):
         raise CobraSBMLError("Input format is not supported.")
     return doc
 
-def write_sbml_model(cobra_model, filename, **kwargs):
+
+def write_sbml_model(cobra_model, filename, use_fbc_package, **kwargs):
     """ Writes cobra model to filename.
 
     The created model is SBML level 3 version 1 (L1V3) with
@@ -152,13 +147,9 @@ def write_sbml_model(cobra_model, filename, **kwargs):
     :param kwargs:
     :return:
     """
-
-    # TODO: legacy SBML
-    # if not use_fbc_package:
-    #     if libsbml is None:
-    #         raise ImportError("libSBML required to write non-fbc models")
-    #     write_sbml2(cobra_model, filename, use_fbc_package=False, **kwargs)
-    #     return
+    if not use_fbc_package:
+        # legacy cobra without fbc
+        write_sbml2(cobra_model, filename, use_fbc_package=False, **kwargs)
 
     # create xml
     doc = _model_to_sbml(cobra_model, **kwargs)
@@ -198,10 +189,21 @@ def _sbml_to_model(doc, number=float):
         met = Metabolite(sid)
         met.name = s.name
         met.compartment = s.compartment
+
+        # parse notes in notes dictionary
+        notes = s.getNotesString()
+        if notes and len(notes) > 0:
+            met.notes = _parse_notes(notes)
+
         s_fbc = s.getPlugin("fbc")
         if s_fbc:
             met.charge = s_fbc.getCharge()
             met.formula = s_fbc.getChemicalFormula()
+        else:
+            if 'CHARGE' in met.notes:
+                met.charge = met.notes['CHARGE']
+            if 'FORMULA' in met.notes:
+                met.formula = met.notes['FORMULA']
 
         # Detect boundary metabolites - In case they have been mistakenly
         # added. They should not actually appear in a model
@@ -213,14 +215,15 @@ def _sbml_to_model(doc, number=float):
         cmodel.add_metabolites([met])
 
     # Genes
-    for gp in model_fbc.getListOfGeneProducts():  # type: libsbml.GeneProduct
-        gid = gp.id   # FIXME: G_ prefix (clip), DOT replacements
-        gene = Gene(gid)
-        gene.name = gp.name
-        if gene.name is None:
-            gene.name = gp.get
-        annotate_cobra_from_sbase(gene, gp)
-        cmodel.genes.append(gene)
+    if model_fbc:
+        for gp in model_fbc.getListOfGeneProducts():  # type: libsbml.GeneProduct
+            gid = gp.id   # FIXME: G_ prefix (clip), DOT replacements
+            gene = Gene(gid)
+            gene.name = gp.name
+            if gene.name is None:
+                gene.name = gp.get
+            annotate_cobra_from_sbase(gene, gp)
+            cmodel.genes.append(gene)
 
     # Reactions
     reactions = []
@@ -230,11 +233,15 @@ def _sbml_to_model(doc, number=float):
         reaction.name = r.name
         annotate_cobra_from_sbase(reaction, r)
 
+        # parse notes in notes dictionary
+        notes = r.getNotesString()
+        if notes and len(notes) > 0:
+            reaction.notes = _parse_notes(notes)
+
         # set bounds
         r_fbc = r.getPlugin("fbc")  # type: libsbml.FbcReactionPlugin
-        if r_fbc is None:
-            raise CobraSBMLError("No flux bounds on reaction '%s'" % r)
-        else:
+        if r_fbc:
+            # information in fbc
             # FIXME: remove code duplication in this section
             lb_id = _check_required(r_fbc, r_fbc.getLowerFluxBound(), "lowerFluxBound")
             ub_id = _check_required(r_fbc, r_fbc.getUpperFluxBound(), "upperFluxBound")
@@ -251,6 +258,24 @@ def _sbml_to_model(doc, number=float):
             else:
                 raise CobraSBMLError("No constant bound '%s' for reaction '%s" % (p_ub, r))
                 bounds.append(p.value)
+
+        elif r.isSetKineticLaw():
+            # sometime information encoded in kinetic laws
+            klaw = r.getKineticLaw()  # type: libsbml.KineticLaw
+            p_lb = klaw.getParameter("LOWER_BOUND")
+            if p_lb:
+                reaction.lower_bound = p_lb.value
+            else:
+                raise CobraSBMLError("Missing flux bounds on reaction '%s'" % r)
+            p_ub = klaw.getParameter("UPPER_BOUND")
+            if p_ub:
+                reaction.upper_bound = p_ub.value
+            else:
+                raise CobraSBMLError("Missing flux bounds on reaction '%s'" % r)
+            warn("Bounds encoded in KineticLaw for '%s" % r)
+        else:
+            raise CobraSBMLError("No flux bounds on reaction '%s'" % r)
+
 
         reactions.append(reaction)
 
@@ -312,17 +337,22 @@ def _sbml_to_model(doc, number=float):
             else:
                 raise Exception("unsupported tag " + sub_xml.tag)
         '''
-        gpa = r_fbc.getGeneProductAssociation()  # type: libsbml.GeneProductAssociation
-        # print(gpa)
+        if r_fbc:
+            gpa = r_fbc.getGeneProductAssociation()  # type: libsbml.GeneProductAssociation
 
-        association = None
-        if gpa is not None:
-            association = gpa.getAssociation()  # type: libsbml.FbcAssociation
-            # print(association)
-            # print(association.getListOfAllElements())
+            # print(gpa)
 
-        # gpr = process_association(association) if association is not None else ''
-        gpr = ''
+            association = None
+            if gpa is not None:
+                association = gpa.getAssociation()  # type: libsbml.FbcAssociation
+                # print(association)
+                # print(association.getListOfAllElements())
+
+            # gpr = process_association(association) if association is not None else ''
+            gpr = ''
+        else:
+            # fallback to notes information
+            gpr = reaction.notes.get('GENE_ASSOCIATION', '')
 
         # remove outside parenthesis, if any
         if gpr.startswith("(") and gpr.endswith(")"):
@@ -337,28 +367,29 @@ def _sbml_to_model(doc, number=float):
         warn(str(e))
 
     # Objective
-    obj_list = model_fbc.getListOfObjectives()  # type: libsbml.ListOfObjectives
-    if obj_list is None:
-        warn("listOfObjectives element not found")
-    else:
-        obj_id = obj_list.getActiveObjective()
-        obj = model_fbc.getObjective(obj_id)  # type: libsbml.Objective
-        obj_direction = LONG_SHORT_DIRECTION[obj.getType()]
+    if model_fbc:
+        obj_list = model_fbc.getListOfObjectives()  # type: libsbml.ListOfObjectives
+        if obj_list is None:
+            warn("listOfObjectives element not found")
+        else:
+            obj_id = obj_list.getActiveObjective()
+            obj = model_fbc.getObjective(obj_id)  # type: libsbml.Objective
+            obj_direction = LONG_SHORT_DIRECTION[obj.getType()]
 
-        coefficients = {}
+            coefficients = {}
 
-        for flux_obj in obj.getListOfFluxObjectives():  # type: libsbml.FluxObjective
-            rid = flux_obj.getReaction()  # FIXME: R_ prefix (clip)
-            try:
-                objective_reaction = cmodel.reactions.get_by_id(rid)
-            except KeyError:
-                raise CobraSBMLError("Objective reaction '%s' not found" % rid)
-            try:
-                coefficients[objective_reaction] = number(flux_obj.getCoefficient())
-            except ValueError as e:
-                warn(str(e))
-        set_objective(cmodel, coefficients)
-        cmodel.solver.objective.direction = obj_direction
+            for flux_obj in obj.getListOfFluxObjectives():  # type: libsbml.FluxObjective
+                rid = flux_obj.getReaction()  # FIXME: R_ prefix (clip)
+                try:
+                    objective_reaction = cmodel.reactions.get_by_id(rid)
+                except KeyError:
+                    raise CobraSBMLError("Objective reaction '%s' not found" % rid)
+                try:
+                    coefficients[objective_reaction] = number(flux_obj.getCoefficient())
+                except ValueError as e:
+                    warn(str(e))
+            set_objective(cmodel, coefficients)
+            cmodel.solver.objective.direction = obj_direction
 
     return cmodel
 
@@ -551,6 +582,16 @@ def _check_required(sbase, value, attribute):
         raise CobraSBMLError(msg)
     return value
 
+
+def _parse_notes(notes):
+    """ Creates dictionary of notes.
+
+    :param notes:
+    :return:
+    """
+    pattern = r"<p>\s*(\w+)\s*:\s*([\w|\s]+)<"
+    matches = re.findall(pattern, notes)
+    return {k.strip(): v.strip() for (k, v) in matches}
 
 # ----------------------
 # Annotations
