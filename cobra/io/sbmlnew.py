@@ -49,8 +49,6 @@ except ImportError:
 LONG_SHORT_DIRECTION = {'maximize': 'max', 'minimize': 'min'}
 SHORT_LONG_DIRECTION = {'min': 'minimize', 'max': 'maximize'}
 
-
-
 # ----------------------------------------------------------
 # Defaults for writing SBML
 # ----------------------------------------------------------
@@ -76,6 +74,8 @@ UNITS_FLUX = ("mmol_per_gDW_per_hr",
 class CobraSBMLError(Exception):
     """ SBML error class. """
     pass
+
+# TODO: check
 
 
 def read_sbml_model(filename):
@@ -190,7 +190,7 @@ def _sbml_to_model(doc, number=float):
     # Species
     boundary_ids = set()
     for s in model.species:  # type: libsbml.Species
-        sid = _check_required(s, s.id, "id")
+        sid = _check_required(s, s.id, "id")  # FIXME: S_ prefix (clip)
         met = Metabolite(sid)
         met.name = s.name
         met.compartment = s.compartment
@@ -210,7 +210,8 @@ def _sbml_to_model(doc, number=float):
 
     # Genes
     for gp in model_fbc.getListOfGeneProducts():  # type: libsbml.GeneProduct
-        gene = Gene(gp.id)
+        gid = gp.id   # FIXME: G_ prefix (clip), DOT replacements
+        gene = Gene(gid)
         gene.name = gp.name
         if gene.name is None:
             gene.name = gp.get
@@ -220,7 +221,7 @@ def _sbml_to_model(doc, number=float):
     # Reactions
     reactions = []
     for r in model.reactions:  # type: libsbml.Reaction
-        rid = _check_required(r, r.id, "id")
+        rid = _check_required(r, r.id, "id")  # FIXME: R_ prefix (clip)
         reaction = Reaction(rid)
         reaction.name = r.name
         annotate_cobra_from_sbase(reaction, r)
@@ -252,8 +253,7 @@ def _sbml_to_model(doc, number=float):
         # parse equation
         stoichiometry = defaultdict(lambda: 0)
         for sref in r.getListOfReactants():  # type: libsbml.SpeciesReference
-            sid = sref.getSpecies()
-            # FIXME: clip
+            sid = sref.getSpecies()    # FIXME: M_ prefix (clip)
             stoichiometry[sid] -= number(_check_required(sref, sref.stoichiometry, "stoichiometry"))
 
         for sref in r.getListOfProducts():  # type: libsbml.SpeciesReference
@@ -317,8 +317,6 @@ def _sbml_to_model(doc, number=float):
             # print(association)
             # print(association.getListOfAllElements())
 
-
-
         # gpr = process_association(association) if association is not None else ''
         gpr = ''
 
@@ -346,8 +344,7 @@ def _sbml_to_model(doc, number=float):
         coefficients = {}
 
         for flux_obj in obj.getListOfFluxObjectives():  # type: libsbml.FluxObjective
-            # FIXME: clip id
-            rid = flux_obj.getReaction()
+            rid = flux_obj.getReaction()  # FIXME: R_ prefix (clip)
             try:
                 objective_reaction = cmodel.reactions.get_by_id(rid)
             except KeyError:
@@ -436,9 +433,9 @@ def _model_to_sbml(cobra_model, units=True):
         min_value = LOWER_BOUND
         max_value = UPPER_BOUND
 
-    _create_parameter(model, pid=LOWER_BOUND_ID, value=min_value, sbo=SBO_DEFAULT_FLUX_BOUND, units=units)
-    _create_parameter(model, pid=UPPER_BOUND_ID, value=max_value, sbo=SBO_DEFAULT_FLUX_BOUND, units=units)
-    _create_parameter(model, pid=ZERO_BOUND_ID, value=0, sbo=SBO_DEFAULT_FLUX_BOUND, units = units)
+    _create_parameter(model, pid=LOWER_BOUND_ID, value=min_value, sbo=SBO_DEFAULT_FLUX_BOUND)
+    _create_parameter(model, pid=UPPER_BOUND_ID, value=max_value, sbo=SBO_DEFAULT_FLUX_BOUND)
+    _create_parameter(model, pid=ZERO_BOUND_ID, value=0, sbo=SBO_DEFAULT_FLUX_BOUND)
 
     # Compartments
     for cid, name in iteritems(cobra_model.compartments):
@@ -476,7 +473,13 @@ def _model_to_sbml(cobra_model, units=True):
 
         annotate_sbase_from_cobra(gp, gene)
 
-    # add in reactions
+    # Objective
+    objective = model_fbc.createObjective()  # type: libsbml.Objective
+    objective.setId("obj")
+    objective.setType(SHORT_LONG_DIRECTION[cobra_model.objective.direction])
+    model_fbc.setActiveObjectiveId("obj")
+
+    # Reactions
     for reaction in cobra_model.reactions:
         rid = reaction.id  # FIXME: id replacement (R_prefix)
         r = model.createReaction()  # type: libsbml.Reaction
@@ -486,31 +489,25 @@ def _model_to_sbml(cobra_model, units=True):
         r.setReversible((reaction.lower_bound < 0))
 
         annotate_sbase_from_cobra(r, reaction)
+
+        # stoichiometry
+        for metabolite, stoichiomety in iteritems(reaction._metabolites):
+            sid = metabolite.id  # FIXME: id replacement (M_ prefix)
+            if stoichiomety < 0:
+                sref = r.createReactant()  # type: libsbml.SpeciesReference
+                sref.setSpecies(sid)
+                sref.setStoichiometry(-stoichiomety)
+                sref.setConstant(True)
+            else:
+                sref = r.createProduct()  # type: libsbml.SpeciesReference
+                sref.setSpecies(sid)
+                sref.setStoichiometry(stoichiomety)
+                sref.setConstant(True)
+
         # bounds
         r_fbc = r.getPlugin("fbc")  # type: libsbml.FbcReactionPlugin
         r_fbc.setLowerFluxBound(_create_bound(model, reaction, "lower_bound"))
         r_fbc.setUpperFluxBound(_create_bound(model, reaction, "upper_bound"))
-
-
-        # stoichiometry
-        reactants = {}
-        products = {}
-        for metabolite, stoichiomety in iteritems(reaction._metabolites):
-            met_id = "M_" + metabolite.id
-            if stoichiomety > 0:
-                products[met_id] = strnum(stoichiomety)
-            else:
-                reactants[met_id] = strnum(-stoichiomety)
-        if len(reactants) > 0:
-            reactant_list = SubElement(sbml_reaction, "listOfReactants")
-            for met_id, stoichiomety in sorted(iteritems(reactants)):
-                SubElement(reactant_list, "speciesReference", species=met_id,
-                           stoichiometry=stoichiomety, constant="true")
-        if len(products) > 0:
-            product_list = SubElement(sbml_reaction, "listOfProducts")
-            for met_id, stoichiomety in sorted(iteritems(products)):
-                SubElement(product_list, "speciesReference", species=met_id,
-                           stoichiometry=stoichiomety, constant="true")
 
         '''
         # gene reaction rule
@@ -529,25 +526,9 @@ def _model_to_sbml(cobra_model, units=True):
 
         # objective coefficient
         if reaction.objective_coefficient != 0:
-            objective = SubElement(flux_objectives_list,
-                                   ns("fbc:fluxObjective"))
-            set_attrib(objective, "fbc:reaction", id)
-            set_attrib(objective, "fbc:coefficient",
-                       strnum(reaction.objective_coefficient))
-
-
-    '''
-    # create the element for the flux objective
-    obj_list_tmp = SubElement(xml_model, ns("fbc:listOfObjectives"))
-    set_attrib(obj_list_tmp, "fbc:activeObjective", "obj")
-    obj_list_tmp = SubElement(obj_list_tmp, ns("fbc:objective"))
-    set_attrib(obj_list_tmp, "fbc:id", "obj")
-    set_attrib(obj_list_tmp, "fbc:type",
-               SHORT_LONG_DIRECTION[cobra_model.objective.direction])
-    flux_objectives_list = SubElement(obj_list_tmp,
-                                      ns("fbc:listOfFluxObjectives"))
-
-    '''
+            flux_obj = objective.createFluxObjective()  # type: libsbml.FluxObjective
+            flux_obj.setReaction(rid)
+            flux_obj.setCoefficient(reaction.objective_coefficient)
 
     return xml
 
@@ -623,7 +604,7 @@ def annotate_cobra_from_sbase(cobj, sbase):
 
     # SBO term
     if sbase.isSetSBOTerm():
-        annotation["SBO"] = sbase.getSBOTerm()
+        annotation["sbo"] = sbase.getSBOTerm()
 
     # RDF annotation
     cvterms = sbase.getCVTerms()
