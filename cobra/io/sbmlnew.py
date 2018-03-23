@@ -122,7 +122,7 @@ def _get_doc_from_filename(filename):
     return doc
 
 
-def write_sbml_model(cobra_model, filename, use_fbc_package, **kwargs):
+def write_sbml_model(cobra_model, filename, use_fbc_package=True, **kwargs):
     """ Writes cobra model to filename.
 
     The created model is SBML level 3 version 1 (L1V3) with
@@ -646,7 +646,8 @@ def annotate_cobra_from_sbase(cobj, sbase):
 
     # SBO term
     if sbase.isSetSBOTerm():
-        annotation["sbo"] = sbase.getSBOTerm()
+        # FIXME: this should be lower collection, i.e. sbo
+        annotation["SBO"] = sbase.getSBOTermID()
 
     # RDF annotation
     cvterms = sbase.getCVTerms()
@@ -689,6 +690,7 @@ def annotate_sbase_from_cobra(sbase, cobj):
     sbase.setMetaId("meta_{}".format(sbase.id))
     for provider, identifiers in sorted(iteritems(cobj.annotation)):
         if provider == "SBO":
+            # FIXME: this should be lower collection, i.e. sbo
             sbase.setSBOTerm(identifiers)
         else:
             if isinstance(identifiers, string_types):
