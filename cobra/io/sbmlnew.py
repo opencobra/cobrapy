@@ -1,29 +1,6 @@
 """
 SBML import and export using libsbml.
-
-
-TODO: converters
-- COBRA to FBCV2
-- FBCV2 to COBRA
-- FBCV1 to FBCV2
-
-- SBMLIdConverter
-
 """
-# -------------------------------
-# TODO
-# ------------------------------
-# [1] Replacing/Changing of identifiers between SBML and cobra formats
-# clip ids
-# clip(met, "M_")
-# clip_prefixes = {'compartment': None, 'specie': 'M_', 'gene': 'G_'}
-# replace ids
-# get_attrib(sbml_gene, "fbc:id").replace(SBML_DOT, ".")
-
-
-# [2] Legacy format and COBRA format support
-# [3] Conversion of FBCv1 to FBCv2
-
 
 from __future__ import absolute_import
 
@@ -40,6 +17,9 @@ from cobra.manipulation.validate import check_metabolite_compartment_formula
 
 from .sbml import write_cobra_model_to_sbml_file as write_sbml2
 
+class CobraSBMLError(Exception):
+    """ SBML error class. """
+    pass
 
 LONG_SHORT_DIRECTION = {'maximize': 'max', 'minimize': 'min'}
 SHORT_LONG_DIRECTION = {'min': 'minimize', 'max': 'maximize'}
@@ -63,15 +43,54 @@ UNITS_FLUX = ("mmol_per_gDW_per_hr",
                Unit(kind=libsbml.UNIT_KIND_GRAM, scale=0, multiplier=1, exponent=-1),
                Unit(kind=libsbml.UNIT_KIND_SECOND, scale=0, multiplier=3600, exponent=-1)]
               )
+
+# ----------------------------------------------------------
+# Handle id replacements
+# ----------------------------------------------------------
+F_GENE = "F_GENE"
+F_GENE_REV = "F_GENE_REV"
+F_SPECIE = "F_SPECIE"
+F_SPECIE_REV = "F_SPECIE_REV"
+F_REACTION = "F_REACTION"
+F_REACTION_REV = "F_REACTION_REV"
+
+SBML_DOT = "__SBML_DOT__"
+
+def _clip(s, prefix):
+    """ Clips a prefix from the beginning of a string if it exists. """
+    return s[len(prefix):] if s.startswith(prefix) else s
+
+def _f_gene(s, prefix="G_"):
+    s = s.replace(SBML_DOT, ".")
+    return _clip(s, prefix)
+
+def _f_gene_rev(s, prefix="G_"):
+    s = s.replace(".", SBML_DOT)
+    return prefix + s
+
+def _f_specie(s, prefix="M_"):
+    return _clip(s, prefix)
+
+def _f_specie_rev(s, prefix="M_"):
+    return prefix + s
+
+def _f_reaction(s, prefix="R_"):
+    return _clip(s, prefix)
+
+def _f_reaction_rev(s, prefix="R_"):
+    return prefix + s
+
+F_REPLACE = {
+    F_GENE: _f_gene,
+    F_GENE_REV: _f_gene_rev,
+    F_SPECIE: _f_specie,
+    F_SPECIE_REV: _f_specie_rev,
+    F_REACTION: _f_reaction,
+    F_REACTION_REV: _f_reaction_rev,
+}
 # ----------------------------------------------------------
 
-
-class CobraSBMLError(Exception):
-    """ SBML error class. """
-    pass
-
-
-def read_sbml_model(filename):
+def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
     """ Reads model from given filename.
 
     If the given filename ends with the suffix ''.gz'' (for example,
@@ -97,12 +116,14 @@ def read_sbml_model(filename):
     CHARGE, FORMULA on species, or GENE_ASSOCIATION, SUBSYSTEM on reactions.
 
     :param filename: path to SBML file or SBML string
-    :param validate: validate the file on reading (additional overhead)
+    :param f_replace: dictionary of replacement functions for gene, specie
+                      and reaction ids. Provide {} to not perform any
+                      changes in the dis.
     :return:
     """
     try:
         doc = _get_doc_from_filename(filename)
-        return _sbml_to_model(doc)
+        return _sbml_to_model(doc, number=number, f_replace=f_replace, **kwargs)
     except Exception:
         raise CobraSBMLError(
             "Something went wrong reading the model. You can get a detailed "
@@ -128,6 +149,7 @@ def _get_doc_from_filename(filename):
         raise CobraSBMLError("Input format is not supported.")
 
     # check core consistency
+    '''
     doc.checkInternalConsistency()
     for k in range(doc.getNumErrors()):
         e = doc.getError(k)  # type: libsbml.SBMLError
@@ -135,11 +157,12 @@ def _get_doc_from_filename(filename):
                                libsbml.LIBSBML_SEV_ERROR,
                                libsbml.LIBSBML_SEV_SCHEMA_ERROR]:
             raise CobraSBMLError(str(e.getMessage() + " Check path to SBML file and SBML content."))
+    '''
 
     return doc
 
 
-def write_sbml_model(cobra_model, filename, use_fbc_package=True, **kwargs):
+def write_sbml_model(cobra_model, filename, use_fbc_package=True, f_replace=F_REPLACE, **kwargs):
     """ Writes cobra model to filename.
 
     The created model is SBML level 3 version 1 (L1V3) with
@@ -169,11 +192,11 @@ def write_sbml_model(cobra_model, filename, use_fbc_package=True, **kwargs):
         write_sbml2(cobra_model, filename, use_fbc_package=False, **kwargs)
 
     # create xml
-    doc = _model_to_sbml(cobra_model, **kwargs)
+    doc = _model_to_sbml(cobra_model, f_replace=f_replace, **kwargs)
     libsbml.writeSBMLToFile(doc, filename)
 
 
-def _sbml_to_model(doc, number=float):
+def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     """ Creates cobra model from SBMLDocument.
 
     :param doc: libsbml.SBMLDocument
@@ -196,7 +219,7 @@ def _sbml_to_model(doc, number=float):
         doc_fbc = doc.getPlugin("fbc")  # type: libsbml.FbcSBMLDocumentPlugin
         fbc_version = doc_fbc.getVersion()
         if fbc_version == 1:
-            warn("Loading SBML with fbc-v1 (use fbc-v2 to encode models)")
+            warn("Loading SBML with fbc-v1 (models should be encoded using fbc-v2)")
             conversion_properties = libsbml.ConversionProperties()
             conversion_properties.addOption(
                 "convert fbc v1 to fbc v2", True, "Convert FBC-v1 model to FBC-v2 model")
@@ -213,8 +236,11 @@ def _sbml_to_model(doc, number=float):
 
     # Species
     boundary_ids = set()
-    for s in model.species:  # type: libsbml.Species
-        sid = _check_required(s, s.id, "id")  # FIXME: S_ prefix (clip)
+    for s in model.getListOfSpecies():  # type: libsbml.Species
+        sid = _check_required(s, s.id, "id")
+        if f_replace and F_SPECIE in f_replace:
+            sid = f_replace[F_SPECIE](sid)
+
         met = Metabolite(sid)
         met.name = s.name
         met.compartment = s.compartment
@@ -250,7 +276,9 @@ def _sbml_to_model(doc, number=float):
     # Genes
     if model_fbc:
         for gp in model_fbc.getListOfGeneProducts():  # type: libsbml.GeneProduct
-            gid = gp.id   # FIXME: G_ prefix (clip), DOT replacements
+            gid = gp.id
+            if f_replace and F_GENE in f_replace:
+                gid = f_replace[F_GENE](gid)
             gene = Gene(gid)
             gene.name = gp.name
             if gene.name is None:
@@ -260,8 +288,10 @@ def _sbml_to_model(doc, number=float):
 
     # Reactions
     reactions = []
-    for r in model.reactions:  # type: libsbml.Reaction
-        rid = _check_required(r, r.id, "id")  # FIXME: R_ prefix (clip)
+    for r in model.getListOfReactions():  # type: libsbml.Reaction
+        rid = _check_required(r, r.id, "id")
+        if f_replace and F_REACTION in f_replace:
+            rid = f_replace[F_REACTION](rid)
         reaction = Reaction(rid)
         reaction.name = r.name
         annotate_cobra_from_sbase(reaction, r)
@@ -309,17 +339,20 @@ def _sbml_to_model(doc, number=float):
         else:
             raise CobraSBMLError("No flux bounds on reaction '%s'" % r)
 
-
         reactions.append(reaction)
 
         # parse equation
         stoichiometry = defaultdict(lambda: 0)
         for sref in r.getListOfReactants():  # type: libsbml.SpeciesReference
-            sid = sref.getSpecies()    # FIXME: M_ prefix (clip)
+            sid = sref.getSpecies()
+            if f_replace and F_SPECIE in f_replace:
+                sid = f_replace[F_SPECIE](sid)
             stoichiometry[sid] -= number(_check_required(sref, sref.stoichiometry, "stoichiometry"))
 
         for sref in r.getListOfProducts():  # type: libsbml.SpeciesReference
             sid = sref.getSpecies()
+            if f_replace and F_SPECIE in f_replace:
+                sid = f_replace[F_SPECIE](sid)
             stoichiometry[sid] += number(_check_required(sref, sref.stoichiometry, "stoichiometry"))
 
         # needs to have keys of metabolite objects, not ids
@@ -337,7 +370,6 @@ def _sbml_to_model(doc, number=float):
                 continue
             object_stoichiometry[metabolite] = stoichiometry[met_id]
         reaction.add_metabolites(object_stoichiometry)
-
 
         # GPR rules
         # TODO
@@ -386,12 +418,14 @@ def _sbml_to_model(doc, number=float):
         else:
             # fallback to notes information
             gpr = reaction.notes.get('GENE_ASSOCIATION', '')
+            # gene replacements
+            if f_replace and F_GENE in f_replace:
+                gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(' '))
 
         # remove outside parenthesis, if any
         if gpr.startswith("(") and gpr.endswith(")"):
             gpr = gpr[1:-1].strip()
 
-        # gpr = gpr.replace(SBML_DOT, ".")
         reaction.gene_reaction_rule = gpr
 
     try:
@@ -412,7 +446,9 @@ def _sbml_to_model(doc, number=float):
             coefficients = {}
 
             for flux_obj in obj.getListOfFluxObjectives():  # type: libsbml.FluxObjective
-                rid = flux_obj.getReaction()  # FIXME: R_ prefix (clip)
+                rid = flux_obj.getReaction()
+                if f_replace and F_REACTION in f_replace:
+                    rid = f_replace[F_REACTION](rid)
                 try:
                     objective_reaction = cmodel.reactions.get_by_id(rid)
                 except KeyError:
@@ -427,7 +463,7 @@ def _sbml_to_model(doc, number=float):
     return cmodel
 
 
-def _model_to_sbml(cobra_model, units=True):
+def _model_to_sbml(cobra_model, f_replace=None, units=True):
     """
 
     :param cobra_model:
@@ -478,7 +514,10 @@ def _model_to_sbml(cobra_model, units=True):
             return UPPER_BOUND_ID
         else:
             # new parameter
-            pid = reaction.id + "_" + bound_type  # FIXME: R_ prefix
+            rid = reaction.id
+            if f_replace and F_REACTION_REV in f_replace:
+                rid = f_replace[F_REACTION_REV](rid)
+            pid = rid + "_" + bound_type
             _create_parameter(model, pid=pid, value=value, sbo=SBO_FLUX_BOUND)
             return pid
 
@@ -516,7 +555,9 @@ def _model_to_sbml(cobra_model, units=True):
     for met in cobra_model.metabolites:
         s = model.createSpecies()  # type: libsbml.Species
         mid = met.id
-        s.setId(mid)  # FIXME: id replacement (R_prefix)
+        if f_replace and F_SPECIE_REV in f_replace:
+            mid = f_replace[F_SPECIE_REV](mid)
+        s.setId(mid)
         s.setConstant(True)
         s.setBoundaryCondition(True)
         s.setHasOnlySubstanceUnits(False)
@@ -533,7 +574,9 @@ def _model_to_sbml(cobra_model, units=True):
     # Genes
     for gene in cobra_model.genes:
         gp = model_fbc.createGeneProduct()  # type: libsbml.GeneProduct
-        gid = gene.id  # FIXME: id replacement (SBML_DOT, G_ prefix)
+        gid = gene.id
+        if f_replace and F_GENE_REV in f_replace:
+            gid = f_replace[F_GENE_REV](gid)
         gp.setId(gid)
         gname = gene.name
         if gname is None or len(gname) == 0:
@@ -551,7 +594,9 @@ def _model_to_sbml(cobra_model, units=True):
 
     # Reactions
     for reaction in cobra_model.reactions:
-        rid = reaction.id  # FIXME: id replacement (R_prefix)
+        rid = reaction.id
+        if f_replace and F_REACTION_REV in f_replace:
+            rid = f_replace[F_REACTION_REV](rid)
         r = model.createReaction()  # type: libsbml.Reaction
         r.setId(rid)
         r.setName(reaction.name)
@@ -562,7 +607,9 @@ def _model_to_sbml(cobra_model, units=True):
 
         # stoichiometry
         for metabolite, stoichiomety in iteritems(reaction._metabolites):
-            sid = metabolite.id  # FIXME: id replacement (M_ prefix)
+            sid = metabolite.id
+            if f_replace and F_SPECIE_REV in f_replace:
+                sid = f_replace[F_SPECIE_REV](sid)
             if stoichiomety < 0:
                 sref = r.createReactant()  # type: libsbml.SpeciesReference
                 sref.setSpecies(sid)
@@ -587,6 +634,9 @@ def _model_to_sbml(cobra_model, units=True):
             # This is a helper method that allows a user to set the
             # GeneProductAssociation via a string such as "a1 AND b1 OR C2" and
             # have the method work out the correct XML structure.
+            # FIXME: only working if whitespace between brackets
+            if f_replace and F_GENE_REV in f_replace:
+                gpr = " ".join(f_replace[F_GENE_REV](t) for t in gpr.split(' '))
             gpa.setAssociation(gpr)
 
         # objective coefficient
