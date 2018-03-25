@@ -89,6 +89,7 @@ class TestCobraIO:
         assert len(model1.reactions[-1].metabolites) == len(
             model2.reactions[-1].metabolites)
         assert len(model1.genes) == len(model2.genes)
+
         # ensure they have the same solution max
         solution1 = model1.optimize()
         solution2 = model2.optimize()
@@ -168,6 +169,3 @@ def io_trial(request, data_directory):
     reread_model = request.param.read_function(test_output_filename)
     unlink(test_output_filename)
     return request.param.name, reference_model, test_model, reread_model
-
-
-

@@ -256,13 +256,20 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             met.charge = s_fbc.getCharge()
             met.formula = s_fbc.getChemicalFormula()
         else:
-            if 'CHARGE' in met.notes:
-                try:
-                    met.charge = int(met.notes['CHARGE'])
-                except ValueError:
-                    # handle nan, na, NA, ...
-                    pass
-            if 'FORMULA' in met.notes:
+            if s.isSetCharge():
+                warn("Use of charge attribute is highly discouraged '%s" % s)
+                met.charge = s.getCharge()
+            else:
+                if met.notes and 'CHARGE' in met.notes:
+                    warn("Use of CHARGE note is discouraged '%s" % s)
+                    try:
+                        met.charge = int(met.notes['CHARGE'])
+                    except ValueError:
+                        # handle nan, na, NA, ...
+                        pass
+
+            if met.notes and 'FORMULA' in met.notes:
+                warn("Use of FORMULA note is discouraged '%s" % s)
                 met.formula = met.notes['FORMULA']
 
         # Detect boundary metabolites - In case they have been mistakenly
@@ -651,7 +658,8 @@ def _parse_notes(notes):
     """
     pattern = r"<p>\s*(\w+)\s*:\s*([\w|\s]+)<"
     matches = re.findall(pattern, notes)
-    return {k.strip(): v.strip() for (k, v) in matches}
+    d = {k.strip(): v.strip() for (k, v) in matches}
+    return {k: v for k, v in d.items() if len(v)>0}
 
 # ----------------------
 # Annotations
