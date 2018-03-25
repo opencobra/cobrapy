@@ -657,10 +657,8 @@ def _parse_notes(notes):
 # Annotations
 # ----------------------
 # FIXME: currently only the terms, but not the qualifier are parsed
-# FIXME: migration to https, both should be supported
-# (better parsing of collection & id via regular expression)
-
-URL_IDENTIFIERS = "http://identifiers.org/"
+URL_IDENTIFIERS_PATTERN = r"^http[s]{0,1}://identifiers.org/(.+)/(.+)"
+URL_IDENTIFIERS_PREFIX = r"http://identifiers.org"
 
 def annotate_cobra_from_sbase(cobj, sbase):
     """ Read annotations from SBase into dictionary.
@@ -684,17 +682,14 @@ def annotate_cobra_from_sbase(cobj, sbase):
     for cvterm in cvterms:  # type: libsbml.CVTerm
         for k in range(cvterm.getNumResources()):
             uri = cvterm.getResourceURI(k)
-            if not uri.startswith(URL_IDENTIFIERS):
-                warn("%s does not start with %s" % (uri, URL_IDENTIFIERS))
-                continue
-            try:
-                provider, identifier = uri[23:].split("/", 1)
-            except ValueError:
-                warn("%s does not conform to http://identifiers.org/collection/id"
-                     % uri)
+            matches = re.findall(URL_IDENTIFIERS_PATTERN, uri)
+
+            if len(matches) == 0:
+                warn("%s does not conform to http(s)://identifiers.org/collection/id"
+                    % uri)
                 continue
 
-            # handle multiple by same provider (create list)
+            provider, identifier = matches[0]
             if provider in annotation:
                 if isinstance(annotation[provider], string_types):
                     annotation[provider] = [annotation[provider]]
@@ -725,7 +720,7 @@ def annotate_sbase_from_cobra(sbase, cobj):
 
             for identifier in identifiers:
                 _add_cv_to_sbase(sbase, qualifier="BQB_IS",
-                                 resource="%s/%s/%s" % (URL_IDENTIFIERS, provider, identifier))
+                                 resource="%s/%s/%s" % (URL_IDENTIFIERS_PREFIX, provider, identifier))
 
 
 def _add_cv_to_sbase(sbase, qualifier, resource):
