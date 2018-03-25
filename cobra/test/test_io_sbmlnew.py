@@ -96,9 +96,6 @@ class TestCobraIO:
         # ensure the references are correct
         assert model2.metabolites[0]._model is model2
         assert model2.reactions[0]._model is model2
-
-        print(model2.genes)
-        print(model2.genes[0], print(model2.genes[0]._model))
         assert model2.genes[0]._model is model2
 
     @classmethod
