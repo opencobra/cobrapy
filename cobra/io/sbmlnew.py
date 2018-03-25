@@ -90,6 +90,7 @@ F_REPLACE = {
 }
 # ----------------------------------------------------------
 
+
 def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
     """ Reads model from given filename.
 
@@ -286,6 +287,19 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             annotate_cobra_from_sbase(gene, gp)
             cmodel.genes.append(gene)
 
+    # GPR rules
+    def process_association(association):
+        """ Recursively convert gpr association to a gpr string. """
+        if association.isFbcOr():
+            return "( " + ' or '.join(process_association(c) for c in association.getListOfAssociations()) + " )"
+        elif association.isFbcAnd():
+            return "( " + ' and '.join(process_association(c) for c in association.getListOfAssociations()) + " )"
+        elif association.isGeneProductRef():
+            gid = association.getGeneProduct()
+            if f_replace and F_GENE in f_replace:
+                return f_replace[F_GENE](gid)
+            return gid
+
     # Reactions
     reactions = []
     for r in model.getListOfReactions():  # type: libsbml.Reaction
@@ -341,7 +355,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
         reactions.append(reaction)
 
-        # parse equation
+        # parse equation (stochiomtry)
         stoichiometry = defaultdict(lambda: 0)
         for sref in r.getListOfReactants():  # type: libsbml.SpeciesReference
             sid = sref.getSpecies()
@@ -365,60 +379,22 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             try:
                 metabolite = cmodel.metabolites.get_by_id(met_id)
             except KeyError:
-                warn("ignoring unknown metabolite '%s' in reaction %s" %
+                warn("Ignoring unknown metabolite '%s' in reaction %s" %
                      (met_id, reaction.id))
                 continue
             object_stoichiometry[metabolite] = stoichiometry[met_id]
         reaction.add_metabolites(object_stoichiometry)
 
-        # GPR rules
-        # TODO
-        '''
-        def process_gpr(sub_xml):
-            """recursively convert gpr xml to a gpr string"""
-            if sub_xml.tag == OR_TAG:
-                return "( " + ' or '.join(process_gpr(i) for i in sub_xml) + " )"
-            elif sub_xml.tag == AND_TAG:
-                return "( " + ' and '.join(process_gpr(i) for i in sub_xml) + " )"
-            elif sub_xml.tag == GENEREF_TAG:
-                gene_id = get_attrib(sub_xml, "fbc:geneProduct", require=True)
-                return clip(gene_id, "G_")
-            else:
-                raise Exception("unsupported tag " + sub_xml.tag)
-        
-
-        def process_association(association):
-            """ Recursively convert gpr xml to a gpr string. """
-            type_code = association.getTypeCode()
-            if association.isFbcOr():
-                association.get
-
-                return "( " + ' or '.join(process_gpa(i) for i in gpa.getCh) + " )"
-            elif sub_xml.tag == AND_TAG:
-                return "( " + ' and '.join(process_gpr(i) for i in sub_xml) + " )"
-            elif sub_xml.tag == GENEREF_TAG:
-                gene_id = get_attrib(sub_xml, "fbc:geneProduct", require=True)
-                return clip(gene_id, "G_")
-            else:
-                raise Exception("unsupported tag " + sub_xml.tag)
-        '''
+        # GPR
         if r_fbc:
+            gpr = ''
             gpa = r_fbc.getGeneProductAssociation()  # type: libsbml.GeneProductAssociation
-
-            # print(gpa)
-
-            association = None
             if gpa is not None:
                 association = gpa.getAssociation()  # type: libsbml.FbcAssociation
-                # print(association)
-                # print(association.getListOfAllElements())
-
-            # gpr = process_association(association) if association is not None else ''
-            gpr = ''
+                gpr = process_association(association)
         else:
             # fallback to notes information
             gpr = reaction.notes.get('GENE_ASSOCIATION', '')
-            # gene replacements
             if f_replace and F_GENE in f_replace:
                 gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(' '))
 
@@ -623,7 +599,6 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
         # bounds
         r_fbc = r.getPlugin("fbc")  # type: libsbml.FbcReactionPlugin
-
         r_fbc.setLowerFluxBound(_create_bound(model, reaction, "lower_bound"))
         r_fbc.setUpperFluxBound(_create_bound(model, reaction, "upper_bound"))
 
@@ -631,15 +606,17 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         gpr = reaction.gene_reaction_rule
         if gpr is not None and len(gpr) > 0:
             gpa = r_fbc.createGeneProductAssociation()  # type: libsbml.GeneProductAssociation
-            # This is a helper method that allows a user to set the
-            # GeneProductAssociation via a string such as "a1 AND b1 OR C2" and
-            # have the method work out the correct XML structure.
-            # FIXME: only working if whitespace between brackets
+            # replace ids
             if f_replace and F_GENE_REV in f_replace:
-                gpr = " ".join(f_replace[F_GENE_REV](t) for t in gpr.split(' '))
+                tokens = gpr.split(' ')
+                for k in range(len(tokens)):
+                    if tokens[k] not in ['and', 'or', '(', ')']:
+                        tokens[k] = f_replace[F_GENE_REV](tokens[k])
+                gpr = " ".join(tokens)
+
             gpa.setAssociation(gpr)
 
-        # objective coefficient
+        # objective coefficients
         if reaction.objective_coefficient != 0:
             flux_obj = objective.createFluxObjective()  # type: libsbml.FluxObjective
             flux_obj.setReaction(rid)
@@ -684,39 +661,6 @@ def _parse_notes(notes):
 # (better parsing of collection & id via regular expression)
 
 URL_IDENTIFIERS = "http://identifiers.org/"
-
-QualifierType = {
-    0: "MODEL_QUALIFIER",
-    1: "BIOLOGICAL_QUALIFIER",
-    2: "UNKNOWN_QUALIFIER"
-}
-
-ModelQualifierType = {
-    0: "BQM_IS",
-    1: "BQM_IS_DESCRIBED_BY",
-    2: "BQM_IS_DERIVED_FROM",
-    3: "BQM_IS_INSTANCE_OF",
-    4: "BQM_HAS_INSTANCE",
-    5: "BQM_UNKNOWN",
-}
-
-BiologicalQualifierType = {
-    0: "BQB_IS",
-    1: "BQB_HAS_PART",
-    2: "BQB_IS_PART_OF",
-    3: "BQB_IS_VERSION_OF",
-    4: "BQB_HAS_VERSION",
-    5: "BQB_IS_HOMOLOG_TO",
-    6: "BQB_IS_DESCRIBED_BY",
-    7: "BQB_IS_ENCODED_BY",
-    8: "BQB_ENCODES",
-    9: "BQB_OCCURS_IN",
-    10: "BQB_HAS_PROPERTY",
-    11: "BQB_IS_PROPERTY_OF",
-    12: "BQB_HAS_TAXON",
-    13: "BQB_UNKNOWN",
-}
-
 
 def annotate_cobra_from_sbase(cobj, sbase):
     """ Read annotations from SBase into dictionary.

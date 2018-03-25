@@ -42,14 +42,10 @@ trials = [IOTrial('fbc2', 'mini.pickle', 'mini_fbc2.xml',
                   sbmlnew.read_sbml_model, sbmlnew.write_sbml_model, None),
           IOTrial('fbc2Bz2', 'mini.pickle', 'mini_fbc2.xml.bz2',
                   sbmlnew.read_sbml_model, sbmlnew.write_sbml_model, None),
-
-          # support for legacy models
-          # IOTrial('fbc1', 'mini.pickle', 'mini_fbc1.xml',
-          #         sbmlnew.read_sbml_model,
-          #         partial(sbmlnew.write_sbml_model, legacy=True), None),
-          # IOTrial('cobra', 'mini.pickle', 'mini_cobra.xml',
-          #         sbmlnew.read_sbml_model,
-          #         partial(sbmlnew.write_sbml_model, legacy=True), None),
+          IOTrial('fbc1', 'mini.pickle', 'mini_fbc1.xml',
+                  sbmlnew.read_sbml_model, sbmlnew.write_sbml_model, None),
+          IOTrial('cobra', None, 'mini_cobra.xml',
+                  sbmlnew.read_sbml_model, sbmlnew.write_sbml_model, None),
           ]
 trial_names = [node.name for node in trials]
 
@@ -100,6 +96,9 @@ class TestCobraIO:
         # ensure the references are correct
         assert model2.metabolites[0]._model is model2
         assert model2.reactions[0]._model is model2
+
+        print(model2.genes)
+        print(model2.genes[0], print(model2.genes[0]._model))
         assert model2.genes[0]._model is model2
 
     @classmethod
@@ -123,13 +122,15 @@ class TestCobraIO:
         name, reference_model, test_model, _ = io_trial
         if name in ['fbc1']:
             pytest.xfail('not supported')
-        self.compare_models(name, reference_model, test_model)
+        if reference_model:
+            self.compare_models(name, reference_model, test_model)
 
     def test_read_2(self, io_trial):
         name, reference_model, test_model, _ = io_trial
         if name in ['fbc1', 'mat', 'cobra', 'raven-mat']:
             pytest.xfail('not supported')
-        self.extra_comparisons(name, reference_model, test_model)
+        if reference_model:
+            self.extra_comparisons(name, reference_model, test_model)
 
     def test_write_1(self, io_trial):
         name, _, test_model, reread_model = io_trial
@@ -146,9 +147,11 @@ class TestCobraIO:
 
 @pytest.fixture(scope="module", params=trials, ids=trial_names)
 def io_trial(request, data_directory):
-    with open(join(data_directory, request.param.reference_file),
+    reference_model = None
+    if request.param.reference_file:
+        with open(join(data_directory, request.param.reference_file),
               "rb") as infile:
-        reference_model = load(infile)
+            reference_model = load(infile)
     test_model = request.param.read_function(join(data_directory,
                                                   request.param.test_file))
     test_output_filename = join(gettempdir(),
