@@ -6,7 +6,8 @@ from __future__ import absolute_import
 
 import os
 import re
-from warnings import catch_warnings, simplefilter, warn
+import logging
+from warnings import catch_warnings, simplefilter
 from six import string_types, iteritems
 from collections import defaultdict, namedtuple
 
@@ -17,10 +18,13 @@ from cobra.manipulation.validate import check_metabolite_compartment_formula
 
 from .sbml import write_cobra_model_to_sbml_file as write_sbml2
 
+
 class CobraSBMLError(Exception):
     """ SBML error class. """
     pass
 
+
+LOGGER = logging.getLogger(__name__)
 LONG_SHORT_DIRECTION = {'maximize': 'max', 'minimize': 'min'}
 SHORT_LONG_DIRECTION = {'min': 'minimize', 'max': 'maximize'}
 
@@ -43,9 +47,8 @@ UNITS_FLUX = ("mmol_per_gDW_per_hr",
                Unit(kind=libsbml.UNIT_KIND_GRAM, scale=0, multiplier=1, exponent=-1),
                Unit(kind=libsbml.UNIT_KIND_SECOND, scale=0, multiplier=3600, exponent=-1)]
               )
-
 # ----------------------------------------------------------
-# Handle id replacements
+# Functions for id replacements (import/export)
 # ----------------------------------------------------------
 F_GENE = "F_GENE"
 F_GENE_REV = "F_GENE_REV"
@@ -149,17 +152,6 @@ def _get_doc_from_filename(filename):
     else:
         raise CobraSBMLError("Input format is not supported.")
 
-    # check core consistency
-    '''
-    doc.checkInternalConsistency()
-    for k in range(doc.getNumErrors()):
-        e = doc.getError(k)  # type: libsbml.SBMLError
-        if e.getSeverity() in [libsbml.LIBSBML_SEV_FATAL,
-                               libsbml.LIBSBML_SEV_ERROR,
-                               libsbml.LIBSBML_SEV_SCHEMA_ERROR]:
-            raise CobraSBMLError(str(e.getMessage() + " Check path to SBML file and SBML content."))
-    '''
-
     return doc
 
 
@@ -190,6 +182,7 @@ def write_sbml_model(cobra_model, filename, use_fbc_package=True, f_replace=F_RE
     """
     if not use_fbc_package:
         # legacy cobra without fbc
+        LOGGER.warning("Constrained based models should be stored with fbc-v2")
         write_sbml2(cobra_model, filename, use_fbc_package=False, **kwargs)
 
     # create xml
@@ -211,16 +204,17 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     model_fbc = model.getPlugin("fbc")  # type: libsbml.FbcModelPlugin
 
     if not model_fbc:
-        warn("Model does not contain FBC information.")
+        LOGGER.warning("Model does not contain FBC information.")
     else:
         if not model_fbc.isSetStrict():
-            warn('Loading SBML model without fbc:strict="true"')
+            LOGGER.warning('Loading SBML model without fbc:strict="true"')
 
         # fbc-v1 (legacy)
         doc_fbc = doc.getPlugin("fbc")  # type: libsbml.FbcSBMLDocumentPlugin
-        fbc_version = doc_fbc.getVersion()
+        fbc_version = doc_fbc.getPackageVersion()
+
         if fbc_version == 1:
-            warn("Loading SBML with fbc-v1 (models should be encoded using fbc-v2)")
+            LOGGER.warning("Loading SBML with fbc-v1 (models should be encoded using fbc-v2)")
             conversion_properties = libsbml.ConversionProperties()
             conversion_properties.addOption(
                 "convert fbc v1 to fbc v2", True, "Convert FBC-v1 model to FBC-v2 model")
@@ -257,11 +251,11 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             met.formula = s_fbc.getChemicalFormula()
         else:
             if s.isSetCharge():
-                warn("Use of charge attribute is highly discouraged '%s" % s)
+                LOGGER.warning("Use of charge attribute is highly discouraged '%s" % s)
                 met.charge = s.getCharge()
             else:
                 if met.notes and 'CHARGE' in met.notes:
-                    warn("Use of CHARGE note is discouraged '%s" % s)
+                    LOGGER.warning("Use of CHARGE note is discouraged '%s" % s)
                     try:
                         met.charge = int(met.notes['CHARGE'])
                     except ValueError:
@@ -269,7 +263,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                         pass
 
             if met.notes and 'FORMULA' in met.notes:
-                warn("Use of FORMULA note is discouraged '%s" % s)
+                LOGGER.warning("Use of FORMULA note is discouraged '%s" % s)
                 met.formula = met.notes['FORMULA']
 
         # Detect boundary metabolites - In case they have been mistakenly
@@ -356,7 +350,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 reaction.upper_bound = p_ub.value
             else:
                 raise CobraSBMLError("Missing flux bounds on reaction '%s'" % r)
-            warn("Bounds encoded in KineticLaw for '%s" % r)
+            LOGGER.warning("Bounds encoded in KineticLaw for '%s" % r)
         else:
             raise CobraSBMLError("No flux bounds on reaction '%s'" % r)
 
@@ -380,13 +374,13 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
         object_stoichiometry = {}
         for met_id in stoichiometry:
             if met_id in boundary_ids:
-                warn("Boundary metabolite '%s' used in reaction '%s'" %
+                LOGGER.warning("Boundary metabolite '%s' used in reaction '%s'" %
                      (met_id, reaction.id))
                 continue
             try:
                 metabolite = cmodel.metabolites.get_by_id(met_id)
             except KeyError:
-                warn("Ignoring unknown metabolite '%s' in reaction %s" %
+                LOGGER.warning("Ignoring unknown metabolite '%s' in reaction %s" %
                      (met_id, reaction.id))
                 continue
             object_stoichiometry[metabolite] = stoichiometry[met_id]
@@ -414,13 +408,13 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     try:
         cmodel.add_reactions(reactions)
     except ValueError as e:
-        warn(str(e))
+        LOGGER.warning(str(e))
 
     # Objective
     if model_fbc:
         obj_list = model_fbc.getListOfObjectives()  # type: libsbml.ListOfObjectives
         if obj_list is None:
-            warn("listOfObjectives element not found")
+            LOGGER.warning("listOfObjectives element not found")
         else:
             obj_id = obj_list.getActiveObjective()
             obj = model_fbc.getObjective(obj_id)  # type: libsbml.Objective
@@ -439,7 +433,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 try:
                     coefficients[objective_reaction] = number(flux_obj.getCoefficient())
                 except ValueError as e:
-                    warn(str(e))
+                    LOGGER.warning(str(e))
             set_objective(cmodel, coefficients)
             cmodel.solver.objective.direction = obj_direction
 
@@ -679,7 +673,7 @@ def annotate_cobra_from_sbase(cobj, sbase):
 
     # SBO term
     if sbase.isSetSBOTerm():
-        # FIXME: this should be lower collection, i.e. sbo
+        # FIXME: this should be lower case collection, i.e. sbo
         annotation["SBO"] = sbase.getSBOTermID()
 
     # RDF annotation
@@ -693,7 +687,7 @@ def annotate_cobra_from_sbase(cobj, sbase):
             matches = re.findall(URL_IDENTIFIERS_PATTERN, uri)
 
             if len(matches) == 0:
-                warn("%s does not conform to http(s)://identifiers.org/collection/id"
+                LOGGER.warning("%s does not conform to http(s)://identifiers.org/collection/id"
                     % uri)
                 continue
 
@@ -720,7 +714,7 @@ def annotate_sbase_from_cobra(sbase, cobj):
     sbase.setMetaId("meta_{}".format(sbase.id))
     for provider, identifiers in sorted(iteritems(cobj.annotation)):
         if provider == "SBO":
-            # FIXME: this should be lower collection, i.e. sbo
+            # FIXME: this should be lower case collection, i.e. sbo
             sbase.setSBOTerm(identifiers)
         else:
             if isinstance(identifiers, string_types):
