@@ -89,6 +89,13 @@ def read_sbml_model(filename):
     with the bzip2 library to read files in bzip2 format.  (Both of these
     are the default configurations for libSBML.)
 
+    This function supports SBML with FBC-v1 and FBC-v2. FBC-v1 models
+    are converted to FBC-v2 models before reading.
+
+    The parser tries to fall back to information in notes dictionaries
+    if information is not available in the FBC packages, e.g.,
+    CHARGE, FORMULA on species, or GENE_ASSOCIATION, SUBSYSTEM on reactions.
+
     :param filename: path to SBML file or SBML string
     :param validate: validate the file on reading (additional overhead)
     :return:
@@ -119,6 +126,16 @@ def _get_doc_from_filename(filename):
         doc = libsbml.readSBMLFromString(filename.read())
     else:
         raise CobraSBMLError("Input format is not supported.")
+
+    # check core consistency
+    doc.checkInternalConsistency()
+    for k in range(doc.getNumErrors()):
+        e = doc.getError(k)  # type: libsbml.SBMLError
+        if e.getSeverity() in [libsbml.LIBSBML_SEV_FATAL,
+                               libsbml.LIBSBML_SEV_ERROR,
+                               libsbml.LIBSBML_SEV_SCHEMA_ERROR]:
+            raise CobraSBMLError(str(e.getMessage() + " Check path to SBML file and SBML content."))
+
     return doc
 
 
@@ -175,8 +192,17 @@ def _sbml_to_model(doc, number=float):
         if not model_fbc.isSetStrict():
             warn('Loading SBML model without fbc:strict="true"')
 
-    # TODO: convert fbc-v1 to fbc-v2git 
-
+        # fbc-v1 (legacy)
+        doc_fbc = doc.getPlugin("fbc")  # type: libsbml.FbcSBMLDocumentPlugin
+        fbc_version = doc_fbc.getVersion()
+        if fbc_version == 1:
+            warn("Loading SBML with fbc-v1 (use fbc-v2 to encode models)")
+            conversion_properties = libsbml.ConversionProperties()
+            conversion_properties.addOption(
+                "convert fbc v1 to fbc v2", True, "Convert FBC-v1 model to FBC-v2 model")
+            result = doc.convert(conversion_properties)
+            if result != libsbml.LIBSBML_OPERATION_SUCCESS:
+                raise Exception("Conversion of SBML fbc v1 to fbc v2 failed")
 
     # Model
     cmodel = Model(model.id)
@@ -204,7 +230,11 @@ def _sbml_to_model(doc, number=float):
             met.formula = s_fbc.getChemicalFormula()
         else:
             if 'CHARGE' in met.notes:
-                met.charge = met.notes['CHARGE']
+                try:
+                    met.charge = int(met.notes['CHARGE'])
+                except ValueError:
+                    # handle nan, na, NA, ...
+                    pass
             if 'FORMULA' in met.notes:
                 met.formula = met.notes['FORMULA']
 
