@@ -13,7 +13,7 @@ from collections import defaultdict, namedtuple
 
 import libsbml
 from cobra.core import Gene, Metabolite, Model, Reaction
-from cobra.util.solver import set_objective
+from cobra.util.solver import set_objective, linear_reaction_coefficients
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 
 from .sbml import write_cobra_model_to_sbml_file as write_sbml2
@@ -231,6 +231,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
     # Species
     boundary_ids = set()
+    metabolites = []
     for s in model.getListOfSpecies():  # type: libsbml.Species
         sid = _check_required(s, s.id, "id")
         if f_replace and F_SPECIE in f_replace:
@@ -272,8 +273,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             boundary_ids.add(s.id)
 
         annotate_cobra_from_sbase(met, s)
+        metabolites.append(met)
 
-        cmodel.add_metabolites([met])
+    cmodel.add_metabolites(metabolites)
 
     # Genes
     if model_fbc:
@@ -292,14 +294,15 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     def process_association(association):
         """ Recursively convert gpr association to a gpr string. """
         if association.isFbcOr():
-            return "( " + ' or '.join(process_association(c) for c in association.getListOfAssociations()) + " )"
+            return " ".join(["(", ' or '.join(process_association(c) for c in association.getListOfAssociations()), ")"])
         elif association.isFbcAnd():
-            return "( " + ' and '.join(process_association(c) for c in association.getListOfAssociations()) + " )"
+            return " ".join(["(", ' and '.join(process_association(c) for c in association.getListOfAssociations()), ")"])
         elif association.isGeneProductRef():
             gid = association.getGeneProduct()
             if f_replace and F_GENE in f_replace:
                 return f_replace[F_GENE](gid)
-            return gid
+            else:
+                return gid
 
     # Reactions
     reactions = []
@@ -375,13 +378,13 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
         for met_id in stoichiometry:
             if met_id in boundary_ids:
                 LOGGER.warning("Boundary metabolite '%s' used in reaction '%s'" %
-                     (met_id, reaction.id))
+                               (met_id, reaction.id))
                 continue
             try:
                 metabolite = cmodel.metabolites.get_by_id(met_id)
             except KeyError:
                 LOGGER.warning("Ignoring unknown metabolite '%s' in reaction %s" %
-                     (met_id, reaction.id))
+                               (met_id, reaction.id))
                 continue
             object_stoichiometry[metabolite] = stoichiometry[met_id]
         reaction.add_metabolites(object_stoichiometry)
@@ -570,6 +573,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
     model_fbc.setActiveObjectiveId("obj")
 
     # Reactions
+    reaction_coefficients = linear_reaction_coefficients(cobra_model)
     for reaction in cobra_model.reactions:
         rid = reaction.id
         if f_replace and F_REACTION_REV in f_replace:
@@ -618,7 +622,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             gpa.setAssociation(gpr)
 
         # objective coefficients
-        if reaction.objective_coefficient != 0:
+        if reaction_coefficients.get(reaction, 0) != 0:
             flux_obj = objective.createFluxObjective()  # type: libsbml.FluxObjective
             flux_obj.setReaction(rid)
             flux_obj.setCoefficient(reaction.objective_coefficient)
@@ -653,7 +657,7 @@ def _parse_notes(notes):
     pattern = r"<p>\s*(\w+)\s*:\s*([\w|\s]+)<"
     matches = re.findall(pattern, notes)
     d = {k.strip(): v.strip() for (k, v) in matches}
-    return {k: v for k, v in d.items() if len(v)>0}
+    return {k: v for k, v in d.items() if len(v) > 0}
 
 # ----------------------
 # Annotations
@@ -684,14 +688,21 @@ def annotate_cobra_from_sbase(cobj, sbase):
     for cvterm in cvterms:  # type: libsbml.CVTerm
         for k in range(cvterm.getNumResources()):
             uri = cvterm.getResourceURI(k)
-            matches = re.findall(URL_IDENTIFIERS_PATTERN, uri)
 
-            if len(matches) == 0:
+            # matches = re.findall(URL_IDENTIFIERS_PATTERN, uri)
+            # if len(matches) == 0:
+            #     LOGGER.warning("%s does not conform to http(s)://identifiers.org/collection/id"
+            #         % uri)
+            #     continue
+            # provider, identifier = matches[0]
+
+            tokens = uri.split('/')
+            if len(tokens) != 5 or not tokens[2] == "identifiers.org":
                 LOGGER.warning("%s does not conform to http(s)://identifiers.org/collection/id"
                     % uri)
                 continue
 
-            provider, identifier = matches[0]
+            provider, identifier = tokens[3], tokens[4]
             if provider in annotation:
                 if isinstance(annotation[provider], string_types):
                     annotation[provider] = [annotation[provider]]
@@ -711,41 +722,31 @@ def annotate_sbase_from_cobra(sbase, cobj):
     if len(cobj.annotation) == 0:
         return
 
+    # FIXME: currently no support for qualifiers
+    qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
+    qualifier = libsbml.BQB_IS
+
     sbase.setMetaId("meta_{}".format(sbase.id))
-    for provider, identifiers in sorted(iteritems(cobj.annotation)):
+
+    for provider, identifiers in iteritems(cobj.annotation):
+        # FIXME: this should be lower case collection, i.e. sbo
         if provider == "SBO":
-            # FIXME: this should be lower case collection, i.e. sbo
             sbase.setSBOTerm(identifiers)
         else:
             if isinstance(identifiers, string_types):
                 identifiers = (identifiers,)
 
             for identifier in identifiers:
-                _add_cv_to_sbase(sbase, qualifier="BQB_IS",
-                                 resource="%s/%s/%s" % (URL_IDENTIFIERS_PREFIX, provider, identifier))
-
-
-def _add_cv_to_sbase(sbase, qualifier, resource):
-    """ Adds RDF information to given element.
-
-    :param sbase:
-    :param qualifier:
-    :param resource:
-    :return:
-    """
-    cv = libsbml.CVTerm()  # type: libsbml.CVTerm
-
-    if qualifier.startswith('BQB'):
-        cv.setQualifierType(libsbml.BIOLOGICAL_QUALIFIER)
-        cv.setBiologicalQualifierType(libsbml.__dict__.get(qualifier))
-    elif qualifier.startswith('BQM'):
-        cv.setQualifierType(libsbml.MODEL_QUALIFIER)
-        cv.setModelQualifierType(libsbml.__dict__.get(qualifier))
-    else:
-        raise CobraSBMLError('Unsupported qualifier: {}'.format(qualifier))
-
-    cv.addResource(resource)
-    sbase.addCVTerm(cv)
+                cv = libsbml.CVTerm()  # type: libsbml.CVTerm
+                cv.setQualifierType(qualifier_type)
+                if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
+                    cv.setBiologicalQualifierType(qualifier)
+                elif qualifier_type == libsbml.MODEL_QUALIFIER:
+                    cv.setModelQualifierType(qualifier)
+                else:
+                    raise CobraSBMLError('Unsupported qualifier: {}'.format(qualifier))
+                cv.addResource("%s/%s/%s" % (URL_IDENTIFIERS_PREFIX, provider, identifier))
+                sbase.addCVTerm(cv)
 
 
 # -----------------------------------
