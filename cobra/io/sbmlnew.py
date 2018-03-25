@@ -711,6 +711,19 @@ def annotate_cobra_from_sbase(cobj, sbase):
                 annotation[provider] = identifier
 
 
+# RDF_TEMPLATE = """
+# <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+#     <rdf:Description rdf:about="#{}">
+#       <bqbiol:is>
+#         <rdf:Bag>
+#           {}
+#         </rdf:Bag>
+#       </bqbiol:is>
+#     </rdf:Description>
+# </rdf:RDF>
+# """
+
+
 def annotate_sbase_from_cobra(sbase, cobj):
     """ Set cobra annotations on SBase into.
 
@@ -726,8 +739,10 @@ def annotate_sbase_from_cobra(sbase, cobj):
     qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
     qualifier = libsbml.BQB_IS
 
-    sbase.setMetaId("meta_{}".format(sbase.id))
+    meta_id = "meta_{}".format(sbase.id)
+    sbase.setMetaId(meta_id)
 
+    # rdf_items = []
     for provider, identifiers in iteritems(cobj.annotation):
         # FIXME: this should be lower case collection, i.e. sbo
         if provider == "SBO":
@@ -747,6 +762,10 @@ def annotate_sbase_from_cobra(sbase, cobj):
                     raise CobraSBMLError('Unsupported qualifier: {}'.format(qualifier))
                 cv.addResource("%s/%s/%s" % (URL_IDENTIFIERS_PREFIX, provider, identifier))
                 sbase.addCVTerm(cv)
+                # rdf_items.append('<rdf:li rdf:resource="{}/{}/{}"/>'.format(URL_IDENTIFIERS_PREFIX,
+                #                                                            provider, identifier))
+
+    # sbase.setAnnotation(RDF_TEMPLATE.format(meta_id, "\n".join(rdf_items)))
 
 
 # -----------------------------------
