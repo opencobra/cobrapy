@@ -224,7 +224,8 @@ def _process_flux_dataframe(flux_dataframe, fva, threshold, floatfmt):
             (flux_dataframe.fmin.abs() > flux_threshold) |
             (flux_dataframe.fmax.abs() > flux_threshold)].copy()
 
-        flux_dataframe.loc[flux_dataframe.flux.abs() < flux_threshold, 'flux'] = 0
+        flux_dataframe.loc[
+            flux_dataframe.flux.abs() < flux_threshold, 'flux'] = 0
 
     # Make all fluxes positive
     if not fva:
