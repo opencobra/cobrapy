@@ -27,7 +27,8 @@ def metabolite_summary(met, solution=None, threshold=0.01, fva=False,
         reactions are not taken into account by this method.
 
     threshold : float
-        a value below which to ignore reaction fluxes
+        a percentage value of the maximum flux below which to ignore reaction
+        fluxes
 
     fva : float (0->1), or None
         Whether or not to include flux variability analysis in the output.
@@ -115,7 +116,7 @@ def metabolite_summary(met, solution=None, threshold=0.01, fva=False,
         pd.np.array(flux_table[2:])[~flux_summary.is_input.values]))
 
 
-def model_summary(model, solution=None, threshold=1E-8, fva=None,
+def model_summary(model, solution=None, threshold=0.01, fva=None,
                   floatfmt='.3g'):
     """Print a summary of the input and output fluxes of the model.
 
@@ -127,7 +128,8 @@ def model_summary(model, solution=None, threshold=1E-8, fva=None,
         reactions are not taken into account by this method.
 
     threshold : float
-        tolerance for determining if a flux is zero (not printed)
+        a percentage value of the maximum flux below which to ignore reaction
+        fluxes
 
     fva : int or None
         Whether or not to calculate and report flux variability in the
@@ -210,17 +212,19 @@ def _process_flux_dataframe(flux_dataframe, fva, threshold, floatfmt):
     """Some common methods for processing a database of flux information into
     print-ready formats. Used in both model_summary and metabolite_summary. """
 
+    flux_threshold = threshold * flux_dataframe.flux.abs().max()
+
     # Drop unused boundary fluxes
     if not fva:
         flux_dataframe = flux_dataframe[
-            flux_dataframe.flux.abs() > threshold].copy()
+            flux_dataframe.flux.abs() > flux_threshold].copy()
     else:
         flux_dataframe = flux_dataframe[
-            (flux_dataframe.flux.abs() > threshold) |
-            (flux_dataframe.fmin.abs() > threshold) |
-            (flux_dataframe.fmax.abs() > threshold)].copy()
+            (flux_dataframe.flux.abs() > flux_threshold) |
+            (flux_dataframe.fmin.abs() > flux_threshold) |
+            (flux_dataframe.fmax.abs() > flux_threshold)].copy()
 
-        flux_dataframe.loc[flux_dataframe.flux.abs() < threshold, 'flux'] = 0
+        flux_dataframe.loc[flux_dataframe.flux.abs() < flux_threshold, 'flux'] = 0
 
     # Make all fluxes positive
     if not fva:
