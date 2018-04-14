@@ -307,10 +307,6 @@ class Model(Object):
                 new_gene = new.genes.get_by_id(gene.id)
                 new_reaction._genes.add(new_gene)
                 new_gene._reaction.add(new_reaction)
-            for compartment in reaction._compartments:
-                new_compartment = new.compartment.get_by_id(compartment.id)
-                new_reaction._compartments.add(new_compartment)
-                new_compartment._reaction.add(new_reaction)
         try:
             new._solver = deepcopy(self.solver)
             # Cplex has an issue with deep copies
@@ -368,6 +364,19 @@ class Model(Object):
             for x in metabolite_list:
                 # Do we care?
                 context(partial(setattr, x, '_model', None))
+
+        # add compartments to cobra.Model
+        for met in metabolite_list:
+            compartment = Compartment(met.compartment)
+            if not self.compartments.has_id(compartment.id):
+                self.compartments += [compartment]
+                compartment._model = self
+
+                if context:
+                    # Remove the compartment later
+                    context(partial(self.compartments.__isub__,
+                                    [compartment]))
+                    context(partial(setattr, compartment, '_model', None))
 
     def remove_metabolites(self, metabolite_list, destructive=False):
         """Remove a list of metabolites from the the object.
@@ -565,13 +574,13 @@ class Model(Object):
 
             for string in list(reaction.compartments):
                 compartment = Compartment(string)
-                # If the gene is not in the model, add it
+                # If the compartment is not in the model, add it
                 if not self.compartments.has_id(compartment.id):
                     self.compartments += [compartment]
                     compartment._model = self
 
                     if context:
-                        # Remove the gene later
+                        # Remove the compartment later
                         context(partial(self.compartments.__isub__,
                                         [compartment]))
                         context(partial(setattr, compartment, '_model', None))
@@ -880,7 +889,8 @@ class Model(Object):
                 for gene in rxn._genes:
                     gene._reaction.add(rxn)
         # point _model to self
-        for l in (self.reactions, self.genes, self.metabolites):
+        for l in (self.reactions, self.genes, self.metabolites,
+                  self.compartments):
             for e in l:
                 e._model = self
 
