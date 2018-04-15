@@ -18,7 +18,6 @@ class Compartment(Object):
            An identifier for the compartment
         name : string
            A human readable name.
-        annotation: dict
         """
     def __init__(self, id=None, name=None):
         Object.__init__(self, id, name)

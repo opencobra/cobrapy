@@ -62,7 +62,8 @@ class Model(Object):
         """Make sure all cobra.Objects in the model point to the model.
         """
         self.__dict__.update(state)
-        for y in ['reactions', 'genes', 'metabolites']:
+        for y in ['reactions', 'genes', 'metabolites',
+                  'compartments']:
             for x in getattr(self, y):
                 x._model = self
         if not hasattr(self, "name"):

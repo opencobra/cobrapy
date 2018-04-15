@@ -229,14 +229,23 @@ json_schema = {
 
         },
         "compartments": {
-            "type": "object",
-            "patternProperties": {
-                "[a-z]{1,2}": {"type": "string"}
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string"},
+                    "name": {"type": "string"},
+                    "notes": {"type": "object"},
+                    "annotation": {"type": "object"},
+                },
+                "required": ["id", "name"],
+                "additionalProperties": False,
             }
+
         },
         "notes": {"type": "object"},
         "annotation": {"type": "object"},
     },
-    "required": ["id", "reactions", "metabolites", "genes"],
+    "required": ["id", "reactions", "metabolites", "genes", "compartments"],
     "additionalProperties": False,
 }

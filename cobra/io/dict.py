@@ -8,7 +8,7 @@ from operator import attrgetter, itemgetter
 from numpy import bool_, float_
 from six import iteritems, string_types
 
-from cobra.core import Gene, Metabolite, Model, Reaction
+from cobra.core import Gene, Metabolite, Model, Reaction, Compartment
 from cobra.util.solver import set_objective
 
 _REQUIRED_REACTION_ATTRIBUTES = [
@@ -44,11 +44,17 @@ _OPTIONAL_GENE_ATTRIBUTES = {
     "annotation": {},
 }
 
-_ORDERED_OPTIONAL_MODEL_KEYS = ["name", "compartments", "notes", "annotation"]
+_REQUIRED_COMPARTMENT_ATTRIBUTES = ["id", "name"]
+_ORDERED_OPTIONAL_COMPARTMENT_KEYS = ["notes", "annotation"]
+_OPTIONAL_COMPARTMENT_ATTRIBUTES = {
+    "notes": {},
+    "annotation": {},
+}
+
+_ORDERED_OPTIONAL_MODEL_KEYS = ["name", "notes", "annotation"]
 _OPTIONAL_MODEL_ATTRIBUTES = {
     "name": None,
     #  "description": None, should not actually be included
-    "compartments": [],
     "notes": {},
     "annotation": {},
 }
@@ -118,6 +124,23 @@ def gene_from_dict(gene):
     return new_gene
 
 
+def compartment_to_dict(compartment):
+    new_compartment = OrderedDict()
+    for key in _REQUIRED_COMPARTMENT_ATTRIBUTES:
+        new_compartment[key] = _fix_type(getattr(compartment, key))
+    _update_optional(compartment, new_compartment,
+                     _OPTIONAL_COMPARTMENT_ATTRIBUTES,
+                     _ORDERED_OPTIONAL_COMPARTMENT_KEYS)
+    return new_compartment
+
+
+def compartment_from_dict(compartment):
+    new_compartment = Compartment(compartment["id"])
+    for k, v in iteritems(compartment):
+        setattr(new_compartment, k, v)
+    return new_compartment
+
+
 def reaction_to_dict(reaction):
     new_reaction = OrderedDict()
     for key in _REQUIRED_REACTION_ATTRIBUTES:
@@ -174,6 +197,7 @@ def model_to_dict(model, sort=False):
     obj["metabolites"] = list(map(metabolite_to_dict, model.metabolites))
     obj["reactions"] = list(map(reaction_to_dict, model.reactions))
     obj["genes"] = list(map(gene_to_dict, model.genes))
+    obj["compartments"] = list(map(compartment_to_dict, model.compartments))
     obj["id"] = model.id
     _update_optional(model, obj, _OPTIONAL_MODEL_ATTRIBUTES,
                      _ORDERED_OPTIONAL_MODEL_KEYS)
@@ -182,6 +206,7 @@ def model_to_dict(model, sort=False):
         obj["metabolites"].sort(key=get_id)
         obj["reactions"].sort(key=get_id)
         obj["genes"].sort(key=get_id)
+        obj["compartments"].sort(key=get_id)
     return obj
 
 
@@ -211,6 +236,8 @@ def model_from_dict(obj):
     if 'reactions' not in obj:
         raise ValueError('Object has no reactions attribute. Cannot load.')
     model = Model()
+    model.compartments.extend([compartment_from_dict(compartment) for
+                               compartment in obj['compartments']])
     model.add_metabolites(
         [metabolite_from_dict(metabolite) for metabolite in obj['metabolites']]
     )
@@ -225,6 +252,6 @@ def model_from_dict(obj):
         rxn in objective_reactions}
     set_objective(model, coefficients)
     for k, v in iteritems(obj):
-        if k in {'id', 'name', 'notes', 'compartments', 'annotation'}:
+        if k in {'id', 'name', 'notes', 'annotation'}:
             setattr(model, k, v)
     return model
