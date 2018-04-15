@@ -467,8 +467,8 @@ def model_to_xml(cobra_model, units=True):
     # add in compartments
     compartments_list = SubElement(xml_model, "listOfCompartments")
     compartments = cobra_model.compartments
-    for compartment, name in iteritems(compartments):
-        SubElement(compartments_list, "compartment", id=compartment, name=name,
+    for compartment in compartments:
+        SubElement(compartments_list, "compartment", id=compartment.id, name=compartment.name,
                    constant="true")
 
     # add in metabolites

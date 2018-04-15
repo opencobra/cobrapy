@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version1" level="3" version="1" fbc:required="false">
-  <model id="mini_textbook" substanceUnits="substance" timeUnits="second" volumeUnits="volume" areaUnits="area" lengthUnits="metre" extentUnits="substance">
+  <model substanceUnits="substance" timeUnits="second" volumeUnits="volume" areaUnits="area" lengthUnits="metre" extentUnits="substance">
     <annotation>
       <listOfGeneAssociations xmlns="http://www.sbml.org/sbml/level3/version1/fbc/version1">
         <geneAssociation id="ga_1" reaction="R_D_LACt2">
@@ -312,15 +312,15 @@
           <speciesReference species="M_h2o_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_adp_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
-          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_D_LACt2" name="D_LACt2" reversible="true" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b3603 or b2975</p>
+            <p>GENE ASSOCIATION: b3603 or b2975</p>
           </html>
         </notes>
         <listOfReactants>
@@ -335,7 +335,7 @@
       <reaction id="R_ENO" name="enolase" reversible="true" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b2779</p>
+            <p>GENE ASSOCIATION: b2779</p>
           </html>
         </notes>
         <listOfReactants>
@@ -373,7 +373,7 @@
       <reaction id="R_FBA" name="fructose-bisphosphate aldolase" reversible="true" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b1773 or b2097 or b2925</p>
+            <p>GENE ASSOCIATION: b1773 or b2097 or b2925</p>
           </html>
         </notes>
         <listOfReactants>
@@ -387,39 +387,39 @@
       <reaction id="R_GAPD" name="glyceraldehyde-3-phosphate dehydrogenase" reversible="true" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b1779</p>
+            <p>GENE ASSOCIATION: b1779</p>
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_nad_c" stoichiometry="1" constant="true"/>
-          <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_g3p_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_nad_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_13dpg_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_nadh_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_13dpg_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_GLCpts" name="D-glucose transport via PEP:Pyr PTS" reversible="false" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: ( b2417 and b1621 and b2415 and b2416 ) or ( b2417 and b1101 and b2415 and b2416 ) or ( b1817 and b1818 and b1819 and b2415 and b2416 )</p>
+            <p>GENE ASSOCIATION: ( b2417 and b1621 and b2415 and b2416 ) or ( b2417 and b1101 and b2415 and b2416 ) or ( b1817 and b1818 and b1819 and b2415 and b2416 )</p>
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_pep_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_glc__D_e" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_pep_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_g6p_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_pyr_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_g6p_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_H2Ot" name="R H2O transport via - diffusion" reversible="true" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b0875 or s0001</p>
+            <p>GENE ASSOCIATION: b0875 or s0001</p>
           </html>
         </notes>
         <listOfReactants>
@@ -432,7 +432,7 @@
       <reaction id="R_LDH_D" name="D-lactate dehydrogenase" reversible="true" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b2133 or b1380</p>
+            <p>GENE ASSOCIATION: b2133 or b1380</p>
           </html>
         </notes>
         <listOfReactants>
@@ -440,31 +440,31 @@
           <speciesReference species="M_lac__D_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_nadh_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_pyr_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_nadh_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_PFK" name="phosphofructokinase" reversible="false" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b3916 or b1723</p>
+            <p>GENE ASSOCIATION: b3916 or b1723</p>
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_atp_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_f6p_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_atp_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
+          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_adp_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_fdp_c" stoichiometry="1" constant="true"/>
-          <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_PGI" name="glucose-6-phosphate isomerase" reversible="true" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b4025</p>
+            <p>GENE ASSOCIATION: b4025</p>
           </html>
         </notes>
         <listOfReactants>
@@ -477,7 +477,7 @@
       <reaction id="R_PGK" name="phosphoglycerate kinase" reversible="true" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b2926</p>
+            <p>GENE ASSOCIATION: b2926</p>
           </html>
         </notes>
         <listOfReactants>
@@ -492,7 +492,7 @@
       <reaction id="R_PGM" name="phosphoglycerate mutase" reversible="true" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b4395 or b3612 or b0755</p>
+            <p>GENE ASSOCIATION: b4395 or b3612 or b0755</p>
           </html>
         </notes>
         <listOfReactants>
@@ -505,7 +505,7 @@
       <reaction id="R_PIt2r" name="R phosphate reversible transport via - symport" reversible="true" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b2987 or b3493</p>
+            <p>GENE ASSOCIATION: b2987 or b3493</p>
           </html>
         </notes>
         <listOfReactants>
@@ -520,23 +520,23 @@
       <reaction id="R_PYK" name="pyruvate kinase" reversible="false" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b1854 or b1676</p>
+            <p>GENE ASSOCIATION: b1854 or b1676</p>
           </html>
         </notes>
         <listOfReactants>
           <speciesReference species="M_adp_c" stoichiometry="1" constant="true"/>
-          <speciesReference species="M_pep_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_h_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_pep_c" stoichiometry="1" constant="true"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_atp_c" stoichiometry="1" constant="true"/>
           <speciesReference species="M_pyr_c" stoichiometry="1" constant="true"/>
+          <speciesReference species="M_atp_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
       <reaction id="R_TPI" name="triose-phosphate isomerase" reversible="true" fast="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b3919</p>
+            <p>GENE ASSOCIATION: b3919</p>
           </html>
         </notes>
         <listOfReactants>

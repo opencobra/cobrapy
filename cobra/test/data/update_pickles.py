@@ -76,14 +76,15 @@ for g in mini.genes:
 mini.reactions.sort()
 mini.genes.sort()
 mini.metabolites.sort()
+mini.compartments.sort()
 # output to various formats
-with open("mini.pickle", "wb") as outfile:
+with open("cobra/test/data/mini.pickle", "wb") as outfile:
     dump(mini, outfile, protocol=2)
-save_matlab_model(mini, "mini.mat")
-save_json_model(mini, "mini.json", pretty=True)
-write_sbml_model(mini, "mini_fbc2.xml")
-write_sbml_model(mini, "mini_fbc2.xml.bz2")
-write_sbml_model(mini, "mini_fbc2.xml.gz")
+save_matlab_model(mini, "cobra/test/data/mini.mat")
+save_json_model(mini, "cobra/test/data/mini.json", pretty=True)
+write_sbml_model(mini, "cobra/test/data/mini_fbc2.xml")
+write_sbml_model(mini, "cobra/test/data/mini_fbc2.xml.bz2")
+write_sbml_model(mini, "cobra/test/data/mini_fbc2.xml.gz")
 write_sbml2(mini, "mini_fbc1.xml", use_fbc_package=True)
 write_sbml_model(mini, "mini_cobra.xml", use_fbc_package=False)
 raven = load_matlab_model("raven.mat")

@@ -156,7 +156,7 @@
             "name": "G_s0001"
         }
     ],
-    "id": "mini_textbook",
+    "id": "cobra/test/data/mini_textbook",
     "metabolites": [
         {
             "annotation": {
@@ -1369,5 +1369,5 @@
             "upper_bound": 1000.0
         }
     ],
-    "version": 1
+    "version": "1"
 }

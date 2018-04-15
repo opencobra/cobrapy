@@ -62,7 +62,8 @@ class Model(Object):
         """Make sure all cobra.Objects in the model point to the model.
         """
         self.__dict__.update(state)
-        for y in ['reactions', 'genes', 'metabolites']:
+        for y in ['reactions', 'genes', 'metabolites',
+                  'compartments']:
             for x in getattr(self, y):
                 x._model = self
         if not hasattr(self, "name"):
@@ -258,6 +259,16 @@ class Model(Object):
         new.notes = deepcopy(self.notes)
         new.annotation = deepcopy(self.annotation)
 
+        new.compartment = DictList()
+        for compartment in self.compartments:
+            new_compartment = compartment.__class__(None)
+            for attr, value in iteritems(compartment.__dict__):
+                if attr not in do_not_copy_by_ref:
+                    new_compartment.__dict__[attr] = copy(
+                        value) if attr == "formula" else value
+            new_compartment._model = new
+            new.compartments.append(new_compartment)
+
         new.metabolites = DictList()
         do_not_copy_by_ref = {"_reaction", "_model"}
         for metabolite in self.metabolites:
@@ -279,18 +290,9 @@ class Model(Object):
             new_gene._model = new
             new.genes.append(new_gene)
 
-        new.compartment = DictList()
-        for compartment in self.compartments:
-            new_compartment = compartment.__class__(None)
-            for attr, value in iteritems(compartment.__dict__):
-                if attr not in do_not_copy_by_ref:
-                    new_compartment.__dict__[attr] = copy(
-                        value) if attr == "formula" else value
-            new_compartment._model = new
-            new.compartment.append(new_compartment)
-
         new.reactions = DictList()
-        do_not_copy_by_ref = {"_model", "_metabolites", "_genes", "_comp"}
+        do_not_copy_by_ref = {"_model", "_metabolites", "_genes",
+                              "_compartments"}
         for reaction in self.reactions:
             new_reaction = reaction.__class__()
             for attr, value in iteritems(reaction.__dict__):
@@ -1101,8 +1103,8 @@ class Model(Object):
                 <td><strong>Objective expression</strong></td>
                 <td>{objective}</td>
             </tr><tr>
-                <td><strong>Number of compartments</strong></td>
-                <td>{num_compartments}</td>
+                <td><strong>{n_compartments} compartment(s)</strong></td>
+                <td>{compartments}</td>
             </tr>
           </table>""".format(
             name=self.id,
@@ -1110,4 +1112,6 @@ class Model(Object):
             num_metabolites=len(self.metabolites),
             num_reactions=len(self.reactions),
             objective=format_long_string(str(self.objective.expression), 100),
-            num_compartments=len(self.compartments))
+            n_compartments=len(self.compartments),
+            compartments= format_long_string(
+                               ', '.join(r.id for r in self.compartments), 200))
