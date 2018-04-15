@@ -62,8 +62,7 @@ class Model(Object):
         """Make sure all cobra.Objects in the model point to the model.
         """
         self.__dict__.update(state)
-        for y in ['reactions', 'genes', 'metabolites',
-                  'compartments']:
+        for y in ['reactions', 'genes', 'metabolites']:
             for x in getattr(self, y):
                 x._model = self
         if not hasattr(self, "name"):
@@ -285,7 +284,7 @@ class Model(Object):
             new_compartment = compartment.__class__(None)
             for attr, value in iteritems(compartment.__dict__):
                 if attr not in do_not_copy_by_ref:
-                    new_gene.__dict__[attr] = copy(
+                    new_compartment.__dict__[attr] = copy(
                         value) if attr == "formula" else value
             new_compartment._model = new
             new.compartment.append(new_compartment)
@@ -319,6 +318,41 @@ class Model(Object):
         new._contexts = list()
 
         return new
+
+    def add_compartments(self, compartment_list):
+        """Will add a list of compartments to the model object
+
+        The change is reverted upon exit when using the model as a context.
+
+        Parameters
+        ----------
+        compartment_list : A list of `cobra.core.Compartment` objects
+
+        """
+        if not hasattr(compartment_list, '__iter__'):
+            compartment_list = [compartment_list]
+        if len(compartment_list) == 0:
+            return None
+
+        # First check whether the compartments exist in the model
+        compartment_list = [x for x in compartment_list
+                            if x.id not in self.compartments]
+
+        bad_ids = [m for m in compartment_list
+                   if not isinstance(m.id, string_types) or len(m.id) < 1]
+        if len(bad_ids) != 0:
+            raise ValueError('invalid identifiers in {}'.format(repr(bad_ids)))
+
+        for x in compartment_list:
+            x._model = self
+        self.compartments += compartment_list
+
+        context = get_context(self)
+        if context:
+            context(partial(self.compartments.__isub__, compartment_list))
+            for x in compartment_list:
+                # Do we care?
+                context(partial(setattr, x, '_model', None))
 
     def add_metabolites(self, metabolite_list):
         """Will add a list of metabolites to the model object and add new
