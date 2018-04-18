@@ -26,8 +26,9 @@ def minimized_shuffle(small_model):
     chosen = sample(list(set(model.reactions) - set(model.exchanges)), 10)
     new = Model("minimized_shuffle")
     new.add_reactions(chosen)
-    LOGGER.debug("'%s' has %d metabolites, %d reactions, %d genes, and %d compartments",
-                 new.id, new.metabolites, new.reactions, new.genes, new.compartments)
+    LOGGER.debug("'%s' has %d metabolites, %d reactions and %d genes",
+                 new.id, new.metabolites, new.reactions, new.genes,
+                 new.compartments)
     return new
 
 
@@ -39,7 +40,8 @@ def minimized_sorted(minimized_shuffle):
         sorted(model.metabolites, key=attrgetter("id")))
     model.genes = DictList(sorted(model.genes, key=attrgetter("id")))
     model.reactions = DictList(sorted(model.reactions, key=attrgetter("id")))
-    model.compartments = DictList(sorted(model.compartments, key=attrgetter("id")))
+    model.compartments = DictList(sorted(model.compartments,
+                                         key=attrgetter("id")))
     return model
 
 

@@ -209,9 +209,11 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
                     Compartment(new_metabolite.compartment, comp_name)])
         else:
             new_metabolite.compartment = _get_id_compartment(new_metabolite.id)
-            if new_metabolite.compartment not in model.compartments and new_metabolite.compartment is not None:
+            if new_metabolite.compartment not in model.compartments and \
+                    new_metabolite.compartment is not None:
                 model.add_compartments([
-                    Compartment(new_metabolite.compartment, new_metabolite.compartment)])
+                    Compartment(new_metabolite.compartment,
+                                new_metabolite.compartment)])
         try:
             new_metabolite.name = str(m["metNames"][0, 0][i][0][0])
         except (IndexError, ValueError):

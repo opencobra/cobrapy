@@ -1100,5 +1100,5 @@ class Model(Object):
             num_reactions=len(self.reactions),
             objective=format_long_string(str(self.objective.expression), 100),
             n_compartments=len(self.compartments),
-            compartments= format_long_string(
-                               ', '.join(r.id for r in self.compartments), 200))
+            compartments=format_long_string(
+                ', '.join(r.id for r in self.compartments), 200))
