@@ -156,7 +156,7 @@
             "name": "G_s0001"
         }
     ],
-    "id": "cobra/test/data/mini_textbook",
+    "id": "mini_textbook",
     "metabolites": [
         {
             "annotation": {

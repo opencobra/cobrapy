@@ -1143,10 +1143,10 @@
     - name: G_s0001
 - id: mini_textbook
 - compartments:
-  - !!omap
-    - id: e
-    - name: extracellular
-  - !!omap
-    - id: c
-    - name: cytosol
+    - !!omap
+      - id: e
+      - name: extracellular
+    - !!omap
+      - id: c
+      - name: cytosol
 - version: 1

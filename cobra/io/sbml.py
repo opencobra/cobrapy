@@ -461,7 +461,7 @@ def get_libsbml_document(cobra_model,
 
     # Add in the common compartment abbreviations.  If there are additional
     # compartments they also need to be added.
-    if(len(cobra_model.compartments) == 0):
+    if len(cobra_model.compartments) == 0:
         cobra_model.add_compartments([Compartment('c', 'cytosol'),
                                       Compartment('p', 'periplasm'),
                                       Compartment('e', 'extracellular')])

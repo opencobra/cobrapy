@@ -56,7 +56,8 @@ def escape_ID(cobra_model):
     for x in chain([cobra_model],
                    cobra_model.metabolites,
                    cobra_model.reactions,
-                   cobra_model.genes):
+                   cobra_model.genes,
+                   cobra_model.compartments):
         x.id = _escape_str_id(x.id)
     cobra_model.repair()
     gene_renamer = _GeneEscaper()

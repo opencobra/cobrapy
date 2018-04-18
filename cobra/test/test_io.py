@@ -182,7 +182,7 @@ class TestCobraIO:
 
     @classmethod
     def extra_comparisons(cls, name, model1, model2):
-        assert model1.compartments == model2.compartments
+        assert len(model1.compartments) == len(model2.compartments)
         assert dict(model1.metabolites[4].annotation) == dict(
             model2.metabolites[4].annotation)
         assert dict(model1.reactions[4].annotation) == dict(

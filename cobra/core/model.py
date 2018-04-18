@@ -609,19 +609,6 @@ class Model(Object):
                         reaction._dissociate_gene(gene)
                         reaction._associate_gene(model_gene)
 
-            for string in list(reaction.compartments):
-                compartment = Compartment(string)
-                # If the compartment is not in the model, add it
-                if not self.compartments.has_id(compartment.id):
-                    self.compartments += [compartment]
-                    compartment._model = self
-
-                    if context:
-                        # Remove the compartment later
-                        context(partial(self.compartments.__isub__,
-                                        [compartment]))
-                        context(partial(setattr, compartment, '_model', None))
-
         self.reactions += pruned
 
         if context:

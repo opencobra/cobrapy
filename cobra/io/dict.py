@@ -236,7 +236,7 @@ def model_from_dict(obj):
     if 'reactions' not in obj:
         raise ValueError('Object has no reactions attribute. Cannot load.')
     model = Model()
-    model.compartments.extend([compartment_from_dict(compartment) for
+    model.add_compartments([compartment_from_dict(compartment) for
                                compartment in obj['compartments']])
     model.add_metabolites(
         [metabolite_from_dict(metabolite) for metabolite in obj['metabolites']]

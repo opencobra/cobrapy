@@ -19,7 +19,7 @@ class Compartment(Object):
         name : string
            A human readable name.
         """
-    def __init__(self, id=None, name=None):
+    def __init__(self, id=None, name=""):
         Object.__init__(self, id, name)
         self._model = None
 

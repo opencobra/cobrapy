@@ -120,7 +120,8 @@ def create_mat_metabolite_id(model):
     for met in model.metabolites:
         if not _get_id_compartment(met.id) and met.compartment:
             yield '{}[{}]'.format(met.id,
-                                  model.compartments[met.compartment].lower())
+                                  model.compartments.get_by_id(
+                                      met.compartment).name.lower())
         else:
             yield met.id
 
@@ -208,7 +209,7 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
                     Compartment(new_metabolite.compartment, comp_name)])
         else:
             new_metabolite.compartment = _get_id_compartment(new_metabolite.id)
-            if new_metabolite.compartment not in model.compartments:
+            if new_metabolite.compartment not in model.compartments and new_metabolite.compartment is not None:
                 model.add_compartments([
                     Compartment(new_metabolite.compartment, new_metabolite.compartment)])
         try:
