@@ -12,6 +12,8 @@ import platform
 
 import pip
 
+import pkg_resources
+
 __all__ = ("show_versions",)
 
 SYS_ORDER = [
@@ -55,7 +57,8 @@ def get_pkg_info():
     # using requirements files that can be read in.
     dependencies = frozenset(PKG_ORDER)
     blob = dict()
-    for dist in pip.get_installed_distributions():
+    dists = [d for d in pkg_resources.working_set]
+    for dist in dists:
         if dist.project_name in dependencies:
             blob[dist.project_name] = dist.version
     return blob
