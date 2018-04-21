@@ -36,6 +36,7 @@ except ImportError:
     jsonschema = None
 try:
     import cPickle
+    import pickle
 
     cload = cPickle.load
     cdump = cPickle.dump
@@ -129,7 +130,10 @@ def raise_libsbml_errors():
 def io_trial(request, data_directory):
     with open(join(data_directory, request.param.reference_file),
               "rb") as infile:
-        reference_model = load(infile)
+        try:
+            reference_model = load(infile)
+        except UnicodeDecodeError:
+            reference_model = pickle.load(infile, encoding='bytes')
     test_model = request.param.read_function(join(data_directory,
                                                   request.param.test_file))
     test_output_filename = join(gettempdir(),
