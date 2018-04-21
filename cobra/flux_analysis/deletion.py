@@ -13,6 +13,7 @@ import pandas as pd
 from cobra.manipulation.delete import find_gene_knockout_reactions
 import cobra.util.solver as sutil
 from cobra.flux_analysis.moma import add_moma
+from cobra.flux_analysis.room import add_room
 
 LOGGER = logging.getLogger(__name__)
 
@@ -88,7 +89,7 @@ def _multi_deletion(model, entity, element_lists, method="fba",
         List of iterables ``cobra.Reaction``s or ``cobra.Gene``s (or their IDs)
         to be deleted.
 
-    method: {"fba", "moma", "linear moma"}, optional
+    method: {"fba", "moma", "linear moma", "room"}, optional
         Method used to predict the growth rate.
 
     processes : int, optional
@@ -125,6 +126,9 @@ def _multi_deletion(model, entity, element_lists, method="fba",
     with model:
         if "moma" in method:
             add_moma(model, linear="linear" in method)
+
+        if "room" in method:
+            add_room(model)
 
         args = set([frozenset(comb) for comb in product(*element_lists)])
         processes = min(processes, len(args))

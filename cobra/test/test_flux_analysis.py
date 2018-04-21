@@ -20,6 +20,7 @@ from cobra.flux_analysis.sampling import ACHRSampler, OptGPSampler
 from cobra.flux_analysis.reaction import assess
 from cobra.exceptions import Infeasible
 from cobra.flux_analysis.moma import add_moma
+from cobra.flux_analysis.room import add_room
 
 # The scipy interface is currently unstable and may yield errors or infeasible
 # solutions.
@@ -249,6 +250,27 @@ class TestCobraFluxAnalysis:
             add_moma(model, linear=True)
             with pytest.raises(ValueError):
                 add_moma(model)
+
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_single_gene_deletion_room(self, model, solver):
+        solver = model.solver
+
+        # expected knockout growth rates for textbook model
+        growth_dict = {"b0008": 0.0, "b0114": 27.0, "b0116": 36.0,
+                       "b2276": 46.0, "b1779": 45.0}
+        rates = single_gene_deletion(model,
+                                     gene_list=growth_dict.keys(),
+                                     method="room")["growth"]
+        for gene, expected_value in iteritems(growth_dict):
+            assert abs(rates[frozenset([gene])] - expected_value) < 0.01
+
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_single_gene_deletion_room_benchmark(self, model, benchmark,
+                                                 solver):
+        model.solver = solver
+        genes = ['b0008', 'b0114', 'b2276', 'b1779']
+        benchmark(single_gene_deletion, model, gene_list=genes,
+                  method="room")
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_gene_deletion_benchmark(self, model, benchmark,
