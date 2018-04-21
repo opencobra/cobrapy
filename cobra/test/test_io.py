@@ -44,6 +44,7 @@ except ImportError:
     cload = None
     cdump = None
 
+
 def validate_json(filename):
     with open(filename, "r") as infile:
         loaded = io.json.json.load(infile)
@@ -131,7 +132,7 @@ def io_trial(request, data_directory):
         try:
             reference_model = load(infile)
         except UnicodeDecodeError:
-            reference_model = load(infile, encoding='bytes')
+            reference_model = load(infile, encoding='latin1')
     test_model = request.param.read_function(join(data_directory,
                                                   request.param.test_file))
     test_output_filename = join(gettempdir(),
