@@ -47,7 +47,7 @@ install:
       if ($env:CONDA -eq "true") {
         conda config --set always_yes yes --set changeps1 no;
         conda install -q pip setuptools wheel numpy scipy;
-        pip install -r --disable-pip-version-check  develop-requirements.txt;
+        pip install --disable-pip-version-check -r develop-requirements.txt;
         pip install --disable-pip-version-check .
       } else {
         pip install --disable-pip-version-check --upgrade setuptools wheel tox
