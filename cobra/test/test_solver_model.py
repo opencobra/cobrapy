@@ -467,12 +467,12 @@ class TestReaction:
         with model:
             model.reactions.EX_glc__D_e *= 100
             assert model.constraints.glc__D_e.expression.coeff(
-                model.variables.EX_glc__D_e) == -100
+                model.variables.EX_glc__D_e) == -100.0
             assert model.reactions.EX_glc__D_e.reaction == \
                 '100.0 glc__D_e <=> '
 
         assert model.constraints.glc__D_e.expression.coeff(
-            model.variables.EX_glc__D_e) == -1
+            model.variables.EX_glc__D_e) == -1.0
         assert model.reactions.EX_glc__D_e.reaction == 'glc__D_e <=> '
 
         with model:
