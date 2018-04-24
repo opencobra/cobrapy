@@ -8,6 +8,7 @@ environment:
 
   global:
     PIP_CACHE_DIR: "pip_cache"
+    PIP_DISABLE_PIP_VERSION_CHECK: "yes"
 
   matrix:
     - PYTHON: "C:\\Miniconda-x64"
@@ -47,10 +48,10 @@ install:
       if ($env:CONDA -eq "true") {
         conda config --set always_yes yes --set changeps1 no;
         conda install -q pip setuptools wheel numpy scipy;
-        pip install --disable-pip-version-check -r develop-requirements.txt;
-        pip install --disable-pip-version-check .
+        pip install -r develop-requirements.txt;
+        pip install .
       } else {
-        pip install --disable-pip-version-check --upgrade setuptools wheel tox
+        pip install --upgrade setuptools wheel tox
       }
 
 build: off
