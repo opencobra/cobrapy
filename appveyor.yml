@@ -8,6 +8,7 @@ environment:
 
   global:
     PIP_CACHE_DIR: "pip_cache"
+    PIP_DISABLE_PIP_VERSION_CHECK: "yes"
 
   matrix:
     - PYTHON: "C:\\Miniconda-x64"
