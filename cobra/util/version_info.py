@@ -10,7 +10,7 @@ from builtins import dict
 
 import platform
 
-import pip
+import pkg_resources
 
 import pkg_resources
 
@@ -57,8 +57,8 @@ def get_pkg_info():
     # using requirements files that can be read in.
     dependencies = frozenset(PKG_ORDER)
     blob = dict()
-    dists = [d for d in pkg_resources.working_set]
-    for dist in dists:
+
+    for dist in pkg_resources.working_set:
         if dist.project_name in dependencies:
             blob[dist.project_name] = dist.version
     return blob
