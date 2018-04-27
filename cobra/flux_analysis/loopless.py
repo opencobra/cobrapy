@@ -90,10 +90,10 @@ def _add_cycle_free(model, fluxes):
             rxn.bounds = (flux, flux)
             continue
         if flux >= 0:
-            rxn.bounds = max(0, rxn.lower_bound), flux
+            rxn.bounds = max(0, rxn.lower_bound), max(flux, rxn.upper_bound)
             objective_vars.append(rxn.forward_variable)
         else:
-            rxn.bounds = flux, min(0, rxn.upper_bound)
+            rxn.bounds = min(flux, rxn.lower_bound), min(0, rxn.upper_bound)
             objective_vars.append(rxn.reverse_variable)
 
     model.objective.set_linear_coefficients(dict.fromkeys(objective_vars, 1.0))
