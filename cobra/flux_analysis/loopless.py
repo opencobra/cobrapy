@@ -90,10 +90,10 @@ def _add_cycle_free(model, fluxes):
             rxn.bounds = (flux, flux)
             continue
         if flux >= 0:
-            rxn.lower_bound = max(0, rxn.lower_bound)
+            rxn.bounds = max(0, rxn.lower_bound), flux
             objective_vars.append(rxn.forward_variable)
         else:
-            rxn.upper_bound = min(0, rxn.upper_bound)
+            rxn.bounds = flux, min(0, rxn.upper_bound)
             objective_vars.append(rxn.reverse_variable)
 
     model.objective.set_linear_coefficients(dict.fromkeys(objective_vars, 1.0))
@@ -208,11 +208,11 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
 
     with model:
         _add_cycle_free(model, sol.fluxes)
-        flux = model.slim_optimize()
+        model.slim_optimize()
 
         # If the previous optimum is maintained in the loopless solution it was
         # loopless and we are done
-        if abs(flux - current) < zero_cutoff:
+        if abs(reaction.flux - current) < zero_cutoff:
             if solution:
                 return sol
             return current
@@ -228,12 +228,14 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
         reaction.bounds = bounds
         # find the reactions with loops using the current reaction and remove
         # the loops
+        print(ll_sol, almost_ll_sol)
         for rxn in model.reactions:
             rid = rxn.id
             if ((abs(ll_sol[rid]) < zero_cutoff) and
                     (abs(almost_ll_sol[rid]) > zero_cutoff)):
                 rxn.bounds = max(0, rxn.lower_bound), min(0, rxn.upper_bound)
 
+        model.objective = reaction
         if solution:
             best = model.optimize()
         else:
