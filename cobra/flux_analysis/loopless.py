@@ -221,11 +221,11 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
         # almost loopless solution containing only loops including the current
         # reaction. Than remove all of those loops.
         ll_sol = get_solution(model).fluxes
-        bounds = reaction.bounds
         reaction.bounds = (current, current)
         model.slim_optimize()
         almost_ll_sol = get_solution(model).fluxes
-        reaction.bounds = bounds
+        print(ll_sol, almost_ll_sol)
+    with model:
         # find the reactions with loops using the current reaction and remove
         # the loops
         for rxn in model.reactions:
@@ -234,7 +234,6 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
                     (abs(almost_ll_sol[rid]) > zero_cutoff)):
                 rxn.bounds = max(0, rxn.lower_bound), min(0, rxn.upper_bound)
 
-        model.objective = reaction
         if solution:
             best = model.optimize()
         else:
