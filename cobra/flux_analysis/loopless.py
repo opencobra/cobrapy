@@ -228,7 +228,6 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
         reaction.bounds = bounds
         # find the reactions with loops using the current reaction and remove
         # the loops
-        print(ll_sol, almost_ll_sol)
         for rxn in model.reactions:
             rid = rxn.id
             if ((abs(ll_sol[rid]) < zero_cutoff) and
