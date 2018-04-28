@@ -246,6 +246,6 @@ json_schema = {
         "notes": {"type": "object"},
         "annotation": {"type": "object"},
     },
-    "required": ["id", "reactions", "metabolites", "genes", "compartments"],
+    "required": ["id", "reactions", "metabolites", "genes"],
     "additionalProperties": False,
 }

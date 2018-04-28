@@ -12,8 +12,6 @@ import platform
 
 import pkg_resources
 
-import pkg_resources
-
 __all__ = ("show_versions",)
 
 SYS_ORDER = [

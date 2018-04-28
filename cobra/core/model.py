@@ -341,7 +341,8 @@ class Model(Object):
                             if x.id not in self.compartments]
 
         bad_ids = [m for m in compartment_list
-                   if not isinstance(m.id, string_types) or len(m.id) < 1]
+                   if not isinstance(m.id, string_types) or len(m.id) < 1 or
+                   m is ' ']
         if len(bad_ids) != 0:
             raise ValueError('invalid identifiers in {}'.format(repr(bad_ids)))
 
@@ -1101,4 +1102,5 @@ class Model(Object):
             objective=format_long_string(str(self.objective.expression), 100),
             n_compartments=len(self.compartments),
             compartments=format_long_string(
-                ', '.join(r.id for r in self.compartments), 200))
+                ', '.join((r.id + ": " + r.name) for r in self.compartments),
+                200))

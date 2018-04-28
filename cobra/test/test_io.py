@@ -132,7 +132,10 @@ def io_trial(request, data_directory):
         try:
             reference_model = load(infile)
         except UnicodeDecodeError:
-            reference_model = load(infile, encoding='latin1')
+            try:
+                reference_model = load(infile, encoding='utf-8')
+            except UnicodeDecodeError:
+                reference_model = load(infile, encoding='latin-1')
     test_model = request.param.read_function(join(data_directory,
                                                   request.param.test_file))
     test_output_filename = join(gettempdir(),

@@ -1,0 +1,1367 @@
+{
+    "compartments": {
+        "c": "cytosol",
+        "e": "extracellular"
+    },
+    "genes": [
+        {
+            "id": "b0755",
+            "name": "gpmA"
+        },
+        {
+            "id": "b0875",
+            "name": "aqpZ"
+        },
+        {
+            "id": "b1101",
+            "name": "ptsG"
+        },
+        {
+            "id": "b1380",
+            "name": "ldhA"
+        },
+        {
+            "id": "b1621",
+            "name": "malX"
+        },
+        {
+            "annotation": {
+                "ncbigi": [
+                    "GI:1208453",
+                    "GI:1652654"
+                ]
+            },
+            "id": "b1676",
+            "name": "pykF"
+        },
+        {
+            "id": "b1723",
+            "name": "pfkB"
+        },
+        {
+            "id": "b1773",
+            "name": "ydjI"
+        },
+        {
+            "id": "b1779",
+            "name": "gapA"
+        },
+        {
+            "id": "b1817",
+            "name": "manX"
+        },
+        {
+            "id": "b1818",
+            "name": "manY"
+        },
+        {
+            "id": "b1819",
+            "name": "manZ"
+        },
+        {
+            "id": "b1854",
+            "name": "pykA"
+        },
+        {
+            "id": "b2097",
+            "name": "fbaB"
+        },
+        {
+            "id": "b2133",
+            "name": "dld"
+        },
+        {
+            "id": "b2415",
+            "name": "ptsH"
+        },
+        {
+            "id": "b2416",
+            "name": "ptsI"
+        },
+        {
+            "id": "b2417",
+            "name": "crr"
+        },
+        {
+            "annotation": {
+                "ncbigi": "GI:1653839"
+            },
+            "id": "b2779",
+            "name": "eno"
+        },
+        {
+            "id": "b2925",
+            "name": "fbaA"
+        },
+        {
+            "annotation": {
+                "ncbigi": "GI:1653609"
+            },
+            "id": "b2926",
+            "name": "pgk"
+        },
+        {
+            "id": "b2975",
+            "name": "glcA"
+        },
+        {
+            "id": "b2987",
+            "name": "pitB"
+        },
+        {
+            "id": "b3493",
+            "name": "pitA"
+        },
+        {
+            "id": "b3603",
+            "name": "lldP"
+        },
+        {
+            "id": "b3612",
+            "name": "gpmM"
+        },
+        {
+            "annotation": {
+                "ncbigi": [
+                    "GI:1006614",
+                    "GI:1651919"
+                ]
+            },
+            "id": "b3916",
+            "name": "pfkA"
+        },
+        {
+            "id": "b3919",
+            "name": "tpiA"
+        },
+        {
+            "annotation": {
+                "ncbigi": "GI:1653253"
+            },
+            "id": "b4025",
+            "name": "pgi"
+        },
+        {
+            "id": "b4395",
+            "name": "ytjC"
+        },
+        {
+            "id": "s0001",
+            "name": "G_s0001"
+        }
+    ],
+    "id": "mini_textbook",
+    "metabolites": [
+        {
+            "annotation": {
+                "bigg.metabolite": "13dpg",
+                "biocyc": "DPG",
+                "chebi": [
+                    "CHEBI:16001",
+                    "CHEBI:1658",
+                    "CHEBI:20189",
+                    "CHEBI:57604",
+                    "CHEBI:11881"
+                ],
+                "hmdb": "HMDB01270",
+                "kegg.compound": "C00236",
+                "pubchem.substance": "3535",
+                "reactome": "REACT_29800",
+                "seed.compound": "cpd00203",
+                "unipathway.compound": "UPC00236"
+            },
+            "charge": -4,
+            "compartment": "c",
+            "formula": "C3H4O10P2",
+            "id": "13dpg_c",
+            "name": "3-Phospho-D-glyceroyl phosphate"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "2pg",
+                "biocyc": "2-PG",
+                "chebi": [
+                    "CHEBI:1267",
+                    "CHEBI:58289",
+                    "CHEBI:17835",
+                    "CHEBI:21028",
+                    "CHEBI:11651",
+                    "CHEBI:12986",
+                    "CHEBI:24344",
+                    "CHEBI:39868"
+                ],
+                "hmdb": [
+                    "HMDB03391",
+                    "HMDB00362"
+                ],
+                "kegg.compound": "C00631",
+                "pubchem.substance": "3904",
+                "reactome": "REACT_30485",
+                "seed.compound": "cpd00482",
+                "unipathway.compound": "UPC00631"
+            },
+            "charge": -3,
+            "compartment": "c",
+            "formula": "C3H4O7P",
+            "id": "2pg_c",
+            "name": "D-Glycerate 2-phosphate"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "3pg",
+                "biocyc": "G3P",
+                "chebi": [
+                    "CHEBI:40016",
+                    "CHEBI:58272",
+                    "CHEBI:57998",
+                    "CHEBI:11879",
+                    "CHEBI:1657",
+                    "CHEBI:1659",
+                    "CHEBI:17050",
+                    "CHEBI:21029",
+                    "CHEBI:11882",
+                    "CHEBI:11880",
+                    "CHEBI:12987",
+                    "CHEBI:17794",
+                    "CHEBI:24345"
+                ],
+                "hmdb": "HMDB00807",
+                "kegg.compound": [
+                    "C00197",
+                    "C00597"
+                ],
+                "pubchem.substance": "3497",
+                "reactome": "REACT_29728",
+                "seed.compound": "cpd00169",
+                "unipathway.compound": [
+                    "UPC00597",
+                    "UPC00197"
+                ]
+            },
+            "charge": -3,
+            "compartment": "c",
+            "formula": "C3H4O7P",
+            "id": "3pg_c",
+            "name": "3-Phospho-D-glycerate"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "adp",
+                "biocyc": [
+                    "ADP",
+                    "ADP-GROUP"
+                ],
+                "cas": [
+                    "58-64-0",
+                    "58-64-0"
+                ],
+                "chebi": [
+                    "CHEBI:13222",
+                    "CHEBI:16761",
+                    "CHEBI:2342",
+                    "CHEBI:22244",
+                    "CHEBI:40553",
+                    "CHEBI:456216"
+                ],
+                "hmdb": "HMDB01341",
+                "kegg.compound": "C00008",
+                "kegg.glycan": "G11113",
+                "pubchem.substance": "3310",
+                "reactome": [
+                    "REACT_190072",
+                    "REACT_481002",
+                    "REACT_211606",
+                    "REACT_429160",
+                    "REACT_29370",
+                    "REACT_196180",
+                    "REACT_113581",
+                    "REACT_113582",
+                    "REACT_114564",
+                    "REACT_114565",
+                    "REACT_429153"
+                ],
+                "seed.compound": "cpd00008",
+                "unipathway.compound": "UPC00008"
+            },
+            "charge": -3,
+            "compartment": "c",
+            "formula": "C10H12N5O10P2",
+            "id": "adp_c",
+            "name": "ADP"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "atp",
+                "biocyc": "ATP",
+                "cas": [
+                    "56-65-5",
+                    "56-65-5"
+                ],
+                "chebi": [
+                    "CHEBI:40938",
+                    "CHEBI:15422",
+                    "CHEBI:57299",
+                    "CHEBI:13236",
+                    "CHEBI:10789",
+                    "CHEBI:30616",
+                    "CHEBI:22249",
+                    "CHEBI:10841",
+                    "CHEBI:2359"
+                ],
+                "hmdb": "HMDB00538",
+                "kegg.compound": "C00002",
+                "kegg.drug": "D08646",
+                "pubchem.substance": "3304",
+                "reactome": [
+                    "REACT_190078",
+                    "REACT_113592",
+                    "REACT_113593",
+                    "REACT_114570",
+                    "REACT_29358",
+                    "REACT_389573",
+                    "REACT_139836",
+                    "REACT_211579"
+                ],
+                "seed.compound": "cpd00002",
+                "unipathway.compound": "UPC00002"
+            },
+            "charge": -4,
+            "compartment": "c",
+            "formula": "C10H12N5O13P3",
+            "id": "atp_c",
+            "name": "ATP"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "dhap",
+                "biocyc": "DIHYDROXY-ACETONE-PHOSPHATE",
+                "cas": [
+                    "57-04-5",
+                    "57-04-5"
+                ],
+                "chebi": [
+                    "CHEBI:14341",
+                    "CHEBI:57642",
+                    "CHEBI:14342",
+                    "CHEBI:16108",
+                    "CHEBI:5454",
+                    "CHEBI:24355",
+                    "CHEBI:39571"
+                ],
+                "hmdb": [
+                    "HMDB01473",
+                    "HMDB11735"
+                ],
+                "kegg.compound": "C00111",
+                "pubchem.substance": "3411",
+                "reactome": [
+                    "REACT_188451",
+                    "REACT_75970",
+                    "REACT_390404"
+                ],
+                "seed.compound": "cpd00095",
+                "unipathway.compound": "UPC00111"
+            },
+            "charge": -2,
+            "compartment": "c",
+            "formula": "C3H5O6P",
+            "id": "dhap_c",
+            "name": "Dihydroxyacetone phosphate"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "f6p",
+                "biocyc": "FRUCTOSE-6P",
+                "cas": [
+                    "643-13-0",
+                    "643-13-0"
+                ],
+                "chebi": [
+                    "CHEBI:57634",
+                    "CHEBI:12352",
+                    "CHEBI:45804",
+                    "CHEBI:61527",
+                    "CHEBI:61553",
+                    "CHEBI:10375",
+                    "CHEBI:16084",
+                    "CHEBI:42378",
+                    "CHEBI:22768"
+                ],
+                "hmdb": "HMDB03971",
+                "kegg.compound": [
+                    "C05345",
+                    "C00085"
+                ],
+                "pubchem.substance": "3385",
+                "seed.compound": "cpd00072",
+                "unipathway.compound": [
+                    "UPC05345",
+                    "UPC00085"
+                ]
+            },
+            "charge": -2,
+            "compartment": "c",
+            "formula": "C6H11O9P",
+            "id": "f6p_c",
+            "name": "D-Fructose 6-phosphate"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "fdp",
+                "biocyc": "FRUCTOSE-16-DIPHOSPHATE",
+                "cas": [
+                    "488-69-7",
+                    "488-69-7"
+                ],
+                "chebi": [
+                    "CHEBI:32968",
+                    "CHEBI:49299",
+                    "CHEBI:42553",
+                    "CHEBI:32966",
+                    "CHEBI:37736",
+                    "CHEBI:28013",
+                    "CHEBI:32967",
+                    "CHEBI:41014",
+                    "CHEBI:22767",
+                    "CHEBI:10374",
+                    "CHEBI:40595",
+                    "CHEBI:40591"
+                ],
+                "kegg.compound": [
+                    "C05378",
+                    "C00354"
+                ],
+                "pubchem.substance": "3647",
+                "seed.compound": "cpd00290",
+                "unipathway.compound": "UPC00354"
+            },
+            "charge": -4,
+            "compartment": "c",
+            "formula": "C6H10O12P2",
+            "id": "fdp_c",
+            "name": "D-Fructose 1,6-bisphosphate"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "g3p",
+                "cas": [
+                    "142-10-9",
+                    "142-10-9"
+                ],
+                "chebi": [
+                    "CHEBI:17138",
+                    "CHEBI:14333",
+                    "CHEBI:5446",
+                    "CHEBI:58027"
+                ],
+                "hmdb": "HMDB01112",
+                "kegg.compound": [
+                    "C00661",
+                    "C00118"
+                ],
+                "pubchem.substance": "3930",
+                "seed.compound": "cpd00102",
+                "unipathway.compound": [
+                    "UPC00661",
+                    "UPC00118"
+                ]
+            },
+            "charge": -2,
+            "compartment": "c",
+            "formula": "C3H5O6P",
+            "id": "g3p_c",
+            "name": "Glyceraldehyde 3-phosphate"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "g6p",
+                "biocyc": [
+                    "D-glucose-6-phosphate",
+                    "GLC-6-P"
+                ],
+                "cas": [
+                    "56-73-5",
+                    "56-73-5"
+                ],
+                "chebi": [
+                    "CHEBI:10399",
+                    "CHEBI:22797",
+                    "CHEBI:41041",
+                    "CHEBI:17719",
+                    "CHEBI:4170",
+                    "CHEBI:61548",
+                    "CHEBI:58247",
+                    "CHEBI:12375"
+                ],
+                "hmdb": [
+                    "HMDB03498",
+                    "HMDB06793",
+                    "HMDB01401",
+                    "HMDB01549"
+                ],
+                "kegg.compound": [
+                    "C00092",
+                    "C01172"
+                ],
+                "pubchem.substance": "3392",
+                "reactome": "REACT_1629756",
+                "seed.compound": "cpd00079",
+                "unipathway.compound": "UPC00092"
+            },
+            "charge": -2,
+            "compartment": "c",
+            "formula": "C6H11O9P",
+            "id": "g6p_c",
+            "name": "D-Glucose 6-phosphate"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "glc__D",
+                "cas": [
+                    "50-99-7",
+                    "50-99-7"
+                ],
+                "kegg.compound": "C00031",
+                "pubchem.substance": "3333"
+            },
+            "charge": 0,
+            "compartment": "e",
+            "formula": "C6H12O6",
+            "id": "glc__D_e",
+            "name": "D-Glucose"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "h2o",
+                "biocyc": [
+                    "WATER",
+                    "OH",
+                    "OXONIUM"
+                ],
+                "cas": [
+                    "7732-18-5",
+                    "7732-18-5"
+                ],
+                "chebi": [
+                    "CHEBI:15377",
+                    "CHEBI:13365",
+                    "CHEBI:41979",
+                    "CHEBI:16234",
+                    "CHEBI:36385",
+                    "CHEBI:42857",
+                    "CHEBI:27313",
+                    "CHEBI:44819",
+                    "CHEBI:29373",
+                    "CHEBI:10743",
+                    "CHEBI:5594",
+                    "CHEBI:29356",
+                    "CHEBI:53442",
+                    "CHEBI:29375",
+                    "CHEBI:29374",
+                    "CHEBI:13419",
+                    "CHEBI:43228",
+                    "CHEBI:44292",
+                    "CHEBI:13352",
+                    "CHEBI:41981",
+                    "CHEBI:29412",
+                    "CHEBI:42043",
+                    "CHEBI:33811",
+                    "CHEBI:33813",
+                    "CHEBI:35511",
+                    "CHEBI:5585",
+                    "CHEBI:44641",
+                    "CHEBI:44701"
+                ],
+                "hmdb": [
+                    "HMDB01039",
+                    "HMDB02111"
+                ],
+                "kegg.compound": [
+                    "C01328",
+                    "C00001",
+                    "C18714",
+                    "C18712"
+                ],
+                "kegg.drug": [
+                    "D00001",
+                    "D06322",
+                    "D03703"
+                ],
+                "pubchem.substance": "3303",
+                "reactome": [
+                    "REACT_947593",
+                    "REACT_189422",
+                    "REACT_141343",
+                    "REACT_113518",
+                    "REACT_1605715",
+                    "REACT_109276",
+                    "REACT_113521",
+                    "REACT_113519",
+                    "REACT_2022884",
+                    "REACT_351603",
+                    "REACT_29356"
+                ],
+                "seed.compound": [
+                    "cpd15275",
+                    "cpd00001"
+                ],
+                "unipathway.compound": [
+                    "UPC00001",
+                    "UPC01328"
+                ]
+            },
+            "charge": 0,
+            "compartment": "c",
+            "formula": "H2O",
+            "id": "h2o_c",
+            "name": "H2O"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "h2o",
+                "biocyc": [
+                    "WATER",
+                    "OH",
+                    "OXONIUM"
+                ],
+                "cas": [
+                    "7732-18-5",
+                    "7732-18-5"
+                ],
+                "chebi": [
+                    "CHEBI:15377",
+                    "CHEBI:13365",
+                    "CHEBI:41979",
+                    "CHEBI:16234",
+                    "CHEBI:36385",
+                    "CHEBI:42857",
+                    "CHEBI:27313",
+                    "CHEBI:44819",
+                    "CHEBI:29373",
+                    "CHEBI:10743",
+                    "CHEBI:5594",
+                    "CHEBI:29356",
+                    "CHEBI:53442",
+                    "CHEBI:29375",
+                    "CHEBI:29374",
+                    "CHEBI:13419",
+                    "CHEBI:43228",
+                    "CHEBI:44292",
+                    "CHEBI:13352",
+                    "CHEBI:41981",
+                    "CHEBI:29412",
+                    "CHEBI:42043",
+                    "CHEBI:33811",
+                    "CHEBI:33813",
+                    "CHEBI:35511",
+                    "CHEBI:5585",
+                    "CHEBI:44641",
+                    "CHEBI:44701"
+                ],
+                "hmdb": [
+                    "HMDB01039",
+                    "HMDB02111"
+                ],
+                "kegg.compound": [
+                    "C01328",
+                    "C00001",
+                    "C18714",
+                    "C18712"
+                ],
+                "kegg.drug": [
+                    "D00001",
+                    "D06322",
+                    "D03703"
+                ],
+                "pubchem.substance": "3303",
+                "reactome": [
+                    "REACT_947593",
+                    "REACT_189422",
+                    "REACT_141343",
+                    "REACT_113518",
+                    "REACT_1605715",
+                    "REACT_109276",
+                    "REACT_113521",
+                    "REACT_113519",
+                    "REACT_2022884",
+                    "REACT_351603",
+                    "REACT_29356"
+                ],
+                "seed.compound": [
+                    "cpd15275",
+                    "cpd00001"
+                ],
+                "unipathway.compound": [
+                    "UPC00001",
+                    "UPC01328"
+                ]
+            },
+            "charge": 0,
+            "compartment": "e",
+            "formula": "H2O",
+            "id": "h2o_e",
+            "name": "H2O"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "h",
+                "biocyc": "PROTON",
+                "cas": [
+                    "12408-02-5",
+                    "12408-02-5"
+                ],
+                "chebi": [
+                    "CHEBI:24636",
+                    "CHEBI:15378",
+                    "CHEBI:10744",
+                    "CHEBI:13357",
+                    "CHEBI:5584"
+                ],
+                "kegg.compound": "C00080",
+                "pubchem.substance": "3380",
+                "reactome": [
+                    "REACT_194688",
+                    "REACT_425978",
+                    "REACT_193465",
+                    "REACT_374900",
+                    "REACT_74722",
+                    "REACT_425999",
+                    "REACT_428040",
+                    "REACT_163953",
+                    "REACT_372511",
+                    "REACT_2000349",
+                    "REACT_70106",
+                    "REACT_1470067",
+                    "REACT_113529",
+                    "REACT_425969",
+                    "REACT_428548",
+                    "REACT_156540",
+                    "REACT_1614597",
+                    "REACT_351626",
+                    "REACT_427899"
+                ],
+                "seed.compound": "cpd00067",
+                "unipathway.compound": "UPC00080"
+            },
+            "charge": 1,
+            "compartment": "c",
+            "formula": "H",
+            "id": "h_c",
+            "name": "H+"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "h",
+                "biocyc": "PROTON",
+                "cas": [
+                    "12408-02-5",
+                    "12408-02-5"
+                ],
+                "chebi": [
+                    "CHEBI:24636",
+                    "CHEBI:15378",
+                    "CHEBI:10744",
+                    "CHEBI:13357",
+                    "CHEBI:5584"
+                ],
+                "kegg.compound": "C00080",
+                "pubchem.substance": "3380",
+                "reactome": [
+                    "REACT_194688",
+                    "REACT_425978",
+                    "REACT_193465",
+                    "REACT_374900",
+                    "REACT_74722",
+                    "REACT_425999",
+                    "REACT_428040",
+                    "REACT_163953",
+                    "REACT_372511",
+                    "REACT_2000349",
+                    "REACT_70106",
+                    "REACT_1470067",
+                    "REACT_113529",
+                    "REACT_425969",
+                    "REACT_428548",
+                    "REACT_156540",
+                    "REACT_1614597",
+                    "REACT_351626",
+                    "REACT_427899"
+                ],
+                "seed.compound": "cpd00067",
+                "unipathway.compound": "UPC00080"
+            },
+            "charge": 1,
+            "compartment": "e",
+            "formula": "H",
+            "id": "h_e",
+            "name": "H+"
+        },
+        {
+            "charge": -1,
+            "compartment": "c",
+            "formula": "C3H5O3",
+            "id": "lac__D_c",
+            "name": "D-Lactate"
+        },
+        {
+            "charge": -1,
+            "compartment": "e",
+            "formula": "C3H5O3",
+            "id": "lac__D_e",
+            "name": "D-Lactate"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "nad",
+                "biocyc": "NAD",
+                "cas": [
+                    "53-84-9",
+                    "53-84-9"
+                ],
+                "chebi": [
+                    "CHEBI:21901",
+                    "CHEBI:7422",
+                    "CHEBI:44214",
+                    "CHEBI:15846",
+                    "CHEBI:13394",
+                    "CHEBI:13393",
+                    "CHEBI:44215",
+                    "CHEBI:13389",
+                    "CHEBI:57540",
+                    "CHEBI:44281"
+                ],
+                "hmdb": "HMDB00902",
+                "kegg.compound": "C00003",
+                "kegg.drug": "D00002",
+                "pubchem.substance": "3305",
+                "reactome": [
+                    "REACT_192307",
+                    "REACT_29360",
+                    "REACT_427523",
+                    "REACT_194653",
+                    "REACT_113526"
+                ],
+                "seed.compound": "cpd00003",
+                "unipathway.compound": "UPC00003"
+            },
+            "charge": -1,
+            "compartment": "c",
+            "formula": "C21H26N7O14P2",
+            "id": "nad_c",
+            "name": "Nicotinamide adenine dinucleotide"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "nadh",
+                "biocyc": "NADH",
+                "cas": [
+                    "58-68-4",
+                    "58-68-4"
+                ],
+                "chebi": [
+                    "CHEBI:13395",
+                    "CHEBI:21902",
+                    "CHEBI:16908",
+                    "CHEBI:7423",
+                    "CHEBI:44216",
+                    "CHEBI:57945",
+                    "CHEBI:13396"
+                ],
+                "hmdb": "HMDB01487",
+                "kegg.compound": "C00004",
+                "pubchem.substance": "3306",
+                "reactome": [
+                    "REACT_192305",
+                    "REACT_73473",
+                    "REACT_194697",
+                    "REACT_29362"
+                ],
+                "seed.compound": "cpd00004",
+                "unipathway.compound": "UPC00004"
+            },
+            "charge": -2,
+            "compartment": "c",
+            "formula": "C21H27N7O14P2",
+            "id": "nadh_c",
+            "name": "Nicotinamide adenine dinucleotide - reduced"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "pep",
+                "biocyc": "PHOSPHO-ENOL-PYRUVATE",
+                "cas": [
+                    "138-08-9",
+                    "138-08-9"
+                ],
+                "chebi": [
+                    "CHEBI:44897",
+                    "CHEBI:44894",
+                    "CHEBI:14812",
+                    "CHEBI:8147",
+                    "CHEBI:26055",
+                    "CHEBI:26054",
+                    "CHEBI:58702",
+                    "CHEBI:18021"
+                ],
+                "hmdb": "HMDB00263",
+                "kegg.compound": "C00074",
+                "pubchem.substance": "3374",
+                "reactome": [
+                    "REACT_29492",
+                    "REACT_372364"
+                ],
+                "seed.compound": "cpd00061",
+                "unipathway.compound": "UPC00074"
+            },
+            "charge": -3,
+            "compartment": "c",
+            "formula": "C3H2O6P",
+            "id": "pep_c",
+            "name": "Phosphoenolpyruvate"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "pi",
+                "biocyc": [
+                    "Pi",
+                    "PHOSPHATE-GROUP",
+                    "CPD0-1421"
+                ],
+                "cas": [
+                    "14265-44-2",
+                    "14265-44-2"
+                ],
+                "chebi": [
+                    "CHEBI:37583",
+                    "CHEBI:7793",
+                    "CHEBI:37585",
+                    "CHEBI:34683",
+                    "CHEBI:14791",
+                    "CHEBI:34855",
+                    "CHEBI:29137",
+                    "CHEBI:29139",
+                    "CHEBI:63036",
+                    "CHEBI:26020",
+                    "CHEBI:39739",
+                    "CHEBI:32597",
+                    "CHEBI:32596",
+                    "CHEBI:43474",
+                    "CHEBI:63051",
+                    "CHEBI:43470",
+                    "CHEBI:9679",
+                    "CHEBI:35433",
+                    "CHEBI:4496",
+                    "CHEBI:45024",
+                    "CHEBI:18367",
+                    "CHEBI:26078",
+                    "CHEBI:39745",
+                    "CHEBI:24838"
+                ],
+                "hmdb": "HMDB02142",
+                "kegg.compound": [
+                    "C13556",
+                    "C13558",
+                    "C00009"
+                ],
+                "kegg.drug": "D05467",
+                "pubchem.substance": "3311",
+                "reactome": [
+                    "REACT_947590",
+                    "REACT_109277",
+                    "REACT_113548",
+                    "REACT_2255331",
+                    "REACT_29372",
+                    "REACT_113550",
+                    "REACT_113551"
+                ],
+                "seed.compound": [
+                    "cpd09464",
+                    "cpd09463",
+                    "cpd00009"
+                ],
+                "unipathway.compound": "UPC00009"
+            },
+            "charge": -2,
+            "compartment": "c",
+            "formula": "HO4P",
+            "id": "pi_c",
+            "name": "Phosphate"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "pi",
+                "biocyc": [
+                    "Pi",
+                    "PHOSPHATE-GROUP",
+                    "CPD0-1421"
+                ],
+                "cas": [
+                    "14265-44-2",
+                    "14265-44-2"
+                ],
+                "chebi": [
+                    "CHEBI:37583",
+                    "CHEBI:7793",
+                    "CHEBI:37585",
+                    "CHEBI:34683",
+                    "CHEBI:14791",
+                    "CHEBI:34855",
+                    "CHEBI:29137",
+                    "CHEBI:29139",
+                    "CHEBI:63036",
+                    "CHEBI:26020",
+                    "CHEBI:39739",
+                    "CHEBI:32597",
+                    "CHEBI:32596",
+                    "CHEBI:43474",
+                    "CHEBI:63051",
+                    "CHEBI:43470",
+                    "CHEBI:9679",
+                    "CHEBI:35433",
+                    "CHEBI:4496",
+                    "CHEBI:45024",
+                    "CHEBI:18367",
+                    "CHEBI:26078",
+                    "CHEBI:39745",
+                    "CHEBI:24838"
+                ],
+                "hmdb": "HMDB02142",
+                "kegg.compound": [
+                    "C13556",
+                    "C13558",
+                    "C00009"
+                ],
+                "kegg.drug": "D05467",
+                "pubchem.substance": "3311",
+                "reactome": [
+                    "REACT_947590",
+                    "REACT_109277",
+                    "REACT_113548",
+                    "REACT_2255331",
+                    "REACT_29372",
+                    "REACT_113550",
+                    "REACT_113551"
+                ],
+                "seed.compound": [
+                    "cpd09464",
+                    "cpd09463",
+                    "cpd00009"
+                ],
+                "unipathway.compound": "UPC00009"
+            },
+            "charge": -2,
+            "compartment": "e",
+            "formula": "HO4P",
+            "id": "pi_e",
+            "name": "Phosphate"
+        },
+        {
+            "annotation": {
+                "bigg.metabolite": "pyr",
+                "biocyc": "PYRUVATE",
+                "cas": [
+                    "127-17-3",
+                    "127-17-3"
+                ],
+                "chebi": [
+                    "CHEBI:15361",
+                    "CHEBI:14987",
+                    "CHEBI:8685",
+                    "CHEBI:32816",
+                    "CHEBI:45253",
+                    "CHEBI:26466",
+                    "CHEBI:26462"
+                ],
+                "hmdb": "HMDB00243",
+                "kegg.compound": "C00022",
+                "lipidmaps": "LMFA01060077",
+                "pubchem.substance": "3324",
+                "reactome": [
+                    "REACT_113557",
+                    "REACT_389680",
+                    "REACT_29398"
+                ],
+                "seed.compound": "cpd00020",
+                "unipathway.compound": "UPC00022"
+            },
+            "charge": -1,
+            "compartment": "c",
+            "formula": "C3H3O3",
+            "id": "pyr_c",
+            "name": "Pyruvate"
+        }
+    ],
+    "reactions": [
+        {
+            "annotation": {
+                "bigg.reaction": "ATPM"
+            },
+            "gene_reaction_rule": "",
+            "id": "ATPM",
+            "lower_bound": 8.39,
+            "metabolites": {
+                "adp_c": 1.0,
+                "atp_c": -1.0,
+                "h2o_c": -1.0,
+                "h_c": 1.0,
+                "pi_c": 1.0
+            },
+            "name": "ATP maintenance requirement",
+            "objective_coefficient": 1.0,
+            "upper_bound": 1000.0
+        },
+        {
+            "gene_reaction_rule": "b3603 or b2975",
+            "id": "D_LACt2",
+            "lower_bound": -1000.0,
+            "metabolites": {
+                "h_c": 1,
+                "h_e": -1,
+                "lac__D_c": 1,
+                "lac__D_e": -1
+            },
+            "name": "",
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "bigg.reaction": "ENO"
+            },
+            "gene_reaction_rule": "b2779",
+            "id": "ENO",
+            "lower_bound": -1000.0,
+            "metabolites": {
+                "2pg_c": -1.0,
+                "h2o_c": 1.0,
+                "pep_c": 1.0
+            },
+            "name": "enolase",
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "SBO": "SBO:0000627",
+                "bigg.reaction": "glc"
+            },
+            "gene_reaction_rule": "",
+            "id": "EX_glc__D_e",
+            "lower_bound": -10.0,
+            "metabolites": {
+                "glc__D_e": -1.0
+            },
+            "name": "D-Glucose exchange",
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "SBO": "SBO:0000627",
+                "bigg.reaction": "h"
+            },
+            "gene_reaction_rule": "",
+            "id": "EX_h_e",
+            "lower_bound": -1000.0,
+            "metabolites": {
+                "h_e": -1.0
+            },
+            "name": "H+ exchange",
+            "upper_bound": 1000.0
+        },
+        {
+            "gene_reaction_rule": "",
+            "id": "EX_lac__D_e",
+            "lower_bound": 0.0,
+            "metabolites": {
+                "lac__D_e": -1.0
+            },
+            "name": "D-lactate exchange",
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "bigg.reaction": "FBA"
+            },
+            "gene_reaction_rule": "b1773 or b2097 or b2925",
+            "id": "FBA",
+            "lower_bound": -1000.0,
+            "metabolites": {
+                "dhap_c": 1.0,
+                "fdp_c": -1.0,
+                "g3p_c": 1.0
+            },
+            "name": "fructose-bisphosphate aldolase",
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "bigg.reaction": "GAPD"
+            },
+            "gene_reaction_rule": "b1779",
+            "id": "GAPD",
+            "lower_bound": -1000.0,
+            "metabolites": {
+                "13dpg_c": 1.0,
+                "g3p_c": -1.0,
+                "h_c": 1.0,
+                "nad_c": -1.0,
+                "nadh_c": 1.0,
+                "pi_c": -1.0
+            },
+            "name": "glyceraldehyde-3-phosphate dehydrogenase",
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "bigg.reaction": "GLCpts"
+            },
+            "gene_reaction_rule": "( b2417 and b1621 and b2415 and b2416 ) or ( b2417 and b1101 and b2415 and b2416 ) or ( b1817 and b1818 and b1819 and b2415 and b2416 )",
+            "id": "GLCpts",
+            "lower_bound": 0.0,
+            "metabolites": {
+                "g6p_c": 1.0,
+                "glc__D_e": -1.0,
+                "pep_c": -1.0,
+                "pyr_c": 1.0
+            },
+            "name": "D-glucose transport via PEP:Pyr PTS",
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "bigg.reaction": "H2Ot"
+            },
+            "gene_reaction_rule": "b0875 or s0001",
+            "id": "H2Ot",
+            "lower_bound": -1000.0,
+            "metabolites": {
+                "h2o_c": 1.0,
+                "h2o_e": -1.0
+            },
+            "name": "R H2O transport via - diffusion",
+            "upper_bound": 1000.0
+        },
+        {
+            "gene_reaction_rule": "b2133 or b1380",
+            "id": "LDH_D",
+            "lower_bound": -1000.0,
+            "metabolites": {
+                "h_c": 1.0,
+                "lac__D_c": -1.0,
+                "nad_c": -1.0,
+                "nadh_c": 1.0,
+                "pyr_c": 1.0
+            },
+            "name": "D-lactate dehydrogenase",
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "bigg.reaction": "PFK"
+            },
+            "gene_reaction_rule": "b3916 or b1723",
+            "id": "PFK",
+            "lower_bound": 0.0,
+            "metabolites": {
+                "adp_c": 1.0,
+                "atp_c": -1.0,
+                "f6p_c": -1.0,
+                "fdp_c": 1.0,
+                "h_c": 1.0
+            },
+            "name": "phosphofructokinase",
+            "objective_coefficient": 1.0,
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "bigg.reaction": "PGI"
+            },
+            "gene_reaction_rule": "b4025",
+            "id": "PGI",
+            "lower_bound": -1000.0,
+            "metabolites": {
+                "f6p_c": 1.0,
+                "g6p_c": -1.0
+            },
+            "name": "glucose-6-phosphate isomerase",
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "bigg.reaction": "PGK"
+            },
+            "gene_reaction_rule": "b2926",
+            "id": "PGK",
+            "lower_bound": -1000.0,
+            "metabolites": {
+                "13dpg_c": 1.0,
+                "3pg_c": -1.0,
+                "adp_c": 1.0,
+                "atp_c": -1.0
+            },
+            "name": "phosphoglycerate kinase",
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "bigg.reaction": "PGM"
+            },
+            "gene_reaction_rule": "b4395 or b3612 or b0755",
+            "id": "PGM",
+            "lower_bound": -1000.0,
+            "metabolites": {
+                "2pg_c": -1.0,
+                "3pg_c": 1.0
+            },
+            "name": "phosphoglycerate mutase",
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "bigg.reaction": "PIt2r"
+            },
+            "gene_reaction_rule": "b2987 or b3493",
+            "id": "PIt2r",
+            "lower_bound": -1000.0,
+            "metabolites": {
+                "h_c": 1.0,
+                "h_e": -1.0,
+                "pi_c": 1.0,
+                "pi_e": -1.0
+            },
+            "name": "R phosphate reversible transport via - symport",
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "bigg.reaction": "PYK"
+            },
+            "gene_reaction_rule": "b1854 or b1676",
+            "id": "PYK",
+            "lower_bound": 0.0,
+            "metabolites": {
+                "adp_c": -1.0,
+                "atp_c": 1.0,
+                "h_c": -1.0,
+                "pep_c": -1.0,
+                "pyr_c": 1.0
+            },
+            "name": "pyruvate kinase",
+            "upper_bound": 1000.0
+        },
+        {
+            "annotation": {
+                "bigg.reaction": "TPI"
+            },
+            "gene_reaction_rule": "b3919",
+            "id": "TPI",
+            "lower_bound": -1000.0,
+            "metabolites": {
+                "dhap_c": -1.0,
+                "g3p_c": 1.0
+            },
+            "name": "triose-phosphate isomerase",
+            "upper_bound": 1000.0
+        }
+    ],
+    "version": 1
+}

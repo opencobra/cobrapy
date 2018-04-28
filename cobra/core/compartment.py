@@ -21,14 +21,9 @@ class Compartment(Object):
         """
     def __init__(self, id=None, name=""):
         Object.__init__(self, id, name)
-        self._model = None
 
     def copy(self):
         return deepcopy(self)
-
-    @property
-    def model(self):
-        return (self._model)
 
     def _repr_html_(self):
         return """
