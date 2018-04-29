@@ -53,17 +53,13 @@ class Model(Object):
         Gene
     solution : Solution
         The last obtained solution from optimizing the model.
-    compartment : DictList
-        A DictList where the key is the compartment identifier and the value a
-        Compartment
     """
 
     def __setstate__(self, state):
         """Make sure all cobra.Objects in the model point to the model.
         """
         self.__dict__.update(state)
-        for y in ['reactions', 'genes', 'metabolites',
-                  'compartments']:
+        for y in ['reactions', 'genes', 'metabolites']:
             for x in getattr(self, y):
                 x._model = self
         if not hasattr(self, "name"):
@@ -95,7 +91,7 @@ class Model(Object):
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
             # genes based on their ids {Gene.id: Gene}
-            self.compartments = DictList()  # A list of cobra.Compartments
+            self._compartments = DictList()
             self._contexts = []
 
             # from cameo ...
@@ -165,6 +161,17 @@ class Model(Object):
         warn('use Model.compartments instead', DeprecationWarning)
         return {met.compartment for met in self.metabolites
                 if met.compartment is not None}
+
+    @property
+    def compartments(self):
+        for met in self.metabolites:
+            if met.compartment is not None:
+                self.add_compartments([Compartment(met.compartment)])
+        return self._compartments
+
+    @compartments.setter
+    def compartments(self, compartments):
+        self._compartments
 
     @property
     def medium(self):
@@ -252,22 +259,12 @@ class Model(Object):
         """
         new = self.__class__()
         do_not_copy_by_ref = {"metabolites", "reactions", "genes",
-                              "compartments", "notes", "annotation"}
+                              "_compartments", "notes", "annotation"}
         for attr in self.__dict__:
             if attr not in do_not_copy_by_ref:
                 new.__dict__[attr] = self.__dict__[attr]
         new.notes = deepcopy(self.notes)
         new.annotation = deepcopy(self.annotation)
-
-        new.compartment = DictList()
-        for compartment in self.compartments:
-            new_compartment = compartment.__class__(None)
-            for attr, value in iteritems(compartment.__dict__):
-                if attr not in do_not_copy_by_ref:
-                    new_compartment.__dict__[attr] = copy(
-                        value) if attr == "formula" else value
-            new_compartment._model = new
-            new.compartments.append(new_compartment)
 
         new.metabolites = DictList()
         do_not_copy_by_ref = {"_reaction", "_model"}
@@ -291,8 +288,7 @@ class Model(Object):
             new.genes.append(new_gene)
 
         new.reactions = DictList()
-        do_not_copy_by_ref = {"_model", "_metabolites", "_genes",
-                              "_compartments"}
+        do_not_copy_by_ref = {"_model", "_metabolites", "_genes"}
         for reaction in self.reactions:
             new_reaction = reaction.__class__()
             for attr, value in iteritems(reaction.__dict__):
@@ -322,15 +318,6 @@ class Model(Object):
         return new
 
     def add_compartments(self, compartment_list):
-        """Will add a list of compartments to the model object
-
-        The change is reverted upon exit when using the model as a context.
-
-        Parameters
-        ----------
-        compartment_list : A list of `cobra.core.Compartment` objects
-
-        """
         if not hasattr(compartment_list, '__iter__'):
             compartment_list = [compartment_list]
         if len(compartment_list) == 0:
@@ -338,7 +325,7 @@ class Model(Object):
 
         # First check whether the compartments exist in the model
         compartment_list = [x for x in compartment_list
-                            if x.id not in self.compartments]
+                            if x.id not in self._compartments]
 
         bad_ids = [m for m in compartment_list
                    if not isinstance(m.id, string_types) or len(m.id) < 1 or
@@ -346,13 +333,11 @@ class Model(Object):
         if len(bad_ids) != 0:
             raise ValueError('invalid identifiers in {}'.format(repr(bad_ids)))
 
-        for x in compartment_list:
-            x._model = self
-        self.compartments += compartment_list
+        self._compartments += compartment_list
 
         context = get_context(self)
         if context:
-            context(partial(self.compartments.__isub__, compartment_list))
+            context(partial(self._compartments.__isub__, compartment_list))
             for x in compartment_list:
                 # Do we care?
                 context(partial(setattr, x, '_model', None))
@@ -402,19 +387,6 @@ class Model(Object):
             for x in metabolite_list:
                 # Do we care?
                 context(partial(setattr, x, '_model', None))
-
-        # add compartments to cobra.Model
-        for met in metabolite_list:
-            compartment = Compartment(met.compartment)
-            if not self.compartments.has_id(compartment.id):
-                self.compartments += [compartment]
-                compartment._model = self
-
-                if context:
-                    # Remove the compartment later
-                    context(partial(self.compartments.__isub__,
-                                    [compartment]))
-                    context(partial(setattr, compartment, '_model', None))
 
     def remove_metabolites(self, metabolite_list, destructive=False):
         """Remove a list of metabolites from the the object.
@@ -902,7 +874,7 @@ class Model(Object):
             self.reactions._generate_index()
             self.metabolites._generate_index()
             self.genes._generate_index()
-            self.compartments._generate_index()
+            self._compartments._generate_index()
         if rebuild_relationships:
             for met in self.metabolites:
                 met._reaction.clear()
@@ -914,8 +886,7 @@ class Model(Object):
                 for gene in rxn._genes:
                     gene._reaction.add(rxn)
         # point _model to self
-        for l in (self.reactions, self.genes, self.metabolites,
-                  self.compartments):
+        for l in (self.reactions, self.genes, self.metabolites):
             for e in l:
                 e._model = self
 
@@ -1094,7 +1065,7 @@ class Model(Object):
                 <td><strong>{n_compartments} compartment(s)</strong></td>
                 <td>{compartments}</td>
             </tr>
-          </table>""".format(
+        </table>""".format(
             name=self.id,
             address='0x0%x' % id(self),
             num_metabolites=len(self.metabolites),
@@ -1102,5 +1073,5 @@ class Model(Object):
             objective=format_long_string(str(self.objective.expression), 100),
             n_compartments=len(self.compartments),
             compartments=format_long_string(
-                ', '.join((r.id + ": " + r.name) for r in self.compartments),
+                ', '.join((r.id + " : " + r.name) for r in self._compartments),
                 200))
