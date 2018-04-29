@@ -171,7 +171,7 @@ class Model(Object):
 
     @compartments.setter
     def compartments(self, compartments):
-        self._compartments
+        self._compartments = compartments
 
     @property
     def medium(self):
@@ -258,8 +258,8 @@ class Model(Object):
         than deepcopy
         """
         new = self.__class__()
-        do_not_copy_by_ref = {"metabolites", "reactions", "genes",
-                              "_compartments", "notes", "annotation"}
+        do_not_copy_by_ref = {"metabolites", "reactions", "genes", "notes",
+                              "annotation"}
         for attr in self.__dict__:
             if attr not in do_not_copy_by_ref:
                 new.__dict__[attr] = self.__dict__[attr]
@@ -310,6 +310,11 @@ class Model(Object):
             # Cplex has an issue with deep copies
         except Exception:  # pragma: no cover
             new._solver = copy(self.solver)  # pragma: no cover
+
+        try:
+            new.compartments = self.compartments
+        except Exception:
+            pass
 
         # it doesn't make sense to retain the context of a copied model so
         # assign a new empty context
