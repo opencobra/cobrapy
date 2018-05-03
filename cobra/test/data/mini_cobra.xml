@@ -201,13 +201,13 @@
     <listOfReactions>
       <reaction id="R_ATPM" name="ATP maintenance requirement" reversible="false">
         <listOfReactants>
-          <speciesReference species="M_h2o_c" stoichiometry="1"/>
           <speciesReference species="M_atp_c" stoichiometry="1"/>
+          <speciesReference species="M_h2o_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_pi_c" stoichiometry="1"/>
           <speciesReference species="M_adp_c" stoichiometry="1"/>
           <speciesReference species="M_h_c" stoichiometry="1"/>
+          <speciesReference species="M_pi_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -228,8 +228,8 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_lac__D_e" stoichiometry="1"/>
           <speciesReference species="M_h_e" stoichiometry="1"/>
+          <speciesReference species="M_lac__D_e" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
           <speciesReference species="M_lac__D_c" stoichiometry="1"/>
@@ -257,8 +257,8 @@
           <speciesReference species="M_2pg_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_pep_c" stoichiometry="1"/>
           <speciesReference species="M_h2o_c" stoichiometry="1"/>
+          <speciesReference species="M_pep_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -361,14 +361,14 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_pi_c" stoichiometry="1"/>
-          <speciesReference species="M_g3p_c" stoichiometry="1"/>
           <speciesReference species="M_nad_c" stoichiometry="1"/>
+          <speciesReference species="M_g3p_c" stoichiometry="1"/>
+          <speciesReference species="M_pi_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_nadh_c" stoichiometry="1"/>
           <speciesReference species="M_13dpg_c" stoichiometry="1"/>
           <speciesReference species="M_h_c" stoichiometry="1"/>
+          <speciesReference species="M_nadh_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -443,8 +443,8 @@
           <speciesReference species="M_lac__D_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_h_c" stoichiometry="1"/>
           <speciesReference species="M_nadh_c" stoichiometry="1"/>
+          <speciesReference species="M_h_c" stoichiometry="1"/>
           <speciesReference species="M_pyr_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
@@ -470,8 +470,8 @@
           <speciesReference species="M_f6p_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_adp_c" stoichiometry="1"/>
           <speciesReference species="M_fdp_c" stoichiometry="1"/>
+          <speciesReference species="M_adp_c" stoichiometry="1"/>
           <speciesReference species="M_h_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
@@ -517,8 +517,8 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_3pg_c" stoichiometry="1"/>
           <speciesReference species="M_atp_c" stoichiometry="1"/>
+          <speciesReference species="M_3pg_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
           <speciesReference species="M_adp_c" stoichiometry="1"/>
@@ -567,8 +567,8 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_pi_e" stoichiometry="1"/>
           <speciesReference species="M_h_e" stoichiometry="1"/>
+          <speciesReference species="M_pi_e" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
           <speciesReference species="M_h_c" stoichiometry="1"/>
@@ -593,13 +593,13 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_adp_c" stoichiometry="1"/>
           <speciesReference species="M_pep_c" stoichiometry="1"/>
+          <speciesReference species="M_adp_c" stoichiometry="1"/>
           <speciesReference species="M_h_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_atp_c" stoichiometry="1"/>
           <speciesReference species="M_pyr_c" stoichiometry="1"/>
+          <speciesReference species="M_atp_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">

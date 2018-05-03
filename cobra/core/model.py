@@ -166,7 +166,10 @@ class Model(Object):
     def compartments(self):
         for met in self.metabolites:
             if met.compartment is not None:
-                self.add_compartments([Compartment(met.compartment)])
+                try:
+                    self._compartments.append(Compartment(met.compartment))
+                except Exception:
+                    pass
         return self._compartments
 
     @compartments.setter
@@ -330,7 +333,7 @@ class Model(Object):
 
         # First check whether the compartments exist in the model
         compartment_list = [x for x in compartment_list
-                            if x.id not in self._compartments]
+                            if x.id not in self.compartments]
 
         bad_ids = [m for m in compartment_list
                    if not isinstance(m.id, string_types) or len(m.id) < 1 or
