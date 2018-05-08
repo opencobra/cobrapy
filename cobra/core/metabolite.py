@@ -126,7 +126,7 @@ class Metabolite(Species):
             return sum([count * elements_and_molecular_weights[element]
                         for element, count in self.elements.items()])
         except KeyError as e:
-            warn("The element %s does not appear in the peridic table" % e)
+            warn("The element %s does not appear in the periodic table" % e)
 
     @property
     def y(self):
