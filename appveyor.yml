@@ -48,7 +48,6 @@ install:
       if ($env:CONDA -eq "true") {
         conda config --set always_yes yes --set changeps1 no;
         conda update -n base conda
-#        conda config --add channels conda-forge
         conda install -q pip setuptools wheel numpy scipy;
         pip install -r develop-requirements.txt;
         pip install .
