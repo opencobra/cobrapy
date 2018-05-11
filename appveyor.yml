@@ -14,17 +14,11 @@ environment:
     - PYTHON: "C:\\Miniconda-x64"
       CONDA: true
 
-    - PYTHON: "C:\\Miniconda35-x64"
-      CONDA: true
-
     - PYTHON: "C:\\Miniconda36-x64"
       CONDA: true
 
     - PYTHON: "C:\\Python27-x64"
       TOXENV: py27
-
-    - PYTHON: "C:\\Python35-x64"
-      TOXENV: py35
 
     - PYTHON: "C:\\Python36-x64"
       TOXENV: py36
