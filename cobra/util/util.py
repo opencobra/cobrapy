@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import
 
+from depinfo import print_dependencies
+
 
 def format_long_string(string, max_length=50):
     if len(string) > max_length:
@@ -20,3 +22,8 @@ class AutoVivification(dict):
         except KeyError:
             value = self[item] = type(self)()
             return value
+
+
+def show_versions():
+    """Print dependency information."""
+    print_dependencies("cobra")

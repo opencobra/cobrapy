@@ -11,7 +11,7 @@ from os.path import dirname as _dirname
 from cobra import flux_analysis, io
 from cobra.core import (
     DictList, Gene, Metabolite, Model, Object, Reaction, Species)
-from cobra.util.version_info import show_versions
+from cobra.util import show_versions
 
 __version__ = "0.11.3"
 
