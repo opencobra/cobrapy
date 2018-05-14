@@ -326,8 +326,8 @@ class TestCobraFluxAnalysis:
     #         assert abs(rates[frozenset([gene])] - expected_value) < 0.01
 
     # @pytest.mark.parametrize("solver", optlang_solvers)
-    # def test_single_gene_deletion_linear_room_benchmark(self, model, benchmark,
-    #                                                     solver):
+    # def test_single_gene_deletion_linear_room_benchmark(self, model,
+    #                                                     benchmark, solver):
     #     model.solver = solver
     #     genes = ['b0114']
     #     benchmark(single_gene_deletion, model, gene_list=genes,
