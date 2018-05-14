@@ -89,7 +89,7 @@ def _multi_deletion(model, entity, element_lists, method="fba",
         List of iterables ``cobra.Reaction``s or ``cobra.Gene``s (or their IDs)
         to be deleted.
 
-    method: {"fba", "moma", "linear moma", "room"}, optional
+    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
         Method used to predict the growth rate.
 
     processes : int, optional
@@ -128,7 +128,7 @@ def _multi_deletion(model, entity, element_lists, method="fba",
             add_moma(model, linear="linear" in method)
 
         if "room" in method:
-            add_room(model)
+            add_room(model, linear="linear" in method)
 
         args = set([frozenset(comb) for comb in product(*element_lists)])
         processes = min(processes, len(args))

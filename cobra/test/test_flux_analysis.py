@@ -273,11 +273,65 @@ class TestCobraFluxAnalysis:
         benchmark(single_gene_deletion, model, gene_list=genes,
                   method="room")
 
-    @pytest.mark.parametrize("solver", optlang_solvers)
-    def test_single_gene_deletion_benchmark(self, model, benchmark,
-                                            solver):
-        model.solver = solver
-        benchmark(single_reaction_deletion, model)
+    # @pytest.mark.parametrize("solver", optlang_solvers)
+    # def test_room_sanity(self, model, solver):
+    #     """Test optimization criterion and optimality."""
+
+    #     sol = model.optimize()
+    #     with model:
+    #         model.reactions.PFK.knock_out()
+    #         knock_sol = model.optimize()
+    #         ssq = (knock_sol.fluxes - sol.fluxes).pow(2).sum()
+
+    #     with model:
+    #         add_room(model)
+    #         model.reactions.PFK.knock_out()
+    #         room_sol = model.optimize()
+    #         room_ssq = (room_sol.fluxes - sol.fluxes).pow(2).sum()
+
+    #     assert numpy.allclose(room_sol.objective_value, room_ssq)
+    #     assert room_ssq < ssq
+
+    # @pytest.mark.parametrize("solver", optlang_solvers)
+    # def test_linear_room_sanity(self, model, solver):
+    #     """Test optimization criterion and optimality."""
+
+    #     sol = model.optimize()
+    #     with model:
+    #         model.reactions.PFK.knock_out()
+    #         knock_sol = model.optimize()
+    #         sabs = (knock_sol.fluxes - sol.fluxes).abs().sum()
+
+    #     with model:
+    #         add_room(model, linear=True)
+    #         model.reactions.PFK.knock_out()
+    #         room_sol = model.optimize()
+    #         room_sabs = (room_sol.fluxes - sol.fluxes).abs().sum()
+
+    #     assert numpy.allclose(room_sol.objective_value, room_sabs)
+    #     assert room_sabs < sabs
+
+    # @pytest.mark.parametrize("solver", optlang_solvers)
+    # def test_single_gene_deletion_linear_room(self, model, solver):
+
+    #     model.solver = solver
+    #     # expected knockout growth rates for textbook model
+    #     # growth_dict = {"b0008": 0.0, "b0114": 27.0, "b0116": 36.0,
+    #     #                "b2276": 46.0, "b1779": 45.0}
+    #     growth_dict = {"b0114": 27.0}
+    #     rates = single_gene_deletion(model,
+    #                                  gene_list=growth_dict.keys(),
+    #                                  method="linear room")["growth"]
+    #     for gene, expected_value in iteritems(growth_dict):
+    #         assert abs(rates[frozenset([gene])] - expected_value) < 0.01
+
+    # @pytest.mark.parametrize("solver", optlang_solvers)
+    # def test_single_gene_deletion_linear_room_benchmark(self, model, benchmark,
+    #                                                     solver):
+    #     model.solver = solver
+    #     genes = ['b0114']
+    #     benchmark(single_gene_deletion, model, gene_list=genes,
+    #               method="linear room")
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_reaction_deletion(self, model, solver):
