@@ -76,6 +76,7 @@ for g in mini.genes:
 mini.reactions.sort()
 mini.genes.sort()
 mini.metabolites.sort()
+mini.compartments.sort()
 # output to various formats
 with open("mini.pickle", "wb") as outfile:
     dump(mini, outfile, protocol=2)

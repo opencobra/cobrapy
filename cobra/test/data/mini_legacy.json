@@ -1,14 +1,8 @@
 {
-    "compartments": [
-        {
-            "id": "c",
-            "name": "cytosol"
-        },
-        {
-            "id": "e",
-            "name": "extracellular"
-        }
-    ],
+    "compartments": {
+        "c": "cytosol",
+        "e": "extracellular"
+    },
     "genes": [
         {
             "id": "b0755",

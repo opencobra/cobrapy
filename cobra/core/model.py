@@ -16,6 +16,7 @@ from six import iteritems, string_types
 from cobra.exceptions import SolverNotFound
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
+from cobra.core.compartment import Compartment
 from cobra.core.reaction import separate_forward_and_reverse_bounds, Reaction
 from cobra.core.solution import get_solution
 from cobra.util.context import HistoryManager, resettable, get_context
@@ -90,7 +91,7 @@ class Model(Object):
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
             # genes based on their ids {Gene.id: Gene}
-            self._compartments = dict()
+            self._compartments = DictList()
             self._contexts = []
 
             # from cameo ...
@@ -163,29 +164,17 @@ class Model(Object):
 
     @property
     def compartments(self):
-        return {met.compartment: self._compartments.get(met.compartment, '')
-                for met in self.metabolites if met.compartment is not None}
+        for met in self.metabolites:
+            if met.compartment is not None:
+                try:
+                    self._compartments.append(Compartment(met.compartment))
+                except Exception:
+                    pass
+        return self._compartments
 
     @compartments.setter
-    def compartments(self, value):
-        """Get or set the dictionary of current compartment descriptions.
-
-        Assigning a dictionary to this property updates the model's
-        dictionary of compartment descriptions with the new values.
-
-        Parameters
-        ----------
-        value : dict
-            Dictionary mapping compartments abbreviations to full names.
-
-        Examples
-        --------
-        >>> import cobra.test
-        >>> model = cobra.test.create_test_model("textbook")
-        >>> model.compartments = {'c': 'the cytosol'}
-        {'c': 'the cytosol', 'e': 'extracellular'}
-        """
-        self._compartments.update(value)
+    def compartments(self, compartments):
+        self._compartments = compartments
 
     @property
     def medium(self):
@@ -325,11 +314,41 @@ class Model(Object):
         except Exception:  # pragma: no cover
             new._solver = copy(self.solver)  # pragma: no cover
 
+        try:
+            new.compartments = self.compartments
+        except Exception:
+            pass
+
         # it doesn't make sense to retain the context of a copied model so
         # assign a new empty context
         new._contexts = list()
 
         return new
+
+    def add_compartments(self, compartment_list):
+        if not hasattr(compartment_list, '__iter__'):
+            compartment_list = [compartment_list]
+        if len(compartment_list) == 0:
+            return None
+
+        # First check whether the compartments exist in the model
+        compartment_list = [x for x in compartment_list
+                            if x.id not in self.compartments]
+
+        bad_ids = [m for m in compartment_list
+                   if not isinstance(m.id, string_types) or len(m.id) < 1 or
+                   m is ' ']
+        if len(bad_ids) != 0:
+            raise ValueError('invalid identifiers in {}'.format(repr(bad_ids)))
+
+        self._compartments += compartment_list
+
+        context = get_context(self)
+        if context:
+            context(partial(self._compartments.__isub__, compartment_list))
+            for x in compartment_list:
+                # Do we care?
+                context(partial(setattr, x, '_model', None))
 
     def add_metabolites(self, metabolite_list):
         """Will add a list of metabolites to the model object and add new
@@ -863,6 +882,7 @@ class Model(Object):
             self.reactions._generate_index()
             self.metabolites._generate_index()
             self.genes._generate_index()
+            self._compartments._generate_index()
         if rebuild_relationships:
             for met in self.metabolites:
                 met._reaction.clear()
@@ -1050,15 +1070,16 @@ class Model(Object):
                 <td><strong>Objective expression</strong></td>
                 <td>{objective}</td>
             </tr><tr>
-                <td><strong>Compartments</strong></td>
+                <td><strong>{n_compartments} compartment(s)</strong></td>
                 <td>{compartments}</td>
             </tr>
-          </table>""".format(
+        </table>""".format(
             name=self.id,
             address='0x0%x' % id(self),
             num_metabolites=len(self.metabolites),
             num_reactions=len(self.reactions),
             objective=format_long_string(str(self.objective.expression), 100),
-            compartments=", ".join(
-                v if v else k for k, v in iteritems(self.compartments)
-            ))
+            n_compartments=len(self.compartments),
+            compartments=format_long_string(
+                ', '.join((r.id + " : " + r.name) for r in self._compartments),
+                200))

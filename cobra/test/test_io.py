@@ -129,7 +129,13 @@ def raise_libsbml_errors():
 def io_trial(request, data_directory):
     with open(join(data_directory, request.param.reference_file),
               "rb") as infile:
-        reference_model = load(infile)
+        try:
+            reference_model = load(infile)
+        except UnicodeDecodeError:
+            try:
+                reference_model = load(infile, encoding='utf-8')
+            except UnicodeDecodeError:
+                reference_model = load(infile, encoding='latin1')
     test_model = request.param.read_function(join(data_directory,
                                                   request.param.test_file))
     test_output_filename = join(gettempdir(),
@@ -182,7 +188,7 @@ class TestCobraIO:
 
     @classmethod
     def extra_comparisons(cls, name, model1, model2):
-        assert model1.compartments == model2.compartments
+        assert len(model1.compartments) == len(model2.compartments)
         assert dict(model1.metabolites[4].annotation) == dict(
             model2.metabolites[4].annotation)
         assert dict(model1.reactions[4].annotation) == dict(

@@ -13,7 +13,7 @@ from warnings import catch_warnings, simplefilter, warn
 
 from six import iteritems, string_types
 
-from cobra.core import Gene, Metabolite, Model, Reaction
+from cobra.core import Gene, Metabolite, Model, Reaction, Compartment
 from cobra.core.gene import parse_gpr
 from cobra.manipulation.modify import _renames
 from cobra.manipulation.validate import check_metabolite_compartment_formula
@@ -262,8 +262,8 @@ def parse_xml_into_model(xml, number=float):
     model = Model(model_id)
     model.name = xml_model.get("name")
 
-    model.compartments = {c.get("id"): c.get("name") for c in
-                          xml_model.findall(COMPARTMENT_XPATH)}
+    model.add_compartments([Compartment(c.get("id"), c.get("name")) for c
+                            in xml_model.findall(COMPARTMENT_XPATH)])
     # add metabolites
     for species in xml_model.findall(SPECIES_XPATH % 'false'):
         met = get_attrib(species, "id", require=True)
@@ -467,9 +467,9 @@ def model_to_xml(cobra_model, units=True):
     # add in compartments
     compartments_list = SubElement(xml_model, "listOfCompartments")
     compartments = cobra_model.compartments
-    for compartment, name in iteritems(compartments):
-        SubElement(compartments_list, "compartment", id=compartment, name=name,
-                   constant="true")
+    for compartment in compartments:
+        SubElement(compartments_list, "compartment", id=compartment.id,
+                   name=compartment.name, constant="true")
 
     # add in metabolites
     species_list = SubElement(xml_model, "listOfSpecies")

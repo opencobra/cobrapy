@@ -55,6 +55,7 @@ def get_pkg_info():
     # using requirements files that can be read in.
     dependencies = frozenset(PKG_ORDER)
     blob = dict()
+
     for dist in pkg_resources.working_set:
         if dist.project_name in dependencies:
             blob[dist.project_name] = dist.version
