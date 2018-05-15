@@ -22,10 +22,6 @@ def add_room(model, solution=None, delta=0.03, epsilon=0.001, linear=False):
     linear : bool
         Whether to use the linear ROOM formulation or not.
 
-    Returns
-    -------
-    Nothing.
-
     Notes
     -----
     The formulation used here is the same as stated in the original paper.
@@ -44,7 +40,7 @@ def add_room(model, solution=None, delta=0.03, epsilon=0.001, linear=False):
          w_i^l = w_i - \delta|w_i| - \epsilon
 
     So, for the linear version of the ROOM , constraint [3] is relaxed to
-    0 <=y_i <= 1.
+    0 <= y_i <= 1.
 
     References
     ----------
@@ -87,14 +83,16 @@ def add_room(model, solution=None, delta=0.03, epsilon=0.001, linear=False):
         upper_const = problem.Constraint(
             rxn.flux_expression - y * (rxn.upper_bound - w_u),
             ub=w_u,
-            name="room_constraint_upper_" + rxn.id
+            name="room_constraint_upper_" + rxn.id,
+            sloppy=True
         )
         # lower constraint
         w_l = flux - delta * abs(flux) - epsilon
         lower_const = problem.Constraint(
             rxn.flux_expression - y * (rxn.lower_bound - w_l),
             lb=w_l,
-            name="room_constraint_lower_" + rxn.id
+            name="room_constraint_lower_" + rxn.id,
+            sloppy=True
         )
         vars_and_cons.extend([y, upper_const, lower_const])
         new_objective += y
