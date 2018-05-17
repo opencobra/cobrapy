@@ -139,11 +139,15 @@ class TestCobraFluxAnalysis:
         model.solver = solver
         growth_dict = {"b0008": 0.87, "b0114": 0.80, "b0116": 0.78,
                        "b2276": 0.21, "b1779": 0.00}
-        rates = single_gene_deletion(model,
-                                     gene_list=growth_dict.keys(),
-                                     method="fba")["growth"]
-        for gene, expected_value in iteritems(growth_dict):
-            assert abs(rates[frozenset([gene])] - expected_value) < 0.01
+        result = single_gene_deletion(
+            model=model,
+            gene_list=list(growth_dict),
+            method="fba",
+            processes=1
+        )["growth"]
+        for gene, value in iteritems(growth_dict):
+            assert numpy.isclose(result[frozenset([gene])], value,
+                                 atol=1E-02)
 
     def test_single_gene_deletion_moma_benchmark(self, model, benchmark):
         try:
@@ -153,8 +157,8 @@ class TestCobraFluxAnalysis:
             pytest.skip("no qp support")
 
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
-        benchmark(single_gene_deletion, model, gene_list=genes,
-                  method="moma")
+        benchmark(single_gene_deletion, model=model, gene_list=genes,
+                  method="moma", processes=1)
 
     def test_single_deletion_linear_moma_benchmark(self, model, benchmark):
         try:
@@ -164,8 +168,8 @@ class TestCobraFluxAnalysis:
             pytest.skip("no qp support")
 
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
-        benchmark(single_gene_deletion, model, gene_list=genes,
-                  method="linear moma")
+        benchmark(single_gene_deletion, model=model, gene_list=genes,
+                  method="linear moma", processes=1)
 
     def test_moma_sanity(self, model):
         """Test optimization criterion and optimality."""
@@ -187,8 +191,18 @@ class TestCobraFluxAnalysis:
             moma_sol = model.optimize()
             moma_ssq = (moma_sol.fluxes - sol.fluxes).pow(2).sum()
 
-        assert numpy.allclose(moma_sol.objective_value, moma_ssq)
+        # Use normal FBA as reference solution.
+        with model:
+            add_moma(model, solution=sol)
+            model.reactions.PFK.knock_out()
+            moma_ref_sol = model.optimize()
+            moma_ref_ssq = (moma_ref_sol.fluxes - sol.fluxes).pow(2).sum()
+
+        assert numpy.isclose(moma_sol.objective_value, moma_ssq)
         assert moma_ssq < ssq
+        assert numpy.isclose(moma_sol.objective_value,
+                             moma_ref_sol.objective_value)
+        assert numpy.isclose(moma_ssq, moma_ref_ssq)
 
     def test_single_gene_deletion_moma(self, model):
         try:
@@ -202,9 +216,37 @@ class TestCobraFluxAnalysis:
                        "b2276": 0.11, "b1779": 0.00}
 
         result = single_gene_deletion(
-            model, gene_list=growth_dict.keys(), method="moma")["growth"]
-        for gene, expected_value in iteritems(growth_dict):
-            assert abs(result[frozenset([gene])] - expected_value) < 0.01
+            model=model,
+            gene_list=list(growth_dict),
+            method="moma",
+            processes=1
+        )["growth"]
+        for gene, value in iteritems(growth_dict):
+            assert numpy.isclose(result[frozenset([gene])], value,
+                                 atol=1E-02)
+
+    def test_single_gene_deletion_moma_reference(self, model):
+        try:
+            solver = sutil.get_solver_name(qp=True)
+            model.solver = solver
+        except sutil.SolverNotFound:
+            pytest.skip("no qp support")
+
+        # expected knockouts for textbook model
+        growth_dict = {"b0008": 0.87, "b0114": 0.71, "b0116": 0.56,
+                       "b2276": 0.11, "b1779": 0.00}
+
+        sol = model.optimize()
+        result = single_gene_deletion(
+            model=model,
+            gene_list=list(growth_dict),
+            method="moma",
+            solution=sol,
+            processes=1
+        )["growth"]
+        for gene, value in iteritems(growth_dict):
+            assert numpy.isclose(result[frozenset([gene])], value,
+                                 atol=1E-02)
 
     def test_linear_moma_sanity(self, model):
         """Test optimization criterion and optimality."""
@@ -226,8 +268,23 @@ class TestCobraFluxAnalysis:
             moma_sol = model.optimize()
             moma_sabs = (moma_sol.fluxes - sol.fluxes).abs().sum()
 
+        # Use normal FBA as reference solution.
+        with model:
+            add_moma(model, solution=sol, linear=True)
+            model.reactions.PFK.knock_out()
+            moma_ref_sol = model.optimize()
+            moma_ref_sabs = (moma_ref_sol.fluxes - sol.fluxes).abs().sum()
+
         assert numpy.allclose(moma_sol.objective_value, moma_sabs)
         assert moma_sabs < sabs
+        assert numpy.isclose(moma_sol.objective_value,
+                             moma_ref_sol.objective_value)
+        assert numpy.isclose(moma_sabs, moma_ref_sabs)
+
+        with model:
+            add_moma(model, linear=True)
+            with pytest.raises(ValueError):
+                add_moma(model)
 
     def test_single_gene_deletion_linear_moma(self, model):
         try:
@@ -240,21 +297,23 @@ class TestCobraFluxAnalysis:
         growth_dict = {"b0008": 0.87, "b0114": 0.76, "b0116": 0.65,
                        "b2276": 0.08, "b1779": 0.00}
 
+        sol = model.optimize()
         result = single_gene_deletion(
-            model, gene_list=growth_dict.keys(),
-            method="linear moma")['growth']
-        assert all(abs(result[frozenset([gene])] - expected) < 0.01
-                   for gene, expected in iteritems(growth_dict))
-        with model:
-            add_moma(model, linear=True)
-            with pytest.raises(ValueError):
-                add_moma(model)
+            model=model,
+            gene_list=list(growth_dict),
+            method="linear moma",
+            solution=sol,
+            processes=1
+        )["growth"]
+        for gene, value in iteritems(growth_dict):
+            assert numpy.isclose(result[frozenset([gene])], value,
+                                 atol=1E-02)
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_gene_deletion_benchmark(self, model, benchmark,
                                             solver):
         model.solver = solver
-        benchmark(single_reaction_deletion, model)
+        benchmark(single_reaction_deletion, model=model, processes=1)
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_reaction_deletion(self, model, solver):
@@ -262,10 +321,14 @@ class TestCobraFluxAnalysis:
                             'FUM': 0.81430, 'GAPD': 0, 'GLUDy': 0.85139}
 
         model.solver = solver
-        results = single_reaction_deletion(
-            model, reaction_list=expected_results.keys()).to_dict()['growth']
+        result = single_reaction_deletion(
+            model=model,
+            reaction_list=list(expected_results),
+            processes=1
+        )['growth']
         for reaction, value in iteritems(expected_results):
-            assert abs(results[frozenset([reaction])] - value) < 1E-05
+            assert numpy.isclose(result[frozenset([reaction])], value,
+                                 atol=1E-05)
 
     @classmethod
     def compare_matrices(cls, matrix1, matrix2, places=3):
@@ -281,7 +344,8 @@ class TestCobraFluxAnalysis:
         genes = ["b0726", "b4025", "b0724", "b0720", "b2935", "b2935",
                  "b1276",
                  "b1241"]
-        benchmark(double_gene_deletion, large_model, gene_list1=genes)
+        benchmark(double_gene_deletion, large_model, gene_list1=genes,
+                  processes=1)
 
     def test_double_gene_deletion(self, model):
         genes = ["b0726", "b4025", "b0724", "b0720", "b2935", "b2935",
@@ -337,7 +401,7 @@ class TestCobraFluxAnalysis:
                                  'b2935': 0.863,
                                  'b4025': 0.863}}
         solution = double_gene_deletion(
-            model, gene_list1=genes, processes=4)['growth']
+            model, gene_list1=genes, processes=3)['growth']
         solution_one_process = double_gene_deletion(
             model, gene_list1=genes, processes=1)['growth']
         for (rxn_a, sub) in iteritems(growth_dict):
