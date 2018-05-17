@@ -511,7 +511,7 @@ class TestCobraFluxAnalysis:
 
     def test_fva_data_frame(self, model):
         df = flux_variability_analysis(model)
-        assert numpy.all([df.columns.values == ['maximum', 'minimum']])
+        assert numpy.all([df.columns.values == ['minimum', 'maximum']])
 
     def test_fva_infeasible(self, model):
         infeasible_model = model.copy()

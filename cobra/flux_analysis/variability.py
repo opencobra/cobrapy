@@ -146,7 +146,7 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
                 model.solver.objective.set_linear_coefficients(
                     {rxn.forward_variable: 0, rxn.reverse_variable: 0})
 
-    return fva_results
+    return fva_results[["minimum", "maximum"]]
 
 
 def find_blocked_reactions(model, reaction_list=None,
