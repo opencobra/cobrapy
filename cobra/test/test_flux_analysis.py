@@ -8,18 +8,20 @@ import warnings
 import math
 import pytest
 import numpy
+from pandas import Series
 from contextlib import contextmanager
 from optlang.interface import OPTIMAL, INFEASIBLE
 from six import StringIO, iteritems
 
 import cobra.util.solver as sutil
-from cobra.core import Metabolite, Model, Reaction
+from cobra.core import Metabolite, Model, Reaction, Solution
 from cobra.flux_analysis import *
 from cobra.flux_analysis.parsimonious import add_pfba
 from cobra.flux_analysis.sampling import ACHRSampler, OptGPSampler
 from cobra.flux_analysis.reaction import assess
 from cobra.exceptions import Infeasible
 from cobra.flux_analysis.moma import add_moma
+from cobra.flux_analysis.room import add_room
 
 # The scipy interface is currently unstable and may yield errors or infeasible
 # solutions.
@@ -59,6 +61,65 @@ def ll_test_model(request):
     test_model = construct_ll_test_model()
     test_model.solver = request.param
     return test_model
+
+
+def construct_papin_2003_model():
+    test_model = Model('papin_2003')
+    test_model.add_metabolites(Metabolite("A"))
+    test_model.add_metabolites(Metabolite("B"))
+    test_model.add_metabolites(Metabolite("C"))
+    test_model.add_metabolites(Metabolite("D"))
+    test_model.add_metabolites(Metabolite("E"))
+    test_model.add_metabolites(Metabolite("byp"))
+    test_model.add_metabolites(Metabolite("cof"))
+    v1 = Reaction("v1")
+    v1.add_metabolites({test_model.metabolites.A: -1.0,
+                        test_model.metabolites.B: 1.0})
+    v2 = Reaction("v2")
+    v2.add_metabolites({test_model.metabolites.B: -2.0,
+                        test_model.metabolites.C: 1.0,
+                        test_model.metabolites.byp: 1.0})
+    v3 = Reaction("v3")
+    v3.add_metabolites({test_model.metabolites.B: -2.0,
+                        test_model.metabolites.cof: -1.0,
+                        test_model.metabolites.D: 1.0,
+                        test_model.metabolites.byp: 1.0})
+    v4 = Reaction("v4")
+    v4.add_metabolites({test_model.metabolites.D: -1.0,
+                        test_model.metabolites.E: 1.0,
+                        test_model.metabolites.cof: 1.0})
+    v5 = Reaction("v5")
+    v5.add_metabolites({test_model.metabolites.C: -1.0,
+                        test_model.metabolites.cof: -1.0,
+                        test_model.metabolites.D: 1.0})
+    v6 = Reaction("v6", upper_bound=0.0)
+    v6.add_metabolites({test_model.metabolites.C: -1.0,
+                        test_model.metabolites.E: 1.0})
+    b1 = Reaction("b1", upper_bound=10.0, lower_bound=0.0)
+    b1.add_metabolites({test_model.metabolites.A: 1.0})
+    b2 = Reaction("b2")
+    b2.add_metabolites({test_model.metabolites.E: -1.0})
+    b3 = Reaction("b3")
+    b3.add_metabolites({test_model.metabolites.byp: -1.0})
+    test_model.add_reactions([v1, v2, v3, v4, v5, v6, b1, b2, b3])
+    test_model.objective = 'b2'
+    return test_model
+
+
+def construct_papin_2003_solution():
+    fluxes = Series({'b1': 10.0, 'b2': 5.0, 'b3': 5.0, 'v1': 10.0, 'v2': 5.0,
+                     'v3': 0.0, 'v4': 0.0, 'v5': 0.0, 'v6': 5.0})
+    reduced_costs = Series({'b1': 0.0, 'b2': 0.0, 'b3': 0.0, 'v1': 0.0,
+                            'v2': 0.0, 'v3': 0.0, 'v4': 0.0, 'v5': 0.0,
+                            'v6': 0.0})
+    shadow_prices = Series({'b1': 0.0, 'b2': 0.0, 'b3': 0.0, 'v1': 0.0,
+                            'v2': 0.0, 'v3': 0.0, 'v4': 0.0, 'v5': 0.0,
+                            'v6': 0.0})
+    sol = Solution(objective_value=5.000, status='optimal',
+                   fluxes=fluxes,
+                   reduced_costs=reduced_costs,
+                   shadow_prices=shadow_prices)
+    return sol
 
 
 @contextmanager
@@ -314,6 +375,25 @@ class TestCobraFluxAnalysis:
                                             solver):
         model.solver = solver
         benchmark(single_reaction_deletion, model=model, processes=1)
+
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_single_reaction_deletion_room(self, solver):
+        model = construct_papin_2003_model()
+        model.solver = solver
+        wt_sol = construct_papin_2003_solution()
+        expected = Series({'v1': 10.0, 'v2': 5.0, 'v3': 0.0, 'v4': 5.0,
+                           'v5': 5.0, 'v6': 0.0, 'b1': 10.0, 'b2': 5.0,
+                           'b3': 5.0})
+        with model:
+            add_room(model, solution=wt_sol, delta=0.0, epsilon=0.0)
+            room_sol = model.optimize()
+        with model:
+            add_room(model, solution=wt_sol, delta=0.0, epsilon=0.0,
+                     linear=True)
+            linear_room_sol = model.optimize()
+
+        assert expected.eq(room_sol.fluxes).all()
+        assert expected.eq(linear_room_sol.fluxes).all()
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_reaction_deletion(self, model, solver):
