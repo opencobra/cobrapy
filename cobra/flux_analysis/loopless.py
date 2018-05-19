@@ -82,7 +82,8 @@ def add_loopless(model, zero_cutoff=1e-12):
 
 def _add_cycle_free(model, fluxes):
     """Add constraints for CycleFreeFlux."""
-    model.objective = Zero
+    model.objective = model.solver.interface.Objective(
+        Zero, direction="min", sloppy=True)
     objective_vars = []
     for rxn in model.reactions:
         flux = fluxes[rxn.id]
@@ -96,8 +97,7 @@ def _add_cycle_free(model, fluxes):
             rxn.bounds = min(flux, rxn.lower_bound), min(0, rxn.upper_bound)
             objective_vars.append(rxn.reverse_variable)
 
-    model.objective.set_linear_coefficients(dict.fromkeys(objective_vars, 1.0))
-    model.objective.direction = "min"
+    model.objective.set_linear_coefficients({v: 1.0 for v in objective_vars})
 
 
 def loopless_solution(model, fluxes=None):
