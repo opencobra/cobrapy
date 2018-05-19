@@ -64,44 +64,26 @@ def ll_test_model(request):
 
 
 def construct_papin_2003_model():
-    test_model = Model('papin_2003')
-    test_model.add_metabolites(Metabolite("A"))
-    test_model.add_metabolites(Metabolite("B"))
-    test_model.add_metabolites(Metabolite("C"))
-    test_model.add_metabolites(Metabolite("D"))
-    test_model.add_metabolites(Metabolite("E"))
-    test_model.add_metabolites(Metabolite("byp"))
-    test_model.add_metabolites(Metabolite("cof"))
+    test_model = Model("papin_2003")
     v1 = Reaction("v1")
-    v1.add_metabolites({test_model.metabolites.A: -1.0,
-                        test_model.metabolites.B: 1.0})
     v2 = Reaction("v2")
-    v2.add_metabolites({test_model.metabolites.B: -2.0,
-                        test_model.metabolites.C: 1.0,
-                        test_model.metabolites.byp: 1.0})
     v3 = Reaction("v3")
-    v3.add_metabolites({test_model.metabolites.B: -2.0,
-                        test_model.metabolites.cof: -1.0,
-                        test_model.metabolites.D: 1.0,
-                        test_model.metabolites.byp: 1.0})
     v4 = Reaction("v4")
-    v4.add_metabolites({test_model.metabolites.D: -1.0,
-                        test_model.metabolites.E: 1.0,
-                        test_model.metabolites.cof: 1.0})
     v5 = Reaction("v5")
-    v5.add_metabolites({test_model.metabolites.C: -1.0,
-                        test_model.metabolites.cof: -1.0,
-                        test_model.metabolites.D: 1.0})
     v6 = Reaction("v6", upper_bound=0.0)
-    v6.add_metabolites({test_model.metabolites.C: -1.0,
-                        test_model.metabolites.E: 1.0})
     b1 = Reaction("b1", upper_bound=10.0, lower_bound=0.0)
-    b1.add_metabolites({test_model.metabolites.A: 1.0})
     b2 = Reaction("b2")
-    b2.add_metabolites({test_model.metabolites.E: -1.0})
     b3 = Reaction("b3")
-    b3.add_metabolites({test_model.metabolites.byp: -1.0})
     test_model.add_reactions([v1, v2, v3, v4, v5, v6, b1, b2, b3])
+    v1.reaction = "A -> B"
+    v2.reaction = "2 B -> C + byp"
+    v3.reaction = "2 B + cof -> D"
+    v4.reaction = "D -> E + cof"
+    v5.reaction = "C + cof -> D"
+    v6.reaction = "C -> E"
+    b1.reaction = "-> A"
+    b2.reaction = "E ->"
+    b3.reaction = "byp ->"
     test_model.objective = 'b2'
     return test_model
 
@@ -377,23 +359,90 @@ class TestCobraFluxAnalysis:
         benchmark(single_reaction_deletion, model=model, processes=1)
 
     @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_room_sanity(self, solver):
+        model = construct_papin_2003_model()
+        sol = model.optimize()
+        with model:
+            model.reactions.v3.knock_out()
+            knock_sol = model.optimize()
+            ssq = (knock_sol.fluxes - sol.fluxes).pow(2).sum()
+
+        with model:
+            add_room(model)
+            model.reactions.v3.knock_out()
+            room_sol = model.optimize()
+            room_ssq = (room_sol.fluxes - sol.fluxes).pow(2).sum()
+
+        # Use normal FBA as reference solution.
+        with model:
+            add_room(model, solution=sol)
+            model.reactions.v3.knock_out()
+            room_ref_sol = model.optimize()
+            room_ref_ssq = (room_ref_sol.fluxes - sol.fluxes).pow(2).sum()
+
+        assert room_ssq == ssq
+        assert room_ssq > room_ref_ssq
+
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_linear_room_sanity(self, model, solver):
+        sol = model.optimize()
+        with model:
+            model.reactions.PFK.knock_out()
+            knock_sol = model.optimize()
+            ssq = (knock_sol.fluxes - sol.fluxes).pow(2).sum()
+
+        with model:
+            add_room(model, linear=True)
+            model.reactions.PFK.knock_out()
+            room_sol = model.optimize()
+            room_ssq = (room_sol.fluxes - sol.fluxes).pow(2).sum()
+
+        # Use normal FBA as reference solution.
+        with model:
+            add_room(model, solution=sol, linear=True)
+            model.reactions.PFK.knock_out()
+            room_ref_sol = model.optimize()
+            room_ref_ssq = (room_ref_sol.fluxes - sol.fluxes).pow(2).sum()
+
+        assert room_ssq > ssq
+        assert numpy.isclose(room_sol.objective_value,
+                             room_ref_sol.objective_value)
+        assert numpy.isclose(room_ssq, room_ref_ssq)
+
+    @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_reaction_deletion_room(self, solver):
         model = construct_papin_2003_model()
         model.solver = solver
-        wt_sol = construct_papin_2003_solution()
+        sol = construct_papin_2003_solution()
         expected = Series({'v1': 10.0, 'v2': 5.0, 'v3': 0.0, 'v4': 5.0,
                            'v5': 5.0, 'v6': 0.0, 'b1': 10.0, 'b2': 5.0,
-                           'b3': 5.0})
+                           'b3': 5.0}, index=['v1', 'v2', 'v3', 'v4',
+                                              'v5', 'v6', 'b1', 'b2',
+                                              'b3'])
         with model:
-            add_room(model, solution=wt_sol, delta=0.0, epsilon=0.0)
+            model.reactions.v6.knock_out()
+            add_room(model, solution=sol, delta=0.0, epsilon=0.0)
             room_sol = model.optimize()
+
+        assert numpy.allclose(room_sol.fluxes, expected)
+
+    @pytest.mark.parametrize("solver", optlang_solvers)
+    def test_single_reaction_deletion_room_linear(self, solver):
+        model = construct_papin_2003_model()
+        model.solver = solver
+        sol = construct_papin_2003_solution()
+        expected = Series({'v1': 10.0, 'v2': 5.0, 'v3': 0.0, 'v4': 5.0,
+                           'v5': 5.0, 'v6': 0.0, 'b1': 10.0, 'b2': 5.0,
+                           'b3': 5.0}, index=['v1', 'v2', 'v3', 'v4',
+                                              'v5', 'v6', 'b1', 'b2',
+                                              'b3'])
         with model:
-            add_room(model, solution=wt_sol, delta=0.0, epsilon=0.0,
+            model.reactions.v6.knock_out()
+            add_room(model, solution=sol, delta=0.0, epsilon=0.0,
                      linear=True)
             linear_room_sol = model.optimize()
 
-        assert expected.eq(room_sol.fluxes).all()
-        assert expected.eq(linear_room_sol.fluxes).all()
+        assert numpy.allclose(linear_room_sol.fluxes, expected)
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_reaction_deletion(self, model, solver):

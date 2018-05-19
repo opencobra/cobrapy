@@ -132,14 +132,8 @@ def _multi_deletion(model, entity, element_lists, method="fba",
         if "moma" in method:
             add_moma(model, solution=solution, linear="linear" in method)
         if "room" in method:
-            if kwargs:
-                delta = float(kwargs['delta'])
-                epsilon = float(kwargs['epsilon'])
-            else:
-                delta = 0.03
-                epsilon = 0.001
             add_room(model, solution=solution, linear="linear" in method,
-                     delta=delta, epsilon=epsilon)
+                     **kwargs)
 
         args = set([frozenset(comb) for comb in product(*element_lists)])
         processes = min(processes, len(args))

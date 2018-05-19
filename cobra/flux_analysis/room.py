@@ -7,7 +7,7 @@ from __future__ import absolute_import
 from optlang.symbolics import Zero, NegativeOne, Add, Mul
 
 
-def add_room(model, solution=None, delta=0.03, epsilon=0.001, linear=False):
+def add_room(model, solution=None, linear=False, **kwargs):
     """Add constraints and objective for ROOM.
 
     This function adds variables and constraints for applying regulatory
@@ -19,15 +19,16 @@ def add_room(model, solution=None, delta=0.03, epsilon=0.001, linear=False):
         The model to add ROOM constraints and objectve to.
     solution : cobra.Solution
         A previous solution to use as a reference.
-    delta: float
-        Relative range of tolerance; is additive in nature.
-        Default is 0.03.
-    epsilon: float
-        Absolute range of tolerance; is multiplicative in nature.
-        Default is 0.001.
     linear : bool
         Whether to use the linear ROOM formulation or not.
         Default is False.
+    **kwargs:
+        delta: float
+            Relative range of tolerance; is additive in nature.
+            Default is 0.03.
+        epsilon: float
+            Absolute range of tolerance; is multiplicative in nature.
+            Default is 0.001.
 
     Notes
     -----
@@ -56,6 +57,13 @@ def add_room(model, solution=None, delta=0.03, epsilon=0.001, linear=False):
      PNAS 2005 102 (21) 7695-7700; doi:10.1073/pnas.0406346102
 
     """
+
+    if kwargs:
+        delta = float(kwargs['delta'])
+        epsilon = float(kwargs['epsilon'])
+    else:
+        delta = 0.03
+        epsilon = 0.001
 
     if 'room_old_objective' in model.solver.variables:
         raise ValueError('model is already adjusted for ROOM')
