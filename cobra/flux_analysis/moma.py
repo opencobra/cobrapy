@@ -4,7 +4,7 @@
 
 from __future__ import absolute_import
 
-from optlang.symbolics import Zero
+from optlang.symbolics import Zero, add
 
 import cobra.util.solver as sutil
 
@@ -75,7 +75,8 @@ def add_moma(model, solution=None, linear=False):
     c = prob.Constraint(model.solver.objective.expression - v,
                         lb=0.0, ub=0.0, name="moma_old_objective_constraint")
     to_add = [v, c]
-    new_obj = Zero
+    model.objective = prob.Objective(Zero, direction="min", sloppy=True)
+    obj_vars = []
     for r in model.reactions:
         flux = solution.fluxes[r.id]
         if linear:
@@ -83,12 +84,16 @@ def add_moma(model, solution=None, linear=False):
                 model, r.flux_expression, name="moma_dist_" + r.id,
                 difference=flux, add=False)
             to_add.extend(components)
-            new_obj += components.variable
+            obj_vars.append(components.variable)
         else:
             dist = prob.Variable("moma_dist_" + r.id)
             const = prob.Constraint(r.flux_expression - dist, lb=flux, ub=flux,
                                     name="moma_constraint_" + r.id)
             to_add.extend([dist, const])
-            new_obj += dist**2
+            obj_vars.append(dist ** 2)
     model.add_cons_vars(to_add)
-    model.objective = prob.Objective(new_obj, direction='min')
+    if linear:
+        model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
+    else:
+        model.objective = prob.Objective(
+            add(obj_vars), direction="min", sloppy=True)
