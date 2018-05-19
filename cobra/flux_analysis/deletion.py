@@ -94,13 +94,8 @@ def _multi_deletion(model, entity, element_lists, method="fba",
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
-    **kwargs:
-        delta: float
-            The relative tolerance for ROOM.
-            Default is 0.03.
-        epsilon: float
-            The absolute tolerance for ROOM.
-            Default is 0.001.
+    kwargs :
+        Passed on to underlying simulation functions.
 
     Returns
     -------
@@ -189,7 +184,7 @@ def _element_lists(entities, *ids):
 
 
 def single_reaction_deletion(model, reaction_list=None, method="fba",
-                             solution=None, processes=None):
+                             solution=None, processes=None, **kwargs):
     """
     Knock out each reaction from a given list.
 
@@ -208,6 +203,9 @@ def single_reaction_deletion(model, reaction_list=None, method="fba",
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
+    kwargs :
+        Keyword arguments are passed on to underlying simulation functions
+        such as ``add_room``.
 
     Returns
     -------
@@ -226,11 +224,11 @@ def single_reaction_deletion(model, reaction_list=None, method="fba",
     return _multi_deletion(
         model, 'reaction',
         element_lists=_element_lists(model.reactions, reaction_list),
-        method=method, solution=solution, processes=processes)
+        method=method, solution=solution, processes=processes, **kwargs)
 
 
 def single_gene_deletion(model, gene_list=None, method="fba", solution=None,
-                         processes=None):
+                         processes=None, **kwargs):
     """
     Knock out each gene from a given list.
 
@@ -249,6 +247,9 @@ def single_gene_deletion(model, gene_list=None, method="fba", solution=None,
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
+    kwargs :
+        Keyword arguments are passed on to underlying simulation functions
+        such as ``add_room``.
 
     Returns
     -------
@@ -266,11 +267,12 @@ def single_gene_deletion(model, gene_list=None, method="fba", solution=None,
     """
     return _multi_deletion(
         model, 'gene', element_lists=_element_lists(model.genes, gene_list),
-        method=method, solution=solution, processes=processes)
+        method=method, solution=solution, processes=processes, **kwargs)
 
 
 def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
-                             method="fba", solution=None, processes=None):
+                             method="fba", solution=None, processes=None,
+                             **kwargs):
     """
     Knock out each reaction pair from the combinations of two given lists.
 
@@ -294,6 +296,9 @@ def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
+    kwargs :
+        Keyword arguments are passed on to underlying simulation functions
+        such as ``add_room``.
 
     Returns
     -------
@@ -315,11 +320,11 @@ def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
                                                     reaction_list2)
     return _multi_deletion(
         model, 'reaction', element_lists=[reaction_list1, reaction_list2],
-        method=method, solution=solution, processes=processes)
+        method=method, solution=solution, processes=processes, **kwargs)
 
 
-def double_gene_deletion(model, gene_list1=None, gene_list2=None,
-                         method="fba", solution=None, processes=None):
+def double_gene_deletion(model, gene_list1=None, gene_list2=None, method="fba",
+                         solution=None, processes=None, **kwargs):
     """
     Knock out each gene pair from the combination of two given lists.
 
@@ -343,6 +348,9 @@ def double_gene_deletion(model, gene_list1=None, gene_list2=None,
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
+    kwargs :
+        Keyword arguments are passed on to underlying simulation functions
+        such as ``add_room``.
 
     Returns
     -------
@@ -363,4 +371,4 @@ def double_gene_deletion(model, gene_list1=None, gene_list2=None,
                                             gene_list2)
     return _multi_deletion(
         model, 'gene', element_lists=[gene_list1, gene_list2],
-        method=method, solution=solution, processes=processes)
+        method=method, solution=solution, processes=processes, **kwargs)

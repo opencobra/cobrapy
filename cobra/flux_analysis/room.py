@@ -7,8 +7,9 @@ from __future__ import absolute_import
 from optlang.symbolics import Zero, NegativeOne, Add, Mul
 
 
-def add_room(model, solution=None, linear=False, **kwargs):
-    """Add constraints and objective for ROOM.
+def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
+    """
+    Add constraints and objective for ROOM.
 
     This function adds variables and constraints for applying regulatory
     on/off minimization (ROOM) to the model.
@@ -22,13 +23,12 @@ def add_room(model, solution=None, linear=False, **kwargs):
     linear : bool
         Whether to use the linear ROOM formulation or not.
         Default is False.
-    **kwargs:
-        delta: float
-            Relative range of tolerance; is additive in nature.
-            Default is 0.03.
-        epsilon: float
-            Absolute range of tolerance; is multiplicative in nature.
-            Default is 0.001.
+    delta: float
+        The relative tolerance range which is additive in nature
+        (default 0.03).
+    epsilon: float
+        The absolute range of tolerance which is multiplicative
+        (default 0.001).
 
     Notes
     -----
@@ -58,13 +58,6 @@ def add_room(model, solution=None, linear=False, **kwargs):
 
     """
 
-    if kwargs:
-        delta = float(kwargs['delta'])
-        epsilon = float(kwargs['epsilon'])
-    else:
-        delta = 0.03
-        epsilon = 0.001
-
     if 'room_old_objective' in model.solver.variables:
         raise ValueError('model is already adjusted for ROOM')
 
@@ -87,11 +80,11 @@ def add_room(model, solution=None, linear=False, **kwargs):
     for rxn in model.reactions:
         flux = solution.fluxes[rxn.id]
 
-        if linear is False:
-            y = problem.Variable("y_" + rxn.id, type="binary")
-        else:
+        if linear:
             y = problem.Variable("y_" + rxn.id, lb=0, ub=1)
             delta = epsilon = Zero
+        else:
+            y = problem.Variable("y_" + rxn.id, type="binary")
 
         # upper constraint
         w_u = flux + (delta * abs(flux)) + epsilon

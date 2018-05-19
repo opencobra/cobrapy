@@ -380,7 +380,7 @@ class TestCobraFluxAnalysis:
             room_ref_sol = model.optimize()
             room_ref_ssq = (room_ref_sol.fluxes - sol.fluxes).pow(2).sum()
 
-        assert room_ssq == ssq
+        assert numpy.isclose(room_ssq, ssq, atol=1E-06)
         assert room_ssq > room_ref_ssq
 
     @pytest.mark.parametrize("solver", optlang_solvers)
