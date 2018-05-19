@@ -13,6 +13,7 @@ import pandas as pd
 from cobra.manipulation.delete import find_gene_knockout_reactions
 import cobra.util.solver as sutil
 from cobra.flux_analysis.moma import add_moma
+from cobra.flux_analysis.room import add_room
 
 LOGGER = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ def _init_worker(model):
 
 
 def _multi_deletion(model, entity, element_lists, method="fba",
-                    solution=None, processes=None):
+                    solution=None, processes=None, **kwargs):
     """
     Provide a common interface for single or multiple knockouts.
 
@@ -93,6 +94,13 @@ def _multi_deletion(model, entity, element_lists, method="fba",
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
+    **kwargs:
+        delta: float
+            The relative tolerance for ROOM.
+            Default is 0.03.
+        epsilon: float
+            The absolute tolerance for ROOM.
+            Default is 0.001.
 
     Returns
     -------
@@ -123,6 +131,9 @@ def _multi_deletion(model, entity, element_lists, method="fba",
     with model:
         if "moma" in method:
             add_moma(model, solution=solution, linear="linear" in method)
+        if "room" in method:
+            add_room(model, solution=solution, linear="linear" in method,
+                     **kwargs)
 
         args = set([frozenset(comb) for comb in product(*element_lists)])
         processes = min(processes, len(args))
