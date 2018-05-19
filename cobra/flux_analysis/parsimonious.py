@@ -100,6 +100,5 @@ def add_pfba(model, objective=None, fraction_of_optimum=1.0):
                           for rxn in model.reactions)
     variables = chain(*reaction_variables)
     model.objective = model.problem.Objective(
-        Zero, direction='min', sloppy=True,
-        name="_pfba_objective")
-    model.objective.set_linear_coefficients(dict.fromkeys(variables, 1.0))
+        Zero, direction='min', sloppy=True, name="_pfba_objective")
+    model.objective.set_linear_coefficients({v: 1.0 for v in variables})
