@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-from optlang.symbolics import Add
+from optlang.symbolics import add, Zero
 
 from optlang.interface import OPTIMAL
 from cobra.core import Model
@@ -183,7 +183,9 @@ class GapFiller(object):
         self.model.add_cons_vars(self.indicators)
         self.model.add_cons_vars(constraints, sloppy=True)
         self.model.objective = prob.Objective(
-            Add(*self.indicators), direction='min')
+            Zero, direction='min', sloppy=True)
+        self.model.objective.set_linear_coefficients({
+            i: 1 for i in self.indicators})
         self.update_costs()
 
     def fill(self, iterations=1):
