@@ -371,6 +371,7 @@ class TestCobraFluxAnalysis:
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_room_sanity(self, solver):
         model = construct_papin_2003_model()
+        model.solver = solver
         sol = model.optimize()
         with model:
             model.reactions.v3.knock_out()
