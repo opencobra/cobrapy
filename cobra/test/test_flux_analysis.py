@@ -358,6 +358,16 @@ class TestCobraFluxAnalysis:
         model.solver = solver
         benchmark(single_reaction_deletion, model=model, processes=1)
 
+    def test_single_gene_deletion_room_benchmark(self, model, benchmark):
+        genes = ['b0008', 'b0114', 'b2276', 'b1779']
+        benchmark(single_gene_deletion, model=model, gene_list=genes,
+                  method="room", processes=1)
+
+    def test_single_gene_deletion_linear_room_benchmark(self, model, benchmark):
+        genes = ['b0008', 'b0114', 'b2276', 'b1779']
+        benchmark(single_gene_deletion, model=model, gene_list=genes,
+                  method="linear room", processes=1)
+
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_room_sanity(self, solver):
         model = construct_papin_2003_model()
