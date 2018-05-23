@@ -22,7 +22,7 @@ def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
         A previous solution to use as a reference.
     linear : bool
         Whether to use the linear ROOM formulation or not.
-        Default is False.
+        (default False).
     delta: float
         The relative tolerance range which is additive in nature
         (default 0.03).
