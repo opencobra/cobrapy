@@ -11,11 +11,10 @@ from cobra.flux_analysis.variability import flux_variability_analysis
 from cobra.core import get_solution
 
 
-def geometric_fba(model, epsilon=1E-06):
-    """Perform geometric FBA to obtain a unique
-    centered flux.
+def geometric_fba(model, epsilon=1E-06, max_tries=30):
+    """Perform geometric FBA to obtain a unique, centered flux distribution.
 
-    Geometric FBA [1] formulates the problem as a polyhedron and
+    Geometric FBA [1]_ formulates the problem as a polyhedron and
     then solves it by bounding the convex hull of the polyhedron.
     The bounding forms a box around the convex hull which reduces
     with every iteration and extracts a unique solution in this way.
@@ -24,9 +23,10 @@ def geometric_fba(model, epsilon=1E-06):
     ----------
     model: cobra.Model
         The model to perform geometric FBA on.
-    epsilon: float
-        The convergence tolerance of the model.
-        (default 10e-6).
+    epsilon: float, optional
+        The convergence tolerance of the model (default 1E-06).
+    max_tries: int, optional
+        Maximum number of iterations (default 30).
 
     Returns
     -------
@@ -42,45 +42,65 @@ def geometric_fba(model, epsilon=1E-06):
     """
 
     with model:
-        prob = model.problem
-        add_pfba(model)  # minimizes the solution space to convex hull
+        # iteration parameters
         delta = 1.0  # initialize at 1.0 to enter while loop
-        # first iteration
-        sol = model.optimize()
-        fva_sol = flux_variability_analysis(model)
-        v_n = 0.5 * abs(fva_sol['maximum'] + fva_sol['minimum'])
+        count = 2  # iteration #1 happens out of the loop
+
+        # vars and consts storage variables
         consts = []
         obj_vars = []
+        triples = []
+
+        # first iteration
+        prob = model.problem
+        add_pfba(model)  # minimizes the solution space to convex hull
+        model.optimize()
+        fva_sol = flux_variability_analysis(model)
+        mean_flux = (fva_sol["maximum"] + fva_sol["minimum"]).abs() / 2
+
         # set gFBA constraints
         for rxn in model.reactions:
             var = prob.Variable("geometric_fba_" + rxn.id,
                                 lb=0,
-                                ub=v_n[rxn.id])
+                                ub=mean_flux[rxn.id])
             upper_const = prob.Constraint(rxn.flux_expression - var,
-                                          ub=v_n[rxn.id],
+                                          ub=mean_flux[rxn.id],
                                           name="geometric_fba_upper_const_" +
                                           rxn.id)
             lower_const = prob.Constraint(rxn.flux_expression + var,
-                                          lb=fva_sol['minimum'][rxn.id],
+                                          lb=fva_sol["minimum"][rxn.id],
                                           name="geometric_fba_lower_const_" +
                                           rxn.id)
+            triples.append((var.name, upper_const.name, lower_const.name))
             consts.extend([var, upper_const, lower_const])
             obj_vars.append(var)
         model.add_cons_vars(consts)
+
         # minimize distance between flux and centre
         model.objective = prob.Objective(Zero, sloppy=True, direction="min")
         model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
         model.optimize()
-        while delta > epsilon:
-            fva_sol = (flux_variability_analysis(model))
-            v_n = 0.5 * abs(fva_sol['maximum'] + fva_sol['minimum'])
-            for rxn in model.reactions:
-                model.variables["geometric_fba_" + rxn.id].ub = v_n[rxn.id]
-                model.constraints["geometric_fba_upper_const_" + rxn.id].ub = \
-                    v_n[rxn.id]
-                model.constraints["geometric_fba_lower_const_" + rxn.id].lb = \
-                    fva_sol['minimum'][rxn.id]
+
+        # further iterations
+        while delta > epsilon and count < max_tries:
+            fva_sol = flux_variability_analysis(model)
+            mean_flux = (fva_sol["maximum"] + fva_sol["minimum"]).abs() / 2
+
+            for rxn, (var, u_c, l_c) in zip(model.reactions, triples):
+                model.variables[var].ub = mean_flux[rxn.id]
+                model.constraints[u_c].ub = mean_flux[rxn.id]
+                model.constraints[l_c].lb = fva_sol["minimum"][rxn.id]
             model.optimize()
-            delta = max(fva_sol['maximum'] - fva_sol['minimum'])
+            delta = (fva_sol["maximum"] - fva_sol["minimum"]).max()
+
+            count += 1
+            if count == max_tries:
+                raise RuntimeError(
+                    "The iterations have exceeded the maximum value of {}. "
+                    "This is probably due to the increased complexity of the "
+                    "model and can lead to inaccurate results. Please set a "
+                    "different convergence tolerance and/or increase the "
+                    "maximum iterations".format(max_tries)
+                )
 
     return get_solution(model)

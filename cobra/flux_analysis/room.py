@@ -18,17 +18,14 @@ def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
     ----------
     model : cobra.Model
         The model to add ROOM constraints and objectve to.
-    solution : cobra.Solution
+    solution : cobra.Solution, optional
         A previous solution to use as a reference.
-    linear : bool
-        Whether to use the linear ROOM formulation or not.
-        (default False).
-    delta: float
-        The relative tolerance range which is additive in nature
-        (default 0.03).
-    epsilon: float
-        The absolute range of tolerance which is multiplicative
-        (default 0.001).
+    linear : bool, optional
+        Whether to use the linear ROOM formulation or not (default False).
+    delta: float, optional
+        The relative tolerance range (default 0.03).
+    epsilon: float, optional
+        The absolute tolerance range (default 0.001).
 
     Notes
     -----
