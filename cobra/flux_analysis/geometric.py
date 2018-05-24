@@ -11,7 +11,7 @@ from cobra.flux_analysis.variability import flux_variability_analysis
 from cobra.core import get_solution
 
 
-def geometric_fba(model, epsilon=1E-06, max_tries=30):
+def geometric_fba(model, epsilon=1E-06, max_tries=200):
     """Perform geometric FBA to obtain a unique, centered flux distribution.
 
     Geometric FBA [1]_ formulates the problem as a polyhedron and
@@ -26,7 +26,7 @@ def geometric_fba(model, epsilon=1E-06, max_tries=30):
     epsilon: float, optional
         The convergence tolerance of the model (default 1E-06).
     max_tries: int, optional
-        Maximum number of iterations (default 30).
+        Maximum number of iterations (default 200).
 
     Returns
     -------
@@ -49,7 +49,7 @@ def geometric_fba(model, epsilon=1E-06, max_tries=30):
         # vars and consts storage variables
         consts = []
         obj_vars = []
-        triples = []
+        updating_vars_cons = []
 
         # first iteration
         prob = model.problem
@@ -68,10 +68,10 @@ def geometric_fba(model, epsilon=1E-06, max_tries=30):
                                           name="geometric_fba_upper_const_" +
                                           rxn.id)
             lower_const = prob.Constraint(rxn.flux_expression + var,
-                                          lb=fva_sol["minimum"][rxn.id],
+                                          lb=fva_sol.at[rxn.id, "minimum"],
                                           name="geometric_fba_lower_const_" +
                                           rxn.id)
-            triples.append((var.name, upper_const.name, lower_const.name))
+            updating_vars_cons.append((rxn.id, var, upper_const, lower_const))
             consts.extend([var, upper_const, lower_const])
             obj_vars.append(var)
         model.add_cons_vars(consts)
@@ -82,14 +82,14 @@ def geometric_fba(model, epsilon=1E-06, max_tries=30):
         model.optimize()
 
         # further iterations
-        while delta > epsilon and count < max_tries:
+        while delta > epsilon and count <= max_tries:
             fva_sol = flux_variability_analysis(model)
             mean_flux = (fva_sol["maximum"] + fva_sol["minimum"]).abs() / 2
 
-            for rxn, (var, u_c, l_c) in zip(model.reactions, triples):
-                model.variables[var].ub = mean_flux[rxn.id]
-                model.constraints[u_c].ub = mean_flux[rxn.id]
-                model.constraints[l_c].lb = fva_sol["minimum"][rxn.id]
+            for rxn_id, var, u_c, l_c in updating_vars_cons:
+                var.ub = mean_flux[rxn_id]
+                u_c.ub = mean_flux[rxn_id]
+                l_c.lb = fva_sol.at[rxn_id, "minimum"]
             model.optimize()
             delta = (fva_sol["maximum"] - fva_sol["minimum"]).max()
 
