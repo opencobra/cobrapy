@@ -15,8 +15,8 @@ def room(model, solution, linear=False, delta=0.03, epsilon=1E-03):
 
     Compute a new flux distribution that minimizes the number of active
     reactions needed to accommodate a previous reference solution.
-    Regulatory on/off minimization (ROOM) is generally used to assess the impact
-    of knock-outs. Thus the typical usage is to provide a wildtype flux
+    Regulatory on/off minimization (ROOM) is generally used to assess the
+    impact of knock-outs. Thus the typical usage is to provide a wildtype flux
     distribution as reference and a model in knock-out state.
 
     Parameters
