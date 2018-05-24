@@ -193,12 +193,13 @@ def find_blocked_reactions(model, reaction_list=None,
                 max(abs(min_max)) < zero_cutoff]
 
 
-def find_essential_genes(model, threshold=None, solution=None, processes=None):
-    """Return a set of essential genes.
+def find_essential_genes(model, threshold=None, processes=None):
+    """
+    Return a set of essential genes.
 
     A gene is considered essential if restricting the flux of all reactions
-    that depends on it to zero causes the objective (e.g. the growth rate)
-    to also be zero.
+    that depend on it to zero causes the objective, e.g., the growth rate,
+    to also be zero, below the threshold, or infeasible.
 
     Parameters
     ----------
@@ -206,9 +207,7 @@ def find_essential_genes(model, threshold=None, solution=None, processes=None):
         The model to find the essential genes for.
     threshold : float, optional
         Minimal objective flux to be considered viable. By default this is
-        0.01 times the growth rate.
-    solution : cobra.Solution
-        A previous solution to use as a reference for (linear) MOMA.
+        1% of the maximal objective.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
@@ -221,19 +220,19 @@ def find_essential_genes(model, threshold=None, solution=None, processes=None):
     """
     if threshold is None:
         threshold = model.slim_optimize(error_value=None) * 1E-02
-    deletions = single_gene_deletion(model, method='fba', solution=solution,
-                                     processes=processes)
+    deletions = single_gene_deletion(model, method='fba', processes=processes)
     essential = deletions.loc[deletions['growth'].isna() |
                               (deletions['growth'] < threshold), :].index
-    return set(model.genes.get_by_id(g) for ids in essential for g in ids)
+    return {model.genes.get_by_id(g) for ids in essential for g in ids}
 
 
-def find_essential_reactions(model, threshold=None, solution=None,
-                             processes=None):
+def find_essential_reactions(model, threshold=None, processes=None):
     """Return a set of essential reactions.
 
     A reaction is considered essential if restricting its flux to zero
-    causes the objective (e.g. the growth rate) to also be zero.
+    causes the objective, e.g., the growth rate, to also be zero, below the
+    threshold, or infeasible.
+
 
     Parameters
     ----------
@@ -241,9 +240,7 @@ def find_essential_reactions(model, threshold=None, solution=None,
         The model to find the essential reactions for.
     threshold : float, optional
         Minimal objective flux to be considered viable. By default this is
-        0.01 times the growth rate.
-    solution : cobra.Solution
-        A previous solution to use as a reference for (linear) MOMA.
+        1% of the maximal objective.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
@@ -257,7 +254,7 @@ def find_essential_reactions(model, threshold=None, solution=None,
     if threshold is None:
         threshold = model.slim_optimize(error_value=None) * 1E-02
     deletions = single_reaction_deletion(
-        model, method='fba', solution=solution, processes=processes)
+        model, method='fba', processes=processes)
     essential = deletions.loc[deletions['growth'].isna() |
                               (deletions['growth'] < threshold), :].index
-    return set(model.reactions.get_by_id(r) for ids in essential for r in ids)
+    return {model.reactions.get_by_id(r) for ids in essential for r in ids}

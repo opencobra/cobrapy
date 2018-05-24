@@ -86,10 +86,10 @@ def _multi_deletion(model, entity, element_lists, method="fba",
     element_lists : list
         List of iterables ``cobra.Reaction``s or ``cobra.Gene``s (or their IDs)
         to be deleted.
-    method: {"fba", "moma", "linear moma"}, optional
+    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
         Method used to predict the growth rate.
-    solution : cobra.Solution
-        A previous solution to use as a reference for (linear) MOMA.
+    solution : cobra.Solution, optional
+        A previous solution to use as a reference for (linear) MOMA or ROOM.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
@@ -126,7 +126,7 @@ def _multi_deletion(model, entity, element_lists, method="fba",
     with model:
         if "moma" in method:
             add_moma(model, solution=solution, linear="linear" in method)
-        if "room" in method:
+        elif "room" in method:
             add_room(model, solution=solution, linear="linear" in method,
                      **kwargs)
 
@@ -192,13 +192,13 @@ def single_reaction_deletion(model, reaction_list=None, method="fba",
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-    reaction_list : iterable
+    reaction_list : iterable, optional
         ``cobra.Reaction``s to be deleted. If not passed,
         all the reactions from the model are used.
-    method: {"fba", "moma", "linear moma"}, optional
+    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
         Method used to predict the growth rate.
-    solution : cobra.Solution
-        A previous solution to use as a reference for (linear) MOMA.
+    solution : cobra.Solution, optional
+        A previous solution to use as a reference for (linear) MOMA or ROOM.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
@@ -239,10 +239,10 @@ def single_gene_deletion(model, gene_list=None, method="fba", solution=None,
     gene_list : iterable
         ``cobra.Gene``s to be deleted. If not passed,
         all the genes from the model are used.
-    method: {"fba", "moma", "linear moma"}, optional
+    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
         Method used to predict the growth rate.
-    solution : cobra.Solution
-        A previous solution to use as a reference for (linear) MOMA.
+    solution : cobra.Solution, optional
+        A previous solution to use as a reference for (linear) MOMA or ROOM.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
@@ -288,10 +288,10 @@ def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
     reaction_list2 : iterable, optional
         Second iterable of ``cobra.Reaction``s to be deleted. If not passed,
         all the reactions from the model are used.
-    method: {"fba", "moma", "linear moma"}, optional
+    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
         Method used to predict the growth rate.
-    solution : cobra.Solution
-        A previous solution to use as a reference for (linear) MOMA.
+    solution : cobra.Solution, optional
+        A previous solution to use as a reference for (linear) MOMA or ROOM.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
@@ -340,10 +340,10 @@ def double_gene_deletion(model, gene_list1=None, gene_list2=None, method="fba",
     gene_list2 : iterable, optional
         Second iterable of ``cobra.Gene``s to be deleted. If not passed,
         all the genes from the model are used.
-    method: {"fba", "moma", "linear moma"}, optional
+    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
         Method used to predict the growth rate.
-    solution : cobra.Solution
-        A previous solution to use as a reference for (linear) MOMA.
+    solution : cobra.Solution, optional
+        A previous solution to use as a reference for (linear) MOMA or ROOM.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,

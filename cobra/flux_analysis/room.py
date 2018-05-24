@@ -1,14 +1,59 @@
 # -*- coding: utf-8 -*-
 
-"""Contains functions to run Regulatory On/Off Minimization (ROOM)."""
+"""Provide regulatory on/off minimization (ROOM)."""
 
 from __future__ import absolute_import, division
 
 from optlang.symbolics import Zero
 
+from cobra.flux_analysis.parsimonious import pfba
+
+
+def room(model, solution, linear=False, delta=0.03, epsilon=1E-03):
+    """
+    Compute a single solution based on regulatory on/off minimization (ROOM).
+
+    Compute a new flux distribution that minimizes the number of active
+    reactions needed to accommodate a previous reference solution.
+    Regulatory on/off minimization (ROOM) is generally used to assess the impact
+    of knock-outs. Thus the typical usage is to provide a wildtype flux
+    distribution as reference and a model in knock-out state.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model state to compute a ROOM-based solution for.
+    solution : cobra.Solution, optional
+        A (wildtype) reference solution.
+    linear : bool, optional
+        Whether to use the linear ROOM formulation or not (default False).
+    delta: float, optional
+        The relative tolerance range which is additive in nature
+        (default 0.03).
+    epsilon: float, optional
+        The absolute range of tolerance which is multiplicative
+        (default 0.001).
+
+    Returns
+    -------
+    cobra.Solution
+        A flux distribution with minimal active reaction changes compared to
+        the reference.
+
+    See Also
+    --------
+    add_room : add ROOM constraints and objective
+
+    """
+    with model:
+        add_room(model=model, solution=solution, linear=linear, delta=delta,
+                 epsilon=epsilon)
+        solution = model.optimize()
+    return solution
+
 
 def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
-    """
+    r"""
     Add constraints and objective for ROOM.
 
     This function adds variables and constraints for applying regulatory
@@ -17,19 +62,22 @@ def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
     Parameters
     ----------
     model : cobra.Model
-        The model to add ROOM constraints and objectve to.
+        The model to add ROOM constraints and objective to.
     solution : cobra.Solution, optional
-        A previous solution to use as a reference.
+        A previous solution to use as a reference. If no solution is given,
+        one will be computed using pFBA.
     linear : bool, optional
         Whether to use the linear ROOM formulation or not (default False).
     delta: float, optional
-        The relative tolerance range (default 0.03).
+        The relative tolerance range which is additive in nature
+        (default 0.03).
     epsilon: float, optional
-        The absolute tolerance range (default 0.001).
+        The absolute range of tolerance which is multiplicative
+        (default 0.001).
 
     Notes
     -----
-    The formulation used here is the same as stated in the original paper.
+    The formulation used here is the same as stated in the original paper [1]_.
     The mathematical expression is given below:
 
     minimize \sum_{i=1}^m y^i
@@ -47,6 +95,10 @@ def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
     So, for the linear version of the ROOM , constraint (3) is relaxed to
     0 <= y_i <= 1.
 
+    See Also
+    --------
+    pfba : parsimonious FBA
+
     References
     ----------
     .. [1] Tomer Shlomi, Omer Berkman and Eytan Ruppin, "Regulatory on/off
@@ -60,7 +112,7 @@ def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
 
     # optimizes if no reference solution is provided
     if solution is None:
-        solution = model.optimize()
+        solution = pfba(model)
 
     prob = model.problem
     variable = prob.Variable("room_old_objective", ub=solution.objective_value)
