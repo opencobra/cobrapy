@@ -242,12 +242,6 @@ class TestCobraFluxAnalysis:
                   method="moma", processes=1)
 
     def test_single_deletion_linear_moma_benchmark(self, model, benchmark):
-        try:
-            solver = sutil.get_solver_name(qp=True)
-            model.solver = solver
-        except sutil.SolverNotFound:
-            pytest.skip("no qp support")
-
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
         benchmark(single_gene_deletion, model=model, gene_list=genes,
                   method="linear moma", processes=1)
@@ -331,12 +325,6 @@ class TestCobraFluxAnalysis:
 
     def test_linear_moma_sanity(self, model):
         """Test optimization criterion and optimality."""
-        try:
-            solver = sutil.get_solver_name(qp=True)
-            model.solver = solver
-        except sutil.SolverNotFound:
-            pytest.skip("no qp support")
-
         sol = model.optimize()
         with model:
             model.reactions.PFK.knock_out()
@@ -368,12 +356,6 @@ class TestCobraFluxAnalysis:
                 add_moma(model)
 
     def test_single_gene_deletion_linear_moma(self, model):
-        try:
-            solver = sutil.get_solver_name(qp=True)
-            model.solver = solver
-        except sutil.SolverNotFound:
-            pytest.skip("no qp support")
-
         # expected knockouts for textbook model
         growth_dict = {"b0008": 0.87, "b0114": 0.76, "b0116": 0.65,
                        "b2276": 0.08, "b1779": 0.00}
@@ -396,9 +378,21 @@ class TestCobraFluxAnalysis:
         model.solver = solver
         benchmark(single_reaction_deletion, model=model, processes=1)
 
+    def test_single_gene_deletion_room_benchmark(self, model, benchmark):
+        genes = ['b0008', 'b0114', 'b2276', 'b1779']
+        benchmark(single_gene_deletion, model=model, gene_list=genes,
+                  method="room", processes=1)
+
+    def test_single_gene_deletion_linear_room_benchmark(self, model,
+                                                        benchmark):
+        genes = ['b0008', 'b0114', 'b2276', 'b1779']
+        benchmark(single_gene_deletion, model=model, gene_list=genes,
+                  method="linear room", processes=1)
+
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_room_sanity(self, solver):
         model = construct_papin_2003_model()
+        model.solver = solver
         sol = model.optimize()
         with model:
             model.reactions.v3.knock_out()
@@ -424,6 +418,7 @@ class TestCobraFluxAnalysis:
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_linear_room_sanity(self, model, solver):
         sol = model.optimize()
+        model.solver = solver
         with model:
             model.reactions.PFK.knock_out()
             knock_sol = model.optimize()

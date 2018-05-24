@@ -128,6 +128,7 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
         model.objective = Zero  # This will trigger the reset as well
         for what in ("minimum", "maximum"):
             sense = "min" if what == "minimum" else "max"
+            model.solver.objective.direction = sense
             for rxn in reaction_list:
                 # The previous objective assignment already triggers a reset
                 # so directly update coefs here to not trigger redundant resets
@@ -135,7 +136,6 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
                 # FVA for small models
                 model.solver.objective.set_linear_coefficients(
                     {rxn.forward_variable: 1, rxn.reverse_variable: -1})
-                model.solver.objective.direction = sense
                 model.slim_optimize()
                 sutil.check_solver_status(model.solver.status)
                 if loopless:

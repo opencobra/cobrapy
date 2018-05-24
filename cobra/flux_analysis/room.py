@@ -4,7 +4,7 @@
 
 from __future__ import absolute_import
 
-from optlang.symbolics import Zero, NegativeOne, Add, Mul
+from optlang.symbolics import Zero, add, mul
 
 
 def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
@@ -62,53 +62,39 @@ def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
     if solution is None:
         solution = model.optimize()
 
-    problem = model.problem
-    variable = problem.Variable("room_old_objective",
-                                ub=solution.objective_value)
-    constraint = problem.Constraint(
+    prob = model.problem
+    variable = prob.Variable("room_old_objective", ub=solution.objective_value)
+    constraint = prob.Constraint(
         model.solver.objective.expression - variable,
         ub=0.0,
         lb=0.0,
         name="room_old_objective_constraint"
     )
-    new_objective = Zero
+    model.objective = prob.Objective(Zero, direction="min", sloppy=True)
     vars_and_cons = [variable, constraint]
+    obj_vars = []
 
     for rxn in model.reactions:
         flux = solution.fluxes[rxn.id]
 
         if linear:
-            y = problem.Variable("y_" + rxn.id, lb=0, ub=1)
+            y = prob.Variable("y_" + rxn.id, lb=0, ub=1)
             delta = epsilon = Zero
         else:
-            y = problem.Variable("y_" + rxn.id, type="binary")
+            y = prob.Variable("y_" + rxn.id, type="binary")
 
         # upper constraint
         w_u = flux + (delta * abs(flux)) + epsilon
-        upper_const = problem.Constraint(
-            Add(rxn.flux_expression,
-                Mul(NegativeOne,
-                    y,
-                    Add(rxn.upper_bound,
-                        Mul(NegativeOne,
-                            w_u)))),
-            ub=w_u,
-            name="room_constraint_upper_" + rxn.id
-        )
+        upper_const = prob.Constraint(
+            rxn.flux_expression - y * (rxn.upper_bound - w_u),
+            ub=w_u, name="room_constraint_upper_" + rxn.id)
         # lower constraint
         w_l = flux - (delta * abs(flux)) - epsilon
-        lower_const = problem.Constraint(
-            Add(rxn.flux_expression,
-                Mul(NegativeOne,
-                    y,
-                    Add(rxn.lower_bound,
-                        Mul(NegativeOne,
-                            w_l)))),
-            lb=w_l,
-            name="room_constraint_lower_" + rxn.id,
-        )
+        lower_const = prob.Constraint(
+            rxn.flux_expression - y * (rxn.lower_bound - w_l),
+            lb=w_l, name="room_constraint_lower_" + rxn.id)
         vars_and_cons.extend([y, upper_const, lower_const])
-        new_objective += y
+        obj_vars.append(y)
 
     model.add_cons_vars(vars_and_cons)
-    model.objective = problem.Objective(new_objective, direction="min")
+    model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
