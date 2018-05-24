@@ -2,9 +2,9 @@
 
 """Contains functions to run Regulatory On/Off Minimization (ROOM)."""
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
-from optlang.symbolics import Zero, add, mul
+from optlang.symbolics import Zero
 
 
 def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
@@ -79,7 +79,7 @@ def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
 
         if linear:
             y = prob.Variable("y_" + rxn.id, lb=0, ub=1)
-            delta = epsilon = Zero
+            delta = epsilon = 0.0
         else:
             y = prob.Variable("y_" + rxn.id, type="binary")
 
