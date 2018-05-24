@@ -2,7 +2,7 @@
 
 "Contains functions to perform geometric FBA."
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
 from optlang.symbolics import Zero
 
