@@ -17,6 +17,7 @@ import cobra.util.solver as sutil
 from cobra.core import Metabolite, Model, Reaction, Solution
 from cobra.flux_analysis import *
 from cobra.flux_analysis.parsimonious import add_pfba
+from cobra.flux_analysis import geometric_fba
 from cobra.flux_analysis.sampling import ACHRSampler, OptGPSampler
 from cobra.flux_analysis.reaction import assess
 from cobra.exceptions import Infeasible
@@ -104,6 +105,29 @@ def construct_papin_2003_solution():
     return sol
 
 
+def construct_geometric_fba_model():
+    test_model = Model('geometric_fba_paper_model')
+    test_model.add_metabolites(Metabolite('A'))
+    test_model.add_metabolites(Metabolite('B'))
+    v1 = Reaction('v1', upper_bound=1.0)
+    v1.add_metabolites({test_model.metabolites.A: 1.0})
+    v2 = Reaction('v2', lower_bound=-1000.0)
+    v2.add_metabolites({test_model.metabolites.A: -1.0,
+                        test_model.metabolites.B: 1.0})
+    v3 = Reaction('v3', lower_bound=-1000.0)
+    v3.add_metabolites({test_model.metabolites.A: -1.0,
+                        test_model.metabolites.B: 1.0})
+    v4 = Reaction('v4', lower_bound=-1000.0)
+    v4.add_metabolites({test_model.metabolites.A: -1.0,
+                        test_model.metabolites.B: 1.0})
+    v5 = Reaction('v5')
+    v5.add_metabolites({test_model.metabolites.A: 0.0,
+                        test_model.metabolites.B: -1.0})
+    test_model.add_reactions([v1, v2, v3, v4, v5])
+    test_model.objective = 'v5'
+    return test_model
+
+
 @contextmanager
 def captured_output():
     """A context manager to test the IO summary methods."""
@@ -169,6 +193,20 @@ class TestCobraFluxAnalysis:
             warnings.simplefilter("error", UserWarning)
             with pytest.raises((UserWarning, Infeasible, ValueError)):
                 pfba(model)
+
+    @pytest.mark.parametrize("solver", all_solvers)
+    def test_geometric_fba_benchmark(self, large_model, benchmark, solver):
+        large_model.solver = solver
+        benchmark(geometric_fba, large_model)
+
+    @pytest.mark.parametrize("solver", all_solvers)
+    def test_geometric_fba(self, solver):
+        model = construct_geometric_fba_model()
+        model.solver = solver
+        geometric_fba_sol = geometric_fba(model)
+        expected = Series({'v1': 1.0, 'v2': 0.33, 'v3': 0.33, 'v4': 0.33,
+                           'v5': 1.0}, index=['v1', 'v2', 'v3', 'v4', 'v5'])
+        assert numpy.allclose(geometric_fba_sol.fluxes, expected, atol=1E-02)
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_gene_deletion_fba_benchmark(self, model, benchmark,

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from cobra.flux_analysis.gapfilling import gapfill
+from cobra.flux_analysis.geometric import geometric_fba
 from cobra.flux_analysis.loopless import (
     construct_loopless_model, loopless_solution, add_loopless)
 from cobra.flux_analysis.parsimonious import pfba
