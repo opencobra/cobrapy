@@ -390,57 +390,66 @@ class TestCobraFluxAnalysis:
                   method="linear room", processes=1)
 
     @pytest.mark.parametrize("solver", optlang_solvers)
-    def test_room_sanity(self, solver):
+    def test_room_sanity(self, solver, threshold=0.0):
         model = construct_papin_2003_model()
         model.solver = solver
         sol = model.optimize()
+        active = (sol.fluxes.abs() > threshold).sum()
         with model:
             model.reactions.v3.knock_out()
             knock_sol = model.optimize()
-            ssq = (knock_sol.fluxes - sol.fluxes).pow(2).sum()
+            knock_active = (knock_sol.fluxes.abs() > threshold).sum()
 
         with model:
+            # Internally uses pFBA as reference solution.
             add_room(model)
             model.reactions.v3.knock_out()
             room_sol = model.optimize()
-            room_ssq = (room_sol.fluxes - sol.fluxes).pow(2).sum()
+            room_active = (room_sol.fluxes.abs() > threshold).sum()
 
-        # Use normal FBA as reference solution.
         with model:
+            # Use FBA as reference solution.
             add_room(model, solution=sol)
             model.reactions.v3.knock_out()
             room_ref_sol = model.optimize()
-            room_ref_ssq = (room_ref_sol.fluxes - sol.fluxes).pow(2).sum()
+            room_ref_active = (room_ref_sol.fluxes.abs() > threshold).sum()
 
-        assert numpy.isclose(room_ssq, ssq, atol=1E-06)
-        assert room_ssq > room_ref_ssq
+        # Expect the ROOM solution to have a smaller number of active
+        # reactions compared to a normal FBA.
+        assert abs(active - room_active) <= abs(active - knock_active)
+        # Expect the FBA-based reference to have more active reactions.
+        assert room_ref_active >= room_active
 
     @pytest.mark.parametrize("solver", optlang_solvers)
-    def test_linear_room_sanity(self, model, solver):
-        sol = model.optimize()
+    def test_linear_room_sanity(self, solver, threshold=0.0):
+        model = construct_papin_2003_model()
         model.solver = solver
+        sol = model.optimize()
+        active = (sol.fluxes.abs() > threshold).sum()
         with model:
-            model.reactions.PFK.knock_out()
+            model.reactions.v3.knock_out()
             knock_sol = model.optimize()
-            ssq = (knock_sol.fluxes - sol.fluxes).pow(2).sum()
+            knock_active = (knock_sol.fluxes.abs() > threshold).sum()
 
         with model:
+            # Internally uses pFBA as reference solution.
             add_room(model, linear=True)
-            model.reactions.PFK.knock_out()
+            model.reactions.v3.knock_out()
             room_sol = model.optimize()
-            room_ssq = (room_sol.fluxes - sol.fluxes).pow(2).sum()
+            room_active = (room_sol.fluxes.abs() > threshold).sum()
 
-        # Use normal FBA as reference solution.
         with model:
+            # Use FBA as reference solution.
             add_room(model, solution=sol, linear=True)
-            model.reactions.PFK.knock_out()
+            model.reactions.v3.knock_out()
             room_ref_sol = model.optimize()
-            room_ref_ssq = (room_ref_sol.fluxes - sol.fluxes).pow(2).sum()
+            room_ref_active = (room_ref_sol.fluxes.abs() > threshold).sum()
 
-        assert room_ssq > ssq
-        assert numpy.isclose(room_sol.objective_value,
-                             room_ref_sol.objective_value)
-        assert numpy.isclose(room_ssq, room_ref_ssq)
+        # Expect the ROOM solution to have a smaller number of active
+        # reactions compared to a normal FBA.
+        assert abs(active - room_active) <= abs(active - knock_active)
+        # Expect the FBA-based reference to have more active reactions.
+        assert room_ref_active >= room_active
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_reaction_deletion_room(self, solver):
