@@ -389,6 +389,7 @@ class TestCobraFluxAnalysis:
         benchmark(single_gene_deletion, model=model, gene_list=genes,
                   method="linear room", processes=1)
 
+    @pytest.mark.skip("Unpredictable solutions.")
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_room_sanity(self, solver, threshold=0.0):
         model = construct_papin_2003_model()
@@ -420,6 +421,7 @@ class TestCobraFluxAnalysis:
         # Expect the FBA-based reference to have more active reactions.
         assert room_ref_active >= room_active
 
+    @pytest.mark.skip("Unpredictable solutions.")
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_linear_room_sanity(self, solver, threshold=0.0):
         model = construct_papin_2003_model()
