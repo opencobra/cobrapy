@@ -5,6 +5,8 @@ from cobra.flux_analysis.geometric import geometric_fba
 from cobra.flux_analysis.loopless import (
     construct_loopless_model, loopless_solution, add_loopless)
 from cobra.flux_analysis.parsimonious import pfba
+from cobra.flux_analysis.moma import moma, add_moma
+from cobra.flux_analysis.room import room, add_room
 from cobra.flux_analysis.deletion import (
     single_gene_deletion, single_reaction_deletion)
 from cobra.flux_analysis.variability import (
