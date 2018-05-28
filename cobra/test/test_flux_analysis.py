@@ -444,10 +444,11 @@ class TestCobraFluxAnalysis:
         flux_change = (sol.fluxes - knock_sol.fluxes).abs().sum()
         flux_change_room = (sol.fluxes - room_sol.fluxes).abs().sum()
         flux_change_room_ref = (sol.fluxes - room_sol_ref.fluxes).abs().sum()
-        # Expect the ROOM solution to have smaller flux changes in 
+        # Expect the ROOM solution to have smaller flux changes in
         # reactions compared to a normal FBA.
-        assert flux_change_room <=flux_change 
-        # Expect the FBA-based reference to have less change in flux distribution.
+        assert flux_change_room <= flux_change
+        # Expect the FBA-based reference to have less change in
+        # flux distribution.
         assert flux_change_room_ref >= flux_room_ref
 
     @pytest.mark.parametrize("solver", optlang_solvers)
