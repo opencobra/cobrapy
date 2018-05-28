@@ -389,9 +389,8 @@ class TestCobraFluxAnalysis:
         benchmark(single_gene_deletion, model=model, gene_list=genes,
                   method="linear room", processes=1)
 
-    @pytest.mark.skip("Unpredictable solutions.")
     @pytest.mark.parametrize("solver", optlang_solvers)
-    def test_room_sanity(self, solver):
+    def test_room_sanity(self, model, solver):
         model.solver = solver
         sol = model.optimize()
         with model:
@@ -408,21 +407,22 @@ class TestCobraFluxAnalysis:
             # Use FBA as reference solution.
             add_room(model, solution=sol)
             model.reactions.PYK.knock_out()
-            room_ref_sol = model.optimize()
+            room_sol_ref = model.optimize()
 
         flux_change = (sol.fluxes - knock_sol.fluxes).abs().sum()
         flux_change_room = (sol.fluxes - room_sol.fluxes).abs().sum()
         flux_change_room_ref = (sol.fluxes - room_sol_ref.fluxes).abs().sum()
         # Expect the ROOM solution to have smaller flux changes in
         # reactions compared to a normal FBA.
-        assert flux_change_room <= flux_change
+        assert flux_change_room < flux_change or \
+            numpy.isclose(flux_change_room, flux_change, atol=1E-06)
         # Expect the FBA-based reference to have less change in
         # flux distribution.
-        assert flux_change_room_ref >= flux_room_ref
+        assert flux_change_room_ref > flux_change_room or \
+            numpy.isclose(flux_change_room_ref, flux_change_room, atol=1E-06)
 
-    @pytest.mark.skip("Unpredictable solutions.")
     @pytest.mark.parametrize("solver", optlang_solvers)
-    def test_linear_room_sanity(self, solver):
+    def test_linear_room_sanity(self, model, solver):
         model.solver = solver
         sol = model.optimize()
         with model:
@@ -439,17 +439,19 @@ class TestCobraFluxAnalysis:
             # Use FBA as reference solution.
             add_room(model, solution=sol, linear=True)
             model.reactions.PYK.knock_out()
-            room_ref_sol = model.optimize()
+            room_sol_ref = model.optimize()
 
         flux_change = (sol.fluxes - knock_sol.fluxes).abs().sum()
         flux_change_room = (sol.fluxes - room_sol.fluxes).abs().sum()
         flux_change_room_ref = (sol.fluxes - room_sol_ref.fluxes).abs().sum()
         # Expect the ROOM solution to have smaller flux changes in
         # reactions compared to a normal FBA.
-        assert flux_change_room <= flux_change
+        assert flux_change_room < flux_change or \
+            numpy.isclose(flux_change_room, flux_change, atol=1E-06)
         # Expect the FBA-based reference to have less change in
         # flux distribution.
-        assert flux_change_room_ref >= flux_room_ref
+        assert flux_change_room_ref > flux_change_room or \
+            numpy.isclose(flux_change_room_ref, flux_change_room, atol=1E-06)
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_reaction_deletion_room(self, solver):
