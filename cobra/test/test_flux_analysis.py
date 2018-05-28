@@ -64,7 +64,7 @@ def ll_test_model(request):
     return test_model
 
 
-def construct_papin_2003_model():
+def construct_room_model():
     test_model = Model("papin_2003")
     v1 = Reaction("v1")
     v2 = Reaction("v2")
@@ -89,7 +89,7 @@ def construct_papin_2003_model():
     return test_model
 
 
-def construct_papin_2003_solution():
+def construct_room_solution():
     fluxes = Series({'b1': 10.0, 'b2': 5.0, 'b3': 5.0, 'v1': 10.0, 'v2': 5.0,
                      'v3': 0.0, 'v4': 0.0, 'v5': 0.0, 'v6': 5.0})
     reduced_costs = Series({'b1': 0.0, 'b2': 0.0, 'b3': 0.0, 'v1': 0.0,
@@ -391,73 +391,70 @@ class TestCobraFluxAnalysis:
 
     @pytest.mark.skip("Unpredictable solutions.")
     @pytest.mark.parametrize("solver", optlang_solvers)
-    def test_room_sanity(self, solver, threshold=0.0):
-        model = construct_papin_2003_model()
+    def test_room_sanity(self, solver):
         model.solver = solver
         sol = model.optimize()
-        active = (sol.fluxes.abs() > threshold).sum()
         with model:
-            model.reactions.v3.knock_out()
+            model.reactions.PYK.knock_out()
             knock_sol = model.optimize()
-            knock_active = (knock_sol.fluxes.abs() > threshold).sum()
 
         with model:
             # Internally uses pFBA as reference solution.
             add_room(model)
-            model.reactions.v3.knock_out()
+            model.reactions.PYK.knock_out()
             room_sol = model.optimize()
-            room_active = (room_sol.fluxes.abs() > threshold).sum()
 
         with model:
             # Use FBA as reference solution.
             add_room(model, solution=sol)
-            model.reactions.v3.knock_out()
+            model.reactions.PYK.knock_out()
             room_ref_sol = model.optimize()
-            room_ref_active = (room_ref_sol.fluxes.abs() > threshold).sum()
 
-        # Expect the ROOM solution to have a smaller number of active
+        flux_change = (sol.fluxes - knock_sol.fluxes).abs().sum()
+        flux_change_room = (sol.fluxes - room_sol.fluxes).abs().sum()
+        flux_change_room_ref = (sol.fluxes - room_sol_ref.fluxes).abs().sum()
+        # Expect the ROOM solution to have smaller flux changes in
         # reactions compared to a normal FBA.
-        assert abs(active - room_active) <= abs(active - knock_active)
-        # Expect the FBA-based reference to have more active reactions.
-        assert room_ref_active >= room_active
+        assert flux_change_room <= flux_change
+        # Expect the FBA-based reference to have less change in
+        # flux distribution.
+        assert flux_change_room_ref >= flux_room_ref
 
     @pytest.mark.skip("Unpredictable solutions.")
     @pytest.mark.parametrize("solver", optlang_solvers)
-    def test_linear_room_sanity(self, solver, threshold=0.0):
-        model = construct_papin_2003_model()
+    def test_linear_room_sanity(self, solver):
         model.solver = solver
         sol = model.optimize()
-        active = (sol.fluxes.abs() > threshold).sum()
         with model:
-            model.reactions.v3.knock_out()
+            model.reactions.PYK.knock_out()
             knock_sol = model.optimize()
-            knock_active = (knock_sol.fluxes.abs() > threshold).sum()
 
         with model:
             # Internally uses pFBA as reference solution.
             add_room(model, linear=True)
-            model.reactions.v3.knock_out()
+            model.reactions.PYK.knock_out()
             room_sol = model.optimize()
-            room_active = (room_sol.fluxes.abs() > threshold).sum()
 
         with model:
             # Use FBA as reference solution.
             add_room(model, solution=sol, linear=True)
-            model.reactions.v3.knock_out()
+            model.reactions.PYK.knock_out()
             room_ref_sol = model.optimize()
-            room_ref_active = (room_ref_sol.fluxes.abs() > threshold).sum()
 
-        # Expect the ROOM solution to have a smaller number of active
+        flux_change = (sol.fluxes - knock_sol.fluxes).abs().sum()
+        flux_change_room = (sol.fluxes - room_sol.fluxes).abs().sum()
+        flux_change_room_ref = (sol.fluxes - room_sol_ref.fluxes).abs().sum()
+        # Expect the ROOM solution to have smaller flux changes in 
         # reactions compared to a normal FBA.
-        assert abs(active - room_active) <= abs(active - knock_active)
-        # Expect the FBA-based reference to have more active reactions.
-        assert room_ref_active >= room_active
+        assert flux_change_room <=flux_change 
+        # Expect the FBA-based reference to have less change in flux distribution.
+        assert flux_change_room_ref >= flux_room_ref
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_reaction_deletion_room(self, solver):
-        model = construct_papin_2003_model()
+        model = construct_room_model()
         model.solver = solver
-        sol = construct_papin_2003_solution()
+        sol = construct_room_solution()
         expected = Series({'v1': 10.0, 'v2': 5.0, 'v3': 0.0, 'v4': 5.0,
                            'v5': 5.0, 'v6': 0.0, 'b1': 10.0, 'b2': 5.0,
                            'b3': 5.0}, index=['v1', 'v2', 'v3', 'v4',
@@ -472,9 +469,9 @@ class TestCobraFluxAnalysis:
 
     @pytest.mark.parametrize("solver", optlang_solvers)
     def test_single_reaction_deletion_room_linear(self, solver):
-        model = construct_papin_2003_model()
+        model = construct_room_model()
         model.solver = solver
-        sol = construct_papin_2003_solution()
+        sol = construct_room_solution()
         expected = Series({'v1': 10.0, 'v2': 5.0, 'v3': 0.0, 'v4': 5.0,
                            'v5': 5.0, 'v6': 0.0, 'b1': 10.0, 'b2': 5.0,
                            'b3': 5.0}, index=['v1', 'v2', 'v3', 'v4',
