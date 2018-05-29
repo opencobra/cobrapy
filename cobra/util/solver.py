@@ -20,6 +20,8 @@ from warnings import warn
 
 import optlang
 from optlang.symbolics import Basic, Zero
+from optlang.interface import (OPTIMAL, NUMERIC, FEASIBLE, INFEASIBLE,
+                               SUBOPTIMAL, ITERATION_LIMIT)
 
 from cobra.exceptions import OptimizationError, SolverNotFound,\
     OPTLANG_TO_EXCEPTIONS_DICT
@@ -31,7 +33,10 @@ solvers = {match.split("_interface")[0]: getattr(optlang, match)
            for match in dir(optlang) if "_interface" in match}
 
 # Defines all the QP solvers implemented in optlang.
-qp_solvers = ["cplex"]  # QP in gurobi not implemented yet
+qp_solvers = ["cplex", "gurobi"]
+
+# optlang solution statuses which still allow retrieving primal values
+has_primals = [NUMERIC, FEASIBLE, INFEASIBLE, SUBOPTIMAL, ITERATION_LIMIT]
 
 
 def linear_reaction_coefficients(model, reactions=None):
@@ -201,7 +206,7 @@ def get_solver_name(mip=False, qp=False):
     # Those lists need to be updated as optlang implements more solvers
     mip_order = ["gurobi", "cplex", "glpk"]
     lp_order = ["glpk", "cplex", "gurobi"]
-    qp_order = ["cplex"]
+    qp_order = ["gurobi", "cplex"]
 
     if mip is False and qp is False:
         for solver_name in lp_order:
@@ -397,9 +402,9 @@ def fix_objective_as_constraint(model, fraction=1, bound=None,
 
 def check_solver_status(status, raise_error=False):
     """Perform standard checks on a solver's status."""
-    if status == optlang.interface.OPTIMAL:
+    if status == OPTIMAL:
         return
-    elif status == optlang.interface.INFEASIBLE and not raise_error:
+    elif (status in has_primals) and not raise_error:
         warn("solver status is '{}'".format(status), UserWarning)
     elif status is None:
         raise RuntimeError(
@@ -422,7 +427,7 @@ def assert_optimal(model, message='optimization failed'):
         Message to for the exception if solver status was not optimal.
     """
     status = model.solver.status
-    if status != optlang.interface.OPTIMAL:
+    if status != OPTIMAL:
         exception_cls = OPTLANG_TO_EXCEPTIONS_DICT.get(
             status, OptimizationError)
         raise exception_cls("{} ({})".format(message, status))
