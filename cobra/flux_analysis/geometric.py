@@ -79,7 +79,7 @@ def geometric_fba(model, epsilon=1E-06, max_tries=200):
         # minimize distance between flux and centre
         model.objective = prob.Objective(Zero, sloppy=True, direction="min")
         model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
-        model.optimize()
+        sol = model.optimize()
 
         # further iterations
         while delta > epsilon and count <= max_tries:
@@ -90,7 +90,7 @@ def geometric_fba(model, epsilon=1E-06, max_tries=200):
                 var.ub = mean_flux[rxn_id]
                 u_c.ub = mean_flux[rxn_id]
                 l_c.lb = fva_sol.at[rxn_id, "minimum"]
-            model.optimize()
+            sol = model.optimize()
             delta = (fva_sol["maximum"] - fva_sol["minimum"]).max()
 
             count += 1
@@ -103,4 +103,4 @@ def geometric_fba(model, epsilon=1E-06, max_tries=200):
                     "maximum iterations".format(max_tries)
                 )
 
-    return get_solution(model)
+    return sol

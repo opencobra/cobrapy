@@ -261,14 +261,14 @@ class TestCobraFluxAnalysis:
             ssq = (knock_sol.fluxes - sol.fluxes).pow(2).sum()
 
         with model:
-            add_moma(model)
+            add_moma(model, linear=False)
             model.reactions.PFK.knock_out()
             moma_sol = model.optimize()
             moma_ssq = (moma_sol.fluxes - sol.fluxes).pow(2).sum()
 
         # Use normal FBA as reference solution.
         with model:
-            add_moma(model, solution=sol)
+            add_moma(model, solution=sol, linear=False)
             model.reactions.PFK.knock_out()
             moma_ref_sol = model.optimize()
             moma_ref_ssq = (moma_ref_sol.fluxes - sol.fluxes).pow(2).sum()
