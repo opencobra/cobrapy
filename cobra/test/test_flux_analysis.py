@@ -1084,7 +1084,7 @@ class TestCobraFluxSampling:
         assert 0.5 < relative_diff.abs().mean() < 2
 
     def test_reproject(self):
-        s = self.optgp.sample(10, fluxes=False).as_matrix()
+        s = self.optgp.sample(10, fluxes=False).values
         proj = numpy.apply_along_axis(self.optgp._reproject, 1, s)
         assert all(self.optgp.validate(proj) == "v")
         s = numpy.random.rand(10, self.optgp.warmup.shape[1])
