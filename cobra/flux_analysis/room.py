@@ -9,7 +9,7 @@ from optlang.symbolics import Zero
 from cobra.flux_analysis.parsimonious import pfba
 
 
-def room(model, solution, linear=False, delta=0.03, epsilon=1E-03):
+def room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
     """
     Compute a single solution based on regulatory on/off minimization (ROOM).
 
@@ -28,11 +28,9 @@ def room(model, solution, linear=False, delta=0.03, epsilon=1E-03):
     linear : bool, optional
         Whether to use the linear ROOM formulation or not (default False).
     delta: float, optional
-        The relative tolerance range which is additive in nature
-        (default 0.03).
+        The relative tolerance range (additive) (default 0.03).
     epsilon: float, optional
-        The absolute range of tolerance which is multiplicative
-        (default 0.001).
+        The absolute tolerance range (multiplicative) (default 0.001).
 
     Returns
     -------

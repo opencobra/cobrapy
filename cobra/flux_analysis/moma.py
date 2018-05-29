@@ -11,7 +11,7 @@ import cobra.util.solver as sutil
 from cobra.flux_analysis.parsimonious import pfba
 
 
-def moma(model, solution, linear=True):
+def moma(model, solution=None, linear=True):
     """
     Compute a single solution based on (linear) MOMA.
 
@@ -25,7 +25,7 @@ def moma(model, solution, linear=True):
     ----------
     model : cobra.Model
         The model state to compute a MOMA-based solution for.
-    solution : cobra.Solution
+    solution : cobra.Solution, optional
         A (wildtype) reference solution.
     linear : bool, optional
         Whether to use the linear MOMA formulation or not (default True).
