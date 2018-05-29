@@ -207,38 +207,40 @@ class Metabolite(Species):
         """
         self._model.remove_metabolites(self, destructive)
 
-    def summary(self, solution=None, threshold=0.01, fva=False,
+    def summary(self, solution=None, threshold=0.01, fva=None, names=False,
                 floatfmt='.3g'):
-        """Print a summary of the reactions which produce and consume this
-        metabolite.
+        """
+        Print a summary of the production and consumption fluxes.
 
         This method requires the model for which this metabolite is a part
         to be solved.
 
         Parameters
         ----------
-        solution : cobra.core.Solution
+        solution : cobra.Solution, optional
             A previously solved model solution to use for generating the
             summary. If none provided (default), the summary method will
             resolve the model. Note that the solution object must match the
             model, i.e., changes to the model such as changed bounds,
             added or removed reactions are not taken into account by this
             method.
-
-        threshold : float
-            a value below which to ignore reaction fluxes
-
-        fva : float (0->1), or None
+        threshold : float, optional
+            Threshold below which fluxes are not reported.
+        fva : pandas.DataFrame, float or None, optional
             Whether or not to include flux variability analysis in the output.
-            If given, fva should be a float between 0 and 1, representing the
+            If given, fva should either be a previous FVA solution matching
+            the model or a float between 0 and 1 representing the
             fraction of the optimum objective to be searched.
+        names : bool, optional
+            Emit reaction and metabolite names rather than identifiers (default
+            False).
+        floatfmt : string, optional
+            Format string for floats (default '.3g').
 
-        floatfmt : string
-            format method for floats, passed to tabulate. Default is '.3g'.
         """
         from cobra.flux_analysis.summary import metabolite_summary
         return metabolite_summary(self, solution=solution, threshold=threshold,
-                                  fva=fva, floatfmt=floatfmt)
+                                  fva=fva, names=names, floatfmt=floatfmt)
 
     def _repr_html_(self):
         return """
