@@ -46,7 +46,7 @@ setup(
         "ruamel.yaml<0.15",
         "numpy>=1.13",
         "pandas>=0.17.0",
-        "optlang>=1.2.5",
+        "optlang>=1.4.2",
         "tabulate",
         "depinfo"
     ],
