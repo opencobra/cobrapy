@@ -870,46 +870,6 @@ class TestCobraModel:
         assert 'fluxes' in solution
         assert 'reduced_costs' in solution
 
-    def test_model_medium(self, model):
-        # Add a dummy 'malformed' import reaction
-        bad_import = Reaction('bad_import')
-        bad_import.add_metabolites({model.metabolites.pyr_c: 1})
-        bad_import.bounds = (0, 42)
-        model.add_reaction(bad_import)
-
-        # Test basic setting and getting methods
-        medium = model.medium
-        model.medium = medium
-        assert model.medium == medium
-
-        # Test context management
-        with model:
-            # Ensure the bounds are correct beforehand
-            assert model.reactions.EX_glc__D_e.lower_bound == -10
-            assert model.reactions.bad_import.upper_bound == 42
-            assert model.reactions.EX_co2_e.lower_bound == -1000
-
-            # Make changes to the media
-            new_medium = model.medium
-            new_medium['EX_glc__D_e'] = 20
-            new_medium['bad_import'] = 24
-            del new_medium['EX_co2_e']
-
-            # Change the medium, make sure changes work
-            model.medium = new_medium
-            assert model.reactions.EX_glc__D_e.lower_bound == -20
-            assert model.reactions.bad_import.upper_bound == 24
-            assert model.reactions.EX_co2_e.lower_bound == 0
-
-        # Make sure changes revert after the contex
-        assert model.reactions.EX_glc__D_e.lower_bound == -10
-        assert model.reactions.bad_import.upper_bound == 42
-        assert model.reactions.EX_co2_e.lower_bound == -1000
-
-        new_medium['bogus_rxn'] = 0
-        with pytest.raises(KeyError):
-            model.medium = new_medium
-
     def test_context_manager(self, model):
         bounds0 = model.reactions[0].bounds
         bounds1 = (1, 2)
