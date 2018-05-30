@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Contains functions and helpers to obtain minimal growth media."""
 
 from optlang.symbolics import Zero

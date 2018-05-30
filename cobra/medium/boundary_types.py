@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Contains function to identify the type of boundary reactions.
 
 This module uses various heuristics to decide whether a boundary reaction
