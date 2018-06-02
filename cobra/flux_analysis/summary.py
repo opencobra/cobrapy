@@ -184,7 +184,7 @@ def model_summary(model, solution=None, threshold=0.01, fva=None, names=False,
         solution = get_solution(model, reactions=summary_rxns)
 
     # Create a dataframe of objective fluxes
-    obj_fluxes = pd.DataFrame({key: solution.fluxes[key.id] * value for key,
+    obj_fluxes = pd.DataFrame({key: solution[key.id] * value for key,
                                value in iteritems(objective_reactions)},
                               index=['flux']).T
     obj_fluxes['id'] = obj_fluxes.apply(
@@ -236,20 +236,19 @@ def model_summary(model, solution=None, threshold=0.01, fva=None, names=False,
     def get_str_table(species_df, fva=False):
         """Formats a string table for each column"""
 
-        if fva is None:
-            return tabulate(species_df.loc[:, ['id', 'flux']].values,
-                            floatfmt=floatfmt, tablefmt='plain').split('\n')
-
-        else:
+        if fva:
             return tabulate(
                 species_df.loc[:, ['id', 'flux', 'fva_fmt']].values,
                 floatfmt=floatfmt, tablefmt='simple',
                 headers=['id', 'Flux', 'Range']).split('\n')
+        else:
+            return tabulate(species_df.loc[:, ['id', 'flux']].values,
+                            floatfmt=floatfmt, tablefmt='plain').split('\n')
 
     in_table = get_str_table(
-        metabolite_fluxes[metabolite_fluxes.is_input], fva=fva)
+        metabolite_fluxes[metabolite_fluxes['is_input']], fva=fva is not None)
     out_table = get_str_table(
-        metabolite_fluxes[~metabolite_fluxes.is_input], fva=fva)
+        metabolite_fluxes[~metabolite_fluxes['is_input']], fva=fva is not None)
     obj_table = get_str_table(obj_fluxes, fva=False)
 
     # Print nested output table
@@ -281,10 +280,8 @@ def _process_flux_dataframe(flux_dataframe, fva, threshold, floatfmt):
 
     # Make all fluxes positive
     if fva is None:
-        flux_dataframe['is_input'] = flux_dataframe.flux >= 0
-        # Seems superfluous.
-        # flux_dataframe.flux = \
-        #     flux_dataframe.flux.abs().astype('float')
+        flux_dataframe['is_input'] = (flux_dataframe['flux'] >= 0)
+        flux_dataframe['flux'] = flux_dataframe['flux'].abs()
     else:
 
         def get_direction(flux, fmin, fmax):
