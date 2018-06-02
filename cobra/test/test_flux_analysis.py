@@ -978,9 +978,7 @@ class TestCobraFluxAnalysis:
     @pytest.mark.parametrize("fraction, met", [(0.99, "fdp_c")])
     def test_metabolite_summary_with_fva(self, model, opt_solver, fraction,
                                          met):
-        if opt_solver in (
-                "optlang-glpk", "optlang-cplex", "optlang-gurobi"):
-            pytest.xfail("FVA currently buggy")
+        #     pytest.xfail("FVA currently buggy")
 
         model.solver = opt_solver
         model.optimize()

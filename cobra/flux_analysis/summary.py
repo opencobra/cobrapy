@@ -81,7 +81,7 @@ def metabolite_summary(met, solution=None, threshold=0.01, fva=False,
             fva_results = fva
         else:
             fva_results = flux_variability_analysis(
-                met.model, met.reactions, fraction_of_optimum=fva)
+                met.model, list(met.reactions), fraction_of_optimum=fva)
 
         flux_summary["maximum"] = zeros(len(rxn_id), dtype=float)
         flux_summary["minimum"] = zeros(len(rxn_id), dtype=float)
