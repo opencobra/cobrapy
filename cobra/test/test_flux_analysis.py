@@ -951,14 +951,14 @@ class TestCobraFluxAnalysis:
             expected_entries = [
                 'PRODUCING REACTIONS -- Ubiquinone-8 (q8_c)',
                 '%       FLUX  RXN ID      REACTION',
-                '100%   43.6   cytochr...  2.0 H+ + 0.5 O2 + Ubiquinol-8 --> H2O '
-                '+ 2.0 H+ ...',
+                '100%   43.6   cytochr...  2.0 H+ + 0.5 O2 + Ubiquinol-8 --> '
+                'H2O + 2.0 H+ ...',
                 'CONSUMING REACTIONS -- Ubiquinone-8 (q8_c)',
                 '%       FLUX  RXN ID      REACTION',
                 '88%    38.5   NADH de...  4.0 H+ + Nicotinamide adenine '
                 'dinucleotide - re...',
-                '12%     5.06  succina...  Ubiquinone-8 + Succinate --> Fumarate '
-                '+ Ubiquin...'
+                '12%     5.06  succina...  Ubiquinone-8 + Succinate --> '
+                'Fumarate + Ubiquin...'
             ]
         else:
             expected_entries = [
