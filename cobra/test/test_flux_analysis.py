@@ -937,24 +937,41 @@ class TestCobraFluxAnalysis:
         solution = pfba(model)
         model.metabolites.get_by_id(met).summary(solution)
 
-    @pytest.mark.parametrize("met", ["q8_c"])
-    def test_metabolite_summary(self, model, opt_solver, met):
+    @pytest.mark.parametrize("met, names", [
+        ("q8_c", False),
+        ("q8_c", True)
+    ])
+    def test_metabolite_summary(self, model, opt_solver, met, names):
         model.solver = opt_solver
         model.optimize()
         with captured_output() as (out, err):
-            model.metabolites.get_by_id(met).summary()
+            model.metabolites.get_by_id(met).summary(names=names)
 
-        expected_entries = [
-            'PRODUCING REACTIONS -- Ubiquinone-8 (q8_c)',
-            '%       FLUX  RXN ID    REACTION',
-            '100%   43.6   CYTBD     '
-            '2.0 h_c + 0.5 o2_c + q8h2_c --> h2o_c + 2.0 h_e...',
-            'CONSUMING REACTIONS -- Ubiquinone-8 (q8_c)',
-            '%       FLUX  RXN ID    REACTION',
-            '88%    38.5   NADH16    '
-            '4.0 h_c + nadh_c + q8_c --> 3.0 h_e + nad_c + q...',
-            '12%     5.06  SUCDi     q8_c + succ_c --> fum_c + q8h2_c',
-        ]
+        if names:
+            expected_entries = [
+                'PRODUCING REACTIONS -- Ubiquinone-8 (q8_c)',
+                '%       FLUX  RXN ID      REACTION',
+                '100%   43.6   cytochr...  2.0 H+ + 0.5 O2 + Ubiquinol-8 --> H2O '
+                '+ 2.0 H+ ...',
+                'CONSUMING REACTIONS -- Ubiquinone-8 (q8_c)',
+                '%       FLUX  RXN ID      REACTION',
+                '88%    38.5   NADH de...  4.0 H+ + Nicotinamide adenine '
+                'dinucleotide - re...',
+                '12%     5.06  succina...  Ubiquinone-8 + Succinate --> Fumarate '
+                '+ Ubiquin...'
+            ]
+        else:
+            expected_entries = [
+                'PRODUCING REACTIONS -- Ubiquinone-8 (q8_c)',
+                '%       FLUX  RXN ID    REACTION',
+                '100%   43.6   CYTBD     '
+                '2.0 h_c + 0.5 o2_c + q8h2_c --> h2o_c + 2.0 h_e...',
+                'CONSUMING REACTIONS -- Ubiquinone-8 (q8_c)',
+                '%       FLUX  RXN ID    REACTION',
+                '88%    38.5   NADH16    '
+                '4.0 h_c + nadh_c + q8_c --> 3.0 h_e + nad_c + q...',
+                '12%     5.06  SUCDi     q8_c + succ_c --> fum_c + q8h2_c',
+            ]
 
         self.check_in_line(out.getvalue(), expected_entries)
 
