@@ -845,41 +845,58 @@ class TestCobraFluxAnalysis:
                 "Not found: {} in:\n{}".format(pattern.sub("", elem),
                                                "\n".join(output_strip))
 
-    def test_model_summary_previous_solution(self, model, opt_solver):
+    @pytest.mark.parametrize("names", [False, True])
+    def test_model_summary_previous_solution(self, model, opt_solver, names):
         model.solver = opt_solver
         solution = model.optimize()
         rxn_test = model.exchanges[0]
-        met_test = list(rxn_test.metabolites.keys())[0].id
+        if names:
+            met_test = list(rxn_test.metabolites.keys())[0].name
+        else:
+            met_test = list(rxn_test.metabolites.keys())[0].id
 
         solution.fluxes[rxn_test.id] = 321
 
         with captured_output() as (out, err):
-            model.summary(solution)
+            model.summary(solution, names=names)
         self.check_in_line(out.getvalue(), [met_test + '321'])
 
-    def test_model_summary(self, model, opt_solver):
+    @pytest.mark.parametrize("names", [False, True])
+    def test_model_summary(self, model, opt_solver, names):
         model.solver = opt_solver
         # test non-fva version (these should be fixed for textbook model
-        expected_entries = [
-            'o2_e      21.8',
-            'glc__D_e  10',
-            'nh4_e      4.77',
-            'pi_e       3.21',
-            'h2o_e  29.2',
-            'co2_e  22.8',
-            'h_e    17.5',
-            'Biomass_Ecol...  0.874',
-        ]
+        if names:
+            expected_entries = [
+                'O2      21.8',
+                'D-Glucose  10',
+                'Ammonium      4.77',
+                'Phosphate       3.21',
+                'H2O  29.2',
+                'CO2  22.8',
+                'H+    17.5',
+                'Biomass_Ecol...  0.874',
+            ]
+        else:
+            expected_entries = [
+                'o2_e      21.8',
+                'glc__D_e  10',
+                'nh4_e      4.77',
+                'pi_e       3.21',
+                'h2o_e  29.2',
+                'co2_e  22.8',
+                'h_e    17.5',
+                'Biomass_Ecol...  0.874',
+            ]
         # Need to use a different method here because
         # there are multiple entries per line.
         model.optimize()
         with captured_output() as (out, err):
-            model.summary()
+            model.summary(names=names)
         self.check_in_line(out.getvalue(), expected_entries)
 
-        with model:
-            model.objective = model.exchanges[0]
-            model.summary()
+        # with model:
+        #     model.objective = model.exchanges[0]
+        #     model.summary()
 
     @pytest.mark.parametrize("fraction", [0.95])
     def test_model_summary_with_fva(self, model, opt_solver, fraction):

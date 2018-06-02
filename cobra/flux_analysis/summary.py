@@ -235,7 +235,6 @@ def model_summary(model, solution=None, threshold=0.01, fva=None, names=False,
     # Begin building string output table
     def get_str_table(species_df, fva=False):
         """Formats a string table for each column"""
-
         if fva:
             return tabulate(
                 species_df.loc[:, ['id', 'flux', 'fva_fmt']].values,
