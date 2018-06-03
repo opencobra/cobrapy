@@ -26,12 +26,8 @@ from cobra.flux_analysis.room import add_room
 
 # The scipy interface is currently unstable and may yield errors or infeasible
 # solutions.
-stable_optlang = ["glpk", "cplex", "gurobi"]
-optlang_solvers = ["optlang-" + s for s in stable_optlang if s in
-                   sutil.solvers]
-all_solvers = ["optlang-" + s for s in stable_optlang if
-               s in sutil.solvers]
-qp_solvers = ["cplex"]
+all_solvers = [s for s in ["glpk", "cplex", "gurobi"] if s in sutil.solvers]
+qp_solvers = [s for s in ["cplex", "gurobi"] if s in sutil.solvers]
 
 
 def construct_ll_test_model():
@@ -57,7 +53,7 @@ def construct_ll_test_model():
     return test_model
 
 
-@pytest.fixture(scope="function", params=optlang_solvers)
+@pytest.fixture(scope="function", params=all_solvers)
 def ll_test_model(request):
     test_model = construct_ll_test_model()
     test_model.solver = request.param
@@ -195,9 +191,9 @@ class TestCobraFluxAnalysis:
                 pfba(model)
 
     @pytest.mark.parametrize("solver", all_solvers)
-    def test_geometric_fba_benchmark(self, large_model, benchmark, solver):
-        large_model.solver = solver
-        benchmark(geometric_fba, large_model)
+    def test_geometric_fba_benchmark(self, model, benchmark, solver):
+        model.solver = solver
+        benchmark(geometric_fba, model)
 
     @pytest.mark.parametrize("solver", all_solvers)
     def test_geometric_fba(self, solver):
@@ -208,13 +204,13 @@ class TestCobraFluxAnalysis:
                            'v5': 1.0}, index=['v1', 'v2', 'v3', 'v4', 'v5'])
         assert numpy.allclose(geometric_fba_sol.fluxes, expected, atol=1E-02)
 
-    @pytest.mark.parametrize("solver", optlang_solvers)
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_single_gene_deletion_fba_benchmark(self, model, benchmark,
                                                 solver):
         model.solver = solver
         benchmark(single_gene_deletion, model)
 
-    @pytest.mark.parametrize("solver", optlang_solvers)
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_single_gene_deletion_fba(self, model, solver):
         # expected knockouts for textbook model
         model.solver = solver
@@ -230,31 +226,28 @@ class TestCobraFluxAnalysis:
             assert numpy.isclose(result[frozenset([gene])], value,
                                  atol=1E-02)
 
-    def test_single_gene_deletion_moma_benchmark(self, model, benchmark):
-        try:
-            solver = sutil.get_solver_name(qp=True)
-            model.solver = solver
-        except sutil.SolverNotFound:
-            pytest.skip("no qp support")
-
+    @pytest.mark.parametrize("solver", qp_solvers)
+    def test_single_gene_deletion_moma_benchmark(self, model, benchmark,
+                                                 solver):
+        model.solver = solver
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
         benchmark(single_gene_deletion, model=model, gene_list=genes,
                   method="moma", processes=1)
 
-    def test_single_deletion_linear_moma_benchmark(self, model, benchmark):
+    @pytest.mark.parametrize("solver", all_solvers)
+    def test_single_gene_deletion_linear_moma_benchmark(
+            self, model, benchmark, solver):
+        model.solver = solver
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
         benchmark(single_gene_deletion, model=model, gene_list=genes,
                   method="linear moma", processes=1)
 
-    def test_moma_sanity(self, model):
+    @pytest.mark.parametrize("solver", qp_solvers)
+    def test_moma_sanity(self, model, solver):
         """Test optimization criterion and optimality."""
-        try:
-            solver = sutil.get_solver_name(qp=True)
-            model.solver = solver
-        except sutil.SolverNotFound:
-            pytest.skip("no qp support")
-
+        model.solver = solver
         sol = model.optimize()
+
         with model:
             model.reactions.PFK.knock_out()
             knock_sol = model.optimize()
@@ -279,12 +272,9 @@ class TestCobraFluxAnalysis:
                              moma_ref_sol.objective_value)
         assert numpy.isclose(moma_ssq, moma_ref_ssq)
 
-    def test_single_gene_deletion_moma(self, model):
-        try:
-            solver = sutil.get_solver_name(qp=True)
-            model.solver = solver
-        except sutil.SolverNotFound:
-            pytest.skip("no qp support")
+    @pytest.mark.parametrize("solver", qp_solvers)
+    def test_single_gene_deletion_moma(self, model, solver):
+        model.solver = solver
 
         # expected knockouts for textbook model
         growth_dict = {"b0008": 0.87, "b0114": 0.71, "b0116": 0.56,
@@ -300,12 +290,9 @@ class TestCobraFluxAnalysis:
             assert numpy.isclose(result[frozenset([gene])], value,
                                  atol=1E-02)
 
-    def test_single_gene_deletion_moma_reference(self, model):
-        try:
-            solver = sutil.get_solver_name(qp=True)
-            model.solver = solver
-        except sutil.SolverNotFound:
-            pytest.skip("no qp support")
+    @pytest.mark.parametrize("solver", qp_solvers)
+    def test_single_gene_deletion_moma_reference(self, model, solver):
+        model.solver = solver
 
         # expected knockouts for textbook model
         growth_dict = {"b0008": 0.87, "b0114": 0.71, "b0116": 0.56,
@@ -323,9 +310,12 @@ class TestCobraFluxAnalysis:
             assert numpy.isclose(result[frozenset([gene])], value,
                                  atol=1E-02)
 
-    def test_linear_moma_sanity(self, model):
+    @pytest.mark.parametrize("solver", all_solvers)
+    def test_linear_moma_sanity(self, model, solver):
         """Test optimization criterion and optimality."""
+        model.solver = solver
         sol = model.optimize()
+
         with model:
             model.reactions.PFK.knock_out()
             knock_sol = model.optimize()
@@ -355,11 +345,13 @@ class TestCobraFluxAnalysis:
             with pytest.raises(ValueError):
                 add_moma(model)
 
-    def test_single_gene_deletion_linear_moma(self, model):
+    @pytest.mark.parametrize("solver", all_solvers)
+    def test_single_gene_deletion_linear_moma(self, model, solver):
         # expected knockouts for textbook model
         growth_dict = {"b0008": 0.87, "b0114": 0.76, "b0116": 0.65,
                        "b2276": 0.08, "b1779": 0.00}
 
+        model.solver = solver
         sol = model.optimize()
         result = single_gene_deletion(
             model=model,
@@ -372,24 +364,31 @@ class TestCobraFluxAnalysis:
             assert numpy.isclose(result[frozenset([gene])], value,
                                  atol=1E-02)
 
-    @pytest.mark.parametrize("solver", optlang_solvers)
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_single_gene_deletion_benchmark(self, model, benchmark,
                                             solver):
         model.solver = solver
         benchmark(single_reaction_deletion, model=model, processes=1)
 
-    def test_single_gene_deletion_room_benchmark(self, model, benchmark):
+    @pytest.mark.parametrize("solver", all_solvers)
+    def test_single_gene_deletion_room_benchmark(self, model, benchmark,
+                                                 solver):
+        if solver == "glpk":
+            pytest.skip("GLPK is too slow to run ROOM.")
+        model.solver = solver
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
         benchmark(single_gene_deletion, model=model, gene_list=genes,
                   method="room", processes=1)
 
-    def test_single_gene_deletion_linear_room_benchmark(self, model,
-                                                        benchmark):
+    @pytest.mark.parametrize("solver", all_solvers)
+    def test_single_gene_deletion_linear_room_benchmark(
+            self, model, benchmark, solver):
+        model.solver = solver
         genes = ['b0008', 'b0114', 'b2276', 'b1779']
         benchmark(single_gene_deletion, model=model, gene_list=genes,
                   method="linear room", processes=1)
 
-    @pytest.mark.parametrize("solver", optlang_solvers)
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_room_sanity(self, model, solver):
         model.solver = solver
         sol = model.optimize()
@@ -421,7 +420,7 @@ class TestCobraFluxAnalysis:
         assert flux_change_room_ref > flux_change_room or \
             numpy.isclose(flux_change_room_ref, flux_change_room, atol=1E-06)
 
-    @pytest.mark.parametrize("solver", optlang_solvers)
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_linear_room_sanity(self, model, solver):
         model.solver = solver
         sol = model.optimize()
@@ -453,7 +452,7 @@ class TestCobraFluxAnalysis:
         assert flux_change_room_ref > flux_change_room or \
             numpy.isclose(flux_change_room_ref, flux_change_room, atol=1E-06)
 
-    @pytest.mark.parametrize("solver", optlang_solvers)
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_single_reaction_deletion_room(self, solver):
         model = construct_room_model()
         model.solver = solver
@@ -470,7 +469,7 @@ class TestCobraFluxAnalysis:
 
         assert numpy.allclose(room_sol.fluxes, expected)
 
-    @pytest.mark.parametrize("solver", optlang_solvers)
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_single_reaction_deletion_room_linear(self, solver):
         model = construct_room_model()
         model.solver = solver
@@ -488,7 +487,7 @@ class TestCobraFluxAnalysis:
 
         assert numpy.allclose(linear_room_sol.fluxes, expected)
 
-    @pytest.mark.parametrize("solver", optlang_solvers)
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_single_reaction_deletion(self, model, solver):
         expected_results = {'FBA': 0.70404, 'FBP': 0.87392, 'CS': 0,
                             'FUM': 0.81430, 'GAPD': 0, 'GLUDy': 0.85139}
@@ -629,14 +628,14 @@ class TestCobraFluxAnalysis:
         benchmark(flux_variability_analysis, large_model,
                   reaction_list=large_model.reactions[1::3])
 
-    @pytest.mark.parametrize("solver", optlang_solvers)
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_flux_variability_loopless_benchmark(self, model, benchmark,
                                                  solver):
         model.solver = solver
         benchmark(flux_variability_analysis, model, loopless=True,
                   reaction_list=model.reactions[1::3])
 
-    @pytest.mark.parametrize("solver", optlang_solvers)
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_pfba_flux_variability(self, model, pfba_fva_results,
                                    fva_results, solver):
         model.solver = solver
@@ -667,7 +666,7 @@ class TestCobraFluxAnalysis:
             for k, v in iteritems(result):
                 assert abs(fva_results[k][name] - v) < 0.00001
 
-    @pytest.mark.parametrize("solver", optlang_solvers)
+    @pytest.mark.parametrize("solver", all_solvers)
     def test_flux_variability_loopless(self, model, solver):
         model.solver = solver
         loop_reactions = [model.reactions.get_by_id(rid)
