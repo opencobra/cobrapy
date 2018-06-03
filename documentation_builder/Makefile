@@ -6,6 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = ../documentation
+AUTODIR       = _autogen
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -39,9 +40,11 @@ help:
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
 clean:
+	-rm -rf $(AUTODIR)
 	-rm -rf $(BUILDDIR)/*
 
 html:
+	sphinx-apidoc -f -d 2 -e -o $(AUTODIR) ../cobra
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."

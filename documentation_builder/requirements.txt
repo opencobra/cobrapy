@@ -1,4 +1,4 @@
-Sphinx==1.7.0
+Sphinx
 sphinxcontrib-napoleon
 nbsphinx>=0.2.4
 ipykernel
