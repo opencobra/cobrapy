@@ -42,6 +42,7 @@ class Mock(object):
 
 # These modules should correspond to the importable Python packages.
 MOCK_MODULES = [
+    'depinfo',
     'numpy',
     'scipy', 'scipy.optimize', 'scipy.sparse', 'scipy.io', 'scipy.stats',
     'pp',
@@ -101,7 +102,7 @@ mathjax_path = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
-    'papersize': 'letterpaper',
+    'papersize': 'a4paper',
 
     # The font size ('10pt', '11pt' or '12pt').
     # 'pointsize': '10pt',
