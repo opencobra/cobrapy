@@ -70,7 +70,8 @@ extensions = [
 ]
 # Document Python Code
 autoapi_type = 'python'
-autoapi_dirs = ['../cobra']
+autoapi_dirs = ['..']
+autoapi_ignore = ['.tox', '.pytest_cache', 'scripts', 'benchmarks']
 
 # Napoleon settings
 napoleon_numpy_docstring = True
