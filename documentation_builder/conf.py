@@ -13,15 +13,12 @@
 # serve to show the default.
 
 import sys
-from os.path import dirname, join
+from os.path import dirname
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-DOCS_ROOT = dirname(__file__)
-PROJECT_ROOT = dirname(DOCS_ROOT)
-
-sys.path.insert(0, PROJECT_ROOT)
+# sys.path.insert(0, dirname(dirname(__file__)))
 
 
 # In order to build documentation that requires libraries to import
@@ -68,8 +65,12 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx.ext.autosummary',
+    'autoapi.extension',
     'nbsphinx'
 ]
+# Document Python Code
+autoapi_type = 'python'
+autoapi_dirs = ['../cobra']
 
 # Napoleon settings
 napoleon_numpy_docstring = True
@@ -144,17 +145,3 @@ intersphinx_mapping = {"http://docs.python.org/": None,
                        "http://docs.scipy.org/doc/numpy/": None,
                        "http://docs.scipy.org/doc/scipy/reference": None}
 intersphinx_cache_limit = 10  # days to keep the cached inventories
-
-# -- sphinx-apidoc calling ---------------------------------------------
-
-
-# def run_apidoc(_):
-#     from sphinx.apidoc import main
-
-    # mod_path = join(PROJECT_ROOT, 'cobra')
-    # auto_path = join(DOCS_ROOT, '_autogen')
-    # main([None, '-f', '-d', '2', '-e', '-o', auto_path, mod_path])
-
-
-# def setup(app):
-#     app.connect('builder-inited', run_apidoc)

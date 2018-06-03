@@ -44,7 +44,7 @@ clean:
 	-rm -rf $(BUILDDIR)/*
 
 html:
-	sphinx-apidoc -f -d 2 -e -o $(AUTODIR) ../cobra
+#	sphinx-apidoc -f -d 2 -e -o $(AUTODIR) ../cobra
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
