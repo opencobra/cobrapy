@@ -7,7 +7,7 @@ from optlang.interface import OPTIMAL
 import numpy as np
 import pandas as pd
 import logging
-from cobra.medium.boundary_types import find_btypes
+from cobra.medium.boundary_types import find_boundary_types
 
 
 LOGGER = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ def add_linear_obj(model):
         The model to modify.
     """
     coefs = {}
-    for rxn in find_btypes(model, "exchange"):
+    for rxn in find_boundary_types(model, "exchange"):
         export = len(rxn.reactants) == 1
         if export:
             coefs[rxn.reverse_variable] = 1
@@ -53,7 +53,7 @@ def add_mip_obj(model):
     if len(model.variables) > 1e4:
         LOGGER.warning("the MIP version of minimal media is extremely slow for"
                        " models that large :(")
-    exchange_rxns = find_btypes(model, "exchange")
+    exchange_rxns = find_boundary_types(model, "exchange")
     M = max(np.max(np.abs(r.bounds)) for r in exchange_rxns)
     prob = model.problem
     coefs = {}
@@ -166,7 +166,7 @@ def minimal_medium(model, min_growth=0.1, exports=False,
 
     """
     LOGGER.info("calculating minimal medium for %s" % model.id)
-    exchange_rxns = find_btypes(model, "exchange")
+    exchange_rxns = find_boundary_types(model, "exchange")
     if isinstance(open_exchanges, bool):
         open_bound = 1000
     else:

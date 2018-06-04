@@ -52,12 +52,12 @@ class TestModelMedium:
 class TestTypeDetection:
 
     def test_external_compartment(self, model):
-        assert medium.external_compartment(model) == "e"
+        assert medium.find_external_compartment(model) == "e"
 
     def test_exchange(self, model):
         ex = model.exchanges
         assert all(r.id.startswith("EX_") for r in ex)
-        ex = medium.find_btypes(model, "exchange", "e")
+        ex = medium.find_boundary_types(model, "exchange", "e")
         assert all(r.id.startswith("EX_") for r in ex)
 
     def test_demand(self, model):
@@ -78,11 +78,13 @@ class TestTypeDetection:
         assert "sink" in [r.id for r in sn]
 
     def test_sbo_terms(self, model):
-        assert not medium.is_type(model.reactions.ATPM, "exchange", "e")
+        assert not medium.is_boundary_type(
+            model.reactions.ATPM, "exchange", "e")
         model.reactions.ATPM.annotation["SBO"] = "SBO:0000627"
-        assert medium.is_type(model.reactions.ATPM, "exchange", "bla")
+        assert medium.is_boundary_type(model.reactions.ATPM, "exchange", "bla")
         model.reactions.ATPM.annotation["SBO"] = "SBO:0000632"
-        assert not medium.is_type(model.reactions.ATPM, "exchange", "e")
+        assert not medium.is_boundary_type(
+            model.reactions.ATPM, "exchange", "e")
 
 
 class TestMinimalMedia:

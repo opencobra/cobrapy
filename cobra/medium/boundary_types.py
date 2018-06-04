@@ -33,7 +33,7 @@ sbo_terms = {"demand": "SBO:0000628",
 """SBO term identifiers for various boundary types."""
 
 
-def external_compartment(model):
+def find_external_compartment(model):
     """Find the external compartment in the model.
 
     Uses a simple heuristic where the external compartment should be the one
@@ -61,17 +61,17 @@ def external_compartment(model):
     return most
 
 
-def is_type(reaction, btype, ext_compartment):
+def is_boundary_type(reaction, boundary_type, external_compartment):
     """Check whether a reaction is an exchange reaction.
 
     Arguments
     ---------
     reaction : cobra.Reaction
         The reaction to check.
-    btype : str
+    boundary_type : str
         What boundary type to check for. Must be one of
         "exchange", "demand", or "sink".
-    ext_compartment : str
+    external_compartment : str
         The id for the external compartment.
 
     Returns
@@ -82,39 +82,39 @@ def is_type(reaction, btype, ext_compartment):
     """
     # Check if the reaction has an annotation. Annotations dominate everything.
     sbo_term = reaction.annotation.get("SBO", "").upper()
-    if sbo_term == sbo_terms[btype]:
+    if sbo_term == sbo_terms[boundary_type]:
         return True
-    if sbo_term in [sbo_terms[k] for k in sbo_terms if k != btype]:
+    if sbo_term in [sbo_terms[k] for k in sbo_terms if k != boundary_type]:
         return False
 
     # Check if the reaction is in the correct compartment (exterior or inside)
-    correct_compartment = ext_compartment in reaction.compartments
-    if btype != "exchange":
+    correct_compartment = external_compartment in reaction.compartments
+    if boundary_type != "exchange":
         correct_compartment = not correct_compartment
 
     # Check if the reaction has the correct reversibility
     rev_type = True
-    if btype == "demand":
+    if boundary_type == "demand":
         rev_type = not reaction.reversibility
-    elif btype == "sink":
+    elif boundary_type == "sink":
         rev_type = reaction.reversibility
 
     return (reaction.boundary and not
-            any(ex in reaction.id for ex in excludes[btype]) and
+            any(ex in reaction.id for ex in excludes[boundary_type]) and
             correct_compartment and rev_type)
 
 
-def find_btypes(model, btype, ext_compartment=None):
+def find_boundary_types(model, boundary_type, external_compartment=None):
     """Find exchange reactions.
 
     Arguments
     ---------
     model : cobra.Model
         A cobra model.
-    btype : str
+    boundary_type : str
         What boundary type to check for. Must be one of
         "exchange", "demand", or "sink".
-    ext_compartment : str or None
+    external_compartment : str or None
         The id for the external compartment. If None it will be detected
         automatically.
 
@@ -123,6 +123,7 @@ def find_btypes(model, btype, ext_compartment=None):
     list of cobra.reaction
         A list of likely exchange reactions.
     """
-    if ext_compartment is None:
-        ext_compartment = external_compartment(model)
-    return model.reactions.query(lambda r: is_type(r, btype, ext_compartment))
+    if external_compartment is None:
+        external_compartment = find_external_compartment(model)
+    return model.reactions.query(
+        lambda r: is_boundary_type(r, boundary_type, external_compartment))

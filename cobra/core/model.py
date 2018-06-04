@@ -23,7 +23,7 @@ from cobra.util.solver import (
     get_solver_name, interface_to_str, set_objective, solvers,
     add_cons_vars_to_problem, remove_cons_vars_from_problem, assert_optimal)
 from cobra.util.util import AutoVivification, format_long_string
-from cobra.medium import find_btypes
+from cobra.medium import find_boundary_types
 
 LOGGER = logging.getLogger(__name__)
 
@@ -743,7 +743,7 @@ class Model(Object):
         Reactions that exchange mass with the exterior. Uses annotations
         and heuristics to exclude non-exchanges such as sink reactions.
         """
-        return find_btypes(self, btype="exchange", ext_compartment=None)
+        return find_boundary_types(self, "exchange", None)
 
     @property
     def demands(self):
@@ -751,7 +751,7 @@ class Model(Object):
         Irreversible reactions that accumulate or consume a metabolite in
         the inside of the model.
         """
-        return find_btypes(self, btype="demand", ext_compartment=None)
+        return find_boundary_types(self, "demand", None)
 
     @property
     def sinks(self):
@@ -759,7 +759,7 @@ class Model(Object):
         Reversible reactions that accumulate or consume a metabolite in
         the inside of the model.
         """
-        return find_btypes(self, btype="sink", ext_compartment=None)
+        return find_boundary_types(self, "sink", None)
 
     def _populate_solver(self, reaction_list, metabolite_list=None):
         """Populate attached solver with constraints and variables that
