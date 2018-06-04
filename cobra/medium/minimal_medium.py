@@ -4,7 +4,6 @@
 
 from optlang.symbolics import Zero
 from optlang.interface import OPTIMAL
-import numpy as np
 import pandas as pd
 import logging
 from cobra.medium.boundary_types import find_boundary_types
@@ -54,7 +53,7 @@ def add_mip_obj(model):
         LOGGER.warning("the MIP version of minimal media is extremely slow for"
                        " models that large :(")
     exchange_rxns = find_boundary_types(model, "exchange")
-    M = max(np.max(np.abs(r.bounds)) for r in exchange_rxns)
+    big_m = max(abs(b) for r in exchange_rxns for b in r.bounds)
     prob = model.problem
     coefs = {}
     to_add = []
@@ -64,11 +63,11 @@ def add_mip_obj(model):
         if export:
             vrv = rxn.reverse_variable
             indicator_const = prob.Constraint(
-                vrv - indicator * M, ub=0, name="ind_constraint_" + rxn.id)
+                vrv - indicator * big_m, ub=0, name="ind_constraint_" + rxn.id)
         else:
             vfw = rxn.forward_variable
             indicator_const = prob.Constraint(
-                vfw - indicator * M, ub=0, name="ind_constraint_" + rxn.id)
+                vfw - indicator * big_m, ub=0, name="ind_constraint_" + rxn.id)
         to_add.extend([indicator, indicator_const])
         coefs[indicator] = 1
     model.add_cons_vars(to_add)
@@ -95,7 +94,7 @@ def _as_medium(exchanges, tolerance=1e-6, exports=False):
     pandas.Series
         The "medium", meaning all active import fluxes in the solution.
     """
-    LOGGER.info("formatting medium")
+    LOGGER.debug("Formatting medium.")
     medium = pd.Series()
     for rxn in exchanges:
         export = len(rxn.reactants) == 1
@@ -112,21 +111,22 @@ def _as_medium(exchanges, tolerance=1e-6, exports=False):
     return medium
 
 
-def minimal_medium(model, min_growth=0.1, exports=False,
+def minimal_medium(model, min_objective_value=0.1, exports=False,
                    minimize_components=False, open_exchanges=False):
-    """Find the minimal growth medium for the model.
+    """
+    Find the minimal growth medium for the model.
 
     Finds the minimal growth medium for the model which allows for
     model as well as individual growth. Here, a minimal medium can either
     be the medium requiring the smallest total import flux or the medium
     requiring the least components (ergo ingredients), which will be much
-    slower.
+    slower due to being a mixed integer problem (MIP).
 
     Arguments
     ---------
     model : cobra.model
         The model to modify.
-    min_growth : positive float or array-like object.
+    min_objective_value : positive float or array-like object
         The minimum growth rate (objective) that has to be achieved.
     exports : boolean
         Whether to include export fluxes in the returned medium. Defaults to
@@ -145,7 +145,7 @@ def minimal_medium(model, min_growth=0.1, exports=False,
     Returns
     -------
     pandas.Series, pandas.DataFrame or None
-        A series {rid: flux} giving the import flux for each required import
+        A series giving the import flux for each required import
         reaction and (optionally) the associated export fluxes. All exchange
         fluxes are oriented into the import reaction e.g. positive fluxes
         denote imports and negative fluxes exports. If `minimize_components`
@@ -156,16 +156,15 @@ def minimal_medium(model, min_growth=0.1, exports=False,
     Notes
     -----
     Due to numerical issues the `minimize_components` option will usually only
-    minimized the number or "large" import fluxes. Specifically, the detection
-    limit is given by `integrality_tolerance * max_bound` where `max_bound` is
-    the largest bound on an import reaction. Thus, if you are interested
+    minimize the number of "large" import fluxes. Specifically, the detection
+    limit is given by ``integrality_tolerance * max_bound`` where ``max_bound``
+    is the largest bound on an import reaction. Thus, if you are interested
     in small import fluxes as well you may have to adjust the integrality
     tolerance at first with
     `model.solver.configuration.tolerances.integrality = 1e-7` for instance.
     However, this will be *very* slow for large models especially with GLPK.
 
     """
-    LOGGER.info("calculating minimal medium for %s" % model.id)
     exchange_rxns = find_boundary_types(model, "exchange")
     if isinstance(open_exchanges, bool):
         open_bound = 1000
@@ -174,18 +173,18 @@ def minimal_medium(model, min_growth=0.1, exports=False,
 
     with model as mod:
         if open_exchanges:
-            LOGGER.info("opening exchanges for %d imports" %
-                        len(exchange_rxns))
+            LOGGER.debug("Opening exchanges for %d imports.",
+                         len(exchange_rxns))
             for rxn in exchange_rxns:
                 rxn.bounds = (-open_bound, open_bound)
-        LOGGER.info("applying growth rate constraints")
+        LOGGER.debug("Applying objective value constraints.")
         obj_const = mod.problem.Constraint(
-            mod.objective.expression, lb=min_growth,
+            mod.objective.expression, lb=min_objective_value,
             name="medium_obj_constraint")
         mod.add_cons_vars([obj_const])
         mod.solver.update()
         mod.objective = Zero
-        LOGGER.info("adding new media objective")
+        LOGGER.debug("Adding new media objective.")
         tol = mod.solver.configuration.tolerances.feasibility
 
         if minimize_components:
@@ -195,14 +194,14 @@ def minimal_medium(model, min_growth=0.1, exports=False,
             seen = set()
             best = num_components = mod.slim_optimize()
             if mod.solver.status != OPTIMAL:
-                LOGGER.warning("minimization of medium was infeasible")
+                LOGGER.warning("Minimization of medium was infeasible.")
                 return None
             exclusion = mod.problem.Constraint(Zero, ub=0)
             mod.add_cons_vars([exclusion])
             mod.solver.update()
             media = []
             for i in range(minimize_components):
-                LOGGER.info("finding alternative medium #%d" % (i + 1))
+                LOGGER.info("Finding alternative medium #%d.", (i + 1))
                 vars = [mod.variables["ind_" + s] for s in seen]
                 if len(seen) > 0:
                     exclusion.set_linear_coefficients(
@@ -213,16 +212,17 @@ def minimal_medium(model, min_growth=0.1, exports=False,
                     break
                 medium = _as_medium(exchange_rxns, tol, exports=exports)
                 media.append(medium)
-                seen.update(medium.index[medium > 0])
+                seen.update(medium[medium > 0].index)
             if len(media) > 1:
-                medium = pd.concat(media, axis=1, sort=True).fillna(0.0)
+                medium = pd.concat(media, axis=1).fillna(0.0)
+                medium.sort_index(axis=1, inplace=True)
             else:
                 medium = media[0]
         else:
             add_linear_obj(mod)
             mod.slim_optimize()
             if mod.solver.status != OPTIMAL:
-                LOGGER.warning("minimization of medium was infeasible")
+                LOGGER.warning("Minimization of medium was infeasible.")
                 return None
             medium = _as_medium(exchange_rxns, tol, exports=exports)
 
