@@ -23,6 +23,7 @@ from cobra.util.solver import (
     get_solver_name, interface_to_str, set_objective, solvers,
     add_cons_vars_to_problem, remove_cons_vars_from_problem, assert_optimal)
 from cobra.util.util import AutoVivification, format_long_string
+from cobra.medium import find_boundary_types
 
 LOGGER = logging.getLogger(__name__)
 
@@ -233,16 +234,20 @@ class Model(Object):
 
         # Set the given media bounds
         media_rxns = list()
+        exchange_rxns = frozenset(self.exchanges)
         for rxn_id, bound in iteritems(medium):
             rxn = self.reactions.get_by_id(rxn_id)
+            if rxn not in exchange_rxns:
+                LOGGER.warn("%s does not seem to be an"
+                            " an exchange reaction. Applying bounds anyway.",
+                            rxn.id)
             media_rxns.append(rxn)
             set_active_bound(rxn, bound)
 
-        boundary_rxns = set(self.exchanges)
-        media_rxns = set(media_rxns)
+        media_rxns = frozenset(media_rxns)
 
         # Turn off reactions not present in media
-        for rxn in (boundary_rxns - media_rxns):
+        for rxn in (exchange_rxns - media_rxns):
             set_active_bound(rxn, 0)
 
     def __add__(self, other_model):
@@ -726,12 +731,35 @@ class Model(Object):
         return self.solver.constraints
 
     @property
-    def exchanges(self):
-        """Exchange reactions in model.
-
-        Reactions that either don't have products or substrates.
+    def boundary(self):
+        """Boundary reactions in the model.
+        Reactions that either have no substrate or product.
         """
         return [rxn for rxn in self.reactions if rxn.boundary]
+
+    @property
+    def exchanges(self):
+        """Exchange reactions in model.
+        Reactions that exchange mass with the exterior. Uses annotations
+        and heuristics to exclude non-exchanges such as sink reactions.
+        """
+        return find_boundary_types(self, "exchange", None)
+
+    @property
+    def demands(self):
+        """Demand reactions in model.
+        Irreversible reactions that accumulate or consume a metabolite in
+        the inside of the model.
+        """
+        return find_boundary_types(self, "demand", None)
+
+    @property
+    def sinks(self):
+        """Sink reactions in model.
+        Reversible reactions that accumulate or consume a metabolite in
+        the inside of the model.
+        """
+        return find_boundary_types(self, "sink", None)
 
     def _populate_solver(self, reaction_list, metabolite_list=None):
         """Populate attached solver with constraints and variables that

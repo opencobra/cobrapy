@@ -21,6 +21,7 @@ be viewed at `nbviewer
     sampling
     loopless
     gapfilling
+    media
     solvers
     constraints_objectives
     pymatbridge
