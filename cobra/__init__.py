@@ -13,7 +13,7 @@ from cobra.core import (
     DictList, Gene, Metabolite, Model, Object, Reaction, Species)
 from cobra.util import show_versions
 
-__version__ = "0.12.1"
+__version__ = "0.13.0"
 
 # set the warning format to be prettier and fit on one line
 _cobra_path = _dirname(_abspath(__file__))
