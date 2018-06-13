@@ -1,14 +1,8 @@
 {
-    "compartments": [
-        {
-            "id": "c",
-            "name": "cytosol"
-        },
-        {
-            "id": "e",
-            "name": "extracellular"
-        }
-    ],
+    "compartments": {
+        "c": "cytosol",
+        "e": "extracellular"
+    },
     "genes": [
         {
             "id": "b0755",
@@ -1369,5 +1363,5 @@
             "upper_bound": 1000.0
         }
     ],
-    "version": "1"
+    "version": 1
 }

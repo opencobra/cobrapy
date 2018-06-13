@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+from importlib_resources import open_text
 
 try:
     import simplejson as json
@@ -135,108 +136,9 @@ def load_json_model(filename):
         return model_from_dict(json.load(filename))
 
 
-json_schema = {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "COBRA",
-    "description": "JSON representation of COBRA model",
-    "type": "object",
-    "properties": {
-        "id": {"type": "string"},
-        "name": {"type": "string"},
-        "description": {"type": "string"},
-        "version": {
-            "type": "integer",
-            "default": 1,
-        },
-
-        "reactions": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "string"},
-                    "name": {"type": "string"},
-                    "metabolites": {
-                        "type": "object",
-                        "patternProperties": {
-                            ".*": {"type": "number"},
-                        }
-                    },
-                    "gene_reaction_rule": {"type": "string"},
-                    "lower_bound": {"type": "number"},
-                    "upper_bound": {"type": "number"},
-                    "objective_coefficient": {
-                        "type": "number",
-                        "default": 0,
-                    },
-                    "variable_kind": {
-                        "type": "string",
-                        "pattern": "integer|continuous",
-                        "default": "continuous"
-                    },
-                    "subsystem": {"type": "string"},
-                    "notes": {"type": "object"},
-                    "annotation": {"type": "object"},
-                },
-                "required": ["id", "name", "metabolites", "lower_bound",
-                             "upper_bound", "gene_reaction_rule"],
-                "additionalProperties": False,
-            }
-        },
-        "metabolites": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "string"},
-                    "name": {"type": "string"},
-                    "compartment": {
-                        "type": "string",
-                        "pattern": "[a-z]{1,2}"
-                    },
-                    "charge": {"type": "integer"},
-                    "formula": {"type": "string"},
-                    "_bound": {
-                        "type": "number",
-                        "default": 0
-                    },
-                    "_constraint_sense": {
-                        "type": "string",
-                        "default": "E",
-                        "pattern": "E|L|G",
-                    },
-                    "notes": {"type": "object"},
-                    "annotation": {"type": "object"},
-                },
-                "required": ["id", "name", "compartment"],
-                "additionalProperties": False,
-            }
-
-        },
-        "genes": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "string"},
-                    "name": {"type": "string"},
-                    "notes": {"type": "object"},
-                    "annotation": {"type": "object"},
-                },
-                "required": ["id", "name"],
-                "additionalProperties": False,
-            }
-
-        },
-        "compartments": {
-            "type": "object",
-            "patternProperties": {
-                "[a-z]{1,2}": {"type": "string"}
-            }
-        },
-        "notes": {"type": "object"},
-        "annotation": {"type": "object"},
-    },
-    "required": ["id", "reactions", "metabolites", "genes"],
-    "additionalProperties": False,
-}
+def init_json_schema():
+    """ Import the JSON schema for schema validation. """
+    with open_text("cobra.io.schemata", "json_schema.json",
+                   encoding="utf-8") as file_handle:
+        json_schema = json.load(file_handle)
+    return json_schema

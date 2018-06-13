@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 from depinfo import print_dependencies
+from six import string_types
 
 
 def format_long_string(string, max_length=50):
@@ -27,3 +28,9 @@ class AutoVivification(dict):
 def show_versions():
     """Print dependency information."""
     print_dependencies("cobra")
+
+
+def is_not_sane(id):
+    """Check if a id is sane to be used for cobra components."""
+    return not isinstance(id, string_types) or \
+        len(id) < 1 or any(c.isspace() for c in id)

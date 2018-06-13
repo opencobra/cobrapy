@@ -49,7 +49,8 @@ if __name__ == "__main__":
             "pandas>=0.17.0",
             "optlang>=1.4.2",
             "tabulate",
-            "depinfo"
+            "depinfo",
+            "importlib-resources"
         ],
         tests_require=[
             "jsonschema > 2.5",

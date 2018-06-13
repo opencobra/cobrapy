@@ -12,7 +12,8 @@ from cobra.exceptions import OptimizationError
 from cobra.core.formula import elements_and_molecular_weights
 from cobra.core.species import Species
 from cobra.util.solver import check_solver_status
-from cobra.util.util import format_long_string
+from cobra.util.util import format_long_string, is_not_sane
+from cobra.core.compartment import Compartment
 
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
@@ -35,8 +36,8 @@ class Metabolite(Species):
         A human readable name.
     charge : float
        The charge number of the metabolite
-    compartment: str or None
-       Compartment of the metabolite.
+    compartment: cobra.Compartment, str or None
+       Compartment or compartment ID that the the metabolite is in.
     """
 
     def __init__(self, id=None, formula=None, name="",
@@ -44,6 +45,7 @@ class Metabolite(Species):
         Species.__init__(self, id, name)
         self.formula = formula
         # because in a Model a metabolite may participate in multiple Reactions
+        self._compartment = None
         self.compartment = compartment
         self.charge = charge
 
@@ -57,6 +59,28 @@ class Metabolite(Species):
         self.model.constraints[self.id].name = value
         self._id = value
         self.model.metabolites._generate_index()
+
+    @property
+    def compartment(self):
+        return self._compartment
+
+    @compartment.setter
+    def compartment(self, value):
+        if value is None:
+            self._compartment = None
+        elif isinstance(value, Compartment):
+            if self._model and value.id in self._model.compartments:
+                self._compartment = \
+                    self._model.compartments.get_by_id(value.id)
+            else:
+                self._compartment = value
+        elif not is_not_sane(value):
+            if self._model and value in self._model.compartments:
+                self._compartment = self._model.compartments.get_by_id(value)
+            else:
+                self._compartment = Compartment(value)
+        else:
+            raise TypeError("The compartment ID must be a non-empty string")
 
     @property
     def constraint(self):

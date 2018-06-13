@@ -10,3 +10,4 @@ from cobra.core.object import Object
 from cobra.core.reaction import Reaction
 from cobra.core.solution import Solution, LegacySolution, get_solution
 from cobra.core.species import Species
+from cobra.core.compartment import Compartment

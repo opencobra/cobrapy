@@ -9,7 +9,7 @@ from warnings import warn
 
 from six import iteritems
 
-from cobra.core import Metabolite, Model, Reaction
+from cobra.core import Metabolite, Model, Reaction, Compartment
 from cobra.util.solver import set_objective
 
 try:
@@ -123,6 +123,10 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
             [(v, k) for k, v in iteritems(compartment_dict)])
 
     cobra_model = Model(sbml_model_id)
+    # Populate the compartment list - This will be done based on
+    # cobra.Metabolites in cobra.Reactions in the future.
+    compartments = [Compartment(k, v) for k, v in iteritems(compartment_dict)]
+    cobra_model.add_compartments(compartments)
     metabolites = []
     metabolite_dict = {}
     # Convert sbml_metabolites to cobra.Metabolites
@@ -344,9 +348,6 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
 
     # Now, add all of the reactions to the model.
     cobra_model.id = sbml_model.getId()
-    # Populate the compartment list - This will be done based on
-    # cobra.Metabolites in cobra.Reactions in the future.
-    cobra_model.compartments = compartment_dict
 
     cobra_model.add_reactions(cobra_reaction_list)
     set_objective(cobra_model, coefficients)
@@ -460,14 +461,14 @@ def get_libsbml_document(cobra_model,
 
     # Add in the common compartment abbreviations.  If there are additional
     # compartments they also need to be added.
-    if not cobra_model.compartments:
-        cobra_model.compartments = {'c': 'cytosol',
-                                    'p': 'periplasm',
-                                    'e': 'extracellular'}
-    for the_key in cobra_model.compartments.keys():
+    if len(cobra_model.compartments) == 0:
+        cobra_model.add_compartments([Compartment('c', 'cytosol'),
+                                      Compartment('p', 'periplasm'),
+                                      Compartment('e', 'extracellular')])
+    for compartment in cobra_model.compartments:
         sbml_comp = sbml_model.createCompartment()
-        sbml_comp.setId(the_key)
-        sbml_comp.setName(cobra_model.compartments[the_key])
+        sbml_comp.setId(compartment.id)
+        sbml_comp.setName(compartment.name)
         sbml_comp.setSize(1)  # Just to get rid of warnings
 
     if print_time:
@@ -562,7 +563,7 @@ def get_libsbml_document(cobra_model,
         # they are set to be identical
         note_dict = the_reaction.notes.copy()
         if the_reaction.gene_reaction_rule:
-            note_dict['GENE ASSOCIATION'] = [
+            note_dict['GENE_ASSOCIATION'] = [
                 str(the_reaction.gene_reaction_rule)]
         if the_reaction.subsystem:
             note_dict['SUBSYSTEM'] = [str(the_reaction.subsystem)]
@@ -657,7 +658,7 @@ def add_sbml_species(sbml_model, cobra_metabolite, note_start_tag,
         sbml_species.setName(cobra_metabolite.id)
     if the_compartment is not None:
         try:
-            sbml_species.setCompartment(the_compartment)
+            sbml_species.setCompartment(the_compartment.id)
         except:
             warn('metabolite failed: ' + the_id)
             return cobra_metabolite
