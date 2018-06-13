@@ -80,7 +80,7 @@ class Metabolite(Species):
         # necessary for some old pickles which use the deprecated
         # Formula class
         tmp_formula = str(self.formula)
-        # commonly occuring characters in incorrectly constructed formulas
+        # commonly occurring characters in incorrectly constructed formulas
         if "*" in tmp_formula:
             warn("invalid character '*' found in formula '%s'" % self.formula)
             tmp_formula = tmp_formula.replace("*", "")
