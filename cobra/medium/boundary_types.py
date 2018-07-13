@@ -125,8 +125,9 @@ def find_boundary_types(model, boundary_type, external_compartment=None):
     """
     if not model.boundary:
         LOGGER.warning("There are no boundary reactions in this model. "
-                    "Therefore specific types of boundary reactions such as "
-                    "'exchanges', 'demands' or 'sinks' cannot be identified.")
+                       "Therefore specific types of boundary reactions such "
+                       "as 'exchanges', 'demands' or 'sinks' cannot be "
+                       "identified.")
         return []
     if external_compartment is None:
         external_compartment = find_external_compartment(model)
