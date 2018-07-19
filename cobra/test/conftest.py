@@ -34,6 +34,16 @@ def data_directory():
 
 
 @pytest.fixture(scope="session")
+def empty_once():
+    return Model()
+
+
+@pytest.fixture(scope="function")
+def empty_model(empty_once):
+    return empty_once.copy()
+
+
+@pytest.fixture(scope="session")
 def small_model():
     return create_test_model("textbook")
 
