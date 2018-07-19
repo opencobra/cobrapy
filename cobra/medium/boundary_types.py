@@ -49,14 +49,23 @@ def find_external_compartment(model):
     str
         The putative external compartment.
     """
+    if not model.boundary:
+        LOGGER.error("The heuristic for discovering an external compartment "
+                     "relies on boundary reactions. Yet, there are no "
+                     "boundary reactions in this model.")
+        raise RuntimeError(
+            "The external compartment cannot be identified. "
+            "The heuristic for discovering an external compartment "
+            "relies on boundary reactions. Yet, there are no "
+            "boundary reactions in this model.")
     counts = Counter(tuple(r.compartments)[0] for r in model.boundary)
     most = counts.most_common(1)[0][0]
     if "e" in model.compartments:
         if most == "e":
             return "e"
         else:
-            LOGGER.warn("There is an `e` compartment but it does not look "
-                        "like it is the actual external compartment.")
+            LOGGER.warning("There is an `e` compartment but it does not look "
+                           "like it is the actual external compartment.")
         return most
     return most
 
