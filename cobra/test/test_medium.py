@@ -136,3 +136,13 @@ class TestMinimalMedia:
         assert len(med) >= 3
         med = medium.minimal_medium(model, 0.8, open_exchanges=100)
         assert len(med) >= 3
+
+
+class TestErrorsAndExceptions:
+
+    def test_no_boundary_reactions(self, empty_model):
+        assert medium.find_boundary_types(empty_model, 'e', None) == []
+
+    def test_no_boundary_reactions(self, empty_model):
+        with pytest.raises(RuntimeError):
+            medium.find_external_compartment(empty_model)
