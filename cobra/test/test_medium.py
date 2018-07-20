@@ -141,7 +141,7 @@ class TestMinimalMedia:
 class TestErrorsAndExceptions:
 
     def test_no_boundary_reactions(self, empty_model):
-        assert find_boundary_types(empty_model, 'e', None) == []
+        assert medium.find_boundary_types(empty_model, 'e', None) == []
 
     def test_no_boundary_reactions(self, empty_model):
         with pytest.raises(RuntimeError):
