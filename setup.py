@@ -65,6 +65,8 @@ if __name__ == "__main__":
         },
         author="The cobrapy core team",
         author_email="cobra-pie@googlegroups.com",
+        maintainer="Moritz E. Beber",
+        maintainer_email="morbeb@biosustain.dtu.dk",
         description="COBRApy is a package for constraints-based modeling of "
         "biological networks",
         license="LGPL/GPL v2+",

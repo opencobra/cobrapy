@@ -2,8 +2,7 @@ language: python
 python: 3.5
 sudo: false
 cache:
-  directories:
-    - $HOME/.cache/pip
+  pip: true
 git:
   depth: 2
 
@@ -15,8 +14,6 @@ branches:
 
 env:
   global:
-    - secure: "hkKBaGLvoDVgktSKR3BmX+mYlGzHw9EO11MRHtiH8D9BbdygOR9p9aSV/OxkaRWhnkSP5/0SXqVgBrvU1g5OsR6cc85UQSpJ5H5jVnLoWelIbTxMCikjxDSkZlseD7ZEWrKZjRo/ZN2qym0HRWpsir3qLpl8W25xHRv/sK7Z6g8="
-    - secure: "DflyBz+QiyhlhBxn4wN00xu248EJUMjKTxUZQN6wq22qV55xO3ToGJTy9i4D6OBfZGAlSXxjjKCJ2+0sAjsghBSDEK56ud3EEg/08TIo7/T8ex/C58FsGoGFz3yDBATmquClEWN8vAMrLdxwniHmQVCBZCP/phdt5dct0AUuDc8="
     - GITHUB_REPO=opencobra/cobrapy
 
 matrix:
@@ -80,7 +77,7 @@ deploy:
       repo: $GITHUB_REPO
       python: '3.6'
       condition: $TRAVIS_OS_NAME == "linux"
-    user: $PYPI_USERNAME
+    user: cobrapy
     password: $PYPI_PASSWORD
   - provider: script
     skip_cleanup: true
