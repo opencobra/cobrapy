@@ -24,7 +24,7 @@ except ImportError:
 
 
 # precompiled regular expressions
-_bracket_re = re.compile("r\[[a-z]\]$")
+_bracket_re = re.compile(r"\[[a-z]\]$")
 _underscore_re = re.compile(r"_[a-z]$")
 
 
