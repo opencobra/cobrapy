@@ -423,6 +423,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             LOGGER.warning("listOfObjectives element not found")
         elif obj_list.size() == 0:
             LOGGER.warning("No objective in listOfObjectives")
+        elif not obj_list.getActiveObjective():
+            LOGGER.warning("No active objective in listOfObjectives")
         else:
             obj_id = obj_list.getActiveObjective()
             obj = model_fbc.getObjective(obj_id)  # type: libsbml.Objective
