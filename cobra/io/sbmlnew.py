@@ -6,6 +6,7 @@ from __future__ import absolute_import
 
 import os
 import re
+import traceback
 import logging
 from warnings import catch_warnings, simplefilter
 from six import string_types, iteritems
@@ -129,10 +130,12 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
         doc = _get_doc_from_filename(filename)
         return _sbml_to_model(doc, number=number, f_replace=f_replace, **kwargs)
     except Exception:
+        print(traceback.print_exc())
         raise CobraSBMLError(
             "Something went wrong reading the model. You can get a detailed "
             "report using the `cobra.io.sbml3.validate_sbml_model` function "
             "or using the online validator at http://sbml.org/validator")
+
 
 
 def _get_doc_from_filename(filename):
@@ -418,6 +421,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
         obj_list = model_fbc.getListOfObjectives()  # type: libsbml.ListOfObjectives
         if obj_list is None:
             LOGGER.warning("listOfObjectives element not found")
+        elif obj_list.size() == 0:
+            LOGGER.warning("No objective in listOfObjectives")
         else:
             obj_id = obj_list.getActiveObjective()
             obj = model_fbc.getObjective(obj_id)  # type: libsbml.Objective
