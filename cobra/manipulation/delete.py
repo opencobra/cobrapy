@@ -7,52 +7,59 @@ from ast import And, NodeTransformer
 from six import iteritems, string_types
 
 from cobra.core.gene import ast2str, eval_gpr, parse_gpr
+from cobra.core import Model
 
 
 def prune_unused_metabolites(cobra_model):
     """Remove metabolites that are not involved in any reactions
-
+        
     Parameters
     ----------
     cobra_model: cobra.Model
-        the model to remove unused metabolites from
-
+    the model to remove unused metabolites from
+    
     Returns
     -------
+    model
+    input model with unused metabolites removed
     list
-        list of metabolites that were removed
+    list of metabolites that were removed
     """
     inactive_metabolites = []
     active_metabolites = []
-    for the_metabolite in cobra_model.metabolites:
+    output_model = cobra_model.copy()
+    for the_metabolite in output_model.metabolites:
         if len(the_metabolite._reaction) == 0:
-            the_metabolite.remove_from_model()
             inactive_metabolites.append(the_metabolite)
         else:
             active_metabolites.append(the_metabolite)
-    return inactive_metabolites
+    output_model.remove_metabolites(inactive_metabolites)
+    return output_model, inactive_metabolites
 
 
 def prune_unused_reactions(cobra_model):
     """Remove reactions that have no assigned metabolites
-
+        
     Parameters
     ----------
     cobra_model: cobra.Model
-        the model to remove unused reactions from
-
+    the model to remove unused reactions from
+    
     Returns
     -------
+    model
+    input model with unused reactions removed
     list
-        list of reactions that were removed
+    list of reactions that were removed
     """
     pruned_reactions = []
-    reactions_to_prune = [x for x in cobra_model.reactions
+    output_model = cobra_model.copy()
+    reactions_to_prune = [x for x in output_model.reactions
                           if len(x._metabolites) == 0]
     for the_reaction in reactions_to_prune:
-        the_reaction.remove_from_model()
         pruned_reactions.append(the_reaction)
-    return pruned_reactions
+    output_model.remove_reactions(pruned_reactions)
+    return output_model, pruned_reactions
 
 
 def undelete_model_genes(cobra_model):
