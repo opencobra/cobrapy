@@ -216,12 +216,47 @@ class TestManipulation:
             r1.check_mass_balance()
 
     def test_prune_unused(self, model):
-        metabolite = model.metabolites.ru5p__D_c
-        [model.reactions.get_by_id(x).remove_from_model() for x in
-         ['RPI', 'RPE', 'GND']]
-        unused = delete.prune_unused_metabolites(model)
-        assert unused[0] is metabolite
+
+#        # test that the output contains metabolite objects
+#        metabolite = model.metabolites.ru5p__D_c
+#        [model.reactions.get_by_id(x).remove_from_model() for x in
+#         ['RPI', 'RPE', 'GND']]
+#        model_pruned, unused = delete.prune_unused_metabolites(model)
+#        assert isinstance(model_pruned,Model)
+#        assert isinstance(unused[0],Metabolite)
+#
+#        # test that the unused metabolites are not used in the model
+#        metabolite1 = model.metabolites.ru5p__D_c
+#        metabolite2 = model.metabolites.akg_e
+#        metabolite3 = model.metabolites.akg_c
+#        reactions = list(set([x for sublist in
+#                               [metabolite1._reaction, metabolite2._reaction, metabolite3._reaction]
+#                               for x in sublist]))
+#        [rxn.remove_from_model() for rxn in reactions]
+#        model_pruned, unused = delete.prune_unused_metabolites(model)
+#        assert metabolite1 in model.metabolites
+#        assert metabolite2 in model.metabolites
+#        assert metabolite3 in model.metabolites
+#        assert metabolite1 not in model_pruned.metabolites
+#        assert metabolite2 not in model_pruned.metabolites
+#        assert metabolite3 not in model_pruned.metabolites
+
+        # test that the output contains reaction objects
         reaction = Reaction('foo')
         model.add_reaction(reaction)
-        unused = delete.prune_unused_reactions(model)
-        assert unused[0] is reaction
+        model_pruned, unused = delete.prune_unused_reactions(model)
+        assert isinstance(model_pruned,Model)
+        assert isinstance(unused[0],Reaction)
+
+
+        # test that the unused reactions are not used in the model
+        for x in ['foo1','foo2','foo3']:
+            model.add_reaction(Reaction(x))
+        model_pruned, unused = delete.prune_unused_reactions(model)
+        assert 'foo1'in [x.id for x in model.reactions]
+        assert 'foo2'in [x.id for x in model.reactions]
+        assert 'foo3'in [x.id for x in model.reactions]
+        assert 'foo1' not in [x.id for x in model_pruned.reactions]
+        assert 'foo2' not in [x.id for x in model_pruned.reactions]
+        assert 'foo3' not in [x.id for x in model_pruned.reactions]
+

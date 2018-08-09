@@ -10,6 +10,7 @@ branches:
  only:
  - master
  - devel
+ - bug/prune_unused_metabolites
  - /^[0-9]+\.[0-9]+\.[0-9]+[.0-9ab]*$/
 
 env:
