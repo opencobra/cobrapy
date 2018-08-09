@@ -51,12 +51,15 @@ class TestManipulation:
 
     def test_rename_gene(self, model):
         original_name = model.genes.b1241.name
-        rename_dict = {"b1241": "foo", "hello": "world",
+        rename_dict = {"b1241": "foo", "hello": "world", "b3115": "b3115",
                        "b2465": "b3919", "bar": "2935"}
         modify.rename_genes(model, rename_dict)
-        for i in rename_dict:
-            assert i not in model.genes
+        for i in rename_dict.keys():
+            if i not in rename_dict.values():
+                assert i not in [x.id for x in model.genes]
+        assert "b3115" in model.genes
         assert "foo" in model.genes
+        assert "world" not in model.genes
         # make sure the object name was preserved
         assert model.genes.foo.name == original_name
         # make sure the reactions are correct
