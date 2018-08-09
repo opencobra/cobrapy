@@ -812,6 +812,36 @@ class TestCobraFluxAnalysis:
         assert len(result[1]) == 1
         assert {i[0].id for i in result} == {"EX_b", "EX_c"}
 
+        # # Gapfilling solution adds metabolites not present in original model
+        # test for when demand = T
+        # a demand reaction must be added to clear new metabolite
+        universal_noDM = Model()
+        a2b = Reaction("a2b")
+        universal_noDM.add_reactions([a2b])
+        a2b.build_reaction_from_string("a --> b + d", verbose=False)
+
+        result = gapfilling.gapfill(m, universal_noDM,
+                                    exchange_reactions=False,
+                                    demand_reactions=True)[0]
+        # add reaction a2b and demand reaction to clear met d
+        assert len(result) == 2
+        assert "a2b" in [x.id for x in result]
+
+        # test for when demand = False
+        # test for when metabolites are added to the model and
+        # must be cleared by other reactions in universal model
+        # (i.e. not necessarily a demand reaction)
+        universal_withDM = universal_noDM.copy()
+        d_dm = Reaction("d_dm")
+        universal_withDM.add_reactions([d_dm])
+        d_dm.build_reaction_from_string("d -->", verbose=False)
+
+        result = gapfilling.gapfill(m, universal_withDM,
+                                    exchange_reactions=False,
+                                    demand_reactions=False)[0]
+        assert len(result) == 2
+        assert "a2b" in [x.id for x in result]
+
         # somewhat bigger model
         universal = Model("universal_reactions")
         with salmonella as model:

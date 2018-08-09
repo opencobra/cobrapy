@@ -118,6 +118,10 @@ class GapFiller(object):
         """
         for rxn in self.universal.reactions:
             rxn.gapfilling_type = 'universal'
+        new_metabolites = self.universal.metabolites.query(
+                lambda metabolite: metabolite not in self.model.metabolites
+        )
+        self.model.add_metabolites(new_metabolites)
         for met in self.model.metabolites:
             if exchange_reactions:
                 rxn = self.universal.add_boundary(
@@ -158,7 +162,7 @@ class GapFiller(object):
                     for r in self.model.reactions)
         prob = self.model.problem
         for rxn in self.model.reactions:
-            if not hasattr(rxn, 'gapfilling_type') or rxn.id.startswith('DM_'):
+            if not hasattr(rxn, 'gapfilling_type'):
                 continue
             indicator = prob.Variable(
                 name='indicator_{}'.format(rxn.id), lb=0, ub=1, type='binary')
@@ -234,6 +238,9 @@ class GapFiller(object):
     def validate(self, reactions):
         with self.original_model as model:
             model.add_reactions(reactions)
+            mets = [x.metabolites for x in reactions]
+            all_keys = set().union(*(d.keys() for d in mets))
+            model.add_metabolites(all_keys)
             model.slim_optimize()
             return (model.solver.status == OPTIMAL and
                     model.solver.objective.value >= self.lower_bound)
