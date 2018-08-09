@@ -12,12 +12,12 @@ from cobra.core import Model
 
 def prune_unused_metabolites(cobra_model):
     """Remove metabolites that are not involved in any reactions
-        
+
     Parameters
     ----------
     cobra_model: cobra.Model
     the model to remove unused metabolites from
-    
+
     Returns
     -------
     model
@@ -39,12 +39,12 @@ def prune_unused_metabolites(cobra_model):
 
 def prune_unused_reactions(cobra_model):
     """Remove reactions that have no assigned metabolites
-        
+
     Parameters
     ----------
     cobra_model: cobra.Model
     the model to remove unused reactions from
-    
+
     Returns
     -------
     model
