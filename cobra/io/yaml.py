@@ -5,11 +5,26 @@ from __future__ import absolute_import
 import io
 
 from six import string_types
-from ruamel import yaml
+from ruamel.yaml import YAML
+from ruamel.yaml.compat import StringIO
 
 from cobra.io.dict import model_to_dict, model_from_dict
 
-YAML_SPEC = "1"
+YAML_SPEC = "1.2"
+
+
+class MyYAML(YAML):
+    def dump(self, data, stream=None, **kwargs):
+        inefficient = False
+        if stream is None:
+            inefficient = True
+            stream = StringIO()
+        YAML.dump(self, data, stream, **kwargs)
+        if inefficient:
+            return stream.getvalue()
+
+
+yaml = MyYAML(typ="rt")
 
 
 def to_yaml(model, sort=False, **kwargs):
@@ -36,9 +51,10 @@ def to_yaml(model, sort=False, **kwargs):
     save_yaml_model : Write directly to a file.
     ruamel.yaml.dump : Base function.
     """
+
     obj = model_to_dict(model, sort=sort)
     obj["version"] = YAML_SPEC
-    return yaml.dump(obj, Dumper=yaml.RoundTripDumper, **kwargs)
+    return yaml.dump(obj, **kwargs)
 
 
 def from_yaml(document):
@@ -59,7 +75,8 @@ def from_yaml(document):
     --------
     load_yaml_model : Load directly from a file.
     """
-    return model_from_dict(yaml.load(document, yaml.RoundTripLoader))
+    content = StringIO(document)
+    return model_from_dict(yaml.load(content))
 
 
 def save_yaml_model(model, filename, sort=False, **kwargs):
@@ -88,9 +105,9 @@ def save_yaml_model(model, filename, sort=False, **kwargs):
     obj["version"] = YAML_SPEC
     if isinstance(filename, string_types):
         with io.open(filename, "w") as file_handle:
-            yaml.dump(obj, file_handle, Dumper=yaml.RoundTripDumper, **kwargs)
+            yaml.dump(obj, file_handle, **kwargs)
     else:
-        yaml.dump(obj, filename, Dumper=yaml.RoundTripDumper, **kwargs)
+        yaml.dump(obj, filename, **kwargs)
 
 
 def load_yaml_model(filename):
@@ -114,7 +131,6 @@ def load_yaml_model(filename):
     """
     if isinstance(filename, string_types):
         with io.open(filename, "r") as file_handle:
-            return model_from_dict(yaml.load(file_handle,
-                                             yaml.RoundTripLoader))
+            return model_from_dict(yaml.load(file_handle))
     else:
-        return model_from_dict(yaml.load(filename, yaml.RoundTripLoader))
+        return model_from_dict(yaml.load(filename))
