@@ -44,7 +44,7 @@ if __name__ == "__main__":
             "six",
             "future",
             "swiglpk",
-            "ruamel.yaml<0.15",
+            "ruamel.yaml>=0.15",
             "numpy>=1.13",
             "pandas>=0.17.0",
             "optlang>=1.4.2",
@@ -88,6 +88,7 @@ if __name__ == "__main__":
             'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
             'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: Implementation :: CPython',
             'Topic :: Scientific/Engineering',
             'Topic :: Scientific/Engineering :: Bio-Informatics'
