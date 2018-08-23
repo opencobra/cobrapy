@@ -17,6 +17,8 @@ from cobra.exceptions import SolverNotFound
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
 from cobra.core.reaction import separate_forward_and_reverse_bounds, Reaction
+from cobra.core.metabolite import Metabolite
+from cobra.core.gene import Gene
 from cobra.core.group import Group
 from cobra.core.solution import get_solution
 from cobra.util.context import HistoryManager, resettable, get_context
@@ -94,7 +96,7 @@ class Model(Object):
             self.genes = DictList()
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
-            self.groups = DictList() # A list of cobra.Groups
+            self.groups = DictList()  # A list of cobra.Groups
             # genes based on their ids {Gene.id: Gene}
             self._compartments = dict()
             self._contexts = []
@@ -283,7 +285,7 @@ class Model(Object):
         """
         new = self.__class__()
         do_not_copy_by_ref = {"metabolites", "reactions", "genes", "notes",
-                              "annotation","groups"}
+                              "annotation", "groups"}
         for attr in self.__dict__:
             if attr not in do_not_copy_by_ref:
                 new.__dict__[attr] = self.__dict__[attr]
@@ -342,11 +344,11 @@ class Model(Object):
             # update awareness, as in the reaction copies
             new_objects = []
             for member in group.members:
-                if isinstance(member,Metabolite):
+                if isinstance(member, Metabolite):
                     new_object = new.metabolites.get_by_id(member.id)
-                elif isinstance(member,Reaction):
+                elif isinstance(member, Reaction):
                     new_object = new.reactions.get_by_id(member.id)
-                elif isinstance(member,Gene):
+                elif isinstance(member, Gene):
                     new_objext = new.genes.get_by_id(member.id)
                 new_objects.append(new_object)
             new_group.add_members(new_objects)
@@ -435,7 +437,7 @@ class Model(Object):
 
             # remove reference to the metabolite in all groups
             associated_groups = self.get_associated_groups(x)
-            for group in get_associated_groups:
+            for group in associated_groups:
                 group.remove(x)
 
             if not destructive:
@@ -678,7 +680,7 @@ class Model(Object):
 
                 # remove reference to the reaction in all groups
                 associated_groups = self.get_associated_groups(reaction)
-                for group in get_associated_groups:
+                for group in associated_groups:
                     group.remove(reaction)
 
     def add_groups(self, group_list):
@@ -697,42 +699,51 @@ class Model(Object):
             A list of `cobra.Group` objects to add to the model
         """
 
-        def existing_filter(rxn):
+        def existing_filter(group):
             if group.id in self.groups:
                 LOGGER.warning(
                     "Ignoring group '%s' since it already exists.", group.id)
                 return False
             return True
 
-        pruned = DictList(filter(existing_filter, group_list)
+        if isinstance(group_list, string_types) or \
+                hasattr(group_list, "id"):
+            warn("need to pass in a list")
+            group_list = [group_list]
+
+        pruned = DictList(filter(existing_filter, group_list))
 
         for group in pruned:
             group._model = self
-            for member in group:
+            for member in group.members:
                 # If the member is not associated with the model, add it
-                if isinstance(member,Metabolite):
+                if isinstance(member, Metabolite):
                     if member not in self.metabolites:
-                        self.add_metabolites(member)
-                if isinstance(member,Reaction):
+                        self.add_metabolites([member])
+                if isinstance(member, Reaction):
                     if member not in self.reactions:
-                        self.add_reactions(member)
-                if isinstance(member,Gene):
+                        self.add_reactions([member])
+                if isinstance(member, Gene):
                     if member not in self.genes:
-                        self.add_genes(member)
+                        self.add_genes([member])
 
-            self.groups += group
-
+            self.groups += [group]
 
     def remove_groups(self, group_list):
         """Remove groups from the model. Members of each group are not removed
-        from the model (i.e. metabolites, reactions, and genes in the group stay
-        in the model after any groups containing them are removed).
+        from the model (i.e. metabolites, reactions, and genes in the group
+        stay in the model after any groups containing them are removed).
 
         Parameters
         ----------
         group_list : list
             A list of `cobra.Group` objects to remove from the model
         """
+
+        if isinstance(group_list, string_types) or \
+                hasattr(group_list, "id"):
+            warn("need to pass in a list")
+            group_list = [group_list]
 
         for group in group_list:
             # make sure the group is in the model
@@ -745,7 +756,7 @@ class Model(Object):
                 self.groups.remove(group)
                 group._model = None
 
-    def get_associated_groups(self,element):
+    def get_associated_groups(self, element):
         """Returns a list of groups that an element (reaction, metabolite, gene)
         is associated with.
 
@@ -759,10 +770,7 @@ class Model(Object):
             All groups that the provided object is a member of
         """
         # check whether the element is associated with the model
-        if element._model is not self:
-            raise ValueError('%s not in %s' % (element, self))
-        return [g for g in self.groups if element in g]
-
+        return [g for g in self.groups if element in g.members]
 
     def add_cons_vars(self, what, **kwargs):
         """Add constraints and variables to the model's mathematical problem.

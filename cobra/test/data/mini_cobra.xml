@@ -11,8 +11,8 @@
       </unitDefinition>
     </listOfUnitDefinitions>
     <listOfCompartments>
-      <compartment id="c" name="cytosol" size="1"/>
       <compartment id="e" name="extracellular" size="1"/>
+      <compartment id="c" name="cytosol" size="1"/>
     </listOfCompartments>
     <listOfSpecies>
       <species id="M_13dpg_c" name="3-Phospho-D-glyceroyl phosphate" compartment="c" charge="-4">
@@ -201,12 +201,12 @@
     <listOfReactions>
       <reaction id="R_ATPM" name="ATP maintenance requirement" reversible="false">
         <listOfReactants>
-          <speciesReference species="M_atp_c" stoichiometry="1"/>
           <speciesReference species="M_h2o_c" stoichiometry="1"/>
+          <speciesReference species="M_atp_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_adp_c" stoichiometry="1"/>
           <speciesReference species="M_pi_c" stoichiometry="1"/>
+          <speciesReference species="M_adp_c" stoichiometry="1"/>
           <speciesReference species="M_h_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
@@ -214,17 +214,17 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="8.39" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="1" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="8.39" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_D_LACt2" name="D_LACt2" reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b3603 or b2975</p>
+            <p>GENE ASSOCIATION: b3603 or b2975</p>
           </html>
         </notes>
         <listOfReactants>
@@ -240,35 +240,35 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_ENO" name="enolase" reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b2779</p>
+            <p>GENE ASSOCIATION: b2779</p>
           </html>
         </notes>
         <listOfReactants>
           <speciesReference species="M_2pg_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_h2o_c" stoichiometry="1"/>
           <speciesReference species="M_pep_c" stoichiometry="1"/>
+          <speciesReference species="M_h2o_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
@@ -284,10 +284,10 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="-10" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="-10" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
@@ -303,10 +303,10 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
@@ -322,17 +322,17 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_FBA" name="fructose-bisphosphate aldolase" reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b1773 or b2097 or b2925</p>
+            <p>GENE ASSOCIATION: b1773 or b2097 or b2925</p>
           </html>
         </notes>
         <listOfReactants>
@@ -347,45 +347,45 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_GAPD" name="glyceraldehyde-3-phosphate dehydrogenase" reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b1779</p>
+            <p>GENE ASSOCIATION: b1779</p>
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_nad_c" stoichiometry="1"/>
           <speciesReference species="M_pi_c" stoichiometry="1"/>
+          <speciesReference species="M_nad_c" stoichiometry="1"/>
           <speciesReference species="M_g3p_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
           <speciesReference species="M_13dpg_c" stoichiometry="1"/>
-          <speciesReference species="M_h_c" stoichiometry="1"/>
           <speciesReference species="M_nadh_c" stoichiometry="1"/>
+          <speciesReference species="M_h_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_GLCpts" name="D-glucose transport via PEP:Pyr PTS" reversible="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: ( b2417 and b1621 and b2415 and b2416 ) or ( b2417 and b1101 and b2415 and b2416 ) or ( b1817 and b1818 and b1819 and b2415 and b2416 )</p>
+            <p>GENE ASSOCIATION: ( b2417 and b1621 and b2415 and b2416 ) or ( b2417 and b1101 and b2415 and b2416 ) or ( b1817 and b1818 and b1819 and b2415 and b2416 )</p>
           </html>
         </notes>
         <listOfReactants>
@@ -393,25 +393,25 @@
           <speciesReference species="M_glc__D_e" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_g6p_c" stoichiometry="1"/>
           <speciesReference species="M_pyr_c" stoichiometry="1"/>
+          <speciesReference species="M_g6p_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_H2Ot" name="R H2O transport via - diffusion" reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b0875 or s0001</p>
+            <p>GENE ASSOCIATION: b0875 or s0001</p>
           </html>
         </notes>
         <listOfReactants>
@@ -425,26 +425,26 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_LDH_D" name="D-lactate dehydrogenase" reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b2133 or b1380</p>
+            <p>GENE ASSOCIATION: b2133 or b1380</p>
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_nad_c" stoichiometry="1"/>
           <speciesReference species="M_lac__D_c" stoichiometry="1"/>
+          <speciesReference species="M_nad_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_nadh_c" stoichiometry="1"/>
           <speciesReference species="M_pyr_c" stoichiometry="1"/>
+          <speciesReference species="M_nadh_c" stoichiometry="1"/>
           <speciesReference species="M_h_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
@@ -452,17 +452,17 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_PFK" name="phosphofructokinase" reversible="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b3916 or b1723</p>
+            <p>GENE ASSOCIATION: b3916 or b1723</p>
           </html>
         </notes>
         <listOfReactants>
@@ -479,17 +479,17 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="1" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_PGI" name="glucose-6-phosphate isomerase" reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b4025</p>
+            <p>GENE ASSOCIATION: b4025</p>
           </html>
         </notes>
         <listOfReactants>
@@ -503,22 +503,22 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_PGK" name="phosphoglycerate kinase" reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b2926</p>
+            <p>GENE ASSOCIATION: b2926</p>
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_atp_c" stoichiometry="1"/>
           <speciesReference species="M_3pg_c" stoichiometry="1"/>
+          <speciesReference species="M_atp_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
           <speciesReference species="M_13dpg_c" stoichiometry="1"/>
@@ -529,17 +529,17 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_PGM" name="phosphoglycerate mutase" reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b4395 or b3612 or b0755</p>
+            <p>GENE ASSOCIATION: b4395 or b3612 or b0755</p>
           </html>
         </notes>
         <listOfReactants>
@@ -553,17 +553,17 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_PIt2r" name="R phosphate reversible transport via - symport" reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b2987 or b3493</p>
+            <p>GENE ASSOCIATION: b2987 or b3493</p>
           </html>
         </notes>
         <listOfReactants>
@@ -579,17 +579,17 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_PYK" name="pyruvate kinase" reversible="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b1854 or b1676</p>
+            <p>GENE ASSOCIATION: b1854 or b1676</p>
           </html>
         </notes>
         <listOfReactants>
@@ -598,25 +598,25 @@
           <speciesReference species="M_h_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_atp_c" stoichiometry="1"/>
           <speciesReference species="M_pyr_c" stoichiometry="1"/>
+          <speciesReference species="M_atp_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_TPI" name="triose-phosphate isomerase" reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>GENE_ASSOCIATION: b3919</p>
+            <p>GENE ASSOCIATION: b3919</p>
           </html>
         </notes>
         <listOfReactants>
@@ -630,10 +630,10 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
-            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>

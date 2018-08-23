@@ -39,8 +39,8 @@ def create_test_model(model_name="salmonella"):
         mini_sbml = join(data_dir, "mini_fbc2.xml")
         return read_sbml_model(mini_sbml)
     elif model_name == "salmonella":
-        salmonella_pickle = join(data_dir, "salmonella.pickle")
-        model_name = salmonella_pickle
+        salmonella = join(data_dir, "salmonella.pickle")
+        model_name = salmonella
     with open(model_name, "rb") as infile:
         return _load(infile)
 
