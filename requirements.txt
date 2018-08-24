@@ -1,0 +1,8 @@
+# Requirements for developing cobrapy
+pytest
+pytest-benchmark
+pytest-cov
+codecov
+jsonschema
+tox
+bumpversion
