@@ -247,7 +247,6 @@ class TestReactions:
             assert gene.model is not model
         assert len(model.get_associated_groups(copied.id)) == 0
 
-
     def test_iadd(self, model):
         PGI = model.reactions.PGI
         EX_h2o = model.reactions.EX_h2o_e
@@ -332,9 +331,9 @@ class TestCobraGenes:
     def test_repr_html_(self, model):
         assert '<table>' in model.genes[0]._repr_html_()
 
-class TestCobraGroups:
 
-    def test_group_add_elements(self,model):
+class TestCobraGroups:
+    def test_group_add_elements(self, model):
         num_members = 5
         reactions_for_group = model.reactions[0:num_members]
         group = Group("arbitrary_group1")
@@ -349,7 +348,6 @@ class TestCobraGroups:
         reactions_for_larger_group = model.reactions[0:num_total_members]
         group.add_members(reactions_for_larger_group)
         assert len(group.members) == num_total_members
-
 
 
 class TestCobraModel:
@@ -647,11 +645,11 @@ class TestCobraModel:
         for reaction in reactions_for_group:
             assert group not in model.get_associated_groups(reaction)
 
-    def test_group_members_add_to_model(self,model):
+    def test_group_members_add_to_model(self, model):
         # remove a few reactions from the model and add them to a new group
         num_members = 5
         reactions_for_group = model.reactions[0:num_members]
-        model.remove_reactions(reactions_for_group,remove_orphans=False)
+        model.remove_reactions(reactions_for_group, remove_orphans=False)
         group = Group("arbitrary_group1")
         group.members = reactions_for_group
         group.kind = "collection"
@@ -686,7 +684,6 @@ class TestCobraModel:
         assert remove_met not in group.members
         assert remove_rxn not in group.members
         assert remove_gene not in group.members
-
 
     def test_exchange_reactions(self, model):
         assert set(model.exchanges) == set([rxn for rxn in model.reactions
