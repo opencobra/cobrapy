@@ -349,6 +349,15 @@ class TestCobraGroups:
         group.add_members(reactions_for_larger_group)
         assert len(group.members) == num_total_members
 
+    def test_group_kind(self):
+        group = Group("arbitrary_group1")
+        with pytest.raises(ValueError) as excinfo:
+            group.kind = "non-SBML compliant group kind"
+        assert "kind can only by one of:" in str(excinfo.value)
+
+        group.kind = "collection"
+        assert group.kind == "collection"
+
 
 class TestCobraModel:
     """test core cobra functions"""
