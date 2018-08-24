@@ -621,7 +621,7 @@ class TestCobraModel:
         for reaction in gene_reactions:
             assert target_gene not in reaction.genes
 
-    def test_group_model_reaction_association(self,model):
+    def test_group_model_reaction_association(self, model):
         num_members = 5
         reactions_for_group = model.reactions[0:num_members]
         group = Group("arbitrary_group1")
