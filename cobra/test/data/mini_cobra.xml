@@ -11,8 +11,8 @@
       </unitDefinition>
     </listOfUnitDefinitions>
     <listOfCompartments>
-      <compartment id="e" name="extracellular" size="1"/>
       <compartment id="c" name="cytosol" size="1"/>
+      <compartment id="e" name="extracellular" size="1"/>
     </listOfCompartments>
     <listOfSpecies>
       <species id="M_13dpg_c" name="3-Phospho-D-glyceroyl phosphate" compartment="c" charge="-4">
@@ -201,8 +201,8 @@
     <listOfReactions>
       <reaction id="R_ATPM" name="ATP maintenance requirement" reversible="false">
         <listOfReactants>
-          <speciesReference species="M_h2o_c" stoichiometry="1"/>
           <speciesReference species="M_atp_c" stoichiometry="1"/>
+          <speciesReference species="M_h2o_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
           <speciesReference species="M_pi_c" stoichiometry="1"/>
@@ -214,9 +214,9 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="8.39" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="1" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="8.39" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -228,8 +228,8 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_h_e" stoichiometry="1"/>
           <speciesReference species="M_lac__D_e" stoichiometry="1"/>
+          <speciesReference species="M_h_e" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
           <speciesReference species="M_lac__D_c" stoichiometry="1"/>
@@ -240,9 +240,9 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -265,9 +265,9 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -284,9 +284,9 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-10" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="-10" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -303,9 +303,9 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -322,9 +322,9 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -339,17 +339,17 @@
           <speciesReference species="M_fdp_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_g3p_c" stoichiometry="1"/>
           <speciesReference species="M_dhap_c" stoichiometry="1"/>
+          <speciesReference species="M_g3p_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -366,18 +366,18 @@
           <speciesReference species="M_g3p_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_13dpg_c" stoichiometry="1"/>
           <speciesReference species="M_nadh_c" stoichiometry="1"/>
           <speciesReference species="M_h_c" stoichiometry="1"/>
+          <speciesReference species="M_13dpg_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -389,21 +389,21 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_pep_c" stoichiometry="1"/>
           <speciesReference species="M_glc__D_e" stoichiometry="1"/>
+          <speciesReference species="M_pep_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_pyr_c" stoichiometry="1"/>
           <speciesReference species="M_g6p_c" stoichiometry="1"/>
+          <speciesReference species="M_pyr_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -425,9 +425,9 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -443,8 +443,8 @@
           <speciesReference species="M_nad_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_pyr_c" stoichiometry="1"/>
           <speciesReference species="M_nadh_c" stoichiometry="1"/>
+          <speciesReference species="M_pyr_c" stoichiometry="1"/>
           <speciesReference species="M_h_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
@@ -452,9 +452,9 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -466,22 +466,22 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_atp_c" stoichiometry="1"/>
           <speciesReference species="M_f6p_c" stoichiometry="1"/>
+          <speciesReference species="M_atp_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
           <speciesReference species="M_adp_c" stoichiometry="1"/>
-          <speciesReference species="M_fdp_c" stoichiometry="1"/>
           <speciesReference species="M_h_c" stoichiometry="1"/>
+          <speciesReference species="M_fdp_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="1" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -503,9 +503,9 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -517,21 +517,21 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_3pg_c" stoichiometry="1"/>
           <speciesReference species="M_atp_c" stoichiometry="1"/>
+          <speciesReference species="M_3pg_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_13dpg_c" stoichiometry="1"/>
           <speciesReference species="M_adp_c" stoichiometry="1"/>
+          <speciesReference species="M_13dpg_c" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -553,9 +553,9 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -579,9 +579,9 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -593,8 +593,8 @@
           </html>
         </notes>
         <listOfReactants>
-          <speciesReference species="M_adp_c" stoichiometry="1"/>
           <speciesReference species="M_pep_c" stoichiometry="1"/>
+          <speciesReference species="M_adp_c" stoichiometry="1"/>
           <speciesReference species="M_h_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
@@ -606,9 +606,9 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
@@ -630,9 +630,9 @@
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
             <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
             <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
