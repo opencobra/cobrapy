@@ -93,7 +93,7 @@ def rename_genes(cobra_model, rename_dict):
             cobra_model.genes[gene_index] = gene
         elif not old_gene_present and new_gene_present:
             pass
-        else:  # not old gene_present and not new_gene_present
+        else:  # if not old gene_present and not new_gene_present
             # the new gene's _model will be set by repair
             # This would add genes from rename_dict
             # that are not associated with a rxn
