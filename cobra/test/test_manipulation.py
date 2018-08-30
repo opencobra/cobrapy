@@ -56,7 +56,7 @@ class TestManipulation:
         modify.rename_genes(model, rename_dict)
         for i in rename_dict.keys():
             if i not in rename_dict.values():
-                assert i not in [x.id for x in model.genes]
+                assert i not in model.genes
         assert "b3115" in model.genes
         assert "foo" in model.genes
         assert "world" not in model.genes
