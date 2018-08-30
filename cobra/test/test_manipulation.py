@@ -5,6 +5,7 @@ import pytest
 
 from cobra.core import Metabolite, Model, Reaction
 from cobra.manipulation import *
+from itertools import chain
 
 
 class TestManipulation:
@@ -215,8 +216,7 @@ class TestManipulation:
         with pytest.raises(ValueError), pytest.warns(UserWarning):
             r1.check_mass_balance()
 
-    def test_prune_unused(self, model):
-
+    def test_prune_unused_mets_output_type(self, model):
         # test that the output contains metabolite objects
         metabolite = model.metabolites.ru5p__D_c
         [model.reactions.get_by_id(x).remove_from_model() for x in
@@ -225,16 +225,15 @@ class TestManipulation:
         assert isinstance(model_pruned, Model)
         assert isinstance(unused[0], Metabolite)
 
+    def test_prune_unused_mets_functionality(self, model):
         # test that the unused metabolites are not used in the model
         metabolite1 = model.metabolites.ru5p__D_c
         metabolite2 = model.metabolites.akg_e
         metabolite3 = model.metabolites.akg_c
-        reactions = list(set([x for sublist in
-                              [metabolite1._reaction,
-                               metabolite2._reaction,
-                               metabolite3._reaction]
-                              for x in sublist]))
-        [rxn.remove_from_model() for rxn in reactions]
+        reactions = set(chain(metabolite1.reactions,
+                              metabolite2.reactions,
+                              metabolite3.reactions))
+        model.remove_reactions(reactions)
         model_pruned, unused = delete.prune_unused_metabolites(model)
         assert metabolite1 in model.metabolites
         assert metabolite2 in model.metabolites
@@ -243,6 +242,7 @@ class TestManipulation:
         assert metabolite2 not in model_pruned.metabolites
         assert metabolite3 not in model_pruned.metabolites
 
+    def test_prune_unused_rxns_output_type(self, model):
         # test that the output contains reaction objects
         reaction = Reaction('foo')
         model.add_reaction(reaction)
@@ -250,13 +250,14 @@ class TestManipulation:
         assert isinstance(model_pruned, Model)
         assert isinstance(unused[0], Reaction)
 
+    def test_prune_unused_rxns_functionality(self, model):
         # test that the unused reactions are not used in the model
         for x in ['foo1', 'foo2', 'foo3']:
             model.add_reaction(Reaction(x))
         model_pruned, unused = delete.prune_unused_reactions(model)
-        assert 'foo1' in [x.id for x in model.reactions]
-        assert 'foo2' in [x.id for x in model.reactions]
-        assert 'foo3' in [x.id for x in model.reactions]
-        assert 'foo1' not in [x.id for x in model_pruned.reactions]
-        assert 'foo2' not in [x.id for x in model_pruned.reactions]
-        assert 'foo3' not in [x.id for x in model_pruned.reactions]
+        assert 'foo1' in model.reactions
+        assert 'foo2' in model.reactions
+        assert 'foo3' in model.reactions
+        assert 'foo1' not in model_pruned.reactions
+        assert 'foo2' not in model_pruned.reactions
+        assert 'foo3' not in model_pruned.reactions
