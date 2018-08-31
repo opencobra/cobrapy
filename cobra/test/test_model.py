@@ -337,7 +337,7 @@ class TestCobraGroups:
         num_members = 5
         reactions_for_group = model.reactions[0:num_members]
         group = Group("arbitrary_group1")
-        group.members = reactions_for_group
+        group.add_members(reactions_for_group)
         group.kind = "collection"
         # number of member sin group should equal the number of reactions
         # assigned to the group
@@ -353,7 +353,7 @@ class TestCobraGroups:
         group = Group("arbitrary_group1")
         with pytest.raises(ValueError) as excinfo:
             group.kind = "non-SBML compliant group kind"
-        assert "kind can only by one of:" in str(excinfo.value)
+        assert "Kind can only by one of:" in str(excinfo.value)
 
         group.kind = "collection"
         assert group.kind == "collection"
@@ -634,11 +634,11 @@ class TestCobraModel:
         num_members = 5
         reactions_for_group = model.reactions[0:num_members]
         group = Group("arbitrary_group1")
-        group.members = reactions_for_group
+        group.add_members(reactions_for_group)
         group.kind = "collection"
         model.add_groups([group])
         # group should point to and be associated with the model
-        assert group.model == model
+        assert group._model is model
         assert group in model.groups
 
         # model.get_associated_groups should find the group for each reaction
@@ -650,7 +650,7 @@ class TestCobraModel:
         # longer associated with the group
         model.remove_groups([group])
         assert group not in model.groups
-        assert group.model is not model
+        assert group._model is not model
         for reaction in reactions_for_group:
             assert group not in model.get_associated_groups(reaction)
 
@@ -660,7 +660,7 @@ class TestCobraModel:
         reactions_for_group = model.reactions[0:num_members]
         model.remove_reactions(reactions_for_group, remove_orphans=False)
         group = Group("arbitrary_group1")
-        group.members = reactions_for_group
+        group.add_members(reactions_for_group)
         group.kind = "collection"
         # the old reactions should not be in the model
         for reaction in reactions_for_group:
@@ -680,7 +680,7 @@ class TestCobraModel:
         elements_for_group.extend(model.metabolites[0:num_members_each])
         elements_for_group.extend(model.genes[0:num_members_each])
         group = Group("arbitrary_group1")
-        group.members = elements_for_group
+        group.add_members(elements_for_group)
         group.kind = "collection"
         model.add_groups([group])
 

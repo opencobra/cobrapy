@@ -696,7 +696,7 @@ class Model(Object):
         Parameters
         ----------
         group_list : list
-            A list of `cobra.Group` objects to add to the model
+            A list of `cobra.Group` objects to add to the model.
         """
 
         def existing_filter(group):
@@ -723,21 +723,24 @@ class Model(Object):
                 if isinstance(member, Reaction):
                     if member not in self.reactions:
                         self.add_reactions([member])
-                if isinstance(member, Gene):
-                    if member not in self.genes:
-                        self.add_genes([member])
+                # TODO(midnighter): `add_genes` method does not exist.
+                # if isinstance(member, Gene):
+                #     if member not in self.genes:
+                #         self.add_genes([member])
 
             self.groups += [group]
 
     def remove_groups(self, group_list):
-        """Remove groups from the model. Members of each group are not removed
+        """Remove groups from the model.
+
+        Members of each group are not removed
         from the model (i.e. metabolites, reactions, and genes in the group
         stay in the model after any groups containing them are removed).
 
         Parameters
         ----------
         group_list : list
-            A list of `cobra.Group` objects to remove from the model
+            A list of `cobra.Group` objects to remove from the model.
         """
 
         if isinstance(group_list, string_types) or \
@@ -747,11 +750,8 @@ class Model(Object):
 
         for group in group_list:
             # make sure the group is in the model
-            try:
-                group = self.groups[self.groups.index(group)]
-            except ValueError:
-                warn('%s not in %s' % (group, self))
-            # if there was no exception, remove the group
+            if group.id not in self.groups:
+                LOGGER.warning("%r not in %r. Ignored.", group, self)
             else:
                 self.groups.remove(group)
                 group._model = None

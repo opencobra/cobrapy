@@ -1,48 +1,56 @@
 # -*- coding: utf-8 -*-
 
+"""Define the group class."""
+
 from __future__ import absolute_import
 
-from cobra.core.object import Object
-from six import string_types
 from warnings import warn
 
-kind_types = ["collection", "classification", "partonomy"]
+from six import string_types
+
+from cobra.core.object import Object
+
+
+KIND_TYPES = ("collection", "classification", "partonomy")
 
 
 class Group(Object):
-    """Group is a class for holding information regarding
-    a pathways, subsystems, or other custom groupings of objects
-    within a cobra.Model object.
+    """
+    Manage groups via this implementation of the SBML group specification.
+
+    `Group` is a class for holding information regarding a pathways, subsystems,
+    or other custom groupings of objects within a cobra.Model object.
 
     Parameters
     ----------
-    id : string
+    id : str
         The identifier to associate with this group
-    name : string
+    name : str, optional
         A human readable name for the group
-    members : list
+    members : iterable, optional
         A list object containing references to cobra.Model-associated objects
         that belong to the group.
-    kind : string
-        The kind of group, as specified for the Groups feature in the SBML
-        level 3 package specification. Can be any of "classification",
-        "partonomy", or "collection". Please consult the SBML level 3 package
-        specification to ensure you are using the proper value for kind. In
-        short, members of a "classification" group should have an "is-a"
-        relationship to the group (e.g. member is-a polar compound, or
+    kind : {"collection", "classification", "partonomy"}, optional
+        The kind of group, as specified for the Groups feature in the SBML level
+        3 package specification. Can be any of "classification", "partonomy", or
+        "collection". The default is "collection". Please consult the SBML level
+        3 package specification to ensure you are using the proper value for
+        kind. In short, members of a "classification" group should have an
+        "is-a" relationship to the group (e.g. member is-a polar compound, or
         member is-a transporter). Members of a "partonomy" group should have a
-        "part-of" relationship (e.g. member is part-of glycolysis). Members of
-        a "collection" group do not have an implied relationship between the
+        "part-of" relationship (e.g. member is part-of glycolysis). Members of a
+        "collection" group do not have an implied relationship between the
         members, so use this value for kind when in doubt (e.g. member is a
         gap-filled reaction, or member is involved in a disease phenotype).
+
     """
 
-    def __init__(self, id=None, name='', members=[], kind=''):
+    def __init__(self, id, name='', members=None, kind=None):
         Object.__init__(self, id, name)
 
-        self._members = set(members)
-        self._kind = kind
-
+        self._members = set() if members is None else set(members)
+        self._kind = None
+        self.kind = "collection" if kind is None else kind
         # self.model is None or refers to the cobra.Model that
         # contains self
         self._model = None
@@ -50,66 +58,51 @@ class Group(Object):
     # read-only
     @property
     def members(self):
-        return getattr(self, "_members", None)
-
-    @members.setter
-    def members(self, members):
-        self._members = set(members)
+        return self._members
 
     @property
     def kind(self):
-        return getattr(self, "_kind", '')
+        return self._kind
 
     @kind.setter
     def kind(self, kind):
-        if kind in kind_types:
+        if kind in KIND_TYPES:
             self._kind = kind
         else:
-            raise ValueError("kind can only by one of: " + str(kind_types))
+            raise ValueError(
+                "Kind can only by one of: {}.".format(", ".join(KIND_TYPES)))
 
-    @property
-    def model(self):
-        """returns the model the group is a part of"""
-        return self._model
-
-    def add_members(self, members_list):
-        """Add objects to the group.
+    def add_members(self, new_members):
+        """
+        Add objects to the group.
 
         Parameters
         ----------
-        members_to_add : list
-            list of cobrapy objects to add to the group.
+        new_members : list
+            A list of cobrapy objects to add to the group.
+
         """
 
-        if isinstance(members_list, string_types) or \
-                hasattr(members_list, "id"):
+        if isinstance(new_members, string_types) or \
+                hasattr(new_members, "id"):
             warn("need to pass in a list")
-            members_list = [members_list]
+            new_members = [new_members]
 
-        new_members = []
-        _id_to_members = dict([(x.id, x) for x in self._members])
+        self._members.update(new_members)
 
-        # Check for duplicate members in the group
-        for member in members_list:
-            # we only need to add the member if it ins't already in the group
-            if member.id not in _id_to_members:
-                new_members.append(member)
-
-        self._members = self._members.union(set(new_members))
-
-    def remove(self, members_list):
-        """Remove objects from the group.
+    def remove(self, to_remove):
+        """
+        Remove objects from the group.
 
         Parameters
         ----------
-        members_to_remove : list
-            list of cobrapy objects to remove from the group
+        to_remove : list
+            A list of cobrapy objects to remove from the group
         """
 
-        if isinstance(members_list, string_types) or \
-                hasattr(members_list, "id"):
+        if isinstance(to_remove, string_types) or \
+                hasattr(to_remove, "id"):
             warn("need to pass in a list")
-            members_list = [members_list]
+            to_remove = [to_remove]
 
-        for member in members_list:
-            self._members.discard(member)
+        self._members.difference_update(to_remove)
