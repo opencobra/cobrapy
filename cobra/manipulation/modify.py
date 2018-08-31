@@ -81,7 +81,7 @@ def rename_genes(cobra_model, rename_dict):
         if old_gene_present and new_gene_present:
             old_gene = cobra_model.genes.get_by_id(old_name)
             # Added in case not renaming some genes:
-            if old_gene != cobra_model.genes.get_by_id(new_name):
+            if old_gene is not cobra_model.genes.get_by_id(new_name):
                 remove_genes.append(old_gene)
                 recompute_reactions.update(old_gene._reaction)
         elif old_gene_present and not new_gene_present:
