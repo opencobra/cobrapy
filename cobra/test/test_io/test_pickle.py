@@ -38,7 +38,7 @@ def test_write_pickle(tmpdir, mini_model, dump_function):
         pytest.skip()
 
     output_file = tmpdir.join("mini.pickle")
-    with open(str(output_file), "wb") as outfile:
+    with open(output_file, "wb") as outfile:
         dump_function(mini_model, outfile)
 
     assert output_file.check()
