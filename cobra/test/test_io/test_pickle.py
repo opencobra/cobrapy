@@ -4,7 +4,7 @@
 
 from __future__ import absolute_import
 
-from os.path import getsize, join
+from os.path import join
 from pickle import dump, load
 
 import pytest
@@ -31,22 +31,14 @@ def test_read_pickle(data_directory, mini_model, load_function):
     assert compare_models(mini_model, pickle_model) is None
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("dump_function", [dump, cdump])
-def test_write_pickle(data_directory, tmpdir, dump_function):
+def test_write_pickle(tmpdir, mini_model, dump_function):
     """Test the writing of model to pickle."""
     if dump_function is None:
         pytest.skip()
 
-    input_file = join(data_directory, "mini.pickle")
-    output_file = join(tmpdir, "mini.pickle")
+    output_file = tmpdir.join("mini.pickle")
+    with open(str(output_file), "wb") as outfile:
+        dump_function(mini_model, outfile)
 
-    # reading
-    with open(input_file, "rb") as infile:
-        pickle_model = load(infile)
-
-    # writing
-    with open(output_file, "wb") as outfile:
-        dump(pickle_model, outfile)
-
-    assert getsize(input_file) == getsize(output_file)
+    assert output_file.check()
