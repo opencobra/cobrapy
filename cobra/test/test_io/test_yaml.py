@@ -13,8 +13,6 @@ import cobra.io as cio
 import pytest
 from cobra.test.test_io.conftest import compare_models
 
-jsonschema = pytest.importorskip("jsonschema")
-
 
 def test_load_yaml_model(data_directory, mini_model):
     """Test the reading of YAML model."""
@@ -23,8 +21,8 @@ def test_load_yaml_model(data_directory, mini_model):
 
 
 @pytest.mark.xfail(reason="schema outdated")
-@pytest.mark.skipif(jsonschema is None, reason="jsonschema not installed")
 def test_save_yaml_model(tmpdir, mini_model):
+    jsonschema = pytest.importorskip("jsonschema")
     """Test the writing of YAML model."""
     output_file = tmpdir.join("mini.yml")
     cio.save_yaml_model(mini_model, output_file.strpath, sort=True)
