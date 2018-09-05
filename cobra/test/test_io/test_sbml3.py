@@ -22,7 +22,7 @@ def mini_fbc2_model(data_directory):
 # Benchmarks
 def test_benchmark_read(data_directory, benchmark):
     """Benchmark SBML read."""
-    benchmark(io.sbml3.read_sbml_model, join(data_directory, 'mini_fbc2.xml'))
+    benchmark(io.sbml3.read_sbml_model, join(data_directory, "mini_fbc2.xml"))
 
 
 def test_benchmark_write(model, benchmark, tmpdir):
