@@ -617,6 +617,14 @@ class Model(Object):
                 reverse = reaction.reverse_variable
 
                 if context:
+
+                    obj_coef = reaction.objective_coefficient
+
+                    if obj_coef != 0:
+                        context(partial(
+                            self.solver.objective.set_linear_coefficients,
+                            {forward: obj_coef, reverse: -obj_coef}))
+
                     context(partial(self._populate_solver, [reaction]))
                     context(partial(setattr, reaction, '_model', self))
                     context(partial(self.reactions.add, reaction))
