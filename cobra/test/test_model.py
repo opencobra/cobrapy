@@ -521,6 +521,13 @@ class TestCobraModel:
             assert tmp_metabolite in model.metabolites
         assert tmp_metabolite not in model.metabolites
 
+        biomass_before = model.slim_optimize()
+        with model:
+            model.remove_reactions([model.reactions.Biomass_Ecoli_core])
+            assert numpy.isclose(model.slim_optimize(), 0)
+
+        assert numpy.isclose(model.slim_optimize(), biomass_before)
+
     def test_reaction_remove(self, model):
         old_reaction_count = len(model.reactions)
         tmp_metabolite = Metabolite("testing")
