@@ -1,35 +1,45 @@
 # -*- coding: utf-8 -*-
 
-"""Test functionalities provided by yaml.py"""
+"""Test YAML input and output."""
 
 from __future__ import absolute_import
 
-import json
+from builtins import open  # Python 2 unicode compatibility.
 from os.path import join
 
-from ruamel.yaml import YAML
-
 import cobra.io as cio
-import pytest
-from cobra.test.test_io.conftest import compare_models
+
+import helpers
+
+
+def test_from_yaml(data_directory, mini_model):
+    """Test reading a model from a YAML string."""
+    with open(join(data_directory, "mini.yml"), encoding="utf-8") as handle:
+        yaml_model = cio.from_yaml(handle.read())
+    helpers.assert_equal_models(mini_model, yaml_model)
 
 
 def test_load_yaml_model(data_directory, mini_model):
-    """Test the reading of YAML model."""
+    """Test reading a model from a YAML file."""
     yaml_model = cio.load_yaml_model(join(data_directory, "mini.yml"))
-    assert compare_models(mini_model, yaml_model) is None
+    helpers.assert_equal_models(mini_model, yaml_model)
 
 
-@pytest.mark.xfail(reason="schema outdated")
-def test_save_yaml_model(tmpdir, mini_model):
-    jsonschema = pytest.importorskip("jsonschema")
-    """Test the writing of YAML model."""
+def test_to_yaml(data_directory, mini_model):
+    """Test writing a model to a YAML string."""
+    output = cio.to_yaml(mini_model, sort=True)
+    with open(join(data_directory, "mini.yml"), encoding="utf-8") as handle:
+        expected = handle.read()
+    assert output == expected
+
+
+def test_save_yaml_model(tmpdir, data_directory, mini_model):
+    """Test writing a model to a YAML file."""
     output_file = tmpdir.join("mini.yml")
-    cio.save_yaml_model(mini_model, output_file.strpath, sort=True)
-    # validate against schema
-    yaml = YAML(typ="unsafe")
-    with open(output_file.strpath, "r") as infile:
-        yaml_to_dict = yaml.load(infile)
-    dict_to_json = json.dumps(yaml_to_dict)
-    loaded = json.loads(dict_to_json)
-    assert jsonschema.validate(loaded, cio.json.json_schema)
+    cio.save_yaml_model(mini_model, str(output_file), sort=True)
+    # Validate the written file.
+    with open(str(output_file), encoding="utf-8") as handle:
+        output = handle.read()
+    with open(join(data_directory, "mini.yml"), encoding="utf-8") as handle:
+        expected = handle.read()
+    assert output == expected

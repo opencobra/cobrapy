@@ -1,20 +1,33 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-from importlib_resources import open_text
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
+import json
+
 from six import string_types
 
+import cobra.io.schemata
 from cobra.io.dict import model_to_dict, model_from_dict
+
 
 JSON_SPEC = "1"
 
+JSON_FORMAT = {
+    True: {
+        "indent": 2,
+        "separators": (", ", ": "),
+        "sort_keys": True,
+        "allow_nan": False
+    },
+    False: {
+        "separators": (",", ":"),
+        "sort_keys": False,
+        "allow_nan": False
+    }
+}
 
-def to_json(model, sort=False, **kwargs):
+
+def to_json(model, sort=False, pretty=False, **kwargs):
     """
     Return the model as a JSON document.
 
@@ -27,6 +40,10 @@ def to_json(model, sort=False, **kwargs):
     sort : bool, optional
         Whether to sort the metabolites, reactions, and genes or maintain the
         order defined in the model.
+    pretty : bool, optional
+        Whether to format the JSON more compactly (default) or in a more
+        verbose but easier to read fashion. Can be partially overwritten by the
+        ``kwargs``.
 
     Returns
     -------
@@ -37,10 +54,13 @@ def to_json(model, sort=False, **kwargs):
     --------
     save_json_model : Write directly to a file.
     json.dumps : Base function.
+
     """
     obj = model_to_dict(model, sort=sort)
     obj[u"version"] = JSON_SPEC
-    return json.dumps(obj, allow_nan=False, **kwargs)
+    options = JSON_FORMAT[pretty]
+    options.update(kwargs)
+    return json.dumps(obj, **options)
 
 
 def from_json(document):
@@ -60,6 +80,7 @@ def from_json(document):
     See Also
     --------
     load_json_model : Load directly from a file.
+
     """
     return model_from_dict(json.loads(document))
 
@@ -89,25 +110,18 @@ def save_json_model(model, filename, sort=False, pretty=False, **kwargs):
     --------
     to_json : Return a string representation.
     json.dump : Base function.
+
     """
     obj = model_to_dict(model, sort=sort)
     obj[u"version"] = JSON_SPEC
-
-    if pretty:
-        dump_opts = {
-            "indent": 4, "separators": (",", ": "), "sort_keys": True,
-            "allow_nan": False}
-    else:
-        dump_opts = {
-            "indent": 0, "separators": (",", ":"), "sort_keys": False,
-            "allow_nan": False}
-    dump_opts.update(**kwargs)
+    options = JSON_FORMAT[pretty]
+    options.update(**kwargs)
 
     if isinstance(filename, string_types):
         with open(filename, "w") as file_handle:
-            json.dump(obj, file_handle, **dump_opts)
+            json.dump(obj, file_handle, **options)
     else:
-        json.dump(obj, filename, **dump_opts)
+        json.dump(obj, filename, **options)
 
 
 def load_json_model(filename):
@@ -128,17 +142,10 @@ def load_json_model(filename):
     See Also
     --------
     from_json : Load from a string.
+
     """
     if isinstance(filename, string_types):
         with open(filename, "r") as file_handle:
             return model_from_dict(json.load(file_handle))
     else:
         return model_from_dict(json.load(filename))
-
-
-def init_json_schema():
-    """ Import the JSON schema for schema validation. """
-    with open_text("cobra.io.schemata", "json_schema.json",
-                   encoding="utf-8") as file_handle:
-        json_schema = json.load(file_handle)
-    return json_schema
