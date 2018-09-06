@@ -616,9 +616,9 @@ class Model(Object):
                 forward = reaction.forward_variable
                 reverse = reaction.reverse_variable
 
-                obj_coef = reaction.objective_coefficient
-
                 if context:
+
+                    obj_coef = reaction.objective_coefficient
 
                     if obj_coef != 0:
                         context(partial(
