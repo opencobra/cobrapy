@@ -5,6 +5,7 @@ from __future__ import absolute_import
 import pytest
 
 import cobra.util.solver as su
+from cobra.exceptions import OptimizationError
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
@@ -129,3 +130,18 @@ class TestSolverMods:
         model.slim_optimize()
         assert (constr[fx_name].lb, constr[fx_name].ub) == (
             None, model.solver.objective.value)
+
+
+def test_time_limit(large_model):
+    if su.interface_to_str(large_model.problem) != "glpk":
+        pytest.skip("requires GLPK")
+
+    # have to do it like that since optlang only accepts inputs in seconds
+    # whereas GLPK accets milliseconds
+    large_model.solver.configuration._smcp.tm_lim = 1
+    with pytest.warns(UserWarning):
+        sol = large_model.optimize()
+    assert sol.fluxes is not None
+
+    with pytest.raises(OptimizationError):
+        sol = large_model.optimize(raise_error=True)
