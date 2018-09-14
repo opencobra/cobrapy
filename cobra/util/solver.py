@@ -21,7 +21,7 @@ from warnings import warn
 import optlang
 from optlang.symbolics import Basic, Zero
 from optlang.interface import (OPTIMAL, NUMERIC, FEASIBLE, INFEASIBLE,
-                               SUBOPTIMAL, ITERATION_LIMIT)
+                               SUBOPTIMAL, ITERATION_LIMIT, TIME_LIMIT)
 
 from cobra.exceptions import OptimizationError, SolverNotFound,\
     OPTLANG_TO_EXCEPTIONS_DICT
@@ -36,7 +36,8 @@ solvers = {match.split("_interface")[0]: getattr(optlang, match)
 qp_solvers = ["cplex", "gurobi"]
 
 # optlang solution statuses which still allow retrieving primal values
-has_primals = [NUMERIC, FEASIBLE, INFEASIBLE, SUBOPTIMAL, ITERATION_LIMIT]
+has_primals = [NUMERIC, FEASIBLE, INFEASIBLE, SUBOPTIMAL, ITERATION_LIMIT,
+               TIME_LIMIT]
 
 
 def linear_reaction_coefficients(model, reactions=None):
