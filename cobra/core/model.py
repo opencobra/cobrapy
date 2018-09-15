@@ -22,7 +22,7 @@ from cobra.util.context import HistoryManager, resettable, get_context
 from cobra.util.solver import (
     get_solver_name, interface_to_str, set_objective, solvers,
     add_cons_vars_to_problem, remove_cons_vars_from_problem, assert_optimal)
-from cobra.util.util import AutoVivification, format_long_string
+from cobra.util.util import AutoVivification, format_long_string, is_not_sane
 from cobra.medium import find_boundary_types
 
 LOGGER = logging.getLogger(__name__)
@@ -91,7 +91,7 @@ class Model(Object):
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
             # genes based on their ids {Gene.id: Gene}
-            self._compartments = dict()
+            self._compartments = DictList()  # A list of cobra.Compartments
             self._contexts = []
 
             # from cameo ...
@@ -162,31 +162,36 @@ class Model(Object):
         return {met.compartment for met in self.metabolites
                 if met.compartment is not None}
 
+    def get_metabolites_in_compartment(self, compartment):
+        """
+        Return all metabolites in a specific compartment.
+
+        Parameters:
+        -----------
+        compartment : Either a `cobra.core.Compartment` object or a string
+            matching the ID of a compartment associated with the cobra.Model.
+
+        """
+        if isinstance(compartment, string_types):
+            return {m for m in self.metabolites if
+                    m.compartment.id == compartment}
+        else:
+            return {m for m in self.metabolites if
+                    m.compartment is compartment}
+
     @property
     def compartments(self):
-        return {met.compartment: self._compartments.get(met.compartment, '')
-                for met in self.metabolites if met.compartment is not None}
+        for met in self.metabolites:
+            if met.compartment is not None:
+                try:
+                    self._compartments.append(met.compartment)
+                except Exception:
+                    pass
+        return self._compartments
 
     @compartments.setter
-    def compartments(self, value):
-        """Get or set the dictionary of current compartment descriptions.
-
-        Assigning a dictionary to this property updates the model's
-        dictionary of compartment descriptions with the new values.
-
-        Parameters
-        ----------
-        value : dict
-            Dictionary mapping compartments abbreviations to full names.
-
-        Examples
-        --------
-        >>> import cobra.test
-        >>> model = cobra.test.create_test_model("textbook")
-        >>> model.compartments = {'c': 'the cytosol'}
-        {'c': 'the cytosol', 'e': 'extracellular'}
-        """
-        self._compartments.update(value)
+    def compartments(self, compartments):
+        self._compartments = compartments
 
     @property
     def medium(self):
@@ -330,11 +335,46 @@ class Model(Object):
         except Exception:  # pragma: no cover
             new._solver = copy(self.solver)  # pragma: no cover
 
+        try:
+            new.compartments = self.compartments
+        except Exception:
+            pass
+
         # it doesn't make sense to retain the context of a copied model so
         # assign a new empty context
         new._contexts = list()
 
         return new
+
+    def add_compartments(self, compartment_list):
+        """
+        Will add a list of compartments to the model object.
+
+        The change is reverted upon exit when using the model as a context.
+
+        Parameters
+        ----------
+        compartment_list : list
+            A list with `cobra.Compartment` objects as elements.
+
+        """
+        if not hasattr(compartment_list, '__iter__'):
+            compartment_list = [compartment_list]
+        if len(compartment_list) == 0:
+            return None
+
+        # First check whether the compartments exist in the model
+        compartment_list = [x for x in compartment_list
+                            if x not in self.compartments]
+
+        self._compartments += compartment_list
+
+        context = get_context(self)
+        if context:
+            context(partial(self._compartments.__isub__, compartment_list))
+            for x in compartment_list:
+                # Do we care?
+                context(partial(setattr, x, '_model', None))
 
     def add_metabolites(self, metabolite_list):
         """Will add a list of metabolites to the model object and add new
@@ -357,12 +397,29 @@ class Model(Object):
                            if x.id not in self.metabolites]
 
         bad_ids = [m for m in metabolite_list
-                   if not isinstance(m.id, string_types) or len(m.id) < 1]
+                   if is_not_sane(m.id)]
         if len(bad_ids) != 0:
             raise ValueError('invalid identifiers in {}'.format(repr(bad_ids)))
 
-        for x in metabolite_list:
-            x._model = self
+        for m in metabolite_list:
+            # Link up metabolite to model.
+            m._model = self
+            # Ignore if the metabolite has no compartment assignment at all.
+            if m.compartment is None:
+                continue
+            # If a compartment with this ID already exists in the model ..
+            if m.compartment.id in self.compartments:
+                # .. then re-trigger the metabolite.compartment.setter to now
+                # assign metabolite to this specific compartment.
+                LOGGER.warning("The compartment {} of metabolite {} has been "
+                               "replaced with a compartment which already "
+                               "exists in the model the ID of which is "
+                               "identical".format(m.compartment, m.id))
+                m.compartment = m.compartment.id
+            # Else, safely add the new compartment to the the central
+            # list of compartments.
+            else:
+                self.add_compartments([m.compartment])
         self.metabolites += metabolite_list
 
         # from cameo ...
@@ -381,6 +438,56 @@ class Model(Object):
             for x in metabolite_list:
                 # Do we care?
                 context(partial(setattr, x, '_model', None))
+
+    def remove_compartments(self, compartment_list, destructive=False):
+        """
+        Removes a list of compartments from the object.
+
+        Be aware that this method does not work with the context manager!
+        Before removing a non-empty compartment destructively we recommend
+        storing affected metabolites and compartment for later recovery:
+
+        >>> met_list = model.get_metabolites_in_compartment('x')
+        >>> backup_compartment = model.compartments.x.copy()
+        >>> model.remove_compartments([model.compartments.x], destructive=True)
+
+        Parameters
+        ----------
+        compartment_list : list
+            A list with `cobra.Compartment` objects as elements.
+
+        destructive : bool
+            If False then the compartment will not be removed if it contains
+            metabolites. If True the compartment will be removed even if when
+            it is non-empty. All associated metabolites will then lack a
+            compartment annotation.
+
+        """
+        if not hasattr(compartment_list, '__iter__'):
+            compartment_list = [compartment_list]
+        # Ignore compartments that don't exist in the model
+        compartment_list = [comp for comp in compartment_list
+                            if comp in self.compartments]
+        for comp in compartment_list:
+            compartment_mets = self.get_metabolites_in_compartment(comp)
+            if destructive and compartment_mets:
+                warn('The compartment {} was not empty. '
+                     'It contained {} metabolites which are now '
+                     'left without compartment association.'
+                     ''.format(comp.id, len(compartment_mets)))
+                for met in compartment_mets:
+                    met.compartment = None
+                self.compartments.remove(comp.id)
+                continue
+            elif not destructive and compartment_mets:
+                raise NameError('The compartment {} is not empty. Removing it '
+                                'will leave {} metabolites without '
+                                'compartment association. To bypass this '
+                                'error invoke this function with '
+                                'destructive=True.'
+                                ''.format(comp.id, len(compartment_mets)))
+            else:
+                self.compartments.remove(comp.id)
 
     def remove_metabolites(self, metabolite_list, destructive=False):
         """Remove a list of metabolites from the the object.
@@ -403,17 +510,24 @@ class Model(Object):
         # Make sure metabolites exist in model
         metabolite_list = [x for x in metabolite_list
                            if x.id in self.metabolites]
-        for x in metabolite_list:
-            x._model = None
+        for m in metabolite_list:
+            m._model = None
 
             if not destructive:
-                for the_reaction in list(x._reaction):
-                    the_coefficient = the_reaction._metabolites[x]
-                    the_reaction.subtract_metabolites({x: the_coefficient})
+                for the_reaction in list(m._reaction):
+                    the_coefficient = the_reaction._metabolites[m]
+                    the_reaction.subtract_metabolites({m: the_coefficient})
 
             else:
-                for x in list(x._reaction):
-                    x.remove_from_model()
+                for r in list(m._reaction):
+                    r.remove_from_model()
+
+            # Notify the user when removing a metabolite has left a
+            # compartment empty.
+            if len(self.get_metabolites_in_compartment(m.compartment)) == 1:
+                warn("{}  is the only metabolite in compartment {}. "
+                     "Removing it has left that compartment empty."
+                     "".format(m.id, m.compartment))
 
         self.metabolites -= metabolite_list
 
@@ -899,6 +1013,7 @@ class Model(Object):
             self.reactions._generate_index()
             self.metabolites._generate_index()
             self.genes._generate_index()
+            self._compartments._generate_index()
         if rebuild_relationships:
             for met in self.metabolites:
                 met._reaction.clear()
@@ -1089,15 +1204,16 @@ class Model(Object):
                 <td><strong>Objective expression</strong></td>
                 <td>{objective}</td>
             </tr><tr>
-                <td><strong>Compartments</strong></td>
+                <td><strong>{n_compartments} compartment(s)</strong></td>
                 <td>{compartments}</td>
             </tr>
-          </table>""".format(
+        </table>""".format(
             name=self.id,
             address='0x0%x' % id(self),
             num_metabolites=len(self.metabolites),
             num_reactions=len(self.reactions),
             objective=format_long_string(str(self.objective.expression), 100),
-            compartments=", ".join(
-                v if v else k for k, v in iteritems(self.compartments)
-            ))
+            n_compartments=len(self.compartments),
+            compartments=format_long_string(
+                ', '.join((r.id + " : " + r.name) for r in self._compartments),
+                200))

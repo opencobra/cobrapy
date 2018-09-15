@@ -4,41 +4,32 @@
 
 from __future__ import absolute_import
 
+from builtins import open  # Python 2 unicode compatibility.
 from os.path import join
-from pickle import dump, load
 
 import pytest
-from cobra.test.test_io.conftest import compare_models
 
-try:
-    import cPickle
-    cload = cPickle.load
-    cdump = cPickle.dump
-except ImportError:
-    cload = None
-    cdump = None
+import helpers
 
 
-@pytest.mark.parametrize("load_function", [load, cload])
-def test_read_pickle(data_directory, mini_model, load_function):
+PICKLE_MODULES = ["pickle", "cPickle"]
+
+
+@pytest.mark.parametrize("module", PICKLE_MODULES)
+def test_read_pickle(data_directory, mini_model, module):
     """Test the reading of model from pickle."""
-    if load_function is None:
-        pytest.skip()
-
-    with open(join(data_directory, "mini.pickle"), "rb") as infile:
-        pickle_model = load_function(infile)
-
-    assert compare_models(mini_model, pickle_model) is None
+    pickle = pytest.importorskip(module)
+    with open(join(data_directory, "mini.pickle"),
+              "rb", encoding=None) as infile:
+        pickle_model = pickle.load(infile)
+    helpers.assert_equal_models(mini_model, pickle_model)
 
 
-@pytest.mark.parametrize("dump_function", [dump, cdump])
-def test_write_pickle(tmpdir, mini_model, dump_function):
+@pytest.mark.parametrize("module", PICKLE_MODULES)
+def test_write_pickle(tmpdir, mini_model, module):
     """Test the writing of model to pickle."""
-    if dump_function is None:
-        pytest.skip()
-
+    pickle = pytest.importorskip(module)
     output_file = tmpdir.join("mini.pickle")
-    with open(str(output_file), "wb") as outfile:
-        dump_function(mini_model, outfile)
-
+    with open(str(output_file), "wb", encoding=None) as outfile:
+        pickle.dump(mini_model, outfile)
     assert output_file.check()

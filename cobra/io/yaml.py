@@ -14,6 +14,7 @@ YAML_SPEC = "1.2"
 
 
 class MyYAML(YAML):
+
     def dump(self, data, stream=None, **kwargs):
         inefficient = False
         if stream is None:

@@ -2,18 +2,32 @@
 
 from __future__ import absolute_import
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
+import json
+
 from six import string_types
 
+import cobra.io.schemata
 from cobra.io.dict import model_to_dict, model_from_dict
+
 
 JSON_SPEC = "1"
 
+JSON_FORMAT = {
+    True: {
+        "indent": 2,
+        "separators": (", ", ": "),
+        "sort_keys": True,
+        "allow_nan": False
+    },
+    False: {
+        "separators": (",", ":"),
+        "sort_keys": False,
+        "allow_nan": False
+    }
+}
 
-def to_json(model, sort=False, **kwargs):
+
+def to_json(model, sort=False, pretty=False, **kwargs):
     """
     Return the model as a JSON document.
 
@@ -26,6 +40,10 @@ def to_json(model, sort=False, **kwargs):
     sort : bool, optional
         Whether to sort the metabolites, reactions, and genes or maintain the
         order defined in the model.
+    pretty : bool, optional
+        Whether to format the JSON more compactly (default) or in a more
+        verbose but easier to read fashion. Can be partially overwritten by the
+        ``kwargs``.
 
     Returns
     -------
@@ -36,10 +54,13 @@ def to_json(model, sort=False, **kwargs):
     --------
     save_json_model : Write directly to a file.
     json.dumps : Base function.
+
     """
     obj = model_to_dict(model, sort=sort)
     obj[u"version"] = JSON_SPEC
-    return json.dumps(obj, allow_nan=False, **kwargs)
+    options = JSON_FORMAT[pretty]
+    options.update(kwargs)
+    return json.dumps(obj, **options)
 
 
 def from_json(document):
@@ -59,6 +80,7 @@ def from_json(document):
     See Also
     --------
     load_json_model : Load directly from a file.
+
     """
     return model_from_dict(json.loads(document))
 
@@ -88,25 +110,18 @@ def save_json_model(model, filename, sort=False, pretty=False, **kwargs):
     --------
     to_json : Return a string representation.
     json.dump : Base function.
+
     """
     obj = model_to_dict(model, sort=sort)
     obj[u"version"] = JSON_SPEC
-
-    if pretty:
-        dump_opts = {
-            "indent": 4, "separators": (",", ": "), "sort_keys": True,
-            "allow_nan": False}
-    else:
-        dump_opts = {
-            "indent": 0, "separators": (",", ":"), "sort_keys": False,
-            "allow_nan": False}
-    dump_opts.update(**kwargs)
+    options = JSON_FORMAT[pretty]
+    options.update(**kwargs)
 
     if isinstance(filename, string_types):
         with open(filename, "w") as file_handle:
-            json.dump(obj, file_handle, **dump_opts)
+            json.dump(obj, file_handle, **options)
     else:
-        json.dump(obj, filename, **dump_opts)
+        json.dump(obj, filename, **options)
 
 
 def load_json_model(filename):
@@ -127,116 +142,10 @@ def load_json_model(filename):
     See Also
     --------
     from_json : Load from a string.
+
     """
     if isinstance(filename, string_types):
         with open(filename, "r") as file_handle:
             return model_from_dict(json.load(file_handle))
     else:
         return model_from_dict(json.load(filename))
-
-
-json_schema = {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "COBRA",
-    "description": "JSON representation of COBRA model",
-    "type": "object",
-    "properties": {
-        "id": {"type": "string"},
-        "name": {"type": "string"},
-        "description": {"type": "string"},
-        "version": {
-            "type": "integer",
-            "default": 1,
-        },
-
-        "reactions": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "string"},
-                    "name": {"type": "string"},
-                    "metabolites": {
-                        "type": "object",
-                        "patternProperties": {
-                            ".*": {"type": "number"},
-                        }
-                    },
-                    "gene_reaction_rule": {"type": "string"},
-                    "lower_bound": {"type": "number"},
-                    "upper_bound": {"type": "number"},
-                    "objective_coefficient": {
-                        "type": "number",
-                        "default": 0,
-                    },
-                    "variable_kind": {
-                        "type": "string",
-                        "pattern": "integer|continuous",
-                        "default": "continuous"
-                    },
-                    "subsystem": {"type": "string"},
-                    "notes": {"type": "object"},
-                    "annotation": {"type": "object"},
-                },
-                "required": ["id", "name", "metabolites", "lower_bound",
-                             "upper_bound", "gene_reaction_rule"],
-                "additionalProperties": False,
-            }
-        },
-        "metabolites": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "string"},
-                    "name": {"type": "string"},
-                    "compartment": {
-                        "type": "string",
-                        "pattern": "[a-z]{1,2}"
-                    },
-                    "charge": {"type": "integer"},
-                    "formula": {"type": "string"},
-                    "_bound": {
-                        "type": "number",
-                        "default": 0
-                    },
-                    "_constraint_sense": {
-                        "type": "string",
-                        "default": "E",
-                        "pattern": "E|L|G",
-                    },
-                    "notes": {"type": "object"},
-                    "annotation": {"type": "object"},
-                },
-                "required": ["id", "name", "compartment"],
-                "additionalProperties": False,
-            }
-
-        },
-        "genes": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "string"},
-                    "name": {"type": "string"},
-                    "notes": {"type": "object"},
-                    "annotation": {"type": "object"},
-                },
-                "required": ["id", "name"],
-                "additionalProperties": False,
-            }
-
-        },
-        "compartments": {
-            "type": "object",
-            "patternProperties": {
-                "[a-z]{1,2}": {"type": "string"}
-            }
-        },
-        "notes": {"type": "object"},
-        "annotation": {"type": "object"},
-    },
-    "required": ["id", "reactions", "metabolites", "genes"],
-    "additionalProperties": False,
-}

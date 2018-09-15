@@ -1,23 +1,13 @@
 # -*- coding: utf-8 -*-
 
-"""Contains module level fixtures and utility functions."""
+"""Define testing helper functions."""
 
 from __future__ import absolute_import
-
-from os.path import join
-from pickle import dump, load
 
 import pytest
 
 
-@pytest.fixture(scope="module")
-def mini_model(data_directory):
-    """Fixture for mini model."""
-    with open(join(data_directory, "mini.pickle"), "rb") as infile:
-        return load(infile)
-
-
-def compare_models(model_1, model_2):
+def assert_equal_models(model_1, model_2):
     """Compare two models (only for testing purposes)."""
     assert len(model_1.compartments) == len(model_2.compartments)
     assert len(model_1.reactions) == len(model_2.reactions)

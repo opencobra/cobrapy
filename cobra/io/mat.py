@@ -11,7 +11,7 @@ from numpy import object as np_object
 from numpy import array, inf, isinf
 from six import string_types
 
-from cobra.core import Metabolite, Model, Reaction
+from cobra.core import Metabolite, Model, Reaction, Compartment
 from cobra.util import create_stoichiometric_matrix
 from cobra.util.solver import set_objective
 
@@ -120,7 +120,8 @@ def create_mat_metabolite_id(model):
     for met in model.metabolites:
         if not _get_id_compartment(met.id) and met.compartment:
             yield '{}[{}]'.format(met.id,
-                                  model.compartments[met.compartment].lower())
+                                  model.compartments.get_by_id(
+                                      met.compartment).name.lower())
         else:
             yield met.id
 
@@ -204,12 +205,15 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
             new_metabolite.compartment = m['comps'][0, 0][comp_index][0][0]
             if new_metabolite.compartment not in model.compartments:
                 comp_name = m['compNames'][0, 0][comp_index][0][0]
-                model.compartments[new_metabolite.compartment] = comp_name
+                model.add_compartments([
+                    Compartment(str(new_metabolite.compartment), comp_name)])
         else:
             new_metabolite.compartment = _get_id_compartment(new_metabolite.id)
-            if new_metabolite.compartment not in model.compartments:
-                model.compartments[
-                    new_metabolite.compartment] = new_metabolite.compartment
+            if new_metabolite.compartment not in model.compartments and \
+                    new_metabolite.compartment is not None:
+                model.add_compartments([
+                    Compartment(str(new_metabolite.compartment),
+                                new_metabolite.compartment)])
         try:
             new_metabolite.name = str(m["metNames"][0, 0][i][0][0])
         except (IndexError, ValueError):
