@@ -9,13 +9,16 @@ from warnings import warn
 
 from six import iteritems
 
-from cobra.core import Metabolite, Model, Reaction
+from cobra.core import Metabolite, Model, Reaction, Configuration
 from cobra.util.solver import set_objective
 
 try:
     import libsbml
 except ImportError:
     libsbml = None
+
+
+CONFIRUATION = Configuration()
 
 
 def parse_legacy_id(the_id, the_compartment=None, the_type='metabolite',
@@ -81,8 +84,8 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
         raise ImportError('create_cobra_model_from_sbml_file '
                           'requires python-libsbml')
 
-    __default_lower_bound = -1000
-    __default_upper_bound = 1000
+    __default_lower_bound = -CONFIRUATION.upper_bound
+    __default_upper_bound = CONFIRUATION.upper_bound
     __default_objective_coefficient = 0
     # Ensure that the file exists
     if not isfile(sbml_filename):

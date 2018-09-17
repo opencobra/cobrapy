@@ -1,58 +1,92 @@
 # -*- coding: utf-8 -*-
 
-"""Contains class for configuration."""
+"""Define the global configuration."""
 
 from __future__ import absolute_import
 
-from cobra.core import Model, Reaction
+import types
+
+from six import with_metaclass, string_types
+
+from cobra.exceptions import SolverNotFound
+from cobra.core.singleton import Singleton
+from cobra.util.solver import solvers
 
 
-class Configuration(object):
+__all__ = ("Configuration",)
+
+
+class BaseConfiguration(object):
     """
-    A class for setting and storing global configuration values.
+    Define global configuration value that will be honored by cobra functions.
 
     This object sets default values for the modifiable attributes like
     default solver, reaction bounds etc.
 
     Attributes
     ----------
-    solver: str, optional (default "glpk")
-        The default solver. The choices are the ones provided
-        by optlang: "glpk", "cplex" and "gurobi".
-    bounds: tuple of floats, optional (default (0.0, 1000.0))
-        The default reaction bounds. The reaction bounds are in the form
-        of (lower_bound, upper_bound).
+    solver : {"glpk", "cplex", "gurobi"}
+        The default solver for new models. The solver choices are the ones
+        provided by `optlang` and solvers installed in your environment.
+    lower_bound : float
+        The default lower bound should almost always be zero.
+    upper_bound : float
+        The default upper bound.
+    bounds : tuple of floats
+        The default reaction bounds for newly created reactions. The bounds
+        are in the form of lower_bound, upper_bound (default 0.0, 1000.0).
 
     """
-    __instance = None
 
-    def __new__(cls, *args, **kwargs):
-        if cls.__instance is None:
-            cls.__instance = object.__new__(cls)
-        return cls.__instance
-
-
-    def __init__(self, solver="glpk", bounds=(0.0, 1000.0)):
-        self._solver = solver
-        self._bounds = bounds
-
-
-    def set(self):
-        """Bind the values to the respective objects."""
-        # TODO: complete the binding
-        # Model.solver = self._solver
-        # Reaction.bounds = self._bounds
-
+    def __init__(self):
+        self._solver = None
+        self.lower_bound = None
+        self.upper_bound = None
+        # Set the default solver from a preferred order.
+        for name in ["gurobi", "cplex", "glpk"]:
+            try:
+                self.solver = name
+            except SolverNotFound:
+                continue
+            else:
+                break
+        self.bounds = 0, 1000
 
     @property
     def solver(self):
         return self._solver
 
+    @solver.setter
+    def solver(self, value):
+        not_valid_interface = SolverNotFound(
+            "'{}' is not a valid solver interface. Pick one from {}.".format(
+                value, ", ".join(list(solvers))))
+        if isinstance(value, string_types):
+            if value not in solvers:
+                raise not_valid_interface
+            interface = solvers[value]
+        elif isinstance(value, types.ModuleType) and hasattr(value, 'Model'):
+            interface = value
+        else:
+            raise not_valid_interface
+        self._solver = interface.Model
 
     @property
-    def default_bounds(self):
-        return self._bounds
+    def bounds(self):
+        return self.lower_bound, self.upper_bound
 
+    @bounds.setter
+    def bounds(self, bounds):
+        assert bounds[0] <= bounds[1]
+        self.lower_bound = bounds[0]
+        self.upper_bound = bounds[1]
 
     def __repr__(self):
-        return "<Configuration at 0x{}>".format(id(self))
+        return "solver: {}\nlower_bound: {}\nupper_bound: {}".format(
+            self.solver, self.lower_bound, self.upper_bound)
+
+
+class Configuration(with_metaclass(Singleton, BaseConfiguration)):
+    """Define the configuration to be singleton based."""
+
+    pass

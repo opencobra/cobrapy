@@ -14,6 +14,7 @@ from six import iteritems, iterkeys, string_types
 from future.utils import raise_from, raise_with_traceback
 
 from cobra.exceptions import OptimizationError
+from cobra.core.configuration import Configuration
 from cobra.core.gene import Gene, ast2str, parse_gpr, eval_gpr
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
@@ -21,6 +22,10 @@ from cobra.util.context import resettable, get_context
 from cobra.util.solver import (
     linear_reaction_coefficients, set_objective, check_solver_status)
 from cobra.util.util import format_long_string
+
+
+CONFIGURATION = Configuration()
+
 
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
@@ -55,8 +60,10 @@ class Reaction(Object):
         The upper flux bound
     """
 
-    def __init__(self, id=None, name='', subsystem='', lower_bound=0.,
-                 upper_bound=1000., objective_coefficient=0.):
+    def __init__(self, id=None, name='', subsystem='',
+                 lower_bound=CONFIGURATION.lower_bound,
+                 upper_bound=CONFIGURATION.upper_bound,
+                 objective_coefficient=0.):
         Object.__init__(self, id, name)
         self._gene_reaction_rule = ''
         self.subsystem = subsystem

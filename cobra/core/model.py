@@ -14,6 +14,7 @@ import six
 from six import iteritems, string_types
 
 from cobra.exceptions import SolverNotFound
+from cobra.core.configuration import Configuration
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
 from cobra.core.reaction import separate_forward_and_reverse_bounds, Reaction
@@ -25,7 +26,9 @@ from cobra.util.solver import (
 from cobra.util.util import AutoVivification, format_long_string
 from cobra.medium import find_boundary_types
 
+
 LOGGER = logging.getLogger(__name__)
+CONFIGURATION = Configuration()
 
 
 class Model(Object):
@@ -98,7 +101,7 @@ class Model(Object):
 
             # if not hasattr(self, '_solver'):  # backwards compatibility
             # with older cobrapy pickles?
-            interface = solvers[get_solver_name()]
+            interface = CONFIGURATION.solver
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(Zero)
             self._populate_solver(self.reactions, self.metabolites)

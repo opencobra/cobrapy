@@ -13,7 +13,7 @@ from warnings import catch_warnings, simplefilter, warn
 
 from six import iteritems, string_types
 
-from cobra.core import Gene, Metabolite, Model, Reaction
+from cobra.core import Gene, Metabolite, Model, Reaction, Configuration
 from cobra.core.gene import parse_gpr
 from cobra.manipulation.modify import _renames
 from cobra.manipulation.validate import check_metabolite_compartment_formula
@@ -52,6 +52,9 @@ try:
 except ImportError:
     class Basic:
         pass
+
+
+CONFIRUATION = Configuration()
 
 # deal with namespaces
 namespaces = {"fbc": "http://www.sbml.org/sbml/level3/version1/fbc/version2",
@@ -436,8 +439,8 @@ def model_to_xml(cobra_model, units=True):
         min_value = min(cobra_model.reactions.list_attr("lower_bound"))
         max_value = max(cobra_model.reactions.list_attr("upper_bound"))
     else:
-        min_value = -1000
-        max_value = 1000
+        min_value = -CONFIRUATION.upper_bound
+        max_value = CONFIRUATION.upper_bound
 
     SubElement(parameter_list, "parameter", value=strnum(min_value),
                id="cobra_default_lb", sboTerm="SBO:0000626", **param_attr)
