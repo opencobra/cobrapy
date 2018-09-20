@@ -27,6 +27,8 @@ from cobra.exceptions import OptimizationError, SolverNotFound,\
     OPTLANG_TO_EXCEPTIONS_DICT
 from cobra.util.context import get_context
 
+import pandas as pd
+
 
 # Define all the solvers that are found in optlang.
 solvers = {match.split("_interface")[0]: getattr(optlang, match)
@@ -385,6 +387,10 @@ def fix_objective_as_constraint(model, fraction=1, bound=None,
     name : str
         Name of the objective. May contain one `{}` placeholder which is filled
         with the name of the old objective.
+
+    Returns
+    -------
+        The value of the optimized objective * fraction
     """
     fix_objective_name = name.format(model.objective.name)
     if fix_objective_name in model.constraints:
@@ -399,6 +405,7 @@ def fix_objective_as_constraint(model, fraction=1, bound=None,
         model.objective.expression,
         name=fix_objective_name, ub=ub, lb=lb)
     add_cons_vars_to_problem(model, constraint, sloppy=True)
+    return bound
 
 
 def check_solver_status(status, raise_error=False):
@@ -432,3 +439,78 @@ def assert_optimal(model, message='optimization failed'):
         exception_cls = OPTLANG_TO_EXCEPTIONS_DICT.get(
             status, OptimizationError)
         raise exception_cls("{} ({})".format(message, status))
+
+
+def add_lp_feasibility(model):
+    """ Add new objective and variables to ensure a feasible solution. The
+    optimized objective will be zero for a feasible solution, and otherwise
+    represent the distance from feasibility.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to which the objective should be added
+
+    References
+    ----------
+    [1] Gomez et al.: DFBAlab: a fast and reliable MATLAB code for dynamic
+    flux balance analysis.  BMC Bioinformatics 2014 15:409.
+    """
+
+    obj_vars = []
+    prob = model.problem
+    for met in model.metabolites:
+        s_plus = prob.Variable("s_plus_" + met.id, lb=0)
+        s_minus = prob.Variable("s_minus_" + met.id, lb=0)
+
+        model.add_cons_vars([s_plus, s_minus])
+        model.constraints[met.id].set_linear_coefficients(
+            {s_plus: 1.0, s_minus: -1.0})
+        obj_vars.append(s_plus)
+        obj_vars.append(s_minus)
+
+    model.objective = prob.Objective(Zero, sloppy=True, direction="min")
+    model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
+
+
+def add_lexicographic_constraints(model,
+                                  objective_list,
+                                  objective_direction='max'):
+    """ For each of a set of reactions, optimize the model for that reaction
+    and set the optimal value as a constraint. Proceeds in the order of the
+    reaction list given. Useful in returning unique solutions for a set of
+    important exchange fluxes.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to which the objective should be added
+    objective_list : list
+        A list of reactions in the model for which unique fluxes are to be
+        determined
+    objective_direction : list or string
+        The desired objective direction for each reaction (if a list), or the
+        objective direction to use for all reactions.
+
+    Returns
+    -------
+    optimized_fluxes : pd.Series
+        A pd.Series containing the optimized fluxes for each of the given
+        reactions in `objective_list`
+
+    References
+    ----------
+    [1] Gomez et al.: DFBAlab: a fast and reliable MATLAB code for dynamic
+    flux balance analysis.  BMC Bioinformatics 2014 15:409.
+    """
+
+    if type(objective_direction) is not list:
+        objective_direction = [objective_direction] * len(objective_list)
+
+    constraints = []
+    for rxn_id, obj_dir in zip(objective_list, objective_direction):
+        model.objective = model.reactions.get_by_id(rxn_id)
+        model.objective_direction = obj_dir
+        constraints += [fix_objective_as_constraint(model)]
+
+    return pd.Series(constraints, index=objective_list)
