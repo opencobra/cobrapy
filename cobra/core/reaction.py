@@ -24,9 +24,6 @@ from cobra.util.solver import (
 from cobra.util.util import format_long_string
 
 
-CONFIGURATION = Configuration()
-
-
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
 and_or_search = re.compile(r'\(| and| or|\+|\)', re.IGNORECASE)
@@ -61,8 +58,6 @@ class Reaction(Object):
     """
 
     def __init__(self, id=None, name='', subsystem='',
-                 lower_bound=CONFIGURATION.lower_bound,
-                 upper_bound=CONFIGURATION.upper_bound,
                  objective_coefficient=0.):
         Object.__init__(self, id, name)
         self._gene_reaction_rule = ''
@@ -93,9 +88,11 @@ class Reaction(Object):
         # semiinteger.
         self.variable_kind = 'continuous'
 
+        CONFIGURATION = Configuration()
+        
         # from cameo ...
-        self._lower_bound = lower_bound
-        self._upper_bound = upper_bound
+        self._lower_bound = CONFIGURATION.lower_bound
+        self._upper_bound = CONFIGURATION.upper_bound
 
         self._reverse_variable = None
         self._forward_variable = None
