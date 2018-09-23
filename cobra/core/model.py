@@ -28,7 +28,6 @@ from cobra.medium import find_boundary_types
 
 
 LOGGER = logging.getLogger(__name__)
-CONFIGURATION = Configuration()
 
 
 class Model(Object):
@@ -39,7 +38,7 @@ class Model(Object):
     id_or_model : Model, string
         Either an existing Model object in which case a new model object is
         instantiated with the same properties as the original model,
-        or a the identifier to associate with the model as a string.
+        or an identifier to associate with the model as a string.
     name : string
         Human readable name for the model
 
@@ -59,8 +58,7 @@ class Model(Object):
     """
 
     def __setstate__(self, state):
-        """Make sure all cobra.Objects in the model point to the model.
-        """
+        """Make sure all cobra.Objects in the model point to the model."""
         self.__dict__.update(state)
         for y in ['reactions', 'genes', 'metabolites']:
             for x in getattr(self, y):
@@ -94,13 +92,14 @@ class Model(Object):
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
             # genes based on their ids {Gene.id: Gene}
-            self._compartments = dict()
+            self._compartments = {}
             self._contexts = []
 
             # from cameo ...
 
             # if not hasattr(self, '_solver'):  # backwards compatibility
             # with older cobrapy pickles?
+            CONFIGURATION = Configuration()
             interface = CONFIGURATION.solver
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(Zero)

@@ -50,7 +50,7 @@ class BaseConfiguration(object):
                 continue
             else:
                 break
-        self.bounds = 0, 1000
+        self.bounds = 0.0, 1000.0
 
     @property
     def solver(self):
@@ -69,7 +69,7 @@ class BaseConfiguration(object):
             interface = value
         else:
             raise not_valid_interface
-        self._solver = interface.Model
+        self._solver = interface
 
     @property
     def bounds(self):
