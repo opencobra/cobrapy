@@ -57,8 +57,8 @@ class Reaction(Object):
         The upper flux bound
     """
 
-    def __init__(self, id=None, name='', subsystem='',
-                 objective_coefficient=0.):
+    def __init__(self, id=None, name='', subsystem='', lower_bound=None,
+                 upper_bound=None, objective_coefficient=0.):
         Object.__init__(self, id, name)
         self._gene_reaction_rule = ''
         self.subsystem = subsystem
@@ -89,10 +89,12 @@ class Reaction(Object):
         self.variable_kind = 'continuous'
 
         CONFIGURATION = Configuration()
-        
+
         # from cameo ...
-        self._lower_bound = CONFIGURATION.lower_bound
-        self._upper_bound = CONFIGURATION.upper_bound
+        self._lower_bound = lower_bound if lower_bound is not None else \
+            CONFIGURATION.lower_bound
+        self._upper_bound = upper_bound if upper_bound is not None else \
+            CONFIGURATION.upper_bound
 
         self._reverse_variable = None
         self._forward_variable = None
