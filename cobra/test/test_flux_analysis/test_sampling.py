@@ -88,8 +88,9 @@ def test_validate_wrong_sample(achr, model):
 
 def test_fixed_seed(model):
     """Test result of fixed seed for sampling."""
-    s = sample(model, 1, seed=42)
-    assert np.allclose(s.TPI[0], 9.12037487)
+    s1 = sample(model, 1, seed=42)
+    s2 = sample(model, 1, seed=42)
+    assert np.isclose(s1.TPI[0], s2.TPI[0])
 
 
 def test_equality_constraint(model):
