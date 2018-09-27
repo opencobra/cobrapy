@@ -10,7 +10,7 @@ from six import with_metaclass, string_types
 
 from cobra.exceptions import SolverNotFound
 from cobra.core.singleton import Singleton
-from cobra.util.solver import solvers
+from cobra.util.solver import interface_to_str, solvers
 
 
 __all__ = ("Configuration",)
@@ -83,7 +83,7 @@ class BaseConfiguration(object):
 
     def __repr__(self):
         return "solver: {}\nlower_bound: {}\nupper_bound: {}".format(
-            self.solver, self.lower_bound, self.upper_bound)
+            interface_to_str(self.solver), self.lower_bound, self.upper_bound)
 
 
 class Configuration(with_metaclass(Singleton, BaseConfiguration)):
