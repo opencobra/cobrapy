@@ -5,6 +5,7 @@
 from __future__ import absolute_import
 
 import pytest
+import numpy as np
 
 import cobra.util.solver as su
 from cobra.exceptions import OptimizationError
@@ -140,7 +141,7 @@ def test_fix_objective_as_constraint_minimize(model, solver):
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
-def test_add_lp_feasibility(self, model, solver):
+def test_add_lp_feasibility(model, solver):
     model.solver = solver
 
     with model:
@@ -158,7 +159,7 @@ def test_add_lp_feasibility(self, model, solver):
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
-def test_add_lexicographic_constraints(self, model, solver):
+def test_add_lexicographic_constraints(model, solver):
     model.solver = solver
 
     rxns = ['Biomass_Ecoli_core', 'EX_glc__D_e', 'EX_o2_e']
