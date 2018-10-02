@@ -54,7 +54,7 @@ except ImportError:
         pass
 
 
-CONFIRUATION = Configuration()
+CONFIGURATION = Configuration()
 
 # deal with namespaces
 namespaces = {"fbc": "http://www.sbml.org/sbml/level3/version1/fbc/version2",
@@ -439,8 +439,8 @@ def model_to_xml(cobra_model, units=True):
         min_value = min(cobra_model.reactions.list_attr("lower_bound"))
         max_value = max(cobra_model.reactions.list_attr("upper_bound"))
     else:
-        min_value = -CONFIRUATION.upper_bound
-        max_value = CONFIRUATION.upper_bound
+        min_value = CONFIGURATION.lower_bound
+        max_value = CONFIGURATION.upper_bound
 
     SubElement(parameter_list, "parameter", value=strnum(min_value),
                id="cobra_default_lb", sboTerm="SBO:0000626", **param_attr)

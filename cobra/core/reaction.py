@@ -24,6 +24,8 @@ from cobra.util.solver import (
 from cobra.util.util import format_long_string
 
 
+CONFIGURATION = Configuration()
+
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
 and_or_search = re.compile(r'\(| and| or|\+|\)', re.IGNORECASE)
@@ -57,8 +59,8 @@ class Reaction(Object):
         The upper flux bound
     """
 
-    def __init__(self, id=None, name='', subsystem='', lower_bound=None,
-                 upper_bound=None, objective_coefficient=0.):
+    def __init__(self, id=None, name='', subsystem='', lower_bound=0.0,
+                 upper_bound=None, objective_coefficient=0.0):
         Object.__init__(self, id, name)
         self._gene_reaction_rule = ''
         self.subsystem = subsystem
@@ -68,7 +70,7 @@ class Reaction(Object):
 
         # A dictionary of metabolites and their stoichiometric coefficients in
         # this reaction.
-        self._metabolites = dict()
+        self._metabolites = {}
 
         # The set of compartments that partaking metabolites are in.
         self._compartments = None
@@ -84,11 +86,8 @@ class Reaction(Object):
                                       'setter')
 
         # Used during optimization.  Indicates whether the
-        # variable is modeled as continuous, integer, binary, semicontinous, or
-        # semiinteger.
+        # variable is modeled as continuous, integer, or binary.
         self.variable_kind = 'continuous'
-
-        CONFIGURATION = Configuration()
 
         # from cameo ...
         self._lower_bound = lower_bound if lower_bound is not None else \

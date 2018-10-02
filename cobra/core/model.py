@@ -21,13 +21,14 @@ from cobra.core.reaction import separate_forward_and_reverse_bounds, Reaction
 from cobra.core.solution import get_solution
 from cobra.util.context import HistoryManager, resettable, get_context
 from cobra.util.solver import (
-    get_solver_name, interface_to_str, set_objective, solvers,
+    interface_to_str, set_objective, solvers,
     add_cons_vars_to_problem, remove_cons_vars_from_problem, assert_optimal)
 from cobra.util.util import AutoVivification, format_long_string
 from cobra.medium import find_boundary_types
 
 
 LOGGER = logging.getLogger(__name__)
+CONFIGURATION = Configuration()
 
 
 class Model(Object):
@@ -99,7 +100,6 @@ class Model(Object):
 
             # if not hasattr(self, '_solver'):  # backwards compatibility
             # with older cobrapy pickles?
-            CONFIGURATION = Configuration()
             interface = CONFIGURATION.solver
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(Zero)

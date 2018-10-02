@@ -8,24 +8,27 @@ from cobra.core import Configuration
 from cobra.util.solver import interface_to_str
 
 
-def test_bounds():
+def test_default_bounds():
+    """Verify the default bounds."""
     config = Configuration()
-    # Check default bounds
-    assert config.bounds == (0.0, 1000.0)
-    # Change bounds
-    config.bounds = (100.0, 10000.0)
-    # Check new bounds
+    assert config.bounds == (-1000.0, 1000.0)
+
+
+def test_bounds():
+    """Test changing bounds."""
+    config = Configuration()
+    config.bounds = 100.0, 10000.0
     assert config.bounds == (100.0, 10000.0)
+    # Restore default values.
+    config.bounds = -1000.0, 1000.0
 
 
 def test_solver():
+    """Test assignment of different solvers."""
     config = Configuration()
-    # Check default solver
+    config.solver = "glpk"
     assert interface_to_str(config.solver) == "glpk"
-    # Change solver
     config.solver = "glpk_exact"
-    # Check new solver
     assert interface_to_str(config.solver) == "glpk_exact"
-    # Change it back for further tests
-    config.bounds = (0.0, 100.0)
+    # Restore default solver.
     config.solver = "glpk"

@@ -29,12 +29,12 @@ class BaseConfiguration(object):
         The default solver for new models. The solver choices are the ones
         provided by `optlang` and solvers installed in your environment.
     lower_bound : float
-        The default lower bound should almost always be zero.
+        The standard lower bound for reversible reactions (default -1000).
     upper_bound : float
-        The default upper bound.
+        The standard upper bound for all reactions (default 1000).
     bounds : tuple of floats
         The default reaction bounds for newly created reactions. The bounds
-        are in the form of lower_bound, upper_bound (default 0.0, 1000.0).
+        are in the form of lower_bound, upper_bound (default -1000.0, 1000.0).
 
     """
 
@@ -50,7 +50,7 @@ class BaseConfiguration(object):
                 continue
             else:
                 break
-        self.bounds = 0.0, 1000.0
+        self.bounds = -1000.0, 1000.0
 
     @property
     def solver(self):
@@ -77,6 +77,7 @@ class BaseConfiguration(object):
 
     @bounds.setter
     def bounds(self, bounds):
+        # TODO: We should consider allowing `None` for free bounds.
         assert bounds[0] <= bounds[1]
         self.lower_bound = bounds[0]
         self.upper_bound = bounds[1]
