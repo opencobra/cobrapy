@@ -13,6 +13,7 @@ be viewed at `nbviewer
     :maxdepth: 2
 
     getting_started
+    configuration
     building_model
     io
     simulating

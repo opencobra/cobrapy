@@ -9,13 +9,16 @@ from warnings import warn
 
 from six import iteritems
 
-from cobra.core import Metabolite, Model, Reaction
+from cobra.core import Metabolite, Model, Reaction, Configuration
 from cobra.util.solver import set_objective
 
 try:
     import libsbml
 except ImportError:
     libsbml = None
+
+
+CONFIGURATION = Configuration()
 
 
 def parse_legacy_id(the_id, the_compartment=None, the_type='metabolite',
@@ -81,8 +84,6 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
         raise ImportError('create_cobra_model_from_sbml_file '
                           'requires python-libsbml')
 
-    __default_lower_bound = -1000
-    __default_upper_bound = 1000
     __default_objective_coefficient = 0
     # Ensure that the file exists
     if not isfile(sbml_filename):
@@ -255,13 +256,13 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
         if not sbml_reaction.getKineticLaw():
 
             if sbml_reaction.getReversible():
-                parameter_dict['lower_bound'] = __default_lower_bound
-                parameter_dict['upper_bound'] = __default_upper_bound
+                parameter_dict['lower_bound'] = CONFIGURATION.lower_bound
+                parameter_dict['upper_bound'] = CONFIGURATION.upper_bound
             else:
                 # Assume that irreversible reactions only proceed from left to
                 # right.
                 parameter_dict['lower_bound'] = 0
-                parameter_dict['upper_bound'] = __default_upper_bound
+                parameter_dict['upper_bound'] = CONFIGURATION.upper_bound
 
             parameter_dict[
                 'objective_coefficient'] = __default_objective_coefficient
@@ -276,7 +277,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
         elif 'lower bound' in parameter_dict:
             reaction.lower_bound = parameter_dict['lower bound']
         elif sbml_reaction.getReversible():
-            reaction.lower_bound = __default_lower_bound
+            reaction.lower_bound = CONFIGURATION.lower_bound
         else:
             reaction.lower_bound = 0
 
@@ -285,7 +286,7 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
         elif 'upper bound' in parameter_dict:
             reaction.upper_bound = parameter_dict['upper bound']
         else:
-            reaction.upper_bound = __default_upper_bound
+            reaction.upper_bound = CONFIGURATION.upper_bound
 
         objective_coefficient = parameter_dict.get(
             'objective_coefficient', parameter_dict.get(
@@ -295,9 +296,9 @@ def create_cobra_model_from_sbml_file(sbml_filename, old_sbml=False,
 
         # ensure values are not set to nan or inf
         if isnan(reaction.lower_bound) or isinf(reaction.lower_bound):
-            reaction.lower_bound = __default_lower_bound
+            reaction.lower_bound = CONFIGURATION.lower_bound
         if isnan(reaction.upper_bound) or isinf(reaction.upper_bound):
-            reaction.upper_bound = __default_upper_bound
+            reaction.upper_bound = CONFIGURATION.upper_bound
 
         reaction_note_dict = parse_legacy_sbml_notes(
             sbml_reaction.getNotesString())
