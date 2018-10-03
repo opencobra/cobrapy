@@ -442,19 +442,25 @@ def assert_optimal(model, message='optimization failed'):
 
 
 def add_lp_feasibility(model):
-    """ Add new objective and variables to ensure a feasible solution. The
-    optimized objective will be zero for a feasible solution, and otherwise
-    represent the distance from feasibility.
+    """
+    Add a new objective and variables to ensure a feasible solution.
+
+    The optimized objective will be zero for a feasible solution and otherwise
+    represent the distance from feasibility (please see [1]_ for more
+    information).
 
     Parameters
     ----------
     model : cobra.Model
-        The model to which the objective should be added
+        The model whose feasibility is to be tested.
 
     References
     ----------
-    [1] Gomez et al.: DFBAlab: a fast and reliable MATLAB code for dynamic
-    flux balance analysis.  BMC Bioinformatics 2014 15:409.
+    .. [1] Gomez, Jose A., Kai Höffner, and Paul I. Barton.
+    “DFBAlab: A Fast and Reliable MATLAB Code for Dynamic Flux Balance
+    Analysis.” BMC Bioinformatics 15, no. 1 (December 18, 2014): 409.
+    https://doi.org/10.1186/s12859-014-0409-8.
+
     """
 
     obj_vars = []
@@ -474,43 +480,50 @@ def add_lp_feasibility(model):
 
 
 def add_lexicographic_constraints(model,
-                                  objective_list,
+                                  objectives,
                                   objective_direction='max'):
-    """ For each of a set of reactions, optimize the model for that reaction
-    and set the optimal value as a constraint. Proceeds in the order of the
-    reaction list given. Useful in returning unique solutions for a set of
-    important exchange fluxes.
+    """
+    Successively optimize separate targets in a specific order.
+
+    For each objective, optimize the model and set the optimal value as a
+    constraint. Proceed in the order of the objectives given. Due to the
+    specific order this is called lexicographic FBA [1]_. This
+    procedure is useful for returning unique solutions for a set of important
+    fluxes. Typically this is applied to exchange fluxes.
 
     Parameters
     ----------
     model : cobra.Model
-        The model to which the objective should be added
-    objective_list : list
-        A list of reactions in the model for which unique fluxes are to be
-        determined
-    objective_direction : list or string
-        The desired objective direction for each reaction (if a list), or the
-        objective direction to use for all reactions.
+        The model to be optimized.
+    objectives : list
+        A list of reactions (or objectives) in the model for which unique
+        fluxes are to be determined.
+    objective_direction : str or list, optional
+        The desired objective direction for each reaction (if a list) or the
+        objective direction to use for all reactions (default maximize).
 
     Returns
     -------
-    optimized_fluxes : pd.Series
-        A pd.Series containing the optimized fluxes for each of the given
-        reactions in `objective_list`
+    optimized_fluxes : pandas.Series
+        A vector containing the optimized fluxes for each of the given
+        reactions in `objectives`.
 
     References
     ----------
-    [1] Gomez et al.: DFBAlab: a fast and reliable MATLAB code for dynamic
-    flux balance analysis.  BMC Bioinformatics 2014 15:409.
+    .. [1] Gomez, Jose A., Kai Höffner, and Paul I. Barton.
+    “DFBAlab: A Fast and Reliable MATLAB Code for Dynamic Flux Balance
+    Analysis.” BMC Bioinformatics 15, no. 1 (December 18, 2014): 409.
+    https://doi.org/10.1186/s12859-014-0409-8.
+
     """
 
     if type(objective_direction) is not list:
-        objective_direction = [objective_direction] * len(objective_list)
+        objective_direction = [objective_direction] * len(objectives)
 
     constraints = []
-    for rxn_id, obj_dir in zip(objective_list, objective_direction):
+    for rxn_id, obj_dir in zip(objectives, objective_direction):
         model.objective = model.reactions.get_by_id(rxn_id)
         model.objective_direction = obj_dir
-        constraints += [fix_objective_as_constraint(model)]
+        constraints.append(fix_objective_as_constraint(model))
 
-    return pd.Series(constraints, index=objective_list)
+    return pd.Series(constraints, index=objectives)

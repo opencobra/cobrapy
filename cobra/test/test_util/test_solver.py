@@ -30,8 +30,6 @@ def test_solver_name():
 
 
 def test_choose_solver(model):
-    so = su.choose_solver(model)
-    assert su.interface_to_str(so) == "glpk"
     so = su.choose_solver(model, "glpk")
     assert su.interface_to_str(so) == "glpk"
 
