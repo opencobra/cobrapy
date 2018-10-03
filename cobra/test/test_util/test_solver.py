@@ -5,6 +5,7 @@
 from __future__ import absolute_import
 
 import pytest
+import numpy as np
 
 import cobra.util.solver as su
 from cobra.exceptions import OptimizationError
@@ -29,8 +30,6 @@ def test_solver_name():
 
 
 def test_choose_solver(model):
-    so = su.choose_solver(model)
-    assert su.interface_to_str(so) == "glpk"
     so = su.choose_solver(model, "glpk")
     assert su.interface_to_str(so) == "glpk"
 
@@ -137,6 +136,45 @@ def test_fix_objective_as_constraint_minimize(model, solver):
     model.slim_optimize()
     assert (constr[fx_name].lb, constr[fx_name].ub) == (
         None, model.solver.objective.value)
+
+
+@pytest.mark.parametrize("solver", optlang_solvers)
+def test_add_lp_feasibility(model, solver):
+    model.solver = solver
+
+    with model:
+        with model:
+            su.add_lp_feasibility(model)
+            assert 's_plus_succoa_c' in model.variables
+            assert np.isclose(model.slim_optimize(), 0.)
+
+        model.reactions.EX_glc__D_e.lower_bound = 1
+        assert np.isnan(model.slim_optimize())
+        assert 's_plus_succoa_c' not in model.variables
+
+        su.add_lp_feasibility(model)
+        assert np.isclose(model.slim_optimize(), 1.3872307692307695)
+
+
+@pytest.mark.parametrize("solver", optlang_solvers)
+def test_add_lexicographic_constraints(model, solver):
+    model.solver = solver
+
+    rxns = ['Biomass_Ecoli_core', 'EX_glc__D_e', 'EX_o2_e']
+
+    with model:
+        out = su.add_lexicographic_constraints(
+            model, rxns, ['max', 'min', 'max'])
+        print(model.reactions.Biomass_Ecoli_core.bounds)
+        assert np.isclose(model.constraints[-3].lb, out[rxns[0]])
+        assert np.isclose(model.constraints[-2].ub, out[rxns[1]])
+        assert np.isclose(model.constraints[-1].lb, out[rxns[2]])
+
+    with model:
+        su.add_lexicographic_constraints(model, rxns, 'max')
+
+    with model:
+        su.add_lexicographic_constraints(model, rxns)
 
 
 def test_time_limit(large_model):
