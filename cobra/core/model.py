@@ -507,9 +507,10 @@ class Model(Object):
             external = find_external_compartment(self)
             if metabolite.compartment != external:
                 raise ValueError("The metabolite is not an external metabolite"
-                                 " (is `%s` but should be `%s`). Either change"
-                                 " its compartment or rename the model"
-                                 " compartments to fix this." %
+                                 " (compartment is `%s` but should be `%s`). "
+                                 "Did you mean to add a demand or sink? "
+                                 "If not, either change its compartment or "
+                                 "rename the model compartments to fix this." %
                                  (metabolite.compartment, external))
         if type in types:
             prefix, lb, ub = types[type]
