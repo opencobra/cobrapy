@@ -24,7 +24,7 @@ from cobra.util.solver import (
     interface_to_str, set_objective, solvers,
     add_cons_vars_to_problem, remove_cons_vars_from_problem, assert_optimal)
 from cobra.util.util import AutoVivification, format_long_string
-from cobra.medium import find_boundary_types
+from cobra.medium import find_boundary_types, find_external_compartment
 
 
 LOGGER = logging.getLogger(__name__)
@@ -500,8 +500,17 @@ class Model(Object):
         >>> demand.build_reaction_string()
         'atp_c --> '
         """
-        types = dict(exchange=("EX", -ub, ub), demand=("DM", 0, ub),
-                     sink=("SK", -ub, ub))
+        types = {"exchange": ("EX", -ub, ub),
+                 "demand": ("DM", 0, ub),
+                 "sink": ("SK", -ub, ub)}
+        if type == "exchange":
+            external = find_external_compartment(self)
+            if metabolite.compartment != external:
+                raise ValueError("The metabolite is not an external metabolite"
+                                 " (is `%s` but should be `%s`). Either change"
+                                 " its compartment or rename the model"
+                                 " compartments to fix this." %
+                                 (metabolite.compartment, external))
         if type in types:
             prefix, lb, ub = types[type]
             reaction_id = "{}_{}".format(prefix, metabolite.id)

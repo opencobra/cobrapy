@@ -12,25 +12,11 @@ Nature protocols. Nature Publishing Group.
 http://doi.org/10.1038/nprot.2009.203
 """
 
-from collections import Counter
 import logging
+import pandas as pd
+from cobra.medium.annotations import excludes, sbo_terms, compartment_shortlist
 
 LOGGER = logging.getLogger(__name__)
-
-excludes = {"demand": ["SN_", "SK_", "sink", "EX_", "exchange"],
-            "exchange": ["demand", "DM_", "biosynthesis", "transcription",
-                         "replication", "SN_", "SK_", "sink"],
-            "sink": ["demand", "DM_", "biosynthesis", "transcription",
-                     "replication", "EX_", "exchange"]}
-"""A list of sub-strings in reaction IDs that usually indicate
-that the reaction is *not* a reaction of the specified type."""
-
-sbo_terms = {"demand": "SBO:0000628",
-             "exchange": "SBO:0000627",
-             "sink": "SBO:0000632",
-             "biomass": "SBO:0000629",
-             "pseudoreaction": "SBO:0000631"}
-"""SBO term identifiers for various boundary types."""
 
 
 def find_external_compartment(model):
@@ -49,25 +35,48 @@ def find_external_compartment(model):
     str
         The putative external compartment.
     """
-    if not model.boundary:
-        LOGGER.error("The heuristic for discovering an external compartment "
-                     "relies on boundary reactions. Yet, there are no "
-                     "boundary reactions in this model.")
-        raise RuntimeError(
-            "The external compartment cannot be identified. "
-            "The heuristic for discovering an external compartment "
-            "relies on boundary reactions. Yet, there are no "
-            "boundary reactions in this model.")
-    counts = Counter(tuple(r.compartments)[0] for r in model.boundary)
-    most = counts.most_common(1)[0][0]
-    if "e" in model.compartments:
-        if most == "e":
-            return "e"
-        else:
-            LOGGER.warning("There is an `e` compartment but it does not look "
-                           "like it is the actual external compartment.")
-        return most
-    return most
+    if model.boundary:
+        counts = pd.Series(tuple(r.compartments)[0] for r in model.boundary)
+        most = counts.value_counts()
+        print(most)
+        most = most.index[most == most.max()].to_series()
+    else:
+        most = None
+    like_external = compartment_shortlist["e"] + ["e"]
+    matches = pd.Series([co in like_external for co in model.compartments],
+                        index=model.compartments)
+
+    if matches.sum() == 1:
+        compartment = matches.index[matches][0]
+        LOGGER.info("Compartment `%s` sounds like an external compartment. "
+                    "Using this one without counting boundary reactions" %
+                    compartment)
+        return compartment
+    elif most is not None and matches.sum() > 1 and matches[most].sum() == 1:
+        compartment = matches.index[matches[most]][0]
+        LOGGER.warning("There are several compartments that look like an "
+                       "external compartment but `%s` has the most boundary "
+                       "reactions, so using that as the external "
+                       "compartment." % compartment)
+        return compartment
+    elif matches.sum() > 1:
+        raise RuntimeError("There are several compartments (%s) that look "
+                           "like external compartments but we can't tell "
+                           "which one to use. Consider renaming your "
+                           "compartments please.")
+
+    if most is not None:
+        return most[0]
+        LOGGER.warning("Could not identify an external compartment by name and"
+                       " choosing one with the most boundary reactions. That "
+                       "might be complete nonsense or change suddenly. "
+                       "Consider renaming your compartments using "
+                       "`Model.compartments` to fix this.")
+    # No info in the model, so give up
+    raise RuntimeError("The heuristic for discovering an external compartment "
+                       "relies on names and boundary reactions. Yet, there "
+                       "are no compartments with recognized names and no "
+                       "boundary reactions.")
 
 
 def is_boundary_type(reaction, boundary_type, external_compartment):

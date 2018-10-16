@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import pytest
 import pandas as pd
 import cobra.medium as medium
-from cobra import Reaction
+from cobra import Reaction, Metabolite
 
 
 class TestModelMedium:
@@ -52,7 +52,18 @@ class TestModelMedium:
 class TestTypeDetection:
 
     def test_external_compartment(self, model):
+        # by name
         assert medium.find_external_compartment(model) == "e"
+        # from boundary counts
+        for m in model.metabolites:
+            if m.compartment == "e":
+                m.compartment = "outside"
+        for r in model.reactions:
+            r._compartments = None
+        assert medium.find_external_compartment(model) == "outside"
+        # names are always right
+        model.exchanges[0].reactants[0].compartment = "extracellular"
+        assert medium.find_external_compartment(model) == "extracellular"
 
     def test_exchange(self, model):
         ex = model.exchanges
@@ -143,6 +154,14 @@ class TestErrorsAndExceptions:
     def test_no_boundary_reactions(self, empty_model):
         assert medium.find_boundary_types(empty_model, 'e', None) == []
 
-    def test_no_boundary_reactions(self, empty_model):
+    def test_no_names_or_boundary_reactions(self, empty_model):
         with pytest.raises(RuntimeError):
             medium.find_external_compartment(empty_model)
+
+    def test_bad_exchange(self, model):
+        with pytest.raises(ValueError):
+            m = Metabolite("baddy", compartment="nonsense")
+            model.add_boundary(m, type="exchange")
+        m = Metabolite("goody", compartment="e")
+        rxn = model.add_boundary(m, type="exchange")
+        assert isinstance(rxn, Reaction)
