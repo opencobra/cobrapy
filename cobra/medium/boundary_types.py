@@ -38,7 +38,6 @@ def find_external_compartment(model):
     if model.boundary:
         counts = pd.Series(tuple(r.compartments)[0] for r in model.boundary)
         most = counts.value_counts()
-        print(most)
         most = most.index[most == most.max()].to_series()
     else:
         most = None
