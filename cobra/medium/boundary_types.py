@@ -52,7 +52,7 @@ def find_external_compartment(model):
                     compartment)
         return compartment
     elif most is not None and matches.sum() > 1 and matches[most].sum() == 1:
-        compartment = matches.index[matches[most]][0]
+        compartment = most[matches[most]][0]
         LOGGER.warning("There are several compartments that look like an "
                        "external compartment but `%s` has the most boundary "
                        "reactions, so using that as the external "

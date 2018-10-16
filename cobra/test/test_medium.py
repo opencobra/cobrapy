@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import pytest
 import pandas as pd
 import cobra.medium as medium
-from cobra import Reaction, Metabolite
+from cobra import Reaction, Metabolite, Model
 
 
 class TestModelMedium:
@@ -64,6 +64,17 @@ class TestTypeDetection:
         # names are always right
         model.exchanges[0].reactants[0].compartment = "extracellular"
         assert medium.find_external_compartment(model) == "extracellular"
+
+    def test_multi_external(self, model):
+        for r in model.reactions:
+            r._compartments = None
+        model.exchanges[0].reactants[0].compartment = "extracellular"
+        # still works due to different boundary numbers
+        assert medium.find_external_compartment(model) == "e"
+        model.exchanges[1].reactants[0].compartment = "extra cellular"
+        model.remove_reactions(model.exchanges)
+        with pytest.raises(RuntimeError):
+            medium.find_external_compartment(model)
 
     def test_exchange(self, model):
         ex = model.exchanges
