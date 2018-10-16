@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import pytest
 import pandas as pd
 import cobra.medium as medium
-from cobra import Reaction, Metabolite, Model
+from cobra import Reaction, Metabolite
 
 
 class TestModelMedium:
@@ -73,6 +73,7 @@ class TestTypeDetection:
         assert medium.find_external_compartment(model) == "e"
         model.exchanges[1].reactants[0].compartment = "extra cellular"
         model.remove_reactions(model.exchanges)
+        # Now fails because same boundary count
         with pytest.raises(RuntimeError):
             medium.find_external_compartment(model)
 
