@@ -20,7 +20,8 @@ def test_flux_variability_benchmark(large_model, benchmark,
     """Benchmark FVA."""
     large_model.solver = all_solvers
     benchmark(flux_variability_analysis, large_model,
-              reaction_list=large_model.reactions[1::3])
+              reaction_list=large_model.reactions[1::3],
+              processes=1)
 
 
 def test_pfba_flux_variability(model, pfba_fva_results,
@@ -29,19 +30,27 @@ def test_pfba_flux_variability(model, pfba_fva_results,
     model.solver = all_solvers
     with pytest.warns(UserWarning):
         flux_variability_analysis(
-            model, pfba_factor=0.1, reaction_list=model.reactions[1::3])
+            model, pfba_factor=0.1, reaction_list=model.reactions[1::3],
+            processes=1)
     fva_out = flux_variability_analysis(
-        model, pfba_factor=1.1, reaction_list=model.reactions)
-    for name, result in iteritems(fva_out.T):
-        for k, v in iteritems(result):
-            assert abs(pfba_fva_results[k][name] - v) < 0.00001
-            assert abs(pfba_fva_results[k][name]) <= abs(
-                fva_results[k][name])
+        model, pfba_factor=1.1, reaction_list=model.reactions,
+        processes=1)
+    fva_out.sort_index(inplace=True)
+    assert np.allclose(fva_out, pfba_fva_results)
+    abs_fva_out = fva_out.dropna().abs()
+    abs_fva_results = fva_results.dropna().abs()
+    comparison = np.isclose(abs_fva_out, abs_fva_results) | (
+            abs_fva_out < abs_fva_results)
+    assert comparison["minimum"].all()
+    assert comparison["maximum"].all()
+
+
+def test_loopless_pfba_fva(model):
     loop_reactions = [model.reactions.get_by_id(rid)
                       for rid in ("FRD7", "SUCDi")]
     fva_loopless = flux_variability_analysis(
         model, pfba_factor=1.1, reaction_list=loop_reactions,
-        loopless=True)
+        loopless=True, processes=1)
     assert np.allclose(fva_loopless["maximum"],
                        fva_loopless["minimum"])
 
@@ -49,11 +58,18 @@ def test_pfba_flux_variability(model, pfba_fva_results,
 def test_flux_variability(model, fva_results, all_solvers):
     """Test FVA."""
     model.solver = all_solvers
-    fva_out = flux_variability_analysis(
-        model, reaction_list=model.reactions)
-    for name, result in iteritems(fva_out.T):
-        for k, v in iteritems(result):
-            assert abs(fva_results[k][name] - v) < 0.00001
+    fva_out = flux_variability_analysis(model, reaction_list=model.reactions,
+                                        processes=1)
+    fva_out.sort_index(inplace=True)
+    assert np.allclose(fva_out, fva_results)
+
+
+def test_parallel_flux_variability(model, fva_results, all_solvers):
+    """Test parallel FVA."""
+    model.solver = all_solvers
+    fva_out = flux_variability_analysis(model, processes=2)
+    fva_out.sort_index(inplace=True)
+    assert np.allclose(fva_out, fva_results)
 
 
 # Loopless FVA

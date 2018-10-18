@@ -126,15 +126,16 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
         reaction_ids = [r.id for r in model.reactions]
     else:
         reaction_ids = [r.id
-                         for r in model.reactions.get_by_any(reaction_list)]
+                        for r in model.reactions.get_by_any(reaction_list)]
 
     if processes is None:
         processes = CONFIGURATION.processes
-    processes = min(processes, len(reaction_list))
+    num_reactions = len(reaction_ids)
+    processes = min(processes, num_reactions)
 
     fva_result = DataFrame({
-        "minimum": zeros(len(reaction_list), dtype=float),
-        "maximum": zeros(len(reaction_list), dtype=float)
+        "minimum": zeros(num_reactions, dtype=float),
+        "maximum": zeros(num_reactions, dtype=float)
     }, index=reaction_ids)
     prob = model.problem
     with model:
