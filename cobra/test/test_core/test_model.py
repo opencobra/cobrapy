@@ -5,8 +5,9 @@
 from __future__ import absolute_import
 
 import warnings
-from copy import deepcopy
+from copy import copy, deepcopy
 from math import isnan
+import os
 
 import numpy as np
 import pandas as pd
@@ -15,10 +16,16 @@ from optlang.symbolics import Zero
 
 import cobra.util.solver as su
 from cobra.core import Metabolite, Model, Reaction
+from cobra.util.solver import SolverNotFound, set_objective, solvers
 from cobra.exceptions import OptimizationError
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
+
+
+def same_ex(ex1, ex2):
+    """Compare to expressions for mathematical equality."""
+    return ex1.simplify() == ex2.simplify()
 
 
 @pytest.mark.parametrize("solver", stable_optlang)
@@ -616,6 +623,291 @@ def test_context_manager(model):
             assert model.reactions[0].bounds == bounds2
         assert model.reactions[0].bounds == bounds1
     assert model.reactions[0].bounds == bounds0
+
+
+def test_objective_coefficient_reflects_changed_objective(model):
+    biomass_r = model.reactions.get_by_id('Biomass_Ecoli_core')
+    assert biomass_r.objective_coefficient == 1
+    model.objective = "PGI"
+    assert biomass_r.objective_coefficient == 0
+    assert model.reactions.PGI.objective_coefficient == 1
+
+
+def test_change_objective_through_objective_coefficient(model):
+    biomass_r = model.reactions.get_by_id('Biomass_Ecoli_core')
+    pgi = model.reactions.PGI
+    pgi.objective_coefficient = 2
+    coef_dict = model.objective.expression.as_coefficients_dict()
+    # Check that objective has been updated
+    assert coef_dict[pgi.forward_variable] == 2.0
+    assert coef_dict[pgi.reverse_variable] == -2.0
+    # Check that original objective is still in there
+    assert coef_dict[biomass_r.forward_variable] == 1.0
+    assert coef_dict[biomass_r.reverse_variable] == -1.0
+
+
+def test_transfer_objective(model):
+    new_mod = Model("new model")
+    new_mod.add_reactions(model.reactions)
+    new_mod.objective = model.objective
+    assert (set(str(x) for x in model.objective.expression.args) == set(
+        str(x) for x in new_mod.objective.expression.args))
+    new_mod.slim_optimize()
+    assert abs(new_mod.objective.value - 0.874) < 0.001
+
+
+def test_model_from_other_model(model):
+    model = Model(id_or_model=model)
+    for reaction in model.reactions:
+        assert reaction == model.reactions.get_by_id(reaction.id)
+
+
+def test_add_reactions(model):
+    r1 = Reaction('r1')
+    r1.add_metabolites({Metabolite('A'): -1, Metabolite('B'): 1})
+    r1.lower_bound, r1.upper_bound = -999999., 999999.
+    r2 = Reaction('r2')
+    r2.add_metabolites(
+        {Metabolite('A'): -1, Metabolite('C'): 1, Metabolite('D'): 1})
+    r2.lower_bound, r2.upper_bound = 0., 999999.
+    model.add_reactions([r1, r2])
+    r2.objective_coefficient = 3.
+    assert r2.objective_coefficient == 3.
+    assert model.reactions[-2] == r1
+    assert model.reactions[-1] == r2
+    assert isinstance(model.reactions[-2].reverse_variable,
+                      model.problem.Variable)
+    coefficients_dict = model.objective.expression. \
+        as_coefficients_dict()
+    biomass_r = model.reactions.get_by_id('Biomass_Ecoli_core')
+    assert coefficients_dict[biomass_r.forward_variable] == 1.
+    assert coefficients_dict[biomass_r.reverse_variable] == -1.
+    assert coefficients_dict[
+               model.reactions.r2.forward_variable] == 3.
+    assert coefficients_dict[
+               model.reactions.r2.reverse_variable] == -3.
+
+
+def test_add_reactions_single_existing(model):
+    rxn = model.reactions[0]
+    r1 = Reaction(rxn.id)
+    r1.add_metabolites({Metabolite('A'): -1, Metabolite('B'): 1})
+    r1.lower_bound, r1.upper_bound = -999999., 999999.
+    model.add_reactions([r1])
+    assert rxn in model.reactions
+    assert r1 is not model.reactions.get_by_id(rxn.id)
+
+
+def test_add_reactions_duplicate(model):
+    rxn = model.reactions[0]
+    r1 = Reaction('r1')
+    r1.add_metabolites({Metabolite('A'): -1, Metabolite('B'): 1})
+    r1.lower_bound, r1.upper_bound = -999999., 999999.
+    r2 = Reaction(rxn.id)
+    r2.add_metabolites(
+        {Metabolite('A'): -1, Metabolite('C'): 1, Metabolite('D'): 1})
+    model.add_reactions([r1, r2])
+    assert r1 in model.reactions
+    assert rxn in model.reactions
+    assert r2 is not model.reactions.get_by_id(rxn.id)
+
+
+def test_add_cobra_reaction(model):
+    r = Reaction(id="c1")
+    model.add_reaction(r)
+    assert isinstance(model.reactions.c1, Reaction)
+
+
+def test_all_objects_point_to_all_other_correct_objects(model):
+    for reaction in model.reactions:
+        assert reaction.model == model
+        for gene in reaction.genes:
+            assert gene == model.genes.get_by_id(gene.id)
+            assert gene.model == model
+            for reaction2 in gene.reactions:
+                assert reaction2.model == model
+                assert reaction2 == model.reactions.get_by_id(
+                    reaction2.id)
+
+        for metabolite in reaction.metabolites:
+            assert metabolite.model == model
+            assert metabolite == model.metabolites.get_by_id(
+                metabolite.id)
+            for reaction2 in metabolite.reactions:
+                assert reaction2.model == model
+                assert reaction2 == model.reactions.get_by_id(
+                    reaction2.id)
+
+
+def test_objects_point_to_correct_other_after_copy(model):
+    for reaction in model.reactions:
+        assert reaction.model == model
+        for gene in reaction.genes:
+            assert gene == model.genes.get_by_id(gene.id)
+            assert gene.model == model
+            for reaction2 in gene.reactions:
+                assert reaction2.model == model
+                assert reaction2 == model.reactions.get_by_id(
+                    reaction2.id)
+
+        for metabolite in reaction.metabolites:
+            assert metabolite.model == model
+            assert metabolite == model.metabolites.get_by_id(
+                metabolite.id)
+            for reaction2 in metabolite.reactions:
+                assert reaction2.model == model
+                assert reaction2 == model.reactions.get_by_id(
+                    reaction2.id)
+
+
+def test_remove_reactions(model):
+    reactions_to_remove = model.reactions[10:30]
+    assert all([reaction.model is model for reaction in
+                reactions_to_remove])
+    assert all(
+        [model.reactions.get_by_id(reaction.id) == reaction for
+         reaction in reactions_to_remove])
+
+    model.remove_reactions(reactions_to_remove)
+    assert all(
+        [reaction.model is None for reaction in reactions_to_remove])
+    for reaction in reactions_to_remove:
+        assert reaction.id not in list(
+            model.variables.keys())
+
+    model.add_reactions(reactions_to_remove)
+    for reaction in reactions_to_remove:
+        assert reaction in model.reactions
+
+
+def test_objective(model):
+    obj = model.objective
+    assert obj.get_linear_coefficients(obj.variables) == {
+               model.variables["Biomass_Ecoli_core_reverse_2cdba"]: -1,
+               model.variables["Biomass_Ecoli_core"]: 1}
+    assert obj.direction == "max"
+
+
+def test_change_objective(model):
+    expression = 1.0 * model.variables['ENO'] + \
+                 1.0 * model.variables['PFK']
+    model.objective = model.problem.Objective(
+        expression)
+    assert same_ex(model.objective.expression, expression)
+    model.objective = "ENO"
+    eno_obj = model.problem.Objective(
+        model.reactions.ENO.flux_expression, direction="max")
+    pfk_obj = model.problem.Objective(
+        model.reactions.PFK.flux_expression, direction="max")
+    assert same_ex(model.objective.expression, eno_obj.expression)
+
+    with model:
+        model.objective = "PFK"
+        assert same_ex(model.objective.expression, pfk_obj.expression)
+    assert same_ex(model.objective.expression, eno_obj.expression)
+    expression = model.objective.expression
+    atpm = model.reactions.get_by_id("ATPM")
+    biomass = model.reactions.get_by_id("Biomass_Ecoli_core")
+    with model:
+        model.objective = atpm
+    assert same_ex(model.objective.expression, expression)
+    with model:
+        atpm.objective_coefficient = 1
+        biomass.objective_coefficient = 2
+    assert same_ex(model.objective.expression, expression)
+
+    with model:
+        set_objective(model, model.problem.Objective(
+            atpm.flux_expression))
+        assert same_ex(model.objective.expression, atpm.flux_expression)
+    assert same_ex(model.objective.expression, expression)
+
+    expression = model.objective.expression
+    with model:
+        with model:  # Test to make sure nested contexts are OK
+            set_objective(model, atpm.flux_expression,
+                          additive=True)
+            assert same_ex(model.objective.expression,
+                           expression + atpm.flux_expression)
+    assert same_ex(model.objective.expression, expression)
+
+
+def test_set_reaction_objective(model):
+    model.objective = model.reactions.ACALD
+    assert str(model.objective.expression) == str(
+        1.0 * model.reactions.ACALD.forward_variable -
+        1.0 * model.reactions.ACALD.reverse_variable)
+
+
+def test_set_reaction_objective_str(model):
+    model.objective = model.reactions.ACALD.id
+    assert str(model.objective.expression) == str(
+        1.0 * model.reactions.ACALD.forward_variable -
+        1.0 * model.reactions.ACALD.reverse_variable)
+
+
+def test_invalid_objective_raises(model):
+    with pytest.raises(ValueError):
+        setattr(model, 'objective', 'This is not a valid objective!')
+    with pytest.raises(TypeError):
+        setattr(model, 'objective', 3.)
+
+
+@pytest.mark.skipif("cplex" not in solvers, reason="need cplex")
+def test_solver_change(model):
+    solver_id = id(model.solver)
+    problem_id = id(model.solver.problem)
+    solution = model.optimize().fluxes
+    model.solver = "cplex"
+    assert id(model.solver) != solver_id
+    assert id(model.solver.problem) != problem_id
+    new_solution = model.optimize().fluxes
+    assert np.allclose(solution, new_solution, rtol=0, atol=1E-06)
+
+
+def test_no_change_for_same_solver(model):
+    solver_id = id(model.solver)
+    problem_id = id(model.solver.problem)
+    model.solver = "glpk"
+    assert id(model.solver) == solver_id
+    assert id(model.solver.problem) == problem_id
+
+
+def test_invalid_solver_change_raises(model):
+    with pytest.raises(SolverNotFound):
+        setattr(model, 'solver', [1, 2, 3])
+    with pytest.raises(SolverNotFound):
+        setattr(model, 'solver',
+                'ThisIsDefinitelyNotAvalidSolver')
+    with pytest.raises(SolverNotFound):
+        setattr(model, 'solver', os)
+
+
+@pytest.mark.skipif('cplex' not in solvers, reason='no cplex')
+def test_change_solver_to_cplex_and_check_copy_works(model):
+    assert round(abs(model.optimize().f - 0.8739215069684306), 7) == 0
+    model_copy = model.copy()
+    assert round(abs(model_copy.optimize().f - 0.8739215069684306),
+                 7) == 0
+    # Second, change existing glpk based model to cplex
+    model.solver = 'cplex'
+    assert round(abs(model.optimize().f - 0.8739215069684306),
+                 7) == 0
+    model_copy = copy(model)
+    assert round(abs(model_copy.optimize().f - 0.8739215069684306),
+                 7) == 0
+
+
+def test_copy_preserves_existing_solution(solved_model):
+    solution, model = solved_model
+    model_cp = copy(model)
+    primals_original = [variable.primal for variable in
+                        model.variables]
+    primals_copy = [variable.primal for variable in
+                    model_cp.variables]
+    abs_diff = abs(
+        np.array(primals_copy) - np.array(primals_original))
+    assert not any(abs_diff > 1e-6)
 
 
 def test_repr_html_(model):
