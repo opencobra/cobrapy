@@ -4,7 +4,10 @@
 
 from __future__ import absolute_import
 
+import logging
 import types
+from multiprocessing import cpu_count
+from warnings import warn
 
 from six import with_metaclass, string_types
 
@@ -14,6 +17,9 @@ from cobra.util.solver import interface_to_str, solvers
 
 
 __all__ = ("Configuration",)
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class BaseConfiguration(object):
@@ -35,6 +41,10 @@ class BaseConfiguration(object):
     bounds : tuple of floats
         The default reaction bounds for newly created reactions. The bounds
         are in the form of lower_bound, upper_bound (default -1000.0, 1000.0).
+    processes : int
+        A default number of processes to use where multiprocessing is
+        possible. The default number corresponds to the number of available
+        cores (hyperthreads).
 
     """
 
@@ -51,6 +61,12 @@ class BaseConfiguration(object):
             else:
                 break
         self.bounds = -1000.0, 1000.0
+        try:
+            self.processes = cpu_count()
+        except NotImplementedError:
+            LOGGER.warning(
+                "The number of cores could not be detected - assuming 1.")
+            self.processes = 1
 
     @property
     def solver(self):
@@ -83,8 +99,10 @@ class BaseConfiguration(object):
         self.upper_bound = bounds[1]
 
     def __repr__(self):
-        return "solver: {}\nlower_bound: {}\nupper_bound: {}".format(
-            interface_to_str(self.solver), self.lower_bound, self.upper_bound)
+        return "solver: {}\nlower_bound: {}\nupper_bound: {}\n" \
+            "processes: {}".format(
+                interface_to_str(self.solver), self.lower_bound,
+                self.upper_bound, self.processes)
 
 
 class Configuration(with_metaclass(Singleton, BaseConfiguration)):
