@@ -500,9 +500,13 @@ class Model(Object):
         >>> demand.build_reaction_string()
         'atp_c --> '
         """
-        types = {"exchange": ("EX", -ub, ub),
-                 "demand": ("DM", 0, ub),
-                 "sink": ("SK", -ub, ub)}
+        ub = CONFIGURATION.upper_bound if ub is None else ub
+        lb = CONFIGURATION.lower_bound if lb is None else lb
+        types = {
+            "exchange": ("EX", -ub, ub),
+            "demand": ("DM", 0, ub),
+            "sink": ("SK", -ub, ub)
+        }
         if type == "exchange":
             external = find_external_compartment(self)
             if metabolite.compartment != external:

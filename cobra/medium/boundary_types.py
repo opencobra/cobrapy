@@ -74,8 +74,8 @@ def find_external_compartment(model):
     # No info in the model, so give up
     raise RuntimeError("The heuristic for discovering an external compartment "
                        "relies on names and boundary reactions. Yet, there "
-                       "are no compartments with recognized names and no "
-                       "boundary reactions.")
+                       "are neither compartments with recognized names nor "
+                       "boundary reactions in the model.")
 
 
 def is_boundary_type(reaction, boundary_type, external_compartment):
