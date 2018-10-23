@@ -505,7 +505,7 @@ class Model(Object):
         types = {
             "exchange": ("EX", lb, ub),
             "demand": ("DM", 0, ub),
-            "sink": ("SK", -ub, ub)
+            "sink": ("SK", lb, ub)
         }
         if type == "exchange":
             external = find_external_compartment(self)
