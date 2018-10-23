@@ -503,7 +503,7 @@ class Model(Object):
         ub = CONFIGURATION.upper_bound if ub is None else ub
         lb = CONFIGURATION.lower_bound if lb is None else lb
         types = {
-            "exchange": ("EX", -ub, ub),
+            "exchange": ("EX", lb, ub),
             "demand": ("DM", 0, ub),
             "sink": ("SK", -ub, ub)
         }
