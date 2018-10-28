@@ -85,10 +85,6 @@ class Reaction(Object):
                                       'supported. Use the model.objective '
                                       'setter')
 
-        # Used during optimization.  Indicates whether the
-        # variable is modeled as continuous, integer, or binary.
-        self.variable_kind = 'continuous'
-
         # from cameo ...
         self._lower_bound = lower_bound if lower_bound is not None else \
             CONFIGURATION.lower_bound

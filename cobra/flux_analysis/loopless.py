@@ -272,10 +272,8 @@ def construct_loopless_model(cobra_model):
             thermo_stoic["thermo_var_" + met.id][bound_id] = stoic
         # I * 1000 > v --> I * 1000 - v > 0
         reaction_ind = Reaction(reaction.id + "_indicator")
-        reaction_ind.variable_kind = "integer"
         reaction_ind.upper_bound = 1
         reaction_ub = Metabolite(reaction.id + "_ind_ub")
-        reaction_ub._constraint_sense = "G"
         reaction.add_metabolites({reaction_ub: -1})
         reaction_ind.add_metabolites({reaction_ub: max_ub})
         # This adds a compensating term for 0 flux reactions, so we get
@@ -283,7 +281,6 @@ def construct_loopless_model(cobra_model):
         # S^T x < 1000 for 0 flux reactions and
         # S^T x < -1 for reactions with nonzero flux.
         reaction_bound = Metabolite(bound_id)
-        reaction_bound._constraint_sense = "L"
         reaction_bound._bound = max_ub
         reaction_ind.add_metabolites({reaction_bound: max_ub + 1})
         model.add_reaction(reaction_ind)
