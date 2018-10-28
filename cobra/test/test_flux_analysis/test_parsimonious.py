@@ -29,9 +29,9 @@ def test_pfba(model, all_solvers):
     n_constraints = len(model.constraints)
     solution = pfba(model)
     assert solution.status == "optimal"
-    assert np.isclose(solution.x_dict["Biomass_Ecoli_core"],
+    assert np.isclose(solution.fluxes["Biomass_Ecoli_core"],
                       0.8739, atol=1e-4, rtol=0.0)
-    abs_x = [abs(i) for i in solution.x]
+    abs_x = [abs(i) for i in solution.fluxes.values]
     assert np.isclose(sum(abs_x), 518.4221, atol=1e-4, rtol=0.0)
     # test changes to model reverted
     assert expression == model.objective.expression
@@ -51,9 +51,9 @@ def test_pfba(model, all_solvers):
     # Test fraction_of_optimum
     solution = pfba(model, fraction_of_optimum=0.95)
     assert solution.status == "optimal"
-    assert np.isclose(solution.x_dict["Biomass_Ecoli_core"],
+    assert np.isclose(solution.fluxes["Biomass_Ecoli_core"],
                       0.95 * 0.8739, atol=1e-4, rtol=0.0)
-    abs_x = [abs(i) for i in solution.x]
+    abs_x = [abs(i) for i in solution.fluxes.values]
     assert np.isclose(sum(abs_x), 493.4400, atol=1e-4, rtol=0.0)
 
     # Infeasible solution
