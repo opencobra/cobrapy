@@ -785,7 +785,8 @@ def test_objective(model):
     obj = model.objective
     assert obj.get_linear_coefficients(obj.variables) == {
         model.variables["Biomass_Ecoli_core_reverse_2cdba"]: -1,
-        model.variables["Biomass_Ecoli_core"]: 1}
+        model.variables["Biomass_Ecoli_core"]: 1
+    }
     assert obj.direction == "max"
 
 
@@ -886,20 +887,16 @@ def test_invalid_solver_change_raises(model):
 
 @pytest.mark.skipif('cplex' not in solvers, reason='no cplex')
 def test_change_solver_to_cplex_and_check_copy_works(model):
-    assert round(abs(model.optimize().objective_value - 0.8739215069684306),
-                 7) == 0
+    assert (model.slim_optimize() - 0.8739215069684306) == pytest.approx(0.0)
     model_copy = model.copy()
-    assert round(
-        abs(model_copy.optimize().objective_value - 0.8739215069684306),
-        7) == 0
+    assert (model_copy.slim_optimize() - 0.8739215069684306) == pytest.approx(
+        0.0)
     # Second, change existing glpk based model to cplex
     model.solver = 'cplex'
-    assert round(abs(model.optimize().objective_value - 0.8739215069684306),
-                 7) == 0
+    assert (model.slim_optimize() - 0.8739215069684306) == pytest.approx(0.0)
     model_copy = copy(model)
-    assert round(
-        abs(model_copy.optimize().objective_value - 0.8739215069684306),
-        7) == 0
+    assert (model_copy.slim_optimize() - 0.8739215069684306) == pytest.approx(
+        0.0)
 
 
 def test_copy_preserves_existing_solution(solved_model):
