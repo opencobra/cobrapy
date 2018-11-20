@@ -12,8 +12,9 @@ Nature protocols. Nature Publishing Group.
 http://doi.org/10.1038/nprot.2009.203
 """
 
-from collections import Counter
 import logging
+from collections import Counter
+
 
 LOGGER = logging.getLogger(__name__)
 

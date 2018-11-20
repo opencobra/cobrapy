@@ -12,6 +12,7 @@ import six
 
 from cobra.core import Metabolite, Model, Reaction
 
+
 stable_optlang = ["glpk", "cplex", "gurobi"]
 
 

@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
-import multiprocessing
 import logging
-from itertools import product
+import multiprocessing
+from builtins import dict, map
 from functools import partial
-from builtins import (map, dict)
+from itertools import product
 
 import pandas as pd
 from optlang.exceptions import SolverError
 
 import cobra.util.solver as sutil
 from cobra.core import Configuration
-from cobra.manipulation.delete import find_gene_knockout_reactions
 from cobra.flux_analysis.moma import add_moma
 from cobra.flux_analysis.room import add_room
+from cobra.manipulation.delete import find_gene_knockout_reactions
 
 
 LOGGER = logging.getLogger(__name__)

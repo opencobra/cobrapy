@@ -8,7 +8,9 @@ from os.path import join
 from pickle import dump, load
 
 import pytest
+
 from cobra.test.test_io.conftest import compare_models
+
 
 try:
     import cPickle

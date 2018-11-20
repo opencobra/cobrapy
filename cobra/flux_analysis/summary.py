@@ -11,10 +11,11 @@ from six import iteritems, print_
 from six.moves import zip_longest
 from tabulate import tabulate
 
+from cobra.core import get_solution
 from cobra.flux_analysis.variability import flux_variability_analysis
 from cobra.util.solver import linear_reaction_coefficients
 from cobra.util.util import format_long_string
-from cobra.core import get_solution
+
 
 LOGGER = logging.getLogger(__name__)
 

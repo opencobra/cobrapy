@@ -7,8 +7,10 @@ from __future__ import absolute_import
 from os.path import getsize, join
 
 import pytest
+
 from cobra import io
 from cobra.test.test_io.conftest import compare_models
+
 
 try:
     import libsbml

@@ -4,11 +4,12 @@
 
 from __future__ import absolute_import
 
-import pytest
 import numpy as np
+import pytest
 
 import cobra.util.solver as su
 from cobra.exceptions import OptimizationError
+
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]

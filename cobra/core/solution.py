@@ -10,9 +10,10 @@ from warnings import warn
 
 from numpy import empty, nan
 from optlang.interface import OPTIMAL
-from pandas import Series, DataFrame, option_context
+from pandas import DataFrame, Series, option_context
 
 from cobra.util.solver import check_solver_status
+
 
 __all__ = ("Solution", "LegacySolution", "get_solution")
 

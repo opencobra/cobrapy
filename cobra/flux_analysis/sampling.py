@@ -18,8 +18,10 @@ import numpy as np
 import pandas
 from optlang.interface import OPTIMAL
 from optlang.symbolics import Zero
-from cobra.util import (create_stoichiometric_matrix, constraint_matrices,
-                        nullspace)
+
+from cobra.util import (
+    constraint_matrices, create_stoichiometric_matrix, nullspace)
+
 
 LOGGER = getLogger(__name__)
 """The logger for the package."""

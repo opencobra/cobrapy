@@ -7,8 +7,9 @@ from __future__ import absolute_import
 import json
 from os.path import join
 
-import cobra.io as cio
 import pytest
+
+import cobra.io as cio
 from cobra.test.test_io.conftest import compare_models
 
 

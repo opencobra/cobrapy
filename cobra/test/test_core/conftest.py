@@ -8,6 +8,7 @@ import pytest
 
 from cobra.util.solver import solvers
 
+
 solver_trials = ['glpk',
                  pytest.param('cplex',
                               marks=pytest.mark.skipif(

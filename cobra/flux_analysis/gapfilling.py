@@ -2,9 +2,9 @@
 
 from __future__ import absolute_import
 
-from optlang.symbolics import add, Zero
-
 from optlang.interface import OPTIMAL
+from optlang.symbolics import Zero, add
+
 from cobra.core import Model
 from cobra.util import fix_objective_as_constraint
 

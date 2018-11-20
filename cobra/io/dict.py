@@ -11,6 +11,7 @@ from six import iteritems, string_types
 from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.util.solver import set_objective
 
+
 _REQUIRED_REACTION_ATTRIBUTES = [
     "id", "name", "metabolites", "lower_bound", "upper_bound",
     "gene_reaction_rule"]

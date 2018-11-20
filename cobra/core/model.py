@@ -2,29 +2,29 @@
 
 from __future__ import absolute_import
 
-import types
 import logging
+import types
 from copy import copy, deepcopy
 from functools import partial
 from warnings import warn
 
 import optlang
-from optlang.symbolics import Basic, Zero
 import six
+from optlang.symbolics import Basic, Zero
 from six import iteritems, string_types
 
-from cobra.exceptions import SolverNotFound
 from cobra.core.configuration import Configuration
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
-from cobra.core.reaction import separate_forward_and_reverse_bounds, Reaction
+from cobra.core.reaction import Reaction, separate_forward_and_reverse_bounds
 from cobra.core.solution import get_solution
-from cobra.util.context import HistoryManager, resettable, get_context
-from cobra.util.solver import (
-    interface_to_str, set_objective, solvers,
-    add_cons_vars_to_problem, remove_cons_vars_from_problem, assert_optimal)
-from cobra.util.util import AutoVivification, format_long_string
+from cobra.exceptions import SolverNotFound
 from cobra.medium import find_boundary_types
+from cobra.util.context import HistoryManager, get_context, resettable
+from cobra.util.solver import (
+    add_cons_vars_to_problem, assert_optimal, interface_to_str,
+    remove_cons_vars_from_problem, set_objective, solvers)
+from cobra.util.util import AutoVivification, format_long_string
 
 
 LOGGER = logging.getLogger(__name__)

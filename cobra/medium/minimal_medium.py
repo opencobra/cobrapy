@@ -2,10 +2,12 @@
 
 """Contains functions and helpers to obtain minimal growth media."""
 
-from optlang.symbolics import Zero
-from optlang.interface import OPTIMAL
-import pandas as pd
 import logging
+
+import pandas as pd
+from optlang.interface import OPTIMAL
+from optlang.symbolics import Zero
+
 from cobra.medium.boundary_types import find_boundary_types
 
 

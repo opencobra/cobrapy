@@ -9,8 +9,9 @@ from warnings import warn
 
 from six import iteritems
 
-from cobra.core import Metabolite, Model, Reaction, Configuration
+from cobra.core import Configuration, Metabolite, Model, Reaction
 from cobra.util.solver import set_objective
+
 
 try:
     import libsbml

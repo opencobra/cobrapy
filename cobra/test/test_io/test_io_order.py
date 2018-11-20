@@ -12,6 +12,7 @@ import pytest
 import cobra.io as cio
 from cobra import DictList, Model
 
+
 LOGGER = logging.getLogger(__name__)
 
 

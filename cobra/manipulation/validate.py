@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from math import isinf, isnan
 from warnings import warn
 
+
 NOT_MASS_BALANCED_TERMS = {"SBO:0000627",  # EXCHANGE
                            "SBO:0000628",  # DEMAND
                            "SBO:0000629",  # BIOMASS

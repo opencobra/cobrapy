@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-import pytest
+
 import pandas as pd
+import pytest
+
 import cobra.medium as medium
 from cobra import Reaction
 

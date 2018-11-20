@@ -13,21 +13,21 @@ allow you to implement custom flux analysis methods with ease.
 from __future__ import absolute_import
 
 import re
-from functools import partial
 from collections import namedtuple
+from functools import partial
 from types import ModuleType
 from warnings import warn
 
 import optlang
-from optlang.symbolics import Basic, Zero
-from optlang.interface import (OPTIMAL, NUMERIC, FEASIBLE, INFEASIBLE,
-                               SUBOPTIMAL, ITERATION_LIMIT, TIME_LIMIT)
-
-from cobra.exceptions import OptimizationError, SolverNotFound,\
-    OPTLANG_TO_EXCEPTIONS_DICT
-from cobra.util.context import get_context
-
 import pandas as pd
+from optlang.interface import (
+    FEASIBLE, INFEASIBLE, ITERATION_LIMIT, NUMERIC, OPTIMAL, SUBOPTIMAL,
+    TIME_LIMIT)
+from optlang.symbolics import Basic, Zero
+
+from cobra.exceptions import (
+    OPTLANG_TO_EXCEPTIONS_DICT, OptimizationError, SolverNotFound)
+from cobra.util.context import get_context
 
 
 # Define all the solvers that are found in optlang.
