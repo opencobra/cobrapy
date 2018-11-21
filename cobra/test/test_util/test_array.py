@@ -9,6 +9,7 @@ import pytest
 
 from cobra.util import create_stoichiometric_matrix
 
+
 try:
     import scipy
 except ImportError:

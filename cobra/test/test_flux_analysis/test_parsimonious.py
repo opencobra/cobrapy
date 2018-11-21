@@ -5,8 +5,8 @@
 import warnings
 
 import numpy as np
-
 import pytest
+
 from cobra.exceptions import Infeasible
 from cobra.flux_analysis.parsimonious import add_pfba, pfba
 

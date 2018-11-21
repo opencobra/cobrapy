@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+from itertools import chain
+
 import pytest
 
 from cobra.core import Metabolite, Model, Reaction
 from cobra.manipulation import *
-from itertools import chain
 
 
 class TestManipulation:

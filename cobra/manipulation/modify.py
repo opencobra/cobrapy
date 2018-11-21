@@ -4,14 +4,15 @@ from __future__ import absolute_import
 
 from ast import NodeTransformer
 from itertools import chain
+from warnings import warn
 
 from six import iteritems
-from warnings import warn
 
 from cobra.core import Gene, Reaction
 from cobra.core.gene import ast2str
 from cobra.manipulation.delete import get_compiled_gene_reaction_rules
 from cobra.util.solver import set_objective
+
 
 _renames = (
     (".", "_DOT_"),

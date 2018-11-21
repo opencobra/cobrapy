@@ -10,17 +10,17 @@ from functools import partial
 from operator import attrgetter
 from warnings import warn
 
-from six import iteritems, iterkeys, string_types
 from future.utils import raise_from, raise_with_traceback
+from six import iteritems, iterkeys, string_types
 
-from cobra.exceptions import OptimizationError
 from cobra.core.configuration import Configuration
-from cobra.core.gene import Gene, ast2str, parse_gpr, eval_gpr
+from cobra.core.gene import Gene, ast2str, eval_gpr, parse_gpr
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
-from cobra.util.context import resettable, get_context
+from cobra.exceptions import OptimizationError
+from cobra.util.context import get_context, resettable
 from cobra.util.solver import (
-    linear_reaction_coefficients, set_objective, check_solver_status)
+    check_solver_status, linear_reaction_coefficients, set_objective)
 from cobra.util.util import format_long_string
 
 

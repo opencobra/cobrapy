@@ -5,9 +5,9 @@
 from __future__ import absolute_import
 
 import numpy as np
+import pytest
 from six import iteritems
 
-import pytest
 from cobra.exceptions import Infeasible
 from cobra.flux_analysis.variability import (
     find_blocked_reactions, find_essential_genes, find_essential_reactions,

@@ -13,11 +13,12 @@ from warnings import catch_warnings, simplefilter, warn
 
 from six import iteritems, string_types
 
-from cobra.core import Gene, Metabolite, Model, Reaction, Configuration
+from cobra.core import Configuration, Gene, Metabolite, Model, Reaction
 from cobra.core.gene import parse_gpr
 from cobra.manipulation.modify import _renames
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import set_objective
+
 
 try:
     from lxml.etree import (

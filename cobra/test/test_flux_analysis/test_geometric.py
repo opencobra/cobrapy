@@ -5,9 +5,9 @@
 from __future__ import absolute_import
 
 import numpy as np
+import pytest
 from pandas import Series
 
-import pytest
 from cobra.core import Metabolite, Model, Reaction, Solution
 from cobra.flux_analysis import geometric_fba
 

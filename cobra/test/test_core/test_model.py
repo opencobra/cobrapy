@@ -4,10 +4,10 @@
 
 from __future__ import absolute_import
 
+import os
 import warnings
 from copy import copy, deepcopy
 from math import isnan
-import os
 
 import numpy as np
 import pandas as pd
@@ -16,8 +16,9 @@ from optlang.symbolics import Zero
 
 import cobra.util.solver as su
 from cobra.core import Metabolite, Model, Reaction
-from cobra.util.solver import SolverNotFound, set_objective, solvers
 from cobra.exceptions import OptimizationError
+from cobra.util.solver import SolverNotFound, set_objective, solvers
+
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]

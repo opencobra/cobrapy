@@ -12,6 +12,7 @@ import pytest
 import cobra.io as cio
 from cobra import DictList, Model
 
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -72,10 +73,6 @@ def get_ids(iterable):
 
 @pytest.mark.parametrize("read, write, ext", [
     ("read_sbml_model", "write_sbml_model", ".xml"),
-    pytest.mark.skip(("read_legacy_sbml", "write_legacy_sbml", ".xml"),
-                     reason="Order for legacy SBML I/O is uninteresting."),
-    pytest.mark.skip(("load_matlab_model", "save_matlab_model", ".mat"),
-                     reason="Order for Matlab model I/O is uninteresting."),
     ("load_json_model", "save_json_model", ".json"),
     ("load_yaml_model", "save_yaml_model", ".yml"),
 ])

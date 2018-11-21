@@ -9,10 +9,10 @@ import types
 from multiprocessing import cpu_count
 from warnings import warn
 
-from six import with_metaclass, string_types
+from six import string_types, with_metaclass
 
-from cobra.exceptions import SolverNotFound
 from cobra.core.singleton import Singleton
+from cobra.exceptions import SolverNotFound
 from cobra.util.solver import interface_to_str, solvers
 
 

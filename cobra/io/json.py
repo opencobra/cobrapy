@@ -2,13 +2,16 @@
 
 from __future__ import absolute_import
 
+from six import string_types
+
+from cobra.io.dict import model_from_dict, model_to_dict
+
+
 try:
     import simplejson as json
 except ImportError:
     import json
-from six import string_types
 
-from cobra.io.dict import model_to_dict, model_from_dict
 
 JSON_SPEC = "1"
 

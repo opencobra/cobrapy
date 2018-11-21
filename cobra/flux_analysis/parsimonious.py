@@ -3,13 +3,14 @@
 from __future__ import absolute_import
 
 import logging
-from warnings import warn
 from itertools import chain
+from warnings import warn
 
 from optlang.symbolics import Zero
 
-from cobra.util import solver as sutil
 from cobra.core.solution import get_solution
+from cobra.util import solver as sutil
+
 
 LOGGER = logging.getLogger(__name__)
 

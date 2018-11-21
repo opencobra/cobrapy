@@ -2,17 +2,16 @@
 
 from __future__ import absolute_import, division
 
-from six import iteritems
 from itertools import product
 
 import pandas as pd
+from numpy import abs, full, linspace, nan
 from optlang.interface import OPTIMAL
-from numpy import (
-    nan, abs, linspace, full)
+from six import iteritems
 
 import cobra.util.solver as sutil
-from cobra.flux_analysis import flux_variability_analysis as fva
 from cobra.exceptions import OptimizationError
+from cobra.flux_analysis import flux_variability_analysis as fva
 
 
 def production_envelope(model, reactions, objective=None, carbon_sources=None,

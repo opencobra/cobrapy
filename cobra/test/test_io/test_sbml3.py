@@ -6,9 +6,9 @@ from __future__ import absolute_import
 
 from os.path import join
 
+import pytest
 from six import itervalues
 
-import pytest
 from cobra import io
 from cobra.test.test_io.conftest import compare_models
 

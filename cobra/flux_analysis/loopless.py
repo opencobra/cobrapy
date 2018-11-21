@@ -5,12 +5,12 @@
 from __future__ import absolute_import
 
 import numpy
-from six import iteritems
 from optlang.symbolics import Zero
+from six import iteritems
 
 from cobra.core import Metabolite, Reaction, get_solution
-from cobra.util import create_stoichiometric_matrix, nullspace
 from cobra.manipulation.modify import convert_to_irreversible
+from cobra.util import create_stoichiometric_matrix, nullspace
 
 
 def add_loopless(model, zero_cutoff=1e-12):

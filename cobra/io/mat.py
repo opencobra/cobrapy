@@ -7,13 +7,14 @@ from collections import OrderedDict
 from uuid import uuid4
 from warnings import warn
 
-from numpy import object as np_object
 from numpy import array, inf, isinf
+from numpy import object as np_object
 from six import string_types
 
 from cobra.core import Metabolite, Model, Reaction
 from cobra.util import create_stoichiometric_matrix
 from cobra.util.solver import set_objective
+
 
 try:
     import scipy.sparse as scipy_sparse
