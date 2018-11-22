@@ -47,7 +47,6 @@ class Metabolite(Species):
         self.compartment = compartment
         self.charge = charge
 
-        self._constraint_sense = 'E'
         self._bound = 0.
 
     def _set_id_with_model(self, value):
