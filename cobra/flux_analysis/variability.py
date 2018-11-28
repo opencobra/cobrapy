@@ -199,25 +199,33 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
     return fva_result[["minimum", "maximum"]]
 
 
-def find_blocked_reactions(model, reaction_list=None,
+def find_blocked_reactions(model,
+                           reaction_list=None,
                            zero_cutoff=1e-9,
                            open_exchanges=False,
                            processes=None):
-    """Finds reactions that cannot carry a flux with the current
-    exchange reaction settings for a cobra model, using flux variability
-    analysis.
+    """
+    Find reactions that cannot carry any flux.
+
+    The question whether or not a reaction is blocked is highly dependent
+    on the current exchange reaction settings for a COBRA model. Hence an
+    argument is provided to open all exchange reactions.
+
+    Notes
+    -----
+    Sink and demand reactions are left untouched. Please modify them manually.
 
     Parameters
     ----------
     model : cobra.Model
-        The model to analyze
-    reaction_list : list
-        List of reactions to consider, use all if left missing
-    zero_cutoff : float
+        The model to analyze.
+    reaction_list : list, optional
+        List of reactions to consider, the default includes all model
+        reactions.
+    zero_cutoff : float, optional
         Flux value which is considered to effectively be zero.
-    open_exchanges : bool
-        If true, set bounds on exchange reactions to very high values to
-        avoid that being the bottle-neck.
+    open_exchanges : bool, optional
+        Whether or not to open all exchange reactions to very high flux ranges.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of reactions is large. If not explicitly
@@ -226,7 +234,7 @@ def find_blocked_reactions(model, reaction_list=None,
     Returns
     -------
     list
-        List with the blocked reactions
+        List with the identifiers of blocked reactions.
     """
     with model:
         if open_exchanges:
@@ -235,19 +243,21 @@ def find_blocked_reactions(model, reaction_list=None,
                                    max(reaction.upper_bound, 1000))
         if reaction_list is None:
             reaction_list = model.reactions
-        # limit to reactions which are already 0. If the reactions already
-        # carry flux in this solution, then they can not be blocked.
+        # Limit the search space to reactions which have zero flux. If the
+        # reactions already carry flux in this solution,
+        # then they cannot be blocked.
         model.slim_optimize()
         solution = get_solution(model, reactions=reaction_list)
-        reaction_list = [rxn for rxn in reaction_list if
-                         abs(solution.fluxes[rxn.id]) < zero_cutoff]
-        # run fva to find reactions where both max and min are 0
+        reaction_list = solution.fluxes[
+            solution.fluxes.abs() < zero_cutoff].index.tolist()
+        # Run FVA to find reactions where both the minimal and maximal flux
+        # are zero (below the cut off).
         flux_span = flux_variability_analysis(
             model, fraction_of_optimum=0., reaction_list=reaction_list,
             processes=processes
         )
-        return [rxn_id for rxn_id, min_max in flux_span.iterrows() if
-                max(abs(min_max)) < zero_cutoff]
+        return flux_span[
+            flux_span.abs().max(axis=1) < zero_cutoff].index.tolist()
 
 
 def find_essential_genes(model, threshold=None, processes=None):
