@@ -15,7 +15,6 @@ http://doi.org/10.1038/nprot.2009.203
 import logging
 from collections import Counter
 
-
 LOGGER = logging.getLogger(__name__)
 
 excludes = {"demand": ["SN_", "SK_", "sink", "EX_", "exchange"],
