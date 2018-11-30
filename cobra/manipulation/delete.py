@@ -6,7 +6,6 @@ from ast import And, NodeTransformer
 
 from six import iteritems, string_types
 
-from cobra.core import Model
 from cobra.core.gene import ast2str, eval_gpr, parse_gpr
 
 
