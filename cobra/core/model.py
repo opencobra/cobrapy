@@ -19,7 +19,7 @@ from cobra.core.object import Object
 from cobra.core.reaction import Reaction, separate_forward_and_reverse_bounds
 from cobra.core.solution import get_solution
 from cobra.exceptions import SolverNotFound
-from cobra.medium import find_boundary_types
+from cobra.medium import find_boundary_types, sbo_terms
 from cobra.util.context import HistoryManager, get_context, resettable
 from cobra.util.solver import (
     add_cons_vars_to_problem, assert_optimal, interface_to_str,
@@ -510,9 +510,9 @@ class Model(Object):
         if lb is None:
             lb = CONFIGURATION.lower_bound
         types = {
-            "exchange": ("EX", lb, ub, "SBO:0000627"),
-            "demand": ("DM", 0, ub, "SBO:0000628"),
-            "sink": ("SK", lb, ub, "SBO:0000632")
+            "exchange": ("EX", lb, ub, sbo_terms["exchange"]),
+            "demand": ("DM", 0, ub, sbo_terms["demand"]),
+            "sink": ("SK", lb, ub, sbo_terms["sink"])
         }
         if type in types:
             prefix, lb, ub, default_term = types[type]
