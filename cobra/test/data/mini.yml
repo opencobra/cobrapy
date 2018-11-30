@@ -861,7 +861,7 @@
     - gene_reaction_rule: ''
     - annotation:
         bigg.reaction: glc
-        SBO: SBO:0000627
+        sbo: sbo:0000627
   - !!omap
     - id: EX_h_e
     - name: H+ exchange
@@ -872,7 +872,7 @@
     - gene_reaction_rule: ''
     - annotation:
         bigg.reaction: h
-        SBO: SBO:0000627
+        sbo: SBO:0000627
   - !!omap
     - id: EX_lac__D_e
     - name: D-lactate exchange

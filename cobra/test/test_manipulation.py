@@ -198,11 +198,11 @@ class TestManipulation:
         fake_DM.add_metabolites({model.metabolites.get_by_id("h_c"): -1})
         # this exchange will be set wrong. The function should not overwrite
         # an existing SBO annotation
-        rxns.get_by_id("EX_h_e").annotation["SBO"] = "SBO:0000628"
+        rxns.get_by_id("EX_h_e").annotation["sbo"] = "SBO:0000628"
         add_SBO(model)
-        assert rxns.EX_o2_e.annotation["SBO"] == "SBO:0000627"
-        assert rxns.DM_h_c.annotation["SBO"] == "SBO:0000628"
-        assert rxns.EX_h_e.annotation["SBO"] == "SBO:0000628"
+        assert rxns.EX_o2_e.annotation["sbo"] == "SBO:0000627"
+        assert rxns.DM_h_c.annotation["sbo"] == "SBO:0000628"
+        assert rxns.EX_h_e.annotation["sbo"] == "SBO:0000628"
 
     def test_validate_formula_compartment(self, model):
         model.metabolites[1].formula = "(a*.bcde)"
@@ -215,7 +215,7 @@ class TestManipulation:
         # mass balanced, then the reaction should be detected as
         # no longer mass balanced
         EX_rxn = model.reactions.query(lambda r: r.boundary)[0]
-        EX_rxn.annotation.pop("SBO")
+        EX_rxn.annotation.pop("sbo")
         balance = check_mass_balance(model)
         assert len(balance) == 1
         assert EX_rxn in balance

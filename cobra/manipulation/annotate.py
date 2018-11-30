@@ -14,13 +14,13 @@ def add_SBO(model):
     """
     for r in model.reactions:
         # don't annotate already annotated reactions
-        if r.annotation.get("SBO"):
+        if r.annotation.get("sbo"):
             continue
         # only doing exchanges
         if len(r.metabolites) != 1:
             continue
         met_id = list(r._metabolites)[0].id
         if r.id.startswith("EX_") and r.id == "EX_" + met_id:
-            r.annotation["SBO"] = "SBO:0000627"
+            r.annotation["sbo"] = "SBO:0000627"
         elif r.id.startswith("DM_") and r.id == "DM_" + met_id:
-            r.annotation["SBO"] = "SBO:0000628"
+            r.annotation["sbo"] = "SBO:0000628"
