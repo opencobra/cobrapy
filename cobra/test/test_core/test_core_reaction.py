@@ -272,7 +272,7 @@ def test_build_from_string(model):
 
 def test_bounds_setter(model):
     rxn = model.reactions.get_by_id("PGI")
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         rxn.bounds = (1, 0)
 
 

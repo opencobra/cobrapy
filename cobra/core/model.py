@@ -16,7 +16,7 @@ from six import iteritems, string_types
 from cobra.core.configuration import Configuration
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
-from cobra.core.reaction import Reaction, separate_forward_and_reverse_bounds
+from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
 from cobra.exceptions import SolverNotFound
 from cobra.medium import find_boundary_types
@@ -784,25 +784,14 @@ class Model(Object):
         self.add_cons_vars(to_add)
 
         for reaction in reaction_list:
-
             if reaction.id not in self.variables:
-
-                reverse_lb, reverse_ub, forward_lb, forward_ub = \
-                    separate_forward_and_reverse_bounds(*reaction.bounds)
-
-                forward_variable = self.problem.Variable(
-                    reaction.id, lb=forward_lb, ub=forward_ub)
-                reverse_variable = self.problem.Variable(
-                    reaction.reverse_id, lb=reverse_lb, ub=reverse_ub)
-
+                forward_variable = self.problem.Variable(reaction.id)
+                reverse_variable = self.problem.Variable(reaction.reverse_id)
                 self.add_cons_vars([forward_variable, reverse_variable])
-
             else:
-
                 reaction = self.reactions.get_by_id(reaction.id)
                 forward_variable = reaction.forward_variable
                 reverse_variable = reaction.reverse_variable
-
             for metabolite, coeff in six.iteritems(reaction.metabolites):
                 if metabolite.id in self.constraints:
                     constraint = self.constraints[metabolite.id]
@@ -812,11 +801,13 @@ class Model(Object):
                         name=metabolite.id,
                         lb=0, ub=0)
                     self.add_cons_vars(constraint, sloppy=True)
-
                 constraint_terms[constraint][forward_variable] = coeff
                 constraint_terms[constraint][reverse_variable] = -coeff
 
         self.solver.update()
+        for reaction in reaction_list:
+            reaction = self.reactions.get_by_id(reaction.id)
+            reaction.update_variable_bounds()
         for constraint, terms in six.iteritems(constraint_terms):
             constraint.set_linear_coefficients(terms)
 
