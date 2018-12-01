@@ -19,7 +19,7 @@ from cobra.core.object import Object
 from cobra.core.reaction import Reaction, separate_forward_and_reverse_bounds
 from cobra.core.solution import get_solution
 from cobra.exceptions import SolverNotFound
-from cobra.medium import find_boundary_types
+from cobra.medium import find_boundary_types, sbo_terms
 from cobra.util.context import HistoryManager, get_context, resettable
 from cobra.util.solver import (
     add_cons_vars_to_problem, assert_optimal, interface_to_str,
@@ -445,12 +445,13 @@ class Model(Object):
         self.add_reactions([reaction])
 
     def add_boundary(self, metabolite, type="exchange", reaction_id=None,
-                     lb=None, ub=1000.0):
-        """Add a boundary reaction for a given metabolite.
+                     lb=None, ub=None, sbo_term=None):
+        """
+        Add a boundary reaction for a given metabolite.
 
         There are three different types of pre-defined boundary reactions:
         exchange, demand, and sink reactions.
-        An exchange reaction is a reversible, imbalanced reaction that adds
+        An exchange reaction is a reversible, unbalanced reaction that adds
         to or removes an extracellular metabolite from the extracellular
         compartment.
         A demand reaction is an irreversible reaction that consumes an
@@ -473,13 +474,17 @@ class Model(Object):
             want to create your own kind of boundary reaction choose
             any other string, e.g., 'my-boundary'.
         reaction_id : str, optional
-            The ID of the resulting reaction. Only used for custom reactions.
+            The ID of the resulting reaction. This takes precedence over the
+            auto-generated identifiers but beware that it might make boundary
+            reactions harder to identify afterwards when using `model.boundary`
+            or specifically `model.exchanges` etc.
         lb : float, optional
-            The lower bound of the resulting reaction. Only used for custom
-            reactions.
+            The lower bound of the resulting reaction.
         ub : float, optional
-            The upper bound of the resulting reaction. For the pre-defined
-            reactions this default value determines all bounds.
+            The upper bound of the resulting reaction.
+        sbo_term : str, optional
+            A correct SBO term is set for the available types. If a custom
+            type is chosen, a suitable SBO term should also be set.
 
         Returns
         -------
@@ -500,17 +505,34 @@ class Model(Object):
         >>> demand.build_reaction_string()
         'atp_c --> '
         """
-        types = dict(exchange=("EX", -ub, ub), demand=("DM", 0, ub),
-                     sink=("SK", -ub, ub))
+        if ub is None:
+            ub = CONFIGURATION.upper_bound
+        if lb is None:
+            lb = CONFIGURATION.lower_bound
+        types = {
+            "exchange": ("EX", lb, ub, sbo_terms["exchange"]),
+            "demand": ("DM", 0, ub, sbo_terms["demand"]),
+            "sink": ("SK", lb, ub, sbo_terms["sink"])
+        }
         if type in types:
-            prefix, lb, ub = types[type]
-            reaction_id = "{}_{}".format(prefix, metabolite.id)
+            prefix, lb, ub, default_term = types[type]
+            if reaction_id is None:
+                reaction_id = "{}_{}".format(prefix, metabolite.id)
+            if sbo_term is None:
+                sbo_term = default_term
+        if reaction_id is None:
+            raise ValueError(
+                "Custom types of boundary reactions require a custom "
+                "identifier. Please set the `reaction_id`.")
         if reaction_id in self.reactions:
-            raise ValueError('boundary %s already exists' % reaction_id)
+            raise ValueError(
+                "Boundary reaction '{}' already exists.".format(reaction_id))
         name = "{} {}".format(metabolite.name, type)
         rxn = Reaction(id=reaction_id, name=name, lower_bound=lb,
                        upper_bound=ub)
         rxn.add_metabolites({metabolite: -1})
+        if sbo_term:
+            rxn.annotation["sbo"] = sbo_term
         self.add_reactions([rxn])
         return rxn
 

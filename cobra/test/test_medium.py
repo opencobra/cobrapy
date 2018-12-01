@@ -82,9 +82,9 @@ class TestTypeDetection:
     def test_sbo_terms(self, model):
         assert not medium.is_boundary_type(
             model.reactions.ATPM, "exchange", "e")
-        model.reactions.ATPM.annotation["SBO"] = "SBO:0000627"
+        model.reactions.ATPM.annotation["sbo"] = "SBO:0000627"
         assert medium.is_boundary_type(model.reactions.ATPM, "exchange", "bla")
-        model.reactions.ATPM.annotation["SBO"] = "SBO:0000632"
+        model.reactions.ATPM.annotation["sbo"] = "SBO:0000632"
         assert not medium.is_boundary_type(
             model.reactions.ATPM, "exchange", "e")
 
