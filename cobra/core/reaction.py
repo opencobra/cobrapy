@@ -202,8 +202,8 @@ class Reaction(Object):
     def _check_bounds(lb, ub):
         if lb > ub:
             raise ValueError(
-                "The lower bound must be less than or equal to the upper bound "
-                "({} <= {}).".format(lb, ub))
+                "The lower bound must be less than or equal to the upper "
+                "bound ({} <= {}).".format(lb, ub))
 
     def update_variable_bounds(self):
         if self.model is None:
