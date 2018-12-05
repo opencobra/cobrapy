@@ -15,7 +15,7 @@ from cobra import flux_analysis
 from cobra import io
 from cobra.util import show_versions
 
-__version__ = "0.13.4"
+__version__ = "0.14.0"
 
 # set the warning format to be prettier and fit on one line
 _cobra_path = _dirname(_abspath(__file__))
