@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import
 
+from io import BytesIO
 from os.path import getsize, join
 
 import pytest
@@ -37,6 +38,15 @@ def test_read_sbml_model(data_directory, mini_fbc1_model, mini_cobra_model):
     mini_cobra = io.read_legacy_sbml(join(data_directory, "mini_cobra.xml"))
     assert compare_models(mini_fbc1_model, mini_fbc1) is None
     assert compare_models(mini_cobra_model, mini_cobra) is None
+
+
+@pytest.mark.skipif(libsbml is None, reason="libsbml unavailable.")
+def test_read_file_handle(data_directory, mini_model):
+    """Test the reading of a model passed as a file handle."""
+    with open(join(data_directory, "mini_cobra.xml"), "rb") as file_:
+        model_stream = BytesIO(file_.read())
+    read_model = io.read_sbml_model(model_stream)
+    assert compare_models(mini_model, read_model) is None
 
 
 # TODO: parametrize the arguments after pytest.fixture_request()
