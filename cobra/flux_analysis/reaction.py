@@ -3,9 +3,11 @@
 """ functions for analyzing / creating objective functions """
 
 from __future__ import absolute_import, division
-from six import iteritems
-from warnings import warn
+
 from operator import attrgetter
+from warnings import warn
+
+from six import iteritems
 
 from cobra.core import Reaction
 

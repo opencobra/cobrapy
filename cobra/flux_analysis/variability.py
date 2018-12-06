@@ -2,22 +2,60 @@
 
 from __future__ import absolute_import
 
+import logging
+import multiprocessing
+from builtins import map
 from warnings import warn
 
 from numpy import zeros
 from optlang.symbolics import Zero
 from pandas import DataFrame
 
-from cobra.flux_analysis.loopless import loopless_fva_iter
-from cobra.flux_analysis.parsimonious import add_pfba
+from cobra.core import Configuration, get_solution
 from cobra.flux_analysis.deletion import (
     single_gene_deletion, single_reaction_deletion)
-from cobra.core import get_solution
+from cobra.flux_analysis.loopless import loopless_fva_iter
+from cobra.flux_analysis.parsimonious import add_pfba
 from cobra.util import solver as sutil
 
 
+LOGGER = logging.getLogger(__name__)
+CONFIGURATION = Configuration()
+
+
+def _init_worker(model, loopless, sense):
+    """Initialize a global model object for multiprocessing."""
+    global _model
+    global _loopless
+    _model = model
+    _model.solver.objective.direction = sense
+    _loopless = loopless
+
+
+def _fva_step(reaction_id):
+    global _model
+    global _loopless
+    rxn = _model.reactions.get_by_id(reaction_id)
+    # The previous objective assignment already triggers a reset
+    # so directly update coefs here to not trigger redundant resets
+    # in the history manager which can take longer than the actual
+    # FVA for small models
+    _model.solver.objective.set_linear_coefficients(
+        {rxn.forward_variable: 1, rxn.reverse_variable: -1})
+    _model.slim_optimize()
+    sutil.check_solver_status(_model.solver.status)
+    if _loopless:
+        value = loopless_fva_iter(_model, rxn)
+    else:
+        value = _model.solver.objective.value
+    _model.solver.objective.set_linear_coefficients(
+        {rxn.forward_variable: 0, rxn.reverse_variable: 0})
+    return reaction_id, value
+
+
 def flux_variability_analysis(model, reaction_list=None, loopless=False,
-                              fraction_of_optimum=1.0, pfba_factor=None):
+                              fraction_of_optimum=1.0, pfba_factor=None,
+                              processes=None):
     """
     Determine the minimum and maximum possible flux value for each reaction.
 
@@ -45,6 +83,9 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
         one that optimally minimizes the total flux sum, the ``pfba_factor``
         should, if set, be larger than one. Setting this value may lead to
         more realistic predictions of the effective flux bounds.
+    processes : int, optional
+        The number of parallel processes to run. If not explicitly passed,
+        will be set from the global configuration singleton.
 
     Returns
     -------
@@ -82,15 +123,21 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
        doi: 10.1093/bioinformatics/btv096.
     """
     if reaction_list is None:
-        reaction_list = model.reactions
+        reaction_ids = [r.id for r in model.reactions]
     else:
-        reaction_list = model.reactions.get_by_any(reaction_list)
+        reaction_ids = [r.id
+                        for r in model.reactions.get_by_any(reaction_list)]
 
+    if processes is None:
+        processes = CONFIGURATION.processes
+    num_reactions = len(reaction_ids)
+    processes = min(processes, num_reactions)
+
+    fva_result = DataFrame({
+        "minimum": zeros(num_reactions, dtype=float),
+        "maximum": zeros(num_reactions, dtype=float)
+    }, index=reaction_ids)
     prob = model.problem
-    fva_results = DataFrame({
-        "minimum": zeros(len(reaction_list), dtype=float),
-        "maximum": zeros(len(reaction_list), dtype=float)
-    }, index=[r.id for r in reaction_list])
     with model:
         # Safety check before setting up FVA.
         model.slim_optimize(error_value=None,
@@ -99,6 +146,7 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
         # Add the previous objective as a variable to the model then set it to
         # zero. This also uses the fraction to create the lower/upper bound for
         # the old objective.
+        # TODO: Use utility function here (fix_objective_as_constraint)?
         if model.solver.objective.direction == "max":
             fva_old_objective = prob.Variable(
                 "fva_old_objective",
@@ -127,51 +175,66 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
 
         model.objective = Zero  # This will trigger the reset as well
         for what in ("minimum", "maximum"):
-            sense = "min" if what == "minimum" else "max"
-            for rxn in reaction_list:
-                # The previous objective assignment already triggers a reset
-                # so directly update coefs here to not trigger redundant resets
-                # in the history manager which can take longer than the actual
-                # FVA for small models
-                model.solver.objective.set_linear_coefficients(
-                    {rxn.forward_variable: 1, rxn.reverse_variable: -1})
-                model.solver.objective.direction = sense
-                model.slim_optimize()
-                sutil.check_solver_status(model.solver.status)
-                if loopless:
-                    value = loopless_fva_iter(model, rxn)
-                else:
-                    value = model.solver.objective.value
-                fva_results.at[rxn.id, what] = value
-                model.solver.objective.set_linear_coefficients(
-                    {rxn.forward_variable: 0, rxn.reverse_variable: 0})
+            if processes > 1:
+                # We create and destroy a new pool here in order to set the
+                # objective direction for all reactions. This creates a
+                # slight overhead but seems the most clean.
+                chunk_size = len(reaction_ids) // processes
+                pool = multiprocessing.Pool(
+                    processes,
+                    initializer=_init_worker,
+                    initargs=(model, loopless, what[:3])
+                )
+                for rxn_id, value in pool.imap_unordered(_fva_step,
+                                                         reaction_ids,
+                                                         chunksize=chunk_size):
+                    fva_result.at[rxn_id, what] = value
+                pool.close()
+                pool.join()
+            else:
+                _init_worker(model, loopless, what[:3])
+                for rxn_id, value in map(_fva_step, reaction_ids):
+                    fva_result.at[rxn_id, what] = value
 
-    return fva_results
+    return fva_result[["minimum", "maximum"]]
 
 
-def find_blocked_reactions(model, reaction_list=None,
+def find_blocked_reactions(model,
+                           reaction_list=None,
                            zero_cutoff=1e-9,
-                           open_exchanges=False):
-    """Finds reactions that cannot carry a flux with the current
-    exchange reaction settings for a cobra model, using flux variability
-    analysis.
+                           open_exchanges=False,
+                           processes=None):
+    """
+    Find reactions that cannot carry any flux.
+
+    The question whether or not a reaction is blocked is highly dependent
+    on the current exchange reaction settings for a COBRA model. Hence an
+    argument is provided to open all exchange reactions.
+
+    Notes
+    -----
+    Sink and demand reactions are left untouched. Please modify them manually.
 
     Parameters
     ----------
     model : cobra.Model
-        The model to analyze
-    reaction_list : list
-        List of reactions to consider, use all if left missing
-    zero_cutoff : float
+        The model to analyze.
+    reaction_list : list, optional
+        List of reactions to consider, the default includes all model
+        reactions.
+    zero_cutoff : float, optional
         Flux value which is considered to effectively be zero.
-    open_exchanges : bool
-        If true, set bounds on exchange reactions to very high values to
-        avoid that being the bottle-neck.
+    open_exchanges : bool, optional
+        Whether or not to open all exchange reactions to very high flux ranges.
+    processes : int, optional
+        The number of parallel processes to run. Can speed up the computations
+        if the number of reactions is large. If not explicitly
+        passed, it will be set from the global configuration singleton.
 
     Returns
     -------
     list
-        List with the blocked reactions
+        List with the identifiers of blocked reactions.
     """
     with model:
         if open_exchanges:
@@ -180,25 +243,30 @@ def find_blocked_reactions(model, reaction_list=None,
                                    max(reaction.upper_bound, 1000))
         if reaction_list is None:
             reaction_list = model.reactions
-        # limit to reactions which are already 0. If the reactions already
-        # carry flux in this solution, then they can not be blocked.
+        # Limit the search space to reactions which have zero flux. If the
+        # reactions already carry flux in this solution,
+        # then they cannot be blocked.
         model.slim_optimize()
         solution = get_solution(model, reactions=reaction_list)
-        reaction_list = [rxn for rxn in reaction_list if
-                         abs(solution.fluxes[rxn.id]) < zero_cutoff]
-        # run fva to find reactions where both max and min are 0
+        reaction_list = solution.fluxes[
+            solution.fluxes.abs() < zero_cutoff].index.tolist()
+        # Run FVA to find reactions where both the minimal and maximal flux
+        # are zero (below the cut off).
         flux_span = flux_variability_analysis(
-            model, fraction_of_optimum=0., reaction_list=reaction_list)
-        return [rxn_id for rxn_id, min_max in flux_span.iterrows() if
-                max(abs(min_max)) < zero_cutoff]
+            model, fraction_of_optimum=0., reaction_list=reaction_list,
+            processes=processes
+        )
+        return flux_span[
+            flux_span.abs().max(axis=1) < zero_cutoff].index.tolist()
 
 
 def find_essential_genes(model, threshold=None, processes=None):
-    """Return a set of essential genes.
+    """
+    Return a set of essential genes.
 
     A gene is considered essential if restricting the flux of all reactions
-    that depends on it to zero causes the objective (e.g. the growth rate)
-    to also be zero.
+    that depend on it to zero causes the objective, e.g., the growth rate,
+    to also be zero, below the threshold, or infeasible.
 
     Parameters
     ----------
@@ -206,11 +274,14 @@ def find_essential_genes(model, threshold=None, processes=None):
         The model to find the essential genes for.
     threshold : float, optional
         Minimal objective flux to be considered viable. By default this is
-        0.01 times the growth rate.
+        1% of the maximal objective.
+    processes : int, optional
+        The number of parallel processes to run. If not passed,
+        will be set to the number of CPUs found.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
-        if the number of knockouts to perform is large. If not passed,
-        will be set to the number of CPUs found.
+        if the number of knockouts to perform is large. If not explicitly
+        passed, it will be set from the global configuration singleton.
 
     Returns
     -------
@@ -222,14 +293,16 @@ def find_essential_genes(model, threshold=None, processes=None):
     deletions = single_gene_deletion(model, method='fba', processes=processes)
     essential = deletions.loc[deletions['growth'].isna() |
                               (deletions['growth'] < threshold), :].index
-    return set(model.genes.get_by_id(g) for ids in essential for g in ids)
+    return {model.genes.get_by_id(g) for ids in essential for g in ids}
 
 
 def find_essential_reactions(model, threshold=None, processes=None):
     """Return a set of essential reactions.
 
     A reaction is considered essential if restricting its flux to zero
-    causes the objective (e.g. the growth rate) to also be zero.
+    causes the objective, e.g., the growth rate, to also be zero, below the
+    threshold, or infeasible.
+
 
     Parameters
     ----------
@@ -237,11 +310,11 @@ def find_essential_reactions(model, threshold=None, processes=None):
         The model to find the essential reactions for.
     threshold : float, optional
         Minimal objective flux to be considered viable. By default this is
-        0.01 times the growth rate.
+        1% of the maximal objective.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
-        if the number of knockouts to perform is large. If not passed,
-        will be set to the number of CPUs found.
+        if the number of knockouts to perform is large. If not explicitly
+        passed, it will be set from the global configuration singleton.
 
     Returns
     -------
@@ -250,8 +323,8 @@ def find_essential_reactions(model, threshold=None, processes=None):
     """
     if threshold is None:
         threshold = model.slim_optimize(error_value=None) * 1E-02
-    deletions = single_reaction_deletion(model, method='fba',
-                                         processes=processes)
+    deletions = single_reaction_deletion(
+        model, method='fba', processes=processes)
     essential = deletions.loc[deletions['growth'].isna() |
                               (deletions['growth'] < threshold), :].index
-    return set(model.reactions.get_by_id(r) for ids in essential for r in ids)
+    return {model.reactions.get_by_id(r) for ids in essential for r in ids}

@@ -13,16 +13,20 @@ allow you to implement custom flux analysis methods with ease.
 from __future__ import absolute_import
 
 import re
-from functools import partial
 from collections import namedtuple
+from functools import partial
 from types import ModuleType
 from warnings import warn
 
 import optlang
+import pandas as pd
+from optlang.interface import (
+    FEASIBLE, INFEASIBLE, ITERATION_LIMIT, NUMERIC, OPTIMAL, SUBOPTIMAL,
+    TIME_LIMIT)
 from optlang.symbolics import Basic, Zero
 
-from cobra.exceptions import OptimizationError, SolverNotFound,\
-    OPTLANG_TO_EXCEPTIONS_DICT
+from cobra.exceptions import (
+    OPTLANG_TO_EXCEPTIONS_DICT, OptimizationError, SolverNotFound)
 from cobra.util.context import get_context
 
 
@@ -31,7 +35,11 @@ solvers = {match.split("_interface")[0]: getattr(optlang, match)
            for match in dir(optlang) if "_interface" in match}
 
 # Defines all the QP solvers implemented in optlang.
-qp_solvers = ["cplex"]  # QP in gurobi not implemented yet
+qp_solvers = ["cplex", "gurobi"]
+
+# optlang solution statuses which still allow retrieving primal values
+has_primals = [NUMERIC, FEASIBLE, INFEASIBLE, SUBOPTIMAL, ITERATION_LIMIT,
+               TIME_LIMIT]
 
 
 def linear_reaction_coefficients(model, reactions=None):
@@ -201,7 +209,7 @@ def get_solver_name(mip=False, qp=False):
     # Those lists need to be updated as optlang implements more solvers
     mip_order = ["gurobi", "cplex", "glpk"]
     lp_order = ["glpk", "cplex", "gurobi"]
-    qp_order = ["cplex"]
+    qp_order = ["gurobi", "cplex"]
 
     if mip is False and qp is False:
         for solver_name in lp_order:
@@ -379,6 +387,10 @@ def fix_objective_as_constraint(model, fraction=1, bound=None,
     name : str
         Name of the objective. May contain one `{}` placeholder which is filled
         with the name of the old objective.
+
+    Returns
+    -------
+        The value of the optimized objective * fraction
     """
     fix_objective_name = name.format(model.objective.name)
     if fix_objective_name in model.constraints:
@@ -393,16 +405,17 @@ def fix_objective_as_constraint(model, fraction=1, bound=None,
         model.objective.expression,
         name=fix_objective_name, ub=ub, lb=lb)
     add_cons_vars_to_problem(model, constraint, sloppy=True)
+    return bound
 
 
 def check_solver_status(status, raise_error=False):
     """Perform standard checks on a solver's status."""
-    if status == optlang.interface.OPTIMAL:
+    if status == OPTIMAL:
         return
-    elif status == optlang.interface.INFEASIBLE and not raise_error:
+    elif (status in has_primals) and not raise_error:
         warn("solver status is '{}'".format(status), UserWarning)
     elif status is None:
-        raise RuntimeError(
+        raise OptimizationError(
             "model was not optimized yet or solver context switched")
     else:
         raise OptimizationError("solver status is '{}'".format(status))
@@ -422,7 +435,95 @@ def assert_optimal(model, message='optimization failed'):
         Message to for the exception if solver status was not optimal.
     """
     status = model.solver.status
-    if status != optlang.interface.OPTIMAL:
+    if status != OPTIMAL:
         exception_cls = OPTLANG_TO_EXCEPTIONS_DICT.get(
             status, OptimizationError)
         raise exception_cls("{} ({})".format(message, status))
+
+
+def add_lp_feasibility(model):
+    """
+    Add a new objective and variables to ensure a feasible solution.
+
+    The optimized objective will be zero for a feasible solution and otherwise
+    represent the distance from feasibility (please see [1]_ for more
+    information).
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model whose feasibility is to be tested.
+
+    References
+    ----------
+    .. [1] Gomez, Jose A., Kai Höffner, and Paul I. Barton.
+    “DFBAlab: A Fast and Reliable MATLAB Code for Dynamic Flux Balance
+    Analysis.” BMC Bioinformatics 15, no. 1 (December 18, 2014): 409.
+    https://doi.org/10.1186/s12859-014-0409-8.
+
+    """
+
+    obj_vars = []
+    prob = model.problem
+    for met in model.metabolites:
+        s_plus = prob.Variable("s_plus_" + met.id, lb=0)
+        s_minus = prob.Variable("s_minus_" + met.id, lb=0)
+
+        model.add_cons_vars([s_plus, s_minus])
+        model.constraints[met.id].set_linear_coefficients(
+            {s_plus: 1.0, s_minus: -1.0})
+        obj_vars.append(s_plus)
+        obj_vars.append(s_minus)
+
+    model.objective = prob.Objective(Zero, sloppy=True, direction="min")
+    model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
+
+
+def add_lexicographic_constraints(model,
+                                  objectives,
+                                  objective_direction='max'):
+    """
+    Successively optimize separate targets in a specific order.
+
+    For each objective, optimize the model and set the optimal value as a
+    constraint. Proceed in the order of the objectives given. Due to the
+    specific order this is called lexicographic FBA [1]_. This
+    procedure is useful for returning unique solutions for a set of important
+    fluxes. Typically this is applied to exchange fluxes.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to be optimized.
+    objectives : list
+        A list of reactions (or objectives) in the model for which unique
+        fluxes are to be determined.
+    objective_direction : str or list, optional
+        The desired objective direction for each reaction (if a list) or the
+        objective direction to use for all reactions (default maximize).
+
+    Returns
+    -------
+    optimized_fluxes : pandas.Series
+        A vector containing the optimized fluxes for each of the given
+        reactions in `objectives`.
+
+    References
+    ----------
+    .. [1] Gomez, Jose A., Kai Höffner, and Paul I. Barton.
+    “DFBAlab: A Fast and Reliable MATLAB Code for Dynamic Flux Balance
+    Analysis.” BMC Bioinformatics 15, no. 1 (December 18, 2014): 409.
+    https://doi.org/10.1186/s12859-014-0409-8.
+
+    """
+
+    if type(objective_direction) is not list:
+        objective_direction = [objective_direction] * len(objectives)
+
+    constraints = []
+    for rxn_id, obj_dir in zip(objectives, objective_direction):
+        model.objective = model.reactions.get_by_id(rxn_id)
+        model.objective_direction = obj_dir
+        constraints.append(fix_objective_as_constraint(model))
+
+    return pd.Series(constraints, index=objectives)

@@ -2,13 +2,16 @@
 
 from __future__ import absolute_import
 
+from six import string_types
+
+from cobra.io.dict import model_from_dict, model_to_dict
+
+
 try:
     import simplejson as json
 except ImportError:
     import json
-from six import string_types
 
-from cobra.io.dict import model_to_dict, model_from_dict
 
 JSON_SPEC = "1"
 
@@ -169,11 +172,6 @@ json_schema = {
                         "type": "number",
                         "default": 0,
                     },
-                    "variable_kind": {
-                        "type": "string",
-                        "pattern": "integer|continuous",
-                        "default": "continuous"
-                    },
                     "subsystem": {"type": "string"},
                     "notes": {"type": "object"},
                     "annotation": {"type": "object"},
@@ -199,11 +197,6 @@ json_schema = {
                     "_bound": {
                         "type": "number",
                         "default": 0
-                    },
-                    "_constraint_sense": {
-                        "type": "string",
-                        "default": "E",
-                        "pattern": "E|L|G",
                     },
                     "notes": {"type": "object"},
                     "annotation": {"type": "object"},

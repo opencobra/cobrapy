@@ -3,13 +3,14 @@
 from __future__ import absolute_import
 
 import logging
-from warnings import warn
 from itertools import chain
+from warnings import warn
 
 from optlang.symbolics import Zero
 
-from cobra.util import solver as sutil
 from cobra.core.solution import get_solution
+from cobra.util import solver as sutil
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -100,6 +101,5 @@ def add_pfba(model, objective=None, fraction_of_optimum=1.0):
                           for rxn in model.reactions)
     variables = chain(*reaction_variables)
     model.objective = model.problem.Objective(
-        Zero, direction='min', sloppy=True,
-        name="_pfba_objective")
-    model.objective.set_linear_coefficients(dict.fromkeys(variables, 1.0))
+        Zero, direction='min', sloppy=True, name="_pfba_objective")
+    model.objective.set_linear_coefficients({v: 1.0 for v in variables})

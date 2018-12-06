@@ -2,29 +2,33 @@
 
 from __future__ import absolute_import
 
-import types
 import logging
+import types
 from copy import copy, deepcopy
 from functools import partial
 from warnings import warn
 
 import optlang
-from optlang.symbolics import Basic, Zero
 import six
+from optlang.symbolics import Basic, Zero
 from six import iteritems, string_types
 
-from cobra.exceptions import SolverNotFound
+from cobra.core.configuration import Configuration
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
-from cobra.core.reaction import separate_forward_and_reverse_bounds, Reaction
+from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
-from cobra.util.context import HistoryManager, resettable, get_context
+from cobra.exceptions import SolverNotFound
+from cobra.medium import find_boundary_types, sbo_terms
+from cobra.util.context import HistoryManager, get_context, resettable
 from cobra.util.solver import (
-    get_solver_name, interface_to_str, set_objective, solvers,
-    add_cons_vars_to_problem, remove_cons_vars_from_problem, assert_optimal)
+    add_cons_vars_to_problem, assert_optimal, interface_to_str,
+    remove_cons_vars_from_problem, set_objective, solvers)
 from cobra.util.util import AutoVivification, format_long_string
 
+
 LOGGER = logging.getLogger(__name__)
+CONFIGURATION = Configuration()
 
 
 class Model(Object):
@@ -35,7 +39,7 @@ class Model(Object):
     id_or_model : Model, string
         Either an existing Model object in which case a new model object is
         instantiated with the same properties as the original model,
-        or a the identifier to associate with the model as a string.
+        or an identifier to associate with the model as a string.
     name : string
         Human readable name for the model
 
@@ -55,8 +59,7 @@ class Model(Object):
     """
 
     def __setstate__(self, state):
-        """Make sure all cobra.Objects in the model point to the model.
-        """
+        """Make sure all cobra.Objects in the model point to the model."""
         self.__dict__.update(state)
         for y in ['reactions', 'genes', 'metabolites']:
             for x in getattr(self, y):
@@ -90,14 +93,14 @@ class Model(Object):
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
             # genes based on their ids {Gene.id: Gene}
-            self._compartments = dict()
+            self._compartments = {}
             self._contexts = []
 
             # from cameo ...
 
             # if not hasattr(self, '_solver'):  # backwards compatibility
             # with older cobrapy pickles?
-            interface = solvers[get_solver_name()]
+            interface = CONFIGURATION.solver
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(Zero)
             self._populate_solver(self.reactions, self.metabolites)
@@ -233,16 +236,20 @@ class Model(Object):
 
         # Set the given media bounds
         media_rxns = list()
+        exchange_rxns = frozenset(self.exchanges)
         for rxn_id, bound in iteritems(medium):
             rxn = self.reactions.get_by_id(rxn_id)
+            if rxn not in exchange_rxns:
+                LOGGER.warn("%s does not seem to be an"
+                            " an exchange reaction. Applying bounds anyway.",
+                            rxn.id)
             media_rxns.append(rxn)
             set_active_bound(rxn, bound)
 
-        boundary_rxns = set(self.exchanges)
-        media_rxns = set(media_rxns)
+        media_rxns = frozenset(media_rxns)
 
         # Turn off reactions not present in media
-        for rxn in (boundary_rxns - media_rxns):
+        for rxn in (exchange_rxns - media_rxns):
             set_active_bound(rxn, 0)
 
     def __add__(self, other_model):
@@ -438,12 +445,13 @@ class Model(Object):
         self.add_reactions([reaction])
 
     def add_boundary(self, metabolite, type="exchange", reaction_id=None,
-                     lb=None, ub=1000.0):
-        """Add a boundary reaction for a given metabolite.
+                     lb=None, ub=None, sbo_term=None):
+        """
+        Add a boundary reaction for a given metabolite.
 
         There are three different types of pre-defined boundary reactions:
         exchange, demand, and sink reactions.
-        An exchange reaction is a reversible, imbalanced reaction that adds
+        An exchange reaction is a reversible, unbalanced reaction that adds
         to or removes an extracellular metabolite from the extracellular
         compartment.
         A demand reaction is an irreversible reaction that consumes an
@@ -466,13 +474,17 @@ class Model(Object):
             want to create your own kind of boundary reaction choose
             any other string, e.g., 'my-boundary'.
         reaction_id : str, optional
-            The ID of the resulting reaction. Only used for custom reactions.
+            The ID of the resulting reaction. This takes precedence over the
+            auto-generated identifiers but beware that it might make boundary
+            reactions harder to identify afterwards when using `model.boundary`
+            or specifically `model.exchanges` etc.
         lb : float, optional
-            The lower bound of the resulting reaction. Only used for custom
-            reactions.
+            The lower bound of the resulting reaction.
         ub : float, optional
-            The upper bound of the resulting reaction. For the pre-defined
-            reactions this default value determines all bounds.
+            The upper bound of the resulting reaction.
+        sbo_term : str, optional
+            A correct SBO term is set for the available types. If a custom
+            type is chosen, a suitable SBO term should also be set.
 
         Returns
         -------
@@ -493,17 +505,34 @@ class Model(Object):
         >>> demand.build_reaction_string()
         'atp_c --> '
         """
-        types = dict(exchange=("EX", -ub, ub), demand=("DM", 0, ub),
-                     sink=("SK", -ub, ub))
+        if ub is None:
+            ub = CONFIGURATION.upper_bound
+        if lb is None:
+            lb = CONFIGURATION.lower_bound
+        types = {
+            "exchange": ("EX", lb, ub, sbo_terms["exchange"]),
+            "demand": ("DM", 0, ub, sbo_terms["demand"]),
+            "sink": ("SK", lb, ub, sbo_terms["sink"])
+        }
         if type in types:
-            prefix, lb, ub = types[type]
-            reaction_id = "{}_{}".format(prefix, metabolite.id)
+            prefix, lb, ub, default_term = types[type]
+            if reaction_id is None:
+                reaction_id = "{}_{}".format(prefix, metabolite.id)
+            if sbo_term is None:
+                sbo_term = default_term
+        if reaction_id is None:
+            raise ValueError(
+                "Custom types of boundary reactions require a custom "
+                "identifier. Please set the `reaction_id`.")
         if reaction_id in self.reactions:
-            raise ValueError('boundary %s already exists' % reaction_id)
+            raise ValueError(
+                "Boundary reaction '{}' already exists.".format(reaction_id))
         name = "{} {}".format(metabolite.name, type)
         rxn = Reaction(id=reaction_id, name=name, lower_bound=lb,
                        upper_bound=ub)
         rxn.add_metabolites({metabolite: -1})
+        if sbo_term:
+            rxn.annotation["sbo"] = sbo_term
         self.add_reactions([rxn])
         return rxn
 
@@ -612,6 +641,14 @@ class Model(Object):
                 reverse = reaction.reverse_variable
 
                 if context:
+
+                    obj_coef = reaction.objective_coefficient
+
+                    if obj_coef != 0:
+                        context(partial(
+                            self.solver.objective.set_linear_coefficients,
+                            {forward: obj_coef, reverse: -obj_coef}))
+
                     context(partial(self._populate_solver, [reaction]))
                     context(partial(setattr, reaction, '_model', self))
                     context(partial(self.reactions.add, reaction))
@@ -726,12 +763,35 @@ class Model(Object):
         return self.solver.constraints
 
     @property
-    def exchanges(self):
-        """Exchange reactions in model.
-
-        Reactions that either don't have products or substrates.
+    def boundary(self):
+        """Boundary reactions in the model.
+        Reactions that either have no substrate or product.
         """
         return [rxn for rxn in self.reactions if rxn.boundary]
+
+    @property
+    def exchanges(self):
+        """Exchange reactions in model.
+        Reactions that exchange mass with the exterior. Uses annotations
+        and heuristics to exclude non-exchanges such as sink reactions.
+        """
+        return find_boundary_types(self, "exchange", None)
+
+    @property
+    def demands(self):
+        """Demand reactions in model.
+        Irreversible reactions that accumulate or consume a metabolite in
+        the inside of the model.
+        """
+        return find_boundary_types(self, "demand", None)
+
+    @property
+    def sinks(self):
+        """Sink reactions in model.
+        Reversible reactions that accumulate or consume a metabolite in
+        the inside of the model.
+        """
+        return find_boundary_types(self, "sink", None)
 
     def _populate_solver(self, reaction_list, metabolite_list=None):
         """Populate attached solver with constraints and variables that
@@ -746,25 +806,14 @@ class Model(Object):
         self.add_cons_vars(to_add)
 
         for reaction in reaction_list:
-
             if reaction.id not in self.variables:
-
-                reverse_lb, reverse_ub, forward_lb, forward_ub = \
-                    separate_forward_and_reverse_bounds(*reaction.bounds)
-
-                forward_variable = self.problem.Variable(
-                    reaction.id, lb=forward_lb, ub=forward_ub)
-                reverse_variable = self.problem.Variable(
-                    reaction.reverse_id, lb=reverse_lb, ub=reverse_ub)
-
+                forward_variable = self.problem.Variable(reaction.id)
+                reverse_variable = self.problem.Variable(reaction.reverse_id)
                 self.add_cons_vars([forward_variable, reverse_variable])
-
             else:
-
                 reaction = self.reactions.get_by_id(reaction.id)
                 forward_variable = reaction.forward_variable
                 reverse_variable = reaction.reverse_variable
-
             for metabolite, coeff in six.iteritems(reaction.metabolites):
                 if metabolite.id in self.constraints:
                     constraint = self.constraints[metabolite.id]
@@ -774,11 +823,13 @@ class Model(Object):
                         name=metabolite.id,
                         lb=0, ub=0)
                     self.add_cons_vars(constraint, sloppy=True)
-
                 constraint_terms[constraint][forward_variable] = coeff
                 constraint_terms[constraint][reverse_variable] = -coeff
 
         self.solver.update()
+        for reaction in reaction_list:
+            reaction = self.reactions.get_by_id(reaction.id)
+            reaction.update_variable_bounds()
         for constraint, terms in six.iteritems(constraint_terms):
             constraint.set_linear_coefficients(terms)
 
@@ -934,34 +985,37 @@ class Model(Object):
         else:
             raise ValueError("Unknown objective direction '{}'.".format(value))
 
-    def summary(self, solution=None, threshold=1E-8, fva=None, floatfmt='.3g'):
-        """Print a summary of the input and output fluxes of the model. This
-        method requires the model to have been previously solved.
+    def summary(self, solution=None, threshold=1E-06, fva=None, names=False,
+                floatfmt='.3g'):
+        """
+        Print a summary of the input and output fluxes of the model.
 
         Parameters
         ----------
-        solution: cobra.core.Solution
+        solution: cobra.Solution, optional
             A previously solved model solution to use for generating the
             summary. If none provided (default), the summary method will
             resolve the model. Note that the solution object must match the
             model, i.e., changes to the model such as changed bounds,
             added or removed reactions are not taken into account by this
             method.
-
-        threshold : float
-            tolerance for determining if a flux is zero (not printed)
-
-        fva : int or None
-            Whether or not to calculate and report flux variability in the
-            output summary
-
-        floatfmt : string
-            format method for floats, passed to tabulate. Default is '.3g'.
+        threshold : float, optional
+            Threshold below which fluxes are not reported.
+        fva : pandas.DataFrame, float or None, optional
+            Whether or not to include flux variability analysis in the output.
+            If given, fva should either be a previous FVA solution matching
+            the model or a float between 0 and 1 representing the
+            fraction of the optimum objective to be searched.
+        names : bool, optional
+            Emit reaction and metabolite names rather than identifiers (default
+            False).
+        floatfmt : string, optional
+            Format string for floats (default '.3g').
 
         """
         from cobra.flux_analysis.summary import model_summary
         return model_summary(self, solution=solution, threshold=threshold,
-                             fva=fva, floatfmt=floatfmt)
+                             fva=fva, names=names, floatfmt=floatfmt)
 
     def __enter__(self):
         """Record all future changes to the model, undoing them when a call to

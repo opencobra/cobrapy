@@ -3,15 +3,16 @@
 from __future__ import absolute_import
 
 import re
-from ast import parse as ast_parse
 from ast import (
     And, BitAnd, BitOr, BoolOp, Expression, Name, NodeTransformer, Or)
+from ast import parse as ast_parse
 from keyword import kwlist
 from warnings import warn
 
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
+
 
 keywords = list(kwlist)
 keywords.remove("and")

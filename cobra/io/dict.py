@@ -11,15 +11,15 @@ from six import iteritems, string_types
 from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.util.solver import set_objective
 
+
 _REQUIRED_REACTION_ATTRIBUTES = [
     "id", "name", "metabolites", "lower_bound", "upper_bound",
     "gene_reaction_rule"]
 _ORDERED_OPTIONAL_REACTION_KEYS = [
-    "objective_coefficient", "variable_kind", "subsystem", "notes",
+    "objective_coefficient", "subsystem", "notes",
     "annotation"]
 _OPTIONAL_REACTION_ATTRIBUTES = {
     "objective_coefficient": 0,
-    "variable_kind": "continuous",
     "subsystem": "",
     "notes": {},
     "annotation": {},
@@ -27,12 +27,11 @@ _OPTIONAL_REACTION_ATTRIBUTES = {
 
 _REQUIRED_METABOLITE_ATTRIBUTES = ["id", "name", "compartment"]
 _ORDERED_OPTIONAL_METABOLITE_KEYS = [
-    "charge", "formula", "_bound", "_constraint_sense", "notes", "annotation"]
+    "charge", "formula", "_bound", "notes", "annotation"]
 _OPTIONAL_METABOLITE_ATTRIBUTES = {
     "charge": None,
     "formula": None,
     "_bound": 0,
-    "_constraint_sense": "E",
     "notes": {},
     "annotation": {},
 }
