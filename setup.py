@@ -23,7 +23,7 @@ extras = {
     'array': ["scipy"],
     'sbml': ["python-libsbml", "lxml"]
 }
-extras["all"] = sorted(list(extras))
+extras["all"] = sorted(extras.values())
 
 try:
     with open('README.rst') as handle:
