@@ -13,11 +13,12 @@ from warnings import catch_warnings, simplefilter, warn
 
 from six import iteritems, string_types
 
-from cobra.core import Gene, Metabolite, Model, Reaction, Configuration
+from cobra.core import Configuration, Gene, Metabolite, Model, Reaction
 from cobra.core.gene import parse_gpr
 from cobra.manipulation.modify import _renames
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import set_objective
+
 
 try:
     from lxml.etree import (
@@ -198,7 +199,7 @@ def construct_gpr_xml(parent, expression):
 def annotate_cobra_from_sbml(cobra_element, sbml_element):
     sbo_term = sbml_element.get("sboTerm")
     if sbo_term is not None:
-        cobra_element.annotation["SBO"] = sbo_term
+        cobra_element.annotation["sbo"] = sbo_term
     meta_id = get_attrib(sbml_element, "metaid")
     if meta_id is None:
         return
@@ -245,7 +246,7 @@ def annotate_sbml_from_cobra(sbml_element, cobra_element):
     bag = SubElement(SubElement(rdf_desc, ns("bqbiol:is")),
                      ns("rdf:Bag"))
     for provider, identifiers in sorted(iteritems(cobra_element.annotation)):
-        if provider == "SBO":
+        if provider == "sbo":
             set_attrib(sbml_element, "sboTerm", identifiers)
             continue
         if isinstance(identifiers, string_types):
@@ -579,7 +580,7 @@ def read_sbml_model(filename, number=float, **kwargs):
         # libsbml needs a file string, so write to temp file if a file handle
         if hasattr(filename, "read"):
             with NamedTemporaryFile(suffix=".xml", delete=False) as outfile:
-                xmlfile.write(outfile, encoding="UTF-8")
+                xmlfile.write(outfile, encoding="UTF-8", xml_declaration=True)
             filename = outfile.name
         return read_sbml2(filename, **kwargs)
     try:

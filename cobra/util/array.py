@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+
 from collections import namedtuple
 
 import numpy as np
 import pandas as pd
 from six import iteritems
+
 
 try:
     from scipy.sparse import dok_matrix, lil_matrix

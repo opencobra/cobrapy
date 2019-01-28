@@ -12,6 +12,7 @@ from cobra.io import (
     write_sbml_model)
 from cobra.io.sbml3 import write_sbml2
 
+
 # This script regenerates pickles of cobra Models.  Should be
 # performed after updating core classes to prevent subtle bugs.
 try:

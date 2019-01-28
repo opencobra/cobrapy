@@ -1,47 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+from itertools import chain
+
 import pytest
 
 from cobra.core import Metabolite, Model, Reaction
 from cobra.manipulation import *
-from itertools import chain
 
 
 class TestManipulation:
     """Test functions in cobra.manipulation"""
-
-    def test_modify_reversible(self, model):
-        solver = 'glpk'
-        model.solver = solver
-        model1 = model.copy()
-        solution1 = model1.optimize()
-        model2 = model.copy()
-        convert_to_irreversible(model2)
-        solution2 = model2.optimize()
-        assert abs(solution1.f - solution2.f) < 10 ** -3
-        revert_to_reversible(model2)
-        solution2_rev = model2.optimize()
-        assert abs(solution1.f - solution2_rev.f) < 10 ** -3
-        # Ensure revert_to_reversible is robust to solutions generated both
-        # before and after reversibility conversion, or not solved at all.
-        model3 = model.copy()
-        solution3 = model3.optimize()
-        convert_to_irreversible(model3)
-        revert_to_reversible(model3)
-        assert abs(solution1.f - solution3.f) < 10 ** -3
-        # test reaction where both bounds are negative
-        model4 = model.copy()
-        glc = model4.reactions.get_by_id("EX_glc__D_e")
-        glc.upper_bound = -1
-        convert_to_irreversible(model4)
-        solution4 = model4.optimize()
-        assert abs(solution1.f - solution4.f) < 10 ** -3
-        glc_rev = model4.reactions.get_by_id(glc.notes["reflection"])
-        assert glc_rev.lower_bound == 1
-        assert glc.upper_bound == 0
-        revert_to_reversible(model4)
-        assert glc.upper_bound == -1
 
     def test_escape_ids(self, model):
         model.reactions.PGI.gene_reaction_rule = "a.b or c"
@@ -192,11 +161,11 @@ class TestManipulation:
         fake_DM.add_metabolites({model.metabolites.get_by_id("h_c"): -1})
         # this exchange will be set wrong. The function should not overwrite
         # an existing SBO annotation
-        rxns.get_by_id("EX_h_e").annotation["SBO"] = "SBO:0000628"
+        rxns.get_by_id("EX_h_e").annotation["sbo"] = "SBO:0000628"
         add_SBO(model)
-        assert rxns.EX_o2_e.annotation["SBO"] == "SBO:0000627"
-        assert rxns.DM_h_c.annotation["SBO"] == "SBO:0000628"
-        assert rxns.EX_h_e.annotation["SBO"] == "SBO:0000628"
+        assert rxns.EX_o2_e.annotation["sbo"] == "SBO:0000627"
+        assert rxns.DM_h_c.annotation["sbo"] == "SBO:0000628"
+        assert rxns.EX_h_e.annotation["sbo"] == "SBO:0000628"
 
     def test_validate_formula_compartment(self, model):
         model.metabolites[1].formula = "(a*.bcde)"
@@ -209,7 +178,7 @@ class TestManipulation:
         # mass balanced, then the reaction should be detected as
         # no longer mass balanced
         EX_rxn = model.reactions.query(lambda r: r.boundary)[0]
-        EX_rxn.annotation.pop("SBO")
+        EX_rxn.annotation.pop("sbo")
         balance = check_mass_balance(model)
         assert len(balance) == 1
         assert EX_rxn in balance

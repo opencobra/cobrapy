@@ -6,16 +6,17 @@ import json
 from os.path import join
 
 import pytest
+from pandas import DataFrame
 
 import cobra.util.solver as sutil
+from cobra import Metabolite, Model, Reaction
 from cobra.test import create_test_model, data_dir
+
 
 try:
     from cPickle import load as _load
 except ImportError:
     from pickle import load as _load
-
-from cobra import Model, Metabolite, Reaction
 
 
 def pytest_addoption(parser):
@@ -98,13 +99,17 @@ def tiny_toy_model():
 @pytest.fixture(scope="session")
 def fva_results(data_directory):
     with open(join(data_directory, "textbook_fva.json"), "r") as infile:
-        return json.load(infile)
+        df = DataFrame(json.load(infile))
+    df.sort_index(inplace=True)
+    return df[["minimum", "maximum"]]
 
 
 @pytest.fixture(scope="session")
 def pfba_fva_results(data_directory):
     with open(join(data_directory, "textbook_pfba_fva.json"), "r") as infile:
-        return json.load(infile)
+        df = DataFrame(json.load(infile))
+    df.sort_index(inplace=True)
+    return df[["minimum", "maximum"]]
 
 
 stable_optlang = ["glpk", "cplex", "gurobi"]

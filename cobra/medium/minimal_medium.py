@@ -2,10 +2,12 @@
 
 """Contains functions and helpers to obtain minimal growth media."""
 
-from optlang.symbolics import Zero
-from optlang.interface import OPTIMAL
-import pandas as pd
 import logging
+
+import pandas as pd
+from optlang.interface import OPTIMAL
+from optlang.symbolics import Zero
+
 from cobra.medium.boundary_types import find_boundary_types
 
 
@@ -214,7 +216,7 @@ def minimal_medium(model, min_objective_value=0.1, exports=False,
                 media.append(medium)
                 seen.update(medium[medium > 0].index)
             if len(media) > 1:
-                medium = pd.concat(media, axis=1).fillna(0.0)
+                medium = pd.concat(media, axis=1, sort=True).fillna(0.0)
                 medium.sort_index(axis=1, inplace=True)
             else:
                 medium = media[0]

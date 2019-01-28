@@ -8,9 +8,9 @@ import re
 import sys
 from contextlib import contextmanager
 
+import pytest
 from six import StringIO
 
-import pytest
 from cobra.flux_analysis.parsimonious import pfba
 
 

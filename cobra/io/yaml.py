@@ -4,11 +4,12 @@ from __future__ import absolute_import
 
 import io
 
-from six import string_types
 from ruamel.yaml import YAML
 from ruamel.yaml.compat import StringIO
+from six import string_types
 
-from cobra.io.dict import model_to_dict, model_from_dict
+from cobra.io.dict import model_from_dict, model_to_dict
+
 
 YAML_SPEC = "1.2"
 

@@ -5,8 +5,8 @@
 from __future__ import absolute_import
 
 import numpy as np
-
 import pytest
+
 from cobra.flux_analysis.moma import add_moma
 
 

@@ -4,10 +4,10 @@
 
 from __future__ import absolute_import
 
+import pytest
 from optlang.interface import INFEASIBLE, OPTIMAL
 
 import cobra.util.solver as sutil
-import pytest
 from cobra.core import Metabolite, Model, Reaction
 from cobra.flux_analysis.loopless import add_loopless, loopless_solution
 

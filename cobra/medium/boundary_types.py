@@ -13,8 +13,11 @@ http://doi.org/10.1038/nprot.2009.203
 """
 
 import logging
+from collections import Counter
+
 import pandas as pd
 from cobra.medium.annotations import excludes, sbo_terms, compartment_shortlist
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -98,7 +101,7 @@ def is_boundary_type(reaction, boundary_type, external_compartment):
         on a heuristic.
     """
     # Check if the reaction has an annotation. Annotations dominate everything.
-    sbo_term = reaction.annotation.get("SBO", "").upper()
+    sbo_term = reaction.annotation.get("sbo", "").upper()
     if sbo_term == sbo_terms[boundary_type]:
         return True
     if sbo_term in [sbo_terms[k] for k in sbo_terms if k != boundary_type]:

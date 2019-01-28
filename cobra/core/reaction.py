@@ -7,20 +7,21 @@ import re
 from collections import defaultdict
 from copy import copy, deepcopy
 from functools import partial
+from math import isinf
 from operator import attrgetter
 from warnings import warn
 
-from six import iteritems, iterkeys, string_types
 from future.utils import raise_from, raise_with_traceback
+from six import iteritems, iterkeys, string_types
 
-from cobra.exceptions import OptimizationError
 from cobra.core.configuration import Configuration
-from cobra.core.gene import Gene, ast2str, parse_gpr, eval_gpr
+from cobra.core.gene import Gene, ast2str, eval_gpr, parse_gpr
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
-from cobra.util.context import resettable, get_context
+from cobra.exceptions import OptimizationError
+from cobra.util.context import get_context, resettable
 from cobra.util.solver import (
-    linear_reaction_coefficients, set_objective, check_solver_status)
+    check_solver_status, linear_reaction_coefficients, set_objective)
 from cobra.util.util import format_long_string
 
 
@@ -85,18 +86,11 @@ class Reaction(Object):
                                       'supported. Use the model.objective '
                                       'setter')
 
-        # Used during optimization.  Indicates whether the
-        # variable is modeled as continuous, integer, or binary.
-        self.variable_kind = 'continuous'
-
         # from cameo ...
         self._lower_bound = lower_bound if lower_bound is not None else \
             CONFIGURATION.lower_bound
         self._upper_bound = upper_bound if upper_bound is not None else \
             CONFIGURATION.upper_bound
-
-        self._reverse_variable = None
-        self._forward_variable = None
 
     def _set_id_with_model(self, value):
         if value in self.model.reactions:
@@ -190,6 +184,39 @@ class Reaction(Object):
         cop = deepcopy(super(Reaction, self), memo)
         return cop
 
+    @staticmethod
+    def _check_bounds(lb, ub):
+        if lb > ub:
+            raise ValueError(
+                "The lower bound must be less than or equal to the upper "
+                "bound ({} <= {}).".format(lb, ub))
+
+    def update_variable_bounds(self):
+        if self.model is None:
+            return
+        # We know that `lb <= ub`.
+        if self._lower_bound > 0:
+            self.forward_variable.set_bounds(
+                lb=None if isinf(self._lower_bound) else self._lower_bound,
+                ub=None if isinf(self._upper_bound) else self._upper_bound
+            )
+            self.reverse_variable.set_bounds(lb=0, ub=0)
+        elif self._upper_bound < 0:
+            self.forward_variable.set_bounds(lb=0, ub=0)
+            self.reverse_variable.set_bounds(
+                lb=None if isinf(self._upper_bound) else -self._upper_bound,
+                ub=None if isinf(self._lower_bound) else -self._lower_bound
+            )
+        else:
+            self.forward_variable.set_bounds(
+                lb=0,
+                ub=None if isinf(self._upper_bound) else self._upper_bound
+            )
+            self.reverse_variable.set_bounds(
+                lb=0,
+                ub=None if isinf(self._lower_bound) else -self._lower_bound
+            )
+
     @property
     def lower_bound(self):
         """Get or set the lower bound
@@ -207,11 +234,18 @@ class Reaction(Object):
     @lower_bound.setter
     @resettable
     def lower_bound(self, value):
-        if self.upper_bound < value:
+        if self._upper_bound < value:
+            warn("You are constraining the reaction '{}' to a fixed flux "
+                 "value of {}. Did you intend to do this? We are planning to "
+                 "remove this behavior in a future release. Please let us "
+                 "know your opinion at "
+                 "https://github.com/opencobra/cobrapy/issues/793."
+                 "".format(self.id, value), DeprecationWarning)
             self.upper_bound = value
-
+        # Validate bounds before setting them.
+        self._check_bounds(value, self._upper_bound)
         self._lower_bound = value
-        update_forward_and_reverse_bounds(self, 'lower')
+        self.update_variable_bounds()
 
     @property
     def upper_bound(self):
@@ -230,11 +264,18 @@ class Reaction(Object):
     @upper_bound.setter
     @resettable
     def upper_bound(self, value):
-        if self.lower_bound > value:
+        if self._lower_bound > value:
+            warn("You are constraining the reaction '{}' to a fixed flux "
+                 "value of {}. Did you intend to do this? We are planning to "
+                 "remove this behavior in a future release. Please let us "
+                 "know your opinion at "
+                 "https://github.com/opencobra/cobrapy/issues/793."
+                 "".format(self.id, value), DeprecationWarning)
             self.lower_bound = value
-
+        # Validate bounds before setting them.
+        self._check_bounds(self._lower_bound, value)
         self._upper_bound = value
-        update_forward_and_reverse_bounds(self, 'upper')
+        self.update_variable_bounds()
 
     @property
     def bounds(self):
@@ -252,9 +293,12 @@ class Reaction(Object):
     @bounds.setter
     @resettable
     def bounds(self, value):
-        assert value[0] <= value[1], "Invalid bounds: {}".format(value)
-        self._lower_bound, self._upper_bound = value
-        update_forward_and_reverse_bounds(self)
+        lower, upper = value
+        # Validate bounds before setting them.
+        self._check_bounds(lower, upper)
+        self._lower_bound = lower
+        self._upper_bound = upper
+        self.update_variable_bounds()
 
     @property
     def flux(self):
@@ -1087,64 +1131,3 @@ class Reaction(Object):
                        self.build_reaction_string(True), 200),
                    gpr=format_long_string(self.gene_reaction_rule, 100),
                    lb=self.lower_bound, ub=self.upper_bound)
-
-
-def separate_forward_and_reverse_bounds(lower_bound, upper_bound):
-    """Split a given (lower_bound, upper_bound) interval into a negative
-    component and a positive component. Negative components are negated
-    (returns positive ranges) and flipped for usage with forward and reverse
-    reactions bounds
-
-    Parameters
-    ----------
-    lower_bound : float
-        The lower flux bound
-    upper_bound : float
-        The upper flux bound
-    """
-
-    assert lower_bound <= upper_bound, "lower bound is greater than upper"
-
-    bounds_list = [0, 0, lower_bound, upper_bound]
-    bounds_list.sort()
-
-    return -bounds_list[1], -bounds_list[0], bounds_list[2], bounds_list[3]
-
-
-def update_forward_and_reverse_bounds(reaction, direction='both'):
-    """For the given reaction, update the bounds in the forward and
-    reverse variable bounds.
-
-    Parameters
-    ----------
-    reaction : cobra.Reaction
-       The reaction to operate on
-    direction : string
-       Either 'both', 'upper' or 'lower' for updating the corresponding flux
-       bounds.
-    """
-
-    reverse_lb, reverse_ub, forward_lb, forward_ub = \
-        separate_forward_and_reverse_bounds(*reaction.bounds)
-
-    try:
-        # Clear the original bounds to avoid complaints
-        if direction == 'both':
-            reaction.forward_variable._ub = None
-            reaction.reverse_variable._lb = None
-            reaction.reverse_variable._ub = None
-            reaction.forward_variable._lb = None
-
-            reaction.forward_variable.set_bounds(lb=forward_lb, ub=forward_ub)
-            reaction.reverse_variable.set_bounds(lb=reverse_lb, ub=reverse_ub)
-
-        elif direction == 'upper':
-            reaction.forward_variable.ub = forward_ub
-            reaction.reverse_variable.lb = reverse_lb
-
-        elif direction == 'lower':
-            reaction.reverse_variable.ub = reverse_ub
-            reaction.forward_variable.lb = forward_lb
-
-    except AttributeError:
-        pass

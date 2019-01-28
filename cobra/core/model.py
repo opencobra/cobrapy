@@ -2,27 +2,28 @@
 
 from __future__ import absolute_import
 
-import types
 import logging
+import types
 from copy import copy, deepcopy
 from functools import partial
 from warnings import warn
 
 import optlang
-from optlang.symbolics import Basic, Zero
 import six
+from optlang.symbolics import Basic, Zero
 from six import iteritems, string_types
 
-from cobra.exceptions import SolverNotFound
 from cobra.core.configuration import Configuration
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
-from cobra.core.reaction import separate_forward_and_reverse_bounds, Reaction
+from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
-from cobra.util.context import HistoryManager, resettable, get_context
+from cobra.exceptions import SolverNotFound
+from cobra.medium import find_boundary_types, sbo_terms
+from cobra.util.context import HistoryManager, get_context, resettable
 from cobra.util.solver import (
-    interface_to_str, set_objective, solvers,
-    add_cons_vars_to_problem, remove_cons_vars_from_problem, assert_optimal)
+    add_cons_vars_to_problem, assert_optimal, interface_to_str,
+    remove_cons_vars_from_problem, set_objective, solvers)
 from cobra.util.util import AutoVivification, format_long_string
 from cobra.medium import find_boundary_types, find_external_compartment
 
@@ -445,12 +446,13 @@ class Model(Object):
         self.add_reactions([reaction])
 
     def add_boundary(self, metabolite, type="exchange", reaction_id=None,
-                     lb=None, ub=1000.0):
-        """Add a boundary reaction for a given metabolite.
+                     lb=None, ub=None, sbo_term=None):
+        """
+        Add a boundary reaction for a given metabolite.
 
         There are three different types of pre-defined boundary reactions:
         exchange, demand, and sink reactions.
-        An exchange reaction is a reversible, imbalanced reaction that adds
+        An exchange reaction is a reversible, unbalanced reaction that adds
         to or removes an extracellular metabolite from the extracellular
         compartment.
         A demand reaction is an irreversible reaction that consumes an
@@ -473,13 +475,17 @@ class Model(Object):
             want to create your own kind of boundary reaction choose
             any other string, e.g., 'my-boundary'.
         reaction_id : str, optional
-            The ID of the resulting reaction. Only used for custom reactions.
+            The ID of the resulting reaction. This takes precedence over the
+            auto-generated identifiers but beware that it might make boundary
+            reactions harder to identify afterwards when using `model.boundary`
+            or specifically `model.exchanges` etc.
         lb : float, optional
-            The lower bound of the resulting reaction. Only used for custom
-            reactions.
+            The lower bound of the resulting reaction.
         ub : float, optional
-            The upper bound of the resulting reaction. For the pre-defined
-            reactions this default value determines all bounds.
+            The upper bound of the resulting reaction.
+        sbo_term : str, optional
+            A correct SBO term is set for the available types. If a custom
+            type is chosen, a suitable SBO term should also be set.
 
         Returns
         -------
@@ -503,9 +509,9 @@ class Model(Object):
         ub = CONFIGURATION.upper_bound if ub is None else ub
         lb = CONFIGURATION.lower_bound if lb is None else lb
         types = {
-            "exchange": ("EX", lb, ub),
-            "demand": ("DM", 0, ub),
-            "sink": ("SK", lb, ub)
+            "exchange": ("EX", lb, ub, sbo_terms["exchange"]),
+            "demand": ("DM", 0, ub, sbo_terms["demand"]),
+            "sink": ("SK", lb, ub, sbo_terms["sink"])
         }
         if type == "exchange":
             external = find_external_compartment(self)
@@ -517,14 +523,24 @@ class Model(Object):
                                  "rename the model compartments to fix this." %
                                  (metabolite.compartment, external))
         if type in types:
-            prefix, lb, ub = types[type]
-            reaction_id = "{}_{}".format(prefix, metabolite.id)
+            prefix, lb, ub, default_term = types[type]
+            if reaction_id is None:
+                reaction_id = "{}_{}".format(prefix, metabolite.id)
+            if sbo_term is None:
+                sbo_term = default_term
+        if reaction_id is None:
+            raise ValueError(
+                "Custom types of boundary reactions require a custom "
+                "identifier. Please set the `reaction_id`.")
         if reaction_id in self.reactions:
-            raise ValueError('boundary %s already exists' % reaction_id)
+            raise ValueError(
+                "Boundary reaction '{}' already exists.".format(reaction_id))
         name = "{} {}".format(metabolite.name, type)
         rxn = Reaction(id=reaction_id, name=name, lower_bound=lb,
                        upper_bound=ub)
         rxn.add_metabolites({metabolite: -1})
+        if sbo_term:
+            rxn.annotation["sbo"] = sbo_term
         self.add_reactions([rxn])
         return rxn
 
@@ -798,25 +814,14 @@ class Model(Object):
         self.add_cons_vars(to_add)
 
         for reaction in reaction_list:
-
             if reaction.id not in self.variables:
-
-                reverse_lb, reverse_ub, forward_lb, forward_ub = \
-                    separate_forward_and_reverse_bounds(*reaction.bounds)
-
-                forward_variable = self.problem.Variable(
-                    reaction.id, lb=forward_lb, ub=forward_ub)
-                reverse_variable = self.problem.Variable(
-                    reaction.reverse_id, lb=reverse_lb, ub=reverse_ub)
-
+                forward_variable = self.problem.Variable(reaction.id)
+                reverse_variable = self.problem.Variable(reaction.reverse_id)
                 self.add_cons_vars([forward_variable, reverse_variable])
-
             else:
-
                 reaction = self.reactions.get_by_id(reaction.id)
                 forward_variable = reaction.forward_variable
                 reverse_variable = reaction.reverse_variable
-
             for metabolite, coeff in six.iteritems(reaction.metabolites):
                 if metabolite.id in self.constraints:
                     constraint = self.constraints[metabolite.id]
@@ -826,11 +831,13 @@ class Model(Object):
                         name=metabolite.id,
                         lb=0, ub=0)
                     self.add_cons_vars(constraint, sloppy=True)
-
                 constraint_terms[constraint][forward_variable] = coeff
                 constraint_terms[constraint][reverse_variable] = -coeff
 
         self.solver.update()
+        for reaction in reaction_list:
+            reaction = self.reactions.get_by_id(reaction.id)
+            reaction.update_variable_bounds()
         for constraint, terms in six.iteritems(constraint_terms):
             constraint.set_linear_coefficients(terms)
 

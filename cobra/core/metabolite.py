@@ -5,12 +5,12 @@ from __future__ import absolute_import
 import re
 from warnings import warn
 
-from six import iteritems
 from future.utils import raise_from, raise_with_traceback
+from six import iteritems
 
-from cobra.exceptions import OptimizationError
 from cobra.core.formula import elements_and_molecular_weights
 from cobra.core.species import Species
+from cobra.exceptions import OptimizationError
 from cobra.util.solver import check_solver_status
 from cobra.util.util import format_long_string
 
@@ -47,7 +47,6 @@ class Metabolite(Species):
         self.compartment = compartment
         self.charge = charge
 
-        self._constraint_sense = 'E'
         self._bound = 0.
 
     def _set_id_with_model(self, value):

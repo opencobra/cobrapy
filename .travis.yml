@@ -1,10 +1,16 @@
 language: python
-python: 3.5
 sudo: false
-cache:
-  pip: true
+python:
+  - "2.7"
+  - "3.5"
+  - "3.6"
+  - "3.7-dev"
+
 git:
   depth: 2
+
+cache:
+  pip: true
 
 branches:
  only:
@@ -18,54 +24,18 @@ env:
 
 matrix:
   fast_finish: true
-  exclude:
-    - python: 3.5
-  include:
-    - os: linux
-      python: 3.5
-      env:
-        - TOXENV=pep8
-    - os: linux
-      python: 2.7
-      env: TOXENV=py27
-    - os: linux
-      python: 3.5
-      env: TOXENV=py35
-    - os: linux
-      python: 3.6
-      env: TOXENV=py36
-    - os: linux
-      python: 3.7-dev
-      env: TOXENV=py37
-    - os: linux
-      python: 3.5
-      env: TOXENV=sbml
-    - os: linux
-      python: 3.5
-      env: TOXENV=array
-    #    - os: osx
-    #      language: generic
-    #      before_install:
-    #        - brew update
-    #        - brew install --without-readline --without-xz --without-gdbm --without-sqlite python3
-    #        - virtualenv env -p python3
-    #        - source env/bin/activate
-    #    - os: osx
-    #      language: generic
-    #      before_install:
-    #        - brew update
-    #        - brew install --without-readline --without-xz --without-gdbm --without-sqlite python2
-    #        - virtualenv env -p python2
-    #        - source env/bin/activate
 
-before_install:
-  - travis_retry pip install -U pip setuptools wheel tox
-
-before_cache:
-  - set +e
+install:
+  - pip install --upgrade pip setuptools wheel tox tox-travis
 
 script:
-  - travis_wait tox
+  - tox -- --benchmark-skip --cov-report xml --cov-report term
+  - bash <(curl -s https://codecov.io/bash)
+
+stages:
+  - test
+  - name: deploy
+    if: tag IS present
 
 # N.B.: Currently, Travis mangles (escapes) the release tag body badly.
 #before_deploy:
@@ -75,27 +45,28 @@ deploy:
   - provider: pypi
     skip_cleanup: true
     distributions: sdist bdist_wheel
+    install: skip
+    script:
+      - echo "Deploying COBRApy to PyPI."
     on:
       tags: true
       repo: $GITHUB_REPO
-      python: '3.6'
-      condition: $TRAVIS_OS_NAME == "linux"
     user: cobrapy
     password: $PYPI_PASSWORD
   - provider: script
     skip_cleanup: true
+    install: skip
     script: scripts/deploy_website.sh
     on:
       tags: true
       repo: $GITHUB_REPO
-      python: '3.6'
-      condition: $TRAVIS_OS_NAME == "linux"
   - provider: releases
     skip_cleanup: true
+    install: skip
+    script:
+    - echo "Releasing COBRApy to GitHub."
     api_key: $GITHUB_TOKEN
     body: "Please see https://github.com/opencobra/cobrapy/tree/${TRAVIS_TAG}/release-notes/${TRAVIS_TAG}.md for the full release notes."
     on:
       tags: true
       repo: $GITHUB_REPO
-      python: '3.6'
-      condition: $TRAVIS_OS_NAME == "linux"

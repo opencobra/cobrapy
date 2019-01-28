@@ -7,10 +7,10 @@ from __future__ import absolute_import
 import json
 from os.path import join
 
+import pytest
 from ruamel.yaml import YAML
 
 import cobra.io as cio
-import pytest
 from cobra.test.test_io.conftest import compare_models
 
 

@@ -5,8 +5,8 @@
 from __future__ import absolute_import
 
 import numpy as np
-
 import pytest
+
 from cobra.core import Metabolite, Model, Reaction
 from cobra.flux_analysis.parsimonious import pfba
 from cobra.flux_analysis.sampling import ACHRSampler, OptGPSampler, sample

@@ -10,9 +10,10 @@ from warnings import warn
 
 from numpy import empty, nan
 from optlang.interface import OPTIMAL
-from pandas import Series, DataFrame, option_context
+from pandas import DataFrame, Series, option_context
 
 from cobra.util.solver import check_solver_status
+
 
 __all__ = ("Solution", "LegacySolution", "get_solution")
 
@@ -40,19 +41,6 @@ class Solution(object):
         Contains reaction reduced costs (dual values of variables).
     shadow_prices : pandas.Series
         Contains metabolite shadow prices (dual values of constraints).
-
-    Deprecated Attributes
-    ---------------------
-    f : float
-        Use `objective_value` instead.
-    x : list
-        Use `fluxes.values` instead.
-    x_dict : pandas.Series
-        Use `fluxes` instead.
-    y : list
-        Use `reduced_costs.values` instead.
-    y_dict : pandas.Series
-        Use `reduced_costs` instead.
     """
 
     def __init__(self, objective_value, status, fluxes, reduced_costs=None,
@@ -98,16 +86,6 @@ class Solution(object):
             html = '<strong><em>{}</em> solution</strong>'.format(self.status)
         return html
 
-    def __dir__(self):
-        """Hide deprecated attributes and methods from the public interface."""
-        fields = sorted(dir(type(self)) + list(self.__dict__))
-        fields.remove('f')
-        fields.remove('x')
-        fields.remove('y')
-        fields.remove('x_dict')
-        fields.remove('y_dict')
-        return fields
-
     def __getitem__(self, reaction_id):
         """
         Return the flux of a reaction.
@@ -120,50 +98,6 @@ class Solution(object):
         return self.fluxes[reaction_id]
 
     get_primal_by_id = __getitem__
-
-    @property
-    def f(self):
-        """Deprecated property for getting the objective value."""
-        warn("use solution.objective_value instead", DeprecationWarning)
-        return self.objective_value
-
-    @property
-    def x_dict(self):
-        """Deprecated property for getting fluxes."""
-        warn("use solution.fluxes instead", DeprecationWarning)
-        return self.fluxes
-
-    @x_dict.setter
-    def x_dict(self, fluxes):
-        """Deprecated property for setting fluxes."""
-        warn("let Model.optimize create a solution instance,"
-             " don't update yourself", DeprecationWarning)
-        self.fluxes = fluxes
-
-    @property
-    def x(self):
-        """Deprecated property for getting flux values."""
-        warn("use solution.fluxes.values() instead", DeprecationWarning)
-        return self.fluxes.values
-
-    @property
-    def y_dict(self):
-        """Deprecated property for getting reduced costs."""
-        warn("use solution.reduced_costs instead", DeprecationWarning)
-        return self.reduced_costs
-
-    @y_dict.setter
-    def y_dict(self, costs):
-        """Deprecated property for setting reduced costs."""
-        warn("let Model create a solution instance, don't update yourself",
-             DeprecationWarning)
-        self.reduced_costs = costs
-
-    @property
-    def y(self):
-        """Deprecated property for getting reduced cost values."""
-        warn("use solution.reduced_costs.values() instead", DeprecationWarning)
-        return self.reduced_costs.values
 
     def to_frame(self):
         """Return the fluxes and reduced costs as a data frame"""

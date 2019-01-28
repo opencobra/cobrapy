@@ -7,7 +7,6 @@ from ast import And, NodeTransformer
 from six import iteritems, string_types
 
 from cobra.core.gene import ast2str, eval_gpr, parse_gpr
-from cobra.core import Model
 
 
 def prune_unused_metabolites(cobra_model):

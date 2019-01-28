@@ -7,13 +7,14 @@ from collections import OrderedDict
 from uuid import uuid4
 from warnings import warn
 
-from numpy import object as np_object
 from numpy import array, inf, isinf
+from numpy import object as np_object
 from six import string_types
 
 from cobra.core import Metabolite, Model, Reaction
 from cobra.util import create_stoichiometric_matrix
 from cobra.util.solver import set_objective
+
 
 try:
     import scipy.sparse as scipy_sparse
@@ -152,8 +153,6 @@ def create_mat_dict(model):
     mat["rxns"] = _cell(rxns.list_attr("id"))
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
     mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
-    mat["csense"] = "".join((
-        met._constraint_sense for met in model.metabolites))
     stoich_mat = create_stoichiometric_matrix(model)
     mat["S"] = stoich_mat if stoich_mat is not None else [[]]
     # multiply by 1 to convert to float, working around scipy bug

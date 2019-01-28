@@ -11,6 +11,7 @@ from pandas import Series
 import cobra.util.solver as sutil
 from cobra.core import Metabolite, Model, Reaction, Solution
 
+
 # The scipy interface is currently unstable and may yield errors or infeasible
 # solutions.
 

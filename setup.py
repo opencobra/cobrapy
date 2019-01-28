@@ -23,7 +23,7 @@ extras = {
     'array': ["scipy"],
     'sbml': ["python-libsbml", "lxml"]
 }
-extras["all"] = sorted(list(extras))
+extras["all"] = sorted(extras.values())
 
 try:
     with open('README.rst') as handle:
@@ -37,7 +37,7 @@ except IOError:
 if __name__ == "__main__":
     setup(
         name="cobra",
-        version="0.13.4",
+        version="0.14.1",
         packages=find_packages(),
         setup_requires=setup_requirements,
         install_requires=[

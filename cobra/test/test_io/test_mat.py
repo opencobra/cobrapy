@@ -8,8 +8,10 @@ from os.path import join
 from pickle import load
 
 import pytest
+
 from cobra import io
 from cobra.test.test_io.conftest import compare_models
+
 
 try:
     import scipy

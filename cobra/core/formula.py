@@ -7,6 +7,7 @@ from warnings import warn
 
 from cobra.core.object import Object
 
+
 # Numbers are not required because of the |(?=[A-Z])? block. See the
 # discussion in https://github.com/opencobra/cobrapy/issues/128 for
 # more details.

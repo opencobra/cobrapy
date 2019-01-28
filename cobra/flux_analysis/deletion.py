@@ -1,21 +1,23 @@
 # -*- coding: utf-8 -*-
 
-import multiprocessing
 import logging
-import optlang
-from warnings import warn
-from itertools import product
+import multiprocessing
+from builtins import dict, map
 from functools import partial
-from builtins import (map, dict)
+from itertools import product
 
 import pandas as pd
+from optlang.exceptions import SolverError
 
-from cobra.manipulation.delete import find_gene_knockout_reactions
 import cobra.util.solver as sutil
+from cobra.core import Configuration
 from cobra.flux_analysis.moma import add_moma
 from cobra.flux_analysis.room import add_room
+from cobra.manipulation.delete import find_gene_knockout_reactions
+
 
 LOGGER = logging.getLogger(__name__)
+CONFIGURATION = Configuration()
 
 
 def _reactions_knockouts_with_restore(model, reactions):
@@ -33,7 +35,7 @@ def _get_growth(model):
             growth = model.solver.variables.moma_old_objective.primal
         else:
             growth = model.slim_optimize()
-    except optlang.exceptions.SolverError:
+    except SolverError:
         growth = float('nan')
     return growth
 
@@ -117,11 +119,7 @@ def _multi_deletion(model, entity, element_lists, method="fba",
             "Please choose a different solver or use FBA only.".format(solver))
 
     if processes is None:
-        try:
-            processes = multiprocessing.cpu_count()
-        except NotImplementedError:
-            warn("Number of cores could not be detected - assuming 1.")
-            processes = 1
+        processes = CONFIGURATION.processes
 
     with model:
         if "moma" in method:

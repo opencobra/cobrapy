@@ -7,10 +7,10 @@ from __future__ import absolute_import
 import math
 
 import numpy as np
+import pytest
 from pandas import Series
 from six import iteritems
 
-import pytest
 from cobra.flux_analysis.deletion import (
     double_gene_deletion, double_reaction_deletion, single_gene_deletion,
     single_reaction_deletion)
