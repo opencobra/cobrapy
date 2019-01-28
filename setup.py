@@ -2,10 +2,11 @@
 
 from __future__ import absolute_import
 
-from warnings import warn
 from sys import argv, version_info
+from warnings import warn
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
+
 
 if version_info[:2] == (3, 4):
     warn("Support for Python 3.4 was dropped by pandas. Since cobrapy is a "

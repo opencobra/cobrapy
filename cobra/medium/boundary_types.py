@@ -16,7 +16,8 @@ import logging
 from collections import Counter
 
 import pandas as pd
-from cobra.medium.annotations import excludes, sbo_terms, compartment_shortlist
+
+from cobra.medium.annotations import compartment_shortlist, excludes, sbo_terms
 
 
 LOGGER = logging.getLogger(__name__)

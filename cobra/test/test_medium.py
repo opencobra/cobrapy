@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 import cobra.medium as medium
-from cobra import Reaction, Metabolite
+from cobra import Metabolite, Reaction
 
 
 class TestModelMedium:
