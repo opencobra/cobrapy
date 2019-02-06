@@ -51,9 +51,9 @@ def find_external_compartment(model):
 
     if matches.sum() == 1:
         compartment = matches.index[matches][0]
-        LOGGER.info("Compartment `%s` sounds like an external compartment. "
-                    "Using this one without counting boundary reactions" %
-                    compartment)
+        LOGGER.debug("Compartment `%s` sounds like an external compartment. "
+                     "Using this one without counting boundary reactions" %
+                     compartment)
         return compartment
     elif most is not None and matches.sum() > 1 and matches[most].sum() == 1:
         compartment = most[matches[most]][0]
