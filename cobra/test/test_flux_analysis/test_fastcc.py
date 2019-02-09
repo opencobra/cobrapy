@@ -2,18 +2,19 @@
 
 """Test functionalities of FASTCC."""
 
+
 from __future__ import absolute_import
 
 import pytest
 
-from cobra.core import Model, Reaction
+import cobra
 from cobra.flux_analysis import fastcc
 
 
 @pytest.fixture(scope="module")
-def fastcc_model():
+def figure1_model():
     """
-    Generate FASTCC model as described in [1]_
+    Generate a toy model as described in [1]_ figure 1.
 
     References
     ----------
@@ -21,32 +22,64 @@ def fastcc_model():
            Fast Reconstruction of Compact Context-Specific Metabolic Network
            Models.
            PLoS Comput Biol 10(1): e1003424. doi:10.1371/journal.pcbi.1003424
+
     """
-    test_model = Model("FASTCC_model")
-    r1 = Reaction("r1")
-    r2 = Reaction("r2")
-    r3 = Reaction("r3")
-    r4 = Reaction("r4")
-    r5 = Reaction("r5")
-    r6 = Reaction("r6")
+    test_model = cobra.Model("figure 1")
+    v1 = cobra.Reaction("v1")
+    v2 = cobra.Reaction("v2")
+    v3 = cobra.Reaction("v3")
+    v4 = cobra.Reaction("v4")
+    v5 = cobra.Reaction("v5")
+    v6 = cobra.Reaction("v6")
 
-    test_model.add_reactions([r1, r2, r3, r4, r5, r6])
+    test_model.add_reactions([v1, v2, v3, v4, v5, v6])
 
-    r1.reaction = "-> 2 A"
-    r2.reaction = "A <-> B"
-    r3.reaction = "A -> D"
-    r4.reaction = "A -> C"
-    r5.reaction = "C -> D"
-    r6.reaction = "D ->"
+    v1.reaction = "-> 2 A"
+    v2.reaction = "A <-> B"
+    v3.reaction = "A -> D"
+    v4.reaction = "A -> C"
+    v5.reaction = "C -> D"
+    v6.reaction = "D ->"
 
-    r1.bounds = (0.0, 3.0)
-    r2.bounds = (-3.0, 3.0)
-    r3.bounds = (0.0, 3.0)
-    r4.bounds = (0.0, 3.0)
-    r5.bounds = (0.0, 3.0)
-    r6.bounds = (0.0, 3.0)
+    v1.bounds = (0.0, 3.0)
+    v2.bounds = (-3.0, 3.0)
+    v3.bounds = (0.0, 3.0)
+    v4.bounds = (0.0, 3.0)
+    v5.bounds = (0.0, 3.0)
+    v6.bounds = (0.0, 3.0)
 
-    test_model.objective = r6
+    test_model.objective = v6
+    return test_model
+
+
+@pytest.fixture(scope="module")
+def opposing_model():
+    """
+    Generate a toy model with opposing reversible reactions.
+
+    This toy model ensures that two opposing reversible reactions do not
+    appear as blocked.
+
+    """
+    test_model = cobra.Model("opposing")
+    v1 = cobra.Reaction("v1")
+    v2 = cobra.Reaction("v2")
+    v3 = cobra.Reaction("v3")
+    v4 = cobra.Reaction("v4")
+
+    test_model.add_reactions([v1, v2, v3, v4])
+
+    v1.reaction = "-> 2 A"
+    v2.reaction = "A -> C"  # Later made reversible via bounds.
+    v3.reaction = "D -> C"  # Later made reversible via bounds.
+    v4.reaction = "D ->"
+
+    v1.bounds = 0.0, 3.0
+    v2.bounds = -3.0, 3.0
+    v3.bounds = -3.0, 3.0
+    v4.bounds = 0.0, 3.0
+
+    test_model.objective = v4
     return test_model
 
 
@@ -56,9 +89,17 @@ def test_fastcc_benchmark(model, benchmark, all_solvers):
     benchmark(fastcc, model)
 
 
-def test_fastcc(fastcc_model, all_solvers):
+def test_figure1(figure1_model, all_solvers):
     """Test fastcc."""
-    fastcc_model.solver = all_solvers
-    consistent_model = fastcc(fastcc_model)
-    expected_reactions = ['r1', 'r3', 'r4', 'r5', 'r6']
-    assert expected_reactions == [rxn.id for rxn in consistent_model.reactions]
+    figure1_model.solver = all_solvers
+    consistent_model = fastcc(figure1_model)
+    expected_reactions = {'v1', 'v3', 'v4', 'v5', 'v6'}
+    assert expected_reactions == {rxn.id for rxn in consistent_model.reactions}
+
+
+def test_opposing(opposing_model, all_solvers):
+    """Test fastcc."""
+    opposing_model.solver = all_solvers
+    consistent_model = fastcc(opposing_model)
+    expected_reactions = {'v1', 'v2', 'v3', 'v4'}
+    assert expected_reactions == {rxn.id for rxn in consistent_model.reactions}
