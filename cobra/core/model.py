@@ -19,7 +19,8 @@ from cobra.core.object import Object
 from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
 from cobra.exceptions import SolverNotFound
-from cobra.medium import find_boundary_types, sbo_terms
+from cobra.medium import (
+    find_boundary_types, find_external_compartment, sbo_terms)
 from cobra.util.context import HistoryManager, get_context, resettable
 from cobra.util.solver import (
     add_cons_vars_to_problem, assert_optimal, interface_to_str,
@@ -505,15 +506,22 @@ class Model(Object):
         >>> demand.build_reaction_string()
         'atp_c --> '
         """
-        if ub is None:
-            ub = CONFIGURATION.upper_bound
-        if lb is None:
-            lb = CONFIGURATION.lower_bound
+        ub = CONFIGURATION.upper_bound if ub is None else ub
+        lb = CONFIGURATION.lower_bound if lb is None else lb
         types = {
             "exchange": ("EX", lb, ub, sbo_terms["exchange"]),
             "demand": ("DM", 0, ub, sbo_terms["demand"]),
             "sink": ("SK", lb, ub, sbo_terms["sink"])
         }
+        if type == "exchange":
+            external = find_external_compartment(self)
+            if metabolite.compartment != external:
+                raise ValueError("The metabolite is not an external metabolite"
+                                 " (compartment is `%s` but should be `%s`). "
+                                 "Did you mean to add a demand or sink? "
+                                 "If not, either change its compartment or "
+                                 "rename the model compartments to fix this." %
+                                 (metabolite.compartment, external))
         if type in types:
             prefix, lb, ub, default_term = types[type]
             if reaction_id is None:

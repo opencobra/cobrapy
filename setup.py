@@ -2,10 +2,11 @@
 
 from __future__ import absolute_import
 
-from warnings import warn
 from sys import argv, version_info
+from warnings import warn
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
+
 
 if version_info[:2] == (3, 4):
     warn("Support for Python 3.4 was dropped by pandas. Since cobrapy is a "
@@ -23,7 +24,7 @@ extras = {
     'array': ["scipy"],
     'sbml': ["python-libsbml", "lxml"]
 }
-extras["all"] = sorted(list(extras))
+extras["all"] = sorted(extras.values())
 
 try:
     with open('README.rst') as handle:
@@ -37,7 +38,7 @@ except IOError:
 if __name__ == "__main__":
     setup(
         name="cobra",
-        version="0.14.1",
+        version="0.14.2",
         packages=find_packages(),
         setup_requires=setup_requirements,
         install_requires=[
