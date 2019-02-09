@@ -50,14 +50,13 @@ def fastcc(model, flux_threshold=1.0, zero_cutoff=1E-09):
            PLoS Comput Biol 10(1): e1003424. doi:10.1371/journal.pcbi.1003424
 
     """
-
     with model:
         obj_vars = []
         vars_and_cons = []
         prob = model.problem
 
         for rxn in model.reactions:
-            var = prob.Variable("auxillary_{}".format(rxn.id),
+            var = prob.Variable("auxiliary_{}".format(rxn.id),
                                 lb=0.0, ub=flux_threshold)
             const = prob.Constraint(rxn.forward_variable +
                                     rxn.reverse_variable -
@@ -72,10 +71,7 @@ def fastcc(model, flux_threshold=1.0, zero_cutoff=1E-09):
 
         sol = model.optimize()
 
-    rxns_to_remove = [rxn_id for rxn_id, flux in sol.fluxes.iteritems() if
-                      abs(flux) < zero_cutoff]
+    rxns_to_remove = sol.fluxes[sol.fluxes.abs() < zero_cutoff].index
     consistent_model = model.copy()
     consistent_model.remove_reactions(rxns_to_remove, remove_orphans=True)
-    consistent_model.objective = model.objective
-
     return consistent_model
