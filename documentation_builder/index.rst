@@ -21,6 +21,7 @@ be viewed at `nbviewer
     phenotype_phase_plane
     sampling
     loopless
+    consistency
     gapfilling
     media
     solvers
