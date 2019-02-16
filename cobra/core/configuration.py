@@ -99,10 +99,42 @@ class BaseConfiguration(object):
         self.upper_bound = bounds[1]
 
     def __repr__(self):
-        return "solver: {}\nlower_bound: {}\nupper_bound: {}\n" \
-            "processes: {}".format(
-                interface_to_str(self.solver), self.lower_bound,
-                self.upper_bound, self.processes)
+        return """
+        solver: {solver}
+        lower_bound: {lower_bound}
+        upper_bound: {upper_bound}
+        processes: {processes}""".format(
+            solver=interface_to_str(self.solver),
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
+            processes=self.processes,
+        )
+
+    def _repr_html_(self):
+        return """
+        <table>
+            <tr>
+                <td><strong>Solver</strong></td>
+                <td>{solver}</td>
+            </tr>
+            <tr>
+                <td><strong>Lower bound</strong></td>
+                <td>{lower_bound}</td>
+            </tr>
+            <tr>
+                <td><strong>Upper bound</strong></td>
+                <td>{upper_bound}</td>
+            </tr>
+            <tr>
+                <td><strong>Processes</strong></td>
+                <td>{processes}</td>
+            </tr>
+        </table>""".format(
+            solver=interface_to_str(self.solver),
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
+            processes=self.processes,
+        )
 
 
 class Configuration(with_metaclass(Singleton, BaseConfiguration)):
