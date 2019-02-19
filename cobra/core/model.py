@@ -57,6 +57,7 @@ class Model(Object):
         Gene
     solution : Solution
         The last obtained solution from optimizing the model.
+   
     """
 
     def __setstate__(self, state):
@@ -105,6 +106,12 @@ class Model(Object):
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(Zero)
             self._populate_solver(self.reactions, self.metabolites)
+
+            tolerances = CONFIGURATION.tolerances
+            solver_tolerances = self._solver.configuration.tolerances
+            solver_tolerances.feasibility = tolerances['feasibility']
+            solver_tolerances.optimality = tolerances['optimality']
+            solver_tolerances.integrality = tolerances['integrality']
 
     @property
     def solver(self):

@@ -9,7 +9,7 @@ import types
 from multiprocessing import cpu_count
 from warnings import warn
 
-from six import string_types, with_metaclass
+from six import string_types, viewvalues, with_metaclass
 
 from cobra.core.singleton import Singleton
 from cobra.exceptions import SolverNotFound
@@ -34,6 +34,8 @@ class BaseConfiguration(object):
     solver : {"glpk", "cplex", "gurobi"}
         The default solver for new models. The solver choices are the ones
         provided by `optlang` and solvers installed in your environment.
+    tolerances: dict('feasibility': float, 'optimality': float, 'integrality': float)
+        The tolerances for the solver being used (default is solver's initial tolerances).
     lower_bound : float
         The standard lower bound for reversible reactions (default -1000).
     upper_bound : float
@@ -50,6 +52,7 @@ class BaseConfiguration(object):
 
     def __init__(self):
         self._solver = None
+        self._tolerances = None
         self.lower_bound = None
         self.upper_bound = None
         # Set the default solver from a preferred order.
@@ -60,7 +63,15 @@ class BaseConfiguration(object):
                 continue
             else:
                 break
+        
+        self.tolerances = {
+            'feasibility': self.solver.Configuration().tolerances.feasibility,
+            'optimality': self.solver.Configuration().tolerances.optimality,
+            'integrality': self.solver.Configuration().tolerances.integrality,
+        }
+
         self.bounds = -1000.0, 1000.0
+
         try:
             self.processes = cpu_count()
         except NotImplementedError:
@@ -98,13 +109,32 @@ class BaseConfiguration(object):
         self.lower_bound = bounds[0]
         self.upper_bound = bounds[1]
 
+    @property
+    def tolerances(self):
+        return self._tolerances
+
+    @tolerances.setter
+    def tolerances(self, tolerance_dict):
+        if all(isinstance(x, float) 
+               for x in list(viewvalues(tolerance_dict))):
+            self._tolerances = {
+                'feasibility': tolerance_dict.get('feasibility', 1e-07),
+                'optimality': tolerance_dict.get('optimality', 1e-07),
+                'integrality': tolerance_dict.get('integrality', 1e-05),
+            }
+        else:
+            LOGGER.warning(
+                "Only float values are allowed for setting tolerances.")
+
     def __repr__(self):
         return """
         solver: {solver}
+        toleraces: {tolerances}
         lower_bound: {lower_bound}
         upper_bound: {upper_bound}
         processes: {processes}""".format(
             solver=interface_to_str(self.solver),
+            tolerances=self.tolerances,
             lower_bound=self.lower_bound,
             upper_bound=self.upper_bound,
             processes=self.processes,
@@ -116,6 +146,10 @@ class BaseConfiguration(object):
             <tr>
                 <td><strong>Solver</strong></td>
                 <td>{solver}</td>
+            </tr>
+            <tr>
+                <td><strong>Tolerances</strong></td>
+                <td>{tolerances}</td>
             </tr>
             <tr>
                 <td><strong>Lower bound</strong></td>
@@ -131,6 +165,7 @@ class BaseConfiguration(object):
             </tr>
         </table>""".format(
             solver=interface_to_str(self.solver),
+            tolerances=self.tolerances,
             lower_bound=self.lower_bound,
             upper_bound=self.upper_bound,
             processes=self.processes,
