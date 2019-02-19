@@ -34,8 +34,10 @@ class BaseConfiguration(object):
     solver : {"glpk", "cplex", "gurobi"}
         The default solver for new models. The solver choices are the ones
         provided by `optlang` and solvers installed in your environment.
-    tolerances: dict('feasibility': float, 'optimality': float, 'integrality': float)
-        The tolerances for the solver being used (default is solver's initial tolerances).
+    tolerances: dict('feasibility': float, 'optimality': float,
+                     'integrality': float)
+        The tolerances for the solver being used (default is solver's initial
+        tolerances).
     lower_bound : float
         The standard lower bound for reversible reactions (default -1000).
     upper_bound : float
@@ -63,7 +65,7 @@ class BaseConfiguration(object):
                 continue
             else:
                 break
-        
+
         self.tolerances = {
             'feasibility': self.solver.Configuration().tolerances.feasibility,
             'optimality': self.solver.Configuration().tolerances.optimality,
@@ -105,9 +107,11 @@ class BaseConfiguration(object):
     @bounds.setter
     def bounds(self, bounds):
         # TODO: We should consider allowing `None` for free bounds.
-        assert bounds[0] <= bounds[1]
-        self.lower_bound = bounds[0]
-        self.upper_bound = bounds[1]
+        if bounds[0] <= bounds[1]:
+            self.lower_bound = bounds[0]
+            self.upper_bound = bounds[1]
+        else:
+            LOGGER.error("Lower bound can't be greater than upper bound.")
 
     @property
     def tolerances(self):
@@ -115,7 +119,7 @@ class BaseConfiguration(object):
 
     @tolerances.setter
     def tolerances(self, tolerance_dict):
-        if all(isinstance(x, float) 
+        if all(isinstance(x, float)
                for x in list(viewvalues(tolerance_dict))):
             self._tolerances = {
                 'feasibility': tolerance_dict.get('feasibility', 1e-07),

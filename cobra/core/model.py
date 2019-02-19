@@ -57,7 +57,7 @@ class Model(Object):
         Gene
     solution : Solution
         The last obtained solution from optimizing the model.
-   
+
     """
 
     def __setstate__(self, state):
