@@ -32,3 +32,31 @@ def test_solver():
     assert interface_to_str(config.solver) == "glpk_exact"
     # Restore default solver.
     config.solver = "glpk"
+
+
+def test_default_tolerances():
+    """Verify the default solver tolerances."""
+    config = Configuration()
+    config.solver = "glpk"
+    assert config.tolerances["feasibility"] == 1e-07
+    assert config.tolerances["optimality"] == 1e-07
+    assert config.tolerances["integrality"] == 1e-05
+
+
+def test_tolerances():
+    """Test assignment of solver tolerances."""
+    config = Configuration()
+    config.tolerances = {
+        "feasibility": 1e-06,
+        "optimality": 1e-06,
+        "integrality": 1e-06,
+    }
+    assert config.tolerances["feasibility"] == 1e-06
+    assert config.tolerances["optimality"] == 1e-06
+    assert config.tolerances["integrality"] == 1e-06
+    # Restore default tolerances
+    config.tolerances = {
+        "feasibility": 1e-07,
+        "optimality": 1e-07,
+        "integrality": 1e-05,
+    }
