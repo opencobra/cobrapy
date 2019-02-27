@@ -21,6 +21,10 @@ except:
     from pickle import load, dump
 
 
+config = cobra.Configuration()
+config.solver = "glpk"
+
+
 # ecoli
 ecoli_model = read_sbml_model("iJO1366.xml")
 with open("iJO1366.pickle", "wb") as outfile:
