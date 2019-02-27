@@ -93,7 +93,7 @@ class TestCobraIO:
         # ensure they have the same solution max
         solution1 = model1.optimize()
         solution2 = model2.optimize()
-        assert abs(solution1.f - solution2.f) < 0.001
+        assert abs(solution1.objective_value - solution2.objective_value) < 0.001
         # ensure the references are correct
         assert model2.metabolites[0]._model is model2
         assert model2.reactions[0]._model is model2
