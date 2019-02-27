@@ -10,49 +10,50 @@ from cobra.core.gene import ast2str, eval_gpr, parse_gpr
 
 
 def prune_unused_metabolites(cobra_model):
-    """Remove metabolites that are not involved in any reactions
+    """Remove metabolites that are not involved in any reactions and
+    returns pruned model
 
     Parameters
     ----------
-    cobra_model: cobra.Model
+    cobra_model: class:`~cobra.core.Model.Model` object
         the model to remove unused metabolites from
 
     Returns
     -------
-    list
+    output_model: class:`~cobra.core.Model.Model` object
+        input model with unused metabolites removed
+    inactive_metabolites: list of class:`~cobra.core.reaction.Reaction`
         list of metabolites that were removed
     """
-    inactive_metabolites = []
-    active_metabolites = []
-    for the_metabolite in cobra_model.metabolites:
-        if len(the_metabolite._reaction) == 0:
-            the_metabolite.remove_from_model()
-            inactive_metabolites.append(the_metabolite)
-        else:
-            active_metabolites.append(the_metabolite)
-    return inactive_metabolites
+
+    output_model = cobra_model.copy()
+    inactive_metabolites = [m for m in output_model.metabolites
+                            if len(m.reactions) == 0]
+    output_model.remove_metabolites(inactive_metabolites)
+    return output_model, inactive_metabolites
 
 
 def prune_unused_reactions(cobra_model):
-    """Remove reactions that have no assigned metabolites
+    """Remove reactions with no assigned metabolites, returns pruned model
 
     Parameters
     ----------
-    cobra_model: cobra.Model
+    cobra_model: class:`~cobra.core.Model.Model` object
         the model to remove unused reactions from
 
     Returns
     -------
-    list
+    output_model: class:`~cobra.core.Model.Model` object
+        input model with unused reactions removed
+    reactions_to_prune: list of class:`~cobra.core.reaction.Reaction`
         list of reactions that were removed
     """
-    pruned_reactions = []
-    reactions_to_prune = [x for x in cobra_model.reactions
-                          if len(x._metabolites) == 0]
-    for the_reaction in reactions_to_prune:
-        the_reaction.remove_from_model()
-        pruned_reactions.append(the_reaction)
-    return pruned_reactions
+
+    output_model = cobra_model.copy()
+    reactions_to_prune = [r for r in output_model.reactions
+                          if len(r.metabolites) == 0]
+    output_model.remove_reactions(reactions_to_prune)
+    return output_model, reactions_to_prune
 
 
 def undelete_model_genes(cobra_model):

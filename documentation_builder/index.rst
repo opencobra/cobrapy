@@ -13,6 +13,7 @@ be viewed at `nbviewer
     :maxdepth: 2
 
     getting_started
+    configuration
     building_model
     io
     simulating
@@ -20,9 +21,12 @@ be viewed at `nbviewer
     phenotype_phase_plane
     sampling
     loopless
+    consistency
     gapfilling
+    media
     solvers
     constraints_objectives
+    dfba
     pymatbridge
     faq
     _autogen/modules

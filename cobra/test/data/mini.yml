@@ -1,225 +1,4 @@
 !!omap
-- reactions:
-  - !!omap
-    - id: ATPM
-    - name: ATP maintenance requirement
-    - metabolites: !!omap
-      - adp_c: 1.0
-      - atp_c: -1.0
-      - h_c: 1.0
-      - h2o_c: -1.0
-      - pi_c: 1.0
-    - lower_bound: 8.39
-    - upper_bound: 1000.0
-    - gene_reaction_rule: ''
-    - objective_coefficient: 1.0
-    - annotation:
-        bigg.reaction: ATPM
-  - !!omap
-    - id: D_LACt2
-    - name: ''
-    - metabolites: !!omap
-      - h_e: -1
-      - lac__D_e: -1
-      - h_c: 1
-      - lac__D_c: 1
-    - lower_bound: -1000.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: b3603 or b2975
-  - !!omap
-    - id: ENO
-    - name: enolase
-    - metabolites: !!omap
-      - pep_c: 1.0
-      - h2o_c: 1.0
-      - 2pg_c: -1.0
-    - lower_bound: -1000.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: b2779
-    - annotation:
-        bigg.reaction: ENO
-  - !!omap
-    - id: EX_glc__D_e
-    - name: D-Glucose exchange
-    - metabolites: !!omap
-      - glc__D_e: -1.0
-    - lower_bound: -10.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: ''
-    - annotation:
-        bigg.reaction: glc
-        SBO: SBO:0000627
-  - !!omap
-    - id: EX_h_e
-    - name: H+ exchange
-    - metabolites: !!omap
-      - h_e: -1.0
-    - lower_bound: -1000.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: ''
-    - annotation:
-        bigg.reaction: h
-        SBO: SBO:0000627
-  - !!omap
-    - id: EX_lac__D_e
-    - name: D-lactate exchange
-    - metabolites: !!omap
-      - lac__D_e: -1.0
-    - lower_bound: 0.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: ''
-  - !!omap
-    - id: FBA
-    - name: fructose-bisphosphate aldolase
-    - metabolites: !!omap
-      - dhap_c: 1.0
-      - fdp_c: -1.0
-      - g3p_c: 1.0
-    - lower_bound: -1000.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: b1773 or b2097 or b2925
-    - annotation:
-        bigg.reaction: FBA
-  - !!omap
-    - id: GAPD
-    - name: glyceraldehyde-3-phosphate dehydrogenase
-    - metabolites: !!omap
-      - nad_c: -1.0
-      - 13dpg_c: 1.0
-      - g3p_c: -1.0
-      - nadh_c: 1.0
-      - h_c: 1.0
-      - pi_c: -1.0
-    - lower_bound: -1000.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: b1779
-    - annotation:
-        bigg.reaction: GAPD
-  - !!omap
-    - id: GLCpts
-    - name: D-glucose transport via PEP:Pyr PTS
-    - metabolites: !!omap
-      - pep_c: -1.0
-      - g6p_c: 1.0
-      - glc__D_e: -1.0
-      - pyr_c: 1.0
-    - lower_bound: 0.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: ( b2417 and b1621 and b2415 and b2416 ) or ( b2417 and b1101
-        and b2415 and b2416 ) or ( b1817 and b1818 and b1819 and b2415 and b2416 )
-    - annotation:
-        bigg.reaction: GLCpts
-  - !!omap
-    - id: H2Ot
-    - name: R H2O transport via - diffusion
-    - metabolites: !!omap
-      - h2o_e: -1.0
-      - h2o_c: 1.0
-    - lower_bound: -1000.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: b0875 or s0001
-    - annotation:
-        bigg.reaction: H2Ot
-  - !!omap
-    - id: LDH_D
-    - name: D-lactate dehydrogenase
-    - metabolites: !!omap
-      - nad_c: -1.0
-      - lac__D_c: -1.0
-      - h_c: 1.0
-      - nadh_c: 1.0
-      - pyr_c: 1.0
-    - lower_bound: -1000.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: b2133 or b1380
-  - !!omap
-    - id: PFK
-    - name: phosphofructokinase
-    - metabolites: !!omap
-      - f6p_c: -1.0
-      - atp_c: -1.0
-      - fdp_c: 1.0
-      - h_c: 1.0
-      - adp_c: 1.0
-    - lower_bound: 0.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: b3916 or b1723
-    - objective_coefficient: 1.0
-    - annotation:
-        bigg.reaction: PFK
-  - !!omap
-    - id: PGI
-    - name: glucose-6-phosphate isomerase
-    - metabolites: !!omap
-      - f6p_c: 1.0
-      - g6p_c: -1.0
-    - lower_bound: -1000.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: b4025
-    - annotation:
-        bigg.reaction: PGI
-  - !!omap
-    - id: PGK
-    - name: phosphoglycerate kinase
-    - metabolites: !!omap
-      - 3pg_c: -1.0
-      - atp_c: -1.0
-      - 13dpg_c: 1.0
-      - adp_c: 1.0
-    - lower_bound: -1000.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: b2926
-    - annotation:
-        bigg.reaction: PGK
-  - !!omap
-    - id: PGM
-    - name: phosphoglycerate mutase
-    - metabolites: !!omap
-      - 3pg_c: 1.0
-      - 2pg_c: -1.0
-    - lower_bound: -1000.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: b4395 or b3612 or b0755
-    - annotation:
-        bigg.reaction: PGM
-  - !!omap
-    - id: PIt2r
-    - name: R phosphate reversible transport via - symport
-    - metabolites: !!omap
-      - h_c: 1.0
-      - pi_e: -1.0
-      - h_e: -1.0
-      - pi_c: 1.0
-    - lower_bound: -1000.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: b2987 or b3493
-    - annotation:
-        bigg.reaction: PIt2r
-  - !!omap
-    - id: PYK
-    - name: pyruvate kinase
-    - metabolites: !!omap
-      - pep_c: -1.0
-      - h_c: -1.0
-      - atp_c: 1.0
-      - pyr_c: 1.0
-      - adp_c: -1.0
-    - lower_bound: 0.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: b1854 or b1676
-    - annotation:
-        bigg.reaction: PYK
-  - !!omap
-    - id: TPI
-    - name: triose-phosphate isomerase
-    - metabolites: !!omap
-      - dhap_c: -1.0
-      - g3p_c: 1.0
-    - lower_bound: -1000.0
-    - upper_bound: 1000.0
-    - gene_reaction_rule: b3919
-    - annotation:
-        bigg.reaction: TPI
 - metabolites:
   - !!omap
     - id: 13dpg_c
@@ -1033,6 +812,227 @@
         - 127-17-3
         - 127-17-3
         unipathway.compound: UPC00022
+- reactions:
+  - !!omap
+    - id: ATPM
+    - name: ATP maintenance requirement
+    - metabolites: !!omap
+      - adp_c: 1.0
+      - atp_c: -1.0
+      - h2o_c: -1.0
+      - h_c: 1.0
+      - pi_c: 1.0
+    - lower_bound: 8.39
+    - upper_bound: 1000.0
+    - gene_reaction_rule: ''
+    - objective_coefficient: 1.0
+    - annotation:
+        bigg.reaction: ATPM
+  - !!omap
+    - id: D_LACt2
+    - name: ''
+    - metabolites: !!omap
+      - h_c: 1
+      - h_e: -1
+      - lac__D_c: 1
+      - lac__D_e: -1
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b3603 or b2975
+  - !!omap
+    - id: ENO
+    - name: enolase
+    - metabolites: !!omap
+      - 2pg_c: -1.0
+      - h2o_c: 1.0
+      - pep_c: 1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b2779
+    - annotation:
+        bigg.reaction: ENO
+  - !!omap
+    - id: EX_glc__D_e
+    - name: D-Glucose exchange
+    - metabolites: !!omap
+      - glc__D_e: -1.0
+    - lower_bound: -10.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: ''
+    - annotation:
+        bigg.reaction: glc
+        sbo: sbo:0000627
+  - !!omap
+    - id: EX_h_e
+    - name: H+ exchange
+    - metabolites: !!omap
+      - h_e: -1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: ''
+    - annotation:
+        bigg.reaction: h
+        sbo: SBO:0000627
+  - !!omap
+    - id: EX_lac__D_e
+    - name: D-lactate exchange
+    - metabolites: !!omap
+      - lac__D_e: -1.0
+    - lower_bound: 0.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: ''
+  - !!omap
+    - id: FBA
+    - name: fructose-bisphosphate aldolase
+    - metabolites: !!omap
+      - dhap_c: 1.0
+      - fdp_c: -1.0
+      - g3p_c: 1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b1773 or b2097 or b2925
+    - annotation:
+        bigg.reaction: FBA
+  - !!omap
+    - id: GAPD
+    - name: glyceraldehyde-3-phosphate dehydrogenase
+    - metabolites: !!omap
+      - 13dpg_c: 1.0
+      - g3p_c: -1.0
+      - h_c: 1.0
+      - nad_c: -1.0
+      - nadh_c: 1.0
+      - pi_c: -1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b1779
+    - annotation:
+        bigg.reaction: GAPD
+  - !!omap
+    - id: GLCpts
+    - name: D-glucose transport via PEP:Pyr PTS
+    - metabolites: !!omap
+      - g6p_c: 1.0
+      - glc__D_e: -1.0
+      - pep_c: -1.0
+      - pyr_c: 1.0
+    - lower_bound: 0.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: ( b2417 and b1621 and b2415 and b2416 ) or ( b2417 and b1101
+        and b2415 and b2416 ) or ( b1817 and b1818 and b1819 and b2415 and b2416 )
+    - annotation:
+        bigg.reaction: GLCpts
+  - !!omap
+    - id: H2Ot
+    - name: R H2O transport via - diffusion
+    - metabolites: !!omap
+      - h2o_c: 1.0
+      - h2o_e: -1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b0875 or s0001
+    - annotation:
+        bigg.reaction: H2Ot
+  - !!omap
+    - id: LDH_D
+    - name: D-lactate dehydrogenase
+    - metabolites: !!omap
+      - h_c: 1.0
+      - lac__D_c: -1.0
+      - nad_c: -1.0
+      - nadh_c: 1.0
+      - pyr_c: 1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b2133 or b1380
+  - !!omap
+    - id: PFK
+    - name: phosphofructokinase
+    - metabolites: !!omap
+      - adp_c: 1.0
+      - atp_c: -1.0
+      - f6p_c: -1.0
+      - fdp_c: 1.0
+      - h_c: 1.0
+    - lower_bound: 0.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b3916 or b1723
+    - objective_coefficient: 1.0
+    - annotation:
+        bigg.reaction: PFK
+  - !!omap
+    - id: PGI
+    - name: glucose-6-phosphate isomerase
+    - metabolites: !!omap
+      - f6p_c: 1.0
+      - g6p_c: -1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b4025
+    - annotation:
+        bigg.reaction: PGI
+  - !!omap
+    - id: PGK
+    - name: phosphoglycerate kinase
+    - metabolites: !!omap
+      - 13dpg_c: 1.0
+      - 3pg_c: -1.0
+      - adp_c: 1.0
+      - atp_c: -1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b2926
+    - annotation:
+        bigg.reaction: PGK
+  - !!omap
+    - id: PGM
+    - name: phosphoglycerate mutase
+    - metabolites: !!omap
+      - 2pg_c: -1.0
+      - 3pg_c: 1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b4395 or b3612 or b0755
+    - annotation:
+        bigg.reaction: PGM
+  - !!omap
+    - id: PIt2r
+    - name: R phosphate reversible transport via - symport
+    - metabolites: !!omap
+      - h_c: 1.0
+      - h_e: -1.0
+      - pi_c: 1.0
+      - pi_e: -1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b2987 or b3493
+    - annotation:
+        bigg.reaction: PIt2r
+  - !!omap
+    - id: PYK
+    - name: pyruvate kinase
+    - metabolites: !!omap
+      - adp_c: -1.0
+      - atp_c: 1.0
+      - h_c: -1.0
+      - pep_c: -1.0
+      - pyr_c: 1.0
+    - lower_bound: 0.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b1854 or b1676
+    - annotation:
+        bigg.reaction: PYK
+  - !!omap
+    - id: TPI
+    - name: triose-phosphate isomerase
+    - metabolites: !!omap
+      - dhap_c: -1.0
+      - g3p_c: 1.0
+    - lower_bound: -1000.0
+    - upper_bound: 1000.0
+    - gene_reaction_rule: b3919
+    - annotation:
+        bigg.reaction: TPI
 - genes:
   - !!omap
     - id: b0755
@@ -1142,7 +1142,7 @@
     - id: s0001
     - name: G_s0001
 - id: mini_textbook
-- compartments:
-    e: extracellular
-    c: cytosol
-- version: 1
+- compartments: !!omap
+  - c: cytosol
+  - e: extracellular
+- version: '1.2'

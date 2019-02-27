@@ -8,8 +8,7 @@ Please explain:
 
 #### Code Sample
 
-Create a [minimal, complete, verifiable example
-](https://stackoverflow.com/help/mcve).
+Create a [minimal, complete, verifiable example](https://stackoverflow.com/help/mcve).
 
 ```python
 # Paste your code here.
@@ -20,9 +19,13 @@ Create a [minimal, complete, verifiable example
 
 #### Expected Output
 
-#### Output of `cobra.show_versions()`
+#### Dependency Information
+
+Please paste the output of `python -c "from cobra import show_versions;
+show_versions()"` in the details block below.
 
 <details>
-# Paste the output of `import cobra;cobra.show_versions()` here.
+
+[Paste output here.]
 
 </details>

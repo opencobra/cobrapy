@@ -8,12 +8,10 @@ environment:
 
   global:
     PIP_CACHE_DIR: "pip_cache"
+    PIP_DISABLE_PIP_VERSION_CHECK: "yes"
 
   matrix:
     - PYTHON: "C:\\Miniconda-x64"
-      CONDA: true
-
-    - PYTHON: "C:\\Miniconda35-x64"
       CONDA: true
 
     - PYTHON: "C:\\Miniconda36-x64"
@@ -21,9 +19,6 @@ environment:
 
     - PYTHON: "C:\\Python27-x64"
       TOXENV: py27
-
-    - PYTHON: "C:\\Python35-x64"
-      TOXENV: py35
 
     - PYTHON: "C:\\Python36-x64"
       TOXENV: py36
@@ -46,11 +41,12 @@ install:
   - ps: |
       if ($env:CONDA -eq "true") {
         conda config --set always_yes yes --set changeps1 no;
+        conda config --add channels conda-forge
         conda install -q pip setuptools wheel numpy scipy;
-        pip install -r develop-requirements.txt;
-        pip install .
+        pip install -qq -r develop-requirements.txt;
+        pip install -qq .
       } else {
-        pip install --upgrade setuptools wheel tox
+        pip install -qq --upgrade setuptools wheel tox
       }
 
 build: off

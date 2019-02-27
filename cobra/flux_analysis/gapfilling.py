@@ -2,9 +2,9 @@
 
 from __future__ import absolute_import
 
-from optlang.symbolics import Add
-
 from optlang.interface import OPTIMAL
+from optlang.symbolics import Zero, add
+
 from cobra.core import Model
 from cobra.util import fix_objective_as_constraint
 
@@ -118,12 +118,23 @@ class GapFiller(object):
         """
         for rxn in self.universal.reactions:
             rxn.gapfilling_type = 'universal'
+        new_metabolites = self.universal.metabolites.query(
+            lambda metabolite: metabolite not in self.model.metabolites
+                                                           )
+        self.model.add_metabolites(new_metabolites)
+        existing_exchanges = []
+        for rxn in self.universal.boundary:
+            existing_exchanges = existing_exchanges + \
+                [met.id for met in list(rxn.metabolites)]
+
         for met in self.model.metabolites:
             if exchange_reactions:
-                rxn = self.universal.add_boundary(
-                    met, type='exchange_smiley', lb=-1000, ub=0,
-                    reaction_id='EX_{}'.format(met.id))
-                rxn.gapfilling_type = 'exchange'
+                # check for exchange reaction in model already
+                if met.id not in existing_exchanges:
+                    rxn = self.universal.add_boundary(
+                        met, type='exchange_smiley', lb=-1000, ub=0,
+                        reaction_id='EX_{}'.format(met.id))
+                    rxn.gapfilling_type = 'exchange'
             if demand_reactions:
                 rxn = self.universal.add_boundary(
                     met, type='demand_smiley', lb=0, ub=1000,
@@ -158,7 +169,7 @@ class GapFiller(object):
                     for r in self.model.reactions)
         prob = self.model.problem
         for rxn in self.model.reactions:
-            if not hasattr(rxn, 'gapfilling_type') or rxn.id.startswith('DM_'):
+            if not hasattr(rxn, 'gapfilling_type'):
                 continue
             indicator = prob.Variable(
                 name='indicator_{}'.format(rxn.id), lb=0, ub=1, type='binary')
@@ -183,7 +194,9 @@ class GapFiller(object):
         self.model.add_cons_vars(self.indicators)
         self.model.add_cons_vars(constraints, sloppy=True)
         self.model.objective = prob.Objective(
-            Add(*self.indicators), direction='min')
+            Zero, direction='min', sloppy=True)
+        self.model.objective.set_linear_coefficients({
+            i: 1 for i in self.indicators})
         self.update_costs()
 
     def fill(self, iterations=1):
@@ -231,6 +244,9 @@ class GapFiller(object):
 
     def validate(self, reactions):
         with self.original_model as model:
+            mets = [x.metabolites for x in reactions]
+            all_keys = set().union(*(d.keys() for d in mets))
+            model.add_metabolites(all_keys)
             model.add_reactions(reactions)
             model.slim_optimize()
             return (model.solver.status == OPTIMAL and

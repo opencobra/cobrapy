@@ -3,7 +3,8 @@ Contributing
 ============
 
 Contributions are welcome, and they are greatly appreciated! Every little bit
-helps, and credit will always be given.
+helps, and credit will always be given. For issues that contributors have 
+experienced in the past, see the FAQ at the bottom of this document.
 
 You can contribute in many ways:
 
@@ -240,3 +241,17 @@ Please use concise descriptive commit messages and consider using
    instead of ``my_dict.iteritems()`` use ``six.iteritems(my_dict)``
 
 Thank you very much for contributing to cobrapy!
+
+FAQs
+----
+Q1. Why do all of the tests that involve loading a pickled model fail on my branch?
+	A: Pickling is the standard method for serializing objects in python,
+	which is commonly done during operations like multiprocessing.
+	Because of this, we need to maintain tests that run on pickled
+	models, otherwise contributors may inadvertantly break
+	multiprocessing features. If changes you made to cobrapy
+	modify attributes of the ``cobra.Model`` class, the pickled
+	models stored in the repository won't contain those changes
+	and may fail tests that you add or modify. To resolve these
+	errors, just run ``cobra/test/data/update_pickles.py`` on your
+	branch, which will repickle the models.

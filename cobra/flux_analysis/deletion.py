@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
 
-import multiprocessing
 import logging
-import optlang
-from warnings import warn
-from itertools import product
+import multiprocessing
+from builtins import dict, map
 from functools import partial
-from builtins import (map, dict)
+from itertools import product
 
 import pandas as pd
+from optlang.exceptions import SolverError
 
-from cobra.manipulation.delete import find_gene_knockout_reactions
 import cobra.util.solver as sutil
+from cobra.core import Configuration
 from cobra.flux_analysis.moma import add_moma
+from cobra.flux_analysis.room import add_room
+from cobra.manipulation.delete import find_gene_knockout_reactions
+
 
 LOGGER = logging.getLogger(__name__)
+CONFIGURATION = Configuration()
 
 
 def _reactions_knockouts_with_restore(model, reactions):
@@ -32,7 +35,7 @@ def _get_growth(model):
             growth = model.solver.variables.moma_old_objective.primal
         else:
             growth = model.slim_optimize()
-    except optlang.exceptions.SolverError:
+    except SolverError:
         growth = float('nan')
     return growth
 
@@ -72,7 +75,7 @@ def _init_worker(model):
 
 
 def _multi_deletion(model, entity, element_lists, method="fba",
-                    processes=None):
+                    solution=None, processes=None, **kwargs):
     """
     Provide a common interface for single or multiple knockouts.
 
@@ -80,21 +83,21 @@ def _multi_deletion(model, entity, element_lists, method="fba",
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-
     entity : 'gene' or 'reaction'
         The entity to knockout (``cobra.Gene`` or ``cobra.Reaction``).
-
     element_lists : list
         List of iterables ``cobra.Reaction``s or ``cobra.Gene``s (or their IDs)
         to be deleted.
-
-    method: {"fba", "moma", "linear moma"}, optional
+    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
         Method used to predict the growth rate.
-
+    solution : cobra.Solution, optional
+        A previous solution to use as a reference for (linear) MOMA or ROOM.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
+    kwargs :
+        Passed on to underlying simulation functions.
 
     Returns
     -------
@@ -110,21 +113,20 @@ def _multi_deletion(model, entity, element_lists, method="fba",
             The solution's status.
     """
     solver = sutil.interface_to_str(model.problem.__name__)
-    if "moma" in method and solver not in sutil.qp_solvers:
+    if method == "moma" and solver not in sutil.qp_solvers:
         raise RuntimeError(
             "Cannot use MOMA since '{}' is not QP-capable."
             "Please choose a different solver or use FBA only.".format(solver))
 
     if processes is None:
-        try:
-            processes = multiprocessing.cpu_count()
-        except NotImplementedError:
-            warn("Number of cores could not be detected - assuming 1.")
-            processes = 1
+        processes = CONFIGURATION.processes
 
     with model:
         if "moma" in method:
-            add_moma(model, linear="linear" in method)
+            add_moma(model, solution=solution, linear="linear" in method)
+        elif "room" in method:
+            add_room(model, solution=solution, linear="linear" in method,
+                     **kwargs)
 
         args = set([frozenset(comb) for comb in product(*element_lists)])
         processes = min(processes, len(args))
@@ -180,7 +182,7 @@ def _element_lists(entities, *ids):
 
 
 def single_reaction_deletion(model, reaction_list=None, method="fba",
-                             processes=None):
+                             solution=None, processes=None, **kwargs):
     """
     Knock out each reaction from a given list.
 
@@ -188,18 +190,20 @@ def single_reaction_deletion(model, reaction_list=None, method="fba",
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-
-    reaction_list : iterable
+    reaction_list : iterable, optional
         ``cobra.Reaction``s to be deleted. If not passed,
         all the reactions from the model are used.
-
-    method: {"fba", "moma", "linear moma"}, optional
+    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
         Method used to predict the growth rate.
-
+    solution : cobra.Solution, optional
+        A previous solution to use as a reference for (linear) MOMA or ROOM.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
+    kwargs :
+        Keyword arguments are passed on to underlying simulation functions
+        such as ``add_room``.
 
     Returns
     -------
@@ -218,10 +222,11 @@ def single_reaction_deletion(model, reaction_list=None, method="fba",
     return _multi_deletion(
         model, 'reaction',
         element_lists=_element_lists(model.reactions, reaction_list),
-        method=method, processes=processes)
+        method=method, solution=solution, processes=processes, **kwargs)
 
 
-def single_gene_deletion(model, gene_list=None, method="fba", processes=None):
+def single_gene_deletion(model, gene_list=None, method="fba", solution=None,
+                         processes=None, **kwargs):
     """
     Knock out each gene from a given list.
 
@@ -229,18 +234,20 @@ def single_gene_deletion(model, gene_list=None, method="fba", processes=None):
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-
     gene_list : iterable
         ``cobra.Gene``s to be deleted. If not passed,
         all the genes from the model are used.
-
-    method: {"fba", "moma", "linear moma"}, optional
+    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
         Method used to predict the growth rate.
-
+    solution : cobra.Solution, optional
+        A previous solution to use as a reference for (linear) MOMA or ROOM.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
+    kwargs :
+        Keyword arguments are passed on to underlying simulation functions
+        such as ``add_room``.
 
     Returns
     -------
@@ -258,11 +265,12 @@ def single_gene_deletion(model, gene_list=None, method="fba", processes=None):
     """
     return _multi_deletion(
         model, 'gene', element_lists=_element_lists(model.genes, gene_list),
-        method=method, processes=processes)
+        method=method, solution=solution, processes=processes, **kwargs)
 
 
 def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
-                             method="fba", processes=None):
+                             method="fba", solution=None, processes=None,
+                             **kwargs):
     """
     Knock out each reaction pair from the combinations of two given lists.
 
@@ -272,22 +280,23 @@ def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-
     reaction_list1 : iterable, optional
         First iterable of ``cobra.Reaction``s to be deleted. If not passed,
         all the reactions from the model are used.
-
     reaction_list2 : iterable, optional
         Second iterable of ``cobra.Reaction``s to be deleted. If not passed,
         all the reactions from the model are used.
-
-    method: {"fba", "moma", "linear moma"}, optional
+    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
         Method used to predict the growth rate.
-
+    solution : cobra.Solution, optional
+        A previous solution to use as a reference for (linear) MOMA or ROOM.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
+    kwargs :
+        Keyword arguments are passed on to underlying simulation functions
+        such as ``add_room``.
 
     Returns
     -------
@@ -309,11 +318,11 @@ def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
                                                     reaction_list2)
     return _multi_deletion(
         model, 'reaction', element_lists=[reaction_list1, reaction_list2],
-        method=method, processes=processes)
+        method=method, solution=solution, processes=processes, **kwargs)
 
 
-def double_gene_deletion(model, gene_list1=None, gene_list2=None,
-                         method="fba", processes=None):
+def double_gene_deletion(model, gene_list1=None, gene_list2=None, method="fba",
+                         solution=None, processes=None, **kwargs):
     """
     Knock out each gene pair from the combination of two given lists.
 
@@ -323,22 +332,23 @@ def double_gene_deletion(model, gene_list1=None, gene_list2=None,
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-
     gene_list1 : iterable, optional
         First iterable of ``cobra.Gene``s to be deleted. If not passed,
         all the genes from the model are used.
-
     gene_list2 : iterable, optional
         Second iterable of ``cobra.Gene``s to be deleted. If not passed,
         all the genes from the model are used.
-
-    method: {"fba", "moma", "linear moma"}, optional
+    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
         Method used to predict the growth rate.
-
+    solution : cobra.Solution, optional
+        A previous solution to use as a reference for (linear) MOMA or ROOM.
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
         will be set to the number of CPUs found.
+    kwargs :
+        Keyword arguments are passed on to underlying simulation functions
+        such as ``add_room``.
 
     Returns
     -------
@@ -359,4 +369,4 @@ def double_gene_deletion(model, gene_list1=None, gene_list2=None,
                                             gene_list2)
     return _multi_deletion(
         model, 'gene', element_lists=[gene_list1, gene_list2],
-        method=method, processes=processes)
+        method=method, solution=solution, processes=processes, **kwargs)
