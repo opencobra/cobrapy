@@ -93,7 +93,8 @@ class TestCobraIO:
         # ensure they have the same solution max
         solution1 = model1.optimize()
         solution2 = model2.optimize()
-        assert abs(solution1.objective_value - solution2.objective_value) < 0.001
+        assert abs(solution1.objective_value -
+                   solution2.objective_value) < 0.001
         # ensure the references are correct
         assert model2.metabolites[0]._model is model2
         assert model2.reactions[0]._model is model2
@@ -103,7 +104,8 @@ class TestCobraIO:
     def extra_comparisons(cls, name, model1, model2):
         assert model1.compartments == model2.compartments
 
-        # FIXME: problems of duplicate annotations in test data ('cas': ['56-65-5', '56-65-5'])
+        # FIXME: problems of duplicate annotations in test data
+        #  ('cas': ['56-65-5', '56-65-5'])
         # assert dict(model1.metabolites[4].annotation) == dict(
         #    model2.metabolites[4].annotation)
         d1 = model1.reactions[4].annotation
