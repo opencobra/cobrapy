@@ -1,10 +1,10 @@
 """
 SBML import and export using python-libsbml(-experimental).
 
-**annotations**
-
-**groups**
-
+- The SBML importer supports all versions of SBML and the fbc package.
+- The SBML exporter writes SBML L3 models.
+- Annotation information is stored on the cobrapy objects
+- Information from the group package is read
 """
 
 from __future__ import absolute_import
@@ -65,29 +65,36 @@ F_REACTION_REV = "F_REACTION_REV"
 
 SBML_DOT = "__SBML_DOT__"
 
+
 def _clip(s, prefix):
-    """ Clips a prefix from the beginning of a string if it exists. """
+    """Clips a prefix from the beginning of a string if it exists."""
     return s[len(prefix):] if s.startswith(prefix) else s
+
 
 def _f_gene(s, prefix="G_"):
     s = s.replace(SBML_DOT, ".")
     return _clip(s, prefix)
 
+
 def _f_gene_rev(s, prefix="G_"):
-    s = s.replace(".", SBML_DOT)
-    return prefix + s
+    return prefix + s.replace(".", SBML_DOT)
+
 
 def _f_specie(s, prefix="M_"):
     return _clip(s, prefix)
 
+
 def _f_specie_rev(s, prefix="M_"):
     return prefix + s
+
 
 def _f_reaction(s, prefix="R_"):
     return _clip(s, prefix)
 
+
 def _f_reaction_rev(s, prefix="R_"):
     return prefix + s
+
 
 F_REPLACE = {
     F_GENE: _f_gene,
@@ -101,7 +108,7 @@ F_REPLACE = {
 
 
 def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
-    """ Reads model from given filename.
+    """Reads SBML model from given filename.
 
     If the given filename ends with the suffix ''.gz'' (for example,
     ''myfile.xml.gz'),' the file is assumed to be compressed in gzip
@@ -125,11 +132,21 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
     if information is not available in the FBC packages, e.g.,
     CHARGE, FORMULA on species, or GENE_ASSOCIATION, SUBSYSTEM on reactions.
 
-    :param filename: path to SBML file or SBML string
-    :param f_replace: dictionary of replacement functions for gene, specie
-                      and reaction ids. Provide {} to not perform any
-                      changes in the dis.
-    :return:
+    Parameters
+    ----------
+    filename : path to SBML file or SBML string
+        SBML which is read into cobra model
+    number: data type of stoichiometry: {float, int}
+        In which data type should the stoichiometry be parsed.
+    f_replace : dict of replacement functions for id replacement
+        Dictionary of replacement functions for gene, specie, and reaction.
+        By default the following id changes are performed on import:
+        clip G_ from genes, clip M_ from species, clip R_ from reactions
+        If no replacements should be performed, set f_replace={}, None
+
+    Returns
+    -------
+    cobra.core.Model
     """
     try:
         doc = _get_doc_from_filename(filename)
@@ -137,17 +154,21 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
     except Exception:
         print(traceback.print_exc())
         raise CobraSBMLError(
-            "Something went wrong reading the model. You can get a detailed "
+            "Something went wrong reading the SBML model. You can get a detailed "
             "report using the `cobra.io.sbml3.validate_sbml_model` function "
             "or using the online validator at http://sbml.org/validator")
 
 
-
 def _get_doc_from_filename(filename):
-    """ SBMLDocument from given filename.
+    """Get SBMLDocument from given filename.
 
-    :param filename:
-    :return:
+    Parameters
+    ----------
+    filename : path to SBML file or SBML string
+
+    Returns
+    -------
+    libsbml.SBMLDocument
     """
     if os.path.exists(filename):
         doc = libsbml.readSBMLFromFile(filename)  # type: libsbml.SBMLDocument
@@ -158,13 +179,13 @@ def _get_doc_from_filename(filename):
         # File handle
         doc = libsbml.readSBMLFromString(filename.read())
     else:
-        raise CobraSBMLError("Input format is not supported.")
+        raise CobraSBMLError("Input format for 'filename' is not supported.")
 
     return doc
 
 
 def write_sbml_model(cobra_model, filename, use_fbc_package=True, f_replace=F_REPLACE, **kwargs):
-    """ Writes cobra model to filename.
+    """Writes cobra model to filename.
 
     The created model is SBML level 3 version 1 (L1V3) with
     fbc package v2 (fbc-v2).
@@ -182,29 +203,44 @@ def write_sbml_model(cobra_model, filename, use_fbc_package=True, f_replace=F_RE
     "test.zip". Similarly, the filename in the archive will be
     "test.sbml" if the given filename is "test.sbml.zip".
 
-    :param cobra_model:
-    :param filename:
-    :param use_fbc_package:
-    :param kwargs:
-    :return:
+    Parameters
+    ----------
+    cobra_model : cobra.core.Model
+        Model instance which is written to SBML
+    filename : string
+        path to which the model is written
+    use_fbc_package : boolean {True, False}
+        should the fbc package be used
+    f_replace: dict of replacement functions for id replacement
     """
     if not use_fbc_package:
+        # FIXME: get completely rid of the legacy non-sense
         # legacy cobra without fbc
-        LOGGER.warning("Constrained based models should be stored with fbc-v2")
+        LOGGER.warning("Constrained based models should be stored with fbc-v2, using legacy writer. No support from "
+                       "here on.")
         write_sbml2(cobra_model, filename, use_fbc_package=False, **kwargs)
-
-    # create xml
-    doc = _model_to_sbml(cobra_model, f_replace=f_replace, **kwargs)
-    libsbml.writeSBMLToFile(doc, filename)
+    else:
+        doc = _model_to_sbml(cobra_model, f_replace=f_replace, **kwargs)
+        libsbml.writeSBMLToFile(doc, filename)
 
 
 def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
-    """ Creates cobra model from SBMLDocument.
+    """Creates cobra model from SBMLDocument.
 
-    :param doc: libsbml.SBMLDocument
-    'param number: data type of stoichiometry
-    :return: cobrapy model
+    Parameters
+    ----------
+    doc: libsbml.SBMLDocument
+    number: data type of stoichiometry: {float, int}
+        In which data type should the stoichiometry be parsed.
+    f_replace : dict of replacement functions for id replacement
+
+    Returns
+    -------
+    cobra.core.Model
     """
+    if f_replace is None:
+        r_replace = {}
+
     # SBML model
     model = doc.getModel()  # type: libsbml.Model
     if model is None:
@@ -302,9 +338,12 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     def process_association(association):
         """ Recursively convert gpr association to a gpr string. """
         if association.isFbcOr():
-            return " ".join(["(", ' or '.join(process_association(c) for c in association.getListOfAssociations()), ")"])
+            return " ".join(
+                ["(", ' or '.join(process_association(c) for c in association.getListOfAssociations()), ")"]
+            )
         elif association.isFbcAnd():
-            return " ".join(["(", ' and '.join(process_association(c) for c in association.getListOfAssociations()), ")"])
+            return " ".join(
+                ["(", ' and '.join(process_association(c) for c in association.getListOfAssociations()), ")"])
         elif association.isGeneProductRef():
             gid = association.getGeneProduct()
             if f_replace and F_GENE in f_replace:
@@ -346,7 +385,6 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 reaction.upper_bound = p_ub.value
             else:
                 raise CobraSBMLError("No constant bound '%s' for reaction '%s" % (p_ub, r))
-                bounds.append(p.value)
 
         elif r.isSetKineticLaw():
             # sometime information encoded in kinetic laws
@@ -458,9 +496,15 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 def _model_to_sbml(cobra_model, f_replace=None, units=True):
     """
 
-    :param cobra_model:
-    :param units: boolean, if true the FLUX_UNITS are written
-    :return:
+    Parameters
+    ----------
+    cobra_model
+    f_replace
+    units : boolean
+        Should the FLUX_UNITS be written in the document.
+
+    Returns
+    -------
     """
     sbmlns = libsbml.SBMLNamespaces(3, 1)
     sbmlns.addPackageNamespace("fbc", 2)
