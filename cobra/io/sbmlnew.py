@@ -104,6 +104,8 @@ F_REPLACE = {
     F_REACTION: _f_reaction,
     F_REACTION_REV: _f_reaction_rev,
 }
+
+
 # ----------------------------------------------------------
 
 
@@ -239,7 +241,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     cobra.core.Model
     """
     if f_replace is None:
-        r_replace = {}
+        f_replace = {}
 
     # SBML model
     model = doc.getModel()  # type: libsbml.Model
@@ -494,18 +496,24 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
 
 def _model_to_sbml(cobra_model, f_replace=None, units=True):
-    """
+    """Convert Cobra model to SBMLDocument.
 
     Parameters
     ----------
-    cobra_model
-    f_replace
+    cobra_model : cobra.core.Model
+        Cobra model instance
+    f_replace : dict of replacement functions
+        Replacement to apply on identifiers.
     units : boolean
-        Should the FLUX_UNITS be written in the document.
+        Should the FLUX_UNITS be written in the SBMLDocument.
 
     Returns
     -------
+    libsbml.SBMLDocument
     """
+    if f_replace is None:
+        f_replace = {}
+
     sbmlns = libsbml.SBMLNamespaces(3, 1)
     sbmlns.addPackageNamespace("fbc", 2)
 
@@ -534,12 +542,22 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
     # Flux bounds
     def _create_bound(model, reaction, bound_type):
-        """ Creates bound parameter.
+        """Creates bound in model for given reaction.
 
-        :param model: SBML model
-        :param reaction: cobra reaction
-        :param bound_type:
-        :return: parameter id of bound
+        Adds the parameters for the bounds to the SBML model.
+
+        Parameters
+        ----------
+        model : libsbml.Model
+            SBML model instance
+        reaction : cobra.core.Reaction
+            Cobra reaction instance from which the bounds are read.
+        bound_type : {LOWER_BOUND, UPPER_BOUND}
+            Type of bound
+
+        Returns
+        -------
+        Id of bound parameter.
         """
         value = getattr(reaction, bound_type)
         if value == LOWER_BOUND:
@@ -558,7 +576,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             return pid
 
     def _create_parameter(model, pid, value, sbo=None, constant=True):
-        """ Create parameter in SBML model. """
+        """Create parameter in SBML model."""
         p = model.createParameter()  # type: libsbml.Parameter
         p.setId(pid)
         p.setValue(value)
@@ -568,7 +586,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         if units:
             p.setUnits(flux_udef.getId())
 
-    # minimum and maximum from model
+    # minimum and maximum value from model
     if len(cobra_model.reactions) > 0:
         min_value = min(cobra_model.reactions.list_attr("lower_bound"))
         max_value = max(cobra_model.reactions.list_attr("upper_bound"))
@@ -687,11 +705,17 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
 
 def _check_required(sbase, value, attribute):
-    """ Get required attribute from the SBase.
+    """Get required attribute from the SBase.
 
-    :param sbase:
-    :param attribute:
-    :return:
+    Parameters
+    ----------
+    sbase : libsbml.SBase
+    value : existing value
+    attribute: name of attribute
+
+    Returns
+    -------
+    attribute value (or value if already set)
     """
     if value is None:
         msg = "required attribute '%s' not found in '%s'" % \
@@ -705,15 +729,21 @@ def _check_required(sbase, value, attribute):
 
 
 def _parse_notes(notes):
-    """ Creates dictionary of notes.
+    """Creates dictionary of notes.
 
-    :param notes:
-    :return:
+    Parameters
+    ----------
+    notes :
+
+    Returns
+    -------
+    dict of notes
     """
     pattern = r"<p>\s*(\w+)\s*:\s*([\w|\s]+)<"
     matches = re.findall(pattern, notes)
     d = {k.strip(): v.strip() for (k, v) in matches}
     return {k: v for k, v in d.items() if len(v) > 0}
+
 
 # ----------------------
 # Annotations
@@ -721,20 +751,30 @@ def _parse_notes(notes):
 # FIXME: currently only the terms, but not the qualifier are parsed
 URL_IDENTIFIERS_PATTERN = r"^http[s]{0,1}://identifiers.org/(.+)/(.+)"
 URL_IDENTIFIERS_PREFIX = r"http://identifiers.org"
+BIOLOGICAL_QUALIFIER_TYPES = set("BQB_IS", "BQB_HAS_PART", "BQB_IS_PART_OF", "BQB_IS_VERSION_OF",
+                                 "BQB_HAS_VERSION", "BQB_IS_HOMOLOG_TO", "BQB_IS_DESCRIBED_BY",
+                                 "BQB_IS_ENCODED_BY", "BQB_ENCODES", "BQB_OCCURS_IN", "BQB_HAS_PROPERTY",
+                                 "BQB_IS_PROPERTY_OF", "BQB_HAS_TAXON", "BQB_UNKNOWN")
+
 
 def annotate_cobra_from_sbase(cobj, sbase):
-    """ Read annotations from SBase into dictionary.
+    """Annotate a cobra object from a given SBase object.
 
-    :param cobj:
-    :param sbase:
-    :return:
+    Annotations are dictionaries with the providers as keys.
+
+
+    Parameters
+    ----------
+    cobj : cobra object (Reaction, Metabolite, Compartment, Model)
+        Cobra core object on which the annotations are stored.
+    sbase : libsbml.SBase
+        SBase from which the SBML annotations are read
     """
     annotation = cobj.annotation
 
     # SBO term
     if sbase.isSetSBOTerm():
-        # FIXME: this should be lower case collection, i.e. sbo
-        annotation["SBO"] = sbase.getSBOTermID()
+        annotation["sbo"] = sbase.getSBOTermID()
 
     # RDF annotation
     cvterms = sbase.getCVTerms()
@@ -752,10 +792,12 @@ def annotate_cobra_from_sbase(cobj, sbase):
             #     continue
             # provider, identifier = matches[0]
 
+            # FIXME: read and store the qualifier
+
             tokens = uri.split('/')
             if len(tokens) != 5 or not tokens[2] == "identifiers.org":
                 LOGGER.warning("%s does not conform to http(s)://identifiers.org/collection/id"
-                    % uri)
+                               % uri)
                 continue
 
             provider, identifier = tokens[3], tokens[4]
@@ -764,30 +806,20 @@ def annotate_cobra_from_sbase(cobj, sbase):
                     annotation[provider] = [annotation[provider]]
                 annotation[provider].append(identifier)
             else:
-                annotation[provider] = identifier
-
-
-# RDF_TEMPLATE = """
-# <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
-#     <rdf:Description rdf:about="#{}">
-#       <bqbiol:is>
-#         <rdf:Bag>
-#           {}
-#         </rdf:Bag>
-#       </bqbiol:is>
-#     </rdf:Description>
-# </rdf:RDF>
-# """
+                annotation[provider] = [identifier]
 
 
 def annotate_sbase_from_cobra(sbase, cobj):
-    """ Set cobra annotations on SBase into.
+    """Annotate SBase based on cobra object annotations.
 
-    :param sbase:
-    :param cobj: cobra object
-
-    :return:
+    Parameters
+    ----------
+    sbase : libsbml.SBase
+        SBML object to annotate
+    cobj : cobra object
+        cobra object with annotation information
     """
+
     if len(cobj.annotation) == 0:
         return
 
@@ -800,8 +832,9 @@ def annotate_sbase_from_cobra(sbase, cobj):
 
     # rdf_items = []
     for provider, identifiers in iteritems(cobj.annotation):
-        # FIXME: this should be lower case collection, i.e. sbo
-        if provider == "SBO":
+        if provider in ["SBO", "sbo"]:
+            if provider == "SBO":
+                logging.warning("'SBO' provider is deprecated, use 'sbo' provider instead")
             sbase.setSBOTerm(identifiers)
         else:
             if isinstance(identifiers, string_types):
@@ -818,25 +851,30 @@ def annotate_sbase_from_cobra(sbase, cobj):
                     raise CobraSBMLError('Unsupported qualifier: {}'.format(qualifier))
                 cv.addResource("%s/%s/%s" % (URL_IDENTIFIERS_PREFIX, provider, identifier))
                 sbase.addCVTerm(cv)
-                # rdf_items.append('<rdf:li rdf:resource="{}/{}/{}"/>'.format(URL_IDENTIFIERS_PREFIX,
-                #                                                            provider, identifier))
-
-    # sbase.setAnnotation(RDF_TEMPLATE.format(meta_id, "\n".join(rdf_items)))
 
 
 # -----------------------------------
 # Validation
 # -----------------------------------
-def validate_sbml_model(filename, use_libsbml=False, check_model=True, ucheck=False, internalConsistency=True,
+def validate_sbml_model(filename, use_libsbml=False, check_model=True,
+                        internal_consistency=True,
                         check_units_consistency=False,
                         check_modeling_practice=False):
-    """Returns the model along with a list of errors.
+    """Validate SBML model and returns the model along with a list of errors.
 
     Parameters
     ----------
     filename : str
-        The filename of the SBML model to be validated.
-    check_model: bool, optional
+        The filename (or SBML string) of the SBML model to be validated.
+    use_libsbml : boolean {True, False}
+        Perform SBML validation via libsbml. This can take some time.
+    internal_consistency: boolean {True, False}
+        Check internal consistency.
+    check_units_consistency: boolean {True, False}
+        Check consistency of units.
+    check_modeling_practice: boolean {True, False}
+        Check modeling practise.
+    check_model: boolean {True, False}
         Whether to also check some basic model properties such as reaction
         boundaries and compartment formulas.
 
@@ -874,7 +912,7 @@ def validate_sbml_model(filename, use_libsbml=False, check_model=True, ucheck=Fa
         doc.setConsistencyChecks(libsbml.LIBSBML_CAT_MODELING_PRACTICE, check_modeling_practice)
 
         # validate the document
-        if internalConsistency:
+        if internal_consistency:
             doc.checkInternalConsistency()
         doc.checkConsistency()
 
@@ -882,13 +920,13 @@ def validate_sbml_model(filename, use_libsbml=False, check_model=True, ucheck=Fa
             e = doc.getError(k)
             sev = e.getSeverity()
             if sev == libsbml.LIBSBML_SEV_FATAL:
-                err(error_string(e), "SBML_FATAL")
+                err(_error_string(e), "SBML_FATAL")
             elif sev == libsbml.LIBSBML_SEV_ERROR:
-                err(error_string(e), "SBML_ERROR")
+                err(_error_string(e), "SBML_ERROR")
             elif sev == libsbml.LIBSBML_SEV_SCHEMA_ERROR:
-                err(error_string(e), "SBML_SCHEMA_ERROR")
+                err(_error_string(e), "SBML_SCHEMA_ERROR")
             elif sev == libsbml.LIBSBML_SEV_WARNING:
-                err(error_string(e), "SBML_WARNING")
+                err(_error_string(e), "SBML_WARNING")
 
     # ensure can be made into model
     # all warnings generated while loading will be logged as errors
@@ -910,11 +948,17 @@ def validate_sbml_model(filename, use_libsbml=False, check_model=True, ucheck=Fa
     return model, errors
 
 
-def error_string(error, k=None):
-    """ String representation of SBMLError.
+def _error_string(error, k=None):
+    """String representation of SBMLError.
 
-    :param error:
-    :return:
+    Parameters
+    ----------
+    error : libsbml.SBMLError
+    k : index of error
+
+    Returns
+    -------
+    string representation of error
     """
     package = error.getPackage()
     if package == '':
