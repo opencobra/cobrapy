@@ -1,5 +1,10 @@
 """
-SBML import and export using libsbml.
+SBML import and export using python-libsbml(-experimental).
+
+**annotations**
+
+**groups**
+
 """
 
 from __future__ import absolute_import
