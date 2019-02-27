@@ -783,13 +783,13 @@ def _parse_notes(notes):
 # FIXME: currently only the terms, but not the qualifier are parsed
 URL_IDENTIFIERS_PATTERN = r"^http[s]{0,1}://identifiers.org/(.+)/(.+)"
 URL_IDENTIFIERS_PREFIX = r"http://identifiers.org"
-BIOLOGICAL_QUALIFIER_TYPES = set("BQB_IS", "BQB_HAS_PART", "BQB_IS_PART_OF",
+BIOLOGICAL_QUALIFIER_TYPES = set(["BQB_IS", "BQB_HAS_PART", "BQB_IS_PART_OF",
                                  "BQB_IS_VERSION_OF", "BQB_HAS_VERSION",
                                  "BQB_IS_HOMOLOG_TO", "BQB_IS_DESCRIBED_BY",
                                  "BQB_IS_ENCODED_BY", "BQB_ENCODES",
                                  "BQB_OCCURS_IN", "BQB_HAS_PROPERTY",
                                  "BQB_IS_PROPERTY_OF", "BQB_HAS_TAXON",
-                                 "BQB_UNKNOWN")
+                                 "BQB_UNKNOWN"])
 
 
 def annotate_cobra_from_sbase(cobj, sbase):
@@ -834,7 +834,8 @@ def annotate_cobra_from_sbase(cobj, sbase):
                     annotation[provider] = [annotation[provider]]
                 annotation[provider].append(identifier)
             else:
-                annotation[provider] = [identifier]
+                # FIXME: always in list
+                annotation[provider] = identifier
 
 
 def annotate_sbase_from_cobra(sbase, cobj):
