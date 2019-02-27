@@ -158,7 +158,7 @@ def io_trial(request, data_directory):
     reference_model = None
     if request.param.reference_file:
         with open(join(data_directory, request.param.reference_file),
-              "rb") as infile:
+                  "rb") as infile:
             reference_model = load(infile)
     test_model = request.param.read_function(join(data_directory,
                                                   request.param.test_file))
