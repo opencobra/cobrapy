@@ -735,7 +735,7 @@ class Model(Object):
                 # remove reference to the reaction in all groups
                 associated_groups = self.get_associated_groups(reaction)
                 for group in associated_groups:
-                    group.remove(reaction)
+                    group.remove_members(reaction)
 
     def add_groups(self, group_list):
         """Add groups to the model.

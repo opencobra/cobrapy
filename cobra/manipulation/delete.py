@@ -233,5 +233,5 @@ def remove_genes(cobra_model, gene_list, remove_reactions=True):
         # remove reference to the gene in all groups
         associated_groups = cobra_model.get_associated_groups(gene)
         for group in associated_groups:
-            group.remove(gene)
+            group.remove_members(gene)
     cobra_model.remove_reactions(target_reactions)
