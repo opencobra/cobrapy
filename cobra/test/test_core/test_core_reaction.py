@@ -289,6 +289,7 @@ def test_copy(model):
     for gene in copied.genes:
         assert gene is not model.genes.get_by_id(gene.id)
         assert gene.model is not model
+    assert len(model.get_associated_groups(copied.id)) == 0
 
 
 def test_iadd(model):
