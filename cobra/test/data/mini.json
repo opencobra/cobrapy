@@ -1140,8 +1140,8 @@
         },
         {
             "annotation": {
-                "sbo": "SBO:0000627",
-                "bigg.reaction": "glc"
+                "bigg.reaction": "glc",
+                "sbo": "SBO:0000627"
             },
             "gene_reaction_rule": "",
             "id": "EX_glc__D_e",
@@ -1154,8 +1154,8 @@
         },
         {
             "annotation": {
-                "sbo": "SBO:0000627",
-                "bigg.reaction": "h"
+                "bigg.reaction": "h",
+                "sbo": "SBO:0000627"
             },
             "gene_reaction_rule": "",
             "id": "EX_h_e",
