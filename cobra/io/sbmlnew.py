@@ -319,6 +319,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
         met = Metabolite(sid)
         met.name = s.name
         met.notes = _parse_notes(s)
+        met._notes = _parse_notes_dictionary(s)
         met.annotation = _parse_annotations(s)
         met.compartment = s.compartment
 
@@ -332,17 +333,19 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                                "discouraged '%s" % s)
                 met.charge = s.getCharge()
             else:
-                if met.notes and 'CHARGE' in met.notes:
-                    LOGGER.warning("Use of CHARGE note is discouraged '%s" % s)
+                if 'CHARGE' in met._notes:
+                    LOGGER.warning("Use of CHARGE note is discouraged '%s,"
+                                   "use fbc:charge instead" % s)
                     try:
-                        met.charge = int(met.notes['CHARGE'])
+                        met.charge = int(met._notes['CHARGE'])
                     except ValueError:
                         # handle nan, na, NA, ...
                         pass
 
-            if met.notes and 'FORMULA' in met.notes:
-                LOGGER.warning("Use of FORMULA note is discouraged '%s" % s)
-                met.formula = met.notes['FORMULA']
+            if 'FORMULA' in met._notes:
+                LOGGER.warning("Use of FORMULA note is discouraged '%s,"
+                               "use fbc:chemicalFormula instead" % s)
+                met.formula = met._notes['FORMULA']
 
         # Detect boundary metabolites - In case they have been mistakenly
         # added. They should not actually appear in a model
@@ -397,6 +400,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
         reaction.name = r.name
         reaction.annotation = _parse_annotations(r)
         reaction.notes = _parse_notes(r)
+        reaction._notes = _parse_notes_dictionary(r)
 
         # set bounds
         r_fbc = r.getPlugin("fbc")  # type: libsbml.FbcReactionPlugin
@@ -488,9 +492,12 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 gpr = process_association(association)
         else:
             # fallback to notes information
-            gpr = reaction.notes.get('GENE_ASSOCIATION', '')
-            if f_replace and F_GENE in f_replace:
-                gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(' '))
+            gpr = reaction._notes.get('GENE_ASSOCIATION', '')
+            if len(gpr) > 0:
+                LOGGER.warning("Use of GENE_ASSOCIATION note is "
+                               "discouraged '%s, use fbc:gpr instead" % s)
+                if f_replace and F_GENE in f_replace:
+                    gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(' '))
 
         # remove outside parenthesis, if any
         if gpr.startswith("(") and gpr.endswith(")"):
@@ -865,6 +872,27 @@ def _parse_notes(sbase):
     return sbase.getNotesString()
 
 
+def _parse_notes_dictionary(sbase):
+    """Creates dictionary of COBRA notes.
+
+    Parameters
+    ----------
+    sbase : libsbml.SBase
+
+    Returns
+    -------
+    dict of notes
+    """
+    notes = sbase.getNotesString()
+    if notes and len(notes) > 0:
+        pattern = r"<p>\s*(\w+)\s*:\s*([\w|\s]+)<"
+        matches = re.findall(pattern, notes)
+        d = {k.strip(): v.strip() for (k, v) in matches}
+        return {k: v for k, v in d.items() if len(v) > 0}
+    else:
+        return {}
+
+
 def _sbase_notes(sbase, notes):
     """Set SBase notes based on cobra object notes.
 
@@ -875,7 +903,8 @@ def _sbase_notes(sbase, notes):
     notes : notes object
         notes information from cobra object
     """
-    sbase.setNotes(notes)
+    if notes:
+        sbase.setNotes(notes)
 
 
 # ----------------------
