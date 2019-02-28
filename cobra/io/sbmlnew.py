@@ -1053,7 +1053,7 @@ def _sbase_annotations(sbase, annotation):
         cobra object with annotation information
     """
 
-    if len(annotation) == 0:
+    if not annotation or len(annotation) == 0:
         return
 
     # FIXME: currently no support for qualifiers
