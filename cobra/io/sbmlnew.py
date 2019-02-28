@@ -9,12 +9,10 @@ SBML import and export using python-libsbml(-experimental).
 Parsing of fbc models was implemented as efficient as possible, whereas
 (discouraged) fallback solutions are not optimized for efficiency.
 
-
-TODO: fix failing tests
+TODO: fix incorrect boundary conditions
 
 TODO: support compression on file handles
 TODO: support writing to file handles
-
 
 TODO: update annotation format (and support qualifiers)
 TODO: write groups information
@@ -385,7 +383,12 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             # fallback to notes information
 
             notes = _parse_notes_dictionary(reaction)
-            gpr = notes.get('GENE ASSOCIATION', '')
+            if "GENE ASSOCIATION" in notes:
+                gpr = notes['GENE ASSOCIATION']
+            elif "GENE_ASSOCIATION" in notes:
+                gpr = notes['GENE_ASSOCIATION']
+            else:
+                gpr = ''
 
             if len(gpr) > 0:
                 gpr = gpr.replace("(", ";")
@@ -526,10 +529,17 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 gpr = process_association(association)
         else:
             # fallback to notes information
-            gpr = reaction._notes.get('GENE ASSOCIATION', '')
+            notes = reaction._notes
+            if "GENE ASSOCIATION" in notes:
+                gpr = notes['GENE ASSOCIATION']
+            elif "GENE_ASSOCIATION" in notes:
+                gpr = notes['GENE_ASSOCIATION']
+            else:
+                gpr = ''
+
             if len(gpr) > 0:
                 LOGGER.warning("Use of GENE ASSOCIATION note is "
-                               "discouraged '%s, use fbc:gpr instead" % s)
+                               "discouraged '%s, use fbc:gpr instead." % r)
                 if f_replace and F_GENE in f_replace:
                     gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(' '))
 
