@@ -6,6 +6,14 @@ SBML import and export using python-libsbml(-experimental).
 - Annotation information is stored on the cobrapy objects
 - Information from the group package is read
 
+TODO: support writing to file handles
+TODO: fix failing tests
+
+TODO: update annotation format (and support qualifiers)
+TODO: write groups information
+TODO: read groups information
+TODO: write compartment annotations and notes
+TODO: support compression on file handles
 """
 
 from __future__ import absolute_import
@@ -22,8 +30,6 @@ import libsbml
 from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.util.solver import set_objective, linear_reaction_coefficients
 from cobra.manipulation.validate import check_metabolite_compartment_formula
-
-from .sbml import write_cobra_model_to_sbml_file as write_sbml2
 
 
 class CobraSBMLError(Exception):
@@ -111,9 +117,9 @@ F_REPLACE = {
 }
 
 
-# ----------------------------------------------------------
-
-
+# ----------------------
+# Read SBML
+# ----------------------
 def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
     """Reads SBML model from given filename.
 
@@ -202,47 +208,6 @@ def _get_doc_from_filename(filename):
     return doc
 
 
-def write_sbml_model(cobra_model, filename, use_fbc_package=True,
-                     f_replace=F_REPLACE, **kwargs):
-    """Writes cobra model to filename.
-
-    The created model is SBML level 3 version 1 (L1V3) with
-    fbc package v2 (fbc-v2).
-
-    If the given filename ends with the suffix ".gz" (for example,
-    "myfile.xml.gz"), libSBML assumes the caller wants the file to be
-    written compressed in gzip format. Similarly, if the given filename
-    ends with ".zip" or ".bz2", libSBML assumes the caller wants the
-    file to be compressed in zip or bzip2 format (respectively). Files
-    whose names lack these suffixes will be written uncompressed. Special
-    considerations for the zip format: If the given filename ends with
-    ".zip", the file placed in the zip archive will have the suffix
-    ".xml" or ".sbml".  For example, the file in the zip archive will
-    be named "test.xml" if the given filename is "test.xml.zip" or
-    "test.zip". Similarly, the filename in the archive will be
-    "test.sbml" if the given filename is "test.sbml.zip".
-
-    Parameters
-    ----------
-    cobra_model : cobra.core.Model
-        Model instance which is written to SBML
-    filename : string
-        path to which the model is written
-    use_fbc_package : boolean {True, False}
-        should the fbc package be used
-    f_replace: dict of replacement functions for id replacement
-    """
-    if not use_fbc_package:
-        # FIXME: get completely rid of the legacy non-sense
-        # legacy cobra without fbc
-        LOGGER.warning("Constrained based models should be stored with fbc-v2,"
-                       "By setting 'use_fbc_package' using legacy writer. No support from here on.")
-        write_sbml2(cobra_model, filename, use_fbc_package=False, **kwargs)
-    else:
-        doc = _model_to_sbml(cobra_model, f_replace=f_replace, **kwargs)
-        libsbml.writeSBMLToFile(doc, filename)
-
-
 def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     """Creates cobra model from SBMLDocument.
 
@@ -287,12 +252,12 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 raise Exception("Conversion of SBML fbc v1 to fbc v2 failed")
 
     # Model
-    cmodel = Model(model.id)
-    cmodel.name = model.name
+    cobra_model = Model(model.id)
+    cobra_model.name = model.name
 
     # meta information
     meta = {
-
+        "model.id": model.getId(),
         "level": model.getLevel(),
         "version": model.getVersion(),
         "packages": []
@@ -317,27 +282,31 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     meta["creators"] = creators
     meta["created"] = created
     meta["notes"] = _parse_notes(doc)
+    meta["notes"] = _parse_notes(doc)
+    meta["annotation"] = _parse_annotations(doc)
 
-    info = "SBML L{}V{}".format(model.getLevel(), model.getVersion())
+    info = "<{}> SBML L{}V{}".format(model.getId(),
+                                    model.getLevel(), model.getVersion())
     packages = {}
     for k in range(doc.getNumPlugins()):
         plugin = doc.getPlugin(k)  # type:libsbml.SBasePlugin
         key, value = plugin.getPackageName(), plugin.getPackageVersion()
         packages[key] = value
         info += ", {}-v{}".format(key, value)
-
+        if key not in ["fbc", "groups"]:
+            LOGGER.warning("SBML package '{}' not supported by cobrapy,"
+                           "information is not parsed".format(key))
     meta["info"] = info
     meta["packages"] = packages
-    meta["notes"] = _parse_notes(doc)
-    meta["annotation"] = _parse_annotations(doc)
-    cmodel._sbml = meta
+    cobra_model._sbml = meta
+    print("READ", cobra_model._sbml["info"])
 
     # notes and annotations
-    cmodel.notes = _parse_notes(model)
-    cmodel.annotation = _parse_annotations(model)
+    cobra_model.notes = _parse_notes(model)
+    cobra_model.annotation = _parse_annotations(model)
 
     # Compartments
-    cmodel.compartments = {c.id: c.name for c in model.compartments}
+    cobra_model.compartments = {c.id: c.name for c in model.compartments}
 
     # Species
     boundary_ids = set()
@@ -382,7 +351,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
         metabolites.append(met)
 
-    cmodel.add_metabolites(metabolites)
+    cobra_model.add_metabolites(metabolites)
 
     # Genes
     if model_fbc:
@@ -397,7 +366,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             gene.annotation = _parse_annotations(gp)
             gene.notes = _parse_notes(gp)
 
-            cmodel.genes.append(gene)
+            cobra_model.genes.append(gene)
 
     # GPR rules
     def process_association(ass):
@@ -501,7 +470,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                                "reaction '%s'" % (met_id, reaction.id))
                 continue
             try:
-                metabolite = cmodel.metabolites.get_by_id(met_id)
+                metabolite = cobra_model.metabolites.get_by_id(met_id)
             except KeyError:
                 LOGGER.warning("Ignoring unknown metabolite '%s' in "
                                "reaction %s" % (met_id, reaction.id))
@@ -529,7 +498,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
         reaction.gene_reaction_rule = gpr
 
-    cmodel.add_reactions(reactions)
+    cobra_model.add_reactions(reactions)
 
     # Objective
     if model_fbc:
@@ -552,7 +521,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 if f_replace and F_REACTION in f_replace:
                     rid = f_replace[F_REACTION](rid)
                 try:
-                    objective_reaction = cmodel.reactions.get_by_id(rid)
+                    objective_reaction = cobra_model.reactions.get_by_id(rid)
                 except KeyError:
                     raise CobraSBMLError("Objective reaction '%s' "
                                          "not found" % rid)
@@ -562,10 +531,48 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                     )
                 except ValueError as e:
                     LOGGER.warning(str(e))
-            set_objective(cmodel, coefficients)
-            cmodel.solver.objective.direction = obj_direction
+            set_objective(cobra_model, coefficients)
+            cobra_model.solver.objective.direction = obj_direction
 
-    return cmodel
+    # TODO: parse groups
+
+    return cobra_model
+
+
+# ----------------------
+# Write SBML
+# ----------------------
+def write_sbml_model(cobra_model, filename, f_replace=F_REPLACE, **kwargs):
+    """Writes cobra model to filename.
+
+    The created model is SBML level 3 version 1 (L1V3) with
+    fbc package v2 (fbc-v2).
+
+    If the given filename ends with the suffix ".gz" (for example,
+    "myfile.xml.gz"), libSBML assumes the caller wants the file to be
+    written compressed in gzip format. Similarly, if the given filename
+    ends with ".zip" or ".bz2", libSBML assumes the caller wants the
+    file to be compressed in zip or bzip2 format (respectively). Files
+    whose names lack these suffixes will be written uncompressed. Special
+    considerations for the zip format: If the given filename ends with
+    ".zip", the file placed in the zip archive will have the suffix
+    ".xml" or ".sbml".  For example, the file in the zip archive will
+    be named "test.xml" if the given filename is "test.xml.zip" or
+    "test.zip". Similarly, the filename in the archive will be
+    "test.sbml" if the given filename is "test.sbml.zip".
+
+    Parameters
+    ----------
+    cobra_model : cobra.core.Model
+        Model instance which is written to SBML
+    filename : string
+        path to which the model is written
+    use_fbc_package : boolean {True, False}
+        should the fbc package be used
+    f_replace: dict of replacement functions for id replacement
+    """
+    doc = _model_to_sbml(cobra_model, f_replace=f_replace, **kwargs)
+    libsbml.writeSBMLToFile(doc, filename)
 
 
 def _model_to_sbml(cobra_model, f_replace=None, units=True):
@@ -601,6 +608,29 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         model.setId(cobra_model.id)
     if cobra_model.name is not None:
         model.setName(cobra_model.name)
+
+    # Meta information (ModelHistory)
+    print("WRITE", cobra_model._sbml["info"])
+    if hasattr(cobra_model, "_sbml"):
+        meta = cobra_model._sbml
+        history = libsbml.ModelHistory()  # type: libsbml.ModelHistory
+        if "created" in meta:
+            history.setCreatedDate(meta["created"])
+        if "annotation" in meta:
+            _sbase_annotations(doc, meta["annotation"])
+            _sbase_notes(doc, meta["notes"])
+        if "creators" in meta:
+            for creator in meta["creators"]:
+                c = libsbml.ModelCreator()  # type: libsbml.ModelCreator
+                if creator.get("familyName", None):
+                    c.setFamilyName(creator["familyName"])
+                if creator.get("givenName", None):
+                    c.setFamilyName(creator["givenName"])
+                if creator.get("organisation", None):
+                    c.setFamilyName(creator["organisation"])
+                if creator.get("email", None):
+                    c.setFamilyName(creator["email"])
+                history.addCreator(c)
 
     # Units
     if units:
@@ -676,11 +706,16 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
                       value=0, sbo=SBO_DEFAULT_FLUX_BOUND)
 
     # Compartments
+    # FIXME: use first class compartment model
     for cid, name in iteritems(cobra_model.compartments):
         c = model.createCompartment()  # type: libsbml.Compartment
         c.setId(cid)
         c.setName(name)
         c.setConstant(True)
+
+        # FIXME: write annotations and notes (from first class model)
+        # _sbase_notes(c, com.notes)
+        # _sbase_annotations(c, com.annotation)
 
     # Species
     for met in cobra_model.metabolites:
@@ -700,7 +735,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         if met.formula is not None:
             s_fbc.setChemicalFormula(met.formula)
 
-        annotate_sbase_from_cobra(s, met)
+        _sbase_annotations(s, met.annotation)
+        _sbase_notes(s, met.notes)
 
     # Genes
     for gene in cobra_model.genes:
@@ -715,7 +751,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         gp.setName(gname)
         gp.setLabel(gid)
 
-        annotate_sbase_from_cobra(gp, gene)
+        _sbase_annotations(gp, gene.annotation)
+        _sbase_notes(gp, gene.notes)
 
     # Objective
     objective = model_fbc.createObjective()  # type: libsbml.Objective
@@ -734,8 +771,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         r.setName(reaction.name)
         r.setFast(False)
         r.setReversible((reaction.lower_bound < 0))
-
-        annotate_sbase_from_cobra(r, reaction)
+        _sbase_annotations(r, reaction.annotation)
+        _sbase_notes(r, reaction.notes)
 
         # stoichiometry
         for metabolite, stoichiomety in iteritems(reaction._metabolites):
@@ -775,13 +812,14 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             res = gpa.setAssociation(gpr)
             print("write", gpr, res)
 
-
         # objective coefficients
         if reaction_coefficients.get(reaction, 0) != 0:
             # type: libsbml.FluxObjective
             flux_obj = objective.createFluxObjective()
             flux_obj.setReaction(rid)
             flux_obj.setCoefficient(reaction.objective_coefficient)
+
+    # TODO: write groups (with groups extension)
 
     return doc
 
@@ -811,7 +849,7 @@ def _check_required(sbase, value, attribute):
 
 
 # ----------------------
-# Notes & Annotations
+# Notes
 # ----------------------
 def _parse_notes(sbase):
     """Creates dictionary of notes.
@@ -822,18 +860,27 @@ def _parse_notes(sbase):
 
     Returns
     -------
-    dict of notes
+    notes str
     """
-    notes = sbase.getNotesString()
-    if notes and len(notes) > 0:
-        pattern = r"<p>\s*(\w+)\s*:\s*([\w|\s]+)<"
-        matches = re.findall(pattern, notes)
-        d = {k.strip(): v.strip() for (k, v) in matches}
-        return {k: v for k, v in d.items() if len(v) > 0}
-    else:
-        return {}
+    return sbase.getNotesString()
 
 
+def _sbase_notes(sbase, notes):
+    """Set SBase notes based on cobra object notes.
+
+    Parameters
+    ----------
+    sbase : libsbml.SBase
+        SBML object to set notes on
+    notes : notes object
+        notes information from cobra object
+    """
+    sbase.setNotes(notes)
+
+
+# ----------------------
+# Annotations
+# ----------------------
 # FIXME: currently only the terms, but not the qualifier are parsed
 URL_IDENTIFIERS_PATTERN = r"^http[s]{0,1}://identifiers.org/(.+)/(.+)"
 URL_IDENTIFIERS_PREFIX = r"http://identifiers.org"
@@ -895,18 +942,18 @@ def _parse_annotations(sbase):
     return annotation
 
 
-def annotate_sbase_from_cobra(sbase, cobj):
-    """Annotate SBase based on cobra object annotations.
+def _sbase_annotations(sbase, annotation):
+    """Set SBase annotations based on cobra annotations.
 
     Parameters
     ----------
     sbase : libsbml.SBase
         SBML object to annotate
-    cobj : cobra object
+    annotation : cobra annotation structure
         cobra object with annotation information
     """
 
-    if len(cobj.annotation) == 0:
+    if len(annotation) == 0:
         return
 
     # FIXME: currently no support for qualifiers
@@ -917,7 +964,7 @@ def annotate_sbase_from_cobra(sbase, cobj):
     sbase.setMetaId(meta_id)
 
     # rdf_items = []
-    for provider, identifiers in iteritems(cobj.annotation):
+    for provider, identifiers in iteritems(annotation):
         if provider in ["SBO", "sbo"]:
             if provider == "SBO":
                 logging.warning("'SBO' provider is deprecated, "
@@ -939,6 +986,7 @@ def annotate_sbase_from_cobra(sbase, cobj):
                                          '%s' % qualifier)
                 cv.addResource("%s/%s/%s" % (URL_IDENTIFIERS_PREFIX, provider,
                                              identifier))
+                # FIXME: add a check that this worked
                 sbase.addCVTerm(cv)
 
 
