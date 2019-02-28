@@ -280,9 +280,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
         for c in history.getListCreators():  # type: libsbml.ModelCreator
             creators.append({
-                "familyName": c.getFamilyName() if c.isSetFamilyName() else None,
+                "familyName": c.getFamilyName() if c.isSetFamilyName() else None,  # noqa: E501
                 "givenName": c.getGivenName() if c.isSetGivenName() else None,
-                "organisation": c.getOrganisation() if c.isSetOrganisation() else None,
+                "organisation": c.getOrganisation() if c.isSetOrganisation() else None,  # noqa: E501
                 "email": c.getEmail() if c.isSetEmail() else None,
             })
 
@@ -1209,9 +1209,9 @@ def _error_string(error, k=None):
                 '{}\n' \
                 '[{}] {}\n' \
                 '{}\n'.format(
-        k, error.getCategoryAsString(), package, error.getLine(),
-        'code',
-        '-' * 60,
-        error.getSeverityAsString(), error.getShortMessage(),
-        error.getMessage())
+                    k, error.getCategoryAsString(), package, error.getLine(),
+                    'code',
+                    '-' * 60,
+                    error.getSeverityAsString(), error.getShortMessage(),
+                    error.getMessage())
     return error_str
