@@ -141,7 +141,7 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
 
     Parameters
     ----------
-    filename : path to SBML file or SBML string
+    filename : path to SBML file, or SBML string, or SBML file handle
         SBML which is read into cobra model
     number: data type of stoichiometry: {float, int}
         In which data type should the stoichiometry be parsed.
@@ -154,6 +154,13 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
     Returns
     -------
     cobra.core.Model
+
+    Notes
+    -----
+    Provided file handles cannot be opened in binary mode, i.e., use
+        with open(path, "r" as f):
+            read_sbml_model(f)
+    File handles to compressed files are not supported yet.
     """
     try:
         doc = _get_doc_from_filename(filename)
@@ -173,19 +180,19 @@ def _get_doc_from_filename(filename):
 
     Parameters
     ----------
-    filename : path to SBML file or SBML string
+    filename : path to SBML, or SBML string, or filehandle
 
     Returns
     -------
     libsbml.SBMLDocument
     """
-    # FIXME: read and write from filehandle
-
-    if os.path.exists(filename):
-        doc = libsbml.readSBMLFromFile(filename)  # type: libsbml.SBMLDocument
-    elif isinstance(filename, string_types):
-        # SBML as string representation
-        doc = libsbml.readSBMLFromString(filename)
+    if isinstance(filename, string_types):
+        if os.path.exists(filename):
+            # SBML as file
+            doc = libsbml.readSBMLFromFile(filename)  # type: libsbml.SBMLDocument
+        else:
+            # SBML as string representation
+            doc = libsbml.readSBMLFromString(filename)
     elif hasattr(filename, "read"):
         # File handle
         doc = libsbml.readSBMLFromString(filename.read())
@@ -229,7 +236,7 @@ def write_sbml_model(cobra_model, filename, use_fbc_package=True,
         # FIXME: get completely rid of the legacy non-sense
         # legacy cobra without fbc
         LOGGER.warning("Constrained based models should be stored with fbc-v2,"
-                       " using legacy writer. No support from here on.")
+                       "By setting 'use_fbc_package' using legacy writer. No support from here on.")
         write_sbml2(cobra_model, filename, use_fbc_package=False, **kwargs)
     else:
         doc = _model_to_sbml(cobra_model, f_replace=f_replace, **kwargs)
