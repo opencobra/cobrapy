@@ -6,9 +6,6 @@ SBML import and export using python-libsbml(-experimental).
 - Annotation information is stored on the cobrapy objects
 - Information from the group package is read
 
-
-TODO: read and write from filehandle
-
 """
 
 from __future__ import absolute_import
@@ -27,7 +24,6 @@ from cobra.util.solver import set_objective, linear_reaction_coefficients
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 
 from .sbml import write_cobra_model_to_sbml_file as write_sbml2
-
 
 
 class CobraSBMLError(Exception):
@@ -313,6 +309,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
     meta["creators"] = creators
     meta["created"] = created
+    meta["notes"] = _parse_notes(doc)
 
     info = "SBML L{}V{}".format(model.getLevel(), model.getVersion())
     packages = {}
@@ -322,13 +319,15 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
         packages[key] = value
         info += ", {}-v{}".format(key, value)
 
-    meta["packages"] = packages
     meta["info"] = info
+    meta["packages"] = packages
+    meta["notes"] = _parse_notes(doc)
+    meta["annotation"] = _parse_annotations(doc)
     cmodel._sbml = meta
 
     # notes and annotations
-    cmodel.notes = _parse_notes(model.getNotesString())
-    annotate_cobra_from_sbase(cmodel, model)
+    cmodel.notes = _parse_notes(model)
+    cmodel.annotation = _parse_annotations(model)
 
     # Compartments
     cmodel.compartments = {c.id: c.name for c in model.compartments}
@@ -343,13 +342,11 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
         met = Metabolite(sid)
         met.name = s.name
-        met.notes = _parse_notes(s.getNotesString())
-        annotate_cobra_from_sbase(met, s)
-
+        met.notes = _parse_notes(s)
+        met.annotation = _parse_annotations(s)
         met.compartment = s.compartment
 
-
-        s_fbc = s.getPlugin("fbc")
+        s_fbc = s.getPlugin("fbc")  # type: libsbml.FbcSpeciesPlugin
         if s_fbc:
             met.charge = s_fbc.getCharge()
             met.formula = s_fbc.getChemicalFormula()
@@ -382,15 +379,17 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
     # Genes
     if model_fbc:
-        for gp in model_fbc.getListOfGeneProducts():
+        for gp in model_fbc.getListOfGeneProducts():  # noqa: E501 type: libsbml.GeneProduct
             gid = gp.id
             if f_replace and F_GENE in f_replace:
                 gid = f_replace[F_GENE](gid)
             gene = Gene(gid)
             gene.name = gp.name
             if gene.name is None:
-                gene.name = gp.get
-            annotate_cobra_from_sbase(gene, gp)
+                gene.name = gp.getId()
+            gene.annotation = _parse_annotations(gp)
+            gene.notes = _parse_notes(gp)
+
             cmodel.genes.append(gene)
 
     # GPR rules
@@ -420,18 +419,13 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             rid = f_replace[F_REACTION](rid)
         reaction = Reaction(rid)
         reaction.name = r.name
-        annotate_cobra_from_sbase(reaction, r)
-
-        # parse notes in notes dictionary
-        notes = r.getNotesString()
-        if notes and len(notes) > 0:
-            reaction.notes = _parse_notes(notes)
+        reaction.annotation = _parse_annotations(r)
+        reaction.notes = _parse_notes(r)
 
         # set bounds
         r_fbc = r.getPlugin("fbc")  # type: libsbml.FbcReactionPlugin
         if r_fbc:
-            # information in fbc
-            # FIXME: remove code duplication in this section
+            # bounds in fbc
             lb_id = _check_required(r_fbc, r_fbc.getLowerFluxBound(),
                                     "lowerFluxBound")
             ub_id = _check_required(r_fbc, r_fbc.getUpperFluxBound(),
@@ -452,7 +446,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                                      "reaction '%s" % (p_ub, r))
 
         elif r.isSetKineticLaw():
-            # sometime information encoded in kinetic laws
+            # some legacy models encode bounds in kinetic laws
             klaw = r.getKineticLaw()  # type: libsbml.KineticLaw
             p_lb = klaw.getParameter("LOWER_BOUND")
             if p_lb:
@@ -470,7 +464,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
         reactions.append(reaction)
 
-        # parse equation (stochiomtry)
+        # parse equation
         stoichiometry = defaultdict(lambda: 0)
         for sref in r.getListOfReactants():  # type: libsbml.SpeciesReference
             sid = sref.getSpecies()
@@ -491,6 +485,10 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
         # needs to have keys of metabolite objects, not ids
         object_stoichiometry = {}
         for met_id in stoichiometry:
+
+            # FIXME: THIS IS INCORRECT BEHAVIOUR
+            # boundary species must be created but additional exchange
+            # reactions must be added to the model
             if met_id in boundary_ids:
                 LOGGER.warning("Boundary metabolite '%s' used in "
                                "reaction '%s'" % (met_id, reaction.id))
@@ -523,12 +521,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             gpr = gpr[1:-1].strip()
 
         reaction.gene_reaction_rule = gpr
-        print("read:", gpr)
 
-    try:
-        cmodel.add_reactions(reactions)
-    except ValueError as e:
-        LOGGER.warning(str(e))
+    cmodel.add_reactions(reactions)
 
     # Objective
     if model_fbc:
@@ -809,17 +803,21 @@ def _check_required(sbase, value, attribute):
     return value
 
 
-def _parse_notes(notes):
+# ----------------------
+# Notes & Annotations
+# ----------------------
+def _parse_notes(sbase):
     """Creates dictionary of notes.
 
     Parameters
     ----------
-    notes :
+    sbase : libsbml.SBase
 
     Returns
     -------
     dict of notes
     """
+    notes = sbase.getNotesString()
     if notes and len(notes) > 0:
         pattern = r"<p>\s*(\w+)\s*:\s*([\w|\s]+)<"
         matches = re.findall(pattern, notes)
@@ -829,9 +827,6 @@ def _parse_notes(notes):
         return {}
 
 
-# ----------------------
-# Annotations
-# ----------------------
 # FIXME: currently only the terms, but not the qualifier are parsed
 URL_IDENTIFIERS_PATTERN = r"^http[s]{0,1}://identifiers.org/(.+)/(.+)"
 URL_IDENTIFIERS_PREFIX = r"http://identifiers.org"
@@ -844,20 +839,21 @@ BIOLOGICAL_QUALIFIER_TYPES = set(["BQB_IS", "BQB_HAS_PART", "BQB_IS_PART_OF",
                                  "BQB_UNKNOWN"])
 
 
-def annotate_cobra_from_sbase(cobj, sbase):
-    """Annotate a cobra object from a given SBase object.
+def _parse_annotations(sbase):
+    """Parses cobra annotations from a given SBase object.
 
     Annotations are dictionaries with the providers as keys.
 
-
     Parameters
     ----------
-    cobj : cobra object (Reaction, Metabolite, Compartment, Model)
-        Cobra core object on which the annotations are stored.
     sbase : libsbml.SBase
         SBase from which the SBML annotations are read
+
+    Returns
+    -------
+    dict (annotation dictionary)
     """
-    annotation = cobj.annotation
+    annotation = {}
 
     # SBO term
     if sbase.isSetSBOTerm():
@@ -888,6 +884,8 @@ def annotate_cobra_from_sbase(cobj, sbase):
             else:
                 # FIXME: always in list
                 annotation[provider] = identifier
+
+    return annotation
 
 
 def annotate_sbase_from_cobra(sbase, cobj):
