@@ -29,6 +29,7 @@ from cobra.manipulation.validate import check_metabolite_compartment_formula
 from .sbml import write_cobra_model_to_sbml_file as write_sbml2
 
 
+
 class CobraSBMLError(Exception):
     """ SBML error class. """
     pass
@@ -286,6 +287,49 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     cmodel = Model(model.id)
     cmodel.name = model.name
 
+    # meta information
+    meta = {
+
+        "level": model.getLevel(),
+        "version": model.getVersion(),
+        "packages": []
+    }
+    # History
+    creators = []
+    created = None
+    if model.isSetModelHistory():
+        history = model.getModelHistory()  # type: libsbml.ModelHistory
+
+        if history.isSetCreatedDate():
+            created = history.getCreatedDate()
+
+        for c in history.getListCreators():  # type: libsbml.ModelCreator
+            creators.append({
+             "familyName": c.getFamilyName() if c.isSetFamilyName() else None,
+             "givenName": c.getGivenName() if c.isSetGivenName() else None,
+             "organisation": c.getOrganisation() if c.isSetOrganisation() else None,
+             "email": c.getEmail() if c.isSetEmail() else None,
+            })
+
+    meta["creators"] = creators
+    meta["created"] = created
+
+    info = "SBML L{}V{}".format(model.getLevel(), model.getVersion())
+    packages = {}
+    for k in range(doc.getNumPlugins()):
+        plugin = doc.getPlugin(k)  # type:libsbml.SBasePlugin
+        key, value = plugin.getPackageName(), plugin.getPackageVersion()
+        packages[key] = value
+        info += ", {}-v{}".format(key, value)
+
+    meta["packages"] = packages
+    meta["info"] = info
+    cmodel._sbml = meta
+
+    # notes and annotations
+    cmodel.notes = _parse_notes(model.getNotesString())
+    annotate_cobra_from_sbase(cmodel, model)
+
     # Compartments
     cmodel.compartments = {c.id: c.name for c in model.compartments}
 
@@ -299,12 +343,11 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
         met = Metabolite(sid)
         met.name = s.name
+        met.notes = _parse_notes(s.getNotesString())
+        annotate_cobra_from_sbase(met, s)
+
         met.compartment = s.compartment
 
-        # parse notes in notes dictionary
-        notes = s.getNotesString()
-        if notes and len(notes) > 0:
-            met.notes = _parse_notes(notes)
 
         s_fbc = s.getPlugin("fbc")
         if s_fbc:
@@ -333,7 +376,6 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
         if s.getBoundaryCondition() is True:
             boundary_ids.add(s.id)
 
-        annotate_cobra_from_sbase(met, s)
         metabolites.append(met)
 
     cmodel.add_metabolites(metabolites)
@@ -465,8 +507,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
         # GPR
         if r_fbc:
             gpr = ''
-            # type: libsbml.GeneProductAssociation
-            gpa = r_fbc.getGeneProductAssociation()
+            gpa = r_fbc.getGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
             if gpa is not None:
                 # type: libsbml.FbcAssociation
                 association = gpa.getAssociation()
@@ -482,6 +523,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             gpr = gpr[1:-1].strip()
 
         reaction.gene_reaction_rule = gpr
+        print("read:", gpr)
 
     try:
         cmodel.add_reactions(reactions)
@@ -490,8 +532,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
     # Objective
     if model_fbc:
-        # type: libsbml.ListOfObjectives
-        obj_list = model_fbc.getListOfObjectives()
+        obj_list = model_fbc.getListOfObjectives()  # noqa: E501 type: libsbml.ListOfObjectives
         if obj_list is None:
             LOGGER.warning("listOfObjectives element not found")
         elif obj_list.size() == 0:
@@ -505,8 +546,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
             coefficients = {}
 
-            # type: libsbml.FluxObjective
-            for flux_obj in obj.getListOfFluxObjectives():
+            for flux_obj in obj.getListOfFluxObjectives():  # noqa: E501 type: libsbml.FluxObjective
                 rid = flux_obj.getReaction()
                 if f_replace and F_REACTION in f_replace:
                     rid = f_replace[F_REACTION](rid)
@@ -730,7 +770,10 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
                         tokens[k] = f_replace[F_GENE_REV](tokens[k])
                 gpr = " ".join(tokens)
 
-            gpa.setAssociation(gpr)
+
+            res = gpa.setAssociation(gpr)
+            print("write", gpr, res)
+
 
         # objective coefficients
         if reaction_coefficients.get(reaction, 0) != 0:
@@ -777,10 +820,13 @@ def _parse_notes(notes):
     -------
     dict of notes
     """
-    pattern = r"<p>\s*(\w+)\s*:\s*([\w|\s]+)<"
-    matches = re.findall(pattern, notes)
-    d = {k.strip(): v.strip() for (k, v) in matches}
-    return {k: v for k, v in d.items() if len(v) > 0}
+    if notes and len(notes) > 0:
+        pattern = r"<p>\s*(\w+)\s*:\s*([\w|\s]+)<"
+        matches = re.findall(pattern, notes)
+        d = {k.strip(): v.strip() for (k, v) in matches}
+        return {k: v for k, v in d.items() if len(v) > 0}
+    else:
+        return {}
 
 
 # ----------------------
