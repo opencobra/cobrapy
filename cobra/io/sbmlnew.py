@@ -6,14 +6,21 @@ SBML import and export using python-libsbml(-experimental).
 - Annotation information is stored on the cobrapy objects
 - Information from the group package is read
 
-TODO: support writing to file handles
+Parsing of fbc models was implemented as efficient as possible, whereas
+(discouraged) fallback solutions are not optimized for efficiency.
+
+
 TODO: fix failing tests
+
+TODO: support compression on file handles
+TODO: support writing to file handles
+
 
 TODO: update annotation format (and support qualifiers)
 TODO: write groups information
 TODO: read groups information
 TODO: write compartment annotations and notes
-TODO: support compression on file handles
+TODO: better validation
 """
 
 from __future__ import absolute_import
@@ -192,10 +199,12 @@ def _get_doc_from_filename(filename):
     -------
     libsbml.SBMLDocument
     """
+    print(filename)
     if isinstance(filename, string_types):
         if os.path.exists(filename):
             # SBML as file
-            doc = libsbml.readSBMLFromFile(filename)  # type: libsbml.SBMLDocument
+            doc = libsbml.readSBMLFromFile(
+                filename)  # type: libsbml.SBMLDocument
         else:
             # SBML as string representation
             doc = libsbml.readSBMLFromString(filename)
@@ -273,10 +282,10 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
         for c in history.getListCreators():  # type: libsbml.ModelCreator
             creators.append({
-             "familyName": c.getFamilyName() if c.isSetFamilyName() else None,
-             "givenName": c.getGivenName() if c.isSetGivenName() else None,
-             "organisation": c.getOrganisation() if c.isSetOrganisation() else None,
-             "email": c.getEmail() if c.isSetEmail() else None,
+                "familyName": c.getFamilyName() if c.isSetFamilyName() else None,
+                "givenName": c.getGivenName() if c.isSetGivenName() else None,
+                "organisation": c.getOrganisation() if c.isSetOrganisation() else None,
+                "email": c.getEmail() if c.isSetEmail() else None,
             })
 
     meta["creators"] = creators
@@ -286,7 +295,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     meta["annotation"] = _parse_annotations(doc)
 
     info = "<{}> SBML L{}V{}".format(model.getId(),
-                                    model.getLevel(), model.getVersion())
+                                     model.getLevel(), model.getVersion())
     packages = {}
     for k in range(doc.getNumPlugins()):
         plugin = doc.getPlugin(k)  # type:libsbml.SBasePlugin
@@ -330,12 +339,13 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
         else:
             if s.isSetCharge():
                 LOGGER.warning("Use of charge attribute is highly "
-                               "discouraged '%s" % s)
+                               "discouraged '%s, use fbc:charge"
+                               "instead." % s)
                 met.charge = s.getCharge()
             else:
                 if 'CHARGE' in met._notes:
-                    LOGGER.warning("Use of CHARGE note is discouraged '%s,"
-                                   "use fbc:charge instead" % s)
+                    LOGGER.warning("Use of CHARGE note is discouraged '%s, "
+                                   "use fbc:charge instead." % s)
                     try:
                         met.charge = int(met._notes['CHARGE'])
                     except ValueError:
@@ -343,8 +353,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                         pass
 
             if 'FORMULA' in met._notes:
-                LOGGER.warning("Use of FORMULA note is discouraged '%s,"
-                               "use fbc:chemicalFormula instead" % s)
+                LOGGER.warning("Use of FORMULA note is discouraged '%s, "
+                               "use fbc:chemicalFormula instead." % s)
                 met.formula = met._notes['FORMULA']
 
         # Detect boundary metabolites - In case they have been mistakenly
@@ -370,6 +380,26 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             gene.notes = _parse_notes(gp)
 
             cobra_model.genes.append(gene)
+    else:
+        for reaction in model.getListOfReactions():  # noqa: E501 type: libsbml.Reaction
+            # fallback to notes information
+
+            notes = _parse_notes_dictionary(reaction)
+            gpr = notes.get('GENE ASSOCIATION', '')
+
+            if len(gpr) > 0:
+                gpr = gpr.replace("(", ";")
+                gpr = gpr.replace(")", ";")
+                gpr = gpr.replace("or", ";")
+                gpr = gpr.replace("and", ";")
+                gids = [t.strip() for t in gpr.split(';')]
+                # create missing genes
+                for gid in gids:
+                    if f_replace and F_GENE in f_replace:
+                        gid = f_replace[F_GENE](gid)
+                    gene = Gene(gid)
+                    gene.name = gid
+                    cobra_model.genes.append(gene)
 
     # GPR rules
     def process_association(ass):
@@ -438,7 +468,11 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 reaction.upper_bound = p_ub.value
             else:
                 raise CobraSBMLError("Missing flux bounds on reaction %s" % r)
-            LOGGER.warning("Bounds encoded in KineticLaw for '%s" % r)
+
+            LOGGER.warning("Encoding LOWER_BOUND and UPPER_BOUND in "
+                           "KineticLaw is discouraged '%s, "
+                           "use fbc:fluxBounds instead." % r)
+
         else:
             raise CobraSBMLError("No flux bounds on reaction '%s'" % r)
 
@@ -492,9 +526,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 gpr = process_association(association)
         else:
             # fallback to notes information
-            gpr = reaction._notes.get('GENE_ASSOCIATION', '')
+            gpr = reaction._notes.get('GENE ASSOCIATION', '')
             if len(gpr) > 0:
-                LOGGER.warning("Use of GENE_ASSOCIATION note is "
+                LOGGER.warning("Use of GENE ASSOCIATION note is "
                                "discouraged '%s, use fbc:gpr instead" % s)
                 if f_replace and F_GENE in f_replace:
                     gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(' '))
@@ -508,6 +542,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     cobra_model.add_reactions(reactions)
 
     # Objective
+    obj_direction = "max"
+    coefficients = {}
     if model_fbc:
         obj_list = model_fbc.getListOfObjectives()  # noqa: E501 type: libsbml.ListOfObjectives
         if obj_list is None:
@@ -520,8 +556,6 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             obj_id = obj_list.getActiveObjective()
             obj = model_fbc.getObjective(obj_id)  # type: libsbml.Objective
             obj_direction = LONG_SHORT_DIRECTION[obj.getType()]
-
-            coefficients = {}
 
             for flux_obj in obj.getListOfFluxObjectives():  # noqa: E501 type: libsbml.FluxObjective
                 rid = flux_obj.getReaction()
@@ -540,6 +574,35 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                     LOGGER.warning(str(e))
             set_objective(cobra_model, coefficients)
             cobra_model.solver.objective.direction = obj_direction
+    else:
+        # some legacy models encode objective coefficients in kinetic laws
+        for reaction in model.getListOfReactions():  # noqa: E501 type: libsbml.Reaction
+            if reaction.isSetKineticLaw():
+
+                klaw = r.getKineticLaw()  # type: libsbml.KineticLaw
+                p_oc = klaw.getParameter(
+                    "OBJECTIVE_COEFFICIENT")  # noqa: E501 type: libsbml.LocalParameter
+                if p_oc:
+                    rid = reaction.id
+                    if f_replace and F_REACTION in f_replace:
+                        rid = f_replace[F_REACTION](rid)
+                    try:
+                        objective_reaction = cobra_model.reactions.get_by_id(
+                            rid)
+                    except KeyError:
+                        raise CobraSBMLError("Objective reaction '%s' "
+                                             "not found" % rid)
+                    try:
+                        coefficients[objective_reaction] = number(p_oc.value)
+                    except ValueError as e:
+                        LOGGER.warning(str(e))
+
+                    LOGGER.warning("Encoding OBJECTIVE_COEFFICIENT in "
+                                   "KineticLaw is discouraged '%s, "
+                                   "use fbc:fluxBounds instead." % reaction)
+
+    set_objective(cobra_model, coefficients)
+    cobra_model.solver.objective.direction = obj_direction
 
     # TODO: parse groups
 
@@ -805,8 +868,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         # GPR
         gpr = reaction.gene_reaction_rule
         if gpr is not None and len(gpr) > 0:
-            # type: libsbml.GeneProductAssociation
-            gpa = r_fbc.createGeneProductAssociation()
+            gpa = r_fbc.createGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
             # replace ids
             if f_replace and F_GENE_REV in f_replace:
                 tokens = gpr.split(' ')
@@ -815,14 +877,11 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
                         tokens[k] = f_replace[F_GENE_REV](tokens[k])
                 gpr = " ".join(tokens)
 
-
-            res = gpa.setAssociation(gpr)
-            print("write", gpr, res)
+            gpa.setAssociation(gpr)
 
         # objective coefficients
         if reaction_coefficients.get(reaction, 0) != 0:
-            # type: libsbml.FluxObjective
-            flux_obj = objective.createFluxObjective()
+            flux_obj = objective.createFluxObjective()  # noqa: E501 type: libsbml.FluxObjective
             flux_obj.setReaction(rid)
             flux_obj.setCoefficient(reaction.objective_coefficient)
 
@@ -874,6 +933,8 @@ def _parse_notes(sbase):
 
 def _parse_notes_dictionary(sbase):
     """Creates dictionary of COBRA notes.
+    Various such formats can occur.
+
 
     Parameters
     ----------
@@ -885,7 +946,7 @@ def _parse_notes_dictionary(sbase):
     """
     notes = sbase.getNotesString()
     if notes and len(notes) > 0:
-        pattern = r"<p>\s*(\w+)\s*:\s*([\w|\s]+)<"
+        pattern = r"<p>\s*(\w+\s*\w*)\s*:\s*([\w|\s]+)<"
         matches = re.findall(pattern, notes)
         d = {k.strip(): v.strip() for (k, v) in matches}
         return {k: v for k, v in d.items() if len(v) > 0}
@@ -914,12 +975,12 @@ def _sbase_notes(sbase, notes):
 URL_IDENTIFIERS_PATTERN = r"^http[s]{0,1}://identifiers.org/(.+)/(.+)"
 URL_IDENTIFIERS_PREFIX = r"http://identifiers.org"
 BIOLOGICAL_QUALIFIER_TYPES = set(["BQB_IS", "BQB_HAS_PART", "BQB_IS_PART_OF",
-                                 "BQB_IS_VERSION_OF", "BQB_HAS_VERSION",
-                                 "BQB_IS_HOMOLOG_TO", "BQB_IS_DESCRIBED_BY",
-                                 "BQB_IS_ENCODED_BY", "BQB_ENCODES",
-                                 "BQB_OCCURS_IN", "BQB_HAS_PROPERTY",
-                                 "BQB_IS_PROPERTY_OF", "BQB_HAS_TAXON",
-                                 "BQB_UNKNOWN"])
+                                  "BQB_IS_VERSION_OF", "BQB_HAS_VERSION",
+                                  "BQB_IS_HOMOLOG_TO", "BQB_IS_DESCRIBED_BY",
+                                  "BQB_IS_ENCODED_BY", "BQB_ENCODES",
+                                  "BQB_OCCURS_IN", "BQB_HAS_PROPERTY",
+                                  "BQB_IS_PROPERTY_OF", "BQB_HAS_TAXON",
+                                  "BQB_UNKNOWN"])
 
 
 def _parse_annotations(sbase):
@@ -1138,9 +1199,9 @@ def _error_string(error, k=None):
                 '{}\n' \
                 '[{}] {}\n' \
                 '{}\n'.format(
-                    k, error.getCategoryAsString(), package, error.getLine(),
-                    'code',
-                    '-' * 60,
-                    error.getSeverityAsString(), error.getShortMessage(),
-                    error.getMessage())
+        k, error.getCategoryAsString(), package, error.getLine(),
+        'code',
+        '-' * 60,
+        error.getSeverityAsString(), error.getShortMessage(),
+        error.getMessage())
     return error_str
