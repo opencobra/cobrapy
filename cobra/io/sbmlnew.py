@@ -5,6 +5,10 @@ SBML import and export using python-libsbml(-experimental).
 - The SBML exporter writes SBML L3 models.
 - Annotation information is stored on the cobrapy objects
 - Information from the group package is read
+
+
+TODO: read and write from filehandle
+
 """
 
 from __future__ import absolute_import
@@ -178,6 +182,8 @@ def _get_doc_from_filename(filename):
     -------
     libsbml.SBMLDocument
     """
+    # FIXME: read and write from filehandle
+
     if os.path.exists(filename):
         doc = libsbml.readSBMLFromFile(filename)  # type: libsbml.SBMLDocument
     elif isinstance(filename, string_types):
