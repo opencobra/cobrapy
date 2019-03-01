@@ -180,7 +180,7 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
         print(traceback.print_exc())
         raise CobraSBMLError(
             "Something went wrong reading the SBML model. You can get a "
-            "detailed report using the `cobra.io.sbml3.validate_sbml_model` "
+            "detailed report using the `cobra.io.sbml.validate_sbml_model` "
             "function or using the online validator at "
             "http://sbml.org/validator")
 
