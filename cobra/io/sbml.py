@@ -495,9 +495,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             sid = sref.getSpecies()
             if f_replace and F_SPECIE in f_replace:
                 sid = f_replace[F_SPECIE](sid)
-            stoichiometry[sid] += number(_check_required(sref,
-                                                         sref.stoichiometry,
-                                                         "stoichiometry"))
+            stoichiometry[sid] += number(
+                _check_required(sref, sref.getStoichiometry(),
+                                "stoichiometry"))
 
         # needs to have keys of metabolite objects, not ids
         object_stoichiometry = {}
