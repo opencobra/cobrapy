@@ -311,7 +311,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     cobra_model.annotation = _parse_annotations(model)
 
     # Compartments
-    cobra_model.compartments = {c.id: c.name for c in model.compartments}
+    cobra_model.compartments = {c.getId(): c.getName()
+                                for c in model.getListOfCompartments()}
 
     # Species
     boundary_ids = set()
