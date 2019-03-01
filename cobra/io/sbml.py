@@ -16,6 +16,7 @@ TODO: handle notes and notes dictionary
 TODO: update annotation format (and support qualifiers)
 TODO: write compartment annotations and notes
 TODO: better validation
+
 """
 
 from __future__ import absolute_import
@@ -27,6 +28,7 @@ import logging
 from warnings import catch_warnings, simplefilter
 from six import string_types, iteritems
 from collections import defaultdict, namedtuple
+from copy import deepcopy
 
 import libsbml
 from cobra.core import Gene, Metabolite, Model, Reaction, Group
@@ -1106,33 +1108,32 @@ The providers are hereby MIRIAM registry keys for collections
 https://www.ebi.ac.uk/miriam/main/collections
 The qualifiers are biomodel qualifiers
 https://co.mbine.org/standards/qualifiers
-with allowed biological qualifiers:
-    'is'
-    'hasPart'
-    'isPartOf',
-    'isVersionOf'
-    'hasVersion',
-    'isHomologTo',
-    'isDescribedBy',
-    'isEncodedBy',
-    'encodes',
-    'occursIn',
-    'hasProperty',
-    'isPropertyOf',
-    'hasTaxon',
-    'unknown',
 """
 
-# FIXME: currently only the terms, but not the qualifier are parsed
 URL_IDENTIFIERS_PATTERN = r"^http[s]{0,1}://identifiers.org/(.+)/(.+)"
 URL_IDENTIFIERS_PREFIX = r"https://identifiers.org"
-BIOLOGICAL_QUALIFIER_TYPES = set(["BQB_IS", "BQB_HAS_PART", "BQB_IS_PART_OF",
-                                  "BQB_IS_VERSION_OF", "BQB_HAS_VERSION",
-                                  "BQB_IS_HOMOLOG_TO", "BQB_IS_DESCRIBED_BY",
-                                  "BQB_IS_ENCODED_BY", "BQB_ENCODES",
-                                  "BQB_OCCURS_IN", "BQB_HAS_PROPERTY",
-                                  "BQB_IS_PROPERTY_OF", "BQB_HAS_TAXON",
-                                  "BQB_UNKNOWN"])
+QUALIFIER_TYPES = {
+     "is": libsbml.BQB_IS,
+     "hasPart": libsbml.BQB_HAS_PART,
+     "isPartOf": libsbml.BQB_IS_PART_OF,
+     "isVersionOf": libsbml.BQB_IS_VERSION_OF,
+     "hasVersion": libsbml.BQB_HAS_VERSION,
+     "isHomologTo": libsbml.BQB_IS_HOMOLOG_TO,
+     "isDescribedBy": libsbml.BQB_IS_DESCRIBED_BY,
+     "isEncodedBy": libsbml.BQB_IS_ENCODED_BY,
+     "encodes": libsbml.BQB_ENCODES,
+     "occursIn": libsbml.BQB_OCCURS_IN,
+     "hasProperty": libsbml.BQB_HAS_PROPERTY,
+     "isPropertyOf": libsbml.BQB_IS_PROPERTY_OF,
+     "hasTaxon": libsbml.BQB_HAS_TAXON,
+     "unknown": libsbml.BQB_UNKNOWN,
+     "bqm_is": libsbml.BQM_IS,
+     "bqm_isDescribedBy": libsbml.BQM_IS_DESCRIBED_BY,
+     "bqm_isDerivedFrom": libsbml.BQM_IS_DERIVED_FROM,
+     "bqm_isInstanceOf": libsbml.BQM_IS_INSTANCE_OF,
+     "bqm_hasInstance": libsbml.BQM_HAS_INSTANCE,
+     "bqm_unknown": libsbml.BQM_UNKNOWN,
+}
 
 
 def _parse_annotations(sbase):
@@ -1199,40 +1200,63 @@ def _sbase_annotations(sbase, annotation):
     if not annotation or len(annotation) == 0:
         return
 
-    # FIXME: currently no support for qualifiers
-    qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
-    qualifier = libsbml.BQB_IS
+    # standardize annotations
+    # FIXME: only here to make the current tests run (while there is still
+    #   old annotation format in tests)
+    annotation_data = deepcopy(annotation)
+    for key, v in annotation_data.items():
+        if isinstance(v, string_types):
+            annotation_data[key] = [("is", v)]
 
+    for key, v in annotation_data.items():
+        for idx, item in enumerate(v):
+            if isinstance(item, string_types):
+                v[idx] = ("is", item)
+
+    # set metaId
     meta_id = "meta_{}".format(sbase.id)
     sbase.setMetaId(meta_id)
 
     # rdf_items = []
-    for provider, identifiers in iteritems(annotation):
+    for provider, data in iteritems(annotation_data):
+
+        # set SBOTerm
         if provider in ["SBO", "sbo"]:
             if provider == "SBO":
                 logging.warning("'SBO' provider is deprecated, "
                                 "use 'sbo' provider instead")
-            _check(sbase.setSBOTerm(identifiers),
-                   "Setting SBOTerm: {}".format(identifiers))
-        else:
-            if isinstance(identifiers, string_types):
-                identifiers = (identifiers,)
+            sbo_term = data[0][1]
+            _check(sbase.setSBOTerm(sbo_term),
+                   "Setting SBOTerm: {}".format(sbo_term))
 
-            for identifier in identifiers:
-                cv = libsbml.CVTerm()  # type: libsbml.CVTerm
-                cv.setQualifierType(qualifier_type)
-                if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
-                    cv.setBiologicalQualifierType(qualifier)
-                elif qualifier_type == libsbml.MODEL_QUALIFIER:
-                    cv.setModelQualifierType(qualifier)
-                else:
-                    raise CobraSBMLError('Unsupported qualifier: '
-                                         '%s' % qualifier)
-                cv.addResource("%s/%s/%s" % (URL_IDENTIFIERS_PREFIX, provider,
-                                             identifier))
-                # FIXME: add a check that this worked
-                _check(sbase.addCVTerm(cv),
-                       "Setting cvterm: {}".format(cv))
+            # FIXME: sbo should also be written as CVTerm
+            continue
+
+        for item in data:
+            qualifier_str, entity = item[0], item[1]
+            qualifier = QUALIFIER_TYPES.get(qualifier_str, None)
+            if qualifier is None:
+                qualifier = libsbml.BQB_IS
+                LOGGER.warning("Qualifier type is not supported on "
+                               "annotation: '{}'".format(qualifier_str))
+
+            qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
+            if qualifier_str.startswith("bqm_"):
+                qualifier_type = libsbml.MODEL_QUALIFIER
+
+            cv = libsbml.CVTerm()  # type: libsbml.CVTerm
+            cv.setQualifierType(qualifier_type)
+            if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
+                cv.setBiologicalQualifierType(qualifier)
+            elif qualifier_type == libsbml.MODEL_QUALIFIER:
+                cv.setModelQualifierType(qualifier)
+            else:
+                raise CobraSBMLError('Unsupported qualifier: '
+                                     '%s' % qualifier)
+            resource = "%s/%s/%s" % (URL_IDENTIFIERS_PREFIX, provider, entity)
+            cv.addResource(resource)
+            _check(sbase.addCVTerm(cv),
+                   "Setting cvterm: {}, resource: {}".format(cv, resource))
 
 
 # -----------------------------------
