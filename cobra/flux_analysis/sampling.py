@@ -221,11 +221,11 @@ class HRSampler(object):
         self.retries = 0
         self.problem = self.__build_problem()
         # Set up a map from reaction -> forward/reverse variable
-        var_idx = {v: idx for idx, v in enumerate(model.variables)}
+        var_idx = {v: idx for idx, v in enumerate(self.model.variables)}
         self.fwd_idx = np.array([var_idx[r.forward_variable]
-                                 for r in model.reactions])
+                                 for r in self.model.reactions])
         self.rev_idx = np.array([var_idx[r.reverse_variable]
-                                 for r in model.reactions])
+                                 for r in self.model.reactions])
         self.warmup = None
         if seed is None:
             self._seed = int(time())
