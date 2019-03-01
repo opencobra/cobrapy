@@ -32,7 +32,7 @@ from six import string_types, iteritems
 from collections import defaultdict, namedtuple
 
 import libsbml
-from cobra.core import Gene, Metabolite, Model, Reaction
+from cobra.core import Gene, Metabolite, Model, Reaction, Group
 from cobra.util.solver import set_objective, linear_reaction_coefficients
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 
@@ -334,8 +334,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             met.formula = s_fbc.getChemicalFormula()
         else:
             if s.isSetCharge():
-                LOGGER.warning("Use of charge attribute is highly "
-                               "discouraged '%s, use fbc:charge"
+                LOGGER.warning("Use of charge attribute is "
+                               "discouraged '%s, use fbc:charge "
                                "instead." % s)
                 met.charge = s.getCharge()
             else:
@@ -398,9 +398,11 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 for gid in gids:
                     if f_replace and F_GENE in f_replace:
                         gid = f_replace[F_GENE](gid)
-                    gene = Gene(gid)
-                    gene.name = gid
-                    cobra_model.genes.append(gene)
+
+                    if gid not in cobra_model.genes:
+                        gene = Gene(gid)
+                        gene.name = gid
+                        cobra_model.genes.append(gene)
 
     # GPR rules
     def process_association(ass):
@@ -606,12 +608,69 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
                     LOGGER.warning("Encoding OBJECTIVE_COEFFICIENT in "
                                    "KineticLaw is discouraged '%s, "
-                                   "use fbc:fluxBounds instead." % reaction)
+                                   "use fbc:fluxObjective instead." % reaction)
 
     set_objective(cobra_model, coefficients)
     cobra_model.solver.objective.direction = obj_direction
 
-    # TODO: parse groups
+    # parse groups
+    model_groups = model.getPlugin("groups")  # type: libsbml.GroupsModelPlugin
+    if model_groups:
+        for g in model_groups.getListOfGroups():  # type: libsbml.Group
+            group = Group(g.id)
+            group.name = g.name
+            if g.isSetKind():
+                group.kind = g.getKindAsString()
+            group.annotation = _parse_annotations(g)
+            group.notes = _parse_notes_dict(g)
+
+            members = []
+            for m in g.getListOfMembers():  # type: libsbml.Member
+                if m.isSetIdRef():
+                    obj = doc.getElementBySId(m.getIdRef())
+                elif m.isSetMetaIdRef():
+                    obj = doc.getElementByMetaId(m.getMetaIdRef())
+
+                typecode = obj.getTypeCode()
+                obj_id = obj.getId()
+
+                member = None
+                if typecode == libsbml.SBML_SPECIES:
+                    if f_replace and F_SPECIE in f_replace:
+                        obj_id = f_replace[F_SPECIE](obj_id)
+                    member = cobra_model.metabolites.get_by_id(obj_id)
+                elif typecode == libsbml.SBML_REACTION:
+                    if f_replace and F_REACTION in f_replace:
+                        obj_id = f_replace[F_REACTION](obj_id)
+                    member = cobra_model.reactions.get_by_id(obj_id)
+                elif typecode == libsbml.SBML_FBC_GENEPRODUCT:
+                    if f_replace and F_GENE in f_replace:
+                        obj_id = f_replace[F_GENE](obj_id)
+                    member = cobra_model.genes.get_by_id(obj_id)
+                else:
+                    LOGGER.warning("Member {} could not be added to group {}."
+                                   "unsupported type code: {}"
+                                   "".format(m, g, typecode))
+
+                if member:
+                    members.append(member)
+
+            group.add_members(members)
+    else:
+        # parse deprecated subsystems on reactions
+        groups_dict = {}
+        for reaction in cobra_model.reactions:
+            if "SUBSYSTEM" in reaction.notes:
+                g_name = reaction.notes["SUBSYSTEM"]
+                if g_name in groups_dict:
+                    groups_dict[g_name].append(reaction)
+                else:
+                    groups_dict[g_name] = [reaction]
+        for gid, members in groups_dict.items():
+            group = Group(gid, name=gid, kind="collection")
+            group.add_members(members)
+            # print("group:", group, ";members:", members)
+
 
     return cobra_model
 
