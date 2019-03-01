@@ -204,10 +204,10 @@ def _get_doc_from_filename(filename):
                 filename)  # type: libsbml.SBMLDocument
         else:
             # SBML as string representation
-            doc = libsbml.readSBMLFromString(filename)
+            doc = libsbml.readSBMLFromString(filename)  # noqa: E501 type: libsbml.SBMLDocument
     elif hasattr(filename, "read"):
         # File handle
-        doc = libsbml.readSBMLFromString(filename.read())
+        doc = libsbml.readSBMLFromString(filename.read())  # noqa: E501 type: libsbml.SBMLDocument
     else:
         raise CobraSBMLError("Input format for 'filename' is not supported.")
 
@@ -258,8 +258,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 raise Exception("Conversion of SBML fbc v1 to fbc v2 failed")
 
     # Model
-    cobra_model = Model(model.id)
-    cobra_model.name = model.name
+    cobra_model = Model(model.getId())
+    cobra_model.name = model.getName()
 
     # meta information
     meta = {
@@ -317,15 +317,15 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     boundary_ids = set()
     metabolites = []
     for s in model.getListOfSpecies():  # type: libsbml.Species
-        sid = _check_required(s, s.id, "id")
+        sid = _check_required(s, s.getId(), "id")
         if f_replace and F_SPECIE in f_replace:
             sid = f_replace[F_SPECIE](sid)
 
         met = Metabolite(sid)
-        met.name = s.name
+        met.name = s.getName()
         met.notes = _parse_notes_dict(s)
         met.annotation = _parse_annotations(s)
-        met.compartment = s.compartment
+        met.compartment = s.getCompartment()
 
         s_fbc = s.getPlugin("fbc")  # type: libsbml.FbcSpeciesPlugin
         if s_fbc:
@@ -354,8 +354,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
         # Detect boundary metabolites - In case they have been mistakenly
         # added. They should not actually appear in a model
+        # FIXME: THIS IS INCORRECT BEHAVIOR
         if s.getBoundaryCondition() is True:
-            boundary_ids.add(s.id)
+            boundary_ids.add(s.getId())
 
         metabolites.append(met)
 
@@ -364,13 +365,13 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     # Genes
     if model_fbc:
         for gp in model_fbc.getListOfGeneProducts():  # noqa: E501 type: libsbml.GeneProduct
-            gid = gp.id
+            gid = gp.getId()
             if f_replace and F_GENE in f_replace:
                 gid = f_replace[F_GENE](gid)
             gene = Gene(gid)
-            gene.name = gp.name
+            gene.name = gp.getName()
             if gene.name is None:
-                gene.name = gp.getId()
+                gene.name = gid
             gene.annotation = _parse_annotations(gp)
             gene.notes = _parse_notes_dict(gp)
 
@@ -425,11 +426,11 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     # Reactions
     reactions = []
     for r in model.getListOfReactions():  # type: libsbml.Reaction
-        rid = _check_required(r, r.id, "id")
+        rid = _check_required(r, r.getId(), "id")
         if f_replace and F_REACTION in f_replace:
             rid = f_replace[F_REACTION](rid)
         reaction = Reaction(rid)
-        reaction.name = r.name
+        reaction.name = r.getName()
         reaction.annotation = _parse_annotations(r)
         reaction.notes = _parse_notes_dict(r)
 
@@ -441,17 +442,17 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                                     "lowerFluxBound")
             ub_id = _check_required(r_fbc, r_fbc.getUpperFluxBound(),
                                     "upperFluxBound")
-            p_lb = model.getParameter(lb_id)
-            p_ub = model.getParameter(ub_id)
+            p_lb = model.getParameter(lb_id)  # type: libsbml.Parameter
+            p_ub = model.getParameter(ub_id)  # type: libsbml.Parameter
 
-            if p_lb.constant and (p_lb.value is not None):
-                reaction.lower_bound = p_lb.value
+            if p_lb.getConstant() and (p_lb.getValue() is not None):
+                reaction.lower_bound = p_lb.getValue()
             else:
                 raise CobraSBMLError("No constant bound '%s' for "
                                      "reaction '%s" % (p_lb, r))
 
-            if p_ub.constant and (p_ub.value is not None):
-                reaction.upper_bound = p_ub.value
+            if p_ub.getConstant() and (p_ub.getValue() is not None):
+                reaction.upper_bound = p_ub.getValue()
             else:
                 raise CobraSBMLError("No constant bound '%s' for "
                                      "reaction '%s" % (p_ub, r))
@@ -459,14 +460,14 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
         elif r.isSetKineticLaw():
             # some legacy models encode bounds in kinetic laws
             klaw = r.getKineticLaw()  # type: libsbml.KineticLaw
-            p_lb = klaw.getParameter("LOWER_BOUND")
+            p_lb = klaw.getParameter("LOWER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
             if p_lb:
-                reaction.lower_bound = p_lb.value
+                reaction.lower_bound = p_lb.getValue()
             else:
                 raise CobraSBMLError("Missing flux bounds on reaction %s" % r)
-            p_ub = klaw.getParameter("UPPER_BOUND")
+            p_ub = klaw.getParameter("UPPER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
             if p_ub:
-                reaction.upper_bound = p_ub.value
+                reaction.upper_bound = p_ub.getValue()
             else:
                 raise CobraSBMLError("Missing flux bounds on reaction %s" % r)
 
@@ -485,9 +486,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             sid = sref.getSpecies()
             if f_replace and F_SPECIE in f_replace:
                 sid = f_replace[F_SPECIE](sid)
-            stoichiometry[sid] -= number(_check_required(sref,
-                                                         sref.stoichiometry,
-                                                         "stoichiometry"))
+            stoichiometry[sid] -= number(
+                _check_required(sref, sref.getStoichiometry(),
+                                "stoichiometry"))
 
         for sref in r.getListOfProducts():  # type: libsbml.SpeciesReference
             sid = sref.getSpecies()
@@ -506,13 +507,13 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             # reactions must be added to the model
             if met_id in boundary_ids:
                 LOGGER.warning("Boundary metabolite '%s' used in "
-                               "reaction '%s'" % (met_id, reaction.id))
+                               "reaction '%s'" % (met_id, reaction.getId()))
                 continue
             try:
                 metabolite = cobra_model.metabolites.get_by_id(met_id)
             except KeyError:
                 LOGGER.warning("Ignoring unknown metabolite '%s' in "
-                               "reaction %s" % (met_id, reaction.id))
+                               "reaction %s" % (met_id, reaction.getId()))
                 continue
             object_stoichiometry[metabolite] = stoichiometry[met_id]
         reaction.add_metabolites(object_stoichiometry)
@@ -522,8 +523,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
             gpr = ''
             gpa = r_fbc.getGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
             if gpa is not None:
-                # type: libsbml.FbcAssociation
-                association = gpa.getAssociation()
+                association = gpa.getAssociation()  # noqa: E501 type: libsbml.FbcAssociation
                 gpr = process_association(association)
         else:
             # fallback to notes information
@@ -591,7 +591,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 p_oc = klaw.getParameter(
                     "OBJECTIVE_COEFFICIENT")  # noqa: E501 type: libsbml.LocalParameter
                 if p_oc:
-                    rid = reaction.id
+                    rid = reaction.getId()
                     if f_replace and F_REACTION in f_replace:
                         rid = f_replace[F_REACTION](rid)
                     try:
@@ -601,7 +601,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                         raise CobraSBMLError("Objective reaction '%s' "
                                              "not found" % rid)
                     try:
-                        coefficients[objective_reaction] = number(p_oc.value)
+                        coefficients[objective_reaction] = number(
+                            p_oc.getValue())
                     except ValueError as e:
                         LOGGER.warning(str(e))
 
@@ -617,8 +618,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     groups = []
     if model_groups:
         for g in model_groups.getListOfGroups():  # type: libsbml.Group
-            group = Group(g.id)
-            group.name = g.name
+            group = Group(g.getId())
+            group.name = g.getName()
             if g.isSetKind():
                 group.kind = g.getKindAsString()
             group.annotation = _parse_annotations(g)
@@ -1009,10 +1010,10 @@ def _check_required(sbase, value, attribute):
     if value is None:
         msg = "required attribute '%s' not found in '%s'" % \
               (attribute, sbase)
-        if sbase.id is not None:
-            msg += " with id '%s'" % sbase.id
-        elif sbase.name is not None:
-            msg += " with name '%s'" % sbase.get("name")
+        if sbase.getId() is not None:
+            msg += " with id '%s'" % sbase.getId()
+        elif sbase.getName() is not None:
+            msg += " with name '%s'" % sbase.getName()
         raise CobraSBMLError(msg)
     return value
 
@@ -1214,7 +1215,7 @@ def _sbase_annotations(sbase, annotation):
                 v[idx] = ("is", item)
 
     # set metaId
-    meta_id = "meta_{}".format(sbase.id)
+    meta_id = "meta_{}".format(sbase.getId())
     sbase.setMetaId(meta_id)
 
     # rdf_items = []
