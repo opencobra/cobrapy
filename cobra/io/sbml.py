@@ -615,6 +615,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
     # parse groups
     model_groups = model.getPlugin("groups")  # type: libsbml.GroupsModelPlugin
+    groups = []
     if model_groups:
         for g in model_groups.getListOfGroups():  # type: libsbml.Group
             group = Group(g.id)
@@ -656,6 +657,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                     members.append(member)
 
             group.add_members(members)
+            groups.append(group)
     else:
         # parse deprecated subsystems on reactions
         groups_dict = {}
@@ -666,11 +668,13 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                     groups_dict[g_name].append(reaction)
                 else:
                     groups_dict[g_name] = [reaction]
+
         for gid, members in groups_dict.items():
             group = Group(gid, name=gid, kind="collection")
             group.add_members(members)
-            # print("group:", group, ";members:", members)
+            groups.append(group)
 
+    cobra_model.add_groups(groups)
 
     return cobra_model
 
