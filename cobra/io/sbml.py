@@ -9,13 +9,10 @@ SBML import and export using python-libsbml(-experimental).
 Parsing of fbc models was implemented as efficient as possible, whereas
 (discouraged) fallback solutions are not optimized for efficiency.
 
-TODO: write groups information
-TODO: read groups information
-
+FIXME: support writing to file handles
+FIXME: support compression on file handles
 TODO: fix incorrect boundary conditions
 TODO: handle notes and notes dictionary
-TODO: support compression on file handles
-TODO: support writing to file handles
 TODO: update annotation format (and support qualifiers)
 TODO: write compartment annotations and notes
 TODO: better validation
@@ -651,7 +648,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 else:
                     LOGGER.warning("Member {} could not be added to group {}."
                                    "unsupported type code: {}"
-                                   "".format(m, g, typecode))
+                                   "".format(m, g, typecode, None))
 
                 if member:
                     members.append(member)
@@ -734,8 +731,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
     if f_replace is None:
         f_replace = {}
 
-    sbmlns = libsbml.SBMLNamespaces(3, 1)
-    sbmlns.addPackageNamespace("fbc", 2)
+    sbmlns = libsbml.SBMLNamespaces(3, 1)  # SBML L3V1
+    sbmlns.addPackageNamespace("fbc", 2)  # fbc-v2
 
     doc = libsbml.SBMLDocument(sbmlns)  # type: libsbml.SBMLDocument
     doc.setPackageRequired("fbc", False)
@@ -915,19 +912,19 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         _sbase_notes_dict(r, reaction.notes)
 
         # stoichiometry
-        for metabolite, stoichiomety in iteritems(reaction._metabolites):
+        for metabolite, stoichiometry in iteritems(reaction._metabolites):
             sid = metabolite.id
             if f_replace and F_SPECIE_REV in f_replace:
                 sid = f_replace[F_SPECIE_REV](sid)
-            if stoichiomety < 0:
+            if stoichiometry < 0:
                 sref = r.createReactant()  # type: libsbml.SpeciesReference
                 sref.setSpecies(sid)
-                sref.setStoichiometry(-stoichiomety)
+                sref.setStoichiometry(-stoichiometry)
                 sref.setConstant(True)
             else:
                 sref = r.createProduct()  # type: libsbml.SpeciesReference
                 sref.setSpecies(sid)
-                sref.setStoichiometry(stoichiomety)
+                sref.setStoichiometry(stoichiometry)
                 sref.setConstant(True)
 
         # bounds
@@ -955,7 +952,41 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             flux_obj.setReaction(rid)
             flux_obj.setCoefficient(reaction.objective_coefficient)
 
-    # TODO: write groups (with groups extension)
+    # write groups
+    if len(cobra_model.groups) > 0:
+        doc.enablePackage(
+            "http://www.sbml.org/sbml/level3/version1/groups/version1",
+            "groups", True)
+        doc.setPackageRequired("groups", False)
+        model_group = model.getPlugin("groups")  # noqa: E501 type: libsbml.GroupsModelPlugin
+        for group in cobra_model.groups:
+            g = model_group.createGroup()  # type: libsbml.Group
+            g.setId(group.id)
+            g.setName(group.name)
+            g.setKind(group.kind)
+
+            _sbase_notes_dict(g, group.notes)
+            _sbase_annotations(g, group.annotation)
+
+            for member in group.members:
+                m = g.createMember()  # type: libsbml.Member
+                mid = member.id
+                m_type = str(type(member))
+
+                # id replacements
+                if "Reaction" in m_type:
+                    if f_replace and F_REACTION_REV in f_replace:
+                        mid = f_replace[F_REACTION_REV](mid)
+                if "Metabolite" in m_type:
+                    if f_replace and F_SPECIE_REV in f_replace:
+                        mid = f_replace[F_SPECIE_REV](mid)
+                if "Gene" in m_type:
+                    if f_replace and F_GENE_REV in f_replace:
+                        mid = f_replace[F_GENE_REV](mid)
+
+                m.setIdRef(mid)
+                if member.name and len(member.name) > 0:
+                    m.setName(member.name)
 
     return doc
 
