@@ -1,67 +1,173 @@
 # -*- coding: utf-8 -*-
-
-"""Test functionalities provided by sbml.py"""
+"""
+Testing SBML functionality based on libsbml.
+"""
 
 from __future__ import absolute_import
 
-from io import BytesIO
-from os.path import getsize, join
+
+from os import unlink
+from os.path import join, split
+from pickle import load
+from tempfile import gettempdir
+from collections import namedtuple
+from functools import partial
+from warnings import warn
+from six import iteritems
+
 
 import pytest
-
-from cobra import io
-from cobra.test.test_io.conftest import compare_models
-
+from cobra.io import read_sbml_model, write_sbml_model, validate_sbml_model
 
 try:
     import libsbml
 except ImportError:
     libsbml = None
 
+try:
+    import jsonschema
+except ImportError:
+    jsonschema = None
 
-@pytest.fixture(scope="function")
-def mini_fbc1_model(data_directory):
-    return io.read_legacy_sbml(join(data_directory, "mini_fbc1.xml"))
-
-
-@pytest.fixture(scope="function")
-def mini_cobra_model(data_directory):
-    return io.read_legacy_sbml(join(data_directory, "mini_cobra.xml"))
-
-
-# TODO: parametrize the arguments after pytest.fixture_request()
-# is approved
-@pytest.mark.skipif(libsbml is None, reason="libsbml unavailable.")
-def test_read_sbml_model(data_directory, mini_fbc1_model, mini_cobra_model):
-    """Test the reading of a model from SBML v2."""
-    mini_fbc1 = io.read_legacy_sbml(join(data_directory, "mini_fbc1.xml"))
-    mini_cobra = io.read_legacy_sbml(join(data_directory, "mini_cobra.xml"))
-    assert compare_models(mini_fbc1_model, mini_fbc1) is None
-    assert compare_models(mini_cobra_model, mini_cobra) is None
-
-
-@pytest.mark.skipif(libsbml is None, reason="libsbml unavailable.")
-def test_read_file_handle(data_directory, mini_model):
-    """Test the reading of a model passed as a file handle."""
-    with open(join(data_directory, "mini_cobra.xml"), "rb") as file_:
-        model_stream = BytesIO(file_.read())
-    read_model = io.read_sbml_model(model_stream)
-    assert compare_models(mini_model, read_model) is None
+# ----------------------------------
+# Definition of SBML files to test
+# ----------------------------------
+IOTrial = namedtuple('IOTrial',
+                     ['name', 'reference_file', 'test_file', 'read_function',
+                      'write_function', 'validation_function'])
+trials = [IOTrial('fbc2', 'mini.pickle', 'mini_fbc2.xml',
+                  read_sbml_model, write_sbml_model,
+                  validate_sbml_model),
+          IOTrial('fbc2Gz', 'mini.pickle', 'mini_fbc2.xml.gz',
+                  read_sbml_model, write_sbml_model, None),
+          IOTrial('fbc2Bz2', 'mini.pickle', 'mini_fbc2.xml.bz2',
+                  read_sbml_model, write_sbml_model, None),
+          IOTrial('fbc1', 'mini.pickle', 'mini_fbc1.xml',
+                  read_sbml_model, write_sbml_model, None),
+          IOTrial('cobra', None, 'mini_cobra.xml',
+                  read_sbml_model, write_sbml_model, None),
+          ]
+trial_names = [node.name for node in trials]
 
 
-# TODO: parametrize the arguments after pytest.fixture_request()
-# is approved
-@pytest.mark.skipif(libsbml is None, reason="libsbml unavailable.")
-def test_write_sbml_model(tmpdir, mini_fbc1_model, mini_cobra_model):
-    """Test the writing of a model to SBML v2."""
-    mini_fbc1_output_file = tmpdir.join("mini_fbc1.xml")
-    mini_cobra_output_file = tmpdir.join("mini_cobra.xml")
+@pytest.mark.parametrize("trial", trials)
+def test_validate(trial, data_directory):
+    """ Test validation function. """
+    if trial.validation_function is None:
+        pytest.skip('not implemented')
+    test_file = join(data_directory, trial.test_file)
+    trial.validation_function(test_file)
 
-    # convert to str object before passing the filename
-    io.write_legacy_sbml(mini_fbc1_model, str(mini_fbc1_output_file),
-                         use_fbc_package=True)
-    io.write_legacy_sbml(mini_cobra_model, str(mini_cobra_output_file),
-                         use_fbc_package=False)
 
-    assert mini_fbc1_output_file.check()
-    assert mini_cobra_output_file.check()
+class TestCobraIO:
+    """ Tests the read and write functions. """
+
+    @classmethod
+    def compare_models(cls, name, model1, model2):
+        assert len(model1.reactions) == len(model2.reactions)
+        assert len(model1.metabolites) == len(model2.metabolites)
+        assert model1.objective.direction == model2.objective.direction
+        for attr in ("id", "name", "lower_bound", "upper_bound",
+                     "objective_coefficient", "gene_reaction_rule"):
+            assert getattr(model1.reactions[0], attr) == getattr(
+                model2.reactions[0], attr)
+            assert getattr(model1.reactions[5], attr) == getattr(
+                model2.reactions[5], attr)
+            assert getattr(model1.reactions[-1], attr) == getattr(
+                model2.reactions[-1], attr)
+        for attr in ("id", "name", "compartment", "formula", "charge"):
+            assert getattr(model1.metabolites[0], attr) == getattr(
+                model2.metabolites[0], attr)
+            assert getattr(model1.metabolites[5], attr) == getattr(
+                model2.metabolites[5], attr)
+            assert getattr(model1.metabolites[-1], attr) == getattr(
+                model2.metabolites[-1], attr)
+        assert len(model1.reactions[0].metabolites) == len(
+            model2.reactions[0].metabolites)
+        assert len(model1.reactions[8].metabolites) == len(
+            model2.reactions[8].metabolites)
+        assert len(model1.reactions[-1].metabolites) == len(
+            model2.reactions[-1].metabolites)
+        assert len(model1.genes) == len(model2.genes)
+
+        # ensure they have the same solution max
+        solution1 = model1.optimize()
+        solution2 = model2.optimize()
+        assert abs(solution1.objective_value -
+                   solution2.objective_value) < 0.001
+        # ensure the references are correct
+        assert model2.metabolites[0]._model is model2
+        assert model2.reactions[0]._model is model2
+        assert model2.genes[0]._model is model2
+
+    @classmethod
+    def extra_comparisons(cls, name, model1, model2):
+        assert model1.compartments == model2.compartments
+
+        # FIXME: problems of duplicate annotations in test data
+        #  ('cas': ['56-65-5', '56-65-5'])
+        # assert dict(model1.metabolites[4].annotation) == dict(
+        #    model2.metabolites[4].annotation)
+        d1 = model1.reactions[4].annotation
+        d2 = model2.reactions[4].annotation
+        assert list(d1.keys()) == list(d2.keys())
+        for k in d1:
+            assert set(d1[k]) == set(d2[k])
+        assert dict(model1.reactions[4].annotation) == dict(
+            model2.reactions[4].annotation)
+        assert dict(model1.genes[5].annotation) == dict(
+            model2.genes[5].annotation)
+
+        for attr in ("id", "name"):
+            assert getattr(model1.genes[0], attr) == getattr(model2.genes[0],
+                                                             attr)
+            assert getattr(model1.genes[10], attr) == getattr(model2.genes[10],
+                                                              attr)
+            assert getattr(model1.genes[-1], attr) == getattr(model2.genes[-1],
+                                                              attr)
+
+    def test_read_1(self, io_trial):
+        name, reference_model, test_model, _ = io_trial
+        if name in ['fbc1']:
+            pytest.xfail('not supported')
+        if reference_model:
+            self.compare_models(name, reference_model, test_model)
+
+    def test_read_2(self, io_trial):
+        name, reference_model, test_model, _ = io_trial
+        if name in ['fbc1', 'mat', 'cobra', 'raven-mat']:
+            pytest.xfail('not supported')
+        if reference_model:
+            self.extra_comparisons(name, reference_model, test_model)
+
+    def test_write_1(self, io_trial):
+        name, _, test_model, reread_model = io_trial
+        if name in ['fbc1', 'raven-mat']:
+            pytest.xfail('not supported')
+        self.compare_models(name, test_model, reread_model)
+
+    def test_write_2(self, io_trial):
+        name, _, test_model, reread_model = io_trial
+        if name in ['fbc1', 'mat', 'cobra', 'raven-mat']:
+            pytest.xfail('not supported')
+        self.extra_comparisons(name, test_model, reread_model)
+
+
+@pytest.fixture(scope="module", params=trials, ids=trial_names)
+def io_trial(request, data_directory):
+    reference_model = None
+    if request.param.reference_file:
+        with open(join(data_directory, request.param.reference_file),
+                  "rb") as infile:
+            reference_model = load(infile)
+    test_model = request.param.read_function(join(data_directory,
+                                                  request.param.test_file))
+    test_output_filename = join(gettempdir(),
+                                split(request.param.test_file)[-1])
+    # test writing the model within a context with a non-empty stack
+    with test_model:
+        test_model.objective = test_model.objective
+        request.param.write_function(test_model, test_output_filename)
+    reread_model = request.param.read_function(test_output_filename)
+    unlink(test_output_filename)
+    return request.param.name, reference_model, test_model, reread_model
