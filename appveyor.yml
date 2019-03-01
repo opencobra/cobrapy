@@ -11,6 +11,9 @@ environment:
     PIP_DISABLE_PIP_VERSION_CHECK: "yes"
 
   matrix:
+    - PYTHON: "C:\\Python36-x64"
+      TOXENV: py36
+
     - PYTHON: "C:\\Miniconda-x64"
       CONDA: true
 
@@ -19,9 +22,6 @@ environment:
 
     - PYTHON: "C:\\Python27-x64"
       TOXENV: py27
-
-    - PYTHON: "C:\\Python36-x64"
-      TOXENV: py36
 
 matrix:
   fast_finish: true
