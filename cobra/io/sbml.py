@@ -9,16 +9,14 @@ SBML import and export using python-libsbml(-experimental).
 Parsing of fbc models was implemented as efficient as possible, whereas
 (discouraged) fallback solutions are not optimized for efficiency.
 
-TODO: fix incorrect boundary conditions
-
-TODO: handle notes and notes dictionary
-
-TODO: support compression on file handles
-TODO: support writing to file handles
-
-TODO: update annotation format (and support qualifiers)
 TODO: write groups information
 TODO: read groups information
+
+TODO: fix incorrect boundary conditions
+TODO: handle notes and notes dictionary
+TODO: support compression on file handles
+TODO: support writing to file handles
+TODO: update annotation format (and support qualifiers)
 TODO: write compartment annotations and notes
 TODO: better validation
 """
@@ -1002,36 +1000,33 @@ def _sbase_notes_dict(sbase, notes):
 # ----------------------
 """
 cobra annotations will be dictionaries of the form:
-
     object.annotation = {
         'provider' : [(qualifier, entity), ...]
     }
-    
-    A concrete example for a metabolite would look like the following
-
+A concrete example for a metabolite would look like the following
     metabolite.annotation = {
         'chebi': [(isVersionOf, "CHEBI:17234), (is, "CHEBI:4167),],
         'kegg.compound': [(is, "C00031")]
     }
-    
-    The providers are hereby MIRIAM registry keys for collections 
-    https://www.ebi.ac.uk/miriam/main/collections
-    The qualifiers are biomodel qualifiers
-    https://co.mbine.org/standards/qualifiers with allowed biological qualifiers:
-        'is'
-        'hasPart'
-        'isPartOf',
-        'isVersionOf'
-        'hasVersion',
-        'isHomologTo',
-        'isDescribedBy',
-        'isEncodedBy',
-        'encodes',
-        'occursIn',
-        'hasProperty',
-        'isPropertyOf',
-        'hasTaxon',
-        'unknown',
+The providers are hereby MIRIAM registry keys for collections
+https://www.ebi.ac.uk/miriam/main/collections
+The qualifiers are biomodel qualifiers
+https://co.mbine.org/standards/qualifiers
+with allowed biological qualifiers:
+    'is'
+    'hasPart'
+    'isPartOf',
+    'isVersionOf'
+    'hasVersion',
+    'isHomologTo',
+    'isDescribedBy',
+    'isEncodedBy',
+    'encodes',
+    'occursIn',
+    'hasProperty',
+    'isPropertyOf',
+    'hasTaxon',
+    'unknown',
 """
 
 # FIXME: currently only the terms, but not the qualifier are parsed
@@ -1064,12 +1059,13 @@ def _parse_annotations(sbase):
 
     # SBO term
     if sbase.isSetSBOTerm():
+        # FIXME: correct handling of annotations
         annotation["sbo"] = sbase.getSBOTermID()
 
     # RDF annotation
     cvterms = sbase.getCVTerms()
     if cvterms is None:
-        return
+        return annotation
 
     for cvterm in cvterms:  # type: libsbml.CVTerm
         for k in range(cvterm.getNumResources()):
@@ -1123,7 +1119,7 @@ def _sbase_annotations(sbase, annotation):
                 logging.warning("'SBO' provider is deprecated, "
                                 "use 'sbo' provider instead")
             _check(sbase.setSBOTerm(identifiers),
-                "Setting SBOTerm: {}".format(identifiers))
+                   "Setting SBOTerm: {}".format(identifiers))
         else:
             if isinstance(identifiers, string_types):
                 identifiers = (identifiers,)
