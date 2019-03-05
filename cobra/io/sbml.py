@@ -47,6 +47,8 @@ from cobra.core import Gene, Metabolite, Model, Reaction, Group
 from cobra.util.solver import set_objective, linear_reaction_coefficients
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 
+from sys import platform
+
 
 class CobraSBMLError(Exception):
     """ SBML error class. """
@@ -222,8 +224,12 @@ def _get_doc_from_filename(filename):
     libsbml.SBMLDocument
     """
     if isinstance(filename, string_types):
-        if os.path.exists(filename):
-            # path
+        if ("win" in platform) and (len(filename) < 260) \
+                and os.path.exists(filename):
+            # path (win)
+            doc = libsbml.readSBMLFromFile(filename)  # noqa: E501 type: libsbml.SBMLDocument
+        elif ("win" not in platform) and os.path.exists(filename):
+            # path other
             doc = libsbml.readSBMLFromFile(filename)  # noqa: E501 type: libsbml.SBMLDocument
         else:
             # string representation
