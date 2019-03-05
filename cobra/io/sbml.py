@@ -1120,10 +1120,6 @@ def _check(value, message):
 # -----------------------------------------------------------------------------
 # Notes
 # -----------------------------------------------------------------------------
-# def _parse_notes(sbase):
-#    return sbase.getNotesString()
-
-
 def _parse_notes_dict(sbase):
     """ Creates dictionary of COBRA notes.
 
@@ -1315,8 +1311,8 @@ def _sbase_annotations(sbase, annotation):
             qualifier = QUALIFIER_TYPES.get(qualifier_str, None)
             if qualifier is None:
                 qualifier = libsbml.BQB_IS
-                LOGGER.warning("Qualifier type is not supported on "
-                               "annotation: '{}'".format(qualifier_str))
+                LOGGER.error("Qualifier type is not supported on "
+                             "annotation: '{}'".format(qualifier_str))
 
             qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
             if qualifier_str.startswith("bqm_"):
@@ -1401,7 +1397,7 @@ def validate_sbml_model(filename,
 
     for k in range(doc.getNumErrors()):
         e = doc.getError(k)
-        msg = _error_string(e)
+        msg = _error_string(e, k=k)
         sev = e.getSeverity()
         if sev == libsbml.LIBSBML_SEV_FATAL:
             errors["SBML_FATAL"].append(msg)
@@ -1449,10 +1445,12 @@ def _error_string(error, k=None):
     if package == '':
         package = 'core'
 
-    error_str = 'E{}: {} ({}, L{}, {})  \n' \
+    error_str = '{}\n' \
+                'E{}: {} ({}, L{}, {})\n' \
                 '{}\n' \
                 '[{}] {}\n' \
-                '{}\n'.format(
+                '{}'.format(
+                    '-' * 60,
                     k, error.getCategoryAsString(), package, error.getLine(),
                     'code',
                     '-' * 60,
