@@ -814,52 +814,6 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             unit.setScale(u.scale)
             unit.setMultiplier(u.multiplier)
 
-    # Flux bounds
-    def _create_bound(model, reaction, bound_type):
-        """Creates bound in model for given reaction.
-
-        Adds the parameters for the bounds to the SBML model.
-
-        Parameters
-        ----------
-        model : libsbml.Model
-            SBML model instance
-        reaction : cobra.core.Reaction
-            Cobra reaction instance from which the bounds are read.
-        bound_type : {LOWER_BOUND, UPPER_BOUND}
-            Type of bound
-
-        Returns
-        -------
-        Id of bound parameter.
-        """
-        value = getattr(reaction, bound_type)
-        if value == LOWER_BOUND:
-            return LOWER_BOUND_ID
-        elif value == 0:
-            return ZERO_BOUND_ID
-        elif value == UPPER_BOUND:
-            return UPPER_BOUND_ID
-        else:
-            # new parameter
-            rid = reaction.id
-            if f_replace and F_REACTION_REV in f_replace:
-                rid = f_replace[F_REACTION_REV](rid)
-            pid = rid + "_" + bound_type
-            _create_parameter(model, pid=pid, value=value, sbo=SBO_FLUX_BOUND)
-            return pid
-
-    def _create_parameter(model, pid, value, sbo=None, constant=True):
-        """Create parameter in SBML model."""
-        p = model.createParameter()  # type: libsbml.Parameter
-        p.setId(pid)
-        p.setValue(value)
-        p.setConstant(constant)
-        if sbo:
-            p.setSBOTerm(sbo)
-        if units:
-            p.setUnits(flux_udef.getId())
-
     # minimum and maximum value from model
     if len(cobra_model.reactions) > 0:
         min_value = min(cobra_model.reactions.list_attr("lower_bound"))
@@ -963,8 +917,12 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
         # bounds
         r_fbc = r.getPlugin("fbc")  # type: libsbml.FbcReactionPlugin
-        r_fbc.setLowerFluxBound(_create_bound(model, reaction, "lower_bound"))
-        r_fbc.setUpperFluxBound(_create_bound(model, reaction, "upper_bound"))
+        r_fbc.setLowerFluxBound(_create_bound(model, reaction, "lower_bound",
+                                              f_replace=f_replace, units=units,
+                                              flux_udef=flux_udef))
+        r_fbc.setUpperFluxBound(_create_bound(model, reaction, "upper_bound",
+                                              f_replace=f_replace, units=units,
+                                              flux_udef=flux_udef))
 
         # GPR
         gpr = reaction.gene_reaction_rule
@@ -1023,6 +981,58 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
                     m.setName(member.name)
 
     return doc
+
+
+def _create_bound(model, reaction, bound_type, f_replace, units=None,
+                  flux_udef=None):
+    """Creates bound in model for given reaction.
+
+    Adds the parameters for the bounds to the SBML model.
+
+    Parameters
+    ----------
+    model : libsbml.Model
+        SBML model instance
+    reaction : cobra.core.Reaction
+        Cobra reaction instance from which the bounds are read.
+    bound_type : {LOWER_BOUND, UPPER_BOUND}
+        Type of bound
+    f_replace : dict of id replacement functions
+    units : flux units
+
+    Returns
+    -------
+    Id of bound parameter.
+    """
+    value = getattr(reaction, bound_type)
+    if value == LOWER_BOUND:
+        return LOWER_BOUND_ID
+    elif value == 0:
+        return ZERO_BOUND_ID
+    elif value == UPPER_BOUND:
+        return UPPER_BOUND_ID
+    else:
+        # new parameter
+        rid = reaction.id
+        if f_replace and F_REACTION_REV in f_replace:
+            rid = f_replace[F_REACTION_REV](rid)
+        pid = rid + "_" + bound_type
+        _create_parameter(model, pid=pid, value=value, sbo=SBO_FLUX_BOUND,
+                          units=units, flux_udef=flux_udef)
+        return pid
+
+
+def _create_parameter(model, pid, value, sbo=None, constant=True, units=None,
+                      flux_udef=None):
+    """Create parameter in SBML model."""
+    p = model.createParameter()  # type: libsbml.Parameter
+    p.setId(pid)
+    p.setValue(value)
+    p.setConstant(constant)
+    if sbo:
+        p.setSBOTerm(sbo)
+    if units:
+        p.setUnits(flux_udef.getId())
 
 
 def _check_required(sbase, value, attribute):
