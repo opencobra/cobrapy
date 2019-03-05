@@ -41,6 +41,7 @@ from collections import defaultdict, namedtuple
 from copy import deepcopy
 
 import libsbml
+import cobra
 from cobra.core import Gene, Metabolite, Model, Reaction, Group
 from cobra.util.solver import set_objective, linear_reaction_coefficients
 from cobra.manipulation.validate import check_metabolite_compartment_formula
@@ -58,8 +59,9 @@ SHORT_LONG_DIRECTION = {'min': 'minimize', 'max': 'maximize'}
 # ----------------------------------------------------------
 # Defaults for writing SBML
 # ----------------------------------------------------------
-LOWER_BOUND = -1000
-UPPER_BOUND = 1000
+config = cobra.Configuration()
+LOWER_BOUND = config.lower_bound
+UPPER_BOUND = config.upper_bound
 LOWER_BOUND_ID = "cobra_default_lb"
 UPPER_BOUND_ID = "cobra_default_ub"
 ZERO_BOUND_ID = "cobra_0_bound"
