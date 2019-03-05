@@ -102,16 +102,14 @@ class Model(Object):
 
             # if not hasattr(self, '_solver'):  # backwards compatibility
             # with older cobrapy pickles?
+
             interface = CONFIGURATION.solver
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(Zero)
             self._populate_solver(self.reactions, self.metabolites)
 
-            tolerances = CONFIGURATION.tolerances
-            solver_tolerances = self._solver.configuration.tolerances
-            solver_tolerances.feasibility = tolerances['feasibility']
-            solver_tolerances.optimality = tolerances['optimality']
-            solver_tolerances.integrality = tolerances['integrality']
+            self._tolerance = None
+            self.tolerance = CONFIGURATION.tolerance
 
     @property
     def solver(self):
@@ -155,6 +153,18 @@ class Model(Object):
         if self.problem == interface:
             return
         self._solver = interface.Model.clone(self._solver)
+
+    @property
+    def tolerance(self):
+        return self._tolerance
+
+    @tolerance.setter
+    def tolerance(self, value):
+        solver_config = self._solver.configuration
+        solver_config.tolerances.feasibility = value
+        solver_config.tolerances.optimality = value
+        solver_config.tolerances.integrality = value
+        self._tolerance = value
 
     @property
     def description(self):
