@@ -270,3 +270,14 @@ def test_groups(data_directory):
     finally:
         os.remove(temp_path)
         os.rmdir(temp_dir)
+
+
+def test_validate(data_directory):
+    """Test the validation code. """
+    sbml_path = join(data_directory, "mini_fbc2.xml")
+    with open(sbml_path, "r") as f_in:
+        model1, errors = validate_sbml_model(f_in,
+                                             check_modeling_practice=True)
+        assert model1
+        assert errors
+        assert len(errors["SBML_WARNING"]) == 23
