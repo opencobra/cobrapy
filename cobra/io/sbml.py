@@ -18,14 +18,14 @@ notes information.
 
 Annotations are read in the Object.annotation fields.
 
-Some open SBML issues depend on other cobrapy issues:
-FIXME: fix incorrect boundary conditions (depends on decision on how to handle
+Some SBML related issues are still open, please refer to the respective issue:
+- fix incorrect boundary conditions (depends on decision on how to handle
     boundary conditions; https://github.com/opencobra/cobrapy/issues/811)
-FIXME: update annotation format and support qualifiers (depends on decision
+- update annotation format and support qualifiers (depends on decision
     for new annotation format; https://github.com/opencobra/cobrapy/issues/684)
-FIXME: write compartment annotations and notes (depends on updated first-class
+- write compartment annotations and notes (depends on updated first-class
     compartments; see https://github.com/opencobra/cobrapy/issues/760)
-FIXME: support compression on file handles (depends on solution for
+- support compression on file handles (depends on solution for
     https://github.com/opencobra/cobrapy/issues/812)
 """
 
@@ -321,6 +321,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     cobra_model.annotation = _parse_annotations(model)
 
     # Compartments
+    # FIXME: update with new compartments
+    # (
     cobra_model.compartments = {c.getId(): c.getName()
                                 for c in model.getListOfCompartments()}
 
@@ -365,7 +367,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
         # Detect boundary metabolites - In case they have been mistakenly
         # added. They should not actually appear in a model
-        # FIXME: THIS IS INCORRECT BEHAVIOR
+        # FIXME: This is incorrect behavior
+        #  (https://github.com/opencobra/cobrapy/issues/811)
         if s.getBoundaryCondition() is True:
             boundary_ids.add(s.getId())
 
@@ -513,9 +516,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
         object_stoichiometry = {}
         for met_id in stoichiometry:
 
-            # FIXME: THIS IS INCORRECT BEHAVIOUR
-            # boundary species must be created but additional exchange
-            # reactions must be added to the model
+            # FIXME: This is incorrect behavior, boundary species must be
+            #   created and additional exchange reaction must be added.
+            #   (https://github.com/opencobra/cobrapy/issues/811)
             if met_id in boundary_ids:
                 LOGGER.warning("Boundary metabolite '%s' used in "
                                "reaction '%s'" % (met_id, reaction.getId()))
@@ -865,14 +868,15 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
                       value=0, sbo=SBO_DEFAULT_FLUX_BOUND)
 
     # Compartments
-    # FIXME: use first class compartment model
+    # FIXME: use first class compartment model (and write notes and annotations)
+    #     (https://github.com/opencobra/cobrapy/issues/811)
     for cid, name in iteritems(cobra_model.compartments):
         c = model.createCompartment()  # type: libsbml.Compartment
         c.setId(cid)
         c.setName(name)
         c.setConstant(True)
 
-        # FIXME: write annotations and notes (from first class model)
+        # FIXME: write annotations and notes
         # _sbase_notes(c, com.notes)
         # _sbase_annotations(c, com.annotation)
 
@@ -1169,6 +1173,9 @@ def _parse_annotations(sbase):
     Returns
     -------
     dict (annotation dictionary)
+
+    FIXME: annotation format must be updated
+        (https://github.com/opencobra/cobrapy/issues/684)
     """
     annotation = {}
 
@@ -1187,7 +1194,6 @@ def _parse_annotations(sbase):
             uri = cvterm.getResourceURI(k)
 
             # FIXME: read and store the qualifier
-
             tokens = uri.split('/')
             if len(tokens) != 5 or not tokens[2] == "identifiers.org":
                 LOGGER.warning("%s does not conform to "
@@ -1215,14 +1221,15 @@ def _sbase_annotations(sbase, annotation):
         SBML object to annotate
     annotation : cobra annotation structure
         cobra object with annotation information
+
+    FIXME: annotation format must be updated
+        (https://github.com/opencobra/cobrapy/issues/684)
     """
 
     if not annotation or len(annotation) == 0:
         return
 
     # standardize annotations
-    # FIXME: only here to make the current tests run (while there is still
-    #   old annotation format in tests)
     annotation_data = deepcopy(annotation)
     for key, v in annotation_data.items():
         if isinstance(v, string_types):
@@ -1307,7 +1314,7 @@ def validate_sbml_model(filename, use_libsbml=False, check_model=True,
     Returns
     -------
     model : :class:`~cobra.core.Model.Model` object
-        The cobra model if the file could be read succesfully or None
+        The cobra model if the file could be read successfully or None
         otherwise.
     errors : dict
         Warnings and errors grouped by their respective types.
