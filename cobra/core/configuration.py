@@ -12,7 +12,7 @@ from warnings import warn
 from six import string_types, viewvalues, with_metaclass
 
 from cobra.core.singleton import Singleton
-from cobra.exceptions import SolverNotFound
+from cobra.exceptions import BoundsError, SolverNotFound
 from cobra.util.solver import interface_to_str, solvers
 
 
@@ -111,7 +111,7 @@ class BaseConfiguration(object):
             self.lower_bound = bounds[0]
             self.upper_bound = bounds[1]
         else:
-            LOGGER.error("Lower bound can't be greater than upper bound.")
+            raise BoundsError("Lower bound can't be greater than upper bound.")
 
     @property
     def tolerances(self):
