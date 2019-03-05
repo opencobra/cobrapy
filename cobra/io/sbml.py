@@ -196,13 +196,18 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
         doc = _get_doc_from_filename(filename)
         return _sbml_to_model(doc, number=number,
                               f_replace=f_replace, **kwargs)
+    except IOError as e:
+        raise e
+
     except Exception:
-        print(traceback.print_exc())
+        LOGGER.error(traceback.print_exc())
         raise CobraSBMLError(
-            "Something went wrong reading the SBML model. You can get a "
-            "detailed report using the `cobra.io.sbml.validate_sbml_model` "
-            "function or using the online validator at "
-            "http://sbml.org/validator")
+            "Something went wrong reading the SBML model. Most likely the SBML "
+            "model is not valid. Please check that your model is valid using "
+            "the `cobra.io.sbml.validate_sbml_model` function or via the "
+            "online validator at http://sbml.org/validator ."
+            "If the model is valid and cannot be read please open an issue at "
+            "https://github.com/opencobra/cobrapy/issues .")
 
 
 def _get_doc_from_filename(filename):
@@ -222,13 +227,21 @@ def _get_doc_from_filename(filename):
             doc = libsbml.readSBMLFromFile(filename)  # noqa: E501 type: libsbml.SBMLDocument
         else:
             # string representation
+            if "<sbml" not in filename:
+                raise IOError("The file with 'filename' does not exist, "
+                              "or is not an SBML string. Provide the path to "
+                              "an existing SBML file or a valid SBML string "
+                              "representation: \n%s" % filename)
+
             doc = libsbml.readSBMLFromString(filename)  # noqa: E501 type: libsbml.SBMLDocument
 
     elif hasattr(filename, "read"):
         # file handle
         doc = libsbml.readSBMLFromString(filename.read())  # noqa: E501 type: libsbml.SBMLDocument
     else:
-        raise CobraSBMLError("Input format for 'filename' is not supported.")
+        raise CobraSBMLError("Input type '%s' for 'filename' is not supported. "
+                             "Provide a path, SBML str, "
+                             "or file handle." % type(filename))
 
     return doc
 
@@ -323,7 +336,6 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
     meta["info"] = info
     meta["packages"] = packages
     cobra_model._sbml = meta
-    # print("READ", cobra_model._sbml["info"])
 
     # notes and annotations
     cobra_model.notes = _parse_notes_dict(model)
@@ -770,6 +782,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
     doc = libsbml.SBMLDocument(sbmlns)  # type: libsbml.SBMLDocument
     doc.setPackageRequired("fbc", False)
     doc.setSBOTerm(SBO_FBA_FRAMEWORK)
+
     model = doc.createModel()  # type: libsbml.Model
     model_fbc = model.getPlugin("fbc")  # type: libsbml.FbcModelPlugin
     model_fbc.setStrict(True)
@@ -781,7 +794,6 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
     # Meta information (ModelHistory)
     if hasattr(cobra_model, "_sbml"):
-        # print("WRITE", cobra_model._sbml["info"])
         meta = cobra_model._sbml
         history = libsbml.ModelHistory()  # type: libsbml.ModelHistory
         if "created" in meta:
@@ -804,8 +816,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
     # Units
     if units:
-        # type: libsbml.UnitDefinition
-        flux_udef = model.createUnitDefinition()
+        flux_udef = model.createUnitDefinition()  # type: libsbml.UnitDefinition
         flux_udef.setId(UNITS_FLUX[0])
         for u in UNITS_FLUX[1]:
             unit = flux_udef.createUnit()  # type: libsbml.Unit
@@ -1061,9 +1072,9 @@ def _check_required(sbase, value, attribute):
 
 def _check(value, message):
     """
-    Checks the libsbml return value and prints message if something happened.
+    Checks the libsbml return value and logs error messages if something happened.
 
-    If 'value' is None, prints an error message constructed using
+    If 'value' is None, logs an error message constructed using
       'message' and then exits with status code 1. If 'value' is an integer,
       it assumes it is a libSBML return status code. If the code value is
       LIBSBML_OPERATION_SUCCESS, returns without further action; if it is not,
@@ -1151,7 +1162,6 @@ https://www.ebi.ac.uk/miriam/main/collections
 The qualifiers are biomodel qualifiers
 https://co.mbine.org/standards/qualifiers
 """
-
 URL_IDENTIFIERS_PATTERN = r"^http[s]{0,1}://identifiers.org/(.+)/(.+)"
 URL_IDENTIFIERS_PREFIX = r"https://identifiers.org"
 QUALIFIER_TYPES = {
