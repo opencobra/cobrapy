@@ -9,14 +9,24 @@ SBML import and export using python-libsbml(-experimental).
 Parsing of fbc models was implemented as efficient as possible, whereas
 (discouraged) fallback solutions are not optimized for efficiency.
 
-FIXME: support writing to file handles
-FIXME: support compression on file handles
-TODO: fix incorrect boundary conditions
-TODO: handle notes and notes dictionary
-TODO: update annotation format (and support qualifiers)
-TODO: write compartment annotations and notes
-TODO: better validation
+Notes are only supported in a minimal way relevant for constraint-based
+models. I.e., structured information from notes in the form
+   <p>key: value</p>
+is read into the Object.notes dictionary when reading SBML files.
+On writing the Object.notes dictionary is serialized to the SBML
+notes information.
 
+Annotations are read in the Object.annotation fields.
+
+Some open SBML issues depend on other cobrapy issues:
+FIXME: fix incorrect boundary conditions (depends on decision on how to handle
+    boundary conditions; https://github.com/opencobra/cobrapy/issues/811)
+FIXME: update annotation format and support qualifiers (depends on decision
+    for new annotation format; https://github.com/opencobra/cobrapy/issues/684)
+FIXME: write compartment annotations and notes (depends on updated first-class
+    compartments; see https://github.com/opencobra/cobrapy/issues/760)
+FIXME: support compression on file handles (depends on solution for
+    https://github.com/opencobra/cobrapy/issues/812)
 """
 
 from __future__ import absolute_import
@@ -713,7 +723,15 @@ def write_sbml_model(cobra_model, filename, f_replace=F_REPLACE, **kwargs):
     f_replace: dict of replacement functions for id replacement
     """
     doc = _model_to_sbml(cobra_model, f_replace=f_replace, **kwargs)
-    libsbml.writeSBMLToFile(doc, filename)
+
+    if isinstance(filename, string_types):
+        # write to path
+        libsbml.writeSBMLToFile(doc, filename)
+
+    elif hasattr(filename, "write"):
+        # write to file handle
+        sbml_str = libsbml.writeSBMLToString(doc)
+        filename.write(sbml_str)
 
 
 def _model_to_sbml(cobra_model, f_replace=None, units=True):
