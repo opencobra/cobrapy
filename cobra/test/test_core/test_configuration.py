@@ -4,7 +4,7 @@
 
 from __future__ import absolute_import
 
-from cobra.core import Configuration
+from cobra.core import Configuration, Model
 from cobra.util.solver import interface_to_str
 
 
@@ -34,29 +34,26 @@ def test_solver():
     config.solver = "glpk"
 
 
-def test_default_tolerances():
-    """Verify the default solver tolerances."""
+def test_default_tolerance(model):
+    """Verify the default solver tolerance."""
     config = Configuration()
     config.solver = "glpk"
-    assert config.tolerances["feasibility"] == 1e-07
-    assert config.tolerances["optimality"] == 1e-07
-    assert config.tolerances["integrality"] == 1e-05
+    assert config.tolerance == 1e-09
+    # Test the consistency between cobra.core.Configuration.tolerance and
+    # cobra.core.Model.tolerance
+    assert config.tolerance == model.tolerance
 
 
-def test_tolerances():
-    """Test assignment of solver tolerances."""
+def test_toy_model_tolerance_with_different_default():
+    """Verify that different default tolerance is respected by Model."""
     config = Configuration()
-    config.tolerances = {
-        "feasibility": 1e-06,
-        "optimality": 1e-06,
-        "integrality": 1e-06,
-    }
-    assert config.tolerances["feasibility"] == 1e-06
-    assert config.tolerances["optimality"] == 1e-06
-    assert config.tolerances["integrality"] == 1e-06
-    # Restore default tolerances
-    config.tolerances = {
-        "feasibility": 1e-07,
-        "optimality": 1e-07,
-        "integrality": 1e-05,
-    }
+    config.tolerance = 1e-05
+
+    toy_model = Model(name="toy model")
+    assert toy_model.tolerance == 1e-05
+
+
+def test_tolerance_assignment(model):
+    """Test assignment of solver tolerance."""
+    model.tolerance = 1e-06
+    assert model.tolerance == 1e-06
