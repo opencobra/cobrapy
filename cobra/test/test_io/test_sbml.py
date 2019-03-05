@@ -6,6 +6,7 @@ Testing SBML functionality based on libsbml.
 from __future__ import absolute_import
 
 
+import os
 from os import unlink
 from os.path import join, split
 from pickle import load
@@ -14,10 +15,11 @@ from collections import namedtuple
 from functools import partial
 from warnings import warn
 from six import iteritems
-
+import tempfile
 
 import pytest
 from cobra.io import read_sbml_model, write_sbml_model, validate_sbml_model
+from cobra import Model
 
 try:
     import libsbml
@@ -171,3 +173,73 @@ def io_trial(request, data_directory):
     reread_model = request.param.read_function(test_output_filename)
     unlink(test_output_filename)
     return request.param.name, reference_model, test_model, reread_model
+
+
+def test_filehandle(data_directory):
+    """Test reading and writing to file handle."""
+    with open(join(data_directory, "mini_fbc2.xml"), "r") as f_in:
+        model1 = read_sbml_model(f_in)
+        assert model1 is not None
+
+    try:
+        temp_dir = tempfile.mkdtemp()
+        sbml_path = join(temp_dir, "test.xml")
+        with open(sbml_path, "w") as f_out:
+            write_sbml_model(model1, f_out)
+
+        with open(sbml_path, "r") as f_in:
+            model2 = read_sbml_model(f_in)
+
+        TestCobraIO.compare_models(name="filehandle",
+                                   model1=model1, model2=model2)
+
+    finally:
+        os.remove(sbml_path)
+        os.rmdir(temp_dir)
+
+
+def test_from_sbml_string(data_directory):
+    """Test reading from SBML string."""
+    sbml_path = join(data_directory, "mini_fbc2.xml")
+    with open(sbml_path, "r") as f_in:
+        sbml_str = f_in.read()
+        model1 = read_sbml_model(sbml_str)
+
+    model2 = read_sbml_model(sbml_path)
+    TestCobraIO.compare_models(name="read from string",
+                               model1=model1, model2=model2)
+
+
+def test_model_history():
+    """Testing reading and writing of ModelHistory."""
+    model = Model("test")
+    model._sbml = {
+        "creators": [{
+            "familyName": "Mustermann",
+            "givenName": "Max",
+            "organisation": "Muster University",
+            "email": "muster@university.com",
+        }]
+    }
+    try:
+        temp_dir = tempfile.mkdtemp()
+        sbml_path = join(temp_dir, "test.xml")
+        with open(sbml_path, "w") as f_out:
+            write_sbml_model(model, f_out)
+
+        # with open(sbml_path, "r") as f_in:
+        #    print(f_in.read())
+
+        with open(sbml_path, "r") as f_in:
+            model2 = read_sbml_model(f_in)
+
+        assert "creators" in model2._sbml
+        assert len(model2._sbml["creators"]) is 1
+        c = model2._sbml["creators"][0]
+        assert c["familyName"] == "Mustermann"
+        assert c["givenName"] == "Max"
+        assert c["organisation"] == "Muster University"
+        assert c["email"] == "muster@university.com"
+    finally:
+        os.remove(sbml_path)
+        os.rmdir(temp_dir)
