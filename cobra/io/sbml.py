@@ -39,6 +39,7 @@ from warnings import catch_warnings, simplefilter
 from six import string_types, iteritems
 from collections import defaultdict, namedtuple
 from copy import deepcopy
+import datetime
 
 import libsbml
 import cobra
@@ -792,30 +793,45 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
     if cobra_model.id is not None:
         model.setId(cobra_model.id)
+        model.setMetaId("meta_" + cobra_model.id)
+    else:
+        model.setMetaId("meta_model")
     if cobra_model.name is not None:
         model.setName(cobra_model.name)
 
     # Meta information (ModelHistory)
     if hasattr(cobra_model, "_sbml"):
         meta = cobra_model._sbml
-        history = libsbml.ModelHistory()  # type: libsbml.ModelHistory
-        if "created" in meta:
-            history.setCreatedDate(meta["created"])
         if "annotation" in meta:
             _sbase_annotations(doc, meta["annotation"])
+        if "notes" in meta:
             _sbase_notes_dict(doc, meta["notes"])
+
+        history = libsbml.ModelHistory()  # type: libsbml.ModelHistory
+        if "created" in meta and meta["created"]:
+            history.setCreatedDate(meta["created"])
+        else:
+            time = datetime.datetime.now()
+            timestr = time.strftime('%Y-%m-%dT%H:%M:%S')
+            date = libsbml.Date(timestr)
+            _check(history.setCreatedDate(date), 'set creation date')
+            _check(history.setModifiedDate(date), 'set modified date')
+
         if "creators" in meta:
-            for creator in meta["creators"]:
-                compartment = libsbml.ModelCreator()  # noqa: E501 type: libsbml.ModelCreator
-                if creator.get("familyName", None):
-                    compartment.setFamilyName(creator["familyName"])
-                if creator.get("givenName", None):
-                    compartment.setFamilyName(creator["givenName"])
-                if creator.get("organisation", None):
-                    compartment.setFamilyName(creator["organisation"])
-                if creator.get("email", None):
-                    compartment.setFamilyName(creator["email"])
-                history.addCreator(compartment)
+            for cobra_creator in meta["creators"]:
+                creator = libsbml.ModelCreator()  # noqa: E501 type: libsbml.ModelCreator
+                if cobra_creator.get("familyName", None):
+                    creator.setFamilyName(cobra_creator["familyName"])
+                if cobra_creator.get("givenName", None):
+                    creator.setGivenName(cobra_creator["givenName"])
+                if cobra_creator.get("organisation", None):
+                    creator.setOrganisation(cobra_creator["organisation"])
+                if cobra_creator.get("email", None):
+                    creator.setEmail(cobra_creator["email"])
+
+                _check(history.addCreator(creator),
+                       "adding creator to ModelHistory.")
+        _check(model.setModelHistory(history), 'set model history')
 
     # Units
     if units:
