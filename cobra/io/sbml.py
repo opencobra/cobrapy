@@ -57,9 +57,7 @@ LOGGER = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Defaults and constants for writing SBML
 # -----------------------------------------------------------------------------
-config = cobra.Configuration()
-LOWER_BOUND = config.lower_bound
-UPPER_BOUND = config.upper_bound
+config = cobra.Configuration()  # for default bounds
 LOWER_BOUND_ID = "cobra_default_lb"
 UPPER_BOUND_ID = "cobra_default_ub"
 ZERO_BOUND_ID = "cobra_0_bound"
@@ -835,8 +833,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         min_value = min(cobra_model.reactions.list_attr("lower_bound"))
         max_value = max(cobra_model.reactions.list_attr("upper_bound"))
     else:
-        min_value = LOWER_BOUND
-        max_value = UPPER_BOUND
+        min_value = config.lower_bound
+        max_value = config.upper_bound
 
     _create_parameter(model, pid=LOWER_BOUND_ID,
                       value=min_value, sbo=SBO_DEFAULT_FLUX_BOUND)
@@ -1023,11 +1021,11 @@ def _create_bound(model, reaction, bound_type, f_replace, units=None,
     Id of bound parameter.
     """
     value = getattr(reaction, bound_type)
-    if value == LOWER_BOUND:
+    if value == config.lower_bound:
         return LOWER_BOUND_ID
     elif value == 0:
         return ZERO_BOUND_ID
-    elif value == UPPER_BOUND:
+    elif value == config.upper_bound:
         return UPPER_BOUND_ID
     else:
         # new parameter
