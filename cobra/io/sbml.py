@@ -781,10 +781,10 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
     if f_replace is None:
         f_replace = {}
 
-    sbmlns = libsbml.SBMLNamespaces(3, 1)  # SBML L3V1
-    sbmlns.addPackageNamespace("fbc", 2)  # fbc-v2
+    sbml_ns = libsbml.SBMLNamespaces(3, 1)  # SBML L3V1
+    sbml_ns.addPackageNamespace("fbc", 2)  # fbc-v2
 
-    doc = libsbml.SBMLDocument(sbmlns)  # noqa: E501 type: libsbml.SBMLDocument
+    doc = libsbml.SBMLDocument(sbml_ns)  # noqa: E501 type: libsbml.SBMLDocument
     doc.setPackageRequired("fbc", False)
     doc.setSBOTerm(SBO_FBA_FRAMEWORK)
 
