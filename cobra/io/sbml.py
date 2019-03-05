@@ -53,12 +53,10 @@ class CobraSBMLError(Exception):
 
 
 LOGGER = logging.getLogger(__name__)
-LONG_SHORT_DIRECTION = {'maximize': 'max', 'minimize': 'min'}
-SHORT_LONG_DIRECTION = {'min': 'minimize', 'max': 'maximize'}
 
-# ----------------------------------------------------------
-# Defaults for writing SBML
-# ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# Defaults and constants for writing SBML
+# -----------------------------------------------------------------------------
 config = cobra.Configuration()
 LOWER_BOUND = config.lower_bound
 UPPER_BOUND = config.upper_bound
@@ -70,6 +68,9 @@ SBO_FBA_FRAMEWORK = "SBO:0000624"
 SBO_DEFAULT_FLUX_BOUND = "SBO:0000626"
 SBO_FLUX_BOUND = "SBO:0000625"
 
+LONG_SHORT_DIRECTION = {'maximize': 'max', 'minimize': 'min'}
+SHORT_LONG_DIRECTION = {'min': 'minimize', 'max': 'maximize'}
+
 Unit = namedtuple('Unit', ['kind', 'scale', 'multiplier', 'exponent'])
 UNITS_FLUX = ("mmol_per_gDW_per_hr",
               [
@@ -80,48 +81,55 @@ UNITS_FLUX = ("mmol_per_gDW_per_hr",
                   Unit(kind=libsbml.UNIT_KIND_SECOND, scale=0, multiplier=3600,
                        exponent=-1)
               ])
-# ----------------------------------------------------------
+
+# -----------------------------------------------------------------------------
 # Functions for id replacements (import/export)
-# ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+SBML_DOT = "__SBML_DOT__"
+
+
+def _clip(sid, prefix):
+    """Clips a prefix from the beginning of a string if it exists."""
+    return sid[len(prefix):] if sid.startswith(prefix) else sid
+
+
+def _f_gene(sid, prefix="G_"):
+    """Clips gene prefix from id."""
+    sid = sid.replace(SBML_DOT, ".")
+    return _clip(sid, prefix)
+
+
+def _f_gene_rev(sid, prefix="G_"):
+    """Adds gene prefix to id."""
+    return prefix + sid.replace(".", SBML_DOT)
+
+
+def _f_specie(sid, prefix="M_"):
+    """Clips specie/metabolite prefix from id."""
+    return _clip(sid, prefix)
+
+
+def _f_specie_rev(sid, prefix="M_"):
+    """Adds specie/metabolite prefix to id."""
+    return prefix + sid
+
+
+def _f_reaction(sid, prefix="R_"):
+    """Clips reaction prefix from id."""
+    return _clip(sid, prefix)
+
+
+def _f_reaction_rev(sid, prefix="R_"):
+    """Adds reaction prefix to id."""
+    return prefix + sid
+
+
 F_GENE = "F_GENE"
 F_GENE_REV = "F_GENE_REV"
 F_SPECIE = "F_SPECIE"
 F_SPECIE_REV = "F_SPECIE_REV"
 F_REACTION = "F_REACTION"
 F_REACTION_REV = "F_REACTION_REV"
-
-SBML_DOT = "__SBML_DOT__"
-
-
-def _clip(s, prefix):
-    """Clips a prefix from the beginning of a string if it exists."""
-    return s[len(prefix):] if s.startswith(prefix) else s
-
-
-def _f_gene(s, prefix="G_"):
-    s = s.replace(SBML_DOT, ".")
-    return _clip(s, prefix)
-
-
-def _f_gene_rev(s, prefix="G_"):
-    return prefix + s.replace(".", SBML_DOT)
-
-
-def _f_specie(s, prefix="M_"):
-    return _clip(s, prefix)
-
-
-def _f_specie_rev(s, prefix="M_"):
-    return prefix + s
-
-
-def _f_reaction(s, prefix="R_"):
-    return _clip(s, prefix)
-
-
-def _f_reaction_rev(s, prefix="R_"):
-    return prefix + s
-
 
 F_REPLACE = {
     F_GENE: _f_gene,
@@ -208,17 +216,16 @@ def _get_doc_from_filename(filename):
     -------
     libsbml.SBMLDocument
     """
-    print(filename)
     if isinstance(filename, string_types):
         if os.path.exists(filename):
-            # SBML as file
-            doc = libsbml.readSBMLFromFile(
-                filename)  # type: libsbml.SBMLDocument
+            # path
+            doc = libsbml.readSBMLFromFile(filename)  # noqa: E501 type: libsbml.SBMLDocument
         else:
-            # SBML as string representation
+            # string representation
             doc = libsbml.readSBMLFromString(filename)  # noqa: E501 type: libsbml.SBMLDocument
+
     elif hasattr(filename, "read"):
-        # File handle
+        # file handle
         doc = libsbml.readSBMLFromString(filename.read())  # noqa: E501 type: libsbml.SBMLDocument
     else:
         raise CobraSBMLError("Input format for 'filename' is not supported.")
@@ -324,7 +331,6 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
 
     # Compartments
     # FIXME: update with new compartments
-    # (
     cobra_model.compartments = {c.getId(): c.getName()
                                 for c in model.getListOfCompartments()}
 
