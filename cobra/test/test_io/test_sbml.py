@@ -243,3 +243,30 @@ def test_model_history():
     finally:
         os.remove(sbml_path)
         os.rmdir(temp_dir)
+
+
+def test_groups(data_directory):
+    """Testing reading and writing of groups"""
+    sbml_path = join(data_directory, "e_coli_core.xml")
+    model = read_sbml_model(sbml_path)
+    assert model.groups is not None
+    assert len(model.groups) == 10
+    g1 = model.groups[0]
+    assert len(g1.members) == 6
+
+    try:
+        temp_dir = tempfile.mkdtemp()
+        temp_path = join(temp_dir, "test.xml")
+        with open(temp_path, "w") as f_out:
+            write_sbml_model(model, f_out)
+
+        with open(temp_path, "r") as f_in:
+            model2 = read_sbml_model(f_in)
+
+            assert model2.groups is not None
+            assert len(model2.groups) == 10
+            g1 = model2.groups[0]
+            assert len(g1.members) == 6
+    finally:
+        os.remove(temp_path)
+        os.rmdir(temp_dir)
