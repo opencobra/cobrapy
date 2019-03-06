@@ -19,8 +19,6 @@ notes information.
 Annotations are read in the Object.annotation fields.
 
 Some SBML related issues are still open, please refer to the respective issue:
-- fix incorrect boundary conditions (depends on decision on how to handle
-    boundary conditions; https://github.com/opencobra/cobrapy/issues/811)
 - update annotation format and support qualifiers (depends on decision
     for new annotation format; https://github.com/opencobra/cobrapy/issues/684)
 - write compartment annotations and notes (depends on updated first-class
@@ -65,9 +63,14 @@ LOWER_BOUND_ID = "cobra_default_lb"
 UPPER_BOUND_ID = "cobra_default_ub"
 ZERO_BOUND_ID = "cobra_0_bound"
 
+BOUND_MINUS_INF = "minus_inf"
+BOUND_PLUS_INF = "plus_inf"
+
+
 SBO_FBA_FRAMEWORK = "SBO:0000624"
 SBO_DEFAULT_FLUX_BOUND = "SBO:0000626"
 SBO_FLUX_BOUND = "SBO:0000625"
+SBO_EXCHANGE_REACTION = "SBO:0000627"
 
 LONG_SHORT_DIRECTION = {'maximize': 'max', 'minimize': 'min'}
 SHORT_LONG_DIRECTION = {'min': 'minimize', 'max': 'maximize'}
@@ -353,8 +356,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                                 for c in model.getListOfCompartments()}
 
     # Species
-    boundary_ids = set()
     metabolites = []
+    boundary_metabolites = []
     for specie in model.getListOfSpecies():  # type: libsbml.Species
         sid = _check_required(specie, specie.getId(), "id")
         if f_replace and F_SPECIE in f_replace:
@@ -393,16 +396,31 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                                "instead: %s", specie)
                 met.formula = met.notes['FORMULA']
 
-        # Detect boundary metabolites - In case they have been mistakenly
-        # added. They should not actually appear in a model
-        # FIXME: This is incorrect behavior
-        #  (https://github.com/opencobra/cobrapy/issues/811)
+        # Detect boundary metabolites
         if specie.getBoundaryCondition() is True:
-            boundary_ids.add(specie.getId())
+            boundary_metabolites.append(met)
 
         metabolites.append(met)
 
     cobra_model.add_metabolites(metabolites)
+
+    # Add exchange reactions for boundary metabolites
+    ex_reactions = []
+    for met in boundary_metabolites:
+        ex_rid = "EX_{}".format(met.id)
+        ex_reaction = Reaction(ex_rid)
+        ex_reaction.name = ex_rid
+        ex_reaction.annotation = {
+            'sbo': SBO_EXCHANGE_REACTION
+        }
+        ex_reaction.lower_bound = -float("Inf")
+        ex_reaction.upper_bound = float("Inf")
+        LOGGER.warning("Adding exchange reaction %s for boundary metabolite: "
+                       "%s" % (ex_reaction.id, met.id))
+        # species is reactant
+        ex_reaction.add_metabolites({met: -1})
+        ex_reactions.append(ex_reaction)
+    cobra_model.add_reactions(ex_reactions)
 
     # Genes
     if model_fbc:
@@ -544,18 +562,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 _check_required(sref, sref.getStoichiometry(),
                                 "stoichiometry"))
 
-        # needs to have keys of metabolite objects, not ids
+        # convert to metabolite objects
         object_stoichiometry = {}
         for met_id in stoichiometry:
-
-            # FIXME: This is incorrect behavior, boundary species must be
-            #   created and additional exchange reaction must be added.
-            #   (https://github.com/opencobra/cobrapy/issues/811)
-            if met_id in boundary_ids:
-                LOGGER.warning("Boundary metabolite '%s' used in reaction '%s' "
-                               "is ignored" % (met_id, cobra_reaction.getId()))
-                continue
-
             metabolite = cobra_model.metabolites.get_by_id(met_id)
             object_stoichiometry[metabolite] = stoichiometry[met_id]
         cobra_reaction.add_metabolites(object_stoichiometry)
@@ -864,6 +873,10 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
                       value=max_value, sbo=SBO_DEFAULT_FLUX_BOUND)
     _create_parameter(model, pid=ZERO_BOUND_ID,
                       value=0, sbo=SBO_DEFAULT_FLUX_BOUND)
+    _create_parameter(model, pid=BOUND_MINUS_INF,
+                      value=-float("Inf"), sbo=SBO_FLUX_BOUND)
+    _create_parameter(model, pid=BOUND_PLUS_INF,
+                      value=float("Inf"), sbo=SBO_FLUX_BOUND)
 
     # Compartments
     # FIXME: use first class compartment model (and write notes and annotations)
@@ -885,8 +898,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         if f_replace and F_SPECIE_REV in f_replace:
             mid = f_replace[F_SPECIE_REV](mid)
         specie.setId(mid)
-        specie.setConstant(True)
-        specie.setBoundaryCondition(True)
+        specie.setConstant(False)
+        specie.setBoundaryCondition(False)
         specie.setHasOnlySubstanceUnits(False)
         specie.setName(metabolite.name)
         specie.setCompartment(metabolite.compartment)
@@ -1049,6 +1062,10 @@ def _create_bound(model, reaction, bound_type, f_replace, units=None,
         return ZERO_BOUND_ID
     elif value == config.upper_bound:
         return UPPER_BOUND_ID
+    elif value == -float("Inf"):
+        return BOUND_MINUS_INF
+    elif value == float("Inf"):
+        return BOUND_PLUS_INF
     else:
         # new parameter
         rid = reaction.id

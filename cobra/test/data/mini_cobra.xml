@@ -176,21 +176,21 @@
           </html>
         </notes>
       </species>
-      <species id="M_glc__D_e_boundary" name="D-Glucose" compartment="e" boundaryCondition="true" charge="0">
+      <species id="M_glc__D_e_boundary" name="D-Glucose" compartment="e" boundaryCondition="false" charge="0">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>FORMULA: C6H12O6</p>
           </html>
         </notes>
       </species>
-      <species id="M_h_e_boundary" name="H+" compartment="e" boundaryCondition="true" charge="1">
+      <species id="M_h_e_boundary" name="H+" compartment="e" boundaryCondition="false" charge="1">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>FORMULA: H</p>
           </html>
         </notes>
       </species>
-      <species id="M_lac__D_e_boundary" name="D-Lactate" compartment="e" boundaryCondition="true" charge="-1">
+      <species id="M_lac__D_e_boundary" name="D-Lactate" compartment="e" boundaryCondition="false" charge="-1">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>FORMULA: C3H5O3</p>

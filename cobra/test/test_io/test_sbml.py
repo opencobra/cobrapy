@@ -146,6 +146,7 @@ class TestCobraIO:
         name, _, test_model, reread_model = io_trial
         if name in ['fbc1', 'raven-mat']:
             pytest.xfail('not supported')
+
         self.compare_models(name, test_model, reread_model)
 
     def test_write_2(self, io_trial):
@@ -281,3 +282,51 @@ def test_validate(data_directory):
         assert model1
         assert errors
         assert len(errors["SBML_WARNING"]) == 23
+
+
+def test_infinity_bounds(data_directory):
+    """Test infinity bound example. """
+    sbml_path = join(data_directory, "fbc_ex1.xml")
+    model = read_sbml_model(sbml_path)
+
+    # check that simulation works
+    solution = model.optimize()
+
+    # check that values are set
+    r = model.reactions.get_by_id("EX_X")
+    assert r.lower_bound == -float("Inf")
+    assert r.upper_bound == float("Inf")
+
+    try:
+        temp_dir = tempfile.mkdtemp()
+        temp_path = join(temp_dir, "test.xml")
+        with open(temp_path, "w") as f_out:
+            write_sbml_model(model, f_out)
+
+        with open(temp_path, "r") as f_in:
+            model2 = read_sbml_model(f_in)
+            r = model2.reactions.get_by_id("EX_X")
+            assert r.lower_bound == -float("Inf")
+            assert r.upper_bound == float("Inf")
+
+    finally:
+        os.remove(temp_path)
+        os.rmdir(temp_dir)
+
+
+def test_boundary_conditions(data_directory):
+    """Test infinity bound example. """
+    sbml_path1 = join(data_directory, "fbc_ex1.xml")
+    model1 = read_sbml_model(sbml_path1)
+    sol1 = model1.optimize()
+
+    # model with species boundaryCondition==True
+    sbml_path2 = join(data_directory, "fbc_ex2.xml")
+    model2 = read_sbml_model(sbml_path2)
+    sol2 = model2.optimize()
+
+    r = model2.reactions.get_by_id("EX_X")
+    assert r.lower_bound == -float("Inf")
+    assert r.upper_bound == float("Inf")
+
+    assert sol1.objective_value == sol2.objective_value
