@@ -32,12 +32,6 @@ class SolverNotFound(Exception):
     pass
 
 
-class BoundsError(Exception):
-    """A simple Exception when there is a bound setting error."""
-
-    pass
-
-
 OPTLANG_TO_EXCEPTIONS_DICT = dict((
     (optlang.interface.INFEASIBLE, Infeasible),
     (optlang.interface.UNBOUNDED, Unbounded),

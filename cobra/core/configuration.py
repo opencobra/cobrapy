@@ -12,7 +12,7 @@ from warnings import warn
 from six import string_types, with_metaclass
 
 from cobra.core.singleton import Singleton
-from cobra.exceptions import BoundsError, SolverNotFound
+from cobra.exceptions import SolverNotFound
 from cobra.util.solver import interface_to_str, solvers
 
 
@@ -100,11 +100,9 @@ class BaseConfiguration(object):
     @bounds.setter
     def bounds(self, bounds):
         # TODO: We should consider allowing `None` for free bounds.
-        if bounds[0] <= bounds[1]:
-            self.lower_bound = bounds[0]
-            self.upper_bound = bounds[1]
-        else:
-            raise BoundsError("Lower bound can't be greater than upper bound.")
+        assert bounds[0] <= bounds[1]
+        self.lower_bound = bounds[0]
+        self.upper_bound = bounds[1]
 
     def __repr__(self):
         return """
