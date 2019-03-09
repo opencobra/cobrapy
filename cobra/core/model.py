@@ -160,22 +160,22 @@ class Model(Object):
 
     @tolerance.setter
     def tolerance(self, value):
-        solver_config = self._solver.configuration
+        solver_tolerances = self._solver.configuration.tolerances
 
         try:
-            solver_config.tolerances.feasibility = value
+            solver_tolerances.feasibility = value
         except AttributeError:
             LOGGER.info("The current solver doesn't allow setting"
                         "feasibility tolerance.")
 
         try:
-            solver_config.tolerances.optimality = value
+            solver_tolerances.optimality = value
         except AttributeError:
             LOGGER.info("The current solver doesn't allow setting"
                         "optimality tolerance.")
 
         try:
-            solver_config.tolerances.integrality = value
+            solver_tolerances.integrality = value
         except AttributeError:
             LOGGER.info("The current solver doesn't allow setting"
                         "integrality tolerance.")
