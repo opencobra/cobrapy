@@ -92,7 +92,7 @@ def geometric_fba(model, epsilon=1E-06, max_tries=200):
                      count, delta, sol.status)
 
         # Following iterations that minimize the distance below threshold.
-        while delta > epsilon and count <= max_tries:
+        while delta > epsilon and count < max_tries:
             for rxn_id, var, u_c, l_c in updating_vars_cons:
                 var.ub = mean_flux[rxn_id]
                 u_c.ub = mean_flux[rxn_id]
