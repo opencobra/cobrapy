@@ -5,17 +5,12 @@ Testing SBML functionality based on libsbml.
 
 from __future__ import absolute_import
 
-
-import os
 from os import unlink
 from os.path import join, split
 from pickle import load
 from tempfile import gettempdir
 from collections import namedtuple
-from functools import partial
-from warnings import warn
-from six import iteritems
-import tempfile
+
 
 import pytest
 from cobra.io import read_sbml_model, write_sbml_model, validate_sbml_model
@@ -176,27 +171,21 @@ def io_trial(request, data_directory):
     return request.param.name, reference_model, test_model, reread_model
 
 
-def test_filehandle(data_directory):
+def test_filehandle(data_directory, tmp_path):
     """Test reading and writing to file handle."""
     with open(join(data_directory, "mini_fbc2.xml"), "r") as f_in:
         model1 = read_sbml_model(f_in)
         assert model1 is not None
 
-    try:
-        temp_dir = tempfile.mkdtemp()
-        sbml_path = join(temp_dir, "test.xml")
-        with open(sbml_path, "w") as f_out:
-            write_sbml_model(model1, f_out)
+    sbml_path = join(str(tmp_path), "test.xml")
+    with open(sbml_path, "w") as f_out:
+        write_sbml_model(model1, f_out)
 
-        with open(sbml_path, "r") as f_in:
-            model2 = read_sbml_model(f_in)
+    with open(sbml_path, "r") as f_in:
+        model2 = read_sbml_model(f_in)
 
-        TestCobraIO.compare_models(name="filehandle",
-                                   model1=model1, model2=model2)
-
-    finally:
-        os.remove(sbml_path)
-        os.rmdir(temp_dir)
+    TestCobraIO.compare_models(name="filehandle",
+                               model1=model1, model2=model2)
 
 
 def test_from_sbml_string(data_directory):
@@ -211,7 +200,7 @@ def test_from_sbml_string(data_directory):
                                model1=model1, model2=model2)
 
 
-def test_model_history():
+def test_model_history(tmp_path):
     """Testing reading and writing of ModelHistory."""
     model = Model("test")
     model._sbml = {
@@ -222,31 +211,24 @@ def test_model_history():
             "email": "muster@university.com",
         }]
     }
-    try:
-        temp_dir = tempfile.mkdtemp()
-        sbml_path = join(temp_dir, "test.xml")
-        with open(sbml_path, "w") as f_out:
-            write_sbml_model(model, f_out)
 
-        # with open(sbml_path, "r") as f_in:
-        #    print(f_in.read())
+    sbml_path = join(str(tmp_path), "test.xml")
+    with open(sbml_path, "w") as f_out:
+        write_sbml_model(model, f_out)
 
-        with open(sbml_path, "r") as f_in:
-            model2 = read_sbml_model(f_in)
+    with open(sbml_path, "r") as f_in:
+        model2 = read_sbml_model(f_in)
 
-        assert "creators" in model2._sbml
-        assert len(model2._sbml["creators"]) is 1
-        c = model2._sbml["creators"][0]
-        assert c["familyName"] == "Mustermann"
-        assert c["givenName"] == "Max"
-        assert c["organisation"] == "Muster University"
-        assert c["email"] == "muster@university.com"
-    finally:
-        os.remove(sbml_path)
-        os.rmdir(temp_dir)
+    assert "creators" in model2._sbml
+    assert len(model2._sbml["creators"]) is 1
+    c = model2._sbml["creators"][0]
+    assert c["familyName"] == "Mustermann"
+    assert c["givenName"] == "Max"
+    assert c["organisation"] == "Muster University"
+    assert c["email"] == "muster@university.com"
 
 
-def test_groups(data_directory):
+def test_groups(data_directory, tmp_path):
     """Testing reading and writing of groups"""
     sbml_path = join(data_directory, "e_coli_core.xml")
     model = read_sbml_model(sbml_path)
@@ -255,22 +237,17 @@ def test_groups(data_directory):
     g1 = model.groups[0]
     assert len(g1.members) == 6
 
-    try:
-        temp_dir = tempfile.mkdtemp()
-        temp_path = join(temp_dir, "test.xml")
-        with open(temp_path, "w") as f_out:
-            write_sbml_model(model, f_out)
+    temp_path = join(str(tmp_path), "test.xml")
+    with open(temp_path, "w") as f_out:
+        write_sbml_model(model, f_out)
 
-        with open(temp_path, "r") as f_in:
-            model2 = read_sbml_model(f_in)
+    with open(temp_path, "r") as f_in:
+        model2 = read_sbml_model(f_in)
 
-            assert model2.groups is not None
-            assert len(model2.groups) == 10
-            g1 = model2.groups[0]
-            assert len(g1.members) == 6
-    finally:
-        os.remove(temp_path)
-        os.rmdir(temp_dir)
+        assert model2.groups is not None
+        assert len(model2.groups) == 10
+        g1 = model2.groups[0]
+        assert len(g1.members) == 6
 
 
 def test_validate(data_directory):
@@ -284,7 +261,7 @@ def test_validate(data_directory):
         assert len(errors["SBML_WARNING"]) == 23
 
 
-def test_infinity_bounds(data_directory):
+def test_infinity_bounds(data_directory, tmp_path):
     """Test infinity bound example. """
     sbml_path = join(data_directory, "fbc_ex1.xml")
     model = read_sbml_model(sbml_path)
@@ -297,21 +274,15 @@ def test_infinity_bounds(data_directory):
     assert r.lower_bound == -float("Inf")
     assert r.upper_bound == float("Inf")
 
-    try:
-        temp_dir = tempfile.mkdtemp()
-        temp_path = join(temp_dir, "test.xml")
-        with open(temp_path, "w") as f_out:
-            write_sbml_model(model, f_out)
+    temp_path = join(str(tmp_path), "test.xml")
+    with open(temp_path, "w") as f_out:
+        write_sbml_model(model, f_out)
 
-        with open(temp_path, "r") as f_in:
-            model2 = read_sbml_model(f_in)
-            r = model2.reactions.get_by_id("EX_X")
-            assert r.lower_bound == -float("Inf")
-            assert r.upper_bound == float("Inf")
-
-    finally:
-        os.remove(temp_path)
-        os.rmdir(temp_dir)
+    with open(temp_path, "r") as f_in:
+        model2 = read_sbml_model(f_in)
+        r = model2.reactions.get_by_id("EX_X")
+        assert r.lower_bound == -float("Inf")
+        assert r.upper_bound == float("Inf")
 
 
 def test_boundary_conditions(data_directory):
