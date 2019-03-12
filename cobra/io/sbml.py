@@ -34,19 +34,16 @@ import logging
 import os
 import re
 import traceback
-
 from collections import defaultdict, namedtuple
 from copy import deepcopy
-
 from sys import platform
 from warnings import catch_warnings, simplefilter
 from six import string_types, iteritems
 import cobra
 import libsbml
-
-from cobra.core import Gene, Metabolite, Model, Reaction, Group
+from cobra.core import Gene, Group, Metabolite, Model, Reaction
 from cobra.manipulation.validate import check_metabolite_compartment_formula
-from cobra.util.solver import set_objective, linear_reaction_coefficients
+from cobra.util.solver import linear_reaction_coefficients, set_objective
 
 
 class CobraSBMLError(Exception):

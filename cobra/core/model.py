@@ -20,7 +20,6 @@ from cobra.core.group import Group
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.core.reaction import Reaction
-
 from cobra.core.solution import get_solution
 from cobra.exceptions import SolverNotFound
 from cobra.medium import (
