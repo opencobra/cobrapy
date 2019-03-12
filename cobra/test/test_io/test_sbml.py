@@ -5,21 +5,18 @@ Testing SBML functionality based on libsbml.
 
 from __future__ import absolute_import
 
+from collections import namedtuple
 from os import unlink
 from os.path import join, split
 from pickle import load
 from tempfile import gettempdir
-from collections import namedtuple
-
 
 import pytest
-from cobra.io import read_sbml_model, write_sbml_model, validate_sbml_model
-from cobra import Model
 
-try:
-    import libsbml
-except ImportError:
-    libsbml = None
+from cobra import Model
+from cobra.io import read_sbml_model, write_sbml_model, validate_sbml_model
+
+import libsbml
 
 try:
     import jsonschema

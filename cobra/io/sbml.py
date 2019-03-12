@@ -29,23 +29,24 @@ Some SBML related issues are still open, please refer to the respective issue:
 
 from __future__ import absolute_import
 
+import datetime
+import logging
 import os
 import re
 import traceback
-import logging
-from warnings import catch_warnings, simplefilter
-from six import string_types, iteritems
+
 from collections import defaultdict, namedtuple
 from copy import deepcopy
-import datetime
-
-import libsbml
-import cobra
-from cobra.core import Gene, Metabolite, Model, Reaction, Group
-from cobra.util.solver import set_objective, linear_reaction_coefficients
-from cobra.manipulation.validate import check_metabolite_compartment_formula
 
 from sys import platform
+from warnings import catch_warnings, simplefilter
+from six import string_types, iteritems
+import cobra
+import libsbml
+
+from cobra.core import Gene, Metabolite, Model, Reaction, Group
+from cobra.manipulation.validate import check_metabolite_compartment_formula
+from cobra.util.solver import set_objective, linear_reaction_coefficients
 
 
 class CobraSBMLError(Exception):
