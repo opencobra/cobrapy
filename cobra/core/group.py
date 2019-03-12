@@ -15,8 +15,9 @@ class Group(Object):
     """
     Manage groups via this implementation of the SBML group specification.
 
-    `Group` is a class for holding information regarding a pathways, subsystems,
-    or other custom groupings of objects within a cobra.Model object.
+    `Group` is a class for holding information regarding a pathways,
+    subsystems, or other custom groupings of objects within a cobra.Model
+    object.
 
     Parameters
     ----------
@@ -28,18 +29,18 @@ class Group(Object):
         A list object containing references to cobra.Model-associated objects
         that belong to the group.
     kind : {"collection", "classification", "partonomy"}, optional
-        The kind of group, as specified for the Groups feature in the SBML level
-        3 package specification. Can be any of "classification", "partonomy", or
-        "collection". The default is "collection". Please consult the SBML level
-        3 package specification to ensure you are using the proper value for
-        kind. In short, members of a "classification" group should have an
-        "is-a" relationship to the group (e.g. member is-a polar compound, or
-        member is-a transporter). Members of a "partonomy" group should have a
-        "part-of" relationship (e.g. member is part-of glycolysis). Members of a
-        "collection" group do not have an implied relationship between the
-        members, so use this value for kind when in doubt (e.g. member is a
-        gap-filled reaction, or member is involved in a disease phenotype).
-
+        The kind of group, as specified for the Groups feature in the SBML
+        level 3 package specification. Can be any of "classification",
+        "partonomy", or "collection". The default is "collection".
+        Please consult the SBML level 3 package specification to ensure you
+        are using the proper value for kind. In short, members of a
+        "classification" group should have an "is-a" relationship to the group
+        (e.g. member is-a polar compound, or member is-a transporter).
+        Members of a "partonomy" group should have a "part-of" relationship
+        (e.g. member is part-of glycolysis). Members of a "collection" group
+        do not have an implied relationship between the members, so use this
+        value for kind when in doubt (e.g. member is a gap-filled reaction,
+        or member is involved in a disease phenotype).
     """
     KIND_TYPES = ("collection", "classification", "partonomy")
 

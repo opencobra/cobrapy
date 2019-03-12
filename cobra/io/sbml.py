@@ -206,8 +206,8 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
     except Exception:
         LOGGER.error(traceback.print_exc())
         raise CobraSBMLError(
-            "Something went wrong reading the SBML model. Most likely the SBML "
-            "model is not valid. Please check that your model is valid using "
+            "Something went wrong reading the SBML model. Most likely the SBML"
+            " model is not valid. Please check that your model is valid using "
             "the `cobra.io.sbml.validate_sbml_model` function or via the "
             "online validator at http://sbml.org/validator .\n"
             "\t`(model, errors) = validate_sbml_model(filename)`"
@@ -248,8 +248,8 @@ def _get_doc_from_filename(filename):
         # file handle
         doc = libsbml.readSBMLFromString(filename.read())  # noqa: E501 type: libsbml.SBMLDocument
     else:
-        raise CobraSBMLError("Input type '%s' for 'filename' is not supported. "
-                             "Provide a path, SBML str, "
+        raise CobraSBMLError("Input type '%s' for 'filename' is not supported."
+                             " Provide a path, SBML str, "
                              "or file handle.", type(filename))
 
     return doc
@@ -587,11 +587,13 @@ def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
                 gpr = ''
 
             if len(gpr) > 0:
-                LOGGER.warning("Use of GENE ASSOCIATION or GENE_ASSOCIATION in"
-                               "the notes element is "
-                               "discouraged, use fbc:gpr instead: %s", reaction)
+                LOGGER.warning("Use of GENE ASSOCIATION or GENE_ASSOCIATION "
+                               "in the notes element is discouraged, use "
+                               "fbc:gpr instead: %s", reaction)
                 if f_replace and F_GENE in f_replace:
-                    gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(' '))
+                    gpr = " ".join(
+                        f_replace[F_GENE](t) for t in gpr.split(' ')
+                    )
 
         # remove outside parenthesis, if any
         if gpr.startswith("(") and gpr.endswith(")"):
@@ -879,7 +881,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
                       value=float("Inf"), sbo=SBO_FLUX_BOUND)
 
     # Compartments
-    # FIXME: use first class compartment model (and write notes and annotations)
+    # FIXME: use first class compartment model (and write notes & annotations)
     #     (https://github.com/opencobra/cobrapy/issues/811)
     for cid, name in iteritems(cobra_model.compartments):
         compartment = model.createCompartment()  # type: libsbml.Compartment
@@ -949,7 +951,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         _sbase_notes_dict(reaction, cobra_reaction.notes)
 
         # stoichiometry
-        for metabolite, stoichiometry in iteritems(cobra_reaction._metabolites):
+        for metabolite, stoichiometry in iteritems(cobra_reaction._metabolites):  # noqa: E501
             sid = metabolite.id
             if f_replace and F_SPECIE_REV in f_replace:
                 sid = f_replace[F_SPECIE_REV](sid)
@@ -1134,7 +1136,7 @@ def _check(value, message):
             return
         else:
             LOGGER.error('Error encountered trying to <' + message + '>.')
-            LOGGER.error('LibSBML returned error code {}: {}'.format(str(value),
+            LOGGER.error('LibSBML error code {}: {}'.format(str(value),
                          libsbml.OperationReturnValue_toString(value).strip()))
     else:
         return
