@@ -15,7 +15,7 @@ import pytest
 from optlang.symbolics import Zero
 
 import cobra.util.solver as su
-from cobra.core import Metabolite, Model, Reaction, Group
+from cobra.core import Group, Metabolite, Model, Reaction
 from cobra.exceptions import OptimizationError
 from cobra.util.solver import SolverNotFound, set_objective, solvers
 

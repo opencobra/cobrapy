@@ -14,23 +14,22 @@ from optlang.symbolics import Basic, Zero
 from six import iteritems, string_types
 
 from cobra.core.configuration import Configuration
-from cobra.exceptions import SolverNotFound
 from cobra.core.dictlist import DictList
-from cobra.core.object import Object
-from cobra.core.reaction import Reaction
-from cobra.core.metabolite import Metabolite
 from cobra.core.gene import Gene
 from cobra.core.group import Group
+from cobra.core.metabolite import Metabolite
+from cobra.core.object import Object
+from cobra.core.reaction import Reaction
+
 from cobra.core.solution import get_solution
 from cobra.exceptions import SolverNotFound
 from cobra.medium import (
     find_boundary_types, find_external_compartment, sbo_terms)
 from cobra.util.context import HistoryManager, get_context, resettable
 from cobra.util.solver import (
-    interface_to_str, set_objective, solvers,
-    add_cons_vars_to_problem, remove_cons_vars_from_problem, assert_optimal)
+    add_cons_vars_to_problem, assert_optimal, interface_to_str,
+    remove_cons_vars_from_problem, set_objective, solvers)
 from cobra.util.util import AutoVivification, format_long_string
-from cobra.medium import find_boundary_types
 
 LOGGER = logging.getLogger(__name__)
 CONFIGURATION = Configuration()
