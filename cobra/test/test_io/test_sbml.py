@@ -10,9 +10,11 @@ from os import unlink
 from os.path import join, split
 from pickle import load
 from tempfile import gettempdir
+
 import pytest
+
 from cobra import Model
-from cobra.io import read_sbml_model, write_sbml_model, validate_sbml_model
+from cobra.io import read_sbml_model, validate_sbml_model, write_sbml_model
 
 try:
     import jsonschema

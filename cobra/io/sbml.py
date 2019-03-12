@@ -38,7 +38,9 @@ from collections import defaultdict, namedtuple
 from copy import deepcopy
 from sys import platform
 from warnings import catch_warnings, simplefilter
-from six import string_types, iteritems
+
+from six import iteritems, string_types
+
 import cobra
 import libsbml
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
