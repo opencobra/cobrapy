@@ -16,6 +16,7 @@ import pytest
 from cobra import Model
 from cobra.io import read_sbml_model, validate_sbml_model, write_sbml_model
 
+
 try:
     import jsonschema
 except ImportError:

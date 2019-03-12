@@ -30,6 +30,7 @@ from cobra.util.solver import (
     remove_cons_vars_from_problem, set_objective, solvers)
 from cobra.util.util import AutoVivification, format_long_string
 
+
 LOGGER = logging.getLogger(__name__)
 CONFIGURATION = Configuration()
 
