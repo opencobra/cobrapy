@@ -48,16 +48,6 @@ from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
 
 
-try:
-    from lxml.etree import (
-        parse, Element, SubElement, ElementTree, register_namespace,
-        ParseError, XPath)
-
-    _with_lxml = True
-except ImportError:
-    pass
-
-
 class CobraSBMLError(Exception):
     """ SBML error class. """
     pass
@@ -683,6 +673,21 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
     model_groups = model.getPlugin("groups")  # type: libsbml.GroupsModelPlugin
     groups = []
     if model_groups:
+        # calculate hashmaps to lookup objects in O(1)
+        sid_map = {}
+        metaid_map = {}
+        for obj_list in [model.getListOfCompartments(),
+                         model.getListOfSpecies(),
+                         model.getListOfReactions(),
+                         model_groups.getListOfGroups()]:
+
+            for sbase in obj_list:  # type: libsbml.SBase
+                if sbase.isSetId():
+                    sid_map[sbase.getId()] = sbase
+                if sbase.isSetMetaId():
+                    metaid_map[sbase.getMetaId()] = sbase
+
+        # create groups
         for group in model_groups.getListOfGroups():  # type: libsbml.Group
             cobra_group = Group(group.getId())
             cobra_group.name = group.getName()
@@ -694,13 +699,16 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
             cobra_members = []
             for member in group.getListOfMembers():  # type: libsbml.Member
                 if member.isSetIdRef():
-                    obj = doc.getElementBySId(member.getIdRef())
+                    obj = sid_map[member.getIdRef()]
+                    # obj = doc.getElementBySId(member.getIdRef())
                 elif member.isSetMetaIdRef():
-                    obj = doc.getElementByMetaId(member.getMetaIdRef())
+                    obj = metaid_map[member.getMetaIdRef()]
+                    # obj = doc.getElementByMetaId(member.getMetaIdRef())
 
                 typecode = obj.getTypeCode()
                 obj_id = obj.getId()
 
+                # id replacements
                 cobra_member = None
                 if typecode == libsbml.SBML_SPECIES:
                     if f_replace and F_SPECIE in f_replace:
