@@ -48,6 +48,16 @@ from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
 
 
+try:
+    from lxml.etree import (
+        parse, Element, SubElement, ElementTree, register_namespace,
+        ParseError, XPath)
+
+    _with_lxml = True
+except ImportError:
+    pass
+
+
 class CobraSBMLError(Exception):
     """ SBML error class. """
     pass
@@ -255,7 +265,8 @@ def _get_doc_from_filename(filename):
     return doc
 
 
-def _sbml_to_model(doc, number=float, f_replace=None, **kwargs):
+def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
+                   **kwargs):
     """Creates cobra model from SBMLDocument.
 
     Parameters
