@@ -487,6 +487,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
                 return gid
 
     # Reactions
+    missing_bounds = False
     reactions = []
     for reaction in model.getListOfReactions():  # type: libsbml.Reaction
         rid = _check_required(reaction, reaction.getId(), "id")
@@ -498,27 +499,29 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
         cobra_reaction.notes = _parse_notes_dict(reaction)
 
         # set bounds
+        p_ub, p_lb = None, None
         r_fbc = reaction.getPlugin("fbc")  # type: libsbml.FbcReactionPlugin
         if r_fbc:
             # bounds in fbc
-            lb_id = _check_required(r_fbc, r_fbc.getLowerFluxBound(),
-                                    "lowerFluxBound")
-            ub_id = _check_required(r_fbc, r_fbc.getUpperFluxBound(),
-                                    "upperFluxBound")
-            p_lb = model.getParameter(lb_id)  # type: libsbml.Parameter
-            p_ub = model.getParameter(ub_id)  # type: libsbml.Parameter
+            lb_id = r_fbc.getLowerFluxBound()
+            if lb_id:
+                p_lb = model.getParameter(lb_id)  # type: libsbml.Parameter
+                if p_lb and p_lb.getConstant() and \
+                        (p_lb.getValue() is not None):
+                    cobra_reaction.lower_bound = p_lb.getValue()
+                else:
+                    raise CobraSBMLError("No constant bound '%s' for "
+                                         "reaction: %s" % (p_lb, reaction))
 
-            if p_lb.getConstant() and (p_lb.getValue() is not None):
-                cobra_reaction.lower_bound = p_lb.getValue()
-            else:
-                raise CobraSBMLError("No constant bound '%s' for "
-                                     "reaction: %s" % (p_lb, reaction))
-
-            if p_ub.getConstant() and (p_ub.getValue() is not None):
-                cobra_reaction.upper_bound = p_ub.getValue()
-            else:
-                raise CobraSBMLError("No constant bound '%s' for "
-                                     "reaction: %s" % (p_ub, reaction))
+            ub_id = r_fbc.getUpperFluxBound()
+            if ub_id:
+                p_ub = model.getParameter(ub_id)  # type: libsbml.Parameter
+                if p_ub and p_ub.getConstant() and \
+                        (p_ub.getValue() is not None):
+                    cobra_reaction.upper_bound = p_ub.getValue()
+                else:
+                    raise CobraSBMLError("No constant bound '%s' for "
+                                         "reaction: %s" % (p_ub, reaction))
 
         elif reaction.isSetKineticLaw():
             # some legacy models encode bounds in kinetic laws
@@ -540,9 +543,16 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
                            "KineticLaw is discouraged, "
                            "use fbc:fluxBounds instead: %s", reaction)
 
-        else:
-            raise CobraSBMLError("No flux bounds on reaction: %s", reaction)
+        if p_lb is None:
+            LOGGER.error("Missing lower flux bound for reaction: "
+                         "%s", reaction)
+            missing_bounds = True
+        if p_ub is None:
+            LOGGER.error("Missing upper flux bound for reaction: "
+                         "%s", reaction)
+            missing_bounds = True
 
+        # add reaction
         reactions.append(cobra_reaction)
 
         # parse equation
@@ -603,6 +613,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
         cobra_reaction.gene_reaction_rule = gpr
 
     cobra_model.add_reactions(reactions)
+    if missing_bounds:
+        raise CobraSBMLError("Missing flux bounds on reactions.")
 
     # Objective
     obj_direction = "max"
@@ -1124,12 +1136,13 @@ def _check_required(sbase, value, attribute):
     -------
     attribute value (or value if already set)
     """
-    if value is None:
+
+    if not value:
         msg = "required attribute '%s' not found in '%s'" % \
               (attribute, sbase)
-        if sbase.getId() is not None:
+        if hasattr(sbase, "getId") and sbase.getId():
             msg += " with id '%s'" % sbase.getId()
-        elif sbase.getName() is not None:
+        elif hasattr(sbase, "getName") and sbase.getName():
             msg += " with name '%s'" % sbase.getName()
         raise CobraSBMLError(msg)
     return value
