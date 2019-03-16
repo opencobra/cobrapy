@@ -13,6 +13,7 @@ from cobra.core import (
     Species)
 from cobra import flux_analysis
 from cobra import io
+from cobra import sampling
 from cobra.util import show_versions
 
 __version__ = "0.15.1"

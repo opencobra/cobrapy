@@ -14,4 +14,3 @@ from cobra.flux_analysis.variability import (
     flux_variability_analysis)
 from cobra.flux_analysis.phenotype_phase_plane import production_envelope
 from cobra.flux_analysis.room import add_room, room
-from cobra.flux_analysis.sampling import sample
