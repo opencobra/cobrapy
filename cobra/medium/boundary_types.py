@@ -102,7 +102,11 @@ def is_boundary_type(reaction, boundary_type, external_compartment):
         on a heuristic.
     """
     # Check if the reaction has an annotation. Annotations dominate everything.
-    sbo_term = reaction.annotation.get("sbo", "").upper()
+    sbo_term = reaction.annotation.get("sbo", "")
+    if isinstance(sbo_term, list):
+        sbo_term = sbo_term[0]
+    sbo_term = sbo_term.upper()
+
     if sbo_term == sbo_terms[boundary_type]:
         return True
     if sbo_term in [sbo_terms[k] for k in sbo_terms if k != boundary_type]:

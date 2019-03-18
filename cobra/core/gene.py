@@ -249,6 +249,11 @@ class Gene(Species):
         the_gene_re = re.compile('(^|(?<=( |\()))%s(?=( |\)|$))' %
                                  re.escape(self.id))
 
+        # remove reference to the gene in all groups
+        associated_groups = self._model.get_associated_groups(self)
+        for group in associated_groups:
+            group.remove_members(self)
+
         self._model.genes.remove(self)
         self._model = None
 

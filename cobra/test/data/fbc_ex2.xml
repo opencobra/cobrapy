@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:comp="http://www.sbml.org/sbml/level3/version1/comp/version1" level="3" version="1" fbc:required="false" comp:required="true">
+  <model metaid="meta_fbc_ex2_1" id="fbc_ex2_1" name="fbc_ex2_1" substanceUnits="mmol" timeUnits="h" volumeUnits="l" areaUnits="m2" lengthUnits="m" extentUnits="mmol" fbc:strict="false">
+    <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+        <rdf:Description rdf:about="#meta_fbc_ex2_1">
+          <dcterms:creator>
+            <rdf:Bag>
+              <rdf:li rdf:parseType="Resource">
+                <vCard:N rdf:parseType="Resource">
+                  <vCard:Family>Koenig</vCard:Family>
+                  <vCard:Given>Matthias</vCard:Given>
+                </vCard:N>
+                <vCard:EMAIL>koenigmx@hu-berlin.de</vCard:EMAIL>
+                <vCard:ORG rdf:parseType="Resource">
+                  <vCard:Orgname>Humboldt-University Berlin, Institute for Theoretical Biology</vCard:Orgname>
+                </vCard:ORG>
+              </rdf:li>
+            </rdf:Bag>
+          </dcterms:creator>
+          <dcterms:created rdf:parseType="Resource">
+            <dcterms:W3CDTF>2019-03-06T14:40:55Z</dcterms:W3CDTF>
+          </dcterms:created>
+          <dcterms:modified rdf:parseType="Resource">
+            <dcterms:W3CDTF>2019-03-06T14:40:55Z</dcterms:W3CDTF>
+          </dcterms:modified>
+        </rdf:Description>
+      </rdf:RDF>
+    </annotation>
+    <listOfUnitDefinitions>
+      <unitDefinition id="h" name="hour">
+        <listOfUnits>
+          <unit kind="second" exponent="1" scale="0" multiplier="3600"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="g" name="gram">
+        <listOfUnits>
+          <unit kind="gram" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="m" name="meter">
+        <listOfUnits>
+          <unit kind="metre" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="m2" name="cubic meter">
+        <listOfUnits>
+          <unit kind="metre" exponent="2" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="l" name="liter">
+        <listOfUnits>
+          <unit kind="litre" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="mmol">
+        <listOfUnits>
+          <unit kind="mole" exponent="1" scale="-3" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="per_h">
+        <listOfUnits>
+          <unit kind="second" exponent="-1" scale="0" multiplier="3600"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="mmol_per_h">
+        <listOfUnits>
+          <unit kind="mole" exponent="1" scale="-3" multiplier="1"/>
+          <unit kind="second" exponent="-1" scale="0" multiplier="3600"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="mmol_per_hg">
+        <listOfUnits>
+          <unit kind="mole" exponent="1" scale="-3" multiplier="1"/>
+          <unit kind="second" exponent="-1" scale="0" multiplier="3600"/>
+          <unit kind="gram" exponent="-1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="mmol_per_l">
+        <listOfUnits>
+          <unit kind="mole" exponent="1" scale="-3" multiplier="1"/>
+          <unit kind="litre" exponent="-1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="mmol_per_lg">
+        <listOfUnits>
+          <unit kind="mole" exponent="1" scale="-3" multiplier="1"/>
+          <unit kind="litre" exponent="-1" scale="0" multiplier="1"/>
+          <unit kind="gram" exponent="-1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="l_per_mmol">
+        <listOfUnits>
+          <unit kind="litre" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="mole" exponent="-1" scale="-3" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="g_per_l">
+        <listOfUnits>
+          <unit kind="gram" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="litre" exponent="-1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="g_per_mmol">
+        <listOfUnits>
+          <unit kind="gram" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="mole" exponent="-1" scale="-3" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment id="bioreactor" name="bioreactor" spatialDimensions="3" size="1" units="l" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="Glcxt" name="glucose" compartment="bioreactor" initialConcentration="0" substanceUnits="mmol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="Ac" name="acetate" compartment="bioreactor" initialConcentration="0" substanceUnits="mmol" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false"/>
+      <species id="O2" name="oxygen" compartment="bioreactor" initialConcentration="0" substanceUnits="mmol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="X" name="biomass" compartment="bioreactor" initialConcentration="0" substanceUnits="mmol" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter sboTerm="SBO:0000612" id="zero" name="zero bound" value="0" units="mmol_per_h" constant="true"/>
+      <parameter sboTerm="SBO:0000612" id="ub_inf" name="default upper bound" value="INF" units="mmol_per_h" constant="true"/>
+      <parameter sboTerm="SBO:0000612" id="lb_inf" name="default lower bound" value="-INF" units="mmol_per_h" constant="true"/>
+      <parameter sboTerm="SBO:0000612" id="glc_import" name="glc import bound" value="-15" units="mmol_per_h" constant="true"/>
+      <parameter sboTerm="SBO:0000612" id="o2_import" name="o2 import bound" value="-10" units="mmol_per_h" constant="true"/>
+    </listOfParameters>
+    <listOfReactions>
+      <reaction id="v1" name="v1 (39.43 Ac + 35 O2 -&gt; X)" reversible="false" fast="false" compartment="bioreactor" fbc:lowerFluxBound="zero" fbc:upperFluxBound="ub_inf">
+        <listOfReactants>
+          <speciesReference species="Ac" stoichiometry="39.43" constant="true"/>
+          <speciesReference species="O2" stoichiometry="35" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="X" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="v2" name="v2 (9.46 Glcxt + 12.92 O2 -&gt; X)" reversible="false" fast="false" compartment="bioreactor" fbc:lowerFluxBound="zero" fbc:upperFluxBound="ub_inf">
+        <listOfReactants>
+          <speciesReference species="Glcxt" stoichiometry="9.46" constant="true"/>
+          <speciesReference species="O2" stoichiometry="12.92" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="X" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="v3" name="v3 (9.84 Glcxt + 12.73 O2 -&gt; 1.24 Ac + X)" reversible="false" fast="false" compartment="bioreactor" fbc:lowerFluxBound="zero" fbc:upperFluxBound="ub_inf">
+        <listOfReactants>
+          <speciesReference species="Glcxt" stoichiometry="9.84" constant="true"/>
+          <speciesReference species="O2" stoichiometry="12.73" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="Ac" stoichiometry="1.24" constant="true"/>
+          <speciesReference species="X" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction id="v4" name="v4 (19.23 Glcxt -&gt; 12.12 Ac + X)" reversible="false" fast="false" compartment="bioreactor" fbc:lowerFluxBound="zero" fbc:upperFluxBound="ub_inf">
+        <listOfReactants>
+          <speciesReference species="Glcxt" stoichiometry="19.23" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="Ac" stoichiometry="12.12" constant="true"/>
+          <speciesReference species="X" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction sboTerm="SBO:0000627" id="EX_Glcxt" name="EX_Glcxt" reversible="false" fast="false" fbc:lowerFluxBound="glc_import" fbc:upperFluxBound="zero">
+        <listOfReactants>
+          <speciesReference species="Glcxt" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction sboTerm="SBO:0000627" id="EX_O2" name="EX_O2" reversible="false" fast="false" fbc:lowerFluxBound="o2_import" fbc:upperFluxBound="zero">
+        <listOfReactants>
+          <speciesReference species="O2" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+    </listOfReactions>
+    <fbc:listOfObjectives fbc:activeObjective="biomass_max">
+      <fbc:objective fbc:id="biomass_max" fbc:type="maximize">
+        <fbc:listOfFluxObjectives>
+          <fbc:fluxObjective fbc:reaction="v1" fbc:coefficient="1"/>
+          <fbc:fluxObjective fbc:reaction="v2" fbc:coefficient="1"/>
+          <fbc:fluxObjective fbc:reaction="v3" fbc:coefficient="1"/>
+          <fbc:fluxObjective fbc:reaction="v4" fbc:coefficient="1"/>
+        </fbc:listOfFluxObjectives>
+      </fbc:objective>
+    </fbc:listOfObjectives>
+  </model>
+</sbml>

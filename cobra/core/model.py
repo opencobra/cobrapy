@@ -15,6 +15,9 @@ from six import iteritems, string_types
 
 from cobra.core.configuration import Configuration
 from cobra.core.dictlist import DictList
+from cobra.core.gene import Gene
+from cobra.core.group import Group
+from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
@@ -55,12 +58,16 @@ class Model(Object):
     genes : DictList
         A DictList where the key is the gene identifier and the value a
         Gene
+    groups : DictList
+        A DictList where the key is the group identifier and the value a
+        Group
     solution : Solution
         The last obtained solution from optimizing the model.
     """
 
     def __setstate__(self, state):
-        """Make sure all cobra.Objects in the model point to the model."""
+        """Make sure all cobra.Objects in the model point to the model.
+        """
         self.__dict__.update(state)
         for y in ['reactions', 'genes', 'metabolites']:
             for x in getattr(self, y):
@@ -93,6 +100,7 @@ class Model(Object):
             self.genes = DictList()
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
+            self.groups = DictList()  # A list of cobra.Groups
             # genes based on their ids {Gene.id: Gene}
             self._compartments = {}
             self._contexts = []
@@ -281,7 +289,7 @@ class Model(Object):
         """
         new = self.__class__()
         do_not_copy_by_ref = {"metabolites", "reactions", "genes", "notes",
-                              "annotation"}
+                              "annotation", "groups"}
         for attr in self.__dict__:
             if attr not in do_not_copy_by_ref:
                 new.__dict__[attr] = self.__dict__[attr]
@@ -327,6 +335,39 @@ class Model(Object):
                 new_gene = new.genes.get_by_id(gene.id)
                 new_reaction._genes.add(new_gene)
                 new_gene._reaction.add(new_reaction)
+
+        new.groups = DictList()
+        do_not_copy_by_ref = {"_model", "_members"}
+        # Groups can be members of other groups. We initialize them first and
+        # then update their members.
+        for group in self.groups:
+            new_group = group.__class__()
+            for attr, value in iteritems(group.__dict__):
+                if attr not in do_not_copy_by_ref:
+                    new_group.__dict__[attr] = copy(value)
+            new_group._model = new
+            new.groups.append(new_group)
+        for group in self.groups:
+            new_group = new.groups[group.id]
+            # update awareness, as in the reaction copies
+            new_objects = []
+            for member in group.members:
+                if isinstance(member, Metabolite):
+                    new_object = new.metabolites.get_by_id(member.id)
+                elif isinstance(member, Reaction):
+                    new_object = new.reactions.get_by_id(member.id)
+                elif isinstance(member, Gene):
+                    new_object = new.genes.get_by_id(member.id)
+                elif isinstance(member, Group):
+                    new_object = new.genes.get_by_id(member.id)
+                else:
+                    raise TypeError(
+                        "The group member {!r} is unexpectedly not a "
+                        "metabolite, reaction, gene, nor another "
+                        "group.".format(member))
+                new_objects.append(new_object)
+            new_group.add_members(new_objects)
+
         try:
             new._solver = deepcopy(self.solver)
             # Cplex has an issue with deep copies
@@ -408,6 +449,11 @@ class Model(Object):
                            if x.id in self.metabolites]
         for x in metabolite_list:
             x._model = None
+
+            # remove reference to the metabolite in all groups
+            associated_groups = self.get_associated_groups(x)
+            for group in associated_groups:
+                group.remove_members(x)
 
             if not destructive:
                 for the_reaction in list(x._reaction):
@@ -505,6 +551,7 @@ class Model(Object):
         (0, 1000.0)
         >>> demand.build_reaction_string()
         'atp_c --> '
+
         """
         ub = CONFIGURATION.upper_bound if ub is None else ub
         lb = CONFIGURATION.lower_bound if lb is None else lb
@@ -683,6 +730,100 @@ class Model(Object):
                             self.genes.remove(gene)
                             if context:
                                 context(partial(self.genes.add, gene))
+
+                # remove reference to the reaction in all groups
+                associated_groups = self.get_associated_groups(reaction)
+                for group in associated_groups:
+                    group.remove_members(reaction)
+
+    def add_groups(self, group_list):
+        """Add groups to the model.
+
+        Groups with identifiers identical to a group already in the model are
+        ignored.
+
+        If any group contains members that are not in the model, these members
+        are added to the model as well. Only metabolites, reactions, and genes
+        can have groups.
+
+        Parameters
+        ----------
+        group_list : list
+            A list of `cobra.Group` objects to add to the model.
+        """
+
+        def existing_filter(group):
+            if group.id in self.groups:
+                LOGGER.warning(
+                    "Ignoring group '%s' since it already exists.", group.id)
+                return False
+            return True
+
+        if isinstance(group_list, string_types) or \
+                hasattr(group_list, "id"):
+            warn("need to pass in a list")
+            group_list = [group_list]
+
+        pruned = DictList(filter(existing_filter, group_list))
+
+        for group in pruned:
+            group._model = self
+            for member in group.members:
+                # If the member is not associated with the model, add it
+                if isinstance(member, Metabolite):
+                    if member not in self.metabolites:
+                        self.add_metabolites([member])
+                if isinstance(member, Reaction):
+                    if member not in self.reactions:
+                        self.add_reactions([member])
+                # TODO(midnighter): `add_genes` method does not exist.
+                # if isinstance(member, Gene):
+                #     if member not in self.genes:
+                #         self.add_genes([member])
+
+            self.groups += [group]
+
+    def remove_groups(self, group_list):
+        """Remove groups from the model.
+
+        Members of each group are not removed
+        from the model (i.e. metabolites, reactions, and genes in the group
+        stay in the model after any groups containing them are removed).
+
+        Parameters
+        ----------
+        group_list : list
+            A list of `cobra.Group` objects to remove from the model.
+        """
+
+        if isinstance(group_list, string_types) or \
+                hasattr(group_list, "id"):
+            warn("need to pass in a list")
+            group_list = [group_list]
+
+        for group in group_list:
+            # make sure the group is in the model
+            if group.id not in self.groups:
+                LOGGER.warning("%r not in %r. Ignored.", group, self)
+            else:
+                self.groups.remove(group)
+                group._model = None
+
+    def get_associated_groups(self, element):
+        """Returns a list of groups that an element (reaction, metabolite, gene)
+        is associated with.
+
+        Parameters
+        ----------
+        element: `cobra.Reaction`, `cobra.Metabolite`, or `cobra.Gene`
+
+        Returns
+        -------
+        list of `cobra.Group`
+            All groups that the provided object is a member of
+        """
+        # check whether the element is associated with the model
+        return [g for g in self.groups if element in g.members]
 
     def add_cons_vars(self, what, **kwargs):
         """Add constraints and variables to the model's mathematical problem.
@@ -922,6 +1063,7 @@ class Model(Object):
             self.reactions._generate_index()
             self.metabolites._generate_index()
             self.genes._generate_index()
+            self.groups._generate_index()
         if rebuild_relationships:
             for met in self.metabolites:
                 met._reaction.clear()
@@ -932,8 +1074,9 @@ class Model(Object):
                     met._reaction.add(rxn)
                 for gene in rxn._genes:
                     gene._reaction.add(rxn)
+
         # point _model to self
-        for l in (self.reactions, self.genes, self.metabolites):
+        for l in (self.reactions, self.genes, self.metabolites, self.groups):
             for e in l:
                 e._model = self
 
@@ -1109,6 +1252,9 @@ class Model(Object):
                 <td><strong>Number of reactions</strong></td>
                 <td>{num_reactions}</td>
             </tr><tr>
+                <td><strong>Number of groups</strong></td>
+                <td>{num_groups}</td>
+            </tr><tr>
                 <td><strong>Objective expression</strong></td>
                 <td>{objective}</td>
             </tr><tr>
@@ -1120,6 +1266,7 @@ class Model(Object):
             address='0x0%x' % id(self),
             num_metabolites=len(self.metabolites),
             num_reactions=len(self.reactions),
+            num_groups=len(self.groups),
             objective=format_long_string(str(self.objective.expression), 100),
             compartments=", ".join(
                 v if v else k for k, v in iteritems(self.compartments)

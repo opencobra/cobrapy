@@ -15,7 +15,7 @@ import pytest
 from optlang.symbolics import Zero
 
 import cobra.util.solver as su
-from cobra.core import Metabolite, Model, Reaction
+from cobra.core import Group, Metabolite, Model, Reaction
 from cobra.exceptions import OptimizationError
 from cobra.util.solver import SolverNotFound, set_objective, solvers
 
@@ -322,6 +322,73 @@ def test_remove_gene(model):
     # Ensure the old reactions no longer have a record of the gene
     for reaction in gene_reactions:
         assert target_gene not in reaction.genes
+
+
+def test_group_model_reaction_association(model):
+    num_members = 5
+    reactions_for_group = model.reactions[0:num_members]
+    group = Group("arbitrary_group1")
+    group.add_members(reactions_for_group)
+    group.kind = "collection"
+    model.add_groups([group])
+    # group should point to and be associated with the model
+    assert group._model is model
+    assert group in model.groups
+
+    # model.get_associated_groups should find the group for each reaction
+    # we added to the group
+    for reaction in reactions_for_group:
+        assert group in model.get_associated_groups(reaction)
+
+    # remove the group from the model and check that reactions are no
+    # longer associated with the group
+    model.remove_groups([group])
+    assert group not in model.groups
+    assert group._model is not model
+    for reaction in reactions_for_group:
+        assert group not in model.get_associated_groups(reaction)
+
+
+def test_group_members_add_to_model(model):
+    # remove a few reactions from the model and add them to a new group
+    num_members = 5
+    reactions_for_group = model.reactions[0:num_members]
+    model.remove_reactions(reactions_for_group, remove_orphans=False)
+    group = Group("arbitrary_group1")
+    group.add_members(reactions_for_group)
+    group.kind = "collection"
+    # the old reactions should not be in the model
+    for reaction in reactions_for_group:
+        assert reaction not in model.reactions
+
+    # add the group to the model and check that the reactions were added
+    model.add_groups([group])
+    assert group in model.groups
+    for reaction in reactions_for_group:
+        assert reaction in model.reactions
+
+
+def test_group_loss_of_elements(model):
+    # when a metabolite, reaction, or gene is removed from a model, it
+    # should no longer be a member of any groups
+    num_members_each = 5
+    elements_for_group = model.reactions[0:num_members_each]
+    elements_for_group.extend(model.metabolites[0:num_members_each])
+    elements_for_group.extend(model.genes[0:num_members_each])
+    group = Group("arbitrary_group1")
+    group.add_members(elements_for_group)
+    group.kind = "collection"
+    model.add_groups([group])
+
+    remove_met = model.metabolites[0]
+    model.remove_metabolites([remove_met])
+    remove_rxn = model.reactions[0]
+    model.remove_reactions([remove_rxn])
+    remove_gene = model.genes[0]
+    remove_gene.remove_from_model()
+    assert remove_met not in group.members
+    assert remove_rxn not in group.members
+    assert remove_gene not in group.members
 
 
 def test_exchange_reactions(model):
