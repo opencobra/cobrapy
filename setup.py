@@ -39,7 +39,7 @@ except IOError:
 if __name__ == "__main__":
     setup(
         name="cobra",
-        version="0.14.2",
+        version="0.15.0",
         packages=find_packages(),
         setup_requires=setup_requirements,
         install_requires=[
