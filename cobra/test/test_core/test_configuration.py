@@ -38,7 +38,7 @@ def test_default_tolerance(model):
     """Verify the default solver tolerance."""
     config = Configuration()
     config.solver = "glpk"
-    assert config.tolerance == 1e-09
+    assert config.tolerance == 1e-07
     # Test the consistency between cobra.core.Configuration.tolerance and
     # cobra.core.Model.tolerance
     assert config.tolerance == model.tolerance
