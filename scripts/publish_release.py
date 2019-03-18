@@ -8,7 +8,6 @@ from __future__ import absolute_import, print_function
 import sys
 from datetime import date
 from glob import glob
-from builtins import open
 from os.path import join, basename
 from shutil import copy
 

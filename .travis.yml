@@ -41,32 +41,35 @@ stages:
 #before_deploy:
 #  - source scripts/prepare_notes.sh
 
-deploy:
-  - provider: pypi
-    skip_cleanup: true
-    distributions: sdist bdist_wheel
-    install: skip
-    script:
-      - echo "Deploying COBRApy to PyPI."
-    on:
-      tags: true
-      repo: $GITHUB_REPO
-    user: cobrapy
-    password: $PYPI_PASSWORD
-  - provider: script
-    skip_cleanup: true
-    install: skip
-    script: scripts/deploy_website.sh
-    on:
-      tags: true
-      repo: $GITHUB_REPO
-  - provider: releases
-    skip_cleanup: true
-    install: skip
-    script:
-    - echo "Releasing COBRApy to GitHub."
-    api_key: $GITHUB_TOKEN
-    body: "Please see https://github.com/opencobra/cobrapy/tree/${TRAVIS_TAG}/release-notes/${TRAVIS_TAG}.md for the full release notes."
-    on:
-      tags: true
-      repo: $GITHUB_REPO
+jobs:
+  include:
+    - stage: deploy
+      python: "3.6"
+      install:
+        - pip install --upgrade pip setuptools wheel
+      deploy:
+        - provider: pypi
+          skip_cleanup: true
+          script:
+            - echo "Deploying cobrapy to PyPI."
+          distributions: sdist bdist_wheel
+          user: cobrapy
+          password: $PYPI_PASSWORD
+          on:
+            tags: true
+            repo: $GITHUB_REPO
+        - provider: script
+          skip_cleanup: true
+          script: scripts/deploy_website.sh
+          on:
+            tags: true
+            repo: $GITHUB_REPO
+        - provider: releases
+          skip_cleanup: true
+          script:
+          - echo "Releasing COBRApy to GitHub."
+          api_key: $GITHUB_TOKEN
+          body: "Please see https://github.com/opencobra/cobrapy/tree/${TRAVIS_TAG}/release-notes/${TRAVIS_TAG}.md for the full release notes."
+          on:
+            tags: true
+            repo: $GITHUB_REPO
