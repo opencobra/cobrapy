@@ -34,6 +34,8 @@ class BaseConfiguration(object):
     solver : {"glpk", "cplex", "gurobi"}
         The default solver for new models. The solver choices are the ones
         provided by `optlang` and solvers installed in your environment.
+    tolerance: float
+        The default tolerance for the solver being used (default 1E-09).
     lower_bound : float
         The standard lower bound for reversible reactions (default -1000).
     upper_bound : float
@@ -50,8 +52,10 @@ class BaseConfiguration(object):
 
     def __init__(self):
         self._solver = None
+        self.tolerance = 1E-09
         self.lower_bound = None
         self.upper_bound = None
+
         # Set the default solver from a preferred order.
         for name in ["gurobi", "cplex", "glpk"]:
             try:
@@ -60,7 +64,9 @@ class BaseConfiguration(object):
                 continue
             else:
                 break
+
         self.bounds = -1000.0, 1000.0
+
         try:
             self.processes = cpu_count()
         except NotImplementedError:
@@ -99,10 +105,49 @@ class BaseConfiguration(object):
         self.upper_bound = bounds[1]
 
     def __repr__(self):
-        return "solver: {}\nlower_bound: {}\nupper_bound: {}\n" \
-            "processes: {}".format(
-                interface_to_str(self.solver), self.lower_bound,
-                self.upper_bound, self.processes)
+        return """
+        solver: {solver}
+        solver tolerance: {tolerance}
+        lower_bound: {lower_bound}
+        upper_bound: {upper_bound}
+        processes: {processes}""".format(
+            solver=interface_to_str(self.solver),
+            tolerance=self.tolerance,
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
+            processes=self.processes,
+        )
+
+    def _repr_html_(self):
+        return """
+        <table>
+            <tr>
+                <td><strong>Solver</strong></td>
+                <td>{solver}</td>
+            </tr>
+            <tr>
+                <td><strong>Solver tolerance</strong></td>
+                <td>{tolerance}</td>
+            </tr>
+            <tr>
+                <td><strong>Lower bound</strong></td>
+                <td>{lower_bound}</td>
+            </tr>
+            <tr>
+                <td><strong>Upper bound</strong></td>
+                <td>{upper_bound}</td>
+            </tr>
+            <tr>
+                <td><strong>Processes</strong></td>
+                <td>{processes}</td>
+            </tr>
+        </table>""".format(
+            solver=interface_to_str(self.solver),
+            tolerance=self.tolerance,
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
+            processes=self.processes,
+        )
 
 
 class Configuration(with_metaclass(Singleton, BaseConfiguration)):

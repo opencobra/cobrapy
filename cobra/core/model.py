@@ -63,6 +63,7 @@ class Model(Object):
         Group
     solution : Solution
         The last obtained solution from optimizing the model.
+
     """
 
     def __setstate__(self, state):
@@ -109,10 +110,14 @@ class Model(Object):
 
             # if not hasattr(self, '_solver'):  # backwards compatibility
             # with older cobrapy pickles?
+
             interface = CONFIGURATION.solver
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(Zero)
             self._populate_solver(self.reactions, self.metabolites)
+
+            self._tolerance = None
+            self.tolerance = CONFIGURATION.tolerance
 
     @property
     def solver(self):
@@ -156,6 +161,34 @@ class Model(Object):
         if self.problem == interface:
             return
         self._solver = interface.Model.clone(self._solver)
+
+    @property
+    def tolerance(self):
+        return self._tolerance
+
+    @tolerance.setter
+    def tolerance(self, value):
+        solver_tolerances = self._solver.configuration.tolerances
+
+        try:
+            solver_tolerances.feasibility = value
+        except AttributeError:
+            LOGGER.info("The current solver doesn't allow setting"
+                        "feasibility tolerance.")
+
+        try:
+            solver_tolerances.optimality = value
+        except AttributeError:
+            LOGGER.info("The current solver doesn't allow setting"
+                        "optimality tolerance.")
+
+        try:
+            solver_tolerances.integrality = value
+        except AttributeError:
+            LOGGER.info("The current solver doesn't allow setting"
+                        "integrality tolerance.")
+
+        self._tolerance = value
 
     @property
     def description(self):
