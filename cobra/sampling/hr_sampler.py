@@ -17,23 +17,11 @@ import numpy as np
 from optlang.interface import OPTIMAL
 from optlang.symbolics import Zero
 
-from cobra import Configuration
 from cobra.util import (
     constraint_matrices, create_stoichiometric_matrix, nullspace)
 
 
 LOGGER = getLogger(__name__)
-
-
-CONFIGURATION = Configuration()
-
-
-# The tolerance used for checking bounds feasibility
-BOUNDS_TOLERANCE = CONFIGURATION.tolerance
-
-
-# The tolerance used for checking equalities feasibility
-FEASIBILITY_TOLERANCE = CONFIGURATION.tolerance
 
 
 # Maximum number of retries for sampling
@@ -130,6 +118,10 @@ class HRSampler(object):
     ----------
     model : cobra.Model
         The cobra model from which the sampes get generated.
+    feasibility_tol: float
+        The tolerance used for checking equalities feasibility.
+    bounds_tol: float
+        The tolerance used for checking bounds feasibility.
     thinning : int
         The currently used thinning factor.
     n_samples : int
@@ -169,6 +161,8 @@ class HRSampler(object):
             raise TypeError("sampling does not work with integer problems :(")
 
         self.model = model.copy()
+        self.feasibility_tol = model.tolerance
+        self.bounds_tol = model.tolerance
         self.thinning = thinning
 
         if nproj is None:
@@ -201,16 +195,16 @@ class HRSampler(object):
         """Build the matrix representation of the sampling problem."""
 
         # Set up the mathematical problem
-        prob = constraint_matrices(self.model, zero_tol=FEASIBILITY_TOLERANCE)
+        prob = constraint_matrices(self.model, zero_tol=self.feasibility_tol)
 
         # check if there any non-zero equality constraints
         equalities = prob.equalities
         b = prob.b
         bounds = np.atleast_2d(prob.bounds).T
         var_bounds = np.atleast_2d(prob.variable_bounds).T
-        homogeneous = all(np.abs(b) < FEASIBILITY_TOLERANCE)
+        homogeneous = all(np.abs(b) < self.feasibility_tol)
         fixed_non_zero = np.abs(prob.variable_bounds[:, 1]) > \
-            FEASIBILITY_TOLERANCE
+            self.feasibility_tol
         fixed_non_zero &= prob.variable_fixed
 
         # check if there are any non-zero fixed variables, add them as
@@ -264,7 +258,7 @@ class HRSampler(object):
                              self.model.variables[self.rev_idx[i]])
 
                 # Omit fixed reactions if they are non-homogeneous
-                if r.upper_bound - r.lower_bound < BOUNDS_TOLERANCE:
+                if r.upper_bound - r.lower_bound < self.bounds_tol:
                     LOGGER.info("skipping fixed reaction %s" % r.id)
                     continue
 
@@ -334,7 +328,7 @@ class HRSampler(object):
 
         # don't reproject if point is feasible
         if np.allclose(equalities.dot(p), self.problem.b,
-                       rtol=0, atol=FEASIBILITY_TOLERANCE):
+                       rtol=0, atol=self.feasibility_tol):
             new = p
         else:
             LOGGER.info("feasibility violated in sample"
@@ -360,7 +354,7 @@ class HRSampler(object):
     def _is_redundant(self, matrix, cutoff=None):
         """Identify rdeundant rows in a matrix that can be removed."""
 
-        cutoff = 1.0 - FEASIBILITY_TOLERANCE
+        cutoff = 1.0 - self.feasibility_tol
 
         # Avoid zero variances
         extra_col = matrix[:, 0] + 1
@@ -483,17 +477,17 @@ class HRSampler(object):
             )
 
         valid = (
-            (feasibility < FEASIBILITY_TOLERANCE) &
-            (lb_error > -BOUNDS_TOLERANCE) &
-            (ub_error > -BOUNDS_TOLERANCE))
+            (feasibility < self.feasibility_tol) &
+            (lb_error > -self.bounds_tol) &
+            (ub_error > -self.bounds_tol))
         codes = np.repeat("", valid.shape[0]).astype(np.dtype((str, 3)))
         codes[valid] = "v"
-        codes[lb_error <= -BOUNDS_TOLERANCE] = np.char.add(
-            codes[lb_error <= -BOUNDS_TOLERANCE], "l")
-        codes[ub_error <= -BOUNDS_TOLERANCE] = np.char.add(
-            codes[ub_error <= -BOUNDS_TOLERANCE], "u")
-        codes[feasibility > FEASIBILITY_TOLERANCE] = np.char.add(
-            codes[feasibility > FEASIBILITY_TOLERANCE], "e")
+        codes[lb_error <= -self.bounds_tol] = np.char.add(
+            codes[lb_error <= -self.bounds_tol], "l")
+        codes[ub_error <= -self.bounds_tol] = np.char.add(
+            codes[ub_error <= -self.bounds_tol], "u")
+        codes[feasibility > self.feasibility_tol] = np.char.add(
+            codes[feasibility > self.feasibility_tol], "e")
 
         return codes
 
@@ -504,18 +498,19 @@ def step(sampler, x, delta, fraction=None, tries=0):
     """Sample a new feasible point from the point `x` in direction `delta`."""
 
     prob = sampler.problem
-    valid = ((np.abs(delta) > FEASIBILITY_TOLERANCE) &
+    valid = ((np.abs(delta) > sampler.feasibility_tol) &
              np.logical_not(prob.variable_fixed))
 
     # permissible alphas for staying in variable bounds
-    valphas = ((1.0 - BOUNDS_TOLERANCE) * prob.variable_bounds - x)[:, valid]
+    valphas = ((1.0 - sampler.bounds_tol) * prob.variable_bounds -
+               x)[:, valid]
     valphas = (valphas / delta[valid]).flatten()
 
     if prob.bounds.shape[0] > 0:
         # permissible alphas for staying in constraint bounds
         ineqs = prob.inequalities.dot(delta)
-        valid = np.abs(ineqs) > FEASIBILITY_TOLERANCE
-        balphas = ((1.0 - BOUNDS_TOLERANCE) * prob.bounds -
+        valid = np.abs(ineqs) > sampler.feasibility_tol
+        balphas = ((1.0 - sampler.bounds_tol) * prob.bounds -
                    prob.inequalities.dot(x))[:, valid]
         balphas = (balphas / ineqs[valid]).flatten()
 
@@ -538,9 +533,9 @@ def step(sampler, x, delta, fraction=None, tries=0):
     # Numerical instabilities may cause bounds invalidation
     # reset sampler and sample from one of the original warmup directions
     # if that occurs. Also reset if we got stuck.
-    if (np.any(sampler._bounds_dist(p) < -BOUNDS_TOLERANCE) or
+    if (np.any(sampler._bounds_dist(p) < -sampler.bounds_tol) or
             np.abs(np.abs(alpha_range).max() * delta).max() <
-            BOUNDS_TOLERANCE):
+            sampler.bounds_tol):
         if tries > MAX_TRIES:
             raise RuntimeError("Can not escape sampling region, model seems"
                                " numerically unstable :( Reporting the "
