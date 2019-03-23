@@ -4,6 +4,8 @@
 
 from __future__ import absolute_import
 
+from warnings import warn
+
 import numpy
 from optlang.symbolics import Zero
 
@@ -11,7 +13,7 @@ from cobra.core import get_solution
 from cobra.util import create_stoichiometric_matrix, nullspace
 
 
-def add_loopless(model, zero_cutoff=1e-12):
+def add_loopless(model, zero_cutoff=None):
     """Modify a model so all feasible flux distributions are loopless.
 
     In most cases you probably want to use the much faster `loopless_solution`.
@@ -26,7 +28,7 @@ def add_loopless(model, zero_cutoff=1e-12):
     ----------
     model : cobra.Model
         The model to which to add the constraints.
-    zero_cutoff : positive float, optional
+    zero_cutoff : positive float, optional (default model.tolerance)
         Cutoff used for null space. Coefficients with an absolute value smaller
         than `zero_cutoff` are considered to be zero.
 
@@ -41,6 +43,16 @@ def add_loopless(model, zero_cutoff=1e-12):
        2011 Feb 2;100(3):544-53. doi: 10.1016/j.bpj.2010.12.3707. Erratum
        in: Biophys J. 2011 Mar 2;100(5):1381.
     """
+
+    if zero_cutoff is None:
+        zero_cutoff = model.tolerance
+    else:
+        if zero_cutoff < model.tolerance:
+            warn("zero_cutoff can't be lesser than model.tolerance; using model.tolerance")
+            zero_cutoff = model.tolerance
+        else:
+            zero_cutoff = zero_cutoff
+
     internal = [i for i, r in enumerate(model.reactions) if not r.boundary]
     s_int = create_stoichiometric_matrix(model)[:, numpy.array(internal)]
     n_int = nullspace(s_int).T
@@ -163,7 +175,7 @@ def loopless_solution(model, fluxes=None):
     return solution
 
 
-def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
+def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=None):
     """Plugin to get a loopless FVA solution from single FVA iteration.
 
     Assumes the following about `model` and `reaction`:
@@ -182,7 +194,7 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
     solution : boolean, optional
         Whether to return the entire solution or only the minimum/maximum for
         `reaction`.
-    zero_cutoff : positive float, optional
+    zero_cutoff : positive float, optional (default model.tolerance)
         Cutoff used for loop removal. Fluxes with an absolute value smaller
         than `zero_cutoff` are considered to be zero.
 
@@ -193,6 +205,16 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=1e-6):
         all_fluxes == False (default). Otherwise returns a loopless flux
         solution containing the minimum/maximum flux for `reaction`.
     """
+
+    if zero_cutoff is None:
+        zero_cutoff = model.tolerance
+    else:
+        if zero_cutoff < model.tolerance:
+            warn("zero_cutoff can't be lesser than model.tolerance; using model.tolerance")
+            zero_cutoff = model.tolerance
+        else:
+            zero_cutoff = zero_cutoff
+
     current = model.objective.value
     sol = get_solution(model)
     objective_dir = model.objective.direction
