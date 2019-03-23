@@ -4,10 +4,12 @@
 
 from __future__ import absolute_import
 
+from warnings import warn
+
 from optlang.symbolics import Zero
 
 
-def fastcc(model, flux_threshold=1.0, zero_cutoff=1E-09):
+def fastcc(model, flux_threshold=1.0, zero_cutoff=None):
     r"""
     Check consistency of a metabolic network using FASTCC [1]_.
 
@@ -26,7 +28,7 @@ def fastcc(model, flux_threshold=1.0, zero_cutoff=1E-09):
         The constraint-based model to operate on.
     flux_threshold: float, optional (default 1.0)
         The flux threshold to consider.
-    zero_cutoff: float, optional (default 1e-9)
+    zero_cutoff: float, optional (default model.tolerance)
         The cutoff to consider for zero flux.
 
     Returns
@@ -50,6 +52,16 @@ def fastcc(model, flux_threshold=1.0, zero_cutoff=1E-09):
            PLoS Comput Biol 10(1): e1003424. doi:10.1371/journal.pcbi.1003424
 
     """
+
+    if zero_cutoff is None:
+        zero_cutoff = model.tolerance
+    else:
+        if zero_cutoff < model.tolerance:
+            warn("zero_cutoff can't be lesser than model.tolerance; using model.tolerance")
+            zero_cutoff = model.tolerance
+        else:
+            zero_cutoff = zero_cutoff
+
     with model:
         obj_vars = []
         vars_and_cons = []
