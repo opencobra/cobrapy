@@ -9,10 +9,14 @@ from multiprocessing import Pool
 import numpy as np
 import pandas
 
+from cobra.core.configuration import Configuration
 from cobra.sampling.hr_sampler import HRSampler, shared_np_array, step
 
 
 __all__ = ("OptGPSampler",)
+
+
+CONFIGURATION = Configuration()
 
 
 def mp_init(obj):
@@ -73,7 +77,7 @@ class OptGPSampler(HRSampler):
     ----------
     model : cobra.Model
         The cobra model from which to generate samples.
-    processes: int
+    processes: int, optional (default Configuration.processes)
         The number of processes used during sampling.
     thinning : int, optional
         The thinning factor of the generated sampling chain. A thinning of 10
@@ -151,13 +155,17 @@ class OptGPSampler(HRSampler):
 
     """
 
-    def __init__(self, model, processes, thinning=100, nproj=None,
+    def __init__(self, model, processes=None, thinning=100, nproj=None,
                  seed=None):
         """Initialize a new OptGPSampler."""
 
         super(OptGPSampler, self).__init__(model, thinning, seed=seed)
         self.generate_fva_warmup()
-        self.processes = processes
+
+        if processes is None:
+            self.processes = CONFIGURATION.processes
+        else:
+            self.processes = processes
 
         # This maps our saved center into shared memory,
         # meaning they are synchronized across processes
