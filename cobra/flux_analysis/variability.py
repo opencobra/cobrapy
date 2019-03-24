@@ -201,7 +201,7 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
 
 def find_blocked_reactions(model,
                            reaction_list=None,
-                           zero_cutoff=1e-9,
+                           zero_cutoff=None,
                            open_exchanges=False,
                            processes=None):
     """
@@ -222,7 +222,7 @@ def find_blocked_reactions(model,
     reaction_list : list, optional
         List of reactions to consider, the default includes all model
         reactions.
-    zero_cutoff : float, optional
+    zero_cutoff : float, optional (default model.tolerance)
         Flux value which is considered to effectively be zero.
     open_exchanges : bool, optional
         Whether or not to open all exchange reactions to very high flux ranges.
@@ -235,7 +235,18 @@ def find_blocked_reactions(model,
     -------
     list
         List with the identifiers of blocked reactions.
+
     """
+
+    if zero_cutoff is None:
+        zero_cutoff = model.tolerance
+    else:
+        if zero_cutoff < model.tolerance:
+            warn("zero_cutoff can't be lesser than model.tolerance; using model.tolerance")
+            zero_cutoff = model.tolerance
+        else:
+            zero_cutoff = zero_cutoff
+
     with model:
         if open_exchanges:
             for reaction in model.exchanges:
