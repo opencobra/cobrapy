@@ -374,14 +374,14 @@ class Model(Object):
         # Groups can be members of other groups. We initialize them first and
         # then update their members.
         for group in self.groups:
-            new_group = group.__class__()
+            new_group = group.__class__(group.id)
             for attr, value in iteritems(group.__dict__):
                 if attr not in do_not_copy_by_ref:
                     new_group.__dict__[attr] = copy(value)
             new_group._model = new
             new.groups.append(new_group)
         for group in self.groups:
-            new_group = new.groups[group.id]
+            new_group = new.groups.get_by_id(group.id)
             # update awareness, as in the reaction copies
             new_objects = []
             for member in group.members:

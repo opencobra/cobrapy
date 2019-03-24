@@ -485,6 +485,15 @@ def test_copy(model):
     assert 'ACALD' not in cp_model.reactions
 
 
+def test_copy_with_groups(model):
+    sub = Group("pathway", members=[model.reactions.PFK, model.reactions.FBA])
+    model.add_groups([sub])
+    copy = model.copy()
+    assert len(copy.groups) == len(model.groups)
+    assert len(copy.groups.get_by_id("pathway")) == len(
+        model.groups.get_by_id("pathway"))
+
+
 def test_deepcopy_benchmark(model, benchmark):
     benchmark(deepcopy, model)
 
