@@ -54,6 +54,9 @@ class Group(Object):
         # contains self
         self._model = None
 
+    def __len__(self):
+        return len(self._members)
+
     # read-only
     @property
     def members(self):
