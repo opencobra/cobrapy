@@ -95,7 +95,8 @@ def production_envelope(model, reactions, objective=None, carbon_sources=None,
         threshold = model.tolerance
     else:
         if threshold < model.tolerance:
-            warn("zero_cutoff can't be lesser than model.tolerance; using model.tolerance")
+            warn("zero_cutoff can't be lesser than model.tolerance; "
+                 "using model.tolerance")
             threshold = model.tolerance
         else:
             threshold = threshold

@@ -242,7 +242,8 @@ def find_blocked_reactions(model,
         zero_cutoff = model.tolerance
     else:
         if zero_cutoff < model.tolerance:
-            warn("zero_cutoff can't be lesser than model.tolerance; using model.tolerance")
+            warn("zero_cutoff can't be lesser than model.tolerance; "
+                 "using model.tolerance")
             zero_cutoff = model.tolerance
         else:
             zero_cutoff = zero_cutoff
