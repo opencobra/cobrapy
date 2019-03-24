@@ -7,8 +7,8 @@ where possible to provide a uniform interface."""
 
 from __future__ import absolute_import, division
 
-from collections import namedtuple
 import ctypes
+from collections import namedtuple
 from logging import getLogger
 from multiprocessing import Array
 from time import time
