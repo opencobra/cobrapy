@@ -4,13 +4,15 @@
 
 from __future__ import absolute_import
 
-from warnings import warn
+import logging
 
 import numpy
 from optlang.symbolics import Zero
 
 from cobra.core import get_solution
 from cobra.util import create_stoichiometric_matrix, nullspace
+
+LOGGER = logging.getLogger(__name__)
 
 
 def add_loopless(model, zero_cutoff=None):
@@ -48,8 +50,8 @@ def add_loopless(model, zero_cutoff=None):
         zero_cutoff = model.tolerance
     else:
         if zero_cutoff < model.tolerance:
-            warn("zero_cutoff can't be lesser than model.tolerance; "
-                 "using model.tolerance")
+            LOGGER.warning("zero_cutoff can't be less than model.tolerance; "
+                           "using model.tolerance")
             zero_cutoff = model.tolerance
         else:
             zero_cutoff = zero_cutoff
@@ -211,8 +213,8 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=None):
         zero_cutoff = model.tolerance
     else:
         if zero_cutoff < model.tolerance:
-            warn("zero_cutoff can't be lesser than model.tolerance; "
-                 "using model.tolerance")
+            LOGGER.warning("zero_cutoff can't be less than model.tolerance; "
+                           "using model.tolerance")
             zero_cutoff = model.tolerance
         else:
             zero_cutoff = zero_cutoff

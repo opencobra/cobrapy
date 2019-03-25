@@ -4,9 +4,11 @@
 
 from __future__ import absolute_import
 
-from warnings import warn
+import logging
 
 from optlang.symbolics import Zero
+
+LOGGER = logging.getLogger(__name__)
 
 
 def fastcc(model, flux_threshold=1.0, zero_cutoff=None):
@@ -57,8 +59,8 @@ def fastcc(model, flux_threshold=1.0, zero_cutoff=None):
         zero_cutoff = model.tolerance
     else:
         if zero_cutoff < model.tolerance:
-            warn("zero_cutoff can't be lesser than model.tolerance; "
-                 "using model.tolerance")
+            LOGGER.warning("zero_cutoff can't be less than model.tolerance; "
+                           "using model.tolerance")
             zero_cutoff = model.tolerance
         else:
             zero_cutoff = zero_cutoff

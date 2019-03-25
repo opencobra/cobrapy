@@ -2,8 +2,8 @@
 
 from __future__ import absolute_import, division
 
+import logging
 from itertools import product
-from warnings import warn
 
 import pandas as pd
 from numpy import abs, full, linspace, nan
@@ -13,6 +13,8 @@ from six import iteritems
 import cobra.util.solver as sutil
 from cobra.exceptions import OptimizationError
 from cobra.flux_analysis import flux_variability_analysis as fva
+
+LOGGER = logging.getLogger(__name__)
 
 
 def production_envelope(model, reactions, objective=None, carbon_sources=None,
@@ -95,8 +97,8 @@ def production_envelope(model, reactions, objective=None, carbon_sources=None,
         threshold = model.tolerance
     else:
         if threshold < model.tolerance:
-            warn("zero_cutoff can't be lesser than model.tolerance; "
-                 "using model.tolerance")
+            LOGGER.warning("threshold can't be less than model.tolerance; "
+                           "using model.tolerance")
             threshold = model.tolerance
         else:
             threshold = threshold
