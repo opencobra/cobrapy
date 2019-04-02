@@ -15,7 +15,7 @@ from cobra.flux_analysis.variability import flux_variability_analysis
 LOGGER = logging.getLogger(__name__)
 
 
-def geometric_fba(model, epsilon=1E-06, max_tries=200):
+def geometric_fba(model, epsilon=1E-06, max_tries=200, processes=None):
     """
     Perform geometric FBA to obtain a unique, centered flux distribution.
 
@@ -32,6 +32,9 @@ def geometric_fba(model, epsilon=1E-06, max_tries=200):
         The convergence tolerance of the model (default 1E-06).
     max_tries: int, optional
         Maximum number of iterations (default 200).
+    processes : int, optional
+        The number of parallel processes to run. If not explicitly passed,
+        will be set from the global configuration singleton.
 
     Returns
     -------
@@ -58,7 +61,7 @@ def geometric_fba(model, epsilon=1E-06, max_tries=200):
         prob = model.problem
         add_pfba(model)  # Minimize the solution space to a convex hull.
         model.optimize()
-        fva_sol = flux_variability_analysis(model)
+        fva_sol = flux_variability_analysis(model, processes=processes)
         mean_flux = (fva_sol["maximum"] + fva_sol["minimum"]).abs() / 2
 
         # Set the gFBA constraints.
@@ -84,7 +87,7 @@ def geometric_fba(model, epsilon=1E-06, max_tries=200):
         model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
         # Update loop variables.
         sol = model.optimize()
-        fva_sol = flux_variability_analysis(model)
+        fva_sol = flux_variability_analysis(model, processes=processes)
         mean_flux = (fva_sol["maximum"] + fva_sol["minimum"]).abs() / 2
         delta = (fva_sol["maximum"] - fva_sol["minimum"]).max()
         count = 1
@@ -99,7 +102,7 @@ def geometric_fba(model, epsilon=1E-06, max_tries=200):
                 l_c.lb = fva_sol.at[rxn_id, "minimum"]
             # Update loop variables.
             sol = model.optimize()
-            fva_sol = flux_variability_analysis(model)
+            fva_sol = flux_variability_analysis(model, processes=processes)
             mean_flux = (fva_sol["maximum"] + fva_sol["minimum"]).abs() / 2
             delta = (fva_sol["maximum"] - fva_sol["minimum"]).max()
             count += 1
