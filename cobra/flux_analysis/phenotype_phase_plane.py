@@ -13,6 +13,8 @@ from six import iteritems
 import cobra.util.solver as sutil
 from cobra.exceptions import OptimizationError
 from cobra.flux_analysis import flux_variability_analysis as fva
+from cobra.flux_analysis.helpers import normalize_cutoff
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -48,8 +50,9 @@ def production_envelope(model, reactions, objective=None, carbon_sources=None,
        Will identify active carbon sources in the medium if none are specified.
     points : int, optional
        The number of points to calculate production for.
-    threshold : float, optional (default model.tolerance)
-        A cut-off under which flux values will be considered to be zero.
+    threshold : float, optional
+        A cut-off under which flux values will be considered to be zero
+        (default model.tolerance).
 
     Returns
     -------
@@ -93,15 +96,7 @@ def production_envelope(model, reactions, objective=None, carbon_sources=None,
     else:
         data['carbon_source'] = ', '.join(rxn.id for rxn in c_input)
 
-    if threshold is None:
-        threshold = model.tolerance
-    else:
-        if threshold < model.tolerance:
-            LOGGER.warning("threshold can't be less than model.tolerance; "
-                           "using model.tolerance")
-            threshold = model.tolerance
-        else:
-            threshold = threshold
+    threshold = normalize_cutoff(model, threshold)
 
     size = points ** len(reactions)
 

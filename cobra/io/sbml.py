@@ -39,10 +39,10 @@ from copy import deepcopy
 from sys import platform
 from warnings import catch_warnings, simplefilter
 
+import libsbml
 from six import iteritems, string_types
 
 import cobra
-import libsbml
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective

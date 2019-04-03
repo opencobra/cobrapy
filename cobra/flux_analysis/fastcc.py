@@ -8,6 +8,9 @@ import logging
 
 from optlang.symbolics import Zero
 
+from cobra.flux_analysis.helpers import normalize_cutoff
+
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -30,8 +33,8 @@ def fastcc(model, flux_threshold=1.0, zero_cutoff=None):
         The constraint-based model to operate on.
     flux_threshold: float, optional (default 1.0)
         The flux threshold to consider.
-    zero_cutoff: float, optional (default model.tolerance)
-        The cutoff to consider for zero flux.
+    zero_cutoff: float, optional
+        The cutoff to consider for zero flux (default model.tolerance).
 
     Returns
     -------
@@ -54,16 +57,7 @@ def fastcc(model, flux_threshold=1.0, zero_cutoff=None):
            PLoS Comput Biol 10(1): e1003424. doi:10.1371/journal.pcbi.1003424
 
     """
-
-    if zero_cutoff is None:
-        zero_cutoff = model.tolerance
-    else:
-        if zero_cutoff < model.tolerance:
-            LOGGER.warning("zero_cutoff can't be less than model.tolerance; "
-                           "using model.tolerance")
-            zero_cutoff = model.tolerance
-        else:
-            zero_cutoff = zero_cutoff
+    zero_cutoff = normalize_cutoff(model, zero_cutoff)
 
     with model:
         obj_vars = []

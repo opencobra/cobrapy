@@ -12,11 +12,13 @@ from optlang.symbolics import Zero
 from pandas import DataFrame
 
 from cobra.core import Configuration, get_solution
-from cobra.flux_analysis.deletion import (single_gene_deletion,
-                                          single_reaction_deletion)
+from cobra.flux_analysis.deletion import (
+    single_gene_deletion, single_reaction_deletion)
+from cobra.flux_analysis.helpers import normalize_cutoff
 from cobra.flux_analysis.loopless import loopless_fva_iter
 from cobra.flux_analysis.parsimonious import add_pfba
 from cobra.util import solver as sutil
+
 
 LOGGER = logging.getLogger(__name__)
 CONFIGURATION = Configuration()
@@ -221,8 +223,9 @@ def find_blocked_reactions(model,
     reaction_list : list, optional
         List of reactions to consider, the default includes all model
         reactions.
-    zero_cutoff : float, optional (default model.tolerance)
-        Flux value which is considered to effectively be zero.
+    zero_cutoff : float, optional
+        Flux value which is considered to effectively be zero
+        (default model.tolerance).
     open_exchanges : bool, optional
         Whether or not to open all exchange reactions to very high flux ranges.
     processes : int, optional
@@ -236,16 +239,7 @@ def find_blocked_reactions(model,
         List with the identifiers of blocked reactions.
 
     """
-
-    if zero_cutoff is None:
-        zero_cutoff = model.tolerance
-    else:
-        if zero_cutoff < model.tolerance:
-            LOGGER.warning("zero_cutoff can't be less than model.tolerance; "
-                           "using model.tolerance")
-            zero_cutoff = model.tolerance
-        else:
-            zero_cutoff = zero_cutoff
+    zero_cutoff = normalize_cutoff(model, zero_cutoff)
 
     with model:
         if open_exchanges:
