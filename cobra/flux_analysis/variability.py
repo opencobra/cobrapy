@@ -14,6 +14,7 @@ from pandas import DataFrame
 from cobra.core import Configuration, get_solution
 from cobra.flux_analysis.deletion import (
     single_gene_deletion, single_reaction_deletion)
+from cobra.flux_analysis.helpers import normalize_cutoff
 from cobra.flux_analysis.loopless import loopless_fva_iter
 from cobra.flux_analysis.parsimonious import add_pfba
 from cobra.util import solver as sutil
@@ -201,7 +202,7 @@ def flux_variability_analysis(model, reaction_list=None, loopless=False,
 
 def find_blocked_reactions(model,
                            reaction_list=None,
-                           zero_cutoff=1e-9,
+                           zero_cutoff=None,
                            open_exchanges=False,
                            processes=None):
     """
@@ -223,7 +224,8 @@ def find_blocked_reactions(model,
         List of reactions to consider, the default includes all model
         reactions.
     zero_cutoff : float, optional
-        Flux value which is considered to effectively be zero.
+        Flux value which is considered to effectively be zero
+        (default model.tolerance).
     open_exchanges : bool, optional
         Whether or not to open all exchange reactions to very high flux ranges.
     processes : int, optional
@@ -235,7 +237,10 @@ def find_blocked_reactions(model,
     -------
     list
         List with the identifiers of blocked reactions.
+
     """
+    zero_cutoff = normalize_cutoff(model, zero_cutoff)
+
     with model:
         if open_exchanges:
             for reaction in model.exchanges:

@@ -4,10 +4,17 @@
 
 from __future__ import absolute_import
 
+import logging
+
 from optlang.symbolics import Zero
 
+from cobra.flux_analysis.helpers import normalize_cutoff
 
-def fastcc(model, flux_threshold=1.0, zero_cutoff=1E-09):
+
+LOGGER = logging.getLogger(__name__)
+
+
+def fastcc(model, flux_threshold=1.0, zero_cutoff=None):
     r"""
     Check consistency of a metabolic network using FASTCC [1]_.
 
@@ -26,8 +33,8 @@ def fastcc(model, flux_threshold=1.0, zero_cutoff=1E-09):
         The constraint-based model to operate on.
     flux_threshold: float, optional (default 1.0)
         The flux threshold to consider.
-    zero_cutoff: float, optional (default 1e-9)
-        The cutoff to consider for zero flux.
+    zero_cutoff: float, optional
+        The cutoff to consider for zero flux (default model.tolerance).
 
     Returns
     -------
@@ -50,6 +57,8 @@ def fastcc(model, flux_threshold=1.0, zero_cutoff=1E-09):
            PLoS Comput Biol 10(1): e1003424. doi:10.1371/journal.pcbi.1003424
 
     """
+    zero_cutoff = normalize_cutoff(model, zero_cutoff)
+
     with model:
         obj_vars = []
         vars_and_cons = []
