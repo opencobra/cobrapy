@@ -1022,16 +1022,19 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         # GPR
         gpr = cobra_reaction.gene_reaction_rule
         if gpr is not None and len(gpr) > 0:
-            gpa = r_fbc.createGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
-            # replace ids
+
+            # replace ids in string
             if f_replace and F_GENE_REV in f_replace:
+                gpr = gpr.replace('(', '( ')
+                gpr = gpr.replace(')', ' )')
                 tokens = gpr.split(' ')
                 for k in range(len(tokens)):
-                    if tokens[k] not in ['and', 'or', '(', ')']:
+                    if tokens[k] not in [' ', 'and', 'or', '(', ')']:
                         tokens[k] = f_replace[F_GENE_REV](tokens[k])
-                gpr = " ".join(tokens)
+                gpr_new = " ".join(tokens)
 
-            gpa.setAssociation(gpr)
+            gpa = r_fbc.createGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
+            gpa.setAssociation(gpr_new)
 
         # objective coefficients
         if reaction_coefficients.get(cobra_reaction, 0) != 0:
