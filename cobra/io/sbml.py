@@ -1278,8 +1278,8 @@ def _parse_annotations(sbase):
     -------
     dict (annotation dictionary)
 
-    FIXME: annotation format must be updated
-        (https://github.com/opencobra/cobrapy/issues/684)
+    FIXME: annotation format must be updated (this is a big collection of
+          fixes) - see: https://github.com/opencobra/cobrapy/issues/684)
     """
     annotation = {}
 
@@ -1308,7 +1308,9 @@ def _parse_annotations(sbase):
             if provider in annotation:
                 if isinstance(annotation[provider], string_types):
                     annotation[provider] = [annotation[provider]]
-                annotation[provider].append(identifier)
+                # FIXME: use a list
+                if identifier not in annotation[provider]:
+                    annotation[provider].append(identifier)
             else:
                 # FIXME: always in list
                 annotation[provider] = identifier
@@ -1335,6 +1337,7 @@ def _sbase_annotations(sbase, annotation):
 
     # standardize annotations
     annotation_data = deepcopy(annotation)
+
     for key, value in annotation_data.items():
         # handling of non-string annotations (e.g. integers)
         if isinstance(value, (float, int)):
