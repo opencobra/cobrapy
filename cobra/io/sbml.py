@@ -656,18 +656,15 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
                     )
                 except ValueError as e:
                     LOGGER.warning(str(e))
-            set_objective(cobra_model, coefficients)
-            cobra_model.solver.objective.direction = obj_direction
     else:
         # some legacy models encode objective coefficients in kinetic laws
-        for cobra_reaction in model.getListOfReactions():  # noqa: E501 type: libsbml.Reaction
-            if cobra_reaction.isSetKineticLaw():
-
+        for reaction in model.getListOfReactions():  # noqa: E501 type: libsbml.Reaction
+            if reaction.isSetKineticLaw():
                 klaw = reaction.getKineticLaw()  # type: libsbml.KineticLaw
                 p_oc = klaw.getParameter(
                     "OBJECTIVE_COEFFICIENT")  # noqa: E501 type: libsbml.LocalParameter
                 if p_oc:
-                    rid = cobra_reaction.getId()
+                    rid = reaction.getId()
                     if f_replace and F_REACTION in f_replace:
                         rid = f_replace[F_REACTION](rid)
                     try:
