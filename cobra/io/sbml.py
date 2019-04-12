@@ -148,7 +148,8 @@ F_REPLACE = {
 # -----------------------------------------------------------------------------
 # Read SBML
 # -----------------------------------------------------------------------------
-def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
+def read_sbml_model(filename, number=float, f_replace=F_REPLACE,
+                    set_missing_bounds=False, **kwargs):
     """Reads SBML model from given filename.
 
     If the given filename ends with the suffix ''.gz'' (for example,
@@ -184,6 +185,8 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
         By default the following id changes are performed on import:
         clip G_ from genes, clip M_ from species, clip R_ from reactions
         If no replacements should be performed, set f_replace={}, None
+    set_missing_bounds : boolean flag to set missing bounds
+        Missing bounds are set to default bounds in configuration.
 
     Returns
     -------
@@ -198,8 +201,11 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
     """
     try:
         doc = _get_doc_from_filename(filename)
-        return _sbml_to_model(doc, number=number,
-                              f_replace=f_replace, **kwargs)
+        return _sbml_to_model(doc,
+                              number=number,
+                              f_replace=f_replace,
+                              set_missing_bounds=set_missing_bounds,
+                              **kwargs)
     except IOError as e:
         raise e
 
@@ -255,7 +261,7 @@ def _get_doc_from_filename(filename):
     return doc
 
 
-def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
+def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
                    **kwargs):
     """Creates cobra model from SBMLDocument.
 
@@ -265,6 +271,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
     number: data type of stoichiometry: {float, int}
         In which data type should the stoichiometry be parsed.
     f_replace : dict of replacement functions for id replacement
+    set_missing_bounds : flag to set missing bounds
 
     Returns
     -------
@@ -529,17 +536,12 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
             p_lb = klaw.getParameter("LOWER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
             if p_lb:
                 cobra_reaction.lower_bound = p_lb.getValue()
-            else:
-                raise CobraSBMLError("Missing flux bounds on reaction: %s",
-                                     reaction)
             p_ub = klaw.getParameter("UPPER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
             if p_ub:
                 cobra_reaction.upper_bound = p_ub.getValue()
-            else:
-                raise CobraSBMLError("Missing flux bounds on reaction %s",
-                                     reaction)
 
-            LOGGER.warning("Encoding LOWER_BOUND and UPPER_BOUND in "
+            if p_ub is not None or p_lb is not None:
+                LOGGER.warning("Encoding LOWER_BOUND and UPPER_BOUND in "
                            "KineticLaw is discouraged, "
                            "use fbc:fluxBounds instead: %s", reaction)
 
@@ -547,10 +549,19 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
             LOGGER.error("Missing lower flux bound for reaction: "
                          "%s", reaction)
             missing_bounds = True
+            if set_missing_bounds:
+                cobra_reaction.lower_bound = config.lower_bound
+                LOGGER.warning("Set lower flux bound to default for reaction: "
+                               "%s", reaction)
+
         if p_ub is None:
             LOGGER.error("Missing upper flux bound for reaction: "
                          "%s", reaction)
             missing_bounds = True
+            if set_missing_bounds:
+                cobra_reaction.upper_bound = config.upper_bound
+                LOGGER.warning("Set upper flux bound to default for reaction: "
+                               "%s", reaction)
 
         # add reaction
         reactions.append(cobra_reaction)
@@ -613,8 +624,6 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
         cobra_reaction.gene_reaction_rule = gpr
 
     cobra_model.add_reactions(reactions)
-    if missing_bounds:
-        raise CobraSBMLError("Missing flux bounds on reactions.")
 
     # Objective
     obj_direction = "max"
@@ -761,6 +770,11 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
             groups.append(cobra_group)
 
     cobra_model.add_groups(groups)
+
+    # run the complete parsing to get all warnings and errors before
+    # raising errors
+    if missing_bounds and not set_missing_bounds:
+        raise CobraSBMLError("Missing flux bounds on reactions.")
 
     return cobra_model
 
