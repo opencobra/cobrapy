@@ -1336,6 +1336,8 @@ def _sbase_annotations(sbase, annotation):
     # standardize annotations
     annotation_data = deepcopy(annotation)
     for key, value in annotation_data.items():
+        if isinstance(value, (float, int)):
+            value = str(value)
         if isinstance(value, string_types):
             annotation_data[key] = [("is", value)]
 
