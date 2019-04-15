@@ -542,8 +542,8 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
 
             if p_ub is not None or p_lb is not None:
                 LOGGER.warning("Encoding LOWER_BOUND and UPPER_BOUND in "
-                           "KineticLaw is discouraged, "
-                           "use fbc:fluxBounds instead: %s", reaction)
+                               "KineticLaw is discouraged, "
+                               "use fbc:fluxBounds instead: %s", reaction)
 
         if p_lb is None:
             LOGGER.error("Missing lower flux bound for reaction: "

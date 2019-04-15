@@ -85,4 +85,3 @@ def test_read_write_sbml_annotations(data_directory, tmp_path):
     with open(sbml_path, "r") as f_in:
         model2 = read_sbml_model(f_in)
         _check_sbml_annotations(model2)
-
