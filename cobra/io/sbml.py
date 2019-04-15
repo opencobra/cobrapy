@@ -1252,8 +1252,8 @@ https://co.mbine.org/standards/qualifiers
 
 In the current stage the new annotation format is not completely supported yet.
 """
-URL_IDENTIFIERS_PATTERN = r"^http[s]{0,1}://identifiers.org/(.+)/(.+)"
-URL_IDENTIFIERS_PREFIX = r"https://identifiers.org"
+URL_IDENTIFIERS_PATTERN = re.compile(r"^http[s]{0,1}://identifiers.org/(.+?)/(.*)")  # noqa: E501
+URL_IDENTIFIERS_PREFIX = "https://identifiers.org"
 QUALIFIER_TYPES = {
      "is": libsbml.BQB_IS,
      "hasPart": libsbml.BQB_HAS_PART,
@@ -1309,16 +1309,16 @@ def _parse_annotations(sbase):
 
     for cvterm in cvterms:  # type: libsbml.CVTerm
         for k in range(cvterm.getNumResources()):
-            uri = cvterm.getResourceURI(k)
-
             # FIXME: read and store the qualifier
-            tokens = uri.split('/')
-            if len(tokens) != 5 or not tokens[2] == "identifiers.org":
+
+            uri = cvterm.getResourceURI(k)
+            match = URL_IDENTIFIERS_PATTERN.match(uri)
+            if not match:
                 LOGGER.warning("%s does not conform to "
                                "http(s)://identifiers.org/collection/id", uri)
                 continue
 
-            provider, identifier = tokens[3], tokens[4]
+            provider, identifier = match.group(1), match.group(2)
             if provider in annotation:
                 if isinstance(annotation[provider], string_types):
                     annotation[provider] = [annotation[provider]]
