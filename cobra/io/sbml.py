@@ -858,6 +858,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
     if cobra_model.name is not None:
         model.setName(cobra_model.name)
 
+    _sbase_annotations(model, cobra_model.annotation)
+
     # Meta information (ModelHistory)
     if hasattr(cobra_model, "_sbml"):
         meta = cobra_model._sbml
@@ -1252,7 +1254,7 @@ https://co.mbine.org/standards/qualifiers
 
 In the current stage the new annotation format is not completely supported yet.
 """
-URL_IDENTIFIERS_PATTERN = re.compile(r"^http[s]{0,1}://identifiers.org/(.+?)/(.*)")  # noqa: E501
+URL_IDENTIFIERS_PATTERN = re.compile(r"^http[s]{0,1}://identifiers.org/(.+?)/(.+)")  # noqa: E501
 URL_IDENTIFIERS_PREFIX = "https://identifiers.org"
 QUALIFIER_TYPES = {
      "is": libsbml.BQB_IS,
