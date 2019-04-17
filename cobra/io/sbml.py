@@ -148,7 +148,8 @@ F_REPLACE = {
 # -----------------------------------------------------------------------------
 # Read SBML
 # -----------------------------------------------------------------------------
-def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
+def read_sbml_model(filename, number=float, f_replace=F_REPLACE,
+                    set_missing_bounds=False, **kwargs):
     """Reads SBML model from given filename.
 
     If the given filename ends with the suffix ''.gz'' (for example,
@@ -184,6 +185,8 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
         By default the following id changes are performed on import:
         clip G_ from genes, clip M_ from species, clip R_ from reactions
         If no replacements should be performed, set f_replace={}, None
+    set_missing_bounds : boolean flag to set missing bounds
+        Missing bounds are set to default bounds in configuration.
 
     Returns
     -------
@@ -198,8 +201,11 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
     """
     try:
         doc = _get_doc_from_filename(filename)
-        return _sbml_to_model(doc, number=number,
-                              f_replace=f_replace, **kwargs)
+        return _sbml_to_model(doc,
+                              number=number,
+                              f_replace=f_replace,
+                              set_missing_bounds=set_missing_bounds,
+                              **kwargs)
     except IOError as e:
         raise e
 
@@ -255,7 +261,7 @@ def _get_doc_from_filename(filename):
     return doc
 
 
-def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
+def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
                    **kwargs):
     """Creates cobra model from SBMLDocument.
 
@@ -265,6 +271,7 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
     number: data type of stoichiometry: {float, int}
         In which data type should the stoichiometry be parsed.
     f_replace : dict of replacement functions for id replacement
+    set_missing_bounds : flag to set missing bounds
 
     Returns
     -------
@@ -529,28 +536,32 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
             p_lb = klaw.getParameter("LOWER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
             if p_lb:
                 cobra_reaction.lower_bound = p_lb.getValue()
-            else:
-                raise CobraSBMLError("Missing flux bounds on reaction: %s",
-                                     reaction)
             p_ub = klaw.getParameter("UPPER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
             if p_ub:
                 cobra_reaction.upper_bound = p_ub.getValue()
-            else:
-                raise CobraSBMLError("Missing flux bounds on reaction %s",
-                                     reaction)
 
-            LOGGER.warning("Encoding LOWER_BOUND and UPPER_BOUND in "
-                           "KineticLaw is discouraged, "
-                           "use fbc:fluxBounds instead: %s", reaction)
+            if p_ub is not None or p_lb is not None:
+                LOGGER.warning("Encoding LOWER_BOUND and UPPER_BOUND in "
+                               "KineticLaw is discouraged, "
+                               "use fbc:fluxBounds instead: %s", reaction)
 
         if p_lb is None:
             LOGGER.error("Missing lower flux bound for reaction: "
                          "%s", reaction)
             missing_bounds = True
+            if set_missing_bounds:
+                cobra_reaction.lower_bound = config.lower_bound
+                LOGGER.warning("Set lower flux bound to default for reaction: "
+                               "%s", reaction)
+
         if p_ub is None:
             LOGGER.error("Missing upper flux bound for reaction: "
                          "%s", reaction)
             missing_bounds = True
+            if set_missing_bounds:
+                cobra_reaction.upper_bound = config.upper_bound
+                LOGGER.warning("Set upper flux bound to default for reaction: "
+                               "%s", reaction)
 
         # add reaction
         reactions.append(cobra_reaction)
@@ -613,8 +624,6 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
         cobra_reaction.gene_reaction_rule = gpr
 
     cobra_model.add_reactions(reactions)
-    if missing_bounds:
-        raise CobraSBMLError("Missing flux bounds on reactions.")
 
     # Objective
     obj_direction = "max"
@@ -647,18 +656,15 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
                     )
                 except ValueError as e:
                     LOGGER.warning(str(e))
-            set_objective(cobra_model, coefficients)
-            cobra_model.solver.objective.direction = obj_direction
     else:
         # some legacy models encode objective coefficients in kinetic laws
-        for cobra_reaction in model.getListOfReactions():  # noqa: E501 type: libsbml.Reaction
-            if cobra_reaction.isSetKineticLaw():
-
+        for reaction in model.getListOfReactions():  # noqa: E501 type: libsbml.Reaction
+            if reaction.isSetKineticLaw():
                 klaw = reaction.getKineticLaw()  # type: libsbml.KineticLaw
                 p_oc = klaw.getParameter(
                     "OBJECTIVE_COEFFICIENT")  # noqa: E501 type: libsbml.LocalParameter
                 if p_oc:
-                    rid = cobra_reaction.getId()
+                    rid = reaction.getId()
                     if f_replace and F_REACTION in f_replace:
                         rid = f_replace[F_REACTION](rid)
                     try:
@@ -762,6 +768,11 @@ def _sbml_to_model(doc, number=float, f_replace=None, skip_annotations=False,
 
     cobra_model.add_groups(groups)
 
+    # run the complete parsing to get all warnings and errors before
+    # raising errors
+    if missing_bounds and not set_missing_bounds:
+        raise CobraSBMLError("Missing flux bounds on reactions.")
+
     return cobra_model
 
 
@@ -846,6 +857,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         model.setMetaId("meta_model")
     if cobra_model.name is not None:
         model.setName(cobra_model.name)
+
+    _sbase_annotations(model, cobra_model.annotation)
 
     # Meta information (ModelHistory)
     if hasattr(cobra_model, "_sbml"):
@@ -1011,16 +1024,19 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         # GPR
         gpr = cobra_reaction.gene_reaction_rule
         if gpr is not None and len(gpr) > 0:
-            gpa = r_fbc.createGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
-            # replace ids
+
+            # replace ids in string
             if f_replace and F_GENE_REV in f_replace:
+                gpr = gpr.replace('(', '( ')
+                gpr = gpr.replace(')', ' )')
                 tokens = gpr.split(' ')
                 for k in range(len(tokens)):
-                    if tokens[k] not in ['and', 'or', '(', ')']:
+                    if tokens[k] not in [' ', 'and', 'or', '(', ')']:
                         tokens[k] = f_replace[F_GENE_REV](tokens[k])
-                gpr = " ".join(tokens)
+                gpr_new = " ".join(tokens)
 
-            gpa.setAssociation(gpr)
+            gpa = r_fbc.createGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
+            gpa.setAssociation(gpr_new)
 
         # objective coefficients
         if reaction_coefficients.get(cobra_reaction, 0) != 0:
@@ -1238,8 +1254,8 @@ https://co.mbine.org/standards/qualifiers
 
 In the current stage the new annotation format is not completely supported yet.
 """
-URL_IDENTIFIERS_PATTERN = r"^http[s]{0,1}://identifiers.org/(.+)/(.+)"
-URL_IDENTIFIERS_PREFIX = r"https://identifiers.org"
+URL_IDENTIFIERS_PATTERN = re.compile(r"^http[s]{0,1}://identifiers.org/(.+?)/(.+)")  # noqa: E501
+URL_IDENTIFIERS_PREFIX = "https://identifiers.org"
 QUALIFIER_TYPES = {
      "is": libsbml.BQB_IS,
      "hasPart": libsbml.BQB_HAS_PART,
@@ -1278,8 +1294,8 @@ def _parse_annotations(sbase):
     -------
     dict (annotation dictionary)
 
-    FIXME: annotation format must be updated
-        (https://github.com/opencobra/cobrapy/issues/684)
+    FIXME: annotation format must be updated (this is a big collection of
+          fixes) - see: https://github.com/opencobra/cobrapy/issues/684)
     """
     annotation = {}
 
@@ -1295,20 +1311,22 @@ def _parse_annotations(sbase):
 
     for cvterm in cvterms:  # type: libsbml.CVTerm
         for k in range(cvterm.getNumResources()):
-            uri = cvterm.getResourceURI(k)
-
             # FIXME: read and store the qualifier
-            tokens = uri.split('/')
-            if len(tokens) != 5 or not tokens[2] == "identifiers.org":
+
+            uri = cvterm.getResourceURI(k)
+            match = URL_IDENTIFIERS_PATTERN.match(uri)
+            if not match:
                 LOGGER.warning("%s does not conform to "
                                "http(s)://identifiers.org/collection/id", uri)
                 continue
 
-            provider, identifier = tokens[3], tokens[4]
+            provider, identifier = match.group(1), match.group(2)
             if provider in annotation:
                 if isinstance(annotation[provider], string_types):
                     annotation[provider] = [annotation[provider]]
-                annotation[provider].append(identifier)
+                # FIXME: use a list
+                if identifier not in annotation[provider]:
+                    annotation[provider].append(identifier)
             else:
                 # FIXME: always in list
                 annotation[provider] = identifier
@@ -1335,7 +1353,11 @@ def _sbase_annotations(sbase, annotation):
 
     # standardize annotations
     annotation_data = deepcopy(annotation)
+
     for key, value in annotation_data.items():
+        # handling of non-string annotations (e.g. integers)
+        if isinstance(value, (float, int)):
+            value = str(value)
         if isinstance(value, string_types):
             annotation_data[key] = [("is", value)]
 
