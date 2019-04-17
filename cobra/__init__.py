@@ -16,7 +16,7 @@ from cobra import io
 from cobra import sampling
 from cobra.util import show_versions
 
-__version__ = "0.15.1"
+__version__ = "0.15.2"
 
 # set the warning format to be prettier and fit on one line
 _cobra_path = _dirname(_abspath(__file__))

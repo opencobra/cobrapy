@@ -29,7 +29,7 @@ install:
   - pip install --upgrade pip setuptools wheel tox tox-travis
 
 script:
-  - tox -- --benchmark-skip --cov-report xml --cov-report term
+  - travis_wait tox -- --benchmark-skip --cov-report xml --cov-report term
   - bash <(curl -s https://codecov.io/bash)
 
 stages:
