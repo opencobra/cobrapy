@@ -416,6 +416,37 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
 
 def find_reactions_in_cycles(model, bigM=10000, zero_cutoff=None,
                              relax_bounds=True, solve="lp"):
+    """
+    Find all reactions that participate in any internal cycles. It is done by
+    shutting down all exchange reactions run `find_active_reactions`
+
+    Parameters
+    ----------
+    model: cobra.Model
+        cobra model. It will *not* be modified.
+    bigM: float, optional
+        a large constant for bounding the optimization problem, default 1e4.
+    zero_cutoff: float, optional
+        The cutoff to consider for zero flux (default model.tolerance).
+    relax_bounds: True or False
+        Whether to relax the model bounds.
+        All +ve LB set as 0, all -ve UB set as 0, all -ve LB set as -bigM,
+        all +ve UB set as bigM. If False, use the original bounds in the model.
+        Default True
+    solve: "lp", "milp" or "fastSNP"
+        - "lp":      to solve a number of LP problems
+                     (usually finish by solving 5 LPs)
+        - "milp":    to solve a single MILP problem
+        - "fastSNP": find a minimal nullspace basis using Fast-SNP and then
+                     return the reactions with nonzero entries in the nullspace
+        Default "lp". For models with numerical difficulties when using "lp"
+        or "milp", it is recommanded to tighten all tolerances:
+        feasbility, optimality and integrality
+
+    Returns
+    -------
+    List of reactions that are in any internal cycles
+    """
 
     with model:
         for r in model.reactions:
