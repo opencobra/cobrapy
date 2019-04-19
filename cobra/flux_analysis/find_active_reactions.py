@@ -4,12 +4,15 @@ Find all active reactions by solving a single MILP problem
 or a (small) number of LP problems
 
 """
+import logging
 from cobra.flux_analysis.variability import flux_variability_analysis
 from cobra.flux_analysis.helpers import normalize_cutoff
 from optlang import Model, Variable, Constraint, Objective
 from optlang.symbolics import Zero
 from scipy.linalg import orth
 import numpy as np
+
+LOGGER = logging.getLogger(__name__)
 
 
 def relax_model_bounds(model, bigM=1e4):
@@ -39,7 +42,7 @@ def relax_model_bounds(model, bigM=1e4):
 
 
 def find_active_reactions(model, bigM=10000, zero_cutoff=None,
-                          relax_bounds=True, solve="lp", verbose=False):
+                          relax_bounds=True, solve="lp"):
     """
     Find all active reactions by solving a single MILP problem
     or a (small) number of LP problems
@@ -67,8 +70,6 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
         Default "lp". For models with numerical difficulties when using "lp"
         or "milp", it is recommanded to tighten all tolerances:
         feasbility, optimality and integrality
-    verbose: True or False
-        True to print messages during the computation
 
     Returns
     -------
@@ -143,9 +144,9 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
                   bigM * 10)
 
     feas_tol = model.solver.configuration.tolerances.feasibility
-    if verbose:
-        print("parameters:\nbigM\t%.f\neps\t%.2e\nfeas_tol\t%.2e"
-              % (bigM, eps, feas_tol))
+
+    LOGGER.debug("parameters:\nbigM\t%.f\neps\t%.2e\nfeas_tol\t%.2e",
+                 bigM, eps, feas_tol)
 
     with model:
 
@@ -199,18 +200,16 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
         model.objective.set_linear_coefficients({z: 1.0 for r, z in
                                                 z_neg.items()})
 
-        if verbose:
-            if solve == "milp":
-                print("Solve an MILP problem to find all active reactions")
-            else:
-                print("Solve LP #1 to find all active irreversible reactions")
+        if solve == "milp":
+            LOGGER.debug("Solve an MILP problem to find all active reactions")
+        else:
+            LOGGER.debug("Solve LP #1 to find all active irreversible reactions")
 
         sol = model.optimize()
         active_rxns = sol.fluxes[sol.fluxes.abs() >= eps *
                                  (1 - 1e-5)].index.tolist()
 
-        if verbose:
-            print("%d active reactions found" % (len(active_rxns)))
+        LOGGER.debug("%d active reactions found", len(active_rxns))
 
         if solve == "lp":
             for r in model.reactions:
@@ -244,9 +243,9 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
                                sol.fluxes[sol.fluxes.abs() >= eps *
                                           (1 - 1e-5)].index.tolist()]
 
-            if verbose:
-                print("Solve LP #2: min sum(z+). %d new" % (len(
-                      new_active_rxns)) + " active reversible reactions found")
+            LOGGER.debug("Solve LP #2: min sum(z+). %d new"
+                         % len(new_active_rxns) +
+                         " active reversible reactions found")
 
             rxns_to_remove = []
             for r in rxns_to_check:
@@ -269,9 +268,9 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
                                sol.fluxes[sol.fluxes.abs() >= eps *
                                           (1 - 1e-5)].index.tolist()]
 
-            if verbose:
-                print("Solve LP #3: min sum(z-). %d" % (len(new_active_rxns)) +
-                      " new active reversible reactions found")
+            LOGGER.debug("Solve LP #3: min sum(z-). %d"
+                         % len(new_active_rxns) +
+                         " new active reversible reactions found")
 
             # Usually all active reactions would have been found at this point.
             # But if there exists some reversible reactions such that
@@ -326,9 +325,8 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
             iter = 3
 
             # find any hidden forward active reversible reactions
-            if verbose:
-                print("Solve LPs until no forward active reversible" +
-                      " reactions are found:")
+            LOGGER.debug("Solve LPs until no forward active reversible" +
+                         " reactions are found:")
 
             while True:
                 iter += 1
@@ -337,9 +335,8 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
 
                 if sol.status == "infeasible":
                     # no feasible solution. No any forward active reaction
-                    if verbose:
-                        print("Solve LP #%d: infeasible." % iter +
-                              " All forward active reactions found...")
+                    LOGGER.debug("Solve LP #%d: infeasible." % iter +
+                                 " All forward active reactions found...")
 
                     break
 
@@ -362,14 +359,12 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
                 for r in rxns_to_remove:
                     rxns_to_check.remove(r)
 
-                if verbose:
-                    print("Solve LP #%d:  %d new active rxns found"
-                          % (iter, n_new))
+                LOGGER.debug("Solve LP #%d:  %d new active rxns found",
+                             iter, n_new)
 
             # find any hidden reverse active reversible reactions
-            if verbose:
-                print("Solve LPs until no reverse active reversible" +
-                      " reactions are found:")
+            LOGGER.debug("Solve LPs until no reverse active reversible" +
+                         " reactions are found:")
 
             # change the constraint into minimum negative flux
             constr_min_flux.lb = -eps
@@ -383,10 +378,9 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
 
                 if sol.status == "infeasible":
                     # no feasible solution. No any reverse active reaction left
-                    if verbose:
-                        print("Solve LP #%d: infeasible. Finished." % iter)
-                        print("%d active reactions in total."
-                              % len(active_rxns))
+                    LOGGER.debug("Solve LP #%d: infeasible. Finished.", iter)
+                    LOGGER.debug("%d active reactions in total.",
+                                 len(active_rxns))
 
                     break
 
@@ -409,9 +403,8 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
                 for r in rxns_to_remove:
                     rxns_to_check.remove(r)
 
-                if verbose:
-                    print("Solve LP #%d:  " % iter +
-                          "%d new active rxns found" % n_new)
+                LOGGER.debug("Solve LP #%d: %d new active rxns found",
+                             iter, n_new)
 
     return active_rxns
 
@@ -432,7 +425,7 @@ def find_reactions_in_cycles(model, bigM=10000, zero_cutoff=1e-1,
             return find_active_reactions(model, bigM=bigM,
                                          zero_cutoff=zero_cutoff,
                                          relax_bounds=relax_bounds,
-                                         solve=solve, verbose=verbose)
+                                         solve=solve)
 
 
 def fastSNP(model, bigM=1e4, zero_cutoff=None, relax_bounds=True, eps=1e-3,
@@ -487,8 +480,7 @@ def fastSNP(model, bigM=1e4, zero_cutoff=None, relax_bounds=True, eps=1e-3,
 
     """
 
-    if verbose:
-        print("Find minimal feasible sparse nullspace by Fast-SNP:")
+    LOGGER.debug("Find minimal feasible sparse nullspace by Fast-SNP:")
 
     zero_cutoff = normalize_cutoff(model, zero_cutoff)
     with model:
@@ -556,9 +548,9 @@ def fastSNP(model, bigM=1e4, zero_cutoff=None, relax_bounds=True, eps=1e-3,
             # update N or quit
             if x is None and y is None:
                 # no more feasible solution is found. Terminate.
-                if verbose:
-                    print("iteration %d. No more feasible basis found. Finish."
-                          % iter)
+                LOGGER.debug("iteration %d. No more feasible basis found.",
+                             iter)
+                LOGGER.debug("Finished")
                 break
             elif x is None:
                 N = y if N is None else np.concatenate((N, y), axis=1)
@@ -571,13 +563,11 @@ def fastSNP(model, bigM=1e4, zero_cutoff=None, relax_bounds=True, eps=1e-3,
                 else:
                     N = y if N is None else np.concatenate((N, y), axis=1)
 
-            if verbose:
-                print("iteration %d. Feasible basis found." % iter)
+            LOGGER.debug("iteration %d. Feasible basis found.", iter)
 
             P_N = orth(N)
             wP = weight - np.matmul(np.matmul(weight, P_N), P_N.transpose())
 
-    if verbose:
-        print("The nullspace dimension is %d." % N.shape[1])
+    LOGGER.debug("The nullspace dimension is %d.", N.shape[1])
 
     return N
