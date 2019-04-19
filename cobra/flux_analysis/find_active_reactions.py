@@ -124,7 +124,7 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
 
     elif solve == "fastsnp":
         N = fastSNP(model, bigM=bigM, zero_cutoff=zero_cutoff,
-                    relax_bounds=relax_bounds, verbose=verbose)
+                    relax_bounds=relax_bounds)
         return [model.reactions[j].id for j in range(len(model.reactions))
                 if N[j, :].any()]
 
@@ -133,17 +133,22 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
     if max_bound < float("inf"):
         bigM = max(bigM, max_bound)
 
-    if relax_bounds and zero_cutoff is None:
-        eps = 1e-5
-    else:
-        eps = normalize_cutoff(model, zero_cutoff)
+    eps = normalize_cutoff(model, zero_cutoff)
+    try:
+        # at least 100x feasibility if it is defined
+        feas_tol = model.solver.configuration.tolerances.feasibility
+        eps = max(eps, feas_tol * 100)
+    except:
+        feas_tol = eps
+        LOGGER.debug("Feasibility tolerance not defined")
 
-    eps = max(eps, model.solver.configuration.tolerances.feasibility * 100)
     if solve == "milp":
-        eps = max(eps, model.solver.configuration.tolerances.integrality *
-                  bigM * 10)
-
-    feas_tol = model.solver.configuration.tolerances.feasibility
+        try:
+            # ensure bigM*z << eps at integrality tolerance limit
+            eps = max(eps, model.solver.configuration.tolerances.integrality *
+                      bigM * 10)
+        except:
+            LOGGER.debug("Integrality tolerance not defined")
 
     LOGGER.debug("parameters:\nbigM\t%.f\neps\t%.2e\nfeas_tol\t%.2e",
                  bigM, eps, feas_tol)
@@ -409,27 +414,20 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
     return active_rxns
 
 
-def find_reactions_in_cycles(model, bigM=10000, zero_cutoff=1e-1,
-                             relax_bounds=True, solve="lp", verbose=False):
+def find_reactions_in_cycles(model, bigM=10000, zero_cutoff=None,
+                             relax_bounds=True, solve="lp"):
 
     with model:
         for r in model.reactions:
             if len(r.metabolites) <= 1:
                 r.upper_bound, r.lower_bound = 0, 0
 
-        if solve == "fastSNP":
-            N = fastSNP(model, bigM=bigM, eps=1e-3)
-            return [model.reactions[j].id for j in range(len(model.reactions))
-                    if N[j, :].any()]
-        else:
-            return find_active_reactions(model, bigM=bigM,
-                                         zero_cutoff=zero_cutoff,
-                                         relax_bounds=relax_bounds,
-                                         solve=solve)
+        return find_active_reactions(model, bigM=bigM, zero_cutoff=zero_cutoff,
+                                     relax_bounds=relax_bounds, solve=solve)
 
 
 def fastSNP(model, bigM=1e4, zero_cutoff=None, relax_bounds=True, eps=1e-3,
-            N=None, verbose=False):
+            N=None):
     """
     Find a minimal feasible sparse null space basis using fast sparse nullspace
     pursuit (Fast-SNP). Fast-SNP iteratively solves LP problems to find new
