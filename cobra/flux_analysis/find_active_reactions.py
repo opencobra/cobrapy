@@ -6,7 +6,7 @@ or a (small) number of LP problems
 """
 import logging
 from cobra.flux_analysis.loopless import fastSNP
-from cobra.flux_analysis.helpers import normalize_cutoff
+from cobra.flux_analysis.helpers import normalize_cutoff, relax_model_bounds
 from optlang import Model, Variable, Constraint, Objective
 from optlang.symbolics import Zero
 from scipy.linalg import orth
@@ -100,8 +100,7 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
         raise ValueError("Parameter solve must be 'lp', 'milp' or 'fastSNP'.")
 
     elif solve == "fastsnp":
-        N = fastSNP(model, bigM=bigM, zero_cutoff=zero_cutoff,
-                    relax_bounds=relax_bounds)
+        N = fastSNP(model, bigM=bigM, zero_cutoff=zero_cutoff)
         return [model.reactions[j].id for j in range(len(model.reactions))
                 if N[j, :].any()]
 
@@ -142,7 +141,7 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
         var_type = "continuous" if solve == "lp" else "binary"
 
         if relax_bounds:
-            cobra.flux_analysis.helpers.relax_model_bounds(model, bigM=bigM)
+            relax_model_bounds(model, bigM=bigM)
 
         for r in model.reactions:
 

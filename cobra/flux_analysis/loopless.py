@@ -10,7 +10,7 @@ import numpy
 from optlang.symbolics import Zero
 
 from cobra.core import get_solution
-from cobra.flux_analysis.helpers import normalize_cutoff
+from cobra.flux_analysis.helpers import normalize_cutoff, relax_model_bounds
 from cobra.util import create_stoichiometric_matrix, nullspace
 from scipy.linalg import orth
 
@@ -304,12 +304,14 @@ def fastSNP(model, bigM=1e4, zero_cutoff=None, eps=1e-3, N=None):
     1.  N = empty matrix
     2.  P = A * A^{T} where A is an orthonormal basis for N
     3.  Solve the following two LP problems:
+    .. math::
         min \sum_{j \in J}{|v_j|}
-        s.t.   \sum_{j \in J}{S_ij * v_j} = 0   \forall i \in I
+        s.t.   \sum_{j \in J}{S_{ij} * v_j} = 0   \forall i \in I
                LB_j <= v_j <= UB_j              \forall j \in J
                v_j <= |v_j|                     \forall j \in J
                -v_j <= |v_j|                    \forall j \in J
-               w^{T} * (I - P) v >= eps or <= -eps (one constraint for one LP)
+               w^{T} (I - P) v >= \varepsilon or <= -\varepsilon
+               (for the last constraint: one constraint for one LP)
     4a. If at least one of the LPs is feasible, choose the solution flux vector
         v with min. non-zeros. N <- [N v]. Go to Step 2.
     4b. If infeasible, terminate and N is the minimal feasible null space.
@@ -326,7 +328,7 @@ def fastSNP(model, bigM=1e4, zero_cutoff=None, eps=1e-3, N=None):
 
     zero_cutoff = normalize_cutoff(model, zero_cutoff)
     with model:
-        cobra.flux_analysis.helpers.relax_model_bounds(model, bigM=bigM)
+        relax_model_bounds(model, bigM=bigM)
         weight = numpy.mat(numpy.random.random(size=(1, len(model.reactions))))
         if N is None:
             wP = weight
