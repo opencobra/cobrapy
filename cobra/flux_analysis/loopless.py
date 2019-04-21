@@ -35,6 +35,13 @@ def add_loopless(model, zero_cutoff=None, method="fastSNP"):
     zero_cutoff : positive float, optional
         Cutoff used for null space. Coefficients with an absolute value smaller
         than `zero_cutoff` are considered to be zero (default model.tolerance).
+    method: str, "fastSNP" or "original"
+        The method to implement constraints for loopless requirement.
+        "fastSNP": preprocessing to find a minimal null space and reduce the
+                   number of 0-1 variables to the number of reactions in loops.
+                   Typically speed up, e.g., loopless FVA by 10~100x.
+                   The results should be completely the same. (default)
+        "original":the original implementation
 
     Returns
     -------
