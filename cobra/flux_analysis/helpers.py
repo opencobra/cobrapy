@@ -22,3 +22,28 @@ def normalize_cutoff(model, zero_cutoff=None):
             )
         else:
             return zero_cutoff
+
+
+def relax_model_bounds(model, bigM=1e4):
+    """
+    Relax all upper and lower bounds in the model.
+    All positive upper bounds will become bigM.
+    All negative lower bounds will become -bigM.
+    All positive lower bounds and negative upper bounds will become zero.
+
+    Parameters
+    ----------
+    model: cobra.Model
+        cobra model. It *will* be modified.
+    bigM: float, optional
+        a large constant for relaxing the model bounds, default 1e4.
+
+    Returns
+    -------
+    Nothing
+
+    """
+
+    for r in model.reactions:
+        r.upper_bound = bigM if r.upper_bound > 0 else 0
+        r.lower_bound = -bigM if r.lower_bound < 0 else 0

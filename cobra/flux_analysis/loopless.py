@@ -12,12 +12,12 @@ from optlang.symbolics import Zero
 from cobra.core import get_solution
 from cobra.flux_analysis.helpers import normalize_cutoff
 from cobra.util import create_stoichiometric_matrix, nullspace
-
+from scipy.linalg import orth
 
 LOGGER = logging.getLogger(__name__)
 
 
-def add_loopless(model, zero_cutoff=None):
+def add_loopless(model, zero_cutoff=None, method="fastSNP"):
     """Modify a model so all feasible flux distributions are loopless.
 
     In most cases you probably want to use the much faster `loopless_solution`.
@@ -49,9 +49,22 @@ def add_loopless(model, zero_cutoff=None):
     """
     zero_cutoff = normalize_cutoff(model, zero_cutoff)
 
-    internal = [i for i, r in enumerate(model.reactions) if not r.boundary]
-    s_int = create_stoichiometric_matrix(model)[:, numpy.array(internal)]
-    n_int = nullspace(s_int).T
+    if method == "original":
+        internal = [i for i, r in enumerate(model.reactions) if not r.boundary]
+        s_int = create_stoichiometric_matrix(model)[:, numpy.array(internal)]
+        n_int = nullspace(s_int).T
+    elif method == "fastSNP":
+        with model:
+            for r in model.reactions:
+                if r.boundary:
+                    r.lower_bound, r.upper_bound = 0, 0
+
+            n_int = fastSNP(model).T
+
+        internal = [i for i, r in enumerate(model.reactions)
+                    if n_int[:, i].any()]
+        n_int = n_int[:, numpy.array(internal)]
+
     max_bound = max(max(abs(b) for b in r.bounds) for r in model.reactions)
     prob = model.problem
 
@@ -249,3 +262,147 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=None):
             best = reaction.flux
     model.objective.direction = objective_dir
     return best
+
+
+def fastSNP(model, bigM=1e4, zero_cutoff=None, eps=1e-3, N=None):
+    """
+    Find a minimal feasible sparse null space basis using fast sparse nullspace
+    pursuit (Fast-SNP). Fast-SNP iteratively solves LP problems to find new
+    feasible nullspace basis that lies outside the current nullspace until the
+    entire feasible nullspace is found
+
+    Parameters
+    ----------
+    model: cobra.Model
+        cobra model. It will *not* be modified.
+    bigM: float, optional
+        a large constant for bounding the optimization problem, default 1e4.
+    zero_cutoff: float, optional
+        The cutoff to consider for zero flux (default model.tolerance).
+    eps: float, optional
+        The cutoff for ensuring the flux vector not lying in the current null
+        nullspace i.e., the constraints w(I - P)v >= eps or <= -eps where P is
+        the projection matrix of the current null space. Default 1e-3
+    N: numpy.ndarray, optional
+        Starting null space matrix. Default None, found by the algorithm
+
+    Returns
+    -------
+    numpy.ndarray
+        Null space matrix with rows corresponding to model.reactions
+
+    Notes
+    -----
+    The algorithm is as follow:
+    1.  N = empty matrix
+    2.  P = A * A^{T} where A is an orthonormal basis for N
+    3.  Solve the following two LP problems:
+        min \sum_{j \in J}{|v_j|}
+        s.t.   \sum_{j \in J}{S_ij * v_j} = 0   \forall i \in I
+               LB_j <= v_j <= UB_j              \forall j \in J
+               v_j <= |v_j|                     \forall j \in J
+               -v_j <= |v_j|                    \forall j \in J
+               w^{T} * (I - P) v >= eps or <= -eps (one constraint for one LP)
+    4a. If at least one of the LPs is feasible, choose the solution flux vector
+        v with min. non-zeros. N <- [N v]. Go to Step 2.
+    4b. If infeasible, terminate and N is the minimal feasible null space.
+
+    References
+    ----------
+    Saa, P. A., & Nielsen, L. K. (2016). Fast-SNP: a fast matrix pre-processing
+    algorithm for efficient loopless flux optimization of metabolic models.
+    Bioinformatics, 32(24), 3807-3814.
+
+    """
+
+    LOGGER.debug("Find minimal feasible sparse nullspace by Fast-SNP:")
+
+    zero_cutoff = normalize_cutoff(model, zero_cutoff)
+    with model:
+        cobra.flux_analysis.helpers.relax_model_bounds(model, bigM=bigM)
+        weight = numpy.mat(numpy.random.random(size=(1, len(model.reactions))))
+        if N is None:
+            wP = weight
+        else:
+            P_N = orth(N)
+            wP = weight - numpy.matmul(numpy.matmul(weight, P_N),
+                                       P_N.transpose())
+
+        # w' (I - P'P) v >= eps / <= -eps
+        constr_proj = model.problem.Constraint(0, lb=eps)
+        model.add_cons_vars(constr_proj)
+
+        # min sum(v_pos + v_neg)
+        model.objective = model.problem.Objective(Zero, sloppy=True,
+                                                  direction="min")
+        model.objective.set_linear_coefficients(
+            {r.forward_variable: 1.0 for r in model.reactions})
+        model.objective.set_linear_coefficients(
+            {r.reverse_variable: 1.0 for r in model.reactions})
+
+        iter = 0
+        while True:
+            iter += 1
+            # use w' (I - P'P) from the current null space as coefficients
+            constr_proj.set_linear_coefficients(
+                {model.reactions[i].forward_variable: wP[0, i] for i in
+                 range(len(model.reactions))})
+            constr_proj.set_linear_coefficients(
+                {model.reactions[i].reverse_variable: -wP[0, i] for i in
+                 range(len(model.reactions))})
+
+            # find basis for using w' (I - P'P) v >= eps
+            constr_proj.ub = bigM
+            constr_proj.lb = eps
+            constr_proj.ub = None
+            sol = model.optimize()
+
+            if sol.status == "optimal":
+                x = sol.fluxes.to_numpy()
+                x = x.reshape((len(x), 1))
+                x[abs(x) < zero_cutoff] = 0
+                x = x / abs(x[x != 0]).min()
+            else:
+                x = None
+
+            # find basis for using w' (I - P'P) v <= -eps
+            constr_proj.lb = -bigM
+            constr_proj.ub = -eps
+            constr_proj.lb = None
+            sol = model.optimize()
+
+            if sol.status == "optimal":
+                y = sol.fluxes.to_numpy()
+                y = y.reshape((len(y), 1))
+                y[abs(y) < zero_cutoff] = 0
+                y = y / abs(y[y != 0]).min()
+            else:
+                y = None
+
+            # update N or quit
+            if x is None and y is None:
+                # no more feasible solution is found. Terminate.
+                LOGGER.debug("iteration %d. No more feasible basis found.",
+                             iter)
+                LOGGER.debug("Finished")
+                break
+            elif x is None:
+                N = y if N is None else numpy.concatenate((N, y), axis=1)
+            elif y is None:
+                N = x if N is None else numpy.concatenate((N, x), axis=1)
+            else:
+                # choose the sparsest solution
+                if sum(x != 0) < sum(y != 0):
+                    N = x if N is None else numpy.concatenate((N, x), axis=1)
+                else:
+                    N = y if N is None else numpy.concatenate((N, y), axis=1)
+
+            LOGGER.debug("iteration %d. Feasible basis found.", iter)
+
+            P_N = orth(N)
+            wP = weight - numpy.matmul(numpy.matmul(weight, P_N),
+                                       P_N.transpose())
+
+    LOGGER.debug("The nullspace dimension is %d.", N.shape[1])
+
+    return N

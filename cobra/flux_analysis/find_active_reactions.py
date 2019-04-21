@@ -5,7 +5,7 @@ or a (small) number of LP problems
 
 """
 import logging
-from cobra.flux_analysis.variability import flux_variability_analysis
+from cobra.flux_analysis.loopless import fastSNP
 from cobra.flux_analysis.helpers import normalize_cutoff
 from optlang import Model, Variable, Constraint, Objective
 from optlang.symbolics import Zero
@@ -13,32 +13,6 @@ from scipy.linalg import orth
 import numpy as np
 
 LOGGER = logging.getLogger(__name__)
-
-
-def relax_model_bounds(model, bigM=1e4):
-    """
-    Relax all upper and lower bounds in the model.
-    All positive upper bounds will become bigM.
-    All negative lower bounds will become -bigM.
-    All positive lower bounds and negative upper bounds will become zero.
-
-    Parameters
-    ----------
-    model: cobra.Model
-        cobra model. It will *not* be modified.
-    bigM: float, optional
-        a large constant for relaxing the model bounds, default 1e4.
-
-    Returns
-    -------
-    cobra.Model
-        cobra model with relaxed bounds
-
-    """
-
-    for r in model.reactions:
-        r.upper_bound = bigM if r.upper_bound > 0 else 0
-        r.lower_bound = -bigM if r.lower_bound < 0 else 0
 
 
 def find_active_reactions(model, bigM=10000, zero_cutoff=None,
@@ -80,35 +54,38 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
     -----
     The optmization problem solved is as follow:
     MILP version:
-    min \sum_{j \in J}{z_pos_j + z_neg_j}
-    s.t.  \sum_{j \in J}{S_ij * v_j} = 0  \forall i \in I
-          LB_j <= v_j <= UB_j             \forall j \in J
-        v_j + \varepsilon * z_pos_j >=  \varepsilon  for j \in J with LB_j >= 0
-        v_j - \varepsilon * z_neg_j <= -\varepsilon  for j \in J with UB_j <= 0
-      v_j + M * z_pos_j >=  \varepsilon  for j \in J with LB_j < 0 and UB_j > 0
-      v_j - M * z_neg_j <= -\varepsilon  for j \in J with LB_j < 0 and UB_j > 0
-      v_j \in \mathbb{R}
-      z_pos_j\in \mathbb{R} for j \in J with LB_j >= 0
-      z_neg_j \in \mathbb{R} for j \in J with UB_j <= 0
-      z_pos_j, z_neg_j \in {0,1} for j \in J with LB_j < 0 and UB_j > 0
+    .. math::
+
+        min \sum_{j \in J}{z_pos_j + z_neg_j}
+        s.t.
+        \sum_{j \in J}{S_{ij} * v_{j}} = 0  \forall i \in I
+        LB_j <= v_j <= UB_j             \forall j \in J
+        v_j + \varepsilon z^{+}_j >=  \varepsilon  for j \in J with LB_j >= 0
+        v_j - \varepsilon z^{-}_j <= -\varepsilon  for j \in J with UB_j <= 0
+        v_j + Mz^{+}_j >=  \varepsilon  for j \in J with LB_j < 0 and UB_j > 0
+        v_j - Mz^{-}_j <= -\varepsilon  for j \in J with LB_j < 0 and UB_j > 0
+        v_j \in \mathbb{R}
+        z^{+}_j \in \mathbb{R} for j \in J with LB_j >= 0
+        z^{-}_j \in \mathbb{R} for j \in J with UB_j <= 0
+        z^{+}_j, z^{-}_j \in {0,1} for j \in J with LB_j < 0 and UB_j > 0
 
     LP version:
     Solve a number of versions of the LP relaxation of the above problem
     as follows (cumulative changes in each step):
-    1. Fix all z_pos_j, z_neg_j = 1 for all reversible reactions.
+    1. Fix all :math:`z^{+}_j, z^{-}_j = 1` for all reversible reactions.
        Solve the LP to find all active irreversible reactions and
        some active reversible reactions.
-    2. Fix all z_pos_j, z_neg_j = 1 for all irreversible reactions.
-       Un-fix z_pos_j for the reversible reactions not yet found active.
+    2. Fix all :math:`z^{+}_j, z^{-}_j = 1` for all irreversible reactions.
+       Unfix :math:`z^{+}_j` for the reversible reactions not yet found active.
        Solve the LP to find some active reversible reactions
-    3. Fix all z_pos_j. Un-fix z_neg_j for reversible reactions not yet found
-       active. Solve the LP to find some active reversible reactions
+    3. Fix all math:`z^{+}_j`. Unfix :math:`z^{-}_j` for reversible reactions
+       not yet found active. Solve the LP to find some active rev. reactions
     4. Add a randomly weighted min. flux constraint:
-       \sum_{j \in J not yet found active}{w_j * v_j} >= eps
+       \sum_{j \in J^{rev,not\: active}}{w_j v_j} >= \varepsilon
        Solve and update the set of reversible reactions not yet found active
        (if any) until infeasibility
     5. Change the sense and R.H.S. of the min. flux constraint in Step 4 to
-       '<= -eps'. Solve and update until infeasibility
+       '<= -\varepsilon'. Solve and update until infeasibility
 
     References
     ----------
@@ -165,7 +142,7 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
         var_type = "continuous" if solve == "lp" else "binary"
 
         if relax_bounds:
-            relax_model_bounds(model, bigM=bigM)
+            cobra.flux_analysis.helpers.relax_model_bounds(model, bigM=bigM)
 
         for r in model.reactions:
 
@@ -208,7 +185,8 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
         if solve == "milp":
             LOGGER.debug("Solve an MILP problem to find all active reactions")
         else:
-            LOGGER.debug("Solve LP #1 to find all active irreversible reactions")
+            LOGGER.debug("Solve LP #1 to find all active irreversible" +
+                         " reactions")
 
         sol = model.optimize()
         active_rxns = sol.fluxes[sol.fluxes.abs() >= eps *
@@ -455,148 +433,3 @@ def find_reactions_in_cycles(model, bigM=10000, zero_cutoff=None,
 
         return find_active_reactions(model, bigM=bigM, zero_cutoff=zero_cutoff,
                                      relax_bounds=relax_bounds, solve=solve)
-
-
-def fastSNP(model, bigM=1e4, zero_cutoff=None, relax_bounds=True, eps=1e-3,
-            N=None):
-    """
-    Find a minimal feasible sparse null space basis using fast sparse nullspace
-    pursuit (Fast-SNP). Fast-SNP iteratively solves LP problems to find new
-    feasible nullspace basis that lies outside the current nullspace until the
-    entire feasible nullspace is found
-
-    Parameters
-    ----------
-    model: cobra.Model
-        cobra model. It will *not* be modified.
-    bigM: float, optional
-        a large constant for bounding the optimization problem, default 1e4.
-    zero_cutoff: float, optional
-        The cutoff to consider for zero flux (default model.tolerance).
-    eps: float, optional
-        The cutoff for ensuring the flux vector not lying in the current null
-        nullspace i.e., the constraints w(I - P)v >= eps or <= -eps where P is
-        the projection matrix of the current null space. Default 1e-3
-    N: numpy.ndarray, optional
-        Starting null space matrix. Default None, found by the algorithm
-
-    Returns
-    -------
-    numpy.ndarray
-        Null space matrix with rows corresponding to model.reactions
-
-    Notes
-    -----
-    The algorithm is as follow:
-    1.  N = empty matrix
-    2.  P = A * A^{T} where A is an orthonormal basis for N
-    3.  Solve the following two LP problems:
-        min \sum_{j \in J}{|v_j|}
-        s.t.   \sum_{j \in J}{S_ij * v_j} = 0   \forall i \in I
-               LB_j <= v_j <= UB_j              \forall j \in J
-               v_j <= |v_j|                     \forall j \in J
-               -v_j <= |v_j|                    \forall j \in J
-               w^{T} * (I - P) v >= eps or <= -eps (one constraint for one LP)
-    4a. If at least one of the LPs is feasible, choose the solution flux vector
-        v with min. non-zeros. N <- [N v]. Go to Step 2.
-    4b. If infeasible, terminate and N is the minimal feasible null space.
-
-    References
-    ----------
-    Saa, P. A., & Nielsen, L. K. (2016). Fast-SNP: a fast matrix pre-processing
-    algorithm for efficient loopless flux optimization of metabolic models.
-    Bioinformatics, 32(24), 3807-3814.
-
-    """
-
-    LOGGER.debug("Find minimal feasible sparse nullspace by Fast-SNP:")
-
-    zero_cutoff = normalize_cutoff(model, zero_cutoff)
-    with model:
-        if relax_bounds:
-            relax_model_bounds(model, bigM=bigM)
-
-        weight = np.mat(np.random.random(size=(1, len(model.reactions))))
-        if N is None:
-            wP = weight
-        else:
-            P_N = orth(N)
-            wP = weight - np.matmul(np.matmul(weight, P_N), P_N.transpose())
-
-        # w' (I - P'P) v >= eps / <= -eps
-        constr_proj = model.problem.Constraint(0, lb=eps)
-        model.add_cons_vars(constr_proj)
-
-        # min sum(v_pos + v_neg)
-        model.objective = model.problem.Objective(Zero, sloppy=True,
-                                                  direction="min")
-        model.objective.set_linear_coefficients(
-            {r.forward_variable: 1.0 for r in model.reactions})
-        model.objective.set_linear_coefficients(
-            {r.reverse_variable: 1.0 for r in model.reactions})
-
-        iter = 0
-        while True:
-            iter += 1
-            # use w' (I - P'P) from the current null space as coefficients
-            constr_proj.set_linear_coefficients(
-                {model.reactions[i].forward_variable: wP[0, i] for i in
-                 range(len(model.reactions))})
-            constr_proj.set_linear_coefficients(
-                {model.reactions[i].reverse_variable: -wP[0, i] for i in
-                 range(len(model.reactions))})
-
-            # find basis for using w' (I - P'P) v >= eps
-            constr_proj.ub = bigM
-            constr_proj.lb = eps
-            constr_proj.ub = None
-            sol = model.optimize()
-
-            if sol.status == "optimal":
-                x = sol.fluxes.to_numpy()
-                x = x.reshape((len(x), 1))
-                x[abs(x) < zero_cutoff] = 0
-                x = x / abs(x[x != 0]).min()
-            else:
-                x = None
-
-            # find basis for using w' (I - P'P) v <= -eps
-            constr_proj.lb = -bigM
-            constr_proj.ub = -eps
-            constr_proj.lb = None
-            sol = model.optimize()
-
-            if sol.status == "optimal":
-                y = sol.fluxes.to_numpy()
-                y = y.reshape((len(y), 1))
-                y[abs(y) < zero_cutoff] = 0
-                y = y / abs(y[y != 0]).min()
-            else:
-                y = None
-
-            # update N or quit
-            if x is None and y is None:
-                # no more feasible solution is found. Terminate.
-                LOGGER.debug("iteration %d. No more feasible basis found.",
-                             iter)
-                LOGGER.debug("Finished")
-                break
-            elif x is None:
-                N = y if N is None else np.concatenate((N, y), axis=1)
-            elif y is None:
-                N = x if N is None else np.concatenate((N, x), axis=1)
-            else:
-                # choose the sparsest solution
-                if sum(x != 0) < sum(y != 0):
-                    N = x if N is None else np.concatenate((N, x), axis=1)
-                else:
-                    N = y if N is None else np.concatenate((N, y), axis=1)
-
-            LOGGER.debug("iteration %d. Feasible basis found.", iter)
-
-            P_N = orth(N)
-            wP = weight - np.matmul(np.matmul(weight, P_N), P_N.transpose())
-
-    LOGGER.debug("The nullspace dimension is %d.", N.shape[1])
-
-    return N
