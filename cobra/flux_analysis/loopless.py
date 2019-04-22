@@ -329,7 +329,7 @@ def fastSNP(model, bigM=1e4, zero_cutoff=None, eps=1e-3, N=None):
     zero_cutoff = normalize_cutoff(model, zero_cutoff)
     with model:
         relax_model_bounds(model, bigM=bigM)
-        weight = numpy.mat(numpy.random.random(size=(1, len(model.reactions))))
+        weight = numpy.random.random(size=(1, len(model.reactions)))
         if N is None:
             wP = weight
         else:
