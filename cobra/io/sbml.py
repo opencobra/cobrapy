@@ -582,9 +582,10 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
             sid = sref.getSpecies()
             if f_replace and F_SPECIE in f_replace:
                 sid = f_replace[F_SPECIE](sid)
+
+
             stoichiometry[sid] -= number(
-                _check_required(sref, sref.getStoichiometry(),
-                                "stoichiometry"))
+                _check_required(sref, sref.getStoichiometry(), "stoichiometry"))
 
         for sref in reaction.getListOfProducts():  # noqa: E501 type: libsbml.SpeciesReference
             sid = sref.getSpecies()
@@ -1163,7 +1164,7 @@ def _check_required(sbase, value, attribute):
     attribute value (or value if already set)
     """
 
-    if not value:
+    if (value is None) or (value == ""):
         msg = "required attribute '%s' not found in '%s'" % \
               (attribute, sbase)
         if hasattr(sbase, "getId") and sbase.getId():
