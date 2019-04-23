@@ -583,10 +583,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
             sid = sref.getSpecies()
             if f_replace and F_SPECIE in f_replace:
                 sid = f_replace[F_SPECIE](sid)
-
-
             stoichiometry[sid] -= number(
-                _check_required(sref, sref.getStoichiometry(), "stoichiometry"))
+                _check_required(sref, sref.getStoichiometry(),
+                                "stoichiometry"))
 
         for sref in reaction.getListOfProducts():  # noqa: E501 type: libsbml.SpeciesReference
             sid = sref.getSpecies()
@@ -1393,7 +1392,7 @@ def _sbase_annotations(sbase, annotation):
         if provider in ["SBO", "sbo"]:
             if provider == "SBO":
                 LOGGER.warning("'SBO' provider is deprecated, "
-                                "use 'sbo' provider instead")
+                               "use 'sbo' provider instead")
             sbo_term = data[0][1]
             _check(sbase.setSBOTerm(sbo_term),
                    "Setting SBOTerm: {}".format(sbo_term))
