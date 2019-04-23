@@ -1453,7 +1453,7 @@ def validate_sbml_model(filename,
     errors = {key: [] for key in ("validator", "warnings", "other",
                                   "SBML errors")}
 
-    for key in ["SBML_FATAL", "SBML ERROR", "SBML_SCHEMA_ERROR",
+    for key in ["SBML_FATAL", "SBML_ERROR", "SBML_SCHEMA_ERROR",
                 "SBML_WARNING"]:
         errors[key] = []
 
