@@ -1,12 +1,13 @@
 """ Test functionalities of find_active_reactions"""
 
+from __future__ import absolute_import
 
 import pytest
 
 import cobra
 from cobra.test import create_test_model
-from cobra.flux_analysis import (
-    find_active_reactions, find_reactions_in_cycles, fastSNP)
+from cobra.flux_analysis.find_active_reactions import (
+    find_active_reactions, find_reactions_in_cycles)
 
 
 def test_find_active_reactions_benchmark(model, benchmark, all_solvers):
@@ -23,11 +24,11 @@ def test_find_reactions_in_cycles_benchmark(model, benchmark, all_solvers):
     benchmark(find_reactions_in_cycles, model)
 
 
-def test_fastSNP_benchmark(model, benchmark, all_solvers):
-    """Benchmark fastSNP."""
-
-    model.solver = all_solvers
-    benchmark(fastSNP, model)
+# def test_fastSNP_benchmark(model, benchmark, all_solvers):
+#     """Benchmark fastSNP."""
+#
+#     model.solver = all_solvers
+#     benchmark(fastSNP, model)
 
 
 def test_find_active_reactions(model, all_solvers):
