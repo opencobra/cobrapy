@@ -37,7 +37,11 @@ import traceback
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 from sys import platform
-from warnings import catch_warnings, simplefilter
+
+try:
+    from cStringIO import StringIO      # Python 2
+except ImportError:
+    from io import StringIO
 
 import libsbml
 from six import iteritems, string_types
@@ -366,6 +370,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
     # Species
     metabolites = []
     boundary_metabolites = []
+    if model.getNumSpecies() == 0:
+        LOGGER.warning("No metabolites in model")
+
     for specie in model.getListOfSpecies():  # type: libsbml.Species
         sid = _check_required(specie, specie.getId(), "id")
         if f_replace and F_SPECIE in f_replace:
@@ -496,6 +503,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
     # Reactions
     missing_bounds = False
     reactions = []
+    if model.getNumReactions() == 0:
+        LOGGER.warning("No reactions in model")
+
     for reaction in model.getListOfReactions():  # type: libsbml.Reaction
         rid = _check_required(reaction, reaction.getId(), "id")
         if f_replace and F_REACTION in f_replace:
@@ -1376,7 +1386,7 @@ def _sbase_annotations(sbase, annotation):
         # set SBOTerm
         if provider in ["SBO", "sbo"]:
             if provider == "SBO":
-                logging.warning("'SBO' provider is deprecated, "
+                LOGGER.warning("'SBO' provider is deprecated, "
                                 "use 'sbo' provider instead")
             sbo_term = data[0][1]
             _check(sbase.setSBOTerm(sbo_term),
@@ -1449,19 +1459,24 @@ def validate_sbml_model(filename,
     ------
     CobraSBMLError
     """
-    # store errors
-    errors = {key: [] for key in ("validator", "warnings", "other",
-                                  "SBML errors")}
+    # Errors and warnings are grouped based on their type. SBML_* types are
+    # from the libsbml validator. COBRA_* types are from the cobrapy SBML
+    # parser.
+    keys = (
+        "SBML_FATAL",
+        "SBML_ERROR",
+        "SBML_SCHEMA_ERROR",
+        "SBML_WARNING",
 
-    for key in ["SBML_FATAL", "SBML_ERROR", "SBML_SCHEMA_ERROR",
-                "SBML_WARNING"]:
-        errors[key] = []
+        "COBRA_FATAL",
+        "COBRA_ERROR",
+        "COBRA_WARNING",
+        "COBRA_CHECK",
+    )
+    errors = {key: [] for key in keys}
 
-    # make sure there is exactly one model
-    doc = _get_doc_from_filename(filename)
-    model = doc.getModel()  # type: libsbml.Model
-    if model is None:
-        raise CobraSBMLError("No SBML model detected in file.")
+    # [1] libsbml validation
+    doc = _get_doc_from_filename(filename)  # type: libsbml.SBMLDocument
 
     # set checking of units & modeling practise
     doc.setConsistencyChecks(libsbml.LIBSBML_CAT_UNITS_CONSISTENCY,
@@ -1475,7 +1490,7 @@ def validate_sbml_model(filename,
     doc.checkConsistency()
 
     for k in range(doc.getNumErrors()):
-        e = doc.getError(k)
+        e = doc.getError(k)  # type: libsbml.SBMLError
         msg = _error_string(e, k=k)
         sev = e.getSeverity()
         if sev == libsbml.LIBSBML_SEV_FATAL:
@@ -1487,23 +1502,43 @@ def validate_sbml_model(filename,
         elif sev == libsbml.LIBSBML_SEV_WARNING:
             errors["SBML_WARNING"].append(msg)
 
-    # ensure can be made into model
+    # [2] cobrapy validation (check that SBML can be read into model)
     # all warnings generated while loading will be logged as errors
-    with catch_warnings(record=True) as warning_list:
-        simplefilter("always")
-        try:
-            model = _sbml_to_model(doc)
-        except CobraSBMLError as e:
-            errors["SBML errors"].append(str(e))
-            return None, errors
-        except Exception as e:
-            errors["other"].append(str(e))
-            return None, errors
+    log_stream = StringIO()
+    handler = logging.StreamHandler(log_stream)
+    formatter = logging.Formatter('%(levelname)s:%(message)s')
+    handler.setFormatter(formatter)
+    handler.setLevel(logging.INFO)
+    LOGGER.addHandler(handler)
 
-    errors["warnings"].extend(str(i.message) for i in warning_list)
+    try:
+        model = _sbml_to_model(doc)
+    except CobraSBMLError as e:
+        errors["COBRA_ERROR"].append(str(e))
+        return None, errors
+    except Exception as e:
+        errors["COBRA_FATAL"].append(str(e))
+        return None, errors
 
+    cobra_errors = log_stream.getvalue().split("\n")
+    for cobra_error in cobra_errors:
+        tokens = cobra_error.split(":")
+        error_type = tokens[0]
+        error_msg = ":".join(tokens[1:])
+
+        if error_type == "WARNING":
+            errors["COBRA_WARNING"].append(error_msg)
+        elif error_type == "ERROR":
+            errors["COBRA_ERROR"].append(error_msg)
+
+    # reset logger
+    LOGGER.removeHandler(handler)
+
+    # [3] additional model tests
     if check_model:
-        errors["validator"].extend(check_metabolite_compartment_formula(model))
+        errors["COBRA_CHECK"].extend(
+            check_metabolite_compartment_formula(model)
+        )
 
     return model, errors
 

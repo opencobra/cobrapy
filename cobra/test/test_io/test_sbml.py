@@ -257,6 +257,18 @@ def test_validate(data_directory):
         assert len(errors["SBML_WARNING"]) == 23
 
 
+def test_validation_warnings(data_directory):
+    """Test the validation warnings. """
+    sbml_path = join(data_directory, "validation.xml")
+    with open(sbml_path, "r") as f_in:
+        model1, errors = validate_sbml_model(f_in,
+                                             check_modeling_practice=True)
+        assert model1
+        assert errors
+        assert len(errors["COBRA_WARNING"]) == 3
+        assert "No objective in listOfObjectives" in errors["COBRA_WARNING"]
+
+
 def test_infinity_bounds(data_directory, tmp_path):
     """Test infinity bound example. """
     sbml_path = join(data_directory, "fbc_ex1.xml")
