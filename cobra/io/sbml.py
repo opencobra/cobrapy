@@ -779,10 +779,14 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
 
     cobra_model.add_groups(groups)
 
-    # run the complete parsing to get all warnings and errors before
-    # raising errors
+    # general hint for missing flux bounds
     if missing_bounds and not set_missing_bounds:
-        raise CobraSBMLError("Missing flux bounds on reactions.")
+        LOGGER.error("Missing flux bounds on reactions. As best practise and "
+                     "to avoid confusion flux bounds should be set on all "
+                     "reactions."
+                     "To set the missing flux bounds to default bounds "
+                     "specified in cobra.configuration use the flag"
+                     "`read_sbml_model(..., set_missing_bounds=True)`.")
 
     return cobra_model
 
