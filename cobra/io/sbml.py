@@ -58,6 +58,7 @@ class CobraSBMLError(Exception):
 
 
 LOGGER = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 # -----------------------------------------------------------------------------
 # Defaults and constants for writing SBML
@@ -1510,11 +1511,12 @@ def validate_sbml_model(filename,
     # [2] cobrapy validation (check that SBML can be read into model)
     # all warnings generated while loading will be logged as errors
     log_stream = StringIO()
-    handler = logging.StreamHandler(log_stream)
+    stream_handler = logging.StreamHandler(log_stream)
     formatter = logging.Formatter('%(levelname)s:%(message)s')
-    handler.setFormatter(formatter)
-    handler.setLevel(logging.INFO)
-    LOGGER.addHandler(handler)
+    stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(logging.INFO)
+    LOGGER.addHandler(stream_handler)
+    LOGGER.propagate = False
 
     try:
         model = _sbml_to_model(doc)
@@ -1536,14 +1538,36 @@ def validate_sbml_model(filename,
         elif error_type == "ERROR":
             errors["COBRA_ERROR"].append(error_msg)
 
-    # reset logger
-    LOGGER.removeHandler(handler)
+    # remove stream handler
+    LOGGER.removeHandler(stream_handler)
+    LOGGER.propagate = True
 
     # [3] additional model tests
     if check_model:
         errors["COBRA_CHECK"].extend(
             check_metabolite_compartment_formula(model)
         )
+
+    for key in ["SBML_FATAL", "SBML_ERROR", "SBML_SCHEMA_ERROR"]:
+        if len(errors[key]) > 0:
+            LOGGER.error("SBML errors in validation, check error log "
+                         "for details.")
+            break
+    for key in ["SBML_WARNING"]:
+        if len(errors[key]) > 0:
+            LOGGER.error("SBML warnings in validation, check error log "
+                         "for details.")
+            break
+    for key in ["COBRA_FATAL", "COBRA_ERROR"]:
+        if len(errors[key]) > 0:
+            LOGGER.error("COBRA errors in validation, check error log "
+                         "for details.")
+            break
+    for key in ["COBRA_WARNING", "COBRA_CHECK"]:
+        if len(errors[key]) > 0:
+            LOGGER.error("COBRA warnings in validation, check error log "
+                         "for details.")
+            break
 
     return model, errors
 
