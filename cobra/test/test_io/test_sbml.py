@@ -13,9 +13,12 @@ from tempfile import gettempdir
 
 import pytest
 
+import cobra
 from cobra import Model
 from cobra.io import read_sbml_model, validate_sbml_model, write_sbml_model
 
+
+config = cobra.Configuration()  # for default bounds
 
 try:
     import jsonschema
@@ -244,6 +247,28 @@ def test_groups(data_directory, tmp_path):
         assert len(model2.groups) == 10
         g1 = model2.groups[0]
         assert len(g1.members) == 6
+
+
+def test_missing_flux_bounds1(data_directory):
+    sbml_path = join(data_directory, "annotation.xml")
+    with open(sbml_path, "r") as f_in:
+        # missing flux bounds are set to cobra.configuration.bounds
+        model, errors = validate_sbml_model(f_in,
+                                            set_missing_bounds=True)
+        r1 = model.reactions.R1
+        assert r1.lower_bound == config.lower_bound
+        assert r1.upper_bound == config.upper_bound
+
+
+def test_missing_flux_bounds2(data_directory):
+    sbml_path = join(data_directory, "annotation.xml")
+    with open(sbml_path, "r") as f_in:
+        # missing flux bounds are set to [-INF, INF]
+        model, errors = validate_sbml_model(f_in,
+                                            set_missing_bounds=False)
+        r1 = model.reactions.R1
+        assert r1.lower_bound == -float("Inf")
+        assert r1.upper_bound == float("Inf")
 
 
 def test_validate(data_directory):

@@ -267,8 +267,8 @@ def _get_doc_from_filename(filename):
     return doc
 
 
-def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
-                   **kwargs):
+def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
+                   set_missing_bounds=False, **kwargs):
     """Creates cobra model from SBMLDocument.
 
     Parameters
@@ -787,11 +787,11 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
 
     # general hint for missing flux bounds
     if missing_bounds and not set_missing_bounds:
-        LOGGER.warning("Missing flux bounds on reactions. As best practise and "
-                       "to avoid confusion flux bounds should be set "
-                       "explicitly on all reactions."
+        LOGGER.warning("Missing flux bounds on reactions. As best practise "
+                       "and to avoid confusion flux bounds should be set "
+                       "explicitly on all reactions. "
                        "To set the missing flux bounds to default bounds "
-                       "specified in cobra.configuration use the flag"
+                       "specified in cobra.configuration use the flag "
                        "`read_sbml_model(..., set_missing_bounds=True)`.")
 
     return cobra_model
@@ -1442,7 +1442,7 @@ def validate_sbml_model(filename,
                         check_model=True,
                         internal_consistency=True,
                         check_units_consistency=False,
-                        check_modeling_practice=False):
+                        check_modeling_practice=False, **kwargs):
     """Validate SBML model and returns the model along with a list of errors.
 
     Parameters
@@ -1472,6 +1472,7 @@ def validate_sbml_model(filename,
     ------
     CobraSBMLError
     """
+    print("kwargs:", kwargs)
     # Errors and warnings are grouped based on their type. SBML_* types are
     # from the libsbml validator. COBRA_* types are from the cobrapy SBML
     # parser.
@@ -1526,7 +1527,8 @@ def validate_sbml_model(filename,
     LOGGER.propagate = False
 
     try:
-        model = _sbml_to_model(doc)
+        # read model and allow additional parser arguments
+        model = _sbml_to_model(doc, **kwargs)
     except CobraSBMLError as e:
         errors["COBRA_ERROR"].append(str(e))
         return None, errors
@@ -1595,9 +1597,9 @@ def _error_string(error, k=None):
     if package == '':
         package = 'core'
 
-    error_str = 'E{} ({}): {} ({}, L{}); {}; {}'.format(k,
-                            error.getSeverityAsString(),
-                            error.getCategoryAsString(), package, error.getLine(),
-                            error.getShortMessage(), error.getMessage()
-    )
+    template = 'E{} ({}): {} ({}, L{}); {}; {}'
+    error_str = template.format(k, error.getSeverityAsString(),
+                                error.getCategoryAsString(), package,
+                                error.getLine(), error.getShortMessage(),
+                                error.getMessage())
     return error_str
