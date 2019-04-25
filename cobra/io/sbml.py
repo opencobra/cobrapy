@@ -558,22 +558,24 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
                                "use fbc:fluxBounds instead: %s", reaction)
 
         if p_lb is None:
-            LOGGER.error("Missing lower flux bound for reaction: "
-                         "%s", reaction)
             missing_bounds = True
             if set_missing_bounds:
-                cobra_reaction.lower_bound = config.lower_bound
-                LOGGER.warning("Set lower flux bound to default for reaction: "
-                               "%s", reaction)
+                lower_bound = config.lower_bound
+            else:
+                lower_bound = -float("Inf")
+            cobra_reaction.lower_bound = lower_bound
+            LOGGER.warning("Missing lower flux bound set to '%s' for "
+                           " reaction: '%s'", lower_bound, reaction)
 
         if p_ub is None:
-            LOGGER.error("Missing upper flux bound for reaction: "
-                         "%s", reaction)
             missing_bounds = True
             if set_missing_bounds:
-                cobra_reaction.upper_bound = config.upper_bound
-                LOGGER.warning("Set upper flux bound to default for reaction: "
-                               "%s", reaction)
+                upper_bound = config.upper_bound
+            else:
+                upper_bound = float("Inf")
+            cobra_reaction.upper_bound = upper_bound
+            LOGGER.warning("Missing upper flux bound set to '%s' for "
+                           " reaction: '%s'", upper_bound, reaction)
 
         # add reaction
         reactions.append(cobra_reaction)
@@ -696,6 +698,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
                                    "use fbc:fluxObjective "
                                    "instead: %s", cobra_reaction)
 
+    if len(coefficients) == 0:
+        LOGGER.error("No objective coefficients in model. Unclear what should "
+                     "be optimized")
     set_objective(cobra_model, coefficients)
     cobra_model.solver.objective.direction = obj_direction
 
@@ -782,12 +787,12 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
 
     # general hint for missing flux bounds
     if missing_bounds and not set_missing_bounds:
-        LOGGER.error("Missing flux bounds on reactions. As best practise and "
-                     "to avoid confusion flux bounds should be set on all "
-                     "reactions."
-                     "To set the missing flux bounds to default bounds "
-                     "specified in cobra.configuration use the flag"
-                     "`read_sbml_model(..., set_missing_bounds=True)`.")
+        LOGGER.warning("Missing flux bounds on reactions. As best practise and "
+                       "to avoid confusion flux bounds should be set "
+                       "explicitly on all reactions."
+                       "To set the missing flux bounds to default bounds "
+                       "specified in cobra.configuration use the flag"
+                       "`read_sbml_model(..., set_missing_bounds=True)`.")
 
     return cobra_model
 
@@ -1156,7 +1161,7 @@ def _create_parameter(model, pid, value, sbo=None, constant=True, units=None,
 
 
 def _check_required(sbase, value, attribute):
-    """Get required attribute from the SBase.
+    """Get required attribute from SBase.
 
     Parameters
     ----------
@@ -1170,12 +1175,14 @@ def _check_required(sbase, value, attribute):
     """
 
     if (value is None) or (value == ""):
-        msg = "required attribute '%s' not found in '%s'" % \
+        msg = "Required attribute '%s' cannot be found or parsed in '%s'" % \
               (attribute, sbase)
         if hasattr(sbase, "getId") and sbase.getId():
             msg += " with id '%s'" % sbase.getId()
         elif hasattr(sbase, "getName") and sbase.getName():
             msg += " with name '%s'" % sbase.getName()
+        elif hasattr(sbase, "getMetaId") and sbase.getMetaId():
+            msg += " with metaId '%s'" % sbase.getName()
         raise CobraSBMLError(msg)
     return value
 
@@ -1588,15 +1595,9 @@ def _error_string(error, k=None):
     if package == '':
         package = 'core'
 
-    error_str = '{}\n' \
-                'E{}: {} ({}, L{}, {})\n' \
-                '{}\n' \
-                '[{}] {}\n' \
-                '{}'.format(
-                    '-' * 60,
-                    k, error.getCategoryAsString(), package, error.getLine(),
-                    'code',
-                    '-' * 60,
-                    error.getSeverityAsString(), error.getShortMessage(),
-                    error.getMessage())
+    error_str = 'E{} ({}): {} ({}, L{}); {}; {}'.format(k,
+                            error.getSeverityAsString(),
+                            error.getCategoryAsString(), package, error.getLine(),
+                            error.getShortMessage(), error.getMessage()
+    )
     return error_str
