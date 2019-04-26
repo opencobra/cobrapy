@@ -236,7 +236,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
       <parameter constant="true" id="R_EX_glc__D_e_lower_bound" name="R EX glc-D e lower - bound" sboTerm="SBO:0000625" units="mmol_per_gDW_per_hr" value="-10" />
     </listOfParameters>
     <listOfReactions>
-      <reaction fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub" id="R_R1" metaid="R_R1" name="R_R1"
+      <reaction fast="false" id="R_R1" metaid="R_R1" name="R_R1"
       reversible="true" sboTerm="SBO:0000375">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">

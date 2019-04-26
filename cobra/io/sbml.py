@@ -37,7 +37,6 @@ import traceback
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 from sys import platform
-from warnings import catch_warnings, simplefilter
 
 import libsbml
 from six import iteritems, string_types
@@ -46,6 +45,12 @@ import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
+
+
+try:
+    from cStringIO import StringIO  # Python 2
+except ImportError:
+    from io import StringIO
 
 
 class CobraSBMLError(Exception):
@@ -261,8 +266,8 @@ def _get_doc_from_filename(filename):
     return doc
 
 
-def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
-                   **kwargs):
+def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
+                   set_missing_bounds=False, **kwargs):
     """Creates cobra model from SBMLDocument.
 
     Parameters
@@ -366,6 +371,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
     # Species
     metabolites = []
     boundary_metabolites = []
+    if model.getNumSpecies() == 0:
+        LOGGER.warning("No metabolites in model")
+
     for specie in model.getListOfSpecies():  # type: libsbml.Species
         sid = _check_required(specie, specie.getId(), "id")
         if f_replace and F_SPECIE in f_replace:
@@ -496,6 +504,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
     # Reactions
     missing_bounds = False
     reactions = []
+    if model.getNumReactions() == 0:
+        LOGGER.warning("No reactions in model")
+
     for reaction in model.getListOfReactions():  # type: libsbml.Reaction
         rid = _check_required(reaction, reaction.getId(), "id")
         if f_replace and F_REACTION in f_replace:
@@ -546,22 +557,24 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
                                "use fbc:fluxBounds instead: %s", reaction)
 
         if p_lb is None:
-            LOGGER.error("Missing lower flux bound for reaction: "
-                         "%s", reaction)
             missing_bounds = True
             if set_missing_bounds:
-                cobra_reaction.lower_bound = config.lower_bound
-                LOGGER.warning("Set lower flux bound to default for reaction: "
-                               "%s", reaction)
+                lower_bound = config.lower_bound
+            else:
+                lower_bound = -float("Inf")
+            cobra_reaction.lower_bound = lower_bound
+            LOGGER.warning("Missing lower flux bound set to '%s' for "
+                           " reaction: '%s'", lower_bound, reaction)
 
         if p_ub is None:
-            LOGGER.error("Missing upper flux bound for reaction: "
-                         "%s", reaction)
             missing_bounds = True
             if set_missing_bounds:
-                cobra_reaction.upper_bound = config.upper_bound
-                LOGGER.warning("Set upper flux bound to default for reaction: "
-                               "%s", reaction)
+                upper_bound = config.upper_bound
+            else:
+                upper_bound = float("Inf")
+            cobra_reaction.upper_bound = upper_bound
+            LOGGER.warning("Missing upper flux bound set to '%s' for "
+                           " reaction: '%s'", upper_bound, reaction)
 
         # add reaction
         reactions.append(cobra_reaction)
@@ -684,6 +697,9 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
                                    "use fbc:fluxObjective "
                                    "instead: %s", cobra_reaction)
 
+    if len(coefficients) == 0:
+        LOGGER.error("No objective coefficients in model. Unclear what should "
+                     "be optimized")
     set_objective(cobra_model, coefficients)
     cobra_model.solver.objective.direction = obj_direction
 
@@ -768,10 +784,14 @@ def _sbml_to_model(doc, number=float, f_replace=None, set_missing_bounds=False,
 
     cobra_model.add_groups(groups)
 
-    # run the complete parsing to get all warnings and errors before
-    # raising errors
+    # general hint for missing flux bounds
     if missing_bounds and not set_missing_bounds:
-        raise CobraSBMLError("Missing flux bounds on reactions.")
+        LOGGER.warning("Missing flux bounds on reactions. As best practise "
+                       "and to avoid confusion flux bounds should be set "
+                       "explicitly on all reactions. "
+                       "To set the missing flux bounds to default bounds "
+                       "specified in cobra.Configuration use the flag "
+                       "`read_sbml_model(..., set_missing_bounds=True)`.")
 
     return cobra_model
 
@@ -1140,7 +1160,7 @@ def _create_parameter(model, pid, value, sbo=None, constant=True, units=None,
 
 
 def _check_required(sbase, value, attribute):
-    """Get required attribute from the SBase.
+    """Get required attribute from SBase.
 
     Parameters
     ----------
@@ -1153,13 +1173,15 @@ def _check_required(sbase, value, attribute):
     attribute value (or value if already set)
     """
 
-    if not value:
-        msg = "required attribute '%s' not found in '%s'" % \
+    if (value is None) or (value == ""):
+        msg = "Required attribute '%s' cannot be found or parsed in '%s'" % \
               (attribute, sbase)
         if hasattr(sbase, "getId") and sbase.getId():
             msg += " with id '%s'" % sbase.getId()
         elif hasattr(sbase, "getName") and sbase.getName():
             msg += " with name '%s'" % sbase.getName()
+        elif hasattr(sbase, "getMetaId") and sbase.getMetaId():
+            msg += " with metaId '%s'" % sbase.getName()
         raise CobraSBMLError(msg)
     return value
 
@@ -1254,7 +1276,7 @@ https://co.mbine.org/standards/qualifiers
 
 In the current stage the new annotation format is not completely supported yet.
 """
-URL_IDENTIFIERS_PATTERN = re.compile(r"^http[s]{0,1}://identifiers.org/(.+?)/(.+)")  # noqa: E501
+URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)/(.+)")  # noqa: E501
 URL_IDENTIFIERS_PREFIX = "https://identifiers.org"
 QUALIFIER_TYPES = {
      "is": libsbml.BQB_IS,
@@ -1376,8 +1398,8 @@ def _sbase_annotations(sbase, annotation):
         # set SBOTerm
         if provider in ["SBO", "sbo"]:
             if provider == "SBO":
-                logging.warning("'SBO' provider is deprecated, "
-                                "use 'sbo' provider instead")
+                LOGGER.warning("'SBO' provider is deprecated, "
+                               "use 'sbo' provider instead")
             sbo_term = data[0][1]
             _check(sbase.setSBOTerm(sbo_term),
                    "Setting SBOTerm: {}".format(sbo_term))
@@ -1419,7 +1441,7 @@ def validate_sbml_model(filename,
                         check_model=True,
                         internal_consistency=True,
                         check_units_consistency=False,
-                        check_modeling_practice=False):
+                        check_modeling_practice=False, **kwargs):
     """Validate SBML model and returns the model along with a list of errors.
 
     Parameters
@@ -1449,19 +1471,24 @@ def validate_sbml_model(filename,
     ------
     CobraSBMLError
     """
-    # store errors
-    errors = {key: [] for key in ("validator", "warnings", "other",
-                                  "SBML errors")}
+    # Errors and warnings are grouped based on their type. SBML_* types are
+    # from the libsbml validator. COBRA_* types are from the cobrapy SBML
+    # parser.
+    keys = (
+        "SBML_FATAL",
+        "SBML_ERROR",
+        "SBML_SCHEMA_ERROR",
+        "SBML_WARNING",
 
-    for key in ["SBML_FATAL", "SBML ERROR", "SBML_SCHEMA_ERROR",
-                "SBML_WARNING"]:
-        errors[key] = []
+        "COBRA_FATAL",
+        "COBRA_ERROR",
+        "COBRA_WARNING",
+        "COBRA_CHECK",
+    )
+    errors = {key: [] for key in keys}
 
-    # make sure there is exactly one model
-    doc = _get_doc_from_filename(filename)
-    model = doc.getModel()  # type: libsbml.Model
-    if model is None:
-        raise CobraSBMLError("No SBML model detected in file.")
+    # [1] libsbml validation
+    doc = _get_doc_from_filename(filename)  # type: libsbml.SBMLDocument
 
     # set checking of units & modeling practise
     doc.setConsistencyChecks(libsbml.LIBSBML_CAT_UNITS_CONSISTENCY,
@@ -1475,7 +1502,7 @@ def validate_sbml_model(filename,
     doc.checkConsistency()
 
     for k in range(doc.getNumErrors()):
-        e = doc.getError(k)
+        e = doc.getError(k)  # type: libsbml.SBMLError
         msg = _error_string(e, k=k)
         sev = e.getSeverity()
         if sev == libsbml.LIBSBML_SEV_FATAL:
@@ -1487,23 +1514,67 @@ def validate_sbml_model(filename,
         elif sev == libsbml.LIBSBML_SEV_WARNING:
             errors["SBML_WARNING"].append(msg)
 
-    # ensure can be made into model
+    # [2] cobrapy validation (check that SBML can be read into model)
     # all warnings generated while loading will be logged as errors
-    with catch_warnings(record=True) as warning_list:
-        simplefilter("always")
-        try:
-            model = _sbml_to_model(doc)
-        except CobraSBMLError as e:
-            errors["SBML errors"].append(str(e))
-            return None, errors
-        except Exception as e:
-            errors["other"].append(str(e))
-            return None, errors
+    log_stream = StringIO()
+    stream_handler = logging.StreamHandler(log_stream)
+    formatter = logging.Formatter('%(levelname)s:%(message)s')
+    stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(logging.INFO)
+    LOGGER.addHandler(stream_handler)
+    LOGGER.propagate = False
 
-    errors["warnings"].extend(str(i.message) for i in warning_list)
+    try:
+        # read model and allow additional parser arguments
+        model = _sbml_to_model(doc, **kwargs)
+    except CobraSBMLError as e:
+        errors["COBRA_ERROR"].append(str(e))
+        return None, errors
+    except Exception as e:
+        errors["COBRA_FATAL"].append(str(e))
+        return None, errors
 
+    cobra_errors = log_stream.getvalue().split("\n")
+    for cobra_error in cobra_errors:
+        tokens = cobra_error.split(":")
+        error_type = tokens[0]
+        error_msg = ":".join(tokens[1:])
+
+        if error_type == "WARNING":
+            errors["COBRA_WARNING"].append(error_msg)
+        elif error_type == "ERROR":
+            errors["COBRA_ERROR"].append(error_msg)
+
+    # remove stream handler
+    LOGGER.removeHandler(stream_handler)
+    LOGGER.propagate = True
+
+    # [3] additional model tests
     if check_model:
-        errors["validator"].extend(check_metabolite_compartment_formula(model))
+        errors["COBRA_CHECK"].extend(
+            check_metabolite_compartment_formula(model)
+        )
+
+    for key in ["SBML_FATAL", "SBML_ERROR", "SBML_SCHEMA_ERROR"]:
+        if len(errors[key]) > 0:
+            LOGGER.error("SBML errors in validation, check error log "
+                         "for details.")
+            break
+    for key in ["SBML_WARNING"]:
+        if len(errors[key]) > 0:
+            LOGGER.error("SBML warnings in validation, check error log "
+                         "for details.")
+            break
+    for key in ["COBRA_FATAL", "COBRA_ERROR"]:
+        if len(errors[key]) > 0:
+            LOGGER.error("COBRA errors in validation, check error log "
+                         "for details.")
+            break
+    for key in ["COBRA_WARNING", "COBRA_CHECK"]:
+        if len(errors[key]) > 0:
+            LOGGER.error("COBRA warnings in validation, check error log "
+                         "for details.")
+            break
 
     return model, errors
 
@@ -1524,15 +1595,9 @@ def _error_string(error, k=None):
     if package == '':
         package = 'core'
 
-    error_str = '{}\n' \
-                'E{}: {} ({}, L{}, {})\n' \
-                '{}\n' \
-                '[{}] {}\n' \
-                '{}'.format(
-                    '-' * 60,
-                    k, error.getCategoryAsString(), package, error.getLine(),
-                    'code',
-                    '-' * 60,
-                    error.getSeverityAsString(), error.getShortMessage(),
-                    error.getMessage())
+    template = 'E{} ({}): {} ({}, L{}); {}; {}'
+    error_str = template.format(k, error.getSeverityAsString(),
+                                error.getCategoryAsString(), package,
+                                error.getLine(), error.getShortMessage(),
+                                error.getMessage())
     return error_str
