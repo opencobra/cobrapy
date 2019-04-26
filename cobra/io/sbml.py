@@ -59,7 +59,6 @@ class CobraSBMLError(Exception):
 
 
 LOGGER = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 # -----------------------------------------------------------------------------
 # Defaults and constants for writing SBML
@@ -791,7 +790,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                        "and to avoid confusion flux bounds should be set "
                        "explicitly on all reactions. "
                        "To set the missing flux bounds to default bounds "
-                       "specified in cobra.configuration use the flag "
+                       "specified in cobra.Configuration use the flag "
                        "`read_sbml_model(..., set_missing_bounds=True)`.")
 
     return cobra_model
@@ -1472,7 +1471,6 @@ def validate_sbml_model(filename,
     ------
     CobraSBMLError
     """
-    print("kwargs:", kwargs)
     # Errors and warnings are grouped based on their type. SBML_* types are
     # from the libsbml validator. COBRA_* types are from the cobrapy SBML
     # parser.
