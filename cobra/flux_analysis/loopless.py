@@ -364,29 +364,33 @@ def fastSNP(model, bigM=1e4, zero_cutoff=None, eps=1e-3, N=None):
             constr_proj.ub = bigM
             constr_proj.lb = eps
             constr_proj.ub = None
-            sol = model.optimize()
+
+            x, y = None, None
+            try:
+                sol = model.optimize()
+            except OptimizationError:
+                LOGGER.debug("Optimization error for w' (I - P'P) v >= eps")
 
             if sol.status == "optimal":
-                x = sol.fluxes.to_numpy()
+                x = sol.fluxes.values
                 x = x.reshape((len(x), 1))
                 x[abs(x) < zero_cutoff] = 0
                 x = x / abs(x[x != 0]).min()
-            else:
-                x = None
 
             # find basis for using w' (I - P'P) v <= -eps
             constr_proj.lb = -bigM
             constr_proj.ub = -eps
             constr_proj.lb = None
-            sol = model.optimize()
+            try:
+                sol = model.optimize()
+            except OptimizationError:
+                LOGGER.debug("Optimization error for w' (I - P'P) v <= eps")
 
             if sol.status == "optimal":
-                y = sol.fluxes.to_numpy()
+                y = sol.fluxes.values
                 y = y.reshape((len(y), 1))
                 y[abs(y) < zero_cutoff] = 0
                 y = y / abs(y[y != 0]).min()
-            else:
-                y = None
 
             # update N or quit
             if x is None and y is None:
