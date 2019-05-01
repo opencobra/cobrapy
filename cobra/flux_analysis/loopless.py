@@ -416,6 +416,9 @@ def fastSNP(model, bigM=1e4, zero_cutoff=None, eps=1e-3, N=None):
             wP = weight - numpy.matmul(numpy.matmul(weight, P_N),
                                        P_N.transpose())
 
+    if N is None:
+        N = numpy.zeros((len(model.reactions), 0))
+
     LOGGER.debug("The nullspace dimension is %d.", N.shape[1])
 
     return N
