@@ -14,6 +14,7 @@ from cobra.flux_analysis.helpers import normalize_cutoff, relax_model_bounds
 from cobra.util import create_stoichiometric_matrix, nullspace
 from scipy.linalg import orth
 
+
 LOGGER = logging.getLogger(__name__)
 
 

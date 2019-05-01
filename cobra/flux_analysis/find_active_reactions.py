@@ -5,13 +5,15 @@ or a (small) number of LP problems
 
 """
 import logging
-from cobra.flux_analysis.loopless import fastSNP
-from cobra.flux_analysis.helpers import normalize_cutoff, relax_model_bounds
-from cobra.exceptions import OptimizationError
-from optlang import Model, Variable, Constraint, Objective
-from optlang.symbolics import Zero
-from scipy.linalg import orth
+
 import numpy as np
+from optlang import Constraint, Model, Objective, Variable
+from optlang.symbolics import Zero
+
+from cobra.exceptions import OptimizationError
+from cobra.flux_analysis.helpers import relax_model_bounds
+from cobra.flux_analysis.loopless import fastSNP
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -410,7 +412,7 @@ def loop_to_find_fwd_active_rxns(model, z_pos, z_neg, active_rxns,
     min_flux = max(eps, min_flux)
     LOGGER.debug("min_flux: %.4e" % min_flux)
     constr_min_flux = model.problem.Constraint(
-                      sum(w * r.flux_expression for r,w in
+                      sum(w * r.flux_expression for r, w in
                           weight_random.items()), lb=min_flux)
     model.add_cons_vars(constr_min_flux)
 
