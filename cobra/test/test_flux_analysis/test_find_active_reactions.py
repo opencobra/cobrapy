@@ -37,9 +37,6 @@ def test_find_active_reactions(model, all_solvers):
     model.solver = all_solvers
     # solve LPs
     active_rxns_lp = find_active_reactions(model)
-    # solving MILP or Fast-SNP may not be feasible for some solvers
-    # active_rxns_milp = find_active_reactions(model, solve="milp")
-    # active_rxns_fastsnp = find_active_reactions(model, solve="fastSNP")
 
     active_rxns = ['ACALD', 'ACALDt', 'ACKr', 'ACONTa', 'ACONTb', 'ACt2r',
                    'ADK1', 'AKGDH', 'AKGt2r', 'ALCD2x', 'ATPM', 'ATPS4r',
@@ -58,8 +55,13 @@ def test_find_active_reactions(model, all_solvers):
                    'SUCDi', 'SUCOAS', 'TALA', 'THD2', 'TKT1', 'TKT2', 'TPI']
 
     assert set(active_rxns_lp) == set(active_rxns)
-    # assert set(active_rxns_milp) == set(active_rxns)
-    # assert set(active_rxns_fastsnp) == set(active_rxns)
+
+    # solving MILP or Fast-SNP may not be feasible for some solvers
+    if all_solvers in ["gurobi", "cplex"]:
+        active_rxns_milp = find_active_reactions(model, solve="milp")
+        active_rxns_fastsnp = find_active_reactions(model, solve="fastSNP")
+        assert set(active_rxns_milp) == set(active_rxns)
+        assert set(active_rxns_fastsnp) == set(active_rxns)
 
 
 def test_find_reactions_in_cycles(large_model, all_solvers):
@@ -68,10 +70,6 @@ def test_find_reactions_in_cycles(large_model, all_solvers):
     large_model.solver = all_solvers
     # solve LPs
     rxns_in_cycles_lp = find_reactions_in_cycles(large_model)
-    # solving MILP or Fast-SNP may not be feasible for some solvers
-    # rxns_in_cycles_milp = find_reactions_in_cycles(large_model, solve="milp")
-    # rxns_in_cycles_fastsnp = find_reactions_in_cycles(large_model,
-    #                                                   solve="fastSNP")
 
     rxns_in_cycles = ['ABUTt2pp', 'ACCOAL', 'ACKr', 'ACS', 'ACt2rpp',
                       'ACt4pp', 'ADK1', 'ADK3', 'ADNt2pp', 'ADNt2rpp',
@@ -91,5 +89,12 @@ def test_find_reactions_in_cycles(large_model, all_solvers):
                       'URIt2pp', 'URIt2rpp', 'VALTA', 'VPAMTr']
 
     assert set(rxns_in_cycles_lp) == set(rxns_in_cycles)
-    # assert set(rxns_in_cycles_milp) == set(rxns_in_cycles)
-    # assert set(rxns_in_cycles_fastsnp) == set(rxns_in_cycles)
+
+    # solving MILP or Fast-SNP may not be feasible for some solvers
+    if all_solvers in ["gurobi", "cplex"]:
+        rxns_in_cycles_milp = find_reactions_in_cycles(large_model,
+                                                       solve="milp")
+        rxns_in_cycles_fastsnp = find_reactions_in_cycles(large_model,
+                                                          solve="fastSNP")
+        assert set(rxns_in_cycles_milp) == set(rxns_in_cycles)
+        assert set(rxns_in_cycles_fastsnp) == set(rxns_in_cycles)
