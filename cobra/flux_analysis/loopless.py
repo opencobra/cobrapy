@@ -371,7 +371,7 @@ def fastSNP(model, bigM=1e4, zero_cutoff=None, eps=1e-3, N=None):
             except OptimizationError:
                 LOGGER.debug("Optimization error for w' (I - P'P) v >= eps")
 
-            if sol.status == "optimal":
+            if sol.status == "optimal" and sol.fluxes.values.any():
                 x = sol.fluxes.values
                 x = x.reshape((len(x), 1))
                 x[abs(x) < zero_cutoff] = 0
@@ -386,7 +386,7 @@ def fastSNP(model, bigM=1e4, zero_cutoff=None, eps=1e-3, N=None):
             except OptimizationError:
                 LOGGER.debug("Optimization error for w' (I - P'P) v <= eps")
 
-            if sol.status == "optimal":
+            if sol.status == "optimal" and sol.fluxes.values.any():
                 y = sol.fluxes.values
                 y = y.reshape((len(y), 1))
                 y[abs(y) < zero_cutoff] = 0
