@@ -30,7 +30,7 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
         a large constant for bounding the optimization problem, default 1e4.
     zero_cutoff: float, optional
         The cutoff to consider for zero flux
-        (default 1e-5 if relax_bounds is True, else model.tolerance).
+        Default model.tolerance.
     relax_bounds: True or False
         Whether to relax the model bounds.
         All +ve LB set as 0, all -ve UB set as 0, all -ve LB set as -bigM,
@@ -150,14 +150,14 @@ def find_active_reactions(model, bigM=10000, zero_cutoff=None,
         active_rxns += [r.id for r in new_active_rxns]
 
         # loop to find any hidden forward active reactions
-        constr_min_flux, n_lp_solved = loop_to_find_fwd_active_rxns(
+        constr_min_flux, n_lp_solved, min_flux = loop_to_find_fwd_active_rxns(
             model, z_pos, z_neg, active_rxns, new_active_rxns, rxns_to_check,
             eps, max_iterations)
 
         # loop to find any hidden reverse active reactions
         loop_to_find_rev_active_rxns(model, active_rxns, rxns_to_check,
                                      constr_min_flux, n_lp_solved,
-                                     eps, max_iterations)
+                                     eps, min_flux, max_iterations)
 
         return active_rxns
 
@@ -243,14 +243,10 @@ def build_opt_problem(model, bigM=10000, zero_cutoff=None, relax_bounds=True,
     if max_bound < float("inf"):
         bigM = max(bigM, max_bound)
 
-    # at least 10x >= model.tolerance
-    eps = model.tolerance * 1e2
+    # ensure bigM*z << eps at tolerance limit
+    eps = model.tolerance * bigM * 10
     if zero_cutoff is not None:
         eps = max(zero_cutoff, eps)
-
-    # ensure bigM*z << eps at integrality tolerance limit
-    if solve == "milp":
-        eps = max(eps, model.tolerance * bigM * 10)
 
     LOGGER.debug("parameters:\nbigM\t%.f\neps\t%.2e\nfeas_tol\t%.2e",
                  bigM, eps, model.tolerance)
@@ -410,9 +406,12 @@ def loop_to_find_fwd_active_rxns(model, z_pos, z_neg, active_rxns,
 
     weight_random = {r: np.round(np.random.random(), 6) for r in
                      rxns_to_check}
+    min_flux = sum(w for w in weight_random.values()) * model.tolerance * 10
+    min_flux = max(eps, min_flux)
+    LOGGER.debug("min_flux: %.4e" % min_flux)
     constr_min_flux = model.problem.Constraint(
-                      sum([weight_random[r] * (r.flux_expression) for r in
-                           rxns_to_check]), lb=eps)
+                      sum(w * r.flux_expression for r,w in
+                          weight_random.items()), lb=min_flux)
     model.add_cons_vars(constr_min_flux)
 
     n_lp_solved = 3
@@ -442,12 +441,12 @@ def loop_to_find_fwd_active_rxns(model, z_pos, z_neg, active_rxns,
             constr_min_flux.set_linear_coefficients(
                 {r.forward_variable: 0, r.reverse_variable: 0})
 
-    return (constr_min_flux, n_lp_solved)
+    return (constr_min_flux, n_lp_solved, min_flux)
 
 
 def loop_to_find_rev_active_rxns(model, active_rxns, rxns_to_check,
                                  constr_min_flux, n_lp_solved,
-                                 eps, max_iterations):
+                                 eps, min_flux, max_iterations):
     """
     Subroutine of `find_active_reactions`.
     Find flux distributions with >=1 negative flux until infeasibility.
@@ -458,8 +457,8 @@ def loop_to_find_rev_active_rxns(model, active_rxns, rxns_to_check,
                  " reactions are found:")
 
     # change the constraint into minimum negative flux
-    constr_min_flux.lb = -eps
-    constr_min_flux.ub = -eps
+    constr_min_flux.lb = -min_flux
+    constr_min_flux.ub = -min_flux
     constr_min_flux.lb = None
     feas_tol = model.tolerance
 
