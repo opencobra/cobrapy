@@ -9,6 +9,11 @@ import logging
 from optlang.symbolics import Zero
 from six import iteritems
 
+from cobra.flux_analysis.helpers import normalize_cutoff
+
+
+LOGGER = logging.getLogger(__name__)
+
 
 def add_fastcc_cons_and_vars(model, flux_threshold):
     """Add constraints and variables for FASTCC."""
@@ -35,20 +40,19 @@ def add_fastcc_cons_and_vars(model, flux_threshold):
 def flip_coefficients(model):
     """Flip the coefficients for optimizing in reverse direction."""
 
+    # flip reactions
     for rxn in model.reactions:
         const = model.constraints.get("constraint_{}".format(rxn.id))
         var = model.variables.get("auxiliary_{}".format(rxn.id))
         coefs = const.get_linear_coefficients(const.variables)
-        const.set_linear_coefficients({k: -v for k, v in iteritems(coefs) if k is not var})
+        const.set_linear_coefficients({k: -v for k, v in iteritems(coefs)
+                                       if k is not var})
 
+    # flip objective
     objective = model.objective
     objective_coefs = objective.get_linear_coefficients(objective.variables)
-    objective.set_linear_coefficients({k: -v for k, v in iteritems(objective_coefs)})
-
-from cobra.flux_analysis.helpers import normalize_cutoff
-
-
-LOGGER = logging.getLogger(__name__)
+    objective.set_linear_coefficients({k: -v for k, v in
+                                       iteritems(objective_coefs)})
 
 
 def fastcc(model, flux_threshold=1.0, zero_cutoff=None):
@@ -101,14 +105,17 @@ def fastcc(model, flux_threshold=1.0, zero_cutoff=None):
     with model:
         add_fastcc_cons_and_vars(model, flux_threshold)
 
-        for i in range(3):
+        # TODO: randomly set to 3; should decide on a default
+        for _ in range(3):
             sol = model.optimize(objective_sense="max")
-            rxns_to_remove.extend(sol.fluxes[sol.fluxes.abs() < zero_cutoff].index)
+            rxns_to_remove.extend(sol.fluxes[sol.fluxes.abs() <
+                                             zero_cutoff].index)
 
             flip_coefficients(model)
 
             sol = model.optimize(objective_sense="min")
-            rxns_to_remove.extend(sol.fluxes[sol.fluxes.abs() < zero_cutoff].index)
+            rxns_to_remove.extend(sol.fluxes[sol.fluxes.abs() >
+                                             zero_cutoff].index)
 
             flip_coefficients(model)
 
