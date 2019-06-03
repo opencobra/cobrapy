@@ -57,7 +57,6 @@ class CobraSBMLError(Exception):
     """ SBML error class. """
     pass
 
-
 LOGGER = logging.getLogger(__name__)
 
 # -----------------------------------------------------------------------------
@@ -313,6 +312,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
     # Model
     model_id = model.getIdAttribute()
+    if not libsbml.SyntaxChecker.isValidSBMLSId(model_id):
+        logging.error("Model id '%s' is no valid SId." % model_id)
     cobra_model = Model(model_id)
     cobra_model.name = model.getName()
 
@@ -445,8 +446,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     # Genes
     if model_fbc:
         for gp in model_fbc.getListOfGeneProducts():  # noqa: E501 type: libsbml.GeneProduct
-            gid = _check_required("GP", gp.getIdAttribute(), "id")
-            print(gid, gp.getIdAttribute(), gp.getId())
+            gid = _check_required(gp, gp.getIdAttribute(), "id")
             if f_replace and F_GENE in f_replace:
                 gid = f_replace[F_GENE](gid)
             cobra_gene = Gene(gid)
@@ -513,7 +513,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         LOGGER.warning("No reactions in model")
 
     for reaction in model.getListOfReactions():  # type: libsbml.Reaction
-        rid = _check_required(reaction, reaction.getId(), "id")
+        rid = _check_required(reaction, reaction.getIdAttribute(), "id")
         if f_replace and F_REACTION in f_replace:
             rid = f_replace[F_REACTION](rid)
         cobra_reaction = Reaction(rid)
@@ -684,7 +684,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                 p_oc = klaw.getParameter(
                     "OBJECTIVE_COEFFICIENT")  # noqa: E501 type: libsbml.LocalParameter
                 if p_oc:
-                    rid = _check_required(reaction, reaction.getId(), "id")
+                    rid = _check_required(reaction,
+                                          reaction.getIdAttribute(), "id")
                     if f_replace and F_REACTION in f_replace:
                         rid = f_replace[F_REACTION](rid)
                     try:
@@ -724,13 +725,13 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
             for sbase in obj_list:  # type: libsbml.SBase
                 if sbase.isSetId():
-                    sid_map[sbase.getId()] = sbase
+                    sid_map[sbase.getIdAttribute()] = sbase
                 if sbase.isSetMetaId():
                     metaid_map[sbase.getMetaId()] = sbase
 
         # create groups
         for group in model_groups.getListOfGroups():  # type: libsbml.Group
-            gid = _check_required(group, group.getId(), "id")
+            gid = _check_required(group, group.getAttributeId(), "id")
             cobra_group = Group(gid)
             cobra_group.name = group.getName()
             if group.isSetKind():
@@ -742,13 +743,11 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
             for member in group.getListOfMembers():  # type: libsbml.Member
                 if member.isSetIdRef():
                     obj = sid_map[member.getIdRef()]
-                    # obj = doc.getElementBySId(member.getIdRef())
                 elif member.isSetMetaIdRef():
                     obj = metaid_map[member.getMetaIdRef()]
-                    # obj = doc.getElementByMetaId(member.getMetaIdRef())
 
                 typecode = obj.getTypeCode()
-                obj_id = _check_required(obj, obj.getId(), "id")
+                obj_id = _check_required(obj, obj.getIdAttribute(), "id")
 
                 # id replacements
                 cobra_member = None
@@ -1182,10 +1181,8 @@ def _check_required(sbase, value, attribute):
     """
 
     if (value is None) or (value == ""):
-        msg = "Required attribute '%s' cannot be found or parsed in '%s'. " \
-              "The syntax of 'id' attribute values must conform to the syntax " \
-              "of the SBML type 'SId'." % \
-              (attribute, sbase)
+        msg = "Required attribute '%s' cannot be found or parsed in " \
+              "'%s'." % (attribute, sbase)
         if hasattr(sbase, "getId") and sbase.getId():
             msg += " with id '%s'" % sbase.getId()
         elif hasattr(sbase, "getName") and sbase.getName():
@@ -1193,6 +1190,10 @@ def _check_required(sbase, value, attribute):
         elif hasattr(sbase, "getMetaId") and sbase.getMetaId():
             msg += " with metaId '%s'" % sbase.getName()
         raise CobraSBMLError(msg)
+    if attribute == "id":
+        if not libsbml.SyntaxChecker.isValidSBMLSId(value):
+            logging.error("'%s' is not a valid SBML 'SId'." % value)
+
     return value
 
 
