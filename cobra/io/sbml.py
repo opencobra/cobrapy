@@ -312,12 +312,13 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                 raise Exception("Conversion of SBML fbc v1 to fbc v2 failed")
 
     # Model
-    cobra_model = Model(model.getId())
+    model_id = model.getIdAttribute()
+    cobra_model = Model(model_id)
     cobra_model.name = model.getName()
 
     # meta information
     meta = {
-        "model.id": model.getId(),
+        "model.id": model_id,
         "level": model.getLevel(),
         "version": model.getVersion(),
         "packages": []
@@ -344,7 +345,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     meta["notes"] = _parse_notes_dict(doc)
     meta["annotation"] = _parse_annotations(doc)
 
-    info = "<{}> SBML L{}V{}".format(model.getId(),
+    info = "<{}> SBML L{}V{}".format(model_id,
                                      model.getLevel(), model.getVersion())
     packages = {}
     for k in range(doc.getNumPlugins()):
@@ -365,8 +366,11 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
     # Compartments
     # FIXME: update with new compartments
-    cobra_model.compartments = {c.getId(): c.getName()
-                                for c in model.getListOfCompartments()}
+    compartments = {}
+    for compartment in model.getListOfCompartments():  # noqa: E501 type: libsbml.Compartment
+        cid = _check_required(compartment, compartment.getIdAttribute(), "id")
+        compartments[cid] = compartment.getName()
+    cobra_model.compartments = compartments
 
     # Species
     metabolites = []
@@ -375,7 +379,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         LOGGER.warning("No metabolites in model")
 
     for specie in model.getListOfSpecies():  # type: libsbml.Species
-        sid = _check_required(specie, specie.getId(), "id")
+        sid = _check_required(specie, specie.getIdAttribute(), "id")
         if f_replace and F_SPECIE in f_replace:
             sid = f_replace[F_SPECIE](sid)
 
@@ -441,7 +445,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     # Genes
     if model_fbc:
         for gp in model_fbc.getListOfGeneProducts():  # noqa: E501 type: libsbml.GeneProduct
-            gid = gp.getId()
+            gid = _check_required("GP", gp.getIdAttribute(), "id")
+            print(gid, gp.getIdAttribute(), gp.getId())
             if f_replace and F_GENE in f_replace:
                 gid = f_replace[F_GENE](gid)
             cobra_gene = Gene(gid)
@@ -582,7 +587,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         # parse equation
         stoichiometry = defaultdict(lambda: 0)
         for sref in reaction.getListOfReactants():  # noqa: E501 type: libsbml.SpeciesReference
-            sid = sref.getSpecies()
+            sid = _check_required(sref, sref.getSpecies(), "species")
+
             if f_replace and F_SPECIE in f_replace:
                 sid = f_replace[F_SPECIE](sid)
             stoichiometry[sid] -= number(
@@ -590,7 +596,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                                 "stoichiometry"))
 
         for sref in reaction.getListOfProducts():  # noqa: E501 type: libsbml.SpeciesReference
-            sid = sref.getSpecies()
+            sid = _check_required(sref, sref.getSpecies(), "species")
+
             if f_replace and F_SPECIE in f_replace:
                 sid = f_replace[F_SPECIE](sid)
             stoichiometry[sid] += number(
@@ -677,7 +684,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                 p_oc = klaw.getParameter(
                     "OBJECTIVE_COEFFICIENT")  # noqa: E501 type: libsbml.LocalParameter
                 if p_oc:
-                    rid = reaction.getId()
+                    rid = _check_required(reaction, reaction.getId(), "id")
                     if f_replace and F_REACTION in f_replace:
                         rid = f_replace[F_REACTION](rid)
                     try:
@@ -723,7 +730,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
         # create groups
         for group in model_groups.getListOfGroups():  # type: libsbml.Group
-            cobra_group = Group(group.getId())
+            gid = _check_required(group, group.getId(), "id")
+            cobra_group = Group(gid)
             cobra_group.name = group.getName()
             if group.isSetKind():
                 cobra_group.kind = group.getKindAsString()
@@ -740,7 +748,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                     # obj = doc.getElementByMetaId(member.getMetaIdRef())
 
                 typecode = obj.getTypeCode()
-                obj_id = obj.getId()
+                obj_id = _check_required(obj, obj.getId(), "id")
 
                 # id replacements
                 cobra_member = None
@@ -1174,7 +1182,9 @@ def _check_required(sbase, value, attribute):
     """
 
     if (value is None) or (value == ""):
-        msg = "Required attribute '%s' cannot be found or parsed in '%s'" % \
+        msg = "Required attribute '%s' cannot be found or parsed in '%s'. " \
+              "The syntax of 'id' attribute values must conform to the syntax " \
+              "of the SBML type 'SId'." % \
               (attribute, sbase)
         if hasattr(sbase, "getId") and sbase.getId():
             msg += " with id '%s'" % sbase.getId()
