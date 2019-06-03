@@ -57,6 +57,7 @@ class CobraSBMLError(Exception):
     """ SBML error class. """
     pass
 
+
 LOGGER = logging.getLogger(__name__)
 
 # -----------------------------------------------------------------------------
