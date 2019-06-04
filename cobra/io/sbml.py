@@ -314,7 +314,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     # Model
     model_id = model.getIdAttribute()
     if not libsbml.SyntaxChecker.isValidSBMLSId(model_id):
-        logging.error("Model id '%s' is no valid SId." % model_id)
+        logging.error("'%s' is not a valid SBML 'SId'." % model_id)
     cobra_model = Model(model_id)
     cobra_model.name = model.getName()
 
@@ -732,7 +732,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
         # create groups
         for group in model_groups.getListOfGroups():  # type: libsbml.Group
-            gid = _check_required(group, group.getAttributeId(), "id")
+            gid = _check_required(group, group.getIdAttribute(), "id")
             cobra_group = Group(gid)
             cobra_group.name = group.getName()
             if group.isSetKind():
