@@ -1,5 +1,5 @@
 """
-SBML import and export using python-libsbml(-experimental).
+SBML import and export using python-libsbml.
 
 - The SBML importer supports all versions of SBML and the fbc package.
 - The SBML exporter writes SBML L3 models.
