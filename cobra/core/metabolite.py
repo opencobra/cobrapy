@@ -237,9 +237,11 @@ class Metabolite(Species):
             Format string for floats (default '.3g').
 
         """
-        from cobra.flux_analysis.summary import metabolite_summary
-        return metabolite_summary(self, solution=solution, threshold=threshold,
-                                  fva=fva, names=names, floatfmt=floatfmt)
+
+        from cobra.flux_analysis.summary import MetaboliteSummary
+        return MetaboliteSummary(met=self, solution=solution,
+                                 threshold=threshold, fva=fva, names=names,
+                                 floatfmt=floatfmt)
 
     def _repr_html_(self):
         return """

@@ -1197,9 +1197,11 @@ class Model(Object):
             Format string for floats (default '.3g').
 
         """
-        from cobra.flux_analysis.summary import model_summary
-        return model_summary(self, solution=solution, threshold=threshold,
-                             fva=fva, names=names, floatfmt=floatfmt)
+
+        from cobra.flux_analysis.summary import ModelSummary
+        return ModelSummary(model=self, solution=solution,
+                            threshold=threshold, fva=fva, names=names,
+                            floatfmt=floatfmt)
 
     def __enter__(self):
         """Record all future changes to the model, undoing them when a call to
