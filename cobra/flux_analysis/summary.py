@@ -489,8 +489,19 @@ class ModelSummary(Summary):
                         metabolite_fluxes.at[met.id, 'fmin'] += fmax
                         metabolite_fluxes.at[met.id, 'fmax'] += fmin
 
-        # Generate a dataframe of boundary fluxes
+        # Generate a pandas.DataFrame of boundary fluxes
         metabolite_fluxes = self._process_flux_dataframe(metabolite_fluxes)
+
+        return metabolite_fluxes, obj_fluxes
+
+    def to_table(self):
+        """
+        Returns
+        -------
+        Nothing
+
+        """
+        met_df, obj_df = self._generate()
 
         # Begin building string output table
         def get_str_table(species_df, fva=False):
@@ -519,3 +530,69 @@ class ModelSummary(Summary):
                                                 obj_table)],
             headers=['IN FLUXES', 'OUT FLUXES', 'OBJECTIVES'],
             tablefmt='simple'))
+
+    def to_frame(self):
+        """
+        Returns
+        -------
+        A pandas.DataFrame of the summary.
+
+        """
+        met_df, obj_df = self._generate()
+
+        if self.fva is not None:
+            column_names = [['IN_FLUXES', 'OUT_FLUXES', 'OBJECTIVES'],
+                            ['ID','FLUX', 'FLUX_MIN', 'FLUX_MAX']]
+
+            # Generate new DataFrames for easy concatenation
+            met_in_df = met_df[met_df['is_input']]\
+                .loc[:, ['id','flux','fmin','fmax']].reset_index(drop=True)
+
+            met_out_df = met_df[~met_df['is_input']]\
+                .loc[:, ['id','flux','fmin','fmax']].reset_index(drop=True)
+
+            obj_df = obj_df.loc[:, ['id','flux']].reset_index(drop=True)
+
+            # concatenate and replace NaN with ''
+            concat_df = pd.concat([met_in_df, met_out_df, obj_df], axis=1)\
+                          .fillna('').values
+
+            del met_in_df, met_out_df, obj_df
+
+            # Generate column names
+            columns = pd.MultiIndex.from_product(column_names)
+
+            # Remove 'FLUX_MIN' and 'FLUX_MAX' for 'OBJECTIVES'
+            columns.set_codes([[0, 0, 0, 0, 2, 2, 2, 2, 1, 1],
+                               [3, 0, 2, 1, 3, 0, 2, 1, 3, 0]],
+                              inplace=True,
+                              verify_integrity=False)
+
+            return pd.DataFrame(
+                data=concat_df,
+                columns=columns
+            )
+
+        else:
+            column_names = [['IN_FLUXES', 'OUT_FLUXES', 'OBJECTIVES'],
+                            ['ID','FLUX']]
+
+            # Generate new DataFrames for easy concatenation
+            met_in_df = met_df[met_df['is_input']]\
+                .loc[:, ['id','flux']].reset_index(drop=True)
+
+            met_out_df = met_df[~met_df['is_input']]\
+                .loc[:, ['id','flux']].reset_index(drop=True)
+
+            obj_df = obj_df.loc[:, ['id','flux']].reset_index(drop=True)
+
+            # concatenate and replace NaN with ''
+            concat_df = pd.concat([met_in_df, met_out_df, obj_df], axis=1)\
+                          .fillna('').values
+
+            del met_in_df, met_out_df, obj_df
+
+            return pd.DataFrame(
+                data=concat_df,
+                columns=pd.MultiIndex.from_product(column_names)
+            )
