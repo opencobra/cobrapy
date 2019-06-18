@@ -108,36 +108,50 @@ class Summary(object):
                 else:
                     return 1
 
-            sign = flux_dataframe.apply(
-                lambda x: get_direction(x.flux, x.fmin, x.fmax), 1)
+            sign = flux_dataframe\
+                .apply(lambda x: get_direction(x.flux, x.fmin, x.fmax), axis=1)
 
             flux_dataframe['is_input'] = sign == 1
 
-            flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']] = \
-                flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']].multiply(
-                    sign, 0).astype('float').round(6)
+            flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']] = (
+                flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']]
+                .multiply(sign, axis=0)
+                .astype('float')
+                .round(6)
+                )
 
-            flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']] = \
-                flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']].applymap(
-                    lambda x: x if abs(x) > 1E-6 else 0)
+            flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']] = (
+                flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']]
+                .applymap(lambda x: x if abs(x) > 1E-6 else 0)
+                )
 
         if self.fva is not None:
-            flux_dataframe['fva_fmt'] = flux_dataframe.apply(
-                lambda x: ("[{0.fmin:" + self.floatfmt + "},\
-                {0.fmax:" + self.floatfmt + "}]").format(x), 1)
+            flux_dataframe['fva_fmt'] = \
+                flux_dataframe.apply(lambda x: ("[{0.fmin:" + self.floatfmt + "},\
+                {0.fmax:" + self.floatfmt + "}]").format(x), axis=1)
 
-            flux_dataframe = flux_dataframe.sort_values(
-                by=['flux', 'fmax', 'fmin', 'id'],
-                ascending=[False, False, False, True])
+            flux_dataframe = (
+                flux_dataframe
+                .sort_values(by=['flux', 'fmax', 'fmin', 'id'],
+                             ascending=[False, False, False, True])
+                )
 
         else:
-            flux_dataframe = flux_dataframe.sort_values(
-                by=['flux', 'id'], ascending=[False, True])
+            flux_dataframe = flux_dataframe\
+                .sort_values(by=['flux', 'id'], ascending=[False, True])
 
         return flux_dataframe
 
+    def to_table(self):
+        """Generate a print-ready table using tabulate."""
+        pass
+
+    def to_frame(self):
+        """Generate a pandas.DataFrame."""
+        pass
+
     def _repr_html_(self):
-        return self.generate()
+        return self.to_frame()._repr_html_()
 
 
 class MetaboliteSummary(Summary):
