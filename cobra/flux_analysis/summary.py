@@ -56,7 +56,7 @@ class Summary(object):
         self.names = names
         self.floatfmt = floatfmt
 
-    def generate():
+    def _generate():
         """Generate the summary for the required cobra object."""
         pass
 
@@ -174,7 +174,14 @@ class MetaboliteSummary(Summary):
                                                 names, floatfmt)
         self.met = met
 
-    def generate(self):
+    def _generate(self):
+        """
+        Returns
+        -------
+        flux_summary: pandas.DataFrame
+            The DataFrame of flux summary data.
+
+        """
         if self.names:
             emit = attrgetter('name')
         else:
@@ -316,7 +323,16 @@ class ModelSummary(Summary):
                                            floatfmt)
         self.model = model
 
-    def generate(self):
+    def _generate(self):
+        """
+        Returns
+        -------
+        metabolite_fluxes: pandas.DataFrame
+            The DataFrame of metabolite fluxes.
+        obj_fluxes: pandas.DataFrame
+            The DataFrame of objective fluxes.
+
+        """
         if self.names:
             emit = attrgetter('name')
         else:
