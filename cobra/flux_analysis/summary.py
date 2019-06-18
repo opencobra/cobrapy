@@ -262,23 +262,35 @@ class MetaboliteSummary(Summary):
 
         flux_summary.loc[flux_summary.is_input, 'percent'] = \
             flux_summary.loc[flux_summary.is_input, 'flux'] / total_flux
+
         flux_summary.loc[~flux_summary.is_input, 'percent'] = \
             flux_summary.loc[~flux_summary.is_input, 'flux'] / total_flux
 
-        flux_summary['percent'] = flux_summary.percent.apply(
-            lambda x: '{:.0%}'.format(x))
+        flux_summary['percent'] = flux_summary.percent.\
+            apply(lambda x: '{:.0%}'.format(x))
+
+        return flux_summary
+
+    def to_table(self):
+        """
+        Returns
+        -------
+        Nothing
+
+        """
+        flux_df = self._generate()
 
         if self.fva is not None:
             flux_table = tabulate(
-                flux_summary.loc[:, ['percent', 'flux', 'fva_fmt', 'id',
-                                     'reaction']].values,
+                flux_df.loc[:, ['percent', 'flux', 'fva_fmt', 'id',
+                                'reaction']].values,
                 floatfmt=self.floatfmt,
                 headers=['%', 'FLUX', 'RANGE', 'RXN ID',
                          'REACTION']).split('\n')
         else:
             flux_table = tabulate(
-                flux_summary.loc[:, ['percent', 'flux', 'id',
-                                     'reaction']].values,
+                flux_df.loc[:, ['percent', 'flux', 'id',
+                                'reaction']].values,
                 floatfmt=self.floatfmt,
                 headers=['%', 'FLUX', 'RXN ID', 'REACTION']
             ).split('\n')
@@ -293,15 +305,76 @@ class MetaboliteSummary(Summary):
         print_("-" * len(head))
         print_('\n'.join(flux_table_head))
         print_('\n'.join(
-            pd.np.array(flux_table[2:])[flux_summary.is_input.values]))
+            pd.np.array(flux_table[2:])[flux_df.is_input.values]))
 
         print_()
         print_("CONSUMING REACTIONS -- " + met_tag)
         print_("-" * len(head))
         print_('\n'.join(flux_table_head))
         print_('\n'.join(
-            pd.np.array(flux_table[2:])[~flux_summary.is_input.values]))
+            pd.np.array(flux_table[2:])[~flux_df.is_input.values]))
 
+    def to_frame(self):
+        """
+        Returns
+        -------
+        A pandas.DataFrame of the summary.
+
+        """
+        flux_df = self._generate()
+
+        if self.fva is not None:
+            column_names = ['percent', 'flux', 'fmin',
+                            'fmax', 'id', 'reaction']
+
+            # Generate DataFrame of production reactions
+            flux_prod = flux_df[flux_df.is_input.values]\
+                .loc[:, column_names]\
+                .reset_index(drop=True)
+            flux_prod.columns = [name.upper() for name in column_names]
+            flux_prod['RXN_STAT'] = 'PRODUCING'
+
+            # Generate DataFrame of consumption reactions
+            flux_cons = flux_df[~flux_df.is_input.values]\
+                .loc[:, column_names]\
+                .reset_index(drop=True)
+            flux_cons.columns = [name.upper() for name in column_names]
+            flux_cons['RXN_STAT'] = 'CONSUMING'
+
+            concat_df = pd.concat([flux_prod, flux_cons])
+
+            del flux_prod, flux_cons
+
+            concat_df.rename(columns={'FMIN': 'FLUX_MIN', 'FMAX': 'FLUX_MAX'},
+                             inplace=True)
+            concat_df.set_index(['RXN_STAT','ID'], inplace=True)
+
+            return concat_df
+
+        else:
+            column_names = ['percent', 'flux', 'id', 'reaction']
+
+            # Generate DataFrame of production reactions
+            flux_prod = flux_df[flux_df.is_input.values]\
+                .loc[:, column_names]\
+                .reset_index(drop=True)
+            flux_prod.columns = [name.upper() for name in column_names]
+            flux_prod['RXN_STAT'] = 'PRODUCING'
+
+            # Generate DataFrame of consumption reactions
+            flux_cons = flux_df[~flux_df.is_input.values]\
+                .loc[:, column_names]\
+                .reset_index(drop=True)
+            flux_cons.columns = [name.upper() for name in column_names]
+            flux_cons['RXN_STAT'] = 'CONSUMING'
+
+            concat_df = pd.concat([flux_prod, flux_cons])
+
+            del flux_prod, flux_cons
+
+            concat_df.set_index(['RXN_STAT','ID'], inplace=True)
+
+            return concat_df
 
 class ModelSummary(Summary):
     """Class definition for a ModelSummary object.
