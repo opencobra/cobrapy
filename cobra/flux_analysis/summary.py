@@ -347,7 +347,7 @@ class MetaboliteSummary(Summary):
 
             concat_df.rename(columns={'FMIN': 'FLUX_MIN', 'FMAX': 'FLUX_MAX'},
                              inplace=True)
-            concat_df.set_index(['RXN_STAT','ID'], inplace=True)
+            concat_df.set_index(['RXN_STAT', 'ID'], inplace=True)
 
             return concat_df
 
@@ -372,9 +372,10 @@ class MetaboliteSummary(Summary):
 
             del flux_prod, flux_cons
 
-            concat_df.set_index(['RXN_STAT','ID'], inplace=True)
+            concat_df.set_index(['RXN_STAT', 'ID'], inplace=True)
 
             return concat_df
+
 
 class ModelSummary(Summary):
     """Class definition for a ModelSummary object.
@@ -542,16 +543,16 @@ class ModelSummary(Summary):
 
         if self.fva is not None:
             column_names = [['IN_FLUXES', 'OUT_FLUXES', 'OBJECTIVES'],
-                            ['ID','FLUX', 'FLUX_MIN', 'FLUX_MAX']]
+                            ['ID', 'FLUX', 'FLUX_MIN', 'FLUX_MAX']]
 
             # Generate new DataFrames for easy concatenation
             met_in_df = met_df[met_df['is_input']]\
-                .loc[:, ['id','flux','fmin','fmax']].reset_index(drop=True)
+                .loc[:, ['id', 'flux', 'fmin', 'fmax']].reset_index(drop=True)
 
             met_out_df = met_df[~met_df['is_input']]\
-                .loc[:, ['id','flux','fmin','fmax']].reset_index(drop=True)
+                .loc[:, ['id', 'flux', 'fmin', 'fmax']].reset_index(drop=True)
 
-            obj_df = obj_df.loc[:, ['id','flux']].reset_index(drop=True)
+            obj_df = obj_df.loc[:, ['id', 'flux']].reset_index(drop=True)
 
             # concatenate and replace NaN with ''
             concat_df = pd.concat([met_in_df, met_out_df, obj_df], axis=1)\
@@ -575,16 +576,16 @@ class ModelSummary(Summary):
 
         else:
             column_names = [['IN_FLUXES', 'OUT_FLUXES', 'OBJECTIVES'],
-                            ['ID','FLUX']]
+                            ['ID', 'FLUX']]
 
             # Generate new DataFrames for easy concatenation
             met_in_df = met_df[met_df['is_input']]\
-                .loc[:, ['id','flux']].reset_index(drop=True)
+                .loc[:, ['id', 'flux']].reset_index(drop=True)
 
             met_out_df = met_df[~met_df['is_input']]\
-                .loc[:, ['id','flux']].reset_index(drop=True)
+                .loc[:, ['id', 'flux']].reset_index(drop=True)
 
-            obj_df = obj_df.loc[:, ['id','flux']].reset_index(drop=True)
+            obj_df = obj_df.loc[:, ['id', 'flux']].reset_index(drop=True)
 
             # concatenate and replace NaN with ''
             concat_df = pd.concat([met_in_df, met_out_df, obj_df], axis=1)\
