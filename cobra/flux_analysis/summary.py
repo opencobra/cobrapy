@@ -8,7 +8,7 @@ import logging
 from operator import attrgetter
 
 import pandas as pd
-from numpy import zeros
+import numpy as np
 from six import iteritems, print_
 from six.moves import zip_longest
 from tabulate import tabulate
@@ -17,9 +17,6 @@ from cobra.core import get_solution
 from cobra.flux_analysis.variability import flux_variability_analysis
 from cobra.util.solver import linear_reaction_coefficients
 from cobra.util.util import format_long_string
-
-
-x
 
 
 LOGGER = logging.getLogger(__name__)
@@ -73,13 +70,16 @@ class Summary(object):
 
         # Drop unused boundary fluxes
         if self.fva is None:
-            flux_dataframe = flux_dataframe.loc[
-                abs_flux >= flux_threshold, :].copy()
+            flux_dataframe = \
+                flux_dataframe.loc[abs_flux >= flux_threshold, :].copy()
         else:
-            flux_dataframe = flux_dataframe.loc[
-                (abs_flux >= flux_threshold) |
-                (flux_dataframe['fmin'].abs() >= flux_threshold) |
-                (flux_dataframe['fmax'].abs() >= flux_threshold), :].copy()
+            flux_dataframe = (
+                flux_dataframe
+                .loc[(abs_flux >= flux_threshold) |
+                     (flux_dataframe['fmin'].abs() >= flux_threshold) |
+                     (flux_dataframe['fmax'].abs() >= flux_threshold), :]
+                .copy()
+                )
 
             # Why set to zero? If included show true value?
             # flux_dataframe.loc[
@@ -214,14 +214,15 @@ class MetaboliteSummary(Summary):
                     self.met.model, list(self.met.reactions),
                     fraction_of_optimum=self.fva)
 
-            flux_summary["maximum"] = zeros(len(rxn_id), dtype=float)
-            flux_summary["minimum"] = zeros(len(rxn_id), dtype=float)
+            flux_summary["maximum"] = np.zeros(len(rxn_id), dtype=float)
+            flux_summary["minimum"] = np.zeros(len(rxn_id), dtype=float)
 
             for rxn in rxns:
-                fmax = rxn.metabolites[self.met] * fva_results.at[rxn.id,
-                                                                  "maximum"]
-                fmin = rxn.metabolites[self.met] * fva_results.at[rxn.id,
-                                                                  "minimum"]
+                fmax = rxn.metabolites[self.met] * \
+                    fva_results.at[rxn.id, "maximum"]
+
+                fmin = rxn.metabolites[self.met] * \
+                    fva_results.at[rxn.id, "minimum"]
 
                 if abs(fmin) <= abs(fmax):
                     flux_summary.at[rxn.id, "fmax"] = fmax
@@ -330,24 +331,27 @@ class ModelSummary(Summary):
             self.model.slim_optimize(error_value=None)
             self.solution = get_solution(self.model, reactions=summary_rxns)
 
-        # Create a dataframe of objective fluxes
+        # Create a pandas.DataFrame of objective fluxes
         obj_fluxes = pd.DataFrame({key: self.solution[key.id] * value
                                    for key, value in
                                    iteritems(objective_reactions)},
                                   index=['flux']).T
-        obj_fluxes['id'] = obj_fluxes.apply(
-            lambda x: format_long_string(x.name.id, 15), 1)
+        obj_fluxes['id'] = obj_fluxes\
+            .apply(lambda x: format_long_string(x.name.id, 15), axis=1)
 
         # Build a dictionary of metabolite production from the
         # boundary reactions
         metabolites = {met for rxn in boundary_reactions
                        for met in rxn.metabolites}
         index = sorted(metabolites, key=attrgetter('id'))
+
+        # Create a pandas.DataFrame of metabolite fluxes
         metabolite_fluxes = pd.DataFrame({
             'id': [format_long_string(emit(met), 15) for met in index],
-            'flux': zeros(len(index), dtype=float)
+            'flux': np.zeros(len(index), dtype=float)
         }, index=[met.id for met in index])
 
+        # Set the proper flux values for metabolites
         for rxn in boundary_reactions:
             for met, stoich in iteritems(rxn.metabolites):
                 metabolite_fluxes.at[met.id, 'flux'] += \
@@ -360,8 +364,8 @@ class ModelSummary(Summary):
                     "There exists more than one boundary reaction per "
                     "metabolite. Please be careful when evaluating flux "
                     "ranges.")
-            metabolite_fluxes['fmin'] = zeros(len(index), dtype=float)
-            metabolite_fluxes['fmax'] = zeros(len(index), dtype=float)
+            metabolite_fluxes['fmin'] = np.zeros(len(index), dtype=float)
+            metabolite_fluxes['fmax'] = np.zeros(len(index), dtype=float)
 
             if hasattr(self.fva, 'columns'):
                 fva_results = self.fva
@@ -398,13 +402,13 @@ class ModelSummary(Summary):
                                 floatfmt=self.floatfmt,
                                 tablefmt='plain').split('\n')
 
-        in_table = get_str_table(
-            metabolite_fluxes[metabolite_fluxes['is_input']],
-            fva=self.fva is not None)
-        out_table = get_str_table(
-            metabolite_fluxes[~metabolite_fluxes['is_input']],
-            fva=self.fva is not None)
-        obj_table = get_str_table(obj_fluxes, fva=False)
+        in_table = get_str_table(met_df[met_df['is_input']],
+                                 fva=self.fva is not None)
+
+        out_table = get_str_table(met_df[~met_df['is_input']],
+                                  fva=self.fva is not None)
+
+        obj_table = get_str_table(obj_df, fva=False)
 
         # Print nested output table
         print_(tabulate(
