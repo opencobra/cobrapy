@@ -7,8 +7,8 @@ from __future__ import absolute_import, division
 import logging
 from operator import attrgetter
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from six import iteritems, print_
 from six.moves import zip_longest
 from tabulate import tabulate

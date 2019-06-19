@@ -62,7 +62,7 @@ def test_model_summary_previous_solution(model, opt_solver, names):
     solution.fluxes[rxn_test.id] = 321
 
     with captured_output() as (out, _):
-        model.summary(solution, names=names)
+        model.summary(solution, names=names).to_table()
     check_in_line(out.getvalue(), [met_test + '321'])
 
 
@@ -97,7 +97,7 @@ def test_model_summary(model, opt_solver, names):
     # there are multiple entries per line.
     model.optimize()
     with captured_output() as (out, _):
-        model.summary(names=names)
+        model.summary(names=names).to_table()
     check_in_line(out.getvalue(), expected_entries)
 
     # with model:
@@ -135,7 +135,7 @@ def test_model_summary_with_fva(model, opt_solver, fraction):
     model.solver = opt_solver
     solution = model.optimize()
     with captured_output() as (out, _):
-        model.summary(solution, fva=fraction)
+        model.summary(solution, fva=fraction).to_table()
     check_in_line(out.getvalue(), expected_entries)
 
 
@@ -145,7 +145,7 @@ def test_metabolite_summary_previous_solution(
     """Test metabolite summary of previous solution."""
     model.solver = opt_solver
     solution = pfba(model)
-    model.metabolites.get_by_id(met).summary(solution)
+    model.metabolites.get_by_id(met).summary(solution).to_table()
 
 
 @pytest.mark.parametrize("met, names", [
@@ -157,7 +157,7 @@ def test_metabolite_summary(model, opt_solver, met, names):
     model.solver = opt_solver
     model.optimize()
     with captured_output() as (out, _):
-        model.metabolites.get_by_id(met).summary(names=names)
+        model.metabolites.get_by_id(met).summary(names=names).to_table()
 
     if names:
         expected_entries = [
@@ -197,7 +197,7 @@ def test_metabolite_summary_with_fva(model, opt_solver, fraction,
     model.solver = opt_solver
     model.optimize()
     with captured_output() as (out, _):
-        model.metabolites.get_by_id(met).summary(fva=fraction)
+        model.metabolites.get_by_id(met).summary(fva=fraction).to_table()
 
     expected_entries = [
         'PRODUCING REACTIONS -- D-Fructose 1,6-bisphosphate (fdp_c)',
