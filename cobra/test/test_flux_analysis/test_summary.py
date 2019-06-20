@@ -343,10 +343,41 @@ def test_metabolite_summary_to_table(model, opt_solver, met, names):
     check_in_line(out.getvalue(), expected_entries)
 
 
+@pytest.mark.parametrize("met, names", [
+    ("q8_c", False),
+    ("q8_c", True)
+])
+def test_metabolite_summary_to_frame(model, opt_solver, met, names):
+    """Test metabolite summary.to_frame()."""
+    model.solver = opt_solver
+    model.optimize()
+
+    out_df = model.metabolites.get_by_id(met).summary(names=names).to_frame()
+
+    if names:
+        data = np.array([
+            ['100%', 43.59898531199755,
+             '2.0 H+ + 0.5 O2 + Ubiquinol-8 --> H2O + 2.0 H+ ...'],
+            ['88%', 38.53460965051545,
+             '4.0 H+ + Nicotinamide adenine dinucleotide - re...'],
+            ['12%', 5.064375661482105,
+             'Ubiquinone-8 + Succinate --> Fumarate + Ubiquin...']])
+
+    else:
+        data = np.array([
+            ['100%', 43.59898531199755,
+             '2.0 h_c + 0.5 o2_c + q8h2_c --> h2o_c + 2.0 h_e...'],
+            ['88%', 38.53460965051545,
+             '4.0 h_c + nadh_c + q8_c --> 3.0 h_e + nad_c + q...'],
+            ['12%', 5.064375661482105, 'q8_c + succ_c --> fum_c + q8h2_c']])
+
+    assert np.array_equal(data, out_df.values)
+
+
 @pytest.mark.parametrize("fraction, met", [(0.99, "fdp_c")])
-def test_metabolite_summary_with_fva(model, opt_solver, fraction,
-                                     met):
-    """Test metabolite summary (using FVA)."""
+def test_metabolite_summary_to_table_with_fva(model, opt_solver, fraction,
+                                              met):
+    """Test metabolite summary.to_table() (using FVA)."""
     #     pytest.xfail("FVA currently buggy")
 
     model.solver = opt_solver
@@ -367,3 +398,22 @@ def test_metabolite_summary_with_fva(model, opt_solver, fraction,
     ]
 
     check_line(out.getvalue(), expected_entries)
+
+
+@pytest.mark.parametrize("fraction, met", [(0.99, "fdp_c")])
+def test_metabolite_summary_to_frame_with_fva(model, opt_solver, fraction,
+                                              met):
+    """Test metabolite summary.to_frame() (using FVA)."""
+
+    model.solver = opt_solver
+    model.optimize()
+
+    out_df = model.metabolites.get_by_id(met).summary(fva=fraction).to_frame()
+
+    data = np.array([
+        ['100%', 7.477382, 6.169728, 9.258708,
+         'atp_c + f6p_c --> adp_c + fdp_c + h_c'],
+        ['100%', 7.477382, 6.169728, 8.915488, 'fdp_c <=> dhap_c + g3p_c'],
+        ['0%', 0.0, 0.0, 1.7161, 'fdp_c + h2o_c --> f6p_c + pi_c']])
+
+    assert np.array(data, out_df.values)
