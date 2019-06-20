@@ -48,9 +48,11 @@ def check_in_line(output, expected_entries,
                                            "\n".join(output_strip))
 
 
+# Test functions
+
 @pytest.mark.parametrize("names", [False, True])
-def test_model_summary_previous_solution(model, opt_solver, names):
-    """Test summary of previous solution."""
+def test_model_summary_to_table_previous_solution(model, opt_solver, names):
+    """Test Summary.to_table() of previous solution."""
     model.solver = opt_solver
     solution = model.optimize()
     rxn_test = model.exchanges[0]
@@ -67,8 +69,53 @@ def test_model_summary_previous_solution(model, opt_solver, names):
 
 
 @pytest.mark.parametrize("names", [False, True])
-def test_model_summary(model, opt_solver, names):
-    """Test model summary."""
+def test_model_summary_to_frame_previous_solution(model, opt_solver, names):
+    """Test Summary.to_frame() of previous solution."""
+    model.solver = opt_solver
+    solution = model.optimize()
+    rxn_test = model.exchanges[0]
+    if names:
+        met_test = list(rxn_test.metabolites.keys())[0].nameop
+    else:
+        met_test = list(rxn_test.metabolites.keys())[0].id
+
+    solution.fluxes[rxn_test.id] = 321
+
+    out_df = model.summary(solution, names=names).to_frame()
+
+    column_names = [['IN_FLUXES', 'OUT_FLUXES', 'OBJECTIVES'], ['ID', 'FLUX']]
+
+    if names:
+        data = np.array([['O2', 21.799492655998794, 'Acetate', 321.0,
+                          'Biomass_Ecol...', 0.8739215069684307],
+                         ['D-Glucose', 10.0, 'H2O', 29.175827135565815, '',
+                          ''],
+                         ['Ammonium', 4.76531919319746, 'CO2',
+                          22.80983331020498, '', ''],
+                         ['Phosphate', 3.2148950476847533, 'H+',
+                          17.530865429786687, '', '']])
+
+    else:
+        data = np.array([['o2_e', 21.799492655998794, 'ac_e', 321.0,
+                          'Biomass_Ecol...', 0.8739215069684307],
+                         ['glc__D_e', 10.0, 'h2o_e', 29.175827135565815, '',
+                          ''],
+                         ['nh4_e', 4.76531919319746, 'co2_e',
+                          22.80983331020498, '', ''],
+                         ['pi_e', 3.2148950476847533, 'h_e',
+                          17.530865429786687, '', '']])
+
+    expected_df = pd.DataFrame(
+        data=data,
+        columns=pd.MultiIndex.from_product(column_names)
+    )
+
+    assert expected_df.equals(out_df)
+
+
+@pytest.mark.parametrize("names", [False, True])
+def test_model_summary_to_table(model, opt_solver, names):
+    """Test model.summary().to_table()."""
     model.solver = opt_solver
     # test non-fva version (these should be fixed for textbook model)
     if names:
@@ -105,12 +152,48 @@ def test_model_summary(model, opt_solver, names):
     #     model.summary()
 
 
+@pytest.mark.parametrize("names", [False, True])
+def test_model_summary_to_frame(model, opt_solver, names):
+    """Test model.summary().to_frame()."""
+    model.solver = opt_solver
+    # test non-fva version (these should be fixed for textbook model)
+    if names:
+        data = np.array([['O2', 21.799492655998794, 'H2O', 29.175827135565815,
+                          'Biomass_Ecol...', 0.8739215069684307],
+                         ['D-Glucose', 10.0, 'CO2', 22.80983331020498, '',
+                          ''],
+                         ['Ammonium', 4.76531919319746, 'H+',
+                          17.530865429786687, '', ''],
+                         ['Phosphate', 3.2148950476847533, '', '', '', '']])
+
+    else:
+        data = np.array([['o2_e', 21.799492655998794, 'h2o_e',
+                          29.175827135565815, 'Biomass_Ecol...',
+                          0.8739215069684307],
+                         ['glc__D_e', 10.0, 'co2_e', 22.80983331020498, '',
+                          ''],
+                         ['nh4_e', 4.76531919319746, 'h_e',
+                          17.530865429786687, '', ''],
+                         ['pi_e', 3.2148950476847533, '', '', '', '']])
+
+    model.optimize()
+
+    column_names = [['IN_FLUXES', 'OUT_FLUXES', 'OBJECTIVES'], ['ID', 'FLUX']]
+
+    expected_df = pd.DataFrame(
+        data=data,
+        columns=pd.MultiIndex.from_product(column_names)
+    )
+
+    assert expected_df.equals(out_df)
+
+
 @pytest.mark.parametrize("fraction", [0.95])
-def test_model_summary_with_fva(model, opt_solver, fraction):
-    """Test model summary (using FVA)."""
+def test_model_summary_to_table_with_fva(model, opt_solver, fraction):
+    """Test model summary.to_table() (using FVA)."""
     if opt_solver == "optlang-gurobi":
         pytest.xfail("FVA currently buggy")
-    # test non-fva version (these should be fixed for textbook model
+    # test non-fva version (these should be fixed for textbook model)
     expected_entries = [
         'idFluxRangeidFluxRangeBiomass_Ecol...0.874',
         'o2_e       21.8   [19.9, 23.7]'
@@ -139,21 +222,93 @@ def test_model_summary_with_fva(model, opt_solver, fraction):
     check_in_line(out.getvalue(), expected_entries)
 
 
+@pytest.mark.parametrize("fraction", [0.95])
+def test_model_summary_to_frame_with_fva(model, opt_solver, fraction):
+    """Test model summary.to_frame() (using FVA)."""
+    if opt_solver == "optlang-gurobi":
+        pytest.xfail("FVA currently buggy")
+    # test non-fva version (these should be fixed for textbook model)
+    expected = np.array([['o2_e', 21.799493, 19.895962, 23.709518, 'h2o_e',
+                          29.175827, 24.996702, 30.717036, 'Biomass_Ecol...',
+                          0.8739215069684307],
+                         ['glc__D_e', 10.0, 9.523306, 10.0, 'co2_e',
+                          22.809833, 18.949008, 24.669342, '', ''],
+                         ['nh4_e', 4.765319, 4.527053, 5.162646, 'h_e',
+                          17.530865, 16.654322, 22.374655, '', ''],
+                         ['pi_e', 3.214895, 3.05415, 3.214895, 'for_e', 0.0,
+                          0.0, 5.720333, '', ''],
+                         ['', '', '', '', 'ac_e', 0.0, 0.0, 1.906778, '', ''],
+                         ['', '', '', '', 'acald_e', 0.0, 0.0, 1.271185, '',
+                          ''],
+                         ['', '', '', '', 'pyr_e', 0.0, 0.0, 1.271185, '',
+                          ''],
+                         ['', '', '', '', 'etoh_e', 0.0, 0.0, 1.107161, '',
+                          ''],
+                         ['', '', '', '', 'lac__D_e', 0.0, 0.0, 1.072563, '',
+                          ''],
+                         ['', '', '', '', 'succ_e', 0.0, 0.0, 0.837122, '',
+                          ''],
+                         ['', '', '', '', 'akg_e', 0.0, 0.0, 0.715042, '',
+                          ''],
+                         ['', '', '', '', 'glu__L_e', 0.0, 0.0, 0.635593, '',
+                          '']])
+
+    model.solver = opt_solver
+    solution = model.optimize()
+    out_df = model.summary(solution, fva=fraction).to_frame()
+
+    assert np.array_equal(expected, out_df.values)
+
+
 @pytest.mark.parametrize("met", ["q8_c"])
-def test_metabolite_summary_previous_solution(
+def test_metabolite_summary_to_table_previous_solution(
         model, opt_solver, met):
-    """Test metabolite summary of previous solution."""
+    """Test metabolite summary.to_table() of previous solution."""
     model.solver = opt_solver
     solution = pfba(model)
-    model.metabolites.get_by_id(met).summary(solution).to_table()
+
+    expected_entries = [
+        'PRODUCING REACTIONS -- Ubiquinone-8 (q8_c)',
+        '%       FLUX  RXN ID    REACTION',
+        '100%   43.6   CYTBD     2.0 h_c + 0.5 o2_c + q8h2_c --> h2o_c + 2.0 '
+        'h_e...',
+        'CONSUMING REACTIONS -- Ubiquinone-8 (q8_c)',
+        '%       FLUX  RXN ID    REACTION',
+        '88%    38.5   NADH16    4.0 h_c + nadh_c + q8_c --> 3.0 h_e + nad_c +'
+        ' q...',
+        '12%     5.06  SUCDi     q8_c + succ_c --> fum_c + q8h2_c'
+    ]
+
+    with captured_output() as (out, _):
+        model.metabolites.get_by_id(met).summary(solution).to_table()
+    check_in_line(out.getvalue(), expected_entries)
+
+
+@pytest.mark.parametrize("met", ["q8_c"])
+def test_metabolite_summary_to_frame_previous_solution(
+        model, opt_solver, met):
+    """Test metabolite summary.to_frame() of previous solution."""
+    model.solver = opt_solver
+    solution = pfba(model)
+
+    expected = np.array([
+        ['100%', 43.59898531199755,
+         '2.0 h_c + 0.5 o2_c + q8h2_c --> h2o_c + 2.0 h_e...'],
+        ['88%', 38.53460965051545,
+         '4.0 h_c + nadh_c + q8_c --> 3.0 h_e + nad_c + q...'],
+        ['12%', 5.064375661482105, 'q8_c + succ_c --> fum_c + q8h2_c']])
+
+    out_df = model.metabolites.get_by_id(met).summary(solution).to_frame()
+
+    assert np.array_equal(expected, out_df.values)
 
 
 @pytest.mark.parametrize("met, names", [
     ("q8_c", False),
     ("q8_c", True)
 ])
-def test_metabolite_summary(model, opt_solver, met, names):
-    """Test metabolite summary."""
+def test_metabolite_summary_to_table(model, opt_solver, met, names):
+    """Test metabolite summary.to_table()."""
     model.solver = opt_solver
     model.optimize()
     with captured_output() as (out, _):
