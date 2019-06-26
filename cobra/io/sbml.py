@@ -355,8 +355,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         key, value = plugin.getPackageName(), plugin.getPackageVersion()
         packages[key] = value
         info += ", {}-v{}".format(key, value)
-        if key not in ["fbc", "groups"]:
-            LOGGER.warning("SBML package '%s' not supported by cobrapy,"
+        if key not in ["fbc", "groups", "l3v2extendedmath"]:
+            LOGGER.warning("SBML package '%s' not supported by cobrapy, "
                            "information is not parsed", key)
     meta["info"] = info
     meta["packages"] = packages
