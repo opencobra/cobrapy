@@ -4,57 +4,32 @@ branches:
  - devel
  - /^[0-9]+\.[0-9]+\.[0-9]+[.0-9ab]*$/
 
+clone_depth: 2
+
 environment:
-
-  global:
-    PIP_CACHE_DIR: "pip_cache"
-    PIP_DISABLE_PIP_VERSION_CHECK: "yes"
-
   matrix:
-    - PYTHON: "C:\\Miniconda-x64"
-      CONDA: true
-
     - PYTHON: "C:\\Miniconda36-x64"
-      CONDA: true
-
-    - PYTHON: "C:\\Python27-x64"
-      TOXENV: py27
-
+      TOXENV: py36
+    - PYTHON: "C:\\Miniconda37-x64"
+      TOXENV: py37
     - PYTHON: "C:\\Python36-x64"
       TOXENV: py36
 
 matrix:
   fast_finish: true
 
-clone_depth: 2
-
-init:
-  - "ECHO %PYTHON%"
-  - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - python -V
-
 cache:
-    - pip_cache -> appveyor.yml
+  - '%LOCALAPPDATA%\pip\Cache'
 
-
-install:
-  - ps: |
-      if ($env:CONDA -eq "true") {
-        conda config --set always_yes yes --set changeps1 no;
-        conda config --add channels conda-forge
-        conda install -q pip setuptools wheel numpy scipy;
-        pip install -qq -r develop-requirements.txt;
-        pip install -qq .
-      } else {
-        pip install -qq --upgrade setuptools wheel tox
-      }
+platform: x64
 
 build: off
 
+install:
+  - set PATH=%PYTHON%;%PYTHON%\Scripts;%PYTHON%\Library\bin;%PATH%"
+  - "ECHO %PYTHON%"
+  - python --version
+  - python -m pip install --upgrade --disable-pip-version-check pip setuptools wheel tox
+
 test_script:
-  - ps: |
-      if ($env:CONDA -eq "true") {
-        pytest --benchmark-skip cobra/test
-      } else {
-        tox
-      }
+  - tox
