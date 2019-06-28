@@ -1,5 +1,5 @@
 """
-SBML import and export using python-libsbml(-experimental).
+SBML import and export using python-libsbml.
 
 - The SBML importer supports all versions of SBML and the fbc package.
 - The SBML exporter writes SBML L3 models.
@@ -312,12 +312,15 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                 raise Exception("Conversion of SBML fbc v1 to fbc v2 failed")
 
     # Model
-    cobra_model = Model(model.getId())
+    model_id = model.getIdAttribute()
+    if not libsbml.SyntaxChecker.isValidSBMLSId(model_id):
+        logging.error("'%s' is not a valid SBML 'SId'." % model_id)
+    cobra_model = Model(model_id)
     cobra_model.name = model.getName()
 
     # meta information
     meta = {
-        "model.id": model.getId(),
+        "model.id": model_id,
         "level": model.getLevel(),
         "version": model.getVersion(),
         "packages": []
@@ -344,7 +347,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     meta["notes"] = _parse_notes_dict(doc)
     meta["annotation"] = _parse_annotations(doc)
 
-    info = "<{}> SBML L{}V{}".format(model.getId(),
+    info = "<{}> SBML L{}V{}".format(model_id,
                                      model.getLevel(), model.getVersion())
     packages = {}
     for k in range(doc.getNumPlugins()):
@@ -352,8 +355,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         key, value = plugin.getPackageName(), plugin.getPackageVersion()
         packages[key] = value
         info += ", {}-v{}".format(key, value)
-        if key not in ["fbc", "groups"]:
-            LOGGER.warning("SBML package '%s' not supported by cobrapy,"
+        if key not in ["fbc", "groups", "l3v2extendedmath"]:
+            LOGGER.warning("SBML package '%s' not supported by cobrapy, "
                            "information is not parsed", key)
     meta["info"] = info
     meta["packages"] = packages
@@ -365,8 +368,11 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
     # Compartments
     # FIXME: update with new compartments
-    cobra_model.compartments = {c.getId(): c.getName()
-                                for c in model.getListOfCompartments()}
+    compartments = {}
+    for compartment in model.getListOfCompartments():  # noqa: E501 type: libsbml.Compartment
+        cid = _check_required(compartment, compartment.getIdAttribute(), "id")
+        compartments[cid] = compartment.getName()
+    cobra_model.compartments = compartments
 
     # Species
     metabolites = []
@@ -375,7 +381,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         LOGGER.warning("No metabolites in model")
 
     for specie in model.getListOfSpecies():  # type: libsbml.Species
-        sid = _check_required(specie, specie.getId(), "id")
+        sid = _check_required(specie, specie.getIdAttribute(), "id")
         if f_replace and F_SPECIE in f_replace:
             sid = f_replace[F_SPECIE](sid)
 
@@ -441,7 +447,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     # Genes
     if model_fbc:
         for gp in model_fbc.getListOfGeneProducts():  # noqa: E501 type: libsbml.GeneProduct
-            gid = gp.getId()
+            gid = _check_required(gp, gp.getIdAttribute(), "id")
             if f_replace and F_GENE in f_replace:
                 gid = f_replace[F_GENE](gid)
             cobra_gene = Gene(gid)
@@ -508,7 +514,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         LOGGER.warning("No reactions in model")
 
     for reaction in model.getListOfReactions():  # type: libsbml.Reaction
-        rid = _check_required(reaction, reaction.getId(), "id")
+        rid = _check_required(reaction, reaction.getIdAttribute(), "id")
         if f_replace and F_REACTION in f_replace:
             rid = f_replace[F_REACTION](rid)
         cobra_reaction = Reaction(rid)
@@ -582,7 +588,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         # parse equation
         stoichiometry = defaultdict(lambda: 0)
         for sref in reaction.getListOfReactants():  # noqa: E501 type: libsbml.SpeciesReference
-            sid = sref.getSpecies()
+            sid = _check_required(sref, sref.getSpecies(), "species")
+
             if f_replace and F_SPECIE in f_replace:
                 sid = f_replace[F_SPECIE](sid)
             stoichiometry[sid] -= number(
@@ -590,7 +597,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                                 "stoichiometry"))
 
         for sref in reaction.getListOfProducts():  # noqa: E501 type: libsbml.SpeciesReference
-            sid = sref.getSpecies()
+            sid = _check_required(sref, sref.getSpecies(), "species")
+
             if f_replace and F_SPECIE in f_replace:
                 sid = f_replace[F_SPECIE](sid)
             stoichiometry[sid] += number(
@@ -677,7 +685,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                 p_oc = klaw.getParameter(
                     "OBJECTIVE_COEFFICIENT")  # noqa: E501 type: libsbml.LocalParameter
                 if p_oc:
-                    rid = reaction.getId()
+                    rid = _check_required(reaction,
+                                          reaction.getIdAttribute(), "id")
                     if f_replace and F_REACTION in f_replace:
                         rid = f_replace[F_REACTION](rid)
                     try:
@@ -717,13 +726,14 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
             for sbase in obj_list:  # type: libsbml.SBase
                 if sbase.isSetId():
-                    sid_map[sbase.getId()] = sbase
+                    sid_map[sbase.getIdAttribute()] = sbase
                 if sbase.isSetMetaId():
                     metaid_map[sbase.getMetaId()] = sbase
 
         # create groups
         for group in model_groups.getListOfGroups():  # type: libsbml.Group
-            cobra_group = Group(group.getId())
+            gid = _check_required(group, group.getIdAttribute(), "id")
+            cobra_group = Group(gid)
             cobra_group.name = group.getName()
             if group.isSetKind():
                 cobra_group.kind = group.getKindAsString()
@@ -734,13 +744,11 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
             for member in group.getListOfMembers():  # type: libsbml.Member
                 if member.isSetIdRef():
                     obj = sid_map[member.getIdRef()]
-                    # obj = doc.getElementBySId(member.getIdRef())
                 elif member.isSetMetaIdRef():
                     obj = metaid_map[member.getMetaIdRef()]
-                    # obj = doc.getElementByMetaId(member.getMetaIdRef())
 
                 typecode = obj.getTypeCode()
-                obj_id = obj.getId()
+                obj_id = _check_required(obj, obj.getIdAttribute(), "id")
 
                 # id replacements
                 cobra_member = None
@@ -1174,8 +1182,8 @@ def _check_required(sbase, value, attribute):
     """
 
     if (value is None) or (value == ""):
-        msg = "Required attribute '%s' cannot be found or parsed in '%s'" % \
-              (attribute, sbase)
+        msg = "Required attribute '%s' cannot be found or parsed in " \
+              "'%s'." % (attribute, sbase)
         if hasattr(sbase, "getId") and sbase.getId():
             msg += " with id '%s'" % sbase.getId()
         elif hasattr(sbase, "getName") and sbase.getName():
@@ -1183,6 +1191,10 @@ def _check_required(sbase, value, attribute):
         elif hasattr(sbase, "getMetaId") and sbase.getMetaId():
             msg += " with metaId '%s'" % sbase.getName()
         raise CobraSBMLError(msg)
+    if attribute == "id":
+        if not libsbml.SyntaxChecker.isValidSBMLSId(value):
+            logging.error("'%s' is not a valid SBML 'SId'." % value)
+
     return value
 
 
