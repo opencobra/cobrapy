@@ -334,3 +334,81 @@ def test_metabolite_summary_to_frame_with_fva(model, opt_solver, fraction,
     out_df = model.metabolites.get_by_id(met).summary(fva=fraction).to_frame()
 
     assert out_df['PERCENT'].tolist() == expected_percent
+
+
+@pytest.mark.parametrize("rxn, names", [("ACALD", False), ("ACALD", True)])
+def test_reaction_summary_to_table(model, rxn, names):
+    """Test reaction summary.to_table()."""
+
+    with captured_output() as (out, _):
+        model.reactions.get_by_id(rxn).summary(names=names).to_table()
+
+    if names:
+        expected_entries = [
+            'REACTION: Acetaldehyde + Coenzyme A + Nicotinamide adenine '
+            'dinucleotide <=> Acetyl-CoA + H+ + Nicotinamide adenine '
+            'dinucleotide - reduced',
+            'GENES -- acetaldehyde dehydrogenase (acetylating) ACALD',
+            'ID',
+            'adhE',
+            'mhpF',
+            'REACTANTS -- acetaldehyde dehydrogenase (acetylating) ACALD',
+            'ID                                   STOICHIOMETRIC COEFFICIENT'
+            'COMPARTMENT',
+            'Acetaldehyde                                                 -1  '
+            'c',
+            'Coenzyme A                                                   -1  '
+            'c',
+            'Nicotinamide adenine dinucleotide                            -1  '
+            'c',
+            'PRODUCTS -- acetaldehyde dehydrogenase (acetylating) ACALD',
+            'ID                                             STOICHIOMETRIC '
+            'COEFFICIENT  COMPARTMENT',
+            'Acetyl-CoA                                                       '
+            '       1  c',
+            'H+                                                               '
+            '       1  c',
+            'Nicotinamide adenine dinucleotide - reduced                      '
+            '       1  c'
+        ]
+    else:
+        expected_entries = [
+            'REACTION: acald_c + coa_c + nad_c <=> accoa_c + h_c + nadh_c',
+            'GENES -- acetaldehyde dehydrogenase (acetylating) ACALD',
+            'ID',
+            'b1241',
+            'b0351',
+            'REACTANTS -- acetaldehyde dehydrogenase (acetylating) ACALD',
+            'ID         STOICHIOMETRIC COEFFICIENT  COMPARTMENT',
+            'acald_c                            -1  c',
+            'coa_c                              -1  c',
+            'nad_c                              -1  c',
+            'PRODUCTS -- acetaldehyde dehydrogenase (acetylating) ACALD',
+            'ID         STOICHIOMETRIC COEFFICIENT  COMPARTMENT',
+            'accoa_c                             1  c',
+            'h_c                                 1  c',
+            'nadh_c                              1  c'
+        ]
+
+    check_line(out.getvalue(), expected_entries)
+
+@pytest.mark.parametrize("rxn, names", [("ACALD", False), ("FUM", True)])
+def test_reaction_summary_to_frame(model, rxn, names):
+    """Test reaction summary.to_frame()."""
+
+    out_df = model.reactions.get_by_id(rxn).summary(names=names).to_frame()
+
+    if names:
+        expected_gene_names = ['fumC', 'fumA', 'fumB']
+        expected_met_names = ['Fumarate', 'H2O', 'L-Malate']
+
+    else:
+        expected_gene_names = ['b1241', 'b0351']
+        expected_met_names = ['acald_c', 'coa_c', 'nad_c', 'accoa_c', 'h_c',
+                              'nadh_c']
+
+    assert out_df['REACTION', 'GENES', 'ID']\
+        .replace('', np.nan).dropna().tolist() == expected_gene_names
+
+    assert out_df['REACTION', 'METABOLITES', 'ID'].tolist() == \
+        expected_met_names
