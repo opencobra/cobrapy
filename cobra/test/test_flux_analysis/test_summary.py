@@ -8,6 +8,7 @@ import re
 import sys
 from contextlib import contextmanager
 
+import numpy as np
 import pytest
 from six import StringIO
 
@@ -392,6 +393,7 @@ def test_reaction_summary_to_table(model, rxn, names):
 
     check_line(out.getvalue(), expected_entries)
 
+
 @pytest.mark.parametrize("rxn, names", [("ACALD", False), ("FUM", True)])
 def test_reaction_summary_to_frame(model, rxn, names):
     """Test reaction summary.to_frame()."""
@@ -407,8 +409,9 @@ def test_reaction_summary_to_frame(model, rxn, names):
         expected_met_names = ['acald_c', 'coa_c', 'nad_c', 'accoa_c', 'h_c',
                               'nadh_c']
 
-    assert out_df['REACTION', 'GENES', 'ID']\
-        .replace('', np.nan).dropna().tolist() == expected_gene_names
+    assert all(out_df['REACTION', 'GENES', 'ID']
+               .replace('', np.nan).dropna().tolist()) == \
+        all(expected_gene_names)
 
-    assert out_df['REACTION', 'METABOLITES', 'ID'].tolist() == \
-        expected_met_names
+    assert all(out_df['REACTION', 'METABOLITES', 'ID'].tolist()) == \
+        all(expected_met_names)

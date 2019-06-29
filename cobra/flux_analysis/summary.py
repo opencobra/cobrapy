@@ -670,24 +670,24 @@ class ReactionSummary(Summary):
 
         reactants_table = tabulate(
             rxn_df[rxn_df['REACTION', 'METABOLITES',
-                          'STOICHIOMETRIC COEFFICIENT'] < 0]\
+                          'STOICHIOMETRIC COEFFICIENT'] < 0]
             .loc[:, ('REACTION', 'METABOLITES')].values,
             headers=['ID', 'STOICHIOMETRIC COEFFICIENT', 'COMPARTMENT']
         )
 
         products_table = tabulate(
             rxn_df[rxn_df['REACTION', 'METABOLITES',
-                          'STOICHIOMETRIC COEFFICIENT'] > 0]\
+                          'STOICHIOMETRIC COEFFICIENT'] > 0]
             .loc[:, ('REACTION', 'METABOLITES')].values,
             headers=['ID', 'STOICHIOMETRIC COEFFICIENT', 'COMPARTMENT']
         )
 
         rxn_tag = '{0} {1}'.format(format_long_string(self.rxn.name, 45),
-                                    format_long_string(self.rxn.id, 10))
+                                   format_long_string(self.rxn.id, 10))
 
         head = 'REACTANTS -- ' + rxn_tag
 
-        print_('REACTION: ' + \
+        print_('REACTION: ' +
                self.rxn.build_reaction_string(use_metabolite_names=self.names))
 
         print_()
