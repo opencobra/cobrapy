@@ -597,3 +597,119 @@ class ModelSummary(Summary):
                 data=concat_df,
                 columns=pd.MultiIndex.from_product(column_names)
             )
+
+
+class ReactionSummary(Summary):
+    """Class definition for a ReactionSummary object.
+
+    Parameters
+    ----------
+    rxn: cobra.Reaction
+        The Reaction object whose summary we intend to get.
+    names : bool, optional
+        Emit gene and metabolite names rather than identifiers (default
+        False).
+
+    """
+
+    def __init__(self, rxn, names):
+        super(ReactionSummary, self).__init__(names=names, solution=None,
+                                              threshold=None, fva=None,
+                                              floatfmt=None)
+        self.rxn = rxn
+
+    def _generate(self):
+        """
+        Returns
+        -------
+        rxn_summary: pandas.DataFrame
+            The DataFrame of reaction summary data.
+
+        """
+        if self.names:
+            emit = attrgetter('name')
+        else:
+            emit = attrgetter('id')
+
+        gene_temp_df = pd.DataFrame([emit(gene) for gene in self.rxn.genes])
+        met_temp_df = pd.DataFrame([
+            [emit(key), value, key.compartment] for key, value in
+            iteritems(self.rxn.metabolites)
+        ])
+        data = pd.concat([gene_temp_df, met_temp_df], axis=1).fillna('').values
+
+        columns = pd.MultiIndex.from_tuples((('Reaction', 'Genes', 'ID'),
+                                             ('Reaction', 'Metabolites', 'ID'),
+                                             ('Reaction', 'Metabolites',
+                                              'Stoichiometric coefficient'),
+                                             ('Reaction', 'Metabolites',
+                                              'Compartment')))
+
+        rxn_summary = pd.DataFrame(
+            data=data,
+            columns=columns
+        )
+
+        del gene_temp_df, met_temp_df
+
+        return rxn_summary
+
+    def to_table(self):
+        """
+        Returns
+        -------
+        Nothing
+
+        """
+        rxn_df = self._generate()
+
+        gene_table = tabulate(
+            rxn_df['Reaction', 'Genes'].replace('', np.nan).dropna().values,
+            headers=['ID']
+        )
+
+        reactants_table = tabulate(
+            rxn_df[rxn_df['Reaction', 'Metabolites',
+                          'Stoichiometric coefficient'] < 0]\
+            .loc[:, ('Reaction', 'Metabolites')].values,
+            headers=['ID', 'Stoichiometric coefficient', 'Compartment']
+        )
+
+        products_table = tabulate(
+            rxn_df[rxn_df['Reaction', 'Metabolites',
+                          'Stoichiometric coefficient'] > 0]\
+            .loc[:, ('Reaction', 'Metabolites')].values,
+            headers=['ID', 'Stoichiometric coefficient', 'Compartment']
+        )
+
+        rxn_tag = '{0} {1}'.format(format_long_string(self.rxn.name, 45),
+                                    format_long_string(self.rxn.id, 10))
+
+        head = 'REACTANTS -- ' + rxn_tag
+
+        print_('REACTION: ' + \
+               self.rxn.build_reaction_string(use_metabolite_names=self.names))
+
+        print_()
+        print_('GENES -- ' + rxn_tag)
+        print_('-' * len(head))
+        print_(gene_table)
+
+        print_()
+        print_(head)
+        print_('-' * len(head))
+        print_(reactants_table)
+
+        print_()
+        print_('PRODUCTS -- ' + rxn_tag)
+        print_('-' * len(head))
+        print_(products_table)
+
+    def to_frame(self):
+        """
+        Returns
+        -------
+        A pandas.DataFrame of the summary.
+
+        """
+        return self._generate()
