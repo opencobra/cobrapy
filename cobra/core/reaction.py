@@ -1085,6 +1085,21 @@ class Reaction(Object):
                     met = Metabolite(met_id)
                 self.add_metabolites({met: num})
 
+    def summary(self, names=False):
+        """
+        Print a summary of the reaction.
+
+        Parameters
+        ----------
+        names : bool, optional
+            Emit reaction and metabolite names rather than identifiers (default
+            False).
+
+        """
+
+        from cobra.flux_analysis.summary import ReactionSummary
+        return ReactionSummary(rxn=self, names=names)
+
     def __str__(self):
         return "{id}: {stoichiometry}".format(
             id=self.id, stoichiometry=self.build_reaction_string())
