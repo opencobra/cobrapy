@@ -638,12 +638,12 @@ class ReactionSummary(Summary):
         ])
         data = pd.concat([gene_temp_df, met_temp_df], axis=1).fillna('').values
 
-        columns = pd.MultiIndex.from_tuples((('Reaction', 'Genes', 'ID'),
-                                             ('Reaction', 'Metabolites', 'ID'),
-                                             ('Reaction', 'Metabolites',
-                                              'Stoichiometric coefficient'),
-                                             ('Reaction', 'Metabolites',
-                                              'Compartment')))
+        columns = pd.MultiIndex.from_tuples((('REACTION', 'GENES', 'ID'),
+                                             ('REACTION', 'METABOLITES', 'ID'),
+                                             ('REACTION', 'METABOLITES',
+                                              'STOICHIOMETRIC COEFFICIENT'),
+                                             ('REACTION', 'METABOLITES',
+                                              'COMPARTMENT')))
 
         rxn_summary = pd.DataFrame(
             data=data,
@@ -664,22 +664,22 @@ class ReactionSummary(Summary):
         rxn_df = self._generate()
 
         gene_table = tabulate(
-            rxn_df['Reaction', 'Genes'].replace('', np.nan).dropna().values,
+            rxn_df['REACTION', 'GENES'].replace('', np.nan).dropna().values,
             headers=['ID']
         )
 
         reactants_table = tabulate(
-            rxn_df[rxn_df['Reaction', 'Metabolites',
-                          'Stoichiometric coefficient'] < 0]\
-            .loc[:, ('Reaction', 'Metabolites')].values,
-            headers=['ID', 'Stoichiometric coefficient', 'Compartment']
+            rxn_df[rxn_df['REACTION', 'METABOLITES',
+                          'STOICHIOMETRIC COEFFICIENT'] < 0]\
+            .loc[:, ('REACTION', 'METABOLITES')].values,
+            headers=['ID', 'STOICHIOMETRIC COEFFICIENT', 'COMPARTMENT']
         )
 
         products_table = tabulate(
-            rxn_df[rxn_df['Reaction', 'Metabolites',
-                          'Stoichiometric coefficient'] > 0]\
-            .loc[:, ('Reaction', 'Metabolites')].values,
-            headers=['ID', 'Stoichiometric coefficient', 'Compartment']
+            rxn_df[rxn_df['REACTION', 'METABOLITES',
+                          'STOICHIOMETRIC COEFFICIENT'] > 0]\
+            .loc[:, ('REACTION', 'METABOLITES')].values,
+            headers=['ID', 'STOICHIOMETRIC COEFFICIENT', 'COMPARTMENT']
         )
 
         rxn_tag = '{0} {1}'.format(format_long_string(self.rxn.name, 45),
