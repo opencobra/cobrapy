@@ -1050,7 +1050,7 @@ class Reaction(Object):
         # reversible case
         arrow_match = reversible_arrow_finder.search(reaction_str)
         if arrow_match is not None:
-            self.bounds = (CONFIGURATION.lower_bound, 
+            self.bounds = (CONFIGURATION.lower_bound,
                            CONFIGURATION.upper_bound)
         else:  # irreversible
             # try forward
