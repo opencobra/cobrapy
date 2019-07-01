@@ -1049,17 +1049,13 @@ class Reaction(Object):
 
         # reversible case
         arrow_match = reversible_arrow_finder.search(reaction_str)
-        lower_bound = CONFIGURATION.lower_bound
-        upper_bound = CONFIGURATION.upper_bound
         if arrow_match is not None:
-            self.lower_bound = lower_bound
-            self.upper_bound = upper_bound
+            self.bounds = (CONFIGURATION.lower_bound, CONFIGURATION.upper_bound)
         else:  # irreversible
             # try forward
             arrow_match = forward_arrow_finder.search(reaction_str)
             if arrow_match is not None:
-                self.upper_bound = upper_bound
-                self.lower_bound = 0
+                self.bounds = (0, CONFIGURATION.upper_bound)
             else:
                 # must be reverse
                 arrow_match = reverse_arrow_finder.search(reaction_str)
@@ -1067,8 +1063,7 @@ class Reaction(Object):
                     raise ValueError("no suitable arrow found in '%s'" %
                                      reaction_str)
                 else:
-                    self.upper_bound = 0
-                    self.lower_bound = lower_bound
+                    self.bounds = (CONFIGURATION.lower_bound, 0)
         reactant_str = reaction_str[:arrow_match.start()].strip()
         product_str = reaction_str[arrow_match.end():].strip()
 
