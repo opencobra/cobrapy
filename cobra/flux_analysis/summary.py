@@ -56,8 +56,13 @@ class Summary(object):
         self.names = names
         self.floatfmt = floatfmt
 
-    def _generate():
-        """Generate the summary for the required cobra object."""
+    def _generate(self):
+        """Generate the summary for the required cobra object.
+
+        This is an abstract method and thus the subclass needs to
+        implement it.
+
+        """
         pass
 
     def _process_flux_dataframe(self, flux_dataframe):
@@ -143,11 +148,21 @@ class Summary(object):
         return flux_dataframe
 
     def to_table(self):
-        """Generate a print-ready table using tabulate."""
+        """Generate a print-ready table using tabulate.
+
+        This is an abstract method and thus the subclass needs to
+        implement it.
+
+        """
         pass
 
     def to_frame(self):
-        """Generate a pandas.DataFrame."""
+        """Generate a pandas.DataFrame.
+
+        This is an abstract method and thus the subclass needs to
+        implement it.
+
+        """
         pass
 
     def _repr_html_(self):
