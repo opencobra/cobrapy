@@ -13,6 +13,7 @@ import six
 from cobra.core import Configuration, Metabolite, Model, Reaction
 
 
+config = Configuration()
 stable_optlang = ["glpk", "cplex", "gurobi"]
 
 
@@ -270,12 +271,16 @@ def test_build_from_string(model):
         assert len(model.metabolites) == m
 
     with model:
-        config = Configuration()
-        assert config.bounds == (-1000, 1000)
+        old_bounds = config.bounds
+        assert old_bounds == (-1000, 1000)
+        config.bounds = (-5, 5)
+        pgi.build_reaction_from_string("g6p_c <--> f6p_c + new",
+                                       verbose=False)
+        assert pgi.bounds == (-5, 5)
+        config.bounds = old_bounds
         pgi.build_reaction_from_string("g6p_c --> f6p_c + new",
                                        verbose=False)
-        assert pgi.bounds == (-1000, 1000)
-
+        assert pgi.bounds == (0, 1000)
 
 def test_bounds_setter(model):
     rxn = model.reactions.get_by_id("PGI")
