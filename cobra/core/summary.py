@@ -403,31 +403,29 @@ class ModelSummary(Summary):
     ----------
     model: cobra.Model
         The Model object whose summary we intend to get.
-    solution: cobra.Solution, optional
+    solution : cobra.Solution or None
         A previously solved model solution to use for generating the
-        summary. If none provided (default), the summary method will
-        resolve the model. Note that the solution object must match the
-        model, i.e., changes to the model such as changed bounds,
-        added or removed reactions are not taken into account by this
-        method.
-    threshold : float, optional
+        summary. If None, the summary method will resolve the model.
+        Note that the solution object must match the model, i.e., changes
+        to the model such as changed bounds, added or removed reactions are
+        not taken into account by this method.
+    threshold : float
         Threshold below which fluxes are not reported.
-    fva : pandas.DataFrame, float or None, optional
+    fva : pandas.DataFrame, float or None
         Whether or not to include flux variability analysis in the output.
         If given, fva should either be a previous FVA solution matching
         the model or a float between 0 and 1 representing the
         fraction of the optimum objective to be searched.
-    names : bool, optional
-        Emit reaction and metabolite names rather than identifiers (default
-        False).
-    floatfmt : string, optional
-        Format string for floats (default '.3g').
+    names : bool
+        Emit reaction and metabolite names rather than identifiers.
+    float_format : one-parameter function
+        Format string for floats.
 
     """
 
-    def __init__(self, model, solution, threshold, fva, names, floatfmt):
+    def __init__(self, model, solution, threshold, fva, names, float_format):
         super(ModelSummary, self).__init__(solution, threshold, fva, names,
-                                           floatfmt)
+                                           float_format)
         self.model = model
 
     def _generate(self):
@@ -514,43 +512,6 @@ class ModelSummary(Summary):
 
         return metabolite_fluxes, obj_fluxes
 
-    def to_table(self):
-        """
-        Returns
-        -------
-        Nothing
-
-        """
-        met_df, obj_df = self._generate()
-
-        # Begin building string output table
-        def get_str_table(species_df, fva=False):
-            """Formats a string table for each column"""
-            if fva:
-                return tabulate(
-                    species_df.loc[:, ['id', 'flux', 'fva_fmt']].values,
-                    floatfmt=self.floatfmt, tablefmt='simple',
-                    headers=['id', 'Flux', 'Range']).split('\n')
-            else:
-                return tabulate(species_df.loc[:, ['id', 'flux']].values,
-                                floatfmt=self.floatfmt,
-                                tablefmt='plain').split('\n')
-
-        in_table = get_str_table(met_df[met_df['is_input']],
-                                 fva=self.fva is not None)
-
-        out_table = get_str_table(met_df[~met_df['is_input']],
-                                  fva=self.fva is not None)
-
-        obj_table = get_str_table(obj_df, fva=False)
-
-        # Print nested output table
-        print_(tabulate(
-            [entries for entries in zip_longest(in_table, out_table,
-                                                obj_table)],
-            headers=['IN FLUXES', 'OUT FLUXES', 'OBJECTIVES'],
-            tablefmt='simple'))
-
     def to_frame(self):
         """
         Returns
@@ -573,9 +534,9 @@ class ModelSummary(Summary):
 
             obj_df = obj_df.loc[:, ['id', 'flux']].reset_index(drop=True)
 
-            # concatenate and replace NaN with ''
+            # concatenate DataFrames
             concat_df = pd.concat([met_in_df, met_out_df, obj_df], axis=1)\
-                          .fillna('').values
+                          .values
 
             del met_in_df, met_out_df, obj_df
 
@@ -587,11 +548,6 @@ class ModelSummary(Summary):
                                [3, 0, 2, 1, 3, 0, 2, 1, 3, 0]],
                               inplace=True,
                               verify_integrity=False)
-
-            return pd.DataFrame(
-                data=concat_df,
-                columns=columns
-            )
 
         else:
             column_names = [['IN_FLUXES', 'OUT_FLUXES', 'OBJECTIVES'],
@@ -606,16 +562,30 @@ class ModelSummary(Summary):
 
             obj_df = obj_df.loc[:, ['id', 'flux']].reset_index(drop=True)
 
-            # concatenate and replace NaN with ''
+            # concatenate DataFrames
             concat_df = pd.concat([met_in_df, met_out_df, obj_df], axis=1)\
-                          .fillna('').values
+                          .values
 
             del met_in_df, met_out_df, obj_df
 
-            return pd.DataFrame(
-                data=concat_df,
-                columns=pd.MultiIndex.from_product(column_names)
-            )
+            # Generate column names
+            columns = pd.MultiIndex.from_product(column_names)
+
+        return pd.DataFrame(
+            data=concat_df,
+            columns=columns
+        )
+
+    def _to_table(self):
+        """
+        Returns
+        -------
+        A string of the summary table.
+
+        """
+        return self.to_frame().to_string(header=True, index=False, na_rep='',
+                                         float_format=self.float_format,
+                                         sparsify=False, justify='center')
 
 
 class ReactionSummary(Summary):
