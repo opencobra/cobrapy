@@ -1205,7 +1205,7 @@ class Model(Object):
         from cobra.core.summary import ModelSummary
 
         if float_format is None:
-            float_format = lambda x: "{:.3g}".format(x)
+            def float_format(x): return "{:.3g}".format(x)
 
         return ModelSummary(model=self, solution=solution,
                             threshold=threshold, fva=fva, names=names,

@@ -245,7 +245,7 @@ class Metabolite(Species):
         from cobra.core.summary import MetaboliteSummary
 
         if float_format is None:
-            float_format = lambda x: "{:.3g}".format(x)
+            def float_format(x): return "{:.3g}".format(x)
 
         return MetaboliteSummary(met=self, solution=solution,
                                  threshold=threshold, fva=fva, names=names,
