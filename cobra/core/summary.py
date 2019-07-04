@@ -9,9 +9,8 @@ from operator import attrgetter
 
 import numpy as np
 import pandas as pd
-from six import iteritems, print_
+from six import iteritems
 from six.moves import zip_longest
-from tabulate import tabulate
 
 from cobra.core import get_solution
 from cobra.flux_analysis.variability import flux_variability_analysis
@@ -130,10 +129,6 @@ class Summary(object):
                 )
 
         if self.fva is not None:
-            flux_dataframe['fva_fmt'] = \
-                flux_dataframe.apply(lambda x: ("[{0.fmin:" + self.floatfmt + "},\
-                {0.fmax:" + self.floatfmt + "}]").format(x), axis=1)
-
             flux_dataframe = (
                 flux_dataframe
                 .sort_values(by=['flux', 'fmax', 'fmin', 'id'],
