@@ -50,7 +50,6 @@ if __name__ == "__main__":
             "numpy>=1.13",
             "pandas>=0.17.0",
             "optlang>=1.4.2",
-            "tabulate",
             "depinfo",
             "python-libsbml-experimental==5.18.0",
         ],

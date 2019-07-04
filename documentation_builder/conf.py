@@ -45,7 +45,6 @@ MOCK_MODULES = [
     'pp',
     'libsbml',
     'pandas',
-    'tabulate',
     'optlang', 'optlang.interface', 'optlang.symbolics',
     'optlang.symbolics.core',
     'future', 'future.utils',
