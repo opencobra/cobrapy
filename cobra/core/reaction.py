@@ -25,7 +25,7 @@ from cobra.util.solver import (
 from cobra.util.util import format_long_string
 
 
-CONFIGURATION = Configuration()
+config = Configuration()
 
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
@@ -88,9 +88,9 @@ class Reaction(Object):
 
         # from cameo ...
         self._lower_bound = lower_bound if lower_bound is not None else \
-            CONFIGURATION.lower_bound
+            config.lower_bound
         self._upper_bound = upper_bound if upper_bound is not None else \
-            CONFIGURATION.upper_bound
+            config.upper_bound
 
     def _set_id_with_model(self, value):
         if value in self.model.reactions:
@@ -1050,12 +1050,12 @@ class Reaction(Object):
         # reversible case
         arrow_match = reversible_arrow_finder.search(reaction_str)
         if arrow_match is not None:
-            self.bounds = (CONFIGURATION.lower_bound, CONFIGURATION.upper_bound)
+            self.bounds = config.lower_bound, config.upper_bound
         else:  # irreversible
             # try forward
             arrow_match = forward_arrow_finder.search(reaction_str)
             if arrow_match is not None:
-                self.bounds = (0, CONFIGURATION.upper_bound)
+                self.bounds = 0, config.upper_bound
             else:
                 # must be reverse
                 arrow_match = reverse_arrow_finder.search(reaction_str)
@@ -1063,7 +1063,7 @@ class Reaction(Object):
                     raise ValueError("no suitable arrow found in '%s'" %
                                      reaction_str)
                 else:
-                    self.bounds = (CONFIGURATION.lower_bound, 0)
+                    self.bounds = config.lower_bound, 0
         reactant_str = reaction_str[:arrow_match.start()].strip()
         product_str = reaction_str[arrow_match.end():].strip()
 

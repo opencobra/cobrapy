@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 import six
 
-from cobra.core import Metabolite, Model, Reaction
+from cobra.core import Metabolite, Model, Reaction, Configuration
 
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
@@ -268,6 +268,13 @@ def test_build_from_string(model):
     with pytest.raises(AttributeError):
         assert model.metabolites.foo
         assert len(model.metabolites) == m
+
+    with model:
+        config = Configuration()
+        assert config.bounds == (-1000, 1000)
+        pgi.build_reaction_from_string("g6p_c --> f6p_c",
+                                       verbose=False)
+        pgi.bounds == (-1000, 1000)
 
 
 def test_bounds_setter(model):
