@@ -180,31 +180,29 @@ class MetaboliteSummary(Summary):
     ----------
     met: cobra.Metabolite
         The Metabolite object whose summary we intend to get.
-    solution : cobra.Solution, optional
+    solution : cobra.Solution or None
         A previously solved model solution to use for generating the
-        summary. If none provided (default), the summary method will
-        resolve the model. Note that the solution object must match the
-        model, i.e., changes to the model such as changed bounds,
-        added or removed reactions are not taken into account by this
-        method.
-    threshold : float, optional
+        summary. If None, the summary method will resolve the model.
+        Note that the solution object must match the model, i.e., changes
+        to the model such as changed bounds, added or removed reactions are
+        not taken into account by this method.
+    threshold : float
         Threshold below which fluxes are not reported.
-    fva : pandas.DataFrame, float or None, optional
+    fva : pandas.DataFrame, float or None
         Whether or not to include flux variability analysis in the output.
         If given, fva should either be a previous FVA solution matching
         the model or a float between 0 and 1 representing the
         fraction of the optimum objective to be searched.
-    names : bool, optional
-        Emit reaction and metabolite names rather than identifiers (default
-        False).
-    floatfmt : string, optional
-        Format string for floats (default '.3g').
+    names : bool
+        Emit reaction and metabolite names rather than identifiers.
+    float_format : one-parameter function
+        Format string for floats.
 
     """
 
-    def __init__(self, met, solution, threshold, fva, names, floatfmt):
+    def __init__(self, met, solution, threshold, fva, names, float_format):
         super(MetaboliteSummary, self).__init__(solution, threshold, fva,
-                                                names, floatfmt)
+                                                names, float_format)
         self.met = met
 
     def _generate(self):
@@ -290,49 +288,6 @@ class MetaboliteSummary(Summary):
 
         return flux_summary
 
-    def to_table(self):
-        """
-        Returns
-        -------
-        Nothing
-
-        """
-        flux_df = self._generate()
-
-        if self.fva is not None:
-            flux_table = tabulate(
-                flux_df.loc[:, ['percent', 'flux', 'fva_fmt', 'id',
-                                'reaction']].values,
-                floatfmt=self.floatfmt,
-                headers=['%', 'FLUX', 'RANGE', 'RXN ID',
-                         'REACTION']).split('\n')
-        else:
-            flux_table = tabulate(
-                flux_df.loc[:, ['percent', 'flux', 'id',
-                                'reaction']].values,
-                floatfmt=self.floatfmt,
-                headers=['%', 'FLUX', 'RXN ID', 'REACTION']
-            ).split('\n')
-
-        flux_table_head = flux_table[:2]
-
-        met_tag = "{0} ({1})".format(format_long_string(self.met.name, 45),
-                                     format_long_string(self.met.id, 10))
-
-        head = "PRODUCING REACTIONS -- " + met_tag
-        print_(head)
-        print_("-" * len(head))
-        print_('\n'.join(flux_table_head))
-        print_('\n'.join(
-            pd.np.array(flux_table[2:])[flux_df.is_input.values]))
-
-        print_()
-        print_("CONSUMING REACTIONS -- " + met_tag)
-        print_("-" * len(head))
-        print_('\n'.join(flux_table_head))
-        print_('\n'.join(
-            pd.np.array(flux_table[2:])[~flux_df.is_input.values]))
-
     def to_frame(self):
         """
         Returns
@@ -368,8 +323,6 @@ class MetaboliteSummary(Summary):
                              inplace=True)
             concat_df.set_index(['RXN_STAT', 'ID'], inplace=True)
 
-            return concat_df
-
         else:
             column_names = ['percent', 'flux', 'id', 'reaction']
 
@@ -393,7 +346,18 @@ class MetaboliteSummary(Summary):
 
             concat_df.set_index(['RXN_STAT', 'ID'], inplace=True)
 
-            return concat_df
+        return concat_df
+
+    def _to_table(self):
+        """
+        Returns
+        -------
+        A string of the summary table.
+
+        """
+        return self.to_frame().to_string(header=True, index=True, na_rep='',
+                                         float_format=self.float_format,
+                                         sparsify=True, justify='center')
 
 
 class ModelSummary(Summary):
