@@ -1102,6 +1102,10 @@ class Reaction(Object):
             Emit reaction and metabolite names rather than identifiers (default
             False).
 
+        Returns
+        -------
+        cobra.core.summary.ReactionSummary
+
         """
 
         from cobra.core.summary import ReactionSummary
