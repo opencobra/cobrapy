@@ -29,11 +29,10 @@ class Summary(object):
     ----------
     solution : cobra.Solution or None
         A previously solved model solution to use for generating the
-        summary. If none provided (default), the summary method will
-        resolve the model. Note that the solution object must match the
-        model, i.e., changes to the model such as changed bounds,
-        added or removed reactions are not taken into account by this
-        method.
+        summary. If None, the summary method will resolve the model.
+        Note that the solution object must match the model, i.e., changes
+        to the model such as changed bounds, added or removed reactions are
+        not taken into account by this method.
     threshold : float
         Threshold below which fluxes are not reported.
     fva : pandas.DataFrame, float or None
@@ -42,19 +41,18 @@ class Summary(object):
         the model or a float between 0 and 1 representing the
         fraction of the optimum objective to be searched.
     names : bool
-        Emit reaction and metabolite names rather than identifiers (default
-        False).
-    floatfmt : string
-        Format string for floats (default '.3g').
+        Emit reaction and metabolite names rather than identifiers.
+    float_format : one-parameter function
+        Format string for floats.
 
     """
 
-    def __init__(self, solution, threshold, fva, names, floatfmt):
+    def __init__(self, solution, threshold, fva, names, float_format):
         self.solution = solution
         self.threshold = threshold
         self.fva = fva
         self.names = names
-        self.floatfmt = floatfmt
+        self.float_format = float_format
 
     def _generate(self):
         """Generate the summary for the required cobra object.
@@ -63,7 +61,8 @@ class Summary(object):
         implement it.
 
         """
-        pass
+        raise NotImplementedError("This method needs to be implemented by the "
+                                  "subclass.")
 
     def _process_flux_dataframe(self, flux_dataframe):
         """Some common methods for processing a database of flux information
@@ -147,23 +146,28 @@ class Summary(object):
 
         return flux_dataframe
 
-    def to_table(self):
-        """Generate a print-ready table using tabulate.
-
-        This is an abstract method and thus the subclass needs to
-        implement it.
-
-        """
-        pass
-
     def to_frame(self):
-        """Generate a pandas.DataFrame.
+        """Generate a pandas DataFrame.
 
         This is an abstract method and thus the subclass needs to
         implement it.
 
         """
-        pass
+        raise NotImplementedError("This method needs to be implemented by the "
+                                  "subclass.")
+
+    def _to_table(self):
+        """Generate a pretty-print table.
+
+        This is an abstract method and thus the subclass needs to
+        implement it.
+
+        """
+        raise NotImplementedError("This method needs to be implemented by the "
+                                  "subclass.")
+
+    def __str__(self):
+        return self._to_table()
 
     def _repr_html_(self):
         return self.to_frame()._repr_html_()
