@@ -559,16 +559,15 @@ class ReactionSummary(Summary):
     ----------
     rxn: cobra.Reaction
         The Reaction object whose summary we intend to get.
-    names : bool, optional
-        Emit gene and metabolite names rather than identifiers (default
-        False).
+    names : bool
+        Emit gene and metabolite names rather than identifiers.
 
     """
 
     def __init__(self, rxn, names):
         super(ReactionSummary, self).__init__(names=names, solution=None,
                                               threshold=None, fva=None,
-                                              floatfmt=None)
+                                              float_format=None)
         self.rxn = rxn
 
     def _generate(self):
@@ -589,7 +588,7 @@ class ReactionSummary(Summary):
             [emit(key), value, key.compartment] for key, value in
             iteritems(self.rxn.metabolites)
         ])
-        data = pd.concat([gene_temp_df, met_temp_df], axis=1).fillna('').values
+        data = pd.concat([gene_temp_df, met_temp_df], axis=1).values
 
         columns = pd.MultiIndex.from_tuples((('REACTION', 'GENES', 'ID'),
                                              ('REACTION', 'METABOLITES', 'ID'),
@@ -607,57 +606,6 @@ class ReactionSummary(Summary):
 
         return rxn_summary
 
-    def to_table(self):
-        """
-        Returns
-        -------
-        Nothing
-
-        """
-        rxn_df = self._generate()
-
-        gene_table = tabulate(
-            rxn_df['REACTION', 'GENES'].replace('', np.nan).dropna().values,
-            headers=['ID']
-        )
-
-        reactants_table = tabulate(
-            rxn_df[rxn_df['REACTION', 'METABOLITES',
-                          'STOICHIOMETRIC COEFFICIENT'] < 0]
-            .loc[:, ('REACTION', 'METABOLITES')].values,
-            headers=['ID', 'STOICHIOMETRIC COEFFICIENT', 'COMPARTMENT']
-        )
-
-        products_table = tabulate(
-            rxn_df[rxn_df['REACTION', 'METABOLITES',
-                          'STOICHIOMETRIC COEFFICIENT'] > 0]
-            .loc[:, ('REACTION', 'METABOLITES')].values,
-            headers=['ID', 'STOICHIOMETRIC COEFFICIENT', 'COMPARTMENT']
-        )
-
-        rxn_tag = '{0} {1}'.format(format_long_string(self.rxn.name, 45),
-                                   format_long_string(self.rxn.id, 10))
-
-        head = 'REACTANTS -- ' + rxn_tag
-
-        print_('REACTION: ' +
-               self.rxn.build_reaction_string(use_metabolite_names=self.names))
-
-        print_()
-        print_('GENES -- ' + rxn_tag)
-        print_('-' * len(head))
-        print_(gene_table)
-
-        print_()
-        print_(head)
-        print_('-' * len(head))
-        print_(reactants_table)
-
-        print_()
-        print_('PRODUCTS -- ' + rxn_tag)
-        print_('-' * len(head))
-        print_(products_table)
-
     def to_frame(self):
         """
         Returns
@@ -666,3 +614,13 @@ class ReactionSummary(Summary):
 
         """
         return self._generate()
+
+    def _to_table(self):
+        """
+        Returns
+        -------
+        A string of the summary table.
+
+        """
+        return self.to_frame().to_string(header=True, index=False, na_rep='',
+                                         sparsify=False, justify='center')
