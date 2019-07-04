@@ -238,7 +238,7 @@ class Metabolite(Species):
 
         """
 
-        from cobra.flux_analysis.summary import MetaboliteSummary
+        from cobra.core.summary import MetaboliteSummary
         return MetaboliteSummary(met=self, solution=solution,
                                  threshold=threshold, fva=fva, names=names,
                                  floatfmt=floatfmt)

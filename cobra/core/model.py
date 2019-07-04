@@ -1198,7 +1198,7 @@ class Model(Object):
 
         """
 
-        from cobra.flux_analysis.summary import ModelSummary
+        from cobra.core.summary import ModelSummary
         return ModelSummary(model=self, solution=solution,
                             threshold=threshold, fva=fva, names=names,
                             floatfmt=floatfmt)
