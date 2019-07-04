@@ -1104,7 +1104,7 @@ class Reaction(Object):
 
         """
 
-        from cobra.flux_analysis.summary import ReactionSummary
+        from cobra.core.summary import ReactionSummary
         return ReactionSummary(rxn=self, names=names)
 
     def __str__(self):
