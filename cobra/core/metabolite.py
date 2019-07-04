@@ -207,7 +207,7 @@ class Metabolite(Species):
         self._model.remove_metabolites(self, destructive)
 
     def summary(self, solution=None, threshold=0.01, fva=None, names=False,
-                floatfmt='.3g'):
+                float_format=None):
         """
         Print a summary of the production and consumption fluxes.
 
@@ -216,32 +216,40 @@ class Metabolite(Species):
 
         Parameters
         ----------
-        solution : cobra.Solution, optional
+        solution: cobra.Solution or None, optional (default None)
             A previously solved model solution to use for generating the
             summary. If none provided (default), the summary method will
             resolve the model. Note that the solution object must match the
             model, i.e., changes to the model such as changed bounds,
             added or removed reactions are not taken into account by this
             method.
-        threshold : float, optional
+        threshold : float, optional (default 1E-06)
             Threshold below which fluxes are not reported.
-        fva : pandas.DataFrame, float or None, optional
+        fva : pandas.DataFrame, float or None, optional (default None)
             Whether or not to include flux variability analysis in the output.
             If given, fva should either be a previous FVA solution matching
             the model or a float between 0 and 1 representing the
             fraction of the optimum objective to be searched.
-        names : bool, optional
-            Emit reaction and metabolite names rather than identifiers (default
-            False).
-        floatfmt : string, optional
-            Format string for floats (default '.3g').
+        names : bool, optional (default False)
+            Emit reaction and metabolite names rather than identifiers.
+        float_format : one-parameter function, optional (default
+                       lambda x: "{:.3g}".format(x))
+            Format string for floats.
+
+        Returns
+        -------
+        cobra.core.summary.MetaboliteSummary
 
         """
 
         from cobra.core.summary import MetaboliteSummary
+
+        if float_format is None:
+            float_format = lambda x: "{:.3g}".format(x)
+
         return MetaboliteSummary(met=self, solution=solution,
                                  threshold=threshold, fva=fva, names=names,
-                                 floatfmt=floatfmt)
+                                 float_format=float_format)
 
     def _repr_html_(self):
         return """
