@@ -282,6 +282,7 @@ def test_build_from_string(model):
                                        verbose=False)
         assert pgi.bounds == (0, 1000)
 
+
 def test_bounds_setter(model):
     rxn = model.reactions.get_by_id("PGI")
     with pytest.raises(ValueError):
