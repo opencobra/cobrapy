@@ -177,7 +177,7 @@ class OptGPSampler(HRSampler):
 
         This is the basic sampling function for all hit-and-run samplers.
 
-        Paramters
+        Parameters
         ---------
         n : int
             The minimum number of samples that are generated at once
