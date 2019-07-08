@@ -61,7 +61,7 @@ class Reaction(Object):
     """
 
     def __init__(self, id=None, name='', subsystem='', lower_bound=0.0,
-                 upper_bound=None, objective_coefficient=0.0):
+                 upper_bound=None):
         Object.__init__(self, id, name)
         self._gene_reaction_rule = ''
         self.subsystem = subsystem
@@ -79,12 +79,6 @@ class Reaction(Object):
         # self.model is None or refers to the cobra.Model that
         # contains self
         self._model = None
-
-        if objective_coefficient != 0:
-            raise NotImplementedError('setting objective coefficient when '
-                                      'creating reaction is no longer '
-                                      'supported. Use the model.objective '
-                                      'setter')
 
         # from cameo ...
         self._lower_bound = lower_bound if lower_bound is not None else \
