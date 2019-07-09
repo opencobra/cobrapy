@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+"""Define the Reaction class."""
+
 from __future__ import absolute_import, print_function
 
 import hashlib
@@ -1094,7 +1096,7 @@ class Reaction(Object):
 
     def summary(self, names=False):
         """
-        Print a summary of the reaction.
+        Create a summary of the producing and consuming fluxes of the reaction.
 
         Parameters
         ----------
@@ -1106,9 +1108,14 @@ class Reaction(Object):
         -------
         cobra.core.summary.ReactionSummary
 
-        """
+        See Also
+        --------
+        cobra.core.metabolite.Metabolite.summary
+        cobra.core.model.Model.summary
 
+        """
         from cobra.core.summary import ReactionSummary
+
         return ReactionSummary(rxn=self, names=names)
 
     def __str__(self):

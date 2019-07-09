@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+"""Define the Model class."""
+
 from __future__ import absolute_import
 
 import logging
@@ -31,8 +33,8 @@ from cobra.util.solver import (
 from cobra.util.util import AutoVivification, format_long_string
 
 
-LOGGER = logging.getLogger(__name__)
-CONFIGURATION = Configuration()
+logger = logging.getLogger(__name__)
+configuration = Configuration()
 
 
 class Model(Object):
@@ -111,13 +113,13 @@ class Model(Object):
             # if not hasattr(self, '_solver'):  # backwards compatibility
             # with older cobrapy pickles?
 
-            interface = CONFIGURATION.solver
+            interface = configuration.solver
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(Zero)
             self._populate_solver(self.reactions, self.metabolites)
 
             self._tolerance = None
-            self.tolerance = CONFIGURATION.tolerance
+            self.tolerance = configuration.tolerance
 
     @property
     def solver(self):
@@ -173,19 +175,19 @@ class Model(Object):
         try:
             solver_tolerances.feasibility = value
         except AttributeError:
-            LOGGER.info("The current solver doesn't allow setting"
+            logger.info("The current solver doesn't allow setting"
                         "feasibility tolerance.")
 
         try:
             solver_tolerances.optimality = value
         except AttributeError:
-            LOGGER.info("The current solver doesn't allow setting"
+            logger.info("The current solver doesn't allow setting"
                         "optimality tolerance.")
 
         try:
             solver_tolerances.integrality = value
         except AttributeError:
-            LOGGER.info("The current solver doesn't allow setting"
+            logger.info("The current solver doesn't allow setting"
                         "integrality tolerance.")
 
         self._tolerance = value
@@ -282,7 +284,7 @@ class Model(Object):
         for rxn_id, bound in iteritems(medium):
             rxn = self.reactions.get_by_id(rxn_id)
             if rxn not in exchange_rxns:
-                LOGGER.warn("%s does not seem to be an"
+                logger.warn("%s does not seem to be an"
                             " an exchange reaction. Applying bounds anyway.",
                             rxn.id)
             media_rxns.append(rxn)
@@ -586,8 +588,8 @@ class Model(Object):
         'atp_c --> '
 
         """
-        ub = CONFIGURATION.upper_bound if ub is None else ub
-        lb = CONFIGURATION.lower_bound if lb is None else lb
+        ub = configuration.upper_bound if ub is None else ub
+        lb = configuration.lower_bound if lb is None else lb
         types = {
             "exchange": ("EX", lb, ub, sbo_terms["exchange"]),
             "demand": ("DM", 0, ub, sbo_terms["demand"]),
@@ -639,7 +641,7 @@ class Model(Object):
         """
         def existing_filter(rxn):
             if rxn.id in self.reactions:
-                LOGGER.warning(
+                logger.warning(
                     "Ignoring reaction '%s' since it already exists.", rxn.id)
                 return False
             return True
@@ -787,7 +789,7 @@ class Model(Object):
 
         def existing_filter(group):
             if group.id in self.groups:
-                LOGGER.warning(
+                logger.warning(
                     "Ignoring group '%s' since it already exists.", group.id)
                 return False
             return True
@@ -837,7 +839,7 @@ class Model(Object):
         for group in group_list:
             # make sure the group is in the model
             if group.id not in self.groups:
-                LOGGER.warning("%r not in %r. Ignored.", group, self)
+                logger.warning("%r not in %r. Ignored.", group, self)
             else:
                 self.groups.remove(group)
                 group._model = None
@@ -1172,36 +1174,40 @@ class Model(Object):
     def summary(self, solution=None, threshold=1E-06, fva=None, names=False,
                 float_format=None):
         """
-        Print a summary of the input and output fluxes of the model.
+        Create a summary of the producing and consuming fluxes of the model.
 
         Parameters
         ----------
-        solution: cobra.Solution or None, optional (default None)
+        solution: cobra.Solution, optional
             A previously solved model solution to use for generating the
             summary. If none provided (default), the summary method will
             resolve the model. Note that the solution object must match the
             model, i.e., changes to the model such as changed bounds,
             added or removed reactions are not taken into account by this
-            method.
-        threshold : float, optional (default 1E-06)
-            Threshold below which fluxes are not reported.
-        fva : pandas.DataFrame, float or None, optional (default None)
+            method (default None).
+        threshold : float, optional
+            Threshold below which fluxes are not reported (default 1E-06).
+        fva : pandas.DataFrame or float, optional
             Whether or not to include flux variability analysis in the output.
             If given, fva should either be a previous FVA solution matching
             the model or a float between 0 and 1 representing the
-            fraction of the optimum objective to be searched.
-        names : bool, optional (default False)
-            Emit reaction and metabolite names rather than identifiers.
-        float_format : one-parameter function, optional (default
-                       lambda x: "{:.3g}".format(x))
-            Format string for floats.
+            fraction of the optimum objective to be searched (default None).
+        names : bool, optional
+            Emit reaction and metabolite names rather than identifiers
+            (default False).
+        float_format : one-parameter function, optional
+            Format string for floats (default lambda x: "{:.3g}".format(x)).
 
         Returns
         -------
         cobra.core.summary.ModelSummary
 
-        """
+        See Also
+        --------
+        cobra.core.reaction.Reaction.summary
+        cobra.core.metabolite.Metabolite.summary
 
+        """
         from cobra.core.summary import ModelSummary
 
         if float_format is None:
