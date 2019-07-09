@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+"""Define the Metabolite class."""
+
 from __future__ import absolute_import
 
 import re
@@ -209,39 +211,43 @@ class Metabolite(Species):
     def summary(self, solution=None, threshold=0.01, fva=None, names=False,
                 float_format=None):
         """
-        Print a summary of the production and consumption fluxes.
+        Create a summary of the producing and consuming fluxes.
 
         This method requires the model for which this metabolite is a part
         to be solved.
 
         Parameters
         ----------
-        solution: cobra.Solution or None, optional (default None)
+        solution: cobra.Solution, optional
             A previously solved model solution to use for generating the
-            summary. If none provided (default), the summary method will
+            summary. If None provided (default), the summary method will
             resolve the model. Note that the solution object must match the
             model, i.e., changes to the model such as changed bounds,
             added or removed reactions are not taken into account by this
-            method.
-        threshold : float, optional (default 1E-06)
-            Threshold below which fluxes are not reported.
-        fva : pandas.DataFrame, float or None, optional (default None)
+            method (default None).
+        threshold : float, optional
+            Threshold below which fluxes are not reported (default 1E-06).
+        fva : pandas.DataFrame or float, optional
             Whether or not to include flux variability analysis in the output.
             If given, fva should either be a previous FVA solution matching
             the model or a float between 0 and 1 representing the
-            fraction of the optimum objective to be searched.
-        names : bool, optional (default False)
-            Emit reaction and metabolite names rather than identifiers.
-        float_format : one-parameter function, optional (default
-                       lambda x: "{:.3g}".format(x))
-            Format string for floats.
+            fraction of the optimum objective to be searched (default None).
+        names : bool, optional
+            Emit reaction and metabolite names rather than identifiers
+            (default False).
+        float_format : one-parameter function, optional
+            Format string for floats (default lambda x: "{:.3g}".format(x)).
 
         Returns
         -------
         cobra.core.summary.MetaboliteSummary
 
-        """
+        See Also
+        --------
+        cobra.core.reaction.Reaction.summary
+        cobra.core.model.Model.summary
 
+        """
         from cobra.core.summary import MetaboliteSummary
 
         if float_format is None:
