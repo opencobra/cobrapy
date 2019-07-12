@@ -47,9 +47,9 @@ MOCK_MODULES = [
     'pandas',
     'tabulate',
     'optlang', 'optlang.interface', 'optlang.symbolics',
-    'optlang.symbolics.core',
+    'optlang.symbolics.core', 'optlang.exceptions',
     'future', 'future.utils',
-    'ruamel', 'ruamel.yaml'
+    'ruamel', 'ruamel.yaml', 'ruamel.yaml.compat',
 ]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
