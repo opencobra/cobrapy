@@ -7,7 +7,7 @@ from __future__ import absolute_import
 from operator import attrgetter
 
 import pandas as pd
-from six import iteritems
+from six import iterkeys, itervalues
 
 from cobra.core.summary import Summary
 
@@ -43,26 +43,21 @@ class ReactionSummary(Summary):
         else:
             emit = attrgetter('id')
 
-        gene_temp_df = pd.DataFrame([emit(gene) for gene in self.rxn.genes])
-        met_temp_df = pd.DataFrame([
-            [emit(key), value, key.compartment] for key, value in
-            iteritems(self.rxn.metabolites)
-        ])
-        data = pd.concat([gene_temp_df, met_temp_df], axis=1).values
+        data = {
+            'GENES_ID': [emit(gene) for gene in self.rxn.genes],
+            'METABOLITES_ID':
+            [emit(met) for met in iterkeys(self.rxn.metabolites)],
+            'METABOLITES_STOICHIOMETRY':
+            [met for met in itervalues(self.rxn.metabolites)],
+            'METABOLITES_COMPARTMENT':
+            [met.compartment for met in iterkeys(self.rxn.metabolites)]
+        }
 
-        columns = pd.MultiIndex.from_tuples((('REACTION', 'GENES', 'ID'),
-                                             ('REACTION', 'METABOLITES', 'ID'),
-                                             ('REACTION', 'METABOLITES',
-                                              'STOICHIOMETRIC COEFFICIENT'),
-                                             ('REACTION', 'METABOLITES',
-                                              'COMPARTMENT')))
+        rxn_summary = pd.DataFrame.from_dict(data, orient='index')\
+                                  .T.fillna(value=pd.np.nan)
 
-        rxn_summary = pd.DataFrame(
-            data=data,
-            columns=columns
-        )
-
-        del gene_temp_df, met_temp_df
+        rxn_summary.columns = pd.MultiIndex.from_tuples(
+            [tuple(c.split('_')) for c in rxn_summary.columns])
 
         return rxn_summary
 
