@@ -44,8 +44,8 @@ def test_reaction_summary_to_frame(model, rxn, names):
         expected_met_names = ['acald_c', 'coa_c', 'nad_c', 'accoa_c', 'h_c',
                               'nadh_c']
 
-    assert all(out_df['REACTION', 'GENES', 'ID'].tolist()) == \
+    assert all(out_df['GENES', 'ID'].tolist()) == \
         all(expected_gene_names)
 
-    assert all(out_df['REACTION', 'METABOLITES', 'ID'].tolist()) == \
+    assert all(out_df['METABOLITES', 'ID'].tolist()) == \
         all(expected_met_names)
