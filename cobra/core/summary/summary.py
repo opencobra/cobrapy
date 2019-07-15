@@ -50,14 +50,27 @@ class Summary(object):
                                   "subclass.")
 
     def _process_flux_dataframe(self, flux_dataframe):
-        """Some common methods for processing a database of flux information
-        into print-ready formats. Used in both ModelSummary and
-        MetaboliteSummary."""
+        """Process a flux DataFrame for convenient downstream analysis.
+
+        This method removes flux entries which are below the threshold and
+        also adds information regarding the direction of the fluxes. It is used
+        in both ModelSummary and MetaboliteSummary.
+
+        Parameters
+        ----------
+        flux_dataframe: pandas.DataFrame
+            The pandas.DataFrame to process.
+
+        Returns
+        -------
+        A processed pandas.DataFrame.
+
+        """
 
         abs_flux = flux_dataframe['flux'].abs()
         flux_threshold = self.threshold * abs_flux.max()
 
-        # Drop unused boundary fluxes
+        # Drop unused boundary fluxes i.e., fluxes below threshold
         if self.fva is None:
             flux_dataframe = \
                 flux_dataframe.loc[abs_flux >= flux_threshold, :].copy()
@@ -70,60 +83,53 @@ class Summary(object):
                 .copy()
                 )
 
-            # Why set to zero? If included show true value?
-            # flux_dataframe.loc[
-            #     flux_dataframe['flux'].abs() < flux_threshold, 'flux'] = 0
-
-        # Make all fluxes positive
+        # Make all fluxes positive while maintaining proper direction
         if self.fva is None:
+            # add information regarding direction
             flux_dataframe['is_input'] = (flux_dataframe['flux'] >= 0)
+            # make the fluxes absolute
             flux_dataframe['flux'] = flux_dataframe['flux'].abs()
+            # sort the values
+            flux_dataframe.sort_values(by=['is_input', 'flux', 'id'],
+                                       ascending=[False, False, True],
+                                       inplace=True)
         else:
 
-            def get_direction(flux, fmin, fmax):
+            def get_direction(row):
                 """Decide whether or not to reverse a flux to make it
                 positive."""
 
-                if flux < 0:
-                    return -1
-                elif flux > 0:
-                    return 1
-                elif (fmax > 0) & (fmin <= 0):
-                    return 1
-                elif (fmax < 0) & (fmin >= 0):
-                    return -1
-                elif ((fmax + fmin) / 2) < 0:
-                    return -1
+                if row.flux < 0:
+                    sign = -1
+                elif row.flux > 0:
+                    sign = 1
+                elif (row.fmax > 0) & (row.fmin <= 0):
+                    sign = 1
+                elif (row.fmax < 0) & (row.fmin >= 0):
+                    sign = -1
+                elif ((row.fmax + row.fmin) / 2) < 0:
+                    sign = -1
                 else:
-                    return 1
+                    sign = 1
 
-            sign = flux_dataframe\
-                .apply(lambda x: get_direction(x.flux, x.fmin, x.fmax), axis=1)
+                return sign
 
-            flux_dataframe['is_input'] = sign == 1
+            # get a sign DataFrame to use as a pseudo-mask
+            sign = flux_dataframe.apply(get_direction, axis=1)
+
+            flux_dataframe['is_input'] = (sign == 1)
 
             flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']] = (
                 flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']]
                 .multiply(sign, axis=0)
                 .astype('float')
-                .round(6)
-                )
+            )
 
-            flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']] = (
-                flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']]
-                .applymap(lambda x: x if abs(x) > 1E-6 else 0)
-                )
-
-        if self.fva is not None:
-            flux_dataframe = (
-                flux_dataframe
-                .sort_values(by=['flux', 'fmax', 'fmin', 'id'],
-                             ascending=[False, False, False, True])
-                )
-
-        else:
-            flux_dataframe = flux_dataframe\
-                .sort_values(by=['flux', 'id'], ascending=[False, True])
+            flux_dataframe.sort_values(by=['is_input', 'flux', 'fmax', 'fmin',
+                                           'id'],
+                                       ascending=[False, False, False, False,
+                                                  True],
+                                       inplace=True)
 
         return flux_dataframe
 
