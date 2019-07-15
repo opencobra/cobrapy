@@ -66,26 +66,20 @@ class MetaboliteSummary(Summary):
             self.solution = get_solution(self.met.model,
                                          reactions=self.met.reactions)
 
-        rxns = sorted(self.met.reactions, key=attrgetter("id"))
-        rxn_id = []
-        rxn_name = []
-        flux = []
-        reaction = []
+        rxns = sorted(self.met.reactions, key=attrgetter('id'))
 
-        for rxn in rxns:
-            rxn_id.append(rxn.id)
-            rxn_name.append(format_long_string(emit(rxn), 10))
-            flux.append(self.solution[rxn.id] * rxn.metabolites[self.met])
-            txt = rxn.build_reaction_string(use_metabolite_names=self.names)
-            reaction.append(format_long_string(txt, 40
-                                               if self.fva is not None
-                                               else 50))
+        data = [(emit(rxn), self.solution[rxn.id] * rxn.metabolites[self.met],
+                 rxn.build_reaction_string(use_metabolite_names=self.names),
+                 rxn) for rxn in rxns]
 
-        flux_summary = pd.DataFrame({
-            "id": rxn_name,
-            "flux": flux,
-            "reaction": reaction
-        }, index=rxn_id)
+        flux_summary = pd.DataFrame.from_records(
+            data=data,
+            index=[rxn.id for rxn in rxns],
+            columns=['id', 'flux', 'reaction_string', 'reaction']
+        )
+
+        assert flux_summary['flux'].sum() < self.met.model.tolerance, \
+            'Error in flux balance'
 
         if self.fva is not None:
             if hasattr(self.fva, 'columns'):
@@ -95,39 +89,34 @@ class MetaboliteSummary(Summary):
                     self.met.model, list(self.met.reactions),
                     fraction_of_optimum=self.fva)
 
-            flux_summary["maximum"] = np.zeros(len(rxn_id), dtype=float)
-            flux_summary["minimum"] = np.zeros(len(rxn_id), dtype=float)
+            flux_summary = pd.concat([flux_summary, fva_results],
+                                     axis=1, sort=False)
+            flux_summary.rename(columns={'maximum': 'fmax', 'minimum': 'fmin'},
+                                inplace=True)
 
-            for rxn in rxns:
-                fmax = rxn.metabolites[self.met] * \
-                    fva_results.at[rxn.id, "maximum"]
-
-                fmin = rxn.metabolites[self.met] * \
-                    fva_results.at[rxn.id, "minimum"]
+            def set_min_and_max(row):
+                """Scale and set proper min and max values for flux."""
+                fmax = row.reaction.metabolites[self.met] * row.fmax
+                fmin = row.reaction.metabolites[self.met] * row.fmin
 
                 if abs(fmin) <= abs(fmax):
-                    flux_summary.at[rxn.id, "fmax"] = fmax
-                    flux_summary.at[rxn.id, "fmin"] = fmin
+                    row.fmax = fmax
+                    row.fmin = fmin
                 else:
-                    # Reverse fluxes.
-                    flux_summary.at[rxn.id, "fmax"] = fmin
-                    flux_summary.at[rxn.id, "fmin"] = fmax
+                    # Reverse fluxes
+                    row.fmax = fmin
+                    row.fmin = fmax
 
-        assert flux_summary["flux"].sum() < 1E-6, "Error in flux balance"
+                return row
+
+            flux_summary = flux_summary.apply(set_min_and_max, axis=1)
 
         flux_summary = self._process_flux_dataframe(flux_summary)
 
-        flux_summary['percent'] = 0
-        total_flux = flux_summary.loc[flux_summary.is_input, "flux"].sum()
+        total_flux = flux_summary.loc[flux_summary.is_input, 'flux'].sum()
 
-        flux_summary.loc[flux_summary.is_input, 'percent'] = \
-            flux_summary.loc[flux_summary.is_input, 'flux'] / total_flux
-
-        flux_summary.loc[~flux_summary.is_input, 'percent'] = \
-            flux_summary.loc[~flux_summary.is_input, 'flux'] / total_flux
-
-        flux_summary['percent'] = flux_summary.percent.\
-            apply(lambda x: '{:.0%}'.format(x))
+        # Calculate flux percentage
+        flux_summary['percent'] = (flux_summary['flux'] / total_flux) * 100
 
         return flux_summary
 
@@ -140,56 +129,25 @@ class MetaboliteSummary(Summary):
         """
         flux_df = self._generate()
 
+        flux_df['is_input'] = flux_df['is_input']\
+            .apply(lambda x: 'PRODUCING' if x is True else 'CONSUMING')
+
+        flux_df.columns = [col.upper() for col in flux_df.columns]
+
         if self.fva is not None:
-            column_names = ['percent', 'flux', 'fmin',
-                            'fmax', 'id', 'reaction']
-
-            # Generate DataFrame of production reactions
-            flux_prod = flux_df[flux_df.is_input.values]\
-                .loc[:, column_names]\
-                .reset_index(drop=True)
-            flux_prod.columns = [name.upper() for name in column_names]
-            flux_prod['RXN_STAT'] = 'PRODUCING'
-
-            # Generate DataFrame of consumption reactions
-            flux_cons = flux_df[~flux_df.is_input.values]\
-                .loc[:, column_names]\
-                .reset_index(drop=True)
-            flux_cons.columns = [name.upper() for name in column_names]
-            flux_cons['RXN_STAT'] = 'CONSUMING'
-
-            concat_df = pd.concat([flux_prod, flux_cons])
-
-            del flux_prod, flux_cons
-
-            concat_df.rename(columns={'FMIN': 'FLUX_MIN', 'FMAX': 'FLUX_MAX'},
-                             inplace=True)
-            concat_df.set_index(['RXN_STAT', 'ID'], inplace=True)
-
+            flux_df.rename(columns={'IS_INPUT': 'RXN_STAT',
+                                    'FMIN': 'FLUX_MIN',
+                                    'FMAX': 'FLUX_MAX'}, inplace=True)
+            flux_df = flux_df[['RXN_STAT', 'ID', 'PERCENT', 'FLUX', 'FLUX_MIN',
+                               'FLUX_MAX', 'REACTION_STRING']]
         else:
-            column_names = ['percent', 'flux', 'id', 'reaction']
+            flux_df.rename(columns={'IS_INPUT': 'RXN_STAT'}, inplace=True)
+            flux_df = flux_df[['RXN_STAT', 'ID', 'PERCENT', 'FLUX',
+                               'REACTION_STRING']]
 
-            # Generate DataFrame of production reactions
-            flux_prod = flux_df[flux_df.is_input.values]\
-                .loc[:, column_names]\
-                .reset_index(drop=True)
-            flux_prod.columns = [name.upper() for name in column_names]
-            flux_prod['RXN_STAT'] = 'PRODUCING'
+        flux_df.set_index(['RXN_STAT', 'ID'], inplace=True)
 
-            # Generate DataFrame of consumption reactions
-            flux_cons = flux_df[~flux_df.is_input.values]\
-                .loc[:, column_names]\
-                .reset_index(drop=True)
-            flux_cons.columns = [name.upper() for name in column_names]
-            flux_cons['RXN_STAT'] = 'CONSUMING'
-
-            concat_df = pd.concat([flux_prod, flux_cons])
-
-            del flux_prod, flux_cons
-
-            concat_df.set_index(['RXN_STAT', 'ID'], inplace=True)
-
-        return concat_df
+        return flux_df
 
     def _to_table(self):
         """
