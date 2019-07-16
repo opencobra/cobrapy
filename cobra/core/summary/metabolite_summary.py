@@ -12,7 +12,6 @@ import pandas as pd
 from cobra.core import get_solution
 from cobra.core.summary import Summary
 from cobra.flux_analysis.variability import flux_variability_analysis
-from cobra.util import format_long_string
 
 
 class MetaboliteSummary(Summary):

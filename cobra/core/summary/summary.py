@@ -4,6 +4,8 @@
 
 from __future__ import absolute_import, division
 
+from warnings import warn
+
 
 class Summary(object):
     """Define the abstract base summary class.
@@ -154,6 +156,9 @@ class Summary(object):
                                   "subclass.")
 
     def __str__(self):
+        if self.float_format is not None:
+            warn("Setting float_format to anything other than None "
+                 "will cause nan to be present in the output.")
         return self._to_table()
 
     def _repr_html_(self):
