@@ -49,10 +49,10 @@ def test_model_summary_to_table(model, opt_solver, names):
     # test non-fva version (these should be fixed for textbook model)
     if names:
         expected_entry = ['        O2    21.8       H2O       29.2     '
-                          'Biomass_Ecol...   0.874   ']
+                          'Biomass Objective Function with GAM   0.874   ']
     else:
         expected_entry = ['     o2_e    21.8      h2o_e      29.2     '
-                          'Biomass_Ecol...   0.874   ']
+                          'Biomass_Ecoli_core   0.874   ']
 
     model.optimize()
 
@@ -88,7 +88,7 @@ def test_model_summary_to_table_with_fva(model, opt_solver, fraction):
         pytest.xfail("FVA currently buggy")
     # test non-fva version (these should be fixed for textbook model)
     expected_entry = ['     o2_e    21.8      19.9      23.7       h2o_e     '
-                      '29.2         25       30.7     Biomass_Ecol...   '
+                      '29.2         25       30.7     Biomass_Ecoli_core   '
                       '0.874   ']
 
     model.solver = opt_solver
