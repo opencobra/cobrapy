@@ -4,44 +4,66 @@
 
 from __future__ import absolute_import
 
-import logging
-
 from optlang.symbolics import Zero
 from six import iteritems
 
 from cobra.flux_analysis.helpers import normalize_cutoff
 
 
-LOGGER = logging.getLogger(__name__)
+def _find_sparse_mode(model, rxns, flux_threshold, zero_cutoff):
+    """Perform the LP required for FASTCC.
+
+    Parameters
+    ----------
+    model: cobra.core.Model
+        The cobra model to perform FASTCC on.
+    rxns: list of cobra.core.Reactions
+        The reactions to use for LP.
+    flux_threshold: float
+        The upper threshold an auxiliary variable can have.
+    zero_cutoff: float
+        The cutoff below which flux is considered zero.
+
+    Returns
+    -------
+    result: list
+        The list of reactions to consider as consistent.
+
+    """
+
+    if rxns:
+        obj_vars = []
+        vars_and_cons = []
+        prob = model.problem
+
+        for rxn in rxns:
+            var = prob.Variable("auxiliary_{}".format(rxn.id),
+                                lb=0.0, ub=flux_threshold)
+            const = prob.Constraint(rxn.forward_variable +
+                                    rxn.reverse_variable -
+                                    var, name="constraint_{}".format(rxn.id),
+                                    lb=0.0)
+            vars_and_cons.extend([var, const])
+            obj_vars.append(var)
+
+        model.add_cons_vars(vars_and_cons)
+        model.objective = prob.Objective(Zero, sloppy=True)
+        model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
+
+        model.optimize(objective_sense="max")
+        result = [rxn for rxn in model.reactions
+                  if abs(rxn.flux) > zero_cutoff]
+    else:
+        result = []
+
+    return result
 
 
-def add_fastcc_cons_and_vars(model, flux_threshold):
-    """Add constraints and variables for FASTCC."""
-
-    obj_vars = []
-    vars_and_cons = []
-    prob = model.problem
-
-    for rxn in model.reactions:
-        var = prob.Variable("auxiliary_{}".format(rxn.id),
-                            lb=0.0, ub=flux_threshold)
-        const = prob.Constraint(rxn.forward_variable +
-                                rxn.reverse_variable -
-                                var, name="constraint_{}".format(rxn.id),
-                                lb=0.0)
-        vars_and_cons.extend([var, const])
-        obj_vars.append(var)
-
-    model.add_cons_vars(vars_and_cons)
-    model.objective = prob.Objective(Zero, sloppy=True)
-    model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
-
-
-def flip_coefficients(model):
+def _flip_coefficients(model, rxns):
     """Flip the coefficients for optimizing in reverse direction."""
 
     # flip reactions
-    for rxn in model.reactions:
+    for rxn in rxns:
         const = model.constraints.get("constraint_{}".format(rxn.id))
         var = model.variables.get("auxiliary_{}".format(rxn.id))
         coefs = const.get_linear_coefficients(const.variables)
@@ -100,24 +122,46 @@ def fastcc(model, flux_threshold=1.0, zero_cutoff=None):
     """
     zero_cutoff = normalize_cutoff(model, zero_cutoff)
 
-    rxns_to_remove = []
+    irreversible_rxns = [rxn for rxn in model.reactions
+                         if not rxn.reversibility]
+    rxns_to_check = irreversible_rxns
 
     with model:
-        add_fastcc_cons_and_vars(model, flux_threshold)
+        rxns_to_keep = _find_sparse_mode(model, rxns_to_check, flux_threshold,
+                                         zero_cutoff)
 
-        # TODO: randomly set to 3; should decide on a default
-        for _ in range(3):
-            sol = model.optimize(objective_sense="max")
-            rxns_to_remove.extend(sol.fluxes[sol.fluxes.abs() <
-                                             zero_cutoff].index)
+    rxns_to_check = list(set(model.reactions).difference(rxns_to_keep))
 
-            flip_coefficients(model)
+    while rxns_to_check:
+        with model:
+            new_rxns = _find_sparse_mode(model, rxns_to_check, flux_threshold,
+                                         zero_cutoff)
+            rxns_to_keep.extend(new_rxns)
 
-            sol = model.optimize(objective_sense="min")
-            rxns_to_remove.extend(sol.fluxes[sol.fluxes.abs() >
-                                             zero_cutoff].index)
+            # this condition will be valid for all but the last iteration
+            if list(set(rxns_to_check).intersection(rxns_to_keep)):
+                rxns_to_check = list(
+                    set(rxns_to_check).difference(rxns_to_keep)
+                )
 
-            flip_coefficients(model)
+            else:
+                rxns_to_flip = list(
+                    set(rxns_to_check).difference(irreversible_rxns)
+                )
+                _flip_coefficients(model, rxns_to_flip)
+                sol = model.optimize(min)
+                to_add_rxns = sol.fluxes.index[sol.fluxes.abs() > zero_cutoff]\
+                                        .tolist()
+                rxns_to_keep.extend([model.reactions.get_by_id(rxn)
+                                     for rxn in to_add_rxns])
+                # since this is the last iteration, it needs to break or else
+                # it will run forever since rxns_to_check won't be empty
+                break
+
+    consistent_rxns = set(rxns_to_keep)
+    # need the ids since Reaction objects are created fresh with model.copy()
+    rxns_to_remove = [rxn.id for rxn in
+                      set(model.reactions).difference(consistent_rxns)]
 
     consistent_model = model.copy()
     consistent_model.remove_reactions(rxns_to_remove, remove_orphans=True)
