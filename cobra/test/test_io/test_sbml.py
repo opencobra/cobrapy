@@ -199,6 +199,7 @@ def test_from_sbml_string(data_directory):
                                model1=model1, model2=model2)
 
 
+@pytest.mark.skip(reason="Model history currently not written")
 def test_model_history(tmp_path):
     """Testing reading and writing of ModelHistory."""
     model = Model("test")
