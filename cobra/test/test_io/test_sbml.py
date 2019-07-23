@@ -355,3 +355,36 @@ def test_gprs(data_directory, tmp_path):
         gpr2 = r2.gene_reaction_rule
 
         assert gpr1 == gpr2
+
+
+def test_identifiers_annotation():
+    from cobra.io.sbml import _parse_annotation_info
+
+    for uri in [
+        "http://identifiers.org/chebi/CHEBI:000123",
+        "https://identifiers.org/chebi/CHEBI:000123",
+        "http://identifiers.org/CHEBI:000123",
+        "https://identifiers.org/CHEBI:000123",
+    ]:
+        data = _parse_annotation_info(uri)
+        assert data
+        assert data[0] == "chebi"
+        assert data[1] == "CHEBI:000123"
+
+    for uri in [
+        "http://identifiers.org/taxonomy/9602",
+        "https://identifiers.org/taxonomy/9602",
+        "http://identifiers.org/taxonomy:9602",
+        "https://identifiers.org/taxonomy:9602",
+    ]:
+        data = _parse_annotation_info(uri)
+        assert data
+        assert data[0] == "taxonomy"
+        assert data[1] == "9602"
+
+    for uri in [
+        "http://identifier.org/taxonomy/9602",
+        "https://test.com",
+    ]:
+        data = _parse_annotation_info(uri)
+        assert data is None

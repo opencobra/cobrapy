@@ -1296,7 +1296,11 @@ https://co.mbine.org/standards/qualifiers
 
 In the current stage the new annotation format is not completely supported yet.
 """
-URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)/(.+)")  # noqa: E501
+
+URL_IDENTIFIERS_PATTERN1 = re.compile(r"^https?://identifiers.org/(.+?)/(.+)")  # noqa: E501
+URL_IDENTIFIERS_PATTERN2 = re.compile(r"^https?://identifiers.org/(.+?):(.+)")  # noqa: E501
+
+
 URL_IDENTIFIERS_PREFIX = "https://identifiers.org"
 QUALIFIER_TYPES = {
      "is": libsbml.BQB_IS,
@@ -1356,13 +1360,12 @@ def _parse_annotations(sbase):
             # FIXME: read and store the qualifier
 
             uri = cvterm.getResourceURI(k)
-            match = URL_IDENTIFIERS_PATTERN.match(uri)
-            if not match:
-                LOGGER.warning("%s does not conform to "
-                               "http(s)://identifiers.org/collection/id", uri)
+            data = _parse_annotation_info(uri)
+            if data is None:
                 continue
+            else:
+                provider, identifier = data
 
-            provider, identifier = match.group(1), match.group(2)
             if provider in annotation:
                 if isinstance(annotation[provider], string_types):
                     annotation[provider] = [annotation[provider]]
@@ -1374,6 +1377,37 @@ def _parse_annotations(sbase):
                 annotation[provider] = identifier
 
     return annotation
+
+
+def _parse_annotation_info(uri):
+    """Parses provider and term from given annotation uri.
+
+    Parameters
+    ----------
+    uri : str
+        uri (identifiers.org url)
+
+    Returns
+    -------
+    (provider, identifier) if resolvable, None otherwise
+    """
+    match = URL_IDENTIFIERS_PATTERN1.match(uri)
+    if match:
+        provider, identifier = match.group(1), match.group(2)
+    else:
+        match = URL_IDENTIFIERS_PATTERN2.match(uri)
+        if match:
+            provider, identifier = match.group(1), match.group(2)
+            if provider.isupper():
+                identifier = "%s:%s" % (provider, identifier)
+                provider = provider.lower()
+        else:
+            LOGGER.warning("%s does not conform to "
+                           "'http(s)://identifiers.org/collection/id' or"
+                           "'http(s)://identifiers.org/COLLECTION:id", uri)
+            return None
+
+    return provider, identifier
 
 
 def _sbase_annotations(sbase, annotation):
