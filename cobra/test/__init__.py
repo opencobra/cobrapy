@@ -30,7 +30,7 @@ def create_test_model(model_name="salmonella"):
 
     """
     if model_name == "ecoli":
-        ecoli_sbml = join(data_dir, "iJO1366.xml")
+        ecoli_sbml = join(data_dir, "iJO1366.xml.gz")
         return read_sbml_model(ecoli_sbml)
     elif model_name == "textbook":
         textbook_sbml = join(data_dir, "textbook.xml.gz")
