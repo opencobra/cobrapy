@@ -261,7 +261,6 @@ def test_missing_flux_bounds1(data_directory):
         assert r1.upper_bound == config.upper_bound
 
 
-# FIXME
 def test_missing_flux_bounds2(data_directory):
     sbml_path = join(data_directory, "annotation.xml")
     with open(sbml_path, "r") as f_in:
