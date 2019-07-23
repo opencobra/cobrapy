@@ -1052,11 +1052,10 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             if f_replace and F_GENE_REV in f_replace:
                 gpr = gpr.replace('(', '( ')
                 gpr = gpr.replace(')', ' )')
-                gpr = gpr.replace('  ', ' ')
                 tokens = gpr.split()
 
                 for k in range(len(tokens)):
-                    if tokens[k] not in [' ', 'and', 'or', '(', ')']:
+                    if tokens[k] not in ['and', 'or', '(', ')']:
                         tokens[k] = f_replace[F_GENE_REV](tokens[k])
                 gpr_new = " ".join(tokens)
             else:
@@ -1291,9 +1290,7 @@ https://co.mbine.org/standards/qualifiers
 In the current stage the new annotation format is not completely supported yet.
 """
 
-URL_IDENTIFIERS_PATTERN1 = re.compile(r"^https?://identifiers.org/(.+?)/(.+)")  # noqa: E501
-URL_IDENTIFIERS_PATTERN2 = re.compile(r"^https?://identifiers.org/(.+?):(.+)")  # noqa: E501
-
+URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")  # noqa: E501
 
 URL_IDENTIFIERS_PREFIX = "https://identifiers.org"
 QUALIFIER_TYPES = {
@@ -1385,21 +1382,19 @@ def _parse_annotation_info(uri):
     -------
     (provider, identifier) if resolvable, None otherwise
     """
-    match = URL_IDENTIFIERS_PATTERN1.match(uri)
+    match = URL_IDENTIFIERS_PATTERN.match(uri)
     if match:
         provider, identifier = match.group(1), match.group(2)
+        print(provider, identifier)
+        if provider.isupper():
+            identifier = "%s:%s" % (provider, identifier)
+            provider = provider.lower()
+
     else:
-        match = URL_IDENTIFIERS_PATTERN2.match(uri)
-        if match:
-            provider, identifier = match.group(1), match.group(2)
-            if provider.isupper():
-                identifier = "%s:%s" % (provider, identifier)
-                provider = provider.lower()
-        else:
-            LOGGER.warning("%s does not conform to "
-                           "'http(s)://identifiers.org/collection/id' or"
-                           "'http(s)://identifiers.org/COLLECTION:id", uri)
-            return None
+        LOGGER.warning("%s does not conform to "
+                       "'http(s)://identifiers.org/collection/id' or"
+                       "'http(s)://identifiers.org/COLLECTION:id", uri)
+        return None
 
     return provider, identifier
 
