@@ -334,3 +334,23 @@ def test_boundary_conditions(data_directory):
     assert r.upper_bound == float("Inf")
 
     assert sol1.objective_value == sol2.objective_value
+
+
+def test_gprs(data_directory, tmp_path):
+    """Test that GPRs are written and read correctly"""
+    model1 = read_sbml_model(join(data_directory, "iJO1366.xml.gz"))
+
+    sbml_path = join(tmp_path, "test.xml")
+    with open(sbml_path, "w") as f_out:
+        write_sbml_model(model1, f_out)
+
+    with open(sbml_path, "r") as f_in:
+        model2 = read_sbml_model(f_in)
+
+    for r1 in model1.reactions:
+        rid = r1.id
+        r2 = model2.reactions.get_by_id(rid)
+        gpr1 = r1.gene_reaction_rule
+        gpr2 = r2.gene_reaction_rule
+
+        assert gpr1 == gpr2

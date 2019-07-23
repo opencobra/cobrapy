@@ -1059,14 +1059,20 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             if f_replace and F_GENE_REV in f_replace:
                 gpr = gpr.replace('(', '( ')
                 gpr = gpr.replace(')', ' )')
+                gpr = gpr.replace('  ', ' ')
                 tokens = gpr.split(' ')
+
                 for k in range(len(tokens)):
                     if tokens[k] not in [' ', 'and', 'or', '(', ')']:
                         tokens[k] = f_replace[F_GENE_REV](tokens[k])
                 gpr_new = " ".join(tokens)
+            else:
+                gpr_new = gpr
 
             gpa = r_fbc.createGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
-            gpa.setAssociation(gpr_new)
+            # uses ids for GP and does not create GPs
+            _check(gpa.setAssociation(gpr_new, True, False),
+                   "set gpr: " + gpr_new)
 
         # objective coefficients
         if reaction_coefficients.get(cobra_reaction, 0) != 0:
