@@ -913,7 +913,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
                 _check(history.addCreator(creator),
                        "adding creator to ModelHistory.")
 
-        # TODO: Will be implemented as part of https://github.com/opencobra/cobrapy/issues/810
+        # TODO: Will be implemented as part of
+        #  https://github.com/opencobra/cobrapy/issues/810
         # _check(model.setModelHistory(history), 'set model history')
 
     # Units
