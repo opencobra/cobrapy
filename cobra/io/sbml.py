@@ -1053,7 +1053,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
                 gpr = gpr.replace('(', '( ')
                 gpr = gpr.replace(')', ' )')
                 gpr = gpr.replace('  ', ' ')
-                tokens = gpr.split(' ')
+                tokens = gpr.split()
 
                 for k in range(len(tokens)):
                     if tokens[k] not in [' ', 'and', 'or', '(', ')']:
@@ -1063,7 +1063,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
                 gpr_new = gpr
 
             gpa = r_fbc.createGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
-            # uses ids for GP and does not create GPs
+            # uses ids to identify GeneProducts (True),
+            # does not create GeneProducts (False)
             _check(gpa.setAssociation(gpr_new, True, False),
                    "set gpr: " + gpr_new)
 
