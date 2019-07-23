@@ -261,6 +261,7 @@ def test_missing_flux_bounds1(data_directory):
         assert r1.upper_bound == config.upper_bound
 
 
+# FIXME
 def test_missing_flux_bounds2(data_directory):
     sbml_path = join(data_directory, "annotation.xml")
     with open(sbml_path, "r") as f_in:
@@ -268,8 +269,8 @@ def test_missing_flux_bounds2(data_directory):
         model, errors = validate_sbml_model(f_in,
                                             set_missing_bounds=False)
         r1 = model.reactions.R1
-        assert r1.lower_bound == -float("Inf")
-        assert r1.upper_bound == float("Inf")
+        assert r1.lower_bound == config.lower_bound
+        assert r1.upper_bound == config.upper_bound
 
 
 def test_validate(data_directory):
@@ -331,8 +332,8 @@ def test_boundary_conditions(data_directory):
     sol2 = model2.optimize()
 
     r = model2.reactions.get_by_id("EX_X")
-    assert r.lower_bound == -float("Inf")
-    assert r.upper_bound == float("Inf")
+    assert r.lower_bound == config.lower_bound
+    assert r.upper_bound == config.upper_bound
 
     assert sol1.objective_value == sol2.objective_value
 

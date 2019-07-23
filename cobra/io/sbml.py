@@ -154,7 +154,7 @@ F_REPLACE = {
 # Read SBML
 # -----------------------------------------------------------------------------
 def read_sbml_model(filename, number=float, f_replace=F_REPLACE,
-                    set_missing_bounds=False, **kwargs):
+                    **kwargs):
     """Reads SBML model from given filename.
 
     If the given filename ends with the suffix ''.gz'' (for example,
@@ -190,8 +190,6 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE,
         By default the following id changes are performed on import:
         clip G_ from genes, clip M_ from species, clip R_ from reactions
         If no replacements should be performed, set f_replace={}, None
-    set_missing_bounds : boolean flag to set missing bounds
-        Missing bounds are set to default bounds in configuration.
 
     Returns
     -------
@@ -209,7 +207,6 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE,
         return _sbml_to_model(doc,
                               number=number,
                               f_replace=f_replace,
-                              set_missing_bounds=set_missing_bounds,
                               **kwargs)
     except IOError as e:
         raise e
@@ -435,10 +432,12 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         ex_reaction.annotation = {
             'sbo': SBO_EXCHANGE_REACTION
         }
-        ex_reaction.lower_bound = -float("Inf")
-        ex_reaction.upper_bound = float("Inf")
-        LOGGER.warning("Adding exchange reaction %s for boundary metabolite: "
-                       "%s" % (ex_reaction.id, met.id))
+        ex_reaction.lower_bound = config.lower_bound
+        ex_reaction.upper_bound = config.upper_bound
+        LOGGER.warning(
+            "Adding exchange reaction %s with default bounds "
+            "for boundary metabolite: %s." % (ex_reaction.id, met.id)
+        )
         # species is reactant
         ex_reaction.add_metabolites({met: -1})
         ex_reactions.append(ex_reaction)
@@ -564,20 +563,14 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
         if p_lb is None:
             missing_bounds = True
-            if set_missing_bounds:
-                lower_bound = config.lower_bound
-            else:
-                lower_bound = -float("Inf")
+            lower_bound = config.lower_bound
             cobra_reaction.lower_bound = lower_bound
             LOGGER.warning("Missing lower flux bound set to '%s' for "
                            " reaction: '%s'", lower_bound, reaction)
 
         if p_ub is None:
             missing_bounds = True
-            if set_missing_bounds:
-                upper_bound = config.upper_bound
-            else:
-                upper_bound = float("Inf")
+            upper_bound = config.upper_bound
             cobra_reaction.upper_bound = upper_bound
             LOGGER.warning("Missing upper flux bound set to '%s' for "
                            " reaction: '%s'", upper_bound, reaction)
@@ -793,13 +786,12 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     cobra_model.add_groups(groups)
 
     # general hint for missing flux bounds
-    if missing_bounds and not set_missing_bounds:
-        LOGGER.warning("Missing flux bounds on reactions. As best practise "
-                       "and to avoid confusion flux bounds should be set "
-                       "explicitly on all reactions. "
-                       "To set the missing flux bounds to default bounds "
-                       "specified in cobra.Configuration use the flag "
-                       "`read_sbml_model(..., set_missing_bounds=True)`.")
+    if missing_bounds:
+        LOGGER.warning(
+            "Missing flux bounds on reactions set to default bounds."
+            "As best practise and to avoid confusion flux bounds "
+            "should be set explicitly on all reactions."
+        )
 
     return cobra_model
 
