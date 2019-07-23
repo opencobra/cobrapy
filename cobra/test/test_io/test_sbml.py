@@ -342,7 +342,7 @@ def test_gprs(data_directory, tmp_path):
     """Test that GPRs are written and read correctly"""
     model1 = read_sbml_model(join(data_directory, "iJO1366.xml.gz"))
 
-    sbml_path = join(tmp_path, "test.xml")
+    sbml_path = join(str(tmp_path), "test.xml")
     with open(sbml_path, "w") as f_out:
         write_sbml_model(model1, f_out)
 
