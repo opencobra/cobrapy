@@ -46,6 +46,13 @@ class Reaction(Object):
     """Reaction is a class for holding information regarding
     a biochemical reaction in a cobra.Model object.
 
+    Reactions are by default irreversible with bounds
+    (0.0, config.upper_bound)
+    if no bounds are provided on creation.
+    To create an irreversible reaction use lower_bound=None,
+    resulting in reaction bounds of
+    (config.lower_bound, config.upper_bound).
+
     Parameters
     ----------
     id : string
