@@ -1116,7 +1116,7 @@ class Reaction(Object):
         """
         from cobra.core.summary import ReactionSummary
 
-        return ReactionSummary(rxn=self, names=names)
+        return ReactionSummary(model=self._model, rxn=self, names=names)
 
     def __str__(self):
         return "{id}: {stoichiometry}".format(

@@ -51,6 +51,7 @@ class ModelSummary(Summary):
     def __init__(self, model, solution, threshold, fva, names, float_format,
                  **kwargs):
         super(ModelSummary, self).__init__(
+            model=model,
             solution=solution,
             threshold=threshold,
             fva=fva,

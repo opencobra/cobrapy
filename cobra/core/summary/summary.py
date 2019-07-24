@@ -12,6 +12,8 @@ class Summary(object):
 
     Parameters
     ----------
+    model : cobra.Model
+        The metabolic model for which to generate a summary description.
     solution : cobra.Solution
         A previously solved model solution to use for generating the
         summary. If None, the summary method will resolve the model.
@@ -32,9 +34,10 @@ class Summary(object):
 
     """
 
-    def __init__(self, solution, threshold, fva, names, float_format,
+    def __init__(self, model, solution, threshold, fva, names, float_format,
                  **kwargs):
         super(Summary, self).__init__(**kwargs)
+        self.model = model
         self.solution = solution
         self.threshold = threshold
         self.fva = fva

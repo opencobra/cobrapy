@@ -18,6 +18,8 @@ class MetaboliteSummary(Summary):
 
     Parameters
     ----------
+    model : cobra.Model
+        The metabolic model for which to generate a metabolite summary.
     met: cobra.Metabolite
         The Metabolite object whose summary we intend to get.
     solution : cobra.Solution
@@ -40,9 +42,10 @@ class MetaboliteSummary(Summary):
 
     """
 
-    def __init__(self, met, solution, threshold, fva, names, float_format,
-                 **kwargs):
+    def __init__(self, model, met, solution, threshold, fva, names,
+                 float_format, **kwargs):
         super(MetaboliteSummary, self).__init__(
+            model=model,
             solution=solution,
             threshold=threshold,
             fva=fva,
