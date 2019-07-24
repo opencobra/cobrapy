@@ -27,7 +27,7 @@ def test_model_summary_to_table_previous_solution(model, opt_solver, names):
 
     with captured_output() as (out, _):
         print(model.summary(solution, names=names))
-    check_in_line(out.getvalue(), [met_test + '321'])
+        check_in_line(out.getvalue(), [met_test + '321'])
 
 
 @pytest.mark.parametrize("names", [False, True])
@@ -57,8 +57,8 @@ def test_model_summary_to_table(model, opt_solver, names):
     model.optimize()
 
     with captured_output() as (out, _):
-        print(model.summary(names=names, float_format='spam'))
-    check_in_line(out.getvalue(), expected_entry)
+        print(model.summary(names=names))
+        check_in_line(out.getvalue(), expected_entry)
 
 
 @pytest.mark.parametrize("names", [False, True])
@@ -95,8 +95,8 @@ def test_model_summary_to_table_with_fva(model, opt_solver, fraction):
     solution = model.optimize()
 
     with captured_output() as (out, _):
-        print(model.summary(solution, fva=fraction, float_format='spam'))
-    check_in_line(out.getvalue(), expected_entry)
+        print(model.summary(solution, fva=fraction))
+        check_in_line(out.getvalue(), expected_entry)
 
 
 @pytest.mark.parametrize("fraction", [0.95])
