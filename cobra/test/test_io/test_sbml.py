@@ -199,6 +199,7 @@ def test_from_sbml_string(data_directory):
                                model1=model1, model2=model2)
 
 
+@pytest.mark.skip(reason="Model history currently not written")
 def test_model_history(tmp_path):
     """Testing reading and writing of ModelHistory."""
     model = Model("test")
@@ -267,8 +268,8 @@ def test_missing_flux_bounds2(data_directory):
         model, errors = validate_sbml_model(f_in,
                                             set_missing_bounds=False)
         r1 = model.reactions.R1
-        assert r1.lower_bound == -float("Inf")
-        assert r1.upper_bound == float("Inf")
+        assert r1.lower_bound == config.lower_bound
+        assert r1.upper_bound == config.upper_bound
 
 
 def test_validate(data_directory):
@@ -330,7 +331,60 @@ def test_boundary_conditions(data_directory):
     sol2 = model2.optimize()
 
     r = model2.reactions.get_by_id("EX_X")
-    assert r.lower_bound == -float("Inf")
-    assert r.upper_bound == float("Inf")
+    assert r.lower_bound == config.lower_bound
+    assert r.upper_bound == config.upper_bound
 
     assert sol1.objective_value == sol2.objective_value
+
+
+def test_gprs(data_directory, tmp_path):
+    """Test that GPRs are written and read correctly"""
+    model1 = read_sbml_model(join(data_directory, "iJO1366.xml.gz"))
+
+    sbml_path = join(str(tmp_path), "test.xml")
+    with open(sbml_path, "w") as f_out:
+        write_sbml_model(model1, f_out)
+
+    with open(sbml_path, "r") as f_in:
+        model2 = read_sbml_model(f_in)
+
+    for r1 in model1.reactions:
+        rid = r1.id
+        r2 = model2.reactions.get_by_id(rid)
+        gpr1 = r1.gene_reaction_rule
+        gpr2 = r2.gene_reaction_rule
+
+        assert gpr1 == gpr2
+
+
+def test_identifiers_annotation():
+    from cobra.io.sbml import _parse_annotation_info
+
+    for uri in [
+        "http://identifiers.org/chebi/CHEBI:000123",
+        "https://identifiers.org/chebi/CHEBI:000123",
+        "http://identifiers.org/CHEBI:000123",
+        "https://identifiers.org/CHEBI:000123",
+    ]:
+        data = _parse_annotation_info(uri)
+        assert data
+        assert data[0] == "chebi"
+        assert data[1] == "CHEBI:000123"
+
+    for uri in [
+        "http://identifiers.org/taxonomy/9602",
+        "https://identifiers.org/taxonomy/9602",
+        "http://identifiers.org/taxonomy:9602",
+        "https://identifiers.org/taxonomy:9602",
+    ]:
+        data = _parse_annotation_info(uri)
+        assert data
+        assert data[0] == "taxonomy"
+        assert data[1] == "9602"
+
+    for uri in [
+        "http://identifier.org/taxonomy/9602",
+        "https://test.com",
+    ]:
+        data = _parse_annotation_info(uri)
+        assert data is None

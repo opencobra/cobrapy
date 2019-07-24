@@ -154,7 +154,7 @@ F_REPLACE = {
 # Read SBML
 # -----------------------------------------------------------------------------
 def read_sbml_model(filename, number=float, f_replace=F_REPLACE,
-                    set_missing_bounds=False, **kwargs):
+                    **kwargs):
     """Reads SBML model from given filename.
 
     If the given filename ends with the suffix ''.gz'' (for example,
@@ -190,8 +190,6 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE,
         By default the following id changes are performed on import:
         clip G_ from genes, clip M_ from species, clip R_ from reactions
         If no replacements should be performed, set f_replace={}, None
-    set_missing_bounds : boolean flag to set missing bounds
-        Missing bounds are set to default bounds in configuration.
 
     Returns
     -------
@@ -209,7 +207,6 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE,
         return _sbml_to_model(doc,
                               number=number,
                               f_replace=f_replace,
-                              set_missing_bounds=set_missing_bounds,
                               **kwargs)
     except IOError as e:
         raise e
@@ -435,10 +432,12 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         ex_reaction.annotation = {
             'sbo': SBO_EXCHANGE_REACTION
         }
-        ex_reaction.lower_bound = -float("Inf")
-        ex_reaction.upper_bound = float("Inf")
-        LOGGER.warning("Adding exchange reaction %s for boundary metabolite: "
-                       "%s" % (ex_reaction.id, met.id))
+        ex_reaction.lower_bound = config.lower_bound
+        ex_reaction.upper_bound = config.upper_bound
+        LOGGER.warning(
+            "Adding exchange reaction %s with default bounds "
+            "for boundary metabolite: %s." % (ex_reaction.id, met.id)
+        )
         # species is reactant
         ex_reaction.add_metabolites({met: -1})
         ex_reactions.append(ex_reaction)
@@ -564,20 +563,14 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
         if p_lb is None:
             missing_bounds = True
-            if set_missing_bounds:
-                lower_bound = config.lower_bound
-            else:
-                lower_bound = -float("Inf")
+            lower_bound = config.lower_bound
             cobra_reaction.lower_bound = lower_bound
             LOGGER.warning("Missing lower flux bound set to '%s' for "
                            " reaction: '%s'", lower_bound, reaction)
 
         if p_ub is None:
             missing_bounds = True
-            if set_missing_bounds:
-                upper_bound = config.upper_bound
-            else:
-                upper_bound = float("Inf")
+            upper_bound = config.upper_bound
             cobra_reaction.upper_bound = upper_bound
             LOGGER.warning("Missing upper flux bound set to '%s' for "
                            " reaction: '%s'", upper_bound, reaction)
@@ -793,13 +786,12 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     cobra_model.add_groups(groups)
 
     # general hint for missing flux bounds
-    if missing_bounds and not set_missing_bounds:
-        LOGGER.warning("Missing flux bounds on reactions. As best practise "
-                       "and to avoid confusion flux bounds should be set "
-                       "explicitly on all reactions. "
-                       "To set the missing flux bounds to default bounds "
-                       "specified in cobra.Configuration use the flag "
-                       "`read_sbml_model(..., set_missing_bounds=True)`.")
+    if missing_bounds:
+        LOGGER.warning(
+            "Missing flux bounds on reactions set to default bounds."
+            "As best practise and to avoid confusion flux bounds "
+            "should be set explicitly on all reactions."
+        )
 
     return cobra_model
 
@@ -920,7 +912,10 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
                 _check(history.addCreator(creator),
                        "adding creator to ModelHistory.")
-        _check(model.setModelHistory(history), 'set model history')
+
+        # TODO: Will be implemented as part of
+        #  https://github.com/opencobra/cobrapy/issues/810
+        # _check(model.setModelHistory(history), 'set model history')
 
     # Units
     if units:
@@ -1057,14 +1052,20 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             if f_replace and F_GENE_REV in f_replace:
                 gpr = gpr.replace('(', '( ')
                 gpr = gpr.replace(')', ' )')
-                tokens = gpr.split(' ')
+                tokens = gpr.split()
+
                 for k in range(len(tokens)):
-                    if tokens[k] not in [' ', 'and', 'or', '(', ')']:
+                    if tokens[k] not in ['and', 'or', '(', ')']:
                         tokens[k] = f_replace[F_GENE_REV](tokens[k])
                 gpr_new = " ".join(tokens)
+            else:
+                gpr_new = gpr
 
             gpa = r_fbc.createGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
-            gpa.setAssociation(gpr_new)
+            # uses ids to identify GeneProducts (True),
+            # does not create GeneProducts (False)
+            _check(gpa.setAssociation(gpr_new, True, False),
+                   "set gpr: " + gpr_new)
 
         # objective coefficients
         if reaction_coefficients.get(cobra_reaction, 0) != 0:
@@ -1288,7 +1289,9 @@ https://co.mbine.org/standards/qualifiers
 
 In the current stage the new annotation format is not completely supported yet.
 """
-URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)/(.+)")  # noqa: E501
+
+URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")  # noqa: E501
+
 URL_IDENTIFIERS_PREFIX = "https://identifiers.org"
 QUALIFIER_TYPES = {
      "is": libsbml.BQB_IS,
@@ -1348,13 +1351,12 @@ def _parse_annotations(sbase):
             # FIXME: read and store the qualifier
 
             uri = cvterm.getResourceURI(k)
-            match = URL_IDENTIFIERS_PATTERN.match(uri)
-            if not match:
-                LOGGER.warning("%s does not conform to "
-                               "http(s)://identifiers.org/collection/id", uri)
+            data = _parse_annotation_info(uri)
+            if data is None:
                 continue
+            else:
+                provider, identifier = data
 
-            provider, identifier = match.group(1), match.group(2)
             if provider in annotation:
                 if isinstance(annotation[provider], string_types):
                     annotation[provider] = [annotation[provider]]
@@ -1366,6 +1368,33 @@ def _parse_annotations(sbase):
                 annotation[provider] = identifier
 
     return annotation
+
+
+def _parse_annotation_info(uri):
+    """Parses provider and term from given identifiers annotation uri.
+
+    Parameters
+    ----------
+    uri : str
+        uri (identifiers.org url)
+
+    Returns
+    -------
+    (provider, identifier) if resolvable, None otherwise
+    """
+    match = URL_IDENTIFIERS_PATTERN.match(uri)
+    if match:
+        provider, identifier = match.group(1), match.group(2)
+        if provider.isupper():
+            identifier = "%s:%s" % (provider, identifier)
+            provider = provider.lower()
+    else:
+        LOGGER.warning("%s does not conform to "
+                       "'http(s)://identifiers.org/collection/id' or"
+                       "'http(s)://identifiers.org/COLLECTION:id", uri)
+        return None
+
+    return provider, identifier
 
 
 def _sbase_annotations(sbase, annotation):
