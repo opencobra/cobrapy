@@ -240,12 +240,12 @@ class Metabolite(Species):
 
         Returns
         -------
-        cobra.core.summary.MetaboliteSummary
+        cobra.MetaboliteSummary
 
         See Also
         --------
-        cobra.core.reaction.Reaction.summary
-        cobra.core.model.Model.summary
+        Reaction.summary
+        Model.summary
 
         """
         from cobra.core.summary import MetaboliteSummary
@@ -254,7 +254,7 @@ class Metabolite(Species):
             if not callable(float_format):
                 def float_format(x): return "{:.3g}".format(x)
 
-        return MetaboliteSummary(model=self._model, met=self, solution=solution,
+        return MetaboliteSummary(model=self._model, metabolite=self, solution=solution,
                                  threshold=threshold, fva=fva, names=names,
                                  float_format=float_format)
 

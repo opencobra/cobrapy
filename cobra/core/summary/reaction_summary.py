@@ -13,30 +13,47 @@ from cobra.core.summary import Summary
 
 
 class ReactionSummary(Summary):
-    """Define the ReactionSummary class.
+    """
+    Define the reaction summary.
 
-    Parameters
+    Attributes
     ----------
-    model : cobra.Model
-        The metabolic model for which to generate a reaction summary.
-    rxn: cobra.Reaction
-        The Reaction object whose summary we intend to get.
-    names : bool
-        Emit gene and metabolite names rather than identifiers.
+    reaction: cobra.Reaction
+        The reaction to summarize.
+
+    See Also
+    --------
+    Summary : Parent that defines further attributes.
+    MetaboliteSummary
+    ModelSummary
 
     """
 
-    def __init__(self, model, rxn, names, **kwargs):
-        super(ReactionSummary, self).__init__(
-            model=model,
-            names=names,
-            solution=None,
-            threshold=None,
-            fva=None,
-            float_format=None,
-            **kwargs
-        )
-        self.rxn = rxn
+    def __init__(self, reaction, model, **kwargs):
+        """
+        Initialize a metabolite summary.
+
+        Parameters
+        ----------
+        reaction: cobra.Reaction
+            The reaction object whose summary we intend to get.
+        model : cobra.Model
+            The metabolic model in which to generate a reaction summary.
+
+        Other Parameters
+        ----------------
+        kwargs :
+            Further keyword arguments are passed on to the parent class.
+
+        See Also
+        --------
+        Summary : Parent that has further default parameters.
+        MetaboliteSummary
+        ModelSummary
+
+        """
+        super(ReactionSummary, self).__init__(model=model, **kwargs)
+        self.reaction = reaction
 
     def _generate(self):
         """
@@ -52,13 +69,13 @@ class ReactionSummary(Summary):
             emit = attrgetter('id')
 
         data = {
-            'GENES_ID': [emit(gene) for gene in self.rxn.genes],
+            'GENES_ID': [emit(gene) for gene in self.reaction.genes],
             'METABOLITES_ID':
-            [emit(met) for met in iterkeys(self.rxn.metabolites)],
+            [emit(met) for met in iterkeys(self.reaction.metabolites)],
             'METABOLITES_STOICHIOMETRY':
-            [met for met in itervalues(self.rxn.metabolites)],
+            [met for met in itervalues(self.reaction.metabolites)],
             'METABOLITES_COMPARTMENT':
-            [met.compartment for met in iterkeys(self.rxn.metabolites)]
+            [met.compartment for met in iterkeys(self.reaction.metabolites)]
         }
 
         rxn_summary = pd.DataFrame.from_dict(data, orient='index')\
