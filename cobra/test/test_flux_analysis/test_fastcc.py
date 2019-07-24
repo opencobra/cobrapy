@@ -8,7 +8,7 @@ from __future__ import absolute_import
 import pytest
 
 import cobra
-from cobra.flux_analysis import fastcc
+from cobra.flux_analysis import fastcc, flux_variability_analysis
 
 
 @pytest.fixture(scope="module")
@@ -103,3 +103,18 @@ def test_opposing(opposing_model, all_solvers):
     consistent_model = fastcc(opposing_model)
     expected_reactions = {'v1', 'v2', 'v3', 'v4'}
     assert expected_reactions == {rxn.id for rxn in consistent_model.reactions}
+
+
+def test_fastcc_against_fva_nonblocked_rxns(model, all_solvers):
+    """Test non-blocked reactions obtained by FASTCC against FVA."""
+    model.solver = all_solvers
+
+    fastcc_consistent_model = fastcc(model)
+
+    fva = flux_variability_analysis(model, fraction_of_optimum=0.0)
+    nonblocked_rxns_fva = fva.index[
+        (fva.minimum.abs() > model.tolerance) |
+        (fva.maximum.abs() > model.tolerance)
+    ]
+    assert all(fastcc_consistent_model.reactions) == \
+        all(nonblocked_rxns_fva.tolist())
