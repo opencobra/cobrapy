@@ -1200,12 +1200,12 @@ class Model(Object):
 
         Returns
         -------
-        cobra.core.summary.ModelSummary
+        cobra.ModelSummary
 
         See Also
         --------
-        cobra.core.reaction.Reaction.summary
-        cobra.core.metabolite.Metabolite.summary
+        Reaction.summary
+        Metabolite.summary
 
         """
         from cobra.core.summary import ModelSummary

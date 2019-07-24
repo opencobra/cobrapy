@@ -22,44 +22,39 @@ logger = logging.getLogger(__name__)
 
 
 class ModelSummary(Summary):
-    """Define the ModelSummary class.
+    """
+    Define the model summary.
 
-    Parameters
-    ----------
-    model: cobra.Model
-        The Model object whose summary we intend to get.
-    solution : cobra.Solution
-        A previously solved model solution to use for generating the
-        summary. If None, the summary method will resolve the model.
-        Note that the solution object must match the model, i.e., changes
-        to the model such as changed bounds, added or removed reactions are
-        not taken into account by this method.
-    threshold : float
-        Threshold below which fluxes are not reported.
-    fva : pandas.DataFrame, float
-        Whether or not to include flux variability analysis in the output.
-        If given, fva should either be a previous FVA solution matching
-        the model or a float between 0 and 1 representing the
-        fraction of the optimum objective to be searched.
-    names : bool
-        Emit reaction and metabolite names rather than identifiers.
-    float_format : one-parameter function
-        Format string for floats.
+    See Also
+    --------
+    Summary : Parent that defines further attributes.
+    MetaboliteSummary
+    ReactionSummary
 
     """
 
-    def __init__(self, model, solution, threshold, fva, names, float_format,
-                 **kwargs):
-        super(ModelSummary, self).__init__(
-            model=model,
-            solution=solution,
-            threshold=threshold,
-            fva=fva,
-            names=names,
-            float_format=float_format,
-            **kwargs
-        )
-        self.model = model
+    def __init__(self, model, **kwargs):
+        """
+        Initialize a model summary.
+
+        Parameters
+        ----------
+        model : cobra.Model
+            The metabolic model for which to generate a summary.
+
+        Other Parameters
+        ----------------
+        kwargs :
+            Further keyword arguments are passed on to the parent class.
+
+        See Also
+        --------
+        Summary : Parent that has further default parameters.
+        MetaboliteSummary
+        ReactionSummary
+
+        """
+        super(ModelSummary, self).__init__(model=model, **kwargs)
 
     def _generate(self):
         """

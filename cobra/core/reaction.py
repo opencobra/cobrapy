@@ -1099,17 +1099,17 @@ class Reaction(Object):
 
         Returns
         -------
-        cobra.core.summary.ReactionSummary
+        cobra.ReactionSummary
 
         See Also
         --------
-        cobra.core.metabolite.Metabolite.summary
-        cobra.core.model.Model.summary
+        Metabolite.summary
+        Model.summary
 
         """
         from cobra.core.summary import ReactionSummary
 
-        return ReactionSummary(model=self._model, rxn=self, names=names)
+        return ReactionSummary(model=self._model, reaction=self, names=names)
 
     def __str__(self):
         return "{id}: {stoichiometry}".format(

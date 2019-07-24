@@ -14,46 +14,47 @@ from cobra.flux_analysis.variability import flux_variability_analysis
 
 
 class MetaboliteSummary(Summary):
-    """Define the MetaboliteSummary class.
+    """
+    Define the metabolite summary.
 
-    Parameters
+    Attributes
     ----------
-    model : cobra.Model
-        The metabolic model for which to generate a metabolite summary.
-    met: cobra.Metabolite
-        The Metabolite object whose summary we intend to get.
-    solution : cobra.Solution
-        A previously solved model solution to use for generating the
-        summary. If None, the summary method will resolve the model.
-        Note that the solution object must match the model, i.e., changes
-        to the model such as changed bounds, added or removed reactions are
-        not taken into account by this method.
-    threshold : float
-        Threshold below which fluxes are not reported.
-    fva : pandas.DataFrame, float
-        Whether or not to include flux variability analysis in the output.
-        If given, fva should either be a previous FVA solution matching
-        the model or a float between 0 and 1 representing the
-        fraction of the optimum objective to be searched.
-    names : bool
-        Emit reaction and metabolite names rather than identifiers.
-    float_format : one-parameter function
-        Format string for floats.
+    metabolite: cobra.Metabolite
+        The metabolite to summarize.
+
+    See Also
+    --------
+    Summary : Parent that defines further attributes.
+    ReactionSummary
+    ModelSummary
 
     """
 
-    def __init__(self, model, met, solution, threshold, fva, names,
-                 float_format, **kwargs):
-        super(MetaboliteSummary, self).__init__(
-            model=model,
-            solution=solution,
-            threshold=threshold,
-            fva=fva,
-            names=names,
-            float_format=float_format,
-            **kwargs
-        )
-        self.met = met
+    def __init__(self, metabolite, model, **kwargs):
+        """
+        Initialize a metabolite summary.
+
+        Parameters
+        ----------
+        metabolite: cobra.Metabolite
+            The metabolite object whose summary we intend to get.
+        model : cobra.Model
+            The metabolic model for which to generate a metabolite summary.
+
+        Other Parameters
+        ----------------
+        kwargs :
+            Further keyword arguments are passed on to the parent class.
+
+        See Also
+        --------
+        Summary : Parent that has further default parameters.
+        ReactionSummary
+        ModelSummary
+
+        """
+        super(MetaboliteSummary, self).__init__(model=model, **kwargs)
+        self.metabolite = metabolite
 
     def _generate(self):
         """
@@ -69,13 +70,13 @@ class MetaboliteSummary(Summary):
             emit = attrgetter('id')
 
         if self.solution is None:
-            self.met.model.slim_optimize(error_value=None)
-            self.solution = get_solution(self.met.model,
-                                         reactions=self.met.reactions)
+            self.metabolite.model.slim_optimize(error_value=None)
+            self.solution = get_solution(self.metabolite.model,
+                                         reactions=self.metabolite.reactions)
 
-        rxns = sorted(self.met.reactions, key=attrgetter('id'))
+        rxns = sorted(self.metabolite.reactions, key=attrgetter('id'))
 
-        data = [(emit(rxn), self.solution[rxn.id] * rxn.metabolites[self.met],
+        data = [(emit(rxn), self.solution[rxn.id] * rxn.metabolites[self.metabolite],
                  rxn.build_reaction_string(use_metabolite_names=self.names),
                  rxn) for rxn in rxns]
 
@@ -85,7 +86,7 @@ class MetaboliteSummary(Summary):
             columns=['id', 'flux', 'reaction_string', 'reaction']
         )
 
-        assert flux_summary['flux'].sum() < self.met.model.tolerance, \
+        assert flux_summary['flux'].sum() < self.metabolite.model.tolerance, \
             'Error in flux balance'
 
         if self.fva is not None:
@@ -93,7 +94,7 @@ class MetaboliteSummary(Summary):
                 fva_results = self.fva
             else:
                 fva_results = flux_variability_analysis(
-                    self.met.model, list(self.met.reactions),
+                    self.metabolite.model, list(self.metabolite.reactions),
                     fraction_of_optimum=self.fva)
 
             flux_summary = pd.concat([flux_summary, fva_results],
@@ -103,8 +104,8 @@ class MetaboliteSummary(Summary):
 
             def set_min_and_max(row):
                 """Scale and set proper min and max values for flux."""
-                fmax = row.reaction.metabolites[self.met] * row.fmax
-                fmin = row.reaction.metabolites[self.met] * row.fmin
+                fmax = row.reaction.metabolites[self.metabolite] * row.fmax
+                fmin = row.reaction.metabolites[self.metabolite] * row.fmin
 
                 if abs(fmin) <= abs(fmax):
                     row.fmax = fmax

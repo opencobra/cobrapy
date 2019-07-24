@@ -8,34 +8,75 @@ from warnings import warn
 
 
 class Summary(object):
-    """Define the abstract base summary class.
+    """
+    Define the abstract base summary.
 
-    Parameters
+    Attributes
     ----------
     model : cobra.Model
-        The metabolic model for which to generate a summary description.
+        The metabolic model in which to generate a summary description.
     solution : cobra.Solution
-        A previously solved model solution to use for generating the
-        summary. If None, the summary method will resolve the model.
-        Note that the solution object must match the model, i.e., changes
-        to the model such as changed bounds, added or removed reactions are
-        not taken into account by this method.
-    threshold : float
+        A solution that matches the given model.
+    threshold : float, optional
         Threshold below which fluxes are not reported.
-    fva : pandas.DataFrame, float
-        Whether or not to include flux variability analysis in the output.
-        If given, fva should either be a previous FVA solution matching
-        the model or a float between 0 and 1 representing the
-        fraction of the optimum objective to be searched.
+    fva : pandas.DataFrame, optional
+        The result of a flux variability analysis (FVA) involving reactions of
+        interest if an FVA was requested.
     names : bool
-        Emit reaction and metabolite names rather than identifiers.
-    float_format : one-parameter function
-        Format string for floats.
+        Whether or not to use object names rather than identifiers.
+    float_format : callable
+        Format string for displaying floats.
+
+    Methods
+    -------
+    to_frame
+        Return a data frame representation of the summary.
 
     """
 
-    def __init__(self, model, solution, threshold, fva, names, float_format,
-                 **kwargs):
+    def __init__(
+            self,
+            model,
+            solution=None,
+            threshold=None,
+            fva=None,
+            names=False,
+            float_format="{:.3G}".format,
+            **kwargs
+    ):
+        """
+        Initialize a summary.
+
+        Parameters
+        ----------
+        model : cobra.Model
+            The metabolic model in which to generate a summary description.
+        solution : cobra.Solution, optional
+            A previous model solution to use for generating the summary. If
+            None, the summary method will resolve the model.  Note that the
+            solution object must match the model, i.e., changes to the model
+            such as changed bounds, added or removed reactions are not taken
+            into account by this method (default None).
+        threshold : float, optional
+            Threshold below which fluxes are not reported. May not be smaller
+            than the model tolerance (default None).
+        fva : pandas.DataFrame or float, optional
+            Whether or not to include flux variability analysis in the output.
+            If given, fva should either be a previous FVA solution matching the
+            model or a float between 0 and 1 representing the fraction of the
+            optimum objective to be searched (default None).
+        names : bool, optional
+            Emit reaction and metabolite names rather than identifiers (default
+            False).
+        float_format : callable, optional
+            Format string for floats (default ``'{:3G}'.format``).
+
+        Other Parameters
+        ----------------
+        kwargs :
+            Further keyword arguments are passed on to the parent class.
+
+        """
         super(Summary, self).__init__(**kwargs)
         self.model = model
         self.solution = solution
