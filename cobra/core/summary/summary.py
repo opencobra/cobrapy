@@ -6,6 +6,8 @@ from __future__ import absolute_import, division
 
 from warnings import warn
 
+from cobra.flux_analysis.helpers import normalize_cutoff
+
 
 class Summary(object):
     """
@@ -80,7 +82,7 @@ class Summary(object):
         super(Summary, self).__init__(**kwargs)
         self.model = model
         self.solution = solution
-        self.threshold = threshold
+        self.threshold = normalize_cutoff(self.model, threshold)
         self.fva = fva
         self.names = names
         self.float_format = float_format
