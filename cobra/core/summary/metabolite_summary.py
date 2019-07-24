@@ -43,8 +43,14 @@ class MetaboliteSummary(Summary):
 
     def __init__(self, met, solution, threshold, fva, names, float_format,
                  **kwargs):
-        super(MetaboliteSummary, self).__init__(solution, threshold, fva,
-                                                names, float_format, **kwargs)
+        super(MetaboliteSummary, self).__init__(
+            solution=solution,
+            threshold=threshold,
+            fva=fva,
+            names=names,
+            float_format=float_format,
+            **kwargs
+        )
         self.met = met
 
     def _generate(self):

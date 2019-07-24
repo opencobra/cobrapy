@@ -50,8 +50,14 @@ class ModelSummary(Summary):
 
     def __init__(self, model, solution, threshold, fva, names, float_format,
                  **kwargs):
-        super(ModelSummary, self).__init__(solution, threshold, fva, names,
-                                           float_format, **kwargs)
+        super(ModelSummary, self).__init__(
+            solution=solution,
+            threshold=threshold,
+            fva=fva,
+            names=names,
+            float_format=float_format,
+            **kwargs
+        )
         self.model = model
 
     def _generate(self):

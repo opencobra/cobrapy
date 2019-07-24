@@ -25,9 +25,14 @@ class ReactionSummary(Summary):
     """
 
     def __init__(self, rxn, names, **kwargs):
-        super(ReactionSummary, self).__init__(names=names, solution=None,
-                                              threshold=None, fva=None,
-                                              float_format=None, **kwargs)
+        super(ReactionSummary, self).__init__(
+            names=names,
+            solution=None,
+            threshold=None,
+            fva=None,
+            float_format=None,
+            **kwargs
+        )
         self.rxn = rxn
 
     def _generate(self):
