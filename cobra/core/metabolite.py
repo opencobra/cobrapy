@@ -208,8 +208,14 @@ class Metabolite(Species):
         """
         self._model.remove_metabolites(self, destructive)
 
-    def summary(self, solution=None, threshold=0.01, fva=None, names=False,
-                float_format=None):
+    def summary(
+        self,
+        solution=None,
+        threshold=0.01,
+        fva=None,
+        names=False,
+        float_format="{:.3g}".format
+    ):
         """
         Create a summary of the producing and consuming fluxes.
 
@@ -218,25 +224,25 @@ class Metabolite(Species):
 
         Parameters
         ----------
-        solution: cobra.Solution, optional
-            A previously solved model solution to use for generating the
-            summary. If None provided (default), the summary method will
-            resolve the model. Note that the solution object must match the
-            model, i.e., changes to the model such as changed bounds,
-            added or removed reactions are not taken into account by this
-            method (default None).
+        solution : cobra.Solution, optional
+            A previous model solution to use for generating the summary. If
+            None, the summary method will resolve the model.  Note that the
+            solution object must match the model, i.e., changes to the model
+            such as changed bounds, added or removed reactions are not taken
+            into account by this method (default None).
         threshold : float, optional
-            Threshold below which fluxes are not reported (default 1E-06).
+            Threshold below which fluxes are not reported. May not be smaller
+            than the model tolerance (default 0.01).
         fva : pandas.DataFrame or float, optional
             Whether or not to include flux variability analysis in the output.
-            If given, fva should either be a previous FVA solution matching
-            the model or a float between 0 and 1 representing the
-            fraction of the optimum objective to be searched (default None).
+            If given, fva should either be a previous FVA solution matching the
+            model or a float between 0 and 1 representing the fraction of the
+            optimum objective to be searched (default None).
         names : bool, optional
-            Emit reaction and metabolite names rather than identifiers
-            (default False).
-        float_format : one-parameter function, optional
-            Format string for floats (default lambda x: "{:.3g}".format(x)).
+            Emit reaction and metabolite names rather than identifiers (default
+            False).
+        float_format : callable, optional
+            Format string for floats (default ``'{:3G}'.format``).
 
         Returns
         -------
@@ -250,13 +256,15 @@ class Metabolite(Species):
         """
         from cobra.core.summary import MetaboliteSummary
 
-        if float_format is not None:
-            if not callable(float_format):
-                def float_format(x): return "{:.3g}".format(x)
-
-        return MetaboliteSummary(model=self._model, metabolite=self, solution=solution,
-                                 threshold=threshold, fva=fva, names=names,
-                                 float_format=float_format)
+        return MetaboliteSummary(
+            metabolite=self,
+            model=self._model,
+            solution=solution,
+            threshold=threshold,
+            fva=fva,
+            names=names,
+            float_format=float_format
+        )
 
     def _repr_html_(self):
         return """
