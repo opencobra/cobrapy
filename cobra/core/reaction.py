@@ -47,11 +47,11 @@ class Reaction(Object):
     a biochemical reaction in a cobra.Model object.
 
     Reactions are by default irreversible with bounds
-    (0.0, config.upper_bound)
+    `(0.0, cobra.Configuration().upper_bound)`
     if no bounds are provided on creation.
-    To create an irreversible reaction use lower_bound=None,
+    To create an irreversible reaction use `lower_bound=None`,
     resulting in reaction bounds of
-    (config.lower_bound, config.upper_bound).
+    `(cobra.Configuration().lower_bound, cobra.Configuration().upper_bound)`.
 
     Parameters
     ----------

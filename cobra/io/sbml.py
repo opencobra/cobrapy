@@ -1371,7 +1371,7 @@ def _parse_annotations(sbase):
 
 
 def _parse_annotation_info(uri):
-    """Parses provider and term from given annotation uri.
+    """Parses provider and term from given identifiers annotation uri.
 
     Parameters
     ----------
@@ -1385,11 +1385,9 @@ def _parse_annotation_info(uri):
     match = URL_IDENTIFIERS_PATTERN.match(uri)
     if match:
         provider, identifier = match.group(1), match.group(2)
-        print(provider, identifier)
         if provider.isupper():
             identifier = "%s:%s" % (provider, identifier)
             provider = provider.lower()
-
     else:
         LOGGER.warning("%s does not conform to "
                        "'http(s)://identifiers.org/collection/id' or"
