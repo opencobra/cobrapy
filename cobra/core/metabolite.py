@@ -254,7 +254,7 @@ class Metabolite(Species):
             if not callable(float_format):
                 def float_format(x): return "{:.3g}".format(x)
 
-        return MetaboliteSummary(met=self, solution=solution,
+        return MetaboliteSummary(model=self._model, met=self, solution=solution,
                                  threshold=threshold, fva=fva, names=names,
                                  float_format=float_format)
 

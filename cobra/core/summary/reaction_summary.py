@@ -17,6 +17,8 @@ class ReactionSummary(Summary):
 
     Parameters
     ----------
+    model : cobra.Model
+        The metabolic model for which to generate a reaction summary.
     rxn: cobra.Reaction
         The Reaction object whose summary we intend to get.
     names : bool
@@ -24,8 +26,9 @@ class ReactionSummary(Summary):
 
     """
 
-    def __init__(self, rxn, names, **kwargs):
+    def __init__(self, model, rxn, names, **kwargs):
         super(ReactionSummary, self).__init__(
+            model=model,
             names=names,
             solution=None,
             threshold=None,
