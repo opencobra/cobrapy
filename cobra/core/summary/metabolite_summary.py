@@ -6,9 +6,8 @@ from __future__ import absolute_import, division
 
 from operator import attrgetter
 
-import pandas as pd
+from pandas import DataFrame
 
-from cobra.core import get_solution
 from cobra.core.summary import Summary
 from cobra.flux_analysis.variability import flux_variability_analysis
 
@@ -55,6 +54,19 @@ class MetaboliteSummary(Summary):
         """
         super(MetaboliteSummary, self).__init__(model=model, **kwargs)
         self.metabolite = metabolite
+        self._generate()
+
+    def _display(self):
+        output = self.data_frame.copy()
+        if self.names:
+            output['name'] = [
+                self.model.reactions.get_by_id(r).name for r in output.index
+            ]
+        output['definition'] = [
+            self.model.reactions.get_by_id(r).build_reaction_string(self.names)
+            for r in output.index
+        ]
+        return output
 
     def _generate(self):
         """
@@ -64,106 +76,50 @@ class MetaboliteSummary(Summary):
             The DataFrame of flux summary data.
 
         """
-        if self.names:
-            emit = attrgetter('name')
-        else:
-            emit = attrgetter('id')
-
-        if self.solution is None:
-            self.metabolite.model.slim_optimize(error_value=None)
-            self.solution = get_solution(self.metabolite.model,
-                                         reactions=self.metabolite.reactions)
-
         rxns = sorted(self.metabolite.reactions, key=attrgetter('id'))
-
-        data = [(emit(rxn), self.solution[rxn.id] * rxn.metabolites[self.metabolite],
-                 rxn.build_reaction_string(use_metabolite_names=self.names),
-                 rxn) for rxn in rxns]
-
-        flux_summary = pd.DataFrame.from_records(
+        data = [
+            (r.id, self.solution[r.id] * r.metabolites[self.metabolite],
+             r.metabolites[self.metabolite])
+            for r in rxns
+        ]
+        flux_summary = DataFrame(
             data=data,
-            index=[rxn.id for rxn in rxns],
-            columns=['id', 'flux', 'reaction_string', 'reaction']
+            columns=['reaction', 'flux', 'factor']
         )
 
-        assert flux_summary['flux'].sum() < self.metabolite.model.tolerance, \
-            'Error in flux balance'
-
         if self.fva is not None:
-            if hasattr(self.fva, 'columns'):
-                fva_results = self.fva
-            else:
-                fva_results = flux_variability_analysis(
-                    self.metabolite.model, list(self.metabolite.reactions),
-                    fraction_of_optimum=self.fva)
+            if not isinstance(self.fva, DataFrame):
+                self.fva = flux_variability_analysis(
+                    self.model,
+                    reaction_list=rxns,
+                    fraction_of_optimum=self.fva
+                )
 
-            flux_summary = pd.concat([flux_summary, fva_results],
-                                     axis=1, sort=False)
-            flux_summary.rename(columns={'maximum': 'fmax', 'minimum': 'fmin'},
-                                inplace=True)
-
-            def set_min_and_max(row):
-                """Scale and set proper min and max values for flux."""
-                fmax = row.reaction.metabolites[self.metabolite] * row.fmax
-                fmin = row.reaction.metabolites[self.metabolite] * row.fmin
-
-                if abs(fmin) <= abs(fmax):
-                    row.fmax = fmax
-                    row.fmin = fmin
-                else:
-                    # Reverse fluxes
-                    row.fmax = fmin
-                    row.fmin = fmax
-
-                return row
-
-            flux_summary = flux_summary.apply(set_min_and_max, axis=1)
-
-        flux_summary = self._process_flux_dataframe(flux_summary)
-
-        total_flux = flux_summary.loc[flux_summary.is_input, 'flux'].sum()
-
-        # Calculate flux percentage
-        flux_summary['percent'] = (flux_summary['flux'] / total_flux) * 100
-
-        return flux_summary
-
-    def to_frame(self):
-        """
-        Returns
-        -------
-        A pandas.DataFrame of the summary.
-
-        """
-        flux_df = self._generate()
-
-        flux_df['is_input'] = flux_df['is_input']\
-            .apply(lambda x: 'PRODUCING' if x is True else 'CONSUMING')
-
-        flux_df.columns = [col.upper() for col in flux_df.columns]
-
-        if self.fva is not None:
-            flux_df.rename(columns={'IS_INPUT': 'RXN_STAT',
-                                    'FMIN': 'FLUX_MIN',
-                                    'FMAX': 'FLUX_MAX'}, inplace=True)
-            flux_df = flux_df[['RXN_STAT', 'ID', 'PERCENT', 'FLUX', 'FLUX_MIN',
-                               'FLUX_MAX', 'REACTION_STRING']]
+            flux_summary = flux_summary.set_index('reaction').join(self.fva)
+            flux_summary.loc[
+                (flux_summary[['flux', 'minimum', 'maximum']].abs() <
+                self.model.tolerance), ['flux', 'minimum', 'maximum']
+            ] = 0
+            flux_summary[['minimum', 'maximum']] = flux_summary[
+                ['minimum', 'maximum']
+            ].mul(flux_summary['factor'], axis=0)
+            # Negative factors inverse the inequality relationship.
+            negative = flux_summary['factor'] < 0
+            tmp = flux_summary.loc[negative, 'maximum']
+            flux_summary.loc[negative, 'maximum'] = flux_summary.loc[
+                negative, 'minimum']
+            flux_summary.loc[negative, 'minimum'] = tmp
+            flux_summary = flux_summary[
+                (flux_summary['flux'].abs() >= self.threshold) |
+                (flux_summary['minimum'].abs() >= self.threshold) |
+                (flux_summary['maximum'].abs() >= self.threshold)
+            ].copy()
         else:
-            flux_df.rename(columns={'IS_INPUT': 'RXN_STAT'}, inplace=True)
-            flux_df = flux_df[['RXN_STAT', 'ID', 'PERCENT', 'FLUX',
-                               'REACTION_STRING']]
+            flux_summary = flux_summary[
+                flux_summary['flux'].abs() >= self.threshold
+            ].copy()
 
-        flux_df.set_index(['RXN_STAT', 'ID'], inplace=True)
-
-        return flux_df
-
-    def _to_table(self):
-        """
-        Returns
-        -------
-        A string of the summary table.
-
-        """
-        return self.to_frame().to_string(header=True, index=True, na_rep='',
-                                         float_format=self.float_format,
-                                         sparsify=True, justify='center')
+        is_input = flux_summary['flux'] > 0
+        total_flux = flux_summary.loc[is_input, 'flux'].sum()
+        flux_summary['percent'] = flux_summary['flux'].abs() / total_flux
+        self.data_frame = flux_summary[['percent', 'flux', 'minimum', 'maximum']]

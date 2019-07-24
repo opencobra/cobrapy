@@ -4,8 +4,7 @@
 
 from __future__ import absolute_import, division
 
-from warnings import warn
-
+from cobra.flux_analysis import pfba
 from cobra.flux_analysis.helpers import normalize_cutoff
 
 
@@ -28,11 +27,8 @@ class Summary(object):
         Whether or not to use object names rather than identifiers.
     float_format : callable
         Format string for displaying floats.
-
-    Methods
-    -------
-    to_frame
-        Return a data frame representation of the summary.
+    data_frame : pandas.DataFrame
+        The table containing the summary.
 
     """
 
@@ -43,7 +39,7 @@ class Summary(object):
             threshold=None,
             fva=None,
             names=False,
-            float_format="{:.3G}".format,
+            float_format='{:.3G}'.format,
             **kwargs
     ):
         """
@@ -71,7 +67,9 @@ class Summary(object):
             Emit reaction and metabolite names rather than identifiers (default
             False).
         float_format : callable, optional
-            Format string for floats (default ``'{:3G}'.format``).
+            Format string for floats (default ``'{:3G}'.format``). Please see
+            https://pandas.pydata.org/pandas-docs/stable/user_guide/style.html#Finer-Control:-Display-Values
+            for more information.
 
         Other Parameters
         ----------------
@@ -86,126 +84,35 @@ class Summary(object):
         self.fva = fva
         self.names = names
         self.float_format = float_format
+        self.data_frame = None
+        self._generate()
 
-    def _generate(self):
-        """Generate the summary for the required cobra object.
-
-        This is an abstract method and thus the subclass needs to
-        implement it.
-
-        """
-        raise NotImplementedError("This method needs to be implemented by the "
-                                  "subclass.")
-
-    def _process_flux_dataframe(self, flux_dataframe):
-        """Process a flux DataFrame for convenient downstream analysis.
-
-        This method removes flux entries which are below the threshold and
-        also adds information regarding the direction of the fluxes. It is used
-        in both ModelSummary and MetaboliteSummary.
-
-        Parameters
-        ----------
-        flux_dataframe: pandas.DataFrame
-            The pandas.DataFrame to process.
-
-        Returns
-        -------
-        A processed pandas.DataFrame.
-
-        """
-
-        abs_flux = flux_dataframe['flux'].abs()
-        flux_threshold = self.threshold * abs_flux.max()
-
-        # Drop unused boundary fluxes i.e., fluxes below threshold
-        if self.fva is None:
-            flux_dataframe = \
-                flux_dataframe.loc[abs_flux >= flux_threshold, :].copy()
-        else:
-            flux_dataframe = (
-                flux_dataframe
-                .loc[(abs_flux >= flux_threshold) |
-                     (flux_dataframe['fmin'].abs() >= flux_threshold) |
-                     (flux_dataframe['fmax'].abs() >= flux_threshold), :]
-                .copy()
-                )
-
-        # Make all fluxes positive while maintaining proper direction
-        if self.fva is None:
-            # add information regarding direction
-            flux_dataframe['is_input'] = (flux_dataframe['flux'] >= 0)
-            # make the fluxes absolute
-            flux_dataframe['flux'] = flux_dataframe['flux'].abs()
-            # sort the values
-            flux_dataframe.sort_values(by=['is_input', 'flux', 'id'],
-                                       ascending=[False, False, True],
-                                       inplace=True)
-        else:
-
-            def get_direction(row):
-                """Decide whether or not to reverse a flux to make it
-                positive."""
-
-                if row.flux < 0:
-                    sign = -1
-                elif row.flux > 0:
-                    sign = 1
-                elif (row.fmax > 0) & (row.fmin <= 0):
-                    sign = 1
-                elif (row.fmax < 0) & (row.fmin >= 0):
-                    sign = -1
-                elif ((row.fmax + row.fmin) / 2) < 0:
-                    sign = -1
-                else:
-                    sign = 1
-
-                return sign
-
-            # get a sign DataFrame to use as a pseudo-mask
-            sign = flux_dataframe.apply(get_direction, axis=1)
-
-            flux_dataframe['is_input'] = (sign == 1)
-
-            flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']] = (
-                flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']]
-                .multiply(sign, axis=0)
-                .astype('float')
-            )
-
-            flux_dataframe.sort_values(by=['is_input', 'flux', 'fmax', 'fmin',
-                                           'id'],
-                                       ascending=[False, False, False, False,
-                                                  True],
-                                       inplace=True)
-
-        return flux_dataframe
-
-    def to_frame(self):
-        """Generate a pandas DataFrame.
-
-        This is an abstract method and thus the subclass needs to
-        implement it.
-
-        """
-        raise NotImplementedError("This method needs to be implemented by the "
-                                  "subclass.")
-
-    def _to_table(self):
-        """Generate a pretty-print table.
-
-        This is an abstract method and thus the subclass needs to
-        implement it.
-
-        """
-        raise NotImplementedError("This method needs to be implemented by the "
-                                  "subclass.")
+    def __repr__(self):
+        return "<%s in %s>".format(type(self).__name__, str(self.model))
 
     def __str__(self):
-        if self.float_format is not None:
-            warn("Setting float_format to anything other than None "
-                 "will cause nan to be present in the output.")
-        return self._to_table()
+        return self._display().to_string(
+            header=True,
+            index=True,
+            na_rep='',
+            formatters=self._styles()
+        )
 
     def _repr_html_(self):
-        return self.to_frame()._repr_html_()
+        self._display().style.format(self._styles())
+
+    def _display(self):
+        raise NotImplementedError("Abstract base method.")
+
+    def _styles(self):
+        """Set the display options on the data frame."""
+        styles = {'flux': self.float_format, 'percent': '{:.2%}'}
+        if self.fva is not None:
+            styles['minimum'] = self.float_format
+            styles['maximum'] = self.float_format
+        return styles
+
+    def _generate(self):
+        """Generate the summary."""
+        if self.solution is None:
+            self.solution = pfba(self.model)
