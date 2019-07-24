@@ -21,9 +21,8 @@ def test_metabolite_summary_to_table_previous_solution(model, opt_solver, met):
                       'q8h2_c --> h2o_c + 2.0 h_...']
 
     with captured_output() as (out, _):
-        print(model.metabolites.get_by_id(met).summary(solution,
-                                                       float_format='spam'))
-    check_in_line(out.getvalue(), expected_entry)
+        print(model.metabolites.get_by_id(met).summary(solution))
+        check_in_line(out.getvalue(), expected_entry)
 
 
 @pytest.mark.parametrize("met", ["q8_c"])
@@ -57,9 +56,8 @@ def test_metabolite_summary_to_table(model, opt_solver, met, names):
                           '0.5 o2_c + q8h2_c --> h2o_c + 2.0 h_...']
 
     with captured_output() as (out, _):
-        print(model.metabolites.get_by_id(met).summary(names=names,
-                                                       float_format='spam'))
-    check_in_line(out.getvalue(), expected_entry)
+        print(model.metabolites.get_by_id(met).summary(names=names))
+        check_in_line(out.getvalue(), expected_entry)
 
 
 @pytest.mark.parametrize("met, names", [
@@ -91,9 +89,8 @@ def test_metabolite_summary_to_table_with_fva(model, opt_solver, fraction,
                       'atp_c + f6p_c --> adp_c + fdp_c + h_c']
 
     with captured_output() as (out, _):
-        print(model.metabolites.get_by_id(met).summary(fva=fraction,
-                                                       float_format='spam'))
-    check_line(out.getvalue(), expected_entry)
+        print(model.metabolites.get_by_id(met).summary(fva=fraction))
+        check_line(out.getvalue(), expected_entry)
 
 
 @pytest.mark.parametrize("fraction, met", [(0.99, "fdp_c")])
