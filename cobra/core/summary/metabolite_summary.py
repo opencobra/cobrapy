@@ -6,7 +6,6 @@ from __future__ import absolute_import, division
 
 from operator import attrgetter
 
-import numpy as np
 import pandas as pd
 
 from cobra.core import get_solution
