@@ -31,25 +31,35 @@ class Mock(object):
 
     @classmethod
     def __getattr__(cls, name):
-        if name in ('__file__', '__path__'):
-            return '/dev/null'
+        if name in ("__file__", "__path__"):
+            return "/dev/null"
         else:
             return Mock()
 
 
 # These modules should correspond to the importable Python packages.
 MOCK_MODULES = [
-    'depinfo',
-    'numpy',
-    'scipy', 'scipy.optimize', 'scipy.sparse', 'scipy.io', 'scipy.stats',
-    'pp',
-    'libsbml',
-    'pandas',
-    'tabulate',
-    'optlang', 'optlang.interface', 'optlang.symbolics',
-    'optlang.symbolics.core',
-    'future', 'future.utils',
-    'ruamel', 'ruamel.yaml'
+    "depinfo",
+    "numpy",
+    "scipy",
+    "scipy.optimize",
+    "scipy.sparse",
+    "scipy.io",
+    "scipy.stats",
+    "pp",
+    "libsbml",
+    "pandas",
+    "tabulate",
+    "optlang",
+    "optlang.interface",
+    "optlang.symbolics",
+    "optlang.symbolics.core",
+    "optlang.exceptions",
+    "future",
+    "future.utils",
+    "ruamel",
+    "ruamel.yaml",
+    "ruamel.yaml.compat",
 ]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
@@ -59,65 +69,69 @@ for mod_name in MOCK_MODULES:
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.autosummary',
-    'autoapi.extension',
-    'nbsphinx'
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autosummary",
+    "autoapi.extension",
+    "nbsphinx",
 ]
 # Document Python Code
-autoapi_type = 'python'
-autoapi_dirs = ['..']
-autoapi_ignore = ['.tox', '.pytest_cache', 'scripts', 'benchmarks']
+autoapi_type = "python"
+autoapi_dirs = [".."]
+autoapi_ignore = [".tox", ".pytest_cache", "scripts", "benchmarks"]
 
 # Napoleon settings
 napoleon_numpy_docstring = True
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = u'cobra'
-copyright = u'2016, The cobrapy core team'
+project = u"cobra"
+copyright = u"2016, The cobrapy core team"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 from cobra import __version__ as release
-version = '.'.join(release.split('.')[:2])
+
+version = ".".join(release.split(".")[:2])
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', '.ipynb_checkpoints']
+exclude_patterns = ["_build", ".ipynb_checkpoints"]
 
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # -- Options for HTML output --------------------------------------------------
 
-mathjax_path = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+mathjax_path = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 
 # -- Options for LaTeX output --------------------------------------------------
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
-    'papersize': 'a4paper',
-
+    "papersize": "a4paper",
     # The font size ('10pt', '11pt' or '12pt').
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
-    'preamble': r'\usepackage{amsmath,amssymb}',
+    "preamble": r"\usepackage{amsmath,amssymb}",
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('index', 'cobra.tex', u'cobra Documentation',
-     u'The cobrapy core team', 'manual'),
+    (
+        "index",
+        "cobra.tex",
+        u"cobra Documentation",
+        u"The cobrapy core team",
+        "manual",
+    )
 ]
 
 # -- Options for manual page output --------------------------------------------
@@ -125,8 +139,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'cobra', u'cobra Documentation',
-     [u'The cobrapy core team'], 1)
+    ("index", "cobra", u"cobra Documentation", [u"The cobrapy core team"], 1)
 ]
 
 # -- Options for Texinfo output ------------------------------------------------
@@ -135,14 +148,21 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'cobra', u'cobra Documentation',
-     u'The cobrapy core team', 'cobra',
-     'A package for constraints-based modeling of biological networks',
-     'Miscellaneous'),
+    (
+        "index",
+        "cobra",
+        u"cobra Documentation",
+        u"The cobrapy core team",
+        "cobra",
+        "A package for constraints-based modeling of biological networks",
+        "Miscellaneous",
+    )
 ]
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {"http://docs.python.org/": None,
-                       "http://docs.scipy.org/doc/numpy/": None,
-                       "http://docs.scipy.org/doc/scipy/reference": None}
+intersphinx_mapping = {
+    "http://docs.python.org/": None,
+    "http://docs.scipy.org/doc/numpy/": None,
+    "http://docs.scipy.org/doc/scipy/reference": None,
+}
 intersphinx_cache_limit = 10  # days to keep the cached inventories
