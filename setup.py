@@ -52,7 +52,7 @@ if __name__ == "__main__":
             "optlang>=1.4.2",
             "tabulate",
             "depinfo",
-            "python-libsbml-experimental==5.18.0",
+            "python-libsbml-experimental==5.18.1",
         ],
         tests_require=[
             "jsonschema > 2.5",
