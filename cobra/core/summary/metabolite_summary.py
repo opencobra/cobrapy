@@ -76,9 +76,14 @@ class MetaboliteSummary(Summary):
 
         rxns = sorted(self.metabolite.reactions, key=attrgetter('id'))
 
-        data = [(emit(rxn), self.solution[rxn.id] * rxn.metabolites[self.metabolite],
-                 rxn.build_reaction_string(use_metabolite_names=self.names),
-                 rxn) for rxn in rxns]
+        data = [
+            (
+                emit(rxn),
+                self.solution[rxn.id] * rxn.metabolites[self.metabolite],
+                rxn.build_reaction_string(use_metabolite_names=self.names),
+                rxn
+            ) for rxn in rxns
+        ]
 
         flux_summary = pd.DataFrame.from_records(
             data=data,
