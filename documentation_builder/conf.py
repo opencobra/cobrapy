@@ -81,8 +81,8 @@ copyright = "2016-2019, The cobrapy core team"
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
-#
-from cobra import __version__ as release
+# This import has to be here.
+from cobra import __version__ as release  # noqa: E402
 
 version = ".".join(release.split(".")[:2])
 
@@ -94,7 +94,10 @@ pygments_style = "sphinx"
 
 # -- Options for HTML output --------------------------------------------------
 
-mathjax_path = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+mathjax_path = (
+    "https://cdn.mathjax.org/mathjax/latest/"
+    "MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+)
 
 # -- Options for LaTeX output --------------------------------------------------
 
