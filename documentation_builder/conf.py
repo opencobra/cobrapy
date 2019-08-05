@@ -14,27 +14,13 @@
 
 import sys
 from os.path import dirname
+from unittest.mock import Mock
+from cobra import __version__ as release
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, dirname(dirname(__file__)))
-
-
-# In order to build documentation that requires libraries to import
-class Mock(object):
-    def __init__(self, *args, **kwargs):
-        return
-
-    def __call__(self, *args, **kwargs):
-        return Mock()
-
-    @classmethod
-    def __getattr__(cls, name):
-        if name in ("__file__", "__path__"):
-            return "/dev/null"
-        else:
-            return Mock()
 
 
 # These modules should correspond to the importable Python packages.
@@ -97,8 +83,6 @@ copyright = u"2016, The cobrapy core team"
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-from cobra import __version__ as release
-
 version = ".".join(release.split(".")[:2])
 
 # List of patterns, relative to source directory, that match files and
@@ -109,7 +93,10 @@ pygments_style = "sphinx"
 
 # -- Options for HTML output --------------------------------------------------
 
-mathjax_path = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+mathjax_path = (
+    "https://cdn.mathjax.org/mathjax/latest/"
+    "MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+)
 
 # -- Options for LaTeX output --------------------------------------------------
 
@@ -151,8 +138,8 @@ texinfo_documents = [
     (
         "index",
         "cobra",
-        u"cobra Documentation",
-        u"The cobrapy core team",
+        "cobra Documentation",
+        "The cobrapy core team",
         "cobra",
         "A package for constraints-based modeling of biological networks",
         "Miscellaneous",
