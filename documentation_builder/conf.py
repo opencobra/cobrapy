@@ -15,7 +15,6 @@
 import sys
 from os.path import dirname
 from unittest.mock import Mock
-from cobra import __version__ as release
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -76,13 +75,15 @@ napoleon_numpy_docstring = True
 master_doc = "index"
 
 # General information about the project.
-project = u"cobra"
-copyright = u"2016, The cobrapy core team"
+project = "cobra"
+copyright = "2016-2019, The cobrapy core team"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
+from cobra import __version__ as release
+
 version = ".".join(release.split(".")[:2])
 
 # List of patterns, relative to source directory, that match files and
@@ -93,10 +94,7 @@ pygments_style = "sphinx"
 
 # -- Options for HTML output --------------------------------------------------
 
-mathjax_path = (
-    "https://cdn.mathjax.org/mathjax/latest/"
-    "MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-)
+mathjax_path = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 
 # -- Options for LaTeX output --------------------------------------------------
 
