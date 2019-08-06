@@ -14,27 +14,12 @@
 
 import sys
 from os.path import dirname
+from unittest.mock import Mock
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, dirname(dirname(__file__)))
-
-
-# In order to build documentation that requires libraries to import
-class Mock(object):
-    def __init__(self, *args, **kwargs):
-        return
-
-    def __call__(self, *args, **kwargs):
-        return Mock()
-
-    @classmethod
-    def __getattr__(cls, name):
-        if name in ("__file__", "__path__"):
-            return "/dev/null"
-        else:
-            return Mock()
 
 
 # These modules should correspond to the importable Python packages.
@@ -79,9 +64,7 @@ extensions = [
     "nbsphinx",
 ]
 # Document Python Code
-autoapi_type = "python"
-autoapi_dirs = [".."]
-autoapi_ignore = [".tox", ".pytest_cache", "scripts", "benchmarks"]
+autoapi_dirs = ["../cobra"]
 
 # Napoleon settings
 napoleon_numpy_docstring = True
@@ -90,14 +73,14 @@ napoleon_numpy_docstring = True
 master_doc = "index"
 
 # General information about the project.
-project = u"cobra"
-copyright = u"2016, The cobrapy core team"
+project = "cobra"
+copyright = "2016-2019, The cobrapy core team"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
-#
-from cobra import __version__ as release
+# This import has to be here.
+from cobra import __version__ as release  # noqa: E402
 
 version = ".".join(release.split(".")[:2])
 
@@ -109,7 +92,10 @@ pygments_style = "sphinx"
 
 # -- Options for HTML output --------------------------------------------------
 
-mathjax_path = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+mathjax_path = (
+    "https://cdn.mathjax.org/mathjax/latest/"
+    "MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+)
 
 # -- Options for LaTeX output --------------------------------------------------
 
@@ -151,8 +137,8 @@ texinfo_documents = [
     (
         "index",
         "cobra",
-        u"cobra Documentation",
-        u"The cobrapy core team",
+        "cobra Documentation",
+        "The cobrapy core team",
         "cobra",
         "A package for constraints-based modeling of biological networks",
         "Miscellaneous",
