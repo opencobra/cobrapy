@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 import io
 
-from ruamel.yaml import YAML
+from ruamel.yaml.main import YAML
 from ruamel.yaml.compat import StringIO
 from six import string_types
 
