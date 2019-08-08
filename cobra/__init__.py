@@ -41,4 +41,4 @@ from cobra import io
 from cobra import sampling
 from cobra.util import show_versions
 
-__version__ = "0.15.4"
+__version__ = "0.16.0"
