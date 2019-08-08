@@ -10,7 +10,7 @@ from os.path import dirname as _dirname
 
 from cobra.core import (
     Configuration, DictList, Gene, Metabolite, Model, Object, Reaction,
-    Species)
+    Solution, Species)
 from cobra import flux_analysis
 from cobra import io
 from cobra import sampling
