@@ -22,7 +22,6 @@ if {'pytest', 'test', 'ptr'}.intersection(argv):
 
 extras = {
     'array': ["scipy"],
-    'sbml': ["python-libsbml", "lxml"]
 }
 extras["all"] = sorted(extras.values())
 
