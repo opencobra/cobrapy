@@ -46,7 +46,7 @@ if __name__ == "__main__":
             "six",
             "future",
             "swiglpk",
-            "ruamel.yaml>=0.15",
+            "ruamel.yaml>=0.16",
             "numpy>=1.13",
             "pandas>=0.17.0",
             "optlang>=1.4.2",

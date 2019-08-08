@@ -4,8 +4,8 @@ from __future__ import absolute_import
 
 import io
 
-from ruamel.yaml import YAML
 from ruamel.yaml.compat import StringIO
+from ruamel.yaml.main import YAML
 from six import string_types
 
 from cobra.io.dict import model_from_dict, model_to_dict
