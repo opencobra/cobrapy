@@ -212,7 +212,6 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE,
         raise e
 
     except Exception:
-        LOGGER.error(traceback.print_exc())
         raise CobraSBMLError(
             "Something went wrong reading the SBML model. Most likely the SBML"
             " model is not valid. Please check that your model is valid using "
