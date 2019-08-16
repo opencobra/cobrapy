@@ -631,10 +631,6 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                         f_replace[F_GENE](t) for t in gpr.split(' ')
                     )
 
-        # remove outside parenthesis, if any
-        if gpr.startswith("(") and gpr.endswith(")"):
-            gpr = gpr[1:-1].strip()
-
         cobra_reaction.gene_reaction_rule = gpr
 
     cobra_model.add_reactions(reactions)
