@@ -1237,9 +1237,15 @@ def _parse_notes_dict(sbase):
     """
     notes = sbase.getNotesString()
     if notes and len(notes) > 0:
-        pattern = r"<p>\s*(\w+\s*\w*)\s*:\s*([\w|\s]+)<"
-        matches = re.findall(pattern, notes)
-        d = {k.strip(): v.strip() for (k, v) in matches}
+        pattern = re.compile(
+            r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<header>\w+\s*\w*)\s*:\s*(?P<content>.*?)</(?P=prefix)p>",
+            re.IGNORECASE
+        )
+        d = dict()
+        for match in pattern.finditer(notes):
+            k = match.group("header")
+            v = match.group("content")
+            d[k.strip()] = v.strip()
         return {k: v for k, v in d.items() if len(v) > 0}
     else:
         return {}
