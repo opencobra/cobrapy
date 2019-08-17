@@ -104,6 +104,16 @@ patternNOTES = re.compile(
     re. IGNORECASE
 )
 
+patternTOSBML = re.compile(
+    r'([^0-9_a-zA-Z])'
+)
+
+
+def _toSBMLfun(nonASCII):
+    """converts a non ascii character to a string representation of its ascii number"""
+    return '__' + str(ord(nonASCII.group())) + '__'
+
+
 def _clip(sid, prefix):
     """Clips a prefix from the beginning of a string if it exists."""
     return sid[len(prefix):] if sid.startswith(prefix) else sid
@@ -117,6 +127,7 @@ def _f_gene(sid, prefix="G_"):
 
 def _f_gene_rev(sid, prefix="G_"):
     """Adds gene prefix to id."""
+    sid = patternTOSBML.sub(_toSBMLfun, sid)
     return prefix + sid.replace(".", SBML_DOT)
 
 
@@ -127,6 +138,7 @@ def _f_specie(sid, prefix="M_"):
 
 def _f_specie_rev(sid, prefix="M_"):
     """Adds specie/metabolite prefix to id."""
+    sid = patternTOSBML.sub(_toSBMLfun, sid)
     return prefix + sid
 
 
@@ -137,6 +149,7 @@ def _f_reaction(sid, prefix="R_"):
 
 def _f_reaction_rev(sid, prefix="R_"):
     """Adds reaction prefix to id."""
+    sid = patternTOSBML.sub(_toSBMLfun, sid)
     return prefix + sid
 
 
@@ -480,6 +493,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                 gpr = gpr.replace(")", ";")
                 gpr = gpr.replace("or", ";")
                 gpr = gpr.replace("and", ";")
+                # gpr = gpr.replace('; ;', ';').replace(';;', ';')
                 gids = [t.strip() for t in gpr.split(';')]
 
                 # create missing genes
