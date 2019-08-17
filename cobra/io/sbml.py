@@ -96,6 +96,13 @@ UNITS_FLUX = ("mmol_per_gDW_per_hr",
 # -----------------------------------------------------------------------------
 SBML_DOT = "__SBML_DOT__"
 
+# -----------------------------------------------------------------------------
+# Precompiled note pattern
+# -----------------------------------------------------------------------------
+patternNOTES = re.compile(
+    r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<header>\w+\s*\w*)\s*:\s*(?P<content>.*?)</(?P=prefix)p>",
+    re.IGNORECASE
+)
 
 def _clip(sid, prefix):
     """Clips a prefix from the beginning of a string if it exists."""
@@ -1237,12 +1244,8 @@ def _parse_notes_dict(sbase):
     """
     notes = sbase.getNotesString()
     if notes and len(notes) > 0:
-        pattern = re.compile(
-            r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<header>\w+\s*\w*)\s*:\s*(?P<content>.*?)</(?P=prefix)p>",
-            re.IGNORECASE
-        )
         d = dict()
-        for match in pattern.finditer(notes):
+        for match in patternNOTES.finditer(notes):
             k = match.group("header")
             v = match.group("content")
             d[k.strip()] = v.strip()
