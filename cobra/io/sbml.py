@@ -100,8 +100,8 @@ SBML_DOT = "__SBML_DOT__"
 # Precompiled note pattern
 # -----------------------------------------------------------------------------
 patternNOTES = re.compile(
-    r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<header>\w+\s*\w*)\s*:\s*(?P<content>.*?)</(?P=prefix)p>",
-    re.IGNORECASE
+    r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<content>.*?)</(?P=prefix)p>",
+    re. IGNORECASE
 )
 
 def _clip(sid, prefix):
@@ -1244,12 +1244,15 @@ def _parse_notes_dict(sbase):
     """
     notes = sbase.getNotesString()
     if notes and len(notes) > 0:
-        d = dict()
+        notes_store = dict()
         for match in patternNOTES.finditer(notes):
-            k = match.group("header")
-            v = match.group("content")
-            d[k.strip()] = v.strip()
-        return {k: v for k, v in d.items() if len(v) > 0}
+            try:
+                key, value = match.group("content").split(":", maxsplit=1)
+            except ValueError:
+                LOGGER.debug("Unexpected content format '{}'.", match.group("content"))
+                continue
+            notes_store[key.strip()] = value.strip()
+        return {k: v for k, v in notes_store.items() if len(v) > 0}
     else:
         return {}
 
