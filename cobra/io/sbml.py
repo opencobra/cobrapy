@@ -104,14 +104,20 @@ patternNOTES = re.compile(
     re. IGNORECASE
 )
 
-patternTOSBML = re.compile(
-    r'([^0-9_a-zA-Z])'
-)
+patternTOSBML = re.compile(r'([^0-9_a-zA-Z])' )
+
+
+patternFROMSBML = re.compile(r'__(\d+)__')
 
 
 def _toSBMLfun(nonASCII):
-    """converts a non ascii character to a string representation of its ascii number"""
+    """converts a non alphanumeric character to a string representation of its ascii number"""
     return '__' + str(ord(nonASCII.group())) + '__'
+
+
+def _fromSBMLfun(numberStr):
+    """converts an ascii number to a character """
+    return chr(int(numberStr.group(1)))
 
 
 def _clip(sid, prefix):
@@ -122,6 +128,7 @@ def _clip(sid, prefix):
 def _f_gene(sid, prefix="G_"):
     """Clips gene prefix from id."""
     sid = sid.replace(SBML_DOT, ".")
+    sid = patternFROMSBML.sub(_fromSBMLfun, sid)
     return _clip(sid, prefix)
 
 
@@ -133,6 +140,7 @@ def _f_gene_rev(sid, prefix="G_"):
 
 def _f_specie(sid, prefix="M_"):
     """Clips specie/metabolite prefix from id."""
+    sid = patternFROMSBML.sub(_fromSBMLfun, sid)
     return _clip(sid, prefix)
 
 
@@ -144,6 +152,7 @@ def _f_specie_rev(sid, prefix="M_"):
 
 def _f_reaction(sid, prefix="R_"):
     """Clips reaction prefix from id."""
+    sid = patternFROMSBML.sub(_fromSBMLfun, sid)
     return _clip(sid, prefix)
 
 
@@ -493,8 +502,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                 gpr = gpr.replace(")", ";")
                 gpr = gpr.replace("or", ";")
                 gpr = gpr.replace("and", ";")
-                # gpr = gpr.replace('; ;', ';').replace(';;', ';')
-                gids = [t.strip() for t in gpr.split(';')]
+                # Interaction of the above replacements can lead to multiple ;, which results in empty gids
+                gids = set([t.strip() for t in gpr.split(';')]).difference({''})
 
                 # create missing genes
                 for gid in gids:
