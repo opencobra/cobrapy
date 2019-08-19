@@ -45,6 +45,7 @@ import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
+from cobra.core.gene import parse_gpr
 
 
 try:
@@ -660,6 +661,14 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                     gpr = " ".join(
                         f_replace[F_GENE](t) for t in gpr.split(' ')
                     )
+
+        # remove outside parenthesis, if any
+        if gpr.startswith("(") and gpr.endswith(")"):
+            try:
+                parse_gpr(gpr[1:-1].strip())
+                gpr = gpr[1:-1].strip()
+            except (SyntaxError, TypeError) as e:
+                LOGGER.warning("Removing parenthesis from gpr %s leads to an error, so keeping parenthesis")
 
         cobra_reaction.gene_reaction_rule = gpr
 
