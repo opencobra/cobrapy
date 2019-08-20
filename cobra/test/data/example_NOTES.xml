@@ -1,0 +1,323 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" level="2" metaid="_25744563-98dd-46d8-b6f9-cf2d22b4e778" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:dc="http://purl.org/dc/elements/1.1/" version="4">
+  <model id="exampleNOTES" name="A subsample of Recon 2.2 which includes NOTES and other propepties to test" metaid="example_based_on_recon2_2">
+    <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+	</rdf:RDF>
+	</annotation>
+      <listOfUnitDefinitions>
+      <unitDefinition id="flux_unit" metaid="a857c55e-e2df-4616-bcb1-e62b48f4c3ce">
+        <listOfUnits>
+          <unit metaid="_2baa8964-aaf5-4ee6-9523-009c2c8fba37" kind="mole"/>
+          <unit exponent="-1" metaid="_97f06357-aa07-4c4d-848f-bad481f0f2b8" kind="second"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment id="c" name="cytoplasm" metaid="meta_c" sboTerm="SBO:0000290" size="1">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+	<rdf:Description rdf:about="#meta_c">
+	<bqbiol:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005737"/>
+	</rdf:Bag>
+	</bqbiol:is>
+	</rdf:Description>
+	</rdf:RDF>
+	</annotation>
+            </compartment>
+      <compartment id="e" name="extracellular space" metaid="meta_e" sboTerm="SBO:0000290" size="1">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+	<rdf:Description rdf:about="#meta_e">
+	<bqbiol:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005615"/>
+	</rdf:Bag>
+	</bqbiol:is>
+	</rdf:Description>
+	</rdf:RDF>
+	</annotation>
+            </compartment>
+      <compartment id="g" name="Golgi apparatus" metaid="meta_g" sboTerm="SBO:0000290" size="1">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+	<rdf:Description rdf:about="#meta_g">
+	<bqbiol:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005794"/>
+	</rdf:Bag>
+	</bqbiol:is>
+	</rdf:Description>
+	</rdf:RDF>
+	</annotation>
+            </compartment>
+      <compartment id="l" name="lysosome" metaid="meta_l" sboTerm="SBO:0000290" size="1">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+	<rdf:Description rdf:about="#meta_l">
+	<bqbiol:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005764"/>
+	</rdf:Bag>
+	</bqbiol:is>
+	</rdf:Description>
+	</rdf:RDF>
+	</annotation>
+            </compartment>
+      <compartment id="m" name="mitochondrion" metaid="meta_m" sboTerm="SBO:0000290" size="1">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+	<rdf:Description rdf:about="#meta_m">
+	<bqbiol:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005739"/>
+	</rdf:Bag>
+	</bqbiol:is>
+	</rdf:Description>
+	</rdf:RDF>
+	</annotation>
+            </compartment>
+      <compartment id="n" name="nucleus" metaid="meta_n" sboTerm="SBO:0000290" size="1">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+	<rdf:Description rdf:about="#meta_n">
+	<bqbiol:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005634"/>
+	</rdf:Bag>
+	</bqbiol:is>
+	</rdf:Description>
+	</rdf:RDF>
+	</annotation>
+            </compartment>
+      <compartment id="r" name="endoplasmic reticulum" metaid="meta_r" sboTerm="SBO:0000290" size="1">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+	<rdf:Description rdf:about="#meta_r">
+	<bqbiol:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005783"/>
+	</rdf:Bag>
+	</bqbiol:is>
+	</rdf:Description>
+	</rdf:RDF>
+	</annotation>
+            </compartment>
+      <compartment id="x" name="peroxisome" metaid="meta_x" sboTerm="SBO:0000290" size="1">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+	<rdf:Description rdf:about="#meta_x">
+	<bqbiol:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005777"/>
+	</rdf:Bag>
+	</bqbiol:is>
+	</rdf:Description>
+	</rdf:RDF>
+	</annotation>
+            </compartment>
+      <compartment id="b" name="boundary" metaid="ae4b1a5b-d773-4829-a154-e5517204c26c" sboTerm="SBO:0000290" size="1"/>
+      <compartment id="i" name="mitochondrial intermembrane space" metaid="meta_i" sboTerm="SBO:0000290" size="1">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+	<rdf:Description rdf:about="#meta_i">
+	<bqbiol:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005758"/>
+	</rdf:Bag>
+	</bqbiol:is>
+	</rdf:Description>
+	</rdf:RDF>
+	</annotation>
+            </compartment>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="M_2hb_e" initialConcentration="0" charge="-1" name="2-hydroxybutyric acid" metaid="meta_M_2hb_e" sboTerm="SBO:0000247" compartment="e">
+        <notes>
+               <html:body xmlns:html="http://www.w3.org/1999/xhtml">
+                  <html:p>CHARGE: -1</html:p>
+                  <html:p>FORMULA: C4H7O3</html:p>
+                  <html:p>SMILES: CCC(O)C(O)=O</html:p>
+               </html:body>
+            </notes>
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+	<rdf:Description rdf:about="#meta_M_2hb_e">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/inchi/InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3,(H,6,7)"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:1148"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species id="M_nad_e" initialConcentration="0" charge="-1" name="NAD(1-)" metaid="meta_M_nad_e" sboTerm="SBO:0000247" compartment="e">
+        <notes>
+               <html:body xmlns:html="http://www.w3.org/1999/xhtml">
+                  <html:p>CHARGE: -1</html:p>
+                  <html:p>FORMULA: C21H26N7O14P2</html:p>
+                  <html:p>SMILES: NC(=O)c1ccc[n+](c1)[C@@H]1O[C@H](COP([O-])(=O)OP([O-])(=O)OC[C@H]2O[C@H]([C@H](O)[C@@H]2O)n2cnc3c(N)ncnc23)[C@@H](O)[C@H]1O</html:p>
+               </html:body>
+            </notes>
+        <annotation>
+	  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+	    <rdf:Description rdf:about="#meta_M_nad_e">
+              <bqbiol:is>
+		<rdf:Bag>
+		  <rdf:li rdf:resource="http://identifiers.org/inchi/InChI=1S/C21H27N7O14P2/c22-17-12-19(25-7-24-17)28(8-26-12)21-16(32)14(30)11(41-21)6-39-44(36,37)42-43(34,35)38-5-10-13(29)15(31)20(40-10)27-3-1-2-9(4-27)18(23)33/h1-4,7-8,10-11,13-16,20-21,29-32H,5-6H2,(H5-,22,23,24,25,33,34,35,36,37)/p-1/t10-,11-,13-,14-,15-,16-,20-,21-/m1/s1"/>
+		  </rdf:Bag>
+		</bqbiol:is>
+	      
+	      <bqbiol:is>
+		<rdf:Bag>
+		  <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:57540"/>
+		  </rdf:Bag>
+		</bqbiol:is>
+	      </rdf:Description>
+	    </rdf:RDF>
+	  </annotation>
+            </species>
+      <species id="M_h_e" initialConcentration="0" charge="1" name="proton" metaid="meta_M_h_e" sboTerm="SBO:0000247" compartment="e">
+        <notes>
+               <html:body xmlns:html="http://www.w3.org/1999/xhtml">
+                  <html:p>CHARGE: 1</html:p>
+                  <html:p>FORMULA: H</html:p>
+                  <html:p>SMILES: [1H+]</html:p>
+               </html:body>
+            </notes>
+        <annotation>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+        <rdf:Description rdf:about="#meta_M_h_e">
+              <bqbiol:is>
+        <rdf:Bag>
+        <rdf:li rdf:resource="http://identifiers.org/inchi/InChI=1S/p+1/i/hH"/>
+        </rdf:Bag>
+        </bqbiol:is>
+
+        <bqbiol:is>
+        <rdf:Bag>
+        <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:24636"/>
+        </rdf:Bag>
+        </bqbiol:is>
+        </rdf:Description>
+        </rdf:RDF>
+        </annotation>
+            </species>
+      <species id="M_2obut_e" initialConcentration="0" charge="-1" name="2-oxobutanoate" metaid="meta_M_2obut_e" sboTerm="SBO:0000247" compartment="e">
+        <notes>
+               <html:body xmlns:html="http://www.w3.org/1999/xhtml">
+                  <html:p>CHARGE: -1</html:p>
+                  <html:p>FORMULA: C4H5O3</html:p>
+                  <html:p>SMILES: CCC(=O)C([O-])=O</html:p>
+               </html:body>
+            </notes>
+        <annotation>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+        <rdf:Description rdf:about="#meta_M_2obut_e">
+              <bqbiol:is>
+        <rdf:Bag>
+        <rdf:li rdf:resource="http://identifiers.org/inchi/InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6,7)/p-1"/>
+        </rdf:Bag>
+        </bqbiol:is>
+
+        <bqbiol:is>
+        <rdf:Bag>
+        <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:16763"/>
+        </rdf:Bag>
+        </bqbiol:is>
+        </rdf:Description>
+        </rdf:RDF>
+        </annotation>
+            </species>
+      <species id="M_nadh_e" initialConcentration="0" charge="-2" name="NADH(2-)" metaid="meta_M_nadh_e" sboTerm="SBO:0000247" compartment="e">
+        <notes>
+               <html:body xmlns:html="http://www.w3.org/1999/xhtml">
+                  <html:p>CHARGE: -2</html:p>
+                  <html:p>FORMULA: C21H27N7O14P2</html:p>
+                  <html:p>SMILES: NC(=O)C1=CN(C=CC1)[C@@H]1O[C@H](COP([O-])(=O)OP([O-])(=O)OC[C@H]2O[C@H]([C@H](O)[C@@H]2O)n2cnc3c(N)ncnc23)[C@@H](O)[C@H]1O</html:p>
+               </html:body>
+            </notes>
+        <annotation>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+        <rdf:Description rdf:about="#meta_M_nadh_e">
+              <bqbiol:is>
+        <rdf:Bag>
+        <rdf:li rdf:resource="http://identifiers.org/inchi/InChI=1S/C21H29N7O14P2/c22-17-12-19(25-7-24-17)28(8-26-12)21-16(32)14(30)11(41-21)6-39-44(36,37)42-43(34,35)38-5-10-13(29)15(31)20(40-10)27-3-1-2-9(4-27)18(23)33/h1,3-4,7-8,10-11,13-16,20-21,29-32H,2,5-6H2,(H2,23,33)(H,34,35)(H,36,37)(H2,22,24,25)/p-2/t10-,11-,13-,14-,15-,16-,20-,21-/m1/s1"/>
+        </rdf:Bag>
+        </bqbiol:is>
+
+        <bqbiol:is>
+        <rdf:Bag>
+        <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:57945"/>
+        </rdf:Bag>
+        </bqbiol:is>
+        </rdf:Description>
+       </rdf:RDF>
+        </annotation>
+            </species>
+    </listOfSpecies>
+    <listOfReactions>
+      <reaction id="R_2HBO" name="2-Hydroxybutyrate:NAD+ oxidoreductase" metaid="meta_R_2HBO" reversible="true" sboTerm="SBO:0000176">
+        <notes>
+               <html:body xmlns:html="http://www.w3.org/1999/xhtml">
+                  <html:p>CONFIDENCE_LEVEL: 4</html:p>
+                  <html:p>GENE_ASSOCIATION: (HGNC:8546 and HGNC:8548) or (HGNC:8547 and HGNC:8548)</html:p>
+                  <html:p>NOTES: NCD</html:p>
+                  <html:p>SUBSYSTEM: Propanoate metabolism</html:p>
+               </html:body>
+            </notes>
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+	<rdf:Description rdf:about="#meta_R_2HBO">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/ec-code/1.1.1.27"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	<bqbiol:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/10108"/>
+	</rdf:Bag>
+	</bqbiol:isDescribedBy>	
+	<bqbiol:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/21765"/>
+	</rdf:Bag>
+	</bqbiol:isDescribedBy>
+	</rdf:Description>
+	</rdf:RDF>
+	</annotation>
+              <listOfReactants>
+          <speciesReference species="M_2hb_e" metaid="df8cc061-4ea8-4165-bb2a-21a1c47a32d8"/>
+          <speciesReference species="M_nad_e" metaid="_657fd9b3-8bbd-4771-a368-b381a417eb7f"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_h_e" metaid="_98fb505e-0b0f-4744-8874-c6b895f6e7c8"/>
+          <speciesReference species="M_2obut_e" metaid="b07e95a0-dcd8-4e0b-93bc-f962f518e18d"/>
+          <speciesReference species="M_nadh_e" metaid="_794e9ab6-242f-406f-8a6a-b171a0fd0db7"/>
+        </listOfProducts>
+        <kineticLaw metaid="_2825f39b-0b65-41d5-9aee-e602a75699da">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <ci> FLUX_VALUE </ci>
+          </math>
+                  <listOfParameters>
+            <parameter id="LOWER_BOUND" metaid="_2749e35e-ea61-48b4-ac98-60c03749fb06" value="-INF" units="flux_unit"/>
+            <parameter id="UPPER_BOUND" metaid="_51159da1-71e5-4eff-97de-c239d7ffcb24" value="INF" units="flux_unit"/>
+            <parameter id="FLUX_VALUE" metaid="_60dda88a-887c-4f09-a629-572e917afe02" value="0" units="flux_unit"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" metaid="e643779a-3ec3-4af7-b78c-bef6c6776148" value="0" units="dimensionless"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>
