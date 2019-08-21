@@ -163,12 +163,26 @@ def _f_reaction_rev(sid, prefix="R_"):
     return prefix + sid
 
 
+def _f_group(sid, prefix="G_"):
+    """Clips group prefix from id."""
+    sid = patternFROMSBML.sub(_fromSBMLfun, sid)
+    return _clip(sid, prefix)
+
+
+def _f_group_rev(sid, prefix="G_"):
+    """Adds group prefix to id."""
+    sid = patternTOSBML.sub(_toSBMLfun, sid)
+    return prefix + sid
+
+
 F_GENE = "F_GENE"
 F_GENE_REV = "F_GENE_REV"
 F_SPECIE = "F_SPECIE"
 F_SPECIE_REV = "F_SPECIE_REV"
 F_REACTION = "F_REACTION"
 F_REACTION_REV = "F_REACTION_REV"
+F_GROUP = "F_GROUP"
+F_GROUP_REV = "F_GROUP_REV"
 
 F_REPLACE = {
     F_GENE: _f_gene,
@@ -177,6 +191,8 @@ F_REPLACE = {
     F_SPECIE_REV: _f_specie_rev,
     F_REACTION: _f_reaction,
     F_REACTION_REV: _f_reaction_rev,
+    F_GROUP: _f_group,
+    F_GROUP_REV: _f_group_rev,
 }
 
 
@@ -761,6 +777,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         # create groups
         for group in model_groups.getListOfGroups():  # type: libsbml.Group
             gid = _check_required(group, group.getIdAttribute(), "id")
+            if f_replace and F_GROUP in f_replace:
+                gid = f_replace[F_GROUP](gid)
             cobra_group = Group(gid)
             cobra_group.name = group.getName()
             if group.isSetKind():
@@ -814,6 +832,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                     groups_dict[g_name] = [cobra_reaction]
 
         for gid, cobra_members in groups_dict.items():
+            if f_replace and F_GROUP in f_replace:
+                gid = f_replace[F_GROUP](gid)
             cobra_group = Group(gid, name=gid, kind="collection")
             cobra_group.add_members(cobra_members)
             groups.append(cobra_group)
@@ -1117,7 +1137,11 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         model_group = model.getPlugin("groups")  # noqa: E501 type: libsbml.GroupsModelPlugin
         for cobra_group in cobra_model.groups:
             group = model_group.createGroup()  # type: libsbml.Group
-            group.setId(cobra_group.id)
+            if f_replace and F_GROUP_REV in f_replace:
+                gid = f_replace[F_GROUP_REV](cobra_group.id)
+            else:
+                gid = cobra_group.id
+            group.setId(gid)
             group.setName(cobra_group.name)
             group.setKind(cobra_group.kind)
 

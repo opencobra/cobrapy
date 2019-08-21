@@ -41,8 +41,6 @@ trials = [IOTrial('fbc2', 'mini.pickle', 'mini_fbc2.xml',
                   read_sbml_model, write_sbml_model, None),
           IOTrial('cobra', None, 'mini_cobra.xml',
                   read_sbml_model, write_sbml_model, None),
-          IOTrial('exmpleNotes', None, 'example_NOTES.xml',
-                  read_sbml_model, write_sbml_model, None),
           ]
 trial_names = [node.name for node in trials]
 
