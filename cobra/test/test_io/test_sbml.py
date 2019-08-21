@@ -41,6 +41,8 @@ trials = [IOTrial('fbc2', 'mini.pickle', 'mini_fbc2.xml',
                   read_sbml_model, write_sbml_model, None),
           IOTrial('cobra', None, 'mini_cobra.xml',
                   read_sbml_model, write_sbml_model, None),
+          IOTrial('exmpleNotes', None, 'example_NOTES.xml',
+                  read_sbml_model, write_sbml_model, None),
           ]
 trial_names = [node.name for node in trials]
 
@@ -88,8 +90,9 @@ class TestCobraIO:
         # ensure they have the same solution max
         solution1 = model1.optimize()
         solution2 = model2.optimize()
-        assert abs(solution1.objective_value -
-                   solution2.objective_value) < 0.001
+        assert (solution1.status == 'infeasible' and solution2.status == 'infeasible') or abs(
+            solution1.objective_value -
+            solution2.objective_value) < 0.001
         # ensure the references are correct
         assert model2.metabolites[0]._model is model2
         assert model2.reactions[0]._model is model2
@@ -394,7 +397,7 @@ def test_smbl_with_NOTES(data_directory, tmp_path):
     sbml_path = join(data_directory, "example_NOTES.xml")
     model = read_sbml_model(sbml_path)
     assert model.metabolites is not None
-    metaboliteNoteValues = {
+    metNoteValues = {
         '2hb_e': {'CHARGE': '-1', 'FORMULA': 'C4H7O3', 'SMILES': 'CCC(O)C(O)=O'},
         'nad_e': {'CHARGE': '-1', 'FORMULA': 'C21H26N7O14P2',
                   'SMILES': 'NC(=O)c1ccc[n+](c1)[C@@H]1O[C@H](COP([O-])(=O)OP([O-])(=O)OC[C@H]2O[C@H]([C@H](O)['
@@ -405,13 +408,13 @@ def test_smbl_with_NOTES(data_directory, tmp_path):
                    'SMILES': 'NC(=O)C1=CN(C=CC1)[C@@H]1O[C@H](COP([O-])(=O)OP([O-])(=O)OC[C@H]2O[C@H]([C@H](O)['
                              'C@@H]2O)n2cnc3c(N)ncnc23)[C@@H](O)[C@H]1O'}
     }
-    metaboliteAnnotationValues = {
+    metAnnotValues = {
         '2hb_e': {'sbo': 'SBO:0000247', 'inchi': 'InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3,(H,6,7)',
                   'chebi': 'CHEBI:1148'},
         'nad_e': {'sbo': 'SBO:0000247',
                   'inchi': 'InChI=1S/C21H27N7O14P2/c22-17-12-19(25-7-24-17)28(8-26-12)21-16(32)14(30)11('
-                           '41-21)6-39-44(3637)42-43(34,35)38-5-10-13(29)15(31)20(40-10)27-3-1-2-9(4-27)18('
-                           '23)33/h1-4,7-8,10-11,13-1620-21,29-32H,5-6H2,(H5-,22,23,24,25,33,34,35,36,37)/p-1/t10-,'
+                           '41-21)6-39-44(36,37)42-43(34,35)38-5-10-13(29)15(31)20(40-10)27-3-1-2-9(4-27)18('
+                           '23)33/h1-4,7-8,10-11,13-16,20-21,29-32H,5-6H2,(H5-,22,23,24,25,33,34,35,36,37)/p-1/t10-,'
                            '11-,13-,14-,15-,16-,20-,21-/m1/s1',
                   'chebi': 'CHEBI:57540'},
         'h_e': {'sbo': 'SBO:0000247', 'inchi': 'InChI=1S/p+1/i/hH', 'chebi': 'CHEBI:24636'},
@@ -424,8 +427,25 @@ def test_smbl_with_NOTES(data_directory, tmp_path):
                             '25)/p-2/t10-,11-,13-,14-,15-,16-,20-,21-/m1/s1',
                    'chebi': 'CHEBI:57945'}
     }
-    for metID in metaboliteNoteValues.keys():
+    rxnNotesValue = {'CONFIDENCE_LEVEL': '4', 'NOTES': 'NCD', 'SUBSYSTEM': 'Propanoate metabolism',
+                     'GENE_ASSOCIATION': '(HGNC:8546 and HGNC:8548) or (HGNC:8547 and HGNC:8548)'}
+    rxnAnnotValue = {'sbo': 'SBO:0000176', 'ec-code': '1.1.1.27', 'pubmed': ['10108', '21765']}
+
+    for metID in metNoteValues.keys():
         assert model.metabolites.has_id(metID)
-        for noteKey in metaboliteNoteValues[metID].keys():
+        for noteKey in metNoteValues[metID].keys():
             assert noteKey in model.metabolites.get_by_id(metID).notes
-            assert metaboliteNoteValues[metID][noteKey] == model.metabolites.get_by_id(metID).notes[noteKey]
+            assert metNoteValues[metID][noteKey] == model.metabolites.get_by_id(metID).notes[noteKey]
+        for annotationKey in metAnnotValues[metID].keys():
+            assert annotationKey in model.metabolites.get_by_id(metID).annotation
+            print(metID)
+            assert metAnnotValues[metID][annotationKey] == model.metabolites.get_by_id(metID).annotation[annotationKey]
+
+    for noteKey in rxnNotesValue.keys():
+        assert noteKey in model.reactions[0].notes.keys()
+        assert rxnNotesValue[noteKey] ==  model.reactions[0].notes[noteKey]
+    assert model.reactions[0].gene_reaction_rule == '(HGNC:8546 and HGNC:8548) or (HGNC:8547 and HGNC:8548)'
+    assert len(model.groups) == 1
+    for annotationKey in rxnAnnotValue.keys():
+        assert annotationKey in model.reactions[0].annotation.keys()
+        assert rxnAnnotValue[annotationKey] == model.reactions[0].annotation[annotationKey]
