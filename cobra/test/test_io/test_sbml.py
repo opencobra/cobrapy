@@ -413,7 +413,8 @@ def test_smbl_with_notes(data_directory, tmp_path):
     }
     metabolite_annotations = {
         '2hb_e': {'sbo': 'SBO:0000247',
-                  'inchi': 'InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3,(H,6,7)',
+                  'inchi': 'InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3,'
+                           '(H,6,7)',
                   'chebi': 'CHEBI:1148'},
         'nad_e': {'sbo': 'SBO:0000247',
                   'inchi': 'InChI=1S/C21H27N7O14P2/c22-17-12-19('
@@ -458,7 +459,8 @@ def test_smbl_with_notes(data_directory, tmp_path):
                 met_id).annotation
             print(met_id)
             assert metabolite_annotations[met_id][annotation_key] == \
-                   model.metabolites.get_by_id(met_id).annotation[annotation_key]
+                   model.metabolites.get_by_id(met_id).annotation[
+                       annotation_key]
 
     for note_key in reaction_notes.keys():
         assert note_key in model.reactions[0].notes.keys()

@@ -530,7 +530,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                 gpr = gpr.replace("and", ";")
                 # Interaction of the above replacements can lead to multiple
                 # ;, which results in empty gids
-                gids = set([t.strip() for t in gpr.split(';')]).difference({''})
+                gids = [t.strip() for t in gpr.split(';')]
+                gids = gids.difference({''})
 
                 # create missing genes
                 for gid in gids:
@@ -934,7 +935,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
     sbml_ns = libsbml.SBMLNamespaces(3, 1)  # SBML L3V1
     sbml_ns.addPackageNamespace("fbc", 2)  # fbc-v2
 
-    doc = libsbml.SBMLDocument(sbml_ns)  # noqa: E501 type: libsbml.SBMLDocument
+    doc = libsbml.SBMLDocument(sbml_ns)  # type: libsbml.SBMLDocument
     doc.setPackageRequired("fbc", False)
     doc.setSBOTerm(SBO_FBA_FRAMEWORK)
 
@@ -972,7 +973,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
         if "creators" in meta:
             for cobra_creator in meta["creators"]:
-                creator = libsbml.ModelCreator()  # noqa: E501 type: libsbml.ModelCreator
+                # noqa: E501 type: libsbml.ModelCreator
+                creator = libsbml.ModelCreator()
                 if cobra_creator.get("familyName", None):
                     creator.setFamilyName(cobra_creator["familyName"])
                 if cobra_creator.get("givenName", None):
@@ -991,7 +993,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
     # Units
     if units:
-        flux_udef = model.createUnitDefinition()  # type: libsbml.UnitDefinition
+        flux_udef = model.createUnitDefinition() # type: libsbml.UnitDefinition
         flux_udef.setId(UNITS_FLUX[0])
         for u in UNITS_FLUX[1]:
             unit = flux_udef.createUnit()  # type: libsbml.Unit
@@ -1090,7 +1092,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         _sbase_notes_dict(reaction, cobra_reaction.notes)
 
         # stoichiometry
-        for metabolite, stoichiometry in iteritems(cobra_reaction._metabolites):
+        for metabolite, stoichiometry in iteritems(
+                cobra_reaction._metabolites):
             sid = metabolite.id
             if f_replace and F_SPECIE_REV in f_replace:
                 sid = f_replace[F_SPECIE_REV](sid)
@@ -1379,7 +1382,8 @@ https://co.mbine.org/standards/qualifiers
 In the current stage the new annotation format is not completely supported yet.
 """
 
-URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")
+URL_IDENTIFIERS_PATTERN = re.compile(
+    r"^https?://identifiers.org/(.+?)[:/](.+)")
 
 URL_IDENTIFIERS_PREFIX = "https://identifiers.org"
 QUALIFIER_TYPES = {
