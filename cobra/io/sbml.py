@@ -71,7 +71,6 @@ ZERO_BOUND_ID = "cobra_0_bound"
 BOUND_MINUS_INF = "minus_inf"
 BOUND_PLUS_INF = "plus_inf"
 
-
 SBO_FBA_FRAMEWORK = "SBO:0000624"
 SBO_DEFAULT_FLUX_BOUND = "SBO:0000626"
 SBO_FLUX_BOUND = "SBO:0000625"
@@ -99,23 +98,23 @@ SBML_DOT = "__SBML_DOT__"
 # -----------------------------------------------------------------------------
 # Precompiled note pattern
 # -----------------------------------------------------------------------------
-patternNOTES = re.compile(
+pattern_notes = re.compile(
     r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<content>.*?)</(?P=prefix)p>",
-    re. IGNORECASE
+    re.IGNORECASE
 )
 
-patternTOSBML = re.compile(r'([^0-9_a-zA-Z])' )
+pattern_to_sbml = re.compile(r'([^0-9_a-zA-Z])')
+
+pattern_from_sbml = re.compile(r'__(\d+)__')
 
 
-patternFROMSBML = re.compile(r'__(\d+)__')
-
-
-def _toSBMLfun(nonASCII):
-    """converts a non alphanumeric character to a string representation of its ascii number"""
+def _escape_non_alphanum(nonASCII):
+    """converts a non alphanumeric character to a string representation of
+    its ascii number """
     return '__' + str(ord(nonASCII.group())) + '__'
 
 
-def _fromSBMLfun(numberStr):
+def _number_to_chr(numberStr):
     """converts an ascii number to a character """
     return chr(int(numberStr.group(1)))
 
@@ -128,49 +127,49 @@ def _clip(sid, prefix):
 def _f_gene(sid, prefix="G_"):
     """Clips gene prefix from id."""
     sid = sid.replace(SBML_DOT, ".")
-    sid = patternFROMSBML.sub(_fromSBMLfun, sid)
+    sid = pattern_from_sbml.sub(_number_to_chr, sid)
     return _clip(sid, prefix)
 
 
 def _f_gene_rev(sid, prefix="G_"):
     """Adds gene prefix to id."""
-    sid = patternTOSBML.sub(_toSBMLfun, sid)
+    sid = pattern_to_sbml.sub(_escape_non_alphanum, sid)
     return prefix + sid.replace(".", SBML_DOT)
 
 
 def _f_specie(sid, prefix="M_"):
     """Clips specie/metabolite prefix from id."""
-    sid = patternFROMSBML.sub(_fromSBMLfun, sid)
+    sid = pattern_from_sbml.sub(_number_to_chr, sid)
     return _clip(sid, prefix)
 
 
 def _f_specie_rev(sid, prefix="M_"):
     """Adds specie/metabolite prefix to id."""
-    sid = patternTOSBML.sub(_toSBMLfun, sid)
+    sid = pattern_to_sbml.sub(_escape_non_alphanum, sid)
     return prefix + sid
 
 
 def _f_reaction(sid, prefix="R_"):
     """Clips reaction prefix from id."""
-    sid = patternFROMSBML.sub(_fromSBMLfun, sid)
+    sid = pattern_from_sbml.sub(_number_to_chr, sid)
     return _clip(sid, prefix)
 
 
 def _f_reaction_rev(sid, prefix="R_"):
     """Adds reaction prefix to id."""
-    sid = patternTOSBML.sub(_toSBMLfun, sid)
+    sid = pattern_to_sbml.sub(_escape_non_alphanum, sid)
     return prefix + sid
 
 
 def _f_group(sid, prefix="G_"):
     """Clips group prefix from id."""
-    sid = patternFROMSBML.sub(_fromSBMLfun, sid)
+    sid = pattern_from_sbml.sub(_number_to_chr, sid)
     return _clip(sid, prefix)
 
 
 def _f_group_rev(sid, prefix="G_"):
     """Adds group prefix to id."""
-    sid = patternTOSBML.sub(_toSBMLfun, sid)
+    sid = pattern_to_sbml.sub(_escape_non_alphanum, sid)
     return prefix + sid
 
 
@@ -283,10 +282,12 @@ def _get_doc_from_filename(filename):
         if ("win" in platform) and (len(filename) < 260) \
                 and os.path.exists(filename):
             # path (win)
-            doc = libsbml.readSBMLFromFile(filename)  # noqa: E501 type: libsbml.SBMLDocument
+            doc = libsbml.readSBMLFromFile(
+                filename)  # noqa: E501 type: libsbml.SBMLDocument
         elif ("win" not in platform) and os.path.exists(filename):
             # path other
-            doc = libsbml.readSBMLFromFile(filename)  # noqa: E501 type: libsbml.SBMLDocument
+            doc = libsbml.readSBMLFromFile(
+                filename)  # noqa: E501 type: libsbml.SBMLDocument
         else:
             # string representation
             if "<sbml" not in filename:
@@ -295,11 +296,13 @@ def _get_doc_from_filename(filename):
                               "an existing SBML file or a valid SBML string "
                               "representation: \n%s", filename)
 
-            doc = libsbml.readSBMLFromString(filename)  # noqa: E501 type: libsbml.SBMLDocument
+            doc = libsbml.readSBMLFromString(
+                filename)  # noqa: E501 type: libsbml.SBMLDocument
 
     elif hasattr(filename, "read"):
         # file handle
-        doc = libsbml.readSBMLFromString(filename.read())  # noqa: E501 type: libsbml.SBMLDocument
+        doc = libsbml.readSBMLFromString(
+            filename.read())  # noqa: E501 type: libsbml.SBMLDocument
     else:
         raise CobraSBMLError("Input type '%s' for 'filename' is not supported."
                              " Provide a path, SBML str, "
@@ -378,9 +381,13 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
         for c in history.getListCreators():  # type: libsbml.ModelCreator
             creators.append({
-                "familyName": c.getFamilyName() if c.isSetFamilyName() else None,  # noqa: E501
+                "familyName": c.getFamilyName() if c.isSetFamilyName()
+                else None,
+                # noqa: E501
                 "givenName": c.getGivenName() if c.isSetGivenName() else None,
-                "organisation": c.getOrganisation() if c.isSetOrganisation() else None,  # noqa: E501
+                "organisation": c.getOrganisation() if c.isSetOrganisation()
+                else None,
+                # noqa: E501
                 "email": c.getEmail() if c.isSetEmail() else None,
             })
 
@@ -411,7 +418,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     # Compartments
     # FIXME: update with new compartments
     compartments = {}
-    for compartment in model.getListOfCompartments():  # noqa: E501 type: libsbml.Compartment
+    # noqa: E501 type: libsbml.Compartment
+    for compartment in model.getListOfCompartments():
         cid = _check_required(compartment, compartment.getIdAttribute(), "id")
         compartments[cid] = compartment.getName()
     cobra_model.compartments = compartments
@@ -490,7 +498,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
     # Genes
     if model_fbc:
-        for gp in model_fbc.getListOfGeneProducts():  # noqa: E501 type: libsbml.GeneProduct
+        # noqa: E501 type: libsbml.GeneProduct
+        for gp in model_fbc.getListOfGeneProducts():
             gid = _check_required(gp, gp.getIdAttribute(), "id")
             if f_replace and F_GENE in f_replace:
                 gid = f_replace[F_GENE](gid)
@@ -503,7 +512,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
             cobra_model.genes.append(cobra_gene)
     else:
-        for cobra_reaction in model.getListOfReactions():  # noqa: E501 type: libsbml.Reaction
+        # noqa: E501 type: libsbml.Reaction
+        for cobra_reaction in model.getListOfReactions():
             # fallback to notes information
             notes = _parse_notes_dict(cobra_reaction)
             if "GENE ASSOCIATION" in notes:
@@ -518,7 +528,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                 gpr = gpr.replace(")", ";")
                 gpr = gpr.replace("or", ";")
                 gpr = gpr.replace("and", ";")
-                # Interaction of the above replacements can lead to multiple ;, which results in empty gids
+                # Interaction of the above replacements can lead to multiple
+                # ;, which results in empty gids
                 gids = set([t.strip() for t in gpr.split(';')]).difference({''})
 
                 # create missing genes
@@ -595,10 +606,12 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         elif reaction.isSetKineticLaw():
             # some legacy models encode bounds in kinetic laws
             klaw = reaction.getKineticLaw()  # type: libsbml.KineticLaw
-            p_lb = klaw.getParameter("LOWER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
+            p_lb = klaw.getParameter(
+                "LOWER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
             if p_lb:
                 cobra_reaction.lower_bound = p_lb.getValue()
-            p_ub = klaw.getParameter("UPPER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
+            p_ub = klaw.getParameter(
+                "UPPER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
             if p_ub:
                 cobra_reaction.upper_bound = p_ub.getValue()
 
@@ -626,7 +639,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
         # parse equation
         stoichiometry = defaultdict(lambda: 0)
-        for sref in reaction.getListOfReactants():  # noqa: E501 type: libsbml.SpeciesReference
+        # noqa: E501 type: libsbml.SpeciesReference
+        for sref in reaction.getListOfReactants():
             sid = _check_required(sref, sref.getSpecies(), "species")
 
             if f_replace and F_SPECIE in f_replace:
@@ -635,7 +649,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                 _check_required(sref, sref.getStoichiometry(),
                                 "stoichiometry"))
 
-        for sref in reaction.getListOfProducts():  # noqa: E501 type: libsbml.SpeciesReference
+        # noqa: E501 type: libsbml.SpeciesReference
+        for sref in reaction.getListOfProducts():
             sid = _check_required(sref, sref.getSpecies(), "species")
 
             if f_replace and F_SPECIE in f_replace:
@@ -654,9 +669,11 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         # GPR
         if r_fbc:
             gpr = ''
-            gpa = r_fbc.getGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
+            # noqa: E501 type: libsbml.GeneProductAssociation
+            gpa = r_fbc.getGeneProductAssociation()
             if gpa is not None:
-                association = gpa.getAssociation()  # noqa: E501 type: libsbml.FbcAssociation
+                # noqa: E501 type: libsbml.FbcAssociation
+                association = gpa.getAssociation()
                 gpr = process_association(association)
         else:
             # fallback to notes information
@@ -683,7 +700,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                 parse_gpr(gpr[1:-1].strip())
                 gpr = gpr[1:-1].strip()
             except (SyntaxError, TypeError) as e:
-                LOGGER.warning("Removing parenthesis from gpr %s leads to an error, so keeping parenthesis")
+                LOGGER.warning("Removing parenthesis from gpr %s leads to "
+                               "an error, so keeping parenthesis", gpr)
 
         cobra_reaction.gene_reaction_rule = gpr
 
@@ -693,7 +711,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     obj_direction = "max"
     coefficients = {}
     if model_fbc:
-        obj_list = model_fbc.getListOfObjectives()  # noqa: E501 type: libsbml.ListOfObjectives
+        # noqa: E501 type: libsbml.ListOfObjectives
+        obj_list = model_fbc.getListOfObjectives()
         if obj_list is None:
             LOGGER.warning("listOfObjectives element not found")
         elif obj_list.size() == 0:
@@ -705,7 +724,8 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
             obj = model_fbc.getObjective(obj_id)  # type: libsbml.Objective
             obj_direction = LONG_SHORT_DIRECTION[obj.getType()]
 
-            for flux_obj in obj.getListOfFluxObjectives():  # noqa: E501 type: libsbml.FluxObjective
+            # noqa: E501 type: libsbml.FluxObjective
+            for flux_obj in obj.getListOfFluxObjectives():
                 rid = flux_obj.getReaction()
                 if f_replace and F_REACTION in f_replace:
                     rid = f_replace[F_REACTION](rid)
@@ -722,11 +742,11 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                     LOGGER.warning(str(e))
     else:
         # some legacy models encode objective coefficients in kinetic laws
-        for reaction in model.getListOfReactions():  # noqa: E501 type: libsbml.Reaction
+        for reaction in model.getListOfReactions():  # type: libsbml.Reaction
             if reaction.isSetKineticLaw():
                 klaw = reaction.getKineticLaw()  # type: libsbml.KineticLaw
                 p_oc = klaw.getParameter(
-                    "OBJECTIVE_COEFFICIENT")  # noqa: E501 type: libsbml.LocalParameter
+                    "OBJECTIVE_COEFFICIENT")  # type: libsbml.LocalParameter
                 if p_oc:
                     rid = _check_required(reaction,
                                           reaction.getIdAttribute(), "id")
@@ -747,7 +767,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                     LOGGER.warning("Encoding OBJECTIVE_COEFFICIENT in "
                                    "KineticLaw is discouraged, "
                                    "use fbc:fluxObjective "
-                                   "instead: %s", cobra_reaction)
+                                   "instead: %s", reaction)
 
     if len(coefficients) == 0:
         LOGGER.error("No objective coefficients in model. Unclear what should "
@@ -878,8 +898,6 @@ def write_sbml_model(cobra_model, filename, f_replace=F_REPLACE, **kwargs):
         Model instance which is written to SBML
     filename : string
         path to which the model is written
-    use_fbc_package : boolean {True, False}
-        should the fbc package be used
     f_replace: dict of replacement functions for id replacement
     """
     doc = _model_to_sbml(cobra_model, f_replace=f_replace, **kwargs)
@@ -973,7 +991,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
     # Units
     if units:
-        flux_udef = model.createUnitDefinition()  # noqa: E501 type: libsbml.UnitDefinition
+        flux_udef = model.createUnitDefinition()  # type: libsbml.UnitDefinition
         flux_udef.setId(UNITS_FLUX[0])
         for u in UNITS_FLUX[1]:
             unit = flux_udef.createUnit()  # type: libsbml.Unit
@@ -1072,17 +1090,19 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         _sbase_notes_dict(reaction, cobra_reaction.notes)
 
         # stoichiometry
-        for metabolite, stoichiometry in iteritems(cobra_reaction._metabolites):  # noqa: E501
+        for metabolite, stoichiometry in iteritems(cobra_reaction._metabolites):
             sid = metabolite.id
             if f_replace and F_SPECIE_REV in f_replace:
                 sid = f_replace[F_SPECIE_REV](sid)
             if stoichiometry < 0:
-                sref = reaction.createReactant()  # noqa: E501 type: libsbml.SpeciesReference
+                # noqa: E501 type: libsbml.SpeciesReference
+                sref = reaction.createReactant()
                 sref.setSpecies(sid)
                 sref.setStoichiometry(-stoichiometry)
                 sref.setConstant(True)
             else:
-                sref = reaction.createProduct()  # noqa: E501 type: libsbml.SpeciesReference
+                # noqa: E501 type: libsbml.SpeciesReference
+                sref = reaction.createProduct()
                 sref.setSpecies(sid)
                 sref.setStoichiometry(stoichiometry)
                 sref.setConstant(True)
@@ -1115,7 +1135,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             else:
                 gpr_new = gpr
 
-            gpa = r_fbc.createGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
+            # noqa: E501 type: libsbml.GeneProductAssociation
+            gpa = r_fbc.createGeneProductAssociation()
             # uses ids to identify GeneProducts (True),
             # does not create GeneProducts (False)
             _check(gpa.setAssociation(gpr_new, True, False),
@@ -1123,7 +1144,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
         # objective coefficients
         if reaction_coefficients.get(cobra_reaction, 0) != 0:
-            flux_obj = objective.createFluxObjective()  # noqa: E501 type: libsbml.FluxObjective
+            # noqa: E501 type: libsbml.FluxObjective
+            flux_obj = objective.createFluxObjective()
             flux_obj.setReaction(rid)
             flux_obj.setCoefficient(cobra_reaction.objective_coefficient)
 
@@ -1133,7 +1155,8 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             "http://www.sbml.org/sbml/level3/version1/groups/version1",
             "groups", True)
         doc.setPackageRequired("groups", False)
-        model_group = model.getPlugin("groups")  # noqa: E501 type: libsbml.GroupsModelPlugin
+        model_group = model.getPlugin(
+            "groups")  # noqa: E501 type: libsbml.GroupsModelPlugin
         for cobra_group in cobra_model.groups:
             group = model_group.createGroup()  # type: libsbml.Group
             if f_replace and F_GROUP_REV in f_replace:
@@ -1277,8 +1300,10 @@ def _check(value, message):
             return
         else:
             LOGGER.error('Error encountered trying to <' + message + '>.')
-            LOGGER.error('LibSBML error code {}: {}'.format(str(value),
-                         libsbml.OperationReturnValue_toString(value).strip()))
+            LOGGER.error('LibSBML error code {}: {}'.
+                         format(str(value),
+                                libsbml.OperationReturnValue_toString(
+                                    value).strip()))
     else:
         return
 
@@ -1300,11 +1325,12 @@ def _parse_notes_dict(sbase):
     notes = sbase.getNotesString()
     if notes and len(notes) > 0:
         notes_store = dict()
-        for match in patternNOTES.finditer(notes):
+        for match in pattern_notes.finditer(notes):
             try:
                 key, value = match.group("content").split(":", maxsplit=1)
             except ValueError:
-                LOGGER.debug("Unexpected content format '{}'.", match.group("content"))
+                LOGGER.debug("Unexpected content format '{}'.",
+                             match.group("content"))
                 continue
             notes_store[key.strip()] = value.strip()
         return {k: v for k, v in notes_store.items() if len(v) > 0}
@@ -1324,8 +1350,8 @@ def _sbase_notes_dict(sbase, notes):
     """
     if notes and len(notes) > 0:
         tokens = ['<html xmlns = "http://www.w3.org/1999/xhtml" >'] + \
-            ["<p>{}: {}</p>".format(k, v) for (k, v) in notes.items()] + \
-            ["</html>"]
+                 ["<p>{}: {}</p>".format(k, v) for (k, v) in notes.items()] + \
+                 ["</html>"]
         _check(
             sbase.setNotes("\n".join(tokens)),
             "Setting notes on sbase: {}".format(sbase)
@@ -1353,30 +1379,30 @@ https://co.mbine.org/standards/qualifiers
 In the current stage the new annotation format is not completely supported yet.
 """
 
-URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")  # noqa: E501
+URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")
 
 URL_IDENTIFIERS_PREFIX = "https://identifiers.org"
 QUALIFIER_TYPES = {
-     "is": libsbml.BQB_IS,
-     "hasPart": libsbml.BQB_HAS_PART,
-     "isPartOf": libsbml.BQB_IS_PART_OF,
-     "isVersionOf": libsbml.BQB_IS_VERSION_OF,
-     "hasVersion": libsbml.BQB_HAS_VERSION,
-     "isHomologTo": libsbml.BQB_IS_HOMOLOG_TO,
-     "isDescribedBy": libsbml.BQB_IS_DESCRIBED_BY,
-     "isEncodedBy": libsbml.BQB_IS_ENCODED_BY,
-     "encodes": libsbml.BQB_ENCODES,
-     "occursIn": libsbml.BQB_OCCURS_IN,
-     "hasProperty": libsbml.BQB_HAS_PROPERTY,
-     "isPropertyOf": libsbml.BQB_IS_PROPERTY_OF,
-     "hasTaxon": libsbml.BQB_HAS_TAXON,
-     "unknown": libsbml.BQB_UNKNOWN,
-     "bqm_is": libsbml.BQM_IS,
-     "bqm_isDescribedBy": libsbml.BQM_IS_DESCRIBED_BY,
-     "bqm_isDerivedFrom": libsbml.BQM_IS_DERIVED_FROM,
-     "bqm_isInstanceOf": libsbml.BQM_IS_INSTANCE_OF,
-     "bqm_hasInstance": libsbml.BQM_HAS_INSTANCE,
-     "bqm_unknown": libsbml.BQM_UNKNOWN,
+    "is": libsbml.BQB_IS,
+    "hasPart": libsbml.BQB_HAS_PART,
+    "isPartOf": libsbml.BQB_IS_PART_OF,
+    "isVersionOf": libsbml.BQB_IS_VERSION_OF,
+    "hasVersion": libsbml.BQB_HAS_VERSION,
+    "isHomologTo": libsbml.BQB_IS_HOMOLOG_TO,
+    "isDescribedBy": libsbml.BQB_IS_DESCRIBED_BY,
+    "isEncodedBy": libsbml.BQB_IS_ENCODED_BY,
+    "encodes": libsbml.BQB_ENCODES,
+    "occursIn": libsbml.BQB_OCCURS_IN,
+    "hasProperty": libsbml.BQB_HAS_PROPERTY,
+    "isPropertyOf": libsbml.BQB_IS_PROPERTY_OF,
+    "hasTaxon": libsbml.BQB_HAS_TAXON,
+    "unknown": libsbml.BQB_UNKNOWN,
+    "bqm_is": libsbml.BQM_IS,
+    "bqm_isDescribedBy": libsbml.BQM_IS_DESCRIBED_BY,
+    "bqm_isDerivedFrom": libsbml.BQM_IS_DERIVED_FROM,
+    "bqm_isInstanceOf": libsbml.BQM_IS_INSTANCE_OF,
+    "bqm_hasInstance": libsbml.BQM_HAS_INSTANCE,
+    "bqm_unknown": libsbml.BQM_UNKNOWN,
 }
 
 

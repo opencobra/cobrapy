@@ -88,9 +88,10 @@ class TestCobraIO:
         # ensure they have the same solution max
         solution1 = model1.optimize()
         solution2 = model2.optimize()
-        assert (solution1.status == 'infeasible' and solution2.status == 'infeasible') or abs(
-            solution1.objective_value -
-            solution2.objective_value) < 0.001
+        assert (solution1.status == 'infeasible' and
+                solution2.status == 'infeasible') or \
+               abs(solution1.objective_value -
+                   solution2.objective_value) < 0.001
         # ensure the references are correct
         assert model2.metabolites[0]._model is model2
         assert model2.reactions[0]._model is model2
@@ -390,60 +391,84 @@ def test_identifiers_annotation():
         assert data is None
 
 
-def test_smbl_with_NOTES(data_directory, tmp_path):
+def test_smbl_with_notes(data_directory, tmp_path):
     """Test that NOTES in the RECON 2.2 style are written and read correctly"""
-    sbml_path = join(data_directory, "example_NOTES.xml")
+    sbml_path = join(data_directory, "example_notes.xml")
     model = read_sbml_model(sbml_path)
     assert model.metabolites is not None
-    metNoteValues = {
-        '2hb_e': {'CHARGE': '-1', 'FORMULA': 'C4H7O3', 'SMILES': 'CCC(O)C(O)=O'},
+    metabolite_notes = {
+        '2hb_e': {'CHARGE': '-1', 'FORMULA': 'C4H7O3',
+                  'SMILES': 'CCC(O)C(O)=O'},
         'nad_e': {'CHARGE': '-1', 'FORMULA': 'C21H26N7O14P2',
-                  'SMILES': 'NC(=O)c1ccc[n+](c1)[C@@H]1O[C@H](COP([O-])(=O)OP([O-])(=O)OC[C@H]2O[C@H]([C@H](O)['
+                  'SMILES': 'NC(=O)c1ccc[n+](c1)[C@@H]1O[C@H](COP([O-])('
+                            '=O)OP([O-])(=O)OC[C@H]2O[C@H]([C@H](O)[ '
                             'C@@H]2O)n2cnc3c(N)ncnc23)[C@@H](O)[C@H]1O'},
         'h_e': {'CHARGE': '1', 'FORMULA': 'H', 'SMILES': '[1H+]'},
-        '2obut_e': {'CHARGE': '-1', 'FORMULA': 'C4H5O3', 'SMILES': 'CCC(=O)C([O-])=O'},
+        '2obut_e': {'CHARGE': '-1', 'FORMULA': 'C4H5O3',
+                    'SMILES': 'CCC(=O)C([O-])=O'},
         'nadh_e': {'CHARGE': '-2', 'FORMULA': 'C21H27N7O14P2',
-                   'SMILES': 'NC(=O)C1=CN(C=CC1)[C@@H]1O[C@H](COP([O-])(=O)OP([O-])(=O)OC[C@H]2O[C@H]([C@H](O)['
+                   'SMILES': 'NC(=O)C1=CN(C=CC1)[C@@H]1O[C@H](COP([O-])('
+                             '=O)OP([O-])(=O)OC[C@H]2O[C@H]([C@H](O)[ '
                              'C@@H]2O)n2cnc3c(N)ncnc23)[C@@H](O)[C@H]1O'}
     }
-    metAnnotValues = {
-        '2hb_e': {'sbo': 'SBO:0000247', 'inchi': 'InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3,(H,6,7)',
+    metabolite_annotations = {
+        '2hb_e': {'sbo': 'SBO:0000247',
+                  'inchi': 'InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3,(H,6,7)',
                   'chebi': 'CHEBI:1148'},
         'nad_e': {'sbo': 'SBO:0000247',
-                  'inchi': 'InChI=1S/C21H27N7O14P2/c22-17-12-19(25-7-24-17)28(8-26-12)21-16(32)14(30)11('
-                           '41-21)6-39-44(36,37)42-43(34,35)38-5-10-13(29)15(31)20(40-10)27-3-1-2-9(4-27)18('
-                           '23)33/h1-4,7-8,10-11,13-16,20-21,29-32H,5-6H2,(H5-,22,23,24,25,33,34,35,36,37)/p-1/t10-,'
+                  'inchi': 'InChI=1S/C21H27N7O14P2/c22-17-12-19('
+                           '25-7-24-17)28(8-26-12)21-16(32)14(30)11( '
+                           '41-21)6-39-44(36,37)42-43(34,35)38-5-10-13(29)15('
+                           '31)20(40-10)27-3-1-2-9(4-27)18( '
+                           '23)33/h1-4,7-8,10-11,13-16,20-21,29-32H,5-6H2,'
+                           '(H5-,22,23,24,25,33,34,35,36,37)/p-1/t10-, '
                            '11-,13-,14-,15-,16-,20-,21-/m1/s1',
                   'chebi': 'CHEBI:57540'},
-        'h_e': {'sbo': 'SBO:0000247', 'inchi': 'InChI=1S/p+1/i/hH', 'chebi': 'CHEBI:24636'},
-        '2obut_e': {'sbo': 'SBO:0000247', 'inchi': 'InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6,7)/p-1',
+        'h_e': {'sbo': 'SBO:0000247', 'inchi': 'InChI=1S/p+1/i/hH',
+                'chebi': 'CHEBI:24636'},
+        '2obut_e': {'sbo': 'SBO:0000247',
+                    'inchi': 'InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6,'
+                             '7)/p-1',
                     'chebi': 'CHEBI:16763'},
         'nadh_e': {'sbo': 'SBO:0000247',
-                   'inchi': 'InChI=1S/C21H29N7O14P2/c22-17-12-19(25-7-24-17)28(8-26-12)21-16(32)14(30)11('
-                            '41-21)6-39-44(36,37)42-43(34,35)38-5-10-13(29)15(31)20(40-10)27-3-1-2-9(4-27)18('
-                            '23)33/h1,3-4,7-8,10-11,13-16,20-21,29-32H,2,5-6H2,(H2,23,33)(H,34,35)(H,36,37)(H2,22,24,'
+                   'inchi': 'InChI=1S/C21H29N7O14P2/c22-17-12-19('
+                            '25-7-24-17)28(8-26-12)21-16(32)14(30)11( '
+                            '41-21)6-39-44(36,37)42-43(34,35)38-5-10-13('
+                            '29)15(31)20(40-10)27-3-1-2-9(4-27)18( '
+                            '23)33/h1,3-4,7-8,10-11,13-16,20-21,29-32H,2,'
+                            '5-6H2,(H2,23,33)(H,34,35)(H,36,37)(H2,22,24, '
                             '25)/p-2/t10-,11-,13-,14-,15-,16-,20-,21-/m1/s1',
                    'chebi': 'CHEBI:57945'}
     }
-    rxnNotesValue = {'CONFIDENCE_LEVEL': '4', 'NOTES': 'NCD', 'SUBSYSTEM': 'Propanoate metabolism',
-                     'GENE_ASSOCIATION': '(HGNC:8546 and HGNC:8548) or (HGNC:8547 and HGNC:8548)'}
-    rxnAnnotValue = {'sbo': 'SBO:0000176', 'ec-code': '1.1.1.27', 'pubmed': ['10108', '21765']}
+    reaction_notes = {'CONFIDENCE_LEVEL': '4', 'NOTES': 'NCD',
+                      'SUBSYSTEM': 'Propanoate metabolism',
+                      'GENE_ASSOCIATION': '(HGNC:8546 and HGNC:8548) or'
+                                          ' (HGNC:8547 and HGNC:8548)'}
+    reaction_annotations = {'sbo': 'SBO:0000176', 'ec-code': '1.1.1.27',
+                            'pubmed': ['10108', '21765']}
 
-    for metID in metNoteValues.keys():
-        assert model.metabolites.has_id(metID)
-        for noteKey in metNoteValues[metID].keys():
-            assert noteKey in model.metabolites.get_by_id(metID).notes
-            assert metNoteValues[metID][noteKey] == model.metabolites.get_by_id(metID).notes[noteKey]
-        for annotationKey in metAnnotValues[metID].keys():
-            assert annotationKey in model.metabolites.get_by_id(metID).annotation
-            print(metID)
-            assert metAnnotValues[metID][annotationKey] == model.metabolites.get_by_id(metID).annotation[annotationKey]
+    for met_id in metabolite_notes:
+        assert model.metabolites.has_id(met_id)
+        for note_key in metabolite_notes[met_id].keys():
+            assert note_key in model.metabolites.get_by_id(met_id).notes
+            assert metabolite_notes[met_id][note_key] == \
+                   model.metabolites.get_by_id(met_id).notes[note_key]
+        for annotation_key in metabolite_annotations[met_id].keys():
+            assert annotation_key in model.metabolites.get_by_id(
+                met_id).annotation
+            print(met_id)
+            assert metabolite_annotations[met_id][annotation_key] == \
+                   model.metabolites.get_by_id(met_id).annotation[annotation_key]
 
-    for noteKey in rxnNotesValue.keys():
-        assert noteKey in model.reactions[0].notes.keys()
-        assert rxnNotesValue[noteKey] ==  model.reactions[0].notes[noteKey]
-    assert model.reactions[0].gene_reaction_rule == '(HGNC:8546 and HGNC:8548) or (HGNC:8547 and HGNC:8548)'
+    for note_key in reaction_notes.keys():
+        assert note_key in model.reactions[0].notes.keys()
+        assert reaction_notes[note_key] == model.reactions[0].notes[note_key]
+    assert model.reactions[
+               0].gene_reaction_rule == '(HGNC:8546 and HGNC:8548) or ' \
+                                        '(HGNC:8547 and HGNC:8548)'
     assert len(model.groups) == 1
-    for annotationKey in rxnAnnotValue.keys():
-        assert annotationKey in model.reactions[0].annotation.keys()
-        assert rxnAnnotValue[annotationKey] == model.reactions[0].annotation[annotationKey]
+    for annotation_key in reaction_annotations.keys():
+        assert annotation_key in model.reactions[0].annotation.keys()
+        assert reaction_annotations[annotation_key] == \
+               model.reactions[0].annotation[
+                   annotation_key]
