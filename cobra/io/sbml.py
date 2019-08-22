@@ -43,7 +43,6 @@ from six import iteritems, string_types
 
 import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
-from cobra.core.gene import parse_gpr
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
 
@@ -698,7 +697,9 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         # remove outside parenthesis, if any
         if gpr.startswith("(") and gpr.endswith(")"):
             try:
-                parse_gpr(gpr[1:-1].strip())
+                # Not importing parse_gpr because it causes travis 3.5 to
+                # complain about import order and fail
+                cobra.core.gene.parse_gpr(gpr[1:-1].strip())
                 gpr = gpr[1:-1].strip()
             except (SyntaxError, TypeError) as e:
                 LOGGER.warning("Removing parenthesis from gpr %s leads to "
