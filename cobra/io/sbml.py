@@ -43,10 +43,9 @@ from six import iteritems, string_types
 
 import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
+from cobra.core.gene import parse_gpr
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
-from cobra.core.gene import parse_gpr
-
 
 try:
     from cStringIO import StringIO  # Python 2
