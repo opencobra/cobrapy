@@ -17,6 +17,7 @@ import cobra
 from cobra import Model
 from cobra.io import read_sbml_model, validate_sbml_model, write_sbml_model
 
+
 config = cobra.Configuration()  # for default bounds
 
 try:

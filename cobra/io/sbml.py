@@ -46,6 +46,7 @@ from cobra.core import Gene, Group, Metabolite, Model, Reaction
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
 
+
 try:
     from cStringIO import StringIO  # Python 2
 except ImportError:
