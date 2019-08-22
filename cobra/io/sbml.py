@@ -1331,7 +1331,9 @@ def _parse_notes_dict(sbase):
         notes_store = dict()
         for match in pattern_notes.finditer(notes):
             try:
-                key, value = match.group("content").split(":", maxsplit=1)
+                # Python 2.7 does not allow keywords for split.
+                # Python 3 can have (":", maxsplit=1)
+                key, value = match.group("content").split(":", 1)
             except ValueError:
                 LOGGER.debug("Unexpected content format '{}'.",
                              match.group("content"))
