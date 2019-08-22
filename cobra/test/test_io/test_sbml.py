@@ -90,8 +90,8 @@ class TestCobraIO:
         solution2 = model2.optimize()
         assert (solution1.status == 'infeasible' and
                 solution2.status == 'infeasible') or \
-               abs(solution1.objective_value -
-                   solution2.objective_value) < 0.001
+            abs(solution1.objective_value -
+                solution2.objective_value) < 0.001
         # ensure the references are correct
         assert model2.metabolites[0]._model is model2
         assert model2.reactions[0]._model is model2
@@ -453,14 +453,14 @@ def test_smbl_with_notes(data_directory, tmp_path):
         for note_key in metabolite_notes[met_id].keys():
             assert note_key in model.metabolites.get_by_id(met_id).notes
             assert metabolite_notes[met_id][note_key] == \
-                   model.metabolites.get_by_id(met_id).notes[note_key]
+                model.metabolites.get_by_id(met_id).notes[note_key]
         for annotation_key in metabolite_annotations[met_id].keys():
             assert annotation_key in model.metabolites.get_by_id(
                 met_id).annotation
             print(met_id)
             assert metabolite_annotations[met_id][annotation_key] == \
-                   model.metabolites.get_by_id(met_id).annotation[
-                       annotation_key]
+                model.metabolites.get_by_id(
+                    met_id).annotation[annotation_key]
 
     for note_key in reaction_notes.keys():
         assert note_key in model.reactions[0].notes.keys()
@@ -471,6 +471,5 @@ def test_smbl_with_notes(data_directory, tmp_path):
     assert len(model.groups) == 1
     for annotation_key in reaction_annotations.keys():
         assert annotation_key in model.reactions[0].annotation.keys()
-        assert reaction_annotations[annotation_key] == \
-               model.reactions[0].annotation[
-                   annotation_key]
+        assert reaction_annotations[annotation_key] == model.reactions[
+            0].annotation[annotation_key]

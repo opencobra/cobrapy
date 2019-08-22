@@ -531,7 +531,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                 # Interaction of the above replacements can lead to multiple
                 # ;, which results in empty gids
                 gids = [t.strip() for t in gpr.split(';')]
-                gids = gids.difference({''})
+                gids = set(gids).difference({''})
 
                 # create missing genes
                 for gid in gids:
@@ -993,7 +993,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
     # Units
     if units:
-        flux_udef = model.createUnitDefinition() # type: libsbml.UnitDefinition
+        flux_udef = model.createUnitDefinition()  # type:libsbml.UnitDefinition
         flux_udef.setId(UNITS_FLUX[0])
         for u in UNITS_FLUX[1]:
             unit = flux_udef.createUnit()  # type: libsbml.Unit
