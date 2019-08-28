@@ -283,12 +283,10 @@ def _get_doc_from_filename(filename):
         if ("win" in platform) and (len(filename) < 260) \
                 and os.path.exists(filename):
             # path (win)
-            doc = libsbml.readSBMLFromFile(
-                filename)  # noqa: E501 type: libsbml.SBMLDocument
+            doc = libsbml.readSBMLFromFile(filename)  # noqa: E501 type: libsbml.SBMLDocument
         elif ("win" not in platform) and os.path.exists(filename):
             # path other
-            doc = libsbml.readSBMLFromFile(
-                filename)  # noqa: E501 type: libsbml.SBMLDocument
+            doc = libsbml.readSBMLFromFile(filename)  # noqa: E501 type: libsbml.SBMLDocument
         else:
             # string representation
             if "<sbml" not in filename:
@@ -297,13 +295,11 @@ def _get_doc_from_filename(filename):
                               "an existing SBML file or a valid SBML string "
                               "representation: \n%s", filename)
 
-            doc = libsbml.readSBMLFromString(
-                filename)  # noqa: E501 type: libsbml.SBMLDocument
+            doc = libsbml.readSBMLFromString(filename)  # noqa: E501 type: libsbml.SBMLDocument
 
     elif hasattr(filename, "read"):
         # file handle
-        doc = libsbml.readSBMLFromString(
-            filename.read())  # noqa: E501 type: libsbml.SBMLDocument
+        doc = libsbml.readSBMLFromString(filename.read())  # noqa: E501 type: libsbml.SBMLDocument
     else:
         raise CobraSBMLError("Input type '%s' for 'filename' is not supported."
                              " Provide a path, SBML str, "
@@ -384,11 +380,9 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
             creators.append({
                 "familyName": c.getFamilyName() if c.isSetFamilyName()
                 else None,
-                # noqa: E501
                 "givenName": c.getGivenName() if c.isSetGivenName() else None,
                 "organisation": c.getOrganisation() if c.isSetOrganisation()
                 else None,
-                # noqa: E501
                 "email": c.getEmail() if c.isSetEmail() else None,
             })
 
@@ -419,8 +413,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     # Compartments
     # FIXME: update with new compartments
     compartments = {}
-    # noqa: E501 type: libsbml.Compartment
-    for compartment in model.getListOfCompartments():
+    for compartment in model.getListOfCompartments():  # noqa: E501 type: libsbml.Compartment
         cid = _check_required(compartment, compartment.getIdAttribute(), "id")
         compartments[cid] = compartment.getName()
     cobra_model.compartments = compartments
@@ -499,8 +492,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
     # Genes
     if model_fbc:
-        # noqa: E501 type: libsbml.GeneProduct
-        for gp in model_fbc.getListOfGeneProducts():
+        for gp in model_fbc.getListOfGeneProducts():  # noqa: E501 type: libsbml.GeneProduct
             gid = _check_required(gp, gp.getIdAttribute(), "id")
             if f_replace and F_GENE in f_replace:
                 gid = f_replace[F_GENE](gid)
@@ -513,8 +505,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
             cobra_model.genes.append(cobra_gene)
     else:
-        # noqa: E501 type: libsbml.Reaction
-        for cobra_reaction in model.getListOfReactions():
+        for cobra_reaction in model.getListOfReactions():  # noqa: E501 type: libsbml.Reaction
             # fallback to notes information
             notes = _parse_notes_dict(cobra_reaction)
             if "GENE ASSOCIATION" in notes:
@@ -608,12 +599,10 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         elif reaction.isSetKineticLaw():
             # some legacy models encode bounds in kinetic laws
             klaw = reaction.getKineticLaw()  # type: libsbml.KineticLaw
-            p_lb = klaw.getParameter(
-                "LOWER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
+            p_lb = klaw.getParameter("LOWER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
             if p_lb:
                 cobra_reaction.lower_bound = p_lb.getValue()
-            p_ub = klaw.getParameter(
-                "UPPER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
+            p_ub = klaw.getParameter("UPPER_BOUND")  # noqa: E501 type: libsbml.LocalParameter
             if p_ub:
                 cobra_reaction.upper_bound = p_ub.getValue()
 
@@ -641,8 +630,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
 
         # parse equation
         stoichiometry = defaultdict(lambda: 0)
-        # noqa: E501 type: libsbml.SpeciesReference
-        for sref in reaction.getListOfReactants():
+        for sref in reaction.getListOfReactants():  # noqa: E501 type: libsbml.SpeciesReference
             sid = _check_required(sref, sref.getSpecies(), "species")
 
             if f_replace and F_SPECIE in f_replace:
@@ -651,8 +639,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
                 _check_required(sref, sref.getStoichiometry(),
                                 "stoichiometry"))
 
-        # noqa: E501 type: libsbml.SpeciesReference
-        for sref in reaction.getListOfProducts():
+        for sref in reaction.getListOfProducts():  # noqa: E501 type: libsbml.SpeciesReference
             sid = _check_required(sref, sref.getSpecies(), "species")
 
             if f_replace and F_SPECIE in f_replace:
@@ -671,11 +658,9 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
         # GPR
         if r_fbc:
             gpr = ''
-            # noqa: E501 type: libsbml.GeneProductAssociation
-            gpa = r_fbc.getGeneProductAssociation()
+            gpa = r_fbc.getGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
             if gpa is not None:
-                # noqa: E501 type: libsbml.FbcAssociation
-                association = gpa.getAssociation()
+                association = gpa.getAssociation()  # noqa: E501 type: libsbml.FbcAssociation
                 gpr = process_association(association)
         else:
             # fallback to notes information
@@ -713,8 +698,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     obj_direction = "max"
     coefficients = {}
     if model_fbc:
-        # noqa: E501 type: libsbml.ListOfObjectives
-        obj_list = model_fbc.getListOfObjectives()
+        obj_list = model_fbc.getListOfObjectives()  # noqa: E501 type: libsbml.ListOfObjectives
         if obj_list is None:
             LOGGER.warning("listOfObjectives element not found")
         elif obj_list.size() == 0:
@@ -726,8 +710,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
             obj = model_fbc.getObjective(obj_id)  # type: libsbml.Objective
             obj_direction = LONG_SHORT_DIRECTION[obj.getType()]
 
-            # noqa: E501 type: libsbml.FluxObjective
-            for flux_obj in obj.getListOfFluxObjectives():
+            for flux_obj in obj.getListOfFluxObjectives():  # noqa: E501 type: libsbml.FluxObjective
                 rid = flux_obj.getReaction()
                 if f_replace and F_REACTION in f_replace:
                     rid = f_replace[F_REACTION](rid)
@@ -973,8 +956,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             _check(history.setModifiedDate(date), 'set modified date')
 
         if "creators" in meta:
-            for cobra_creator in meta["creators"]:
-                # noqa: E501 type: libsbml.ModelCreator
+            for cobra_creator in meta["creators"]:  # noqa: E501 type: libsbml.ModelCreator
                 creator = libsbml.ModelCreator()
                 if cobra_creator.get("familyName", None):
                     creator.setFamilyName(cobra_creator["familyName"])
@@ -1099,14 +1081,12 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             if f_replace and F_SPECIE_REV in f_replace:
                 sid = f_replace[F_SPECIE_REV](sid)
             if stoichiometry < 0:
-                # noqa: E501 type: libsbml.SpeciesReference
-                sref = reaction.createReactant()
+                sref = reaction.createReactant()  # noqa: E501 type: libsbml.SpeciesReference
                 sref.setSpecies(sid)
                 sref.setStoichiometry(-stoichiometry)
                 sref.setConstant(True)
             else:
-                # noqa: E501 type: libsbml.SpeciesReference
-                sref = reaction.createProduct()
+                sref = reaction.createProduct()  # noqa: E501 type: libsbml.SpeciesReference
                 sref.setSpecies(sid)
                 sref.setStoichiometry(stoichiometry)
                 sref.setConstant(True)
@@ -1139,8 +1119,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             else:
                 gpr_new = gpr
 
-            # noqa: E501 type: libsbml.GeneProductAssociation
-            gpa = r_fbc.createGeneProductAssociation()
+            gpa = r_fbc.createGeneProductAssociation()  # noqa: E501 type: libsbml.GeneProductAssociation
             # uses ids to identify GeneProducts (True),
             # does not create GeneProducts (False)
             _check(gpa.setAssociation(gpr_new, True, False),
@@ -1148,8 +1127,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
 
         # objective coefficients
         if reaction_coefficients.get(cobra_reaction, 0) != 0:
-            # noqa: E501 type: libsbml.FluxObjective
-            flux_obj = objective.createFluxObjective()
+            flux_obj = objective.createFluxObjective()  # noqa: E501 type: libsbml.FluxObjective
             flux_obj.setReaction(rid)
             flux_obj.setCoefficient(cobra_reaction.objective_coefficient)
 
@@ -1159,8 +1137,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             "http://www.sbml.org/sbml/level3/version1/groups/version1",
             "groups", True)
         doc.setPackageRequired("groups", False)
-        model_group = model.getPlugin(
-            "groups")  # noqa: E501 type: libsbml.GroupsModelPlugin
+        model_group = model.getPlugin("groups")  # noqa: E501 type: libsbml.GroupsModelPlugin
         for cobra_group in cobra_model.groups:
             group = model_group.createGroup()  # type: libsbml.Group
             if f_replace and F_GROUP_REV in f_replace:
