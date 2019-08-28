@@ -39,7 +39,7 @@ from copy import deepcopy
 from sys import platform
 
 import libsbml
-from six import iteritems, string_types
+from six import iteritems, raise_from, string_types
 
 import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
@@ -256,9 +256,8 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE,
     except IOError as e:
         raise e
 
-    except Exception:
-        LOGGER.error(traceback.print_exc())
-        raise CobraSBMLError(
+    except Exception as original_error:
+        cobra_error = CobraSBMLError(
             "Something went wrong reading the SBML model. Most likely the SBML"
             " model is not valid. Please check that your model is valid using "
             "the `cobra.io.sbml.validate_sbml_model` function or via the "
@@ -266,6 +265,7 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE,
             "\t`(model, errors) = validate_sbml_model(filename)`"
             "\nIf the model is valid and cannot be read please open an issue "
             "at https://github.com/opencobra/cobrapy/issues .")
+        raise_from(cobra_error, original_error)
 
 
 def _get_doc_from_filename(filename):
