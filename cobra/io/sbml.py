@@ -356,7 +356,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     # Model
     model_id = model.getIdAttribute()
     if not libsbml.SyntaxChecker.isValidSBMLSId(model_id):
-        logging.error("'%s' is not a valid SBML 'SId'." % model_id)
+        LOGGER.error("'%s' is not a valid SBML 'SId'." % model_id)
     cobra_model = Model(model_id)
     cobra_model.name = model.getName()
 
@@ -1256,7 +1256,7 @@ def _check_required(sbase, value, attribute):
         raise CobraSBMLError(msg)
     if attribute == "id":
         if not libsbml.SyntaxChecker.isValidSBMLSId(value):
-            logging.error("'%s' is not a valid SBML 'SId'." % value)
+            LOGGER.error("'%s' is not a valid SBML 'SId'." % value)
 
     return value
 
