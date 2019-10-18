@@ -220,11 +220,7 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=None):
     # Handle a suddenly infeasible solution,
     # usually due to numerical instability
     if current is None:
-        LOGGER.warning(
-            "Could not get flux for reaction %s,"
-            " setting it to NaN. This is usually due to numerical instability."
-        )
-        return float("nan")
+        return None
 
     # boundary reactions can not be part of cycles
     if reaction.boundary:
