@@ -54,6 +54,7 @@ def _fva_step(reaction_id):
         value = _model.solver.objective.value
     # handle infeasible case
     if value is None:
+        value = float("nan")
         LOGGER.warning(
             "Could not get flux for reaction %s,"
             " setting it to NaN. This is usually due to numerical instability.",
