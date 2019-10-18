@@ -64,12 +64,18 @@ def add_loopless(model, zero_cutoff=None):
         # -M*(1 - a_i) <= v_i <= M*a_i
         on_off_constraint = prob.Constraint(
             rxn.flux_expression - max_bound * indicator,
-            lb=-max_bound, ub=0, name="on_off_" + rxn.id)
+            lb=-max_bound,
+            ub=0,
+            name="on_off_" + rxn.id,
+        )
         # -(max_bound + 1) * a_i + 1 <= G_i <= -(max_bound + 1) * a_i + 1000
         delta_g = prob.Variable("delta_g_" + rxn.id)
         delta_g_range = prob.Constraint(
             delta_g + (max_bound + 1) * indicator,
-            lb=1, ub=max_bound, name="delta_g_range_" + rxn.id)
+            lb=1,
+            ub=max_bound,
+            name="delta_g_range_" + rxn.id,
+        )
         to_add.extend([indicator, on_off_constraint, delta_g, delta_g_range])
 
     model.add_cons_vars(to_add)
@@ -79,17 +85,19 @@ def add_loopless(model, zero_cutoff=None):
         name = "nullspace_constraint_" + str(i)
         nullspace_constraint = prob.Constraint(Zero, lb=0, ub=0, name=name)
         model.add_cons_vars([nullspace_constraint])
-        coefs = {model.variables[
-                 "delta_g_" + model.reactions[ridx].id]: row[i]
-                 for i, ridx in enumerate(internal) if
-                 abs(row[i]) > zero_cutoff}
+        coefs = {
+            model.variables["delta_g_" + model.reactions[ridx].id]: row[i]
+            for i, ridx in enumerate(internal)
+            if abs(row[i]) > zero_cutoff
+        }
         model.constraints[name].set_linear_coefficients(coefs)
 
 
 def _add_cycle_free(model, fluxes):
     """Add constraints for CycleFreeFlux."""
     model.objective = model.solver.interface.Objective(
-        Zero, direction="min", sloppy=True)
+        Zero, direction="min", sloppy=True
+    )
     objective_vars = []
     for rxn in model.reactions:
         flux = fluxes[rxn.id]
@@ -162,7 +170,9 @@ def loopless_solution(model, fluxes=None):
         # Needs one fixed bound for cplex...
         loopless_obj_constraint = prob.Constraint(
             model.objective.expression,
-            lb=-1e32, name="loopless_obj_constraint")
+            lb=-1e32,
+            name="loopless_obj_constraint",
+        )
         model.add_cons_vars([loopless_obj_constraint])
         _add_cycle_free(model, fluxes)
         solution = model.optimize(objective_sense=None)
@@ -207,6 +217,15 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=None):
     sol = get_solution(model)
     objective_dir = model.objective.direction
 
+    # Handle a suddenly infeasible solution,
+    # usually due to numerical instability
+    if current is None:
+        LOGGER.warning(
+            "Could not get flux for reaction %s,"
+            " setting it to NaN. This is usually due to numerical instability."
+        )
+        return float("nan")
+
     # boundary reactions can not be part of cycles
     if reaction.boundary:
         if solution:
@@ -238,8 +257,9 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=None):
         # the loops
         for rxn in model.reactions:
             rid = rxn.id
-            if ((abs(ll_sol[rid]) < zero_cutoff) and
-                    (abs(almost_ll_sol[rid]) > zero_cutoff)):
+            if (abs(ll_sol[rid]) < zero_cutoff) and (
+                abs(almost_ll_sol[rid]) > zero_cutoff
+            ):
                 rxn.bounds = max(0, rxn.lower_bound), min(0, rxn.upper_bound)
 
         if solution:
