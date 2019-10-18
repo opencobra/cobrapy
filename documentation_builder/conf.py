@@ -45,6 +45,7 @@ MOCK_MODULES = [
     "ruamel",
     "ruamel.yaml",
     "ruamel.yaml.compat",
+    "ruamel.yaml.main",
 ]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
