@@ -93,9 +93,9 @@ class ACHRSampler(HRSampler):
 
     def __init__(self, model, thinning=100, nproj=None, seed=None):
         """Initialize a new ACHRSampler."""
-
-        super(ACHRSampler, self).__init__(model, thinning, nproj=nproj,
-                                          seed=seed)
+        super(ACHRSampler, self).__init__(
+            model, thinning, nproj=nproj, seed=seed
+        )
         self.generate_fva_warmup()
         self.prev = self.center = self.warmup.mean(axis=0)
         np.random.seed(self._seed)
@@ -104,16 +104,18 @@ class ACHRSampler(HRSampler):
         pi = np.random.randint(self.n_warmup)
 
         # mix in the original warmup points to not get stuck
-        delta = self.warmup[pi, ] - self.center
+        delta = self.warmup[pi, :] - self.center
         self.prev = step(self, self.prev, delta)
 
-        if self.problem.homogeneous and (self.n_samples *
-                                         self.thinning % self.nproj == 0):
+        if self.problem.homogeneous and (
+            self.n_samples * self.thinning % self.nproj == 0
+        ):
             self.prev = self._reproject(self.prev)
             self.center = self._reproject(self.center)
 
-        self.center = ((self.n_samples * self.center) / (self.n_samples + 1) +
-                       self.prev / (self.n_samples + 1))
+        self.center = (self.n_samples * self.center) / (
+            self.n_samples + 1
+        ) + self.prev / (self.n_samples + 1)
         self.n_samples += 1
 
     def sample(self, n, fluxes=True):
@@ -142,21 +144,21 @@ class ACHRSampler(HRSampler):
         of reactions in your model and the thinning factor.
 
         """
-
         samples = np.zeros((n, self.warmup.shape[1]))
 
         for i in range(1, self.thinning * n + 1):
             self.__single_iteration()
 
             if i % self.thinning == 0:
-                samples[i//self.thinning - 1, ] = self.prev
+                samples[i // self.thinning - 1, :] = self.prev
 
         if fluxes:
             names = [r.id for r in self.model.reactions]
 
             return pandas.DataFrame(
                 samples[:, self.fwd_idx] - samples[:, self.rev_idx],
-                columns=names)
+                columns=names,
+            )
         else:
             names = [v.name for v in self.model.variables]
 
