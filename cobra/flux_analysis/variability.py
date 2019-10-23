@@ -54,8 +54,8 @@ def _fva_step(reaction_id):
     if value is None:
         value = float("nan")
         LOGGER.warning(
-            "Could not get flux for reaction %s,"
-            " setting it to NaN. This is usually due to numerical instability.",
+            "Could not get flux for reaction %s,  setting "
+            "it to NaN. This is usually due to numerical instability.",
             rxn.id,
         )
     _model.solver.objective.set_linear_coefficients(
