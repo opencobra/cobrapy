@@ -4,8 +4,8 @@
 
 from __future__ import absolute_import
 
-import pytest
 import numpy as np
+import pytest
 
 from cobra.flux_analysis.parsimonious import pfba
 from cobra.test.test_core.test_summary import (
