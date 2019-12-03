@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import
 
+import numpy as np
 import pytest
 
 from cobra.flux_analysis.parsimonious import pfba
@@ -105,4 +106,7 @@ def test_metabolite_summary_to_frame_with_fva(model, opt_solver, fraction,
 
     out_df = model.metabolites.get_by_id(met).summary(fva=fraction).to_frame()
 
-    assert out_df['PERCENT'].tolist() == expected_percent
+    assert np.allclose(
+        out_df['PERCENT'].tolist(),
+        expected_percent,
+        1e-6, 1e-6)
