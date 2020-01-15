@@ -42,7 +42,11 @@ def to_json(model, sort=False, **kwargs):
     """
     obj = model_to_dict(model, sort=sort)
     obj[u"version"] = JSON_SPEC
-    return json.dumps(obj, allow_nan=False, **kwargs)
+
+    dump_opts = { "allow_nan": False }
+    dump_opts.update(**kwargs)
+
+    return json.dumps(obj, **kwargs)
 
 
 def from_json(document):
