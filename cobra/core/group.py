@@ -8,6 +8,8 @@ from warnings import warn
 
 from six import string_types
 
+from cobra.core.dictlist import DictList
+
 from cobra.core.object import Object
 
 
@@ -47,7 +49,7 @@ class Group(Object):
     def __init__(self, id, name='', members=None, kind=None):
         Object.__init__(self, id, name)
 
-        self._members = set() if members is None else set(members)
+        self._members = DictList() if members is None else DictList(members)
         self._kind = None
         self.kind = "collection" if kind is None else kind
         # self.model is None or refers to the cobra.Model that
@@ -92,7 +94,7 @@ class Group(Object):
             warn("need to pass in a list")
             new_members = [new_members]
 
-        self._members.update(new_members)
+        self._members.union(new_members)
 
     def remove_members(self, to_remove):
         """
@@ -109,4 +111,5 @@ class Group(Object):
             warn("need to pass in a list")
             to_remove = [to_remove]
 
-        self._members.difference_update(to_remove)
+        for member_to_remove in to_remove:
+            self._members.remove(member_to_remove)
