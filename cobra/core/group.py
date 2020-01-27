@@ -28,7 +28,7 @@ class Group(Object):
     name : str, optional
         A human readable name for the group
     members : iterable, optional
-        A list object containing references to cobra.Model-associated objects
+        A DictList containing references to cobra.Model-associated objects
         that belong to the group.
     kind : {"collection", "classification", "partonomy"}, optional
         The kind of group, as specified for the Groups feature in the SBML
