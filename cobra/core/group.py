@@ -9,7 +9,6 @@ from warnings import warn
 from six import string_types
 
 from cobra.core.dictlist import DictList
-
 from cobra.core.object import Object
 
 
