@@ -161,9 +161,8 @@ def minimal_medium(model, min_objective_value=0.1, exports=False,
     minimize the number of "large" import fluxes. Specifically, the detection
     limit is given by ``integrality_tolerance * max_bound`` where ``max_bound``
     is the largest bound on an import reaction. Thus, if you are interested
-    in small import fluxes as well you may have to adjust the integrality
-    tolerance at first with
-    `model.solver.configuration.tolerances.integrality = 1e-7` for instance.
+    in small import fluxes as well you may have to adjust the solver
+    tolerance at first with `model.tolerance = 1e-7` for instance.
     However, this will be *very* slow for large models especially with GLPK.
 
     """
@@ -218,7 +217,9 @@ def minimal_medium(model, min_objective_value=0.1, exports=False,
                             "This is usually due to numerical instability. "
                             "Possible remedies are relaoding the model "
                             "from scratch, switching to a different solver, "
-                            "or decreasing the solver tolerance."
+                            "or decreasing the solver tolerance. Please, "
+                            "carefully read the note on numerical instability "
+                            "in the function documentation."
                         )
                         return None
                     break
