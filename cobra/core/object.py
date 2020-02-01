@@ -20,7 +20,7 @@ class Object(object):
         self.name = name
 
         self.notes = {}
-        self.annotation = {}
+        self._annotation = {}
 
     @property
     def id(self):
@@ -39,6 +39,19 @@ class Object(object):
 
     def _set_id_with_model(self, value):
         self._id = value
+
+    @property
+    def annotation(self):
+        return getattr(self, "_annotation", None)
+
+    @annotation.setter
+    def annotation(self, annotation):
+        if annotation == self.annotation:
+            pass
+        elif not isinstance(annotation, dict):
+            raise TypeError("Annotation must be a dict")
+        else:
+            self._annotation = annotation
 
     def __getstate__(self):
         """To prevent excessive replication during deepcopy."""
