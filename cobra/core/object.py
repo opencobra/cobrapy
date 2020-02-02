@@ -42,13 +42,11 @@ class Object(object):
 
     @property
     def annotation(self):
-        return getattr(self, "_annotation", None)
+        return self._annotation
 
     @annotation.setter
     def annotation(self, annotation):
-        if annotation == self.annotation:
-            pass
-        elif not isinstance(annotation, dict):
+        if not isinstance(annotation, dict):
             raise TypeError("Annotation must be a dict")
         else:
             self._annotation = annotation

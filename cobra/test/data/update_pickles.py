@@ -9,8 +9,8 @@ from json import dump as json_dump
 import cobra
 from cobra.io import (
     load_matlab_model, read_sbml_model, save_json_model, save_matlab_model,
-    write_sbml_model)
-from cobra.io.sbml3 import write_sbml2
+    write_sbml_model, save_yaml_model)
+# from cobra.io.sbml3 import write_sbml2
 
 
 # This script regenerates pickles of cobra Models.  Should be
@@ -26,7 +26,7 @@ config.solver = "glpk"
 
 
 # ecoli
-ecoli_model = read_sbml_model("iJO1366.xml")
+ecoli_model = read_sbml_model("iJO1366.xml.gz")
 with open("iJO1366.pickle", "wb") as outfile:
     dump(ecoli_model, outfile, protocol=2)
 
@@ -60,8 +60,8 @@ mini.add_reaction(ecoli_model.reactions.LDH_D.copy())
 mini.add_reaction(ecoli_model.reactions.EX_lac__D_e.copy())
 r = cobra.Reaction("D_LACt2")
 mini.add_reaction(r)
-r.gene_reaction_rule = ecoli_model.reactions.D__LACt2pp.gene_reaction_rule
-r.reaction = ecoli_model.reactions.D__LACt2pp.reaction.replace("_p", "_e")
+# r.gene_reaction_rule = ecoli_model.reactions.D__LACt2pp.gene_reaction_rule
+# r.reaction = ecoli_model.reactions.D__LACt2pp.reaction.replace("_p", "_e")
 mini.reactions.GLCpts.gene_reaction_rule = \
     ecoli_model.reactions.GLCptspp.gene_reaction_rule
 
@@ -86,10 +86,11 @@ with open("mini.pickle", "wb") as outfile:
     dump(mini, outfile, protocol=2)
 save_matlab_model(mini, "mini.mat")
 save_json_model(mini, "mini.json", pretty=True)
+save_yaml_model(mini, "mini.yml")
 write_sbml_model(mini, "mini_fbc2.xml")
 write_sbml_model(mini, "mini_fbc2.xml.bz2")
 write_sbml_model(mini, "mini_fbc2.xml.gz")
-write_sbml2(mini, "mini_fbc1.xml", use_fbc_package=True)
+# write_sbml2(mini, "mini_fbc1.xml", use_fbc_package=True)
 write_sbml_model(mini, "mini_cobra.xml", use_fbc_package=False)
 raven = load_matlab_model("raven.mat")
 with open("raven.pickle", "wb") as outfile:
