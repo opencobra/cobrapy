@@ -121,7 +121,7 @@ class Model(Object):
             self._tolerance = None
             self.tolerance = configuration.tolerance
 
-            self._timeout= None
+            self._timeout = None
             self.timeout = configuration.timeout
 
     @property
