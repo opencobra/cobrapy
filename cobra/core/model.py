@@ -121,6 +121,9 @@ class Model(Object):
             self._tolerance = None
             self.tolerance = configuration.tolerance
 
+            self._timeout= None
+            self.timeout = configuration.timeout
+
     @property
     def solver(self):
         """Get or set the attached solver instance.
@@ -191,6 +194,20 @@ class Model(Object):
                         "integrality tolerance.")
 
         self._tolerance = value
+
+    @property
+    def timeout(self):
+        return self._timeout
+
+    @timeout.setter
+    def timeout(self, value):
+        try:
+            self._solver.configuration.timeout = value
+        except AttributeError:
+            logger.info("The current solver doesn't allow setting"
+                        "timeout.")
+
+        self._timeout = value
 
     @property
     def description(self):
