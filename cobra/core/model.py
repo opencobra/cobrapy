@@ -206,8 +206,8 @@ class Model(Object):
         except AttributeError:
             logger.info("The current solver doesn't allow setting"
                         "timeout.")
-
-        self._timeout = value
+        else:
+            self._timeout = value
 
     @property
     def description(self):
