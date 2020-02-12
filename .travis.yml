@@ -46,9 +46,10 @@ stages:
 jobs:
   include:
     - stage: deploy
-      python: "3.6"
+      python: "3.8"
       install:
-        - pip install --upgrade pip setuptools wheel
+        - python -m ensurepip
+        - python -m pip install --upgrade pip setuptools wheel
       script:
         - echo "Deploying..."
       deploy:
