@@ -28,7 +28,8 @@ matrix:
   fast_finish: true
 
 install:
-  - pip install --upgrade pip setuptools wheel tox tox-travis
+  - python -m ensurepip
+  - python -m pip install --upgrade pip setuptools wheel tox tox-travis
 
 script:
   - travis_wait tox -- --benchmark-skip --cov-report xml --cov-report term
