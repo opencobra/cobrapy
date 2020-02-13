@@ -27,7 +27,6 @@ matrix:
   fast_finish: true
 
 install:
-  - python -m ensurepip
   - python -m pip install --upgrade pip setuptools wheel tox tox-travis
 
 script:
@@ -48,7 +47,6 @@ jobs:
     - stage: deploy
       python: "3.8"
       install:
-        - python -m ensurepip
         - python -m pip install --upgrade pip setuptools wheel
       script:
         - echo "Deploying..."
