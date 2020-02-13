@@ -63,22 +63,16 @@ def test_default_timeout(model):
     """Verify the default solver tolerance."""
     config = Configuration()
     config.solver = "glpk"
-    assert config.timeout is None
-    # Test the consistency between cobra.core.Configuration.tolerance and
-    # cobra.core.Model.tolerance
-    assert config.timeout == model.timeout
+    assert config.solver_timeout is None
+    # compare with `==` even if both are None so the test is consistent with
+    # possible changes in default values
+    assert config.solver_timeout == model.solver.configuration.timeout
 
 
 def test_toy_model_timeout_with_different_default():
     """Verify that different default tolerance is respected by Model."""
     config = Configuration()
-    config.timeout = 2
+    config.solver_timeout = 2
 
     toy_model = Model(name="toy model")
-    assert toy_model.timeout == 2
-
-
-def test_timeout_assignment(model):
-    """Test assignment of solver tolerance."""
-    model.timeout = 2
-    assert model.timeout == 2
+    assert toy_model.solver.configuration.timeout == 2

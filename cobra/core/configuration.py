@@ -53,7 +53,7 @@ class BaseConfiguration(object):
     def __init__(self):
         self._solver = None
         self.tolerance = 1E-07
-        self.timeout = None
+        self.solver_timeout = None
         self.lower_bound = None
         self.upper_bound = None
 
