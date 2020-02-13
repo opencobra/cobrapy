@@ -7,7 +7,6 @@ from __future__ import absolute_import
 import logging
 import types
 from multiprocessing import cpu_count
-from warnings import warn
 
 from six import string_types, with_metaclass
 
