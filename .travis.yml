@@ -1,10 +1,10 @@
 language: python
 sudo: false
 python:
-  - "2.7"
   - "3.5"
   - "3.6"
-  - "3.7-dev"
+  - "3.7"
+  - "3.8"
 
 git:
   depth: 2
@@ -26,7 +26,7 @@ matrix:
   fast_finish: true
 
 install:
-  - pip install --upgrade pip setuptools wheel tox tox-travis
+  - python -m pip install --upgrade pip setuptools wheel tox tox-travis
 
 script:
   - travis_wait tox -- --benchmark-skip --cov-report xml --cov-report term
@@ -44,9 +44,9 @@ stages:
 jobs:
   include:
     - stage: deploy
-      python: "3.6"
+      python: "3.8"
       install:
-        - pip install --upgrade pip setuptools wheel
+        - python -m pip install --upgrade pip setuptools wheel
       script:
         - echo "Deploying..."
       deploy:
