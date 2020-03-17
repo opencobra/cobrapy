@@ -1,11 +1,13 @@
-import pytest
-import cobra
 from os.path import join
-from cobra.util.solver import set_objective
+
+import pytest
+
+import cobra
 from cobra.io import read_sbml_model, write_sbml_model
+from cobra.util.solver import set_objective
 
 
-def test_model_notes(tmp_path):
+def test_notes(tmp_path):
     """Testing if model notes are written in SBML"""
     path_to_file = join(str(tmp_path), "model_notes.xml")
 
