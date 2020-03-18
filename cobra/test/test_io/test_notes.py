@@ -21,13 +21,17 @@ def test_notes(tmp_path):
     model.add_reactions([rxn])
     rxn.notes["Remark"] = "What about me?"
     model.objective_direction = "max"
-    coefficients = {}
-    coefficients[rxn] = 1
-    set_objective(model, coefficients)
+    model.objective = rxn
     write_sbml_model(model, path_to_file)
 
     # reading the model back
     model_after_reading = read_sbml_model(path_to_file)
+    met_after_reading = model_after_reading.metabolites.get_by_id("pyr_c")
+    reaction_after_reading = model_after_reading.reactions.get_by_id("R_ATPM")
 
     # checking if notes are written to model
     assert model_after_reading.notes["Remark"] == "...Model Notes..."
+
+    # checking notes for metabolite and reaction
+    assert met_after_reading.notes["Remark"] == "I appear."
+    assert reaction_after_reading.notes["Remark"] == "What about me?"
