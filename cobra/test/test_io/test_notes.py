@@ -4,7 +4,6 @@ import pytest
 
 import cobra
 from cobra.io import read_sbml_model, write_sbml_model
-from cobra.util.solver import set_objective
 
 
 def test_notes(tmp_path):
@@ -16,7 +15,7 @@ def test_notes(tmp_path):
     model.notes["Remark"] = "...Model Notes..."
     met = cobra.Metabolite("pyr_c", compartment="c")
     model.add_metabolites([met])
-    met.notes["Remark"] = "I appear."
+    met.notes["Remark"] = "Note with \n newline"
     rxn = cobra.Reaction("R_ATPM")
     model.add_reactions([rxn])
     rxn.notes["Remark"] = "What about me?"
@@ -33,5 +32,5 @@ def test_notes(tmp_path):
     assert model_after_reading.notes["Remark"] == "...Model Notes..."
 
     # checking notes for metabolite and reaction
-    assert met_after_reading.notes["Remark"] == "I appear."
+    assert met_after_reading.notes["Remark"] == "Note with \n newline"
     assert reaction_after_reading.notes["Remark"] == "What about me?"

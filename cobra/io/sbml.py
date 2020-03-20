@@ -101,7 +101,7 @@ SBML_DOT = "__SBML_DOT__"
 # -----------------------------------------------------------------------------
 pattern_notes = re.compile(
     r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<content>.*?)</(?P=prefix)p>",
-    re.IGNORECASE
+    re.IGNORECASE | re.DOTALL
 )
 
 pattern_to_sbml = re.compile(r'([^0-9_a-zA-Z])')
