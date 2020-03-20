@@ -101,7 +101,7 @@ SBML_DOT = "__SBML_DOT__"
 # -----------------------------------------------------------------------------
 pattern_notes = re.compile(
     r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<content>.*?)</(?P=prefix)p>",
-    re.IGNORECASE
+    re.IGNORECASE | re.DOTALL
 )
 
 pattern_to_sbml = re.compile(r'([^0-9_a-zA-Z])')
@@ -935,9 +935,12 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
     if cobra_model.name is not None:
         model.setName(cobra_model.name)
 
+    # for parsing annotation corresponding to the model
     _sbase_annotations(model, cobra_model.annotation)
+    # for parsing notes corresponding to the model
+    _sbase_notes_dict(model, cobra_model.notes)
 
-    # Meta information (ModelHistory)
+    # Meta information (ModelHistory) related to SBMLDocument
     if hasattr(cobra_model, "_sbml"):
         meta = cobra_model._sbml
         if "annotation" in meta:
