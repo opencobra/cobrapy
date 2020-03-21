@@ -60,8 +60,6 @@ mini.add_reaction(ecoli_model.reactions.LDH_D.copy())
 mini.add_reaction(ecoli_model.reactions.EX_lac__D_e.copy())
 r = cobra.Reaction("D_LACt2")
 mini.add_reaction(r)
-# r.gene_reaction_rule = ecoli_model.reactions.D__LACt2pp.gene_reaction_rule
-# r.reaction = ecoli_model.reactions.D__LACt2pp.reaction.replace("_p", "_e")
 mini.reactions.GLCpts.gene_reaction_rule = \
     ecoli_model.reactions.GLCptspp.gene_reaction_rule
 
@@ -90,7 +88,6 @@ save_yaml_model(mini, "mini.yml")
 write_sbml_model(mini, "mini_fbc2.xml")
 write_sbml_model(mini, "mini_fbc2.xml.bz2")
 write_sbml_model(mini, "mini_fbc2.xml.gz")
-# write_sbml2(mini, "mini_fbc1.xml", use_fbc_package=True)
 write_sbml_model(mini, "mini_cobra.xml", use_fbc_package=False)
 raven = load_matlab_model("raven.mat")
 with open("raven.pickle", "wb") as outfile:
