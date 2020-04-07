@@ -13,6 +13,7 @@ from cobra.flux_analysis.moma import add_moma
 def test_moma_sanity(model, qp_solvers):
     """Test optimization criterion and optimality for MOMA."""
     model.solver = qp_solvers
+    print(qp_solvers)
     sol = model.optimize()
 
     with model:

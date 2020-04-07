@@ -2,7 +2,6 @@
 
 
 import logging
-import types
 from copy import copy, deepcopy
 from functools import partial
 from warnings import warn
@@ -18,16 +17,15 @@ from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
-from cobra.exceptions import SolverNotFound
 from cobra.medium import find_boundary_types, find_external_compartment, sbo_terms
 from cobra.util.context import HistoryManager, get_context, resettable
 from cobra.util.solver import (
     add_cons_vars_to_problem,
     assert_optimal,
+    check_solver,
     interface_to_str,
     remove_cons_vars_from_problem,
     set_objective,
-    solvers,
 )
 from cobra.util.util import AutoVivification, format_long_string
 
@@ -111,7 +109,7 @@ class Model(Object):
             # if not hasattr(self, '_solver'):  # backwards compatibility
             # with older cobrapy pickles?
 
-            interface = configuration.solver
+            interface = check_solver(configuration.solver)
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(Zero)
             self._populate_solver(self.reactions, self.metabolites)
@@ -142,20 +140,7 @@ class Model(Object):
     @solver.setter
     @resettable
     def solver(self, value):
-        not_valid_interface = SolverNotFound(
-            "%s is not a valid solver interface. Pick from %s." % (value, list(solvers))
-        )
-        if isinstance(value, str):
-            try:
-                interface = solvers[interface_to_str(value)]
-            except KeyError:
-                raise not_valid_interface
-        elif isinstance(value, types.ModuleType) and hasattr(value, "Model"):
-            interface = value
-        elif isinstance(value, optlang.interface.Model):
-            interface = value.interface
-        else:
-            raise not_valid_interface
+        interface = check_solver(value)
 
         # Do nothing if the solver did not change
         if self.problem == interface:

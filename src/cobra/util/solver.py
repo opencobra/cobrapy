@@ -9,6 +9,7 @@ should allow you to implement custom flux analysis methods with ease.
 
 """
 
+import logging
 import re
 from functools import partial
 from types import ModuleType
@@ -43,6 +44,7 @@ if TYPE_CHECKING:
 
 CONS_VARS = Union[optlang.interface.Constraint, optlang.interface.Variable]
 
+logger = logging.getLogger(__name__)
 
 # Define all the solvers that are found in optlang.
 solvers = {
@@ -52,7 +54,7 @@ solvers = {
 }
 
 # Defines all the QP solvers implemented in optlang.
-qp_solvers = ["cplex", "gurobi"]
+qp_solvers = ["cplex", "gurobi", "osqp"]
 
 # optlang solution statuses which still allow retrieving primal values
 has_primals = [NUMERIC, FEASIBLE, INFEASIBLE, SUBOPTIMAL, ITERATION_LIMIT, TIME_LIMIT]
@@ -252,7 +254,7 @@ def get_solver_name(mip: bool = False, qp: bool = False) -> str:
     # Those lists need to be updated as optlang implements more solvers
     mip_order = ["gurobi", "cplex", "glpk"]
     lp_order = ["glpk", "cplex", "gurobi"]
-    qp_order = ["gurobi", "cplex"]
+    qp_order = ["gurobi", "cplex", "osqp"]
 
     if mip is False and qp is False:
         for solver_name in lp_order:
@@ -311,6 +313,49 @@ def choose_solver(
         solver = solvers[get_solver_name(qp=True)]
 
     return solver
+
+
+def check_solver(obj):
+    """Check whether the chosen solver is valid.
+
+    Check whether chosen solver is valid and also warn when using
+    a specialized solver. Will return the optlang interface for the
+    requested solver.
+
+    Parameters
+    ----------
+    obj : str or optlang.interface or optlang.interface.Model
+        The chosen solver.
+
+    Raises
+    ------
+    SolverNotFound
+        If the solver is not valid.
+    """
+    not_valid_interface = SolverNotFound(
+        "%s is not a valid solver interface. Pick from %s." % (obj, list(solvers))
+    )
+    if isinstance(obj, str):
+        try:
+            interface = solvers[interface_to_str(obj)]
+        except KeyError:
+            raise not_valid_interface
+    elif isinstance(obj, ModuleType) and hasattr(obj, "Model"):
+        interface = obj
+    elif isinstance(obj, optlang.interface.Model):
+        interface = obj.interface
+    else:
+        raise not_valid_interface
+
+    if interface_to_str(interface) in ["osqp", "coinor_cbc"]:
+        logger.warning(
+            "OSQB and CBC are specialized solvers for QP and MIP problems and may "
+            "not perform well on general LP problems. So we recommend to change the "
+            "solver back to a general purpose solver like "
+            "`model.solver = 'glpk'` for instance."
+        )
+
+    return interface
 
 
 def add_cons_vars_to_problem(

@@ -8,7 +8,7 @@ from __future__ import absolute_import
 import pytest
 from pandas import Series
 
-from cobra.core import Metabolite, Model, Reaction, Solution
+from cobra.core import Model, Reaction, Solution
 from cobra.util import solver as sutil
 
 
@@ -26,7 +26,8 @@ def all_solvers(request):
 
 
 @pytest.fixture(
-    scope="session", params=[s for s in ["cplex", "gurobi"] if s in sutil.solvers]
+    scope="session",
+    params=[s for s in ["cplex", "gurobi", "osqp"] if s in sutil.solvers],
 )
 def qp_solvers(request):
     """Return the available QP solvers."""
