@@ -50,7 +50,7 @@ if __name__ == "__main__":
             "pandas>=0.17.0",
             "optlang>=1.4.2",
             "depinfo",
-            "python-libsbml-experimental==5.18.0",
+            "python-libsbml-experimental==5.18.1",
         ],
         tests_require=[
             "jsonschema > 2.5",
