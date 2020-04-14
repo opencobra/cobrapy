@@ -1003,9 +1003,9 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
     _create_parameter(model, pid=ZERO_BOUND_ID,
                       value=0, sbo=SBO_DEFAULT_FLUX_BOUND)
     _create_parameter(model, pid=BOUND_MINUS_INF,
-                      value=-float("Inf"), sbo=SBO_FLUX_BOUND)
+                      value=-float("Inf"), sbo=SBO_DEFAULT_FLUX_BOUND)
     _create_parameter(model, pid=BOUND_PLUS_INF,
-                      value=float("Inf"), sbo=SBO_FLUX_BOUND)
+                      value=float("Inf"), sbo=SBO_DEFAULT_FLUX_BOUND)
 
     # Compartments
     # FIXME: use first class compartment model (and write notes & annotations)
