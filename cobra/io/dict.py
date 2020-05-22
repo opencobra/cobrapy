@@ -121,7 +121,12 @@ def reaction_to_dict(reaction):
     new_reaction = OrderedDict()
     for key in _REQUIRED_REACTION_ATTRIBUTES:
         if key != "metabolites":
-            new_reaction[key] = _fix_type(getattr(reaction, key))
+            if key == "lower_bound" and reaction.lower_bound in {float('inf'), float('-inf'), float('nan')}:
+                new_reaction[key] = str(_fix_type(getattr(reaction, key)))
+            elif key == "upper_bound" and reaction.upper_bound in {float('inf'), float('-inf'), float('nan')}:
+                new_reaction[key] = str(_fix_type(getattr(reaction, key)))
+            else:
+                new_reaction[key] = _fix_type(getattr(reaction, key))
             continue
         mets = OrderedDict()
         for met in sorted(reaction.metabolites, key=attrgetter("id")):
