@@ -25,8 +25,8 @@ except ImportError:
 
 
 # precompiled regular expressions
-_bracket_re = re.compile(r"\[[a-z]{1,2}\]$")
-_underscore_re = re.compile(r"_[a-z]{1,2}$")
+_bracket_re = re.compile(r"\[[a-z]{1,3}\]$")
+_underscore_re = re.compile(r"_[a-z]{1,3}$")
 
 
 def _get_id_compartment(id):
