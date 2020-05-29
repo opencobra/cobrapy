@@ -1434,14 +1434,9 @@ def _parse_annotations(sbase):
                 provider, identifier = data
 
             if provider in annotation:
-                if isinstance(annotation[provider], string_types):
-                    annotation[provider] = [annotation[provider]]
-                # FIXME: use a list
-                if identifier not in annotation[provider]:
-                    annotation[provider].append(identifier)
-            else:
-                # FIXME: always in list
-                annotation[provider] = identifier
+                if annotation[provider] is None:
+                    annotation[provider] = []
+                annotation[provider].append(identifier)
 
     return annotation
 
