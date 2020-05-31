@@ -53,6 +53,14 @@ _OPTIONAL_MODEL_ATTRIBUTES = {
 }
 
 
+def _fix_annotation(annotation):
+    # Convert single annotation values which are represented as
+    # as strings as list to have a consistent format
+    for key in annotation.keys():
+        if isinstance(annotation[key], string_types) and key != "sbo":
+            annotation[key] = [annotation[key]]
+
+
 def _fix_type(value):
     """convert possible types to str, float, and bool"""
     # Because numpy floats can not be pickled to json
@@ -82,6 +90,8 @@ def _update_optional(cobra_object, new_dict, optional_attribute_dict,
         value = getattr(cobra_object, key)
         if value is None or value == default:
             continue
+        if key == "annotation":
+            _fix_annotation(value)
         new_dict[key] = _fix_type(value)
 
 
@@ -98,6 +108,8 @@ def metabolite_from_dict(metabolite):
     new_metabolite = Metabolite()
     for k, v in iteritems(metabolite):
         setattr(new_metabolite, k, v)
+        if k == "annotation":
+            _fix_annotation(v)
     return new_metabolite
 
 
@@ -114,6 +126,8 @@ def gene_from_dict(gene):
     new_gene = Gene(gene["id"])
     for k, v in iteritems(gene):
         setattr(new_gene, k, v)
+        if k == "annotation":
+            _fix_annotation(v)
     return new_gene
 
 
@@ -143,6 +157,8 @@ def reaction_from_dict(reaction, model):
                 for met, coeff in iteritems(v)))
         else:
             setattr(new_reaction, k, v)
+            if k == "annotation":
+                _fix_annotation(v)
     return new_reaction
 
 
@@ -226,4 +242,6 @@ def model_from_dict(obj):
     for k, v in iteritems(obj):
         if k in {'id', 'name', 'notes', 'compartments', 'annotation'}:
             setattr(model, k, v)
+            if k == "annotation":
+                _fix_annotation(v)
     return model

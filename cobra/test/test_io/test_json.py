@@ -39,3 +39,20 @@ def test_save_json_model(tmpdir, mini_model):
     with open(output_file, "r") as infile:
         loaded = json.load(infile)
     assert jsonschema.validate(loaded, cio.json.json_schema)
+
+
+def test_consistent_annotation_values(data_directory):
+    """Test if annotation are consistently represented as list"""
+    model = cio.read_sbml_model(join(data_directory, "mini_fbc2.xml"))
+    # annotation of genes
+    for gene in model.genes:
+        for key in list(gene.annotation.keys()):
+            assert isinstance(gene.annotation[key], list)
+    # annotation of metabolites
+    for metabolite in model.metabolites:
+        for key in list(metabolite.annotation.keys()):
+            assert isinstance(metabolite.annotation[key], list)
+    # annotation of reaction
+    for reaction in model.genes:
+        for key in list(reaction.annotation.keys()):
+            assert isinstance(reaction.annotation[key], list)
