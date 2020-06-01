@@ -10,6 +10,7 @@ from six import iteritems, string_types
 
 from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.util.solver import set_objective
+from cobra.io.sbml import _parse_annotation_info
 
 
 _REQUIRED_REACTION_ATTRIBUTES = [
@@ -54,11 +55,30 @@ _OPTIONAL_MODEL_ATTRIBUTES = {
 
 
 def _fix_annotation(annotation):
+    # if annotation is in the form of a list of list, convert it in
+    # right format first i.e in a dict format
+    if isinstance(annotation, list):
+        dict_anno = {}
+        for item in annotation:
+            data = _parse_annotation_info(item[1])
+            if data is None:
+                continue
+            else:
+                provider, identifier = data
+
+            if provider not in dict_anno:
+                dict_anno[provider] = []
+            dict_anno[provider].append(identifier)
+
+        annotation = dict_anno
+
     # Convert single annotation values which are represented as
     # as strings as list to have a consistent format
     for key in annotation.keys():
         if isinstance(annotation[key], string_types) and key != "sbo":
             annotation[key] = [annotation[key]]
+
+    return annotation
 
 
 def _fix_type(value):
@@ -107,9 +127,9 @@ def metabolite_to_dict(metabolite):
 def metabolite_from_dict(metabolite):
     new_metabolite = Metabolite()
     for k, v in iteritems(metabolite):
-        setattr(new_metabolite, k, v)
         if k == "annotation":
-            _fix_annotation(v)
+            v = _fix_annotation(v)
+        setattr(new_metabolite, k, v)
     return new_metabolite
 
 
@@ -125,9 +145,9 @@ def gene_to_dict(gene):
 def gene_from_dict(gene):
     new_gene = Gene(gene["id"])
     for k, v in iteritems(gene):
-        setattr(new_gene, k, v)
         if k == "annotation":
-            _fix_annotation(v)
+            v = _fix_annotation(v)
+        setattr(new_gene, k, v)
     return new_gene
 
 
@@ -156,9 +176,9 @@ def reaction_from_dict(reaction, model):
                 (model.metabolites.get_by_id(str(met)), coeff)
                 for met, coeff in iteritems(v)))
         else:
-            setattr(new_reaction, k, v)
             if k == "annotation":
-                _fix_annotation(v)
+                v = _fix_annotation(v)
+            setattr(new_reaction, k, v)
     return new_reaction
 
 
@@ -241,7 +261,7 @@ def model_from_dict(obj):
     set_objective(model, coefficients)
     for k, v in iteritems(obj):
         if k in {'id', 'name', 'notes', 'compartments', 'annotation'}:
-            setattr(model, k, v)
             if k == "annotation":
-                _fix_annotation(v)
+                v = _fix_annotation(v)
+            setattr(model, k, v)
     return model
