@@ -12,6 +12,10 @@
         [
           "CHEBI",
           "http://identifiers.org/chebi/CHEBI:11981"
+        ],
+        [
+          "CHEBI",
+          "http://identifiers.org/chebi/CHEBI:17847"
         ]
       ]
     }

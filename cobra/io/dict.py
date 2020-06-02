@@ -10,7 +10,7 @@ from six import iteritems, string_types
 
 from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.util.solver import set_objective
-from cobra.io.sbml import _parse_annotation_info
+from cobra.io.sbml import parse_annotation_info
 
 
 _REQUIRED_REACTION_ATTRIBUTES = [

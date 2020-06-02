@@ -1427,7 +1427,7 @@ def _parse_annotations(sbase):
             # FIXME: read and store the qualifier
 
             uri = cvterm.getResourceURI(k)
-            data = _parse_annotation_info(uri)
+            data = parse_annotation_info(uri)
             if data is None:
                 continue
             else:
@@ -1440,7 +1440,7 @@ def _parse_annotations(sbase):
     return annotation
 
 
-def _parse_annotation_info(uri):
+def parse_annotation_info(uri):
     """Parses provider and term from given identifiers annotation uri.
 
     Parameters

@@ -21,7 +21,11 @@ def test_load_json_model_valid(data_directory, tmp_path):
 
 
 def test_load_json_model_invalid(data_directory):
-    """Test that loading an invalid annotation from JSON raises TypeError"""
+    """Test loading an annotation in the form of list of list"""
     path = join(data_directory, "invalid_annotation_format.json")
-    with pytest.raises(TypeError):
-        model = load_json_model(path)
+    expected = {
+        'kegg.compound': ['C01468'],
+        'chebi': ['CHEBI:11981', 'CHEBI:17847']
+    }
+    model = load_json_model(path)
+    assert model.metabolites[0].annotation == expected
