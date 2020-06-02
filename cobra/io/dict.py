@@ -9,8 +9,8 @@ from numpy import bool_, float_
 from six import iteritems, string_types
 
 from cobra.core import Gene, Metabolite, Model, Reaction
-from cobra.util.solver import set_objective
 from cobra.io.sbml import parse_annotation_info
+from cobra.util.solver import set_objective
 
 
 _REQUIRED_REACTION_ATTRIBUTES = [
@@ -60,7 +60,7 @@ def _fix_annotation(annotation):
     if isinstance(annotation, list):
         dict_anno = {}
         for item in annotation:
-            data = _parse_annotation_info(item[1])
+            data = parse_annotation_info(item[1])
             if data is None:
                 continue
             else:
