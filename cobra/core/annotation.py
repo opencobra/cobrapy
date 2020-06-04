@@ -138,7 +138,7 @@ class Annotation:
 
         @property
         def key(self):
-            return getattr(self, "_key", '')
+            return getattr(self, "_key", None)
 
         @key.setter
         def key(self, inKey):
@@ -149,7 +149,7 @@ class Annotation:
 
         @property
         def value(self):
-            return getattr(self, "_key", '')
+            return getattr(self, "_key", None)
 
         @value.setter
         def value(self, inValue):
