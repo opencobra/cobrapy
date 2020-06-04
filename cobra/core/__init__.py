@@ -13,3 +13,4 @@ from cobra.core.group import Group
 from cobra.core.solution import Solution, LegacySolution, get_solution
 from cobra.core.species import Species
 from cobra.core.summary import MetaboliteSummary, ReactionSummary, Summary
+from cobra.core.annotation import Annotation
