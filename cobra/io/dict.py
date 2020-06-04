@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from operator import attrgetter, itemgetter
 
 from numpy import bool_, float_
@@ -58,7 +58,7 @@ def _fix_annotation(annotation):
     # if annotation is in the form of a list of list, convert it in
     # right format first i.e in a dict format
     if isinstance(annotation, list):
-        dict_anno = {}
+        dict_anno = defaultdict(list)
         for item in annotation:
             data = parse_annotation_info(item[1])
             if data is None:
@@ -66,8 +66,6 @@ def _fix_annotation(annotation):
             else:
                 provider, identifier = data
 
-            if provider not in dict_anno:
-                dict_anno[provider] = []
             dict_anno[provider].append(identifier)
 
         annotation = dict_anno
