@@ -8,7 +8,7 @@ resources
 from __future__ import absolute_import
 
 
-class CVTerm(dict) :
+class CVTerm(dict):
     """
     Class representation of Controlled Vocabulary term inside Annotation.
     It will look similar to a dictionary, but will have restrictions on the
@@ -37,8 +37,8 @@ class CVTerm(dict) :
                 else:
                     dict.__setitem__(self, key, value)
 
-    def __getitem__(self,key):
-        return dict.__getitem__(self,key)
+    def __getitem__(self, key):
+        return dict.__getitem__(self, key)
 
     def __setitem__(self, key, value):
         """Make sure that key passed is of type string and value
@@ -54,7 +54,7 @@ class CVTerm(dict) :
             raise TypeError("The value passed does not confirm to CVList type")
 
     def __delitem__(self, key):
-        dict.__delitem__(self,key)
+        dict.__delitem__(self, key)
 
     def __iter__(self):
         return dict.__iter__(self)
@@ -63,8 +63,7 @@ class CVTerm(dict) :
         return dict.__len__(self)
 
     def __contains__(self, x):
-        return dict.__contains__(self,x)
-
+        return dict.__contains__(self, x)
 
     class CVList(list):
         """
@@ -84,12 +83,13 @@ class CVTerm(dict) :
             if not isinstance(cvlist, list):
                 raise TypeError("The resources passed must be inside a list")
             for item in cvlist:
-                if isinstance(item, self.ExternalResources):
+                if isinstance(item, CVTerm.ExternalResources):
                     list.append(self, item)
                 elif isinstance(item, dict):
                     list.append(self, CVTerm.ExternalResources(item))
                 else:
-                    raise TypeError("All items must confirm to ExternalResources structure")
+                    raise TypeError("All items must confirm to "
+                                    "ExternalResources structure")
 
         def __len__(self):
             return list.__len__(self)
@@ -109,7 +109,6 @@ class CVTerm(dict) :
         def __getitem__(self, index):
             return list.__getitem__(self, index)
 
-
     class ExternalResources(dict):
         """
         Class representation of a single set of resources and its nested
@@ -127,10 +126,10 @@ class CVTerm(dict) :
 
         Allowed Keys
         ----------
-            "resources" : string
-                for accessing the mapped resources
-            "nested_data" : string
-                for accessing the nested annotation data
+        "resources" : string
+            for accessing the mapped resources
+        "nested_data" : string
+            for accessing the nested annotation data
 
         """
 
@@ -142,8 +141,10 @@ class CVTerm(dict) :
             if not isinstance(data, dict):
                 raise TypeError("The value passed must be of type dict.")
             for key, value in data.items():
-                if key not in ANNOTATION_KEYS:
-                    raise ValueError("Key '%s' is not allowed. Only allowed keys are 'resource', 'nested_data'." %key)
+                if key not in self.ANNOTATION_KEYS:
+                    raise ValueError("Key '%s' is not allowed. Only "
+                                     "allowed keys are 'resource', "
+                                     "'nested_data'." % key)
                 if key == 'resources':
                     if not isinstance(value, list):
                         raise TypeError("Resources must be put in a list")
@@ -154,30 +155,34 @@ class CVTerm(dict) :
                     elif isinstance(value, dict):
                         dict.__setitem__(self, key, CVTerm(value))
                     else:
-                        raise TypeError("The nested data structure does not have valid CVTerm format")
+                        raise TypeError("The nested data structure does "
+                                        "not have valid CVTerm format")
 
-        def __getitem__(self,key):
-            if key not in ANNOTATION_KEYS:
-                raise ValueError("Key %s is not allowed. Allowed keys are 'resources', 'nested_data'." %key)
-            return dict.__getitem__(self,key)
+        def __getitem__(self, key):
+            if key not in self.ANNOTATION_KEYS:
+                raise ValueError("Key %s is not allowed. Only allowed keys are"
+                                 " 'resources', 'nested_data'." % key)
+            return dict.__getitem__(self, key)
 
         def __setitem__(self, key, value):
             """Restricting the keys and values that can be set.
                Only allowed keys are 'resources' and 'nested_data'
             """
-            if key not in ANNOTATION_KEYS:
-                raise ValueError("Key %s is not allowed. Allowed keys are 'resources', 'nested_data'." %key)
+            if key not in self.ANNOTATION_KEYS:
+                raise ValueError("Key %s is not allowed. Only allowed "
+                                 "keys are 'resources', 'nested_data'."
+                                 % key)
             if key == 'resources':
                 if not isinstance(value, list):
                     raise TypeError("Resources must be put in a list")
                 dict.__setitem__(self, key, value)
             elif key == 'nested_data':
-                if not isinstance(value,CVTerm):
+                if not isinstance(value, CVTerm):
                     raise TypeError("The value passed must be of type CVTerm.")
                 dict.__setitem__(self, key, value)
 
         def __delitem__(self, key):
-            dict.__delitem__(self,key)
+            dict.__delitem__(self, key)
 
         def __iter__(self):
             return dict.__iter__(self)
@@ -186,4 +191,4 @@ class CVTerm(dict) :
             return dict.__len__(self)
 
         def __contains__(self, x):
-            return dict.__contains__(self,x)
+            return dict.__contains__(self, x)

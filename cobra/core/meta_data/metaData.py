@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 from cobra.core.meta_data.cvTerm import CVTerm
 from cobra.core.meta_data.history import History
-from cobra.core.meta_data.keyValuePair import KeyValuePair
+from cobra.core.meta_data.keyValuePair import ListOfKeyValue
 
 
 class MetaData:
@@ -27,41 +27,40 @@ class MetaData:
 
     def __init__(self, cvterm=None, history=None, listofKeyValue=None):
         # setting the cvterm
-        if isinstance(cvterm, CVTerm):
+        if cvterm is None:
+            self._cvTerms = CVTerm()
+        elif isinstance(cvterm, CVTerm):
             self._cvTerms = cvterm
         elif isinstance(cvterm, dict):
             self._cvTerms = CVTerm(cvterm)
         else:
-            self._cvTerms = CVTerm()
+            raise TypeError("Invalid format passed for cvterm")
         # setting the history of the component
-        if isinstance(history, History):
+        if history is None:
+            self._history = History()
+        elif isinstance(history, History):
             self._history = history
         elif isinstance(history, dict):
             if "creator" not in history:
-                history["creator"] = {}
+                history["creator"] = []
             if "created" not in history:
                 history["created"] = None
             if "modified" not in history:
                 history["modified"] = []
-            self._history = History(history["creator"], history["created"], history["modified"])
+            self._history = History(history["creator"],
+                                    history["created"], history["modified"])
         else:
-            self._history = History()
+            raise TypeError("Invalid format passed for history")
         # setting the list of key-value pair
         if listofKeyValue is not None:
-            if isinstance(listofKeyValue, list):
-                keyValue = []
-                for item in listofKeyValue:
-                    if isinstance(item, dict):
-                        keyValue.append(KeyValuePair(item))
-                    if isinstance(item, KeyValuePair):
-                        keyValue.append(item)
-                    else:
-                        raise TypeError("Each entry of key-value pair must be a dict or KeyValuePair object")
-                self.listofKeyValue = keyValue
+            if isinstance(listofKeyValue, ListOfKeyValue):
+                self._listofKeyValue = listofKeyValue
+            elif isinstance(listofKeyValue, list):
+                self._listofKeyValue = ListOfKeyValue(listofKeyValue)
             else:
                 raise TypeError("Key value pairs must be passed in a list")
         else:
-            self.listofKeyValue = []
+            self._listofKeyValue = ListOfKeyValue()
 
     @property
     def cvTerms(self):
@@ -73,10 +72,10 @@ class MetaData:
             pass
         elif isinstance(value, CVTerm):
             self._cvTerms = value
-        elif isinstance(cvterm, dict):
+        elif isinstance(value, dict):
             self._cvTerms = CVTerm(cvterm)
         else:
-            raise TypeError("This passed format for cvterm is not acceptable")
+            raise TypeError("This passed format for cvterm is invalid")
 
     @property
     def history(self):
@@ -88,13 +87,30 @@ class MetaData:
             pass
         elif isinstance(value, History):
             self._history = value
-        elif isinstance(history, dict):
+        elif isinstance(value, dict):
             if "creator" not in history:
-                history["creator"] = {}
+                history["creator"] = []
             if "created" not in history:
                 history["created"] = None
             if "modified" not in history:
                 history["modified"] = []
-            self._history = History(value["creator"], value["created"], value["modified"])
+            self._history = History(value["creator"],
+                                    value["created"], value["modified"])
         else:
-            raise TypeError("This passed format for history is not acceptable")
+            raise TypeError("This passed format for history is invalid")
+
+    @property
+    def listofKeyValue(self):
+        return getattr(self, "_listofKeyValue", [])
+
+    @listofKeyValue.setter
+    def listofKeyValue(self, value):
+        if value == self._listofKeyValue:
+            pass
+        elif isinstance(value, ListOfKeyValue):
+            self._listofKeyValue = value
+        elif isinstance(value, list):
+            self._listofKeyValue = ListOfKeyValue(value)
+        else:
+            raise TypeError("This passed format for listofKeyValue is "
+                            "invalid")

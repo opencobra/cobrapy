@@ -5,91 +5,128 @@ from __future__ import absolute_import
 from cobra.core.object import Object
 
 
-class KeyValuePair(Object):
-    """
-    Class representation of key-value pairs supported in fba-v3
+class ListOfKeyValue(list):
+    """A list extension to store key-value pairs
 
     Parameters
     ----------
-    data : dict
-        A dictionary containong data about key-value pairs
-        {
-            "id" : "abc",
-            "name" : "abc",
-            "key" : "abc",
-            "value" : "abc",
-            "uri" : "abc"
-        }
-
-    Attributes
-    ----------
-    id : string
-        The identifier to associate with this key-value pair
-    name : string
-        A human readable name for this key-value pair
-    key : string
-        The key by which we can refer to the value. Must be
-        unique in a given list of key-value pair
-    value : string
-        The value corresponding to that key
-    uri : string
-        The uri identifies a resource that defines the associated
-        key component
-
+    creators : list key-value pair data
     """
 
-    def __init__(self, data={}):
-        if "id" in data:
-            id = data["id"]
+    def __init__(self, keyvaluelist=[]):
+        if not isinstance(keyvaluelist, list):
+            raise TypeError("The data passed for ListOfKeyValue "
+                            "must be inside a list")
         else:
-            id = None
-        if "name" in data:
-            name = data["name"]
-        else:
-            name = None
-        Object.__init__(self, id, name)
-        if "key" in data:
-            self._key = data["key"]
-        else:
-            self._key = None
-        if "value" in data:
-            self._value = data["value"]
-        else:
-            self._value = None
-        if "uri" in data:
-            self._uri = data["uri"]
-        else:
-            self._uri = None
+            for item in keyvaluelist:
+                if isinstance(item, self.KeyValuePair):
+                    list.append(self, item)
+                elif isinstance(item, dict):
+                    list.append(self, self.KeyValuePair(item))
+                else:
+                    raise TypeError("The data passed for KeyValuepair "
+                                    "indexed %s has invalid format"
+                                    % keyvaluelist.index(item, 0,
+                                                         len(keyvaluelist)))
 
-    @property
-    def key(self):
-        return getattr(self, "_key", None)
+    def __len__(self):
+        return list.__len__(self)
 
-    @key.setter
-    def key(self, inKey):
-        if not isinstance(inKey, str):
-            raise TypeError("the key must be of type string")
+    def __delitem__(self, index):
+        list.__delitem__(self, index)
+
+    def insert(self, index, value):
+        if isinstance(value, self.KeyValuePair):
+            list.insert(self, index, value)
+        elif isinstance(value, dict):
+            list.insert(self, index, self.KeyValuePair(value))
         else:
-            self._key = inKey
+            raise TypeError("The data passed for KeyValuePair "
+                            "has invalid format")
 
-    @property
-    def value(self):
-        return getattr(self, "_key", None)
-
-    @value.setter
-    def value(self, inValue):
-        if not isinstance(inValue, str):
-            raise TypeError("the value must be of type string")
+    def append(self, value):
+        if isinstance(value, self.KeyValuePair):
+            list.append(self, value)
+        elif isinstance(value, dict):
+            list.append(self, self.KeyValuePair(value))
         else:
-            self._value = inValue
+            raise TypeError("The data passed for KeyValuePair "
+                            "has invalid format")
 
-    @property
-    def uri(self):
-        return getattr(self, "_uri", None)
-
-    @uri.setter
-    def uri(self, inUri):
-        if not isinstance(inUri, str):
-            raise TypeError("the uri must be of type string")
+    def __setitem__(self, index, value):
+        if isinstance(value, self.KeyValuePair):
+            list.__setitem__(self, index, value)
+        elif isinstance(value, dict):
+            list.__setitem__(self, index, self.KeyValuePair(value))
         else:
-            self._uri = inUri
+            raise TypeError("The data passed for KeyValuePair "
+                            "has invalid format")
+
+    def __getitem__(self, index):
+        return list.__getitem__(self, index)
+
+    class KeyValuePair(dict):
+        """
+        Class representation of key-value pairs supported in fba-v3
+
+        Parameters
+        ----------
+        data : dict
+            A dictionary containing data about key-value pairs
+            {
+                "id" : "abc",
+                "name" : "abc",
+                "key" : "abc",
+                "value" : "abc",
+                "uri" : "abc"
+            }
+
+        """
+
+        VALID_KEYS = ["id", "name", "key", "value", "uri"]
+
+        def __init__(self, data={}):
+            for key, value in data.items():
+                if key not in self.VALID_KEYS:
+                    raise ValueError("'%s' is not allowed. Only possible "
+                                     "keys are : 'id', 'name', 'key', "
+                                     "'value', 'uri'" % key)
+                if not isinstance(key, str):
+                    raise TypeError("All keys must be of type string")
+                if not isinstance(value, str):
+                    raise TypeError("All values must be of type string")
+                dict.__setitem__(self, key, value)
+            for key in self.VALID_KEYS:
+                if key not in data:
+                    dict.__setitem__(self, key, None)
+
+        def __getitem__(self, key):
+            if key not in self.VALID_KEYS:
+                raise ValueError("Key %s is not allowed. Only allowed "
+                                 "keys are : 'id', 'name', 'key',"
+                                 " 'value', 'uri'" % key)
+            return dict.__getitem__(self, key)
+
+        def __setitem__(self, key, value):
+            """Restricting the keys and values that can be set.
+               Only allowed keys are : 'id', 'name', 'key', 'value', 'uri''
+            """
+            if key not in self.VALID_KEYS:
+                raise ValueError("Key %s is not allowed. Only allowed"
+                                 " keys are : 'id', 'name', 'key',"
+                                 " 'value', 'uri'" % key)
+            if not isinstance(value, str):
+                raise TypeError("The value must be of type string")
+            dict.__setitem__(self, key, value)
+
+        def __delitem__(self, key):
+            dict.__delitem__(self, key)
+
+        def __iter__(self):
+            return dict.__iter__(self)
+
+        def __len__(self):
+            return dict.__len__(self)
+
+        def __contains__(self, x):
+            return dict.__contains__(self, x)
