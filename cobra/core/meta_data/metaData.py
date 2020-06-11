@@ -110,6 +110,8 @@ class MetaData(dict):
                                  ListOfKeyValue(listofKeyValue))
             else:
                 raise TypeError("Key value pairs must be passed in a list")
+        elif key == "sbo":
+            dict.__setitem__(self, "sbo", value)
 
     def __delitem__(self, key):
         dict.__delitem__(self, key)

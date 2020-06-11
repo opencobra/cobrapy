@@ -3,7 +3,9 @@
 from __future__ import absolute_import
 
 from six import string_types
+
 from cobra.core.meta_data import MetaData
+
 
 class Object(object):
     """Defines common behavior of object in cobra.core"""
