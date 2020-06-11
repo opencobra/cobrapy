@@ -18,10 +18,11 @@ def validateDate(date_text):
     return True
 
 
-class History:
+class History(dict):
     """
     Class representation of history of a given component i.e. creator,
-    created date and modification dates
+    created date and modification dates. It is basically an extended
+    dictionary with some restrictions
 
     Parameters
     ----------
@@ -33,7 +34,7 @@ class History:
     modified : list
         A list of dates about the component modification
 
-    Attributes
+    Allowed Keys
     ----------
     creator : dict
         A dictionary containong details of creator's name, email and
@@ -45,49 +46,72 @@ class History:
 
     """
 
+    VALID_KEYS = ["creators", "created", "modified"]
+
     def __init__(self, creators=[], created=None, modified=[]):
         if creators is None:
             creators = []
-        self._creators = self.ListOfCreators(creators)
+        dict.__setitem__(self, "creators", self.ListOfCreators(creators))
         if isinstance(created, str):
             validateDate(created)
-            self._created = created
+            dict.__setitem__(self, "created", created)
         elif created is None:
-            self._created = None
+            dict.__setitem__(self, "created", None)
         else:
             raise TypeError('Only None and string types are possible for '
                             '"created" date attribute')
         if modified is None:
             modified = []
-        self._modified = self.ModifiedHistory(modified)
+        dict.__setitem__(self, "modified", self.ModifiedHistory(modified))
 
-    @property
-    def creators(self):
-        return self._creators
+    def __getitem__(self, key):
+        if key not in self.VALID_KEYS:
+            raise ValueError("Key %s is not allowed. Only allowed "
+                             "keys are : 'creators', 'created', 'modified'"
+                             % key)
+        return dict.__getitem__(self, key)
 
-    @creators.setter
-    def creators(self, creators_list):
-        self._creators = self.ListOfCreators(creators_list)
+    def __setitem__(self, key, value):
+        """Restricting the keys and values that can be set.
+           Only allowed keys are : 'id', 'name', 'key', 'value', 'uri''
+        """
+        if key not in self.VALID_KEYS:
+            raise ValueError("Key %s is not allowed. Only allowed"
+                             " keys are : 'id', 'name', 'key',"
+                             " 'value', 'uri'" % key)
+        if key == "creators":
+            if isinstance(value, self.ListOfCreators):
+                dict.__setitem__(self, key, value)
+            elif isinstance(value, list):
+                dict.__setitem__(self, key, self.ListOfCreators(value))
+            else:
+                raise TypeError("The passed format for creators is invalid")
+        elif key == "created":
+            if not isinstance(value, str):
+                raise TypeError("The date passed must be a string")
+            else:
+                validateDate(value)
+                dict.__setitem__(self, key, value)
+        elif key == "modified":
+            if isinstance(value, self.ModifiedHistory):
+                dict.__setitem__(self, key, value)
+            elif isinstance(value, list):
+                dict.__setitem__(self, key, self.ModifiedHistory(value))
+            else:
+                raise TypeError("The passed format for modification"
+                                " history is invalid")
 
-    @property
-    def created(self):
-        return self._created
+    def __delitem__(self, key):
+        dict.__delitem__(self, key)
 
-    @created.setter
-    def created(self, value):
-        if not isinstance(value, str):
-            raise TypeError("The date passed must be a string")
-        else:
-            validateDate(value)
-            self._created = value
+    def __iter__(self):
+        return dict.__iter__(self)
 
-    @property
-    def modified(self):
-        return self._modified
+    def __len__(self):
+        return dict.__len__(self)
 
-    @modified.setter
-    def modified(self, value):
-        self._modified = self.ModifiedHistory(value)
+    def __contains__(self, x):
+        return dict.__contains__(self, x)
 
     class ListOfCreators(list):
         """A list extension to store each creator's info

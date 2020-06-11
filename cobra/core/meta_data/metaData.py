@@ -7,7 +7,7 @@ from cobra.core.meta_data.history import History
 from cobra.core.meta_data.keyValuePair import ListOfKeyValue
 
 
-class MetaData:
+class MetaData(dict):
     """Class representation of the meta-data of the component.
     It is a combination of three classes i.e CVTerm, History
     and KeyValuePair class.
@@ -25,92 +25,100 @@ class MetaData:
 
     """
 
+    VALID_KEYS = ["sbo", "cvTerms", "history", "listofKeyValue"]
+
     def __init__(self, cvterm=None, history=None, listofKeyValue=None):
         # setting the cvterm
         if cvterm is None:
-            self._cvTerms = CVTerm()
+            dict.__setitem__(self, "cvTerms", CVTerm())
         elif isinstance(cvterm, CVTerm):
-            self._cvTerms = cvterm
+            dict.__setitem__(self, "cvTerms", cvterm)
         elif isinstance(cvterm, dict):
-            self._cvTerms = CVTerm(cvterm)
+            dict.__setitem__(self, "cvTerms", CVTerm(cvterm))
         else:
             raise TypeError("Invalid format passed for cvterm")
         # setting the history of the component
         if history is None:
-            self._history = History()
+            dict.__setitem__(self, "history", History())
         elif isinstance(history, History):
-            self._history = history
+            dict.__setitem__(self, "history", history)
         elif isinstance(history, dict):
-            if "creator" not in history:
-                history["creator"] = []
+            if "creators" not in history:
+                history["creators"] = []
             if "created" not in history:
                 history["created"] = None
             if "modified" not in history:
                 history["modified"] = []
-            self._history = History(history["creator"],
-                                    history["created"], history["modified"])
+            dict.__setitem__(self, "history", History(history["creators"],
+                                                      history["created"],
+                                                      history["modified"]))
         else:
             raise TypeError("Invalid format passed for history")
         # setting the list of key-value pair
         if listofKeyValue is not None:
             if isinstance(listofKeyValue, ListOfKeyValue):
-                self._listofKeyValue = listofKeyValue
+                dict.__setitem__(self, "listofKeyValue", listofKeyValue)
             elif isinstance(listofKeyValue, list):
-                self._listofKeyValue = ListOfKeyValue(listofKeyValue)
+                dict.__setitem__(self, "listofKeyValue",
+                                 ListOfKeyValue(listofKeyValue))
             else:
                 raise TypeError("Key value pairs must be passed in a list")
         else:
-            self._listofKeyValue = ListOfKeyValue()
+            dict.__setitem__(self, "listofKeyValue", ListOfKeyValue())
 
-    @property
-    def cvTerms(self):
-        return getattr(self, "_cvTerms", None)
+    def __getitem__(self, key):
+        if key not in self.VALID_KEYS:
+            raise ValueError("Key %s is not allowed. Only allowed "
+                             "keys are : 'sbo', 'cvTerms', 'history', "
+                             "'listofKeyValue'" % key)
+        return dict.__getitem__(self, key)
 
-    @cvTerms.setter
-    def cvTerms(self, value):
-        if value == self._cvTerms:
-            pass
-        elif isinstance(value, CVTerm):
-            self._cvTerms = value
-        elif isinstance(value, dict):
-            self._cvTerms = CVTerm(cvterm)
-        else:
-            raise TypeError("This passed format for cvterm is invalid")
+    def __setitem__(self, key, value):
+        """Restricting the keys and values that can be set.
+           Only allowed keys are : 'sbo', 'cvTerms', 'history',
+           'listofKeyValue'
+        """
+        if key not in self.VALID_KEYS:
+            raise ValueError("Key %s is not allowed. Only allowed "
+                             "keys are : 'sbo', 'cvTerms', 'history', "
+                             "'listofKeyValue'" % key)
+        if key == "cvTerms":
+            if isinstance(value, CVTerm):
+                dict.__setitem__(self, "cvTerms", value)
+            elif isinstance(value, dict):
+                dict.__setitem__(self, "cvTerms", CVTerm(value))
+            else:
+                raise TypeError("This passed format for cvterm is invalid")
+        elif key == "history":
+            if isinstance(history, History):
+                dict.__setitem__(self, "history", history)
+            elif isinstance(history, dict):
+                if "creators" not in history:
+                    history["creators"] = []
+                if "created" not in history:
+                    history["created"] = None
+                if "modified" not in history:
+                    history["modified"] = []
+                dict.__setitem__(self, "history", History(history["creators"],
+                                                          history["created"],
+                                                          history["modified"]))
+        elif key == "listofKeyValue":
+            if isinstance(listofKeyValue, ListOfKeyValue):
+                dict.__setitem__(self, "listofKeyValue", listofKeyValue)
+            elif isinstance(listofKeyValue, list):
+                dict.__setitem__(self, "listofKeyValue",
+                                 ListOfKeyValue(listofKeyValue))
+            else:
+                raise TypeError("Key value pairs must be passed in a list")
 
-    @property
-    def history(self):
-        return getattr(self, "_history", None)
+    def __delitem__(self, key):
+        dict.__delitem__(self, key)
 
-    @history.setter
-    def history(self, value):
-        if value == self._history:
-            pass
-        elif isinstance(value, History):
-            self._history = value
-        elif isinstance(value, dict):
-            if "creator" not in history:
-                history["creator"] = []
-            if "created" not in history:
-                history["created"] = None
-            if "modified" not in history:
-                history["modified"] = []
-            self._history = History(value["creator"],
-                                    value["created"], value["modified"])
-        else:
-            raise TypeError("This passed format for history is invalid")
+    def __iter__(self):
+        return dict.__iter__(self)
 
-    @property
-    def listofKeyValue(self):
-        return getattr(self, "_listofKeyValue", [])
+    def __len__(self):
+        return dict.__len__(self)
 
-    @listofKeyValue.setter
-    def listofKeyValue(self, value):
-        if value == self._listofKeyValue:
-            pass
-        elif isinstance(value, ListOfKeyValue):
-            self._listofKeyValue = value
-        elif isinstance(value, list):
-            self._listofKeyValue = ListOfKeyValue(value)
-        else:
-            raise TypeError("This passed format for listofKeyValue is "
-                            "invalid")
+    def __contains__(self, x):
+        return dict.__contains__(self, x)

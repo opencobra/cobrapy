@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 
 from six import string_types
-
+from cobra.core.meta_data import MetaData
 
 class Object(object):
     """Defines common behavior of object in cobra.core"""
@@ -20,7 +20,7 @@ class Object(object):
         self.name = name
 
         self.notes = {}
-        self._annotation = {}
+        self.annotation = MetaData()
 
     @property
     def id(self):
@@ -39,17 +39,6 @@ class Object(object):
 
     def _set_id_with_model(self, value):
         self._id = value
-
-    @property
-    def annotation(self):
-        return self._annotation
-
-    @annotation.setter
-    def annotation(self, annotation):
-        if not isinstance(annotation, dict):
-            raise TypeError("Annotation must be a dict")
-        else:
-            self._annotation = annotation
 
     def __getstate__(self):
         """To prevent excessive replication during deepcopy."""

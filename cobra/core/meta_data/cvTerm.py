@@ -177,8 +177,12 @@ class CVTerm(dict):
                     raise TypeError("Resources must be put in a list")
                 dict.__setitem__(self, key, value)
             elif key == 'nested_data':
-                if not isinstance(value, CVTerm):
-                    raise TypeError("The value passed must be of type CVTerm.")
+                if isinstance(value, CVTerm):
+                    dict.__setitem__(self, key, value)
+                elif isinstance(value, dict):
+                    dict.__setitem__(self, key, CVTerm(value))
+                else:
+                    raise TypeError("The value passed has invalid format.")
                 dict.__setitem__(self, key, value)
 
         def __delitem__(self, key):

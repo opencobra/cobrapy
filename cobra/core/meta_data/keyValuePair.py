@@ -2,8 +2,6 @@
 
 from __future__ import absolute_import
 
-from cobra.core.object import Object
-
 
 class ListOfKeyValue(list):
     """A list extension to store key-value pairs
