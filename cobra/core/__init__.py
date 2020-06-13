@@ -6,7 +6,7 @@ from cobra.core.configuration import Configuration
 from cobra.core.dictlist import DictList
 from cobra.core.gene import Gene
 from cobra.core.group import Group
-from cobra.core.meta_data import *
+from cobra.core.metadata import *
 from cobra.core.metabolite import Metabolite
 from cobra.core.model import Model
 from cobra.core.object import Object

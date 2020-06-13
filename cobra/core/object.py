@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 from six import string_types
 
-from cobra.core.meta_data import MetaData
+from cobra.core.metadata import MetaData
 
 
 class Object(object):

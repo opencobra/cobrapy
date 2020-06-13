@@ -2,8 +2,10 @@
 
 from __future__ import absolute_import
 
+from collections.abc import MutableMapping, MutableSequence
 
-class ListOfKeyValue(list):
+
+class ListOfKeyValue(MutableSequence):
     """A list extension to store key-value pairs
 
     Parameters
@@ -11,16 +13,19 @@ class ListOfKeyValue(list):
     creators : list key-value pair data
     """
 
-    def __init__(self, keyvaluelist=[]):
+    def __init__(self, keyvaluelist=None):
+        if keyvaluelist is None:
+            keyvaluelist = []
+        self._sequence = list()
         if not isinstance(keyvaluelist, list):
             raise TypeError("The data passed for ListOfKeyValue "
                             "must be inside a list")
         else:
             for item in keyvaluelist:
                 if isinstance(item, self.KeyValuePair):
-                    list.append(self, item)
+                    self._sequence.append(item)
                 elif isinstance(item, dict):
-                    list.append(self, self.KeyValuePair(item))
+                    self._sequence.append(self.KeyValuePair(item))
                 else:
                     raise TypeError("The data passed for KeyValuepair "
                                     "indexed %s has invalid format"
@@ -28,42 +33,48 @@ class ListOfKeyValue(list):
                                                          len(keyvaluelist)))
 
     def __len__(self):
-        return list.__len__(self)
+        return len(self._sequence)
 
     def __delitem__(self, index):
-        list.__delitem__(self, index)
+        del self._sequence[index]
 
     def insert(self, index, value):
         if isinstance(value, self.KeyValuePair):
-            list.insert(self, index, value)
+            self._sequence.insert(index, value)
         elif isinstance(value, dict):
-            list.insert(self, index, self.KeyValuePair(value))
+            self._sequence.insert(index, self.KeyValuePair(value))
         else:
             raise TypeError("The data passed for KeyValuePair "
                             "has invalid format")
 
     def append(self, value):
         if isinstance(value, self.KeyValuePair):
-            list.append(self, value)
+            self._sequence.append(value)
         elif isinstance(value, dict):
-            list.append(self, self.KeyValuePair(value))
+            self._sequence.append(self.KeyValuePair(value))
         else:
             raise TypeError("The data passed for KeyValuePair "
                             "has invalid format")
 
     def __setitem__(self, index, value):
         if isinstance(value, self.KeyValuePair):
-            list.__setitem__(self, index, value)
+            self._sequence[index] = value
         elif isinstance(value, dict):
-            list.__setitem__(self, index, self.KeyValuePair(value))
+            self._sequence[index] = self.KeyValuePair(value)
         else:
             raise TypeError("The data passed for KeyValuePair "
                             "has invalid format")
 
     def __getitem__(self, index):
-        return list.__getitem__(self, index)
+        return self._sequence[index]
 
-    class KeyValuePair(dict):
+    def __str__(self):
+        return str(self._sequence)
+
+    def __repr__(self):
+        return '{}'.format(self._sequence)
+
+    class KeyValuePair(MutableMapping):
         """
         Class representation of key-value pairs supported in fba-v3
 
@@ -83,7 +94,10 @@ class ListOfKeyValue(list):
 
         VALID_KEYS = ["id", "name", "key", "value", "uri"]
 
-        def __init__(self, data={}):
+        def __init__(self, data=None):
+            if data is None:
+                data = {}
+            self._mapping = dict()
             for key, value in data.items():
                 if key not in self.VALID_KEYS:
                     raise ValueError("'%s' is not allowed. Only possible "
@@ -93,17 +107,17 @@ class ListOfKeyValue(list):
                     raise TypeError("All keys must be of type string")
                 if not isinstance(value, str):
                     raise TypeError("All values must be of type string")
-                dict.__setitem__(self, key, value)
+                self._mapping[key] = value
             for key in self.VALID_KEYS:
                 if key not in data:
-                    dict.__setitem__(self, key, None)
+                    self._mapping[key] = None
 
         def __getitem__(self, key):
             if key not in self.VALID_KEYS:
                 raise ValueError("Key %s is not allowed. Only allowed "
                                  "keys are : 'id', 'name', 'key',"
                                  " 'value', 'uri'" % key)
-            return dict.__getitem__(self, key)
+            return self._mapping[key]
 
         def __setitem__(self, key, value):
             """Restricting the keys and values that can be set.
@@ -115,16 +129,19 @@ class ListOfKeyValue(list):
                                  " 'value', 'uri'" % key)
             if not isinstance(value, str):
                 raise TypeError("The value must be of type string")
-            dict.__setitem__(self, key, value)
+            self._mapping[key] = value
 
         def __delitem__(self, key):
-            dict.__delitem__(self, key)
+            del self._mapping[key]
 
         def __iter__(self):
-            return dict.__iter__(self)
+            return iter(self._mapping)
 
         def __len__(self):
-            return dict.__len__(self)
+            return len(self._mapping)
 
-        def __contains__(self, x):
-            return dict.__contains__(self, x)
+        def __str__(self):
+            return str(self._mapping)
+
+        def __repr__(self):
+            return '{}'.format(self._mapping)

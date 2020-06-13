@@ -7,8 +7,10 @@ resources
 
 from __future__ import absolute_import
 
+from collections.abc import MutableMapping, MutableSequence
 
-class CVTerm(dict):
+
+class CVTerm(MutableMapping):
     """
     Class representation of Controlled Vocabulary term inside Annotation.
     It will look similar to a dictionary, but will have restrictions on the
@@ -17,7 +19,8 @@ class CVTerm(dict):
     Parameters
     ----------
     cvterm : dict
-        A dictionary that maps the provider to its corresponding CVList
+        A dictionary type structure that maps the provider to its
+        corresponding CVList
 
     Attributes
     ----------
@@ -25,7 +28,10 @@ class CVTerm(dict):
 
     """
 
-    def __init__(self, cvterm={}):
+    def __init__(self, cvterm=None):
+        if cvterm is None:
+            cvterm = {}
+        self._mapping = dict()
         if not isinstance(cvterm, dict):
             raise TypeError("The annotation data must be in a dict form")
         else:
@@ -33,12 +39,15 @@ class CVTerm(dict):
                 if not isinstance(key, str):
                     raise TypeError("the provider must be of type string")
                 if isinstance(value, list):
-                    dict.__setitem__(self, key, self.CVList(value))
+                    self._mapping[key] = self.CVList(value)
+                elif isinstance(value, self.CVList):
+                    self._mapping[key] = value
                 else:
-                    dict.__setitem__(self, key, value)
+                    raise TypeError("the value passed for key '%s' "
+                                    "has invalid format" % key)
 
     def __getitem__(self, key):
-        return dict.__getitem__(self, key)
+        return self._mapping[key]
 
     def __setitem__(self, key, value):
         """Make sure that key passed is of type string and value
@@ -47,25 +56,28 @@ class CVTerm(dict):
         if not isinstance(key, str):
             raise TypeError("The key passed must be a string")
         if isinstance(value, list):
-            dict.__setitem__(self, key, self.CVList(value))
+            self._mapping[key] = self.CVList(value)
         elif isinstance(value, self.CVList):
-            dict.__setitem__(self, key, value)
+            self._mapping[key] = key, value
         else:
             raise TypeError("The value passed does not confirm to CVList type")
 
     def __delitem__(self, key):
-        dict.__delitem__(self, key)
+        del self._mapping[key]
 
     def __iter__(self):
-        return dict.__iter__(self)
+        return iter(self._mapping)
 
     def __len__(self):
-        return dict.__len__(self)
+        return len(self._mapping)
 
-    def __contains__(self, x):
-        return dict.__contains__(self, x)
+    def __str__(self):
+        return str(self._mapping)
 
-    class CVList(list):
+    def __repr__(self):
+        return '{}'.format(self._mapping)
+
+    class CVList(MutableSequence):
         """
         Class representation of all sets of resources and their nested
         annotation corresponding to a given qualifier. It have similar
@@ -79,37 +91,52 @@ class CVTerm(dict):
 
         """
 
-        def __init__(self, cvlist=[]):
+        def __init__(self, cvlist=None):
+            if cvlist is None:
+                cvlist = []
+            self._sequence = list()
             if not isinstance(cvlist, list):
                 raise TypeError("The resources passed must be inside a list")
             for item in cvlist:
                 if isinstance(item, CVTerm.ExternalResources):
-                    list.append(self, item)
+                    self._sequence.append(item)
                 elif isinstance(item, dict):
-                    list.append(self, CVTerm.ExternalResources(item))
+                    self._sequence.append(CVTerm.ExternalResources(item))
                 else:
                     raise TypeError("All items must confirm to "
                                     "ExternalResources structure")
 
         def __len__(self):
-            return list.__len__(self)
+            return len(self._sequence)
 
         def __delitem__(self, index):
-            list.__delitem__(self, index)
+            del self._sequence[index]
 
         def insert(self, index, value):
-            list.insert(self, index, CVTerm.ExternalResources(value))
+            self._sequence.insert(index, CVTerm.ExternalResources(value))
 
         def append(self, value):
-            list.append(self, CVTerm.ExternalResources(value))
+            if isinstance(value, CVTerm.ExternalResources):
+                self._sequence.append(value)
+            elif isinstance(value, dict):
+                self._sequence.append(CVTerm.ExternalResources(value))
+            else:
+                raise TypeError("The passed format for setting external"
+                                " resources is invalid.")
 
         def __setitem__(self, index, value):
-            list.__setitem__(self, index, CVTerm.ExternalResources(value))
+            self._sequence[index] = CVTerm.ExternalResources(value)
 
         def __getitem__(self, index):
-            return list.__getitem__(self, index)
+            return self._sequence[index]
 
-    class ExternalResources(dict):
+        def __str__(self):
+            return str(self._sequence)
+
+        def __repr__(self):
+            return '{}'.format(self._sequence)
+
+    class ExternalResources(MutableMapping):
         """
         Class representation of a single set of resources and its nested
         annotation. Its a special type of dict with restricted keys and
@@ -133,36 +160,47 @@ class CVTerm(dict):
 
         """
 
-        ANNOTATION_KEYS = ['resources', 'nested_data']
+        ANNOTATION_KEYS = ['resources', 'nested_data', 'qualifier_type']
+        QUALIFIER_RELATION = ['MODEL', 'BIOLOGICAL', 'UNKNOWN']
 
-        def __init__(self, data={}):
-            self._resources = []
-            self._nested_data = None
+        def __init__(self, data=None):
+            if data is None:
+                data = {}
+            self._mapping = dict()
             if not isinstance(data, dict):
                 raise TypeError("The value passed must be of type dict.")
             for key, value in data.items():
                 if key not in self.ANNOTATION_KEYS:
                     raise ValueError("Key '%s' is not allowed. Only "
-                                     "allowed keys are 'resource', "
+                                     "allowed keys are 'resources', "
                                      "'nested_data'." % key)
                 if key == 'resources':
                     if not isinstance(value, list):
                         raise TypeError("Resources must be put in a list")
-                    dict.__setitem__(self, key, value)
-                if key == 'nested_data':
+                    self._mapping[key] = value
+                elif key == 'nested_data':
                     if isinstance(value, CVTerm):
-                        dict.__setitem__(self, key, value)
+                        self._mapping[key] = value
                     elif isinstance(value, dict):
-                        dict.__setitem__(self, key, CVTerm(value))
+                        self._mapping[key] = CVTerm(value)
                     else:
                         raise TypeError("The nested data structure does "
                                         "not have valid CVTerm format")
+                elif key == "qualifier_type":
+                    if not isinstance(value, int):
+                        raise TypeError("The value passed for qualifier type "
+                                        "must be an integer")
+                    if value == 0 or value == 1:
+                        self._mapping[key] = self.QUALIFIER_RELATION[value]
+                    else:
+                        self._mapping[key] = self.QUALIFIER_RELATION[2]
 
         def __getitem__(self, key):
             if key not in self.ANNOTATION_KEYS:
-                raise ValueError("Key %s is not allowed. Only allowed keys are"
-                                 " 'resources', 'nested_data'." % key)
-            return dict.__getitem__(self, key)
+                raise ValueError("Key %s is not allowed. Only allowed "
+                                 "keys are : 'qualifier_type', 'resources', "
+                                 "'nested_data'" % key)
+            return self._mapping[key]
 
         def __setitem__(self, key, value):
             """Restricting the keys and values that can be set.
@@ -170,29 +208,39 @@ class CVTerm(dict):
             """
             if key not in self.ANNOTATION_KEYS:
                 raise ValueError("Key %s is not allowed. Only allowed "
-                                 "keys are 'resources', 'nested_data'."
-                                 % key)
+                                 "keys are : 'qualifier_type', 'resources', "
+                                 "'nested_data'" % key)
             if key == 'resources':
                 if not isinstance(value, list):
                     raise TypeError("Resources must be put in a list")
-                dict.__setitem__(self, key, value)
+                self._mapping[key] = value
             elif key == 'nested_data':
                 if isinstance(value, CVTerm):
-                    dict.__setitem__(self, key, value)
+                    self._mapping[key] = value
                 elif isinstance(value, dict):
-                    dict.__setitem__(self, key, CVTerm(value))
+                    self._mapping[key] = CVTerm(value)
                 else:
                     raise TypeError("The value passed has invalid format.")
-                dict.__setitem__(self, key, value)
+            elif key == "qualifier_type":
+                if not isinstance(value, int):
+                    raise TypeError("The value passed for qualifier type "
+                                    "must be an integer")
+                if value == 0 or value == 1:
+                    self._mapping[key] = self.QUALIFIER_RELATION[value]
+                else:
+                    self._mapping[key] = self.QUALIFIER_RELATION[2]
 
         def __delitem__(self, key):
-            dict.__delitem__(self, key)
+            del self._mapping[key]
 
         def __iter__(self):
-            return dict.__iter__(self)
+            return iter(self._mapping)
 
         def __len__(self):
-            return dict.__len__(self)
+            return len(self._mapping)
 
-        def __contains__(self, x):
-            return dict.__contains__(self, x)
+        def __str__(self):
+            return str(self._mapping)
+
+        def __repr__(self):
+            return '{}'.format(self._mapping)

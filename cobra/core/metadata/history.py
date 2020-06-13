@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import datetime
+from collections.abc import MutableMapping, MutableSequence
 
 
 # The possible keys inside creator dict
@@ -18,7 +19,7 @@ def validateDate(date_text):
     return True
 
 
-class History(dict):
+class History(MutableMapping):
     """
     Class representation of history of a given component i.e. creator,
     created date and modification dates. It is basically an extended
@@ -48,28 +49,29 @@ class History(dict):
 
     VALID_KEYS = ["creators", "created", "modified"]
 
-    def __init__(self, creators=[], created=None, modified=[]):
+    def __init__(self, creators=None, created=None, modified=None):
         if creators is None:
             creators = []
-        dict.__setitem__(self, "creators", self.ListOfCreators(creators))
+        if modified is None:
+            modified = []
+        self._mapping = dict()
+        self._mapping["creators"] = self.ListOfCreators(creators)
         if isinstance(created, str):
             validateDate(created)
-            dict.__setitem__(self, "created", created)
+            self._mapping["created"] = created
         elif created is None:
-            dict.__setitem__(self, "created", None)
+            self._mapping["created"] = None
         else:
             raise TypeError('Only None and string types are possible for '
                             '"created" date attribute')
-        if modified is None:
-            modified = []
-        dict.__setitem__(self, "modified", self.ModifiedHistory(modified))
+        self._mapping["modified"] = self.ModifiedHistory(modified)
 
     def __getitem__(self, key):
         if key not in self.VALID_KEYS:
             raise ValueError("Key %s is not allowed. Only allowed "
                              "keys are : 'creators', 'created', 'modified'"
                              % key)
-        return dict.__getitem__(self, key)
+        return self._mapping[key]
 
     def __setitem__(self, key, value):
         """Restricting the keys and values that can be set.
@@ -81,9 +83,9 @@ class History(dict):
                              " 'value', 'uri'" % key)
         if key == "creators":
             if isinstance(value, self.ListOfCreators):
-                dict.__setitem__(self, key, value)
+                self._mapping[key] = value
             elif isinstance(value, list):
-                dict.__setitem__(self, key, self.ListOfCreators(value))
+                self._mapping[key] = self.ListOfCreators(value)
             else:
                 raise TypeError("The passed format for creators is invalid")
         elif key == "created":
@@ -91,29 +93,32 @@ class History(dict):
                 raise TypeError("The date passed must be a string")
             else:
                 validateDate(value)
-                dict.__setitem__(self, key, value)
+                self._mapping[key] = value
         elif key == "modified":
             if isinstance(value, self.ModifiedHistory):
-                dict.__setitem__(self, key, value)
+                self._mapping[key] = value
             elif isinstance(value, list):
-                dict.__setitem__(self, key, self.ModifiedHistory(value))
+                self._mapping[key] = self.ModifiedHistory(value)
             else:
                 raise TypeError("The passed format for modification"
                                 " history is invalid")
 
     def __delitem__(self, key):
-        dict.__delitem__(self, key)
+        del self._mapping[key]
 
     def __iter__(self):
-        return dict.__iter__(self)
+        return iter(self._mapping)
 
     def __len__(self):
-        return dict.__len__(self)
+        return len(self._mapping)
 
-    def __contains__(self, x):
-        return dict.__contains__(self, x)
+    def __str__(self):
+        return str(self._mapping)
 
-    class ListOfCreators(list):
+    def __repr__(self):
+        return '{}'.format(self._mapping)
+
+    class ListOfCreators(MutableSequence):
         """A list extension to store each creator's info
 
         Parameters
@@ -121,16 +126,19 @@ class History(dict):
         creators : list containing info about creators
         """
 
-        def __init__(self, creators=[]):
+        def __init__(self, creators=None):
+            if creators is None:
+                creators = []
+            self._sequence = list()
             if not isinstance(creators, list):
                 raise TypeError("The data passed for creators must be "
                                 "inside a list")
             else:
                 for item in creators:
                     if isinstance(item, History.Creator):
-                        list.append(self, item)
+                        self._sequence.append(item)
                     elif isinstance(item, dict):
-                        list.append(self, History.Creator(item))
+                        self._sequence.append(History.Creator(item))
                     else:
                         raise TypeError("The data passed for creator "
                                         "indexed %s has invalid format"
@@ -138,39 +146,45 @@ class History(dict):
                                                          len(creators)))
 
         def __len__(self):
-            return list.__len__(self)
+            return len(self._sequence)
 
         def __delitem__(self, index):
-            list.__delitem__(self, index)
+            del self._sequence[index]
 
         def insert(self, index, value):
             if isinstance(value, History.Creator):
-                list.insert(self, index, value)
+                self._sequence.insert(index, value)
             elif isinstance(value, dict):
-                list.insert(self, index, History.Creator(value))
+                self._sequence.insert(index, History.Creator(value))
             else:
                 raise TypeError("The data passed has invalid format")
 
         def append(self, value):
             if isinstance(value, History.Creator):
-                list.append(self, value)
+                self._sequence.append(value)
             elif isinstance(value, dict):
-                list.append(self, History.Creator(value))
+                self._sequence.append(History.Creator(value))
             else:
                 raise TypeError("The data passed has invalid format")
 
         def __setitem__(self, index, value):
             if isinstance(value, History.Creator):
-                list.__setitem__(self, index, value)
+                self._sequence[index] = value
             elif isinstance(value, dict):
-                list.__setitem__(self, index, History.Creator(value))
+                self._sequence[index] = History.Creator(value)
             else:
                 raise TypeError("The data passed has invalid format")
 
         def __getitem__(self, index):
-            return list.__getitem__(self, index)
+            return self._sequence[index]
 
-    class Creator(dict):
+        def __str__(self):
+            return str(self._sequence)
+
+        def __repr__(self):
+            return '{}'.format(self._sequence)
+
+    class Creator(MutableMapping):
         """A dictionary extension to store basic info of this component
            creator
 
@@ -185,26 +199,29 @@ class History(dict):
             }
         """
 
-        def __init__(self, creator_dict={}):
+        def __init__(self, creator_dict=None):
+            if creator_dict is None:
+                creator_dict = {}
+            self._mapping = dict()
             if not isinstance(creator_dict, dict):
                 raise TypeError("The value passed for creator must "
                                 "be of type dict.")
             for key in CREATOR_KEYS:
                 if key not in creator_dict:
-                    dict.__setitem__(self, key, None)
+                    self._mapping[key] = None
                 else:
                     if not isinstance(creator_dict[key], str):
                         raise TypeError("All the values passed must "
                                         "be of type string.")
                     else:
-                        dict.__setitem__(self, key, creator_dict[key])
+                        self._mapping[key] = creator_dict[key]
 
         def __getitem__(self, key):
             if key not in CREATOR_KEYS:
                 raise ValueError("Key %s is not allowed. only allowed "
                                  "keys are 'first_name', 'last_name', "
                                  "'email', 'organization_name'." % key)
-            return dict.__getitem__(self, key)
+            return self._mapping[key]
 
         def __setitem__(self, key, value):
             if key not in CREATOR_KEYS:
@@ -213,21 +230,24 @@ class History(dict):
                                  "'email', 'organization_name'." % key)
             if not isinstance(value, str):
                 raise TypeError("Value passed must be of type string.")
-            dict.__setitem__(self, key, value)
+            self._mapping[key] = value
 
         def __delitem__(self, key):
-            dict.__delitem__(self, key)
+            del self._mapping[key]
 
         def __iter__(self):
-            return dict.__iter__(self)
+            return iter(self._mapping)
 
         def __len__(self):
-            return dict.__len__(self)
+            return len(self._mapping)
 
-        def __contains__(self, x):
-            return dict.__contains__(self, x)
+        def __str__(self):
+            return str(self._mapping)
 
-    class ModifiedHistory(list):
+        def __repr__(self):
+            return '{}'.format(self._mapping)
+
+    class ModifiedHistory(MutableSequence):
         """A list extension to store modification dates. Only Restricted
         type of entries are possible.
 
@@ -237,32 +257,41 @@ class History(dict):
                        8601 format
         """
 
-        def __init__(self, modifiedList=[]):
+        def __init__(self, modifiedList=None):
+            if modifiedList is None:
+                modifiedList = []
+            self._sequence = list()
             if not isinstance(modifiedList, list):
                 raise TypeError("The dates passed must be inside a list")
             for item in modifiedList:
                 if not isinstance(item, str):
                     raise ValueError("Each date must be of type string")
                 validateDate(item)
-                list.append(self, item)
+                self._sequence.append(item)
 
         def __len__(self):
-            return list.__len__(self)
+            return len(self._sequence)
 
         def __delitem__(self, index):
-            list.__delitem__(self, index)
+            del self._sequence[index]
 
         def insert(self, index, value):
             validateDate(value)
-            list.insert(self, index, value)
+            self._sequence.insert(index, value)
 
         def append(self, value):
             validateDate(value)
-            list.append(self, value)
+            self._sequence.append(value)
 
         def __setitem__(self, index, value):
             validateDate(value)
-            list.__setitem__(self, index, value)
+            self._sequence[index] = value
 
         def __getitem__(self, index):
-            return list.__getitem__(self, index)
+            return self._sequence[index]
+
+        def __str__(self):
+            return str(self._sequence)
+
+        def __repr__(self):
+            return '{}'.format(self._sequence)

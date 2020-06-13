@@ -2,12 +2,14 @@
 
 from __future__ import absolute_import
 
-from cobra.core.meta_data.cvTerm import CVTerm
-from cobra.core.meta_data.history import History
-from cobra.core.meta_data.keyValuePair import ListOfKeyValue
+from collections.abc import MutableMapping
+
+from cobra.core.metadata.cvterm import CVTerm
+from cobra.core.metadata.history import History
+from cobra.core.metadata.keyvaluepair import ListOfKeyValue
 
 
-class MetaData(dict):
+class MetaData(MutableMapping):
     """Class representation of the meta-data of the component.
     It is a combination of three classes i.e CVTerm, History
     and KeyValuePair class.
@@ -28,20 +30,21 @@ class MetaData(dict):
     VALID_KEYS = ["sbo", "cvTerms", "history", "listofKeyValue"]
 
     def __init__(self, cvterm=None, history=None, listofKeyValue=None):
+        self._mapping = dict()
         # setting the cvterm
         if cvterm is None:
-            dict.__setitem__(self, "cvTerms", CVTerm())
+            self._mapping["cvTerms"] = CVTerm()
         elif isinstance(cvterm, CVTerm):
-            dict.__setitem__(self, "cvTerms", cvterm)
+            self._mapping["cvTerms"] = cvterm
         elif isinstance(cvterm, dict):
-            dict.__setitem__(self, "cvTerms", CVTerm(cvterm))
+            self._mapping["cvTerms"] = CVTerm(cvterm)
         else:
             raise TypeError("Invalid format passed for cvterm")
         # setting the history of the component
         if history is None:
-            dict.__setitem__(self, "history", History())
+            self._mapping["history"] = History()
         elif isinstance(history, History):
-            dict.__setitem__(self, "history", history)
+            self._mapping["history"] = history
         elif isinstance(history, dict):
             if "creators" not in history:
                 history["creators"] = []
@@ -49,29 +52,28 @@ class MetaData(dict):
                 history["created"] = None
             if "modified" not in history:
                 history["modified"] = []
-            dict.__setitem__(self, "history", History(history["creators"],
-                                                      history["created"],
-                                                      history["modified"]))
+            self._mapping["history"] = History(history["creators"],
+                                               history["created"],
+                                               history["modified"])
         else:
             raise TypeError("Invalid format passed for history")
         # setting the list of key-value pair
         if listofKeyValue is not None:
             if isinstance(listofKeyValue, ListOfKeyValue):
-                dict.__setitem__(self, "listofKeyValue", listofKeyValue)
+                self._mapping["listofKeyValue"] = listofKeyValue
             elif isinstance(listofKeyValue, list):
-                dict.__setitem__(self, "listofKeyValue",
-                                 ListOfKeyValue(listofKeyValue))
+                self._mapping["listofKeyValue"] = ListOfKeyValue(listofKeyValue)
             else:
                 raise TypeError("Key value pairs must be passed in a list")
         else:
-            dict.__setitem__(self, "listofKeyValue", ListOfKeyValue())
+            self._mapping["listofKeyValue"] = ListOfKeyValue()
 
     def __getitem__(self, key):
         if key not in self.VALID_KEYS:
             raise ValueError("Key %s is not allowed. Only allowed "
                              "keys are : 'sbo', 'cvTerms', 'history', "
                              "'listofKeyValue'" % key)
-        return dict.__getitem__(self, key)
+        return self._mapping[key]
 
     def __setitem__(self, key, value):
         """Restricting the keys and values that can be set.
@@ -84,14 +86,14 @@ class MetaData(dict):
                              "'listofKeyValue'" % key)
         if key == "cvTerms":
             if isinstance(value, CVTerm):
-                dict.__setitem__(self, "cvTerms", value)
+                self._mapping["cvTerms"] = value
             elif isinstance(value, dict):
-                dict.__setitem__(self, "cvTerms", CVTerm(value))
+                self._mapping["cvTerms"] = CVTerm(value)
             else:
                 raise TypeError("This passed format for cvterm is invalid")
         elif key == "history":
             if isinstance(history, History):
-                dict.__setitem__(self, "history", history)
+                self._mapping["history"] = history
             elif isinstance(history, dict):
                 if "creators" not in history:
                     history["creators"] = []
@@ -99,28 +101,30 @@ class MetaData(dict):
                     history["created"] = None
                 if "modified" not in history:
                     history["modified"] = []
-                dict.__setitem__(self, "history", History(history["creators"],
-                                                          history["created"],
-                                                          history["modified"]))
+                self._mapping["history"] = History(history["creators"],
+                                                   history["created"],
+                                                   history["modified"])
         elif key == "listofKeyValue":
             if isinstance(listofKeyValue, ListOfKeyValue):
-                dict.__setitem__(self, "listofKeyValue", listofKeyValue)
+                self._mapping["listofKeyValue"] = listofKeyValue
             elif isinstance(listofKeyValue, list):
-                dict.__setitem__(self, "listofKeyValue",
-                                 ListOfKeyValue(listofKeyValue))
+                self._mapping["listofKeyValue"] = ListOfKeyValue(listofKeyValue)
             else:
                 raise TypeError("Key value pairs must be passed in a list")
         elif key == "sbo":
-            dict.__setitem__(self, "sbo", value)
+            self._mapping["sbo"] = value
 
     def __delitem__(self, key):
-        dict.__delitem__(self, key)
+        del self._mapping[key]
 
     def __iter__(self):
-        return dict.__iter__(self)
+        return iter(self._mapping)
 
     def __len__(self):
-        return dict.__len__(self)
+        return len(self._mapping)
 
-    def __contains__(self, x):
-        return dict.__contains__(self, x)
+    def __str__(self):
+        return str(self._mapping)
+
+    def __repr__(self):
+        return '{}'.format(self._mapping)
