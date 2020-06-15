@@ -1,41 +1,44 @@
-cvterms = {
-  "hasPart" : [
-    {
-      "resources" : [
-          "https://identifiers.org/uniprot/P69905",
-          "https://www.uniprot.org/uniprot/P68871",
-          "https://identifiers.org/chebi/CHEBI:17627",
-      ],
-        "isDescribedBy" : [
-          {
-            "resources" : [
-              "https://identifiers.org/pubmed/1111111"
-            ]
-          },
-          {
-            "resources" : [
-              "https://identifiers.org/eco", "000000"
-            ]
-          }
-        ]
-    },
-    {
-      "resources" : [
-          ["https://identifiers.org/uniprot", "P69905"],
-          ["https://identifiers.org/uniprot", "P68871"],
-          ["https://identifiers.org/kegg.compound", "C00032"],
-        ]
-    },
-  ],
+{
+    cvterms : {
+    "hasPart" : [
+      {
+        "resources" : [
+            "https://identifiers.org/uniprot/P69905",
+            "https://www.uniprot.org/uniprot/P68871",
+            "https://identifiers.org/chebi/CHEBI:17627",
+        ],
+          "isDescribedBy" : [
+            {
+              "resources" : [
+                "https://identifiers.org/pubmed/1111111"
+              ]
+            },
+            {
+              "resources" : [
+                "https://identifiers.org/eco/000000"
+              ]
+            }
+          ]
+      },
+      {
+        "resources" : [
+            "https://identifiers.org/uniprot/P69905",
+            "https://identifiers.org/uniprot/P68871",
+            "https://identifiers.org/kegg.compound/C00032",
+          ]
+      },
+    ],
 
-  "hasVersion" : [
-    {
-      "resources" : [
-        "https://identifiers.org/uniprot/Q9UQM7",
-        "https://identifiers.org/uniprot", "Q13554"],
-      ]
-      "nested_data": [
-         ...
-      ]
-    }
+    "hasVersion" : [
+      {
+        "resources" : [
+          "https://identifiers.org/uniprot/Q9UQM7",
+          "https://identifiers.org/uniprot/Q13554"
+        ]
+        "nested_data": [
+           ...
+        ]
+      }
+    ]
+  }
 }
