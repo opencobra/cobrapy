@@ -118,6 +118,21 @@ class History(MutableMapping):
     def __repr__(self):
         return '{}'.format(self._mapping)
 
+    @staticmethod
+    def parse_history(data) -> 'History':
+        if data is None:
+            return History()
+        elif isinstance(data, History):
+            return data
+        elif isinstance(data, dict):
+            for key in ["creators", "created", "modified"]:
+                if key not in data:
+                    data[key] = None
+            return History(**data)
+        else:
+            raise TypeError("Invalid format for History: '{}'".format(data))
+
+
     class ListOfCreators(MutableSequence):
         """A list extension to store each creator's info
 

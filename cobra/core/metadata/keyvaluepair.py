@@ -4,6 +4,24 @@ from __future__ import absolute_import
 
 from collections.abc import MutableMapping, MutableSequence
 
+class KeyValueDict(object):
+
+    def __init__(self, data):
+        self._keyValueDict = {}  # FIXME: this is more complicated
+        # FIXME: implement with code below
+
+    @staticmethod
+    def parse_keyValueDict(data) -> 'KeyValueDict':
+        """Tries to parse the KeyValueDict."""
+        if data is None:
+            return KeyValueDict(None)
+        elif isinstance(data, KeyValueDict):
+            return data
+        elif isinstance(data, dict):
+            return KeyValueDict(data)
+        else:
+            raise TypeError("Invalid format for KeyValueDict: '{}'".format(data))
+
 
 class ListOfKeyValue(MutableSequence):
     """A list extension to store key-value pairs

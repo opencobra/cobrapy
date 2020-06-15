@@ -22,7 +22,7 @@ class Object(object):
         self.name = name
 
         self.notes = {}
-        self.annotation = MetaData()
+        self._annotation = MetaData()  # {}
 
     @property
     def id(self):
@@ -41,6 +41,14 @@ class Object(object):
 
     def _set_id_with_model(self, value):
         self._id = value
+
+    @property
+    def annotation(self):
+        return self._annotation
+
+    @annotation.setter
+    def annotation(self, annotation):
+        self._annotation = annotation
 
     def __getstate__(self):
         """To prevent excessive replication during deepcopy."""
