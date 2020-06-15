@@ -4,10 +4,6 @@
 Define the Controlled Vocabulary term class for refering to external
 resources
 
-
-
-
-
 """
 from __future__ import absolute_import
 
@@ -45,9 +41,9 @@ URL_IDENTIFIERS_PATTERN = re.compile(
 
 class CVTerm(object):
     """ Representation of a single CVTerm."""
-    def __init__(self, qualifier: Qualifier=Qualifier.bqb_is, uri: str = None):
+    def __init__(self, qualifier: Qualifier=Qualifier.bqb_is, resource: str = None):
         self.qualifier = qualifier
-        self.uri = uri
+        self.uri = resource
 
     def parse_provider_identifier(self):
         """Parses provider and term from given identifiers annotation uri.
@@ -75,6 +71,7 @@ class CVTerm(object):
             return None
 
         return provider, identifier
+
 
 class CVTerms(object):
     """Representation of all CVTerms of an object in their dependency structure. """
@@ -109,6 +106,7 @@ class CVTerms(object):
             return CVTerms(data)
         else:
             raise TypeError("Invalid format for CVTerms: '{}'".format(data))
+
 
 
 class ExternalResources(MutableMapping):

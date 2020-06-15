@@ -41,6 +41,9 @@ class MetaData(MutableMapping):
         # for resources a list of identifiers is stored
         self._annotations = defaultdict(list)
 
+    # def add_cvterm(self):
+    #    self._annotations
+
     def __getitem__(self, key):
         return self._annotations[key]
 

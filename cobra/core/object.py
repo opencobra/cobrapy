@@ -22,7 +22,7 @@ class Object(object):
         self.name = name
 
         self.notes = {}
-        self._annotation = MetaData()  # {}
+        self._annotation = {}  # MetaData()
 
     @property
     def id(self):

@@ -1,34 +1,36 @@
+from pathlib import Path
 from cobra.core.metadata import *
 from cobra.core.species import Species
 import pytest
+import json
+from pprint import pprint
+from cobra.core.metadata.cvterm import CVTerms
 
 
-def test_annotation():
-    s = Species()
-    print(s.annotation)
-    s.annotation["chebi"] = ["1234", "23423432"]
-    s.annotation["sbo"] = ["SBO123"]
-    print(s.annotation)
-
-    assert "chebi" in s.annotation
-    assert "sbo" in s.annotation
-    assert len(s.annotation) == 2
-    for key in ["keys", "items", "values"]:
-        assert hasattr(s.annotation, key)
-
-    # assert 0 == 1
-
-
-def test_metadata():
+def example_metadata():
     s = Species()
 
-    meta = MetaData()
+    for json_example in ["cvterms_flat", "cvterms_nested"]:
+
+        with open(Path(__file__).parent / f"{json_example}.json", "r") as f_cvterms:
+            cvterms_data = json.load(f_cvterms)
+            print("-" * 80)
+            pprint(cvterms_data)
+            print("-" * 80)
+
+            # FIXME:
+            cvterms = CVTerms(cvterms_data)
+            print(cvterms)
+            meta = MetaData(cvterms=cvterms)
+    return
+
 
     # history
 
     # keyValuePair
 
     # cvterms
+    # FIXME: update example
     meta["cvterms"] = {
         "is": [{"resources": ["http://identifiers.org/chebi/CHEBI:17847"]}]}
     print(meta["annotation"])
@@ -45,7 +47,7 @@ def test_metadata():
 
     s.annotation = meta
 
-# if __name__ == "__main__":
-    # example_metadata()
+
+if __name__ == "__main__":
+    example_metadata()
     # example_annotation()
-#    pass
