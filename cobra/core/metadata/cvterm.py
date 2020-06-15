@@ -7,7 +7,13 @@ resources
 
 from __future__ import absolute_import
 
+import re
+import warnings
 from collections.abc import MutableMapping, MutableSequence
+
+
+URL_IDENTIFIERS_PATTERN = re.compile(
+    r"^https?://identifiers.org/(.+?)[:/](.+)")
 
 
 class CVTerm(MutableMapping):
@@ -28,10 +34,11 @@ class CVTerm(MutableMapping):
 
     """
 
-    def __init__(self, cvterm=None):
+    def __init__(self, metadata=None, cvterm=None):
         if cvterm is None:
             cvterm = {}
         self._mapping = dict()
+        self.metadata = metadata
         if not isinstance(cvterm, dict):
             raise TypeError("The annotation data must be in a dict form")
         else:
@@ -39,7 +46,7 @@ class CVTerm(MutableMapping):
                 if not isinstance(key, str):
                     raise TypeError("the provider must be of type string")
                 if isinstance(value, list):
-                    self._mapping[key] = self.CVList(value)
+                    self._mapping[key] = self.CVList(self.metadata, key, value)
                 elif isinstance(value, self.CVList):
                     self._mapping[key] = value
                 else:
@@ -56,9 +63,9 @@ class CVTerm(MutableMapping):
         if not isinstance(key, str):
             raise TypeError("The key passed must be a string")
         if isinstance(value, list):
-            self._mapping[key] = self.CVList(value)
+            self._mapping[key] = self.CVList(self.metadata, key, value)
         elif isinstance(value, self.CVList):
-            self._mapping[key] = key, value
+            self._mapping[key] = value
         else:
             raise TypeError("The value passed does not confirm to CVList type")
 
@@ -91,17 +98,24 @@ class CVTerm(MutableMapping):
 
         """
 
-        def __init__(self, cvlist=None):
+        def __init__(self, metadata=None, qualifier_key=None, cvlist=None):
             if cvlist is None:
                 cvlist = []
+            if qualifier_key is None:
+                self._qualifier_key = "is"
+            elif not isinstance(qualifier_key, str):
+                raise ("The qualifier key passed must be of type string")
+            else:
+                self._qualifier_key = qualifier_key
             self._sequence = list()
+            self.metadata = metadata
             if not isinstance(cvlist, list):
                 raise TypeError("The resources passed must be inside a list")
             for item in cvlist:
                 if isinstance(item, CVTerm.ExternalResources):
                     self._sequence.append(item)
                 elif isinstance(item, dict):
-                    self._sequence.append(CVTerm.ExternalResources(item))
+                    self._sequence.append(CVTerm.ExternalResources(self.metadata, self._qualifier_key, item))
                 else:
                     raise TypeError("All items must confirm to "
                                     "ExternalResources structure")
@@ -113,19 +127,31 @@ class CVTerm(MutableMapping):
             del self._sequence[index]
 
         def insert(self, index, value):
-            self._sequence.insert(index, CVTerm.ExternalResources(value))
+            if isinstance(value, CVTerm.ExternalResources):
+                self._sequence.insert(index, value)
+            elif isinstance(value, dict):
+                self._sequence.insert(index, CVTerm.ExternalResources(self.metadata, self._qualifier_key, value))
+            else:
+                raise TypeError("The passed format for setting external"
+                                " resources is invalid.")
 
         def append(self, value):
             if isinstance(value, CVTerm.ExternalResources):
                 self._sequence.append(value)
             elif isinstance(value, dict):
-                self._sequence.append(CVTerm.ExternalResources(value))
+                self._sequence.append(CVTerm.ExternalResources(self.metadata, self._qualifier_key, value))
             else:
                 raise TypeError("The passed format for setting external"
                                 " resources is invalid.")
 
         def __setitem__(self, index, value):
-            self._sequence[index] = CVTerm.ExternalResources(value)
+            if isinstance(value, CVTerm.ExternalResources):
+                self._sequence[index] = value
+            elif isinstance(value, dict):
+                self._sequence[index] = CVTerm.ExternalResources(self.metadata, self._qualifier_key, value)
+            else:
+                raise TypeError("The passed format for setting external"
+                                " resources is invalid.")
 
         def __getitem__(self, index):
             return self._sequence[index]
@@ -163,10 +189,17 @@ class CVTerm(MutableMapping):
         ANNOTATION_KEYS = ['resources', 'nested_data', 'qualifier_type']
         QUALIFIER_RELATION = ['MODEL', 'BIOLOGICAL', 'UNKNOWN']
 
-        def __init__(self, data=None):
+        def __init__(self, metadata=None, qualifier_key=None, data=None):
             if data is None:
                 data = {}
+            if qualifier_key is None:
+                self.qualifier_key = "is"
+            elif not isinstance(qualifier_key, str):
+                raise TypeError("The qualifier key passed must be of type string")
+            else:
+                self.qualifier_key = qualifier_key
             self._mapping = dict()
+            self.metadata = metadata
             if not isinstance(data, dict):
                 raise TypeError("The value passed must be of type dict.")
             for key, value in data.items():
@@ -178,6 +211,8 @@ class CVTerm(MutableMapping):
                     if not isinstance(value, list):
                         raise TypeError("Resources must be put in a list")
                     self._mapping[key] = value
+                    for items in value:
+                        self.set_annotation(items)
                 elif key == 'nested_data':
                     if isinstance(value, CVTerm):
                         self._mapping[key] = value
@@ -214,6 +249,8 @@ class CVTerm(MutableMapping):
                 if not isinstance(value, list):
                     raise TypeError("Resources must be put in a list")
                 self._mapping[key] = value
+                for items in value:
+                    set_annotation(items)
             elif key == 'nested_data':
                 if isinstance(value, CVTerm):
                     self._mapping[key] = value
@@ -244,3 +281,41 @@ class CVTerm(MutableMapping):
 
         def __repr__(self):
             return '{}'.format(self._mapping)
+
+        def set_annotation(self, resource=None):
+            if resource is None:
+                return
+            else:
+                data = self._parse_annotation_info(resource)
+                if data is None:
+                    return
+                else:
+                    provider, identifier = data
+                self.metadata["annotation"][provider].append((self.qualifier_key, identifier))
+
+        def _parse_annotation_info(self, uri):
+            """Parses provider and term from given identifiers annotation uri.
+
+            Parameters
+            ----------
+            uri : str
+                uri (identifiers.org url)
+
+            Returns
+            -------
+            (provider, identifier) if resolvable, None otherwise
+            """
+            match = URL_IDENTIFIERS_PATTERN.match(uri)
+            if match:
+                provider, identifier = match.group(1), match.group(2)
+                if provider.isupper():
+                    identifier = "%s:%s" % (provider, identifier)
+                    provider = provider.lower()
+            else:
+                print("WARNING : %s does not conform to "
+                      "'http(s)://identifiers.org/collection/id' or"
+                      "'http(s)://identifiers.org/COLLECTION:id, so "
+                      "is not added to annotation dictionary." % uri)
+                return None
+
+            return provider, identifier
