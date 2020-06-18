@@ -1,5 +1,5 @@
 {
-  "hasPart": [
+  "bqb_hasPart": [
     {
       "resources": [
         "https://identifiers.org/uniprot/P69905",
@@ -13,7 +13,7 @@
         "https://www.uniprot.org/uniprot/P68871",
         "https://identifiers.org/chebi/CHEBI:17627"
       ],
-      "isDescribedBy": [
+      "bqb_isDescribedBy": [
         {
           "resources": [
             "https://identifiers.org/pubmed/1111111"

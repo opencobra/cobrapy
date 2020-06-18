@@ -9,6 +9,7 @@ from __future__ import absolute_import
 
 import re
 import warnings
+from collections import defaultdict
 from collections.abc import MutableMapping, MutableSequence
 from enum import Enum
 
@@ -40,10 +41,13 @@ URL_IDENTIFIERS_PATTERN = re.compile(
 
 
 class CVTerm(object):
-    """ Representation of a single CVTerm."""
-    def __init__(self, qualifier: Qualifier=Qualifier.bqb_is, resource: str = None):
-        self.qualifier = qualifier
+    """Representation of a single CVTerm."""
+    def __init__(self, qualifier: Qualifier = Qualifier.bqb_is, resource: str = None):
         self.uri = resource
+        if isinstance(qualifier, Qualifier):
+            self.qualifier = qualifier
+        else:
+            raise TypeError("qualifier passed must be an enum Qualifier")
 
     def parse_provider_identifier(self):
         """Parses provider and term from given identifiers annotation uri.
@@ -67,46 +71,148 @@ class CVTerm(object):
             print("WARNING : %s does not conform to "
                   "'http(s)://identifiers.org/collection/id' or"
                   "'http(s)://identifiers.org/COLLECTION:id, so "
-                  "is not added to annotation dictionary." % uri)
+                  "is not added to annotation dictionary." % self.uri)
             return None
 
         return provider, identifier
 
 
-class CVTerms(object):
-    """Representation of all CVTerms of an object in their dependency structure. """
+class CVTerms(MutableMapping):
+    """
+    Representation of all CVTerms of an object in their
+    dependency structure.
+    """
 
-    def __init__(self, data):
-        self._cvterms = {}
-        # FIXME: implement with code below
-
-        # FIXME: refactor
-        if not isinstance(cvterm, dict):
-            raise TypeError("The annotation data must be in a dict form")
-        else:
-            for key, value in cvterm.items():
-                if not isinstance(key, str):
-                    raise TypeError("the provider must be of type string")
+    def __init__(self, data: dict = None):
+        self._cvterms = defaultdict(list)
+        if data is None:
+            return
+        elif isinstance(data, dict):
+            for key, value in data.items():
+                if key not in Qualifier.__members__:
+                    raise TypeError("%s is not an enum Qualifier" % key)
                 if isinstance(value, list):
-                    self._mapping[key] = self.CVList(self.metadata, key, value)
-                elif isinstance(value, self.CVList):
-                    self._mapping[key] = value
+                    self._cvterms[key] = CVList(value)
                 else:
-                    raise TypeError("the value passed for key '%s' "
-                                    "has invalid format" % key)
+                    raise TypeError("The value passed must be of type list: "
+                                    "{}".format(value))
+        else:
+            raise TypeError("Invalid format for CVTerms: '{}'".format(data))
 
     @staticmethod
     def parse_cvterms(data) -> 'CVTerms':
         """Tries to parse the CVterms."""
-        if data is None:
-            return CVTerms(None)
+        if data is None or isinstance(data, dict):
+            return CVTerms(data)
         elif isinstance(data, CVTerms):
             return data
-        elif isinstance(data, dict):
-            return CVTerms(data)
         else:
             raise TypeError("Invalid format for CVTerms: '{}'".format(data))
 
+    def __getitem__(self, key):
+        return self._cvterms[key]
+
+    def __setitem__(self, key, value):
+        raise TypeError("The setitem method does not work for CVTerms. "
+                        "Please use 'add_cvterm' method for adding cvterms.")
+
+    def __delitem__(self, key):
+        del self._cvterms[key]
+
+    def __iter__(self):
+        return iter(self._cvterms)
+
+    def __len__(self):
+        return len(self._cvterms)
+
+    def __str__(self):
+        return str(dict(self._cvterms))
+
+    def __repr__(self):
+        return '{}'.format(self._cvterms)
+
+
+class CVList(MutableSequence):
+    """
+    Class representation of all sets of resources and their nested
+    annotation corresponding to a given qualifier. It have similar
+    structure like that of a list but has only restricted type of
+    entries (of type ExternalResources) within it
+    CVList : [
+                 {
+                    "resources" : [],
+                    "nested_data" : CVTerm
+                 },
+                 {
+                     "resources" : [],
+                     "nested_data" : CVTerm
+                 },
+                 ...
+              ]
+
+    Parameters
+    ----------
+    cvlist : list
+        a list containing entries confirming to ExternalResources structure
+
+    """
+    def __init__(self, data: list = None):
+
+        self._sequence = list()
+        if data is None:
+            data = []
+        elif not isinstance(data, list):
+            raise TypeError("The data passed must be "
+                            "inside a list: '{}'".format(data))
+
+        for item in data:
+            if isinstance(item, dict):
+                self._sequence.append(ExternalResources(item))
+            else:
+                raise TypeError("All items inside CVList must be of type "
+                                "dict: {}".format(item))
+
+    def __len__(self):
+        return len(self._sequence)
+
+    def __delitem__(self, index):
+        del self._sequence[index]
+
+    def insert(self, index, value):
+        if isinstance(value, ExternalResources):
+            self._sequence.insert(index, value)
+        elif isinstance(value, dict):
+            self._sequence.insert(index, ExternalResources(value))
+        else:
+            raise TypeError("The passed format for setting external"
+                            " resources is invalid.")
+
+    def append(self, value):
+        if isinstance(value, ExternalResources):
+            self._sequence.append(value)
+        elif isinstance(value, dict):
+            self._sequence.append(ExternalResources(value))
+        else:
+            raise TypeError("The passed format for setting external"
+                            " resources is invalid.")
+
+    def __setitem__(self, index, value):
+        if isinstance(value, ExternalResources):
+            self._sequence[index] = value
+        elif isinstance(value, dict):
+            self._sequence[index] = ExternalResources(value)
+        else:
+            raise TypeError("The passed format for setting external"
+                            " resources is invalid.")
+
+    def __getitem__(self, index):
+        return self._sequence[index]
+
+    def __str__(self):
+        return str(self._sequence)
+
+    def __repr__(self):
+        return '{}'.format(self._sequence)
 
 
 class ExternalResources(MutableMapping):
@@ -121,7 +227,7 @@ class ExternalResources(MutableMapping):
         A dictionary containing the resources and nested annotation
         {
             "resources" : [],
-            "nested_data" : CVTerm
+            "nested_data" : CVTerms
          }
 
     Allowed Keys
@@ -133,57 +239,38 @@ class ExternalResources(MutableMapping):
 
     """
 
+    ANNOTATION_KEYS = ['resources', 'nested_data']
 
-
-
-    ANNOTATION_KEYS = ['resources', 'nested_data', 'qualifier_type']
-    QUALIFIER_RELATION = ['MODEL', 'BIOLOGICAL', 'UNKNOWN']
-
-    def __init__(self, metadata=None, qualifier_key=None, data=None):
+    def __init__(self, data=None):
         if data is None:
             data = {}
-        if qualifier_key is None:
-            self.qualifier_key = "is"
-        elif not isinstance(qualifier_key, str):
-            raise TypeError("The qualifier key passed must be of type string")
-        else:
-            self.qualifier_key = qualifier_key
         self._mapping = dict()
-        self.metadata = metadata
         if not isinstance(data, dict):
             raise TypeError("The value passed must be of type dict.")
         for key, value in data.items():
-            if key not in self.ANNOTATION_KEYS:
-                raise ValueError("Key '%s' is not allowed. Only "
-                                 "allowed keys are 'resources', "
-                                 "'nested_data'." % key)
             if key == 'resources':
                 if not isinstance(value, list):
                     raise TypeError("Resources must be put in a list")
                 self._mapping[key] = value
-                for items in value:
-                    self.set_annotation(items)
             elif key == 'nested_data':
                 if isinstance(value, CVTerm):
                     self._mapping[key] = value
                 elif isinstance(value, dict):
-                    self._mapping[key] = CVTerm(value)
+                    self._mapping[key] = CVTerms(value)
                 else:
                     raise TypeError("The nested data structure does "
                                     "not have valid CVTerm format")
-            elif key == "qualifier_type":
-                if not isinstance(value, int):
-                    raise TypeError("The value passed for qualifier type "
-                                    "must be an integer")
-                if value == 0 or value == 1:
-                    self._mapping[key] = self.QUALIFIER_RELATION[value]
-                else:
-                    self._mapping[key] = self.QUALIFIER_RELATION[2]
+            elif key in Qualifier.__members__:
+                self._mapping['nested_data'] = CVTerms({key: value})
+            else:
+                raise ValueError("Key '%s' is not allowed. Only "
+                                 "allowed keys are 'resources', "
+                                 "'nested_data'." % key)
 
     def __getitem__(self, key):
         if key not in self.ANNOTATION_KEYS:
             raise ValueError("Key %s is not allowed. Only allowed "
-                             "keys are : 'qualifier_type', 'resources', "
+                             "keys are : 'resources', "
                              "'nested_data'" % key)
         return self._mapping[key]
 
@@ -191,31 +278,23 @@ class ExternalResources(MutableMapping):
         """Restricting the keys and values that can be set.
            Only allowed keys are 'resources' and 'nested_data'
         """
-        if key not in self.ANNOTATION_KEYS:
-            raise ValueError("Key %s is not allowed. Only allowed "
-                             "keys are : 'qualifier_type', 'resources', "
-                             "'nested_data'" % key)
         if key == 'resources':
             if not isinstance(value, list):
                 raise TypeError("Resources must be put in a list")
             self._mapping[key] = value
-            for items in value:
-                set_annotation(items)
         elif key == 'nested_data':
             if isinstance(value, CVTerm):
                 self._mapping[key] = value
             elif isinstance(value, dict):
-                self._mapping[key] = CVTerm(value)
+                self._mapping[key] = CVTerms(value)
             else:
                 raise TypeError("The value passed has invalid format.")
-        elif key == "qualifier_type":
-            if not isinstance(value, int):
-                raise TypeError("The value passed for qualifier type "
-                                "must be an integer")
-            if value == 0 or value == 1:
-                self._mapping[key] = self.QUALIFIER_RELATION[value]
-            else:
-                self._mapping[key] = self.QUALIFIER_RELATION[2]
+        elif key in Qualifier.__members__:
+            self._mapping['nested_data'] = CVTerms({key: value})
+        else:
+            raise ValueError("Key '%s' is not allowed. Only "
+                             "allowed keys are 'resources', "
+                             "'nested_data'." % key)
 
     def __delitem__(self, key):
         del self._mapping[key]
@@ -242,89 +321,3 @@ class ExternalResources(MutableMapping):
             else:
                 provider, identifier = data
             self.metadata["annotation"][provider].append((self.qualifier_key, identifier))
-
-
-
-class CVList(MutableSequence):
-    """
-    Class representation of all sets of resources and their nested
-    annotation corresponding to a given qualifier. It have similar
-    structure like that of a list but has only restricted type of
-    entries (of type ExternalResources) within it
-
-    Parameters
-    ----------
-    cvlist : list
-        a list containing entries confirming to ExternalResources structure
-
-    """
-    def __init__(self, metadata=None, qualifier_key=None, cvlist=None):
-        if cvlist is None:
-            cvlist = []
-        if qualifier_key is None:
-            self._qualifier_key = "is"
-        elif not isinstance(qualifier_key, str):
-            raise ("The qualifier key passed must be of type string")
-        else:
-            self._qualifier_key = qualifier_key
-        self._sequence = list()
-        self.metadata = metadata
-        if not isinstance(cvlist, list):
-            raise TypeError("The resources passed must be inside a list")
-        for item in cvlist:
-            if isinstance(item, CVTerm.ExternalResources):
-                self._sequence.append(item)
-            elif isinstance(item, dict):
-                self._sequence.append(CVTerm.ExternalResources(self.metadata, self._qualifier_key, item))
-            else:
-                raise TypeError("All items must confirm to "
-                                "ExternalResources structure")
-
-    def __len__(self):
-        return len(self._sequence)
-
-    def __delitem__(self, index):
-        del self._sequence[index]
-
-    def insert(self, index, value):
-        if isinstance(value, CVTerm.ExternalResources):
-            self._sequence.insert(index, value)
-        elif isinstance(value, dict):
-            self._sequence.insert(index, CVTerm.ExternalResources(self.metadata, self._qualifier_key, value))
-        else:
-            raise TypeError("The passed format for setting external"
-                            " resources is invalid.")
-
-    def append(self, value):
-        if isinstance(value, CVTerm.ExternalResources):
-            self._sequence.append(value)
-        elif isinstance(value, dict):
-            self._sequence.append(CVTerm.ExternalResources(self.metadata, self._qualifier_key, value))
-        else:
-            raise TypeError("The passed format for setting external"
-                            " resources is invalid.")
-
-    def __setitem__(self, index, value):
-        if isinstance(value, CVTerm.ExternalResources):
-            self._sequence[index] = value
-        elif isinstance(value, dict):
-            self._sequence[index] = CVTerm.ExternalResources(self.metadata, self._qualifier_key, value)
-        else:
-            raise TypeError("The passed format for setting external"
-                            " resources is invalid.")
-
-    def __getitem__(self, index):
-        return self._sequence[index]
-
-    def __str__(self):
-        return str(self._sequence)
-
-    def __repr__(self):
-        return '{}'.format(self._sequence)
-
-
-
-
-
-
-

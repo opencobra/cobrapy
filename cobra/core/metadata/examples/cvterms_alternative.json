@@ -1,5 +1,5 @@
 {
-  "hasVersion": [
+  "bqb_hasVersion": [
     {
       "resources": [
         "https://identifiers.org/chebi/CHEBI:17345",
@@ -15,7 +15,7 @@
       ]
     }
   ],
-  "is": [
+  "bqb_isDescribedBy": [
     {
       "resources": [
         "https://identifiers.org/uniprot/Q9UQM7",
