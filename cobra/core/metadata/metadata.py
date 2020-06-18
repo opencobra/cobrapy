@@ -34,49 +34,17 @@ class MetaData(MutableMapping):
                  keyValueDict: KeyValueDict = None):
         # internal dictionary of annotations for backwards compatibility
         # for resources a list of identifiers is stored
-        self._annotations = defaultdict(list)
 
         self._cvterms = CVTerms()
-        self.add_cvterms(cvterms)
+        self.add_cvterms(cvterms)  # FIXME: unnecessary -> CVTerms(cvterms)
         self.history = History.parse_history(history)
         self.keyValueDict = KeyValueDict.parse_keyValueDict(keyValueDict)
 
-    def add_cvterm(self, cvterm, index):
-        if isinstance(cvterm, CVTerm):
-            qual = str(cvterm.qualifier)
-            qual = qual[10:] if qual.startswith('Qualifier.') else qual
-            data = cvterm.parse_provider_identifier()
-            if data is not None:
-                provider, identifier = data
-                self._annotations[provider].append(identifier)
-        else:
-            raise TypeError("The CVTerm passed must be a CVTerm object: {}".format(cvterm))
-
-        if index < len(self._cvterms[qual]):
-            self._cvterms[qual][index]["resources"].append(cvterm.uri)
-        elif index == len(self._cvterms[qual]):
-            self._cvterms[qual].append({"resources":[cvterm.uri]})
-        else:
-            raise UnboundLocalError("The index is out of bound: {}".format(index))
+    def add_cvterm(self, cvterm, index: int = 0):
+        self._cvterms.add_cvterm(cvterm=cvterm, index=index)
 
     def add_cvterms(self, cvterms: CVTerms = None):
-        if cvterms is None:
-            return
-        elif isinstance(cvterms, dict) or isinstance(cvterms, CVTerm):
-            parsed_cvterms = CVTerms.parse_cvterms(cvterms)
-            for key, value in parsed_cvterms.items():
-                offset = len(self.cvterms[key])
-                for index in range(len(value)):
-                    ex_res_list = value[index]
-                    res_list = ex_res_list["resources"]
-                    for uri in res_list:
-                        cvterm = CVTerm(Qualifier[key], uri)
-                        self.add_cvterm(cvterm, index+offset)
-                    if "nested_data" in ex_res_list:
-                        self._cvterms[key][index+offset]["nested_data"] = ex_res_list["nested_data"]
-        else:
-            raise TypeError("The value passed must be of "
-                            "type CVTerms: {}".format(cvterms))
+        self._cvterms.add_cvterms(cvterms=cvterms)
 
     @property
     def cvterms(self):
@@ -85,26 +53,32 @@ class MetaData(MutableMapping):
     @cvterms.setter
     def cvterms(self, value):
         self._cvterms = CVTerms()
-        self._annotations = defaultdict(list)
+        
+        # synchronize the annotation dictionary
+        self.cvterms._annotations = defaultdict(list)
         self.add_cvterms(value)
 
+    @property
+    def annotations(self):
+        return self.cvterms._annotations
+
     def __getitem__(self, key):
-        return self._annotations[key]
+        return self.annotations[key]
 
     def __setitem__(self, key, value):
-        self._annotations[key].append(value)
+        self.annotations[key].append(value)
 
     def __delitem__(self, key):
-        del self._annotations[key]
+        del self.annotations[key]
 
     def __iter__(self):
-        return iter(self._annotations)
+        return iter(self.annotations)
 
     def __len__(self):
-        return len(self._annotations)
+        return len(self.annotations)
 
     def __str__(self):
-        return str(dict(self._annotations))
+        return str(dict(self.annotations))
 
     def __repr__(self):
-        return '{}'.format(dict(self._annotations))
+        return '{}'.format(dict(self.annotations))

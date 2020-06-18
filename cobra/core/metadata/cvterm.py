@@ -77,13 +77,18 @@ class CVTerm(object):
         return provider, identifier
 
 
+# FIXME: this is probably not a dictionary
 class CVTerms(MutableMapping):
     """
     Representation of all CVTerms of an object in their
     dependency structure.
     """
 
+    # add property: annotations
+
     def __init__(self, data: dict = None):
+        self._annotations = defaultdict(list)
+
         self._cvterms = defaultdict(list)
         if data is None:
             return
@@ -108,6 +113,44 @@ class CVTerms(MutableMapping):
             return data
         else:
             raise TypeError("Invalid format for CVTerms: '{}'".format(data))
+
+    def add_cvterm(self, cvterm, index):
+        if isinstance(cvterm, CVTerm):
+            qual = str(cvterm.qualifier)
+            qual = qual[10:] if qual.startswith('Qualifier.') else qual
+            data = cvterm.parse_provider_identifier()
+            if data is not None:
+                provider, identifier = data
+                self._annotations[provider].append(identifier)
+        else:
+            raise TypeError("The CVTerm passed must be a CVTerm object: {}".format(cvterm))
+
+        if index < len(self[qual]):
+            self[qual][index]["resources"].append(cvterm.uri)
+        elif index == len(self[qual]):
+            self[qual].append({"resources":[cvterm.uri]})
+        else:
+            raise UnboundLocalError("The index is out of bound: {}".format(index))
+
+    def add_cvterms(self, cvterms: 'CVTerms' = None):
+        if cvterms is None:
+            return
+        elif isinstance(cvterms, dict) or isinstance(cvterms, CVTerm):
+            parsed_cvterms = CVTerms.parse_cvterms(cvterms)
+            for key, value in parsed_cvterms.items():
+                # FIXME: this is probably broken now
+                offset = len(self[key])
+                for index in range(len(value)):
+                    ex_res_list = value[index]
+                    res_list = ex_res_list["resources"]  # FIXME: change to dot syntax
+                    for uri in res_list:
+                        cvterm = CVTerm(Qualifier[key], uri)
+                        self.add_cvterm(cvterm, index+offset)
+                    if "nested_data" in ex_res_list:
+                        self[key][index+offset]["nested_data"] = ex_res_list["nested_data"]  # FIXME: change to dot syntax
+        else:
+            raise TypeError("The value passed must be of "
+                            "type CVTerms: {}".format(cvterms))
 
     def __getitem__(self, key):
         return self._cvterms[key]
