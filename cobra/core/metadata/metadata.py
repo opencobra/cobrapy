@@ -30,20 +30,17 @@ class MetaData(MutableMapping):
         Some key-value pairs which are not suitable to be
         represented anywhere else in the model.
     """
-    def __init__(self, cvterms: CVTerms = None, history: History = None,
-                 keyValueDict: KeyValueDict = None):
-        # internal dictionary of annotations for backwards compatibility
-        # for resources a list of identifiers is stored
-
+    def __init__(self, cvterms: 'CVTerms' = None, history: 'History' = None,
+                 keyValueDict: 'KeyValueDict' = None):
         self._cvterms = CVTerms()
-        self.add_cvterms(cvterms)  # FIXME: unnecessary -> CVTerms(cvterms)
+        self.add_cvterms(cvterms)
         self.history = History.parse_history(history)
-        self.keyValueDict = KeyValueDict.parse_keyValueDict(keyValueDict)
+        self.keyValueDict = ListOfKeyValue.parse_listofKeyValue(keyValueDict)
 
-    def add_cvterm(self, cvterm, index: int = 0):
+    def add_cvterm(self, cvterm, index: 'int' = 0):
         self._cvterms.add_cvterm(cvterm=cvterm, index=index)
 
-    def add_cvterms(self, cvterms: CVTerms = None):
+    def add_cvterms(self, cvterms: 'CVTerms' = None):
         self._cvterms.add_cvterms(cvterms=cvterms)
 
     @property
@@ -53,20 +50,25 @@ class MetaData(MutableMapping):
     @cvterms.setter
     def cvterms(self, value):
         self._cvterms = CVTerms()
-        
+
         # synchronize the annotation dictionary
         self.cvterms._annotations = defaultdict(list)
         self.add_cvterms(value)
 
     @property
     def annotations(self):
-        return self.cvterms._annotations
+        return self.cvterms.annotations
 
     def __getitem__(self, key):
         return self.annotations[key]
 
     def __setitem__(self, key, value):
-        self.annotations[key].append(value)
+        if key == "sbo":
+            self.cvterms._annotations = value
+        else:
+            raise ValueError("The setting of annotation in this way "
+                             "is not allowed. Either use annotation.add_cvterm()"
+                             " or annotation.add_cvterms() to add resources.")
 
     def __delitem__(self, key):
         del self.annotations[key]

@@ -4,24 +4,6 @@ from __future__ import absolute_import
 
 from collections.abc import MutableMapping, MutableSequence
 
-class KeyValueDict(object):
-
-    def __init__(self, data):
-        self._keyValueDict = {}  # FIXME: this is more complicated
-        # FIXME: implement with code below
-
-    @staticmethod
-    def parse_keyValueDict(data) -> 'KeyValueDict':
-        """Tries to parse the KeyValueDict."""
-        if data is None:
-            return KeyValueDict(None)
-        elif isinstance(data, KeyValueDict):
-            return data
-        elif isinstance(data, dict):
-            return KeyValueDict(data)
-        else:
-            raise TypeError("Invalid format for KeyValueDict: '{}'".format(data))
-
 
 class ListOfKeyValue(MutableSequence):
     """A list extension to store key-value pairs
@@ -37,18 +19,24 @@ class ListOfKeyValue(MutableSequence):
         self._sequence = list()
         if not isinstance(keyvaluelist, list):
             raise TypeError("The data passed for ListOfKeyValue "
-                            "must be inside a list")
+                            "must be inside a list: {}".format(value))
         else:
             for item in keyvaluelist:
-                if isinstance(item, self.KeyValuePair):
+                if isinstance(item, KeyValueDict):
                     self._sequence.append(item)
                 elif isinstance(item, dict):
-                    self._sequence.append(self.KeyValuePair(item))
+                    self._sequence.append(KeyValueDict(item))
                 else:
                     raise TypeError("The data passed for KeyValuepair "
                                     "indexed %s has invalid format"
                                     % keyvaluelist.index(item, 0,
                                                          len(keyvaluelist)))
+
+    def parse_listofKeyValue(data):
+        if data is None or isinstance(data, list):
+            return ListOfKeyValue(data)
+        else:
+            raise TypeError("Invalid format passed for ListOfKeyValue: {}".format(data))
 
     def __len__(self):
         return len(self._sequence)
@@ -57,31 +45,31 @@ class ListOfKeyValue(MutableSequence):
         del self._sequence[index]
 
     def insert(self, index, value):
-        if isinstance(value, self.KeyValuePair):
+        if isinstance(value, KeyValueDict):
             self._sequence.insert(index, value)
         elif isinstance(value, dict):
-            self._sequence.insert(index, self.KeyValuePair(value))
+            self._sequence.insert(index, KeyValueDict(value))
         else:
             raise TypeError("The data passed for KeyValuePair "
-                            "has invalid format")
+                            "has invalid format: {}".format(value))
 
     def append(self, value):
-        if isinstance(value, self.KeyValuePair):
+        if isinstance(value, KeyValueDict):
             self._sequence.append(value)
         elif isinstance(value, dict):
-            self._sequence.append(self.KeyValuePair(value))
+            self._sequence.append(KeyValueDict(value))
         else:
             raise TypeError("The data passed for KeyValuePair "
-                            "has invalid format")
+                            "has invalid format: {}".format(value))
 
     def __setitem__(self, index, value):
-        if isinstance(value, self.KeyValuePair):
+        if isinstance(value, KeyValueDict):
             self._sequence[index] = value
         elif isinstance(value, dict):
-            self._sequence[index] = self.KeyValuePair(value)
+            self._sequence[index] = KeyValueDict(value)
         else:
             raise TypeError("The data passed for KeyValuePair "
-                            "has invalid format")
+                            "has invalid format: {}".format(value))
 
     def __getitem__(self, index):
         return self._sequence[index]
@@ -92,74 +80,92 @@ class ListOfKeyValue(MutableSequence):
     def __repr__(self):
         return '{}'.format(self._sequence)
 
-    class KeyValuePair(MutableMapping):
-        """
-        Class representation of key-value pairs supported in fba-v3
 
-        Parameters
-        ----------
-        data : dict
-            A dictionary containing data about key-value pairs
-            {
-                "id" : "abc",
-                "name" : "abc",
-                "key" : "abc",
-                "value" : "abc",
-                "uri" : "abc"
-            }
+class KeyValueDict(object):
 
-        """
+    def __init__(self, data):
+        if data is None:
+            data = {}
+        if isinstance(data, dict):
+            self._key = data["key"] if "key" in data else None
+            self._value = data["value"] if "value" in data else None
+            self._uri = data["uri"] if "uri" in data else None
+            self._id = data["id"] if "id" in data else None
+            self._name = data["name"] if "name" in data else None
+        else:
+            raise TypeError("Invalid format passed for KeyValueDict: {}".format(data))
 
-        VALID_KEYS = ["id", "name", "key", "value", "uri"]
+    @staticmethod
+    def parse_keyValueDict(data) -> 'KeyValueDict':
+        """Tries to parse the KeyValueDict."""
+        if data is None:
+            return KeyValueDict(None)
+        elif isinstance(data, KeyValueDict):
+            return data
+        elif isinstance(data, dict):
+            return KeyValueDict(data)
+        else:
+            raise TypeError("Invalid format for KeyValueDict: '{}'".format(data))
 
-        def __init__(self, data=None):
-            if data is None:
-                data = {}
-            self._mapping = dict()
-            for key, value in data.items():
-                if key not in self.VALID_KEYS:
-                    raise ValueError("'%s' is not allowed. Only possible "
-                                     "keys are : 'id', 'name', 'key', "
-                                     "'value', 'uri'" % key)
-                if not isinstance(key, str):
-                    raise TypeError("All keys must be of type string")
-                if not isinstance(value, str):
-                    raise TypeError("All values must be of type string")
-                self._mapping[key] = value
-            for key in self.VALID_KEYS:
-                if key not in data:
-                    self._mapping[key] = None
+    @property
+    def id(self):
+        return getattr(self, "_id", None)
 
-        def __getitem__(self, key):
-            if key not in self.VALID_KEYS:
-                raise ValueError("Key %s is not allowed. Only allowed "
-                                 "keys are : 'id', 'name', 'key',"
-                                 " 'value', 'uri'" % key)
-            return self._mapping[key]
+    @id.setter
+    def id(self, data):
+        if not isinstance(data, str):
+            raise TypeError("Only string type allowed for 'id': {}".format(data))
+        else:
+            self._id = data
 
-        def __setitem__(self, key, value):
-            """Restricting the keys and values that can be set.
-               Only allowed keys are : 'id', 'name', 'key', 'value', 'uri''
-            """
-            if key not in self.VALID_KEYS:
-                raise ValueError("Key %s is not allowed. Only allowed"
-                                 " keys are : 'id', 'name', 'key',"
-                                 " 'value', 'uri'" % key)
-            if not isinstance(value, str):
-                raise TypeError("The value must be of type string")
-            self._mapping[key] = value
+    @property
+    def name(self):
+        return getattr(self, "_name", None)
 
-        def __delitem__(self, key):
-            del self._mapping[key]
+    @name.setter
+    def name(self, data):
+        if not isinstance(data, str):
+            raise TypeError("Only string type allowed for 'name': {}".format(data))
+        else:
+            self._name = data
 
-        def __iter__(self):
-            return iter(self._mapping)
+    @property
+    def key(self):
+        return getattr(self, "_key", None)
 
-        def __len__(self):
-            return len(self._mapping)
+    @key.setter
+    def key(self, data):
+        if not isinstance(data, str):
+            raise TypeError("Only string type allowed for 'key': {}".format(data))
+        else:
+            self._key = data
 
-        def __str__(self):
-            return str(self._mapping)
+    @property
+    def value(self):
+        return getattr(self, "_value", None)
 
-        def __repr__(self):
-            return '{}'.format(self._mapping)
+    @value.setter
+    def value(self, data):
+        if not isinstance(data, str):
+            raise TypeError("Only string type allowed for 'value': {}".format(data))
+        else:
+            self._value = data
+
+    @property
+    def uri(self):
+        return getattr(self, "_uri", None)
+
+    @uri.setter
+    def uri(self, data):
+        if not isinstance(data, str):
+            raise TypeError("Only string type allowed for 'uri': {}".format(data))
+        else:
+            self._uri = data
+
+    def __str__(self):
+        return str({"id": self.id, "name": self.name, "key": self.key,
+                        "value": self.value, "uri": self.uri})
+
+    def __repr__(self):
+        return str({"id": self.id, "name": self.name, "key": self.key,
+                        "value": self.value, "uri": self.uri})

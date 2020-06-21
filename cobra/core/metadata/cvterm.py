@@ -42,7 +42,7 @@ URL_IDENTIFIERS_PATTERN = re.compile(
 
 class CVTerm(object):
     """Representation of a single CVTerm."""
-    def __init__(self, qualifier: Qualifier = Qualifier.bqb_is, resource: str = None):
+    def __init__(self, qualifier: 'Qualifier' = Qualifier.bqb_is, resource: 'str' = None):
         self.uri = resource
         if isinstance(qualifier, Qualifier):
             self.qualifier = qualifier
@@ -84,12 +84,10 @@ class CVTerms(MutableMapping):
     dependency structure.
     """
 
-    # add property: annotations
-
-    def __init__(self, data: dict = None):
+    def __init__(self, data: 'dict' = None):
         self._annotations = defaultdict(list)
 
-        self._cvterms = defaultdict(list)
+        self._cvterms = defaultdict(CVList)
         if data is None:
             return
         elif isinstance(data, dict):
@@ -126,7 +124,7 @@ class CVTerms(MutableMapping):
             raise TypeError("The CVTerm passed must be a CVTerm object: {}".format(cvterm))
 
         if index < len(self[qual]):
-            self[qual][index]["resources"].append(cvterm.uri)
+            self[qual][index].resources.append(cvterm.uri)
         elif index == len(self[qual]):
             self[qual].append({"resources":[cvterm.uri]})
         else:
@@ -135,22 +133,32 @@ class CVTerms(MutableMapping):
     def add_cvterms(self, cvterms: 'CVTerms' = None):
         if cvterms is None:
             return
-        elif isinstance(cvterms, dict) or isinstance(cvterms, CVTerm):
+        elif isinstance(cvterms, dict) or isinstance(cvterms, CVTerms):
             parsed_cvterms = CVTerms.parse_cvterms(cvterms)
             for key, value in parsed_cvterms.items():
-                # FIXME: this is probably broken now
+
                 offset = len(self[key])
                 for index in range(len(value)):
-                    ex_res_list = value[index]
-                    res_list = ex_res_list["resources"]  # FIXME: change to dot syntax
+                    external_res = value[index]
+                    res_list = external_res.resources
                     for uri in res_list:
                         cvterm = CVTerm(Qualifier[key], uri)
                         self.add_cvterm(cvterm, index+offset)
-                    if "nested_data" in ex_res_list:
-                        self[key][index+offset]["nested_data"] = ex_res_list["nested_data"]  # FIXME: change to dot syntax
+                    if external_res.nested_data is not None:
+                        self[key][index+offset].nested_data = external_res.nested_data  # FIXME: change to dot syntax
         else:
             raise TypeError("The value passed must be of "
                             "type CVTerms: {}".format(cvterms))
+
+    @property
+    def annotations(self):
+        return getattr(self, "_annotations", defaultdict(list))
+
+    @annotations.setter
+    def annotations(self, value):
+        raise ValueError("The setting of annotation in this way "
+                         "is not allowed. Either use annotation.add_cvterm()"
+                         " or annotation.add_cvterms() to add resources.")
 
     def __getitem__(self, key):
         return self._cvterms[key]
@@ -199,7 +207,7 @@ class CVList(MutableSequence):
         a list containing entries confirming to ExternalResources structure
 
     """
-    def __init__(self, data: list = None):
+    def __init__(self, data: 'list' = None):
 
         self._sequence = list()
         if data is None:
@@ -258,7 +266,7 @@ class CVList(MutableSequence):
         return '{}'.format(self._sequence)
 
 
-class ExternalResources(MutableMapping):
+class ExternalResources(object):
     """
     Class representation of a single set of resources and its nested
     annotation. Its a special type of dict with restricted keys and
@@ -282,85 +290,59 @@ class ExternalResources(MutableMapping):
 
     """
 
-    ANNOTATION_KEYS = ['resources', 'nested_data']
-
     def __init__(self, data=None):
         if data is None:
             data = {}
-        self._mapping = dict()
         if not isinstance(data, dict):
             raise TypeError("The value passed must be of type dict.")
         for key, value in data.items():
             if key == 'resources':
-                if not isinstance(value, list):
-                    raise TypeError("Resources must be put in a list")
-                self._mapping[key] = value
+                if not isinstance(data["resources"], list):
+                    raise TypeError("Resources must be wrapped in a list: {}".format(data["resources"]))
+                else:
+                    self._resources = data["resources"]
             elif key == 'nested_data':
                 if isinstance(value, CVTerm):
-                    self._mapping[key] = value
+                    self._nested_data = value
                 elif isinstance(value, dict):
-                    self._mapping[key] = CVTerms(value)
+                    self._nested_data = CVTerms(value)
                 else:
                     raise TypeError("The nested data structure does "
-                                    "not have valid CVTerm format")
+                                    "not have valid CVTerm format: {}".format(value))
             elif key in Qualifier.__members__:
-                self._mapping['nested_data'] = CVTerms({key: value})
+                self._nested_data = CVTerms({key: value})
             else:
                 raise ValueError("Key '%s' is not allowed. Only "
                                  "allowed keys are 'resources', "
                                  "'nested_data'." % key)
 
-    def __getitem__(self, key):
-        if key not in self.ANNOTATION_KEYS:
-            raise ValueError("Key %s is not allowed. Only allowed "
-                             "keys are : 'resources', "
-                             "'nested_data'" % key)
-        return self._mapping[key]
+    @property
+    def resources(self):
+        return getattr(self, "_resources", None)
 
-    def __setitem__(self, key, value):
-        """Restricting the keys and values that can be set.
-           Only allowed keys are 'resources' and 'nested_data'
-        """
-        if key == 'resources':
-            if not isinstance(value, list):
-                raise TypeError("Resources must be put in a list")
-            self._mapping[key] = value
-        elif key == 'nested_data':
-            if isinstance(value, CVTerm):
-                self._mapping[key] = value
-            elif isinstance(value, dict):
-                self._mapping[key] = CVTerms(value)
-            else:
-                raise TypeError("The value passed has invalid format.")
-        elif key in Qualifier.__members__:
-            self._mapping['nested_data'] = CVTerms({key: value})
+    @resources.setter
+    def resources(self, value):
+        if not isinstance(value, list):
+            raise TypeError("The resources must be wrapped inside a list: {}".format(value))
         else:
-            raise ValueError("Key '%s' is not allowed. Only "
-                             "allowed keys are 'resources', "
-                             "'nested_data'." % key)
+            self._resources = value
 
-    def __delitem__(self, key):
-        del self._mapping[key]
+    @property
+    def nested_data(self):
+        return getattr(self, "_nested_data", None)
 
-    def __iter__(self):
-        return iter(self._mapping)
-
-    def __len__(self):
-        return len(self._mapping)
+    @nested_data.setter
+    def nested_data(self, value):
+        if isinstance(value, CVTerms):
+            self._nested_data = value
+        elif isinstance(value, dict):
+            self._nested_data = CVTerms(value)
+        else:
+            raise TypeError("The nested data structure does "
+                            "not have valid CVTerm format: {}".format(value))
 
     def __str__(self):
-        return str(self._mapping)
+        return str({"resources": self._resources})
 
     def __repr__(self):
-        return '{}'.format(self._mapping)
-
-    def set_annotation(self, resource=None):
-        if resource is None:
-            return
-        else:
-            data = self._parse_annotation_info(resource)
-            if data is None:
-                return
-            else:
-                provider, identifier = data
-            self.metadata["annotation"][provider].append((self.qualifier_key, identifier))
+        return str({"resources": self._resources})
