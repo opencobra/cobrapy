@@ -4,7 +4,8 @@ from __future__ import absolute_import
 
 from six import string_types
 
-from cobra.core.metadata import MetaData
+from collections import defaultdict
+from cobra.core.metadata import MetaData, CVList
 
 
 class Object(object):
@@ -22,7 +23,7 @@ class Object(object):
         self.name = name
 
         self.notes = {}
-        self.annotation = MetaData()
+        self._annotation = MetaData()
 
     @property
     def id(self):
@@ -38,6 +39,23 @@ class Object(object):
             self._set_id_with_model(value)
         else:
             self._id = value
+
+    @property
+    def annotation(self):
+        return getattr(self, "_annotation", None)
+
+    @annotation.setter
+    def annotation(self, value):
+        if not (isinstance(value, dict) or isinstance(value, MetaData)):
+            raise TypeError("The data passed for annotation must be inside "
+                            "a dictionary: {}".format(value))
+        else:
+            if isinstance(value, MetaData):
+                self._annotation = value
+            else:
+                self._annotation.cvterms._annotations = defaultdict(list)
+                self._annotation.cvterms._cvterms = defaultdict(CVList)
+                self._annotation.cvterms.add_simple_annotations(value)
 
     def _set_id_with_model(self, value):
         self._id = value

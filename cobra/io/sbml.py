@@ -44,6 +44,7 @@ from six import iteritems, raise_from, string_types
 import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
 from cobra.core.gene import parse_gpr
+from cobra.core.metadata import MetaData, CVTerm, CVTerms, Qualifier, CVList
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
 
@@ -1410,11 +1411,10 @@ def _parse_annotations(sbase):
     FIXME: annotation format must be updated (this is a big collection of
           fixes) - see: https://github.com/opencobra/cobrapy/issues/684)
     """
-    annotation = {}
+    annotation = MetaData()
 
     # SBO term
     if sbase.isSetSBOTerm():
-        # FIXME: correct handling of annotations
         annotation["sbo"] = sbase.getSBOTermID()
 
     # RDF annotation
@@ -1423,54 +1423,52 @@ def _parse_annotations(sbase):
         return annotation
 
     for cvterm in cvterms:  # type: libsbml.CVTerm
+        # reading the qualifier
+        qualifier_type = cvterm.getQualifierType()
+        if qualifier_type == 0:
+            qualifier = "bqm_" + libsbml.ModelQualifierType_toString(cvterm.getModelQualifierType())
+        elif qualifier_type == 1:
+            qualifier = "bqb_" + libsbml.BiolQualifierType_toString(cvterm.getBiologicalQualifierType())
+        else:
+            qualifier = "unknown_qualifier"
+        ext_res = {"resources": []}
         for k in range(cvterm.getNumResources()):
-            # FIXME: read and store the qualifier
-
             uri = cvterm.getResourceURI(k)
-            data = _parse_annotation_info(uri)
-            if data is None:
-                continue
-            else:
-                provider, identifier = data
-
-            if provider in annotation:
-                if isinstance(annotation[provider], string_types):
-                    annotation[provider] = [annotation[provider]]
-                # FIXME: use a list
-                if identifier not in annotation[provider]:
-                    annotation[provider].append(identifier)
-            else:
-                # FIXME: always in list
-                annotation[provider] = identifier
+            ext_res["resources"].append(uri)
+        ext_res["nested_data"] = _set_nested_data(cvterm)
+        new_cvterms = CVTerms({qualifier: CVList([ext_res])})
+        annotation.add_cvterms(new_cvterms)
 
     return annotation
 
 
-def _parse_annotation_info(uri):
-    """Parses provider and term from given identifiers annotation uri.
+def _set_nested_data(cvterm_obj):
+    num_nested_cvterms = cvterm_obj.getNumNestedCVTerms()
+    cobra_nested_cvterms = CVTerms()
+    if num_nested_cvterms == 0:
+        return cobra_nested_cvterms
 
-    Parameters
-    ----------
-    uri : str
-        uri (identifiers.org url)
+    for index in range(num_nested_cvterms):  # type: libsbml.CVTerm
+        # reading the qualifier
+        cvterm = cvterm_obj.getNestedCVTerm(index)
+        qualifier_type = cvterm.getQualifierType()
+        if qualifier_type == 0:
+            qualifier = "bqm_" + libsbml.ModelQualifierType_toString(cvterm.getModelQualifierType())
+        elif qualifier_type == 1:
+            qualifier = "bqb_" + libsbml.BiolQualifierType_toString(cvterm.getBiologicalQualifierType())
+        else:
+            qualifier = "unknown_qualifier"
 
-    Returns
-    -------
-    (provider, identifier) if resolvable, None otherwise
-    """
-    match = URL_IDENTIFIERS_PATTERN.match(uri)
-    if match:
-        provider, identifier = match.group(1), match.group(2)
-        if provider.isupper():
-            identifier = "%s:%s" % (provider, identifier)
-            provider = provider.lower()
-    else:
-        LOGGER.warning("%s does not conform to "
-                       "'http(s)://identifiers.org/collection/id' or"
-                       "'http(s)://identifiers.org/COLLECTION:id", uri)
-        return None
+        ext_res = {"resources": []}
+        for k in range(cvterm.getNumResources()):
+            uri = cvterm.getResourceURI(k)
+            ext_res["resources"].append(uri)
+        ext_res["nested_data"] = _set_nested_data(cvterm)
+        new_cvterms = CVTerms({qualifier: CVList([ext_res])})
+        # print(new_cvterms)
+        cobra_nested_cvterms.add_cvterms(new_cvterms)
 
-    return provider, identifier
+    return cobra_nested_cvterms
 
 
 def _sbase_annotations(sbase, annotation):
@@ -1486,69 +1484,87 @@ def _sbase_annotations(sbase, annotation):
     FIXME: annotation format must be updated
         (https://github.com/opencobra/cobrapy/issues/684)
     """
-
     if not annotation or len(annotation) == 0:
         return
 
     # standardize annotations
     annotation_data = deepcopy(annotation)
 
-    for key, value in annotation_data.items():
-        # handling of non-string annotations (e.g. integers)
-        if isinstance(value, (float, int)):
-            value = str(value)
-        if isinstance(value, string_types):
-            annotation_data[key] = [("is", value)]
+    if not isinstance(annotation_data, MetaData):
+        raise TypeError("The annotation object must be of type 'Metadata': {}".format(annotation_data))
 
-    for key, value in annotation_data.items():
-        for idx, item in enumerate(value):
-            if isinstance(item, string_types):
-                value[idx] = ("is", item)
+    if 'sbo' in annotation and annotation['sbo'] != []:
+        sbo_term = annotation["sbo"]
+        _check(sbase.setSBOTerm(sbo_term),
+               "Setting SBOTerm: {}".format(sbo_term))
 
     # set metaId
     meta_id = "meta_{}".format(sbase.getId())
     sbase.setMetaId(meta_id)
 
-    # rdf_items = []
-    for provider, data in iteritems(annotation_data):
-
-        # set SBOTerm
-        if provider in ["SBO", "sbo"]:
-            if provider == "SBO":
-                LOGGER.warning("'SBO' provider is deprecated, "
-                               "use 'sbo' provider instead")
-            sbo_term = data[0][1]
-            _check(sbase.setSBOTerm(sbo_term),
-                   "Setting SBOTerm: {}".format(sbo_term))
-
-            # FIXME: sbo should also be written as CVTerm
-            continue
-
-        for item in data:
-            qualifier_str, entity = item[0], item[1]
-            qualifier = QUALIFIER_TYPES.get(qualifier_str, None)
-            if qualifier is None:
-                qualifier = libsbml.BQB_IS
-                LOGGER.error("Qualifier type is not supported on "
-                             "annotation: '{}'".format(qualifier_str))
-
+    for key, value in annotation.cvterms.items():
+        qualifier = key
+        if qualifier.startswith("bqb"):
             qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
-            if qualifier_str.startswith("bqm_"):
-                qualifier_type = libsbml.MODEL_QUALIFIER
+        elif qualifier.startswith("bqm"):
+            qualifier_type = libsbml.MODEL_QUALIFIER
+        else:
+            raise CobraSBMLError('Unsupported qualifier: '
+                                 '%s' % qualifier)
 
+        for ex_res in value:
             cv = libsbml.CVTerm()  # type: libsbml.CVTerm
             cv.setQualifierType(qualifier_type)
             if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
-                cv.setBiologicalQualifierType(qualifier)
+                cv.setBiologicalQualifierType(Qualifier[qualifier].value)
             elif qualifier_type == libsbml.MODEL_QUALIFIER:
-                cv.setModelQualifierType(qualifier)
+                cv.setModelQualifierType(Qualifier[qualifier].value-14)
             else:
                 raise CobraSBMLError('Unsupported qualifier: '
                                      '%s' % qualifier)
-            resource = "%s/%s/%s" % (URL_IDENTIFIERS_PREFIX, provider, entity)
-            cv.addResource(resource)
+            for uri in ex_res.resources:
+                cv.addResource(uri)
+
+            # adding the nested data
+            if ex_res.nested_data is not None:
+                _add_nested_data(cv, ex_res.nested_data)
+
+            # finally add the cvterm
             _check(sbase.addCVTerm(cv),
-                   "Setting cvterm: {}, resource: {}".format(cv, resource))
+                   "Setting cvterm: {}".format(cv))
+
+
+def _add_nested_data(cvterm, nested_data):
+    for key, value in nested_data.items():
+        qualifier = key
+        if qualifier.startswith("bqb"):
+            qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
+        elif qualifier.startswith("bqm"):
+            qualifier_type = libsbml.MODEL_QUALIFIER
+        else:
+            raise CobraSBMLError('Unsupported qualifier: '
+                                 '%s' % qualifier)
+
+        for ex_res in value:
+            cv = libsbml.CVTerm()  # type: libsbml.CVTerm
+            cv.setQualifierType(qualifier_type)
+            if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
+                cv.setBiologicalQualifierType(Qualifier[qualifier].value)
+            elif qualifier_type == libsbml.MODEL_QUALIFIER:
+                cv.setModelQualifierType(Qualifier[qualifier].value-14)
+            else:
+                raise CobraSBMLError('Unsupported qualifier: '
+                                     '%s' % qualifier)
+            for uri in ex_res.resources:
+                cv.addResource(uri)
+
+            # adding the nested data
+            if ex_res.nested_data is not None:
+                _add_nested_data(cv, ex_res.nested_data)
+
+            # finally add the cvterm
+            _check(cvterm.addNestedCVTerm(cv),
+                   "Adding nested cvterm: {}".format(cv))
 
 
 # -----------------------------------------------------------------------------

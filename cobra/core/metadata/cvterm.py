@@ -15,26 +15,26 @@ from enum import Enum
 
 
 class Qualifier(Enum):
-    bqb_is = 1
-    bqb_hasPart = 2
-    bqb_isPartOf = 3
-    bqb_isVersionOf = 4
-    bqb_hasVersion = 5
-    bqb_isHomologTo = 6
-    bqb_isDescribedBy = 7
-    bqb_isEncodedBy = 8
-    bqb_encodes = 9
-    bqb_occursIn = 10
-    bqb_hasProperty = 11
-    bqb_isPropertyOf = 12
-    bqb_hasTaxon = 13
-    bqb_unknown = 14
-    bqm_is = 15
-    bqm_isDescribedBy = 16
-    bqm_isDerivedFrom = 17
-    bqm_isInstanceOf = 18
-    bqm_hasInstance = 19
-    bqm_unknown = 20
+    bqb_is = 0
+    bqb_hasPart = 1
+    bqb_isPartOf = 2
+    bqb_isVersionOf = 3
+    bqb_hasVersion = 4
+    bqb_isHomologTo = 5
+    bqb_isDescribedBy = 6
+    bqb_isEncodedBy = 7
+    bqb_encodes = 8
+    bqb_occursIn = 9
+    bqb_hasProperty = 10
+    bqb_isPropertyOf = 11
+    bqb_hasTaxon = 12
+    bqb_unknown = 13
+    bqm_is = 14
+    bqm_isDescribedBy = 15
+    bqm_isDerivedFrom = 16
+    bqm_isInstanceOf = 17
+    bqm_hasInstance = 18
+    bqm_unknown = 19
 
 URL_IDENTIFIERS_PATTERN = re.compile(
     r"^https?://identifiers.org/(.+?)[:/](.+)")
@@ -82,6 +82,19 @@ class CVTerms(MutableMapping):
     """
     Representation of all CVTerms of an object in their
     dependency structure.
+    {
+        "bqb_is": [
+            {
+                "resources": [
+                    "",
+                    ...
+                ],
+                "nested_data": CVTerms Object
+            },
+            ...
+        ],
+        ...
+    }
     """
 
     def __init__(self, data: 'dict' = None):
@@ -94,7 +107,9 @@ class CVTerms(MutableMapping):
             for key, value in data.items():
                 if key not in Qualifier.__members__:
                     raise TypeError("%s is not an enum Qualifier" % key)
-                if isinstance(value, list):
+                if isinstance(value, CVList):
+                    self._cvterms[key] = value
+                elif isinstance(value, list):
                     self._cvterms[key] = CVList(value)
                 else:
                     raise TypeError("The value passed must be of type list: "
@@ -144,11 +159,36 @@ class CVTerms(MutableMapping):
                     for uri in res_list:
                         cvterm = CVTerm(Qualifier[key], uri)
                         self.add_cvterm(cvterm, index+offset)
-                    if external_res.nested_data is not None:
-                        self[key][index+offset].nested_data = external_res.nested_data  # FIXME: change to dot syntax
+                    if external_res.nested_data is not None and len(external_res.nested_data) != 0:
+                        self[key][index+offset].nested_data = external_res.nested_data
         else:
             raise TypeError("The value passed must be of "
                             "type CVTerms: {}".format(cvterms))
+
+    def add_simple_annotations(self, data: None):
+        if data is None:
+            data = {}
+        if not isinstance(data, dict):
+            raise TypeError("The data passed must be of type dict: {}".format(data))
+
+        for key, value in data.items():
+            if key == "sbo":
+                self._annotations[key] = value
+                continue
+            if not isinstance(value, list):
+                raise TypeError("The value passed must be of type list: {}".format(value))
+            if not isinstance(key, str):
+                raise TypeError("The key passed must be of type string: {}".format(key))
+
+            # reset the data of annotations corresponding to this key
+            self._annotations[key] = []
+            for identifier in value:
+                if not isinstance(identifier, str):
+                    raise TypeError("The identifier passed must be of type string: {}".format(identifier))
+                cvterm = CVTerm()
+                cvterm.uri = "https://identifiers.org/" + key + "/" + identifier
+                cvterm.qualifier = Qualifier["bqb_is"]
+                self.add_cvterm(cvterm, 0)
 
     @property
     def annotations(self):
@@ -161,11 +201,32 @@ class CVTerms(MutableMapping):
                          " or annotation.add_cvterms() to add resources.")
 
     def __getitem__(self, key):
+        if key not in Qualifier.__members__:
+            raise TypeError("''%s' is not an valid enum Qualifier" % key)
         return self._cvterms[key]
 
     def __setitem__(self, key, value):
-        raise TypeError("The setitem method does not work for CVTerms. "
-                        "Please use 'add_cvterm' method for adding cvterms.")
+        """Make sure that key passed is of type string and value
+           passed confirms to CVList type (CVList or list)
+        """
+        # setting the cvterm
+        if key not in Qualifier.__members__:
+            raise TypeError("%s is not an enum Qualifier" % key)
+        if isinstance(value, list):
+            self._cvterms[key] = CVList(value)
+        elif isinstance(value, CVList):
+            self._cvterms[key] = value
+        else:
+            raise TypeError("The value passed must be of type list or CVList: "
+                            "{}".format(value))
+        # setting the annotation
+        for ex_res in value:
+            for uri in ex_res.resources:
+                cvterm = CVTerm(Qualifier[key], uri)
+                data = cvterm.parse_provider_identifier()
+                if data is not None:
+                    provider, identifier = data
+                    self._annotations[provider].append(identifier)
 
     def __delitem__(self, key):
         del self._cvterms[key]
@@ -180,7 +241,7 @@ class CVTerms(MutableMapping):
         return str(dict(self._cvterms))
 
     def __repr__(self):
-        return '{}'.format(self._cvterms)
+        return '{}'.format(dict(self._cvterms))
 
 
 class CVList(MutableSequence):
@@ -302,7 +363,7 @@ class ExternalResources(object):
                 else:
                     self._resources = data["resources"]
             elif key == 'nested_data':
-                if isinstance(value, CVTerm):
+                if isinstance(value, CVTerms):
                     self._nested_data = value
                 elif isinstance(value, dict):
                     self._nested_data = CVTerms(value)
@@ -342,7 +403,13 @@ class ExternalResources(object):
                             "not have valid CVTerm format: {}".format(value))
 
     def __str__(self):
-        return str({"resources": self._resources})
+        if self.nested_data is None:
+            return str({"resources": self.resources})
+        else:
+            return str({"resources": self.resources, "nested_data": self.nested_data})
 
     def __repr__(self):
-        return str({"resources": self._resources})
+        if self.nested_data is None:
+            return str({"resources": self.resources})
+        else:
+            return str({"resources": self.resources, "nested_data": self.nested_data})

@@ -64,11 +64,10 @@ class MetaData(MutableMapping):
 
     def __setitem__(self, key, value):
         if key == "sbo":
-            self.cvterms._annotations = value
+            self.cvterms._annotations[key] = value
+            return
         else:
-            raise ValueError("The setting of annotation in this way "
-                             "is not allowed. Either use annotation.add_cvterm()"
-                             " or annotation.add_cvterms() to add resources.")
+            self._cvterms.add_simple_annotations({key: value})
 
     def __delitem__(self, key):
         del self.annotations[key]
