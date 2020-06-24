@@ -324,7 +324,7 @@ class CVList(MutableSequence):
         return str(self._sequence)
 
     def __repr__(self):
-        return '{}'.format(self._sequence)
+        return '{}'.format(list(self._sequence))
 
 
 class ExternalResources(object):

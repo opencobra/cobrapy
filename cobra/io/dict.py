@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 
+from ast import literal_eval
 from collections import OrderedDict
 from operator import attrgetter, itemgetter
 
@@ -9,6 +10,7 @@ from numpy import bool_, float_
 from six import iteritems, string_types
 
 from cobra.core import Gene, Metabolite, Model, Reaction
+from cobra.core.metadata import MetaData
 from cobra.util.solver import set_objective
 
 
@@ -74,6 +76,32 @@ def _fix_type(value):
     return value
 
 
+def _annotation_to_dict(annotation):
+    anno_str = str(annotation.cvterms)
+    anno_dict = literal_eval(anno_str)
+    final_dict = {"cvterms": anno_dict}
+
+    if annotation.history.isSetHistory():
+        history_str = str(annotation.history)
+        history_dict = literal_eval(history_str)
+        final_dict["history"] = history_dict
+
+    if 'sbo' in annotation and annotation['sbo'] != []:
+        final_dict['sbo'] = annotation['sbo']
+        
+    return final_dict
+
+
+def _extract_annotation(data):
+        cvterms = data["cvterms"] if "cvterms" in data else None
+        history = data["history"] if "history" in data else None
+        keyValueDict = data["history"] if "keyValueDict" in data else None
+        annotation = MetaData(cvterms, history, keyValueDict)
+        if "sbo" in data:
+            annotation["sbo"] = data["sbo"]
+        return annotation
+
+
 def _update_optional(cobra_object, new_dict, optional_attribute_dict,
                      ordered_keys):
     """update new_dict with optional attributes from cobra_object"""
@@ -82,6 +110,8 @@ def _update_optional(cobra_object, new_dict, optional_attribute_dict,
         value = getattr(cobra_object, key)
         if value is None or value == default:
             continue
+        if key == "annotation":
+            value = _annotation_to_dict(value)
         new_dict[key] = _fix_type(value)
 
 
@@ -97,7 +127,11 @@ def metabolite_to_dict(metabolite):
 def metabolite_from_dict(metabolite):
     new_metabolite = Metabolite()
     for k, v in iteritems(metabolite):
-        setattr(new_metabolite, k, v)
+        if k == "annotation":
+            value = _extract_annotation(v)
+            setattr(new_metabolite, k, value)
+        else:
+            setattr(new_metabolite, k, v)
     return new_metabolite
 
 
@@ -113,7 +147,11 @@ def gene_to_dict(gene):
 def gene_from_dict(gene):
     new_gene = Gene(gene["id"])
     for k, v in iteritems(gene):
-        setattr(new_gene, k, v)
+        if k == "annotation":
+            value = _extract_annotation(v)
+            setattr(new_gene, k, value)
+        else:
+            setattr(new_gene, k, v)
     return new_gene
 
 
@@ -142,7 +180,11 @@ def reaction_from_dict(reaction, model):
                 (model.metabolites.get_by_id(str(met)), coeff)
                 for met, coeff in iteritems(v)))
         else:
-            setattr(new_reaction, k, v)
+            if k == "annotation":
+                value = _extract_annotation(v)
+                setattr(new_reaction, k, value)
+            else:
+                setattr(new_reaction, k, v)
     return new_reaction
 
 
@@ -224,6 +266,9 @@ def model_from_dict(obj):
         rxn in objective_reactions}
     set_objective(model, coefficients)
     for k, v in iteritems(obj):
-        if k in {'id', 'name', 'notes', 'compartments', 'annotation'}:
+        if k == "annotation":
+            value = _extract_annotation(v)
+            setattr(model, k, value)
+        elif k in {'id', 'name', 'notes', 'compartments'}:
             setattr(model, k, v)
     return model

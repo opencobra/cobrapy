@@ -76,8 +76,8 @@ class History(object):
 
     @created.setter
     def created(self, value):
-        validateDate(created)
-        self._created = created
+        validateDate(value)
+        self._created = value
 
     @property
     def creators(self):
@@ -95,12 +95,18 @@ class History(object):
     def modified(self, value):
         self._modified = ModifiedHistory(value)
 
+    def isSetHistory(self):
+        if self.created == None and len(self.creators) == 0 and len(self.modified) == 0:
+            return False
+        else:
+            return True
+
     def __str__(self):
         return str({"creators": self.creators, "created": self.created,
                         "modified": self.modified})
 
     def __repr__(self):
-        return str({"creators": self.created, "created": self.created,
+        return str({"creators": self.creators, "created": self.created,
                         "modified": self.modified})
 
 
@@ -126,10 +132,7 @@ class ListOfCreators(MutableSequence):
                 elif isinstance(item, dict):
                     self._sequence.append(Creator(item))
                 else:
-                    raise TypeError("The data passed for creator "
-                                    "indexed %s has invalid format"
-                                    % creators.index(item, 0,
-                                                     len(creators)))
+                    raise TypeError("Invalid format for Creator: {}".format(item))
 
     def __len__(self):
         return len(self._sequence)
@@ -143,7 +146,7 @@ class ListOfCreators(MutableSequence):
         elif isinstance(value, dict):
             self._sequence.insert(index, Creator(value))
         else:
-            raise TypeError("The data passed has invalid format")
+            raise TypeError("The data passed has invalid format: {}".format(value))
 
     def append(self, value):
         if isinstance(value, Creator):
@@ -151,7 +154,7 @@ class ListOfCreators(MutableSequence):
         elif isinstance(value, dict):
             self._sequence.append(Creator(value))
         else:
-            raise TypeError("The data passed has invalid format")
+            raise TypeError("The data passed has invalid format: {}".format(value))
 
     def __setitem__(self, index, value):
         if isinstance(value, Creator):
@@ -159,7 +162,7 @@ class ListOfCreators(MutableSequence):
         elif isinstance(value, dict):
             self._sequence[index] = Creator(value)
         else:
-            raise TypeError("The data passed has invalid format")
+            raise TypeError("The data passed has invalid format: {}".format(value))
 
     def __getitem__(self, index):
         return self._sequence[index]
@@ -211,10 +214,10 @@ class Creator(object):
             raise TypeError("Invalid format for Creator: {}".format(data))
 
     def __str__(self):
-        return str({"first_name": self.first_name, "last_name": self.last_name, "email": email, "organization_name": self.organization_name})
+        return str({"first_name": self.first_name, "last_name": self.last_name, "email": self.email, "organization_name": self.organization_name})
 
     def __repr__(self):
-        return str({"first_name": self.first_name, "last_name": self.last_name, "email": email, "organization_name": self.organization_name})
+        return str({"first_name": self.first_name, "last_name": self.last_name, "email": self.email, "organization_name": self.organization_name})
 
 class ModifiedHistory(MutableSequence):
     """A list extension to store modification dates. Only Restricted
@@ -231,10 +234,10 @@ class ModifiedHistory(MutableSequence):
             modifiedList = []
         self._sequence = list()
         if not isinstance(modifiedList, list):
-            raise TypeError("The dates passed must be inside a list")
+            raise TypeError("The dates passed must be inside a list: {}".format(modifiedList))
         for item in modifiedList:
             if not isinstance(item, str):
-                raise ValueError("Each date must be of type string")
+                raise ValueError("Each date must be of type string: {}".format(item))
             validateDate(item)
             self._sequence.append(item)
 

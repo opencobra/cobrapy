@@ -1439,6 +1439,36 @@ def _parse_annotations(sbase):
         new_cvterms = CVTerms({qualifier: CVList([ext_res])})
         annotation.add_cvterms(new_cvterms)
 
+    # history of the component
+    if sbase.isSetModelHistory():
+        model_history = sbase.getModelHistory() # type: libsbml.ModelHistory
+
+        cobra_creators = []
+        for index in range(model_history.getNumCreators()):
+            creator = model_history.getCreator(index) # type: libsbml.Creator
+            cobra_creator = {}
+            if creator.isSetGivenName():
+                cobra_creator["first_name"] = creator.getGivenName()
+            if creator.isSetFamilyName():
+                cobra_creator["last_name"] = creator.getFamilyName()
+            if creator.isSetEmail():
+                cobra_creator["email"] = creator.getEmail()
+            if creator.isSetOrganisation():
+                cobra_creator["organization_name"] = creator.getOrganisation()
+            cobra_creators.append(cobra_creator)
+        annotation.history.creators = cobra_creators
+
+        if model_history.isSetCreatedDate():
+            date = model_history.getCreatedDate() # type: libsbml.Date
+            cobra_date = date.getDateAsString()
+            annotation.history.created = cobra_date
+
+        cobra_modified_dates = []
+        for index in range(model_history.getNumModifiedDates()):
+            modified_date = model_history.getModifiedDate(index)
+            cobra_modified_dates.append(modified_date.getDateAsString())
+        annotation.history.modified = cobra_modified_dates
+
     return annotation
 
 
@@ -1465,7 +1495,6 @@ def _set_nested_data(cvterm_obj):
             ext_res["resources"].append(uri)
         ext_res["nested_data"] = _set_nested_data(cvterm)
         new_cvterms = CVTerms({qualifier: CVList([ext_res])})
-        # print(new_cvterms)
         cobra_nested_cvterms.add_cvterms(new_cvterms)
 
     return cobra_nested_cvterms
@@ -1532,6 +1561,30 @@ def _sbase_annotations(sbase, annotation):
             # finally add the cvterm
             _check(sbase.addCVTerm(cv),
                    "Setting cvterm: {}".format(cv))
+
+    if annotation.history.isSetHistory():
+        # component history
+        comp_history = libsbml.ModelHistory()
+
+        for creator in annotation.history.creators:
+            comp_creator = libsbml.ModelCreator()
+            comp_creator.setGivenName(creator.first_name)
+            comp_creator.setFamilyName(creator.last_name)
+            comp_creator.setEmail(creator.email)
+            comp_creator.setOrganisation(creator.organization_name)
+            comp_history.addCreator(comp_creator)
+
+        if annotation.history.created is not None:
+            date = libsbml.Date(annotation.history.created)
+            comp_history.setCreatedDate(date)
+
+        for modified_date in annotation.history.modified:
+            date = libsbml.Date(modified_date)
+            comp_history.addModifiedDate(date)
+
+        # finally add the compo_history
+        _check(sbase.setModelHistory(comp_history),
+               "Setting ModelHistory: {}".format(comp_history))
 
 
 def _add_nested_data(cvterm, nested_data):
