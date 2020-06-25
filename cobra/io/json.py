@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 
 from six import string_types
-
+from pathlib import Path
 from cobra.io.dict import model_from_dict, model_to_dict
 
 
@@ -76,7 +76,7 @@ def save_json_model(model, filename, sort=False, pretty=False, **kwargs):
     ----------
     model : cobra.Model
         The cobra model to represent.
-    filename : str or file-like
+    filename : str or file-like or Path
         File path or descriptor that the JSON representation should be
         written to.
     sort : bool, optional
@@ -105,7 +105,7 @@ def save_json_model(model, filename, sort=False, pretty=False, **kwargs):
             "allow_nan": False}
     dump_opts.update(**kwargs)
 
-    if isinstance(filename, string_types):
+    if isinstance(filename, (string_types, Path)):
         with open(filename, "w") as file_handle:
             json.dump(obj, file_handle, **dump_opts)
     else:
@@ -118,7 +118,7 @@ def load_json_model(filename):
 
     Parameters
     ----------
-    filename : str or file-like
+    filename : str or file-like or Path
         File path or descriptor that contains the JSON document describing the
         cobra model.
 
@@ -131,7 +131,7 @@ def load_json_model(filename):
     --------
     from_json : Load from a string.
     """
-    if isinstance(filename, string_types):
+    if isinstance(filename, (string_types, Path)):
         with open(filename, "r") as file_handle:
             return model_from_dict(json.load(file_handle))
     else:

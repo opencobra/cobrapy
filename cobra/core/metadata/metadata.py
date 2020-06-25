@@ -64,7 +64,8 @@ class MetaData(MutableMapping):
 
     def __setitem__(self, key, value):
         if key == "sbo":
-            self.cvterms._annotations[key] = value
+            # FIXME: list
+            self.annotations[key] = value
             return
         else:
             self._cvterms.add_simple_annotations({key: value})

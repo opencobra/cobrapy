@@ -95,6 +95,8 @@ class CVTerms(MutableMapping):
         ],
         ...
     }
+
+    FIXME: proper equality checks
     """
 
     def __init__(self, data: 'dict' = None):

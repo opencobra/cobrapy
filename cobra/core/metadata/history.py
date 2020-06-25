@@ -1,32 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
 import datetime
-from collections.abc import MutableMapping, MutableSequence
-
-
-def validateDate(date_text):
-    """Validate if the date format is of type w3cdtf ISO 8601"""
-    if not isinstance(date_text, str):
-        raise TypeError("The date passed must be of type string: {}".format(date_text))
-
-    try:
-        datetime.datetime.strptime(date_text, '%Y-%m-%dT%H:%M:%S%z')
-    except ValueError as e:
-        raise ValueError(str(e))
-    return True
+from collections.abc import MutableSequence
 
 
 class History(object):
     """
-    Class representation of history of a given component i.e. creator,
-    created date and modification dates.
+    Class representation of history of a given component.
+    The history allows to store creator, created date and
+    modification dates.
 
     Parameters
     ----------
     creator : dict
-        A dictionary containong details of creator's name, email and
+        A dictionary containing details of creator's name, email and
         organisation name
     created : string
         The date when component is created in W3CDTF ISO 8601 format
@@ -47,14 +34,13 @@ class History(object):
 
     def __init__(self, creators: 'ListOfCreators' = None, created: 'str' = None,
                  modified: 'ModifiedHistory' = None):
-        self._creators = ListOfCreators(creators)
-        self._modified = ModifiedHistory(modified)
+        self._creators = list() # FIXME ListOfCreators(creators)
+        self._modified = list(DateTime)  # ModifiedHistory(modified)
         if created is None:
-            self._created = None
+            self._created = None  # DateTime
         else:
             validateDate(created)
             self._created = created
-
 
     @staticmethod
     def parse_history(data) -> 'History':
@@ -109,7 +95,8 @@ class History(object):
         return str({"creators": self.creators, "created": self.created,
                         "modified": self.modified})
 
-
+'''
+FIXME: remove, use simple list
 class ListOfCreators(MutableSequence):
     """A list extension to store each creator's info
 
@@ -172,20 +159,14 @@ class ListOfCreators(MutableSequence):
 
     def __repr__(self):
         return '{}'.format(self._sequence)
-
+'''
 
 class Creator(object):
     """Class representation of a Creator
 
     Parameters
     ----------
-    creator_dict : dict containing info about creator
-        {
-            "first_name" : "abc",
-            "last_name" : "abc",
-            "email" : "abc",
-            "organization_name" : "abc"
-        }
+
     Attributes
     ----------
         first_name : str,
@@ -193,32 +174,52 @@ class Creator(object):
         email : str,
         organization_name : str
     """
+    def __init__(self, first_name: str = None, last_name: str = None,
+                 email: str = None, organization_name: str = None):
 
-    def __init__(self, creator_dict=None):
-        if creator_dict is None:
-            creator_dict = {}
-        if not isinstance(creator_dict, dict):
-            raise TypeError("The value passed for creator must "
-                            "be of type dict: {}".format(creator_dict))
-        self.first_name = creator_dict["first_name"] if "first_name" in creator_dict else None
-        self.last_name = creator_dict["last_name"] if "last_name" in creator_dict else None
-        self.email = creator_dict["email"] if "email" in creator_dict else None
-        self.organization_name = creator_dict["organization_name"] if "organization_name" in creator_dict else None
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.organization_name = organization_name
 
+    @staticmethod
     def parse_creator(data) -> 'Creator':
-        if data is None or isinstance(data, dict):
-            return Creator(data)
+        if data is None:
+            return Creator()
+        elif isinstance(data, dict):
+            return Creator(**data)
         elif isinstance(data, Creator):
             return data
         else:
             raise TypeError("Invalid format for Creator: {}".format(data))
 
     def __str__(self):
-        return str({"first_name": self.first_name, "last_name": self.last_name, "email": self.email, "organization_name": self.organization_name})
+        return str({
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "organization_name": self.organization_name}
+        )
 
     def __repr__(self):
-        return str({"first_name": self.first_name, "last_name": self.last_name, "email": self.email, "organization_name": self.organization_name})
+        return self.__str__()
 
+
+class DateTime(object):
+    @staticmethod
+    def validateDate(date_text):
+        """Validate if the date format is of type w3cdtf ISO 8601"""
+        if not isinstance(date_text, str):
+            raise TypeError("The date passed must be of type string: {}".format(date_text))
+
+        try:
+            datetime.datetime.strptime(date_text, '%Y-%m-%dT%H:%M:%S%z')
+        except ValueError as e:
+            raise ValueError(str(e))
+        return True
+
+
+# FIXME: remove
 class ModifiedHistory(MutableSequence):
     """A list extension to store modification dates. Only Restricted
     type of entries are possible.
@@ -267,3 +268,5 @@ class ModifiedHistory(MutableSequence):
 
     def __repr__(self):
         return '{}'.format(self._sequence)
+
+
