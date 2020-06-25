@@ -171,10 +171,30 @@ class CVTerms(MutableMapping):
         if not isinstance(data, dict):
             raise TypeError("The data passed must be of type dict: {}".format(data))
 
+        # if annotation is in the form of list of list, modify the format
+        if isinstance(data, list):
+            dict_anno = defaultdict(list)
+            for item in data:
+                cvt = CVTerm(resource = item[1])
+                data = cvt.parse_provider_identifier()
+                if data is None:
+                    continue
+                else:
+                    provider, identifier = data
+
+                dict_anno[provider].append(identifier)
+            data = dict_anno
+
         for key, value in data.items():
             if key == "sbo":
                 self._annotations[key] = value
                 continue
+
+            # if single identifiers are put directly as string,
+            # put them inside a list
+            if isinstance(value, str) and key != 'sbo':
+                data[key] = [value]
+                value = [value]
             if not isinstance(value, list):
                 raise TypeError("The value passed must be of type list: {}".format(value))
             if not isinstance(key, str):
