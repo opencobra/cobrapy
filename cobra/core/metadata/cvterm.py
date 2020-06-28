@@ -189,7 +189,12 @@ class CVTerms(MutableMapping):
 
         for key, value in data.items():
             if key == "sbo":
-                self._annotations[key] = value
+                if isinstance(value, str):
+                    self._annotations[key] = [value]
+                elif isinstance(value, list):
+                    self._annotations[key] = value
+                else:
+                    raise TypeError("'sbo' terms must be wrapped inside a list: {}".format(value))
                 continue
 
             # if single identifiers are put directly as string,
@@ -205,11 +210,16 @@ class CVTerms(MutableMapping):
             # reset the data of annotations corresponding to this key
             self._annotations[key] = []
             for identifier in value:
-                if not isinstance(identifier, str):
-                    raise TypeError("The identifier passed must be of type string: {}".format(identifier))
                 cvterm = CVTerm()
-                cvterm.uri = "https://identifiers.org/" + key + "/" + identifier
-                cvterm.qualifier = Qualifier["bqb_is"]
+                if isinstance(identifier, str):
+                    cvterm.uri = "https://identifiers.org/" + key + "/" + identifier
+                    cvterm.qualifier = Qualifier["bqb_is"]
+                elif isinstance(identifier, list):
+                    cvterm.uri = "https://identifiers.org/" + key + "/" + identifier[1]
+                    cvterm.qualifier = Qualifier[identifier[0]]
+                else:
+                    raise TypeError("The identifier passed must be of \
+                                     type string: {}".format(identifier))
                 self.add_cvterm(cvterm, 0)
 
     @property
@@ -219,8 +229,8 @@ class CVTerms(MutableMapping):
     @annotations.setter
     def annotations(self, value):
         raise ValueError("The setting of annotation in this way "
-                         "is not allowed. Either use annotation.add_cvterm()"
-                         " or annotation.add_cvterms() to add resources.")
+                             "is not allowed. Either use annotation.add_cvterm()"
+                             " or annotation.add_cvterms() to add resources.")
 
     def __getitem__(self, key):
         if key not in Qualifier.__members__:

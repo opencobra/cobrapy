@@ -90,6 +90,7 @@ class TestTypeDetection:
         model.add_reaction(dm)
         dm.build_reaction_from_string("atp_c ->")
         dm = model.demands
+        print(dm)
         assert len(dm) == 1
         assert "demand" in [r.id for r in dm]
 

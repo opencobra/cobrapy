@@ -14,7 +14,12 @@ NOT_MASS_BALANCED_TERMS = {"SBO:0000627",  # EXCHANGE
 def check_mass_balance(model):
     unbalanced = {}
     for reaction in model.reactions:
-        if reaction.annotation.get("sbo") not in NOT_MASS_BALANCED_TERMS:
+        sbo = reaction.annotation["sbo"]
+        if len(sbo) == 0:
+            sbo = None
+        else:
+            sbo = sbo[0]
+        if sbo not in NOT_MASS_BALANCED_TERMS:
             balance = reaction.check_mass_balance()
             if balance:
                 unbalanced[reaction] = balance

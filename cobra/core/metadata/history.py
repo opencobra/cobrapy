@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-from collections.abc import MutableSequence
+from typing import List
 
 
 class History(object):
@@ -32,15 +32,18 @@ class History(object):
 
     """
 
-    def __init__(self, creators: 'ListOfCreators' = None, created: 'str' = None,
-                 modified: 'ModifiedHistory' = None):
-        self._creators = list() # FIXME ListOfCreators(creators)
-        self._modified = list(DateTime)  # ModifiedHistory(modified)
+    def __init__(self, creators: 'list' = None, created: 'DateTime' = None,
+                 modified: 'list' = None):
+        if creators is None:
+            creators = []
+        self._creators: List(Creator) = list(creators)
+        if modified is None:
+            modified = []
+        self._modified: List(DateTime) = list(modified)
         if created is None:
-            self._created = None  # DateTime
+            self._created = None
         else:
-            validateDate(created)
-            self._created = created
+            self._created = DateTime(created)
 
     @staticmethod
     def parse_history(data) -> 'History':
@@ -62,8 +65,10 @@ class History(object):
 
     @created.setter
     def created(self, value):
-        validateDate(value)
-        self._created = value
+        if not isinstance(value, DateTime):
+            raise TypeError("Created date must be of type DateTime: {}".format(value))
+        else:
+            self._created = value
 
     @property
     def creators(self):
@@ -71,7 +76,10 @@ class History(object):
 
     @creators.setter
     def creators(self, value):
-        self._creators = ListOfCreators(value)
+        if not isinstance(value, list):
+            raise TypeError("Creators must be wrapped inside a list: {}".format(value))
+        else:
+            self._creators = value
 
     @property
     def modified(self):
@@ -79,7 +87,10 @@ class History(object):
 
     @modified.setter
     def modified(self, value):
-        self._modified = ModifiedHistory(value)
+        if not isinstance(value, list):
+            raise TypeError("Modified dates must be wrapped inside a list: {}".format(value))
+        else:
+            self._modified = value
 
     def isSetHistory(self):
         if self.created == None and len(self.creators) == 0 and len(self.modified) == 0:
@@ -88,12 +99,11 @@ class History(object):
             return True
 
     def __str__(self):
-        return str({"creators": self.creators, "created": self.created,
-                        "modified": self.modified})
+        return str({"creators": self.creators, "created": self.created.getDateString(),
+                        "modified": [(modified_date.getDateString()) for modified_date in self.modified]})
 
     def __repr__(self):
-        return str({"creators": self.creators, "created": self.created,
-                        "modified": self.modified})
+        return self.__str__()
 
 '''
 FIXME: remove, use simple list
@@ -206,6 +216,20 @@ class Creator(object):
 
 
 class DateTime(object):
+
+    def __init__(self, date_text: 'str' = None):
+        if date_text is None:
+            date_text = "2000-01-01T00:00:00+00:00"
+        self.validateDate(date_text)
+        self._date = date_text
+
+    def getDateString(self):
+        return self._date
+
+    def setDateFromString(self, value):
+        self.validateDate(value)
+        self._date = value
+
     @staticmethod
     def validateDate(date_text):
         """Validate if the date format is of type w3cdtf ISO 8601"""
@@ -218,55 +242,59 @@ class DateTime(object):
             raise ValueError(str(e))
         return True
 
-
-# FIXME: remove
-class ModifiedHistory(MutableSequence):
-    """A list extension to store modification dates. Only Restricted
-    type of entries are possible.
-
-    Parameters
-    ----------
-    modifiedList : list containing modification dates in W3CDTF ISO
-                   8601 format
-    """
-
-    def __init__(self, modifiedList=None):
-        if modifiedList is None:
-            modifiedList = []
-        self._sequence = list()
-        if not isinstance(modifiedList, list):
-            raise TypeError("The dates passed must be inside a list: {}".format(modifiedList))
-        for item in modifiedList:
-            if not isinstance(item, str):
-                raise ValueError("Each date must be of type string: {}".format(item))
-            validateDate(item)
-            self._sequence.append(item)
-
-    def __len__(self):
-        return len(self._sequence)
-
-    def __delitem__(self, index):
-        del self._sequence[index]
-
-    def insert(self, index, value):
-        validateDate(value)
-        self._sequence.insert(index, value)
-
-    def append(self, value):
-        validateDate(value)
-        self._sequence.append(value)
-
-    def __setitem__(self, index, value):
-        validateDate(value)
-        self._sequence[index] = value
-
-    def __getitem__(self, index):
-        return self._sequence[index]
-
     def __str__(self):
-        return str(self._sequence)
+        return self._date
 
     def __repr__(self):
-        return '{}'.format(self._sequence)
+        return self._date
 
 
+# FIXME: remove
+# class ModifiedHistory(MutableSequence):
+#     """A list extension to store modification dates. Only Restricted
+#     type of entries are possible.
+#
+#     Parameters
+#     ----------
+#     modifiedList : list containing modification dates in W3CDTF ISO
+#                    8601 format
+#     """
+#
+#     def __init__(self, modifiedList=None):
+#         if modifiedList is None:
+#             modifiedList = []
+#         self._sequence = list()
+#         if not isinstance(modifiedList, list):
+#             raise TypeError("The dates passed must be inside a list: {}".format(modifiedList))
+#         for item in modifiedList:
+#             if not isinstance(item, str):
+#                 raise ValueError("Each date must be of type string: {}".format(item))
+#             validateDate(item)
+#             self._sequence.append(item)
+#
+#     def __len__(self):
+#         return len(self._sequence)
+#
+#     def __delitem__(self, index):
+#         del self._sequence[index]
+#
+#     def insert(self, index, value):
+#         validateDate(value)
+#         self._sequence.insert(index, value)
+#
+#     def append(self, value):
+#         validateDate(value)
+#         self._sequence.append(value)
+#
+#     def __setitem__(self, index, value):
+#         validateDate(value)
+#         self._sequence[index] = value
+#
+#     def __getitem__(self, index):
+#         return self._sequence[index]
+#
+#     def __str__(self):
+#         return str(self._sequence)
+#
+#     def __repr__(self):
+#         return '{}'.format(self._sequence)

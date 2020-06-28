@@ -25,7 +25,7 @@ class ListOfKeyValue(MutableSequence):
                 if isinstance(item, KeyValueDict):
                     self._sequence.append(item)
                 elif isinstance(item, dict):
-                    self._sequence.append(KeyValueDict(item))
+                    self._sequence.append(KeyValueDict(**item))
                 else:
                     raise TypeError("The data passed for KeyValuepair "
                                     "indexed %s has invalid format"
@@ -48,7 +48,7 @@ class ListOfKeyValue(MutableSequence):
         if isinstance(value, KeyValueDict):
             self._sequence.insert(index, value)
         elif isinstance(value, dict):
-            self._sequence.insert(index, KeyValueDict(value))
+            self._sequence.insert(index, KeyValueDict(**value))
         else:
             raise TypeError("The data passed for KeyValuePair "
                             "has invalid format: {}".format(value))
@@ -57,7 +57,7 @@ class ListOfKeyValue(MutableSequence):
         if isinstance(value, KeyValueDict):
             self._sequence.append(value)
         elif isinstance(value, dict):
-            self._sequence.append(KeyValueDict(value))
+            self._sequence.append(KeyValueDict(**value))
         else:
             raise TypeError("The data passed for KeyValuePair "
                             "has invalid format: {}".format(value))
@@ -66,7 +66,7 @@ class ListOfKeyValue(MutableSequence):
         if isinstance(value, KeyValueDict):
             self._sequence[index] = value
         elif isinstance(value, dict):
-            self._sequence[index] = KeyValueDict(value)
+            self._sequence[index] = KeyValueDict(**value)
         else:
             raise TypeError("The data passed for KeyValuePair "
                             "has invalid format: {}".format(value))
@@ -83,17 +83,13 @@ class ListOfKeyValue(MutableSequence):
 
 class KeyValueDict(object):
 
-    def __init__(self, data):
-        if data is None:
-            data = {}
-        if isinstance(data, dict):
-            self._key = data["key"] if "key" in data else None
-            self._value = data["value"] if "value" in data else None
-            self._uri = data["uri"] if "uri" in data else None
-            self._id = data["id"] if "id" in data else None
-            self._name = data["name"] if "name" in data else None
-        else:
-            raise TypeError("Invalid format passed for KeyValueDict: {}".format(data))
+    def __init__(self, id: str = None, name: str = None, key: str = None,
+                 value: str = None, uri: str = None):
+        self._key = key
+        self._value = value
+        self._uri = uri
+        self._id = id
+        self._name = name
 
     @staticmethod
     def parse_keyValueDict(data) -> 'KeyValueDict':
@@ -103,7 +99,7 @@ class KeyValueDict(object):
         elif isinstance(data, KeyValueDict):
             return data
         elif isinstance(data, dict):
-            return KeyValueDict(data)
+            return KeyValueDict(**data)
         else:
             raise TypeError("Invalid format for KeyValueDict: '{}'".format(data))
 
@@ -167,5 +163,4 @@ class KeyValueDict(object):
                         "value": self.value, "uri": self.uri})
 
     def __repr__(self):
-        return str({"id": self.id, "name": self.name, "key": self.key,
-                        "value": self.value, "uri": self.uri})
+        return self.__str__()

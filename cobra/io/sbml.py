@@ -44,7 +44,8 @@ from six import iteritems, raise_from, string_types
 import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
 from cobra.core.gene import parse_gpr
-from cobra.core.metadata import MetaData, CVTerm, CVTerms, Qualifier, CVList
+from cobra.core.metadata import MetaData, CVTerm, CVTerms, Qualifier, \
+                                Creator, DateTime, CVList
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
 
@@ -1394,6 +1395,31 @@ QUALIFIER_TYPES = {
 }
 
 
+def _parse_annotation_info(uri):
+    """Parses provider and term from given identifiers annotation uri.
+    Parameters
+    ----------
+    uri : str
+        uri (identifiers.org url)
+    Returns
+    -------
+    (provider, identifier) if resolvable, None otherwise
+    """
+    match = URL_IDENTIFIERS_PATTERN.match(uri)
+    if match:
+        provider, identifier = match.group(1), match.group(2)
+        if provider.isupper():
+            identifier = "%s:%s" % (provider, identifier)
+            provider = provider.lower()
+    else:
+        LOGGER.warning("%s does not conform to "
+                       "'http(s)://identifiers.org/collection/id' or"
+                       "'http(s)://identifiers.org/COLLECTION:id", uri)
+        return None
+
+    return provider, identifier
+
+
 def _parse_annotations(sbase):
     """Parses cobra annotations from a given SBase object.
 
@@ -1415,7 +1441,7 @@ def _parse_annotations(sbase):
 
     # SBO term
     if sbase.isSetSBOTerm():
-        annotation["sbo"] = sbase.getSBOTermID()
+        annotation["sbo"] = [sbase.getSBOTermID()]
 
     # RDF annotation
     cvterms = sbase.getCVTerms()
@@ -1446,27 +1472,29 @@ def _parse_annotations(sbase):
         cobra_creators = []
         for index in range(model_history.getNumCreators()):
             creator = model_history.getCreator(index) # type: libsbml.Creator
-            cobra_creator = {}
+            creator_dict = {}
             if creator.isSetGivenName():
-                cobra_creator["first_name"] = creator.getGivenName()
+                creator_dict["first_name"] = creator.getGivenName()
             if creator.isSetFamilyName():
-                cobra_creator["last_name"] = creator.getFamilyName()
+                creator_dict["last_name"] = creator.getFamilyName()
             if creator.isSetEmail():
-                cobra_creator["email"] = creator.getEmail()
+                creator_dict["email"] = creator.getEmail()
             if creator.isSetOrganisation():
-                cobra_creator["organization_name"] = creator.getOrganisation()
+                creator_dict["organization_name"] = creator.getOrganisation()
+            cobra_creator = Creator.parse_creator(creator_dict)
             cobra_creators.append(cobra_creator)
         annotation.history.creators = cobra_creators
 
         if model_history.isSetCreatedDate():
             date = model_history.getCreatedDate() # type: libsbml.Date
-            cobra_date = date.getDateAsString()
+            cobra_date = DateTime(date.getDateAsString()) # type: DateTime
             annotation.history.created = cobra_date
 
         cobra_modified_dates = []
         for index in range(model_history.getNumModifiedDates()):
             modified_date = model_history.getModifiedDate(index)
-            cobra_modified_dates.append(modified_date.getDateAsString())
+            cobra_modified_date = DateTime(modified_date.getDateAsString())
+            cobra_modified_dates.append(cobra_modified_date)
         annotation.history.modified = cobra_modified_dates
 
     return annotation
@@ -1524,8 +1552,8 @@ def _sbase_annotations(sbase, annotation):
 
     if 'sbo' in annotation and annotation['sbo'] != []:
         sbo_term = annotation["sbo"]
-        _check(sbase.setSBOTerm(sbo_term),
-               "Setting SBOTerm: {}".format(sbo_term))
+        _check(sbase.setSBOTerm(sbo_term[0]),
+               "Setting SBOTerm: {}".format(sbo_term[0]))
 
     # set metaId
     meta_id = "meta_{}".format(sbase.getId())
@@ -1575,11 +1603,11 @@ def _sbase_annotations(sbase, annotation):
             comp_history.addCreator(comp_creator)
 
         if annotation.history.created is not None:
-            date = libsbml.Date(annotation.history.created)
+            date = libsbml.Date(annotation.history.created.getDateString())
             comp_history.setCreatedDate(date)
 
         for modified_date in annotation.history.modified:
-            date = libsbml.Date(modified_date)
+            date = libsbml.Date(modified_date.getDateString())
             comp_history.addModifiedDate(date)
 
         # finally add the compo_history

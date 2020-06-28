@@ -87,7 +87,7 @@ def _annotation_to_dict(annotation):
         final_dict["history"] = history_dict
 
     if 'sbo' in annotation and annotation['sbo'] != []:
-        final_dict['sbo'] = annotation['sbo']
+        final_dict['sbo'] = annotation['sbo'][0]
 
     return final_dict
 
@@ -99,11 +99,11 @@ def _extract_annotation(data):
 
         if cvterms is None and history is None and keyValueDict is None:
             annotation = MetaData()
-            annotation = data
+            annotation.cvterms.add_simple_annotations(data)
         else:
             annotation = MetaData(cvterms, history, keyValueDict)
             if "sbo" in data:
-                annotation["sbo"] = data["sbo"]
+                annotation["sbo"] = [data["sbo"]]
         return annotation
 
 

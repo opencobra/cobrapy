@@ -10,9 +10,9 @@ def test_load_json_model_valid(data_directory, tmp_path):
     path_to_file = join(data_directory, "valid_annotation_format.json")
     model = load_json_model(path_to_file)
     expected = {
-        'bigg.reaction': [['is', 'PFK26']],
-        'kegg.reaction': [['is', 'R02732']],
-        'rhea': [['is', '15656']]
+        'bigg.reaction': ['PFK26'],
+        'kegg.reaction': ['R02732'],
+        'rhea': ['15656']
     }
     for metabolite in model.metabolites:
         assert metabolite.annotation == expected

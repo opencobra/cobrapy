@@ -60,13 +60,20 @@ class MetaData(MutableMapping):
         return self.cvterms.annotations
 
     def __getitem__(self, key):
+        if key == "sbo" and len(self.annotations[key]) == 0:
+            value = self._cvterms._annotations[key]
+            del self._cvterms._annotations[key]
+            return value
         return self.annotations[key]
 
     def __setitem__(self, key, value):
         if key == "sbo":
-            # FIXME: list
-            self.annotations[key] = value
-            return
+            if isinstance(value, str):
+                self._cvterms._annotations[key] = [value]
+            elif isinstance(value, list):
+                self._cvterms._annotations[key] = value
+            else:
+                raise TypeError("'sbo' terms must be wrapped inside a list: {}".format(value))
         else:
             self._cvterms.add_simple_annotations({key: value})
 

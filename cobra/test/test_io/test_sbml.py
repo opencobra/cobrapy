@@ -413,40 +413,40 @@ def test_smbl_with_notes(data_directory, tmp_path):
                              'C@@H]2O)n2cnc3c(N)ncnc23)[C@@H](O)[C@H]1O'}
     }
     metabolite_annotations = {
-        '2hb_e': {'sbo': 'SBO:0000247',
-                  'inchi': 'InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3,'
-                           '(H,6,7)',
-                  'chebi': 'CHEBI:1148'},
-        'nad_e': {'sbo': 'SBO:0000247',
-                  'inchi': 'InChI=1S/C21H27N7O14P2/c22-17-12-19('
+        '2hb_e': {'sbo': ['SBO:0000247'],
+                  'inchi': ['InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3,'
+                           '(H,6,7)'],
+                  'chebi': ['CHEBI:1148']},
+        'nad_e': {'sbo': ['SBO:0000247'],
+                  'inchi': ['InChI=1S/C21H27N7O14P2/c22-17-12-19('
                            '25-7-24-17)28(8-26-12)21-16(32)14(30)11('
                            '41-21)6-39-44(36,37)42-43(34,35)38-5-10-13(29)15('
                            '31)20(40-10)27-3-1-2-9(4-27)18('
                            '23)33/h1-4,7-8,10-11,13-16,20-21,29-32H,5-6H2,'
                            '(H5-,22,23,24,25,33,34,35,36,37)/p-1/t10-,'
-                           '11-,13-,14-,15-,16-,20-,21-/m1/s1',
-                  'chebi': 'CHEBI:57540'},
-        'h_e': {'sbo': 'SBO:0000247', 'inchi': 'InChI=1S/p+1/i/hH',
-                'chebi': 'CHEBI:24636'},
-        '2obut_e': {'sbo': 'SBO:0000247',
-                    'inchi': 'InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6,'
-                             '7)/p-1',
-                    'chebi': 'CHEBI:16763'},
-        'nadh_e': {'sbo': 'SBO:0000247',
-                   'inchi': 'InChI=1S/C21H29N7O14P2/c22-17-12-19('
+                           '11-,13-,14-,15-,16-,20-,21-/m1/s1'],
+                  'chebi': ['CHEBI:57540']},
+        'h_e': {'sbo': ['SBO:0000247'], 'inchi': ['InChI=1S/p+1/i/hH'],
+                'chebi': ['CHEBI:24636']},
+        '2obut_e': {'sbo': ['SBO:0000247'],
+                    'inchi': ['InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6,'
+                             '7)/p-1'],
+                    'chebi': ['CHEBI:16763']},
+        'nadh_e': {'sbo': ['SBO:0000247'],
+                   'inchi': ['InChI=1S/C21H29N7O14P2/c22-17-12-19('
                             '25-7-24-17)28(8-26-12)21-16(32)14(30)11('
                             '41-21)6-39-44(36,37)42-43(34,35)38-5-10-13('
                             '29)15(31)20(40-10)27-3-1-2-9(4-27)18('
                             '23)33/h1,3-4,7-8,10-11,13-16,20-21,29-32H,2,'
                             '5-6H2,(H2,23,33)(H,34,35)(H,36,37)(H2,22,24,'
-                            '25)/p-2/t10-,11-,13-,14-,15-,16-,20-,21-/m1/s1',
-                   'chebi': 'CHEBI:57945'}
+                            '25)/p-2/t10-,11-,13-,14-,15-,16-,20-,21-/m1/s1'],
+                   'chebi': ['CHEBI:57945']}
     }
     reaction_notes = {'CONFIDENCE_LEVEL': '4', 'NOTES': 'NCD',
                       'SUBSYSTEM': 'Propanoate metabolism',
                       'GENE_ASSOCIATION': '(HGNC:8546 and HGNC:8548) or'
                                           ' (HGNC:8547 and HGNC:8548)'}
-    reaction_annotations = {'sbo': 'SBO:0000176', 'ec-code': '1.1.1.27',
+    reaction_annotations = {'sbo': ['SBO:0000176'], 'ec-code': ['1.1.1.27'],
                             'pubmed': ['10108', '21765']}
 
     for met_id in metabolite_notes:

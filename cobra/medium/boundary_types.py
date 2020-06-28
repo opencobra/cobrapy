@@ -103,9 +103,9 @@ def is_boundary_type(reaction, boundary_type, external_compartment):
     """
     # Check if the reaction has an annotation. Annotations dominate everything.
     sbo_term = reaction.annotation.get("sbo", "")
-    if isinstance(sbo_term, list):
+    if isinstance(sbo_term, list) and len(sbo_term) != 0:
         sbo_term = sbo_term[0]
-    sbo_term = sbo_term.upper()
+        sbo_term = sbo_term.upper()
 
     if sbo_term == sbo_terms[boundary_type]:
         return True
