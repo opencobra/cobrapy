@@ -13,7 +13,7 @@ from collections import defaultdict
 from collections.abc import MutableMapping, MutableSequence
 from enum import Enum
 
-
+# the supported qualifiers for cvterm
 class Qualifier(Enum):
     bqb_is = 0
     bqb_hasPart = 1
@@ -36,12 +36,29 @@ class Qualifier(Enum):
     bqm_hasInstance = 18
     bqm_unknown = 19
 
+# the URL pattern to out parse provider and identifier
 URL_IDENTIFIERS_PATTERN = re.compile(
     r"^https?://identifiers.org/(.+?)[:/](.+)")
 
 
 class CVTerm(object):
-    """Representation of a single CVTerm."""
+    """Representation of a single CVTerm.
+
+       Parameters
+       ----------
+       qualifier : Qualifier
+            the qualifier relation of resource to the component
+       resource : string
+            a uri identifying external resource
+
+        Attributes
+        ----------
+        qualifier : Qualifier
+             the qualifier relation of resource to the component
+        uri : string
+             a uri identifying external resource
+    """
+
     def __init__(self, qualifier: 'Qualifier' = Qualifier.bqb_is, resource: 'str' = None):
         self.uri = resource
         if isinstance(qualifier, Qualifier):
@@ -77,16 +94,23 @@ class CVTerm(object):
         return provider, identifier
 
 
-# FIXME: this is probably not a dictionary
 class CVTerms(MutableMapping):
     """
     Representation of all CVTerms of an object in their
-    dependency structure.
+    dependency structure. It is like a dictionary where
+    qualifier will be keys and CVList will be corresponding values
+
+    Parameters
+    ----------
+    data : dict
+        a dictionary mapping qualifier to its CVList/List
+
+    This is how a CVTerm looks :
     {
         "bqb_is": [
             {
                 "resources": [
-                    "",
+                    "resource_uri",
                     ...
                 ],
                 "nested_data": CVTerms Object
@@ -95,13 +119,10 @@ class CVTerms(MutableMapping):
         ],
         ...
     }
-
-    FIXME: proper equality checks
     """
 
     def __init__(self, data: 'dict' = None):
         self._annotations = defaultdict(list)
-
         self._cvterms = defaultdict(CVList)
         if data is None:
             return
@@ -130,6 +151,17 @@ class CVTerms(MutableMapping):
             raise TypeError("Invalid format for CVTerms: '{}'".format(data))
 
     def add_cvterm(self, cvterm, index):
+        """
+        Adds a single CVTerm to CVTerms.
+
+        Parameters
+        ----------
+        cvterm : CVTerm
+            the cvterm to be added
+        index : int
+            the index where this cvterm should be added inside
+            the CVList of corresponding qualifier
+        """
         if isinstance(cvterm, CVTerm):
             qual = str(cvterm.qualifier)
             qual = qual[10:] if qual.startswith('Qualifier.') else qual
@@ -148,6 +180,14 @@ class CVTerms(MutableMapping):
             raise UnboundLocalError("The index is out of bound: {}".format(index))
 
     def add_cvterms(self, cvterms: 'CVTerms' = None):
+        """
+        Adds multiple CVTerm to CVTerms.
+
+        Parameters
+        ----------
+        cvterm : CVTerms or dict (to be converted in CVTerms)
+            the cvterms to be added
+        """
         if cvterms is None:
             return
         elif isinstance(cvterms, dict) or isinstance(cvterms, CVTerms):
@@ -168,6 +208,16 @@ class CVTerms(MutableMapping):
                             "type CVTerms: {}".format(cvterms))
 
     def add_simple_annotations(self, data: None):
+        """
+        Adds cvterms via old annotation format. If no qualifier
+        is linked to the identifier, default qualifier i.e "bqb_is"
+        will be used.
+
+        Parameters
+        ----------
+        data : dict
+            the data in old annotation format
+        """
         if data is None:
             data = {}
         if not isinstance(data, dict):
@@ -188,6 +238,8 @@ class CVTerms(MutableMapping):
             data = dict_anno
 
         for key, value in data.items():
+
+            # addition of "sbo" term
             if key == "sbo":
                 if isinstance(value, str):
                     self._annotations[key] = [value]
@@ -199,6 +251,8 @@ class CVTerms(MutableMapping):
 
             # if single identifiers are put directly as string,
             # put them inside a list
+            # for eg:
+            # { "chebi": "CHEBI:17234"} -> { "chebi": ["CHEBI:17234"]}
             if isinstance(value, str) and key != 'sbo':
                 data[key] = [value]
                 value = [value]
@@ -211,9 +265,13 @@ class CVTerms(MutableMapping):
             self._annotations[key] = []
             for identifier in value:
                 cvterm = CVTerm()
+                # if no qualifier is linked to identifier i.e annotation
+                # of the form { "chebi": ["CHEBI:17234"]}
                 if isinstance(identifier, str):
                     cvterm.uri = "https://identifiers.org/" + key + "/" + identifier
                     cvterm.qualifier = Qualifier["bqb_is"]
+                # if some qualifier is linked to the identifier i.e annotation
+                # of the form { "chebi": ["bqb_is", "CHEBI:17234"]}
                 elif isinstance(identifier, list):
                     cvterm.uri = "https://identifiers.org/" + key + "/" + identifier[1]
                     cvterm.qualifier = Qualifier[identifier[0]]
@@ -225,12 +283,6 @@ class CVTerms(MutableMapping):
     @property
     def annotations(self):
         return getattr(self, "_annotations", defaultdict(list))
-
-    @annotations.setter
-    def annotations(self, value):
-        raise ValueError("The setting of annotation in this way "
-                             "is not allowed. Either use annotation.add_cvterm()"
-                             " or annotation.add_cvterms() to add resources.")
 
     def __getitem__(self, key):
         if key not in Qualifier.__members__:

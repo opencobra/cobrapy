@@ -6,12 +6,13 @@ from cobra.core.species import Species
 from cobra.core.metadata import *
 import pytest
 import os
+from os.path import join
 import json
 from pathlib import Path
 from cobra.io import read_sbml_model, write_sbml_model, load_json_model, save_json_model
 
 from cobra.test import data_dir
-metadata_examples_dir = Path(__file__).parent.parent / "examples"
+metadata_examples_dir = data_dir
 
 
 def test_annotation():
@@ -46,7 +47,7 @@ def test_annotation():
 
 def test_nested_annotation():
     # testing via cvterms
-    with open(Path(__file__).parent / f"cvterms_nested.json", "r") as f_cvterms:
+    with open(join(data_dir, "cvterms_nested.json"), "r") as f_cvterms:
         cvterms_data = json.load(f_cvterms)
 
     s = Species()
@@ -90,12 +91,12 @@ def test_writing_xml(tmp_path):
 
 def test_write_json():
     model = _read_ecoli_annotation_model()
-    json_path = metadata_examples_dir / "e_coli_core_json_writing.json"
+    json_path = join(data_dir, "e_coli_core_json_writing.json")
     assert save_json_model(model, json_path, sort=False, pretty=True) is None
 
 
 def test_read_new_json_model():
-    json_path = metadata_examples_dir / "e_coli_core_json_writing.json"
+    json_path = join(data_dir, "e_coli_core_json_writing.json")
     model = load_json_model(json_path)
     assert model.annotation == {
             'taxonomy': ['511145'],

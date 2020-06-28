@@ -25,7 +25,7 @@ class History(object):
     creator :Creators
         A dictionary containong details of creator's name, email and
         organisation name
-    created : string
+    created : DateTime
         The date when component is created in W3CDTF ISO 8601 format
     modified : list
         A list of dates about the component modification
@@ -105,71 +105,6 @@ class History(object):
     def __repr__(self):
         return self.__str__()
 
-'''
-FIXME: remove, use simple list
-class ListOfCreators(MutableSequence):
-    """A list extension to store each creator's info
-
-    Parameters
-    ----------
-    creators : list containing info about creators
-    """
-
-    def __init__(self, creators=None):
-        if creators is None:
-            creators = []
-        self._sequence = list()
-        if not isinstance(creators, list):
-            raise TypeError("The data passed for creators must be "
-                            "inside a list")
-        else:
-            for item in creators:
-                if isinstance(item, Creator):
-                    self._sequence.append(item)
-                elif isinstance(item, dict):
-                    self._sequence.append(Creator(item))
-                else:
-                    raise TypeError("Invalid format for Creator: {}".format(item))
-
-    def __len__(self):
-        return len(self._sequence)
-
-    def __delitem__(self, index):
-        del self._sequence[index]
-
-    def insert(self, index, value):
-        if isinstance(value, Creator):
-            self._sequence.insert(index, value)
-        elif isinstance(value, dict):
-            self._sequence.insert(index, Creator(value))
-        else:
-            raise TypeError("The data passed has invalid format: {}".format(value))
-
-    def append(self, value):
-        if isinstance(value, Creator):
-            self._sequence.append(value)
-        elif isinstance(value, dict):
-            self._sequence.append(Creator(value))
-        else:
-            raise TypeError("The data passed has invalid format: {}".format(value))
-
-    def __setitem__(self, index, value):
-        if isinstance(value, Creator):
-            self._sequence[index] = value
-        elif isinstance(value, dict):
-            self._sequence[index] = Creator(value)
-        else:
-            raise TypeError("The data passed has invalid format: {}".format(value))
-
-    def __getitem__(self, index):
-        return self._sequence[index]
-
-    def __str__(self):
-        return str(self._sequence)
-
-    def __repr__(self):
-        return '{}'.format(self._sequence)
-'''
 
 class Creator(object):
     """Class representation of a Creator
@@ -216,6 +151,16 @@ class Creator(object):
 
 
 class DateTime(object):
+    """
+    Class representation of dates allowed inside model history.
+    This class make sure that dates passed must be of the form :
+    %Y-%m-%dT%H:%M:%S%z
+
+    Parameter
+    ---------
+    date_text : str
+        date in the form of a string
+    """
 
     def __init__(self, date_text: 'str' = None):
         if date_text is None:
@@ -227,6 +172,10 @@ class DateTime(object):
         return self._date
 
     def setDateFromString(self, value):
+        """
+        Before setting the date, it first checks if date is in valid format
+        or not.
+        """
         self.validateDate(value)
         self._date = value
 
@@ -247,54 +196,3 @@ class DateTime(object):
 
     def __repr__(self):
         return self._date
-
-
-# FIXME: remove
-# class ModifiedHistory(MutableSequence):
-#     """A list extension to store modification dates. Only Restricted
-#     type of entries are possible.
-#
-#     Parameters
-#     ----------
-#     modifiedList : list containing modification dates in W3CDTF ISO
-#                    8601 format
-#     """
-#
-#     def __init__(self, modifiedList=None):
-#         if modifiedList is None:
-#             modifiedList = []
-#         self._sequence = list()
-#         if not isinstance(modifiedList, list):
-#             raise TypeError("The dates passed must be inside a list: {}".format(modifiedList))
-#         for item in modifiedList:
-#             if not isinstance(item, str):
-#                 raise ValueError("Each date must be of type string: {}".format(item))
-#             validateDate(item)
-#             self._sequence.append(item)
-#
-#     def __len__(self):
-#         return len(self._sequence)
-#
-#     def __delitem__(self, index):
-#         del self._sequence[index]
-#
-#     def insert(self, index, value):
-#         validateDate(value)
-#         self._sequence.insert(index, value)
-#
-#     def append(self, value):
-#         validateDate(value)
-#         self._sequence.append(value)
-#
-#     def __setitem__(self, index, value):
-#         validateDate(value)
-#         self._sequence[index] = value
-#
-#     def __getitem__(self, index):
-#         return self._sequence[index]
-#
-#     def __str__(self):
-#         return str(self._sequence)
-#
-#     def __repr__(self):
-#         return '{}'.format(self._sequence)
