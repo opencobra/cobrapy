@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
+
 import pytest
 
-from cobra.core.metadata.keyvaluepair import ListOfKeyValue, KeyValueDict
+from cobra.core.metadata.keyvaluepair import KeyValueDict, ListOfKeyValue
 
 
 def test_keyvaluedict():
@@ -18,6 +20,7 @@ def test_keyvaluedict():
     assert keyvaluedict.key == "keyX"
     assert keyvaluedict.value == "45"
     assert keyvaluedict.uri == "https://tinyurl.com/ybyr7b62"
+    # only string type allowed for value
     with pytest.raises(TypeError):
         keyvaluedict.value = 45
 

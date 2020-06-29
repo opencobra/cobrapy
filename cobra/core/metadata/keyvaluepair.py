@@ -36,7 +36,8 @@ class ListOfKeyValue(MutableSequence):
         if data is None or isinstance(data, list):
             return ListOfKeyValue(data)
         else:
-            raise TypeError("Invalid format passed for ListOfKeyValue: {}".format(data))
+            raise TypeError("Invalid format passed "
+                            "for ListOfKeyValue: {}".format(data))
 
     def __len__(self):
         return len(self._sequence)
@@ -101,7 +102,8 @@ class KeyValueDict(object):
         elif isinstance(data, dict):
             return KeyValueDict(**data)
         else:
-            raise TypeError("Invalid format for KeyValueDict: '{}'".format(data))
+            raise TypeError("Invalid format for KeyValueDict:"
+                            " '{}'".format(data))
 
     @property
     def id(self):
@@ -110,7 +112,8 @@ class KeyValueDict(object):
     @id.setter
     def id(self, data):
         if not isinstance(data, str):
-            raise TypeError("Only string type allowed for 'id': {}".format(data))
+            raise TypeError("Only string type allowed "
+                            "for 'id': {}".format(data))
         else:
             self._id = data
 
@@ -121,7 +124,8 @@ class KeyValueDict(object):
     @name.setter
     def name(self, data):
         if not isinstance(data, str):
-            raise TypeError("Only string type allowed for 'name': {}".format(data))
+            raise TypeError("Only string type allowed "
+                            "for 'name': {}".format(data))
         else:
             self._name = data
 
@@ -132,7 +136,8 @@ class KeyValueDict(object):
     @key.setter
     def key(self, data):
         if not isinstance(data, str):
-            raise TypeError("Only string type allowed for 'key': {}".format(data))
+            raise TypeError("Only string type allowed "
+                            "for 'key': {}".format(data))
         else:
             self._key = data
 
@@ -143,7 +148,8 @@ class KeyValueDict(object):
     @value.setter
     def value(self, data):
         if not isinstance(data, str):
-            raise TypeError("Only string type allowed for 'value': {}".format(data))
+            raise TypeError("Only string type allowed "
+                            "for 'value': {}".format(data))
         else:
             self._value = data
 
@@ -154,13 +160,14 @@ class KeyValueDict(object):
     @uri.setter
     def uri(self, data):
         if not isinstance(data, str):
-            raise TypeError("Only string type allowed for 'uri': {}".format(data))
+            raise TypeError("Only string type allowed for "
+                            "'uri': {}".format(data))
         else:
             self._uri = data
 
     def __str__(self):
         return str({"id": self.id, "name": self.name, "key": self.key,
-                        "value": self.value, "uri": self.uri})
+                    "value": self.value, "uri": self.uri})
 
     def __repr__(self):
         return self.__str__()

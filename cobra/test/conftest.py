@@ -7,6 +7,7 @@ from os.path import join
 
 import pytest
 from pandas import DataFrame
+from copy import deepcopy
 
 import cobra.util.solver as sutil
 from cobra import Metabolite, Model, Reaction
@@ -51,7 +52,7 @@ def small_model():
 
 @pytest.fixture(scope="function")
 def model(small_model):
-    return small_model.copy()
+    return deepcopy(small_model)
 
 
 @pytest.fixture(scope="session")

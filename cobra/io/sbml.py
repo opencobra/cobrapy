@@ -44,8 +44,8 @@ from six import iteritems, raise_from, string_types
 import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
 from cobra.core.gene import parse_gpr
-from cobra.core.metadata import MetaData, CVTerm, CVTerms, Qualifier, \
-                                Creator, DateTime, CVList
+from cobra.core.metadata import (
+    Creator, CVList, CVTerm, CVTerms, DateTime, MetaData, Qualifier)
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
 
@@ -1452,9 +1452,11 @@ def _parse_annotations(sbase):
         # reading the qualifier
         qualifier_type = cvterm.getQualifierType()
         if qualifier_type == 0:
-            qualifier = "bqm_" + libsbml.ModelQualifierType_toString(cvterm.getModelQualifierType())
+            mq_type = cvterm.getModelQualifierType()
+            qualifier = "bqm_" + libsbml.ModelQualifierType_toString(mq_type)
         elif qualifier_type == 1:
-            qualifier = "bqb_" + libsbml.BiolQualifierType_toString(cvterm.getBiologicalQualifierType())
+            bq_type = cvterm.getBiologicalQualifierType()
+            qualifier = "bqb_" + libsbml.BiolQualifierType_toString(bq_type)
         else:
             qualifier = "unknown_qualifier"
         ext_res = {"resources": []}
@@ -1467,11 +1469,11 @@ def _parse_annotations(sbase):
 
     # history of the component
     if sbase.isSetModelHistory():
-        model_history = sbase.getModelHistory() # type: libsbml.ModelHistory
+        model_history = sbase.getModelHistory()  # type: libsbml.ModelHistory
 
         cobra_creators = []
         for index in range(model_history.getNumCreators()):
-            creator = model_history.getCreator(index) # type: libsbml.Creator
+            creator = model_history.getCreator(index)  # type: libsbml.Creator
             creator_dict = {}
             if creator.isSetGivenName():
                 creator_dict["first_name"] = creator.getGivenName()
@@ -1486,8 +1488,8 @@ def _parse_annotations(sbase):
         annotation.history.creators = cobra_creators
 
         if model_history.isSetCreatedDate():
-            date = model_history.getCreatedDate() # type: libsbml.Date
-            cobra_date = DateTime(date.getDateAsString()) # type: DateTime
+            date = model_history.getCreatedDate()  # type: libsbml.Date
+            cobra_date = DateTime(date.getDateAsString())  # type: DateTime
             annotation.history.created = cobra_date
 
         cobra_modified_dates = []
@@ -1511,9 +1513,11 @@ def _set_nested_data(cvterm_obj):
         cvterm = cvterm_obj.getNestedCVTerm(index)
         qualifier_type = cvterm.getQualifierType()
         if qualifier_type == 0:
-            qualifier = "bqm_" + libsbml.ModelQualifierType_toString(cvterm.getModelQualifierType())
+            mq_type = cvterm.getModelQualifierType()
+            qualifier = "bqm_" + libsbml.ModelQualifierType_toString(mq_type)
         elif qualifier_type == 1:
-            qualifier = "bqb_" + libsbml.BiolQualifierType_toString(cvterm.getBiologicalQualifierType())
+            bq_type = cvterm.getBiologicalQualifierType()
+            qualifier = "bqb_" + libsbml.BiolQualifierType_toString(bq_type)
         else:
             qualifier = "unknown_qualifier"
 
@@ -1548,7 +1552,8 @@ def _sbase_annotations(sbase, annotation):
     annotation_data = deepcopy(annotation)
 
     if not isinstance(annotation_data, MetaData):
-        raise TypeError("The annotation object must be of type 'Metadata': {}".format(annotation_data))
+        raise TypeError("The annotation object must be "
+                        "of type 'Metadata': {}".format(annotation_data))
 
     if 'sbo' in annotation and annotation['sbo'] != []:
         sbo_term = annotation["sbo"]

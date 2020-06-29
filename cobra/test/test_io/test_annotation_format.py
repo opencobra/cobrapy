@@ -23,5 +23,15 @@ def test_load_json_model_valid(data_directory, tmp_path):
 def test_load_json_model_invalid(data_directory):
     """Test that loading an invalid annotation from JSON raises TypeError"""
     path = join(data_directory, "invalid_annotation_format.json")
-    with pytest.raises(TypeError):
-        model = load_json_model(path)
+    # with pytest.raises(TypeError):
+    #     model = load_json_model(path)
+
+    # the issue of reading annotation when it is in the form of
+    # of list of list has been resolved. When such type of annotation
+    # are encountered, they will be first fixed and then added
+    model = load_json_model(path)
+    anno = model.metabolites[0].annotation
+    assert anno == {
+        "kegg.compound": ["C01468"],
+        "chebi": ["CHEBI:11981"]
+    }

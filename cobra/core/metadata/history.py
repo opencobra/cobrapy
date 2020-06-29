@@ -12,19 +12,17 @@ class History(object):
 
     Parameters
     ----------
-    creator : dict
-        A dictionary containing details of creator's name, email and
-        organisation name
+    creators : list
+        A list of cobra creators
     created : string
         The date when component is created in W3CDTF ISO 8601 format
     modified : list
-        A list of dates about the component modification
+        A list of dates (of type DateTime) about the component modification
 
     Attributes
     ----------
-    creator :Creators
-        A dictionary containong details of creator's name, email and
-        organisation name
+    creator : list
+        A list containing details of creators of the component
     created : DateTime
         The date when component is created in W3CDTF ISO 8601 format
     modified : list
@@ -36,14 +34,14 @@ class History(object):
                  modified: 'list' = None):
         if creators is None:
             creators = []
-        self._creators: List(Creator) = list(creators)
+        self._creators = list(creators)
         if modified is None:
             modified = []
-        self._modified: List(DateTime) = list(modified)
+        self._modified = list(modified)
         if created is None:
             self._created = None
         else:
-            self._created = DateTime(created)
+            self._created = created
 
     @staticmethod
     def parse_history(data) -> 'History':
@@ -57,7 +55,8 @@ class History(object):
                     data[key] = None
             return History(**data)
         else:
-            raise TypeError("Invalid format for History: '{}'".format(data))
+            raise TypeError("Invalid format for "
+                            "History: '{}'".format(data))
 
     @property
     def created(self):
@@ -66,7 +65,8 @@ class History(object):
     @created.setter
     def created(self, value):
         if not isinstance(value, DateTime):
-            raise TypeError("Created date must be of type DateTime: {}".format(value))
+            raise TypeError("Created date must be of type"
+                            " DateTime: {}".format(value))
         else:
             self._created = value
 
@@ -77,7 +77,8 @@ class History(object):
     @creators.setter
     def creators(self, value):
         if not isinstance(value, list):
-            raise TypeError("Creators must be wrapped inside a list: {}".format(value))
+            raise TypeError("Creators must be wrapped inside "
+                            "a list: {}".format(value))
         else:
             self._creators = value
 
@@ -88,19 +89,47 @@ class History(object):
     @modified.setter
     def modified(self, value):
         if not isinstance(value, list):
-            raise TypeError("Modified dates must be wrapped inside a list: {}".format(value))
+            raise TypeError("Modified dates must be wrapped inside"
+                            " a list: {}".format(value))
         else:
             self._modified = value
 
     def isSetHistory(self):
-        if self.created == None and len(self.creators) == 0 and len(self.modified) == 0:
-            return False
+        if self.created is None and len(self.creators) == 0 \
+           and len(self.modified) == 0:
+                return False
         else:
             return True
 
+    def equals(self, history):
+        # checking equality of creators
+        if len(self.creators) != len(history.creators):
+            return False
+        creator_len = len(self.creators)
+        for index in range(creator_len):
+            if not self.creators[index].equals(history.creators[index]):
+                return False
+
+        # checking equality of created date
+        if not self.created.equals(history.created):
+            return False
+
+        # checking equality of modified
+        if len(self.modified) != len(history.modified):
+            return False
+        modified_len = len(self.modified)
+        for index in range(modified_len):
+            if not self.modified[index].equals(history.modified[index]):
+                return False
+
+        return True
+
     def __str__(self):
-        return str({"creators": self.creators, "created": self.created.getDateString(),
-                        "modified": [(modified_date.getDateString()) for modified_date in self.modified]})
+        return str({
+            "creators": self.creators,
+            "created": self.created.getDateString(),
+            "modified": [(modified_date.getDateString()) for modified_date
+                         in self.modified]})
 
     def __repr__(self):
         return self.__str__()
@@ -138,6 +167,15 @@ class Creator(object):
         else:
             raise TypeError("Invalid format for Creator: {}".format(data))
 
+    def equals(self, creator):
+        if self.first_name == creator.first_name and \
+           self.last_name == creator.last_name and \
+           self.email == creator.email and \
+           self.organization_name == creator.organization_name:
+                return True
+        else:
+            return False
+
     def __str__(self):
         return str({
             "first_name": self.first_name,
@@ -169,21 +207,28 @@ class DateTime(object):
         self._date = date_text
 
     def getDateString(self):
-        return self._date
+        return getattr(self, "_date", None)
 
     def setDateFromString(self, value):
         """
-        Before setting the date, it first checks if date is in valid format
-        or not.
+        Before setting the date, it first checks if date
+        is in valid format or not.
         """
         self.validateDate(value)
         self._date = value
+
+    def equals(self, datetime):
+        if self.getDateString() == datetime.getDateString():
+            return True
+        else:
+            return False
 
     @staticmethod
     def validateDate(date_text):
         """Validate if the date format is of type w3cdtf ISO 8601"""
         if not isinstance(date_text, str):
-            raise TypeError("The date passed must be of type string: {}".format(date_text))
+            raise TypeError("The date passed must be of "
+                            "type string: {}".format(date_text))
 
         try:
             datetime.datetime.strptime(date_text, '%Y-%m-%dT%H:%M:%S%z')

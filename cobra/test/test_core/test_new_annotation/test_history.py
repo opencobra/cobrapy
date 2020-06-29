@@ -1,38 +1,44 @@
-import pytest
+# -*- coding: utf-8 -*-
 
-from cobra.core.metadata.history import History, Creator, DateTime
-from cobra.io import read_sbml_model
 import os
 from pathlib import Path
 
+import pytest
+
+from cobra.core.metadata.history import Creator, DateTime, History
+from cobra.io import read_sbml_model
 from cobra.test import data_dir
+
+
 metadata_examples_dir = Path(__file__).parent.parent / "examples"
+
 
 def _read_ecoli_annotation_model():
     test_xml = os.path.join(data_dir, "e_coli_core_for_annotation.xml")
     model = read_sbml_model(test_xml)
     return model
 
+
 def test_create_history():
     history = History(
-        creators = [
-            {
-                "first_name" : "Matthias",
-                "last_name" : "Koenig",
-                "organization_name" : "HU",
-                "email" : "test@test.com"
-            },
-            {
-                "first_name" : "Andreas",
-                "last_name" : "Draeger",
-                "organization_name" : "University of Tübingen",
-                "email" : "test2@test2.com"
-            }
+        creators=[
+            Creator(
+                first_name="Matthias",
+                last_name="Koenig",
+                organization_name="HU",
+                email="test@test.com"
+            ),
+            Creator(
+                first_name="Andreas",
+                last_name="Draeger",
+                organization_name="University of Tübingen",
+                email="test2@test2.com"
+            )
         ],
-        created = "2020-06-26T02:34:30+05:30",
-        modified = [
-            "2020-06-26T12:34:11+00:00",
-            "2020-06-26T00:34:11+05:30"
+        created=DateTime("2020-06-26T02:34:30+05:30"),
+        modified=[
+            DateTime("2020-06-26T12:34:11+00:00"),
+            DateTime("2020-06-26T00:34:11+05:30")
         ]
     )
     assert len(history.creators) == 2
@@ -43,7 +49,22 @@ def test_create_history():
 
 def test_history_from_ecoli_xml():
     model = _read_ecoli_annotation_model()
-    assert str(model.annotation.history) == "{'creators': [{'first_name': 'Matthias', 'last_name': 'Koenig', 'email': 'koenigmx@hu-berlin.de', 'organization_name': 'Humboldt-University Berlin, Institute for Theoretical Biology'}], 'created': '2019-03-06T14:40:55Z', 'modified': ['2019-03-06T14:40:55Z']}"
+    history = History(
+       creators=[
+          Creator(
+             first_name="Matthias",
+             last_name="Koenig",
+             email="koenigmx@hu-berlin.de",
+             organization_name="Humboldt-University Berlin, "
+                               "Institute for Theoretical Biology"
+          )
+       ],
+       created=DateTime("2019-03-06T14:40:55Z"),
+       modified=[
+          DateTime("2019-03-06T14:40:55Z")
+       ]
+    )
+    assert model.annotation.history.equals(history)
 
 
 def test_create_creator():
@@ -63,7 +84,7 @@ def test_DateTime():
     # valid date
     date = DateTime("2020-06-26T02:34:11+05:30")
     assert date.getDateString() == "2020-06-26T02:34:11+05:30"
-    # invalid date
+    # invalid date (seconds > 59)
     with pytest.raises(ValueError):
         date.setDateFromString("2020-06-26T02:34:70+05:30")
     # valid date

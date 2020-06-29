@@ -5,9 +5,9 @@ from __future__ import absolute_import
 from collections import defaultdict
 from collections.abc import MutableMapping
 
-from cobra.core.metadata.cvterm import CVTerms, CVTerm, Qualifier
+from cobra.core.metadata.cvterm import CVTerm, CVTerms, Qualifier
 from cobra.core.metadata.history import History
-from cobra.core.metadata.keyvaluepair import ListOfKeyValue, KeyValueDict
+from cobra.core.metadata.keyvaluepair import KeyValueDict, ListOfKeyValue
 
 
 class MetaData(MutableMapping):
@@ -67,15 +67,7 @@ class MetaData(MutableMapping):
         return self.annotations[key]
 
     def __setitem__(self, key, value):
-        if key == "sbo":
-            if isinstance(value, str):
-                self._cvterms._annotations[key] = [value]
-            elif isinstance(value, list):
-                self._cvterms._annotations[key] = value
-            else:
-                raise TypeError("'sbo' terms must be wrapped inside a list: {}".format(value))
-        else:
-            self._cvterms.add_simple_annotations({key: value})
+        self._cvterms.add_simple_annotations(dict({key: value}))
 
     def __delitem__(self, key):
         del self.annotations[key]
