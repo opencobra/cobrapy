@@ -15,10 +15,6 @@ from cobra.core.metadata import *
 from cobra.core.species import Species
 from cobra.io import (
     load_json_model, read_sbml_model, save_json_model, write_sbml_model)
-from cobra.test import data_dir
-
-
-metadata_examples_dir = data_dir
 
 ecoli_model_annotation = {
   "bqb_hasTaxon": [
@@ -96,9 +92,9 @@ def test_annotation():
                             }
 
 
-def test_nested_annotation():
+def test_nested_annotation(data_directory):
     # testing via cvterms
-    with open(join(data_dir, "cvterms_nested.json"), "r") as f_cvterms:
+    with open(join(data_directory, "cvterms_nested.json"), "r") as f_cvterms:
         cvterms_data = json.load(f_cvterms)
 
     s = Species()
@@ -162,14 +158,14 @@ def test_nested_annotation():
     assert nested_data.equals(nested_cvt)
 
 
-def _read_ecoli_annotation_model():
-    test_xml = os.path.join(data_dir, "e_coli_core_for_annotation.xml")
+def _read_ecoli_annotation_model(data_directory):
+    test_xml = os.path.join(data_directory, "e_coli_core_for_annotation.xml")
     model = read_sbml_model(test_xml)
     return model
 
 
-def test_cvterms_from_ecoli_xml():
-    model = _read_ecoli_annotation_model()
+def test_cvterms_from_ecoli_xml(data_directory):
+    model = _read_ecoli_annotation_model(data_directory)
     qualifier_list = ['bqb_hasTaxon', 'bqm_is', 'bqm_isDescribedBy']
     nested_cvt = CVTerms({
         "bqb_isDescribedBy": [
@@ -202,19 +198,19 @@ def test_cvterms_from_ecoli_xml():
     }
 
 
-def test_writing_xml(tmp_path):
-    model = _read_ecoli_annotation_model()
+def test_writing_xml(data_directory, tmp_path):
+    model = _read_ecoli_annotation_model(data_directory)
     assert write_sbml_model(model, tmp_path / "e_coli_core_writing.xml")is None
 
 
-def test_write_json():
-    model = _read_ecoli_annotation_model()
-    json_path = join(data_dir, "e_coli_core_json_writing.json")
+def test_write_json(data_directory):
+    model = _read_ecoli_annotation_model(data_directory)
+    json_path = join(data_directory, "e_coli_core_json_writing.json")
     assert save_json_model(model, json_path, sort=False, pretty=True) is None
 
 
-def test_read_new_json_model():
-    json_path = join(data_dir, "e_coli_core_json_writing.json")
+def test_read_new_json_model(data_directory):
+    json_path = join(data_directory, "e_coli_core_json_writing.json")
     model = load_json_model(json_path)
     assert model.annotation == {
             'taxonomy': ['511145'],
@@ -225,8 +221,8 @@ def test_read_new_json_model():
     assert model.annotation.cvterms.equals(CVTerms(ecoli_model_annotation))
 
 
-def test_read_old_json_model():
-    model = load_json_model(Path(data_dir) / "mini.json")
+def test_read_old_json_model(data_directory):
+    model = load_json_model(Path(data_directory) / "mini.json")
     meta = model.metabolites[0]
     assert meta.annotation == {
         'bigg.metabolite': ['13dpg'],

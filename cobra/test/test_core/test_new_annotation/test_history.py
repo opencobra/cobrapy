@@ -7,14 +7,10 @@ import pytest
 
 from cobra.core.metadata.history import Creator, DateTime, History
 from cobra.io import read_sbml_model
-from cobra.test import data_dir
 
 
-metadata_examples_dir = Path(__file__).parent.parent / "examples"
-
-
-def _read_ecoli_annotation_model():
-    test_xml = os.path.join(data_dir, "e_coli_core_for_annotation.xml")
+def _read_ecoli_annotation_model(data_directory):
+    test_xml = os.path.join(data_directory, "e_coli_core_for_annotation.xml")
     model = read_sbml_model(test_xml)
     return model
 
@@ -47,8 +43,8 @@ def test_create_history():
     assert len(history.modified) == 2
 
 
-def test_history_from_ecoli_xml():
-    model = _read_ecoli_annotation_model()
+def test_history_from_ecoli_xml(data_directory):
+    model = _read_ecoli_annotation_model(data_directory)
     history = History(
        creators=[
           Creator(
