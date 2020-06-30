@@ -2,10 +2,16 @@
 
 from __future__ import absolute_import
 
-from collections.abc import MutableMapping, MutableSequence
+import collections
 
 
-class ListOfKeyValue(MutableSequence):
+try:
+    collectionsAbc = collections.abc
+except AttributeError:
+    collectionsAbc = collections
+
+
+class ListOfKeyValue(collectionsAbc.MutableSequence):
     """A list extension to store key-value pairs
 
     Parameters

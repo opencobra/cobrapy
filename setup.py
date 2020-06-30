@@ -51,6 +51,7 @@ if __name__ == "__main__":
             "optlang>=1.4.2",
             "depinfo",
             "python-libsbml-experimental==5.18.1",
+            "enum34"
         ],
         tests_require=[
             "jsonschema > 2.5",

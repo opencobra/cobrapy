@@ -2,15 +2,22 @@
 
 from __future__ import absolute_import
 
+import collections
 from collections import defaultdict
-from collections.abc import MutableMapping
 
-from cobra.core.metadata.cvterm import CVTerm, CVTerms, Qualifier
+from cobra.core.metadata.cvterm import CVTerms
 from cobra.core.metadata.history import History
 from cobra.core.metadata.keyvaluepair import KeyValueDict, ListOfKeyValue
 
 
-class MetaData(MutableMapping):
+try:
+    collectionsAbc = collections.abc
+except AttributeError:
+    collectionsAbc = collections
+
+
+
+class MetaData(collectionsAbc.MutableMapping):
     """Class representation of the meta-data of an object.
 
     Meta-data consists of three components:

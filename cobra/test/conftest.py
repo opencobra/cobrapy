@@ -3,11 +3,11 @@
 from __future__ import absolute_import
 
 import json
+from copy import deepcopy
 from os.path import join
 
 import pytest
 from pandas import DataFrame
-from copy import deepcopy
 
 import cobra.util.solver as sutil
 from cobra import Metabolite, Model, Reaction

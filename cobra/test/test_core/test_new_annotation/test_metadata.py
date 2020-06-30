@@ -4,6 +4,8 @@
 Tests for the metadata structures
 """
 
+from __future__ import absolute_import
+
 import json
 import os
 from os.path import join
@@ -15,6 +17,7 @@ from cobra.core.metadata import *
 from cobra.core.species import Species
 from cobra.io import (
     load_json_model, read_sbml_model, save_json_model, write_sbml_model)
+
 
 ecoli_model_annotation = {
   "bqb_hasTaxon": [

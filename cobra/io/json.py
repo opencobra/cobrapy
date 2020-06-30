@@ -2,8 +2,10 @@
 
 from __future__ import absolute_import
 
-from six import string_types
 from pathlib import Path
+
+from six import string_types
+
 from cobra.io.dict import model_from_dict, model_to_dict
 
 

@@ -2,10 +2,11 @@
 
 from __future__ import absolute_import
 
+from collections import defaultdict
+
 from six import string_types
 
-from collections import defaultdict
-from cobra.core.metadata import MetaData, CVList
+from cobra.core.metadata import CVList, MetaData
 
 
 class Object(object):

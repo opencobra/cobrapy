@@ -7,11 +7,18 @@ resources
 """
 from __future__ import absolute_import
 
+import collections
 import re
 import warnings
 from collections import defaultdict
-from collections.abc import MutableMapping, MutableSequence
 from enum import Enum
+
+
+try:
+    collectionsAbc = collections.abc
+except AttributeError:
+    collectionsAbc = collections
+
 
 
 # the supported qualifiers for cvterm
@@ -60,8 +67,7 @@ class CVTerm(object):
              a uri identifying external resource
     """
 
-    def __init__(self, qualifier: 'Qualifier' = Qualifier.bqb_is,
-                 resource: 'str' = None):
+    def __init__(self, qualifier=Qualifier.bqb_is, resource=None):
         self.uri = resource
         if isinstance(qualifier, Qualifier):
             self.qualifier = qualifier
@@ -96,7 +102,7 @@ class CVTerm(object):
         return provider, identifier
 
 
-class CVTerms(MutableMapping):
+class CVTerms(collectionsAbc.MutableMapping):
     """
     Representation of all CVTerms of an object in their
     dependency structure. It is like a dictionary where
@@ -123,7 +129,7 @@ class CVTerms(MutableMapping):
     }
     """
 
-    def __init__(self, data: 'dict' = None):
+    def __init__(self, data=None):
         self._annotations = defaultdict(list)
         self._cvterms = defaultdict(CVList)
         if data is None:
@@ -143,7 +149,7 @@ class CVTerms(MutableMapping):
             raise TypeError("Invalid format for CVTerms: '{}'".format(data))
 
     @staticmethod
-    def parse_cvterms(data) -> 'CVTerms':
+    def parse_cvterms(data):
         """Tries to parse the CVterms."""
         if data is None or isinstance(data, dict):
             return CVTerms(data)
@@ -183,7 +189,7 @@ class CVTerms(MutableMapping):
             raise UnboundLocalError("The index is out of bound:"
                                     " {}".format(index))
 
-    def add_cvterms(self, cvterms: 'CVTerms' = None):
+    def add_cvterms(self, cvterms=None):
         """
         Adds multiple CVTerm to CVTerms.
 
@@ -213,7 +219,7 @@ class CVTerms(MutableMapping):
             raise TypeError("The value passed must be of "
                             "type CVTerms: {}".format(cvterms))
 
-    def add_simple_annotations(self, data: None):
+    def add_simple_annotations(self, data=None):
         """
         Adds cvterms via old annotation format. If no qualifier
         is linked to the identifier, default qualifier i.e "bqb_is"
@@ -355,7 +361,7 @@ class CVTerms(MutableMapping):
         return '{}'.format(dict(self._cvterms))
 
 
-class CVList(MutableSequence):
+class CVList(collectionsAbc.MutableSequence):
     """
     Class representation of all sets of resources and their nested
     annotation corresponding to a given qualifier. It have similar
@@ -379,7 +385,7 @@ class CVList(MutableSequence):
         a list containing entries confirming to ExternalResources structure
 
     """
-    def __init__(self, data: 'list' = None):
+    def __init__(self, data=None):
 
         self._sequence = list()
         if data is None:
