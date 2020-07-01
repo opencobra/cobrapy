@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 
 import json
-from copy import deepcopy
 from os.path import join
 
 import pytest
@@ -52,7 +51,7 @@ def small_model():
 
 @pytest.fixture(scope="function")
 def model(small_model):
-    return deepcopy(small_model)
+    return small_model.copy()
 
 
 @pytest.fixture(scope="session")

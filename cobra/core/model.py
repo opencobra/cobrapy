@@ -324,7 +324,7 @@ class Model(Object):
         """
         new = self.__class__()
         do_not_copy_by_ref = {"metabolites", "reactions", "genes", "notes",
-                              "annotation", "groups"}
+                              "_annotation", "groups"}
         for attr in self.__dict__:
             if attr not in do_not_copy_by_ref:
                 new.__dict__[attr] = self.__dict__[attr]
@@ -332,7 +332,7 @@ class Model(Object):
         new.annotation = deepcopy(self.annotation)
 
         new.metabolites = DictList()
-        do_not_copy_by_ref = {"_reaction", "_model"}
+        do_not_copy_by_ref = {"_reaction", "_model", "_annotation"}
         for metabolite in self.metabolites:
             new_met = metabolite.__class__()
             for attr, value in iteritems(metabolite.__dict__):
@@ -340,6 +340,7 @@ class Model(Object):
                     new_met.__dict__[attr] = copy(
                         value) if attr == "formula" else value
             new_met._model = new
+            new_met.annotation = deepcopy(metabolite.annotation)
             new.metabolites.append(new_met)
 
         new.genes = DictList()
@@ -350,16 +351,18 @@ class Model(Object):
                     new_gene.__dict__[attr] = copy(
                         value) if attr == "formula" else value
             new_gene._model = new
+            new_gene.annotation = deepcopy(gene.annotation)
             new.genes.append(new_gene)
 
         new.reactions = DictList()
-        do_not_copy_by_ref = {"_model", "_metabolites", "_genes"}
+        do_not_copy_by_ref = {"_model", "_metabolites", "_genes", "_annotation"}
         for reaction in self.reactions:
             new_reaction = reaction.__class__()
             for attr, value in iteritems(reaction.__dict__):
                 if attr not in do_not_copy_by_ref:
                     new_reaction.__dict__[attr] = copy(value)
             new_reaction._model = new
+            new_reaction._annotation = deepcopy(reaction.annotation)
             new.reactions.append(new_reaction)
             # update awareness
             for metabolite, stoic in iteritems(reaction._metabolites):
@@ -372,7 +375,7 @@ class Model(Object):
                 new_gene._reaction.add(new_reaction)
 
         new.groups = DictList()
-        do_not_copy_by_ref = {"_model", "_members"}
+        do_not_copy_by_ref = {"_model", "_members", "_annotation"}
         # Groups can be members of other groups. We initialize them first and
         # then update their members.
         for group in self.groups:
@@ -381,6 +384,7 @@ class Model(Object):
                 if attr not in do_not_copy_by_ref:
                     new_group.__dict__[attr] = copy(value)
             new_group._model = new
+            new_group.annotation = group.annotation
             new.groups.append(new_group)
         for group in self.groups:
             new_group = new.groups.get_by_id(group.id)
