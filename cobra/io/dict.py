@@ -83,7 +83,7 @@ def _annotation_to_dict(annotation):
     anno_dict = literal_eval(anno_str)
     final_dict = {"cvterms": anno_dict}
 
-    if annotation.history.isSetHistory():
+    if annotation.history.is_set_history():
         history_str = str(annotation.history)
         history_dict = literal_eval(history_str)
         final_dict["history"] = history_dict

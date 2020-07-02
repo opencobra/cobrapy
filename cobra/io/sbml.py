@@ -45,7 +45,7 @@ import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
 from cobra.core.gene import parse_gpr
 from cobra.core.metadata import (
-    Creator, CVList, CVTerms, DateTime, MetaData, Qualifier, Notes)
+    Creator, CVList, CVTerms, HistoryDateTime, MetaData, Qualifier, Notes)
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
 
@@ -1474,15 +1474,15 @@ def _parse_annotations(sbase):
 
         if model_history.isSetCreatedDate():
             date = model_history.getCreatedDate()  # type: libsbml.Date
-            cobra_date = DateTime(date.getDateAsString())  # type: DateTime
-            annotation.history.created = cobra_date
+            cobra_date = HistoryDateTime(date.getDateAsString())  # type: HistoryDateTime
+            annotation.history.created_date = cobra_date
 
         cobra_modified_dates = []
         for index in range(model_history.getNumModifiedDates()):
             modified_date = model_history.getModifiedDate(index)
-            cobra_modified_date = DateTime(modified_date.getDateAsString())
+            cobra_modified_date = HistoryDateTime(modified_date.getDateAsString())
             cobra_modified_dates.append(cobra_modified_date)
-        annotation.history.modified = cobra_modified_dates
+        annotation.history.modified_dates = cobra_modified_dates
 
     return annotation
 
@@ -1580,7 +1580,7 @@ def _sbase_annotations(sbase, annotation):
             _check(sbase.addCVTerm(cv),
                    "Setting cvterm: {}".format(cv))
 
-    if annotation.history.isSetHistory():
+    if annotation.history.is_set_history():
         # component history
         comp_history = libsbml.ModelHistory()
 

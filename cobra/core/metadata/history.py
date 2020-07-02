@@ -6,6 +6,65 @@ import datetime
 from typing import List
 
 
+class HistoryDateTime(object):
+    """
+    Class representation of DateTimes allowed inside model history.
+    This class make sure that dates passed must be of the form:
+
+    %Y-%m-%dT%H:%M:%S%z
+
+    Parameter
+    ---------
+    datetime: str
+        date in the form of a string
+    """
+
+    def __init__(self, datetime=None):
+        # FIXME: accept python DateTimes & strings
+        self.datetime = datetime
+
+    @property
+    def datetime(self):
+        return getattr(self, "_date", None)
+
+    @datetime.setter
+    def datetime(self, value):
+        """
+        Before setting the date, it first checks if date
+        is in valid format or not.
+        """
+        # FIXME: add python Datetime support
+
+        if value is None:
+            # FIXME: is default a good idea? probably not (better None)
+            value = "2000-01-01T00:00:00+00:00"
+
+        self.validate_date(value)
+        self._date = value
+
+    def __eq__(self, value):
+        return self.datetime == value.datetime
+
+    @staticmethod
+    def validate_date(date_text):
+        """Validate if the date format is of type w3cdtf ISO 8601"""
+        if not isinstance(date_text, str):
+            raise TypeError("The date passed must be of "
+                            "type string: {}".format(date_text))
+
+        try:
+            datetime.datetime.strptime(date_text, '%Y-%m-%dT%H:%M:%S%z')
+        except ValueError as e:
+            raise ValueError(str(e))
+        return True
+
+    def __str__(self):
+        return self._date
+
+    def __repr__(self):
+        return self._date
+
+
 class History(object):
     """
     Class representation of history of a given component.
@@ -16,34 +75,31 @@ class History(object):
     ----------
     creators : list
         A list of cobra creators
-    created : string
+    created_date : string
         The date when component is created in W3CDTF ISO 8601 format
-    modified : list
+    modified_dates : list
         A list of dates (of type DateTime) about the component modification
 
     Attributes
     ----------
     creator : list
         A list containing details of creators of the component
-    created : DateTime
+    created_date : HistoryDateTime
         The date when component is created in W3CDTF ISO 8601 format
-    modified : list
+    modified_dates : list
         A list of dates about the component modification
 
     """
 
-    def __init__(self, creators: 'list' = None, created: 'DateTime' = None,
-                 modified: 'list' = None):
-        if creators is None:
-            creators = []
-        self._creators = list(creators)
-        if modified is None:
-            modified = []
-        self._modified = list(modified)
-        if created is None:
-            self._created = None
-        else:
-            self._created = created
+    def __init__(self, creators: List = None, created_date: HistoryDateTime = None,
+                 modified_dates: List = None):
+        self._creators = []
+        self._created_date = None
+        self._modified_dates = []
+
+        self.creators = creators
+        self.created_date = created_date
+        self.modified_dates = modified_dates
 
     @staticmethod
     def parse_history(data) -> 'History':
@@ -61,67 +117,77 @@ class History(object):
                             "History: '{}'".format(data))
 
     @property
-    def created(self):
-        return getattr(self, "_created", None)
-
-    @created.setter
-    def created(self, value):
-        if not isinstance(value, DateTime):
-            raise TypeError("Created date must be of type"
-                            " DateTime: {}".format(value))
-        else:
-            self._created = value
-
-    @property
     def creators(self):
-        return getattr(self, "_creators", [])
+        return self._creators
 
     @creators.setter
     def creators(self, value):
+        if value is None:
+            value = []
+
         if not isinstance(value, list):
-            raise TypeError("Creators must be wrapped inside "
-                            "a list: {}".format(value))
+            raise TypeError("Creators must be a list "
+                            "{}".format(value))
         else:
             self._creators = value
 
     @property
-    def modified(self):
-        return getattr(self, "_modified", [])
+    def created_date(self):
+        return self._created_date
 
-    @modified.setter
-    def modified(self, value):
+    @created_date.setter
+    def created_date(self, value):
+        if not isinstance(value, HistoryDateTime):
+            raise TypeError("'created_date' must be of type"
+                            " DateTime: {}".format(value))
+        else:
+            self._created_date = value
+
+    @property
+    def modified_dates(self):
+        return self._modified_dates
+
+    @modified_dates.setter
+    def modified_dates(self, value):
+        if value is None:
+            value = []
         if not isinstance(value, list):
-            raise TypeError("Modified dates must be wrapped inside"
+            raise TypeError("'modified_dates' must be wrapped inside"
                             " a list: {}".format(value))
         else:
-            self._modified = value
+            self._modified_dates = value
 
-    def isSetHistory(self):
-        if self.created is None and len(self.creators) == 0 \
-           and len(self.modified) == 0:
-                return False
-        else:
+    def is_set_history(self) -> bool:
+        """Checks if history is set.
+        Returns true if at least one attribute is set.
+        :return:
+        """
+        if self.creators or self.created_date or self.modified_dates:
             return True
+        return False
 
-    def equals(self, history):
-        # checking equality of creators
+    def __eq__(self, history):
+        """ Checking equality of history elements.
+
+        :param history:
+        :return:
+        """
+        # check creators
         if len(self.creators) != len(history.creators):
             return False
-        creator_len = len(self.creators)
-        for index in range(creator_len):
-            if not self.creators[index].equals(history.creators[index]):
+        for k, creator in enumerate(self.creators):
+            if not creator == history.creators[k]:
                 return False
 
         # checking equality of created date
-        if not self.created.equals(history.created):
+        if not self.created_date == history.created_date:
             return False
 
         # checking equality of modified
         if len(self.modified) != len(history.modified):
             return False
-        modified_len = len(self.modified)
-        for index in range(modified_len):
-            if not self.modified[index].equals(history.modified[index]):
+        for k, modified_date in enumerate(self.modified_dates):
+            if not modified_date == history.modified_date[k]:
                 return False
 
         return True
@@ -129,9 +195,9 @@ class History(object):
     def __str__(self):
         return str({
             "creators": self.creators,
-            "created": self.created.getDateString(),
-            "modified": [(modified_date.getDateString()) for modified_date
-                         in self.modified]})
+            "created_date": self.created_date.getDateString(),
+            "modified_dates": [(modified_date.getDateString()) for modified_date
+                         in self.modified_dates]})
 
     def __repr__(self):
         return self.__str__()
@@ -169,7 +235,8 @@ class Creator(object):
         else:
             raise TypeError("Invalid format for Creator: {}".format(data))
 
-    def equals(self, creator):
+    def __eq__(self, creator):
+        # FIXME: better test via negative or
         if self.first_name == creator.first_name and \
            self.last_name == creator.last_name and \
            self.email == creator.email and \
@@ -189,57 +256,3 @@ class Creator(object):
     def __repr__(self):
         return self.__str__()
 
-
-class DateTime(object):
-    """
-    Class representation of dates allowed inside model history.
-    This class make sure that dates passed must be of the form :
-    %Y-%m-%dT%H:%M:%S%z
-
-    Parameter
-    ---------
-    date_text : str
-        date in the form of a string
-    """
-
-    def __init__(self, date_text: 'str' = None):
-        if date_text is None:
-            date_text = "2000-01-01T00:00:00+00:00"
-        self.validateDate(date_text)
-        self._date = date_text
-
-    def getDateString(self):
-        return getattr(self, "_date", None)
-
-    def setDateFromString(self, value):
-        """
-        Before setting the date, it first checks if date
-        is in valid format or not.
-        """
-        self.validateDate(value)
-        self._date = value
-
-    def equals(self, datetime):
-        if self.getDateString() == datetime.getDateString():
-            return True
-        else:
-            return False
-
-    @staticmethod
-    def validateDate(date_text):
-        """Validate if the date format is of type w3cdtf ISO 8601"""
-        if not isinstance(date_text, str):
-            raise TypeError("The date passed must be of "
-                            "type string: {}".format(date_text))
-
-        try:
-            datetime.datetime.strptime(date_text, '%Y-%m-%dT%H:%M:%S%z')
-        except ValueError as e:
-            raise ValueError(str(e))
-        return True
-
-    def __str__(self):
-        return self._date
-
-    def __repr__(self):
-        return self._date
