@@ -7,3 +7,4 @@ from cobra.core.metadata.cvterm import (
 from cobra.core.metadata.history import Creator, DateTime, History
 from cobra.core.metadata.keyvaluepair import ListOfKeyValue
 from cobra.core.metadata.metadata import MetaData
+from cobra.core.metadata.notes import Notes

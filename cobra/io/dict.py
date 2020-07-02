@@ -10,7 +10,7 @@ from numpy import bool_, float_
 from six import iteritems, string_types
 
 from cobra.core import Gene, Metabolite, Model, Reaction
-from cobra.core.metadata import MetaData
+from cobra.core.metadata import MetaData, Notes
 from cobra.util.solver import set_objective
 
 
@@ -68,6 +68,8 @@ def _fix_type(value):
         return list(value)
     if isinstance(value, dict):
         return OrderedDict((key, value[key]) for key in sorted(value))
+    if isinstance(value, Notes):
+        return str(value)
     # handle legacy Formula type
     if value.__class__.__name__ == "Formula":
         return str(value)
@@ -113,6 +115,8 @@ def _update_optional(cobra_object, new_dict, optional_attribute_dict,
     for key in ordered_keys:
         default = optional_attribute_dict[key]
         value = getattr(cobra_object, key)
+        if key == 'notes' and value.get_notes_str() is None:
+            continue
         if value is None or value == default:
             continue
         if key == "annotation":
@@ -135,6 +139,9 @@ def metabolite_from_dict(metabolite):
         if k == "annotation":
             value = _extract_annotation(v)
             setattr(new_metabolite, k, value)
+        elif k == "notes":
+            notes_data = Notes(v)
+            setattr(new_metabolite, k, notes_data)
         else:
             setattr(new_metabolite, k, v)
     return new_metabolite
@@ -155,6 +162,9 @@ def gene_from_dict(gene):
         if k == "annotation":
             value = _extract_annotation(v)
             setattr(new_gene, k, value)
+        elif k == "notes":
+            notes_data = Notes(v)
+            setattr(new_gene, k, notes_data)
         else:
             setattr(new_gene, k, v)
     return new_gene
@@ -188,6 +198,9 @@ def reaction_from_dict(reaction, model):
             if k == "annotation":
                 value = _extract_annotation(v)
                 setattr(new_reaction, k, value)
+            elif k == "notes":
+                notes_data = Notes(v)
+                setattr(new_reaction, k, notes_data)
             else:
                 setattr(new_reaction, k, v)
     return new_reaction
@@ -274,6 +287,9 @@ def model_from_dict(obj):
         if k == "annotation":
             value = _extract_annotation(v)
             setattr(model, k, value)
+        elif k == "notes":
+            notes_data = Notes(v)
+            setattr(model, k, notes_data)
         elif k in {'id', 'name', 'notes', 'compartments'}:
             setattr(model, k, v)
     return model

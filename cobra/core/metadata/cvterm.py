@@ -20,7 +20,6 @@ except AttributeError:
     collectionsAbc = collections
 
 
-
 # the supported qualifiers for cvterm
 class Qualifier(Enum):
     bqb_is = 0

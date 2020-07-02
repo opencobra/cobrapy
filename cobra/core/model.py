@@ -355,7 +355,8 @@ class Model(Object):
             new.genes.append(new_gene)
 
         new.reactions = DictList()
-        do_not_copy_by_ref = {"_model", "_metabolites", "_genes", "_annotation"}
+        do_not_copy_by_ref = {"_model", "_metabolites",
+                              "_genes", "_annotation"}
         for reaction in self.reactions:
             new_reaction = reaction.__class__()
             for attr, value in iteritems(reaction.__dict__):

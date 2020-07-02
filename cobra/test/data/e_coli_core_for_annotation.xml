@@ -5,6 +5,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
   <notes>
     <body xmlns="http://www.w3.org/1999/xhtml" style="font-size: 14px; height: 100%; width: 100%; color: #444444; font-family:Helvetica, sans-serif; margin-top: 0px; margin-left: 0px;">
       <div style="height: 60px; background-color: #09F;">
+        <p> Key1 : Value1 </p>
         <div style="margin-left: auto; margin-right: auto; width: 970px;">
           <h1
           style="           font-family: Lato, Helvetica Neue, Helvetica, Arial, sans-serif;           font-weight: 700;           color:#EFF8FF;           text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);            text-decoration-color: -moz-use-text-color;           margin-bottom: 40px;           margin-top: 0px;">
@@ -5374,6 +5375,19 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             </rdf:Description>
           </rdf:RDF>
         </annotation>
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <div style="height: 60px; background-color: #09F;">
+              <p> Key1 : Value1 </p>
+              <p> Key2 : Value2 </p>
+              <div style="margin-left: auto; margin-right: auto; width: 970px;">
+                <h1> A Heading </h1>
+                  <div class="dc:title"> e_coli_core - Escherichia coli str. K-12 substr. MG1655 </div>
+              </div>
+              <p> Key3 : Value3 </p>
+            </div>
+          </body>
+        </notes>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b0351" />

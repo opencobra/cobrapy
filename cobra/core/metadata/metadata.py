@@ -16,7 +16,6 @@ except AttributeError:
     collectionsAbc = collections
 
 
-
 class MetaData(collectionsAbc.MutableMapping):
     """Class representation of the meta-data of an object.
 

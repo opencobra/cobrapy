@@ -6,7 +6,7 @@ from collections import defaultdict
 
 from six import string_types
 
-from cobra.core.metadata import CVList, MetaData
+from cobra.core.metadata import CVList, MetaData, Notes
 
 
 class Object(object):
@@ -23,7 +23,7 @@ class Object(object):
         self._id = id
         self.name = name
 
-        self.notes = {}
+        self._notes = Notes()
         self._annotation = MetaData()
 
     @property
@@ -40,6 +40,17 @@ class Object(object):
             self._set_id_with_model(value)
         else:
             self._id = value
+
+    @property
+    def notes(self):
+        return getattr(self, "_notes", None)
+
+    @notes.setter
+    def notes(self, data):
+        if isinstance(data, Notes):
+            self._notes = data
+            return
+        self._notes.set_notes(data)
 
     @property
     def annotation(self):

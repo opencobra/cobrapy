@@ -45,7 +45,7 @@ import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
 from cobra.core.gene import parse_gpr
 from cobra.core.metadata import (
-    Creator, CVList, CVTerm, CVTerms, DateTime, MetaData, Qualifier)
+    Creator, CVList, CVTerms, DateTime, MetaData, Qualifier, Notes)
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
 
@@ -1298,7 +1298,7 @@ def _check(value, message):
 # Notes
 # -----------------------------------------------------------------------------
 def _parse_notes_dict(sbase):
-    """ Creates dictionary of COBRA notes.
+    """ Creates Notes object.
 
     Parameters
     ----------
@@ -1306,24 +1306,11 @@ def _parse_notes_dict(sbase):
 
     Returns
     -------
-    dict of notes
+    Notes object
     """
     notes = sbase.getNotesString()
-    if notes and len(notes) > 0:
-        notes_store = dict()
-        for match in pattern_notes.finditer(notes):
-            try:
-                # Python 2.7 does not allow keywords for split.
-                # Python 3 can have (":", maxsplit=1)
-                key, value = match.group("content").split(":", 1)
-            except ValueError:
-                LOGGER.debug("Unexpected content format '{}'.",
-                             match.group("content"))
-                continue
-            notes_store[key.strip()] = value.strip()
-        return {k: v for k, v in notes_store.items() if len(v) > 0}
-    else:
-        return {}
+    cobra_notes = Notes(notes)
+    return cobra_notes
 
 
 def _sbase_notes_dict(sbase, notes):
@@ -1336,14 +1323,12 @@ def _sbase_notes_dict(sbase, notes):
     notes : notes object
         notes information from cobra object
     """
-    if notes and len(notes) > 0:
-        tokens = ['<html xmlns = "http://www.w3.org/1999/xhtml" >'] + \
-                 ["<p>{}: {}</p>".format(k, v) for (k, v) in notes.items()] + \
-                 ["</html>"]
-        _check(
-            sbase.setNotes("\n".join(tokens)),
-            "Setting notes on sbase: {}".format(sbase)
-        )
+    if notes.get_notes_str() is None:
+        return
+    _check(
+        sbase.setNotes(notes.get_notes_str()),
+        "Setting notes on sbase: {}".format(sbase)
+    )
 
 
 # -----------------------------------------------------------------------------

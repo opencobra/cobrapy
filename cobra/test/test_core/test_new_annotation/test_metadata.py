@@ -203,7 +203,8 @@ def test_cvterms_from_ecoli_xml(data_directory):
 
 def test_writing_xml(data_directory, tmp_path):
     model = _read_ecoli_annotation_model(data_directory)
-    assert write_sbml_model(model, tmp_path / "e_coli_core_writing.xml")is None
+    assert write_sbml_model(model, tmp_path /
+                            "e_coli_core_writing.xml") is None
 
 
 def test_write_json(data_directory):
