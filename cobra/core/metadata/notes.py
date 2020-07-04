@@ -11,83 +11,96 @@ except AttributeError:
     collectionsAbc = collections
 
 
-pattern_notes = re.compile(
-    r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<content>.*?)</(?P=prefix)p>",
-    re.IGNORECASE | re.DOTALL
-)
-
-
 class Notes(collectionsAbc.MutableMapping):
 
-    def __init__(self, notes_str=None):
-        self._notes_str = notes_str
-        self._data = {}
-        self.update_notes_dict()
+    def __init__(self, notes_text: 'str' = None):
+        self._notes_text = None
+        self.notes_text = notes_text
+
+    pattern_notes = re.compile(
+        r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<content>.*?)</(?P=prefix)p>",
+        re.IGNORECASE | re.DOTALL
+    )
 
     def update_notes_dict(self):
-        if self._notes_str and len(self._notes_str) > 0:
-            notes_store = dict()
-            for match in pattern_notes.finditer(self._notes_str):
+        """
+        Updates notes dictionary according to key-value stored
+        in notes string.
+        """
+        if self._notes_text and len(self._notes_text) > 0:
+            for match in self.pattern_notes.finditer(self._notes_text):
                 try:
                     # Python 2.7 does not allow keywords for split.
                     # Python 3 can have (":", maxsplit=1)
                     key, value = match.group("content").split(":", 1)
                 except ValueError:
-                    print("WARNING : Unexpected content format '{}'.",
-                          match.group("content"))
                     continue
                 self._data[key.strip()] = value.strip()
-            return {k: v for k, v in notes_store.items() if len(v) > 0}
-        else:
-            return {}
 
     def update_notes_str(self, key, value):
-        if self._notes_str is None:
+        """
+        Updates the notes string according to key-value pairs
+        passed. If any such 'key' is present inside notes string
+        having format '<p> key : oldvalue </p>', then it will be
+        updated to store the new value.
+        """
+        # if notes string is empty
+        if self._notes_text is None:
             raise ValueError("Notes string is not a right place "
                              "to store key value pairs. Store them "
                              "at appropriate place in the document.")
+
+        # if value passed is not of type 'str'
         if not isinstance(value, str):
             print("WARNING : The value must be of type string. \n"
-                  "Converting value in string type and "
-                  "then putting in notes string.")
+                  "Converting value to 'string' type and "
+                  "then putting in notes string....")
             value = str(value)
+
+        # pattern to search for inside notes string.
         pattern = re.compile(
             r"<(?P<prefix>(\w+:)?)p[^>]*>(\s*){}(\s*):(\s*)"
             r"(?P<content>.*?)(\s*)</(?P=prefix)p>".format(key),
             re.IGNORECASE | re.DOTALL
         )
-        match = re.search(pattern, self._notes_str)
+        match = re.search(pattern, self._notes_text)
+
+        # if no such key-value substring is
+        # already present inside notes string
         if match is None:
             del self._data[key]
-            raise ValueError("Notes string is not a right place to store "
-                             "key value pairs. Store them at appropriate"
-                             " place in the document.")
+            raise ValueError("Notes string is not a right place "
+                             "to store key value pairs. Store them "
+                             "at appropriate place in the document.")
+        # otherwise update the content
         else:
             start = match.start('content')
             end = match.end('content')
-            modified_str = self._notes_str[:start] + \
-                value + self._notes_str[end:]
-        self._notes_str = modified_str
+            modified_str = self._notes_text[:start] + \
+                           value + self._notes_text[end:]
+            self._notes_text = modified_str
 
-    def set_notes(self, notes_str):
-        self._notes_str = notes_str
-        self._data = {}
-        if notes_str is None:
-            return
-        elif not isinstance(notes_str, str):
-            raise TypeError("notes data must be of type "
-                            "string: {}".format(notes_str))
-        else:
+    @property
+    def notes_text(self):
+        return self._notes_text
+
+    @notes_text.setter
+    def notes_text(self, value):
+        if value is None:
+            self._notes_text = value
+            self._data = {}
+        elif isinstance(value, str):
+            self._notes_text = value
+            self._data = {}
             self.update_notes_dict()
-
-    def get_notes_str(self):
-        return self._notes_str
-
-    def equals(self, new_notes):
-        if self.get_notes_str() == new_notes.get_notes_str():
-            return True
         else:
+            raise TypeError("notes data must be of type "
+                            "string: {}".format(value))
+
+    def __eq__(self, other):
+        if not isinstance(other, Notes):
             return False
+        return self.notes_text == other.notes_text
 
     def __getitem__(self, key):
         return self._data[key]
@@ -106,7 +119,7 @@ class Notes(collectionsAbc.MutableMapping):
         return len(self._data)
 
     def __str__(self):
-        return self._notes_str
+        return self.notes_text
 
     def __repr__(self):
-        return self._notes_str
+        return self.notes_text

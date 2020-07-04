@@ -50,7 +50,7 @@ class Object(object):
         if isinstance(data, Notes):
             self._notes = data
             return
-        self._notes.set_notes(data)
+        self._notes.notes_text = data
 
     @property
     def annotation(self):

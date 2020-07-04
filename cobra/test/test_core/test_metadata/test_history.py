@@ -3,10 +3,11 @@
 from __future__ import absolute_import
 
 import os
-from pathlib import Path
 
+import datetime
 import pytest
 
+from datetime import datetime
 from cobra.core.metadata.history import Creator, HistoryDateTime, History
 from cobra.io import read_sbml_model
 
@@ -41,7 +42,7 @@ def test_create_history():
     )
     assert len(history.creators) == 2
     assert isinstance(history.created_date, HistoryDateTime)
-    assert history.created_date.getDateString() == "2020-06-26T02:34:30+05:30"
+    assert history.created_date.datetime == "2020-06-26T02:34:30+05:30"
     assert len(history.modified_dates) == 2
 
 
@@ -62,7 +63,7 @@ def test_history_from_ecoli_xml(data_directory):
           HistoryDateTime("2019-03-06T14:40:55Z")
        ]
     )
-    assert model.annotation.history.equals(history)
+    assert model.annotation.history == history
 
 
 def test_create_creator():
@@ -81,10 +82,15 @@ def test_create_creator():
 
 def test_DateTime():
     # valid date
-    date = HistoryDateTime("2020-06-26T02:34:11+05:30")
-    assert date.getDateString() == "2020-06-26T02:34:11+05:30"
+    datetime_obj = HistoryDateTime("2020-06-26T02:34:11+05:30")
+    assert datetime_obj.datetime == "2020-06-26T02:34:11+05:30"
     # invalid date (seconds > 59)
     with pytest.raises(ValueError):
-        date.datetime("2020-06-26T02:34:70+05:30")
+        datetime_obj.datetime = "2020-06-26T02:34:70+05:30"
     # valid date
-    assert date.datetime("2020-06-26T12:34:11+00:00") is None
+    datetime_obj.datetime = "2020-06-26T12:34:11+00:00"
+    assert datetime_obj.datetime == "2020-06-26T12:34:11+00:00"
+    datetime_obj.datetime = None
+    assert datetime_obj.datetime is None
+    datetime_obj.datetime = datetime.now()
+    assert datetime_obj.datetime is not None

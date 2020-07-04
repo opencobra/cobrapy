@@ -16,27 +16,20 @@ class ListOfKeyValue(collectionsAbc.MutableSequence):
 
     Parameters
     ----------
-    creators : list key-value pair data
+    keyvaluelist : list
+        a list containing KeyValueDict objects.
     """
 
-    def __init__(self, keyvaluelist=None):
+    def __init__(self, keyvaluelist: 'list' = None):
         if keyvaluelist is None:
             keyvaluelist = []
         self._sequence = list()
         if not isinstance(keyvaluelist, list):
-            raise TypeError("The data passed for ListOfKeyValue "
-                            "must be inside a list: {}".format(value))
+            raise TypeError("The key-value data must be of"
+                            " type list: {}".format(keyvaluelist))
         else:
             for item in keyvaluelist:
-                if isinstance(item, KeyValueDict):
-                    self._sequence.append(item)
-                elif isinstance(item, dict):
-                    self._sequence.append(KeyValueDict(**item))
-                else:
-                    raise TypeError("The data passed for KeyValuepair "
-                                    "indexed %s has invalid format"
-                                    % keyvaluelist.index(item, 0,
-                                                         len(keyvaluelist)))
+                self.append(item)
 
     def parse_listofKeyValue(data):
         if data is None or isinstance(data, list):
@@ -45,13 +38,21 @@ class ListOfKeyValue(collectionsAbc.MutableSequence):
             raise TypeError("Invalid format passed "
                             "for ListOfKeyValue: {}".format(data))
 
-    def __len__(self):
-        return len(self._sequence)
-
-    def __delitem__(self, index):
-        del self._sequence[index]
+    def append(self, value):
+        """ Append a KeyValueDict object in its list.
+        """
+        if isinstance(value, KeyValueDict):
+            self._sequence.append(value)
+        elif isinstance(value, dict):
+            self._sequence.append(KeyValueDict(**value))
+        else:
+            raise TypeError("The data passed for KeyValuePair "
+                            "has invalid format: {}".format(value))
 
     def insert(self, index, value):
+        """ Insert a KeyValueDict object at
+        the given index in its list.
+        """
         if isinstance(value, KeyValueDict):
             self._sequence.insert(index, value)
         elif isinstance(value, dict):
@@ -60,14 +61,8 @@ class ListOfKeyValue(collectionsAbc.MutableSequence):
             raise TypeError("The data passed for KeyValuePair "
                             "has invalid format: {}".format(value))
 
-    def append(self, value):
-        if isinstance(value, KeyValueDict):
-            self._sequence.append(value)
-        elif isinstance(value, dict):
-            self._sequence.append(KeyValueDict(**value))
-        else:
-            raise TypeError("The data passed for KeyValuePair "
-                            "has invalid format: {}".format(value))
+    def __getitem__(self, index):
+        return self._sequence[index]
 
     def __setitem__(self, index, value):
         if isinstance(value, KeyValueDict):
@@ -78,8 +73,11 @@ class ListOfKeyValue(collectionsAbc.MutableSequence):
             raise TypeError("The data passed for KeyValuePair "
                             "has invalid format: {}".format(value))
 
-    def __getitem__(self, index):
-        return self._sequence[index]
+    def __len__(self):
+        return len(self._sequence)
+
+    def __delitem__(self, index):
+        del self._sequence[index]
 
     def __str__(self):
         return str(self._sequence)
@@ -89,14 +87,36 @@ class ListOfKeyValue(collectionsAbc.MutableSequence):
 
 
 class KeyValueDict(object):
+    """ Class representation of a single key-value data
+    for fbc-v3 key-value pair data.
+    Parameters
+    ----------
+        id : str
+        name : str
+        key : str
+        value : str
+        uri : str
+    Attributes
+    ----------
+        id : str
+        name : str
+        key : str
+        value : str
+        uri : str
+    """
 
     def __init__(self, id: str = None, name: str = None, key: str = None,
                  value: str = None, uri: str = None):
-        self._key = key
-        self._value = value
-        self._uri = uri
-        self._id = id
-        self._name = name
+        self._id = None
+        self._name = None
+        self._key = None
+        self._value = None
+        self._uri = None
+        self.id = id
+        self.name = name
+        self.key = key
+        self.value = value
+        self.uri = uri
 
     @staticmethod
     def parse_keyValueDict(data) -> 'KeyValueDict':
@@ -172,8 +192,12 @@ class KeyValueDict(object):
             self._uri = data
 
     def __str__(self):
-        return str({"id": self.id, "name": self.name, "key": self.key,
-                    "value": self.value, "uri": self.uri})
+        return str({
+            "id": self.id,
+            "name": self.name,
+            "key": self.key,
+            "value": self.value,
+            "uri": self.uri})
 
     def __repr__(self):
         return self.__str__()

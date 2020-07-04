@@ -99,13 +99,14 @@ def _extract_annotation(data):
         history = data["history"] if "history" in data else None
         keyValueDict = data["history"] if "keyValueDict" in data else None
 
-        if cvterms is None and history is None and keyValueDict is None:
+        if cvterms is not None or history is not None or \
+                keyValueDict is not None:
+            annotation = MetaData(cvterms, history, keyValueDict)
+        else:
             annotation = MetaData()
             annotation.cvterms.add_simple_annotations(data)
-        else:
-            annotation = MetaData(cvterms, history, keyValueDict)
-            if "sbo" in data:
-                annotation["sbo"] = [data["sbo"]]
+        if "sbo" in data:
+            annotation["sbo"] = [data["sbo"]]
         return annotation
 
 
@@ -115,7 +116,7 @@ def _update_optional(cobra_object, new_dict, optional_attribute_dict,
     for key in ordered_keys:
         default = optional_attribute_dict[key]
         value = getattr(cobra_object, key)
-        if key == 'notes' and value.get_notes_str() is None:
+        if key == 'notes' and value.notes_text is None:
             continue
         if value is None or value == default:
             continue

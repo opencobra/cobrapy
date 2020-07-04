@@ -23,7 +23,7 @@ class MetaData(collectionsAbc.MutableMapping):
     - CVTerms, storing resource:identifier annotation information (this is
         exposed via the dict interface)
     - History, storing the object history
-    - KeyValuePairs, a dictionary of optional information
+    - KeyValuePairs, a list of key-value pairs
 
     Parameters
     ----------
@@ -32,7 +32,7 @@ class MetaData(collectionsAbc.MutableMapping):
     history : dict, History
         The history is holding the data about the creator,
         created and modified dates.
-    keyValueDict : dict or KeyValuePair
+    keyValueDict : list
         Some key-value pairs which are not suitable to be
         represented anywhere else in the model.
     """

@@ -1323,10 +1323,10 @@ def _sbase_notes_dict(sbase, notes):
     notes : notes object
         notes information from cobra object
     """
-    if notes.get_notes_str() is None:
+    if notes.notes_text is None:
         return
     _check(
-        sbase.setNotes(notes.get_notes_str()),
+        sbase.setNotes(notes.notes_text),
         "Setting notes on sbase: {}".format(sbase)
     )
 
@@ -1549,6 +1549,7 @@ def _sbase_annotations(sbase, annotation):
     meta_id = "meta_{}".format(sbase.getId())
     sbase.setMetaId(meta_id)
 
+    # set cvterms
     for key, value in annotation.cvterms.items():
         qualifier = key
         if qualifier.startswith("bqb"):
@@ -1580,8 +1581,8 @@ def _sbase_annotations(sbase, annotation):
             _check(sbase.addCVTerm(cv),
                    "Setting cvterm: {}".format(cv))
 
+    # set history
     if annotation.history.is_set_history():
-        # component history
         comp_history = libsbml.ModelHistory()
 
         for creator in annotation.history.creators:
@@ -1592,12 +1593,12 @@ def _sbase_annotations(sbase, annotation):
             comp_creator.setOrganisation(creator.organization_name)
             comp_history.addCreator(comp_creator)
 
-        if annotation.history.created is not None:
-            date = libsbml.Date(annotation.history.created.getDateString())
+        if annotation.history.created_date is not None:
+            date = libsbml.Date(annotation.history.created_date.datetime)
             comp_history.setCreatedDate(date)
 
-        for modified_date in annotation.history.modified:
-            date = libsbml.Date(modified_date.getDateString())
+        for modified_date in annotation.history.modified_dates:
+            date = libsbml.Date(modified_date.datetime)
             comp_history.addModifiedDate(date)
 
         # finally add the compo_history

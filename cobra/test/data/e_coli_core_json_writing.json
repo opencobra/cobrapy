@@ -43,7 +43,7 @@
             ]
         },
         "history": {
-            "created": "2019-03-06T14:40:55Z",
+            "created_date": "2019-03-06T14:40:55Z",
             "creators": [
                 {
                     "email": "koenigmx@hu-berlin.de",
@@ -52,7 +52,7 @@
                     "organization_name": "Humboldt-University Berlin, Institute for Theoretical Biology"
                 }
             ],
-            "modified": [
+            "modified_dates": [
                 "2019-03-06T14:40:55Z"
             ]
         }
@@ -85,7 +85,8 @@
                 }
             },
             "id": "b0351",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -110,11 +111,13 @@
                 }
             },
             "id": "b1241",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "id": "s0001",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -139,7 +142,8 @@
                 }
             },
             "id": "b2296",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -164,7 +168,8 @@
                 }
             },
             "id": "b3115",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -189,7 +194,8 @@
                 }
             },
             "id": "b1849",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -214,7 +220,8 @@
                 }
             },
             "id": "b1276",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -239,7 +246,8 @@
                 }
             },
             "id": "b0118",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -264,7 +272,8 @@
                 }
             },
             "id": "b0474",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -289,7 +298,8 @@
                 }
             },
             "id": "b0726",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -314,7 +324,8 @@
                 }
             },
             "id": "b0116",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -339,7 +350,8 @@
                 }
             },
             "id": "b0727",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -364,7 +376,8 @@
                 }
             },
             "id": "b2587",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -389,7 +402,8 @@
                 }
             },
             "id": "b0356",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -414,7 +428,8 @@
                 }
             },
             "id": "b1478",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -439,7 +454,8 @@
                 }
             },
             "id": "b3736",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -464,7 +480,8 @@
                 }
             },
             "id": "b3731",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -489,7 +506,8 @@
                 }
             },
             "id": "b3732",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -514,7 +532,8 @@
                 }
             },
             "id": "b3737",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -539,7 +558,8 @@
                 }
             },
             "id": "b3734",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -564,7 +584,8 @@
                 }
             },
             "id": "b3735",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -589,7 +610,8 @@
                 }
             },
             "id": "b3738",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -614,7 +636,8 @@
                 }
             },
             "id": "b3739",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -639,7 +662,8 @@
                 }
             },
             "id": "b3733",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -664,7 +688,8 @@
                 }
             },
             "id": "b0720",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -689,7 +714,8 @@
                 }
             },
             "id": "b0979",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -714,7 +740,8 @@
                 }
             },
             "id": "b0978",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -739,7 +766,8 @@
                 }
             },
             "id": "b0733",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -764,7 +792,8 @@
                 }
             },
             "id": "b0734",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -789,7 +818,8 @@
                 }
             },
             "id": "b2975",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -814,7 +844,8 @@
                 }
             },
             "id": "b3603",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -839,7 +870,8 @@
                 }
             },
             "id": "b2779",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -864,7 +896,8 @@
                 }
             },
             "id": "b2097",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -889,7 +922,8 @@
                 }
             },
             "id": "b1773",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -914,7 +948,8 @@
                 }
             },
             "id": "b2925",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -939,7 +974,8 @@
                 }
             },
             "id": "b4232",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -964,7 +1000,8 @@
                 }
             },
             "id": "b3925",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -989,7 +1026,8 @@
                 }
             },
             "id": "b2492",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1014,7 +1052,8 @@
                 }
             },
             "id": "b0904",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1039,7 +1078,8 @@
                 }
             },
             "id": "b4151",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1064,7 +1104,8 @@
                 }
             },
             "id": "b4152",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1089,7 +1130,8 @@
                 }
             },
             "id": "b4154",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1114,7 +1156,8 @@
                 }
             },
             "id": "b4153",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1139,7 +1182,8 @@
                 }
             },
             "id": "b2416",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1164,7 +1208,8 @@
                 }
             },
             "id": "b2415",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1189,7 +1234,8 @@
                 }
             },
             "id": "b1817",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1214,7 +1260,8 @@
                 }
             },
             "id": "b1818",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1239,7 +1286,8 @@
                 }
             },
             "id": "b1819",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1264,7 +1312,8 @@
                 }
             },
             "id": "b1611",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1289,7 +1338,8 @@
                 }
             },
             "id": "b4122",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1314,7 +1364,8 @@
                 }
             },
             "id": "b1612",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1339,7 +1390,8 @@
                 }
             },
             "id": "b3528",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1364,7 +1416,8 @@
                 }
             },
             "id": "b1852",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1389,7 +1442,8 @@
                 }
             },
             "id": "b1779",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1414,7 +1468,8 @@
                 }
             },
             "id": "b1101",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1439,7 +1494,8 @@
                 }
             },
             "id": "b2417",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1464,7 +1520,8 @@
                 }
             },
             "id": "b1621",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1489,7 +1546,8 @@
                 }
             },
             "id": "b1297",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1514,7 +1572,8 @@
                 }
             },
             "id": "b3870",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1539,7 +1598,8 @@
                 }
             },
             "id": "b0811",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1564,7 +1624,8 @@
                 }
             },
             "id": "b0810",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1589,7 +1650,8 @@
                 }
             },
             "id": "b0809",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1614,7 +1676,8 @@
                 }
             },
             "id": "b1761",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1639,7 +1702,8 @@
                 }
             },
             "id": "b0485",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1664,7 +1728,8 @@
                 }
             },
             "id": "b1524",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1689,7 +1754,8 @@
                 }
             },
             "id": "b1812",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1714,7 +1780,8 @@
                 }
             },
             "id": "b3212",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1739,7 +1806,8 @@
                 }
             },
             "id": "b3213",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1764,7 +1832,8 @@
                 }
             },
             "id": "b4077",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1789,7 +1858,8 @@
                 }
             },
             "id": "b2029",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1814,7 +1884,8 @@
                 }
             },
             "id": "b0875",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1839,7 +1910,8 @@
                 }
             },
             "id": "b1136",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1864,7 +1936,8 @@
                 }
             },
             "id": "b4015",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1889,7 +1962,8 @@
                 }
             },
             "id": "b2133",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1914,7 +1988,8 @@
                 }
             },
             "id": "b1380",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1939,7 +2014,8 @@
                 }
             },
             "id": "b2976",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1964,7 +2040,8 @@
                 }
             },
             "id": "b4014",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -1989,7 +2066,8 @@
                 }
             },
             "id": "b3236",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2014,7 +2092,8 @@
                 }
             },
             "id": "b1479",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2039,7 +2118,8 @@
                 }
             },
             "id": "b2463",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2064,7 +2144,8 @@
                 }
             },
             "id": "b2276",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2089,7 +2170,8 @@
                 }
             },
             "id": "b2279",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2114,7 +2196,8 @@
                 }
             },
             "id": "b2288",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2139,7 +2222,8 @@
                 }
             },
             "id": "b2278",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2164,7 +2248,8 @@
                 }
             },
             "id": "b2286",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2189,7 +2274,8 @@
                 }
             },
             "id": "b2285",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2214,7 +2300,8 @@
                 }
             },
             "id": "b2283",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2239,7 +2326,8 @@
                 }
             },
             "id": "b2287",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2264,7 +2352,8 @@
                 }
             },
             "id": "b2284",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2289,7 +2378,8 @@
                 }
             },
             "id": "b2281",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2314,7 +2404,8 @@
                 }
             },
             "id": "b2277",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2339,7 +2430,8 @@
                 }
             },
             "id": "b2282",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2364,7 +2456,8 @@
                 }
             },
             "id": "b2280",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2389,7 +2482,8 @@
                 }
             },
             "id": "b1603",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2414,7 +2508,8 @@
                 }
             },
             "id": "b1602",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2439,7 +2534,8 @@
                 }
             },
             "id": "b3962",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2464,7 +2560,8 @@
                 }
             },
             "id": "b0451",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2489,7 +2586,8 @@
                 }
             },
             "id": "b0114",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2514,7 +2612,8 @@
                 }
             },
             "id": "b0115",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2539,7 +2638,8 @@
                 }
             },
             "id": "b1723",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2564,7 +2664,8 @@
                 }
             },
             "id": "b3916",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2589,7 +2690,8 @@
                 }
             },
             "id": "b3114",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2614,7 +2716,8 @@
                 }
             },
             "id": "b3952",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2639,7 +2742,8 @@
                 }
             },
             "id": "b3951",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2664,7 +2768,8 @@
                 }
             },
             "id": "b0902",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2689,7 +2794,8 @@
                 }
             },
             "id": "b0903",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2714,7 +2820,8 @@
                 }
             },
             "id": "b2579",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2739,7 +2846,8 @@
                 }
             },
             "id": "b4025",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2764,7 +2872,8 @@
                 }
             },
             "id": "b2926",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2789,7 +2898,8 @@
                 }
             },
             "id": "b0767",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2814,7 +2924,8 @@
                 }
             },
             "id": "b0755",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2839,7 +2950,8 @@
                 }
             },
             "id": "b4395",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2864,7 +2976,8 @@
                 }
             },
             "id": "b3612",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2889,7 +3002,8 @@
                 }
             },
             "id": "b2987",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2914,7 +3028,8 @@
                 }
             },
             "id": "b3493",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2939,7 +3054,8 @@
                 }
             },
             "id": "b3956",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2964,7 +3080,8 @@
                 }
             },
             "id": "b3403",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -2989,7 +3106,8 @@
                 }
             },
             "id": "b1702",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3014,7 +3132,8 @@
                 }
             },
             "id": "b2297",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3039,7 +3158,8 @@
                 }
             },
             "id": "b2458",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3064,7 +3184,8 @@
                 }
             },
             "id": "b1676",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3089,7 +3210,8 @@
                 }
             },
             "id": "b1854",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3114,7 +3236,8 @@
                 }
             },
             "id": "b4301",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3139,7 +3262,8 @@
                 }
             },
             "id": "b3386",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3164,7 +3288,8 @@
                 }
             },
             "id": "b2914",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3189,7 +3314,8 @@
                 }
             },
             "id": "b4090",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3214,7 +3340,8 @@
                 }
             },
             "id": "b0723",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3239,7 +3366,8 @@
                 }
             },
             "id": "b0724",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3264,7 +3392,8 @@
                 }
             },
             "id": "b0722",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3289,7 +3418,8 @@
                 }
             },
             "id": "b0721",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3314,7 +3444,8 @@
                 }
             },
             "id": "b0729",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3339,7 +3470,8 @@
                 }
             },
             "id": "b0728",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3364,7 +3496,8 @@
                 }
             },
             "id": "b0008",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3389,7 +3522,8 @@
                 }
             },
             "id": "b2464",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3414,7 +3548,8 @@
                 }
             },
             "id": "b2935",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3439,7 +3574,8 @@
                 }
             },
             "id": "b2465",
-            "name": ""
+            "name": "",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3464,7 +3600,8 @@
                 }
             },
             "id": "b3919",
-            "name": ""
+            "name": "",
+            "notes": ""
         }
     ],
     "id": "e_coli_core",
@@ -3495,7 +3632,8 @@
             "compartment": "c",
             "formula": "C3H4O10P2",
             "id": "13dpg_c",
-            "name": "3-Phospho-D-glyceroyl phosphate"
+            "name": "3-Phospho-D-glyceroyl phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3528,7 +3666,8 @@
             "compartment": "c",
             "formula": "C3H4O7P",
             "id": "2pg_c",
-            "name": "D-Glycerate 2-phosphate"
+            "name": "D-Glycerate 2-phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3557,7 +3696,8 @@
             "compartment": "c",
             "formula": "C3H4O7P",
             "id": "3pg_c",
-            "name": "3-Phospho-D-glycerate"
+            "name": "3-Phospho-D-glycerate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3588,7 +3728,8 @@
             "compartment": "c",
             "formula": "C6H10O10P",
             "id": "6pgc_c",
-            "name": "6-Phospho-D-gluconate"
+            "name": "6-Phospho-D-gluconate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3617,7 +3758,8 @@
             "compartment": "c",
             "formula": "C6H9O9P",
             "id": "6pgl_c",
-            "name": "6-phospho-D-glucono-1,5-lactone"
+            "name": "6-phospho-D-glucono-1,5-lactone",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3650,7 +3792,8 @@
             "compartment": "c",
             "formula": "C2H3O2",
             "id": "ac_c",
-            "name": "Acetate"
+            "name": "Acetate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3683,7 +3826,8 @@
             "compartment": "e",
             "formula": "C2H3O2",
             "id": "ac_e",
-            "name": "Acetate"
+            "name": "Acetate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3711,7 +3855,8 @@
             "compartment": "c",
             "formula": "C2H4O",
             "id": "acald_c",
-            "name": "Acetaldehyde"
+            "name": "Acetaldehyde",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3739,7 +3884,8 @@
             "compartment": "e",
             "formula": "C2H4O",
             "id": "acald_e",
-            "name": "Acetaldehyde"
+            "name": "Acetaldehyde",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3770,7 +3916,8 @@
             "compartment": "c",
             "formula": "C23H34N7O17P3S",
             "id": "accoa_c",
-            "name": "Acetyl-CoA"
+            "name": "Acetyl-CoA",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3800,7 +3947,8 @@
             "compartment": "c",
             "formula": "C6H3O6",
             "id": "acon_C_c",
-            "name": "Cis-Aconitate"
+            "name": "Cis-Aconitate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3828,7 +3976,8 @@
             "compartment": "c",
             "formula": "C2H3O5P",
             "id": "actp_c",
-            "name": "Acetyl phosphate"
+            "name": "Acetyl phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3860,7 +4009,8 @@
             "compartment": "c",
             "formula": "C10H12N5O10P2",
             "id": "adp_c",
-            "name": "ADP C10H12N5O10P2"
+            "name": "ADP C10H12N5O10P2",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3892,7 +4042,8 @@
             "compartment": "c",
             "formula": "C5H4O5",
             "id": "akg_c",
-            "name": "2-Oxoglutarate"
+            "name": "2-Oxoglutarate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3924,7 +4075,8 @@
             "compartment": "e",
             "formula": "C5H4O5",
             "id": "akg_e",
-            "name": "2-Oxoglutarate"
+            "name": "2-Oxoglutarate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3965,7 +4117,8 @@
             "compartment": "c",
             "formula": "C10H12N5O7P",
             "id": "amp_c",
-            "name": "AMP C10H12N5O7P"
+            "name": "AMP C10H12N5O7P",
+            "notes": ""
         },
         {
             "annotation": {
@@ -3999,7 +4152,8 @@
             "compartment": "c",
             "formula": "C10H12N5O13P3",
             "id": "atp_c",
-            "name": "ATP C10H12N5O13P3"
+            "name": "ATP C10H12N5O13P3",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4042,7 +4196,8 @@
             "compartment": "c",
             "formula": "C6H5O7",
             "id": "cit_c",
-            "name": "Citrate"
+            "name": "Citrate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4074,7 +4229,8 @@
             "compartment": "c",
             "formula": "CO2",
             "id": "co2_c",
-            "name": "CO2 CO2"
+            "name": "CO2 CO2",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4106,7 +4262,8 @@
             "compartment": "e",
             "formula": "CO2",
             "id": "co2_e",
-            "name": "CO2 CO2"
+            "name": "CO2 CO2",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4141,7 +4298,8 @@
             "compartment": "c",
             "formula": "C21H32N7O16P3S",
             "id": "coa_c",
-            "name": "Coenzyme A"
+            "name": "Coenzyme A",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4172,7 +4330,8 @@
             "compartment": "c",
             "formula": "C3H5O6P",
             "id": "dhap_c",
-            "name": "Dihydroxyacetone phosphate"
+            "name": "Dihydroxyacetone phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4201,7 +4360,8 @@
             "compartment": "c",
             "formula": "C4H7O7P",
             "id": "e4p_c",
-            "name": "D-Erythrose 4-phosphate"
+            "name": "D-Erythrose 4-phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4237,7 +4397,8 @@
             "compartment": "c",
             "formula": "C2H6O",
             "id": "etoh_c",
-            "name": "Ethanol"
+            "name": "Ethanol",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4273,7 +4434,8 @@
             "compartment": "e",
             "formula": "C2H6O",
             "id": "etoh_e",
-            "name": "Ethanol"
+            "name": "Ethanol",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4302,7 +4464,8 @@
             "compartment": "c",
             "formula": "C6H11O9P",
             "id": "f6p_c",
-            "name": "D-Fructose 6-phosphate"
+            "name": "D-Fructose 6-phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4325,7 +4488,8 @@
             "compartment": "c",
             "formula": "C6H10O12P2",
             "id": "fdp_c",
-            "name": "D-Fructose 1,6-bisphosphate"
+            "name": "D-Fructose 1,6-bisphosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4362,7 +4526,8 @@
             "compartment": "c",
             "formula": "CH1O2",
             "id": "for_c",
-            "name": "Formate"
+            "name": "Formate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4399,7 +4564,8 @@
             "compartment": "e",
             "formula": "CH1O2",
             "id": "for_e",
-            "name": "Formate"
+            "name": "Formate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4444,7 +4610,8 @@
             "compartment": "e",
             "formula": "C6H12O6",
             "id": "fru_e",
-            "name": "D-Fructose"
+            "name": "D-Fructose",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4482,7 +4649,8 @@
             "compartment": "c",
             "formula": "C4H2O4",
             "id": "fum_c",
-            "name": "Fumarate"
+            "name": "Fumarate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4520,7 +4688,8 @@
             "compartment": "e",
             "formula": "C4H2O4",
             "id": "fum_e",
-            "name": "Fumarate"
+            "name": "Fumarate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4556,7 +4725,8 @@
             "compartment": "c",
             "formula": "C3H5O6P",
             "id": "g3p_c",
-            "name": "Glyceraldehyde 3-phosphate"
+            "name": "Glyceraldehyde 3-phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4585,7 +4755,8 @@
             "compartment": "c",
             "formula": "C6H11O9P",
             "id": "g6p_c",
-            "name": "D-Glucose 6-phosphate"
+            "name": "D-Glucose 6-phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4615,7 +4786,8 @@
             "compartment": "e",
             "formula": "C6H12O6",
             "id": "glc__D_e",
-            "name": "D-Glucose"
+            "name": "D-Glucose",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4657,7 +4829,8 @@
             "compartment": "c",
             "formula": "C5H10N2O3",
             "id": "gln__L_c",
-            "name": "L-Glutamine"
+            "name": "L-Glutamine",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4699,7 +4872,8 @@
             "compartment": "e",
             "formula": "C5H10N2O3",
             "id": "gln__L_e",
-            "name": "L-Glutamine"
+            "name": "L-Glutamine",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4743,7 +4917,8 @@
             "compartment": "c",
             "formula": "C5H8NO4",
             "id": "glu__L_c",
-            "name": "L-Glutamate"
+            "name": "L-Glutamate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4787,7 +4962,8 @@
             "compartment": "e",
             "formula": "C5H8NO4",
             "id": "glu__L_e",
-            "name": "L-Glutamate"
+            "name": "L-Glutamate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4818,7 +4994,8 @@
             "compartment": "c",
             "formula": "C2H1O3",
             "id": "glx_c",
-            "name": "Glyoxylate"
+            "name": "Glyoxylate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4879,7 +5056,8 @@
             "compartment": "c",
             "formula": "H2O",
             "id": "h2o_c",
-            "name": "H2O H2O"
+            "name": "H2O H2O",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4940,7 +5118,8 @@
             "compartment": "e",
             "formula": "H2O",
             "id": "h2o_e",
-            "name": "H2O H2O"
+            "name": "H2O H2O",
+            "notes": ""
         },
         {
             "annotation": {
@@ -4970,7 +5149,8 @@
             "compartment": "c",
             "formula": "H",
             "id": "h_c",
-            "name": "H+"
+            "name": "H+",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5000,7 +5180,8 @@
             "compartment": "e",
             "formula": "H",
             "id": "h_e",
-            "name": "H+"
+            "name": "H+",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5030,7 +5211,8 @@
             "compartment": "c",
             "formula": "C6H5O7",
             "id": "icit_c",
-            "name": "Isocitrate"
+            "name": "Isocitrate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5061,7 +5243,8 @@
             "compartment": "c",
             "formula": "C3H5O3",
             "id": "lac__D_c",
-            "name": "D-Lactate"
+            "name": "D-Lactate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5092,7 +5275,8 @@
             "compartment": "e",
             "formula": "C3H5O3",
             "id": "lac__D_e",
-            "name": "D-Lactate"
+            "name": "D-Lactate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5122,7 +5306,8 @@
             "compartment": "c",
             "formula": "C4H4O5",
             "id": "mal__L_c",
-            "name": "L-Malate"
+            "name": "L-Malate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5152,7 +5337,8 @@
             "compartment": "e",
             "formula": "C4H4O5",
             "id": "mal__L_e",
-            "name": "L-Malate"
+            "name": "L-Malate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5185,7 +5371,8 @@
             "compartment": "c",
             "formula": "C21H26N7O14P2",
             "id": "nad_c",
-            "name": "Nicotinamide adenine dinucleotide"
+            "name": "Nicotinamide adenine dinucleotide",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5215,7 +5402,8 @@
             "compartment": "c",
             "formula": "C21H27N7O14P2",
             "id": "nadh_c",
-            "name": "Nicotinamide adenine dinucleotide - reduced"
+            "name": "Nicotinamide adenine dinucleotide - reduced",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5247,7 +5435,8 @@
             "compartment": "c",
             "formula": "C21H25N7O17P3",
             "id": "nadp_c",
-            "name": "Nicotinamide adenine dinucleotide phosphate"
+            "name": "Nicotinamide adenine dinucleotide phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5279,7 +5468,8 @@
             "compartment": "c",
             "formula": "C21H26N7O17P3",
             "id": "nadph_c",
-            "name": "Nicotinamide adenine dinucleotide phosphate - reduced"
+            "name": "Nicotinamide adenine dinucleotide phosphate - reduced",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5325,7 +5515,8 @@
             "compartment": "c",
             "formula": "H4N",
             "id": "nh4_c",
-            "name": "Ammonium"
+            "name": "Ammonium",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5371,7 +5562,8 @@
             "compartment": "e",
             "formula": "H4N",
             "id": "nh4_e",
-            "name": "Ammonium"
+            "name": "Ammonium",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5407,7 +5599,8 @@
             "compartment": "c",
             "formula": "O2",
             "id": "o2_c",
-            "name": "O2 O2"
+            "name": "O2 O2",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5443,7 +5636,8 @@
             "compartment": "e",
             "formula": "O2",
             "id": "o2_e",
-            "name": "O2 O2"
+            "name": "O2 O2",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5481,7 +5675,8 @@
             "compartment": "c",
             "formula": "C4H2O5",
             "id": "oaa_c",
-            "name": "Oxaloacetate"
+            "name": "Oxaloacetate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5512,7 +5707,8 @@
             "compartment": "c",
             "formula": "C3H2O6P",
             "id": "pep_c",
-            "name": "Phosphoenolpyruvate"
+            "name": "Phosphoenolpyruvate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5557,7 +5753,8 @@
             "compartment": "c",
             "formula": "HO4P",
             "id": "pi_c",
-            "name": "Phosphate"
+            "name": "Phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5602,7 +5799,8 @@
             "compartment": "e",
             "formula": "HO4P",
             "id": "pi_e",
-            "name": "Phosphate"
+            "name": "Phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5635,7 +5833,8 @@
             "compartment": "c",
             "formula": "C3H3O3",
             "id": "pyr_c",
-            "name": "Pyruvate"
+            "name": "Pyruvate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5668,7 +5867,8 @@
             "compartment": "e",
             "formula": "C3H3O3",
             "id": "pyr_e",
-            "name": "Pyruvate"
+            "name": "Pyruvate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5692,7 +5892,8 @@
             "compartment": "c",
             "formula": "C49H74O4",
             "id": "q8_c",
-            "name": "Ubiquinone-8"
+            "name": "Ubiquinone-8",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5716,7 +5917,8 @@
             "compartment": "c",
             "formula": "C49H76O4",
             "id": "q8h2_c",
-            "name": "Ubiquinol-8"
+            "name": "Ubiquinol-8",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5742,7 +5944,8 @@
             "compartment": "c",
             "formula": "C5H9O8P",
             "id": "r5p_c",
-            "name": "Alpha-D-Ribose 5-phosphate"
+            "name": "Alpha-D-Ribose 5-phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5776,7 +5979,8 @@
             "compartment": "c",
             "formula": "C5H9O8P",
             "id": "ru5p__D_c",
-            "name": "D-Ribulose 5-phosphate"
+            "name": "D-Ribulose 5-phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5807,7 +6011,8 @@
             "compartment": "c",
             "formula": "C7H13O10P",
             "id": "s7p_c",
-            "name": "Sedoheptulose 7-phosphate"
+            "name": "Sedoheptulose 7-phosphate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5843,7 +6048,8 @@
             "compartment": "c",
             "formula": "C4H4O4",
             "id": "succ_c",
-            "name": "Succinate"
+            "name": "Succinate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5879,7 +6085,8 @@
             "compartment": "e",
             "formula": "C4H4O4",
             "id": "succ_e",
-            "name": "Succinate"
+            "name": "Succinate",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5910,7 +6117,8 @@
             "compartment": "c",
             "formula": "C25H35N7O19P3S",
             "id": "succoa_c",
-            "name": "Succinyl-CoA"
+            "name": "Succinyl-CoA",
+            "notes": ""
         },
         {
             "annotation": {
@@ -5940,7 +6148,8 @@
             "compartment": "c",
             "formula": "C5H9O8P",
             "id": "xu5p__D_c",
-            "name": "D-Xylulose 5-phosphate"
+            "name": "D-Xylulose 5-phosphate",
+            "notes": ""
         }
     ],
     "name": "Escherichia coli str. K-12 substr. MG1655",
@@ -6004,6 +6213,7 @@
                 "acald_e": -1.0
             },
             "name": "Acetaldehyde reversible transport",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6038,6 +6248,7 @@
                 "atp_c": -1.0
             },
             "name": "Acetate kinase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6070,6 +6281,7 @@
                 "h2o_c": 1.0
             },
             "name": "Aconitase (half-reaction A, Citrate hydro-lyase)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6101,6 +6313,7 @@
                 "icit_c": 1.0
             },
             "name": "Aconitase (half-reaction B, Isocitrate hydro-lyase)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6128,6 +6341,7 @@
                 "h_e": -1.0
             },
             "name": "Acetate reversible transport via proton symport",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6160,6 +6374,7 @@
                 "atp_c": -1.0
             },
             "name": "Adenylate kinase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6198,6 +6413,7 @@
                 "succoa_c": 1.0
             },
             "name": "2-Oxogluterate dehydrogenase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6229,6 +6445,7 @@
                 "h_e": -1.0
             },
             "name": "2 oxoglutarate reversible transport via symport",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6264,6 +6481,7 @@
                 "nadh_c": 1.0
             },
             "name": "Alcohol dehydrogenase (ethanol)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6366,6 +6584,7 @@
                 "pi_c": 1.0
             },
             "name": "ATP maintenance requirement",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6396,6 +6615,7 @@
                 "pi_c": -1.0
             },
             "name": "ATP synthase (four protons for one ATP)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6440,6 +6660,7 @@
                 "r5p_c": -0.8977
             },
             "name": "Biomass Objective Function with GAM",
+            "notes": "",
             "objective_coefficient": 1.0,
             "upper_bound": 1000.0
         },
@@ -6466,6 +6687,7 @@
                 "co2_e": -1.0
             },
             "name": "CO2 transporter via diffusion",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6504,6 +6726,7 @@
                 "oaa_c": -1.0
             },
             "name": "Citrate synthase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6532,6 +6755,7 @@
                 "q8h2_c": -1.0
             },
             "name": "Cytochrome oxidase bd (ubiquinol-8: 2 protons)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6559,6 +6783,7 @@
                 "lac__D_e": -1.0
             },
             "name": "D lactate transport via proton symport",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6591,6 +6816,7 @@
                 "pep_c": 1.0
             },
             "name": "Enolase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6617,6 +6843,7 @@
                 "h_e": -1.0
             },
             "name": "Ethanol reversible transport via proton symport",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6639,6 +6866,7 @@
                 "ac_e": -1.0
             },
             "name": "Acetate exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6661,6 +6889,7 @@
                 "acald_e": -1.0
             },
             "name": "Acetaldehyde exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6683,6 +6912,7 @@
                 "akg_e": -1.0
             },
             "name": "2-Oxoglutarate exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6705,6 +6935,7 @@
                 "co2_e": -1.0
             },
             "name": "CO2 exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6727,6 +6958,7 @@
                 "etoh_e": -1.0
             },
             "name": "Ethanol exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6749,6 +6981,7 @@
                 "for_e": -1.0
             },
             "name": "Formate exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6771,6 +7004,7 @@
                 "fru_e": -1.0
             },
             "name": "D-Fructose exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6793,6 +7027,7 @@
                 "fum_e": -1.0
             },
             "name": "Fumarate exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6815,6 +7050,7 @@
                 "glc__D_e": -1.0
             },
             "name": "D-Glucose exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6837,6 +7073,7 @@
                 "gln__L_e": -1.0
             },
             "name": "L-Glutamine exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6859,6 +7096,7 @@
                 "glu__L_e": -1.0
             },
             "name": "L-Glutamate exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6881,6 +7119,7 @@
                 "h_e": -1.0
             },
             "name": "H+ exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6903,6 +7142,7 @@
                 "h2o_e": -1.0
             },
             "name": "H2O exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6925,6 +7165,7 @@
                 "lac__D_e": -1.0
             },
             "name": "D-lactate exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6947,6 +7188,7 @@
                 "mal__L_e": -1.0
             },
             "name": "L-Malate exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6969,6 +7211,7 @@
                 "nh4_e": -1.0
             },
             "name": "Ammonia exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -6991,6 +7234,7 @@
                 "o2_e": -1.0
             },
             "name": "O2 exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7013,6 +7257,7 @@
                 "pi_e": -1.0
             },
             "name": "Phosphate exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7035,6 +7280,7 @@
                 "pyr_e": -1.0
             },
             "name": "Pyruvate exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7057,6 +7303,7 @@
                 "succ_e": -1.0
             },
             "name": "Succinate exchange",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7088,6 +7335,7 @@
                 "g3p_c": 1.0
             },
             "name": "Fructose-bisphosphate aldolase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7119,6 +7367,7 @@
                 "pi_c": 1.0
             },
             "name": "Fructose-bisphosphatase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7145,6 +7394,7 @@
                 "h_e": -1.0
             },
             "name": "Formate transport in via proton symport",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7174,6 +7424,7 @@
                 "for_e": -1.0
             },
             "name": "Formate transport via diffusion",
+            "notes": "",
             "upper_bound": 0.0
         },
         {
@@ -7204,6 +7455,7 @@
                 "succ_c": 1.0
             },
             "name": "Fumarate reductase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7230,6 +7482,7 @@
                 "pyr_c": 1.0
             },
             "name": "Fructose transport via PEP:Pyr PTS (f6p generating)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7262,6 +7515,7 @@
                 "mal__L_c": 1.0
             },
             "name": "Fumarase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7293,6 +7547,7 @@
                 "h_e": -2.0
             },
             "name": "Fumarate transport via proton symport (2 H)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7328,6 +7583,7 @@
                 "nadph_c": 1.0
             },
             "name": "Glucose 6-phosphate dehydrogenase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7364,6 +7620,7 @@
                 "pi_c": -1.0
             },
             "name": "Glyceraldehyde-3-phosphate dehydrogenase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7390,6 +7647,7 @@
                 "pyr_c": 1.0
             },
             "name": "D-glucose transport via PEP:Pyr PTS",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7426,6 +7684,7 @@
                 "pi_c": 1.0
             },
             "name": "Glutamine synthetase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7461,6 +7720,7 @@
                 "pi_c": 1.0
             },
             "name": "L-glutamine transport via ABC system",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7499,6 +7759,7 @@
                 "nh4_c": 1.0
             },
             "name": "Glutamate dehydrogenase (NADP)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7540,6 +7801,7 @@
                 "nh4_c": 1.0
             },
             "name": "Glutaminase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7575,6 +7837,7 @@
                 "nadph_c": -1.0
             },
             "name": "Glutamate synthase (NADPH)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7601,6 +7864,7 @@
                 "h_e": -1.0
             },
             "name": "L glutamate transport via proton symport  reversible",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7636,6 +7900,7 @@
                 "ru5p__D_c": 1.0
             },
             "name": "Phosphogluconate dehydrogenase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7666,6 +7931,7 @@
                 "h2o_e": -1.0
             },
             "name": "H2O transport via diffusion",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7699,6 +7965,7 @@
                 "nadph_c": 1.0
             },
             "name": "Isocitrate dehydrogenase (NADP)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7730,6 +7997,7 @@
                 "succ_c": 1.0
             },
             "name": "Isocitrate lyase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7764,6 +8032,7 @@
                 "pyr_c": 1.0
             },
             "name": "D-lactate dehydrogenase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7799,6 +8068,7 @@
                 "mal__L_c": 1.0
             },
             "name": "Malate synthase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7830,6 +8100,7 @@
                 "mal__L_e": -1.0
             },
             "name": "Malate transport via proton symport (2 H)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7865,6 +8136,7 @@
                 "oaa_c": 1.0
             },
             "name": "Malate dehydrogenase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7900,6 +8172,7 @@
                 "pyr_c": 1.0
             },
             "name": "Malic enzyme (NAD)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7934,6 +8207,7 @@
                 "pyr_c": 1.0
             },
             "name": "Malic enzyme (NADP)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7963,6 +8237,7 @@
                 "q8h2_c": 1.0
             },
             "name": "NADH dehydrogenase (ubiquinone-8 & 3 protons)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -7998,6 +8273,7 @@
                 "nadph_c": -1.0
             },
             "name": "NAD transhydrogenase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8029,6 +8305,7 @@
                 "nh4_e": -1.0
             },
             "name": "Ammonia reversible transport",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8054,6 +8331,7 @@
                 "o2_e": -1.0
             },
             "name": "O2 transport  diffusion ",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8093,6 +8371,7 @@
                 "pyr_c": -1.0
             },
             "name": "Pyruvate dehydrogenase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8125,6 +8404,7 @@
                 "h_c": 1.0
             },
             "name": "Phosphofructokinase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8158,6 +8438,7 @@
                 "pyr_c": -1.0
             },
             "name": "Pyruvate formate lyase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8184,6 +8465,7 @@
                 "g6p_c": -1.0
             },
             "name": "Glucose-6-phosphate isomerase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8217,6 +8499,7 @@
                 "atp_c": -1.0
             },
             "name": "Phosphoglycerate kinase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8250,6 +8533,7 @@
                 "h_c": 1.0
             },
             "name": "6-phosphogluconolactonase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8284,6 +8568,7 @@
                 "3pg_c": 1.0
             },
             "name": "Phosphoglycerate mutase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8315,6 +8600,7 @@
                 "pi_e": -1.0
             },
             "name": "Phosphate reversible transport via symport",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8349,6 +8635,7 @@
                 "pi_c": 1.0
             },
             "name": "Phosphoenolpyruvate carboxylase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8383,6 +8670,7 @@
                 "pep_c": 1.0
             },
             "name": "Phosphoenolpyruvate carboxykinase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8419,6 +8707,7 @@
                 "pyr_c": -1.0
             },
             "name": "Phosphoenolpyruvate synthase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8452,6 +8741,7 @@
                 "pi_c": -1.0
             },
             "name": "Phosphotransacetylase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8486,6 +8776,7 @@
                 "pyr_c": 1.0
             },
             "name": "Pyruvate kinase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8512,6 +8803,7 @@
                 "pyr_e": -1.0
             },
             "name": "Pyruvate transport in via proton symport",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8543,6 +8835,7 @@
                 "xu5p__D_c": 1.0
             },
             "name": "Ribulose 5-phosphate 3-epimerase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8568,6 +8861,7 @@
                 "ru5p__D_c": 1.0
             },
             "name": "Ribose-5-phosphate isomerase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8599,6 +8893,7 @@
                 "succ_e": -1.0
             },
             "name": "Succinate transport via proton symport (2 H)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8625,6 +8920,7 @@
                 "succ_e": 1.0
             },
             "name": "Succinate transport out via proton antiport",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8655,6 +8951,7 @@
                 "succ_c": -1.0
             },
             "name": "Succinate dehydrogenase (irreversible)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8690,6 +8987,7 @@
                 "succoa_c": 1.0
             },
             "name": "Succinyl-CoA synthetase (ADP-forming)",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8723,6 +9021,7 @@
                 "s7p_c": -1.0
             },
             "name": "Transaldolase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8752,6 +9051,7 @@
                 "nadph_c": 1.0
             },
             "name": "NAD(P) transhydrogenase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8779,6 +9079,7 @@
                 "xu5p__D_c": -1.0
             },
             "name": "Transketolase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8812,6 +9113,7 @@
                 "xu5p__D_c": -1.0
             },
             "name": "Transketolase",
+            "notes": "",
             "upper_bound": 1000.0
         },
         {
@@ -8843,6 +9145,7 @@
                 "g3p_c": 1.0
             },
             "name": "Triose-phosphate isomerase",
+            "notes": "",
             "upper_bound": 1000.0
         }
     ],

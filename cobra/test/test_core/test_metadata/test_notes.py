@@ -51,8 +51,8 @@ def test_notes(data_directory, tmp_path):
     # two notes object
     notes = Notes(incoming_notes_str)
 
-    assert rx1.notes.get_notes_str() == incoming_notes_str
-    assert rx1.notes.equals(notes)
+    assert rx1.notes.notes_text == incoming_notes_str
+    assert rx1.notes == notes
 
     # keys inside notes dict
     list_of_keys = ['Key1', 'Key2', 'Key3']
@@ -73,7 +73,7 @@ def test_notes(data_directory, tmp_path):
         rx1.notes["Key4"] = "New Value 3"
 
     # checking modified notes dict and string
-    assert rx1.notes.get_notes_str() == modified_notes_str
+    assert rx1.notes.notes_text == modified_notes_str
     assert rx1.notes['Key1'] == 'New Value 1'
     assert rx1.notes['Key2'] == 'Value2'
     assert rx1.notes['Key3'] == 'New Value 3'
@@ -86,7 +86,7 @@ def test_notes(data_directory, tmp_path):
     rx1_after_reading = model_after_reading.reactions[0]
 
     # checks after reading model back again
-    assert rx1_after_reading.notes.get_notes_str() == modified_notes_str
+    assert rx1_after_reading.notes.notes_text == modified_notes_str
     assert rx1_after_reading.notes['Key1'] == 'New Value 1'
     assert rx1_after_reading.notes['Key2'] == 'Value2'
     assert rx1_after_reading.notes['Key3'] == 'New Value 3'
@@ -99,15 +99,14 @@ def test_reading_writing_notes(data_directory, tmp_path):
 
     # checking notes data
     rx1 = model.reactions[0]
-    assert rx1.notes.get_notes_str() == incoming_notes_str
+    assert rx1.notes.notes_text == incoming_notes_str
 
     # reading and writing in json format
     path_to_json = join(str(tmp_path), "json_notes.json")
     save_json_model(model, path_to_json)
-
     model_from_json = load_json_model(path_to_json)
     rx1_from_json = model_from_json.reactions[0]
-    assert rx1_from_json.notes.get_notes_str() == incoming_notes_str
+    assert rx1_from_json.notes.notes_text == incoming_notes_str
 
 
 # def test_notes(tmp_path):
