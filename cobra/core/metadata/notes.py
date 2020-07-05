@@ -77,7 +77,7 @@ class Notes(collectionsAbc.MutableMapping):
             start = match.start('content')
             end = match.end('content')
             modified_str = self._notes_text[:start] + \
-                           value + self._notes_text[end:]
+                value + self._notes_text[end:]
             self._notes_text = modified_str
 
     @property

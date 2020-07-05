@@ -1323,7 +1323,7 @@ def _sbase_notes_dict(sbase, notes):
     notes : notes object
         notes information from cobra object
     """
-    if notes.notes_text is None:
+    if notes.notes_text is None or len(notes.notes_text) == 0:
         return
     _check(
         sbase.setNotes(notes.notes_text),
@@ -1474,13 +1474,15 @@ def _parse_annotations(sbase):
 
         if model_history.isSetCreatedDate():
             date = model_history.getCreatedDate()  # type: libsbml.Date
-            cobra_date = HistoryDateTime(date.getDateAsString())  # type: HistoryDateTime
+            cobra_date = HistoryDateTime(
+                date.getDateAsString())  # type: HistoryDateTime
             annotation.history.created_date = cobra_date
 
         cobra_modified_dates = []
         for index in range(model_history.getNumModifiedDates()):
             modified_date = model_history.getModifiedDate(index)
-            cobra_modified_date = HistoryDateTime(modified_date.getDateAsString())
+            cobra_modified_date = HistoryDateTime(
+                modified_date.getDateAsString())
             cobra_modified_dates.append(cobra_modified_date)
         annotation.history.modified_dates = cobra_modified_dates
 

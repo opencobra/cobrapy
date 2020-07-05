@@ -207,21 +207,18 @@ def test_writing_xml(data_directory, tmp_path):
                             "e_coli_core_writing.xml") is None
 
 
-def test_write_json(data_directory):
+def test_read_write_json(data_directory, tmp_path):
     model = _read_ecoli_annotation_model(data_directory)
-    json_path = join(data_directory, "e_coli_core_json_writing.json")
+    json_path = join(tmp_path, "e_coli_core_json_writing.json")
     assert save_json_model(model, json_path, sort=False, pretty=True) is None
 
-
-def test_read_new_json_model(data_directory):
-    json_path = join(data_directory, "e_coli_core_json_writing.json")
     model = load_json_model(json_path)
     assert model.annotation == {
-            'taxonomy': ['511145'],
-            'bigg.model': ['e_coli_core'],
-            'doi': ['10.1128/ecosalplus.10.2.1'],
-            'ncbigi': ['gi:16128336']
-        }
+        'taxonomy': ['511145'],
+        'bigg.model': ['e_coli_core'],
+        'doi': ['10.1128/ecosalplus.10.2.1'],
+        'ncbigi': ['gi:16128336']
+    }
     assert model.annotation.cvterms.equals(CVTerms(ecoli_model_annotation))
 
 

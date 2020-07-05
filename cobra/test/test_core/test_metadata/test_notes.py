@@ -129,7 +129,8 @@ def test_reading_writing_notes(data_directory, tmp_path):
 #     # reading the model back
 #     model_after_reading = read_sbml_model(path_to_file)
 #     met_after_reading = model_after_reading.metabolites.get_by_id("pyr_c")
-#     reaction_after_reading = model_after_reading.reactions.get_by_id("R_ATPM")
+#     reaction_after_reading =
+#     model_after_reading.reactions.get_by_id("R_ATPM")
 
 #     # checking if notes are written to model
 #     assert model_after_reading.notes["Remark"] == "...Model Notes..."

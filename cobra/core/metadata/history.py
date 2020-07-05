@@ -19,7 +19,7 @@ class HistoryDateTime(object):
         date in the form of a string
     """
 
-    def __init__(self, datetime_obj: [str, datetime] = None):
+    def __init__(self, datetime_obj: [str, datetime]=None):
         self._datetime = None
         self.datetime = datetime_obj
 
@@ -49,7 +49,7 @@ class HistoryDateTime(object):
     def set_current_datetime(self):
         current_datetime = datetime.now()
         self._datetime = current_datetime.strftime("%Y-%m-%dT%H:%M:%S%z") \
-                         + self.get_utc_offset_str()
+            + self.get_utc_offset_str()
 
     def get_utc_offset_str(self):
         """
@@ -129,7 +129,8 @@ class History(object):
 
     """
 
-    def __init__(self, creators: List = None, created_date: HistoryDateTime = None,
+    def __init__(self, creators: List = None,
+                 created_date: HistoryDateTime = None,
                  modified_dates: List = None):
         self._creators = []
         self._created_date = None
@@ -306,4 +307,3 @@ class Creator(object):
 
     def __repr__(self):
         return self.__str__()
-
