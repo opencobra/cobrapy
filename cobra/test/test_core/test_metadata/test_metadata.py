@@ -82,7 +82,7 @@ def test_annotation():
                          }
                     ]
                    })
-    assert s.annotation.cvterms.equals(cvt)
+    assert s.annotation.cvterms == cvt
 
     # adding an SBO term
     s.annotation["sbo"] = ["SBO:0000123"]
@@ -156,9 +156,9 @@ def test_nested_annotation(data_directory):
           }
         ]
     })
-    assert s.annotation.cvterms.equals(main_cvt)
+    assert s.annotation.cvterms == main_cvt
     nested_data = s.annotation.cvterms["bqb_hasPart"][1].nested_data
-    assert nested_data.equals(nested_cvt)
+    assert nested_data == nested_cvt
 
 
 def _read_ecoli_annotation_model(data_directory):
@@ -187,10 +187,10 @@ def test_cvterms_from_ecoli_xml(data_directory):
     ecoli_model_cvterm = CVTerms(ecoli_model_annotation)
     for key in qualifier_list:
         assert key in model.annotation.cvterms
-    assert model.annotation.cvterms.equals(ecoli_model_cvterm)
+    assert model.annotation.cvterms == ecoli_model_cvterm
     assert len(model.annotation.cvterms["bqm_isDescribedBy"]) == 2
     nested_data = model.annotation.cvterms["bqm_is"][0].nested_data
-    assert nested_data.equals(nested_cvt)
+    assert nested_data == nested_cvt
 
     # check backwards compatibility
     assert model.annotation == {
@@ -219,7 +219,7 @@ def test_read_write_json(data_directory, tmp_path):
         'doi': ['10.1128/ecosalplus.10.2.1'],
         'ncbigi': ['gi:16128336']
     }
-    assert model.annotation.cvterms.equals(CVTerms(ecoli_model_annotation))
+    assert model.annotation.cvterms == CVTerms(ecoli_model_annotation)
 
 
 def test_read_old_json_model(data_directory):
@@ -263,4 +263,4 @@ def test_read_old_json_model(data_directory):
           }
        ]
     })
-    assert meta.annotation.cvterms.equals(expected_cvterms)
+    assert meta.annotation.cvterms == expected_cvterms

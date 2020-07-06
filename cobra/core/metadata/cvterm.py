@@ -66,12 +66,19 @@ class CVTerm(object):
              a uri identifying external resource
     """
 
-    def __init__(self, qualifier=Qualifier.bqb_is, resource=None):
+    def __init__(self, qualifier: 'Qualifier'=Qualifier.bqb_is,
+                 resource: 'str'=None):
         self.uri = resource
         if isinstance(qualifier, Qualifier):
             self.qualifier = qualifier
+        elif isinstance(qualifier, str):
+            if qualifier not in Qualifier.__members__:
+                raise TypeError("%s is not an enum Qualifier" % qualifier)
+            else:
+                self.qualifier = Qualifier[qualifier]
         else:
-            raise TypeError("qualifier passed must be an enum Qualifier")
+            raise TypeError("qualifier passed must be an enum "
+                            "Qualifier: {}".format(qualifier))
 
     def parse_provider_identifier(self):
         """Parses provider and term from given identifiers annotation uri.
@@ -85,20 +92,24 @@ class CVTerm(object):
         -------
         (provider, identifier) if resolvable, None otherwise
         """
-        match = URL_IDENTIFIERS_PATTERN.match(self.uri)
-        if match:
-            provider, identifier = match.group(1), match.group(2)
-            if provider.isupper():
-                identifier = "%s:%s" % (provider, identifier)
-                provider = provider.lower()
+        if self.uri is None:
+            raise ValueError("'uri' set for this cvterm is "
+                             "None: {}".format(self))
         else:
-            print("WARNING : %s does not conform to "
-                  "'http(s)://identifiers.org/collection/id' or"
-                  "'http(s)://identifiers.org/COLLECTION:id, so "
-                  "is not added to annotation dictionary." % self.uri)
-            return None
+            match = URL_IDENTIFIERS_PATTERN.match(self.uri)
+            if match:
+                provider, identifier = match.group(1), match.group(2)
+                if provider.isupper():
+                    identifier = "%s:%s" % (provider, identifier)
+                    provider = provider.lower()
+            else:
+                print("WARNING : %s does not conform to "
+                      "'http(s)://identifiers.org/collection/id' or"
+                      "'http(s)://identifiers.org/COLLECTION:id, so "
+                      "is not added to annotation dictionary." % self.uri)
+                return None
 
-        return provider, identifier
+            return provider, identifier
 
 
 class CVTerms(collectionsAbc.MutableMapping):
@@ -135,15 +146,7 @@ class CVTerms(collectionsAbc.MutableMapping):
             return
         elif isinstance(data, dict):
             for key, value in data.items():
-                if key not in Qualifier.__members__:
-                    raise TypeError("%s is not an enum Qualifier" % key)
-                if isinstance(value, CVList):
-                    self._cvterms[key] = value
-                elif isinstance(value, list):
-                    self._cvterms[key] = CVList(value)
-                else:
-                    raise TypeError("The value passed must be of type list: "
-                                    "{}".format(value))
+                self.__setitem__(key, value)
         else:
             raise TypeError("Invalid format for CVTerms: '{}'".format(data))
 
@@ -169,6 +172,8 @@ class CVTerms(collectionsAbc.MutableMapping):
             the index where this cvterm should be added inside
             the CVList of corresponding qualifier
         """
+        if index is None:
+            index = 0
         if isinstance(cvterm, CVTerm):
             qual = str(cvterm.qualifier)
             qual = qual[10:] if qual.startswith('Qualifier.') else qual
@@ -298,20 +303,6 @@ class CVTerms(collectionsAbc.MutableMapping):
                                      type string: {}".format(identifier))
                 self.add_cvterm(cvterm, 0)
 
-    def equals(self, cvterms):
-        """
-        Compare two CVTerms objects to find out whether they
-        are same (have same data) or not
-        """
-        if len(self._cvterms) != len(cvterms):
-            return False
-        for key, value in cvterms.items():
-            if key not in self._cvterms:
-                return False
-            if not value.equals(self._cvterms[key]):
-                return False
-        return True
-
     @property
     def annotations(self):
         return getattr(self, "_annotations", defaultdict(list))
@@ -336,13 +327,27 @@ class CVTerms(collectionsAbc.MutableMapping):
             raise TypeError("The value passed must be of type list"
                             " or CVList: {}".format(value))
         # setting the annotation
-        for ex_res in value:
+        for ex_res in self._cvterms[key]:
             for uri in ex_res.resources:
                 cvterm = CVTerm(Qualifier[key], uri)
                 data = cvterm.parse_provider_identifier()
                 if data is not None:
                     provider, identifier = data
                     self._annotations[provider].append(identifier)
+
+    def __eq__(self, other):
+        """
+        Compare two CVTerms objects to find out whether they
+        are same (have same data) or not
+        """
+        if len(self._cvterms) != len(other):
+            return False
+        for key, value in other.items():
+            if key not in self._cvterms:
+                return False
+            if not value == self._cvterms[key]:
+                return False
+        return True
 
     def __delitem__(self, key):
         del self._cvterms[key]
@@ -357,7 +362,7 @@ class CVTerms(collectionsAbc.MutableMapping):
         return str(dict(self._cvterms))
 
     def __repr__(self):
-        return '{}'.format(dict(self._cvterms))
+        return self.__str__()
 
 
 class CVList(collectionsAbc.MutableSequence):
@@ -384,7 +389,7 @@ class CVList(collectionsAbc.MutableSequence):
         a list containing entries confirming to ExternalResources structure
 
     """
-    def __init__(self, data=None):
+    def __init__(self, data: 'list' = None):
 
         self._sequence = list()
         if data is None:
@@ -392,32 +397,8 @@ class CVList(collectionsAbc.MutableSequence):
         elif not isinstance(data, list):
             raise TypeError("The data passed must be "
                             "inside a list: '{}'".format(data))
-
         for item in data:
-            if isinstance(item, dict):
-                self._sequence.append(ExternalResources(item))
-            else:
-                raise TypeError("All items inside CVList must be "
-                                "of type dict: {}".format(item))
-
-    def equals(self, cvlist):
-        """
-        Compare two CVList objects to find out whether
-        they are same (have same data) or not
-        """
-        if len(self) != len(cvlist):
-            return False
-        num_ext_res = len(self)
-        for index in range(num_ext_res):
-            if not self[index].equals(cvlist[index]):
-                return False
-        return True
-
-    def __len__(self):
-        return len(self._sequence)
-
-    def __delitem__(self, index):
-        del self._sequence[index]
+            self.append(item)
 
     def insert(self, index, value):
         if isinstance(value, ExternalResources):
@@ -437,6 +418,9 @@ class CVList(collectionsAbc.MutableSequence):
             raise TypeError("The passed format for setting external"
                             " resources is invalid.")
 
+    def __getitem__(self, index):
+        return self._sequence[index]
+
     def __setitem__(self, index, value):
         if isinstance(value, ExternalResources):
             self._sequence[index] = value
@@ -446,8 +430,23 @@ class CVList(collectionsAbc.MutableSequence):
             raise TypeError("The passed format for setting external"
                             " resources is invalid.")
 
-    def __getitem__(self, index):
-        return self._sequence[index]
+    def __eq__(self, other):
+        """
+        Compare two CVList objects to find out whether
+        they are same (have same data) or not
+        """
+        if len(self) != len(other):
+            return False
+        for k, ext_res in enumerate(self):
+            if not ext_res == other[k]:
+                return False
+        return True
+
+    def __len__(self):
+        return len(self._sequence)
+
+    def __delitem__(self, index):
+        del self._sequence[index]
 
     def __str__(self):
         return str(self._sequence)
@@ -485,22 +484,16 @@ class ExternalResources(object):
             data = {}
         if not isinstance(data, dict):
             raise TypeError("The value passed must be of type dict.")
+        self._resources = None
+        self._nested_data = None
+        self.resources = data['resources'] if 'resources' in data else None
+        self.nested_data = data['nested_data'] if 'nested_data' \
+                                                  in data else None
         for key, value in data.items():
             if key == 'resources':
-                if not isinstance(data["resources"], list):
-                    raise TypeError("Resources must be wrapped ""in a list:"
-                                    " {}".format(data["resources"]))
-                else:
-                    self._resources = data["resources"]
+                continue
             elif key == 'nested_data':
-                if isinstance(value, CVTerms):
-                    self._nested_data = value
-                elif isinstance(value, dict):
-                    self._nested_data = CVTerms(value)
-                else:
-                    raise TypeError("The nested data structure does "
-                                    "not have valid CVTerm format: "
-                                    "{}".format(value))
+                continue
             elif key in Qualifier.__members__:
                 self._nested_data = CVTerms({key: value})
             else:
@@ -508,28 +501,15 @@ class ExternalResources(object):
                                  "allowed keys are 'resources', "
                                  "'nested_data'." % key)
 
-    def equals(self, ext_res):
-        """
-        Compare two ExternalResources objects to find out whether
-        they are same (have same data) or not
-        """
-        if self.resources != ext_res.resources:
-            return False
-        if self.nested_data is None and ext_res.nested_data is None:
-            return True
-        elif self.nested_data is None or ext_res.nested_data is None:
-            return False
-        elif not self.nested_data.equals(ext_res.nested_data):
-            return False
-        return True
-
     @property
     def resources(self):
-        return getattr(self, "_resources", None)
+        return self._resources
 
     @resources.setter
     def resources(self, value):
-        if not isinstance(value, list):
+        if value is None:
+            self._nested_data = None
+        elif not isinstance(value, list):
             raise TypeError("The resources must be wrapped "
                             "inside a list: {}".format(value))
         else:
@@ -537,17 +517,34 @@ class ExternalResources(object):
 
     @property
     def nested_data(self):
-        return getattr(self, "_nested_data", None)
+        return self._nested_data
 
     @nested_data.setter
     def nested_data(self, value):
-        if isinstance(value, CVTerms):
+        if value is None:
+            self._nested_data = None
+        elif isinstance(value, CVTerms):
             self._nested_data = value
         elif isinstance(value, dict):
             self._nested_data = CVTerms(value)
         else:
             raise TypeError("The nested data structure does "
                             "not have valid CVTerm format: {}".format(value))
+
+    def __eq__(self, other):
+        """
+        Compare two ExternalResources objects to find out whether
+        they are same (have same data) or not
+        """
+        if self.resources != other.resources:
+            return False
+        if self.nested_data is None and other.nested_data is None:
+            return True
+        elif self.nested_data is None or other.nested_data is None:
+            return False
+        elif not self.nested_data == other.nested_data:
+            return False
+        return True
 
     def __str__(self):
         if self.nested_data is None:
