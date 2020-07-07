@@ -25,18 +25,18 @@ except ImportError:
 
 
 # precompiled regular expressions
-_bracket_re = re.compile(r"\[[a-z]+\]$")
-_underscore_re = re.compile(r"_[a-z]{1,3}$")
+_bracket_re = re.compile(r"\[(?P<compartment>[a-z]+)\]$")
+_underscore_re = re.compile(r"_(?P<compartment>[a-z]+)$")
 
 
 def _get_id_compartment(id):
     """extract the compartment from the id string"""
-    bracket_search = _bracket_re.findall(id)
-    if len(bracket_search) == 1:
-        return bracket_search[0][1:-1]
-    underscore_search = _underscore_re.findall(id)
-    if len(underscore_search) == 1:
-        return underscore_search[0][1:]
+    bracket_search = _bracket_re.search(id)
+    if bracket_search:
+        return bracket_search.group("compartment")
+    underscore_search = _underscore_re.search(id)
+    if underscore_search:
+        return underscore_search.group("compartment")
     return None
 
 
