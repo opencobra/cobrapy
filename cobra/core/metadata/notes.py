@@ -12,10 +12,15 @@ except AttributeError:
 
 
 class Notes(collectionsAbc.MutableMapping):
+    """
+    FIXME: documentation
+
+    """
+    # FIXME: should we abstract comments in the notes (?!)
 
     def __init__(self, notes_text: 'str' = None):
         self._notes_text = None
-        self.notes_text = notes_text
+        self.notes_text = notes_text  # FIXME: rename notes_xhtml
 
     pattern_notes = re.compile(
         r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<content>.*?)</(?P=prefix)p>",
