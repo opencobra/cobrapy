@@ -67,7 +67,8 @@ def test_add_remove(model):
     v = model.variables
     new_var = model.problem.Variable("test_var", lb=-10, ub=-10)
     new_constraint = model.problem.Constraint(
-        v.PGK - new_var, name="test_constraint", lb=0)
+        v.PGK - new_var, name="test_constraint", lb=0
+    )
 
     su.add_cons_vars_to_problem(model, [new_var, new_constraint])
     assert "test_var" in model.variables.keys()
@@ -95,8 +96,7 @@ def test_add_remove_in_context(model):
 def test_absolute_expression(model):
     v = model.variables
     with model:
-        parts = su.add_absolute_expression(
-            model, 2 * v.PGM, name="test", ub=100)
+        parts = su.add_absolute_expression(model, 2 * v.PGM, name="test", ub=100)
         assert len(parts) == 3
         assert "test" in model.variables.keys()
         assert "abs_pos_test" in model.constraints.keys()
@@ -112,13 +112,11 @@ def test_fix_objective_as_constraint(solver, model):
     with model as m:
         su.fix_objective_as_constraint(model, 1.0)
         constraint_name = m.constraints[-1]
-        assert abs(m.constraints[-1].expression -
-                   m.objective.expression) < 1e-6
+        assert abs(m.constraints[-1].expression - m.objective.expression) < 1e-6
     assert constraint_name not in m.constraints
     su.fix_objective_as_constraint(model)
     constraint_name = model.constraints[-1]
-    assert abs(model.constraints[-1].expression -
-               model.objective.expression) < 1e-6
+    assert abs(model.constraints[-1].expression - model.objective.expression) < 1e-6
     assert constraint_name in model.constraints
 
 
@@ -127,16 +125,18 @@ def test_fix_objective_as_constraint_minimize(model, solver):
     model.solver = solver
     model.reactions.Biomass_Ecoli_core.bounds = (0.1, 0.1)
     minimize_glucose = model.problem.Objective(
-        model.reactions.EX_glc__D_e.flux_expression,
-        direction='min')
+        model.reactions.EX_glc__D_e.flux_expression, direction="min"
+    )
     su.set_objective(model, minimize_glucose)
     su.fix_objective_as_constraint(model)
-    fx_name = 'fixed_objective_{}'.format(model.objective.name)
+    fx_name = "fixed_objective_{}".format(model.objective.name)
     constr = model.constraints
     # Ensure that a solution exists on non-GLPK solvers.
     model.slim_optimize()
     assert (constr[fx_name].lb, constr[fx_name].ub) == (
-        None, model.solver.objective.value)
+        None,
+        model.solver.objective.value,
+    )
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
@@ -146,12 +146,12 @@ def test_add_lp_feasibility(model, solver):
     with model:
         with model:
             su.add_lp_feasibility(model)
-            assert 's_plus_succoa_c' in model.variables
-            assert np.isclose(model.slim_optimize(), 0.)
+            assert "s_plus_succoa_c" in model.variables
+            assert np.isclose(model.slim_optimize(), 0.0)
 
         model.reactions.EX_glc__D_e.lower_bound = 1
         assert np.isnan(model.slim_optimize())
-        assert 's_plus_succoa_c' not in model.variables
+        assert "s_plus_succoa_c" not in model.variables
 
         su.add_lp_feasibility(model)
         assert np.isclose(model.slim_optimize(), 1.3872307692307695)
@@ -161,18 +161,17 @@ def test_add_lp_feasibility(model, solver):
 def test_add_lexicographic_constraints(model, solver):
     model.solver = solver
 
-    rxns = ['Biomass_Ecoli_core', 'EX_glc__D_e', 'EX_o2_e']
+    rxns = ["Biomass_Ecoli_core", "EX_glc__D_e", "EX_o2_e"]
 
     with model:
-        out = su.add_lexicographic_constraints(
-            model, rxns, ['max', 'min', 'max'])
+        out = su.add_lexicographic_constraints(model, rxns, ["max", "min", "max"])
         print(model.reactions.Biomass_Ecoli_core.bounds)
         assert np.isclose(model.constraints[-3].lb, out[rxns[0]])
         assert np.isclose(model.constraints[-2].ub, out[rxns[1]])
         assert np.isclose(model.constraints[-1].lb, out[rxns[2]])
 
     with model:
-        su.add_lexicographic_constraints(model, rxns, 'max')
+        su.add_lexicographic_constraints(model, rxns, "max")
 
     with model:
         su.add_lexicographic_constraints(model, rxns)

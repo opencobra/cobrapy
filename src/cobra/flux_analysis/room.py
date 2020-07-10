@@ -9,7 +9,7 @@ from optlang.symbolics import Zero
 from cobra.flux_analysis.parsimonious import pfba
 
 
-def room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
+def room(model, solution=None, linear=False, delta=0.03, epsilon=1e-03):
     """
     Compute a single solution based on regulatory on/off minimization (ROOM).
 
@@ -44,13 +44,14 @@ def room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
 
     """
     with model:
-        add_room(model=model, solution=solution, linear=linear, delta=delta,
-                 epsilon=epsilon)
+        add_room(
+            model=model, solution=solution, linear=linear, delta=delta, epsilon=epsilon
+        )
         solution = model.optimize()
     return solution
 
 
-def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
+def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1e-03):
     r"""
     Add constraints and objective for ROOM.
 
@@ -105,8 +106,8 @@ def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
 
     """
 
-    if 'room_old_objective' in model.solver.variables:
-        raise ValueError('model is already adjusted for ROOM')
+    if "room_old_objective" in model.solver.variables:
+        raise ValueError("model is already adjusted for ROOM")
 
     # optimizes if no reference solution is provided
     if solution is None:
@@ -118,7 +119,7 @@ def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
         model.solver.objective.expression - variable,
         ub=0.0,
         lb=0.0,
-        name="room_old_objective_constraint"
+        name="room_old_objective_constraint",
     )
     model.objective = prob.Objective(Zero, direction="min", sloppy=True)
     vars_and_cons = [variable, constraint]
@@ -137,12 +138,16 @@ def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1E-03):
         w_u = flux + (delta * abs(flux)) + epsilon
         upper_const = prob.Constraint(
             rxn.flux_expression - y * (rxn.upper_bound - w_u),
-            ub=w_u, name="room_constraint_upper_" + rxn.id)
+            ub=w_u,
+            name="room_constraint_upper_" + rxn.id,
+        )
         # lower constraint
         w_l = flux - (delta * abs(flux)) - epsilon
         lower_const = prob.Constraint(
             rxn.flux_expression - y * (rxn.lower_bound - w_l),
-            lb=w_l, name="room_constraint_lower_" + rxn.id)
+            lb=w_l,
+            name="room_constraint_lower_" + rxn.id,
+        )
         vars_and_cons.extend([y, upper_const, lower_const])
         obj_vars.append(y)
 

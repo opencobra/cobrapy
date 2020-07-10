@@ -38,8 +38,7 @@ _renames = (
 def _escape_str_id(id_str):
     """make a single string id SBML compliant"""
     for c in ("'", '"'):
-        if id_str.startswith(c) and id_str.endswith(c) \
-                and id_str.count(c) == 2:
+        if id_str.startswith(c) and id_str.endswith(c) and id_str.count(c) == 2:
             id_str = id_str.strip(c)
     for char, escaped_char in _renames:
         id_str = id_str.replace(char, escaped_char)
@@ -54,10 +53,9 @@ class _GeneEscaper(NodeTransformer):
 
 def escape_ID(cobra_model):
     """makes all ids SBML compliant"""
-    for x in chain([cobra_model],
-                   cobra_model.metabolites,
-                   cobra_model.reactions,
-                   cobra_model.genes):
+    for x in chain(
+        [cobra_model], cobra_model.metabolites, cobra_model.reactions, cobra_model.genes
+    ):
         x.id = _escape_str_id(x.id)
     cobra_model.repair()
     gene_renamer = _GeneEscaper()

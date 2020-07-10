@@ -110,8 +110,8 @@ def add_moma(model, solution=None, linear=True):
            Prediction of Cellular Metabolism with Constraint-Based Models:
            The COBRA Toolbox.” Nature Protocols 2 (March 29, 2007): 727.
     """
-    if 'moma_old_objective' in model.solver.variables:
-        raise ValueError('model is already adjusted for MOMA')
+    if "moma_old_objective" in model.solver.variables:
+        raise ValueError("model is already adjusted for MOMA")
 
     # Fall back to default QP solver if current one has no QP capability
     if not linear:
@@ -121,8 +121,12 @@ def add_moma(model, solution=None, linear=True):
         solution = pfba(model)
     prob = model.problem
     v = prob.Variable("moma_old_objective")
-    c = prob.Constraint(model.solver.objective.expression - v,
-                        lb=0.0, ub=0.0, name="moma_old_objective_constraint")
+    c = prob.Constraint(
+        model.solver.objective.expression - v,
+        lb=0.0,
+        ub=0.0,
+        name="moma_old_objective_constraint",
+    )
     to_add = [v, c]
     model.objective = prob.Objective(Zero, direction="min", sloppy=True)
     obj_vars = []
@@ -130,19 +134,26 @@ def add_moma(model, solution=None, linear=True):
         flux = solution.fluxes[r.id]
         if linear:
             components = sutil.add_absolute_expression(
-                model, r.flux_expression, name="moma_dist_" + r.id,
-                difference=flux, add=False)
+                model,
+                r.flux_expression,
+                name="moma_dist_" + r.id,
+                difference=flux,
+                add=False,
+            )
             to_add.extend(components)
             obj_vars.append(components.variable)
         else:
             dist = prob.Variable("moma_dist_" + r.id)
-            const = prob.Constraint(r.flux_expression - dist, lb=flux, ub=flux,
-                                    name="moma_constraint_" + r.id)
+            const = prob.Constraint(
+                r.flux_expression - dist,
+                lb=flux,
+                ub=flux,
+                name="moma_constraint_" + r.id,
+            )
             to_add.extend([dist, const])
             obj_vars.append(dist ** 2)
     model.add_cons_vars(to_add)
     if linear:
         model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
     else:
-        model.objective = prob.Objective(
-            add(obj_vars), direction="min", sloppy=True)
+        model.objective = prob.Objective(add(obj_vars), direction="min", sloppy=True)

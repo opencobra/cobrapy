@@ -140,9 +140,7 @@ def flux_variability_analysis(
     if reaction_list is None:
         reaction_ids = [r.id for r in model.reactions]
     else:
-        reaction_ids = [
-            r.id for r in model.reactions.get_by_any(reaction_list)
-        ]
+        reaction_ids = [r.id for r in model.reactions.get_by_any(reaction_list)]
 
     if processes is None:
         processes = CONFIGURATION.processes
@@ -161,8 +159,7 @@ def flux_variability_analysis(
         # Safety check before setting up FVA.
         model.slim_optimize(
             error_value=None,
-            message="There is no optimal solution for the "
-            "chosen objective!",
+            message="There is no optimal solution for the " "chosen objective!",
         )
         # Add the previous objective as a variable to the model then set it to
         # zero. This also uses the fraction to create the lower/upper bound for
@@ -189,8 +186,7 @@ def flux_variability_analysis(
         if pfba_factor is not None:
             if pfba_factor < 1.0:
                 warn(
-                    "The 'pfba_factor' should be larger or equal to 1.",
-                    UserWarning,
+                    "The 'pfba_factor' should be larger or equal to 1.", UserWarning,
                 )
             with model:
                 add_pfba(model, fraction_of_optimum=0)
@@ -231,11 +227,7 @@ def flux_variability_analysis(
 
 
 def find_blocked_reactions(
-    model,
-    reaction_list=None,
-    zero_cutoff=None,
-    open_exchanges=False,
-    processes=None,
+    model, reaction_list=None, zero_cutoff=None, open_exchanges=False, processes=None,
 ):
     """
     Find reactions that cannot carry any flux.
@@ -298,9 +290,7 @@ def find_blocked_reactions(
             reaction_list=reaction_list,
             processes=processes,
         )
-        return flux_span[
-            flux_span.abs().max(axis=1) < zero_cutoff
-        ].index.tolist()
+        return flux_span[flux_span.abs().max(axis=1) < zero_cutoff].index.tolist()
 
 
 def find_essential_genes(model, threshold=None, processes=None):
@@ -367,9 +357,7 @@ def find_essential_reactions(model, threshold=None, processes=None):
     """
     if threshold is None:
         threshold = model.slim_optimize(error_value=None) * 1e-02
-    deletions = single_reaction_deletion(
-        model, method="fba", processes=processes
-    )
+    deletions = single_reaction_deletion(model, method="fba", processes=processes)
     essential = deletions.loc[
         deletions["growth"].isna() | (deletions["growth"] < threshold), :
     ].index

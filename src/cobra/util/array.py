@@ -15,7 +15,7 @@ except ImportError:
     dok_matrix, lil_matrix = None, None
 
 
-def create_stoichiometric_matrix(model, array_type='dense', dtype=None):
+def create_stoichiometric_matrix(model, array_type="dense", dtype=None):
     """Return a stoichiometric array representation of the given model.
 
     The the columns represent the reactions and rows represent
@@ -39,21 +39,22 @@ def create_stoichiometric_matrix(model, array_type='dense', dtype=None):
     matrix of class `dtype`
         The stoichiometric matrix for the given model.
     """
-    if array_type not in ('DataFrame', 'dense') and not dok_matrix:
-        raise ValueError('Sparse matrices require scipy')
+    if array_type not in ("DataFrame", "dense") and not dok_matrix:
+        raise ValueError("Sparse matrices require scipy")
 
     if dtype is None:
         dtype = np.float64
 
     array_constructor = {
-        'dense': np.zeros, 'dok': dok_matrix, 'lil': lil_matrix,
-        'DataFrame': np.zeros,
+        "dense": np.zeros,
+        "dok": dok_matrix,
+        "lil": lil_matrix,
+        "DataFrame": np.zeros,
     }
 
     n_metabolites = len(model.metabolites)
     n_reactions = len(model.reactions)
-    array = array_constructor[array_type]((n_metabolites, n_reactions),
-                                          dtype=dtype)
+    array = array_constructor[array_type]((n_metabolites, n_reactions), dtype=dtype)
 
     m_ind = model.metabolites.index
     r_ind = model.reactions.index
@@ -62,7 +63,7 @@ def create_stoichiometric_matrix(model, array_type='dense', dtype=None):
         for metabolite, stoich in iteritems(reaction.metabolites):
             array[m_ind(metabolite), r_ind(reaction)] = stoich
 
-    if array_type == 'DataFrame':
+    if array_type == "DataFrame":
         metabolite_ids = [met.id for met in model.metabolites]
         reaction_ids = [rxn.id for rxn in model.reactions]
         return pd.DataFrame(array, index=metabolite_ids, columns=reaction_ids)
@@ -114,8 +115,7 @@ def nullspace(A, atol=1e-13, rtol=0):
     return ns
 
 
-def constraint_matrices(model, array_type='dense', include_vars=False,
-                        zero_tol=1e-6):
+def constraint_matrices(model, array_type="dense", include_vars=False, zero_tol=1e-6):
     """Create a matrix representation of the problem.
 
     This is used for alternative solution approaches that do not use optlang.
@@ -157,17 +157,27 @@ def constraint_matrices(model, array_type='dense', include_vars=False,
         - "variable_bounds" is a compound matrix [lb ub] containing the
           lower and upper bounds for all variables.
     """
-    if array_type not in ('DataFrame', 'dense') and not dok_matrix:
-        raise ValueError('Sparse matrices require scipy')
+    if array_type not in ("DataFrame", "dense") and not dok_matrix:
+        raise ValueError("Sparse matrices require scipy")
 
     array_builder = {
-        'dense': np.array, 'dok': dok_matrix, 'lil': lil_matrix,
-        'DataFrame': pd.DataFrame,
+        "dense": np.array,
+        "dok": dok_matrix,
+        "lil": lil_matrix,
+        "DataFrame": pd.DataFrame,
     }[array_type]
 
-    Problem = namedtuple("Problem",
-                         ["equalities", "b", "inequalities", "bounds",
-                          "variable_fixed", "variable_bounds"])
+    Problem = namedtuple(
+        "Problem",
+        [
+            "equalities",
+            "b",
+            "inequalities",
+            "bounds",
+            "variable_fixed",
+            "variable_bounds",
+        ],
+    )
     equality_rows = []
     inequality_rows = []
     inequality_bounds = []
@@ -195,6 +205,7 @@ def constraint_matrices(model, array_type='dense', include_vars=False,
         inequalities=array_builder(inequality_rows),
         bounds=array_builder(inequality_bounds),
         variable_fixed=np.array(fixed),
-        variable_bounds=array_builder(var_bounds))
+        variable_bounds=array_builder(var_bounds),
+    )
 
     return results

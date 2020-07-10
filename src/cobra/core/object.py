@@ -54,8 +54,8 @@ class Object(object):
     def __getstate__(self):
         """To prevent excessive replication during deepcopy."""
         state = self.__dict__.copy()
-        if '_model' in state:
-            state['_model'] = None
+        if "_model" in state:
+            state["_model"] = None
         return state
 
     def __repr__(self):

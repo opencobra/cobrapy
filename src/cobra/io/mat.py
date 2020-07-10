@@ -81,14 +81,10 @@ def load_matlab_model(infile_path, variable_name=None, inf=inf):
         if len(possible_names) == 1:
             variable_name = possible_names[0]
     if variable_name is not None:
-        return from_mat_struct(
-            data[variable_name], model_id=variable_name, inf=inf
-        )
+        return from_mat_struct(data[variable_name], model_id=variable_name, inf=inf)
     for possible_name in possible_names:
         try:
-            return from_mat_struct(
-                data[possible_name], model_id=possible_name, inf=inf
-            )
+            return from_mat_struct(data[possible_name], model_id=possible_name, inf=inf)
         except ValueError:
             pass
     # If code here is executed, then no model was found.
@@ -119,18 +115,14 @@ def save_matlab_model(model, file_name, varname=None):
             else "exported_model"
         )
     mat = create_mat_dict(model)
-    scipy_io.savemat(
-        file_name, {varname: mat}, appendmat=True, oned_as="column"
-    )
+    scipy_io.savemat(file_name, {varname: mat}, appendmat=True, oned_as="column")
 
 
 def create_mat_metabolite_id(model):
     """Obtain a metabolite id from a Matlab model."""
     for met in model.metabolites:
         if not _get_id_compartment(met.id) and met.compartment:
-            yield "{}[{}]".format(
-                met.id, model.compartments[met.compartment].lower()
-            )
+            yield "{}[{}]".format(met.id, model.compartments[met.compartment].lower())
         else:
             yield met.id
 
@@ -151,9 +143,7 @@ def create_mat_dict(model):
     mat["genes"] = _cell(model.genes.list_attr("id"))
     # make a matrix for rxnGeneMat
     # reactions are rows, genes are columns
-    rxn_gene = scipy_sparse.dok_matrix(
-        (len(model.reactions), len(model.genes))
-    )
+    rxn_gene = scipy_sparse.dok_matrix((len(model.reactions), len(model.genes)))
     if min(rxn_gene.shape) > 0:
         for i, reaction in enumerate(model.reactions):
             for gene in reaction.genes:
@@ -207,9 +197,7 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
     for i, name in enumerate(m["mets"][0, 0]):
         new_metabolite = Metabolite()
         new_metabolite.id = str(name[0][0])
-        if all(
-            var in m.dtype.names for var in ["metComps", "comps", "compNames"]
-        ):
+        if all(var in m.dtype.names for var in ["metComps", "comps", "compNames"]):
             comp_index = m["metComps"][0, 0][i][0] - 1
             new_metabolite.compartment = m["comps"][0, 0][comp_index][0][0]
             if new_metabolite.compartment not in model.compartments:

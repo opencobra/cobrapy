@@ -52,8 +52,10 @@ def add_mip_obj(model):
         The model to modify.
     """
     if len(model.variables) > 1e4:
-        LOGGER.warning("the MIP version of minimal media is extremely slow for"
-                       " models that large :(")
+        LOGGER.warning(
+            "the MIP version of minimal media is extremely slow for"
+            " models that large :("
+        )
     exchange_rxns = find_boundary_types(model, "exchange")
     big_m = max(abs(b) for r in exchange_rxns for b in r.bounds)
     prob = model.problem
@@ -65,11 +67,13 @@ def add_mip_obj(model):
         if export:
             vrv = rxn.reverse_variable
             indicator_const = prob.Constraint(
-                vrv - indicator * big_m, ub=0, name="ind_constraint_" + rxn.id)
+                vrv - indicator * big_m, ub=0, name="ind_constraint_" + rxn.id
+            )
         else:
             vfw = rxn.forward_variable
             indicator_const = prob.Constraint(
-                vfw - indicator * big_m, ub=0, name="ind_constraint_" + rxn.id)
+                vfw - indicator * big_m, ub=0, name="ind_constraint_" + rxn.id
+            )
         to_add.extend([indicator, indicator_const])
         coefs[indicator] = 1
     model.add_cons_vars(to_add)
@@ -113,8 +117,13 @@ def _as_medium(exchanges, tolerance=1e-6, exports=False):
     return medium
 
 
-def minimal_medium(model, min_objective_value=0.1, exports=False,
-                   minimize_components=False, open_exchanges=False):
+def minimal_medium(
+    model,
+    min_objective_value=0.1,
+    exports=False,
+    minimize_components=False,
+    open_exchanges=False,
+):
     """
     Find the minimal growth medium for the model.
 
@@ -174,14 +183,15 @@ def minimal_medium(model, min_objective_value=0.1, exports=False,
 
     with model as mod:
         if open_exchanges:
-            LOGGER.debug("Opening exchanges for %d imports.",
-                         len(exchange_rxns))
+            LOGGER.debug("Opening exchanges for %d imports.", len(exchange_rxns))
             for rxn in exchange_rxns:
                 rxn.bounds = (-open_bound, open_bound)
         LOGGER.debug("Applying objective value constraints.")
         obj_const = mod.problem.Constraint(
-            mod.objective.expression, lb=min_objective_value,
-            name="medium_obj_constraint")
+            mod.objective.expression,
+            lb=min_objective_value,
+            name="medium_obj_constraint",
+        )
         mod.add_cons_vars([obj_const])
         mod.solver.update()
         mod.objective = Zero
@@ -206,8 +216,7 @@ def minimal_medium(model, min_objective_value=0.1, exports=False,
                 LOGGER.info("Finding alternative medium #%d.", (i + 1))
                 vars = [mod.variables["ind_" + s] for s in seen]
                 if len(seen) > 0:
-                    exclusion.set_linear_coefficients(
-                        dict.fromkeys(vars, 1))
+                    exclusion.set_linear_coefficients(dict.fromkeys(vars, 1))
                     exclusion.ub = best - 1
                 num_components = mod.slim_optimize()
                 if mod.solver.status != OPTIMAL or num_components > best:

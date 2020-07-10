@@ -25,25 +25,38 @@ def compare_models(model_1, model_2):
     assert model_1.objective.direction == model_2.objective.direction
 
     # check Reaction attributes
-    for attr in ("id", "name", "lower_bound", "upper_bound",
-                 "objective_coefficient", "gene_reaction_rule"):
+    for attr in (
+        "id",
+        "name",
+        "lower_bound",
+        "upper_bound",
+        "objective_coefficient",
+        "gene_reaction_rule",
+    ):
         assert getattr(model_1.reactions[0], attr) == getattr(
-            model_2.reactions[0], attr)
+            model_2.reactions[0], attr
+        )
         assert getattr(model_1.reactions[5], attr) == getattr(
-            model_2.reactions[5], attr)
+            model_2.reactions[5], attr
+        )
         assert getattr(model_1.reactions[-1], attr) == getattr(
-            model_2.reactions[-1], attr)
+            model_2.reactions[-1], attr
+        )
 
     # check Metabolite attributes
     for attr in ("id", "name", "compartment", "formula", "charge"):
         assert getattr(model_1.metabolites[0], attr) == getattr(
-            model_2.metabolites[0], attr)
+            model_2.metabolites[0], attr
+        )
         assert getattr(model_1.metabolites[5], attr) == getattr(
-            model_2.metabolites[5], attr)
+            model_2.metabolites[5], attr
+        )
         assert getattr(model_1.metabolites[-1], attr) == getattr(
-            model_2.metabolites[-1], attr)
+            model_2.metabolites[-1], attr
+        )
         assert len(model_1.reactions[0].metabolites) == len(
-            model_2.reactions[0].metabolites)
+            model_2.reactions[0].metabolites
+        )
     # TODO: either relax gene attribute checking or fix models for testing.
     # check Gene attributes
     # for attr in ("id", "name"):
@@ -55,16 +68,19 @@ def compare_models(model_1, model_2):
     #                                                        attr)
 
     assert len(model_1.reactions[8].metabolites) == len(
-        model_2.reactions[8].metabolites)
+        model_2.reactions[8].metabolites
+    )
     assert len(model_1.reactions[-1].metabolites) == len(
-        model_2.reactions[-1].metabolites)
+        model_2.reactions[-1].metabolites
+    )
     assert len(model_1.genes) == len(model_2.genes)
 
     # ensure they have the same solution max
     solution_1 = model_1.optimize()
     solution_2 = model_2.optimize()
-    assert abs(solution_1.objective_value -
-               solution_2.objective_value) == pytest.approx(0.0)
+    assert abs(
+        solution_1.objective_value - solution_2.objective_value
+    ) == pytest.approx(0.0)
 
     # ensure the references are correct
     # metabolite -> model reference

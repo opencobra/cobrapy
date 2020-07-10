@@ -10,13 +10,13 @@ def test_load_json_model_valid(data_directory, tmp_path):
     path_to_file = join(data_directory, "valid_annotation_format.json")
     model = load_json_model(path_to_file)
     expected = {
-        'bigg.reaction': [['is', 'PFK26']],
-        'kegg.reaction': [['is', 'R02732']],
-        'rhea': [['is', '15656']]
+        "bigg.reaction": [["is", "PFK26"]],
+        "kegg.reaction": [["is", "R02732"]],
+        "rhea": [["is", "15656"]],
     }
     for metabolite in model.metabolites:
         assert metabolite.annotation == expected
-    path_to_output = join(str(tmp_path), 'valid_annotation_output.xml')
+    path_to_output = join(str(tmp_path), "valid_annotation_output.xml")
     write_sbml_model(model, path_to_output)
 
 

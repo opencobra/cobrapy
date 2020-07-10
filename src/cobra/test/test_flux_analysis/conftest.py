@@ -16,17 +16,18 @@ from cobra.util import solver as sutil
 # solutions.
 
 
-@pytest.fixture(scope="session",
-                params=[s for s in ["glpk", "cplex", "gurobi"]
-                        if s in sutil.solvers])
+@pytest.fixture(
+    scope="session",
+    params=[s for s in ["glpk", "cplex", "gurobi"] if s in sutil.solvers],
+)
 def all_solvers(request):
     """Return the avaialble solvers."""
     return request.param
 
 
-@pytest.fixture(scope="session",
-                params=[s for s in ["cplex", "gurobi"]
-                        if s in sutil.solvers])
+@pytest.fixture(
+    scope="session", params=[s for s in ["cplex", "gurobi"] if s in sutil.solvers]
+)
 def qp_solvers(request):
     """Return the available QP solvers."""
     return request.param
@@ -68,7 +69,7 @@ def room_model():
     b_2.reaction = "E ->"
     b_3.reaction = "byp ->"
 
-    test_model.objective = 'b2'
+    test_model.objective = "b2"
 
     return test_model
 
@@ -85,16 +86,50 @@ def room_solution():
      PNAS 2005 102 (21) 7695-7700; doi:10.1073/pnas.0406346102
 
     """
-    fluxes = Series({'b1': 10.0, 'b2': 5.0, 'b3': 5.0, 'v1': 10.0, 'v2': 5.0,
-                     'v3': 0.0, 'v4': 0.0, 'v5': 0.0, 'v6': 5.0})
-    reduced_costs = Series({'b1': 0.0, 'b2': 0.0, 'b3': 0.0, 'v1': 0.0,
-                            'v2': 0.0, 'v3': 0.0, 'v4': 0.0, 'v5': 0.0,
-                            'v6': 0.0})
-    shadow_prices = Series({'b1': 0.0, 'b2': 0.0, 'b3': 0.0, 'v1': 0.0,
-                            'v2': 0.0, 'v3': 0.0, 'v4': 0.0, 'v5': 0.0,
-                            'v6': 0.0})
-    sol = Solution(objective_value=5.000, status='optimal',
-                   fluxes=fluxes,
-                   reduced_costs=reduced_costs,
-                   shadow_prices=shadow_prices)
+    fluxes = Series(
+        {
+            "b1": 10.0,
+            "b2": 5.0,
+            "b3": 5.0,
+            "v1": 10.0,
+            "v2": 5.0,
+            "v3": 0.0,
+            "v4": 0.0,
+            "v5": 0.0,
+            "v6": 5.0,
+        }
+    )
+    reduced_costs = Series(
+        {
+            "b1": 0.0,
+            "b2": 0.0,
+            "b3": 0.0,
+            "v1": 0.0,
+            "v2": 0.0,
+            "v3": 0.0,
+            "v4": 0.0,
+            "v5": 0.0,
+            "v6": 0.0,
+        }
+    )
+    shadow_prices = Series(
+        {
+            "b1": 0.0,
+            "b2": 0.0,
+            "b3": 0.0,
+            "v1": 0.0,
+            "v2": 0.0,
+            "v3": 0.0,
+            "v4": 0.0,
+            "v5": 0.0,
+            "v6": 0.0,
+        }
+    )
+    sol = Solution(
+        objective_value=5.000,
+        status="optimal",
+        fluxes=fluxes,
+        reduced_costs=reduced_costs,
+        shadow_prices=shadow_prices,
+    )
     return sol

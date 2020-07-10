@@ -82,15 +82,22 @@ class GapFiller(object):
        [5] Diener, Christian https://github.com/cdiener/corda
      """
 
-    def __init__(self, model, universal=None, lower_bound=0.05,
-                 penalties=None, exchange_reactions=False,
-                 demand_reactions=True, integer_threshold=1e-6):
+    def __init__(
+        self,
+        model,
+        universal=None,
+        lower_bound=0.05,
+        penalties=None,
+        exchange_reactions=False,
+        demand_reactions=True,
+        integer_threshold=1e-6,
+    ):
         self.original_model = model
         self.lower_bound = lower_bound
         self.model = model.copy()
         tolerances = self.model.solver.configuration.tolerances
         tolerances.integrality = integer_threshold
-        self.universal = universal.copy() if universal else Model('universal')
+        self.universal = universal.copy() if universal else Model("universal")
         self.penalties = dict(universal=1, exchange=100, demand=1)
         if penalties is not None:
             self.penalties.update(penalties)
@@ -117,29 +124,38 @@ class GapFiller(object):
             Consider adding demand reactions for all metabolites.
         """
         for rxn in self.universal.reactions:
-            rxn.gapfilling_type = 'universal'
+            rxn.gapfilling_type = "universal"
         new_metabolites = self.universal.metabolites.query(
             lambda metabolite: metabolite not in self.model.metabolites
-                                                           )
+        )
         self.model.add_metabolites(new_metabolites)
         existing_exchanges = []
         for rxn in self.universal.boundary:
-            existing_exchanges = existing_exchanges + \
-                [met.id for met in list(rxn.metabolites)]
+            existing_exchanges = existing_exchanges + [
+                met.id for met in list(rxn.metabolites)
+            ]
 
         for met in self.model.metabolites:
             if exchange_reactions:
                 # check for exchange reaction in model already
                 if met.id not in existing_exchanges:
                     rxn = self.universal.add_boundary(
-                        met, type='exchange_smiley', lb=-1000, ub=0,
-                        reaction_id='EX_{}'.format(met.id))
-                    rxn.gapfilling_type = 'exchange'
+                        met,
+                        type="exchange_smiley",
+                        lb=-1000,
+                        ub=0,
+                        reaction_id="EX_{}".format(met.id),
+                    )
+                    rxn.gapfilling_type = "exchange"
             if demand_reactions:
                 rxn = self.universal.add_boundary(
-                    met, type='demand_smiley', lb=0, ub=1000,
-                    reaction_id='DM_{}'.format(met.id))
-                rxn.gapfilling_type = 'demand'
+                    met,
+                    type="demand_smiley",
+                    lb=0,
+                    ub=1000,
+                    reaction_id="DM_{}".format(met.id),
+                )
+                rxn.gapfilling_type = "demand"
 
         new_reactions = self.universal.reactions.query(
             lambda reaction: reaction not in self.model.reactions
@@ -165,14 +181,14 @@ class GapFiller(object):
         """ Update gapfilling model with switches and the indicator objective.
         """
         constraints = list()
-        big_m = max(max(abs(b) for b in r.bounds)
-                    for r in self.model.reactions)
+        big_m = max(max(abs(b) for b in r.bounds) for r in self.model.reactions)
         prob = self.model.problem
         for rxn in self.model.reactions:
-            if not hasattr(rxn, 'gapfilling_type'):
+            if not hasattr(rxn, "gapfilling_type"):
                 continue
             indicator = prob.Variable(
-                name='indicator_{}'.format(rxn.id), lb=0, ub=1, type='binary')
+                name="indicator_{}".format(rxn.id), lb=0, ub=1, type="binary"
+            )
             if rxn.id in self.penalties:
                 indicator.cost = self.penalties[rxn.id]
             else:
@@ -183,20 +199,24 @@ class GapFiller(object):
             # if z = 1 v_i is allowed non-zero
             # v_i - Mz <= 0   and   v_i + Mz >= 0
             constraint_lb = prob.Constraint(
-                rxn.flux_expression - big_m * indicator, ub=0,
-                name='constraint_lb_{}'.format(rxn.id), sloppy=True)
+                rxn.flux_expression - big_m * indicator,
+                ub=0,
+                name="constraint_lb_{}".format(rxn.id),
+                sloppy=True,
+            )
             constraint_ub = prob.Constraint(
-                rxn.flux_expression + big_m * indicator, lb=0,
-                name='constraint_ub_{}'.format(rxn.id), sloppy=True)
+                rxn.flux_expression + big_m * indicator,
+                lb=0,
+                name="constraint_ub_{}".format(rxn.id),
+                sloppy=True,
+            )
 
             constraints.extend([constraint_lb, constraint_ub])
 
         self.model.add_cons_vars(self.indicators)
         self.model.add_cons_vars(constraints, sloppy=True)
-        self.model.objective = prob.Objective(
-            Zero, direction='min', sloppy=True)
-        self.model.objective.set_linear_coefficients({
-            i: 1 for i in self.indicators})
+        self.model.objective = prob.Objective(Zero, direction="min", sloppy=True)
+        self.model.objective.set_linear_coefficients({i: 1 for i in self.indicators})
         self.update_costs()
 
     def fill(self, iterations=1):
@@ -230,14 +250,19 @@ class GapFiller(object):
         """
         used_reactions = list()
         for i in range(iterations):
-            self.model.slim_optimize(error_value=None,
-                                     message='gapfilling optimization failed')
-            solution = [self.model.reactions.get_by_id(ind.rxn_id)
-                        for ind in self.indicators if
-                        ind._get_primal() > self.integer_threshold]
+            self.model.slim_optimize(
+                error_value=None, message="gapfilling optimization failed"
+            )
+            solution = [
+                self.model.reactions.get_by_id(ind.rxn_id)
+                for ind in self.indicators
+                if ind._get_primal() > self.integer_threshold
+            ]
             if not self.validate(solution):
-                raise RuntimeError('failed to validate gapfilled model, '
-                                   'try lowering the integer_threshold')
+                raise RuntimeError(
+                    "failed to validate gapfilled model, "
+                    "try lowering the integer_threshold"
+                )
             used_reactions.append(solution)
             self.update_costs()
         return used_reactions
@@ -249,13 +274,21 @@ class GapFiller(object):
             model.add_metabolites(all_keys)
             model.add_reactions(reactions)
             model.slim_optimize()
-            return (model.solver.status == OPTIMAL and
-                    model.solver.objective.value >= self.lower_bound)
+            return (
+                model.solver.status == OPTIMAL
+                and model.solver.objective.value >= self.lower_bound
+            )
 
 
-def gapfill(model, universal=None, lower_bound=0.05,
-            penalties=None, demand_reactions=True, exchange_reactions=False,
-            iterations=1):
+def gapfill(
+    model,
+    universal=None,
+    lower_bound=0.05,
+    penalties=None,
+    demand_reactions=True,
+    exchange_reactions=False,
+    iterations=1,
+):
     """Perform gapfilling on a model.
 
     See documentation for the class GapFiller.
@@ -307,8 +340,12 @@ import cobra as ct
     >>> model.remove_reactions([model.reactions.GF6PTA])
     >>> gapfill(model, universal)
     """
-    gapfiller = GapFiller(model, universal=universal,
-                          lower_bound=lower_bound, penalties=penalties,
-                          demand_reactions=demand_reactions,
-                          exchange_reactions=exchange_reactions)
+    gapfiller = GapFiller(
+        model,
+        universal=universal,
+        lower_bound=lower_bound,
+        penalties=penalties,
+        demand_reactions=demand_reactions,
+        exchange_reactions=exchange_reactions,
+    )
     return gapfiller.fill(iterations=iterations)

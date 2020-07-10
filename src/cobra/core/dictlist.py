@@ -77,6 +77,7 @@ class DictList(list):
         list
             a list of members
         """
+
         def get_item(item):
             if isinstance(item, int):
                 return self[item]
@@ -121,6 +122,7 @@ class DictList(list):
         >>> regex = re.compile('^g', flags=re.IGNORECASE)
         >>> model.metabolites.query(regex, attribute='name')
         """
+
         def select_attribute(x):
             if attribute is None:
                 return x
@@ -133,18 +135,17 @@ class DictList(list):
 
             if attribute is not None:
                 matches = (
-                    i for i in self if
-                    regex_searcher.findall(select_attribute(i)) != [])
+                    i for i in self if regex_searcher.findall(select_attribute(i)) != []
+                )
 
             else:
                 # Don't regex on objects
                 matches = (
-                    i for i in self if
-                    regex_searcher.findall(getattr(i, 'id')) != [])
+                    i for i in self if regex_searcher.findall(getattr(i, "id")) != []
+                )
 
         except TypeError:
-            matches = (
-                i for i in self if search_function(select_attribute(i)))
+            matches = (i for i in self if search_function(select_attribute(i)))
 
         results = self.__class__()
         results._extend_nocheck(matches)
@@ -184,8 +185,7 @@ class DictList(list):
         _dict = self._dict
         current_length = len(self)
         list.extend(self, iterable)
-        for i, obj in enumerate(islice(self, current_length, None),
-                                current_length):
+        for i, obj in enumerate(islice(self, current_length, None), current_length):
             the_id = obj.id
             if the_id not in _dict:
                 _dict[the_id] = i
@@ -195,8 +195,10 @@ class DictList(list):
                 self._check(the_id)
                 # if the above succeeded, then the id must be present
                 # twice in the list being added
-                raise ValueError("id '%s' at index %d is non-unique. "
-                                 "Is it present twice?" % (str(the_id), i))
+                raise ValueError(
+                    "id '%s' at index %d is non-unique. "
+                    "Is it present twice?" % (str(the_id), i)
+                )
 
     def _extend_nocheck(self, iterable):
         """extends without checking for uniqueness
@@ -213,8 +215,7 @@ class DictList(list):
         if current_length is 0:
             self._generate_index()
             return
-        for i, obj in enumerate(islice(self, current_length, None),
-                                current_length):
+        for i, obj in enumerate(islice(self, current_length, None), current_length):
             _dict[obj.id] = i
 
     def __sub__(self, other):
@@ -307,7 +308,8 @@ class DictList(list):
             i = self._dict[id.id]
             if self[i] is not id:
                 raise ValueError(
-                    "Another object with the identical id (%s) found" % id.id)
+                    "Another object with the identical id (%s) found" % id.id
+                )
             return i
         except KeyError:
             raise ValueError("%s not found" % str(id))
@@ -379,8 +381,10 @@ class DictList(list):
 
         """
         if key is None:
+
             def key(i):
                 return i.id
+
         if PY3:
             list.sort(self, key=key, reverse=reverse)
         else:
@@ -450,8 +454,7 @@ class DictList(list):
         try:
             return DictList.get_by_id(self, attr)
         except KeyError:
-            raise AttributeError("DictList has no attribute or entry %s" %
-                                 attr)
+            raise AttributeError("DictList has no attribute or entry %s" % attr)
 
     def __dir__(self):
         # override this to allow tab complete of items by their id

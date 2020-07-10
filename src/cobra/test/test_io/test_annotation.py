@@ -49,11 +49,20 @@ def _check_sbml_annotations(model):
     # 'seed.compound': 'cpd00203', 'hmdb': ['HMDB62758', 'HMDB06213'],
     # 'biocyc': 'META:DPG'}
     annotation = model.metabolites.A.annotation
-    for key in ["inchi", "bigg.metabolite", "chebi", "metanetx.chemical",
-                "kegg.compound", "seed.compound", "hmdb", "biocyc"]:
+    for key in [
+        "inchi",
+        "bigg.metabolite",
+        "chebi",
+        "metanetx.chemical",
+        "kegg.compound",
+        "seed.compound",
+        "hmdb",
+        "biocyc",
+    ]:
         assert key in annotation
-    assert annotation[
-               "inchi"] == "InChI=1S/C3H8O2/c1-3(5)2-4/h3-5H,2H2,1H3/t3-/m0/s1"  # noqa: E501
+    assert (
+        annotation["inchi"] == "InChI=1S/C3H8O2/c1-3(5)2-4/h3-5H,2H2,1H3/t3-/m0/s1"
+    )  # noqa: E501
 
     # reaction annotation
     # {'kegg.reaction': 'R00228', 'sbo': 'SBO:0000375',
@@ -61,10 +70,17 @@ def _check_sbml_annotations(model):
     # 'metanetx.reaction': 'MNXR95210', 'bigg.reaction': 'ACALD',
     # 'biocyc': 'META:ACETALD-DEHYDROG-RXN'}
     annotation = model.reactions.R1.annotation
-    for key in ["kegg.reaction", "sbo", "ec-code", "rhea",
-                "metanetx.reaction", "bigg.reaction", "biocyc"]:
+    for key in [
+        "kegg.reaction",
+        "sbo",
+        "ec-code",
+        "rhea",
+        "metanetx.reaction",
+        "bigg.reaction",
+        "biocyc",
+    ]:
         assert key in annotation
-    assert annotation["biocyc"] == 'META:ACETALD-DEHYDROG-RXN'
+    assert annotation["biocyc"] == "META:ACETALD-DEHYDROG-RXN"
 
 
 def test_read_sbml_annotations(data_directory):

@@ -30,20 +30,19 @@ def _reactions_knockouts_with_restore(model, reactions):
 
 def _get_growth(model):
     try:
-        if 'moma_old_objective' in model.solver.variables:
+        if "moma_old_objective" in model.solver.variables:
             model.slim_optimize()
             growth = model.solver.variables.moma_old_objective.primal
         else:
             growth = model.slim_optimize()
     except SolverError:
-        growth = float('nan')
+        growth = float("nan")
     return growth
 
 
 def _reaction_deletion(model, ids):
     return _reactions_knockouts_with_restore(
-        model,
-        [model.reactions.get_by_id(r_id) for r_id in ids]
+        model, [model.reactions.get_by_id(r_id) for r_id in ids]
     )
 
 
@@ -51,9 +50,7 @@ def _gene_deletion(model, ids):
     all_reactions = []
     for g_id in ids:
         all_reactions.extend(
-            find_gene_knockout_reactions(
-                model, (model.genes.get_by_id(g_id),)
-            )
+            find_gene_knockout_reactions(model, (model.genes.get_by_id(g_id),))
         )
     _, growth, status = _reactions_knockouts_with_restore(model, all_reactions)
     return (ids, growth, status)
@@ -74,8 +71,9 @@ def _init_worker(model):
     _model = model
 
 
-def _multi_deletion(model, entity, element_lists, method="fba",
-                    solution=None, processes=None, **kwargs):
+def _multi_deletion(
+    model, entity, element_lists, method="fba", solution=None, processes=None, **kwargs
+):
     """
     Provide a common interface for single or multiple knockouts.
 
@@ -116,7 +114,8 @@ def _multi_deletion(model, entity, element_lists, method="fba",
     if method == "moma" and solver not in sutil.qp_solvers:
         raise RuntimeError(
             "Cannot use MOMA since '{}' is not QP-capable."
-            "Please choose a different solver or use FBA only.".format(solver))
+            "Please choose a different solver or use FBA only.".format(solver)
+        )
 
     if processes is None:
         processes = CONFIGURATION.processes
@@ -125,39 +124,38 @@ def _multi_deletion(model, entity, element_lists, method="fba",
         if "moma" in method:
             add_moma(model, solution=solution, linear="linear" in method)
         elif "room" in method:
-            add_room(model, solution=solution, linear="linear" in method,
-                     **kwargs)
+            add_room(model, solution=solution, linear="linear" in method, **kwargs)
 
         args = set([frozenset(comb) for comb in product(*element_lists)])
         processes = min(processes, len(args))
 
         def extract_knockout_results(result_iter):
-            result = pd.DataFrame([
-                (frozenset(ids), growth, status)
-                for (ids, growth, status) in result_iter
-            ], columns=['ids', 'growth', 'status'])
-            result.set_index('ids', inplace=True)
+            result = pd.DataFrame(
+                [
+                    (frozenset(ids), growth, status)
+                    for (ids, growth, status) in result_iter
+                ],
+                columns=["ids", "growth", "status"],
+            )
+            result.set_index("ids", inplace=True)
             return result
 
         if processes > 1:
-            worker = dict(gene=_gene_deletion_worker,
-                          reaction=_reaction_deletion_worker)[entity]
+            worker = dict(
+                gene=_gene_deletion_worker, reaction=_reaction_deletion_worker
+            )[entity]
             chunk_size = len(args) // processes
             pool = multiprocessing.Pool(
                 processes, initializer=_init_worker, initargs=(model,)
             )
-            results = extract_knockout_results(pool.imap_unordered(
-                worker,
-                args,
-                chunksize=chunk_size
-            ))
+            results = extract_knockout_results(
+                pool.imap_unordered(worker, args, chunksize=chunk_size)
+            )
             pool.close()
             pool.join()
         else:
-            worker = dict(gene=_gene_deletion,
-                          reaction=_reaction_deletion)[entity]
-            results = extract_knockout_results(map(
-                partial(worker, model), args))
+            worker = dict(gene=_gene_deletion, reaction=_reaction_deletion)[entity]
+            results = extract_knockout_results(map(partial(worker, model), args))
         return results
 
 
@@ -181,8 +179,9 @@ def _element_lists(entities, *ids):
     return result
 
 
-def single_reaction_deletion(model, reaction_list=None, method="fba",
-                             solution=None, processes=None, **kwargs):
+def single_reaction_deletion(
+    model, reaction_list=None, method="fba", solution=None, processes=None, **kwargs
+):
     """
     Knock out each reaction from a given list.
 
@@ -220,13 +219,19 @@ def single_reaction_deletion(model, reaction_list=None, method="fba",
 
     """
     return _multi_deletion(
-        model, 'reaction',
+        model,
+        "reaction",
         element_lists=_element_lists(model.reactions, reaction_list),
-        method=method, solution=solution, processes=processes, **kwargs)
+        method=method,
+        solution=solution,
+        processes=processes,
+        **kwargs
+    )
 
 
-def single_gene_deletion(model, gene_list=None, method="fba", solution=None,
-                         processes=None, **kwargs):
+def single_gene_deletion(
+    model, gene_list=None, method="fba", solution=None, processes=None, **kwargs
+):
     """
     Knock out each gene from a given list.
 
@@ -264,13 +269,25 @@ def single_gene_deletion(model, gene_list=None, method="fba", solution=None,
 
     """
     return _multi_deletion(
-        model, 'gene', element_lists=_element_lists(model.genes, gene_list),
-        method=method, solution=solution, processes=processes, **kwargs)
+        model,
+        "gene",
+        element_lists=_element_lists(model.genes, gene_list),
+        method=method,
+        solution=solution,
+        processes=processes,
+        **kwargs
+    )
 
 
-def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
-                             method="fba", solution=None, processes=None,
-                             **kwargs):
+def double_reaction_deletion(
+    model,
+    reaction_list1=None,
+    reaction_list2=None,
+    method="fba",
+    solution=None,
+    processes=None,
+    **kwargs
+):
     """
     Knock out each reaction pair from the combinations of two given lists.
 
@@ -313,16 +330,29 @@ def double_reaction_deletion(model, reaction_list1=None, reaction_list2=None,
 
     """
 
-    reaction_list1, reaction_list2 = _element_lists(model.reactions,
-                                                    reaction_list1,
-                                                    reaction_list2)
+    reaction_list1, reaction_list2 = _element_lists(
+        model.reactions, reaction_list1, reaction_list2
+    )
     return _multi_deletion(
-        model, 'reaction', element_lists=[reaction_list1, reaction_list2],
-        method=method, solution=solution, processes=processes, **kwargs)
+        model,
+        "reaction",
+        element_lists=[reaction_list1, reaction_list2],
+        method=method,
+        solution=solution,
+        processes=processes,
+        **kwargs
+    )
 
 
-def double_gene_deletion(model, gene_list1=None, gene_list2=None, method="fba",
-                         solution=None, processes=None, **kwargs):
+def double_gene_deletion(
+    model,
+    gene_list1=None,
+    gene_list2=None,
+    method="fba",
+    solution=None,
+    processes=None,
+    **kwargs
+):
     """
     Knock out each gene pair from the combination of two given lists.
 
@@ -365,8 +395,13 @@ def double_gene_deletion(model, gene_list1=None, gene_list2=None, method="fba",
 
     """
 
-    gene_list1, gene_list2 = _element_lists(model.genes, gene_list1,
-                                            gene_list2)
+    gene_list1, gene_list2 = _element_lists(model.genes, gene_list1, gene_list2)
     return _multi_deletion(
-        model, 'gene', element_lists=[gene_list1, gene_list2],
-        method=method, solution=solution, processes=processes, **kwargs)
+        model,
+        "gene",
+        element_lists=[gene_list1, gene_list2],
+        method=method,
+        solution=solution,
+        processes=processes,
+        **kwargs
+    )

@@ -34,12 +34,14 @@ def test_room_sanity(model, all_solvers):
     flux_change_room_ref = (sol.fluxes - room_sol_ref.fluxes).abs().sum()
     # Expect the ROOM solution to have smaller flux changes in
     # reactions compared to a normal FBA.
-    assert flux_change_room < flux_change or \
-        np.isclose(flux_change_room, flux_change, atol=1E-06)
+    assert flux_change_room < flux_change or np.isclose(
+        flux_change_room, flux_change, atol=1e-06
+    )
     # Expect the FBA-based reference to have less change in
     # flux distribution.
-    assert flux_change_room_ref > flux_change_room or \
-        np.isclose(flux_change_room_ref, flux_change_room, atol=1E-06)
+    assert flux_change_room_ref > flux_change_room or np.isclose(
+        flux_change_room_ref, flux_change_room, atol=1e-06
+    )
 
 
 def test_linear_room_sanity(model, all_solvers):
@@ -67,9 +69,11 @@ def test_linear_room_sanity(model, all_solvers):
     flux_change_room_ref = (sol.fluxes - room_sol_ref.fluxes).abs().sum()
     # Expect the ROOM solution to have smaller flux changes in
     # reactions compared to a normal FBA.
-    assert flux_change_room < flux_change or \
-        np.isclose(flux_change_room, flux_change, atol=1E-06)
+    assert flux_change_room < flux_change or np.isclose(
+        flux_change_room, flux_change, atol=1e-06
+    )
     # Expect the FBA-based reference to have less change in
     # flux distribution.
-    assert flux_change_room_ref > flux_change_room or \
-        np.isclose(flux_change_room_ref, flux_change_room, atol=1E-06)
+    assert flux_change_room_ref > flux_change_room or np.isclose(
+        flux_change_room_ref, flux_change_room, atol=1e-06
+    )

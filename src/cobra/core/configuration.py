@@ -52,7 +52,7 @@ class BaseConfiguration(object):
 
     def __init__(self):
         self._solver = None
-        self.tolerance = 1E-07
+        self.tolerance = 1e-07
         self.lower_bound = None
         self.upper_bound = None
 
@@ -70,8 +70,7 @@ class BaseConfiguration(object):
         try:
             self.processes = cpu_count()
         except NotImplementedError:
-            LOGGER.warning(
-                "The number of cores could not be detected - assuming 1.")
+            LOGGER.warning("The number of cores could not be detected - assuming 1.")
             self.processes = 1
 
     @property
@@ -82,12 +81,14 @@ class BaseConfiguration(object):
     def solver(self, value):
         not_valid_interface = SolverNotFound(
             "'{}' is not a valid solver interface. Pick one from {}.".format(
-                value, ", ".join(list(solvers))))
+                value, ", ".join(list(solvers))
+            )
+        )
         if isinstance(value, string_types):
             if value not in solvers:
                 raise not_valid_interface
             interface = solvers[value]
-        elif isinstance(value, types.ModuleType) and hasattr(value, 'Model'):
+        elif isinstance(value, types.ModuleType) and hasattr(value, "Model"):
             interface = value
         else:
             raise not_valid_interface

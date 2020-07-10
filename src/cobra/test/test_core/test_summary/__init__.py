@@ -22,22 +22,19 @@ def captured_output():
         sys.stdout, sys.stderr = old_out, old_err
 
 
-def check_line(output, expected_entries,
-               pattern=re.compile(r"\s")):
+def check_line(output, expected_entries, pattern=re.compile(r"\s")):
     """Ensure each expected entry is in the output."""
-    output_set = set(
-        pattern.sub("", line) for line in output.splitlines())
+    output_set = set(pattern.sub("", line) for line in output.splitlines())
     for elem in expected_entries:
         assert pattern.sub("", elem) in output_set
 
 
-def check_in_line(output, expected_entries,
-                  pattern=re.compile(r"\s")):
+def check_in_line(output, expected_entries, pattern=re.compile(r"\s")):
     """Ensure each expected entry is contained in the output."""
-    output_strip = [pattern.sub("", line) for line in
-                    output.splitlines()]
+    output_strip = [pattern.sub("", line) for line in output.splitlines()]
     for elem in expected_entries:
         assert any(
-            pattern.sub("", elem) in line for line in output_strip), \
-            "Not found: {} in:\n{}".format(pattern.sub("", elem),
-                                           "\n".join(output_strip))
+            pattern.sub("", elem) in line for line in output_strip
+        ), "Not found: {} in:\n{}".format(
+            pattern.sub("", elem), "\n".join(output_strip)
+        )

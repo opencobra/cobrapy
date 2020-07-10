@@ -93,7 +93,7 @@ def test_figure1(figure1_model, all_solvers):
     """Test fastcc."""
     figure1_model.solver = all_solvers
     consistent_model = fastcc(figure1_model)
-    expected_reactions = {'v1', 'v3', 'v4', 'v5', 'v6'}
+    expected_reactions = {"v1", "v3", "v4", "v5", "v6"}
     assert expected_reactions == {rxn.id for rxn in consistent_model.reactions}
 
 
@@ -101,7 +101,7 @@ def test_opposing(opposing_model, all_solvers):
     """Test fastcc."""
     opposing_model.solver = all_solvers
     consistent_model = fastcc(opposing_model)
-    expected_reactions = {'v1', 'v2', 'v3', 'v4'}
+    expected_reactions = {"v1", "v2", "v3", "v4"}
     assert expected_reactions == {rxn.id for rxn in consistent_model.reactions}
 
 
@@ -113,8 +113,6 @@ def test_fastcc_against_fva_nonblocked_rxns(model, all_solvers):
 
     fva = flux_variability_analysis(model, fraction_of_optimum=0.0)
     nonblocked_rxns_fva = fva.index[
-        (fva.minimum.abs() > model.tolerance) |
-        (fva.maximum.abs() > model.tolerance)
+        (fva.minimum.abs() > model.tolerance) | (fva.maximum.abs() > model.tolerance)
     ]
-    assert all(fastcc_consistent_model.reactions) == \
-        all(nonblocked_rxns_fva.tolist())
+    assert all(fastcc_consistent_model.reactions) == all(nonblocked_rxns_fva.tolist())

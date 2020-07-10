@@ -21,10 +21,12 @@ except ImportError:
 
 def pytest_addoption(parser):
     try:
-        parser.addoption("--run-slow", action="store_true",
-                         help="run slow tests")
-        parser.addoption("--run-non-deterministic", action="store_true",
-                         help="run tests that sometimes (rarely) fail")
+        parser.addoption("--run-slow", action="store_true", help="run slow tests")
+        parser.addoption(
+            "--run-non-deterministic",
+            action="store_true",
+            help="run tests that sometimes (rarely) fail",
+        )
     except ValueError:
         pass
 
@@ -77,8 +79,7 @@ def salmonella(medium_model):
 @pytest.fixture(scope="function")
 def solved_model(data_directory):
     model = create_test_model("textbook")
-    with open(join(data_directory, "textbook_solution.pickle"),
-              "rb") as infile:
+    with open(join(data_directory, "textbook_solution.pickle"), "rb") as infile:
         solution = _load(infile)
     return solution, model
 
@@ -92,7 +93,7 @@ def tiny_toy_model():
     d1.upper_bound = 0
     d1.lower_bound = -1000
     tiny.add_reactions([d1])
-    tiny.objective = 'ex1'
+    tiny.objective = "ex1"
     return tiny
 
 
@@ -113,8 +114,7 @@ def pfba_fva_results(data_directory):
 
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
-all_solvers = ["optlang-" + s for s in stable_optlang if
-               s in sutil.solvers]
+all_solvers = ["optlang-" + s for s in stable_optlang if s in sutil.solvers]
 
 
 @pytest.fixture(params=all_solvers, scope="session")
@@ -126,15 +126,21 @@ def opt_solver(request):
 def metabolites(model, request):
     if request.param == "exchange":
         return [
-            met for met in model.metabolites if
-            met.compartment == 'e' and "EX_" + met.id not in model.reactions]
+            met
+            for met in model.metabolites
+            if met.compartment == "e" and "EX_" + met.id not in model.reactions
+        ]
     elif request.param == "demand":
         return [
-            met for met in model.metabolites if
-            met.compartment == 'c' and "DM_" + met.id not in model.reactions]
+            met
+            for met in model.metabolites
+            if met.compartment == "c" and "DM_" + met.id not in model.reactions
+        ]
     elif request.param == "sink":
         return [
-            met for met in model.metabolites if
-            met.compartment == 'c' and "SK_" + met.id not in model.reactions]
+            met
+            for met in model.metabolites
+            if met.compartment == "c" and "SK_" + met.id not in model.reactions
+        ]
     else:
         raise ValueError("unknown metabolites {}".format(request.param))

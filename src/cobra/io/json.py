@@ -97,12 +97,18 @@ def save_json_model(model, filename, sort=False, pretty=False, **kwargs):
 
     if pretty:
         dump_opts = {
-            "indent": 4, "separators": (",", ": "), "sort_keys": True,
-            "allow_nan": True}
+            "indent": 4,
+            "separators": (",", ": "),
+            "sort_keys": True,
+            "allow_nan": False,
+        }
     else:
         dump_opts = {
-            "indent": 0, "separators": (",", ":"), "sort_keys": False,
-            "allow_nan": True}
+            "indent": 0,
+            "separators": (",", ":"),
+            "sort_keys": False,
+            "allow_nan": False,
+        }
     dump_opts.update(**kwargs)
 
     if isinstance(filename, string_types):

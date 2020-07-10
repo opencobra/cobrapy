@@ -23,22 +23,20 @@ def construct_ll_test_model():
     DM_C = Reaction("DM_C")
     DM_C.add_metabolites({test_model.metabolites.C: -1})
     v1 = Reaction("v1")
-    v1.add_metabolites({test_model.metabolites.A: -1,
-                        test_model.metabolites.B: 1})
+    v1.add_metabolites({test_model.metabolites.A: -1, test_model.metabolites.B: 1})
     v2 = Reaction("v2")
-    v2.add_metabolites({test_model.metabolites.B: -1,
-                        test_model.metabolites.C: 1})
+    v2.add_metabolites({test_model.metabolites.B: -1, test_model.metabolites.C: 1})
     v3 = Reaction("v3")
-    v3.add_metabolites({test_model.metabolites.C: -1,
-                        test_model.metabolites.A: 1})
+    v3.add_metabolites({test_model.metabolites.C: -1, test_model.metabolites.A: 1})
     test_model.add_reactions([EX_A, DM_C, v1, v2, v3])
     DM_C.objective_coefficient = 1
     return test_model
 
 
-@pytest.fixture(scope="function", params=[s for s in ["glpk", "cplex",
-                                                      "gurobi"]
-                                          if s in sutil.solvers])
+@pytest.fixture(
+    scope="function",
+    params=[s for s in ["glpk", "cplex", "gurobi"] if s in sutil.solvers],
+)
 def ll_test_model(request):
     """Return test model set with different solvers."""
     test_model = construct_ll_test_model()

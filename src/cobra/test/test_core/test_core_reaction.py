@@ -58,7 +58,7 @@ def test_gpr_modification(model):
     new_gene = model.genes.get_by_id("s0001")
 
     # Add an existing 'gene' to the GPR
-    reaction.gene_reaction_rule = 's0001'
+    reaction.gene_reaction_rule = "s0001"
     assert new_gene in reaction.genes
     assert reaction in new_gene.reactions
 
@@ -67,7 +67,7 @@ def test_gpr_modification(model):
     assert reaction not in old_gene.reactions
 
     # Add a new 'gene' to the GPR
-    reaction.gene_reaction_rule = 'fake_gene'
+    reaction.gene_reaction_rule = "fake_gene"
     assert model.genes.has_id("fake_gene")
     fake_gene = model.genes.get_by_id("fake_gene")
     assert fake_gene in reaction.genes
@@ -77,10 +77,10 @@ def test_gpr_modification(model):
 
 
 def test_gene_knock_out(model):
-    rxn = Reaction('rxn')
-    rxn.add_metabolites({Metabolite('A'): -1, Metabolite('B'): 1})
-    rxn.gene_reaction_rule = 'A2B1 or A2B2 and A2B3'
-    assert hasattr(list(rxn.genes)[0], 'knock_out')
+    rxn = Reaction("rxn")
+    rxn.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
+    rxn.gene_reaction_rule = "A2B1 or A2B2 and A2B3"
+    assert hasattr(list(rxn.genes)[0], "knock_out")
     model.add_reaction(rxn)
     with model:
         model.genes.A2B1.knock_out()
@@ -97,13 +97,13 @@ def test_gene_knock_out(model):
 
 
 def test_str():
-    rxn = Reaction('rxn')
-    rxn.add_metabolites({Metabolite('A'): -1, Metabolite('B'): 1})
-    assert str(rxn) == 'rxn: A --> B'
+    rxn = Reaction("rxn")
+    rxn.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
+    assert str(rxn) == "rxn: A --> B"
 
 
 def test_str_from_model(model):
-    assert model.reactions[0].__str__().startswith('ACALD')
+    assert model.reactions[0].__str__().startswith("ACALD")
 
 
 def test_add_metabolite_from_solved_model(solved_model):
@@ -112,31 +112,49 @@ def test_add_metabolite_from_solved_model(solved_model):
     test_met = model.metabolites[0]
     pgi_reaction.add_metabolites({test_met: 42}, combine=False)
     assert pgi_reaction.metabolites[test_met] == 42.0
-    assert model.constraints[
-               test_met.id].expression.as_coefficients_dict()[
-               pgi_reaction.forward_variable] == 42.0
-    assert model.constraints[
-               test_met.id].expression.as_coefficients_dict()[
-               pgi_reaction.reverse_variable] == -42.0
+    assert (
+        model.constraints[test_met.id].expression.as_coefficients_dict()[
+            pgi_reaction.forward_variable
+        ]
+        == 42.0
+    )
+    assert (
+        model.constraints[test_met.id].expression.as_coefficients_dict()[
+            pgi_reaction.reverse_variable
+        ]
+        == -42.0
+    )
 
     pgi_reaction.add_metabolites({test_met: -10}, combine=True)
     assert pgi_reaction.metabolites[test_met] == 32.0
-    assert model.constraints[
-               test_met.id].expression.as_coefficients_dict()[
-               pgi_reaction.forward_variable] == 32.0
-    assert model.constraints[
-               test_met.id].expression.as_coefficients_dict()[
-               pgi_reaction.reverse_variable] == -32.0
+    assert (
+        model.constraints[test_met.id].expression.as_coefficients_dict()[
+            pgi_reaction.forward_variable
+        ]
+        == 32.0
+    )
+    assert (
+        model.constraints[test_met.id].expression.as_coefficients_dict()[
+            pgi_reaction.reverse_variable
+        ]
+        == -32.0
+    )
 
     pgi_reaction.add_metabolites({test_met: 0}, combine=False)
     with pytest.raises(KeyError):
         pgi_reaction.metabolites[test_met]
-    assert model.constraints[
-               test_met.id].expression.as_coefficients_dict()[
-               pgi_reaction.forward_variable] == 0
-    assert model.constraints[
-               test_met.id].expression.as_coefficients_dict()[
-               pgi_reaction.reverse_variable] == 0
+    assert (
+        model.constraints[test_met.id].expression.as_coefficients_dict()[
+            pgi_reaction.forward_variable
+        ]
+        == 0
+    )
+    assert (
+        model.constraints[test_met.id].expression.as_coefficients_dict()[
+            pgi_reaction.reverse_variable
+        ]
+        == 0
+    )
 
 
 @pytest.mark.parametrize("solver", stable_optlang)
@@ -146,12 +164,11 @@ def test_add_metabolite_benchmark(model, benchmark, solver):
 
     def add_remove_metabolite():
         reaction.add_metabolites(many_metabolites)
-        if not getattr(model, 'solver', None):
+        if not getattr(model, "solver", None):
             solver_dict[solver].create_problem(model)
         for m, c in many_metabolites.items():
             try:
-                reaction.subtract_metabolites(
-                    {m: reaction.get_coefficient(m)})
+                reaction.subtract_metabolites({m: reaction.get_coefficient(m)})
             except KeyError:
                 pass
 
@@ -180,29 +197,23 @@ def test_add_metabolite(model):
     # Test adding by string
     with model:
         reaction.add_metabolites({"g6p_c": -1})  # already in reaction
-        assert reaction._metabolites[
-            model.metabolites.get_by_id("g6p_c")] == -2
+        assert reaction._metabolites[model.metabolites.get_by_id("g6p_c")] == -2
         reaction.add_metabolites({"h_c": 1})
-        assert reaction._metabolites[
-            model.metabolites.get_by_id("h_c")] == 1
+        assert reaction._metabolites[model.metabolites.get_by_id("h_c")] == 1
         with pytest.raises(KeyError):
             reaction.add_metabolites({"missing": 1})
 
-    assert reaction._metabolites[
-        model.metabolites.get_by_id("g6p_c")] == -1
+    assert reaction._metabolites[model.metabolites.get_by_id("g6p_c")] == -1
     assert model.metabolites.h_c not in reaction._metabolites
 
     # Test combine=False
     reaction = model.reactions.get_by_id("ATPM")
-    old_stoich = reaction._metabolites[
-        model.metabolites.get_by_id("h2o_c")]
+    old_stoich = reaction._metabolites[model.metabolites.get_by_id("h2o_c")]
     with model:
-        reaction.add_metabolites({'h2o_c': 2.5}, combine=False)
-        assert reaction._metabolites[
-            model.metabolites.get_by_id("h2o_c")] == 2.5
+        reaction.add_metabolites({"h2o_c": 2.5}, combine=False)
+        assert reaction._metabolites[model.metabolites.get_by_id("h2o_c")] == 2.5
 
-    assert reaction._metabolites[
-        model.metabolites.get_by_id("h2o_c")] == old_stoich
+    assert reaction._metabolites[model.metabolites.get_by_id("h2o_c")] == old_stoich
 
     # Test adding to a new Reaction
     reaction = Reaction("test")
@@ -220,7 +231,7 @@ def test_subtract_metabolite_benchmark(model, benchmark, solver):
 def test_subtract_metabolite(model, solver):
     reaction = model.reactions.get_by_id("PGI")
     reaction.subtract_metabolites(reaction.metabolites)
-    if not getattr(model, 'solver', None):
+    if not getattr(model, "solver", None):
         solver_dict[solver].create_problem(model)
         assert len(reaction.metabolites) == 0
 
@@ -257,8 +268,7 @@ def test_build_from_string(model):
     assert model.metabolites.h2o_c, pgi._metabolites
 
     with model:
-        pgi.build_reaction_from_string("g6p_c --> f6p_c + foo",
-                                       verbose=False)
+        pgi.build_reaction_from_string("g6p_c --> f6p_c + foo", verbose=False)
         assert model.metabolites.h2o_c not in pgi._metabolites
         assert "foo" in model.metabolites
         assert model.metabolites.foo in pgi._metabolites
@@ -274,12 +284,10 @@ def test_build_from_string(model):
         old_bounds = config.bounds
         assert old_bounds == (-1000, 1000)
         config.bounds = (-5, 5)
-        pgi.build_reaction_from_string("g6p_c <--> f6p_c + new",
-                                       verbose=False)
+        pgi.build_reaction_from_string("g6p_c <--> f6p_c + new", verbose=False)
         assert pgi.bounds == (-5, 5)
         config.bounds = old_bounds
-        pgi.build_reaction_from_string("g6p_c --> f6p_c + new",
-                                       verbose=False)
+        pgi.build_reaction_from_string("g6p_c --> f6p_c + new", verbose=False)
         assert pgi.bounds == (0, 1000)
 
 
@@ -313,7 +321,7 @@ def test_iadd(model):
     assert PGI.gene_reaction_rule == original_PGI_gpr
     assert PGI.metabolites[model.metabolites.h2o_e] == -1.0
     # Original should not change
-    assert EX_h2o.gene_reaction_rule == ''
+    assert EX_h2o.gene_reaction_rule == ""
     assert EX_h2o.metabolites[model.metabolites.h2o_e] == -1.0
     # Add a reaction not in the model
     new_reaction = Reaction("test")
@@ -328,7 +336,7 @@ def test_iadd(model):
     assert new_reaction.gene_reaction_rule == original_PGI_gpr
     # Combine two GPRs
     model.reactions.ACKr += model.reactions.ACONTa
-    expected_rule = '(b2296 or b3115 or b1849) and (b0118 or b1276)'
+    expected_rule = "(b2296 or b3115 or b1849) and (b0118 or b1276)"
     assert model.reactions.ACKr.gene_reaction_rule == expected_rule
     assert len(model.reactions.ACKr.genes) == 5
 
@@ -384,19 +392,19 @@ def test_removal_from_model_retains_bounds(model):
 
 def test_set_bounds_scenario_1(model):
     acald_reaction = model.reactions.ACALD
-    assert acald_reaction.lower_bound == -1000.
-    assert acald_reaction.upper_bound == 1000.
-    assert acald_reaction.forward_variable.lb == 0.
-    assert acald_reaction.forward_variable.ub == 1000.
+    assert acald_reaction.lower_bound == -1000.0
+    assert acald_reaction.upper_bound == 1000.0
+    assert acald_reaction.forward_variable.lb == 0.0
+    assert acald_reaction.forward_variable.ub == 1000.0
     assert acald_reaction.reverse_variable.lb == 0
-    assert acald_reaction.reverse_variable.ub == 1000.
+    assert acald_reaction.reverse_variable.ub == 1000.0
     acald_reaction.upper_bound = acald_reaction.lower_bound - 100
     assert acald_reaction.lower_bound == -1100.0
     assert acald_reaction.upper_bound == -1100.0
     assert acald_reaction.forward_variable.lb == 0
     assert acald_reaction.forward_variable.ub == 0
-    assert acald_reaction.reverse_variable.lb == 1100.
-    assert acald_reaction.reverse_variable.ub == 1100.
+    assert acald_reaction.reverse_variable.lb == 1100.0
+    assert acald_reaction.reverse_variable.ub == 1100.0
     acald_reaction.upper_bound = 100
     assert acald_reaction.lower_bound == -1100.0
     assert acald_reaction.upper_bound == 100
@@ -458,12 +466,12 @@ def test_set_upper_before_lower_bound_to_0(model):
 
 def test_set_bounds_scenario_2(model):
     acald_reaction = model.reactions.ACALD
-    assert acald_reaction.lower_bound == -1000.
-    assert acald_reaction.upper_bound == 1000.
-    assert acald_reaction.forward_variable.lb == 0.
-    assert acald_reaction.forward_variable.ub == 1000.
+    assert acald_reaction.lower_bound == -1000.0
+    assert acald_reaction.upper_bound == 1000.0
+    assert acald_reaction.forward_variable.lb == 0.0
+    assert acald_reaction.forward_variable.ub == 1000.0
     assert acald_reaction.reverse_variable.lb == 0
-    assert acald_reaction.reverse_variable.ub == 1000.
+    assert acald_reaction.reverse_variable.ub == 1000.0
     acald_reaction.lower_bound = acald_reaction.upper_bound + 100
     assert acald_reaction.lower_bound == 1100.0
     assert acald_reaction.upper_bound == 1100.0
@@ -472,10 +480,10 @@ def test_set_bounds_scenario_2(model):
     assert acald_reaction.reverse_variable.lb == 0
     assert acald_reaction.reverse_variable.ub == 0
     acald_reaction.lower_bound = -100
-    assert acald_reaction.lower_bound == -100.
-    assert acald_reaction.upper_bound == 1100.
+    assert acald_reaction.lower_bound == -100.0
+    assert acald_reaction.upper_bound == 1100.0
     assert acald_reaction.forward_variable.lb == 0
-    assert acald_reaction.forward_variable.ub == 1100.
+    assert acald_reaction.forward_variable.ub == 1100.0
     assert acald_reaction.reverse_variable.lb == 0
     assert acald_reaction.reverse_variable.ub == 100
 
@@ -495,94 +503,93 @@ def test_change_bounds(model):
 
 def test_make_irreversible(model):
     acald_reaction = model.reactions.ACALD
-    assert acald_reaction.lower_bound == -1000.
-    assert acald_reaction.upper_bound == 1000.
-    assert acald_reaction.forward_variable.lb == 0.
-    assert acald_reaction.forward_variable.ub == 1000.
+    assert acald_reaction.lower_bound == -1000.0
+    assert acald_reaction.upper_bound == 1000.0
+    assert acald_reaction.forward_variable.lb == 0.0
+    assert acald_reaction.forward_variable.ub == 1000.0
     assert acald_reaction.reverse_variable.lb == 0
-    assert acald_reaction.reverse_variable.ub == 1000.
+    assert acald_reaction.reverse_variable.ub == 1000.0
     acald_reaction.lower_bound = 0
     assert acald_reaction.lower_bound == 0
-    assert acald_reaction.upper_bound == 1000.
+    assert acald_reaction.upper_bound == 1000.0
     assert acald_reaction.forward_variable.lb == 0
     assert acald_reaction.forward_variable.ub == 1000.0
     assert acald_reaction.reverse_variable.lb == 0
     assert acald_reaction.reverse_variable.ub == 0
     acald_reaction.lower_bound = -100
-    assert acald_reaction.lower_bound == -100.
-    assert acald_reaction.upper_bound == 1000.
+    assert acald_reaction.lower_bound == -100.0
+    assert acald_reaction.upper_bound == 1000.0
     assert acald_reaction.forward_variable.lb == 0
-    assert acald_reaction.forward_variable.ub == 1000.
+    assert acald_reaction.forward_variable.ub == 1000.0
     assert acald_reaction.reverse_variable.lb == 0
     assert acald_reaction.reverse_variable.ub == 100
 
 
 def test_make_reversible(model):
     pfk_reaction = model.reactions.PFK
-    assert pfk_reaction.lower_bound == 0.
-    assert pfk_reaction.upper_bound == 1000.
-    assert pfk_reaction.forward_variable.lb == 0.
-    assert pfk_reaction.forward_variable.ub == 1000.
+    assert pfk_reaction.lower_bound == 0.0
+    assert pfk_reaction.upper_bound == 1000.0
+    assert pfk_reaction.forward_variable.lb == 0.0
+    assert pfk_reaction.forward_variable.ub == 1000.0
     assert pfk_reaction.reverse_variable.lb == 0
     assert pfk_reaction.reverse_variable.ub == 0
-    pfk_reaction.lower_bound = -100.
-    assert pfk_reaction.lower_bound == -100.
-    assert pfk_reaction.upper_bound == 1000.
+    pfk_reaction.lower_bound = -100.0
+    assert pfk_reaction.lower_bound == -100.0
+    assert pfk_reaction.upper_bound == 1000.0
     assert pfk_reaction.forward_variable.lb == 0
     assert pfk_reaction.forward_variable.ub == 1000.0
     assert pfk_reaction.reverse_variable.lb == 0
-    assert pfk_reaction.reverse_variable.ub == 100.
+    assert pfk_reaction.reverse_variable.ub == 100.0
     pfk_reaction.lower_bound = 0
     assert pfk_reaction.lower_bound == 0
-    assert pfk_reaction.upper_bound == 1000.
+    assert pfk_reaction.upper_bound == 1000.0
     assert pfk_reaction.forward_variable.lb == 0
-    assert pfk_reaction.forward_variable.ub == 1000.
+    assert pfk_reaction.forward_variable.ub == 1000.0
     assert pfk_reaction.reverse_variable.lb == 0
     assert pfk_reaction.reverse_variable.ub == 0
 
 
 def test_make_irreversible_irreversible_to_the_other_side(model):
     pfk_reaction = model.reactions.PFK
-    assert pfk_reaction.lower_bound == 0.
-    assert pfk_reaction.upper_bound == 1000.
-    assert pfk_reaction.forward_variable.lb == 0.
-    assert pfk_reaction.forward_variable.ub == 1000.
+    assert pfk_reaction.lower_bound == 0.0
+    assert pfk_reaction.upper_bound == 1000.0
+    assert pfk_reaction.forward_variable.lb == 0.0
+    assert pfk_reaction.forward_variable.ub == 1000.0
     assert pfk_reaction.reverse_variable.lb == 0
     assert pfk_reaction.reverse_variable.ub == 0
-    pfk_reaction.upper_bound = -100.
+    pfk_reaction.upper_bound = -100.0
     assert pfk_reaction.forward_variable.lb == 0
     assert pfk_reaction.forward_variable.ub == 0
     assert pfk_reaction.reverse_variable.lb == 100
     assert pfk_reaction.reverse_variable.ub == 100
-    pfk_reaction.lower_bound = -1000.
-    assert pfk_reaction.lower_bound == -1000.
-    assert pfk_reaction.upper_bound == -100.
+    pfk_reaction.lower_bound = -1000.0
+    assert pfk_reaction.lower_bound == -1000.0
+    assert pfk_reaction.upper_bound == -100.0
     assert pfk_reaction.forward_variable.lb == 0
     assert pfk_reaction.forward_variable.ub == 0
     assert pfk_reaction.reverse_variable.lb == 100
-    assert pfk_reaction.reverse_variable.ub == 1000.
+    assert pfk_reaction.reverse_variable.ub == 1000.0
 
 
 def test_make_lhs_irreversible_reversible(model):
-    rxn = Reaction('test')
-    rxn.add_metabolites(
-        {model.metabolites[0]: -1., model.metabolites[1]: 1.})
-    rxn.lower_bound = -1000.
+    rxn = Reaction("test")
+    rxn.add_metabolites({model.metabolites[0]: -1.0, model.metabolites[1]: 1.0})
+    rxn.lower_bound = -1000.0
     rxn.upper_bound = -100
     model.add_reaction(rxn)
-    assert rxn.lower_bound == -1000.
-    assert rxn.upper_bound == -100.
-    assert rxn.forward_variable.lb == 0.
-    assert rxn.forward_variable.ub == 0.
-    assert rxn.reverse_variable.lb == 100.
-    assert rxn.reverse_variable.ub == 1000.
-    rxn.upper_bound = 666.
-    assert rxn.lower_bound == -1000.
-    assert rxn.upper_bound == 666.
-    assert rxn.forward_variable.lb == 0.
+    assert rxn.lower_bound == -1000.0
+    assert rxn.upper_bound == -100.0
+    assert rxn.forward_variable.lb == 0.0
+    assert rxn.forward_variable.ub == 0.0
+    assert rxn.reverse_variable.lb == 100.0
+    assert rxn.reverse_variable.ub == 1000.0
+    rxn.upper_bound = 666.0
+    assert rxn.lower_bound == -1000.0
+    assert rxn.upper_bound == 666.0
+    assert rxn.forward_variable.lb == 0.0
     assert rxn.forward_variable.ub == 666
-    assert rxn.reverse_variable.lb == 0.
-    assert rxn.reverse_variable.ub == 1000.
+    assert rxn.reverse_variable.lb == 0.0
+    assert rxn.reverse_variable.ub == 1000.0
 
 
 def test_model_less_reaction(model):
@@ -601,8 +608,7 @@ def test_model_less_reaction(model):
 def test_knockout(model):
     original_bounds = dict()
     for reaction in model.reactions:
-        original_bounds[reaction.id] = (
-            reaction.lower_bound, reaction.upper_bound)
+        original_bounds[reaction.id] = (reaction.lower_bound, reaction.upper_bound)
         reaction.knock_out()
         assert reaction.lower_bound == 0
         assert reaction.upper_bound == 0
@@ -614,8 +620,7 @@ def test_knockout(model):
         assert reaction.upper_bound == original_bounds[reaction.id][1]
     with model:
         for reaction in model.reactions:
-            original_bounds[reaction.id] = (
-                reaction.lower_bound, reaction.upper_bound)
+            original_bounds[reaction.id] = (reaction.lower_bound, reaction.upper_bound)
             reaction.knock_out()
             assert reaction.lower_bound == 0
             assert reaction.upper_bound == 0
@@ -625,14 +630,14 @@ def test_knockout(model):
 
 
 def test_reaction_without_model():
-    r = Reaction('blub')
+    r = Reaction("blub")
     assert r.flux_expression is None
     assert r.forward_variable is None
     assert r.reverse_variable is None
 
 
 def test_weird_left_to_right_reaction_issue(tiny_toy_model):
-    d1 = tiny_toy_model.reactions.get_by_id('ex1')
+    d1 = tiny_toy_model.reactions.get_by_id("ex1")
     assert not d1.reversibility
     assert d1.lower_bound == -1000
     assert d1._lower_bound == -1000
@@ -651,7 +656,7 @@ def test_weird_left_to_right_reaction_issue(tiny_toy_model):
 
 
 def test_one_left_to_right_reaction_set_positive_ub(tiny_toy_model):
-    d1 = tiny_toy_model.reactions.get_by_id('ex1')
+    d1 = tiny_toy_model.reactions.get_by_id("ex1")
     assert d1.reverse_variable.lb == 0
     assert d1.reverse_variable.ub == 1000
     assert d1._lower_bound == -1000
@@ -660,15 +665,15 @@ def test_one_left_to_right_reaction_set_positive_ub(tiny_toy_model):
     assert d1.upper_bound == 0
     assert d1.forward_variable.lb == 0
     assert d1.forward_variable.ub == 0
-    d1.upper_bound = .1
+    d1.upper_bound = 0.1
     assert d1.forward_variable.lb == 0
-    assert d1.forward_variable.ub == .1
+    assert d1.forward_variable.ub == 0.1
     assert d1.reverse_variable.lb == 0
     assert d1.reverse_variable.ub == 1000
     assert d1._lower_bound == -1000
-    assert d1.upper_bound == .1
+    assert d1.upper_bound == 0.1
     assert d1._lower_bound == -1000
-    assert d1.upper_bound == .1
+    assert d1.upper_bound == 0.1
 
 
 def test_irrev_reaction_set_negative_lb(model):
@@ -721,75 +726,85 @@ def test_set_ub_lower_than_lb_sets_lb_to_new_ub(model):
 
 
 def test_add_metabolites_combine_true(model):
-    test_metabolite = Metabolite('test')
+    test_metabolite = Metabolite("test")
     for reaction in model.reactions:
         reaction.add_metabolites({test_metabolite: -66}, combine=True)
         assert reaction.metabolites[test_metabolite] == -66
-        assert model.constraints['test'].get_linear_coefficients(
-            [reaction.forward_variable])[reaction.forward_variable] == -66
-        assert model.constraints['test'].get_linear_coefficients(
-            [reaction.reverse_variable])[reaction.reverse_variable] == 66
-        already_included_metabolite = \
-            list(reaction.metabolites.keys())[0]
-        previous_coefficient = reaction.get_coefficient(
-            already_included_metabolite.id)
-        reaction.add_metabolites({already_included_metabolite: 10},
-                                 combine=True)
+        assert (
+            model.constraints["test"].get_linear_coefficients(
+                [reaction.forward_variable]
+            )[reaction.forward_variable]
+            == -66
+        )
+        assert (
+            model.constraints["test"].get_linear_coefficients(
+                [reaction.reverse_variable]
+            )[reaction.reverse_variable]
+            == 66
+        )
+        already_included_metabolite = list(reaction.metabolites.keys())[0]
+        previous_coefficient = reaction.get_coefficient(already_included_metabolite.id)
+        reaction.add_metabolites({already_included_metabolite: 10}, combine=True)
         new_coefficient = previous_coefficient + 10
-        assert reaction.metabolites[
-                   already_included_metabolite] == new_coefficient
-        assert (model.constraints[
-                already_included_metabolite.id].get_linear_coefficients(
-                [reaction.forward_variable])[reaction.forward_variable] ==
-                new_coefficient)
-        assert (model.constraints[
-                already_included_metabolite.id].get_linear_coefficients(
-                [reaction.reverse_variable])[
-                    reaction.reverse_variable] == -new_coefficient)
+        assert reaction.metabolites[already_included_metabolite] == new_coefficient
+        assert (
+            model.constraints[already_included_metabolite.id].get_linear_coefficients(
+                [reaction.forward_variable]
+            )[reaction.forward_variable]
+            == new_coefficient
+        )
+        assert (
+            model.constraints[already_included_metabolite.id].get_linear_coefficients(
+                [reaction.reverse_variable]
+            )[reaction.reverse_variable]
+            == -new_coefficient
+        )
 
 
-@pytest.mark.xfail(reason='non-deterministic test')
+@pytest.mark.xfail(reason="non-deterministic test")
 def test_add_metabolites_combine_false(model):
-    test_metabolite = Metabolite('test')
+    test_metabolite = Metabolite("test")
     for reaction in model.reactions:
         reaction.add_metabolites({test_metabolite: -66}, combine=False)
         assert reaction.metabolites[test_metabolite] == -66
-        assert model.constraints['test'].expression.has(
-            -66. * reaction.forward_variable)
-        assert model.constraints['test'].expression.has(
-            66. * reaction.reverse_variable)
-        already_included_metabolite = \
-            list(reaction.metabolites.keys())[0]
-        reaction.add_metabolites({already_included_metabolite: 10},
-                                 combine=False)
+        assert model.constraints["test"].expression.has(
+            -66.0 * reaction.forward_variable
+        )
+        assert model.constraints["test"].expression.has(
+            66.0 * reaction.reverse_variable
+        )
+        already_included_metabolite = list(reaction.metabolites.keys())[0]
+        reaction.add_metabolites({already_included_metabolite: 10}, combine=False)
         assert reaction.metabolites[already_included_metabolite] == 10
-        assert model.constraints[
-            already_included_metabolite.id].expression.has(
-            10 * reaction.forward_variable)
-        assert model.constraints[
-            already_included_metabolite.id].expression.has(
-            -10 * reaction.reverse_variable)
+        assert model.constraints[already_included_metabolite.id].expression.has(
+            10 * reaction.forward_variable
+        )
+        assert model.constraints[already_included_metabolite.id].expression.has(
+            -10 * reaction.reverse_variable
+        )
 
 
 def test_reaction_imul(model):
     with model:
         model.reactions.EX_glc__D_e *= 100
-        assert model.constraints.glc__D_e.expression.coeff(
-            model.variables.EX_glc__D_e) == -100.0
-        assert model.reactions.EX_glc__D_e.reaction == \
-            '100.0 glc__D_e <=> '
+        assert (
+            model.constraints.glc__D_e.expression.coeff(model.variables.EX_glc__D_e)
+            == -100.0
+        )
+        assert model.reactions.EX_glc__D_e.reaction == "100.0 glc__D_e <=> "
 
-    assert model.constraints.glc__D_e.expression.coeff(
-        model.variables.EX_glc__D_e) == -1.0
-    assert model.reactions.EX_glc__D_e.reaction == 'glc__D_e <=> '
+    assert (
+        model.constraints.glc__D_e.expression.coeff(model.variables.EX_glc__D_e) == -1.0
+    )
+    assert model.reactions.EX_glc__D_e.reaction == "glc__D_e <=> "
 
     with model:
         model.reactions.EX_glc__D_e *= -2
         assert model.reactions.EX_glc__D_e.bounds == (-1000.0, 10.0)
-        assert model.reactions.EX_glc__D_e.reaction == ' <=> 2.0 glc__D_e'
+        assert model.reactions.EX_glc__D_e.reaction == " <=> 2.0 glc__D_e"
 
     assert model.reactions.EX_glc__D_e.bounds == (-10, 1000.0)
-    assert model.reactions.EX_glc__D_e.reaction == 'glc__D_e <=> '
+    assert model.reactions.EX_glc__D_e.reaction == "glc__D_e <=> "
 
 
 # def test_pop(model):
@@ -818,8 +833,8 @@ def test_reaction_imul(model):
 def test_remove_from_model(model):
     pgi = model.reactions.PGI
     g6p = model.metabolites.g6p_c
-    pgi_flux = model.optimize().fluxes['PGI']
-    assert abs(pgi_flux) > 1E-6
+    pgi_flux = model.optimize().fluxes["PGI"]
+    assert abs(pgi_flux) > 1e-6
 
     with model:
         pgi.remove_from_model()
@@ -836,16 +851,15 @@ def test_remove_from_model(model):
     assert pgi.forward_variable.problem is model.solver
     assert pgi in g6p.reactions
     assert g6p in pgi.metabolites
-    assert np.isclose(pgi_flux, model.optimize().fluxes['PGI'])
+    assert np.isclose(pgi_flux, model.optimize().fluxes["PGI"])
 
 
 def test_change_id_is_reflected_in_solver(model):
     for i, reaction in enumerate(model.reactions):
         old_reaction_id = reaction.id
-        assert model.variables[
-                   old_reaction_id].name == old_reaction_id
+        assert model.variables[old_reaction_id].name == old_reaction_id
         assert old_reaction_id in model.variables
-        new_reaction_id = reaction.id + '_' + str(i)
+        new_reaction_id = reaction.id + "_" + str(i)
         reaction.id = new_reaction_id
         assert reaction.id == new_reaction_id
         assert not (old_reaction_id in model.variables)
@@ -856,4 +870,4 @@ def test_change_id_is_reflected_in_solver(model):
 
 
 def test_repr_html_(model):
-    assert '<table>' in model.reactions[0]._repr_html_()
+    assert "<table>" in model.reactions[0]._repr_html_()
