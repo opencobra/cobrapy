@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 
+"""Set up the cobra package."""
+
+
 from sys import version_info
 from warnings import warn
 
@@ -14,5 +17,6 @@ if version_info[:2] < (3, 6):
     )
 
 
+# All other arguments are defined in `setup.cfg`.
 if __name__ == "__main__":
     setup()
