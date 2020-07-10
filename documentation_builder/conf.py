@@ -13,13 +13,14 @@
 # serve to show the default.
 
 import sys
-from os.path import dirname
+from os.path import dirname, join
 from unittest.mock import Mock
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, dirname(dirname(__file__)))
+SRC_PATH = join(dirname(dirname(__file__)), "src")
+sys.path.insert(0, SRC_PATH)
 
 
 # These modules should correspond to the importable Python packages.
@@ -65,7 +66,7 @@ extensions = [
     "nbsphinx",
 ]
 # Document Python Code
-autoapi_dirs = ["../cobra"]
+autoapi_dirs = [SRC_PATH]
 
 # Napoleon settings
 napoleon_numpy_docstring = True

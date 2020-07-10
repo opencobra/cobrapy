@@ -39,7 +39,8 @@ if __name__ == "__main__":
     setup(
         name="cobra",
         version="0.18.1",
-        packages=find_packages(),
+        packages=find_packages("src"),
+        package_dir={"": "src"},
         setup_requires=setup_requirements,
         install_requires=[
             "six",
