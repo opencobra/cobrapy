@@ -297,7 +297,8 @@ def gapfill(model, universal=None, lower_bound=0.05,
 
     Examples
     --------
-    >>> import cobra.test as ct
+
+import cobra as ct
     >>> from cobra import Model
     >>> from cobra.flux_analysis import gapfill
     >>> model = ct.create_test_model("salmonella")
