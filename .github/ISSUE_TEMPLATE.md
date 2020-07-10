@@ -8,24 +8,29 @@ Please explain:
 
 #### Code Sample
 
-Create a [minimal, complete, verifiable example](https://stackoverflow.com/help/mcve).
+Create a [minimal, complete, verifiable example
+](https://stackoverflow.com/help/mcve).
 
+<!-- Paste your code between the ``` tickmarks below or link to a gist. -->
 ```python
-# Paste your code here.
-
 ```
 
-#### Actual Output
+<!-- If there was a crash, please include the traceback between the ``` tickmarks below. -->
+```
+```
 
-#### Expected Output
+### Context
 
-#### Dependency Information
+<!-- Please run the following code and paste the output between the ``` tickmarks below
+inside the details block.
 
-Please paste the output of `python -c "from cobra import show_versions;
-show_versions()"` in the details block below.
+python -c "import cobra;cobra.show_versions()"
+
+-->
 
 <details>
 
-[Paste output here.]
+```
+```
 
 </details>
