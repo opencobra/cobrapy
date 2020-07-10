@@ -8,8 +8,13 @@ from json import dump as json_dump
 
 import cobra
 from cobra.io import (
-    load_matlab_model, read_sbml_model, save_json_model, save_matlab_model,
-    save_yaml_model, write_sbml_model)
+    load_matlab_model,
+    read_sbml_model,
+    save_json_model,
+    save_matlab_model,
+    save_yaml_model,
+    write_sbml_model,
+)
 
 
 # from cobra.io.sbml3 import write_sbml2

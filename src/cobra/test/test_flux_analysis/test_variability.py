@@ -10,8 +10,11 @@ from six import iteritems
 
 from cobra.exceptions import Infeasible
 from cobra.flux_analysis.variability import (
-    find_blocked_reactions, find_essential_genes, find_essential_reactions,
-    flux_variability_analysis)
+    find_blocked_reactions,
+    find_essential_genes,
+    find_essential_reactions,
+    flux_variability_analysis,
+)
 
 
 # FVA

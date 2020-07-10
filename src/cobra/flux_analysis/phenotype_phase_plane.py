@@ -10,10 +10,10 @@ from numpy import abs, full, linspace, nan
 from optlang.interface import OPTIMAL
 from six import iteritems
 
-import cobra.util.solver as sutil
 from cobra.exceptions import OptimizationError
 from cobra.flux_analysis import flux_variability_analysis as fva
 from cobra.flux_analysis.helpers import normalize_cutoff
+from cobra.util import solver as sutil
 
 
 LOGGER = logging.getLogger(__name__)

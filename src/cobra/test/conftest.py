@@ -8,9 +8,9 @@ from os.path import join
 import pytest
 from pandas import DataFrame
 
-import cobra.util.solver as sutil
 from cobra import Metabolite, Model, Reaction
 from cobra.test import create_test_model, data_dir
+from cobra.util import solver as sutil
 
 
 try:

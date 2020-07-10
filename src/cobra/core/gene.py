@@ -3,8 +3,7 @@
 from __future__ import absolute_import
 
 import re
-from ast import (
-    And, BitAnd, BitOr, BoolOp, Expression, Name, NodeTransformer, Or)
+from ast import And, BitAnd, BitOr, BoolOp, Expression, Name, NodeTransformer, Or
 from ast import parse as ast_parse
 from keyword import kwlist
 from warnings import warn

@@ -21,12 +21,21 @@ from warnings import warn
 import optlang
 import pandas as pd
 from optlang.interface import (
-    FEASIBLE, INFEASIBLE, ITERATION_LIMIT, NUMERIC, OPTIMAL, SUBOPTIMAL,
-    TIME_LIMIT)
+    FEASIBLE,
+    INFEASIBLE,
+    ITERATION_LIMIT,
+    NUMERIC,
+    OPTIMAL,
+    SUBOPTIMAL,
+    TIME_LIMIT,
+)
 from optlang.symbolics import Basic, Zero
 
 from cobra.exceptions import (
-    OPTLANG_TO_EXCEPTIONS_DICT, OptimizationError, SolverNotFound)
+    OPTLANG_TO_EXCEPTIONS_DICT,
+    OptimizationError,
+    SolverNotFound,
+)
 from cobra.util.context import get_context
 
 

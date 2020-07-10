@@ -12,8 +12,7 @@ from optlang.symbolics import Zero
 from pandas import DataFrame
 
 from cobra.core import Configuration, get_solution
-from cobra.flux_analysis.deletion import (
-    single_gene_deletion, single_reaction_deletion)
+from cobra.flux_analysis.deletion import single_gene_deletion, single_reaction_deletion
 from cobra.flux_analysis.helpers import normalize_cutoff
 from cobra.flux_analysis.loopless import loopless_fva_iter
 from cobra.flux_analysis.parsimonious import add_pfba

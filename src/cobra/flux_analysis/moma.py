@@ -6,8 +6,8 @@ from __future__ import absolute_import
 
 from optlang.symbolics import Zero, add
 
-import cobra.util.solver as sutil
 from cobra.flux_analysis.parsimonious import pfba
+from cobra.util import solver as sutil
 
 
 def moma(model, solution=None, linear=True):

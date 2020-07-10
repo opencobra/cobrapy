@@ -10,7 +10,7 @@ from os.path import join
 import pytest
 from importlib_resources import open_text
 
-import cobra.io as cio
+from cobra import io as cio
 from cobra.test.test_io.conftest import compare_models
 
 

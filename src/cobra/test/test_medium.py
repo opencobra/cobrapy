@@ -5,8 +5,8 @@ from __future__ import absolute_import
 import pandas as pd
 import pytest
 
-import cobra.medium as medium
 from cobra import Metabolite, Reaction
+from cobra import medium as medium
 
 
 class TestModelMedium:

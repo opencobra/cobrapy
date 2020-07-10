@@ -7,9 +7,9 @@ from __future__ import absolute_import
 import pytest
 from optlang.interface import INFEASIBLE, OPTIMAL
 
-import cobra.util.solver as sutil
 from cobra.core import Metabolite, Model, Reaction
 from cobra.flux_analysis.loopless import add_loopless, loopless_solution
+from cobra.util import solver as sutil
 
 
 def construct_ll_test_model():

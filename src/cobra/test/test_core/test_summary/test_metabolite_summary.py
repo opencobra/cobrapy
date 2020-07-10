@@ -8,8 +8,7 @@ import numpy as np
 import pytest
 
 from cobra.flux_analysis.parsimonious import pfba
-from cobra.test.test_core.test_summary import (
-    captured_output, check_in_line, check_line)
+from cobra.test.test_core.test_summary import captured_output, check_in_line, check_line
 
 
 @pytest.mark.parametrize("met", ["q8_c"])

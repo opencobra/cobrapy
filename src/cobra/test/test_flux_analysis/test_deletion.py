@@ -12,8 +12,11 @@ from pandas import Series
 from six import iteritems
 
 from cobra.flux_analysis.deletion import (
-    double_gene_deletion, double_reaction_deletion, single_gene_deletion,
-    single_reaction_deletion)
+    double_gene_deletion,
+    double_reaction_deletion,
+    single_gene_deletion,
+    single_reaction_deletion,
+)
 from cobra.flux_analysis.room import add_room
 
 

@@ -23,7 +23,10 @@ from cobra.core.object import Object
 from cobra.exceptions import OptimizationError
 from cobra.util.context import get_context, resettable
 from cobra.util.solver import (
-    check_solver_status, linear_reaction_coefficients, set_objective)
+    check_solver_status,
+    linear_reaction_coefficients,
+    set_objective,
+)
 from cobra.util.util import format_long_string
 
 

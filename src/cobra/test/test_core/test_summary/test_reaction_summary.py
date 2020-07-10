@@ -7,8 +7,7 @@ from __future__ import absolute_import
 import numpy as np
 import pytest
 
-from cobra.test.test_core.test_summary import (
-    captured_output, check_in_line, check_line)
+from cobra.test.test_core.test_summary import captured_output, check_in_line, check_line
 
 
 @pytest.mark.skip(reason="has some weird formatting issue")

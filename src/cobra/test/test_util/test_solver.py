@@ -7,8 +7,8 @@ from __future__ import absolute_import
 import numpy as np
 import pytest
 
-import cobra.util.solver as su
 from cobra.exceptions import OptimizationError
+from cobra.util import solver as su
 
 
 stable_optlang = ["glpk", "cplex", "gurobi"]

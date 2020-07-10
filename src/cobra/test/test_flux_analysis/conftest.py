@@ -8,8 +8,8 @@ from __future__ import absolute_import
 import pytest
 from pandas import Series
 
-import cobra.util.solver as sutil
 from cobra.core import Metabolite, Model, Reaction, Solution
+from cobra.util import solver as sutil
 
 
 # The scipy interface is currently unstable and may yield errors or infeasible

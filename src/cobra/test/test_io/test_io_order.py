@@ -9,8 +9,8 @@ from random import sample
 
 import pytest
 
-import cobra.io as cio
 from cobra import DictList, Model
+from cobra import io as cio
 
 
 LOGGER = logging.getLogger(__name__)
