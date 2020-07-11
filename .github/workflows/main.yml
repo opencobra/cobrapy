@@ -33,4 +33,6 @@ jobs:
       run:
         tox -- --cov-report=xml
     - name: Report coverage
-      run: bash <(curl -f https://codecov.io/bash)
+      uses: codecov/codecov-action@v1
+      with:
+        fail_ci_if_error: true
