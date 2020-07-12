@@ -12,15 +12,53 @@ except AttributeError:
 
 
 class Notes(collectionsAbc.MutableMapping):
-    """
-    FIXME: documentation
+    """ Class representation of 'notes' of COBRA object.
+
+    The previous version of COBRApy was parsing out any-
+    thing of the form '<p> key : value </p>' and making
+    a dict out of it. All other information was simply
+    left out. And while writing model back to SBML, this
+    dict was converted in the string:
+
+        "<html xmlns = "http://www.w3.org/1999/xhtml" >
+            <p>key1: value1</p>"
+            <p>key2: value2</p>"
+            ...
+        </html>"
+
+    So in the name of 'notes', we were having a dict
+    containing these key-value pairs in COBRApy in
+    previous version.
+
+    The current implementation of 'notes' keep things
+    backward compatible by maintaining a dict for storing
+    key-value pairs and also store the complete 'notes'
+    data in the form of a single string. The dict and the
+    string of 'notes' are both synchronized with each other.
+    When a notes string is set, the dict will get updated
+    according to the key-value pairs present inside the notes
+    string. If you change a value corresponding to a key
+    inside the notes dict, the notes string will also be
+    updated. However, one thing to note is, since the 'notes'
+    attribute is not a right place to store any machine
+    readable information and only human-readable information
+    should be put into it, so addition of any new key-values
+    inside the 'notes' dict is not allowed. Trying to do so
+    will throw an ValueError. The complete 'notes' string is
+    directly written to formats like "JSON", "YAML" etc when
+    COBRA model is written in these format. And when writing
+    SBML, 'notes' is initialized using the method:
+
+            SBase.getNotesString()
+
+    which makes the xhtml content of the notes using the string.
 
     """
     # FIXME: should we abstract comments in the notes (?!)
 
-    def __init__(self, notes_text: 'str' = None):
+    def __init__(self, notes_xhtml: 'str' = None):
         self._notes_text = None
-        self.notes_text = notes_text  # FIXME: rename notes_xhtml
+        self.notes_xhtml = notes_xhtml
 
     pattern_notes = re.compile(
         r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<content>.*?)</(?P=prefix)p>",
@@ -47,7 +85,8 @@ class Notes(collectionsAbc.MutableMapping):
         Updates the notes string according to key-value pairs
         passed. If any such 'key' is present inside notes string
         having format '<p> key : oldvalue </p>', then it will be
-        updated to store the new value.
+        updated to store the new value. But if that 'key' is not
+        present, an ValueError will be thrown.
         """
         # if notes string is empty
         if self._notes_text is None:
@@ -86,11 +125,16 @@ class Notes(collectionsAbc.MutableMapping):
             self._notes_text = modified_str
 
     @property
-    def notes_text(self):
+    def notes_xhtml(self):
+        """ Return the html content of notes in the form
+        of a string.
+        """
         return self._notes_text
 
-    @notes_text.setter
-    def notes_text(self, value):
+    @notes_xhtml.setter
+    def notes_xhtml(self, value):
+        """ Set the notes_xhtml string
+        """
         if value is None:
             self._notes_text = value
             self._data = {}
@@ -105,7 +149,7 @@ class Notes(collectionsAbc.MutableMapping):
     def __eq__(self, other):
         if not isinstance(other, Notes):
             return False
-        return self.notes_text == other.notes_text
+        return self.notes_xhtml == other.notes_xhtml
 
     def __getitem__(self, key):
         return self._data[key]
@@ -124,7 +168,7 @@ class Notes(collectionsAbc.MutableMapping):
         return len(self._data)
 
     def __str__(self):
-        return self.notes_text
+        return self.notes_xhtml
 
     def __repr__(self):
-        return self.notes_text
+        return self.notes_xhtml

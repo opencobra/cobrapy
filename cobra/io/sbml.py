@@ -1323,10 +1323,10 @@ def _sbase_notes_dict(sbase, notes):
     notes : notes object
         notes information from cobra object
     """
-    if notes.notes_text is None or len(notes.notes_text) == 0:
+    if notes.notes_xhtml is None or len(notes.notes_xhtml) == 0:
         return
     _check(
-        sbase.setNotes(notes.notes_text),
+        sbase.setNotes(notes.notes_xhtml),
         "Setting notes on sbase: {}".format(sbase)
     )
 

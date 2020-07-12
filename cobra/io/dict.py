@@ -116,8 +116,8 @@ def _update_optional(cobra_object, new_dict, optional_attribute_dict,
     for key in ordered_keys:
         default = optional_attribute_dict[key]
         value = getattr(cobra_object, key)
-        if key == 'notes' and (value.notes_text is None or
-                               len(value.notes_text) == 0):
+        if key == 'notes' and (value.notes_xhtml is None or
+                               len(value.notes_xhtml) == 0):
             continue
         if value is None or value == default:
             continue
