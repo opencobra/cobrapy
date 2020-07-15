@@ -30,15 +30,17 @@ class Notes(collectionsAbc.MutableMapping):
     containing these key-value pairs in COBRApy in
     previous version.
 
-    The current implementation of 'notes' keep things
-    backward compatible by maintaining a dict for storing
-    key-value pairs and also store the complete 'notes'
-    data in the form of a single string. The dict and the
-    string of 'notes' are both synchronized with each other.
-    When a notes string is set, the dict will get updated
-    according to the key-value pairs present inside the notes
-    string. If you change a value corresponding to a key
-    inside the notes dict, the notes string will also be
+    The current version of 'notes' have a dedicated class
+    that behaves like a dict storing the key-value pairs
+    present inside the notes string (making it backward
+    compatible) and also stores the complete notes data
+    in the form of a string inside it.
+
+    The dict and the string of 'notes' are both synchronized
+    with each other. When a notes string is set, the dict will
+    get updated according to the key-value pairs present inside
+    the notes string. If you change a value corresponding to a
+    key inside the notes dict, the notes string will also be
     updated. However, one thing to note is, since the 'notes'
     attribute is not a right place to store any machine
     readable information and only human-readable information
@@ -53,11 +55,22 @@ class Notes(collectionsAbc.MutableMapping):
 
     which makes the xhtml content of the notes using the string.
 
+    Parameters
+    ----------
+    notes_xhtml : string
+        The complete notes (xhtml) data in the form of a string.
+
+    Attributes
+    ----------
+    notes_xhtml : string
+        The string corresponding to the notes (xhtml) data
+
     """
     # FIXME: should we abstract comments in the notes (?!)
 
     def __init__(self, notes_xhtml: 'str' = None):
-        self._notes_text = None
+        self._notes_xhtml = None
+        self._data = {}
         self.notes_xhtml = notes_xhtml
 
     pattern_notes = re.compile(
@@ -70,8 +83,8 @@ class Notes(collectionsAbc.MutableMapping):
         Updates notes dictionary according to key-value stored
         in notes string.
         """
-        if self._notes_text and len(self._notes_text) > 0:
-            for match in self.pattern_notes.finditer(self._notes_text):
+        if self._notes_xhtml and len(self._notes_xhtml) > 0:
+            for match in self.pattern_notes.finditer(self._notes_xhtml):
                 try:
                     # Python 2.7 does not allow keywords for split.
                     # Python 3 can have (":", maxsplit=1)
@@ -89,7 +102,7 @@ class Notes(collectionsAbc.MutableMapping):
         present, an ValueError will be thrown.
         """
         # if notes string is empty
-        if self._notes_text is None:
+        if self._notes_xhtml is None:
             raise ValueError("Notes string is not a right place "
                              "to store key value pairs. Store them "
                              "at appropriate place in the document.")
@@ -107,7 +120,7 @@ class Notes(collectionsAbc.MutableMapping):
             r"(?P<content>.*?)(\s*)</(?P=prefix)p>".format(key),
             re.IGNORECASE | re.DOTALL
         )
-        match = re.search(pattern, self._notes_text)
+        match = re.search(pattern, self._notes_xhtml)
 
         # if no such key-value substring is
         # already present inside notes string
@@ -120,26 +133,26 @@ class Notes(collectionsAbc.MutableMapping):
         else:
             start = match.start('content')
             end = match.end('content')
-            modified_str = self._notes_text[:start] + \
-                value + self._notes_text[end:]
-            self._notes_text = modified_str
+            modified_str = self._notes_xhtml[:start] + \
+                           value + self._notes_xhtml[end:]
+            self._notes_xhtml = modified_str
 
     @property
     def notes_xhtml(self):
         """ Return the html content of notes in the form
         of a string.
         """
-        return self._notes_text
+        return self._notes_xhtml
 
     @notes_xhtml.setter
     def notes_xhtml(self, value):
         """ Set the notes_xhtml string
         """
         if value is None:
-            self._notes_text = value
+            self._notes_xhtml = value
             self._data = {}
         elif isinstance(value, str):
-            self._notes_text = value
+            self._notes_xhtml = value
             self._data = {}
             self.update_notes_dict()
         else:
@@ -155,8 +168,13 @@ class Notes(collectionsAbc.MutableMapping):
         return self._data[key]
 
     def __setitem__(self, key, value):
-        self._data[key] = value
-        self.update_notes_str(key, value)
+        if key not in self._data:
+            raise ValueError("Notes string is not a right place "
+                             "to store key value pairs. Store them "
+                             "at appropriate place in the document.")
+        else:
+            self._data[key] = value
+            self.update_notes_str(key, value)
 
     def __delitem__(self, key):
         del self._data[key]
