@@ -17,8 +17,8 @@ from cobra.util.solver import set_objective
 
 
 try:
-    import scipy.sparse as scipy_sparse
     import scipy.io as scipy_io
+    import scipy.sparse as scipy_sparse
 except ImportError:
     scipy_sparse = None
     scipy_io = None
