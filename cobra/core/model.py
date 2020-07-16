@@ -23,6 +23,8 @@ from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
+from cobra.core.user_defined_constraints import (
+    UserDefinedConstraints, UserDefinedConstraintComponents)
 from cobra.exceptions import SolverNotFound
 from cobra.medium import (
     find_boundary_types, find_external_compartment, sbo_terms)
@@ -104,6 +106,7 @@ class Model(Object):
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
             self.groups = DictList()  # A list of cobra.Groups
+            self.user_defined_const = DictList() # A list of cobra.UserDefiendConstriant
             # genes based on their ids {Gene.id: Gene}
             self._compartments = {}
             self._contexts = []
@@ -864,6 +867,75 @@ class Model(Object):
         """
         # check whether the element is associated with the model
         return [g for g in self.groups if element in g.members]
+
+    def add_user_defined_constraints(self, constraints):
+        # COBRApy doesn't support parameters. So constraints
+        # present on parameter will not be added
+
+        if not isinstance(constraints, list):
+            if isinstance(constraints, UserDefinedConstraints):
+                warn("The constraints passed must be inside a list: "
+                     "{}".format(constraints))
+                constraints = [constraints]
+            else:
+                raise TypeError("The constraints passed must be inside"
+                                " a list: {}".format(constraints))
+
+        for constraint in constraints:
+            if not isinstance(constraint, UserDefinedConstraints):
+                raise TypeError("The user defined constraints passed must "
+                                "be of type 'UserDefinedConstraints': "
+                                "{}".format(constraint))
+
+            if constraint.lower_bound is None or constraint.upper_bound is None:
+                raise ValueError("Bounds must be set for the constraint: "
+                                 "{}".format(constraint))
+
+            constraint._model = self
+            cons_exp = 0
+            for item in constraint.constraint_comps:
+
+                # FIXME: what to do with non-constant parameters
+                if item.ref_var not in self.reactions:
+                    warn("The referenced variable is not present "
+                         "inside this model's reaction list: "
+                         "{}".format(item.ref_var))
+                if item.variable_type == 'linear':
+                    var_pow = 1
+                elif item.variable_type == 'quadratic':
+                    var_pow = 2
+                else:
+                    raise ValueError("Unexpected variable type set "
+                                     "for item: {}".format(item))
+                rxn = self.reactions.get_by_id(item.ref_var)
+                cons_exp += item.coefficient * pow(rxn.flux_expression, var_pow)
+
+            new_constraint = self.problem.Constraint(
+                cons_exp,
+                name=self.id,
+                lb=constraint.lower_bound,
+                up=constraint.upper_bound
+            )
+            self.add_cons_vars(new_constraint)
+
+    def remove_user_defined_constraints(self, constraints):
+        if not isinstance(constraints, list):
+            if isinstance(constraints, UserDefinedConstraints):
+                warn("The constraints passed must be inside a list: "
+                     "{}".format(constraints))
+                constraints = [constraints]
+            else:
+                raise TypeError("The constraints passed must be inside"
+                                " a list: {}".format(constraints))
+
+        for constraint in constraints:
+            if not isinstance(constraint, UserDefinedConstraints):
+                raise TypeError("The user defined constraints passed must "
+                                "be of type 'UserDefinedConstraints': "
+                                "{}".format(constraint))
+
+            cons_to_remove = self.constraints[constraint.id]
+            self.remove_cons_vars(cons_to_remove)
 
     def add_cons_vars(self, what, **kwargs):
         """Add constraints and variables to the model's mathematical problem.
