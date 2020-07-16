@@ -1,4 +1,39 @@
 
+"""
+Some documentation:
+
+Reactions: v1; v2; v3;
+Stochiometric Contraints (metabolic nework, SBML Reactions):
+v1 - v2 = 0
+
+UserDefinedConstraints:
+v1 + v2 < 2
+
+Non-constant parameters (x1: not reactions; )
+
+expression =: v1 + v2 + 1.2 x1 < 2
+v1 + v2 + 1.2 x1*x1 < 2
+
+-> examples:
+-> optimize: (v1, v2, x1); how to access the optimal solution?
+
+Test Cases:
+------------
+1. add user constraint to simple model
+A -v1-> B -v2-> C
+optimize: v2; bounds v1[0; 10]; v2[0, 5]
+optimal value: 5;
+
+UserConstraint: v1 + v2 <= 4
+optimal value: 2;
+
+2. only user constraint;
+empty cobra model
+
+x1 <= 2
+maximize: x1
+flux distribution optimal: x1=2
+"""
 
 from warnings import warn
 from cobra import DictList, Object
