@@ -2,13 +2,14 @@
 
 from __future__ import absolute_import
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from operator import attrgetter, itemgetter
 
 from numpy import bool_, float_
 from six import iteritems, string_types
 
 from cobra.core import Gene, Metabolite, Model, Reaction
+from cobra.io.sbml import parse_annotation_info
 from cobra.util.solver import set_objective
 
 
@@ -53,6 +54,31 @@ _OPTIONAL_MODEL_ATTRIBUTES = {
 }
 
 
+def _fix_annotation(annotation):
+    # if annotation is in the form of a list of list, convert it in
+    # right format first i.e in a dict format
+    if isinstance(annotation, list):
+        dict_anno = defaultdict(list)
+        for item in annotation:
+            data = parse_annotation_info(item[1])
+            if data is None:
+                continue
+            else:
+                provider, identifier = data
+
+            dict_anno[provider].append(identifier)
+
+        annotation = dict_anno
+
+    # Convert single annotation values which are represented as
+    # as strings as list to have a consistent format
+    for key in annotation.keys():
+        if isinstance(annotation[key], string_types) and key != "sbo":
+            annotation[key] = [annotation[key]]
+
+    return annotation
+
+
 def _fix_type(value):
     """convert possible types to str, float, and bool"""
     # Because numpy floats can not be pickled to json
@@ -82,6 +108,8 @@ def _update_optional(cobra_object, new_dict, optional_attribute_dict,
         value = getattr(cobra_object, key)
         if value is None or value == default:
             continue
+        if key == "annotation":
+            _fix_annotation(value)
         new_dict[key] = _fix_type(value)
 
 
@@ -97,6 +125,8 @@ def metabolite_to_dict(metabolite):
 def metabolite_from_dict(metabolite):
     new_metabolite = Metabolite()
     for k, v in iteritems(metabolite):
+        if k == "annotation":
+            v = _fix_annotation(v)
         setattr(new_metabolite, k, v)
     return new_metabolite
 
@@ -113,6 +143,8 @@ def gene_to_dict(gene):
 def gene_from_dict(gene):
     new_gene = Gene(gene["id"])
     for k, v in iteritems(gene):
+        if k == "annotation":
+            v = _fix_annotation(v)
         setattr(new_gene, k, v)
     return new_gene
 
@@ -142,6 +174,8 @@ def reaction_from_dict(reaction, model):
                 (model.metabolites.get_by_id(str(met)), coeff)
                 for met, coeff in iteritems(v)))
         else:
+            if k == "annotation":
+                v = _fix_annotation(v)
             setattr(new_reaction, k, v)
     return new_reaction
 
@@ -225,5 +259,7 @@ def model_from_dict(obj):
     set_objective(model, coefficients)
     for k, v in iteritems(obj):
         if k in {'id', 'name', 'notes', 'compartments', 'annotation'}:
+            if k == "annotation":
+                v = _fix_annotation(v)
             setattr(model, k, v)
     return model

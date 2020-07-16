@@ -1427,26 +1427,20 @@ def _parse_annotations(sbase):
             # FIXME: read and store the qualifier
 
             uri = cvterm.getResourceURI(k)
-            data = _parse_annotation_info(uri)
+            data = parse_annotation_info(uri)
             if data is None:
                 continue
             else:
                 provider, identifier = data
 
-            if provider in annotation:
-                if isinstance(annotation[provider], string_types):
-                    annotation[provider] = [annotation[provider]]
-                # FIXME: use a list
-                if identifier not in annotation[provider]:
-                    annotation[provider].append(identifier)
-            else:
-                # FIXME: always in list
-                annotation[provider] = identifier
+            if provider not in annotation:
+                annotation[provider] = []
+            annotation[provider].append(identifier)
 
     return annotation
 
 
-def _parse_annotation_info(uri):
+def parse_annotation_info(uri):
     """Parses provider and term from given identifiers annotation uri.
 
     Parameters
