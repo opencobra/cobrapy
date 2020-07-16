@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from collections import OrderedDict
 from operator import attrgetter, itemgetter
 
+import numpy as np
 from numpy import bool_, float_
 from six import iteritems, string_types
 
@@ -121,7 +122,16 @@ def reaction_to_dict(reaction):
     new_reaction = OrderedDict()
     for key in _REQUIRED_REACTION_ATTRIBUTES:
         if key != "metabolites":
-            new_reaction[key] = _fix_type(getattr(reaction, key))
+            if key == "lower_bound" and (
+                    np.isnan(reaction.lower_bound) or
+                    np.isinf(reaction.lower_bound)):
+                new_reaction[key] = str(_fix_type(getattr(reaction, key)))
+            elif key == "upper_bound" and (
+                    np.isnan(reaction.upper_bound) or
+                    np.isinf(reaction.upper_bound)):
+                new_reaction[key] = str(_fix_type(getattr(reaction, key)))
+            else:
+                new_reaction[key] = _fix_type(getattr(reaction, key))
             continue
         mets = OrderedDict()
         for met in sorted(reaction.metabolites, key=attrgetter("id")):
@@ -142,7 +152,10 @@ def reaction_from_dict(reaction, model):
                 (model.metabolites.get_by_id(str(met)), coeff)
                 for met, coeff in iteritems(v)))
         else:
-            setattr(new_reaction, k, v)
+            if k == "lower_bound" or k == "upper_bound":
+                setattr(new_reaction, k, float(v))
+            else:
+                setattr(new_reaction, k, v)
     return new_reaction
 
 

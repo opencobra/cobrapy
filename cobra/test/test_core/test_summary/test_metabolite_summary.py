@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import
 
+import numpy as np
 import pytest
 
 from cobra.flux_analysis.parsimonious import pfba
@@ -18,7 +19,7 @@ def test_metabolite_summary_to_table_previous_solution(model, opt_solver, met):
     solution = pfba(model)
 
     expected_entry = ['PRODUCING CYTBD     100    43.6  2.0 h_c + 0.5 o2_c + '
-                      'q8h2_c --> h2o_c + 2.0 h_...']
+                      'q8h2_c --> h2o_c + 2.0 h_']
 
     with captured_output() as (out, _):
         print(model.metabolites.get_by_id(met).summary(solution))
@@ -50,10 +51,10 @@ def test_metabolite_summary_to_table(model, opt_solver, met, names):
     if names:
         expected_entry = ['PRODUCING cytochrome oxidase bd '
                           '(ubiquinol-8: 2 protons)    100    43.6  '
-                          '2.0 H+ + 0.5 O2 + Ubiquinol-8 --> H2O + 2.0 H+...']
+                          '2.0 H+ + 0.5 O2 + Ubiquinol-8 --> H2O + 2.0 H+']
     else:
         expected_entry = ['PRODUCING CYTBD     100    43.6  2.0 h_c + '
-                          '0.5 o2_c + q8h2_c --> h2o_c + 2.0 h_...']
+                          '0.5 o2_c + q8h2_c --> h2o_c + 2.0 h_']
 
     with captured_output() as (out, _):
         print(model.metabolites.get_by_id(met).summary(names=names))
@@ -105,4 +106,7 @@ def test_metabolite_summary_to_frame_with_fva(model, opt_solver, fraction,
 
     out_df = model.metabolites.get_by_id(met).summary(fva=fraction).to_frame()
 
-    assert out_df['PERCENT'].tolist() == expected_percent
+    assert np.allclose(
+        out_df['PERCENT'].tolist(),
+        expected_percent,
+        1e-6, 1e-6)

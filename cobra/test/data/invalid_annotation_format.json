@@ -1,0 +1,24 @@
+{
+  "metabolites":[
+    {
+      "id":"4crsol_c",
+      "name":"",
+      "compartment":"c",
+      "annotation":[
+        [
+          "KEGG Compound",
+          "http://identifiers.org/kegg.compound/C01468"
+        ],
+        [
+          "CHEBI",
+          "http://identifiers.org/chebi/CHEBI:11981"
+        ]
+      ]
+    }
+  ],
+  "reactions":[],
+  "genes":[],
+  "id":"tesut",
+  "compartments":{},
+  "version": 1
+}

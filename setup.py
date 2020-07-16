@@ -38,7 +38,7 @@ except IOError:
 if __name__ == "__main__":
     setup(
         name="cobra",
-        version="0.16.0",
+        version="0.18.1",
         packages=find_packages(),
         setup_requires=setup_requirements,
         install_requires=[
@@ -50,7 +50,7 @@ if __name__ == "__main__":
             "pandas>=0.17.0",
             "optlang>=1.4.2",
             "depinfo",
-            "python-libsbml-experimental==5.18.0",
+            "python-libsbml-experimental==5.18.1",
         ],
         tests_require=[
             "jsonschema > 2.5",
@@ -85,11 +85,10 @@ if __name__ == "__main__":
             'License :: OSI Approved :: GNU General Public License v2'
                 ' or later (GPLv2+)',
             'Operating System :: OS Independent',
-            'Programming Language :: Python :: 2.7',
-            'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8',
             'Programming Language :: Python :: Implementation :: CPython',
             'Topic :: Scientific/Engineering',
             'Topic :: Scientific/Engineering :: Bio-Informatics'

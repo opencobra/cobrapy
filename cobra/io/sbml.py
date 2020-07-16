@@ -101,7 +101,7 @@ SBML_DOT = "__SBML_DOT__"
 # -----------------------------------------------------------------------------
 pattern_notes = re.compile(
     r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<content>.*?)</(?P=prefix)p>",
-    re.IGNORECASE
+    re.IGNORECASE | re.DOTALL
 )
 
 pattern_to_sbml = re.compile(r'([^0-9_a-zA-Z])')
@@ -356,7 +356,7 @@ def _sbml_to_model(doc, number=float, f_replace=F_REPLACE,
     # Model
     model_id = model.getIdAttribute()
     if not libsbml.SyntaxChecker.isValidSBMLSId(model_id):
-        logging.error("'%s' is not a valid SBML 'SId'." % model_id)
+        LOGGER.error("'%s' is not a valid SBML 'SId'." % model_id)
     cobra_model = Model(model_id)
     cobra_model.name = model.getName()
 
@@ -935,9 +935,12 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
     if cobra_model.name is not None:
         model.setName(cobra_model.name)
 
+    # for parsing annotation corresponding to the model
     _sbase_annotations(model, cobra_model.annotation)
+    # for parsing notes corresponding to the model
+    _sbase_notes_dict(model, cobra_model.notes)
 
-    # Meta information (ModelHistory)
+    # Meta information (ModelHistory) related to SBMLDocument
     if hasattr(cobra_model, "_sbml"):
         meta = cobra_model._sbml
         if "annotation" in meta:
@@ -1000,9 +1003,9 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
     _create_parameter(model, pid=ZERO_BOUND_ID,
                       value=0, sbo=SBO_DEFAULT_FLUX_BOUND)
     _create_parameter(model, pid=BOUND_MINUS_INF,
-                      value=-float("Inf"), sbo=SBO_FLUX_BOUND)
+                      value=-float("Inf"), sbo=SBO_DEFAULT_FLUX_BOUND)
     _create_parameter(model, pid=BOUND_PLUS_INF,
-                      value=float("Inf"), sbo=SBO_FLUX_BOUND)
+                      value=float("Inf"), sbo=SBO_DEFAULT_FLUX_BOUND)
 
     # Compartments
     # FIXME: use first class compartment model (and write notes & annotations)
@@ -1256,7 +1259,7 @@ def _check_required(sbase, value, attribute):
         raise CobraSBMLError(msg)
     if attribute == "id":
         if not libsbml.SyntaxChecker.isValidSBMLSId(value):
-            logging.error("'%s' is not a valid SBML 'SId'." % value)
+            LOGGER.error("'%s' is not a valid SBML 'SId'." % value)
 
     return value
 

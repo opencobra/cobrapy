@@ -101,20 +101,12 @@
             "name": "pgk"
         },
         {
-            "id": "b2975",
-            "name": "glcA"
-        },
-        {
             "id": "b2987",
             "name": "pitB"
         },
         {
             "id": "b3493",
             "name": "pitA"
-        },
-        {
-            "id": "b3603",
-            "name": "lldP"
         },
         {
             "id": "b3612",
@@ -252,7 +244,6 @@
                     "ADP-GROUP"
                 ],
                 "cas": [
-                    "58-64-0",
                     "58-64-0"
                 ],
                 "chebi": [
@@ -294,7 +285,6 @@
                 "bigg.metabolite": "atp",
                 "biocyc": "ATP",
                 "cas": [
-                    "56-65-5",
                     "56-65-5"
                 ],
                 "chebi": [
@@ -336,7 +326,6 @@
                 "bigg.metabolite": "dhap",
                 "biocyc": "DIHYDROXY-ACETONE-PHOSPHATE",
                 "cas": [
-                    "57-04-5",
                     "57-04-5"
                 ],
                 "chebi": [
@@ -373,7 +362,6 @@
                 "bigg.metabolite": "f6p",
                 "biocyc": "FRUCTOSE-6P",
                 "cas": [
-                    "643-13-0",
                     "643-13-0"
                 ],
                 "chebi": [
@@ -410,7 +398,6 @@
                 "bigg.metabolite": "fdp",
                 "biocyc": "FRUCTOSE-16-DIPHOSPHATE",
                 "cas": [
-                    "488-69-7",
                     "488-69-7"
                 ],
                 "chebi": [
@@ -445,7 +432,6 @@
             "annotation": {
                 "bigg.metabolite": "g3p",
                 "cas": [
-                    "142-10-9",
                     "142-10-9"
                 ],
                 "chebi": [
@@ -480,7 +466,6 @@
                     "GLC-6-P"
                 ],
                 "cas": [
-                    "56-73-5",
                     "56-73-5"
                 ],
                 "chebi": [
@@ -518,7 +503,6 @@
             "annotation": {
                 "bigg.metabolite": "glc__D",
                 "cas": [
-                    "50-99-7",
                     "50-99-7"
                 ],
                 "kegg.compound": "C00031",
@@ -539,7 +523,6 @@
                     "OXONIUM"
                 ],
                 "cas": [
-                    "7732-18-5",
                     "7732-18-5"
                 ],
                 "chebi": [
@@ -625,7 +608,6 @@
                     "OXONIUM"
                 ],
                 "cas": [
-                    "7732-18-5",
                     "7732-18-5"
                 ],
                 "chebi": [
@@ -707,7 +689,6 @@
                 "bigg.metabolite": "h",
                 "biocyc": "PROTON",
                 "cas": [
-                    "12408-02-5",
                     "12408-02-5"
                 ],
                 "chebi": [
@@ -754,7 +735,6 @@
                 "bigg.metabolite": "h",
                 "biocyc": "PROTON",
                 "cas": [
-                    "12408-02-5",
                     "12408-02-5"
                 ],
                 "chebi": [
@@ -797,6 +777,26 @@
             "name": "H+"
         },
         {
+            "annotation": {
+                "bigg.metabolite": "lac__D",
+                "biocyc": "META:D-LACTATE",
+                "chebi": [
+                    "CHEBI:11001",
+                    "CHEBI:16004",
+                    "CHEBI:18684",
+                    "CHEBI:341",
+                    "CHEBI:42105",
+                    "CHEBI:42111",
+                    "CHEBI:43701"
+                ],
+                "hmdb": [
+                    "HMDB00171",
+                    "HMDB01311"
+                ],
+                "kegg.compound": "C00256",
+                "metanetx.chemical": "MNXM285",
+                "seed.compound": "cpd00221"
+            },
             "charge": -1,
             "compartment": "c",
             "formula": "C3H5O3",
@@ -804,6 +804,26 @@
             "name": "D-Lactate"
         },
         {
+            "annotation": {
+                "bigg.metabolite": "lac__D",
+                "biocyc": "META:D-LACTATE",
+                "chebi": [
+                    "CHEBI:11001",
+                    "CHEBI:16004",
+                    "CHEBI:18684",
+                    "CHEBI:341",
+                    "CHEBI:42105",
+                    "CHEBI:42111",
+                    "CHEBI:43701"
+                ],
+                "hmdb": [
+                    "HMDB00171",
+                    "HMDB01311"
+                ],
+                "kegg.compound": "C00256",
+                "metanetx.chemical": "MNXM285",
+                "seed.compound": "cpd00221"
+            },
             "charge": -1,
             "compartment": "e",
             "formula": "C3H5O3",
@@ -815,7 +835,6 @@
                 "bigg.metabolite": "nad",
                 "biocyc": "NAD",
                 "cas": [
-                    "53-84-9",
                     "53-84-9"
                 ],
                 "chebi": [
@@ -855,7 +874,6 @@
                 "bigg.metabolite": "nadh",
                 "biocyc": "NADH",
                 "cas": [
-                    "58-68-4",
                     "58-68-4"
                 ],
                 "chebi": [
@@ -890,7 +908,6 @@
                 "bigg.metabolite": "pep",
                 "biocyc": "PHOSPHO-ENOL-PYRUVATE",
                 "cas": [
-                    "138-08-9",
                     "138-08-9"
                 ],
                 "chebi": [
@@ -928,7 +945,6 @@
                     "CPD0-1421"
                 ],
                 "cas": [
-                    "14265-44-2",
                     "14265-44-2"
                 ],
                 "chebi": [
@@ -996,7 +1012,6 @@
                     "CPD0-1421"
                 ],
                 "cas": [
-                    "14265-44-2",
                     "14265-44-2"
                 ],
                 "chebi": [
@@ -1060,7 +1075,6 @@
                 "bigg.metabolite": "pyr",
                 "biocyc": "PYRUVATE",
                 "cas": [
-                    "127-17-3",
                     "127-17-3"
                 ],
                 "chebi": [
@@ -1111,15 +1125,10 @@
             "upper_bound": 1000.0
         },
         {
-            "gene_reaction_rule": "b3603 or b2975",
+            "gene_reaction_rule": "",
             "id": "D_LACt2",
             "lower_bound": -1000.0,
-            "metabolites": {
-                "h_c": 1,
-                "h_e": -1,
-                "lac__D_c": 1,
-                "lac__D_e": -1
-            },
+            "metabolites": {},
             "name": "",
             "upper_bound": 1000.0
         },
@@ -1167,6 +1176,10 @@
             "upper_bound": 1000.0
         },
         {
+            "annotation": {
+                "bigg.reaction": "lac__D",
+                "sbo": "SBO:0000627"
+            },
             "gene_reaction_rule": "",
             "id": "EX_lac__D_e",
             "lower_bound": 0.0,
@@ -1213,7 +1226,7 @@
             "annotation": {
                 "bigg.reaction": "GLCpts"
             },
-            "gene_reaction_rule": "( b2417 and b1621 and b2415 and b2416 ) or ( b2417 and b1101 and b2415 and b2416 ) or ( b1817 and b1818 and b1819 and b2415 and b2416 )",
+            "gene_reaction_rule": "( b2415 and b2417 and b1101 and b2416 ) or ( b2415 and b2417 and b1621 and b2416 ) or ( b2415 and b1818 and b1817 and b1819 and b2416 )",
             "id": "GLCpts",
             "lower_bound": 0.0,
             "metabolites": {
@@ -1240,6 +1253,20 @@
             "upper_bound": 1000.0
         },
         {
+            "annotation": {
+                "bigg.reaction": "LDH_D",
+                "biocyc": "META:DLACTDEHYDROGNAD-RXN",
+                "ec-code": "1.1.1.28",
+                "kegg.reaction": "R00704",
+                "metanetx.reaction": "MNXR101037",
+                "rhea": [
+                    "16369",
+                    "16370",
+                    "16371",
+                    "16372"
+                ],
+                "sbo": "SBO:0000375"
+            },
             "gene_reaction_rule": "b2133 or b1380",
             "id": "LDH_D",
             "lower_bound": -1000.0,

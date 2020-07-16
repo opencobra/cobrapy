@@ -669,13 +669,14 @@ def test_change_objective(model):
 def test_problem_properties(model):
     new_variable = model.problem.Variable("test_variable")
     new_constraint = model.problem.Constraint(Zero,
-                                              name="test_constraint")
+                                              name="test_constraint",
+                                              lb=0)
     model.add_cons_vars([new_variable, new_constraint])
-    assert "test_variable" in model.variables.keys()
-    assert "test_constraint" in model.constraints.keys()
+    assert "test_variable" in model.variables
+    assert "test_constraint" in model.constraints
     model.remove_cons_vars([new_constraint, new_variable])
-    assert "test_variable" not in model.variables.keys()
-    assert "test_constraint" not in model.variables.keys()
+    assert "test_variable" not in model.variables
+    assert "test_constraint" not in model.variables
 
 
 def test_solution_data_frame(model):
@@ -912,16 +913,20 @@ def test_change_objective(model):
 
 def test_set_reaction_objective(model):
     model.objective = model.reactions.ACALD
-    assert str(model.objective.expression) == str(
+    assert same_ex(
+        model.objective.expression,
         1.0 * model.reactions.ACALD.forward_variable -
-        1.0 * model.reactions.ACALD.reverse_variable)
+        1.0 * model.reactions.ACALD.reverse_variable
+    )
 
 
 def test_set_reaction_objective_str(model):
     model.objective = model.reactions.ACALD.id
-    assert str(model.objective.expression) == str(
+    assert same_ex(
+        model.objective.expression,
         1.0 * model.reactions.ACALD.forward_variable -
-        1.0 * model.reactions.ACALD.reverse_variable)
+        1.0 * model.reactions.ACALD.reverse_variable
+    )
 
 
 def test_invalid_objective_raises(model):
@@ -933,6 +938,7 @@ def test_invalid_objective_raises(model):
 
 @pytest.mark.skipif("cplex" not in solvers, reason="need cplex")
 def test_solver_change(model):
+    model.solver = "glpk"
     solver_id = id(model.solver)
     problem_id = id(model.solver.problem)
     solution = model.optimize().fluxes
@@ -944,6 +950,7 @@ def test_solver_change(model):
 
 
 def test_no_change_for_same_solver(model):
+    model.solver = "glpk"
     solver_id = id(model.solver)
     problem_id = id(model.solver.problem)
     model.solver = "glpk"

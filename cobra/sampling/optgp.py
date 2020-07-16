@@ -21,7 +21,6 @@ CONFIGURATION = Configuration()
 
 def mp_init(obj):
     """Initialize the multiprocessing pool."""
-
     global sampler
     sampler = obj
 
@@ -34,13 +33,12 @@ def _sample_chain(args):
     center and n_samples are updated locally and forgotten afterwards.
 
     """
-
-    n, idx = args       # has to be this way to work in Python 2.7
+    n, idx = args  # has to be this way to work in Python 2.7
     center = sampler.center
     np.random.seed((sampler._seed + idx) % np.iinfo(np.int32).max)
     pi = np.random.randint(sampler.n_warmup)
 
-    prev = sampler.warmup[pi, ]
+    prev = sampler.warmup[pi, :]
     prev = step(sampler, center, prev - center, 0.95)
 
     n_samples = max(sampler.n_samples, 1)
@@ -48,20 +46,22 @@ def _sample_chain(args):
 
     for i in range(1, sampler.thinning * n + 1):
         pi = np.random.randint(sampler.n_warmup)
-        delta = sampler.warmup[pi, ] - center
+        delta = sampler.warmup[pi, :] - center
 
         prev = step(sampler, prev, delta)
 
         if sampler.problem.homogeneous and (
-                n_samples * sampler.thinning % sampler.nproj == 0):
+            n_samples * sampler.thinning % sampler.nproj == 0
+        ):
             prev = sampler._reproject(prev)
             center = sampler._reproject(center)
 
         if i % sampler.thinning == 0:
-            samples[i//sampler.thinning - 1, ] = prev
+            samples[i // sampler.thinning - 1, :] = prev
 
-        center = ((n_samples * center) / (n_samples + 1) +
-                  prev / (n_samples + 1))
+        center = (n_samples * center) / (n_samples + 1) + prev / (
+            n_samples + 1
+        )
         n_samples += 1
 
     return (sampler.retries, samples)
@@ -155,10 +155,10 @@ class OptGPSampler(HRSampler):
 
     """
 
-    def __init__(self, model, processes=None, thinning=100, nproj=None,
-                 seed=None):
+    def __init__(
+        self, model, processes=None, thinning=100, nproj=None, seed=None
+    ):
         """Initialize a new OptGPSampler."""
-
         super(OptGPSampler, self).__init__(model, thinning, seed=seed)
         self.generate_fva_warmup()
 
@@ -169,8 +169,9 @@ class OptGPSampler(HRSampler):
 
         # This maps our saved center into shared memory,
         # meaning they are synchronized across processes
-        self.center = shared_np_array((len(model.variables), ),
-                                      self.warmup.mean(axis=0))
+        self.center = shared_np_array(
+            (len(self.model.variables),), self.warmup.mean(axis=0)
+        )
 
     def sample(self, n, fluxes=True):
         """Generate a set of samples.
@@ -178,7 +179,7 @@ class OptGPSampler(HRSampler):
         This is the basic sampling function for all hit-and-run samplers.
 
         Parameters
-        ---------
+        ----------
         n : int
             The minimum number of samples that are generated at once
             (see Notes).
@@ -205,15 +206,15 @@ class OptGPSampler(HRSampler):
         (`n` > 1000).
 
         """
-
         if self.processes > 1:
             n_process = np.ceil(n / self.processes).astype(int)
             n = n_process * self.processes
 
             # The cast to list is weird but not doing it gives recursion
             # limit errors, something weird going on with multiprocessing
-            args = list(zip(
-                [n_process] * self.processes, range(self.processes)))
+            args = list(
+                zip([n_process] * self.processes, range(self.processes))
+            )
 
             # No with statement or starmap here since Python 2.x
             # does not support it :(
@@ -230,8 +231,9 @@ class OptGPSampler(HRSampler):
             chains = results[1]
 
         # Update the global center
-        self.center = (self.n_samples * self.center +
-                       np.atleast_2d(chains).sum(0)) / (self.n_samples + n)
+        self.center = (
+            self.n_samples * self.center + np.atleast_2d(chains).sum(0)
+        ) / (self.n_samples + n)
         self.n_samples += n
 
         if fluxes:
@@ -239,7 +241,8 @@ class OptGPSampler(HRSampler):
 
             return pandas.DataFrame(
                 chains[:, self.fwd_idx] - chains[:, self.rev_idx],
-                columns=names)
+                columns=names,
+            )
         else:
             names = [v.name for v in self.model.variables]
 
@@ -249,5 +252,5 @@ class OptGPSampler(HRSampler):
     def __getstate__(self):
         """Return the object for serialization."""
         d = dict(self.__dict__)
-        del d['model']
+        del d["model"]
         return d

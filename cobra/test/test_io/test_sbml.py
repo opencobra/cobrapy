@@ -282,7 +282,7 @@ def test_validate(data_directory):
                                              check_modeling_practice=True)
         assert model1
         assert errors
-        assert len(errors["SBML_WARNING"]) == 23
+        assert len(errors["SBML_WARNING"]) == 0
 
 
 def test_validation_warnings(data_directory):

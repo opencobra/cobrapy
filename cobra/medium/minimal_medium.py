@@ -161,9 +161,8 @@ def minimal_medium(model, min_objective_value=0.1, exports=False,
     minimize the number of "large" import fluxes. Specifically, the detection
     limit is given by ``integrality_tolerance * max_bound`` where ``max_bound``
     is the largest bound on an import reaction. Thus, if you are interested
-    in small import fluxes as well you may have to adjust the integrality
-    tolerance at first with
-    `model.solver.configuration.tolerances.integrality = 1e-7` for instance.
+    in small import fluxes as well you may have to adjust the solver
+    tolerance at first with `model.tolerance = 1e-7` for instance.
     However, this will be *very* slow for large models especially with GLPK.
 
     """
@@ -202,6 +201,7 @@ def minimal_medium(model, min_objective_value=0.1, exports=False,
             mod.add_cons_vars([exclusion])
             mod.solver.update()
             media = []
+
             for i in range(minimize_components):
                 LOGGER.info("Finding alternative medium #%d.", (i + 1))
                 vars = [mod.variables["ind_" + s] for s in seen]
@@ -211,6 +211,17 @@ def minimal_medium(model, min_objective_value=0.1, exports=False,
                     exclusion.ub = best - 1
                 num_components = mod.slim_optimize()
                 if mod.solver.status != OPTIMAL or num_components > best:
+                    if i == 0:
+                        LOGGER.warning(
+                            "Could not get an optimal solution. "
+                            "This is usually due to numerical instability. "
+                            "Possible remedies are relaoding the model "
+                            "from scratch, switching to a different solver, "
+                            "or decreasing the solver tolerance. Please, "
+                            "carefully read the note on numerical instability "
+                            "in the function documentation."
+                        )
+                        return None
                     break
                 medium = _as_medium(exchange_rxns, tol, exports=exports)
                 media.append(medium)

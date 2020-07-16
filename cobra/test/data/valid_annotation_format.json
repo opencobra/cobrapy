@@ -1,0 +1,19 @@
+{
+  "metabolites":[
+    {
+      "id":"4crsol_c",
+      "name":"",
+      "compartment":"c",
+      "annotation": {
+        "bigg.reaction": [["is", "PFK26"]],
+        "kegg.reaction": [["is", "R02732"]],
+        "rhea": [["is", "15656"]]
+      }
+    }
+  ],
+  "reactions":[],
+  "genes":[],
+  "id":"tesut",
+  "compartments":{},
+  "version": 1
+}
