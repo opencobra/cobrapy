@@ -46,7 +46,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
-          body_path: "release-notes/${{ steps.tag.outputs.version }}.md
+          body_path: "release-notes/${{ steps.tag.outputs.version }}.md"
           draft: false
           prerelease: false
       - name: Publish to website
