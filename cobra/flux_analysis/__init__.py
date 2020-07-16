@@ -4,9 +4,12 @@ from cobra.flux_analysis.deletion import (
     double_gene_deletion, double_reaction_deletion, single_gene_deletion,
     single_reaction_deletion)
 from cobra.flux_analysis.fastcc import fastcc
+from cobra.flux_analysis.find_active_reactions import (
+    find_active_reactions, find_reactions_in_cycles)
 from cobra.flux_analysis.gapfilling import gapfill
 from cobra.flux_analysis.geometric import geometric_fba
-from cobra.flux_analysis.loopless import (loopless_solution, add_loopless)
+from cobra.flux_analysis.loopless import (
+    loopless_solution, add_loopless, fastSNP)
 from cobra.flux_analysis.moma import add_moma, moma
 from cobra.flux_analysis.parsimonious import pfba
 from cobra.flux_analysis.variability import (
