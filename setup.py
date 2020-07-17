@@ -60,6 +60,7 @@ if __name__ == "__main__":
         extras_require=extras,
         package_data={
              '': [
+                 'cobra/io/*.json',
                  'test/data/*',
                  'mlab/matlab_scripts/*m'
              ]
