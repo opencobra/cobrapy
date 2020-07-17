@@ -1,2 +1,2 @@
 include README.rst INSTALL.rst LICENSE
-include cobra
+graft src/cobra/test/data

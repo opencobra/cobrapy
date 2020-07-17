@@ -3,157 +3,121 @@ Contributing
 ============
 
 Contributions are welcome, and they are greatly appreciated! Every little bit
-helps, and credit will always be given. For issues that contributors have 
-experienced in the past, see the FAQ at the bottom of this document.
+helps, and credit will always be given.
 
 You can contribute in many ways:
 
-Types of Contributions
-----------------------
-
 Report Bugs
-~~~~~~~~~~~
+===========
 
-Report bugs using the `issue tracker <https://github.com/opencobra/cobrapy/issues>`__
+Report bugs at https://github.com/opencobra/cobrapy/issues.
 
-If you are reporting a bug, please include:
-
-* Your operating system name and version.
-* Your Python and cobrapy version.
-* Any details about your local setup that might be helpful in troubleshooting.
-* Detailed steps to reproduce the bug.
+If you are reporting a bug, please follow the template guide lines. The more
+detailed your report, the easier and thus faster we can help you.
 
 Fix Bugs
-~~~~~~~~
+========
 
-Look through the GitHub `issues <https://github.com/opencobra/cobrapy/issues>`__
-for bugs. Anything tagged with "bug" and "help wanted" is open to whoever wants
-to implement it.
+Look through the GitHub issues for bugs. Anything tagged with "bug" and "help
+wanted" is open to whoever wants to implement it.
 
 Implement Features
-~~~~~~~~~~~~~~~~~~
+==================
 
-Look through the GitHub `issues <https://github.com/opencobra/cobrapy/issues>`__
-and `projects <https://github.com/opencobra/cobrapy/projects>`__ for features.
-Anything tagged with "enhancement" and "help wanted" is open to whoever wants to
-implement it.
+Look through the GitHub issues for features. Anything tagged with "enhancement"
+and "help wanted" is open to whoever wants to implement it.
 
 Write Documentation
-~~~~~~~~~~~~~~~~~~~
+===================
 
 cobrapy could always use more documentation, whether as part of the official
-cobrapy docs, in docstrings, or even on the web in blog posts, articles, and
-such - all contributions are welcome!
+documentation, in docstrings, or even on the web in blog posts, articles, and
+such.
 
 Submit Feedback
-~~~~~~~~~~~~~~~
+===============
 
-The best way to send feedback is to file an
-`issue <https://github.com/opencobra/cobrapy/issues>`__.
+The best way to send feedback is to file an issue at
+https://github.com/opencobra/cobrapy/issues.
 
 If you are proposing a feature:
 
 * Explain in detail how it would work.
 * Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that contributions
-  are welcome :)
-
-If you like cobrapy please remember to 'star' our github page (click on the star
-at top right corner), that way we also have an idea of who is using cobrapy!
+* Remember that this is a volunteer-driven project, and that contributions are
+  welcome :)
 
 Get Started!
-------------
+============
 
-Want to contribute a new feature or improvement? Consider starting by raising an
-issue and assign it to yourself to describe what you want to achieve. This way,
-we reduce the risk of duplicated efforts and you may also get suggestions on how
-to best proceed, e.g. there may be half-finished work in some branch that you
-could start with.
+Ready to contribute? Here's how to set up cobrapy for local development.
 
-Here's how to set up `cobrapy` for local development to contribute smaller
-features or changes that you can implement yourself.
+1. Fork the https://github.com/opencobra/cobrapy repository on GitHub. If you
+   have never done this before, `follow the official guide
+   <https://guides.github.com/activities/forking/>`_
+2. Clone your fork locally as described in the same guide.
+3. Install your local copy into a a Python virtual environment.  You can `read
+   this guide to learn more
+   <https://realpython.com/python-virtual-environments-a-primer/>`_ about them
+   and how to create one. Alternatively, particularly if you are a Windows or
+   Mac user, you can also use `Anaconda <https://docs.anaconda.com/anaconda/>`_.
+   Assuming you have virtualenvwrapper installed, this is how you set up your
+   fork for local development
 
-1. Fork the `cobrapy` repository on GitHub.
-2. Clone your fork locally::
+   .. code-block:: console
 
-    $ git clone git@github.com:<your Github name>/cobrapy.git
+       mkvirtualenv my-env
+       cd cobrapy/
+       pip install -e ".[development]"
 
-3. Install libglpk using your package manager. For macOS::
+4. Create a branch for local development using the ``devel`` branch as a
+   starting point. Use ``fix``, ``refactor``, or ``feat`` as a prefix
 
-	$ brew install homebrew/science/glpk
+   .. code-block:: console
 
-   For Debian-based Linux systems (including Ubuntu and Mint)::
-
-	$ sudo apt-get install libglpk-dev
-
-4. If virtualenvwrapper is not installed,
-   `follow the directions <https://virtualenvwrapper.readthedocs.io/en/latest/>`__
-   to install virtualenvwrapper.
-
-5. Install your local copy of cobrapy into a virtualenv with virtualenvwrapper::
-
-    $ cd cobrapy
-    $ mkvirtualenv cobrapy
-
-   Use the ``--python`` option to select a specific version of Python for the
-   virtualenv. Note on macOS, matplotlib requires Python be installed as a
-   framework but virtualenv creates a non-framework build of Python.  See the
-   `matplotlib FAQ <http://matplotlib.org/1.5.3/faq/virtualenv_faq.html>`__ for
-   details on a workaround.
-
-6. Install the required packages for development in the virtualenv using pip install::
-
-    (cobrapy)$ pip install --upgrade pip setuptools wheel
-    (cobrapy)$ pip install -r develop-requirements.txt
-
-   If you want to work on the Matlab interface, please also install
-   ``pymatbridge``::
-
-    (cobrapy)$ pip install pymatbridge
-
-7. Check out the branch that you want to contribute to. Most likely that will be
-   ``devel``::
-
-    (cobrapy)$ git checkout devel
-
-8. Create a branch for local development based on the previously checked out
-   branch (see below for details on the branching model)::
-
-    (cobrapy)$ git checkout -b name-of-your-bugfix-or-feature
+       git checkout devel
+       git checkout -b fix-name-of-your-bugfix
 
    Now you can make your changes locally.
 
-9. Setup cobrapy for development::
+5. When making changes locally, it is helpful to ``git commit`` your work
+   regularly. On one hand to save your work and on the other hand, the smaller
+   the steps, the easier it is to review your work later. Please use `semantic
+   commit messages
+   <http://karma-runner.github.io/2.0/dev/git-commit-msg.html>`_.
 
-    (cobrapy)$ python setup.py develop
+   .. code-block:: console
 
-   or::
+       git add .
+       git commit -m "fix: Your summary of changes"
 
-    (cobrapy)$ pip install -e .
+6. When you're done making changes, check that your changes pass our test suite.
+   This is all included with tox
 
-10. When you are done making changes, check that your changes pass pep8
-    and the tests with tox for your local Python version::
+   .. code-block:: console
 
-     (cobrapy)$ tox -e pep8
+       tox
 
-    and likely one of::
+   You can run all tests in parallel using detox. To get detox, just pip install
+   it into your virtualenv.
 
-     (cobrapy)$ tox -e py27
-     (cobrapy)$ tox -e py34
-     (cobrapy)$ tox -e py35
+7. Push your branch to GitHub.
 
-11. Commit your changes and push your branch to GitHub::
+   .. code-block:: console
 
-    (cobrapy)$ git add .
-    (cobrapy)$ git commit -m "Your detailed description of your changes."
-    (cobrapy)$ git push origin name-of-your-bugfix-or-feature
+       git push origin fix-name-of-your-bugfix
 
-12. Submit a pull request through the GitHub website. Once you submit a pull
-    request your changes will be tested automatically against multiple Python
-    versions and operating systems. Further errors might appear during those
-    tests.
+8. Open the link displayed in the message when pushing your new branch in order
+   to submit a pull request. Please follow the template presented to you in the
+   web interface to complete your pull request.
 
-For larger features that you want to work on collaboratively with other cobrapy team members, you may consider to first request to join the cobrapy developers team to get write access to the repository so that you can create a branch in the main repository (or simply ask the maintainer to create a branch for you). Once you have a new branch you can push your changes directly to the main repository and when finished, submit a pull request from that branch to ``devel``.
+For larger features that you want to work on collaboratively with other cobrapy
+team members, you may consider to first request to join the cobrapy developers
+team to get write access to the repository so that you can create a branch in
+the main repository (or simply ask the maintainer to create a branch for you).
+Once you have a new branch you can push your changes directly to the main
+repository and when finished, submit a pull request from that branch to
+``devel``.
 
 Pull Request Guidelines
 -----------------------
