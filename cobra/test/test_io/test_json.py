@@ -8,9 +8,17 @@ import json
 from os.path import join
 
 import pytest
+from importlib_resources import open_text
 
 import cobra.io as cio
 from cobra.test.test_io.conftest import compare_models
+
+
+@pytest.fixture(scope="module")
+def json_schema_v1():
+    with open_text(cio, "schema_v1.json") as handle:
+        schema_v1 = json.load(handle)
+    return schema_v1
 
 
 def test_validate_json(data_directory, json_schema_v1):

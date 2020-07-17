@@ -10,7 +10,7 @@ from pandas import DataFrame
 
 import cobra.util.solver as sutil
 from cobra import Metabolite, Model, Reaction
-from cobra.test import cobra_directory, create_test_model, data_dir
+from cobra.test import create_test_model, data_dir
 
 
 try:
@@ -72,14 +72,6 @@ def medium_model():
 @pytest.fixture(scope="function")
 def salmonella(medium_model):
     return medium_model.copy()
-
-
-@pytest.fixture(scope="session")
-def json_schema_v1():
-    json_path = join(cobra_directory, "io", "schema_v1.json")
-    with open(json_path) as handle:
-        schema_v1 = json.load(handle)
-    return schema_v1
 
 
 @pytest.fixture(scope="function")
