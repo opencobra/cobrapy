@@ -8,7 +8,7 @@ from __future__ import absolute_import, print_function
 import sys
 from datetime import date
 from glob import glob
-from os.path import join, basename
+from os.path import basename, join
 from shutil import copy
 
 
@@ -29,6 +29,7 @@ def insert_break(lines, break_pos=9):
         The text with the inserted tag or no modification if it was
         sufficiently short.
     """
+
     def line_filter(line):
         if len(line) == 0:
             return True
@@ -37,8 +38,10 @@ def insert_break(lines, break_pos=9):
     if len(lines) <= break_pos:
         return lines
     newlines = [
-        i for i, line in enumerate(lines[break_pos:], start=break_pos)
-        if line_filter(line.strip())]
+        i
+        for i, line in enumerate(lines[break_pos:], start=break_pos)
+        if line_filter(line.strip())
+    ]
     if len(newlines) > 0:
         break_pos = newlines[0]
     lines.insert(break_pos, "<!--more-->\n")
@@ -63,13 +66,13 @@ def build_hugo_md(filename, tag, bump):
 
     """
     header = [
-        '+++\n',
+        "+++\n",
         'date = "{}"\n'.format(date.today().isoformat()),
         'title = "{}"\n'.format(tag),
         'author = "The COBRApy Team"\n',
         'release = "{}"\n'.format(bump),
-        '+++\n',
-        '\n'
+        "+++\n",
+        "\n",
     ]
     with open(filename, "r") as file_h:
         content = insert_break(file_h.readlines())
@@ -131,7 +134,6 @@ def main(argv):
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print("Usage:\n{} <source dir> <target dir> <tag>"
-              "".format(sys.argv[0]))
+        print("Usage:\n{} <source dir> <target dir> <tag>" "".format(sys.argv[0]))
         sys.exit(2)
     sys.exit(main(sys.argv[1:]))
