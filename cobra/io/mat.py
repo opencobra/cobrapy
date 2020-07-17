@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+"""Helpers to interface with Matlab models."""
+
 from __future__ import absolute_import
 
 import re
@@ -17,37 +19,37 @@ from cobra.util.solver import set_objective
 
 
 try:
-    import scipy.sparse as scipy_sparse
     import scipy.io as scipy_io
+    import scipy.sparse as scipy_sparse
 except ImportError:
     scipy_sparse = None
     scipy_io = None
 
 
 # precompiled regular expressions
-_bracket_re = re.compile(r"\[[a-z]\]$")
-_underscore_re = re.compile(r"_[a-z]$")
+_bracket_re = re.compile(r"\[(?P<compartment>[a-z]+)\]$")
+_underscore_re = re.compile(r"_(?P<compartment>[a-z]+)$")
 
 
 def _get_id_compartment(id):
-    """extract the compartment from the id string"""
-    bracket_search = _bracket_re.findall(id)
-    if len(bracket_search) == 1:
-        return bracket_search[0][1]
-    underscore_search = _underscore_re.findall(id)
-    if len(underscore_search) == 1:
-        return underscore_search[0][1]
+    """Extract the compartment from the id string."""
+    bracket_search = _bracket_re.search(id)
+    if bracket_search:
+        return bracket_search.group("compartment")
+    underscore_search = _underscore_re.search(id)
+    if underscore_search:
+        return underscore_search.group("compartment")
     return None
 
 
 def _cell(x):
-    """translate an array x into a MATLAB cell array"""
+    """Translate an array x into a MATLAB cell array."""
     x_no_none = [i if i is not None else "" for i in x]
     return array(x_no_none, dtype=np_object)
 
 
 def load_matlab_model(infile_path, variable_name=None, inf=inf):
-    """Load a cobra model stored as a .mat file
+    """Load a cobra model stored as a .mat file.
 
     Parameters
     ----------
@@ -68,7 +70,7 @@ def load_matlab_model(infile_path, variable_name=None, inf=inf):
 
     """
     if not scipy_io:
-        raise ImportError('load_matlab_model requires scipy')
+        raise ImportError("load_matlab_model requires scipy")
 
     data = scipy_io.loadmat(infile_path)
     possible_names = []
@@ -79,12 +81,14 @@ def load_matlab_model(infile_path, variable_name=None, inf=inf):
         if len(possible_names) == 1:
             variable_name = possible_names[0]
     if variable_name is not None:
-        return from_mat_struct(data[variable_name], model_id=variable_name,
-                               inf=inf)
+        return from_mat_struct(
+            data[variable_name], model_id=variable_name, inf=inf
+        )
     for possible_name in possible_names:
         try:
-            return from_mat_struct(data[possible_name], model_id=possible_name,
-                                   inf=inf)
+            return from_mat_struct(
+                data[possible_name], model_id=possible_name, inf=inf
+            )
         except ValueError:
             pass
     # If code here is executed, then no model was found.
@@ -106,28 +110,33 @@ def save_matlab_model(model, file_name, varname=None):
        The name of the variable within the workspace
     """
     if not scipy_io:
-        raise ImportError('load_matlab_model requires scipy')
+        raise ImportError("load_matlab_model requires scipy")
 
     if varname is None:
-        varname = str(model.id) \
-            if model.id is not None and len(model.id) > 0 \
+        varname = (
+            str(model.id)
+            if model.id is not None and len(model.id) > 0
             else "exported_model"
+        )
     mat = create_mat_dict(model)
-    scipy_io.savemat(file_name, {varname: mat},
-                     appendmat=True, oned_as="column")
+    scipy_io.savemat(
+        file_name, {varname: mat}, appendmat=True, oned_as="column"
+    )
 
 
 def create_mat_metabolite_id(model):
+    """Obtain a metabolite id from a Matlab model."""
     for met in model.metabolites:
         if not _get_id_compartment(met.id) and met.compartment:
-            yield '{}[{}]'.format(met.id,
-                                  model.compartments[met.compartment].lower())
+            yield "{}[{}]".format(
+                met.id, model.compartments[met.compartment].lower()
+            )
         else:
             yield met.id
 
 
 def create_mat_dict(model):
-    """create a dict mapping model attributes to arrays"""
+    """Create a dict mapping model attributes to arrays."""
     rxns = model.reactions
     mets = model.metabolites
     mat = OrderedDict()
@@ -135,15 +144,16 @@ def create_mat_dict(model):
     mat["metNames"] = _cell(mets.list_attr("name"))
     mat["metFormulas"] = _cell([str(m.formula) for m in mets])
     try:
-        mat["metCharge"] = array(mets.list_attr("charge")) * 1.
+        mat["metCharge"] = array(mets.list_attr("charge")) * 1.0
     except TypeError:
         # can't have any None entries for charge, or this will fail
         pass
     mat["genes"] = _cell(model.genes.list_attr("id"))
     # make a matrix for rxnGeneMat
     # reactions are rows, genes are columns
-    rxn_gene = scipy_sparse.dok_matrix((len(model.reactions),
-                                        len(model.genes)))
+    rxn_gene = scipy_sparse.dok_matrix(
+        (len(model.reactions), len(model.genes))
+    )
     if min(rxn_gene.shape) > 0:
         for i, reaction in enumerate(model.reactions):
             for gene in reaction.genes:
@@ -157,17 +167,17 @@ def create_mat_dict(model):
     mat["S"] = stoich_mat if stoich_mat is not None else [[]]
     # multiply by 1 to convert to float, working around scipy bug
     # https://github.com/scipy/scipy/issues/4537
-    mat["lb"] = array(rxns.list_attr("lower_bound")) * 1.
-    mat["ub"] = array(rxns.list_attr("upper_bound")) * 1.
-    mat["b"] = array(mets.list_attr("_bound")) * 1.
-    mat["c"] = array(rxns.list_attr("objective_coefficient")) * 1.
+    mat["lb"] = array(rxns.list_attr("lower_bound")) * 1.0
+    mat["ub"] = array(rxns.list_attr("upper_bound")) * 1.0
+    mat["b"] = array(mets.list_attr("_bound")) * 1.0
+    mat["c"] = array(rxns.list_attr("objective_coefficient")) * 1.0
     mat["rev"] = array(rxns.list_attr("reversibility")) * 1
     mat["description"] = str(model.id)
     return mat
 
 
 def from_mat_struct(mat_struct, model_id=None, inf=inf):
-    """create a model from the COBRA toolbox struct
+    """Create a model from the COBRA toolbox struct.
 
     The struct will be a dict read in by scipy.io.loadmat
 
@@ -197,18 +207,20 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
     for i, name in enumerate(m["mets"][0, 0]):
         new_metabolite = Metabolite()
         new_metabolite.id = str(name[0][0])
-        if all(var in m.dtype.names for var in
-               ['metComps', 'comps', 'compNames']):
+        if all(
+            var in m.dtype.names for var in ["metComps", "comps", "compNames"]
+        ):
             comp_index = m["metComps"][0, 0][i][0] - 1
-            new_metabolite.compartment = m['comps'][0, 0][comp_index][0][0]
+            new_metabolite.compartment = m["comps"][0, 0][comp_index][0][0]
             if new_metabolite.compartment not in model.compartments:
-                comp_name = m['compNames'][0, 0][comp_index][0][0]
+                comp_name = m["compNames"][0, 0][comp_index][0][0]
                 model.compartments[new_metabolite.compartment] = comp_name
         else:
             new_metabolite.compartment = _get_id_compartment(new_metabolite.id)
             if new_metabolite.compartment not in model.compartments:
                 model.compartments[
-                    new_metabolite.compartment] = new_metabolite.compartment
+                    new_metabolite.compartment
+                ] = new_metabolite.compartment
         try:
             new_metabolite.name = str(m["metNames"][0, 0][i][0][0])
         except (IndexError, ValueError):
@@ -239,7 +251,7 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
         if c_vec is not None:
             coefficients[new_reaction] = float(c_vec[i][0])
         try:
-            new_reaction.gene_reaction_rule = str(m['grRules'][0, 0][i][0][0])
+            new_reaction.gene_reaction_rule = str(m["grRules"][0, 0][i][0][0])
         except (IndexError, ValueError):
             pass
         try:
@@ -247,7 +259,7 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
         except (IndexError, ValueError):
             pass
         try:
-            new_reaction.subsystem = str(m['subSystems'][0, 0][i][0][0])
+            new_reaction.subsystem = str(m["subSystems"][0, 0][i][0][0])
         except (IndexError, ValueError):
             pass
         new_reactions.append(new_reaction)
@@ -260,13 +272,13 @@ def from_mat_struct(mat_struct, model_id=None, inf=inf):
 
 
 def _check(result):
-    """ensure success of a pymatbridge operation"""
+    """Ensure success of a pymatbridge operation."""
     if result["success"] is not True:
         raise RuntimeError(result["content"]["stdout"])
 
 
 def model_to_pymatbridge(model, variable_name="model", matlab=None):
-    """send the model to a MATLAB workspace through pymatbridge
+    """Send the model to a MATLAB workspace through pymatbridge.
 
     This model can then be manipulated through the COBRA toolbox
 
@@ -286,9 +298,10 @@ def model_to_pymatbridge(model, variable_name="model", matlab=None):
         raise ImportError("`model_to_pymatbridge` requires scipy!")
     if matlab is None:  # assumed to be running an IPython magic
         from IPython import get_ipython
+
         matlab = get_ipython().magics_manager.registry["MatlabMagics"].Matlab
     model_info = create_mat_dict(model)
-    S = model_info["S"].todok()
+    S = scipy_sparse.dok_matrix(model_info["S"])
     model_info["S"] = 0
     temp_S_name = "cobra_pymatbridge_temp_" + uuid4().hex
     _check(matlab.set_variable(variable_name, model_info))

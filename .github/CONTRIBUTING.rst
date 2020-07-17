@@ -222,7 +222,7 @@ Branching model
 
 ``devel``
     Is the branch all pull-requests should be based on.
-``master``
+``stable``
     Is only touched by maintainers and is the branch with only tested, reviewed
     code that is released or ready for the next release.
 ``{fix, bugfix, doc, feature}/descriptive-name``

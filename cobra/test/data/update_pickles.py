@@ -18,9 +18,9 @@ from cobra.io import (
 # This script regenerates pickles of cobra Models.  Should be
 # performed after updating core classes to prevent subtle bugs.
 try:
-    from cPickle import load, dump
-except:
-    from pickle import load, dump
+    from cPickle import dump, load
+except ImportError:
+    from pickle import dump, load
 
 
 config = cobra.Configuration()
