@@ -1,4 +1,5 @@
-Installation of cobrapy
+=======================
+Installation of COBRApy
 =======================
 
 For installation help, please use the `Google Group
@@ -10,9 +11,9 @@ should work mostly. For Windows users and possibly also Mac OS users, we
 recommend using the `Anaconda Python <https://www.anaconda.com/>`_ distribution.
 
 Stable version installation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===========================
 
-cobrapy can be installed with any recent installation of pip.  Instructions for
+COBRApy can be installed with any recent installation of pip.  Instructions for
 several operating systems are below:
 
 Mac OS X or Linux
@@ -20,36 +21,36 @@ Mac OS X or Linux
 
 1. We highly recommend that you create a `Python virtual environment
    <https://realpython.com/python-virtual-environments-a-primer>`_.
-2. Install cobrapy with when an environment is active using ``pip install
-   cobra``.
+2. Install COBRApy when an environment is active by running ``pip install
+   cobra`` in the terminal.
 
 Microsoft Windows
 -----------------
 
 If you heed our recommendation to use Anaconda, you can open an Anaconda shell
-and install cobrapy from the ``bioconda`` channel. Soon it should also be
+and install COBRApy from the ``bioconda`` channel. Soon it should also be
 available from the ``conda-forge`` channel.
 
 .. code-block:: console
     conda install -c bioconda cobra
 
 Installation for development
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+============================
 
 Get the `detailed contribution instructions <CONTRIBUTING.rst>`_ for
-contributing to cobrapy.
+contributing to COBRApy.
 
 Solvers
-~~~~~~~~~~~~~
+=======
 
-cobrapy uses `optlang <http://optlang.readthedocs.io>`_ to interface the
+COBRApy uses `optlang <http://optlang.readthedocs.io>`_ to interface the
 mathematical solvers used to optimize the created COBRA models.  At the time of
 writing the supported solvers are:
 
 -  ILOG/CPLEX (available with `Academic
-  <https://www.ibm.com/developerworks/university/academicinitiative/>`_ and
-  `Commercial
-  <http://www.ibm.com/software/integration/optimization/cplex-optimizer/>`_
-  licenses).
+    <https://www.ibm.com/developerworks/university/academicinitiative/>`_ and
+    `Commercial
+    <http://www.ibm.com/software/integration/optimization/cplex-optimizer/>`_
+    licenses)
 -  `Gurobi <http://gurobi.com>`_
--  `GLPK <http://www.gnu.org/software/glpk/>`_
+-  `GLPK <http://www.gnu.org/software/glpk/>`_ which is automatically installed as swiglpk

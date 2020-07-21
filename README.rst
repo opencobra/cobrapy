@@ -1,4 +1,5 @@
-cobrapy - Constraint-Based Reconstruction and Analysis in Python
+================================================================
+COBRApy - Constraint-Based Reconstruction and Analysis in Python
 ================================================================
 
 .. image:: https://img.shields.io/pypi/v/cobra.svg
@@ -19,7 +20,7 @@ cobrapy - Constraint-Based Reconstruction and Analysis in Python
 
 .. image:: https://github.com/opencobra/cobrapy/workflows/CI/badge.svg
    :target: https://github.com/opencobra/cobrapy/workflows/CI
-   :alt: GitHub Actions Continuous Integration Status
+   :alt: Continuous Integration Status
 
 .. image:: https://codecov.io/gh/opencobra/cobrapy/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/opencobra/cobrapy
@@ -37,17 +38,17 @@ cobrapy - Constraint-Based Reconstruction and Analysis in Python
    :target: https://github.com/ambv/black
    :alt: Black
 
-What is cobrapy?
-~~~~~~~~~~~~~~~~
+What is COBRApy?
+================
 
 COBRA methods are widely used for genome-scale modeling of metabolic networks in
-both prokaryotes and eukaryotes. **cobrapy** is a constraint-based modeling
+both prokaryotes and eukaryotes. **COBRApy** is a constraint-based modeling
 package that is designed to accommodate the biological complexity of the next
 generation of COBRA models and provides access to commonly used COBRA methods,
 such as flux balance analysis, flux variability analysis, and gene deletion
 analyses.
 
-Our aim with cobrapy is to provide useful, efficient infrastructure for:
+Our aim with COBRApy is to provide useful, efficient infrastructure for:
 
 - creating and managing metabolic models
 - accessing popular solvers
@@ -55,7 +56,7 @@ Our aim with cobrapy is to provide useful, efficient infrastructure for:
 - inspecting models and drawing conclusions on gene essentiality, testing
   consequences of knock-outs etc.
 
-Our goal with cobrapy is for it to be useful on its own, and for it to be the
+Our goal with COBRApy is for it to be useful on its own, and for it to be the
 natural choice of infrastructure for developers that want to build new COBRA
 related python packages for e.g. visualization, strain-design and data driven
 analysis. By re-using the same classes and design principles, we can make new
@@ -72,19 +73,19 @@ much more likely to quickly receive a good answer! Please refer to these
 `StackOverflow guidelines <https://stackoverflow.com/help/how-to-ask>`_ on how
 to ask questions.  Alternatively, you can use `gitter.im
 <https://gitter.im/opencobra/cobrapy>`_ for quick questions and discussions
-about cobrapy (faster response times). Please keep in mind that answers are
+about COBRApy (faster response times). Please keep in mind that answers are
 provided on a volunteer basis.
 
 More information about opencobra is available at the `website
 <http://opencobra.github.io/>`_.
 
-If you use cobrapy in a scientific publication, please cite
+If you use COBRApy in a scientific publication, please cite
 `doi:10.1186/1752-0509-7-74 <http://dx.doi.org/doi:10.1186/1752-0509-7-74>`_
 
 Installation
-~~~~~~~~~~~~
+============
 
-Use pip to `install cobrapy from PyPI <https://pypi.org/project/cobra/>`_ (we
+Use pip to `install COBRApy from PyPI <https://pypi.org/project/cobra/>`_ (we
 recommend doing this inside a `virtual environment
 <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_)::
 
@@ -99,16 +100,16 @@ For further information, please follow the `detailed installation instructions
 <INSTALL.rst>`_.
 
 Contributing
-~~~~~~~~~~~~
+============
 
 Contributions are always welcome! Please read the `contributing guidelines
 <https://github.com/opencobra/cobrapy/blob/devel/.github/CONTRIBUTING.rst>`_ to
 get started.
 
 License
--------
+=======
 
-The cobrapy source is released under both the GPL and LGPL licenses version 2 or
+The COBRApy source is released under both the GPL and LGPL licenses version 2 or
 later. You may choose which license you choose to use the software under.
 
 This program is free software: you can redistribute it and/or modify it under
