@@ -134,7 +134,7 @@ class Notes(collectionsAbc.MutableMapping):
             start = match.start('content')
             end = match.end('content')
             modified_str = self._notes_xhtml[:start] + \
-                           value + self._notes_xhtml[end:]
+                value + self._notes_xhtml[end:]
             self._notes_xhtml = modified_str
 
     @property

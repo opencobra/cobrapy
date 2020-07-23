@@ -1,42 +1,9 @@
-
-"""
-Some documentation:
-
-Reactions: v1; v2; v3;
-Stochiometric Contraints (metabolic nework, SBML Reactions):
-v1 - v2 = 0
-
-UserDefinedConstraints:
-v1 + v2 < 2
-
-Non-constant parameters (x1: not reactions; )
-
-expression =: v1 + v2 + 1.2 x1 < 2
-v1 + v2 + 1.2 x1*x1 < 2
-
--> examples:
--> optimize: (v1, v2, x1); how to access the optimal solution?
-
-Test Cases:
-------------
-1. add user constraint to simple model
-A -v1-> B -v2-> C
-optimize: v2; bounds v1[0; 10]; v2[0, 5]
-optimal value: 5;
-
-UserConstraint: v1 + v2 <= 4
-optimal value: 2;
-
-2. only user constraint;
-empty cobra model
-
-x1 <= 2
-maximize: x1
-flux distribution optimal: x1=2
-"""
+# -*- coding: utf-8 -*-
 
 from warnings import warn
-from cobra import DictList, Object
+
+from cobra.core import DictList
+from cobra.core.object import Object
 
 
 class UserDefinedConstraints(Object):
@@ -49,16 +16,16 @@ class UserDefinedConstraints(Object):
        An identifier for the chemical species
     name : string
        A human readable name.
-    lower_bound : 'int', 'float'
+    lower_bound : int, float
         lower bound on constraint expression
-    upper_bound : 'int', 'float'
+    upper_bound : int, float
         upper bound on constraint expression
-    const_comp : list
+    const_comps : list
         a list of constraint components
     """
 
-    def __init__(self, id=None, name=None, lower_bound: ['int', 'float']=None,
-                 upper_bound: ['int', 'float']=None, const_comps: 'list'=None):
+    def __init__(self, id=None, name=None, lower_bound: [int, float]=None,
+                 upper_bound: [int, float]=None, const_comps: list=None):
         Object.__init__(self, id, name)
         self._model = None
 
@@ -68,7 +35,8 @@ class UserDefinedConstraints(Object):
         self.upper_bound = upper_bound
 
         self._constraint_comps = DictList()
-        self.add_constraint_comps(const_comps)
+        if const_comps is not None:
+            self.add_constraint_comps(const_comps)
 
     @property
     def lower_bound(self):
@@ -76,8 +44,10 @@ class UserDefinedConstraints(Object):
 
     @lower_bound.setter
     def lower_bound(self, value):
-        if not isinstance(value, int) or \
-                not isinstance(value, float):
+        if value is None:
+            self._lower_bound = value
+        elif not (isinstance(value, int) or
+                  isinstance(value, float)):
             raise TypeError("The 'lower_bound' must be of "
                             "type 'number' (int, float):"
                             " {}".format(value))
@@ -90,8 +60,10 @@ class UserDefinedConstraints(Object):
 
     @upper_bound.setter
     def upper_bound(self, value):
-        if not isinstance(value, int) or \
-                not isinstance(value, float):
+        if value is None:
+            self._upper_bound = value
+        elif not (isinstance(value, int) or
+                  isinstance(value, float)):
             raise TypeError("The 'upper_bound' must be of "
                             "type 'number' (int, float):"
                             " {}".format(value))
@@ -103,8 +75,14 @@ class UserDefinedConstraints(Object):
         return self._constraint_comps
 
     def add_constraint_comps(self, value):
-        # COBRApy doesn't support parameters. So constraints
-        # present on parameter will not be added
+        """Adds a UserDefinedConstraintComponent in this constraint
+
+        Parameters
+        ----------
+        value: UserDefinedConstraintComponent
+            the constraint component to add in the model
+
+        """
         if self._model is not None:
             raise ValueError("The constraint has already been "
                              "added to model. Can't add more "
@@ -125,14 +103,17 @@ class UserDefinedConstraints(Object):
                                 "type 'UserDefinedConstraintComponents'"
                                 ": {}".format(item))
 
-            # FIXME: what to do with non-constant parameters
-            if item.ref_var not in self._model.reactions:
-                warn("The referenced variable is not present "
-                     "inside this model's reaction list: "
-                     "{}".format(item.ref_var))
             self.constraint_comps.append(item)
 
     def remove_constraint_comps(self, value):
+        """Removes a UserDefinedConstraintComponent from this constraint
+
+        Parameters
+        ----------
+        value: UserDefinedConstraintComponent
+            the constraint component to br removed
+
+        """
         if self._model is not None:
             raise ValueError("The constraint has already been "
                              "added to model. Can't remove any "
@@ -156,6 +137,23 @@ class UserDefinedConstraints(Object):
 
 
 class UserDefinedConstraintComponents(Object):
+    """Class representation of components of a user-defined
+    contraint.
+
+    Parameters
+    ----------
+    id: str
+        An identifier for the chemical species
+    name : string
+        A human readable name.
+    ref_var: str
+        the id of variable referenced by this components
+    coefficient: int, float
+        coefficient of the variable in constraint expression
+    variable_type: str
+        exponent of the variable in constraint expression
+
+    """
 
     variable_types = ('linear', 'quadratic')
 
@@ -188,8 +186,10 @@ class UserDefinedConstraintComponents(Object):
 
     @coefficient.setter
     def coefficient(self, value):
-        if not isinstance(value, int) or \
-                not isinstance(value, float):
+        if value is None:
+            self._coefficient = value
+        elif not (isinstance(value, int) or
+                  isinstance(value, float)):
             raise TypeError("The 'coefficient' must be of "
                             "type 'number' (int, float):"
                             " {}".format(value))

@@ -23,8 +23,7 @@ from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
-from cobra.core.user_defined_constraints import (
-    UserDefinedConstraints, UserDefinedConstraintComponents)
+from cobra.core.user_defined_constraints import UserDefinedConstraints
 from cobra.exceptions import SolverNotFound
 from cobra.medium import (
     find_boundary_types, find_external_compartment, sbo_terms)
@@ -106,7 +105,8 @@ class Model(Object):
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
             self.groups = DictList()  # A list of cobra.Groups
-            self.user_defined_const = DictList() # A list of cobra.UserDefiendConstriant
+            # A list of UserDefinedConstraints
+            self.user_defined_const = DictList()
             # genes based on their ids {Gene.id: Gene}
             self._compartments = {}
             self._contexts = []
@@ -869,10 +869,17 @@ class Model(Object):
         return [g for g in self.groups if element in g.members]
 
     def add_user_defined_constraints(self, constraints):
-        # COBRApy doesn't support parameters. So constraints
-        # present on parameter will not be added
+        """Adds User defined constraints to the model via
+        fbc-v3.
+
+        Parameters
+        ----------
+        constraints: list
+            a list of UserDefinedConstraints
+        """
 
         if not isinstance(constraints, list):
+            # if single UserDefinedConstraints, convert to a list
             if isinstance(constraints, UserDefinedConstraints):
                 warn("The constraints passed must be inside a list: "
                      "{}".format(constraints))
@@ -887,19 +894,18 @@ class Model(Object):
                                 "be of type 'UserDefinedConstraints': "
                                 "{}".format(constraint))
 
-            if constraint.lower_bound is None or constraint.upper_bound is None:
+            if constraint.lower_bound is None or \
+                    constraint.upper_bound is None:
                 raise ValueError("Bounds must be set for the constraint: "
                                  "{}".format(constraint))
 
             constraint._model = self
-            cons_exp = 0
+            cons_exp = 0        # an expression involving variables
+            list_of_var_cons = []
+
             for item in constraint.constraint_comps:
 
-                # FIXME: what to do with non-constant parameters
-                if item.ref_var not in self.reactions:
-                    warn("The referenced variable is not present "
-                         "inside this model's reaction list: "
-                         "{}".format(item.ref_var))
+                # set the exponent of variable/flux
                 if item.variable_type == 'linear':
                     var_pow = 1
                 elif item.variable_type == 'quadratic':
@@ -907,19 +913,41 @@ class Model(Object):
                 else:
                     raise ValueError("Unexpected variable type set "
                                      "for item: {}".format(item))
-                rxn = self.reactions.get_by_id(item.ref_var)
-                cons_exp += item.coefficient * pow(rxn.flux_expression, var_pow)
 
+                # checks if the reference variable is a rxn flux
+                # or variable
+                if item.ref_var in self.reactions:
+                    rxn = self.reactions.get_by_id(item.ref_var)
+                    var_to_add = rxn.flux_expression
+                else:
+                    var_to_add = self.problem.Variable(item.ref_var)
+                    if var_to_add not in self.variables:
+                        list_of_var_cons.append(var_to_add)
+
+                # add the variable/flux to the constraint expression
+                cons_exp += item.coefficient * pow(var_to_add, var_pow)
+
+            # make the constraint using expression and bounds
             new_constraint = self.problem.Constraint(
                 cons_exp,
-                name=self.id,
+                name=constraint.id,
                 lb=constraint.lower_bound,
-                up=constraint.upper_bound
-            )
-            self.add_cons_vars(new_constraint)
+                ub=constraint.upper_bound)
+
+            list_of_var_cons.append(new_constraint)
+            self.user_defined_const.append(constraint)
+            self.add_cons_vars(list_of_var_cons)
 
     def remove_user_defined_constraints(self, constraints):
+        """Remove the constraints from the model
+
+        Parameters
+        ----------
+        constraints: list
+            a list of UserDefinedConstraints
+        """
         if not isinstance(constraints, list):
+            # if single UserDefinedConstraints, convert to a list
             if isinstance(constraints, UserDefinedConstraints):
                 warn("The constraints passed must be inside a list: "
                      "{}".format(constraints))

@@ -9,7 +9,9 @@ from operator import attrgetter, itemgetter
 from numpy import bool_, float_
 from six import iteritems, string_types
 
-from cobra.core import Gene, Metabolite, Model, Reaction
+from cobra.core import (Gene, Metabolite, Model, Reaction,
+                        UserDefinedConstraints,
+                        UserDefinedConstraintComponents)
 from cobra.core.metadata import MetaData, Notes
 from cobra.util.solver import set_objective
 
@@ -41,6 +43,22 @@ _OPTIONAL_METABOLITE_ATTRIBUTES = {
 _REQUIRED_GENE_ATTRIBUTES = ["id", "name"]
 _ORDERED_OPTIONAL_GENE_KEYS = ["notes", "annotation"]
 _OPTIONAL_GENE_ATTRIBUTES = {
+    "notes": {},
+    "annotation": {},
+}
+
+_REQUIRED_CONSTRAINT_ATTRIBUTES = ["id", "name", "lower_bound",
+                                   "upper_bound", "constraint_comps"]
+_ORDERED_OPTIONAL_CONSTRAINT_KEYS = ["notes", "annotation"]
+_OPTIONAL_CONSTRAINT_ATTRIBUTES = {
+    "notes": {},
+    "annotation": {},
+}
+
+_REQUIRED_CONSTRAINT_COMP_ATTRIBUTES = ["id", "name", "ref_var",
+                                        "coefficient", "variable_type"]
+_ORDERED_OPTIONAL_CONSTRAINT_COMP_KEYS = ["notes", "annotation"]
+_OPTIONAL_CONSTRAINT_COMP_ATTRIBUTES = {
     "notes": {},
     "annotation": {},
 }
@@ -208,6 +226,47 @@ def reaction_from_dict(reaction, model):
     return new_reaction
 
 
+def const_comp_to_dict(component):
+    new_const_comp = OrderedDict()
+    for key in _REQUIRED_CONSTRAINT_COMP_ATTRIBUTES:
+        new_const_comp[key] = _fix_type(getattr(component, key))
+    _update_optional(component, new_const_comp,
+                     _OPTIONAL_CONSTRAINT_COMP_ATTRIBUTES,
+                     _ORDERED_OPTIONAL_CONSTRAINT_COMP_KEYS)
+    return new_const_comp
+
+
+def user_defined_const_to_dict(constraint):
+    new_const = OrderedDict()
+    for key in _REQUIRED_CONSTRAINT_ATTRIBUTES:
+        if key != "constraint_comps":
+            new_const[key] = _fix_type(getattr(constraint, key))
+            continue
+        new_const["constraint_comps"] = list(map(const_comp_to_dict,
+                                                 constraint.constraint_comps))
+    _update_optional(constraint, new_const, _OPTIONAL_CONSTRAINT_ATTRIBUTES,
+                     _ORDERED_OPTIONAL_CONSTRAINT_KEYS)
+    return new_const
+
+
+def user_defined_const_from_dict(constraint):
+    new_user_defined_const = UserDefinedConstraints()
+    for k, v in iteritems(constraint):
+        if k == "constraint_comps":
+            for comp in v:
+                new_comp = UserDefinedConstraintComponents(**comp)
+                new_user_defined_const.add_constraint_comps([new_comp])
+        elif k == "annotation":
+            value = _extract_annotation(v)
+            setattr(new_user_defined_const, k, value)
+        elif k == "notes":
+            notes_data = Notes(v)
+            setattr(new_user_defined_const, k, notes_data)
+        else:
+            setattr(new_user_defined_const, k, v)
+    return new_user_defined_const
+
+
 def model_to_dict(model, sort=False):
     """Convert model to a dict.
 
@@ -235,6 +294,8 @@ def model_to_dict(model, sort=False):
     obj["metabolites"] = list(map(metabolite_to_dict, model.metabolites))
     obj["reactions"] = list(map(reaction_to_dict, model.reactions))
     obj["genes"] = list(map(gene_to_dict, model.genes))
+    obj["user_defined_constraints"] = list(map(user_defined_const_to_dict,
+                                               model.user_defined_const))
     obj["id"] = model.id
     _update_optional(model, obj, _OPTIONAL_MODEL_ATTRIBUTES,
                      _ORDERED_OPTIONAL_MODEL_KEYS)
@@ -285,6 +346,10 @@ def model_from_dict(obj):
         model.reactions.get_by_id(rxn['id']): rxn['objective_coefficient'] for
         rxn in objective_reactions}
     set_objective(model, coefficients)
+    model.add_user_defined_constraints(
+        [user_defined_const_from_dict(cons) for cons in
+         obj["user_defined_constraints"]]
+    )
     for k, v in iteritems(obj):
         if k == "annotation":
             value = _extract_annotation(v)
