@@ -46,18 +46,18 @@ from cobra.core.user_defined_constraints import (
 from cobra.io import load_json_model, read_sbml_model, save_json_model
 
 
-@pytest.fixture(scope="session")
 def ex_model(data_directory):
     model = read_sbml_model(join(data_directory, "userConstraint.xml"))
     return model
 
 
-@pytest.fixture(scope="function")
-def cons_model(ex_model):
-    return ex_model.copy()
+def textbook_model(data_directory):
+    model = read_sbml_model(join(data_directory, "textbook.xml.gz"))
+    return model
 
 
-def test_user_defined_constraints(cons_model):
+def test_user_defined_constraints(data_directory):
+    cons_model = ex_model(data_directory)
     solution1 = cons_model.optimize()
     assert solution1.objective_value == 5.0
 
@@ -72,7 +72,8 @@ def test_user_defined_constraints(cons_model):
     assert solution2.objective_value == 2.00
 
 
-def test_user_defined_constraints_on_single_flux(cons_model):
+def test_user_defined_constraints_on_single_flux(data_directory):
+    cons_model = ex_model(data_directory)
     solution1 = cons_model.optimize()
     assert solution1.objective_value == 5.0
 
@@ -121,7 +122,8 @@ def test_json_reading_writing(small_model, tmp_path):
     assert const_1.constraint_comps[0].ref_var == "FBA"
 
 
-def test_user_defined_constraints_documented(small_model):
+def test_user_defined_constraints_documented(data_directory):
+    small_model = textbook_model(data_directory)
     solution1 = small_model.optimize()
     assert solution1.objective_value == 0.8739215069684307
 
@@ -135,40 +137,41 @@ def test_user_defined_constraints_documented(small_model):
     assert solution2.objective_value == 0.8551109609261563
 
 
-def test_user_defined_constraints_with_variable_documented(small_model):
+def test_user_defined_constraints_with_variable_documented(data_directory):
+    small_model = textbook_model(data_directory)
     solution1 = small_model.optimize()
     assert solution1.objective_value == 0.8739215069684307
 
-    cc1 = UserDefinedConstraintComponents("cc1", "comp1", "FBA", 1, "linear")
-    cc2 = UserDefinedConstraintComponents("cc2", "comp2", "NH4t", -1, "linear")
+    cc1 = UserDefinedConstraintComponents("cc1", "comp1", "EX_glc__D_e", 1, "linear")
+    cc2 = UserDefinedConstraintComponents("cc2", "comp2", "EX_nh4_e", -1, "linear")
     cc3 = UserDefinedConstraintComponents("cc3", "comp3",
                                           "difference", -1, "linear")
     c1 = UserDefinedConstraints("c1", "constraint1", 0, 0, [cc1, cc2, cc3])
     small_model.add_user_defined_constraints([c1])
-    # solution2 = small_model.optimize()
-    # assert solution2.objective_value == 0.8739215069684302
+    solution2 = small_model.optimize()
+    assert solution2.objective_value == 0.8739215069684302
 
-    # reaction1 = small_model.reactions[0]
-    # reaction1.knock_out()
-    # small_model.optimize()
-    # assert small_model.solver.variables.difference.primal == -5.234680806802543
-    #
-    # reaction2 = small_model.reactions[1]
-    # reaction2.knock_out()
-    # small_model.optimize()
-    # assert small_model.solver.variables.difference.primal == -5.2346808068025386
-    #
-    # reaction3 = small_model.reactions[2]
-    # reaction3.knock_out()
-    # small_model.optimize()
-    # assert small_model.solver.variables.difference.primal == -5.234680806802525
-    #
-    # reaction4 = small_model.reactions[3]
-    # reaction4.knock_out()
-    # small_model.optimize()
-    # assert small_model.solver.variables.difference.primal == -1.8644444444444337
-    #
-    # reaction5 = small_model.reactions[4]
-    # reaction5.knock_out()
-    # small_model.optimize()
-    # assert small_model.solver.variables.difference.primal == -1.8644444444444466
+    reaction1 = small_model.reactions[0]
+    reaction1.knock_out()
+    small_model.optimize()
+    assert small_model.solver.variables.difference.primal == -5.234680806802545
+
+    reaction2 = small_model.reactions[1]
+    reaction2.knock_out()
+    small_model.optimize()
+    assert small_model.solver.variables.difference.primal == -5.234680806802545
+
+    reaction3 = small_model.reactions[2]
+    reaction3.knock_out()
+    small_model.optimize()
+    assert small_model.solver.variables.difference.primal == -5.234680806802545
+
+    reaction4 = small_model.reactions[3]
+    reaction4.knock_out()
+    small_model.optimize()
+    assert small_model.solver.variables.difference.primal == -1.864444444444441
+
+    reaction5 = small_model.reactions[4]
+    reaction5.knock_out()
+    small_model.optimize()
+    assert small_model.solver.variables.difference.primal == -1.864444444444441

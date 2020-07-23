@@ -64,6 +64,8 @@ class Model(Object):
     groups : DictList
         A DictList where the key is the group identifier and the value a
         Group
+    user_defined_const : UserDefinedConstraints
+        A Dictlist to store UserDefinedConstraints
     solution : Solution
         The last obtained solution from optimizing the model.
 
@@ -388,7 +390,7 @@ class Model(Object):
                 if attr not in do_not_copy_by_ref:
                     new_group.__dict__[attr] = copy(value)
             new_group._model = new
-            new_group.annotation = group.annotation
+            new_group.annotation = deepcopy(group.annotation)
             new.groups.append(new_group)
         for group in self.groups:
             new_group = new.groups.get_by_id(group.id)
@@ -410,6 +412,28 @@ class Model(Object):
                         "group.".format(member))
                 new_objects.append(new_object)
             new_group.add_members(new_objects)
+
+        new.user_defined_const = DictList()
+        do_not_copy_by_ref = {"_model", "_constraint_comps", "_annotation"}
+        for const in self.user_defined_const:
+            new_user_defined_const = const.__class__()
+
+            for attr, value in iteritems(const.__dict__):
+                if attr not in do_not_copy_by_ref:
+                    new_user_defined_const.__dict__[attr] = copy(value)
+            new_user_defined_const._model = new
+            new_user_defined_const.annotation = deepcopy(const.annotation)
+
+            do_not_copy_by_ref = {"_annotation"}
+            for const_comp in const.constraint_comps:
+                new_const_comp = const_comp.__class__()
+                for attr, value in iteritems(const_comp.__dict__):
+                    if attr not in do_not_copy_by_ref:
+                        new_const_comp.__dict__[attr] = copy(value)
+                new_const_comp.annotation = deepcopy(const_comp.annotation)
+                new_user_defined_const.add_constraint_comps([new_const_comp])
+
+            new.user_defined_const.append(new_user_defined_const)
 
         try:
             new._solver = deepcopy(self.solver)
