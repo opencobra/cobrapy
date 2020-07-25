@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-
 """Test functions of array.py"""
-
-from __future__ import absolute_import
 
 import numpy as np
 import pytest
