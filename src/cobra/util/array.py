@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
+"""Helper functions for array operations."""
 
 from collections import namedtuple
 
 import numpy as np
 import pandas as pd
-from six import iteritems
 
 
 try:
@@ -60,7 +57,7 @@ def create_stoichiometric_matrix(model, array_type="dense", dtype=None):
     r_ind = model.reactions.index
 
     for reaction in model.reactions:
-        for metabolite, stoich in iteritems(reaction.metabolites):
+        for metabolite, stoich in reaction.metabolites.items():
             array[m_ind(metabolite), r_ind(reaction)] = stoich
 
     if array_type == "DataFrame":
