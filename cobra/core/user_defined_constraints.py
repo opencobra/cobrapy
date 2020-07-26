@@ -6,7 +6,7 @@ from cobra.core import DictList
 from cobra.core.object import Object
 
 
-class UserDefinedConstraints(Object):
+class UserDefinedConstraint(Object):
     """Class representation of constraints defined by
     user.
 
@@ -79,7 +79,7 @@ class UserDefinedConstraints(Object):
 
         Parameters
         ----------
-        value: UserDefinedConstraintComponent
+        value: ConstraintComponent
             the constraint component to add in the model
 
         """
@@ -89,7 +89,7 @@ class UserDefinedConstraints(Object):
                              "constraint components".format(value))
 
         if not isinstance(value, list):
-            if isinstance(value, UserDefinedConstraintComponents):
+            if isinstance(value, ConstraintComponent):
                 warn("Pass the Constraint Components inside a "
                      "list: {}".format(value))
                 value = [value]
@@ -98,7 +98,7 @@ class UserDefinedConstraints(Object):
                                 "inside a list: {}".format(value))
 
         for item in value:
-            if not isinstance(item, UserDefinedConstraintComponents):
+            if not isinstance(item, ConstraintComponent):
                 raise TypeError("The constraint component should be of "
                                 "type 'UserDefinedConstraintComponents'"
                                 ": {}".format(item))
@@ -110,7 +110,7 @@ class UserDefinedConstraints(Object):
 
         Parameters
         ----------
-        value: UserDefinedConstraintComponent
+        value: ConstraintComponent
             the constraint component to br removed
 
         """
@@ -120,7 +120,7 @@ class UserDefinedConstraints(Object):
                              "constraint components".format(value))
 
         if not isinstance(value, list):
-            if isinstance(value, UserDefinedConstraintComponents):
+            if isinstance(value, ConstraintComponent):
                 warn("Pass the Constraint Components inside a "
                      "list: {}".format(value))
                 value = [value]
@@ -129,16 +129,16 @@ class UserDefinedConstraints(Object):
                                 "inside a list: {}".format(value))
 
         for item in value:
-            if not isinstance(item, UserDefinedConstraintComponents):
+            if not isinstance(item, ConstraintComponent):
                 raise TypeError("The constraint component should be of "
                                 "type 'UserDefinedConstraintComponents'"
                                 ": {}".format(item))
             self.constraint_comps.remove(item)
 
 
-class UserDefinedConstraintComponents(Object):
-    """Class representation of components of a user-defined
-    contraint.
+class ConstraintComponent(Object):
+    """Class representation of component of a user-defined
+    constraint.
 
     Parameters
     ----------
@@ -146,8 +146,8 @@ class UserDefinedConstraintComponents(Object):
         An identifier for the chemical species
     name : string
         A human readable name.
-    ref_var: str
-        the id of variable referenced by this components
+    variable: str
+        the id of variable referenced by this component
     coefficient: int, float
         coefficient of the variable in constraint expression
     variable_type: str
@@ -157,22 +157,22 @@ class UserDefinedConstraintComponents(Object):
 
     variable_types = ('linear', 'quadratic')
 
-    def __init__(self, id=None, name=None, ref_var=None,
-                 coefficient=None, variable_type=None):
-        Object.__init__(self, id, name)
+    def __init__(self, id=None, name=None, variable=None,
+                 coefficient=1.0, variable_type='linear'):
+        Object.__init__(self, id=id, name=name)
         self._ref_var = None
         self._coefficient = None
         self._variable_type = None
-        self.ref_var = ref_var
+        self.variable = variable
         self.coefficient = coefficient
         self.variable_type = variable_type
 
     @property
-    def ref_var(self):
+    def variable(self):
         return self._ref_var
 
-    @ref_var.setter
-    def ref_var(self, value):
+    @variable.setter
+    def variable(self, value):
         if not isinstance(value, str):
             raise TypeError("The 'ref_var' have to be an "
                             "COBRA object id and must be of"

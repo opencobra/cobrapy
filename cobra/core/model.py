@@ -23,7 +23,7 @@ from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
-from cobra.core.user_defined_constraints import UserDefinedConstraints
+from cobra.core.user_defined_constraints import UserDefinedConstraint
 from cobra.exceptions import SolverNotFound
 from cobra.medium import (
     find_boundary_types, find_external_compartment, sbo_terms)
@@ -64,7 +64,7 @@ class Model(Object):
     groups : DictList
         A DictList where the key is the group identifier and the value a
         Group
-    user_defined_const : UserDefinedConstraints
+    user_defined_const : UserDefinedConstraint
         A Dictlist to store UserDefinedConstraints
     solution : Solution
         The last obtained solution from optimizing the model.
@@ -329,7 +329,7 @@ class Model(Object):
         """
         new = self.__class__()
         do_not_copy_by_ref = {"metabolites", "reactions", "genes", "notes",
-                              "_annotation", "groups"}
+                              "_annotation", "user_defined_const", "groups"}
         for attr in self.__dict__:
             if attr not in do_not_copy_by_ref:
                 new.__dict__[attr] = self.__dict__[attr]
@@ -904,7 +904,7 @@ class Model(Object):
 
         if not isinstance(constraints, list):
             # if single UserDefinedConstraints, convert to a list
-            if isinstance(constraints, UserDefinedConstraints):
+            if isinstance(constraints, UserDefinedConstraint):
                 warn("The constraints passed must be inside a list: "
                      "{}".format(constraints))
                 constraints = [constraints]
@@ -913,7 +913,7 @@ class Model(Object):
                                 " a list: {}".format(constraints))
 
         for constraint in constraints:
-            if not isinstance(constraint, UserDefinedConstraints):
+            if not isinstance(constraint, UserDefinedConstraint):
                 raise TypeError("The user defined constraints passed must "
                                 "be of type 'UserDefinedConstraints': "
                                 "{}".format(constraint))
@@ -940,11 +940,11 @@ class Model(Object):
 
                 # checks if the reference variable is a rxn flux
                 # or variable
-                if item.ref_var in self.reactions:
-                    rxn = self.reactions.get_by_id(item.ref_var)
+                if item.variable in self.reactions:
+                    rxn = self.reactions.get_by_id(item.variable)
                     var_to_add = rxn.flux_expression
                 else:
-                    var_to_add = self.problem.Variable(item.ref_var)
+                    var_to_add = self.problem.Variable(item.variable)
                     if var_to_add not in self.variables:
                         list_of_var_cons.append(var_to_add)
 
@@ -972,7 +972,7 @@ class Model(Object):
         """
         if not isinstance(constraints, list):
             # if single UserDefinedConstraints, convert to a list
-            if isinstance(constraints, UserDefinedConstraints):
+            if isinstance(constraints, UserDefinedConstraint):
                 warn("The constraints passed must be inside a list: "
                      "{}".format(constraints))
                 constraints = [constraints]
@@ -981,7 +981,7 @@ class Model(Object):
                                 " a list: {}".format(constraints))
 
         for constraint in constraints:
-            if not isinstance(constraint, UserDefinedConstraints):
+            if not isinstance(constraint, UserDefinedConstraint):
                 raise TypeError("The user defined constraints passed must "
                                 "be of type 'UserDefinedConstraints': "
                                 "{}".format(constraint))

@@ -10,8 +10,8 @@ from numpy import bool_, float_
 from six import iteritems, string_types
 
 from cobra.core import (Gene, Metabolite, Model, Reaction,
-                        UserDefinedConstraints,
-                        UserDefinedConstraintComponents)
+                        UserDefinedConstraint,
+                        ConstraintComponent)
 from cobra.core.metadata import MetaData, Notes
 from cobra.util.solver import set_objective
 
@@ -250,11 +250,11 @@ def user_defined_const_to_dict(constraint):
 
 
 def user_defined_const_from_dict(constraint):
-    new_user_defined_const = UserDefinedConstraints()
+    new_user_defined_const = UserDefinedConstraint()
     for k, v in iteritems(constraint):
         if k == "constraint_comps":
             for comp in v:
-                new_comp = UserDefinedConstraintComponents(**comp)
+                new_comp = ConstraintComponent(**comp)
                 new_user_defined_const.add_constraint_comps([new_comp])
         elif k == "annotation":
             value = _extract_annotation(v)
