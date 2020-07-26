@@ -18,7 +18,7 @@ def test_formula_element_setting(model):
     met = model.metabolites[1]
     orig_formula = str(met.formula)
     orig_elements = dict(met.elements)
-    met.formula = ''
+    met.formula = ""
     assert met.elements == {}
     met.elements = orig_elements
     assert met.formula == orig_formula
@@ -28,10 +28,10 @@ def test_set_id(solved_model):
     solution, model = solved_model
     met = Metabolite("test")
     with pytest.raises(TypeError):
-        setattr(met, 'id', 1)
+        setattr(met, "id", 1)
     model.add_metabolites([met])
     with pytest.raises(ValueError):
-        setattr(met, "id", 'g6p_c')
+        setattr(met, "id", "g6p_c")
     met.id = "test2"
     assert "test2" in model.metabolites
     assert "test" not in model.metabolites
@@ -46,4 +46,4 @@ def test_remove_from_model(solved_model):
 
 
 def test_repr_html_(model):
-    assert '<table>' in model.metabolites.h2o_c._repr_html_()
+    assert "<table>" in model.metabolites.h2o_c._repr_html_()

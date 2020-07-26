@@ -41,20 +41,20 @@ class Metabolite(Species):
        Compartment of the metabolite.
     """
 
-    def __init__(self, id=None, formula=None, name="",
-                 charge=None, compartment=None):
+    def __init__(self, id=None, formula=None, name="", charge=None, compartment=None):
         Species.__init__(self, id, name)
         self.formula = formula
         # because in a Model a metabolite may participate in multiple Reactions
         self.compartment = compartment
         self.charge = charge
 
-        self._bound = 0.
+        self._bound = 0.0
 
     def _set_id_with_model(self, value):
         if value in self.model.metabolites:
-            raise ValueError("The model already contains a metabolite with "
-                             "the id:", value)
+            raise ValueError(
+                "The model already contains a metabolite with " "the id:", value
+            )
         self.model.constraints[self.id].name = value
         self._id = value
         self.model.metabolites._generate_index()
@@ -91,7 +91,7 @@ class Metabolite(Species):
         composition = {}
         parsed = element_re.findall(tmp_formula)
         for (element, count) in parsed:
-            if count == '':
+            if count == "":
                 count = 1
             else:
                 try:
@@ -100,11 +100,12 @@ class Metabolite(Species):
                     if count == int_count:
                         count = int_count
                     else:
-                        warn("%s is not an integer (in formula %s)" %
-                             (count, self.formula))
+                        warn(
+                            "%s is not an integer (in formula %s)"
+                            % (count, self.formula)
+                        )
                 except ValueError:
-                    warn("failed to parse %s (in formula %s)" %
-                         (count, self.formula))
+                    warn("failed to parse %s (in formula %s)" % (count, self.formula))
                     return None
             if element in composition:
                 composition[element] += count
@@ -117,15 +118,20 @@ class Metabolite(Species):
         def stringify(element, number):
             return element if number == 1 else element + str(number)
 
-        self.formula = ''.join(stringify(e, n) for e, n in
-                               sorted(iteritems(elements_dict)))
+        self.formula = "".join(
+            stringify(e, n) for e, n in sorted(iteritems(elements_dict))
+        )
 
     @property
     def formula_weight(self):
         """Calculate the formula weight"""
         try:
-            return sum([count * elements_and_molecular_weights[element]
-                        for element, count in self.elements.items()])
+            return sum(
+                [
+                    count * elements_and_molecular_weights[element]
+                    for element, count in self.elements.items()
+                ]
+            )
         except KeyError as e:
             warn("The element %s does not appear in the periodic table" % e)
 
@@ -183,16 +189,19 @@ class Metabolite(Species):
             check_solver_status(self._model.solver.status)
             return self._model.constraints[self.id].dual
         except AttributeError:
-            raise RuntimeError(
-                "metabolite '{}' is not part of a model".format(self.id))
+            raise RuntimeError("metabolite '{}' is not part of a model".format(self.id))
         # Due to below all-catch, which sucks, need to reraise these.
         except (RuntimeError, OptimizationError) as err:
             raise_with_traceback(err)
         # Would love to catch CplexSolverError and GurobiError here.
         except Exception as err:
-            raise_from(OptimizationError(
-                "Likely no solution exists. Original solver message: {}."
-                "".format(str(err))), err)
+            raise_from(
+                OptimizationError(
+                    "Likely no solution exists. Original solver message: {}."
+                    "".format(str(err))
+                ),
+                err,
+            )
 
     def remove_from_model(self, destructive=False):
         """Removes the association from self.model
@@ -214,7 +223,7 @@ class Metabolite(Species):
         threshold=0.01,
         fva=None,
         names=False,
-        float_format="{:.3g}".format
+        float_format="{:.3g}".format,
     ):
         """
         Create a summary of the producing and consuming fluxes.
@@ -263,7 +272,7 @@ class Metabolite(Species):
             threshold=threshold,
             fva=fva,
             names=names,
-            float_format=float_format
+            float_format=float_format,
         )
 
     def _repr_html_(self):
@@ -284,10 +293,12 @@ class Metabolite(Species):
                 <td><strong>In {n_reactions} reaction(s)</strong></td><td>
                     {reactions}</td>
             </tr>
-        </table>""".format(id=self.id, name=format_long_string(self.name),
-                           formula=self.formula,
-                           address='0x0%x' % id(self),
-                           compartment=self.compartment,
-                           n_reactions=len(self.reactions),
-                           reactions=format_long_string(
-                               ', '.join(r.id for r in self.reactions), 200))
+        </table>""".format(
+            id=self.id,
+            name=format_long_string(self.name),
+            formula=self.formula,
+            address="0x0%x" % id(self),
+            compartment=self.compartment,
+            n_reactions=len(self.reactions),
+            reactions=format_long_string(", ".join(r.id for r in self.reactions), 200),
+        )

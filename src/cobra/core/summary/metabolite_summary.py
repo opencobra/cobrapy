@@ -65,47 +65,52 @@ class MetaboliteSummary(Summary):
 
         """
         if self.names:
-            emit = attrgetter('name')
+            emit = attrgetter("name")
         else:
-            emit = attrgetter('id')
+            emit = attrgetter("id")
 
         if self.solution is None:
             self.metabolite.model.slim_optimize(error_value=None)
-            self.solution = get_solution(self.metabolite.model,
-                                         reactions=self.metabolite.reactions)
+            self.solution = get_solution(
+                self.metabolite.model, reactions=self.metabolite.reactions
+            )
 
-        rxns = sorted(self.metabolite.reactions, key=attrgetter('id'))
+        rxns = sorted(self.metabolite.reactions, key=attrgetter("id"))
 
         data = [
             (
                 emit(rxn),
                 self.solution[rxn.id] * rxn.metabolites[self.metabolite],
                 rxn.build_reaction_string(use_metabolite_names=self.names),
-                rxn
-            ) for rxn in rxns
+                rxn,
+            )
+            for rxn in rxns
         ]
 
         flux_summary = pd.DataFrame.from_records(
             data=data,
             index=[rxn.id for rxn in rxns],
-            columns=['id', 'flux', 'reaction_string', 'reaction']
+            columns=["id", "flux", "reaction_string", "reaction"],
         )
 
-        assert flux_summary['flux'].sum() < self.metabolite.model.tolerance, \
-            'Error in flux balance'
+        assert (
+            flux_summary["flux"].sum() < self.metabolite.model.tolerance
+        ), "Error in flux balance"
 
         if self.fva is not None:
-            if hasattr(self.fva, 'columns'):
+            if hasattr(self.fva, "columns"):
                 fva_results = self.fva
             else:
                 fva_results = flux_variability_analysis(
-                    self.metabolite.model, list(self.metabolite.reactions),
-                    fraction_of_optimum=self.fva)
+                    self.metabolite.model,
+                    list(self.metabolite.reactions),
+                    fraction_of_optimum=self.fva,
+                )
 
-            flux_summary = pd.concat([flux_summary, fva_results],
-                                     axis=1, sort=False)
-            flux_summary.rename(columns={'maximum': 'fmax', 'minimum': 'fmin'},
-                                inplace=True)
+            flux_summary = pd.concat([flux_summary, fva_results], axis=1, sort=False)
+            flux_summary.rename(
+                columns={"maximum": "fmax", "minimum": "fmin"}, inplace=True
+            )
 
             def set_min_and_max(row):
                 """Scale and set proper min and max values for flux."""
@@ -126,10 +131,10 @@ class MetaboliteSummary(Summary):
 
         flux_summary = self._process_flux_dataframe(flux_summary)
 
-        total_flux = flux_summary.loc[flux_summary.is_input, 'flux'].sum()
+        total_flux = flux_summary.loc[flux_summary.is_input, "flux"].sum()
 
         # Calculate flux percentage
-        flux_summary['percent'] = (flux_summary['flux'] / total_flux) * 100
+        flux_summary["percent"] = (flux_summary["flux"] / total_flux) * 100
 
         return flux_summary
 
@@ -142,23 +147,37 @@ class MetaboliteSummary(Summary):
         """
         flux_df = self._generate()
 
-        flux_df['is_input'] = flux_df['is_input']\
-            .apply(lambda x: 'PRODUCING' if x is True else 'CONSUMING')
+        flux_df["is_input"] = flux_df["is_input"].apply(
+            lambda x: "PRODUCING" if x is True else "CONSUMING"
+        )
 
         flux_df.columns = [col.upper() for col in flux_df.columns]
 
         if self.fva is not None:
-            flux_df.rename(columns={'IS_INPUT': 'RXN_STAT',
-                                    'FMIN': 'FLUX_MIN',
-                                    'FMAX': 'FLUX_MAX'}, inplace=True)
-            flux_df = flux_df[['RXN_STAT', 'ID', 'PERCENT', 'FLUX', 'FLUX_MIN',
-                               'FLUX_MAX', 'REACTION_STRING']]
+            flux_df.rename(
+                columns={
+                    "IS_INPUT": "RXN_STAT",
+                    "FMIN": "FLUX_MIN",
+                    "FMAX": "FLUX_MAX",
+                },
+                inplace=True,
+            )
+            flux_df = flux_df[
+                [
+                    "RXN_STAT",
+                    "ID",
+                    "PERCENT",
+                    "FLUX",
+                    "FLUX_MIN",
+                    "FLUX_MAX",
+                    "REACTION_STRING",
+                ]
+            ]
         else:
-            flux_df.rename(columns={'IS_INPUT': 'RXN_STAT'}, inplace=True)
-            flux_df = flux_df[['RXN_STAT', 'ID', 'PERCENT', 'FLUX',
-                               'REACTION_STRING']]
+            flux_df.rename(columns={"IS_INPUT": "RXN_STAT"}, inplace=True)
+            flux_df = flux_df[["RXN_STAT", "ID", "PERCENT", "FLUX", "REACTION_STRING"]]
 
-        flux_df.set_index(['RXN_STAT', 'ID'], inplace=True)
+        flux_df.set_index(["RXN_STAT", "ID"], inplace=True)
 
         return flux_df
 
@@ -169,6 +188,11 @@ class MetaboliteSummary(Summary):
         A string of the summary table.
 
         """
-        return self.to_frame().to_string(header=True, index=True, na_rep='',
-                                         float_format=self.float_format,
-                                         sparsify=True, justify='center')
+        return self.to_frame().to_string(
+            header=True,
+            index=True,
+            na_rep="",
+            float_format=self.float_format,
+            sparsify=True,
+            justify="center",
+        )

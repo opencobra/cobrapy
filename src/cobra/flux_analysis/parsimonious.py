@@ -61,11 +61,11 @@ def pfba(model, fraction_of_optimum=1.0, objective=None, reactions=None):
        390. doi:10.1038/msb.2010.47
 
     """
-    reactions = model.reactions if reactions is None \
-        else model.reactions.get_by_any(reactions)
+    reactions = (
+        model.reactions if reactions is None else model.reactions.get_by_any(reactions)
+    )
     with model as m:
-        add_pfba(m, objective=objective,
-                 fraction_of_optimum=fraction_of_optimum)
+        add_pfba(m, objective=objective, fraction_of_optimum=fraction_of_optimum)
         m.slim_optimize(error_value=None)
         solution = get_solution(m, reactions=reactions)
     return solution
@@ -94,12 +94,14 @@ def add_pfba(model, objective=None, fraction_of_optimum=1.0):
     """
     if objective is not None:
         model.objective = objective
-    if model.solver.objective.name == '_pfba_objective':
-        raise ValueError('The model already has a pFBA objective.')
+    if model.solver.objective.name == "_pfba_objective":
+        raise ValueError("The model already has a pFBA objective.")
     sutil.fix_objective_as_constraint(model, fraction=fraction_of_optimum)
-    reaction_variables = ((rxn.forward_variable, rxn.reverse_variable)
-                          for rxn in model.reactions)
+    reaction_variables = (
+        (rxn.forward_variable, rxn.reverse_variable) for rxn in model.reactions
+    )
     variables = chain(*reaction_variables)
     model.objective = model.problem.Objective(
-        Zero, direction='min', sloppy=True, name="_pfba_objective")
+        Zero, direction="min", sloppy=True, name="_pfba_objective"
+    )
     model.objective.set_linear_coefficients({v: 1.0 for v in variables})

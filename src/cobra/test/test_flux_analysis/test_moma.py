@@ -35,8 +35,7 @@ def test_moma_sanity(model, qp_solvers):
 
     assert np.isclose(moma_sol.objective_value, moma_ssq)
     assert moma_ssq < ssq
-    assert np.isclose(moma_sol.objective_value,
-                      moma_ref_sol.objective_value)
+    assert np.isclose(moma_sol.objective_value, moma_ref_sol.objective_value)
     assert np.isclose(moma_ssq, moma_ref_ssq)
 
 
@@ -65,8 +64,7 @@ def test_linear_moma_sanity(model, all_solvers):
 
     assert np.allclose(moma_sol.objective_value, moma_sabs)
     assert moma_sabs < sabs
-    assert np.isclose(moma_sol.objective_value,
-                      moma_ref_sol.objective_value)
+    assert np.isclose(moma_sol.objective_value, moma_ref_sol.objective_value)
     assert np.isclose(moma_sabs, moma_ref_sabs)
 
     with model:

@@ -26,7 +26,7 @@ def raven_model(data_directory):
         return load(infile)
 
 
-@pytest.mark.skipif(scipy is None, reason='scipy unavailable')
+@pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 # @pytest.mark.parametrize("ref_model, filename",
 #                          [(pytest.fixture_request("mini_model"),
 #                            "mini.mat"),
@@ -42,7 +42,7 @@ def test_load_matlab_model(data_directory, mini_model, raven_model):
 
 
 # @pytest.mark.xfail(reason="localPath not supported yet")
-@pytest.mark.skipif(scipy is None, reason='scipy unavailable')
+@pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 # @pytest.mark.parametrize("model, filename",
 #                          [(pytest.fixture_request("mini_model"),
 #                            "mini.mat"),

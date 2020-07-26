@@ -59,9 +59,7 @@ def _sample_chain(args):
         if i % sampler.thinning == 0:
             samples[i // sampler.thinning - 1, :] = prev
 
-        center = (n_samples * center) / (n_samples + 1) + prev / (
-            n_samples + 1
-        )
+        center = (n_samples * center) / (n_samples + 1) + prev / (n_samples + 1)
         n_samples += 1
 
     return (sampler.retries, samples)
@@ -155,9 +153,7 @@ class OptGPSampler(HRSampler):
 
     """
 
-    def __init__(
-        self, model, processes=None, thinning=100, nproj=None, seed=None
-    ):
+    def __init__(self, model, processes=None, thinning=100, nproj=None, seed=None):
         """Initialize a new OptGPSampler."""
         super(OptGPSampler, self).__init__(model, thinning, seed=seed)
         self.generate_fva_warmup()
@@ -212,9 +208,7 @@ class OptGPSampler(HRSampler):
 
             # The cast to list is weird but not doing it gives recursion
             # limit errors, something weird going on with multiprocessing
-            args = list(
-                zip([n_process] * self.processes, range(self.processes))
-            )
+            args = list(zip([n_process] * self.processes, range(self.processes)))
 
             # No with statement or starmap here since Python 2.x
             # does not support it :(
@@ -231,17 +225,16 @@ class OptGPSampler(HRSampler):
             chains = results[1]
 
         # Update the global center
-        self.center = (
-            self.n_samples * self.center + np.atleast_2d(chains).sum(0)
-        ) / (self.n_samples + n)
+        self.center = (self.n_samples * self.center + np.atleast_2d(chains).sum(0)) / (
+            self.n_samples + n
+        )
         self.n_samples += n
 
         if fluxes:
             names = [r.id for r in self.model.reactions]
 
             return pandas.DataFrame(
-                chains[:, self.fwd_idx] - chains[:, self.rev_idx],
-                columns=names,
+                chains[:, self.fwd_idx] - chains[:, self.rev_idx], columns=names,
             )
         else:
             names = [v.name for v in self.model.variables]

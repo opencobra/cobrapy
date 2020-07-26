@@ -17,8 +17,7 @@ import numpy as np
 from optlang.interface import OPTIMAL
 from optlang.symbolics import Zero
 
-from cobra.util import (
-    constraint_matrices, create_stoichiometric_matrix, nullspace)
+from cobra.util import constraint_matrices, create_stoichiometric_matrix, nullspace
 
 
 LOGGER = getLogger(__name__)
@@ -28,10 +27,19 @@ LOGGER = getLogger(__name__)
 MAX_TRIES = 100
 
 
-Problem = namedtuple("Problem",
-                     ["equalities", "b", "inequalities", "bounds",
-                      "variable_fixed", "variable_bounds", "nullspace",
-                      "homogeneous"])
+Problem = namedtuple(
+    "Problem",
+    [
+        "equalities",
+        "b",
+        "inequalities",
+        "bounds",
+        "variable_fixed",
+        "variable_bounds",
+        "nullspace",
+        "homogeneous",
+    ],
+)
 """Defines the matrix representation of a sampling problem.
 
 Attributes
@@ -84,13 +92,13 @@ def shared_np_array(shape, data=None, integer=False):
 
     if data is not None:
         if len(shape) != len(data.shape):
-            raise ValueError("`data` must have the same dimensions"
-                             "as the created array.")
+            raise ValueError(
+                "`data` must have the same dimensions" "as the created array."
+            )
         same = all(x == y for x, y in zip(shape, data.shape))
 
         if not same:
-            raise ValueError("`data` must have the same shape"
-                             "as the created array.")
+            raise ValueError("`data` must have the same shape" "as the created array.")
         np_array[:] = data
 
     return np_array
@@ -166,7 +174,7 @@ class HRSampler(object):
         self.thinning = thinning
 
         if nproj is None:
-            self.nproj = int(min(len(self.model.variables)**3, 1e6))
+            self.nproj = int(min(len(self.model.variables) ** 3, 1e6))
         else:
             self.nproj = nproj
 
@@ -177,10 +185,12 @@ class HRSampler(object):
         # Set up a map from reaction -> forward/reverse variable
         var_idx = {v: idx for idx, v in enumerate(self.model.variables)}
 
-        self.fwd_idx = np.array([var_idx[r.forward_variable]
-                                 for r in self.model.reactions])
-        self.rev_idx = np.array([var_idx[r.reverse_variable]
-                                 for r in self.model.reactions])
+        self.fwd_idx = np.array(
+            [var_idx[r.forward_variable] for r in self.model.reactions]
+        )
+        self.rev_idx = np.array(
+            [var_idx[r.reverse_variable] for r in self.model.reactions]
+        )
         self.warmup = None
 
         if seed is None:
@@ -203,8 +213,7 @@ class HRSampler(object):
         bounds = np.atleast_2d(prob.bounds).T
         var_bounds = np.atleast_2d(prob.variable_bounds).T
         homogeneous = all(np.abs(b) < self.feasibility_tol)
-        fixed_non_zero = np.abs(prob.variable_bounds[:, 1]) > \
-            self.feasibility_tol
+        fixed_non_zero = np.abs(prob.variable_bounds[:, 1]) > self.feasibility_tol
         fixed_non_zero &= prob.variable_fixed
 
         # check if there are any non-zero fixed variables, add them as
@@ -225,14 +234,14 @@ class HRSampler(object):
         return Problem(
             equalities=shared_np_array(equalities.shape, equalities),
             b=shared_np_array(b.shape, b),
-            inequalities=shared_np_array(prob.inequalities.shape,
-                                         prob.inequalities),
+            inequalities=shared_np_array(prob.inequalities.shape, prob.inequalities),
             bounds=shared_np_array(bounds.shape, bounds),
-            variable_fixed=shared_np_array(prob.variable_fixed.shape,
-                                           prob.variable_fixed, integer=True),
+            variable_fixed=shared_np_array(
+                prob.variable_fixed.shape, prob.variable_fixed, integer=True
+            ),
             variable_bounds=shared_np_array(var_bounds.shape, var_bounds),
             nullspace=shared_np_array(nulls.shape, nulls),
-            homogeneous=homogeneous
+            homogeneous=homogeneous,
         )
 
     def generate_fva_warmup(self):
@@ -254,8 +263,10 @@ class HRSampler(object):
             self.model.objective_direction = sense
 
             for i, r in enumerate(reactions):
-                variables = (self.model.variables[self.fwd_idx[i]],
-                             self.model.variables[self.rev_idx[i]])
+                variables = (
+                    self.model.variables[self.fwd_idx[i]],
+                    self.model.variables[self.rev_idx[i]],
+                )
 
                 # Omit fixed reactions if they are non-homogeneous
                 if r.upper_bound - r.lower_bound < self.bounds_tol:
@@ -263,26 +274,27 @@ class HRSampler(object):
                     continue
 
                 self.model.objective.set_linear_coefficients(
-                    {variables[0]: 1, variables[1]: -1})
+                    {variables[0]: 1, variables[1]: -1}
+                )
 
                 self.model.slim_optimize()
 
                 if not self.model.solver.status == OPTIMAL:
-                    LOGGER.info("can not maximize reaction %s, skipping it" %
-                                r.id)
+                    LOGGER.info("can not maximize reaction %s, skipping it" % r.id)
                     continue
 
                 primals = self.model.solver.primal_values
                 sol = [primals[v.name] for v in self.model.variables]
-                self.warmup[self.n_warmup, ] = sol
+                self.warmup[self.n_warmup,] = sol
                 self.n_warmup += 1
 
                 # Reset objective
                 self.model.objective.set_linear_coefficients(
-                    {variables[0]: 0, variables[1]: 0})
+                    {variables[0]: 0, variables[1]: 0}
+                )
 
         # Shrink to measure
-        self.warmup = self.warmup[0:self.n_warmup, :]
+        self.warmup = self.warmup[0 : self.n_warmup, :]
 
         # Remove redundant search directions
         keep = np.logical_not(self._is_redundant(self.warmup))
@@ -294,8 +306,10 @@ class HRSampler(object):
             raise ValueError("Your flux cone consists only of a single point!")
         elif self.n_warmup == 2:
             if not self.problem.homogeneous:
-                raise ValueError("Can not sample from an inhomogenous problem"
-                                 " with only 2 search directions :(")
+                raise ValueError(
+                    "Can not sample from an inhomogenous problem"
+                    " with only 2 search directions :("
+                )
             LOGGER.info("All search directions on a line, adding another one.")
             newdir = self.warmup.T.dot([0.25, 0.25])
             self.warmup = np.vstack([self.warmup, newdir])
@@ -303,7 +317,8 @@ class HRSampler(object):
 
         # Shrink warmup points to measure
         self.warmup = shared_np_array(
-            (self.n_warmup, len(self.model.variables)), self.warmup)
+            (self.n_warmup, len(self.model.variables)), self.warmup
+        )
 
     def _reproject(self, p):
         """Reproject a point into the feasibility region.
@@ -327,19 +342,24 @@ class HRSampler(object):
         equalities = self.problem.equalities
 
         # don't reproject if point is feasible
-        if np.allclose(equalities.dot(p), self.problem.b,
-                       rtol=0, atol=self.feasibility_tol):
+        if np.allclose(
+            equalities.dot(p), self.problem.b, rtol=0, atol=self.feasibility_tol
+        ):
             new = p
         else:
-            LOGGER.info("feasibility violated in sample"
-                        " %d, trying to reproject" % self.n_samples)
+            LOGGER.info(
+                "feasibility violated in sample"
+                " %d, trying to reproject" % self.n_samples
+            )
             new = nulls.dot(nulls.T.dot(p))
 
         # Projections may violate bounds
         # set to random point in space in that case
         if any(new != p):
-            LOGGER.info("reprojection failed in sample"
-                        " %d, using random point in space" % self.n_samples)
+            LOGGER.info(
+                "reprojection failed in sample"
+                " %d, using random point in space" % self.n_samples
+            )
             new = self._random_point()
 
         return new
@@ -347,8 +367,9 @@ class HRSampler(object):
     def _random_point(self):
         """Find an approximately random point in the flux cone."""
 
-        idx = np.random.randint(self.n_warmup,
-                                size=min(2, np.ceil(np.sqrt(self.n_warmup))))
+        idx = np.random.randint(
+            self.n_warmup, size=min(2, np.ceil(np.sqrt(self.n_warmup)))
+        )
         return self.warmup[idx, :].mean(axis=0)
 
     def _is_redundant(self, matrix, cutoff=None):
@@ -370,13 +391,13 @@ class HRSampler(object):
         """Get the lower and upper bound distances. Negative is bad."""
 
         prob = self.problem
-        lb_dist = (p - prob.variable_bounds[0, ]).min()
-        ub_dist = (prob.variable_bounds[1, ] - p).min()
+        lb_dist = (p - prob.variable_bounds[0,]).min()
+        ub_dist = (prob.variable_bounds[1,] - p).min()
 
         if prob.bounds.shape[0] > 0:
             const = prob.inequalities.dot(p)
-            const_lb_dist = (const - prob.bounds[0, ]).min()
-            const_ub_dist = (prob.bounds[1, ] - const).min()
+            const_lb_dist = (const - prob.bounds[0,]).min()
+            const_ub_dist = (prob.bounds[1,] - const).min()
             lb_dist = min(lb_dist, const_lb_dist)
             ub_dist = min(ub_dist, const_ub_dist)
 
@@ -449,45 +470,46 @@ class HRSampler(object):
 
         if samples.shape[1] == len(self.model.reactions):
             S = create_stoichiometric_matrix(self.model)
-            b = np.array([self.model.constraints[m.id].lb for m in
-                          self.model.metabolites])
+            b = np.array(
+                [self.model.constraints[m.id].lb for m in self.model.metabolites]
+            )
             bounds = np.array([r.bounds for r in self.model.reactions]).T
         elif samples.shape[1] == len(self.model.variables):
             S = prob.equalities
             b = prob.b
             bounds = prob.variable_bounds
         else:
-            raise ValueError("Wrong number of columns. samples must have a "
-                             "column for each flux or variable defined in the "
-                             "model!")
-
-        feasibility = np.abs(S.dot(samples.T).T - b).max(axis=1)
-        lb_error = (samples - bounds[0, ]).min(axis=1)
-        ub_error = (bounds[1, ] - samples).min(axis=1)
-
-        if (samples.shape[1] == len(self.model.variables) and
-                prob.inequalities.shape[0]):
-            consts = prob.inequalities.dot(samples.T)
-            lb_error = np.minimum(
-                lb_error,
-                (consts - prob.bounds[0, ]).min(axis=1))
-            ub_error = np.minimum(
-                ub_error,
-                (prob.bounds[1, ] - consts).min(axis=1)
+            raise ValueError(
+                "Wrong number of columns. samples must have a "
+                "column for each flux or variable defined in the "
+                "model!"
             )
 
+        feasibility = np.abs(S.dot(samples.T).T - b).max(axis=1)
+        lb_error = (samples - bounds[0,]).min(axis=1)
+        ub_error = (bounds[1,] - samples).min(axis=1)
+
+        if samples.shape[1] == len(self.model.variables) and prob.inequalities.shape[0]:
+            consts = prob.inequalities.dot(samples.T)
+            lb_error = np.minimum(lb_error, (consts - prob.bounds[0,]).min(axis=1))
+            ub_error = np.minimum(ub_error, (prob.bounds[1,] - consts).min(axis=1))
+
         valid = (
-            (feasibility < self.feasibility_tol) &
-            (lb_error > -self.bounds_tol) &
-            (ub_error > -self.bounds_tol))
+            (feasibility < self.feasibility_tol)
+            & (lb_error > -self.bounds_tol)
+            & (ub_error > -self.bounds_tol)
+        )
         codes = np.repeat("", valid.shape[0]).astype(np.dtype((str, 3)))
         codes[valid] = "v"
         codes[lb_error <= -self.bounds_tol] = np.char.add(
-            codes[lb_error <= -self.bounds_tol], "l")
+            codes[lb_error <= -self.bounds_tol], "l"
+        )
         codes[ub_error <= -self.bounds_tol] = np.char.add(
-            codes[ub_error <= -self.bounds_tol], "u")
+            codes[ub_error <= -self.bounds_tol], "u"
+        )
         codes[feasibility > self.feasibility_tol] = np.char.add(
-            codes[feasibility > self.feasibility_tol], "e")
+            codes[feasibility > self.feasibility_tol], "e"
+        )
 
         return codes
 
@@ -498,20 +520,21 @@ def step(sampler, x, delta, fraction=None, tries=0):
     """Sample a new feasible point from the point `x` in direction `delta`."""
 
     prob = sampler.problem
-    valid = ((np.abs(delta) > sampler.feasibility_tol) &
-             np.logical_not(prob.variable_fixed))
+    valid = (np.abs(delta) > sampler.feasibility_tol) & np.logical_not(
+        prob.variable_fixed
+    )
 
     # permissible alphas for staying in variable bounds
-    valphas = ((1.0 - sampler.bounds_tol) * prob.variable_bounds -
-               x)[:, valid]
+    valphas = ((1.0 - sampler.bounds_tol) * prob.variable_bounds - x)[:, valid]
     valphas = (valphas / delta[valid]).flatten()
 
     if prob.bounds.shape[0] > 0:
         # permissible alphas for staying in constraint bounds
         ineqs = prob.inequalities.dot(delta)
         valid = np.abs(ineqs) > sampler.feasibility_tol
-        balphas = ((1.0 - sampler.bounds_tol) * prob.bounds -
-                   prob.inequalities.dot(x))[:, valid]
+        balphas = ((1.0 - sampler.bounds_tol) * prob.bounds - prob.inequalities.dot(x))[
+            :, valid
+        ]
         balphas = (balphas / ineqs[valid]).flatten()
 
         # combined alphas
@@ -520,8 +543,12 @@ def step(sampler, x, delta, fraction=None, tries=0):
         alphas = valphas
     pos_alphas = alphas[alphas > 0.0]
     neg_alphas = alphas[alphas <= 0.0]
-    alpha_range = np.array([neg_alphas.max() if len(neg_alphas) > 0 else 0,
-                            pos_alphas.min() if len(pos_alphas) > 0 else 0])
+    alpha_range = np.array(
+        [
+            neg_alphas.max() if len(neg_alphas) > 0 else 0,
+            pos_alphas.min() if len(pos_alphas) > 0 else 0,
+        ]
+    )
 
     if fraction:
         alpha = alpha_range[0] + fraction * (alpha_range[1] - alpha_range[0])
@@ -533,20 +560,21 @@ def step(sampler, x, delta, fraction=None, tries=0):
     # Numerical instabilities may cause bounds invalidation
     # reset sampler and sample from one of the original warmup directions
     # if that occurs. Also reset if we got stuck.
-    if (np.any(sampler._bounds_dist(p) < -sampler.bounds_tol) or
-            np.abs(np.abs(alpha_range).max() * delta).max() <
-            sampler.bounds_tol):
+    if (
+        np.any(sampler._bounds_dist(p) < -sampler.bounds_tol)
+        or np.abs(np.abs(alpha_range).max() * delta).max() < sampler.bounds_tol
+    ):
         if tries > MAX_TRIES:
-            raise RuntimeError("Can not escape sampling region, model seems"
-                               " numerically unstable :( Reporting the "
-                               "model to "
-                               "https://github.com/opencobra/cobrapy/issues "
-                               "will help us to fix this :)")
-        LOGGER.info("found bounds infeasibility in sample, "
-                    "resetting to center")
+            raise RuntimeError(
+                "Can not escape sampling region, model seems"
+                " numerically unstable :( Reporting the "
+                "model to "
+                "https://github.com/opencobra/cobrapy/issues "
+                "will help us to fix this :)"
+            )
+        LOGGER.info("found bounds infeasibility in sample, " "resetting to center")
         newdir = sampler.warmup[np.random.randint(sampler.n_warmup)]
         sampler.retries += 1
 
-        return step(sampler, sampler.center, newdir - sampler.center, None,
-                    tries + 1)
+        return step(sampler, sampler.center, newdir - sampler.center, None, tries + 1)
     return p

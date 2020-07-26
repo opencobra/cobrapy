@@ -46,40 +46,50 @@ def find_external_compartment(model):
     else:
         most = None
     like_external = compartment_shortlist["e"] + ["e"]
-    matches = pd.Series([co in like_external for co in model.compartments],
-                        index=model.compartments)
+    matches = pd.Series(
+        [co in like_external for co in model.compartments], index=model.compartments
+    )
 
     if matches.sum() == 1:
         compartment = matches.index[matches][0]
-        LOGGER.info("Compartment `%s` sounds like an external compartment. "
-                    "Using this one without counting boundary reactions" %
-                    compartment)
+        LOGGER.info(
+            "Compartment `%s` sounds like an external compartment. "
+            "Using this one without counting boundary reactions" % compartment
+        )
         return compartment
     elif most is not None and matches.sum() > 1 and matches[most].sum() == 1:
         compartment = most[matches[most]][0]
-        LOGGER.warning("There are several compartments that look like an "
-                       "external compartment but `%s` has the most boundary "
-                       "reactions, so using that as the external "
-                       "compartment." % compartment)
+        LOGGER.warning(
+            "There are several compartments that look like an "
+            "external compartment but `%s` has the most boundary "
+            "reactions, so using that as the external "
+            "compartment." % compartment
+        )
         return compartment
     elif matches.sum() > 1:
-        raise RuntimeError("There are several compartments (%s) that look "
-                           "like external compartments but we can't tell "
-                           "which one to use. Consider renaming your "
-                           "compartments please.")
+        raise RuntimeError(
+            "There are several compartments (%s) that look "
+            "like external compartments but we can't tell "
+            "which one to use. Consider renaming your "
+            "compartments please."
+        )
 
     if most is not None:
         return most[0]
-        LOGGER.warning("Could not identify an external compartment by name and"
-                       " choosing one with the most boundary reactions. That "
-                       "might be complete nonsense or change suddenly. "
-                       "Consider renaming your compartments using "
-                       "`Model.compartments` to fix this.")
+        LOGGER.warning(
+            "Could not identify an external compartment by name and"
+            " choosing one with the most boundary reactions. That "
+            "might be complete nonsense or change suddenly. "
+            "Consider renaming your compartments using "
+            "`Model.compartments` to fix this."
+        )
     # No info in the model, so give up
-    raise RuntimeError("The heuristic for discovering an external compartment "
-                       "relies on names and boundary reactions. Yet, there "
-                       "are neither compartments with recognized names nor "
-                       "boundary reactions in the model.")
+    raise RuntimeError(
+        "The heuristic for discovering an external compartment "
+        "relies on names and boundary reactions. Yet, there "
+        "are neither compartments with recognized names nor "
+        "boundary reactions in the model."
+    )
 
 
 def is_boundary_type(reaction, boundary_type, external_compartment):
@@ -124,9 +134,12 @@ def is_boundary_type(reaction, boundary_type, external_compartment):
     elif boundary_type == "sink":
         rev_type = reaction.reversibility
 
-    return (reaction.boundary and not
-            any(ex in reaction.id for ex in excludes[boundary_type]) and
-            correct_compartment and rev_type)
+    return (
+        reaction.boundary
+        and not any(ex in reaction.id for ex in excludes[boundary_type])
+        and correct_compartment
+        and rev_type
+    )
 
 
 def find_boundary_types(model, boundary_type, external_compartment=None):
@@ -149,12 +162,15 @@ def find_boundary_types(model, boundary_type, external_compartment=None):
         A list of likely boundary reactions of a user defined type.
     """
     if not model.boundary:
-        LOGGER.warning("There are no boundary reactions in this model. "
-                       "Therefore specific types of boundary reactions such "
-                       "as 'exchanges', 'demands' or 'sinks' cannot be "
-                       "identified.")
+        LOGGER.warning(
+            "There are no boundary reactions in this model. "
+            "Therefore specific types of boundary reactions such "
+            "as 'exchanges', 'demands' or 'sinks' cannot be "
+            "identified."
+        )
         return []
     if external_compartment is None:
         external_compartment = find_external_compartment(model)
     return model.reactions.query(
-        lambda r: is_boundary_type(r, boundary_type, external_compartment))
+        lambda r: is_boundary_type(r, boundary_type, external_compartment)
+    )

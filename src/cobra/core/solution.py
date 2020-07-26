@@ -43,8 +43,15 @@ class Solution(object):
         Contains metabolite shadow prices (dual values of constraints).
     """
 
-    def __init__(self, objective_value, status, fluxes, reduced_costs=None,
-                 shadow_prices=None, **kwargs):
+    def __init__(
+        self,
+        objective_value,
+        status,
+        fluxes,
+        reduced_costs=None,
+        shadow_prices=None,
+        **kwargs
+    ):
         """
         Initialize a `Solution` from its components.
 
@@ -72,18 +79,19 @@ class Solution(object):
         """String representation of the solution instance."""
         if self.status != OPTIMAL:
             return "<Solution {0:s} at 0x{1:x}>".format(self.status, id(self))
-        return "<Solution {0:.3f} at 0x{1:x}>".format(self.objective_value,
-                                                      id(self))
+        return "<Solution {0:.3f} at 0x{1:x}>".format(self.objective_value, id(self))
 
     def _repr_html_(self):
         if self.status == OPTIMAL:
-            with option_context('display.max_rows', 10):
-                html = ('<strong><em>Optimal</em> solution with objective '
-                        'value {:.3f}</strong><br>{}'
-                        .format(self.objective_value,
-                                self.to_frame()._repr_html_()))
+            with option_context("display.max_rows", 10):
+                html = (
+                    "<strong><em>Optimal</em> solution with objective "
+                    "value {:.3f}</strong><br>{}".format(
+                        self.objective_value, self.to_frame()._repr_html_()
+                    )
+                )
         else:
-            html = '<strong><em>{}</em> solution</strong>'.format(self.status)
+            html = "<strong><em>{}</em> solution</strong>".format(self.status)
         return html
 
     def __getitem__(self, reaction_id):
@@ -101,8 +109,7 @@ class Solution(object):
 
     def to_frame(self):
         """Return the fluxes and reduced costs as a data frame"""
-        return DataFrame({'fluxes': self.fluxes,
-                          'reduced_costs': self.reduced_costs})
+        return DataFrame({"fluxes": self.fluxes, "reduced_costs": self.reduced_costs})
 
 
 class LegacySolution(object):
@@ -129,8 +136,18 @@ class LegacySolution(object):
     The LegacySolution class and its interface is deprecated.
     """
 
-    def __init__(self, f, x=None, x_dict=None, y=None, y_dict=None,
-                 solver=None, the_time=0, status='NA', **kwargs):
+    def __init__(
+        self,
+        f,
+        x=None,
+        x_dict=None,
+        y=None,
+        y_dict=None,
+        solver=None,
+        the_time=0,
+        status="NA",
+        **kwargs
+    ):
         """
         Initialize a `LegacySolution` from an objective value.
 
@@ -167,10 +184,8 @@ class LegacySolution(object):
     def __repr__(self):
         """String representation of the solution instance."""
         if self.status != "optimal":
-            return "<LegacySolution {0:s} at 0x{1:x}>".format(
-                self.status, id(self))
-        return "<LegacySolution {0:.3f} at 0x{1:x}>".format(
-            self.f, id(self))
+            return "<LegacySolution {0:s} at 0x{1:x}>".format(self.status, id(self))
+        return "<LegacySolution {0:.3f} at 0x{1:x}>".format(self.f, id(self))
 
     def __getitem__(self, reaction_id):
         """
@@ -189,8 +204,7 @@ class LegacySolution(object):
 
         .. warning :: deprecated
         """
-        warn("unnecessary to call this deprecated function",
-             DeprecationWarning)
+        warn("unnecessary to call this deprecated function", DeprecationWarning)
 
 
 def get_solution(model, reactions=None, metabolites=None, raise_error=False):
@@ -250,8 +264,10 @@ def get_solution(model, reactions=None, metabolites=None, raise_error=False):
         for (i, met) in enumerate(metabolites):
             met_index.append(met.id)
             shadow[i] = constr_duals[met.id]
-    return Solution(model.solver.objective.value, model.solver.status,
-                    Series(index=rxn_index, data=fluxes, name="fluxes"),
-                    Series(index=rxn_index, data=reduced,
-                           name="reduced_costs"),
-                    Series(index=met_index, data=shadow, name="shadow_prices"))
+    return Solution(
+        model.solver.objective.value,
+        model.solver.status,
+        Series(index=rxn_index, data=fluxes, name="fluxes"),
+        Series(index=rxn_index, data=reduced, name="reduced_costs"),
+        Series(index=met_index, data=shadow, name="shadow_prices"),
+    )

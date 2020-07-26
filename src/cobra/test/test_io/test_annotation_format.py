@@ -16,7 +16,7 @@ def test_load_json_model_valid(data_directory, tmp_path):
     }
     for metabolite in model.metabolites:
         assert metabolite.annotation == expected
-    path_to_output = join(str(tmp_path), 'valid_annotation_output.xml')
+    path_to_output = join(str(tmp_path), "valid_annotation_output.xml")
     write_sbml_model(model, path_to_output)
 
 

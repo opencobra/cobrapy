@@ -21,25 +21,36 @@ from warnings import warn
 import optlang
 import pandas as pd
 from optlang.interface import (
-    FEASIBLE, INFEASIBLE, ITERATION_LIMIT, NUMERIC, OPTIMAL, SUBOPTIMAL,
-    TIME_LIMIT)
+    FEASIBLE,
+    INFEASIBLE,
+    ITERATION_LIMIT,
+    NUMERIC,
+    OPTIMAL,
+    SUBOPTIMAL,
+    TIME_LIMIT,
+)
 from optlang.symbolics import Basic, Zero
 
 from cobra.exceptions import (
-    OPTLANG_TO_EXCEPTIONS_DICT, OptimizationError, SolverNotFound)
+    OPTLANG_TO_EXCEPTIONS_DICT,
+    OptimizationError,
+    SolverNotFound,
+)
 from cobra.util.context import get_context
 
 
 # Define all the solvers that are found in optlang.
-solvers = {match.split("_interface")[0]: getattr(optlang, match)
-           for match in dir(optlang) if "_interface" in match}
+solvers = {
+    match.split("_interface")[0]: getattr(optlang, match)
+    for match in dir(optlang)
+    if "_interface" in match
+}
 
 # Defines all the QP solvers implemented in optlang.
 qp_solvers = ["cplex", "gurobi"]
 
 # optlang solution statuses which still allow retrieving primal values
-has_primals = [NUMERIC, FEASIBLE, INFEASIBLE, SUBOPTIMAL, ITERATION_LIMIT,
-               TIME_LIMIT]
+has_primals = [NUMERIC, FEASIBLE, INFEASIBLE, SUBOPTIMAL, ITERATION_LIMIT, TIME_LIMIT]
 
 
 def linear_reaction_coefficients(model, reactions=None):
@@ -120,29 +131,31 @@ def set_objective(model, value, additive=False):
     interface = model.problem
     reverse_value = model.solver.objective.expression
     reverse_value = interface.Objective(
-        reverse_value, direction=model.solver.objective.direction,
-        sloppy=True)
+        reverse_value, direction=model.solver.objective.direction, sloppy=True
+    )
 
     if isinstance(value, dict):
         if not model.objective.is_Linear:
-            raise ValueError('can only update non-linear objectives '
-                             'additively using object of class '
-                             'model.problem.Objective, not %s' %
-                             type(value))
+            raise ValueError(
+                "can only update non-linear objectives "
+                "additively using object of class "
+                "model.problem.Objective, not %s" % type(value)
+            )
 
         if not additive:
             model.solver.objective = interface.Objective(
-                Zero, direction=model.solver.objective.direction)
+                Zero, direction=model.solver.objective.direction
+            )
         for reaction, coef in value.items():
             model.solver.objective.set_linear_coefficients(
-                {reaction.forward_variable: coef,
-                 reaction.reverse_variable: -coef})
+                {reaction.forward_variable: coef, reaction.reverse_variable: -coef}
+            )
 
     elif isinstance(value, (Basic, optlang.interface.Objective)):
         if isinstance(value, Basic):
             value = interface.Objective(
-                value, direction=model.solver.objective.direction,
-                sloppy=False)
+                value, direction=model.solver.objective.direction, sloppy=False
+            )
         # Check whether expression only uses variables from current model
         # clone the objective if not, faster than cloning without checking
         if not _valid_atoms(model, value.expression):
@@ -153,11 +166,11 @@ def set_objective(model, value, additive=False):
         else:
             model.solver.objective += value.expression
     else:
-        raise TypeError(
-            '%r is not a valid objective for %r.' % (value, model.solver))
+        raise TypeError("%r is not a valid objective for %r." % (value, model.solver))
 
     context = get_context(model)
     if context:
+
         def reset():
             model.solver.objective = reverse_value
             model.solver.objective.direction = reverse_value.direction
@@ -313,8 +326,9 @@ def remove_cons_vars_from_problem(model, what):
         context(partial(model.solver.add, what))
 
 
-def add_absolute_expression(model, expression, name="abs_var", ub=None,
-                            difference=0, add=True):
+def add_absolute_expression(
+    model, expression, name="abs_var", ub=None, difference=0, add=True
+):
     """Add the absolute value of an expression to the model.
 
     Also defines a variable for the absolute value that can be used in other
@@ -343,25 +357,29 @@ def add_absolute_expression(model, expression, name="abs_var", ub=None,
         lower_constraint) describing the new variable and the constraints
         that assign the absolute value of the expression to it.
     """
-    Components = namedtuple('Components', ['variable', 'upper_constraint',
-                                           'lower_constraint'])
+    Components = namedtuple(
+        "Components", ["variable", "upper_constraint", "lower_constraint"]
+    )
     variable = model.problem.Variable(name, lb=0, ub=ub)
     # The following constraints enforce variable > expression and
     # variable > -expression
-    upper_constraint = model.problem.Constraint(expression - variable,
-                                                ub=difference,
-                                                name="abs_pos_" + name),
-    lower_constraint = model.problem.Constraint(expression + variable,
-                                                lb=difference,
-                                                name="abs_neg_" + name)
+    upper_constraint = (
+        model.problem.Constraint(
+            expression - variable, ub=difference, name="abs_pos_" + name
+        ),
+    )
+    lower_constraint = model.problem.Constraint(
+        expression + variable, lb=difference, name="abs_neg_" + name
+    )
     to_add = Components(variable, upper_constraint, lower_constraint)
     if add:
         add_cons_vars_to_problem(model, to_add)
     return to_add
 
 
-def fix_objective_as_constraint(model, fraction=1, bound=None,
-                                name='fixed_objective_{}'):
+def fix_objective_as_constraint(
+    model, fraction=1, bound=None, name="fixed_objective_{}"
+):
     """Fix current objective as an additional constraint.
 
     When adding constraints to a model, such as done in pFBA which
@@ -397,13 +415,13 @@ def fix_objective_as_constraint(model, fraction=1, bound=None,
         model.solver.remove(fix_objective_name)
     if bound is None:
         bound = model.slim_optimize(error_value=None) * fraction
-    if model.objective.direction == 'max':
+    if model.objective.direction == "max":
         ub, lb = None, bound
     else:
         ub, lb = bound, None
     constraint = model.problem.Constraint(
-        model.objective.expression,
-        name=fix_objective_name, ub=ub, lb=lb)
+        model.objective.expression, name=fix_objective_name, ub=ub, lb=lb
+    )
     add_cons_vars_to_problem(model, constraint, sloppy=True)
     return bound
 
@@ -416,12 +434,13 @@ def check_solver_status(status, raise_error=False):
         warn("solver status is '{}'".format(status), UserWarning)
     elif status is None:
         raise OptimizationError(
-            "model was not optimized yet or solver context switched")
+            "model was not optimized yet or solver context switched"
+        )
     else:
         raise OptimizationError("solver status is '{}'".format(status))
 
 
-def assert_optimal(model, message='optimization failed'):
+def assert_optimal(model, message="optimization failed"):
     """Assert model solver status is optimal.
 
     Do nothing if model solver status is optimal, otherwise throw
@@ -436,8 +455,7 @@ def assert_optimal(model, message='optimization failed'):
     """
     status = model.solver.status
     if status != OPTIMAL:
-        exception_cls = OPTLANG_TO_EXCEPTIONS_DICT.get(
-            status, OptimizationError)
+        exception_cls = OPTLANG_TO_EXCEPTIONS_DICT.get(status, OptimizationError)
         raise exception_cls("{} ({})".format(message, status))
 
 
@@ -470,8 +488,7 @@ def add_lp_feasibility(model):
         s_minus = prob.Variable("s_minus_" + met.id, lb=0)
 
         model.add_cons_vars([s_plus, s_minus])
-        model.constraints[met.id].set_linear_coefficients(
-            {s_plus: 1.0, s_minus: -1.0})
+        model.constraints[met.id].set_linear_coefficients({s_plus: 1.0, s_minus: -1.0})
         obj_vars.append(s_plus)
         obj_vars.append(s_minus)
 
@@ -479,9 +496,7 @@ def add_lp_feasibility(model):
     model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
 
 
-def add_lexicographic_constraints(model,
-                                  objectives,
-                                  objective_direction='max'):
+def add_lexicographic_constraints(model, objectives, objective_direction="max"):
     """
     Successively optimize separate targets in a specific order.
 

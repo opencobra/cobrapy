@@ -43,9 +43,10 @@ class Group(Object):
         value for kind when in doubt (e.g. member is a gap-filled reaction,
         or member is involved in a disease phenotype).
     """
+
     KIND_TYPES = ("collection", "classification", "partonomy")
 
-    def __init__(self, id, name='', members=None, kind=None):
+    def __init__(self, id, name="", members=None, kind=None):
         Object.__init__(self, id, name)
 
         self._members = DictList() if members is None else DictList(members)
@@ -74,8 +75,8 @@ class Group(Object):
             self._kind = kind
         else:
             raise ValueError(
-                "Kind can only by one of: {}.".format(", ".join(
-                    self.KIND_TYPES)))
+                "Kind can only by one of: {}.".format(", ".join(self.KIND_TYPES))
+            )
 
     def add_members(self, new_members):
         """
@@ -88,8 +89,7 @@ class Group(Object):
 
         """
 
-        if isinstance(new_members, string_types) or \
-                hasattr(new_members, "id"):
+        if isinstance(new_members, string_types) or hasattr(new_members, "id"):
             warn("need to pass in a list")
             new_members = [new_members]
 
@@ -105,8 +105,7 @@ class Group(Object):
             A list of cobra objects to remove from the group
         """
 
-        if isinstance(to_remove, string_types) or \
-                hasattr(to_remove, "id"):
+        if isinstance(to_remove, string_types) or hasattr(to_remove, "id"):
             warn("need to pass in a list")
             to_remove = [to_remove]
 

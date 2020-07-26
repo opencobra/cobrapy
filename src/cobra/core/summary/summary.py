@@ -37,14 +37,14 @@ class Summary(object):
     """
 
     def __init__(
-            self,
-            model,
-            solution=None,
-            threshold=None,
-            fva=None,
-            names=False,
-            float_format="{:.3G}".format,
-            **kwargs
+        self,
+        model,
+        solution=None,
+        threshold=None,
+        fva=None,
+        names=False,
+        float_format="{:.3G}".format,
+        **kwargs
     ):
         """
         Initialize a summary.
@@ -94,8 +94,9 @@ class Summary(object):
         implement it.
 
         """
-        raise NotImplementedError("This method needs to be implemented by the "
-                                  "subclass.")
+        raise NotImplementedError(
+            "This method needs to be implemented by the " "subclass."
+        )
 
     def _process_flux_dataframe(self, flux_dataframe):
         """Process a flux DataFrame for convenient downstream analysis.
@@ -115,32 +116,32 @@ class Summary(object):
 
         """
 
-        abs_flux = flux_dataframe['flux'].abs()
+        abs_flux = flux_dataframe["flux"].abs()
         flux_threshold = self.threshold * abs_flux.max()
 
         # Drop unused boundary fluxes i.e., fluxes below threshold
         if self.fva is None:
-            flux_dataframe = \
-                flux_dataframe.loc[abs_flux >= flux_threshold, :].copy()
+            flux_dataframe = flux_dataframe.loc[abs_flux >= flux_threshold, :].copy()
         else:
-            flux_dataframe = (
-                flux_dataframe
-                .loc[(abs_flux >= flux_threshold) |
-                     (flux_dataframe['fmin'].abs() >= flux_threshold) |
-                     (flux_dataframe['fmax'].abs() >= flux_threshold), :]
-                .copy()
-                )
+            flux_dataframe = flux_dataframe.loc[
+                (abs_flux >= flux_threshold)
+                | (flux_dataframe["fmin"].abs() >= flux_threshold)
+                | (flux_dataframe["fmax"].abs() >= flux_threshold),
+                :,
+            ].copy()
 
         # Make all fluxes positive while maintaining proper direction
         if self.fva is None:
             # add information regarding direction
-            flux_dataframe['is_input'] = (flux_dataframe['flux'] >= 0)
+            flux_dataframe["is_input"] = flux_dataframe["flux"] >= 0
             # make the fluxes absolute
-            flux_dataframe['flux'] = flux_dataframe['flux'].abs()
+            flux_dataframe["flux"] = flux_dataframe["flux"].abs()
             # sort the values
-            flux_dataframe.sort_values(by=['is_input', 'flux', 'id'],
-                                       ascending=[False, False, True],
-                                       inplace=True)
+            flux_dataframe.sort_values(
+                by=["is_input", "flux", "id"],
+                ascending=[False, False, True],
+                inplace=True,
+            )
         else:
 
             def get_direction(row):
@@ -165,19 +166,19 @@ class Summary(object):
             # get a sign DataFrame to use as a pseudo-mask
             sign = flux_dataframe.apply(get_direction, axis=1)
 
-            flux_dataframe['is_input'] = (sign == 1)
+            flux_dataframe["is_input"] = sign == 1
 
-            flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']] = (
-                flux_dataframe.loc[:, ['flux', 'fmin', 'fmax']]
+            flux_dataframe.loc[:, ["flux", "fmin", "fmax"]] = (
+                flux_dataframe.loc[:, ["flux", "fmin", "fmax"]]
                 .multiply(sign, axis=0)
-                .astype('float')
+                .astype("float")
             )
 
-            flux_dataframe.sort_values(by=['is_input', 'flux', 'fmax', 'fmin',
-                                           'id'],
-                                       ascending=[False, False, False, False,
-                                                  True],
-                                       inplace=True)
+            flux_dataframe.sort_values(
+                by=["is_input", "flux", "fmax", "fmin", "id"],
+                ascending=[False, False, False, False, True],
+                inplace=True,
+            )
 
         return flux_dataframe
 
@@ -188,8 +189,9 @@ class Summary(object):
         implement it.
 
         """
-        raise NotImplementedError("This method needs to be implemented by the "
-                                  "subclass.")
+        raise NotImplementedError(
+            "This method needs to be implemented by the " "subclass."
+        )
 
     def _to_table(self):
         """Generate a pretty-print table.
@@ -198,13 +200,16 @@ class Summary(object):
         implement it.
 
         """
-        raise NotImplementedError("This method needs to be implemented by the "
-                                  "subclass.")
+        raise NotImplementedError(
+            "This method needs to be implemented by the " "subclass."
+        )
 
     def __str__(self):
         if self.float_format is not None:
-            warn("Setting float_format to anything other than None "
-                 "will cause nan to be present in the output.")
+            warn(
+                "Setting float_format to anything other than None "
+                "will cause nan to be present in the output."
+            )
         return self._to_table()
 
     def _repr_html_(self):

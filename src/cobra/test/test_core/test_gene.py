@@ -4,4 +4,4 @@
 
 
 def test_repr_html_(model):
-    assert '<table>' in model.genes[0]._repr_html_()
+    assert "<table>" in model.genes[0]._repr_html_()

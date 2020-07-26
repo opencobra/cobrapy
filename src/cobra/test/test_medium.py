@@ -5,14 +5,14 @@ from __future__ import absolute_import
 import pandas as pd
 import pytest
 
-import cobra.medium as medium
 from cobra import Metabolite, Reaction
+from cobra import medium as medium
 
 
 class TestModelMedium:
     def test_model_medium(self, model):
         # Add a dummy 'malformed' import reaction
-        bad_import = Reaction('bad_import')
+        bad_import = Reaction("bad_import")
         bad_import.add_metabolites({model.metabolites.pyr_c: 1})
         bad_import.bounds = (0, 42)
         model.add_reaction(bad_import)
@@ -31,9 +31,9 @@ class TestModelMedium:
 
             # Make changes to the media
             new_medium = model.medium
-            new_medium['EX_glc__D_e'] = 20
-            new_medium['bad_import'] = 24
-            del new_medium['EX_co2_e']
+            new_medium["EX_glc__D_e"] = 20
+            new_medium["bad_import"] = 24
+            del new_medium["EX_co2_e"]
 
             # Change the medium, make sure changes work
             model.medium = new_medium
@@ -46,13 +46,12 @@ class TestModelMedium:
         assert model.reactions.bad_import.upper_bound == 42
         assert model.reactions.EX_co2_e.lower_bound == -1000
 
-        new_medium['bogus_rxn'] = 0
+        new_medium["bogus_rxn"] = 0
         with pytest.raises(KeyError):
             model.medium = new_medium
 
 
 class TestTypeDetection:
-
     def test_external_compartment(self, model):
         # by name
         assert medium.find_external_compartment(model) == "e"
@@ -103,17 +102,14 @@ class TestTypeDetection:
         assert "sink" in [r.id for r in sn]
 
     def test_sbo_terms(self, model):
-        assert not medium.is_boundary_type(
-            model.reactions.ATPM, "exchange", "e")
+        assert not medium.is_boundary_type(model.reactions.ATPM, "exchange", "e")
         model.reactions.ATPM.annotation["sbo"] = "SBO:0000627"
         assert medium.is_boundary_type(model.reactions.ATPM, "exchange", "bla")
         model.reactions.ATPM.annotation["sbo"] = "SBO:0000632"
-        assert not medium.is_boundary_type(
-            model.reactions.ATPM, "exchange", "e")
+        assert not medium.is_boundary_type(model.reactions.ATPM, "exchange", "e")
 
 
 class TestMinimalMedia:
-
     def test_medium_linear(self, model):
         med = medium.minimal_medium(model, 0.8)
         assert len(med) <= 4
@@ -130,8 +126,9 @@ class TestMinimalMedia:
         assert all(med > 1e-6)
 
     def test_medium_alternative_mip(self, model):
-        med = medium.minimal_medium(model, 0.8, minimize_components=5,
-                                    open_exchanges=True)
+        med = medium.minimal_medium(
+            model, 0.8, minimize_components=5, open_exchanges=True
+        )
         assert isinstance(med, pd.DataFrame)
         assert med.shape[0] >= 5
         assert med.shape[1] == 5
@@ -145,8 +142,7 @@ class TestMinimalMedia:
         benchmark(medium.minimal_medium, model, 0.8, True)
 
     def test_medium_exports(self, model):
-        med = medium.minimal_medium(model, 0.8, exports=True,
-                                    minimize_components=True)
+        med = medium.minimal_medium(model, 0.8, exports=True, minimize_components=True)
         assert len(med) > 4
         assert any(med < -1e-6)
 
@@ -164,9 +160,8 @@ class TestMinimalMedia:
 
 
 class TestErrorsAndExceptions:
-
     def test_no_boundary_reactions(self, empty_model):
-        assert medium.find_boundary_types(empty_model, 'e', None) == []
+        assert medium.find_boundary_types(empty_model, "e", None) == []
 
     def test_no_names_or_boundary_reactions(self, empty_model):
         with pytest.raises(RuntimeError):

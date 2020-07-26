@@ -27,7 +27,7 @@ def test_contains(dict_list):
     assert obj in test_list
     assert obj.id in test_list
     assert Object("not_in") not in test_list
-    assert 'not_in' not in test_list
+    assert "not_in" not in test_list
 
 
 def test_index(dict_list):
@@ -57,9 +57,9 @@ def test_independent():
 def test_get_by_any(dict_list):
     obj, test_list = dict_list
     assert test_list.get_by_any(0) == [obj]
-    assert test_list.get_by_any('test1') == [obj]
+    assert test_list.get_by_any("test1") == [obj]
     with pytest.raises(KeyError):
-        test_list.get_by_any('not-in-list')
+        test_list.get_by_any("not-in-list")
     with pytest.raises(TypeError):
         test_list.get_by_any(1.1)
     assert test_list.get_by_any(obj) == [obj]
@@ -147,7 +147,7 @@ def test_isub(dict_list):
     sum -= obj_list[2:4]
     assert len(sum) == 7
     with pytest.raises(ValueError):
-        sum -= [Object('bogus')]
+        sum -= [Object("bogus")]
 
 
 def test_init_copy(dict_list):
@@ -247,7 +247,7 @@ def test_query(dict_list):
     result = test_list.query(re.compile("foobar."), "name")
     assert len(result) == 1
     # Test query with lambda function
-    result = test_list.query(lambda x: x.id == 'test1')
+    result = test_list.query(lambda x: x.id == "test1")
     assert len(result) == 1
 
 
@@ -286,8 +286,7 @@ def test_set():
     # Even if the object is unique, if it is present twice in the new
     # list, it should still raise an exception
     with pytest.raises(ValueError):
-        obj_list.__setitem__(slice(5, 7),
-                             [Object("testd"), Object("testd")])
+        obj_list.__setitem__(slice(5, 7), [Object("testd"), Object("testd")])
 
 
 def test_sort_and_reverse():

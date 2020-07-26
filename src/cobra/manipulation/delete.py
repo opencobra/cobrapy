@@ -27,8 +27,9 @@ def prune_unused_metabolites(cobra_model):
     """
 
     output_model = cobra_model.copy()
-    inactive_metabolites = [m for m in output_model.metabolites
-                            if len(m.reactions) == 0]
+    inactive_metabolites = [
+        m for m in output_model.metabolites if len(m.reactions) == 0
+    ]
     output_model.remove_metabolites(inactive_metabolites)
     return output_model, inactive_metabolites
 
@@ -50,8 +51,7 @@ def prune_unused_reactions(cobra_model):
     """
 
     output_model = cobra_model.copy()
-    reactions_to_prune = [r for r in output_model.reactions
-                          if len(r.metabolites) == 0]
+    reactions_to_prune = [r for r in output_model.reactions if len(r.metabolites) == 0]
     output_model.remove_reactions(reactions_to_prune)
     return output_model, reactions_to_prune
 
@@ -68,8 +68,10 @@ def undelete_model_genes(cobra_model):
             x.functional = True
 
     if cobra_model._trimmed_reactions is not None:
-        for the_reaction, (lower_bound, upper_bound) in \
-                cobra_model._trimmed_reactions.items():
+        for (
+            the_reaction,
+            (lower_bound, upper_bound),
+        ) in cobra_model._trimmed_reactions.items():
             the_reaction.lower_bound = lower_bound
             the_reaction.upper_bound = upper_bound
 
@@ -87,12 +89,12 @@ def get_compiled_gene_reaction_rules(cobra_model):
     rules.
 
     """
-    return {r: parse_gpr(r.gene_reaction_rule)[0]
-            for r in cobra_model.reactions}
+    return {r: parse_gpr(r.gene_reaction_rule)[0] for r in cobra_model.reactions}
 
 
-def find_gene_knockout_reactions(cobra_model, gene_list,
-                                 compiled_gene_reaction_rules=None):
+def find_gene_knockout_reactions(
+    cobra_model, gene_list, compiled_gene_reaction_rules=None
+):
     """identify reactions which will be disabled when the genes are knocked out
 
     cobra_model: :class:`~cobra.core.Model.Model`
@@ -114,15 +116,20 @@ def find_gene_knockout_reactions(cobra_model, gene_list,
         potential_reactions.update(gene._reaction)
     gene_set = {str(i) for i in gene_list}
     if compiled_gene_reaction_rules is None:
-        compiled_gene_reaction_rules = {r: parse_gpr(r.gene_reaction_rule)[0]
-                                        for r in potential_reactions}
+        compiled_gene_reaction_rules = {
+            r: parse_gpr(r.gene_reaction_rule)[0] for r in potential_reactions
+        }
 
-    return [r for r in potential_reactions
-            if not eval_gpr(compiled_gene_reaction_rules[r], gene_set)]
+    return [
+        r
+        for r in potential_reactions
+        if not eval_gpr(compiled_gene_reaction_rules[r], gene_set)
+    ]
 
 
-def delete_model_genes(cobra_model, gene_list,
-                       cumulative_deletions=True, disable_orphans=False):
+def delete_model_genes(
+    cobra_model, gene_list, cumulative_deletions=True, disable_orphans=False
+):
     """delete_model_genes will set the upper and lower bounds for reactions
     catalysed by the genes in gene_list if deleting the genes means that
     the reaction cannot proceed according to
@@ -134,7 +141,7 @@ def delete_model_genes(cobra_model, gene_list,
     """
     if disable_orphans:
         raise NotImplementedError("disable_orphans not implemented")
-    if not hasattr(cobra_model, '_trimmed'):
+    if not hasattr(cobra_model, "_trimmed"):
         cobra_model._trimmed = False
         cobra_model._trimmed_genes = []
         cobra_model._trimmed_reactions = {}  # Store the old bounds in here.
@@ -144,13 +151,14 @@ def delete_model_genes(cobra_model, gene_list,
     if cobra_model._trimmed_reactions is None:
         cobra_model._trimmed_reactions = {}
     # Allow a single gene to be fed in as a string instead of a list.
-    if not hasattr(gene_list, '__iter__') or \
-            hasattr(gene_list, 'id'):  # cobra.Gene has __iter__
+    if not hasattr(gene_list, "__iter__") or hasattr(
+        gene_list, "id"
+    ):  # cobra.Gene has __iter__
         gene_list = [gene_list]
 
-    if not hasattr(gene_list[0], 'id'):
+    if not hasattr(gene_list[0], "id"):
         if gene_list[0] in cobra_model.genes:
-                tmp_gene_dict = dict([(x.id, x) for x in cobra_model.genes])
+            tmp_gene_dict = dict([(x.id, x) for x in cobra_model.genes])
         else:
             # assume we're dealing with names if no match to an id
             tmp_gene_dict = dict([(x.name, x) for x in cobra_model.genes])
@@ -172,14 +180,15 @@ def delete_model_genes(cobra_model, gene_list,
             continue
         old_lower_bound = the_reaction.lower_bound
         old_upper_bound = the_reaction.upper_bound
-        cobra_model._trimmed_reactions[the_reaction] = (old_lower_bound,
-                                                        old_upper_bound)
-        the_reaction.lower_bound = 0.
-        the_reaction.upper_bound = 0.
+        cobra_model._trimmed_reactions[the_reaction] = (
+            old_lower_bound,
+            old_upper_bound,
+        )
+        the_reaction.lower_bound = 0.0
+        the_reaction.upper_bound = 0.0
         cobra_model._trimmed = True
 
-    cobra_model._trimmed_genes = list(set(cobra_model._trimmed_genes +
-                                          gene_list))
+    cobra_model._trimmed_genes = list(set(cobra_model._trimmed_genes + gene_list))
 
 
 class _GeneRemover(NodeTransformer):
@@ -215,8 +224,7 @@ def remove_genes(cobra_model, gene_list, remove_reactions=True):
     ast_rules = get_compiled_gene_reaction_rules(cobra_model)
     target_reactions = []
     for reaction, rule in iteritems(ast_rules):
-        if reaction.gene_reaction_rule is None or \
-                len(reaction.gene_reaction_rule) == 0:
+        if reaction.gene_reaction_rule is None or len(reaction.gene_reaction_rule) == 0:
             continue
         # reactions to remove
         if remove_reactions and not eval_gpr(rule, gene_id_set):

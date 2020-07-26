@@ -32,8 +32,11 @@ class SolverNotFound(Exception):
     pass
 
 
-OPTLANG_TO_EXCEPTIONS_DICT = dict((
-    (optlang.interface.INFEASIBLE, Infeasible),
-    (optlang.interface.UNBOUNDED, Unbounded),
-    (optlang.interface.FEASIBLE, FeasibleButNotOptimal),
-    (optlang.interface.UNDEFINED, UndefinedSolution)))
+OPTLANG_TO_EXCEPTIONS_DICT = dict(
+    (
+        (optlang.interface.INFEASIBLE, Infeasible),
+        (optlang.interface.UNBOUNDED, Unbounded),
+        (optlang.interface.FEASIBLE, FeasibleButNotOptimal),
+        (optlang.interface.UNDEFINED, UndefinedSolution),
+    )
+)

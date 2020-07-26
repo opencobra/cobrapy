@@ -79,5 +79,6 @@ def sample(model, n, method="optgp", thinning=100, processes=1, seed=None):
     else:
         raise ValueError("method must be 'optgp' or 'achr'!")
 
-    return pandas.DataFrame(columns=[rxn.id for rxn in model.reactions],
-                            data=sampler.sample(n))
+    return pandas.DataFrame(
+        columns=[rxn.id for rxn in model.reactions], data=sampler.sample(n)
+    )

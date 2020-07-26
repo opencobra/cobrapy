@@ -1,0 +1,146 @@
+{
+  "metabolites": [
+    {
+      "id": "Glcxt",
+      "name": "glucose",
+      "compartment": "bioreactor",
+      "charge": 0,
+      "formula": ""
+    },
+    {
+      "id": "Ac",
+      "name": "acetate",
+      "compartment": "bioreactor",
+      "charge": 0,
+      "formula": ""
+    },
+    {
+      "id": "O2",
+      "name": "oxygen",
+      "compartment": "bioreactor",
+      "charge": 0,
+      "formula": ""
+    },
+    {
+      "id": "X",
+      "name": "biomass",
+      "compartment": "bioreactor",
+      "charge": 0,
+      "formula": ""
+    }
+  ],
+  "reactions": [
+    {
+      "id": "v1",
+      "name": "v1 (39.43 Ac + 35 O2 -> X)",
+      "metabolites": {
+        "Ac": -39.43,
+        "O2": -35,
+        "X": 1
+      },
+      "lower_bound": 0,
+      "upper_bound": "inf",
+      "gene_reaction_rule": "",
+      "objective_coefficient": 1
+    },
+    {
+      "id": "v2",
+      "name": "v2 (9.46 Glcxt + 12.92 O2 -> X)",
+      "metabolites": {
+        "Glcxt": -9.46,
+        "O2": -12.92,
+        "X": 1
+      },
+      "lower_bound": 0,
+      "upper_bound": "inf",
+      "gene_reaction_rule": "",
+      "objective_coefficient": 1
+    },
+    {
+      "id": "v3",
+      "name": "v3 (9.84 Glcxt + 12.73 O2 -> 1.24 Ac + X)",
+      "metabolites": {
+        "Ac": 1.24,
+        "Glcxt": -9.84,
+        "O2": -12.73,
+        "X": 1
+      },
+      "lower_bound": 0,
+      "upper_bound": "inf",
+      "gene_reaction_rule": "",
+      "objective_coefficient": 1
+    },
+    {
+      "id": "v4",
+      "name": "v4 (19.23 Glcxt -> 12.12 Ac + X)",
+      "metabolites": {
+        "Ac": 12.12,
+        "Glcxt": -19.23,
+        "X": 1
+      },
+      "lower_bound": 0,
+      "upper_bound": "inf",
+      "gene_reaction_rule": "",
+      "objective_coefficient": 1
+    },
+    {
+      "id": "EX_Ac",
+      "name": "EX_Ac",
+      "metabolites": {
+        "Ac": -1
+      },
+      "lower_bound": "-inf",
+      "upper_bound": "inf",
+      "gene_reaction_rule": "",
+      "annotation": {
+        "sbo": "SBO:0000627"
+      }
+    },
+    {
+      "id": "EX_O2",
+      "name": "EX_O2",
+      "metabolites": {
+        "O2": -1
+      },
+      "lower_bound": -10,
+      "upper_bound": 0,
+      "gene_reaction_rule": "",
+      "annotation": {
+        "sbo": "SBO:0000627"
+      }
+    },
+    {
+      "id": "EX_Glcxt",
+      "name": "EX_Glcxt",
+      "metabolites": {
+        "Glcxt": -1
+      },
+      "lower_bound": -15,
+      "upper_bound": 0,
+      "gene_reaction_rule": "",
+      "annotation": {
+        "sbo": "SBO:0000627"
+      }
+    },
+    {
+      "id": "EX_X",
+      "name": "EX_X",
+      "metabolites": {
+        "X": -1
+      },
+      "lower_bound": "-inf",
+      "upper_bound": "inf",
+      "gene_reaction_rule": "",
+      "annotation": {
+        "sbo": "SBO:0000627"
+      }
+    }
+  ],
+  "genes": [],
+  "id": "fbc_ex1_1",
+  "name": "fbc_ex1_1",
+  "compartments": {
+    "bioreactor": "bioreactor"
+  },
+  "version": "1"
+}

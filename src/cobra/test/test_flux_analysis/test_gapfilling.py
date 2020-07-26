@@ -19,7 +19,7 @@ def test_gapfilling(salmonella):
     dmc = Reaction("DM_c")
     dmc.add_metabolites({m.metabolites.c: -1})
     m.add_reactions([exa, b2c, dmc])
-    m.objective = 'DM_c'
+    m.objective = "DM_c"
 
     universal = Model()
     a2b = Reaction("a2b")
@@ -37,15 +37,14 @@ def test_gapfilling(salmonella):
     # # SMILEY
     # result = gapfilling.SMILEY(m, "b", universal)[0]
     with m:
-        m.objective = m.add_boundary(m.metabolites.b, type='demand')
+        m.objective = m.add_boundary(m.metabolites.b, type="demand")
         result = gapfill(m, universal)[0]
         assert len(result) == 1
         assert result[0].id == "a2b"
 
     # # 2 rounds of GrowMatch with exchange reactions
     # result = gapfilling.growMatch(m, None, ex_rxns=True, iterations=2)
-    result = gapfill(m, None, exchange_reactions=True,
-                     iterations=2)
+    result = gapfill(m, None, exchange_reactions=True, iterations=2)
     assert len(result) == 2
     assert len(result[0]) == 1
     assert len(result[1]) == 1
@@ -58,9 +57,9 @@ def test_gapfilling(salmonella):
     a2b = Reaction("a2b")
     universal_noDM.add_reactions([a2b])
     a2b.build_reaction_from_string("a --> b + d", verbose=False)
-    result = gapfill(m, universal_noDM,
-                     exchange_reactions=False,
-                     demand_reactions=True)[0]
+    result = gapfill(
+        m, universal_noDM, exchange_reactions=False, demand_reactions=True
+    )[0]
     # add reaction a2b and demand reaction to clear met d
     assert len(result) == 2
     assert "a2b" in [x.id for x in result]
@@ -73,9 +72,9 @@ def test_gapfilling(salmonella):
     d_dm = Reaction("d_dm")
     universal_withDM.add_reactions([d_dm])
     d_dm.build_reaction_from_string("d -->", verbose=False)
-    result = gapfill(m, universal_withDM,
-                     exchange_reactions=False,
-                     demand_reactions=False)[0]
+    result = gapfill(
+        m, universal_withDM, exchange_reactions=False, demand_reactions=False
+    )[0]
     assert len(result) == 2
     assert "a2b" in [x.id for x in result]
 
@@ -86,9 +85,9 @@ def test_gapfilling(salmonella):
             reaction = model.reactions.get_by_id(i)
             universal.add_reactions([reaction.copy()])
             model.remove_reactions([reaction])
-        gf = GapFiller(model, universal,
-                       penalties={'TKT2': 1e3},
-                       demand_reactions=False)
+        gf = GapFiller(
+            model, universal, penalties={"TKT2": 1e3}, demand_reactions=False
+        )
         solution = gf.fill()
-        assert 'TKT2' not in {r.id for r in solution[0]}
+        assert "TKT2" not in {r.id for r in solution[0]}
         assert gf.validate(solution[0])

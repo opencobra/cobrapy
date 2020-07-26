@@ -35,7 +35,7 @@ class Species(Object):
 
         """
         state = Object.__getstate__(self)
-        state['_reaction'] = set()
+        state["_reaction"] = set()
         return state
 
     def copy(self):
@@ -50,4 +50,4 @@ class Species(Object):
 
     @property
     def model(self):
-        return(self._model)
+        return self._model

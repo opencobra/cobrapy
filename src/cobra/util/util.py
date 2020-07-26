@@ -7,8 +7,8 @@ from depinfo import print_dependencies
 
 def format_long_string(string, max_length=50):
     if len(string) > max_length:
-        string = string[:max_length - 3]
-        string += '...'
+        string = string[: max_length - 3]
+        string += "..."
     return string
 
 

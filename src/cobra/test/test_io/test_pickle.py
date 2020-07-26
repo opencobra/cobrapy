@@ -14,6 +14,7 @@ from cobra.test.test_io.conftest import compare_models
 
 try:
     import cPickle
+
     cload = cPickle.load
     cdump = cPickle.dump
 except ImportError:

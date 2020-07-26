@@ -20,6 +20,7 @@ def _warn_format(message, category, filename, lineno, file=None, line=None):
     shortname = filename.replace(_cobra_path, "cobra", 1)
     return _warning_base % (shortname, lineno, category.__name__, message)
 
+
 _warnings.formatwarning = _warn_format
 
 import sys
@@ -30,15 +31,23 @@ if sys.version_info[0] == 2:
         "https://www.python.org/dev/peps/pep-0373/) and many cobra "
         "dependencies have already dropped support. At the moment it *should* "
         "still work but we will no longer actively maintain Python 2 support.",
-        FutureWarning
+        FutureWarning,
     )
 
 from cobra.core import (
-    Configuration, DictList, Gene, Metabolite, Model, Object, Reaction,
-    Solution, Species)
+    Configuration,
+    DictList,
+    Gene,
+    Metabolite,
+    Model,
+    Object,
+    Reaction,
+    Solution,
+    Species,
+)
 from cobra import flux_analysis
 from cobra import io
 from cobra import sampling
 from cobra.util import show_versions
 
-__version__ = "0.18.0"
+__version__ = "0.18.1"

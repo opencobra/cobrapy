@@ -63,8 +63,7 @@ def test_equality_constraint(model):
 def test_inequality_constraint(model):
     """Test inequality constraint."""
 
-    co = model.problem.Constraint(
-        model.reactions.ACALD.flux_expression, lb=-0.5)
+    co = model.problem.Constraint(model.reactions.ACALD.flux_expression, lb=-0.5)
     model.add_cons_vars(co)
 
     s = sample(model, 10)
@@ -105,16 +104,16 @@ def test_complicated_model():
 
     """
 
-    model = Model('flux_split')
+    model = Model("flux_split")
 
-    reaction1 = Reaction('V1')
-    reaction2 = Reaction('V2')
-    reaction3 = Reaction('V3')
+    reaction1 = Reaction("V1")
+    reaction2 = Reaction("V2")
+    reaction3 = Reaction("V3")
     reaction1.bounds = (0, 6)
     reaction2.bounds = (0, 8)
     reaction3.bounds = (0, 10)
 
-    A = Metabolite('A')
+    A = Metabolite("A")
 
     reaction1.add_metabolites({A: -1})
     reaction2.add_metabolites({A: -1})
@@ -141,10 +140,10 @@ def test_single_point_space(model):
 
     pfba_sol = pfba(model)
     pfba_const = model.problem.Constraint(
-        sum(model.variables), ub=pfba_sol.objective_value)
+        sum(model.variables), ub=pfba_sol.objective_value
+    )
     model.add_cons_vars(pfba_const)
-    model.reactions.Biomass_Ecoli_core.lower_bound = \
-        pfba_sol.fluxes.Biomass_Ecoli_core
+    model.reactions.Biomass_Ecoli_core.lower_bound = pfba_sol.fluxes.Biomass_Ecoli_core
 
     with pytest.raises(ValueError):
         s = sample(model, 1)

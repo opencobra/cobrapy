@@ -8,8 +8,13 @@ from json import dump as json_dump
 
 import cobra
 from cobra.io import (
-    load_matlab_model, read_sbml_model, save_json_model, save_matlab_model,
-    save_yaml_model, write_sbml_model)
+    load_matlab_model,
+    read_sbml_model,
+    save_json_model,
+    save_matlab_model,
+    save_yaml_model,
+    write_sbml_model,
+)
 
 
 # from cobra.io.sbml3 import write_sbml2
@@ -18,9 +23,9 @@ from cobra.io import (
 # This script regenerates pickles of cobra Models.  Should be
 # performed after updating core classes to prevent subtle bugs.
 try:
-    from cPickle import load, dump
-except:
-    from pickle import load, dump
+    from cPickle import dump, load
+except ImportError:
+    from pickle import dump, load
 
 
 config = cobra.Configuration()
@@ -50,9 +55,23 @@ mini.compartments = textbook.compartments
 
 
 for r in textbook.reactions:
-    if r.id in ("GLCpts", "PGI", "PFK", "FBA", "TPI", "GAPD", "PGK", "PGM",
-                "ENO", "PYK", "EX_glc__D_e", "EX_h_e", "H2Ot", "ATPM",
-                "PIt2r"):
+    if r.id in (
+        "GLCpts",
+        "PGI",
+        "PFK",
+        "FBA",
+        "TPI",
+        "GAPD",
+        "PGK",
+        "PGM",
+        "ENO",
+        "PYK",
+        "EX_glc__D_e",
+        "EX_h_e",
+        "H2Ot",
+        "ATPM",
+        "PIt2r",
+    ):
         mini.add_reaction(r.copy())
 mini.reactions.ATPM.upper_bound = mini.reactions.PGI.upper_bound
 mini.objective = ["PFK", "ATPM"]  # No biomass, 2 reactions
@@ -62,8 +81,9 @@ mini.add_reaction(ecoli_model.reactions.LDH_D.copy())
 mini.add_reaction(ecoli_model.reactions.EX_lac__D_e.copy())
 r = cobra.Reaction("D_LACt2")
 mini.add_reaction(r)
-mini.reactions.GLCpts.gene_reaction_rule = \
+mini.reactions.GLCpts.gene_reaction_rule = (
     ecoli_model.reactions.GLCptspp.gene_reaction_rule
+)
 
 # adjust bounds
 for i in ["ATPM", "D_LACt2", "EX_lac__D_e", "LDH_D"]:
@@ -106,8 +126,7 @@ with open("textbook_fva.json", "w") as outfile:
     json_dump(clean_result, outfile)
 
 # fva with pfba constraint
-fva_result = cobra.flux_analysis.flux_variability_analysis(textbook,
-                                                           pfba_factor=1.1)
+fva_result = cobra.flux_analysis.flux_variability_analysis(textbook, pfba_factor=1.1)
 clean_result = OrderedDict()
 for key in sorted(fva_result):
     clean_result[key] = {k: round(v, 5) for k, v in fva_result[key].items()}
@@ -116,5 +135,5 @@ with open("textbook_pfba_fva.json", "w") as outfile:
 
 # textbook solution
 solution = cobra.flux_analysis.parsimonious.pfba(textbook)
-with open('textbook_solution.pickle', 'wb') as f:
+with open("textbook_solution.pickle", "wb") as f:
     dump(solution, f, protocol=2)

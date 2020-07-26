@@ -15,7 +15,7 @@ from cobra.flux_analysis.variability import flux_variability_analysis
 LOGGER = logging.getLogger(__name__)
 
 
-def geometric_fba(model, epsilon=1E-06, max_tries=200, processes=None):
+def geometric_fba(model, epsilon=1e-06, max_tries=200, processes=None):
     """
     Perform geometric FBA to obtain a unique, centered flux distribution.
 
@@ -66,17 +66,17 @@ def geometric_fba(model, epsilon=1E-06, max_tries=200, processes=None):
 
         # Set the gFBA constraints.
         for rxn in model.reactions:
-            var = prob.Variable("geometric_fba_" + rxn.id,
-                                lb=0,
-                                ub=mean_flux[rxn.id])
-            upper_const = prob.Constraint(rxn.flux_expression - var,
-                                          ub=mean_flux[rxn.id],
-                                          name="geometric_fba_upper_const_" +
-                                          rxn.id)
-            lower_const = prob.Constraint(rxn.flux_expression + var,
-                                          lb=fva_sol.at[rxn.id, "minimum"],
-                                          name="geometric_fba_lower_const_" +
-                                          rxn.id)
+            var = prob.Variable("geometric_fba_" + rxn.id, lb=0, ub=mean_flux[rxn.id])
+            upper_const = prob.Constraint(
+                rxn.flux_expression - var,
+                ub=mean_flux[rxn.id],
+                name="geometric_fba_upper_const_" + rxn.id,
+            )
+            lower_const = prob.Constraint(
+                rxn.flux_expression + var,
+                lb=fva_sol.at[rxn.id, "minimum"],
+                name="geometric_fba_lower_const_" + rxn.id,
+            )
             updating_vars_cons.append((rxn.id, var, upper_const, lower_const))
             consts.extend([var, upper_const, lower_const])
             obj_vars.append(var)
@@ -91,8 +91,9 @@ def geometric_fba(model, epsilon=1E-06, max_tries=200, processes=None):
         mean_flux = (fva_sol["maximum"] + fva_sol["minimum"]).abs() / 2
         delta = (fva_sol["maximum"] - fva_sol["minimum"]).max()
         count = 1
-        LOGGER.debug("Iteration: %d; delta: %.3g; status: %s.",
-                     count, delta, sol.status)
+        LOGGER.debug(
+            "Iteration: %d; delta: %.3g; status: %s.", count, delta, sol.status
+        )
 
         # Following iterations that minimize the distance below threshold.
         while delta > epsilon and count < max_tries:
@@ -106,8 +107,9 @@ def geometric_fba(model, epsilon=1E-06, max_tries=200, processes=None):
             mean_flux = (fva_sol["maximum"] + fva_sol["minimum"]).abs() / 2
             delta = (fva_sol["maximum"] - fva_sol["minimum"]).max()
             count += 1
-            LOGGER.debug("Iteration: %d; delta: %.3g; status: %s.",
-                         count, delta, sol.status)
+            LOGGER.debug(
+                "Iteration: %d; delta: %.3g; status: %s.", count, delta, sol.status
+            )
 
         if count == max_tries:
             raise RuntimeError(

@@ -3,8 +3,7 @@
 from __future__ import absolute_import
 
 import re
-from ast import (
-    And, BitAnd, BitOr, BoolOp, Expression, Name, NodeTransformer, Or)
+from ast import And, BitAnd, BitOr, BoolOp, Expression, Name, NodeTransformer, Or
 from ast import parse as ast_parse
 from keyword import kwlist
 from warnings import warn
@@ -29,7 +28,7 @@ replacements = (
     ("/", "__COBRA_FSLASH__"),
     ("\\", "__COBRA_BSLASH"),
     ("-", "__COBRA_DASH__"),
-    ("=", "__COBRA_EQ__")
+    ("=", "__COBRA_EQ__"),
 )
 
 
@@ -55,18 +54,15 @@ def ast2str(expr, level=0, names=None):
         The gene reaction rule
     """
     if isinstance(expr, Expression):
-        return ast2str(expr.body, 0, names) \
-            if hasattr(expr, "body") else ""
+        return ast2str(expr.body, 0, names) if hasattr(expr, "body") else ""
     elif isinstance(expr, Name):
         return names.get(expr.id, expr.id) if names else expr.id
     elif isinstance(expr, BoolOp):
         op = expr.op
         if isinstance(op, Or):
-            str_exp = " or ".join(ast2str(i, level + 1, names)
-                                  for i in expr.values)
+            str_exp = " or ".join(ast2str(i, level + 1, names) for i in expr.values)
         elif isinstance(op, And):
-            str_exp = " and ".join(ast2str(i, level + 1, names)
-                                   for i in expr.values)
+            str_exp = " and ".join(ast2str(i, level + 1, names) for i in expr.values)
         else:
             raise TypeError("unsupported operation " + op.__class__.__name)
         return "(" + str_exp + ")" if level else str_exp
@@ -136,8 +132,7 @@ class GPRCleaner(NodeTransformer):
         elif isinstance(node.op, BitOr):
             return BoolOp(Or(), (node.left, node.right))
         else:
-            raise TypeError("unsupported operation '%s'" %
-                            node.op.__class__.__name__)
+            raise TypeError("unsupported operation '%s'" % node.op.__class__.__name__)
 
 
 def parse_gpr(str_expr):
@@ -200,7 +195,7 @@ class Gene(Species):
     @resettable
     def functional(self, value):
         if not isinstance(value, bool):
-            raise ValueError('expected boolean')
+            raise ValueError("expected boolean")
         self._functional = value
 
     def knock_out(self):
@@ -215,8 +210,9 @@ class Gene(Species):
             if not reaction.functional:
                 reaction.bounds = (0, 0)
 
-    def remove_from_model(self, model=None,
-                          make_dependent_reactions_nonfunctional=True):
+    def remove_from_model(
+        self, model=None, make_dependent_reactions_nonfunctional=True
+    ):
         """Removes the association
 
         Parameters
@@ -237,17 +233,18 @@ class Gene(Species):
         warn("Use cobra.manipulation.remove_genes instead")
         if model is not None:
             if model != self._model:
-                raise Exception("%s is a member of %s, not %s" %
-                                (repr(self), repr(self._model), repr(model)))
+                raise Exception(
+                    "%s is a member of %s, not %s"
+                    % (repr(self), repr(self._model), repr(model))
+                )
         if self._model is None:
-            raise Exception('%s is not in a model' % repr(self))
+            raise Exception("%s is not in a model" % repr(self))
 
         if make_dependent_reactions_nonfunctional:
-            gene_state = 'False'
+            gene_state = "False"
         else:
-            gene_state = 'True'
-        the_gene_re = re.compile('(^|(?<=( |\()))%s(?=( |\)|$))' %
-                                 re.escape(self.id))
+            gene_state = "True"
+        the_gene_re = re.compile("(^|(?<=( |\()))%s(?=( |\)|$))" % re.escape(self.id))
 
         # remove reference to the gene in all groups
         associated_groups = self._model.get_associated_groups(self)
@@ -259,17 +256,19 @@ class Gene(Species):
 
         for the_reaction in list(self._reaction):
             the_reaction._gene_reaction_rule = the_gene_re.sub(
-                gene_state, the_reaction.gene_reaction_rule)
+                gene_state, the_reaction.gene_reaction_rule
+            )
             the_reaction._genes.remove(self)
             # Now, deactivate the reaction if its gene association evaluates
             # to False
             the_gene_reaction_relation = the_reaction.gene_reaction_rule
             for other_gene in the_reaction._genes:
-                other_gene_re = re.compile('(^|(?<=( |\()))%s(?=( |\)|$))' %
-                                           re.escape(other_gene.id))
+                other_gene_re = re.compile(
+                    "(^|(?<=( |\()))%s(?=( |\)|$))" % re.escape(other_gene.id)
+                )
                 the_gene_reaction_relation = other_gene_re.sub(
-                    'True',
-                    the_gene_reaction_relation)
+                    "True", the_gene_reaction_relation
+                )
 
             if not eval(the_gene_reaction_relation):
                 the_reaction.lower_bound = 0
@@ -292,9 +291,11 @@ class Gene(Species):
                 <td><strong>In {n_reactions} reaction(s)</strong></td><td>
                     {reactions}</td>
             </tr>
-        </table>""".format(id=self.id, name=self.name,
-                           functional=self.functional,
-                           address='0x0%x' % id(self),
-                           n_reactions=len(self.reactions),
-                           reactions=format_long_string(
-                               ', '.join(r.id for r in self.reactions), 200))
+        </table>""".format(
+            id=self.id,
+            name=self.name,
+            functional=self.functional,
+            address="0x0%x" % id(self),
+            n_reactions=len(self.reactions),
+            reactions=format_long_string(", ".join(r.id for r in self.reactions), 200),
+        )

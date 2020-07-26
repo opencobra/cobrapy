@@ -65,9 +65,9 @@ class ModelSummary(Summary):
 
         """
         if self.names:
-            emit = attrgetter('name')
+            emit = attrgetter("name")
         else:
-            emit = attrgetter('id')
+            emit = attrgetter("id")
 
         obj_rxns = linear_reaction_coefficients(self.model)
         boundary_rxns = self.model.exchanges
@@ -80,61 +80,64 @@ class ModelSummary(Summary):
         # the order needs to be maintained
         ord_obj_rxns = OrderedDict(obj_rxns)
 
-        obj_data = [(emit(rxn), self.solution[rxn.id] * stoich, np.nan, rxn,
-                     np.nan, 1.0) for rxn, stoich in iteritems(ord_obj_rxns)]
+        obj_data = [
+            (emit(rxn), self.solution[rxn.id] * stoich, np.nan, rxn, np.nan, 1.0)
+            for rxn, stoich in iteritems(ord_obj_rxns)
+        ]
 
         # create a DataFrame of objective reactions
         obj_df = pd.DataFrame.from_records(
             data=obj_data,
             index=[rxn.id for rxn in iterkeys(ord_obj_rxns)],
-            columns=['id', 'flux', 'metabolite', 'reaction', 'is_input',
-                     'is_obj_rxn']
+            columns=["id", "flux", "metabolite", "reaction", "is_input", "is_obj_rxn"],
         )
 
         # create a collection of metabolites from the boundary reactions
-        mets = OrderedDict((met, rxn) for rxn in boundary_rxns
-                           for met in sorted(rxn.metabolites,
-                                             key=attrgetter('id')))
+        mets = OrderedDict(
+            (met, rxn)
+            for rxn in boundary_rxns
+            for met in sorted(rxn.metabolites, key=attrgetter("id"))
+        )
         index = [met.id for met in iterkeys(mets)]
 
-        met_data = [(emit(met), self.solution[rxn.id] * rxn.metabolites[met],
-                     met, rxn) for met, rxn in iteritems(mets)]
+        met_data = [
+            (emit(met), self.solution[rxn.id] * rxn.metabolites[met], met, rxn)
+            for met, rxn in iteritems(mets)
+        ]
 
         # create a DataFrame of metabolites
         flux_summary = pd.DataFrame.from_records(
-            data=met_data,
-            index=index,
-            columns=['id', 'flux', 'metabolite', 'reaction']
+            data=met_data, index=index, columns=["id", "flux", "metabolite", "reaction"]
         )
 
         # Calculate FVA results if requested
         if self.fva is not None:
             if len(index) != len(boundary_rxns):
                 logger.warning(
-                    'There exists more than one boundary reaction per '
-                    'metabolite. Please be careful when evaluating flux '
-                    'ranges.')
+                    "There exists more than one boundary reaction per "
+                    "metabolite. Please be careful when evaluating flux "
+                    "ranges."
+                )
 
-            if hasattr(self.fva, 'columns'):
+            if hasattr(self.fva, "columns"):
                 fva_results = self.fva
             else:
                 fva_results = flux_variability_analysis(
-                    self.model, reaction_list=boundary_rxns,
-                    fraction_of_optimum=self.fva
+                    self.model,
+                    reaction_list=boundary_rxns,
+                    fraction_of_optimum=self.fva,
                 )
 
             # save old index
             old_index = flux_summary.index
             # generate new index for consistency with fva_results
-            flux_summary['rxn_id'] = flux_summary.apply(
-                lambda x: x.reaction.id, axis=1
-            )
+            flux_summary["rxn_id"] = flux_summary.apply(lambda x: x.reaction.id, axis=1)
             # change to new index
-            flux_summary.set_index(['rxn_id'], inplace=True)
-            flux_summary = pd.concat([flux_summary, fva_results],
-                                     axis=1, sort=False)
-            flux_summary.rename(columns={'maximum': 'fmax', 'minimum': 'fmin'},
-                                inplace=True)
+            flux_summary.set_index(["rxn_id"], inplace=True)
+            flux_summary = pd.concat([flux_summary, fva_results], axis=1, sort=False)
+            flux_summary.rename(
+                columns={"maximum": "fmax", "minimum": "fmin"}, inplace=True
+            )
             # revert to old index
             flux_summary.set_index(old_index)
 
@@ -174,21 +177,37 @@ class ModelSummary(Summary):
         # old DataFrame, since that is easier to understand
 
         if self.fva is not None:
-            column_names = ['IN_FLUXES-ID', 'IN_FLUXES-FLUX',
-                            'IN_FLUXES-FLUX_MIN', 'IN_FLUXES-FLUX_MAX',
-                            'OUT_FLUXES-ID', 'OUT_FLUXES-FLUX',
-                            'OUT_FLUXES-FLUX_MIN', 'OUT_FLUXES-FLUX_MAX',
-                            'OBJECTIVES-ID', 'OBJECTIVES-FLUX']
+            column_names = [
+                "IN_FLUXES-ID",
+                "IN_FLUXES-FLUX",
+                "IN_FLUXES-FLUX_MIN",
+                "IN_FLUXES-FLUX_MAX",
+                "OUT_FLUXES-ID",
+                "OUT_FLUXES-FLUX",
+                "OUT_FLUXES-FLUX_MIN",
+                "OUT_FLUXES-FLUX_MAX",
+                "OBJECTIVES-ID",
+                "OBJECTIVES-FLUX",
+            ]
 
             # generate separate DataFrames
-            met_in_df = flux_df[flux_df.is_input == 1.0]\
-                .loc[:, ['id', 'flux', 'fmin', 'fmax']].reset_index(drop=True)
+            met_in_df = (
+                flux_df[flux_df.is_input == 1.0]
+                .loc[:, ["id", "flux", "fmin", "fmax"]]
+                .reset_index(drop=True)
+            )
 
-            met_out_df = flux_df[flux_df.is_input == 0.0]\
-                .loc[:, ['id', 'flux', 'fmin', 'fmax']].reset_index(drop=True)
+            met_out_df = (
+                flux_df[flux_df.is_input == 0.0]
+                .loc[:, ["id", "flux", "fmin", "fmax"]]
+                .reset_index(drop=True)
+            )
 
-            obj_df = flux_df[flux_df.is_obj_rxn == 1.0]\
-                .loc[:, ['id', 'flux']].reset_index(drop=True)
+            obj_df = (
+                flux_df[flux_df.is_obj_rxn == 1.0]
+                .loc[:, ["id", "flux"]]
+                .reset_index(drop=True)
+            )
 
             # concatenate DataFrames
             concat_df = pd.concat([met_in_df, met_out_df, obj_df], axis=1)
@@ -197,23 +216,37 @@ class ModelSummary(Summary):
 
             # generate column names
             concat_df.columns = pd.MultiIndex.from_tuples(
-                [tuple(c.split('-')) for c in column_names]
+                [tuple(c.split("-")) for c in column_names]
             )
 
         else:
-            column_names = ['IN_FLUXES-ID', 'IN_FLUXES-FLUX',
-                            'OUT_FLUXES-ID', 'OUT_FLUXES-FLUX',
-                            'OBJECTIVES-ID', 'OBJECTIVES-FLUX']
+            column_names = [
+                "IN_FLUXES-ID",
+                "IN_FLUXES-FLUX",
+                "OUT_FLUXES-ID",
+                "OUT_FLUXES-FLUX",
+                "OBJECTIVES-ID",
+                "OBJECTIVES-FLUX",
+            ]
 
             # generate separate DataFrames
-            met_in_df = flux_df[flux_df.is_input == 1.0]\
-                .loc[:, ['id', 'flux']].reset_index(drop=True)
+            met_in_df = (
+                flux_df[flux_df.is_input == 1.0]
+                .loc[:, ["id", "flux"]]
+                .reset_index(drop=True)
+            )
 
-            met_out_df = flux_df[flux_df.is_input == 0.0]\
-                .loc[:, ['id', 'flux']].reset_index(drop=True)
+            met_out_df = (
+                flux_df[flux_df.is_input == 0.0]
+                .loc[:, ["id", "flux"]]
+                .reset_index(drop=True)
+            )
 
-            obj_df = flux_df[flux_df.is_obj_rxn == 1.0]\
-                .loc[:, ['id', 'flux']].reset_index(drop=True)
+            obj_df = (
+                flux_df[flux_df.is_obj_rxn == 1.0]
+                .loc[:, ["id", "flux"]]
+                .reset_index(drop=True)
+            )
 
             # concatenate DataFrames
             concat_df = pd.concat([met_in_df, met_out_df, obj_df], axis=1)
@@ -222,7 +255,7 @@ class ModelSummary(Summary):
 
             # generate column names
             concat_df.columns = pd.MultiIndex.from_tuples(
-                [tuple(c.split('-')) for c in column_names]
+                [tuple(c.split("-")) for c in column_names]
             )
 
         return concat_df
@@ -234,6 +267,11 @@ class ModelSummary(Summary):
         A string of the summary table.
 
         """
-        return self.to_frame().to_string(header=True, index=False, na_rep='',
-                                         float_format=self.float_format,
-                                         sparsify=False, justify='center')
+        return self.to_frame().to_string(
+            header=True,
+            index=False,
+            na_rep="",
+            float_format=self.float_format,
+            sparsify=False,
+            justify="center",
+        )

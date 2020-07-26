@@ -23,7 +23,10 @@ from cobra.core.object import Object
 from cobra.exceptions import OptimizationError
 from cobra.util.context import get_context, resettable
 from cobra.util.solver import (
-    check_solver_status, linear_reaction_coefficients, set_objective)
+    check_solver_status,
+    linear_reaction_coefficients,
+    set_objective,
+)
 from cobra.util.util import format_long_string
 
 
@@ -31,10 +34,10 @@ config = Configuration()
 
 # precompiled regular expressions
 # Matches and/or in a gene reaction rule
-and_or_search = re.compile(r'\(| and| or|\+|\)', re.IGNORECASE)
-uppercase_AND = re.compile(r'\bAND\b')
-uppercase_OR = re.compile(r'\bOR\b')
-gpr_clean = re.compile(' {2,}')
+and_or_search = re.compile(r"\(| and| or|\+|\)", re.IGNORECASE)
+uppercase_AND = re.compile(r"\bAND\b")
+uppercase_OR = re.compile(r"\bOR\b")
+gpr_clean = re.compile(" {2,}")
 # This regular expression finds any single letter compartment enclosed in
 # square brackets at the beginning of the string. For example [c] : foo --> bar
 compartment_finder = re.compile("^\s*(\[[A-Za-z]\])\s*:*")
@@ -69,10 +72,11 @@ class Reaction(Object):
         The upper flux bound
     """
 
-    def __init__(self, id=None, name='', subsystem='', lower_bound=0.0,
-                 upper_bound=None):
+    def __init__(
+        self, id=None, name="", subsystem="", lower_bound=0.0, upper_bound=None
+    ):
         Object.__init__(self, id, name)
-        self._gene_reaction_rule = ''
+        self._gene_reaction_rule = ""
         self.subsystem = subsystem
 
         # The cobra.Genes that are used to catalyze the reaction
@@ -90,15 +94,18 @@ class Reaction(Object):
         self._model = None
 
         # from cameo ...
-        self._lower_bound = lower_bound if lower_bound is not None else \
-            config.lower_bound
-        self._upper_bound = upper_bound if upper_bound is not None else \
-            config.upper_bound
+        self._lower_bound = (
+            lower_bound if lower_bound is not None else config.lower_bound
+        )
+        self._upper_bound = (
+            upper_bound if upper_bound is not None else config.upper_bound
+        )
 
     def _set_id_with_model(self, value):
         if value in self.model.reactions:
-            raise ValueError("The model already contains a reaction with"
-                             " the id:", value)
+            raise ValueError(
+                "The model already contains a reaction with" " the id:", value
+            )
         forward_variable = self.forward_variable
         reverse_variable = self.reverse_variable
         self._id = value
@@ -109,9 +116,9 @@ class Reaction(Object):
     @property
     def reverse_id(self):
         """Generate the id of reverse_variable from the reaction's id."""
-        return '_'.join((self.id, 'reverse',
-                         hashlib.md5(
-                             self.id.encode('utf-8')).hexdigest()[0:5]))
+        return "_".join(
+            (self.id, "reverse", hashlib.md5(self.id.encode("utf-8")).hexdigest()[0:5])
+        )
 
     @property
     def flux_expression(self):
@@ -125,7 +132,7 @@ class Reaction(Object):
             model.reversible_encoding == 'unsplit' or None if reaction is
             not associated with a model """
         if self.model is not None:
-            return 1. * self.forward_variable - 1. * self.reverse_variable
+            return 1.0 * self.forward_variable - 1.0 * self.reverse_variable
         else:
             return None
 
@@ -175,7 +182,7 @@ class Reaction(Object):
     @objective_coefficient.setter
     def objective_coefficient(self, value):
         if self.model is None:
-            raise AttributeError('cannot assign objective to a missing model')
+            raise AttributeError("cannot assign objective to a missing model")
         if self.flux_expression is not None:
             set_objective(self.model, {self: value}, additive=True)
 
@@ -192,7 +199,8 @@ class Reaction(Object):
         if lb > ub:
             raise ValueError(
                 "The lower bound must be less than or equal to the upper "
-                "bound ({} <= {}).".format(lb, ub))
+                "bound ({} <= {}).".format(lb, ub)
+            )
 
     def update_variable_bounds(self):
         if self.model is None:
@@ -201,23 +209,21 @@ class Reaction(Object):
         if self._lower_bound > 0:
             self.forward_variable.set_bounds(
                 lb=None if isinf(self._lower_bound) else self._lower_bound,
-                ub=None if isinf(self._upper_bound) else self._upper_bound
+                ub=None if isinf(self._upper_bound) else self._upper_bound,
             )
             self.reverse_variable.set_bounds(lb=0, ub=0)
         elif self._upper_bound < 0:
             self.forward_variable.set_bounds(lb=0, ub=0)
             self.reverse_variable.set_bounds(
                 lb=None if isinf(self._upper_bound) else -self._upper_bound,
-                ub=None if isinf(self._lower_bound) else -self._lower_bound
+                ub=None if isinf(self._lower_bound) else -self._lower_bound,
             )
         else:
             self.forward_variable.set_bounds(
-                lb=0,
-                ub=None if isinf(self._upper_bound) else self._upper_bound
+                lb=0, ub=None if isinf(self._upper_bound) else self._upper_bound
             )
             self.reverse_variable.set_bounds(
-                lb=0,
-                ub=None if isinf(self._lower_bound) else -self._lower_bound
+                lb=0, ub=None if isinf(self._lower_bound) else -self._lower_bound
             )
 
     @property
@@ -238,12 +244,15 @@ class Reaction(Object):
     @resettable
     def lower_bound(self, value):
         if self._upper_bound < value:
-            warn("You are constraining the reaction '{}' to a fixed flux "
-                 "value of {}. Did you intend to do this? We are planning to "
-                 "remove this behavior in a future release. Please let us "
-                 "know your opinion at "
-                 "https://github.com/opencobra/cobrapy/issues/793."
-                 "".format(self.id, value), DeprecationWarning)
+            warn(
+                "You are constraining the reaction '{}' to a fixed flux "
+                "value of {}. Did you intend to do this? We are planning to "
+                "remove this behavior in a future release. Please let us "
+                "know your opinion at "
+                "https://github.com/opencobra/cobrapy/issues/793."
+                "".format(self.id, value),
+                DeprecationWarning,
+            )
             self.upper_bound = value
         # Validate bounds before setting them.
         self._check_bounds(value, self._upper_bound)
@@ -268,12 +277,15 @@ class Reaction(Object):
     @resettable
     def upper_bound(self, value):
         if self._lower_bound > value:
-            warn("You are constraining the reaction '{}' to a fixed flux "
-                 "value of {}. Did you intend to do this? We are planning to "
-                 "remove this behavior in a future release. Please let us "
-                 "know your opinion at "
-                 "https://github.com/opencobra/cobrapy/issues/793."
-                 "".format(self.id, value), DeprecationWarning)
+            warn(
+                "You are constraining the reaction '{}' to a fixed flux "
+                "value of {}. Did you intend to do this? We are planning to "
+                "remove this behavior in a future release. Please let us "
+                "know your opinion at "
+                "https://github.com/opencobra/cobrapy/issues/793."
+                "".format(self.id, value),
+                DeprecationWarning,
+            )
             self.lower_bound = value
         # Validate bounds before setting them.
         self._check_bounds(self._lower_bound, value)
@@ -346,16 +358,19 @@ class Reaction(Object):
             check_solver_status(self._model.solver.status)
             return self.forward_variable.primal - self.reverse_variable.primal
         except AttributeError:
-            raise RuntimeError(
-                "reaction '{}' is not part of a model".format(self.id))
+            raise RuntimeError("reaction '{}' is not part of a model".format(self.id))
         # Due to below all-catch, which sucks, need to reraise these.
         except (RuntimeError, OptimizationError) as err:
             raise_with_traceback(err)
         # Would love to catch CplexSolverError and GurobiError here.
         except Exception as err:
-            raise_from(OptimizationError(
-                "Likely no solution exists. Original solver message: {}."
-                "".format(str(err))), err)
+            raise_from(
+                OptimizationError(
+                    "Likely no solution exists. Original solver message: {}."
+                    "".format(str(err))
+                ),
+                err,
+            )
 
     @property
     def reduced_cost(self):
@@ -399,16 +414,19 @@ class Reaction(Object):
             check_solver_status(self._model.solver.status)
             return self.forward_variable.dual - self.reverse_variable.dual
         except AttributeError:
-            raise RuntimeError(
-                "reaction '{}' is not part of a model".format(self.id))
+            raise RuntimeError("reaction '{}' is not part of a model".format(self.id))
         # Due to below all-catch, which sucks, need to reraise these.
         except (RuntimeError, OptimizationError) as err:
             raise_with_traceback(err)
         # Would love to catch CplexSolverError and GurobiError here.
         except Exception as err:
-            raise_from(OptimizationError(
-                "Likely no solution exists. Original solver message: {}."
-                "".format(str(err))), err)
+            raise_from(
+                OptimizationError(
+                    "Likely no solution exists. Original solver message: {}."
+                    "".format(str(err))
+                ),
+                err,
+            )
 
     # read-only
     @property
@@ -428,26 +446,26 @@ class Reaction(Object):
 
         # TODO: Do this :)
         if get_context(self):
-            warn("Context management not implemented for "
-                 "gene reaction rules")
+            warn("Context management not implemented for " "gene reaction rules")
 
         self._gene_reaction_rule = new_rule.strip()
         try:
             _, gene_names = parse_gpr(self._gene_reaction_rule)
         except (SyntaxError, TypeError) as e:
             if "AND" in new_rule or "OR" in new_rule:
-                warn("uppercase AND/OR found in rule '%s' for '%s'" %
-                     (new_rule, repr(self)))
+                warn(
+                    "uppercase AND/OR found in rule '%s' for '%s'"
+                    % (new_rule, repr(self))
+                )
                 new_rule = uppercase_AND.sub("and", new_rule)
                 new_rule = uppercase_OR.sub("or", new_rule)
                 self.gene_reaction_rule = new_rule
                 return
-            warn("malformed gene_reaction_rule '%s' for %s" %
-                 (new_rule, repr(self)))
-            tmp_str = and_or_search.sub('', self._gene_reaction_rule)
-            gene_names = set((gpr_clean.sub(' ', tmp_str).split(' ')))
-        if '' in gene_names:
-            gene_names.remove('')
+            warn("malformed gene_reaction_rule '%s' for %s" % (new_rule, repr(self)))
+            tmp_str = and_or_search.sub("", self._gene_reaction_rule)
+            gene_names = set((gpr_clean.sub(" ", tmp_str).split(" ")))
+        if "" in gene_names:
+            gene_names.remove("")
         old_genes = self._genes
         if self._model is None:
             self._genes = {Gene(i) for i in gene_names}
@@ -473,8 +491,10 @@ class Reaction(Object):
                 try:
                     g._reaction.remove(self)
                 except KeyError:
-                    warn("could not remove old gene %s from reaction %s" %
-                         (g.id, self.id))
+                    warn(
+                        "could not remove old gene %s from reaction %s"
+                        % (g.id, self.id)
+                    )
 
     @property
     def gene_name_reaction_rule(self):
@@ -502,8 +522,9 @@ class Reaction(Object):
         """
         if self._model:
             tree, _ = parse_gpr(self.gene_reaction_rule)
-            return eval_gpr(tree, {gene.id for gene in self.genes if
-                                   not gene.functional})
+            return eval_gpr(
+                tree, {gene.id for gene in self.genes if not gene.functional}
+            )
         return True
 
     @property
@@ -545,8 +566,7 @@ class Reaction(Object):
 
         Returns `True` if the reaction has either no products or reactants.
         """
-        return (len(self.metabolites) == 1 and
-                not (self.reactants and self.products))
+        return len(self.metabolites) == 1 and not (self.reactants and self.products)
 
     @property
     def model(self):
@@ -595,8 +615,10 @@ class Reaction(Object):
             Remove orphaned genes and metabolites from the model as well
 
         """
-        warn("delete is deprecated. Use reaction.remove_from_model instead",
-             DeprecationWarning)
+        warn(
+            "delete is deprecated. Use reaction.remove_from_model instead",
+            DeprecationWarning,
+        )
         self.remove_from_model(remove_orphans=remove_orphans)
 
     def __setstate__(self, state):
@@ -615,16 +637,16 @@ class Reaction(Object):
         if "gene_reaction_rule" in state:
             state["_gene_reaction_rule"] = state.pop("gene_reaction_rule")
         if "lower_bound" in state:
-            state['_lower_bound'] = state.pop('lower_bound')
+            state["_lower_bound"] = state.pop("lower_bound")
         if "upper_bound" in state:
-            state['_upper_bound'] = state.pop('upper_bound')
+            state["_upper_bound"] = state.pop("upper_bound")
 
         self.__dict__.update(state)
-        for x in state['_metabolites']:
-            setattr(x, '_model', self._model)
+        for x in state["_metabolites"]:
+            setattr(x, "_model", self._model)
             x._reaction.add(self)
-        for x in state['_genes']:
-            setattr(x, '_model', self._model)
+        for x in state["_genes"]:
+            setattr(x, "_model", self._model)
             x._reaction.add(self)
 
     def copy(self):
@@ -674,13 +696,14 @@ class Reaction(Object):
         self.add_metabolites(other._metabolites, combine=True)
         gpr1 = self.gene_reaction_rule.strip()
         gpr2 = other.gene_reaction_rule.strip()
-        if gpr1 != '' and gpr2 != '':
-            self.gene_reaction_rule = "(%s) and (%s)" % \
-                                      (self.gene_reaction_rule,
-                                       other.gene_reaction_rule)
-        elif gpr1 != '' and gpr2 == '':
+        if gpr1 != "" and gpr2 != "":
+            self.gene_reaction_rule = "(%s) and (%s)" % (
+                self.gene_reaction_rule,
+                other.gene_reaction_rule,
+            )
+        elif gpr1 != "" and gpr2 == "":
             self.gene_reaction_rule = gpr1
-        elif gpr1 == '' and gpr2 != '':
+        elif gpr1 == "" and gpr2 != "":
             self.gene_reaction_rule = gpr2
         return self
 
@@ -702,8 +725,8 @@ class Reaction(Object):
         bounds are swapped.
         """
         self._metabolites = {
-            met: value * coefficient
-            for met, value in iteritems(self._metabolites)}
+            met: value * coefficient for met, value in iteritems(self._metabolites)
+        }
 
         if coefficient < 0:
             self.bounds = (-self.upper_bound, -self.lower_bound)
@@ -714,7 +737,7 @@ class Reaction(Object):
         context = get_context(self)
         if context:
             context(partial(self._model._populate_solver, [self]))
-            context(partial(self.__imul__, 1./coefficient))
+            context(partial(self.__imul__, 1.0 / coefficient))
 
         return self
 
@@ -760,8 +783,7 @@ class Reaction(Object):
         """
         return map(self.get_coefficient, metabolite_ids)
 
-    def add_metabolites(self, metabolites_to_add, combine=True,
-                        reversibly=True):
+    def add_metabolites(self, metabolites_to_add, combine=True, reversibly=True):
         """Add metabolites and stoichiometric coefficients to the reaction.
         If the final coefficient for a metabolite is 0 then it is removed
         from the reaction.
@@ -795,8 +817,9 @@ class Reaction(Object):
             # Make sure metabolites being added belong to the same model, or
             # else copy them.
             if isinstance(metabolite, Metabolite):
-                if ((metabolite.model is not None) and
-                        (metabolite.model is not self._model)):
+                if (metabolite.model is not None) and (
+                    metabolite.model is not self._model
+                ):
                     metabolite = metabolite.copy()
 
             met_id = str(metabolite)
@@ -813,8 +836,7 @@ class Reaction(Object):
                 # a duplicate metabolite.
                 if self._model:
                     try:
-                        metabolite = \
-                            self._model.metabolites.get_by_id(met_id)
+                        metabolite = self._model.metabolites.get_by_id(met_id)
                     except KeyError as e:
                         if isinstance(metabolite, Metabolite):
                             new_metabolites.append(metabolite)
@@ -823,11 +845,12 @@ class Reaction(Object):
                             raise e
                 elif isinstance(metabolite, string_types):
                     # if we want to handle creation, this should be changed
-                    raise ValueError("Reaction '%s' does not belong to a "
-                                     "model. Either add the reaction to a "
-                                     "model or use Metabolite objects instead "
-                                     "of strings as keys."
-                                     % self.id)
+                    raise ValueError(
+                        "Reaction '%s' does not belong to a "
+                        "model. Either add the reaction to a "
+                        "model or use Metabolite objects instead "
+                        "of strings as keys." % self.id
+                    )
                 self._metabolites[metabolite] = coefficient
                 # make the metabolite aware that it is involved in this
                 # reaction
@@ -839,11 +862,12 @@ class Reaction(Object):
             model.add_metabolites(new_metabolites)
 
             for metabolite, coefficient in self._metabolites.items():
-                model.constraints[
-                    metabolite.id].set_linear_coefficients(
-                    {self.forward_variable: coefficient,
-                     self.reverse_variable: -coefficient
-                     })
+                model.constraints[metabolite.id].set_linear_coefficients(
+                    {
+                        self.forward_variable: coefficient,
+                        self.reverse_variable: -coefficient,
+                    }
+                )
 
         for metabolite, the_coefficient in list(self._metabolites.items()):
             if the_coefficient == 0:
@@ -856,18 +880,29 @@ class Reaction(Object):
         if context and reversibly:
             if combine:
                 # Just subtract the metabolites that were added
-                context(partial(
-                    self.subtract_metabolites, metabolites_to_add,
-                    combine=True, reversibly=False))
+                context(
+                    partial(
+                        self.subtract_metabolites,
+                        metabolites_to_add,
+                        combine=True,
+                        reversibly=False,
+                    )
+                )
             else:
                 # Reset them with add_metabolites
                 mets_to_reset = {
                     key: old_coefficients[model.metabolites.get_by_any(key)[0]]
-                    for key in iterkeys(metabolites_to_add)}
+                    for key in iterkeys(metabolites_to_add)
+                }
 
-                context(partial(
-                    self.add_metabolites, mets_to_reset,
-                    combine=False, reversibly=False))
+                context(
+                    partial(
+                        self.add_metabolites,
+                        mets_to_reset,
+                        combine=False,
+                        reversibly=False,
+                    )
+                )
 
     def subtract_metabolites(self, metabolites, combine=True, reversibly=True):
         """Subtract metabolites from a reaction.
@@ -898,9 +933,11 @@ class Reaction(Object):
             reversibly or not (primarily intended for internal use).
 
         """
-        self.add_metabolites({
-            k: -v for k, v in iteritems(metabolites)},
-            combine=combine, reversibly=reversibly)
+        self.add_metabolites(
+            {k: -v for k, v in iteritems(metabolites)},
+            combine=combine,
+            reversibly=reversibly,
+        )
 
     @property
     def reaction(self):
@@ -917,9 +954,9 @@ class Reaction(Object):
         def format(number):
             return "" if number == 1 else str(number).rstrip(".") + " "
 
-        id_type = 'id'
+        id_type = "id"
         if use_metabolite_names:
-            id_type = 'name'
+            id_type = "name"
         reactant_bits = []
         product_bits = []
         for met in sorted(self._metabolites, key=attrgetter("id")):
@@ -930,15 +967,15 @@ class Reaction(Object):
             else:
                 reactant_bits.append(format(abs(coefficient)) + name)
 
-        reaction_string = ' + '.join(reactant_bits)
+        reaction_string = " + ".join(reactant_bits)
         if not self.reversibility:
             if self.lower_bound < 0 and self.upper_bound <= 0:
-                reaction_string += ' <-- '
+                reaction_string += " <-- "
             else:
-                reaction_string += ' --> '
+                reaction_string += " --> "
         else:
-            reaction_string += ' <=> '
-        reaction_string += ' + '.join(product_bits)
+            reaction_string += " <=> "
+        reaction_string += " + ".join(product_bits)
         return reaction_string
 
     def check_mass_balance(self):
@@ -951,11 +988,9 @@ class Reaction(Object):
         reaction_element_dict = defaultdict(int)
         for metabolite, coefficient in iteritems(self._metabolites):
             if metabolite.charge is not None:
-                reaction_element_dict["charge"] += \
-                    coefficient * metabolite.charge
+                reaction_element_dict["charge"] += coefficient * metabolite.charge
             if metabolite.elements is None:
-                raise ValueError("No elements found in metabolite %s"
-                                 % metabolite.id)
+                raise ValueError("No elements found in metabolite %s" % metabolite.id)
             for element, amount in iteritems(metabolite.elements):
                 reaction_element_dict[element] += coefficient * amount
         # filter out 0 values
@@ -965,13 +1000,16 @@ class Reaction(Object):
     def compartments(self):
         """lists compartments the metabolites are in"""
         if self._compartments is None:
-            self._compartments = {met.compartment for met in self._metabolites
-                                  if met.compartment is not None}
+            self._compartments = {
+                met.compartment
+                for met in self._metabolites
+                if met.compartment is not None
+            }
         return self._compartments
 
     def get_compartments(self):
         """lists compartments the metabolites are in"""
-        warn('use Reaction.compartments instead', DeprecationWarning)
+        warn("use Reaction.compartments instead", DeprecationWarning)
         return list(self.compartments)
 
     def _associate_gene(self, cobra_gene):
@@ -1001,9 +1039,15 @@ class Reaction(Object):
         """Knockout reaction by setting its bounds to zero."""
         self.bounds = (0, 0)
 
-    def build_reaction_from_string(self, reaction_str, verbose=True,
-                                   fwd_arrow=None, rev_arrow=None,
-                                   reversible_arrow=None, term_split="+"):
+    def build_reaction_from_string(
+        self,
+        reaction_str,
+        verbose=True,
+        fwd_arrow=None,
+        rev_arrow=None,
+        reversible_arrow=None,
+        term_split="+",
+    ):
         """Builds reaction from reaction equation reaction_str using parser
 
         Takes a string and using the specifications supplied in the optional
@@ -1031,13 +1075,21 @@ class Reaction(Object):
 
         """
         # set the arrows
-        forward_arrow_finder = _forward_arrow_finder if fwd_arrow is None \
+        forward_arrow_finder = (
+            _forward_arrow_finder
+            if fwd_arrow is None
             else re.compile(re.escape(fwd_arrow))
-        reverse_arrow_finder = _reverse_arrow_finder if rev_arrow is None \
+        )
+        reverse_arrow_finder = (
+            _reverse_arrow_finder
+            if rev_arrow is None
             else re.compile(re.escape(rev_arrow))
-        reversible_arrow_finder = _reversible_arrow_finder \
-            if reversible_arrow is None \
+        )
+        reversible_arrow_finder = (
+            _reversible_arrow_finder
+            if reversible_arrow is None
             else re.compile(re.escape(reversible_arrow))
+        )
         if self._model is None:
             warn("no model found")
             model = None
@@ -1063,12 +1115,11 @@ class Reaction(Object):
                 # must be reverse
                 arrow_match = reverse_arrow_finder.search(reaction_str)
                 if arrow_match is None:
-                    raise ValueError("no suitable arrow found in '%s'" %
-                                     reaction_str)
+                    raise ValueError("no suitable arrow found in '%s'" % reaction_str)
                 else:
                     self.bounds = config.lower_bound, 0
-        reactant_str = reaction_str[:arrow_match.start()].strip()
-        product_str = reaction_str[arrow_match.end():].strip()
+        reactant_str = reaction_str[: arrow_match.start()].strip()
+        product_str = reaction_str[arrow_match.end() :].strip()
 
         self.subtract_metabolites(self.metabolites, combine=True)
 
@@ -1100,7 +1151,7 @@ class Reaction(Object):
         threshold=0.01,
         fva=None,
         names=False,
-        float_format="{:.3g}".format
+        float_format="{:.3g}".format,
     ):
         """
         Create a summary of the producing and consuming fluxes of the reaction.
@@ -1146,12 +1197,13 @@ class Reaction(Object):
             threshold=threshold,
             fva=fva,
             names=names,
-            float_format=float_format
+            float_format=float_format,
         )
 
     def __str__(self):
         return "{id}: {stoichiometry}".format(
-            id=self.id, stoichiometry=self.build_reaction_string())
+            id=self.id, stoichiometry=self.build_reaction_string()
+        )
 
     def _repr_html_(self):
         return """
@@ -1177,12 +1229,13 @@ class Reaction(Object):
                 <td><strong>Upper bound</strong></td><td>{ub}</td>
             </tr>
         </table>
-        """.format(id=format_long_string(self.id, 100),
-                   name=format_long_string(self.name, 100),
-                   address='0x0%x' % id(self),
-                   stoich_id=format_long_string(
-                       self.build_reaction_string(), 200),
-                   stoich_name=format_long_string(
-                       self.build_reaction_string(True), 200),
-                   gpr=format_long_string(self.gene_reaction_rule, 100),
-                   lb=self.lower_bound, ub=self.upper_bound)
+        """.format(
+            id=format_long_string(self.id, 100),
+            name=format_long_string(self.name, 100),
+            address="0x0%x" % id(self),
+            stoich_id=format_long_string(self.build_reaction_string(), 200),
+            stoich_name=format_long_string(self.build_reaction_string(True), 200),
+            gpr=format_long_string(self.gene_reaction_rule, 100),
+            lb=self.lower_bound,
+            ub=self.upper_bound,
+        )

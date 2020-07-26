@@ -14,5 +14,4 @@ def test_solution_contains_only_reaction_specific_values(solved_model):
         assert set(solution.fluxes.index) == reaction_ids
         # assert set(solution.reduced_costs.index) == reaction_ids
     else:
-        raise TypeError(
-            "solutions of type {0:r} are untested".format(type(solution)))
+        raise TypeError("solutions of type {0:r} are untested".format(type(solution)))

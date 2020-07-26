@@ -10,17 +10,18 @@ from numpy import abs, full, linspace, nan
 from optlang.interface import OPTIMAL
 from six import iteritems
 
-import cobra.util.solver as sutil
 from cobra.exceptions import OptimizationError
 from cobra.flux_analysis import flux_variability_analysis as fva
 from cobra.flux_analysis.helpers import normalize_cutoff
+from cobra.util import solver as sutil
 
 
 LOGGER = logging.getLogger(__name__)
 
 
-def production_envelope(model, reactions, objective=None, carbon_sources=None,
-                        points=20, threshold=None):
+def production_envelope(
+    model, reactions, objective=None, carbon_sources=None, points=20, threshold=None
+):
     """Calculate the objective value conditioned on all combinations of
     fluxes for a set of chosen reactions
 
@@ -90,22 +91,20 @@ def production_envelope(model, reactions, objective=None, carbon_sources=None,
         c_input = model.reactions.get_by_any(carbon_sources)
 
     if c_input is None:
-        data['carbon_source'] = None
-    elif hasattr(c_input, 'id'):
-        data['carbon_source'] = c_input.id
+        data["carbon_source"] = None
+    elif hasattr(c_input, "id"):
+        data["carbon_source"] = c_input.id
     else:
-        data['carbon_source'] = ', '.join(rxn.id for rxn in c_input)
+        data["carbon_source"] = ", ".join(rxn.id for rxn in c_input)
 
     threshold = normalize_cutoff(model, threshold)
 
     size = points ** len(reactions)
 
-    for direction in ('minimum', 'maximum'):
-        data['flux_{}'.format(direction)] = full(size, nan, dtype=float)
-        data['carbon_yield_{}'.format(direction)] = full(
-            size, nan, dtype=float)
-        data['mass_yield_{}'.format(direction)] = full(
-            size, nan, dtype=float)
+    for direction in ("minimum", "maximum"):
+        data["flux_{}".format(direction)] = full(size, nan, dtype=float)
+        data["carbon_yield_{}".format(direction)] = full(size, nan, dtype=float)
+        data["mass_yield_{}".format(direction)] = full(size, nan, dtype=float)
 
     grid = pd.DataFrame(data)
 
@@ -114,15 +113,25 @@ def production_envelope(model, reactions, objective=None, carbon_sources=None,
         objective_reactions = list(sutil.linear_reaction_coefficients(model))
 
         if len(objective_reactions) != 1:
-            raise ValueError('cannot calculate yields for objectives with '
-                             'multiple reactions')
+            raise ValueError(
+                "cannot calculate yields for objectives with " "multiple reactions"
+            )
         c_output = objective_reactions[0]
         min_max = fva(model, reactions, fraction_of_optimum=0)
         min_max[min_max.abs() < threshold] = 0.0
-        points = list(product(*[
-            linspace(min_max.at[rxn.id, "minimum"],
-                     min_max.at[rxn.id, "maximum"],
-                     points, endpoint=True) for rxn in reactions]))
+        points = list(
+            product(
+                *[
+                    linspace(
+                        min_max.at[rxn.id, "minimum"],
+                        min_max.at[rxn.id, "maximum"],
+                        points,
+                        endpoint=True,
+                    )
+                    for rxn in reactions
+                ]
+            )
+        )
         tmp = pd.DataFrame(points, columns=[rxn.id for rxn in reactions])
         grid = pd.concat([grid, tmp], axis=1, copy=False)
         add_envelope(model, reactions, grid, c_input, c_output, threshold)
@@ -147,7 +156,7 @@ def add_envelope(model, reactions, grid, c_input, c_output, threshold):
         input_weights = []
         output_weight = []
 
-    for direction in ('minimum', 'maximum'):
+    for direction in ("minimum", "maximum"):
         with model:
             model.objective_direction = direction
 
@@ -161,20 +170,23 @@ def add_envelope(model, reactions, grid, c_input, c_output, threshold):
                     if model.solver.status != OPTIMAL:
                         continue
 
-                    grid.at[i, 'flux_{}'.format(direction)] = \
+                    grid.at[i, "flux_{}".format(direction)] = (
                         0.0 if abs(obj_val) < threshold else obj_val
+                    )
 
                     if c_input is not None:
-                        grid.at[i, 'carbon_yield_{}'.format(direction)] = \
-                            total_yield([rxn.flux for rxn in c_input],
-                                        input_components,
-                                        obj_val,
-                                        output_components)
-                        grid.at[i, 'mass_yield_{}'.format(direction)] = \
-                            total_yield([rxn.flux for rxn in c_input],
-                                        input_weights,
-                                        obj_val,
-                                        output_weight)
+                        grid.at[i, "carbon_yield_{}".format(direction)] = total_yield(
+                            [rxn.flux for rxn in c_input],
+                            input_components,
+                            obj_val,
+                            output_components,
+                        )
+                        grid.at[i, "mass_yield_{}".format(direction)] = total_yield(
+                            [rxn.flux for rxn in c_input],
+                            input_weights,
+                            obj_val,
+                            output_weight,
+                        )
 
 
 def total_yield(input_fluxes, input_elements, output_flux, output_elements):
@@ -204,9 +216,11 @@ def total_yield(input_fluxes, input_elements, output_flux, output_elements):
 
     carbon_input_flux = sum(
         total_components_flux(flux, components, consumption=True)
-        for flux, components in zip(input_fluxes, input_elements))
+        for flux, components in zip(input_fluxes, input_elements)
+    )
     carbon_output_flux = total_components_flux(
-        output_flux, output_elements, consumption=False)
+        output_flux, output_elements, consumption=False
+    )
     try:
         return carbon_output_flux / carbon_input_flux
     except ZeroDivisionError:
@@ -228,8 +242,10 @@ def reaction_elements(reaction):
         Each of the reaction's metabolites' desired carbon elements (if any)
         times that metabolite's stoichiometric coefficient.
     """
-    c_elements = [coeff * met.elements.get('C', 0)
-                  for met, coeff in iteritems(reaction.metabolites)]
+    c_elements = [
+        coeff * met.elements.get("C", 0)
+        for met, coeff in iteritems(reaction.metabolites)
+    ]
     return [elem for elem in c_elements if elem != 0]
 
 
@@ -237,8 +253,10 @@ def reaction_weight(reaction):
     """Return the metabolite weight times its stoichiometric coefficient."""
 
     if len(reaction.metabolites) != 1:
-        raise ValueError('Reaction weight is only defined for single '
-                         'metabolite products or educts.')
+        raise ValueError(
+            "Reaction weight is only defined for single "
+            "metabolite products or educts."
+        )
 
     met, coeff = next(iteritems(reaction.metabolites))
 
@@ -289,6 +307,7 @@ def find_carbon_sources(model):
 
     reactions = model.reactions.get_by_any(list(model.medium))
     reactions_fluxes = [
-        (rxn, total_components_flux(rxn.flux, reaction_elements(rxn),
-                                    consumption=True)) for rxn in reactions]
+        (rxn, total_components_flux(rxn.flux, reaction_elements(rxn), consumption=True))
+        for rxn in reactions
+    ]
     return [rxn for rxn, c_flux in reactions_fluxes if c_flux > 0]

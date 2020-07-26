@@ -9,8 +9,8 @@ from random import sample
 
 import pytest
 
-import cobra.io as cio
 from cobra import DictList, Model
+from cobra import io as cio
 
 
 LOGGER = logging.getLogger(__name__)
@@ -27,8 +27,13 @@ def minimized_shuffle(small_model):
     chosen = sample(list(set(model.reactions) - set(model.exchanges)), 10)
     new = Model("minimized_shuffle")
     new.add_reactions(chosen)
-    LOGGER.debug("'%s' has %d metabolites, %d reactions, and %d genes.",
-                 new.id, new.metabolites, new.reactions, new.genes)
+    LOGGER.debug(
+        "'%s' has %d metabolites, %d reactions, and %d genes.",
+        new.id,
+        new.metabolites,
+        new.reactions,
+        new.genes,
+    )
     return new
 
 
@@ -36,8 +41,7 @@ def minimized_shuffle(small_model):
 def minimized_sorted(minimized_shuffle):
     model = minimized_shuffle.copy()
     model.id = "minimized_sorted"
-    model.metabolites = DictList(
-        sorted(model.metabolites, key=attrgetter("id")))
+    model.metabolites = DictList(sorted(model.metabolites, key=attrgetter("id")))
     model.genes = DictList(sorted(model.genes, key=attrgetter("id")))
     model.reactions = DictList(sorted(model.reactions, key=attrgetter("id")))
     return model
@@ -48,16 +52,19 @@ def minimized_reverse(minimized_shuffle):
     model = minimized_shuffle.copy()
     model.id = "minimized_reverse"
     model.metabolites = DictList(
-        sorted(model.metabolites, key=attrgetter("id"), reverse=True))
-    model.genes = DictList(
-        sorted(model.genes, key=attrgetter("id"), reverse=True))
+        sorted(model.metabolites, key=attrgetter("id"), reverse=True)
+    )
+    model.genes = DictList(sorted(model.genes, key=attrgetter("id"), reverse=True))
     model.reactions = DictList(
-        sorted(model.reactions, key=attrgetter("id"), reverse=True))
+        sorted(model.reactions, key=attrgetter("id"), reverse=True)
+    )
     return model
 
 
-@pytest.fixture(scope="module", params=[
-    "minimized_shuffle", "minimized_reverse", "minimized_sorted"])
+@pytest.fixture(
+    scope="module",
+    params=["minimized_shuffle", "minimized_reverse", "minimized_sorted"],
+)
 def template(request, minimized_shuffle, minimized_reverse, minimized_sorted):
     return locals()[request.param]
 
@@ -71,11 +78,14 @@ def get_ids(iterable):
     return [x.id for x in iterable]
 
 
-@pytest.mark.parametrize("read, write, ext", [
-    ("read_sbml_model", "write_sbml_model", ".xml"),
-    ("load_json_model", "save_json_model", ".json"),
-    ("load_yaml_model", "save_yaml_model", ".yml"),
-])
+@pytest.mark.parametrize(
+    "read, write, ext",
+    [
+        ("read_sbml_model", "write_sbml_model", ".xml"),
+        ("load_json_model", "save_json_model", ".json"),
+        ("load_yaml_model", "save_yaml_model", ".yml"),
+    ],
+)
 def test_io_order(attribute, read, write, ext, template, tmp_path):
     read = getattr(cio, read)
     write = getattr(cio, write)

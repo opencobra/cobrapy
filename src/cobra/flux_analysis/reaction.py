@@ -50,15 +50,16 @@ def assess(model, reaction, flux_coefficient_cutoff=0.001, solver=None):
             return True
         else:
             results = dict()
-            results['precursors'] = assess_component(
-                model, reaction, 'reactants', flux_coefficient_cutoff)
-            results['products'] = assess_component(
-                model, reaction, 'products', flux_coefficient_cutoff)
+            results["precursors"] = assess_component(
+                model, reaction, "reactants", flux_coefficient_cutoff
+            )
+            results["products"] = assess_component(
+                model, reaction, "products", flux_coefficient_cutoff
+            )
             return results
 
 
-def assess_component(model, reaction, side, flux_coefficient_cutoff=0.001,
-                     solver=None):
+def assess_component(model, reaction, side, flux_coefficient_cutoff=0.001, solver=None):
     """Assesses the ability of the model to provide sufficient precursors,
     or absorb products, for a reaction operating at, or beyond,
     the specified cutoff.
@@ -92,7 +93,7 @@ def assess_component(model, reaction, side, flux_coefficient_cutoff=0.001,
 
     """
     reaction = model.reactions.get_by_any(reaction)[0]
-    result_key = dict(reactants='produced', products='capacity')[side]
+    result_key = dict(reactants="produced", products="capacity")[side]
     get_components = attrgetter(side)
     with model as m:
         m.objective = reaction
@@ -103,7 +104,7 @@ def assess_component(model, reaction, side, flux_coefficient_cutoff=0.001,
         demand_reactions = {}
         for component in get_components(reaction):
             coeff = reaction.metabolites[component]
-            demand = m.add_boundary(component, type='demand')
+            demand = m.add_boundary(component, type="demand")
             demand.metabolites[component] = coeff
             demand_reactions[demand] = (component, coeff)
         # First assess whether all precursors can be produced simultaneously
@@ -126,22 +127,24 @@ def assess_component(model, reaction, side, flux_coefficient_cutoff=0.001,
             # metabolite that can be produced.
             if flux_coefficient_cutoff > flux:
                 # Scale the results to a single unit
-                simulation_results.update({
-                    component: {
-                        'required': flux_coefficient_cutoff / abs(coeff),
-                        result_key: flux / abs(coeff)
-                    }})
+                simulation_results.update(
+                    {
+                        component: {
+                            "required": flux_coefficient_cutoff / abs(coeff),
+                            result_key: flux / abs(coeff),
+                        }
+                    }
+                )
         if len(simulation_results) == 0:
             simulation_results = False
         return simulation_results
 
 
-def _optimize_or_value(model, value=0., solver=None):
+def _optimize_or_value(model, value=0.0, solver=None):
     return model.slim_optimize(error_value=value)
 
 
-def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001,
-                      solver=None):
+def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001, solver=None):
     """Assesses the ability of the model to provide sufficient precursors for
     a reaction operating at, or beyond, the specified cutoff.
 
@@ -172,13 +175,13 @@ def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001,
         that is not produced in sufficient quantities.
 
     """
-    warn('use assess_component instead', DeprecationWarning)
-    return assess_component(model, reaction, 'reactants',
-                            flux_coefficient_cutoff, solver)
+    warn("use assess_component instead", DeprecationWarning)
+    return assess_component(
+        model, reaction, "reactants", flux_coefficient_cutoff, solver
+    )
 
 
-def assess_products(model, reaction, flux_coefficient_cutoff=0.001,
-                    solver=None):
+def assess_products(model, reaction, flux_coefficient_cutoff=0.001, solver=None):
     """Assesses whether the model has the capacity to absorb the products of
     a reaction at a given flux rate.
 
@@ -212,6 +215,7 @@ def assess_products(model, reaction, flux_coefficient_cutoff=0.001,
         that is not absorbed in sufficient quantities.
 
     """
-    warn('use assess_component instead', DeprecationWarning)
-    return assess_component(model, reaction, 'products',
-                            flux_coefficient_cutoff, solver)
+    warn("use assess_component instead", DeprecationWarning)
+    return assess_component(
+        model, reaction, "products", flux_coefficient_cutoff, solver
+    )

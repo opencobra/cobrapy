@@ -64,25 +64,30 @@ class ReactionSummary(Summary):
 
         """
         if self.names:
-            emit = attrgetter('name')
+            emit = attrgetter("name")
         else:
-            emit = attrgetter('id')
+            emit = attrgetter("id")
 
         data = {
-            'GENES_ID': [emit(gene) for gene in self.reaction.genes],
-            'METABOLITES_ID':
-            [emit(met) for met in iterkeys(self.reaction.metabolites)],
-            'METABOLITES_STOICHIOMETRY':
-            [met for met in itervalues(self.reaction.metabolites)],
-            'METABOLITES_COMPARTMENT':
-            [met.compartment for met in iterkeys(self.reaction.metabolites)]
+            "GENES_ID": [emit(gene) for gene in self.reaction.genes],
+            "METABOLITES_ID": [
+                emit(met) for met in iterkeys(self.reaction.metabolites)
+            ],
+            "METABOLITES_STOICHIOMETRY": [
+                met for met in itervalues(self.reaction.metabolites)
+            ],
+            "METABOLITES_COMPARTMENT": [
+                met.compartment for met in iterkeys(self.reaction.metabolites)
+            ],
         }
 
-        rxn_summary = pd.DataFrame.from_dict(data, orient='index')\
-                                  .T.fillna(value=pd.np.nan)
+        rxn_summary = pd.DataFrame.from_dict(data, orient="index").T.fillna(
+            value=pd.np.nan
+        )
 
         rxn_summary.columns = pd.MultiIndex.from_tuples(
-            [tuple(c.split('_')) for c in rxn_summary.columns])
+            [tuple(c.split("_")) for c in rxn_summary.columns]
+        )
 
         return rxn_summary
 
@@ -102,5 +107,6 @@ class ReactionSummary(Summary):
         A string of the summary table.
 
         """
-        return self.to_frame().to_string(header=True, index=False, na_rep='',
-                                         sparsify=False, justify='center')
+        return self.to_frame().to_string(
+            header=True, index=False, na_rep="", sparsify=False, justify="center"
+        )
