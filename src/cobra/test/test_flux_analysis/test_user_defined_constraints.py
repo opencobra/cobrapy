@@ -61,8 +61,8 @@ def test_user_defined_constraints(data_directory):
     solution1 = cons_model.optimize()
     assert solution1.objective_value == pytest.approx(5.0)
 
-    cons_comp_1 = ConstraintComponent(variable="v1")
-    cons_comp_2 = ConstraintComponent(variable="v2")
+    cons_comp_1 = ConstraintComponent(id='c1', variable="v1")
+    cons_comp_2 = ConstraintComponent(id='c2', variable="v2")
     const_1 = UserDefinedConstraint(id="c1", name="constraint1",
                                     lower_bound=0, upper_bound=4, const_comps=[cons_comp_1, cons_comp_2])
     cons_model.add_user_defined_constraints([const_1])
@@ -96,7 +96,8 @@ def test_user_defined_constraints_on_single_variable():
     assert solution.objective_value == pytest.approx(2.00)
 
 
-def test_json_reading_writing(small_model, tmp_path):
+def test_json_reading_writing(data_directory, tmp_path):
+    small_model = textbook_model(data_directory)
     cc1 = ConstraintComponent("cc1", "comp1", "FBA", 1, "linear")
     cc2 = ConstraintComponent("cc2", "comp2", "NH4t", -1, "linear")
     cc3 = ConstraintComponent("cc3", "comp3",

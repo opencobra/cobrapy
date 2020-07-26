@@ -160,7 +160,7 @@ class ConstraintComponent(Object):
     def __init__(self, id=None, name=None, variable=None,
                  coefficient=1.0, variable_type='linear'):
         Object.__init__(self, id=id, name=name)
-        self._ref_var = None
+        self._variable = None
         self._coefficient = None
         self._variable_type = None
         self.variable = variable
@@ -169,16 +169,16 @@ class ConstraintComponent(Object):
 
     @property
     def variable(self):
-        return self._ref_var
+        return self._variable
 
     @variable.setter
     def variable(self, value):
         if not isinstance(value, str):
-            raise TypeError("The 'ref_var' have to be an "
+            raise TypeError("The 'variable' have to be an "
                             "COBRA object id and must be of"
                             " type string: {}".format(value))
         else:
-            self._ref_var = value
+            self._variable = value
 
     @property
     def coefficient(self):
@@ -187,7 +187,7 @@ class ConstraintComponent(Object):
     @coefficient.setter
     def coefficient(self, value):
         if value is None:
-            self._coefficient = value
+            self._coefficient = 1
         elif not (isinstance(value, int) or
                   isinstance(value, float)):
             raise TypeError("The 'coefficient' must be of "

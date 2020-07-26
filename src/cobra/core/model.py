@@ -448,7 +448,7 @@ class Model(Object):
 
             do_not_copy_by_ref = {"_annotation"}
             for const_comp in const.constraint_comps:
-                new_const_comp = const_comp.__class__()
+                new_const_comp = const_comp.__class__(variable=const_comp.variable)
                 for attr, value in iteritems(const_comp.__dict__):
                     if attr not in do_not_copy_by_ref:
                         new_const_comp.__dict__[attr] = copy(value)

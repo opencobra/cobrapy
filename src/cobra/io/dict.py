@@ -69,7 +69,7 @@ _OPTIONAL_CONSTRAINT_ATTRIBUTES = {
     "annotation": {},
 }
 
-_REQUIRED_CONSTRAINT_COMP_ATTRIBUTES = ["id", "name", "ref_var",
+_REQUIRED_CONSTRAINT_COMP_ATTRIBUTES = ["id", "name", "variable",
                                         "coefficient", "variable_type"]
 _ORDERED_OPTIONAL_CONSTRAINT_COMP_KEYS = ["notes", "annotation"]
 _OPTIONAL_CONSTRAINT_COMP_ATTRIBUTES = {
@@ -384,10 +384,10 @@ def model_from_dict(obj):
         for rxn in objective_reactions
     }
     set_objective(model, coefficients)
-    model.add_user_defined_constraints(
-        [user_defined_const_from_dict(cons) for cons in
-         obj["user_defined_constraints"]]
-    )
+    if "user_defined_constraints" in obj:
+        model.add_user_defined_constraints(
+            [user_defined_const_from_dict(cons) for cons in obj["user_defined_constraints"]]
+        )
     for k, v in iteritems(obj):
         if k == "annotation":
             value = _extract_annotation(v)
