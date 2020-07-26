@@ -83,7 +83,7 @@ examples/faq.py
 cobra.egg-info
 setuptools-*egg
 setuptools-*.tar.gz
-cobra/solvers/cglpk.c
+src/cobra/solvers/cglpk.c
 glpk.h
 libglpk.a
 .idea/
