@@ -13,7 +13,7 @@ import pytest
 @pytest.fixture(scope="module")
 def mini_model(data_directory):
     """Fixture for mini model."""
-    with open(join(data_directory, "newmini.pickle"), "rb") as infile:
+    with open(join(data_directory, "mini.pickle"), "rb") as infile:
         return load(infile)
 
 

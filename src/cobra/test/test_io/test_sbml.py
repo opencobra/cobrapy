@@ -495,8 +495,8 @@ def test_smbl_with_notes(data_directory, tmp_path):
         "GENE_ASSOCIATION": "(HGNC:8546 and HGNC:8548) or" " (HGNC:8547 and HGNC:8548)",
     }
     reaction_annotations = {
-        "sbo": "SBO:0000176",
-        "ec-code": "1.1.1.27",
+        "sbo": ["SBO:0000176"],
+        "ec-code": ["1.1.1.27"],
         "pubmed": ["10108", "21765"],
     }
 

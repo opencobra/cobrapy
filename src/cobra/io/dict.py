@@ -256,6 +256,8 @@ def reaction_from_dict(reaction, model):
             elif k == "notes":
                 notes_data = Notes(v)
                 setattr(new_reaction, k, notes_data)
+            elif k == "lower_bound" or k == "upper_bound":
+                setattr(new_reaction, k, float(v))
             else:
                 setattr(new_reaction, k, v)
     return new_reaction
