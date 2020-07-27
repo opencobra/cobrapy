@@ -61,18 +61,20 @@ _OPTIONAL_GENE_ATTRIBUTES = {
     "annotation": {},
 }
 
-_REQUIRED_CONSTRAINT_ATTRIBUTES = ["id", "name", "lower_bound",
+_REQUIRED_CONSTRAINT_ATTRIBUTES = ["id", "lower_bound",
                                    "upper_bound", "constraint_comps"]
-_ORDERED_OPTIONAL_CONSTRAINT_KEYS = ["notes", "annotation"]
+_ORDERED_OPTIONAL_CONSTRAINT_KEYS = ["name", "notes", "annotation"]
 _OPTIONAL_CONSTRAINT_ATTRIBUTES = {
+    "name": None,
     "notes": {},
     "annotation": {},
 }
 
-_REQUIRED_CONSTRAINT_COMP_ATTRIBUTES = ["id", "name", "variable",
+_REQUIRED_CONSTRAINT_COMP_ATTRIBUTES = ["id", "variable",
                                         "coefficient", "variable_type"]
-_ORDERED_OPTIONAL_CONSTRAINT_COMP_KEYS = ["notes", "annotation"]
+_ORDERED_OPTIONAL_CONSTRAINT_COMP_KEYS = ["name", "notes", "annotation"]
 _OPTIONAL_CONSTRAINT_COMP_ATTRIBUTES = {
+    "name": None,
     "notes": {},
     "annotation": {},
 }

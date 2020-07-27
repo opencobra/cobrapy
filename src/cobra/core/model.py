@@ -425,7 +425,7 @@ class Model(Object):
                 elif isinstance(member, Gene):
                     new_object = new.genes.get_by_id(member.id)
                 elif isinstance(member, Group):
-                    new_object = new.genes.get_by_id(member.id)
+                    new_object = new.groups.get_by_id(member.id)
                 else:
                     raise TypeError(
                         "The group member {!r} is unexpectedly not a "
@@ -434,6 +434,8 @@ class Model(Object):
                     )
                 new_objects.append(new_object)
             new_group.add_members(new_objects)
+
+        # new.user_defined_const = deepcopy(self.user_defined_const)
 
         new.user_defined_const = DictList()
         do_not_copy_by_ref = {"_model", "_constraint_comps", "_annotation"}
