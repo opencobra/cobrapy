@@ -61,9 +61,9 @@ def test_user_defined_constraints(data_directory):
     solution1 = cons_model.optimize()
     assert solution1.objective_value == pytest.approx(5.0)
 
-    cons_comp_1 = ConstraintComponent(id='c1', variable="v1")
-    cons_comp_2 = ConstraintComponent(id='c2', variable="v2")
-    const_1 = UserDefinedConstraint(id="c1", lower_bound=0, upper_bound=4,
+    cons_comp_1 = ConstraintComponent(variable="v1")
+    cons_comp_2 = ConstraintComponent(variable="v2")
+    const_1 = UserDefinedConstraint(lower_bound=0, upper_bound=4,
                                     const_comps=[cons_comp_1, cons_comp_2])
     cons_model.add_user_defined_constraints([const_1])
     solution2 = cons_model.optimize()
@@ -75,8 +75,8 @@ def test_user_defined_constraints_on_single_flux(data_directory):
     solution1 = cons_model.optimize()
     assert solution1.objective_value == pytest.approx(5.0)
 
-    cons_comp_1 = ConstraintComponent(id="cc2", variable="v2")
-    const_1 = UserDefinedConstraint(id="c1", lower_bound=0, upper_bound=3,
+    cons_comp_1 = ConstraintComponent(variable="v2")
+    const_1 = UserDefinedConstraint(lower_bound=0, upper_bound=3,
                                     const_comps=[cons_comp_1])
     cons_model.add_user_defined_constraints([const_1])
     solution2 = cons_model.optimize()
@@ -86,7 +86,7 @@ def test_user_defined_constraints_on_single_flux(data_directory):
 def test_user_defined_constraints_on_single_variable():
     # an empty model
     model = Model("model_abc")
-    cc1 = ConstraintComponent(id="cc1", variable="new_var")
+    cc1 = ConstraintComponent(variable="new_var")
     c1 = UserDefinedConstraint(id="c1", lower_bound=0, upper_bound=2,
                                const_comps=[cc1])
     model.add_user_defined_constraints([c1])
@@ -98,13 +98,13 @@ def test_user_defined_constraints_on_single_variable():
 
 def test_json_reading_writing(model, tmp_path):
     cc1 = ConstraintComponent(id="cc1", variable="FBA")
-    cc2 = ConstraintComponent(id="cc2", variable="NH4t", coefficient=-1)
+    cc2 = ConstraintComponent(variable="NH4t", coefficient=-1)
     cc3 = ConstraintComponent(id="cc3", variable="difference", coefficient=-1)
-    c1 = UserDefinedConstraint("c1", lower_bound=0, upper_bound=0, const_comps=[cc1, cc2, cc3])
+    c1 = UserDefinedConstraint(id="c1", lower_bound=0, upper_bound=0, const_comps=[cc1, cc2, cc3])
 
-    cc4 = ConstraintComponent(id="cc4", variable="FBA")
-    cc5 = ConstraintComponent(id="cc5", variable="NH4t")
-    c2 = UserDefinedConstraint(id="c2", lower_bound=0, upper_bound=10, const_comps=[cc4, cc5])
+    cc4 = ConstraintComponent(variable="FBA")
+    cc5 = ConstraintComponent(variable="NH4t")
+    c2 = UserDefinedConstraint(lower_bound=0, upper_bound=10, const_comps=[cc4, cc5])
     model.add_user_defined_constraints([c1, c2])
 
     path_to_json = join(tmp_path, "userConstraint.json")
@@ -123,9 +123,9 @@ def test_user_defined_constraints_documented(model):
     solution1 = model.optimize()
     assert solution1.objective_value == pytest.approx(0.87392, 0.0001)
 
-    cc1 = ConstraintComponent(id="cc1", variable="FBA")
-    cc2 = ConstraintComponent(id="cc2", variable="NH4t", coefficient=-1)
-    c1 = UserDefinedConstraint(id="c1", lower_bound=0, upper_bound=0, const_comps=[cc1, cc2])
+    cc1 = ConstraintComponent(variable="FBA")
+    cc2 = ConstraintComponent(variable="NH4t", coefficient=-1)
+    c1 = UserDefinedConstraint(lower_bound=0, upper_bound=0, const_comps=[cc1, cc2])
     model.add_user_defined_constraints([c1])
     solution2 = model.optimize()
     assert solution2.fluxes['FBA'] == pytest.approx(4.66274, 0.0001)
@@ -138,10 +138,10 @@ def test_user_defined_constraints_with_variable_documented(data_directory):
     solution1 = model.optimize()
     assert solution1.objective_value == pytest.approx(0.87392, 0.0001)
 
-    cc1 = ConstraintComponent(id="cc1", variable="EX_glc__D_e")
-    cc2 = ConstraintComponent(id="cc2", variable="EX_nh4_e", coefficient=-1)
-    cc3 = ConstraintComponent(id="cc3", variable="difference", coefficient=-1)
-    c1 = UserDefinedConstraint(id="c1", lower_bound=0, upper_bound=0, const_comps=[cc1, cc2, cc3])
+    cc1 = ConstraintComponent(variable="EX_glc__D_e")
+    cc2 = ConstraintComponent(variable="EX_nh4_e", coefficient=-1)
+    cc3 = ConstraintComponent(variable="difference", coefficient=-1)
+    c1 = UserDefinedConstraint(lower_bound=0, upper_bound=0, const_comps=[cc1, cc2, cc3])
     model.add_user_defined_constraints([c1])
     solution2 = model.optimize()
     assert solution2.objective_value == pytest.approx(0.87392, 0.0001)

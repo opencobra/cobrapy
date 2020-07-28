@@ -113,6 +113,7 @@ class Model(Object):
             self.groups = DictList()  # A list of cobra.Groups
             # A list of UserDefinedConstraints
             self.user_defined_const = DictList()
+            self._const_ids = set()
             # genes based on their ids {Gene.id: Gene}
             self._compartments = {}
             self._contexts = []
@@ -956,6 +957,9 @@ class Model(Object):
                 raise ValueError("Bounds must be set for the constraint: "
                                  "{}".format(constraint))
 
+            if constraint.id is None or constraint.id == "":
+                constraint.id = "_internal_const_id" + str(len(self._const_ids))
+            self._const_ids.add(constraint.id)
             constraint._model = self
             cons_exp = 0        # an expression involving variables
             list_of_var_cons = []
@@ -1018,7 +1022,7 @@ class Model(Object):
                 raise TypeError("The user defined constraints passed must "
                                 "be of type 'UserDefinedConstraints': "
                                 "{}".format(constraint))
-
+            self._const_ids.remove(constraint.id)
             cons_to_remove = self.constraints[constraint.id]
             self.remove_cons_vars(cons_to_remove)
 

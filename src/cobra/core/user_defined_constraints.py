@@ -35,6 +35,7 @@ class UserDefinedConstraint(Object):
         self.upper_bound = upper_bound
 
         self._constraint_comps = DictList()
+        self._const_comp_ids = set()
         if const_comps is not None:
             self.add_constraint_comps(const_comps)
 
@@ -102,7 +103,9 @@ class UserDefinedConstraint(Object):
                 raise TypeError("The constraint component should be of "
                                 "type 'UserDefinedConstraintComponents'"
                                 ": {}".format(item))
-
+            if item.id is None or item.id == "":
+                item.id = "_internal_comp_id" + str(len(self._const_comp_ids))
+            self._const_comp_ids.add(item.id)
             self.constraint_comps.append(item)
 
     def remove_constraint_comps(self, value):
@@ -133,6 +136,7 @@ class UserDefinedConstraint(Object):
                 raise TypeError("The constraint component should be of "
                                 "type 'UserDefinedConstraintComponents'"
                                 ": {}".format(item))
+            self._const_comp_ids.remove(item.id)
             self.constraint_comps.remove(item)
 
 
