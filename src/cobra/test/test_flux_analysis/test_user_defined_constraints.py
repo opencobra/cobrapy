@@ -113,7 +113,8 @@ def test_json_reading_writing(model, tmp_path):
     cc1 = ConstraintComponent(id="cc1", variable="FBA")
     cc2 = ConstraintComponent(variable="NH4t", coefficient=-1)
     cc3 = ConstraintComponent(id="cc3", variable="difference", coefficient=-1)
-    c1 = UserDefinedConstraint(id="c1", lower_bound=0, upper_bound=0, const_comps=[cc1, cc2, cc3])
+    c1 = UserDefinedConstraint(id="c1", lower_bound=0,
+                               upper_bound=0, const_comps=[cc1, cc2, cc3])
 
     cc4 = ConstraintComponent(variable="FBA")
     cc5 = ConstraintComponent(variable="NH4t")
@@ -154,7 +155,9 @@ def test_user_defined_constraints_with_variable_documented(data_directory):
     cc1 = ConstraintComponent(variable="EX_glc__D_e")
     cc2 = ConstraintComponent(variable="EX_nh4_e", coefficient=-1)
     cc3 = ConstraintComponent(variable="difference", coefficient=-1)
-    c1 = UserDefinedConstraint(lower_bound=0, upper_bound=0, const_comps=[cc1, cc2, cc3])
+    c1 = UserDefinedConstraint(lower_bound=0,
+                               upper_bound=0,
+                               const_comps=[cc1, cc2, cc3])
     model.add_user_defined_constraints([c1])
     solution2 = model.optimize()
     assert solution2.objective_value == pytest.approx(0.87392, 0.0001)

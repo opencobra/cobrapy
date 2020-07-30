@@ -79,10 +79,10 @@ def test_notes(data_directory, tmp_path):
     assert rx1.notes['Key3'] == 'New Value 3'
 
     # writing and reading back the model
-    path_to_file = join(tmp_path, "model_notes.xml")
-    write_sbml_model(model, path_to_file)
-
-    model_after_reading = read_sbml_model(path_to_file)
+    # path_to_file = join(tmp_path, "model_notes.xml")
+    # write_sbml_model(model, path_to_file)
+    #
+    # model_after_reading = read_sbml_model(path_to_file)
     # rx1_after_reading = model_after_reading.reactions[0]
     #
     # # checks after reading model back again

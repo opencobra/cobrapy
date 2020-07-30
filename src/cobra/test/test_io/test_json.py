@@ -4,29 +4,25 @@
 
 from __future__ import absolute_import
 
-import json
 from os.path import join
 
 import pytest
-from importlib_resources import open_text
 
 from cobra import io as cio
 from cobra.test.test_io.conftest import compare_models
 
 
-@pytest.fixture(scope="module")
-def json_schema_v1():
-    with open_text(cio, "schema_v1.json") as handle:
-        schema_v1 = json.load(handle)
-    return schema_v1
-
-
-def test_validate_json(data_directory, json_schema_v1):
+def test_validate_json(data_directory):
     """Validate file according to JSON-schema."""
-    jsonschema = pytest.importorskip("jsonschema")
-    with open(join(data_directory, "mini.json"), "r", encoding="utf-8") as infile:
-        loaded = json.load(infile)
-    assert jsonschema.validate(loaded, json_schema_v1) is None
+    path_old_format = join(data_directory, "e_coli_core.json")
+    # validate the model using JSON schema v1
+    assert cio.validate_json_model(filename=path_old_format,
+                                   json_schema_version=1) == (True, "")
+
+    path_new_format = join(data_directory, "e_coli_new_format.json")
+    # validate the model using JSON schema v2
+    assert cio.validate_json_model(filename=path_new_format,
+                                   json_schema_version=2) == (True, "")
 
 
 def test_load_json_model(data_directory, mini_model):
@@ -35,15 +31,12 @@ def test_load_json_model(data_directory, mini_model):
     assert compare_models(mini_model, json_model) is None
 
 
-def test_save_json_model(tmpdir, mini_model, json_schema_v1):
+def test_save_json_model(tmpdir, mini_model):
     """Test the writing of JSON model."""
-    jsonschema = pytest.importorskip("jsonschema")
     output_file = tmpdir.join("mini.json")
     cio.save_json_model(mini_model, output_file.strpath, pretty=True)
     # validate against JSONSchema
-    with open(str(output_file), "r") as infile:
-        loaded = json.load(infile)
-    assert jsonschema.validate(loaded, json_schema_v1) is None
+    assert cio.validate_json_model(output_file, 1) == (True, "")
 
 
 def test_reaction_bounds_json(data_directory, tmp_path):
