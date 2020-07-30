@@ -323,7 +323,7 @@ def group_to_dict(group):
             continue
         members = []
         for member in group.members:
-            json_member = {"id": member.id, "type": type(member).__name__}
+            json_member = {"idRef": member.id, "type": type(member).__name__}
             members.append(json_member)
         new_group["members"] = members
     _update_optional(group, new_group, _OPTIONAL_GROUP_ATTRIBUTES,
@@ -344,13 +344,13 @@ def group_from_dict(group, model):
             cobra_members = []
             for member in group["members"]:
                 if member["type"] == "Reaction":
-                    cobra_obj = model.reactions.get_by_id(member["id"])
+                    cobra_obj = model.reactions.get_by_id(member["idRef"])
                     cobra_members.append(cobra_obj)
                 elif member["type"] == "Metabolite":
-                    cobra_obj = model.metabolites.get_by_id(member["id"])
+                    cobra_obj = model.metabolites.get_by_id(member["idRef"])
                     cobra_members.append(cobra_obj)
                 elif member["type"] == "Gene":
-                    cobra_obj = model.genes.get_by_id(member["id"])
+                    cobra_obj = model.genes.get_by_id(member["idRef"])
                     cobra_members.append(cobra_obj)
             new_group.add_members(cobra_members)
         else:

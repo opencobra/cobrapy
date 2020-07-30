@@ -96,6 +96,19 @@ def test_user_defined_constraints_on_single_variable():
     assert solution.objective_value == pytest.approx(2.00)
 
 
+def test_helper_function(data_directory):
+    cons_model = ex_model(data_directory)
+    solution1 = cons_model.optimize()
+    assert solution1.objective_value == pytest.approx(5.0)
+
+    const = UserDefinedConstraint.constraint_from_expression(expression='3/3*v1 + v2^1',
+                                                             lower_bound=0,
+                                                             upper_bound=4)
+    cons_model.add_user_defined_constraints([const])
+    solution2 = cons_model.optimize()
+    assert solution2.objective_value == pytest.approx(2.00)
+
+
 def test_json_reading_writing(model, tmp_path):
     cc1 = ConstraintComponent(id="cc1", variable="FBA")
     cc2 = ConstraintComponent(variable="NH4t", coefficient=-1)

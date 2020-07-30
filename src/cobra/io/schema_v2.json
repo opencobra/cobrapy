@@ -2,6 +2,108 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "COBRA",
   "description": "JSON representation of COBRA model",
+  "definitions": {
+    "annotation": {
+      "type": "object",
+      "properties": {
+        "sbo": {
+          "type": "string"
+        },
+        "cvterms": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "resources": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "nested_data": {
+                  "$ref": "#/definitions/annotation"
+                }
+              }
+            }
+          }
+        },
+        "history": {
+          "type": "object",
+          "properties": {
+            "creators": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "first_name": {
+                    "type": "string"
+                  },
+                  "last_name": {
+                    "type": "string"
+                  },
+                  "organization_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "first_name",
+                  "last_name"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "created_date": {
+              "type": "string"
+            },
+            "modified_dates": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "creators",
+            "created_date",
+            "modified_dates"
+          ],
+          "additionalProperties": false
+        },
+        "listofkeyvalue": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "uri": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "key"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  },
   "type": "object",
   "properties": {
     "id": {
@@ -50,10 +152,10 @@
             "type": "string"
           },
           "notes": {
-            "type": "object"
+            "type": "string"
           },
           "annotation": {
-            "type": "object"
+            "$ref": "#/definitions/annotation"
           }
         },
         "required": [
@@ -93,10 +195,10 @@
             "default": 0
           },
           "notes": {
-            "type": "object"
+            "type": "string"
           },
           "annotation": {
-            "type": "object"
+            "$ref": "#/definitions/annotation"
           }
         },
         "required": [
@@ -119,10 +221,10 @@
             "type": "string"
           },
           "notes": {
-            "type": "object"
+            "type": "string"
           },
           "annotation": {
-            "type": "object"
+            "$ref": "#/definitions/annotation"
           }
         },
         "required": [
@@ -140,11 +242,111 @@
         }
       }
     },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "annotation": {
+            "$ref": "#/definitions/annotation"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["collection", "classification", "partonomy"]
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": ["id", "type"]
+            }
+          }
+        },
+        "required": ["kind", "members"]
+      }
+    },
+    "user_defined_constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "lower_bound": {
+            "type": "number"
+          },
+          "upper_bound": {
+            "type": "number"
+          },
+          "constraint_comps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "coefficient": {
+                  "type": "number"
+                },
+                "variable": {
+                  "type": "string"
+                },
+                "variable_type": {
+                  "type": "string",
+                  "enum": ["linear", "quadratic"]
+                },
+                "notes": {
+                  "type": "string"
+                },
+                "annotation": {
+                  "$ref": "#/definitions/annotation"
+                }
+              },
+              "required": ["variable"],
+              "additionalProperties": false
+            }
+          },
+          "notes": {
+            "type": "string"
+          },
+          "annotation": {
+            "$ref": "#/definitions/annotation"
+          }
+        },
+        "required": ["lower_bound", "upper_bound", "constraint_comps"],
+        "additionalProperties": false
+      }
+    },
     "notes": {
-      "type": "object"
+      "type": "string"
     },
     "annotation": {
-      "type": "object"
+      "$ref": "#/definitions/annotation"
     }
   },
   "required": [
