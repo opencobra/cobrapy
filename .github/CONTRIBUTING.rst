@@ -134,12 +134,9 @@ Before you submit a pull request, check that it meets these guidelines:
    usage in ``documentation_builder`` (documentation is written as
    jupyter notebooks in the ``documentation_builder`` directory, which
    are then converted to rst by the ``autodoc.sh`` script.)
-3. The pull request should work for Python 2.7, 3.4 and 3.5. Check
-   https://travis-ci.org/biosustain/cobrapy/pull_requests
-   and make sure that the tests pass for all supported Python versions.
-4. Assign a reviewer to your pull request. If in doubt, assign Henning
-   Redestig. Your pull request must be approved by at least one
-   reviewer before it can be merged.
+3. The pull request will be tested for several different Python versions.
+4. Someone from the @opencobra/cobrapy-core team will review your work and guide
+   you to a successful contribution.
 
 Unit tests and benchmarks
 -------------------------
@@ -196,18 +193,11 @@ Branching model
 Please use concise descriptive commit messages and consider using
 ``git pull --rebase`` when you update your own fork to avoid merge commits.
 
-1. Tests are in the ``cobra/test`` directory. They are automatically run
-   through continuous integration services on both python 2 and python 3
-   when pull requests are made.
-2. Please write tests for new functions. Writing documentation as well
-   would also be very helpful.
-3. Ensure code will work with both python 2 and python 3. For example,
-   instead of ``my_dict.iteritems()`` use ``six.iteritems(my_dict)``
-
 Thank you very much for contributing to cobrapy!
 
 FAQs
 ----
+
 Q1. Why do all of the tests that involve loading a pickled model fail on my branch?
 	A: Pickling is the standard method for serializing objects in python,
 	which is commonly done during operations like multiprocessing.
