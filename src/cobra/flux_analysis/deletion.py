@@ -72,13 +72,7 @@ def _init_worker(model):
 
 
 def _multi_deletion(
-    model,
-    entity,
-    element_lists,
-    method="fba",
-    solution=None,
-    processes=None,
-    **kwargs
+    model, entity, element_lists, method="fba", solution=None, processes=None, **kwargs
 ):
     """
     Provide a common interface for single or multiple knockouts.
@@ -130,9 +124,7 @@ def _multi_deletion(
         if "moma" in method:
             add_moma(model, solution=solution, linear="linear" in method)
         elif "room" in method:
-            add_room(
-                model, solution=solution, linear="linear" in method, **kwargs
-            )
+            add_room(model, solution=solution, linear="linear" in method, **kwargs)
 
         args = set([frozenset(comb) for comb in product(*element_lists)])
         processes = min(processes, len(args))
@@ -162,12 +154,8 @@ def _multi_deletion(
             pool.close()
             pool.join()
         else:
-            worker = dict(gene=_gene_deletion, reaction=_reaction_deletion)[
-                entity
-            ]
-            results = extract_knockout_results(
-                map(partial(worker, model), args)
-            )
+            worker = dict(gene=_gene_deletion, reaction=_reaction_deletion)[entity]
+            results = extract_knockout_results(map(partial(worker, model), args))
         return results
 
 
@@ -192,12 +180,7 @@ def _element_lists(entities, *ids):
 
 
 def single_reaction_deletion(
-    model,
-    reaction_list=None,
-    method="fba",
-    solution=None,
-    processes=None,
-    **kwargs
+    model, reaction_list=None, method="fba", solution=None, processes=None, **kwargs
 ):
     """
     Knock out each reaction from a given list.
@@ -247,12 +230,7 @@ def single_reaction_deletion(
 
 
 def single_gene_deletion(
-    model,
-    gene_list=None,
-    method="fba",
-    solution=None,
-    processes=None,
-    **kwargs
+    model, gene_list=None, method="fba", solution=None, processes=None, **kwargs
 ):
     """
     Knock out each gene from a given list.
@@ -417,9 +395,7 @@ def double_gene_deletion(
 
     """
 
-    gene_list1, gene_list2 = _element_lists(
-        model.genes, gene_list1, gene_list2
-    )
+    gene_list1, gene_list2 = _element_lists(model.genes, gene_list1, gene_list2)
     return _multi_deletion(
         model,
         "gene",
