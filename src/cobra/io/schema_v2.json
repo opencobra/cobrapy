@@ -58,12 +58,14 @@
               }
             },
             "created_date": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "modified_dates": {
               "type": "array",
               "items": {
-                "type": "string"
+                "type": "string",
+                "format": "date-time"
               }
             }
           },
@@ -80,7 +82,8 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": "string",
+                "pattern": "^[a-zA-Z|_][a-zA-Z0-9_]*$"
               },
               "name": {
                 "type": "string"
@@ -107,7 +110,8 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[a-zA-Z|_][a-zA-Z0-9_]*$"
     },
     "name": {
       "type": "string"
@@ -122,7 +126,8 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-zA-Z|_][a-zA-Z0-9_]*$"
           },
           "name": {
             "type": "string"
@@ -175,7 +180,8 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-zA-Z|_][a-zA-Z0-9_]*$"
           },
           "name": {
             "type": "string"
@@ -215,7 +221,8 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-zA-Z|_][a-zA-Z0-9_]*$"
           },
           "name": {
             "type": "string"
@@ -248,7 +255,8 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-zA-Z|_][a-zA-Z0-9_]*$"
           },
           "name": {
             "type": "string"
@@ -269,7 +277,8 @@
               "type": "object",
               "properties": {
                 "id": {
-                  "type": "string"
+                  "type": "string",
+                  "pattern": "^[a-zA-Z|_][a-zA-Z0-9_]*$"
                 },
                 "type": {
                   "type": "string"
@@ -288,7 +297,8 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-zA-Z|_][a-zA-Z0-9_]*$"
           },
           "name": {
             "type": "string"
@@ -305,7 +315,8 @@
               "type": "object",
               "properties": {
                 "id": {
-                  "type": "string"
+                  "type": "string",
+                  "pattern": "^[a-zA-Z|_][a-zA-Z0-9_]*$"
                 },
                 "name": {
                   "type": "string"

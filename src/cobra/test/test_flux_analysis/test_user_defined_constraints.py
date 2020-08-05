@@ -96,12 +96,41 @@ def test_user_defined_constraints_on_single_variable():
     assert solution.objective_value == pytest.approx(2.00)
 
 
+def test_ast_tree():
+    # an expression containing variable in different possible styles
+    expr = "-(2/8+ 1)*a+(4/2+5%2) * b * b- (5 * c * c + (-d+e*e))"
+    constraint = UserDefinedConstraint.constraint_from_expression(expression=expr,
+                                                                  lower_bound=0,
+                                                                  upper_bound=20)
+    assert len(constraint.constraint_comps) == 5
+
+    assert constraint.constraint_comps[0].coefficient == pytest.approx(-1.25)
+    assert constraint.constraint_comps[0].variable == 'a'
+    assert constraint.constraint_comps[0].variable_type == 'linear'
+
+    assert constraint.constraint_comps[1].coefficient == pytest.approx(3.00)
+    assert constraint.constraint_comps[1].variable == 'b'
+    assert constraint.constraint_comps[1].variable_type == 'quadratic'
+
+    assert constraint.constraint_comps[2].coefficient == -5
+    assert constraint.constraint_comps[2].variable == 'c'
+    assert constraint.constraint_comps[2].variable_type == 'quadratic'
+
+    assert constraint.constraint_comps[3].coefficient == 1
+    assert constraint.constraint_comps[3].variable == 'd'
+    assert constraint.constraint_comps[3].variable_type == 'linear'
+
+    assert constraint.constraint_comps[4].coefficient == -1
+    assert constraint.constraint_comps[4].variable == 'e'
+    assert constraint.constraint_comps[4].variable_type == 'quadratic'
+
+
 def test_helper_function(data_directory):
     cons_model = ex_model(data_directory)
     solution1 = cons_model.optimize()
     assert solution1.objective_value == pytest.approx(5.0)
 
-    const = UserDefinedConstraint.constraint_from_expression(expression='3/3*v1 + v2^1',
+    const = UserDefinedConstraint.constraint_from_expression(expression='3/3*v1 + v2',
                                                              lower_bound=0,
                                                              upper_bound=4)
     cons_model.add_user_defined_constraints([const])
