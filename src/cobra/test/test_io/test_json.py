@@ -12,13 +12,20 @@ def test_validate_json(data_directory):
     """Validate file according to JSON-schema."""
     path_old_format = join(data_directory, "e_coli_core.json")
     # validate the model using JSON schema v1
-    assert cio.validate_json_model(filename=path_old_format,
-                                   json_schema_version=1) == (True, "")
+    list_errors = cio.validate_json_model(filename=path_old_format,
+                                          json_schema_version=1)
+    assert len(list_errors) == 0
 
     path_new_format = join(data_directory, "e_coli_new_format.json")
     # validate the model using JSON schema v2
-    assert cio.validate_json_model(filename=path_new_format,
-                                   json_schema_version=2) == (True, "")
+    errors = cio.validate_json_model(filename=path_new_format,
+                                     json_schema_version=2)
+    assert len(errors) == 0
+
+    # test for invalid json model according to schema
+    errors_invalid = cio.validate_json_model(filename=path_old_format,
+                                             json_schema_version=2)
+    assert len(errors_invalid) == 309
 
 
 def test_load_json_model(data_directory, mini_model):
@@ -32,7 +39,8 @@ def test_save_json_model(tmpdir, mini_model):
     output_file = tmpdir.join("mini.json")
     cio.save_json_model(mini_model, output_file.strpath, pretty=True)
     # validate against JSONSchema
-    assert cio.validate_json_model(output_file, 1) == (True, "")
+    errors = cio.validate_json_model(output_file, 1)
+    assert len(errors) == 0
 
 
 def test_reaction_bounds_json(data_directory, tmp_path):
