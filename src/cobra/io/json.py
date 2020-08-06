@@ -168,11 +168,8 @@ def validate_json_model(filename, json_schema_version=1):
         Currently we have v1 and v2 only and v2 is under development
     Returns
     -------
-    (boolean, error)
-    boolean :
-        True if json instance is valid against the schema, False otherwise
-    errors : str
-        Error encountered while validating
+    errors : list
+        The list of errors encountered while validating
     """
 
     if json_schema_version not in [1, 2]:
@@ -187,13 +184,12 @@ def validate_json_model(filename, json_schema_version=1):
         raise ValueError("Only v1 and v2 of JSON schema are available. JSON "
                          "schema v{} is not supported.".format(json_schema_version))
 
-    try:
-        if isinstance(filename, string_types):
-            with open(filename, "r") as file_handle:
-                jsonschema.validate(json.load(file_handle), schema)
-        else:
-            jsonschema.validate(json.load(filename), schema)
-    except Exception as e:
-        return False, str(e)
+    validator = jsonschema.Draft7Validator(schema)
 
-    return True, ""
+    if isinstance(filename, string_types):
+        with open(filename, "r") as file_handle:
+            errors = validator.iter_errors(json.load(file_handle))
+    else:
+        errors = validator.iter_errors(json.load(filename))
+
+    return list(errors)
