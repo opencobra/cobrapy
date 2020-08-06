@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Additional helper functions for the optlang solvers.
 
 All functions integrate well with the context manager, meaning that
@@ -9,8 +7,6 @@ all operations defined here are automatically reverted when used in a
 The functions defined here together with the existing model functions should
 allow you to implement custom flux analysis methods with ease.
 """
-
-from __future__ import absolute_import
 
 import re
 from collections import namedtuple
