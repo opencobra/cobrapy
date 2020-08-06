@@ -2,11 +2,7 @@
 
 """Test functionalities of json.py"""
 
-from __future__ import absolute_import
-
 from os.path import join
-
-import pytest
 
 from cobra import io as cio
 from cobra.test.test_io.conftest import compare_models

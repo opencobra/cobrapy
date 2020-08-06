@@ -2,8 +2,6 @@
 
 """Test functionalities provided by mat.py"""
 
-from __future__ import absolute_import
-
 from os.path import join
 from pickle import load
 

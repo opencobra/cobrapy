@@ -295,7 +295,7 @@ class UserDefinedConstraint(Object):
         tree = ast.parse(source=expression, mode='eval')
         compute_nodes = UserDefinedConstraint.ComputeNumericNodes()
         tree = compute_nodes.visit(tree)
-        print(ast.dump(tree))
+        print((ast.dump(tree)))
         constraint.add_components_via_ast_nodes(ast_node=tree)
 
         return constraint

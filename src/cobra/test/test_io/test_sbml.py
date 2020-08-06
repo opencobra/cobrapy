@@ -3,8 +3,6 @@
 Testing SBML functionality based on libsbml.
 """
 
-from __future__ import absolute_import
-
 from collections import namedtuple
 from os import unlink
 from os.path import join, split

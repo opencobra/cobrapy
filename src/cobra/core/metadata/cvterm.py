@@ -5,7 +5,6 @@ Define the Controlled Vocabulary term class for refering to external
 resources
 
 """
-from __future__ import absolute_import
 
 import collections
 import re
@@ -42,6 +41,7 @@ class Qualifier(Enum):
     bqm_isInstanceOf = 17
     bqm_hasInstance = 18
     bqm_unknown = 19
+
 
 # the URL pattern to out parse provider and identifier
 URL_IDENTIFIERS_PATTERN = re.compile(
@@ -103,10 +103,10 @@ class CVTerm(object):
                     identifier = "%s:%s" % (provider, identifier)
                     provider = provider.lower()
             else:
-                print("WARNING : %s does not conform to "
-                      "'http(s)://identifiers.org/collection/id' or"
-                      "'http(s)://identifiers.org/COLLECTION:id, so "
-                      "is not added to annotation dictionary." % self.uri)
+                print(("WARNING : %s does not conform to "
+                       "'http(s)://identifiers.org/collection/id' or"
+                       "'http(s)://identifiers.org/COLLECTION:id, so "
+                       "is not added to annotation dictionary." % self.uri))
                 return None
 
             return provider, identifier

@@ -2,8 +2,6 @@
 
 """Test functionalities provided by yaml.py"""
 
-from __future__ import absolute_import
-
 import json
 from os.path import join
 

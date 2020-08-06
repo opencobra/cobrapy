@@ -1,6 +1,4 @@
-
-
-from __future__ import absolute_import
+# -*- coding: utf-8 -*-
 
 from cobra.core.metadata.cvterm import (
     CVList, CVTerm, CVTerms, ExternalResources, Qualifier)
