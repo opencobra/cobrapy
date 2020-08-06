@@ -1,15 +1,8 @@
-# -*- coding: utf-8 -*-
-
 import collections
 import re
 
-try:
-    collectionsAbc = collections.abc
-except AttributeError:
-    collectionsAbc = collections
 
-
-class Notes(collectionsAbc.MutableMapping):
+class Notes(collections.MutableMapping):
     """ Class representation of 'notes' of COBRA object.
 
     The previous version of COBRApy was parsing out any-
@@ -64,13 +57,12 @@ class Notes(collectionsAbc.MutableMapping):
         The string corresponding to the notes (xhtml) data
 
     """
-    # FIXME: should we abstract comments in the notes (?!)
-
-    def __init__(self, notes_xhtml: 'str' = None):
+    def __init__(self, notes_xhtml: str = None):
         self._notes_xhtml = None
         self._data = {}
         self.notes_xhtml = notes_xhtml
 
+    # pattern checking for <p> tags
     pattern_notes = re.compile(
         r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<content>.*?)</(?P=prefix)p>",
         re.IGNORECASE | re.DOTALL

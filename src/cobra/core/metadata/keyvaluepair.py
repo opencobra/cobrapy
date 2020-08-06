@@ -166,6 +166,15 @@ class KeyValueDict(object):
 
     @property
     def value(self):
+
+
+
+
+
+
+
+
+
         return getattr(self, "_value", None)
 
     @value.setter

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 import time
-from typing import List
+from typing import List, Union, Iterable
 
 
 class HistoryDateTime(object):
@@ -17,7 +17,7 @@ class HistoryDateTime(object):
         date in the form of a string
     """
 
-    def __init__(self, datetime_obj: [str, datetime]=None):
+    def __init__(self, datetime_obj: [str, datetime] = None):
         self._datetime = None
         self.datetime = datetime_obj
 
@@ -42,41 +42,41 @@ class HistoryDateTime(object):
         else:
             raise TypeError("Invalid type passed for datetime. "
                             "Accepted types are 'str' or "
-                            "'datetime' objects: {}")
+                            "'datetime' objects: {}") # FIXME: something missing
 
     def set_current_datetime(self):
-        current_datetime = datetime.now()
-        self._datetime = current_datetime.strftime("%Y-%m-%dT%H:%M:%S%z") \
-            + self.get_utc_offset_str()
+        current_datetime = datetime.utcnow()
+        self._datetime = current_datetime.strftime("%Y-%m-%dT%H:%M:%S%z")
 
-    def get_utc_offset_str(self):
-        """
-        Returns a UTC offset string of the current time suitable
-        for use in the most widely used timestamps (i.e. ISO 8601,
-        RFC 3339). For example: 10 hours ahead, 5 hours behind,
-        and time is UTC: +10:00, -05:00, +00:00
-        """
-        # Calculate the UTC time difference in seconds.
-        timestamp = time.time()
-        time_now = datetime.fromtimestamp(timestamp)
-        time_utc = datetime.utcfromtimestamp(timestamp)
-        utc_offset_secs = (time_now - time_utc).total_seconds()
-        # Flag variable to hold if the current time is behind UTC.
-        is_behind_utc = False
-        # If the current time is behind UTC convert the offset
-        # seconds to a positive value and set the flag variable.
-        if utc_offset_secs < 0:
-            is_behind_utc = True
-            utc_offset_secs *= -1
-        # Build a UTC offset string suitable for use in a timestamp.
-        if is_behind_utc:
-            pos_neg_prefix = "-"
-        else:
-            pos_neg_prefix = "+"
-        utc_offset = time.gmtime(utc_offset_secs)
-        utc_offset_fmt = time.strftime("%H:%M", utc_offset)
-        utc_offset_str = pos_neg_prefix + utc_offset_fmt
-        return utc_offset_str
+    # FIXME: remove
+    # def get_utc_offset_str(self):
+    #     """
+    #     Returns a UTC offset string of the current time suitable
+    #     for use in the most widely used timestamps (i.e. ISO 8601,
+    #     RFC 3339). For example: 10 hours ahead, 5 hours behind,
+    #     and time is UTC: +10:00, -05:00, +00:00
+    #     """
+    #     # Calculate the UTC time difference in seconds.
+    #     timestamp = time.time()
+    #     time_now = datetime.fromtimestamp(timestamp)
+    #     time_utc = datetime.utcfromtimestamp(timestamp)
+    #     utc_offset_secs = (time_now - time_utc).total_seconds()
+    #     # Flag variable to hold if the current time is behind UTC.
+    #     is_behind_utc = False
+    #     # If the current time is behind UTC convert the offset
+    #     # seconds to a positive value and set the flag variable.
+    #     if utc_offset_secs < 0:
+    #         is_behind_utc = True
+    #         utc_offset_secs *= -1
+    #     # Build a UTC offset string suitable for use in a timestamp.
+    #     if is_behind_utc:
+    #         pos_neg_prefix = "-"
+    #     else:
+    #         pos_neg_prefix = "+"
+    #     utc_offset = time.gmtime(utc_offset_secs)
+    #     utc_offset_fmt = time.strftime("%H:%M", utc_offset)
+    #     utc_offset_str = pos_neg_prefix + utc_offset_fmt
+    #     return utc_offset_str
 
     @staticmethod
     def validate_date(date_text):
@@ -101,7 +101,7 @@ class HistoryDateTime(object):
         return self.__str__()
 
 
-class History(object):
+class History:
     """
     Class representation of history of a given component.
     The history allows to store creator, created date and
@@ -130,9 +130,6 @@ class History(object):
     def __init__(self, creators: List = None,
                  created_date: HistoryDateTime = None,
                  modified_dates: List = None):
-        self._creators = []
-        self._created_date = None
-        self._modified_dates = []
 
         self.creators = creators
         self.created_date = created_date
@@ -159,7 +156,7 @@ class History(object):
         return self._creators
 
     @creators.setter
-    def creators(self, value):
+    def creators(self, value: List):
         if value is None:
             value = []
         if not isinstance(value, list):
@@ -173,50 +170,48 @@ class History(object):
         return self._created_date
 
     @created_date.setter
-    def created_date(self, value):
+    def created_date(self, value: Union[str, HistoryDateTime]):
         if value is None:
             self._created_date = None
         elif isinstance(value, str):
             self._created_date = HistoryDateTime(value)
-        elif not isinstance(value, HistoryDateTime):
-            raise TypeError("'created_date' must be of type"
-                            " DateTime: {}".format(value))
-        else:
+        elif isinstance(value, HistoryDateTime):
             self._created_date = value
+        else:
+            raise TypeError(f"'created_date' must be of type "
+                            f"DateTime: {value}")
 
     @property
     def modified_dates(self):
         return self._modified_dates
 
     @modified_dates.setter
-    def modified_dates(self, value):
+    def modified_dates(self, value: Iterable):
         if value is None:
             value = []
-        if not isinstance(value, list):
-            raise TypeError("'modified_dates' must be "
-                            " a list: {}".format(value))
-        else:
-            for date in value:
-                if isinstance(date, str):
-                    self._modified_dates.append(HistoryDateTime(date))
-                elif isinstance(date, HistoryDateTime):
-                    self._modified_dates.append(date)
-                else:
-                    raise TypeError("'modified_date' must be of type"
-                                    " DateTime: {}".format(date))
+
+        if not isinstance(value, Iterable):
+            raise TypeError(f"'modified_dates' must be "
+                            f" a Iterable: {value}")
+
+        for date in value:
+            if isinstance(date, str):
+                self._modified_dates.append(HistoryDateTime(date))
+            elif isinstance(date, HistoryDateTime):
+                self._modified_dates.append(date)
+            else:
+                raise TypeError("'modified_date' must be of type"
+                                " DateTime: {}".format(date))
 
     def is_set_history(self) -> bool:
         """Checks if history is set.
         Returns true if at least one attribute is set.
         """
-        if self.creators or self.created_date or \
-                self.modified_dates:
-            return True
-        return False
+        return self.creators or self.created_date or \
+               self.modified_dates
 
-    def __eq__(self, history_obj):
-        """ Checking equality of two history objects.
-        """
+    def __eq__(self, history_obj: 'History'):
+        """ Checking equality of two history objects. """
         # check creators
         if len(self.creators) != len(history_obj.creators):
             return False
@@ -248,7 +243,7 @@ class History(object):
         return self.__str__()
 
 
-class Creator(object):
+class Creator:
     """Class representation of a Creator
 
     Parameters

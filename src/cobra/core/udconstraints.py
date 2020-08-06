@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import ast
 from ast import (
     Add,
@@ -41,8 +39,8 @@ class UserDefinedConstraint(Object):
         a list of constraint components
     """
 
-    def __init__(self, id=None, name=None, lower_bound: [int, float]=None,
-                 upper_bound: [int, float]=None, const_comps: list=None):
+    def __init__(self, id=None, name=None, lower_bound: [int, float] = None,
+                 upper_bound: [int, float] = None, const_comps: list = None):
         if id is not None:
             if id.startswith('_'):
                 warn("Use of '_' before publicly set id is "

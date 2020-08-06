@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
-
 """
 Define the Controlled Vocabulary term class for refering to external
 resources
 
 """
 
+from typing import Dict, List, Set, Tuple, Union
 import collections
 import re
 import warnings
@@ -48,7 +47,7 @@ URL_IDENTIFIERS_PATTERN = re.compile(
     r"^https?://identifiers.org/(.+?)[:/](.+)")
 
 
-class CVTerm(object):
+class CVTerm:
     """Representation of a single CVTerm.
 
        Parameters
@@ -66,8 +65,8 @@ class CVTerm(object):
              a uri identifying external resource
     """
 
-    def __init__(self, qualifier: 'Qualifier'=Qualifier.bqb_is,
-                 resource: 'str'=None):
+    def __init__(self, qualifier: Qualifier = Qualifier.bqb_is,
+                 resource: str = None):
         self.uri = resource
         if isinstance(qualifier, Qualifier):
             self.qualifier = qualifier
@@ -80,7 +79,7 @@ class CVTerm(object):
             raise TypeError("qualifier passed must be an enum "
                             "Qualifier: {}".format(qualifier))
 
-    def parse_provider_identifier(self):
+    def parse_provider_identifier(self) -> Tuple[str]:
         """Parses provider and term from given identifiers annotation uri.
 
         Parameters
@@ -93,14 +92,14 @@ class CVTerm(object):
         (provider, identifier) if resolvable, None otherwise
         """
         if self.uri is None:
-            raise ValueError("'uri' set for this cvterm is "
-                             "None: {}".format(self))
+            raise ValueError(f"'uri' set for this cvterm is "
+                             f"None: {self}")
         else:
             match = URL_IDENTIFIERS_PATTERN.match(self.uri)
             if match:
                 provider, identifier = match.group(1), match.group(2)
                 if provider.isupper():
-                    identifier = "%s:%s" % (provider, identifier)
+                    identifier = f"{provider}:{identifier}"
                     provider = provider.lower()
             else:
                 print(("WARNING : %s does not conform to "
@@ -139,7 +138,7 @@ class CVTerms(collectionsAbc.MutableMapping):
     }
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data: Dict = None):
         self._annotations = defaultdict(list)
         self._cvterms = defaultdict(CVList)
         if data is None:
@@ -148,11 +147,11 @@ class CVTerms(collectionsAbc.MutableMapping):
             for key, value in data.items():
                 self.__setitem__(key, value)
         else:
-            raise TypeError("Invalid format for CVTerms: '{}'".format(data))
+            raise TypeError(f"Invalid format for CVTerms: '{data}'")
 
     @staticmethod
-    def parse_cvterms(data):
-        """Tries to parse the CVterms."""
+    def parse_cvterms(data: Union[Dict, 'CVTerms']) -> 'CVTerms':
+        """Parses the CVTerms."""
         if data is None or isinstance(data, dict):
             return CVTerms(data)
         elif isinstance(data, CVTerms):
@@ -160,9 +159,9 @@ class CVTerms(collectionsAbc.MutableMapping):
         else:
             raise TypeError("Invalid format for CVTerms: '{}'".format(data))
 
-    def add_cvterm(self, cvterm, index):
+    def add_cvterm(self, cvterm: CVTerm, index: int = 0) -> None:
         """
-        Adds a single CVTerm to CVTerms.
+        Adds a single CVTerm to CVTerms at given index position
 
         Parameters
         ----------
@@ -172,8 +171,6 @@ class CVTerms(collectionsAbc.MutableMapping):
             the index where this cvterm should be added inside
             the CVList of corresponding qualifier
         """
-        if index is None:
-            index = 0
         if isinstance(cvterm, CVTerm):
             qual = str(cvterm.qualifier)
             qual = qual[10:] if qual.startswith('Qualifier.') else qual
@@ -193,7 +190,7 @@ class CVTerms(collectionsAbc.MutableMapping):
             raise UnboundLocalError("The index is out of bound:"
                                     " {}".format(index))
 
-    def add_cvterms(self, cvterms=None):
+    def add_cvterms(self, cvterms: Union[Dict, 'CVTerms'] = None) -> None:
         """
         Adds multiple CVTerm to CVTerms.
 
@@ -204,7 +201,8 @@ class CVTerms(collectionsAbc.MutableMapping):
         """
         if cvterms is None:
             return
-        elif isinstance(cvterms, dict) or isinstance(cvterms, CVTerms):
+
+        if isinstance(cvterms, dict) or isinstance(cvterms, CVTerms):
             parsed_cvterms = CVTerms.parse_cvterms(cvterms)
             for key, value in parsed_cvterms.items():
 
@@ -223,7 +221,7 @@ class CVTerms(collectionsAbc.MutableMapping):
             raise TypeError("The value passed must be of "
                             "type CVTerms: {}".format(cvterms))
 
-    def add_simple_annotations(self, data=None):
+    def add_simple_annotations(self, data=None) -> None:
         """
         Adds cvterms via old annotation format. If no qualifier
         is linked to the identifier, default qualifier i.e "bqb_is"
@@ -305,11 +303,11 @@ class CVTerms(collectionsAbc.MutableMapping):
 
     @property
     def annotations(self):
-        return getattr(self, "_annotations", defaultdict(list))
+        return self._annotations
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str):  # FIXME: check return type
         if key not in Qualifier.__members__:
-            raise TypeError("''%s' is not an valid enum Qualifier" % key)
+            raise TypeError(f"'{key}' is not an valid Qualifier.")
         return self._cvterms[key]
 
     def __setitem__(self, key, value):
@@ -395,8 +393,8 @@ class CVList(collectionsAbc.MutableSequence):
         if data is None:
             data = []
         elif not isinstance(data, list):
-            raise TypeError("The data passed must be "
-                            "inside a list: '{}'".format(data))
+            raise TypeError(f"The data passed must be "
+                            f"inside a list: '{data}'")
         for item in data:
             self.append(item)
 
@@ -406,8 +404,8 @@ class CVList(collectionsAbc.MutableSequence):
         elif isinstance(value, dict):
             self._sequence.insert(index, ExternalResources(value))
         else:
-            raise TypeError("The passed format for setting external"
-                            " resources is invalid.")
+            raise TypeError("The passed format for setting external "
+                            "resources is invalid.")
 
     def append(self, value):
         if isinstance(value, ExternalResources):
@@ -415,8 +413,8 @@ class CVList(collectionsAbc.MutableSequence):
         elif isinstance(value, dict):
             self._sequence.append(ExternalResources(value))
         else:
-            raise TypeError("The passed format for setting external"
-                            " resources is invalid.")
+            raise TypeError("The passed format for setting external "
+                            "resources is invalid.")
 
     def __getitem__(self, index):
         return self._sequence[index]
@@ -427,8 +425,8 @@ class CVList(collectionsAbc.MutableSequence):
         elif isinstance(value, dict):
             self._sequence[index] = ExternalResources(value)
         else:
-            raise TypeError("The passed format for setting external"
-                            " resources is invalid.")
+            raise TypeError("The passed format for setting external "
+                            "resources is invalid.")
 
     def __eq__(self, other):
         """
@@ -455,7 +453,7 @@ class CVList(collectionsAbc.MutableSequence):
         return '{}'.format(list(self._sequence))
 
 
-class ExternalResources(object):
+class ExternalResources:
     """
     Class representation of a single set of resources and its nested
     annotation. Its a special type of dict with restricted keys and
@@ -497,9 +495,9 @@ class ExternalResources(object):
             elif key in Qualifier.__members__:
                 self._nested_data = CVTerms({key: value})
             else:
-                raise ValueError("Key '%s' is not allowed. Only "
-                                 "allowed keys are 'resources', "
-                                 "'nested_data'." % key)
+                raise ValueError(f"Key '{key}' is not allowed. Only "
+                                 f"allowed keys are 'resources', "
+                                 f"'nested_data'.")
 
     @property
     def resources(self):
@@ -510,8 +508,8 @@ class ExternalResources(object):
         if value is None:
             self._nested_data = None
         elif not isinstance(value, list):
-            raise TypeError("The resources must be wrapped "
-                            "inside a list: {}".format(value))
+            raise TypeError(f"The resources must be wrapped "
+                            f"inside a list: {value}")
         else:
             self._resources = value
 
