@@ -9,7 +9,7 @@ from itertools import product
 import pandas as pd
 from optlang.exceptions import SolverError
 
-from cobra.core import Configuration
+from cobra.core import Configuration, Reaction, Gene
 from cobra.flux_analysis.moma import add_moma
 from cobra.flux_analysis.room import add_room
 from cobra.manipulation.delete import find_gene_knockout_reactions
@@ -405,3 +405,53 @@ def double_gene_deletion(
         processes=processes,
         **kwargs
     )
+
+
+@pd.api.extensions.register_dataframe_accessor("knockout")
+class KnockoutAccessor:
+    """Access unique combinations of reactions in deletion results."""
+
+    def __init__(self, pandas_obj):
+        """Set up the accessor.
+
+        Parameters:
+        -----------
+        pandas_obj : pd.DataFrame
+            A result from one of the deletion methods.
+        """
+        self._validate(pandas_obj)
+        self._result = pandas_obj
+
+    @staticmethod
+    def _validate(obj):
+        # verify it is a deletion results
+        if "growth" not in obj.columns or "status" not in obj.columns:
+            raise AttributeError("Must be DataFrame returned by a deletion method.")
+
+    def _get_ids(self, args):
+        print(args)
+        if any(isinstance(args[0], t) for t in [list, tuple, set]):
+            return [tuple(sorted(set(el.id for el in elems))) for elems in args]
+        else:
+            return [(el.id, ) for el in args]
+
+    def __getitem__(self, args) -> pd.DataFrame:
+        """Return the deletion result for a particular set of knocked entities.
+
+        Parameters:
+        -----------
+        args : iterable of str, cobra.Reaction or cobra.Gene
+
+        Returns:
+        --------
+        pd.DataFrame
+            The deletion result where the chosen entities have been deleted.
+        """
+        if not any(isinstance(args, t) for t in [list, tuple, set]):
+            args = [args]
+
+        if isinstance(args[0], Reaction) or isinstance(args[0], Gene):
+            args = tuple(sorted(set(el.id for el in args)))
+        else:
+            args = tuple(sorted(set(args)))
+        return self._result.loc[[args]]
