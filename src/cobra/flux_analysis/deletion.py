@@ -103,7 +103,7 @@ def _multi_deletion(
         A representation of all combinations of entity deletions. The
         columns are 'growth' and 'status', where
 
-        index : frozenset([str])
+        index : tuple(str)
             The gene or reaction identifiers that were knocked out.
         growth : float
             The growth rate of the adjusted model.
@@ -210,7 +210,7 @@ def single_reaction_deletion(
         A representation of all single reaction deletions. The columns are
         'growth' and 'status', where
 
-        index : frozenset([str])
+        index : tuple(str)
             The reaction identifier that was knocked out.
         growth : float
             The growth rate of the adjusted model.
@@ -260,7 +260,7 @@ def single_gene_deletion(
         A representation of all single gene deletions. The columns are
         'growth' and 'status', where
 
-        index : frozenset([str])
+        index : tuple(str)
             The gene identifier that was knocked out.
         growth : float
             The growth rate of the adjusted model.
@@ -321,7 +321,7 @@ def double_reaction_deletion(
         A representation of all combinations of reaction deletions. The
         columns are 'growth' and 'status', where
 
-        index : frozenset([str])
+        index : tuple(str)
             The reaction identifiers that were knocked out.
         growth : float
             The growth rate of the adjusted model.
@@ -386,7 +386,7 @@ def double_gene_deletion(
         A representation of all combinations of gene deletions. The
         columns are 'growth' and 'status', where
 
-        index : frozenset([str])
+        index : tuple(str)
             The gene identifiers that were knocked out.
         growth : float
             The growth rate of the adjusted model.
@@ -408,6 +408,7 @@ def double_gene_deletion(
 
 
 @pd.api.extensions.register_dataframe_accessor("knockout")
+@pd.api.extensions.register_series_accessor("knockout")
 class KnockoutAccessor:
     """Access unique combinations of reactions in deletion results."""
 
@@ -416,7 +417,7 @@ class KnockoutAccessor:
 
         Parameters:
         -----------
-        pandas_obj : pd.DataFrame
+        pandas_obj : pd.DataFrame or pd.Series
             A result from one of the deletion methods.
         """
         self._validate(pandas_obj)
@@ -425,17 +426,10 @@ class KnockoutAccessor:
     @staticmethod
     def _validate(obj):
         # verify it is a deletion results
-        if "growth" not in obj.columns or "status" not in obj.columns:
+        if obj.index.name != "ids":
             raise AttributeError("Must be DataFrame returned by a deletion method.")
 
-    def _get_ids(self, args):
-        print(args)
-        if any(isinstance(args[0], t) for t in [list, tuple, set]):
-            return [tuple(sorted(set(el.id for el in elems))) for elems in args]
-        else:
-            return [(el.id, ) for el in args]
-
-    def __getitem__(self, args) -> pd.DataFrame:
+    def __getitem__(self, args):
         """Return the deletion result for a particular set of knocked entities.
 
         Parameters:
@@ -451,7 +445,7 @@ class KnockoutAccessor:
             args = [args]
 
         if isinstance(args[0], Reaction) or isinstance(args[0], Gene):
-            args = tuple(sorted(set(el.id for el in args)))
+            args = tuple(sorted(set(obj.id for obj in args)))
         else:
             args = tuple(sorted(set(args)))
         return self._result.loc[[args]]
