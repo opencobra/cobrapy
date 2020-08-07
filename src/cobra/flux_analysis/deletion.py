@@ -9,7 +9,7 @@ from itertools import product
 import pandas as pd
 from optlang.exceptions import SolverError
 
-from cobra.core import Configuration, Reaction, Gene
+from cobra.core import Configuration, Gene, Reaction
 from cobra.flux_analysis.moma import add_moma
 from cobra.flux_analysis.room import add_room
 from cobra.manipulation.delete import find_gene_knockout_reactions
