@@ -1,4 +1,6 @@
 """Provide a reaction summary class."""
+
+
 from textwrap import dedent
 from typing import TYPE_CHECKING, Optional
 
@@ -18,8 +20,8 @@ class ReactionSummary(Summary):
 
     Attributes
     ----------
-    reaction: cobra.Reaction
-        The reaction to summarize.
+    flux: pandas.DataFrame
+        The reaction flux (with minimum and maximum if an FVA was requested).
 
     See Also
     --------
@@ -29,7 +31,7 @@ class ReactionSummary(Summary):
 
     """
 
-    def __init__(self, *, reaction: "Reaction", model: "Model", **kwargs):
+    def __init__(self, *, reaction: "Reaction", model: "Model", **kwargs) -> None:
         """
         Initialize a metabolite summary.
 
@@ -54,10 +56,10 @@ class ReactionSummary(Summary):
         """
         super(ReactionSummary, self).__init__(model=model, **kwargs)
         self._reaction = reaction.copy()
-        self._flux_frame: Optional[pd.DataFrame] = None
+        self.flux: Optional[pd.DataFrame] = None
         self._generate()
 
-    def _generate(self):
+    def _generate(self) -> None:
         """
         Returns
         -------
@@ -74,42 +76,32 @@ class ReactionSummary(Summary):
                 fraction_of_optimum=self._fva,
             )
 
-        self._flux_frame = pd.DataFrame(
+        self.flux = pd.DataFrame(
             data={"flux": [self._solution[self._reaction.id]]},
             index=[self._reaction.id],
         )
         if self._fva is not None:
-            self._flux_frame = self._flux_frame.join(self._fva)
+            self.flux = self.flux.join(self._fva)
 
-    def __str__(self):
+    def to_string(self, names: bool = False, float_format: str = ".3G") -> str:
+        if self._fva is None:
+            flux = f"Flux: {self.flux.at[self._reaction.id, 'flux']:{float_format}}"
+        else:
+            flux = (
+                f"Flux: {self.flux.at[self._reaction.id, 'flux']:{float_format}} "
+                f"[{self.flux.at[self._reaction.id, 'minimum']:{float_format}}; "
+                f"{self.flux.at[self._reaction.id, 'maximum']:{float_format}}]"
+            )
+
         return dedent(
             f"""
-            {self._reaction.build_reaction_string(use_metabolite_names=self._names)}
+            {flux}
+            {self._reaction.build_reaction_string(use_metabolite_names=names)}
             """
         )
 
-    def _repr_html_(self):
+    def to_html(self, names: bool = False) -> str:
         return f"""
-            {self._flux_frame.to_html()}
+            {self.flux.to_html()}
             {self._reaction._repr_html_()}
             """
-
-    def to_frame(self):
-        """
-        Returns
-        -------
-        A pandas.DataFrame of the summary.
-
-        """
-        return self._flux_frame
-
-    def _to_table(self):
-        """
-        Returns
-        -------
-        A string of the summary table.
-
-        """
-        return self.to_frame().to_string(
-            header=True, index=False, na_rep="", sparsify=False, justify="center"
-        )

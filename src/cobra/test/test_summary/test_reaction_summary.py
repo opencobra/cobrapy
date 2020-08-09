@@ -1,49 +1,32 @@
-# -*- coding: utf-8 -*-
+"""Unit test the ReactionSummary class."""
 
-"""Test functionalities of ReactionSummary."""
 
-from __future__ import absolute_import
-
-import numpy as np
 import pytest
 
-from cobra.test.test_summary import captured_output, check_in_line
+from cobra.summary import ReactionSummary
 
 
-@pytest.mark.skip(reason="has some weird formatting issue")
-@pytest.mark.parametrize("rxn, names", [("ACALD", False), ("ACALD", True)])
-def test_reaction_summary_to_table(model, rxn, names):
-    """Test reaction summary._to_table()."""
-
-    if names:
-        expected_entry = [
-            " adhE                                     "
-            "Coenzyme A             -1                   c    "
-        ]
-    else:
-        expected_entry = [
-            "          accoa_c               " "1                   c    "
-        ]
-
-    with captured_output() as (out, _):
-        print(model.reactions.get_by_id(rxn).summary(names=names))
-    check_in_line(out.getvalue(), expected_entry)
+@pytest.mark.parametrize(
+    "reaction_id, expected", [("ACALD", 0.0), ("FUM", 5.06), ("PFK", 7.48),]
+)
+def test_reaction_summary_flux(model, reaction_id: str, expected: float) -> None:
+    """Test that the reported flux in the summary is reasonable."""
+    result = ReactionSummary(
+        reaction=model.reactions.get_by_id(reaction_id), model=model
+    )
+    assert result.flux.at[reaction_id, "flux"] == pytest.approx(expected, abs=1e-2)
 
 
-@pytest.mark.parametrize("rxn, names", [("ACALD", False), ("FUM", True)])
-def test_reaction_summary_to_frame(model, rxn, names):
-    """Test reaction summary.to_frame()."""
-
-    out_df = model.reactions.get_by_id(rxn).summary(names=names).to_frame()
-
-    if names:
-        expected_gene_names = ["fumB", "fumC", "fumA"]
-        expected_met_names = ["Fumarate", "H2O", "L-Malate"]
-
-    else:
-        expected_gene_names = ["b0351", "b1241", np.nan, np.nan, np.nan, np.nan]
-        expected_met_names = ["acald_c", "coa_c", "nad_c", "accoa_c", "h_c", "nadh_c"]
-
-    assert all(out_df["GENES", "ID"].tolist()) == all(expected_gene_names)
-
-    assert all(out_df["METABOLITES", "ID"].tolist()) == all(expected_met_names)
+@pytest.mark.parametrize(
+    "reaction_id, min_flux, max_flux",
+    [("ACALD", -1.27, 0.0), ("FUM", 0.79, 7.38), ("PFK", 2.58, 16.38)],
+)
+def test_reaction_summary_flux_fva(
+    model, reaction_id: str, min_flux: float, max_flux: float
+) -> None:
+    """Test that the reported flux ranges in the summary are reasonable."""
+    result = ReactionSummary(
+        reaction=model.reactions.get_by_id(reaction_id), model=model, fva=0.95
+    )
+    assert result.flux.at[reaction_id, "minimum"] == pytest.approx(min_flux, abs=1e-2)
+    assert result.flux.at[reaction_id, "maximum"] == pytest.approx(max_flux, abs=1e-2)
