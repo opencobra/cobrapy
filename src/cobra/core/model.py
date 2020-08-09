@@ -1242,7 +1242,7 @@ class Model(Object):
         Metabolite.summary
 
         """
-        from cobra.core.summary import ModelSummary
+        from cobra.summary import ModelSummary
 
         return ModelSummary(
             model=self,

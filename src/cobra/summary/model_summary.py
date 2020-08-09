@@ -13,8 +13,8 @@ import pandas as pd
 from six import iteritems, iterkeys
 
 from cobra.core import get_solution
-from cobra.core.summary import Summary
 from cobra.flux_analysis.variability import flux_variability_analysis
+from cobra.summary import Summary
 from cobra.util.solver import linear_reaction_coefficients
 
 

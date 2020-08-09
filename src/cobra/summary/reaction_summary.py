@@ -1,15 +1,15 @@
-# -*- coding: utf-8 -*-
-
-"""Define the ReactionSummary class."""
-
-from __future__ import absolute_import
-
-from operator import attrgetter
+"""Provide a reaction summary class."""
+from textwrap import dedent
+from typing import TYPE_CHECKING, Optional
 
 import pandas as pd
-from six import iterkeys, itervalues
 
-from cobra.core.summary import Summary
+from cobra.flux_analysis import flux_variability_analysis
+from cobra.summary import Summary
+
+
+if TYPE_CHECKING:
+    from cobra import Model, Reaction
 
 
 class ReactionSummary(Summary):
@@ -29,7 +29,7 @@ class ReactionSummary(Summary):
 
     """
 
-    def __init__(self, reaction, model, **kwargs):
+    def __init__(self, *, reaction: "Reaction", model: "Model", **kwargs):
         """
         Initialize a metabolite summary.
 
@@ -53,7 +53,9 @@ class ReactionSummary(Summary):
 
         """
         super(ReactionSummary, self).__init__(model=model, **kwargs)
-        self.reaction = reaction
+        self._reaction = reaction.copy()
+        self._flux_frame: Optional[pd.DataFrame] = None
+        self._generate()
 
     def _generate(self):
         """
@@ -63,33 +65,34 @@ class ReactionSummary(Summary):
             The DataFrame of reaction summary data.
 
         """
-        if self.names:
-            emit = attrgetter("name")
-        else:
-            emit = attrgetter("id")
+        super()._generate()
 
-        data = {
-            "GENES_ID": [emit(gene) for gene in self.reaction.genes],
-            "METABOLITES_ID": [
-                emit(met) for met in iterkeys(self.reaction.metabolites)
-            ],
-            "METABOLITES_STOICHIOMETRY": [
-                met for met in itervalues(self.reaction.metabolites)
-            ],
-            "METABOLITES_COMPARTMENT": [
-                met.compartment for met in iterkeys(self.reaction.metabolites)
-            ],
-        }
+        if isinstance(self._fva, float):
+            self._fva = flux_variability_analysis(
+                self._model,
+                reaction_list=[self._reaction],
+                fraction_of_optimum=self._fva,
+            )
 
-        rxn_summary = pd.DataFrame.from_dict(data, orient="index").T.fillna(
-            value=pd.np.nan
+        self._flux_frame = pd.DataFrame(
+            data={"flux": [self._solution[self._reaction.id]]},
+            index=[self._reaction.id],
+        )
+        if self._fva is not None:
+            self._flux_frame = self._flux_frame.join(self._fva)
+
+    def __str__(self):
+        return dedent(
+            f"""
+            {self._reaction.build_reaction_string(use_metabolite_names=self._names)}
+            """
         )
 
-        rxn_summary.columns = pd.MultiIndex.from_tuples(
-            [tuple(c.split("_")) for c in rxn_summary.columns]
-        )
-
-        return rxn_summary
+    def _repr_html_(self):
+        return f"""
+            {self._flux_frame.to_html()}
+            {self._reaction._repr_html_()}
+            """
 
     def to_frame(self):
         """
@@ -98,7 +101,7 @@ class ReactionSummary(Summary):
         A pandas.DataFrame of the summary.
 
         """
-        return self._generate()
+        return self._flux_frame
 
     def _to_table(self):
         """

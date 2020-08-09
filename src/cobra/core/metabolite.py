@@ -263,7 +263,7 @@ class Metabolite(Species):
         Model.summary
 
         """
-        from cobra.core.summary import MetaboliteSummary
+        from cobra.summary import MetaboliteSummary
 
         return MetaboliteSummary(
             metabolite=self,

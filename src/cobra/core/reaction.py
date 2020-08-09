@@ -1146,12 +1146,7 @@ class Reaction(Object):
                 self.add_metabolites({met: num})
 
     def summary(
-        self,
-        solution=None,
-        threshold=0.01,
-        fva=None,
-        names=False,
-        float_format="{:.3g}".format,
+        self, solution=None, threshold=0.01, fva=None,
     ):
         """
         Create a summary of the producing and consuming fluxes of the reaction.
@@ -1172,15 +1167,10 @@ class Reaction(Object):
             If given, fva should either be a previous FVA solution matching the
             model or a float between 0 and 1 representing the fraction of the
             optimum objective to be searched (default None).
-        names : bool, optional
-            Emit reaction and metabolite names rather than identifiers (default
-            False).
-        float_format : callable, optional
-            Format string for floats (default ``'{:3G}'.format``).
 
         Returns
         -------
-        cobra.ReactionSummary
+        cobra.summary.ReactionSummary
 
         See Also
         --------
@@ -1188,7 +1178,7 @@ class Reaction(Object):
         Model.summary
 
         """
-        from cobra.core.summary import ReactionSummary
+        from cobra.summary import ReactionSummary
 
         return ReactionSummary(
             reaction=self,
@@ -1196,8 +1186,6 @@ class Reaction(Object):
             solution=solution,
             threshold=threshold,
             fva=fva,
-            names=names,
-            float_format=float_format,
         )
 
     def __str__(self):

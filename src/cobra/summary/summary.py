@@ -1,15 +1,24 @@
-# -*- coding: utf-8 -*-
+"""Provide the abstract base summary class."""
 
-"""Define the Summary class."""
 
-from __future__ import absolute_import, division
+import logging
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Optional, Union
 
-from warnings import warn
-
+from cobra.flux_analysis import pfba
 from cobra.flux_analysis.helpers import normalize_cutoff
 
 
-class Summary(object):
+if TYPE_CHECKING:
+    from pandas import DataFrame
+
+    from cobra import Model, Solution
+
+
+logger = logging.getLogger(__name__)
+
+
+class Summary(ABC):
     """
     Define the abstract base summary.
 
@@ -17,35 +26,33 @@ class Summary(object):
     ----------
     model : cobra.Model
         The metabolic model in which to generate a summary description.
-    solution : cobra.Solution
-        A solution that matches the given model.
+    solution : cobra.Solution, optional
+        A solution that matches the given model. If missing, it will be generated using
+        parsimonious FBA.
     threshold : float, optional
         Threshold below which fluxes are not reported.
-    fva : pandas.DataFrame, optional
+    fva : pandas.DataFrame or float, optional
         The result of a flux variability analysis (FVA) involving reactions of
-        interest if an FVA was requested.
-    names : bool
+        interest for the summary. A number will be used as fraction of optimum flux
+        for calculating a new FVA.
+    names : bool, optional
         Whether or not to use object names rather than identifiers.
     float_format : callable
         Format string for displaying floats.
-
-    Methods
-    -------
-    to_frame
-        Return a data frame representation of the summary.
+    data_frame : pandas.DataFrame
+        The table containing the summary.
 
     """
 
     def __init__(
         self,
-        model,
-        solution=None,
-        threshold=None,
-        fva=None,
-        names=False,
-        float_format="{:.3G}".format,
-        **kwargs
-    ):
+        *,
+        model: "Model",
+        solution: Optional["Solution"] = None,
+        threshold: Optional[float] = None,
+        fva: Optional[Union[float, "DataFrame"]] = None,
+        **kwargs,
+    ) -> None:
         """
         Initialize a summary.
 
@@ -71,7 +78,9 @@ class Summary(object):
             Emit reaction and metabolite names rather than identifiers (default
             False).
         float_format : callable, optional
-            Format string for floats (default ``'{:3G}'.format``).
+            Format string for floats (default ``'{:3G}'.format``). Please see
+            https://pandas.pydata.org/pandas-docs/stable/user_guide/style.html#Finer-Control:-Display-Values
+            for more information.
 
         Other Parameters
         ----------------
@@ -79,24 +88,50 @@ class Summary(object):
             Further keyword arguments are passed on to the parent class.
 
         """
-        super(Summary, self).__init__(**kwargs)
-        self.model = model
-        self.solution = solution
-        self.threshold = normalize_cutoff(self.model, threshold)
-        self.fva = fva
-        self.names = names
-        self.float_format = float_format
+        super().__init__(**kwargs)
+        self._model = model
+        self._solution = solution
+        self._threshold = normalize_cutoff(self._model, threshold)
+        self._fva = fva
+        self._flux_frame = None
 
-    def _generate(self):
+    def _generate(self) -> None:
         """Generate the summary for the required cobra object.
 
         This is an abstract method and thus the subclass needs to
         implement it.
 
         """
+        if self._solution is None:
+            logger.info("Generating new parsimonious flux distribution.")
+            self._solution = pfba(self._model)
+
+    @abstractmethod
+    def to_frame(self, names: bool = False):
+        """Return a pandas data frame representation of the summary."""
         raise NotImplementedError(
-            "This method needs to be implemented by the " "subclass."
+            "This method needs to be implemented by the subclass."
         )
+
+    @abstractmethod
+    def to_html(self, names: bool = False):
+        """Return a rich HTML representation of the summary."""
+        raise NotImplementedError(
+            "This method needs to be implemented by the subclass."
+        )
+
+    @abstractmethod
+    def to_string(self, names: bool = False):
+        """Return a string representation of the summary."""
+        raise NotImplementedError(
+            "This method needs to be implemented by the subclass."
+        )
+
+    def __str__(self) -> str:
+        return self.to_string()
+
+    def _repr_html_(self) -> str:
+        return self.to_html()
 
     def _process_flux_dataframe(self, flux_dataframe):
         """Process a flux DataFrame for convenient downstream analysis.
@@ -182,35 +217,10 @@ class Summary(object):
 
         return flux_dataframe
 
-    def to_frame(self):
-        """Generate a pandas DataFrame.
+    # def __str__(self):
+    #     return self._display().to_string(
+    #         header=True, index=True, na_rep="", formatters=self._styles()
+    #     )
 
-        This is an abstract method and thus the subclass needs to
-        implement it.
-
-        """
-        raise NotImplementedError(
-            "This method needs to be implemented by the " "subclass."
-        )
-
-    def _to_table(self):
-        """Generate a pretty-print table.
-
-        This is an abstract method and thus the subclass needs to
-        implement it.
-
-        """
-        raise NotImplementedError(
-            "This method needs to be implemented by the " "subclass."
-        )
-
-    def __str__(self):
-        if self.float_format is not None:
-            warn(
-                "Setting float_format to anything other than None "
-                "will cause nan to be present in the output."
-            )
-        return self._to_table()
-
-    def _repr_html_(self):
-        return self.to_frame()._repr_html_()
+    # def _repr_html_(self):
+    #     self._display().style.format(self._styles())
