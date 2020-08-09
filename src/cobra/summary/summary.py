@@ -19,30 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class Summary(ABC):
-    """
-    Define the abstract base summary.
-
-    Attributes
-    ----------
-    model : cobra.Model
-        The metabolic model in which to generate a summary description.
-    solution : cobra.Solution, optional
-        A solution that matches the given model. If missing, it will be generated using
-        parsimonious FBA.
-    threshold : float, optional
-        Threshold below which fluxes are not reported.
-    fva : pandas.DataFrame or float, optional
-        The result of a flux variability analysis (FVA) involving reactions of
-        interest for the summary. A number will be used as fraction of optimum flux
-        for calculating a new FVA.
-    names : bool, optional
-        Whether or not to use object names rather than identifiers.
-    float_format : callable
-        Format string for displaying floats.
-    data_frame : pandas.DataFrame
-        The table containing the summary.
-
-    """
+    """Define the abstract base summary."""
 
     def __init__(
         self,
@@ -74,13 +51,6 @@ class Summary(ABC):
             If given, fva should either be a previous FVA solution matching the
             model or a float between 0 and 1 representing the fraction of the
             optimum objective to be searched (default None).
-        names : bool, optional
-            Emit reaction and metabolite names rather than identifiers (default
-            False).
-        float_format : callable, optional
-            Format string for floats (default ``'{:3G}'.format``). Please see
-            https://pandas.pydata.org/pandas-docs/stable/user_guide/style.html#Finer-Control:-Display-Values
-            for more information.
 
         Other Parameters
         ----------------
@@ -93,45 +63,52 @@ class Summary(ABC):
         self._solution = solution
         self._threshold = normalize_cutoff(self._model, threshold)
         self._fva = fva
-        self._flux_frame = None
 
     def _generate(self) -> None:
-        """Generate the summary for the required cobra object.
-
-        This is an abstract method and thus the subclass needs to
-        implement it.
-
-        """
+        """Generate the summary for the COBRA object."""
         if self._solution is None:
             logger.info("Generating new parsimonious flux distribution.")
             self._solution = pfba(self._model)
 
-    @abstractmethod
-    def to_frame(self, names: bool = False):
-        """Return a pandas data frame representation of the summary."""
-        raise NotImplementedError(
-            "This method needs to be implemented by the subclass."
-        )
-
-    @abstractmethod
-    def to_html(self, names: bool = False):
-        """Return a rich HTML representation of the summary."""
-        raise NotImplementedError(
-            "This method needs to be implemented by the subclass."
-        )
-
-    @abstractmethod
-    def to_string(self, names: bool = False):
-        """Return a string representation of the summary."""
-        raise NotImplementedError(
-            "This method needs to be implemented by the subclass."
-        )
-
     def __str__(self) -> str:
+        """Return a string representation of the summary."""
         return self.to_string()
 
     def _repr_html_(self) -> str:
+        """Return a rich HTML representation of the summary."""
         return self.to_html()
+
+    @abstractmethod
+    def to_string(self, names: bool = False, float_format: str = ".3G") -> str:
+        """
+        Return a string representation of the summary.
+
+        Parameters
+        ----------
+        names : bool, optional
+            Emit entity names rather than identifiers (default False).
+        float_format : str, optional
+            Format string for floats (default ``3G``).
+
+        """
+        raise NotImplementedError(
+            "This method needs to be implemented by the subclass."
+        )
+
+    @abstractmethod
+    def to_html(self, names: bool = False) -> str:
+        """
+        Return a rich HTML representation of the summary.
+
+        Parameters
+        ----------
+        names : bool, optional
+            Emit entity names rather than identifiers (default False).
+
+        """
+        raise NotImplementedError(
+            "This method needs to be implemented by the subclass."
+        )
 
     def _process_flux_dataframe(self, flux_dataframe):
         """Process a flux DataFrame for convenient downstream analysis.
@@ -180,8 +157,7 @@ class Summary(ABC):
         else:
 
             def get_direction(row):
-                """Decide whether or not to reverse a flux to make it
-                positive."""
+                """Decide whether or not to reverse a flux to make it positive."""
 
                 if row.flux < 0:
                     sign = -1
