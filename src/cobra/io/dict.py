@@ -1,18 +1,23 @@
-# -*- coding: utf-8 -*-
-
 from __future__ import absolute_import
 
 from ast import literal_eval
 from collections import OrderedDict
 from operator import attrgetter, itemgetter
+from typing import Dict
 
 import numpy as np
 from numpy import bool_, float_
 from six import iteritems, string_types
 
-from cobra.core import (Gene, Metabolite, Model, Reaction,
-                        UserDefinedConstraint,
-                        ConstraintComponent, Group)
+from cobra.core import (
+    ConstraintComponent,
+    Gene,
+    Group,
+    Metabolite,
+    Model,
+    Reaction,
+    UserDefinedConstraint,
+)
 from cobra.core.metadata import MetaData, Notes
 from cobra.io.sbml import F_REPLACE
 from cobra.util.solver import set_objective
@@ -122,7 +127,7 @@ def _fix_type(value):
     return value
 
 
-def _annotation_to_dict(annotation):
+def _annotation_to_dict(annotation: MetaData) -> Dict:
     anno_str = str(annotation.cvterms)
     anno_dict = literal_eval(anno_str)
     final_dict = {"cvterms": anno_dict}
@@ -138,7 +143,7 @@ def _annotation_to_dict(annotation):
     return final_dict
 
 
-def _extract_annotation(data):
+def _extract_annotation(data: Dict) -> MetaData:
         cvterms = data["cvterms"] if "cvterms" in data else None
         history = data["history"] if "history" in data else None
         keyValueDict = data["history"] if "keyValueDict" in data else None
@@ -293,7 +298,7 @@ def reaction_from_dict(reaction, model):
     return new_reaction
 
 
-def const_comp_to_dict(component):
+def const_comp_to_dict(component: ConstraintComponent) -> Dict:
     new_const_comp = OrderedDict()
     for key in _REQUIRED_CONSTRAINT_COMP_ATTRIBUTES:
         new_const_comp[key] = _fix_type(getattr(component, key))
@@ -303,7 +308,7 @@ def const_comp_to_dict(component):
     return new_const_comp
 
 
-def user_defined_const_to_dict(constraint):
+def user_defined_const_to_dict(constraint: UserDefinedConstraint) -> Dict:
     new_const = OrderedDict()
     for key in _REQUIRED_CONSTRAINT_ATTRIBUTES:
         if key != "constraint_comps":
@@ -316,7 +321,7 @@ def user_defined_const_to_dict(constraint):
     return new_const
 
 
-def user_defined_const_from_dict(constraint):
+def user_defined_const_from_dict(constraint: Dict) -> UserDefinedConstraint:
     new_user_defined_const = UserDefinedConstraint()
     for k, v in iteritems(constraint):
         if k == "constraint_comps":
@@ -334,7 +339,7 @@ def user_defined_const_from_dict(constraint):
     return new_user_defined_const
 
 
-def group_to_dict(group):
+def group_to_dict(group: Group) -> Dict:
     new_group = OrderedDict()
     for key in _REQUIRED_GROUP_ATTRIBUTES:
         if key != "members":
@@ -363,7 +368,7 @@ def group_to_dict(group):
     return new_group
 
 
-def group_from_dict(group, model):
+def group_from_dict(group: Dict, model: Model) -> Group:
     new_group = Group(group["id"])
     for k, v in iteritems(group):
         if k == "annotation":
@@ -426,6 +431,17 @@ def model_to_dict(model, sort=False):
     obj["groups"] = list(map(group_to_dict, model.groups))
     obj["user_defined_constraints"] = list(map(user_defined_const_to_dict,
                                                model.user_defined_const))
+
+    # sbml meta info
+    sbml_info = OrderedDict()
+    if hasattr(model, '_sbml'):
+        for key, value in iteritems(model._sbml):
+            if key == "annotation":
+                sbml_info[key] = _fix_type(_annotation_to_dict(value))
+            else:
+                sbml_info[key] = _fix_type(value)
+        obj["sbml_info"] = sbml_info
+
     obj["id"] = model.id
     _update_optional(
         model, obj, _OPTIONAL_MODEL_ATTRIBUTES, _ORDERED_OPTIONAL_MODEL_KEYS
@@ -488,6 +504,21 @@ def model_from_dict(obj):
             [user_defined_const_from_dict(cons) for cons in obj["user_defined_constraints"]]
         )
     set_objective(model, coefficients)
+
+    # sbml meta info
+    if "sbml_info" in obj:
+        meta = {}
+        for k, v in iteritems(obj["sbml_info"]):
+            if k == "annotation":
+                value = _extract_annotation(v)
+                meta[k] = value
+            elif k == "notes":
+                notes_data = Notes(v)
+                meta[k] = notes_data
+            else:
+                meta[k] = v
+        model._sbml = meta
+
     for k, v in iteritems(obj):
         if k == "annotation":
             value = _extract_annotation(v)

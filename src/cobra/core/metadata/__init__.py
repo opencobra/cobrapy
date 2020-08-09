@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from cobra.core.metadata.cvterm import (
     CVList, CVTerm, CVTerms, ExternalResources, Qualifier)
 from cobra.core.metadata.history import Creator, HistoryDateTime, History

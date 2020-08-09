@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Test functionalities of json.py"""
 
 from os.path import join
@@ -12,19 +10,20 @@ def test_validate_json(data_directory):
     """Validate file according to JSON-schema."""
     path_old_format = join(data_directory, "e_coli_core.json")
     # validate the model using JSON schema v1
-    list_errors = cio.validate_json_model(filename=path_old_format,
-                                          json_schema_version=1)
+    list_errors = cio.validate_json_model(
+        filename=path_old_format, json_schema_version=1
+    )
     assert len(list_errors) == 0
 
     path_new_format = join(data_directory, "e_coli_new_format.json")
     # validate the model using JSON schema v2
-    errors = cio.validate_json_model(filename=path_new_format,
-                                     json_schema_version=2)
+    errors = cio.validate_json_model(filename=path_new_format, json_schema_version=2)
     assert len(errors) == 0
 
     # test for invalid json model according to schema
-    errors_invalid = cio.validate_json_model(filename=path_old_format,
-                                             json_schema_version=2)
+    errors_invalid = cio.validate_json_model(
+        filename=path_old_format, json_schema_version=2
+    )
     assert len(errors_invalid) == 309
 
 

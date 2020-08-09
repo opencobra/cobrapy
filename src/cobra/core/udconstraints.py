@@ -15,6 +15,7 @@ from ast import (
     USub,
     copy_location,
 )
+from typing import List, Union
 from warnings import warn
 
 from cobra.core import DictList
@@ -24,6 +25,11 @@ from cobra.core.object import Object
 class UserDefinedConstraint(Object):
     """Class representation of constraints defined by
     user.
+
+    The id attribute of UserDefinedConstraint is optional according
+    to SBML specifications. But DictList requires the id of the object
+    to be set. So temporary inner id's will be generated to store such
+    objects.
 
     Parameters
     ----------
@@ -39,18 +45,17 @@ class UserDefinedConstraint(Object):
         a list of constraint components
     """
 
-    def __init__(self, id=None, name=None, lower_bound: [int, float] = None,
-                 upper_bound: [int, float] = None, const_comps: list = None):
-        if id is not None:
-            if id.startswith('_'):
-                warn("Use of '_' before publicly set id is "
-                     "discouraged. Ids with an underscore before "
-                     "them are for private use only.")
+    def __init__(
+        self,
+        id=None,
+        name=None,
+        lower_bound: [int, float] = None,
+        upper_bound: [int, float] = None,
+        const_comps: List = None,
+    ):
         Object.__init__(self, id, name)
         self._model = None
 
-        self._lower_bound = None
-        self._upper_bound = None
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
 
@@ -65,6 +70,10 @@ class UserDefinedConstraint(Object):
         """
 
         def visit_BinOp(self, node: BinOp):
+            """This method visits every node of ast tree and solve the nodes
+            which are computable i.e having numeric value on both sides and
+            a defined BioOp (or UnaryOp)
+            """
             node.left = self.visit(node.left)
             node.right = self.visit(node.right)
             if isinstance(node.left, Num) and isinstance(node.right, Num):
@@ -85,7 +94,9 @@ class UserDefinedConstraint(Object):
                     return copy_location(result, node)
             return node
 
-    def add_single_node(self, ast_node, negate=False):
+    def add_single_node(
+        self, ast_node: Union[Name, UnaryOp, BinOp], negate: bool = False
+    ) -> None:
         """
         The final node to add constraint component inside constraint.
 
@@ -97,53 +108,83 @@ class UserDefinedConstraint(Object):
             Whether to add a negative sign before this component
 
         """
-
+        # variable of type 'v1'
         if isinstance(ast_node, Name):
             coeff = 1
             if negate:
                 coeff = -1
-            self.add_constraint_comps([ConstraintComponent(coefficient=coeff,
-                                                           variable=ast_node.id,
-                                                           variable_type='linear')])
+            self.add_constraint_comps(
+                [
+                    ConstraintComponent(
+                        coefficient=coeff, variable=ast_node.id, variable_type="linear"
+                    )
+                ]
+            )
+        # variable of type '-v1'
         elif isinstance(ast_node, UnaryOp):
             if isinstance(ast_node.op, UAdd):
                 coeff = 1
             elif isinstance(ast_node.op, USub):
                 coeff = -1
             else:
-                raise ValueError("Unsupported Unary Operand: {}".format(ast_node.op))
+                raise ValueError(f"Unsupported Unary Operand: {ast_node.op}")
             if negate:
                 coeff = -1 * coeff
-            self.add_constraint_comps([ConstraintComponent(coefficient=coeff,
-                                                           variable=ast_node.operand.id,
-                                                           variable_type='linear')])
+            self.add_constraint_comps(
+                [
+                    ConstraintComponent(
+                        coefficient=coeff,
+                        variable=ast_node.operand.id,
+                        variable_type="linear",
+                    )
+                ]
+            )
+        # variable of type '2*v1', '3*v1*v1' etc.
         elif isinstance(ast_node, BinOp):
             if not isinstance(ast_node.op, Mult):
-                raise ValueError("Unsupported operand type between the variables:"
-                                 "{} and {}".format(ast_node.left, ast_node.right))
+                raise ValueError(
+                    f"Unsupported operand type between the variables:"
+                    f"{ast_node.left} and {ast_node.right}"
+                )
             if not isinstance(ast_node.right, Name):
-                raise ValueError("The second argument must be a single variable"
-                                 ": {}".format(ast_node.right))
+                raise ValueError(
+                    f"The second argument must be a single variable"
+                    f": {ast_node.right}"
+                )
+            # variable of type '2*v1'
             if isinstance(ast_node.left, Num):
                 coeff = ast_node.left.n
                 if negate:
                     coeff = -1 * coeff
                 var = ast_node.right.id
-                self.add_constraint_comps([ConstraintComponent(coefficient=coeff,
-                                                               variable=var,
-                                                               variable_type='linear')])
+                self.add_constraint_comps(
+                    [
+                        ConstraintComponent(
+                            coefficient=coeff, variable=var, variable_type="linear"
+                        )
+                    ]
+                )
+            # variables of type 'v1*v1'
             elif isinstance(ast_node.left, Name):
                 if ast_node.left.id != ast_node.right.id:
-                    raise ValueError("Multiplication of two different variables is not "
-                                     "allowed as per SBML FBC-V3: {} and {}"
-                                     "".format(ast_node.left.id, ast_node.right.id))
+                    raise ValueError(
+                        f"Multiplication of two different variables is not "
+                        f"allowed as per SBML FBC-V3: {ast_node.left.id} and "
+                        f"{ast_node.right.id}"
+                    )
                 coeff = 1
                 if negate:
                     coeff = -1
                 self.add_constraint_comps(
-                    [ConstraintComponent(coefficient=coeff,
-                                         variable=ast_node.right.id,
-                                         variable_type='quadratic')])
+                    [
+                        ConstraintComponent(
+                            coefficient=coeff,
+                            variable=ast_node.right.id,
+                            variable_type="quadratic",
+                        )
+                    ]
+                )
+            # variables of type '-v1*v1'
             elif isinstance(ast_node.left, UnaryOp):
                 if isinstance(ast_node.left.operand, Num):
                     if isinstance(ast_node.left.op, UAdd):
@@ -152,38 +193,49 @@ class UserDefinedConstraint(Object):
                         coeff = -1
                     else:
                         raise ValueError(
-                            "Unsupported Unary Operand: {}".format(ast_node.left.op))
+                            f"Unsupported Unary Operand: {ast_node.left.op}"
+                        )
                     coeff *= ast_node.left.operand.n
                     if negate:
                         coeff = -1 * coeff
-                    comp = ConstraintComponent(coefficient=coeff,
-                                               variable=ast_node.right.id,
-                                               variable_type='linear')
+                    comp = ConstraintComponent(
+                        coefficient=coeff,
+                        variable=ast_node.right.id,
+                        variable_type="linear",
+                    )
                     self.add_constraint_comps([comp])
                 elif isinstance(ast_node.left.operand, Name):
                     if ast_node.left.operand.id != ast_node.right.id:
-                        raise ValueError("Multiplication of two different variables is "
-                                         "not allowed as per SBML FBC-V3: {} and {}"
-                                         "".format(ast_node.left.operand.id,
-                                                   ast_node.right.id))
+                        raise ValueError(
+                            f"Multiplication of two different variables is not allowed "
+                            f"as per SBML FBC-V3: {ast_node.left.operand.id}"
+                            f" and {ast_node.right.id}"
+                        )
                     if isinstance(ast_node.left.op, UAdd):
                         coeff = 1
                     elif isinstance(ast_node.left.op, USub):
                         coeff = -1
                     else:
                         raise ValueError(
-                            "Unsupported Unary Operand: {}".format(ast_node.left.op))
+                            f"Unsupported Unary Operand: {ast_node.left.op}"
+                        )
                     if negate:
                         coeff = -1 * coeff
-                    comp = ConstraintComponent(coefficient=coeff,
-                                               variable=ast_node.left.operand.id,
-                                               variable_type='quadratic')
+                    comp = ConstraintComponent(
+                        coefficient=coeff,
+                        variable=ast_node.left.operand.id,
+                        variable_type="quadratic",
+                    )
                     self.add_constraint_comps([comp])
+            # variables of type '2*v1*v1'
             elif isinstance(ast_node.left, BinOp):
                 if ast_node.left.right.id != ast_node.right.id:
-                    raise ValueError("Multiplication of two different variables is not "
-                                     "allowed as per SBML FBC-V3: {} and {}".format(
-                                        ast_node.left.name.id, ast_node.right.id))
+                    raise ValueError(
+                        f"Multiplication of two different variables is not "
+                        f"allowed as per SBML FBC-V3: {ast_node.left.name.id} "
+                        f"and {ast_node.right.id}"
+                    )
+                # variables of type '-2*v1*v1'
                 if isinstance(ast_node.left.left, UnaryOp):
                     if isinstance(ast_node.left.left.op, USub):
                         coeff = -1
@@ -191,19 +243,25 @@ class UserDefinedConstraint(Object):
                         coeff = 1
                     else:
                         raise ValueError("Invalid expression.")
-                    coeff = coeff*ast_node.left.left.operand.n
+                    coeff = coeff * ast_node.left.left.operand.n
                 elif isinstance(ast_node.left.left, Num):
                     coeff = ast_node.left.left.n
                 else:
                     raise ValueError("Invalid expression.")
                 if negate:
-                    coeff = -1*coeff
-                comp = ConstraintComponent(coefficient=coeff,
-                                           variable=ast_node.right.id,
-                                           variable_type='quadratic')
+                    coeff = -1 * coeff
+                comp = ConstraintComponent(
+                    coefficient=coeff,
+                    variable=ast_node.right.id,
+                    variable_type="quadratic",
+                )
                 self.add_constraint_comps([comp])
 
-    def add_components_via_ast_nodes(self, ast_node, negate=False):
+    def add_components_via_ast_nodes(
+        self,
+        ast_node: Union[Name, UnaryOp, BinOp, Expression, Num],
+        negate: bool = False,
+    ) -> None:
         """
         Add the constraint components to model via ast node
         representation of constraint expression.
@@ -228,8 +286,7 @@ class UserDefinedConstraint(Object):
             elif isinstance(ast_node.op, Mult):
                 self.add_single_node(ast_node, negate)
             else:
-                raise ValueError("Unsupported operation between variables"
-                                 ": ".format(ast_node))
+                raise ValueError(f"Unsupported operation between variables: {ast_node}")
         elif isinstance(ast_node, Name):
             self.add_single_node(ast_node, negate)
         elif isinstance(ast_node, UnaryOp):
@@ -237,11 +294,15 @@ class UserDefinedConstraint(Object):
         elif isinstance(ast_node, Expression):
             self.add_components_via_ast_nodes(ast_node.body, negate)
         else:
-            raise ValueError("Unsupported variable type: ".format(ast_node))
+            raise ValueError(f"Unsupported variable type: {ast_node}")
 
     @staticmethod
-    def constraint_from_expression(id=None, expression: 'str' = '',
-                                   lower_bound=None, upper_bound=None):
+    def constraint_from_expression(
+        id: str = None,
+        expression: str = "",
+        lower_bound: Union[int, float] = None,
+        upper_bound: Union[int, float] = None,
+    ) -> "UserDefinedConstraint":
         """
         Method to add a user defined constraint via an expression of
         type string. Following rules must be followed while making the
@@ -283,14 +344,15 @@ class UserDefinedConstraint(Object):
         -------
         A UserDefinedConstraint object
         """
-        constraint = UserDefinedConstraint(id=id, lower_bound=lower_bound,
-                                           upper_bound=upper_bound)
-        if expression is None or expression == '':
+        constraint = UserDefinedConstraint(
+            id=id, lower_bound=lower_bound, upper_bound=upper_bound
+        )
+        if expression is None or expression == "":
             return constraint
 
         expression = expression.strip()
 
-        tree = ast.parse(source=expression, mode='eval')
+        tree = ast.parse(source=expression, mode="eval")
         compute_nodes = UserDefinedConstraint.ComputeNumericNodes()
         tree = compute_nodes.visit(tree)
         print((ast.dump(tree)))
@@ -299,42 +361,40 @@ class UserDefinedConstraint(Object):
         return constraint
 
     @property
-    def lower_bound(self):
+    def lower_bound(self) -> Union[int, float]:
         return self._lower_bound
 
     @lower_bound.setter
-    def lower_bound(self, value):
+    def lower_bound(self, value: Union[int, float]) -> None:
         if value is None:
             self._lower_bound = value
-        elif not (isinstance(value, int) or
-                  isinstance(value, float)):
-            raise TypeError("The 'lower_bound' must be of "
-                            "type 'number' (int, float):"
-                            " {}".format(value))
+        elif not (isinstance(value, int) or isinstance(value, float)):
+            raise TypeError(
+                f"The 'lower_bound' must be of type 'number' (int, float): {value}"
+            )
         else:
             self._lower_bound = value
 
     @property
-    def upper_bound(self):
+    def upper_bound(self) -> Union[int, float]:
         return self._upper_bound
 
     @upper_bound.setter
-    def upper_bound(self, value):
+    def upper_bound(self, value: Union[int, float]) -> None:
         if value is None:
             self._upper_bound = value
-        elif not (isinstance(value, int) or
-                  isinstance(value, float)):
-            raise TypeError("The 'upper_bound' must be of "
-                            "type 'number' (int, float):"
-                            " {}".format(value))
+        elif not (isinstance(value, int) or isinstance(value, float)):
+            raise TypeError(
+                f"The 'upper_bound' must be of type 'number' (int, float): {value}"
+            )
         else:
             self._upper_bound = value
 
     @property
-    def constraint_comps(self):
+    def constraint_comps(self) -> List:
         return self._constraint_comps
 
-    def add_constraint_comps(self, value):
+    def add_constraint_comps(self, value: List) -> None:
         """Adds a UserDefinedConstraintComponent in this constraint
 
         Parameters
@@ -344,30 +404,32 @@ class UserDefinedConstraint(Object):
 
         """
         if self._model is not None:
-            raise ValueError("The constraint has already been "
-                             "added to model. Can't add more "
-                             "constraint components".format(value))
+            raise ValueError(
+                f"The constraint has already been added to model. Can't add more "
+                f"constraint components: {value}"
+            )
 
         if not isinstance(value, list):
             if isinstance(value, ConstraintComponent):
-                warn("Pass the Constraint Components inside a "
-                     "list: {}".format(value))
+                warn(f"Pass the Constraint Components inside a list: {value}")
                 value = [value]
             else:
-                raise TypeError("Pass the Constraint Components "
-                                "inside a list: {}".format(value))
+                raise TypeError(
+                    f"Pass the Constraint Components inside a list: {value}"
+                )
 
         for item in value:
             if not isinstance(item, ConstraintComponent):
-                raise TypeError("The constraint component should be of "
-                                "type 'UserDefinedConstraintComponents'"
-                                ": {}".format(item))
+                raise TypeError(
+                    f"The constraint component should be of type "
+                    f"'UserDefinedConstraintComponents': {item}"
+                )
             if item.id is None or item.id == "":
-                item.id = "_internal_comp_id" + str(len(self._const_comp_ids))
+                item.id = "$_internal_comp_id" + str(len(self._const_comp_ids))
             self._const_comp_ids.add(item.id)
             self.constraint_comps.append(item)
 
-    def remove_constraint_comps(self, value):
+    def remove_constraint_comps(self, value: "ConstraintComponent") -> None:
         """Removes a UserDefinedConstraintComponent from this constraint
 
         Parameters
@@ -377,24 +439,26 @@ class UserDefinedConstraint(Object):
 
         """
         if self._model is not None:
-            raise ValueError("The constraint has already been "
-                             "added to model. Can't remove any "
-                             "constraint components".format(value))
+            raise ValueError(
+                f"The constraint has already been added to model. Can't remove any "
+                f"constraint components: {value}"
+            )
 
         if not isinstance(value, list):
             if isinstance(value, ConstraintComponent):
-                warn("Pass the Constraint Components inside a "
-                     "list: {}".format(value))
+                warn(f"Pass the Constraint Components inside a list: {value}")
                 value = [value]
             else:
-                raise TypeError("Pass the Constraint Components "
-                                "inside a list: {}".format(value))
+                raise TypeError(
+                    f"Pass the Constraint Components inside a list: {value}"
+                )
 
         for item in value:
             if not isinstance(item, ConstraintComponent):
-                raise TypeError("The constraint component should be of "
-                                "type 'UserDefinedConstraintComponents'"
-                                ": {}".format(item))
+                raise TypeError(
+                    f"The constraint component should be of type "
+                    f"'UserDefinedConstraintComponents': {item}"
+                )
             self._const_comp_ids.remove(item.id)
             self.constraint_comps.remove(item)
 
@@ -418,61 +482,59 @@ class ConstraintComponent(Object):
 
     """
 
-    variable_types = ('linear', 'quadratic')
+    variable_types = ("linear", "quadratic")
 
-    def __init__(self, id=None, name=None, variable=None,
-                 coefficient=1.0, variable_type='linear'):
-        if id is not None:
-            if id.startswith('_'):
-                warn("Use of '_' before publicly set id is "
-                     "discouraged. Ids with an underscore before "
-                     "them are for private use only.")
+    def __init__(
+        self,
+        id: str = None,
+        name: str = None,
+        variable: str = None,
+        coefficient: int = 1.0,
+        variable_type: str = "linear",
+    ):
         Object.__init__(self, id=id, name=name)
-        self._variable = None
-        self._coefficient = None
-        self._variable_type = None
         self.variable = variable
         self.coefficient = coefficient
         self.variable_type = variable_type
 
     @property
-    def variable(self):
+    def variable(self) -> str:
         return self._variable
 
     @variable.setter
-    def variable(self, value):
+    def variable(self, value: str) -> None:
         if not isinstance(value, str):
-            raise TypeError("The 'variable' have to be an "
-                            "COBRA object id and must be of"
-                            " type string: {}".format(value))
+            raise TypeError(
+                f"The 'variable' have to be an COBRA object id and must be of"
+                f" type string: {value}"
+            )
         else:
             self._variable = value
 
     @property
-    def coefficient(self):
+    def coefficient(self) -> Union[int, float]:
         return self._coefficient
 
     @coefficient.setter
-    def coefficient(self, value):
+    def coefficient(self, value: Union[int, float]) -> None:
         if value is None:
             self._coefficient = 1
-        elif not (isinstance(value, int) or
-                  isinstance(value, float)):
-            raise TypeError("The 'coefficient' must be of "
-                            "type 'number' (int, float):"
-                            " {}".format(value))
+        elif not (isinstance(value, int) or isinstance(value, float)):
+            raise TypeError(
+                f"The 'coefficient' must be of type 'number' (int, float): {value}"
+            )
         else:
             self._coefficient = value
 
     @property
-    def variable_type(self):
+    def variable_type(self) -> str:
         return self._variable_type
 
     @variable_type.setter
-    def variable_type(self, value):
+    def variable_type(self, value: str) -> None:
         if value not in self.variable_types:
-            raise ValueError("The 'variable_type' must be one"
-                             "of 'linear' or 'quadratic': "
-                             "{}".format(value))
+            raise ValueError(
+                f"The 'variable_type' must be one of 'linear' or 'quadratic': {value}"
+            )
         else:
             self._variable_type = value

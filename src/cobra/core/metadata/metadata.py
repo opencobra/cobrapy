@@ -1,20 +1,13 @@
-# -*- coding: utf-8 -*-
-
 import collections
 from collections import defaultdict
+from typing import Dict, Iterator, List, Union
 
 from cobra.core.metadata.cvterm import CVTerms
 from cobra.core.metadata.history import History
-from cobra.core.metadata.keyvaluepair import KeyValueDict, ListOfKeyValue
+from cobra.core.metadata.keyvaluepair import ListOfKeyValue
 
 
-try:
-    collectionsAbc = collections.abc
-except AttributeError:
-    collectionsAbc = collections
-
-
-class MetaData(collectionsAbc.MutableMapping):
+class MetaData(collections.MutableMapping):
     """Class representation of the meta-data of an object.
 
     Meta-data consists of three components:
@@ -30,29 +23,36 @@ class MetaData(collectionsAbc.MutableMapping):
     history : dict, History
         The history is holding the data about the creator,
         created and modified dates.
-    keyValueDict : list
+    keyvaluedict : list
         Some key-value pairs which are not suitable to be
         represented anywhere else in the model.
     """
-    def __init__(self, cvterms: 'CVTerms' = None, history: 'History' = None,
-                 keyValueDict: 'KeyValueDict' = None):
+
+    def __init__(
+        self,
+        cvterms: Union[Dict, "CVTerms"] = None,
+        history: Union[Dict, "History"] = None,
+        keyvaluedict: List = None,
+    ):
         self._cvterms = CVTerms()
         self.add_cvterms(cvterms)
         self.history = History.parse_history(history)
-        self.keyValueDict = ListOfKeyValue.parse_listofKeyValue(keyValueDict)
+        self.keyValueDict = ListOfKeyValue.parse_listofkeyvalue(keyvaluedict)
 
-    def add_cvterm(self, cvterm, index: 'int' = 0):
+    def add_cvterm(self, cvterm, index: int = 0) -> None:
+        """Adds a single CVTerm to CVList of given qualifier at given index."""
         self._cvterms.add_cvterm(cvterm=cvterm, index=index)
 
-    def add_cvterms(self, cvterms: 'CVTerms' = None):
+    def add_cvterms(self, cvterms: Union[Dict, "CVTerms"] = None) -> None:
+        """Adds multiple CVTerm data."""
         self._cvterms.add_cvterms(cvterms=cvterms)
 
     @property
-    def cvterms(self):
+    def cvterms(self) -> "CVTerms":
         return self._cvterms
 
     @cvterms.setter
-    def cvterms(self, value):
+    def cvterms(self, value: Union[Dict, "CVTerms"]) -> None:
         self._cvterms = CVTerms()
 
         # synchronize the annotation dictionary
@@ -60,30 +60,31 @@ class MetaData(collectionsAbc.MutableMapping):
         self.add_cvterms(value)
 
     @property
-    def annotations(self):
+    def annotations(self) -> Dict:
+        # annotation data in old format
         return self.cvterms.annotations
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> None:
         if key == "sbo" and len(self.annotations[key]) == 0:
             value = self._cvterms._annotations[key]
             del self._cvterms._annotations[key]
             return value
         return self.annotations[key]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: List) -> None:
         self._cvterms.add_simple_annotations(dict({key: value}))
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         del self.annotations[key]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator:
         return iter(self.annotations)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.annotations)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(dict(self.annotations))
 
-    def __repr__(self):
-        return '{}'.format(dict(self.annotations))
+    def __repr__(self) -> str:
+        return f"{dict(self.annotations)}"

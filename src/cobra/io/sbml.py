@@ -34,6 +34,7 @@ import re
 import traceback
 from collections import defaultdict, namedtuple
 from copy import deepcopy
+from io import StringIO
 from sys import platform
 
 import libsbml
@@ -43,11 +44,16 @@ import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
 from cobra.core.gene import parse_gpr
 from cobra.core.metadata import (
-    Creator, CVList, CVTerms, HistoryDateTime, MetaData, Qualifier, Notes)
+    Creator,
+    CVList,
+    CVTerms,
+    HistoryDateTime,
+    MetaData,
+    Notes,
+    Qualifier,
+)
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
-
-from io import StringIO
 
 
 class CobraSBMLError(Exception):
@@ -369,39 +375,6 @@ def _sbml_to_model(
     cobra_model = Model(model_id)
     cobra_model.name = model.getName()
 
-    # meta information
-    meta = {
-        "model.id": model_id,
-        "level": model.getLevel(),
-        "version": model.getVersion(),
-        "packages": [],
-    }
-    # History
-    creators = []
-    created = None
-    if model.isSetModelHistory():
-        history = model.getModelHistory()  # type: libsbml.ModelHistory
-
-        if history.isSetCreatedDate():
-            created = history.getCreatedDate()
-
-        for c in history.getListCreators():  # type: libsbml.ModelCreator
-            creators.append(
-                {
-                    "familyName": c.getFamilyName() if c.isSetFamilyName() else None,
-                    "givenName": c.getGivenName() if c.isSetGivenName() else None,
-                    "organisation": c.getOrganisation()
-                    if c.isSetOrganisation()
-                    else None,
-                    "email": c.getEmail() if c.isSetEmail() else None,
-                }
-            )
-
-    meta["creators"] = creators
-    meta["created"] = created
-    meta["notes"] = _parse_notes_dict(doc)
-    meta["annotation"] = _parse_annotations(doc)
-
     info = "<{}> SBML L{}V{}".format(model_id, model.getLevel(), model.getVersion())
     packages = {}
     for k in range(doc.getNumPlugins()):
@@ -415,12 +388,17 @@ def _sbml_to_model(
                 "information is not parsed",
                 key,
             )
-    meta["info"] = info
-    meta["packages"] = packages
+
+    # meta information
+    meta = {"model.id": model_id, "level": model.getLevel(),
+            "version": model.getVersion(), "packages": packages,
+            "notes": _parse_notes_info(doc), "annotation": _parse_annotations(doc),
+            "info": info}
+
     cobra_model._sbml = meta
 
     # notes and annotations
-    cobra_model.notes = _parse_notes_dict(model)
+    cobra_model.notes = _parse_notes_info(model)
     cobra_model.annotation = _parse_annotations(model)
 
     # Compartments
@@ -446,7 +424,7 @@ def _sbml_to_model(
 
         met = Metabolite(sid)
         met.name = specie.getName()
-        met.notes = _parse_notes_dict(specie)
+        met.notes = _parse_notes_info(specie)
         met.annotation = _parse_annotations(specie)
         met.compartment = specie.getCompartment()
 
@@ -525,7 +503,7 @@ def _sbml_to_model(
             if cobra_gene.name is None:
                 cobra_gene.name = gid
             cobra_gene.annotation = _parse_annotations(gp)
-            cobra_gene.notes = _parse_notes_dict(gp)
+            cobra_gene.notes = _parse_notes_info(gp)
 
             cobra_model.genes.append(cobra_gene)
     else:
@@ -533,7 +511,7 @@ def _sbml_to_model(
             cobra_reaction
         ) in model.getListOfReactions():  # noqa: E501 type: libsbml.Reaction
             # fallback to notes information
-            notes = _parse_notes_dict(cobra_reaction)
+            notes = _parse_notes_info(cobra_reaction)
             if "GENE ASSOCIATION" in notes:
                 gpr = notes["GENE ASSOCIATION"]
             elif "GENE_ASSOCIATION" in notes:
@@ -606,7 +584,7 @@ def _sbml_to_model(
         cobra_reaction = Reaction(rid)
         cobra_reaction.name = reaction.getName()
         cobra_reaction.annotation = _parse_annotations(reaction)
-        cobra_reaction.notes = _parse_notes_dict(reaction)
+        cobra_reaction.notes = _parse_notes_info(reaction)
 
         # set bounds
         p_ub, p_lb = None, None
@@ -858,7 +836,7 @@ def _sbml_to_model(
             if group.isSetKind():
                 cobra_group.kind = group.getKindAsString()
             cobra_group.annotation = _parse_annotations(group)
-            cobra_group.notes = _parse_notes_dict(group)
+            cobra_group.notes = _parse_notes_info(group)
 
             cobra_members = []
             for member in group.getListOfMembers():  # type: libsbml.Member
@@ -1010,7 +988,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
     # for parsing annotation corresponding to the model
     _sbase_annotations(model, cobra_model.annotation)
     # for parsing notes corresponding to the model
-    _sbase_notes_dict(model, cobra_model.notes)
+    _set_notes(model, cobra_model.notes)
 
     # Meta information (ModelHistory) related to SBMLDocument
     if hasattr(cobra_model, "_sbml"):
@@ -1018,37 +996,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         if "annotation" in meta:
             _sbase_annotations(doc, meta["annotation"])
         if "notes" in meta:
-            _sbase_notes_dict(doc, meta["notes"])
-
-        history = libsbml.ModelHistory()  # type: libsbml.ModelHistory
-        if "created" in meta and meta["created"]:
-            history.setCreatedDate(meta["created"])
-        else:
-            time = datetime.datetime.now()
-            timestr = time.strftime("%Y-%m-%dT%H:%M:%S")
-            date = libsbml.Date(timestr)
-            _check(history.setCreatedDate(date), "set creation date")
-            _check(history.setModifiedDate(date), "set modified date")
-
-        if "creators" in meta:
-            for cobra_creator in meta[
-                "creators"
-            ]:  # noqa: E501 type: libsbml.ModelCreator
-                creator = libsbml.ModelCreator()
-                if cobra_creator.get("familyName", None):
-                    creator.setFamilyName(cobra_creator["familyName"])
-                if cobra_creator.get("givenName", None):
-                    creator.setGivenName(cobra_creator["givenName"])
-                if cobra_creator.get("organisation", None):
-                    creator.setOrganisation(cobra_creator["organisation"])
-                if cobra_creator.get("email", None):
-                    creator.setEmail(cobra_creator["email"])
-
-                _check(history.addCreator(creator), "adding creator to ModelHistory.")
-
-        # TODO: Will be implemented as part of
-        #  https://github.com/opencobra/cobrapy/issues/810
-        # _check(model.setModelHistory(history), 'set model history')
+            _set_notes(doc, meta["notes"])
 
     # Units
     if units:
@@ -1115,7 +1063,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             s_fbc.setChemicalFormula(metabolite.formula)
 
         _sbase_annotations(specie, metabolite.annotation)
-        _sbase_notes_dict(specie, metabolite.notes)
+        _set_notes(specie, metabolite.notes)
 
     # Genes
     for cobra_gene in cobra_model.genes:
@@ -1131,7 +1079,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         gp.setLabel(gid)
 
         _sbase_annotations(gp, cobra_gene.annotation)
-        _sbase_notes_dict(gp, cobra_gene.notes)
+        _set_notes(gp, cobra_gene.notes)
 
     # Objective
     objective = model_fbc.createObjective()  # type: libsbml.Objective
@@ -1151,7 +1099,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         reaction.setFast(False)
         reaction.setReversible((cobra_reaction.lower_bound < 0))
         _sbase_annotations(reaction, cobra_reaction.annotation)
-        _sbase_notes_dict(reaction, cobra_reaction.notes)
+        _set_notes(reaction, cobra_reaction.notes)
 
         # stoichiometry
         for metabolite, stoichiometry in iteritems(cobra_reaction._metabolites):
@@ -1247,7 +1195,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
             group.setName(cobra_group.name)
             group.setKind(cobra_group.kind)
 
-            _sbase_notes_dict(group, cobra_group.notes)
+            _set_notes(group, cobra_group.notes)
             _sbase_annotations(group, cobra_group.annotation)
 
             for cobra_member in cobra_group.members:
@@ -1401,7 +1349,7 @@ def _check(value, message):
 # -----------------------------------------------------------------------------
 # Notes
 # -----------------------------------------------------------------------------
-def _parse_notes_dict(sbase):
+def _parse_notes_info(sbase: libsbml.SBase) -> Notes:
     """ Creates Notes object.
 
     Parameters
@@ -1417,8 +1365,8 @@ def _parse_notes_dict(sbase):
     return cobra_notes
 
 
-def _sbase_notes_dict(sbase, notes):
-    """Set SBase notes based on dictionary.
+def _set_notes(sbase: libsbml.SBase, notes: Notes) -> None:
+    """Set SBase notes based on the COBRA notes object.
 
     Parameters
     ----------
@@ -1438,49 +1386,8 @@ def _sbase_notes_dict(sbase, notes):
 # -----------------------------------------------------------------------------
 # Annotations
 # -----------------------------------------------------------------------------
-"""
-cobra annotations will be dictionaries of the form:
-    object.annotation = {
-        'provider' : [(qualifier, entity), ...]
-    }
-A concrete example for a metabolite would look like the following
-    metabolite.annotation = {
-        'chebi': [(isVersionOf, "CHEBI:17234), (is, "CHEBI:4167),],
-        'kegg.compound': [(is, "C00031")]
-    }
-The providers are hereby MIRIAM registry keys for collections
-https://www.ebi.ac.uk/miriam/main/collections
-The qualifiers are biomodel qualifiers
-https://co.mbine.org/standards/qualifiers
-
-In the current stage the new annotation format is not completely supported yet.
-"""
 
 URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")
-
-URL_IDENTIFIERS_PREFIX = "https://identifiers.org"
-QUALIFIER_TYPES = {
-    "is": libsbml.BQB_IS,
-    "hasPart": libsbml.BQB_HAS_PART,
-    "isPartOf": libsbml.BQB_IS_PART_OF,
-    "isVersionOf": libsbml.BQB_IS_VERSION_OF,
-    "hasVersion": libsbml.BQB_HAS_VERSION,
-    "isHomologTo": libsbml.BQB_IS_HOMOLOG_TO,
-    "isDescribedBy": libsbml.BQB_IS_DESCRIBED_BY,
-    "isEncodedBy": libsbml.BQB_IS_ENCODED_BY,
-    "encodes": libsbml.BQB_ENCODES,
-    "occursIn": libsbml.BQB_OCCURS_IN,
-    "hasProperty": libsbml.BQB_HAS_PROPERTY,
-    "isPropertyOf": libsbml.BQB_IS_PROPERTY_OF,
-    "hasTaxon": libsbml.BQB_HAS_TAXON,
-    "unknown": libsbml.BQB_UNKNOWN,
-    "bqm_is": libsbml.BQM_IS,
-    "bqm_isDescribedBy": libsbml.BQM_IS_DESCRIBED_BY,
-    "bqm_isDerivedFrom": libsbml.BQM_IS_DERIVED_FROM,
-    "bqm_isInstanceOf": libsbml.BQM_IS_INSTANCE_OF,
-    "bqm_hasInstance": libsbml.BQM_HAS_INSTANCE,
-    "bqm_unknown": libsbml.BQM_UNKNOWN,
-}
 
 
 def _parse_annotation_info(uri):
@@ -1500,18 +1407,29 @@ def _parse_annotation_info(uri):
             identifier = "%s:%s" % (provider, identifier)
             provider = provider.lower()
     else:
-        LOGGER.warning("%s does not conform to "
-                       "'http(s)://identifiers.org/collection/id' or"
-                       "'http(s)://identifiers.org/COLLECTION:id", uri)
+        LOGGER.warning(f"{uri} does not conform to "
+                       f"'http(s)://identifiers.org/collection/id' or"
+                       f"'http(s)://identifiers.org/COLLECTION:id")
         return None
 
     return provider, identifier
 
 
-def _parse_annotations(sbase):
+def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
     """Parses cobra annotations from a given SBase object.
 
-    Annotations are dictionaries with the providers as keys.
+    The annotation format has been changed. We no longer have
+    simple dictionaries for storing annotation data. Dedicated
+    classes for storing CVTerm data, History data and key-value
+    pair data corresponding to an SBase object have been made.
+    The metadata classes inside cobra.core directory contains
+    of them. All the existing issues in old annotation format have
+    been solved. The new format annotation is completely backward
+    compatible. It can read models with old annotation format,
+    can convert old format annotation to new format annotation,
+    and writes annotation in new format only (for JSON and other
+    formats). The JSON schema v2 specifies the new format annotation
+    whereas JSON schema v1 have annotation data defined in old format.
 
     Parameters
     ----------
@@ -1520,10 +1438,8 @@ def _parse_annotations(sbase):
 
     Returns
     -------
-    dict (annotation dictionary)
-
-    FIXME: annotation format must be updated (this is a big collection of
-          fixes) - see: https://github.com/opencobra/cobrapy/issues/684)
+    MetaData
+        a metadata object storing COBRA annotation
     """
     annotation = MetaData()
 
@@ -1592,13 +1508,26 @@ def _parse_annotations(sbase):
     return annotation
 
 
-def _set_nested_data(cvterm_obj):
+def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms:
+    """ Parses the nested data corresponding to a given
+    libsbml.CVTerm object
+
+    Parameters
+    ----------
+    cvterm_obj : libsbml.CVTerm
+        The CVTerm object from which nested data is to be parsed
+
+    Returns
+    -------
+    CVTerms
+        the parsed nested data of the given CVTerm object
+    """
     num_nested_cvterms = cvterm_obj.getNumNestedCVTerms()
     cobra_nested_cvterms = CVTerms()
     if num_nested_cvterms == 0:
         return cobra_nested_cvterms
 
-    for index in range(num_nested_cvterms):  # type: libsbml.CVTerm
+    for index in range(num_nested_cvterms):  # type libsbml.CVTerm
         # reading the qualifier
         cvterm = cvterm_obj.getNestedCVTerm(index)
         qualifier_type = cvterm.getQualifierType()
@@ -1622,7 +1551,7 @@ def _set_nested_data(cvterm_obj):
     return cobra_nested_cvterms
 
 
-def _sbase_annotations(sbase, annotation):
+def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
     """Set SBase annotations based on cobra annotations.
 
     Parameters
@@ -1632,8 +1561,6 @@ def _sbase_annotations(sbase, annotation):
     annotation : cobra annotation structure
         cobra object with annotation information
 
-    FIXME: annotation format must be updated
-        (https://github.com/opencobra/cobrapy/issues/684)
     """
     if not annotation or len(annotation) == 0:
         return
@@ -1642,8 +1569,8 @@ def _sbase_annotations(sbase, annotation):
     annotation_data = deepcopy(annotation)
 
     if not isinstance(annotation_data, MetaData):
-        raise TypeError("The annotation object must be "
-                        "of type 'Metadata': {}".format(annotation_data))
+        raise TypeError(f"The annotation object must be "
+                        f"of type 'Metadata': {annotation_data}")
 
     if 'sbo' in annotation and annotation['sbo'] != []:
         sbo_term = annotation["sbo"]
@@ -1673,8 +1600,7 @@ def _sbase_annotations(sbase, annotation):
             elif qualifier_type == libsbml.MODEL_QUALIFIER:
                 cv.setModelQualifierType(Qualifier[qualifier].value-14)
             else:
-                raise CobraSBMLError('Unsupported qualifier: '
-                                     '%s' % qualifier)
+                raise CobraSBMLError(f'Unsupported qualifier: {qualifier}')
             for uri in ex_res.resources:
                 cv.addResource(uri)
 
@@ -1711,7 +1637,17 @@ def _sbase_annotations(sbase, annotation):
                "Setting ModelHistory: {}".format(comp_history))
 
 
-def _add_nested_data(cvterm, nested_data):
+def _add_nested_data(cvterm: libsbml.CVTerm, nested_data: CVTerms):
+    """Sets nested data inside a libsbml.CVTerm object.
+
+    Parameters
+    ----------
+    cvterm : libsbml.CVTerm
+        the cvterm object whose nested data is to be set
+    nested_data : CVTerms
+        the nested data to be set.
+
+    """
     for key, value in nested_data.items():
         qualifier = key
         if qualifier.startswith("bqb"):
@@ -1719,8 +1655,7 @@ def _add_nested_data(cvterm, nested_data):
         elif qualifier.startswith("bqm"):
             qualifier_type = libsbml.MODEL_QUALIFIER
         else:
-            raise CobraSBMLError('Unsupported qualifier: '
-                                 '%s' % qualifier)
+            raise CobraSBMLError(f'Unsupported qualifier: {qualifier}')
 
         for ex_res in value:
             cv = libsbml.CVTerm()  # type: libsbml.CVTerm
@@ -1730,8 +1665,7 @@ def _add_nested_data(cvterm, nested_data):
             elif qualifier_type == libsbml.MODEL_QUALIFIER:
                 cv.setModelQualifierType(Qualifier[qualifier].value-14)
             else:
-                raise CobraSBMLError('Unsupported qualifier: '
-                                     '%s' % qualifier)
+                raise CobraSBMLError(f'Unsupported qualifier: {qualifier}')
             for uri in ex_res.resources:
                 cv.addResource(uri)
 

@@ -23,7 +23,7 @@ from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
-from cobra.core.user_defined_constraints import UserDefinedConstraint
+from cobra.core.udconstraints import UserDefinedConstraint
 from cobra.exceptions import SolverNotFound
 from cobra.medium import find_boundary_types, find_external_compartment, sbo_terms
 from cobra.util.context import HistoryManager, get_context, resettable
@@ -926,9 +926,8 @@ class Model(Object):
         # check whether the element is associated with the model
         return [g for g in self.groups if element in g.members]
 
-    def add_user_defined_constraints(self, constraints):
-        """Adds User defined constraints to the model via
-        fbc-v3.
+    def add_user_defined_constraints(self, constraints: list) -> None:
+        """Adds User defined constraints (FBC V3) to the model
 
         Parameters
         ----------
@@ -939,26 +938,24 @@ class Model(Object):
         if not isinstance(constraints, list):
             # if single UserDefinedConstraints, convert to a list
             if isinstance(constraints, UserDefinedConstraint):
-                warn("The constraints passed must be inside a list: "
-                     "{}".format(constraints))
+                warn(f"The constraints passed must be inside a list: "
+                     f"{constraints}")
                 constraints = [constraints]
             else:
-                raise TypeError("The constraints passed must be inside"
-                                " a list: {}".format(constraints))
+                raise TypeError(f"The constraints passed must be inside "
+                                f"a list: {constraints}")
 
         for constraint in constraints:
             if not isinstance(constraint, UserDefinedConstraint):
-                raise TypeError("The user defined constraints passed must "
-                                "be of type 'UserDefinedConstraints': "
-                                "{}".format(constraint))
+                raise TypeError(f"The user defined constraints passed must be of "
+                                f"type 'UserDefinedConstraints': {constraint}")
 
             if constraint.lower_bound is None or \
                     constraint.upper_bound is None:
-                raise ValueError("Bounds must be set for the constraint: "
-                                 "{}".format(constraint))
+                raise ValueError(f"Bounds must be set for the constraint: {constraint}")
 
             if constraint.id is None or constraint.id == "":
-                constraint.id = "_internal_const_id" + str(len(self._const_ids))
+                constraint.id = "$_internal_const_id" + str(len(self._const_ids))
             self._const_ids.add(constraint.id)
             constraint._model = self
             cons_exp = 0        # an expression involving variables
@@ -972,8 +969,7 @@ class Model(Object):
                 elif item.variable_type == 'quadratic':
                     var_pow = 2
                 else:
-                    raise ValueError("Unexpected variable type set "
-                                     "for item: {}".format(item))
+                    raise ValueError(f"Unexpected variable type set for item: {item}")
 
                 # checks if the reference variable is a rxn flux
                 # or variable
@@ -999,7 +995,7 @@ class Model(Object):
             self.user_defined_const.append(constraint)
             self.add_cons_vars(list_of_var_cons)
 
-    def remove_user_defined_constraints(self, constraints):
+    def remove_user_defined_constraints(self, constraints: list) -> None:
         """Remove the constraints from the model
 
         Parameters
@@ -1010,18 +1006,16 @@ class Model(Object):
         if not isinstance(constraints, list):
             # if single UserDefinedConstraints, convert to a list
             if isinstance(constraints, UserDefinedConstraint):
-                warn("The constraints passed must be inside a list: "
-                     "{}".format(constraints))
+                warn(f"The constraints passed must be inside a list: {constraints}")
                 constraints = [constraints]
             else:
-                raise TypeError("The constraints passed must be inside"
-                                " a list: {}".format(constraints))
+                raise TypeError(f"The constraints passed must be inside "
+                                f"a list: {constraints}")
 
         for constraint in constraints:
             if not isinstance(constraint, UserDefinedConstraint):
-                raise TypeError("The user defined constraints passed must "
-                                "be of type 'UserDefinedConstraints': "
-                                "{}".format(constraint))
+                raise TypeError("The user defined constraints passed must be of "
+                                "type 'UserDefinedConstraints': {constraint}")
             self._const_ids.remove(constraint.id)
             cons_to_remove = self.constraints[constraint.id]
             self.remove_cons_vars(cons_to_remove)

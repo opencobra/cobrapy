@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Some documentation:
 
@@ -41,8 +39,7 @@ from os.path import join
 import pytest
 
 from cobra.core.model import Model
-from cobra.core.user_defined_constraints import (
-    ConstraintComponent, UserDefinedConstraint)
+from cobra.core.udconstraints import ConstraintComponent, UserDefinedConstraint
 from cobra.io import load_json_model, read_sbml_model, save_json_model
 
 
@@ -63,8 +60,9 @@ def test_user_defined_constraints(data_directory):
 
     cons_comp_1 = ConstraintComponent(variable="v1")
     cons_comp_2 = ConstraintComponent(variable="v2")
-    const_1 = UserDefinedConstraint(lower_bound=0, upper_bound=4,
-                                    const_comps=[cons_comp_1, cons_comp_2])
+    const_1 = UserDefinedConstraint(
+        lower_bound=0, upper_bound=4, const_comps=[cons_comp_1, cons_comp_2]
+    )
     cons_model.add_user_defined_constraints([const_1])
     solution2 = cons_model.optimize()
     assert solution2.objective_value == pytest.approx(2.00)
@@ -76,8 +74,9 @@ def test_user_defined_constraints_on_single_flux(data_directory):
     assert solution1.objective_value == pytest.approx(5.0)
 
     cons_comp_1 = ConstraintComponent(variable="v2")
-    const_1 = UserDefinedConstraint(lower_bound=0, upper_bound=3,
-                                    const_comps=[cons_comp_1])
+    const_1 = UserDefinedConstraint(
+        lower_bound=0, upper_bound=3, const_comps=[cons_comp_1]
+    )
     cons_model.add_user_defined_constraints([const_1])
     solution2 = cons_model.optimize()
     assert solution2.objective_value == pytest.approx(3.00)
@@ -87,8 +86,7 @@ def test_user_defined_constraints_on_single_variable():
     # an empty model
     model = Model("model_abc")
     cc1 = ConstraintComponent(variable="new_var")
-    c1 = UserDefinedConstraint(id="c1", lower_bound=0, upper_bound=2,
-                               const_comps=[cc1])
+    c1 = UserDefinedConstraint(id="c1", lower_bound=0, upper_bound=2, const_comps=[cc1])
     model.add_user_defined_constraints([c1])
 
     model.objective = model.variables.new_var
@@ -99,30 +97,30 @@ def test_user_defined_constraints_on_single_variable():
 def test_ast_tree():
     # an expression containing variable in different possible styles
     expr = "-(2/8+ 1)*a+(4/2+5%2) * b * b- (5 * c * c + (-d+e*e))"
-    constraint = UserDefinedConstraint.constraint_from_expression(expression=expr,
-                                                                  lower_bound=0,
-                                                                  upper_bound=20)
+    constraint = UserDefinedConstraint.constraint_from_expression(
+        expression=expr, lower_bound=0, upper_bound=20
+    )
     assert len(constraint.constraint_comps) == 5
 
     assert constraint.constraint_comps[0].coefficient == pytest.approx(-1.25)
-    assert constraint.constraint_comps[0].variable == 'a'
-    assert constraint.constraint_comps[0].variable_type == 'linear'
+    assert constraint.constraint_comps[0].variable == "a"
+    assert constraint.constraint_comps[0].variable_type == "linear"
 
     assert constraint.constraint_comps[1].coefficient == pytest.approx(3.00)
-    assert constraint.constraint_comps[1].variable == 'b'
-    assert constraint.constraint_comps[1].variable_type == 'quadratic'
+    assert constraint.constraint_comps[1].variable == "b"
+    assert constraint.constraint_comps[1].variable_type == "quadratic"
 
     assert constraint.constraint_comps[2].coefficient == -5
-    assert constraint.constraint_comps[2].variable == 'c'
-    assert constraint.constraint_comps[2].variable_type == 'quadratic'
+    assert constraint.constraint_comps[2].variable == "c"
+    assert constraint.constraint_comps[2].variable_type == "quadratic"
 
     assert constraint.constraint_comps[3].coefficient == 1
-    assert constraint.constraint_comps[3].variable == 'd'
-    assert constraint.constraint_comps[3].variable_type == 'linear'
+    assert constraint.constraint_comps[3].variable == "d"
+    assert constraint.constraint_comps[3].variable_type == "linear"
 
     assert constraint.constraint_comps[4].coefficient == -1
-    assert constraint.constraint_comps[4].variable == 'e'
-    assert constraint.constraint_comps[4].variable_type == 'quadratic'
+    assert constraint.constraint_comps[4].variable == "e"
+    assert constraint.constraint_comps[4].variable_type == "quadratic"
 
 
 def test_helper_function(data_directory):
@@ -130,9 +128,9 @@ def test_helper_function(data_directory):
     solution1 = cons_model.optimize()
     assert solution1.objective_value == pytest.approx(5.0)
 
-    const = UserDefinedConstraint.constraint_from_expression(expression='3/3*v1 + v2',
-                                                             lower_bound=0,
-                                                             upper_bound=4)
+    const = UserDefinedConstraint.constraint_from_expression(
+        expression="3/3*v1 + v2", lower_bound=0, upper_bound=4
+    )
     cons_model.add_user_defined_constraints([const])
     solution2 = cons_model.optimize()
     assert solution2.objective_value == pytest.approx(2.00)
@@ -142,8 +140,9 @@ def test_json_reading_writing(model, tmp_path):
     cc1 = ConstraintComponent(id="cc1", variable="FBA")
     cc2 = ConstraintComponent(variable="NH4t", coefficient=-1)
     cc3 = ConstraintComponent(id="cc3", variable="difference", coefficient=-1)
-    c1 = UserDefinedConstraint(id="c1", lower_bound=0,
-                               upper_bound=0, const_comps=[cc1, cc2, cc3])
+    c1 = UserDefinedConstraint(
+        id="c1", lower_bound=0, upper_bound=0, const_comps=[cc1, cc2, cc3]
+    )
 
     cc4 = ConstraintComponent(variable="FBA")
     cc5 = ConstraintComponent(variable="NH4t")
@@ -171,8 +170,8 @@ def test_user_defined_constraints_documented(model):
     c1 = UserDefinedConstraint(lower_bound=0, upper_bound=0, const_comps=[cc1, cc2])
     model.add_user_defined_constraints([c1])
     solution2 = model.optimize()
-    assert solution2.fluxes['FBA'] == pytest.approx(4.66274, 0.0001)
-    assert solution2.fluxes['NH4t'] == pytest.approx(4.66274, 0.0001)
+    assert solution2.fluxes["FBA"] == pytest.approx(4.66274, 0.0001)
+    assert solution2.fluxes["NH4t"] == pytest.approx(4.66274, 0.0001)
     assert solution2.objective_value == pytest.approx(0.85511, 0.0001)
 
 
@@ -184,9 +183,9 @@ def test_user_defined_constraints_with_variable_documented(data_directory):
     cc1 = ConstraintComponent(variable="EX_glc__D_e")
     cc2 = ConstraintComponent(variable="EX_nh4_e", coefficient=-1)
     cc3 = ConstraintComponent(variable="difference", coefficient=-1)
-    c1 = UserDefinedConstraint(lower_bound=0,
-                               upper_bound=0,
-                               const_comps=[cc1, cc2, cc3])
+    c1 = UserDefinedConstraint(
+        lower_bound=0, upper_bound=0, const_comps=[cc1, cc2, cc3]
+    )
     model.add_user_defined_constraints([c1])
     solution2 = model.optimize()
     assert solution2.objective_value == pytest.approx(0.87392, 0.0001)

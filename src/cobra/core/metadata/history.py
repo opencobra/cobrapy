@@ -1,13 +1,9 @@
-# -*- coding: utf-8 -*-
-
 from datetime import datetime
-import time
-from typing import List, Union, Iterable
+from typing import Dict, Iterable, List, Union
 
 
-class HistoryDateTime(object):
-    """
-    Class representation of DateTimes allowed inside model history.
+class HistoryDateTime:
+    """ Class representation of DateTimes allowed inside model history.
     This class make sure that dates passed must be of the form:
     %Y-%m-%dT%H:%M:%S%z
 
@@ -22,82 +18,49 @@ class HistoryDateTime(object):
         self.datetime = datetime_obj
 
     @property
-    def datetime(self):
+    def datetime(self) -> str:
         return self._datetime
 
     @datetime.setter
-    def datetime(self, value):
-        """
-        Before setting the date, it first checks if date
-        is in valid format or not.
-        """
+    def datetime(self, value: str) -> None:
+        """ Before setting the date, checks if date is in valid format or not. """
         if value is None:
             self._datetime = None
         elif isinstance(value, str):
             self.validate_date(value)
             self._datetime = value
         elif isinstance(value, datetime):
-            self._datetime = value.strftime("%Y-%m-%dT%H:%M:%S%z") \
-                             + self.get_utc_offset_str()
+            self._datetime = value.strftime("%Y-%m-%dT%H:%M:%S%z")
         else:
-            raise TypeError("Invalid type passed for datetime. "
-                            "Accepted types are 'str' or "
-                            "'datetime' objects: {}") # FIXME: something missing
+            raise TypeError(
+                f"Invalid type passed for datetime. "
+                f"Accepted types are 'str' or "
+                f"'datetime' objects: {value}"
+            )
 
-    def set_current_datetime(self):
+    def set_current_datetime(self) -> None:
         current_datetime = datetime.utcnow()
         self._datetime = current_datetime.strftime("%Y-%m-%dT%H:%M:%S%z")
 
-    # FIXME: remove
-    # def get_utc_offset_str(self):
-    #     """
-    #     Returns a UTC offset string of the current time suitable
-    #     for use in the most widely used timestamps (i.e. ISO 8601,
-    #     RFC 3339). For example: 10 hours ahead, 5 hours behind,
-    #     and time is UTC: +10:00, -05:00, +00:00
-    #     """
-    #     # Calculate the UTC time difference in seconds.
-    #     timestamp = time.time()
-    #     time_now = datetime.fromtimestamp(timestamp)
-    #     time_utc = datetime.utcfromtimestamp(timestamp)
-    #     utc_offset_secs = (time_now - time_utc).total_seconds()
-    #     # Flag variable to hold if the current time is behind UTC.
-    #     is_behind_utc = False
-    #     # If the current time is behind UTC convert the offset
-    #     # seconds to a positive value and set the flag variable.
-    #     if utc_offset_secs < 0:
-    #         is_behind_utc = True
-    #         utc_offset_secs *= -1
-    #     # Build a UTC offset string suitable for use in a timestamp.
-    #     if is_behind_utc:
-    #         pos_neg_prefix = "-"
-    #     else:
-    #         pos_neg_prefix = "+"
-    #     utc_offset = time.gmtime(utc_offset_secs)
-    #     utc_offset_fmt = time.strftime("%H:%M", utc_offset)
-    #     utc_offset_str = pos_neg_prefix + utc_offset_fmt
-    #     return utc_offset_str
-
     @staticmethod
-    def validate_date(date_text):
+    def validate_date(date_text: str) -> bool:
         """Validate if the date format is of type w3cdtf ISO 8601"""
         if not isinstance(date_text, str):
-            raise TypeError("The date passed must be of "
-                            "type string: {}".format(date_text))
+            raise TypeError(f"The date passed must be of " f"type string: {date_text}")
 
         try:
-            datetime.strptime(date_text, '%Y-%m-%dT%H:%M:%S%z')
+            datetime.strptime(date_text, "%Y-%m-%dT%H:%M:%S%z")
         except ValueError as e:
             raise ValueError(str(e))
         return True
 
-    def __eq__(self, historydatetime_obj):
+    def __eq__(self, historydatetime_obj: "HistoryDateTime") -> bool:
         return self.datetime == historydatetime_obj.datetime
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.datetime)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
 
@@ -127,50 +90,51 @@ class History:
 
     """
 
-    def __init__(self, creators: List = None,
-                 created_date: HistoryDateTime = None,
-                 modified_dates: List = None):
+    def __init__(
+        self,
+        creators: List = None,
+        created_date: HistoryDateTime = None,
+        modified_dates: List = None,
+    ):
+        self._modified_dates = []
 
         self.creators = creators
         self.created_date = created_date
         self.modified_dates = modified_dates
 
     @staticmethod
-    def parse_history(data) -> 'History':
+    def parse_history(data: Union[Dict, "History"]) -> "History":
         if data is None:
             return History()
         elif isinstance(data, History):
             return data
         elif isinstance(data, dict):
-            for key in ["creators", "created_date",
-                        "modified_dates"]:
+            for key in ["creators", "created_date", "modified_dates"]:
                 if key not in data:
                     data[key] = None
             return History(**data)
         else:
-            raise TypeError("Invalid format for "
-                            "History: '{}'".format(data))
+            raise TypeError(f"Invalid format for History: '{data}'")
 
     @property
-    def creators(self):
+    def creators(self) -> List:
         return self._creators
 
     @creators.setter
-    def creators(self, value: List):
+    def creators(self, value: List) -> None:
         if value is None:
             value = []
         if not isinstance(value, list):
-            raise TypeError("'creators' must be a list "
-                            "{}".format(value))
+            raise TypeError(f"'creators' must be a list type: {value}")
         else:
             self._creators = value
 
     @property
-    def created_date(self):
+    def created_date(self) -> "HistoryDateTime":
         return self._created_date
 
     @created_date.setter
-    def created_date(self, value: Union[str, HistoryDateTime]):
+    def created_date(self, value: Union[str, HistoryDateTime]) -> None:
         if value is None:
             self._created_date = None
         elif isinstance(value, str):
@@ -178,21 +142,19 @@ class History:
         elif isinstance(value, HistoryDateTime):
             self._created_date = value
         else:
-            raise TypeError(f"'created_date' must be of type "
-                            f"DateTime: {value}")
+            raise TypeError(f"'created_date' must be of type DateTime: {value}")
 
     @property
-    def modified_dates(self):
+    def modified_dates(self) -> List:
         return self._modified_dates
 
     @modified_dates.setter
-    def modified_dates(self, value: Iterable):
+    def modified_dates(self, value: Iterable) -> None:
         if value is None:
             value = []
 
         if not isinstance(value, Iterable):
-            raise TypeError(f"'modified_dates' must be "
-                            f" a Iterable: {value}")
+            raise TypeError(f"'modified_dates' must be an Iterable: {value}")
 
         for date in value:
             if isinstance(date, str):
@@ -200,17 +162,17 @@ class History:
             elif isinstance(date, HistoryDateTime):
                 self._modified_dates.append(date)
             else:
-                raise TypeError("'modified_date' must be of type"
-                                " DateTime: {}".format(date))
+                raise TypeError(f"'modified_date' must be of type DateTime: {date}")
 
     def is_set_history(self) -> bool:
         """Checks if history is set.
         Returns true if at least one attribute is set.
         """
-        return self.creators or self.created_date or \
-               self.modified_dates
+        return len(self.creators) == 0 and \
+            self.created_date is not None and \
+            len(self.modified_dates) != 0
 
-    def __eq__(self, history_obj: 'History'):
+    def __eq__(self, history_obj: "History") -> bool:
         """ Checking equality of two history objects. """
         # check creators
         if len(self.creators) != len(history_obj.creators):
@@ -232,14 +194,18 @@ class History:
 
         return True
 
-    def __str__(self):
-        return str({
-            "creators": self.creators,
-            "created_date": self.created_date.datetime,
-            "modified_dates": [modified_date.datetime for modified_date
-                               in self.modified_dates]})
+    def __str__(self) -> str:
+        return str(
+            {
+                "creators": self.creators,
+                "created_date": self.created_date.datetime,
+                "modified_dates": [
+                    modified_date.datetime for modified_date in self.modified_dates
+                ],
+            }
+        )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
 
@@ -259,8 +225,14 @@ class Creator:
         email : str,
         organization_name : str
     """
-    def __init__(self, first_name: str = None, last_name: str = None,
-                 email: str = None, organization_name: str = None):
+
+    def __init__(
+        self,
+        first_name: str = None,
+        last_name: str = None,
+        email: str = None,
+        organization_name: str = None,
+    ):
 
         self.first_name = first_name
         self.last_name = last_name
@@ -268,7 +240,7 @@ class Creator:
         self.organization_name = organization_name
 
     @staticmethod
-    def parse_creator(data) -> 'Creator':
+    def parse_creator(data: Union[Dict, "Creator"]) -> "Creator":
         if data is None:
             return Creator()
         elif isinstance(data, dict):
@@ -276,27 +248,31 @@ class Creator:
         elif isinstance(data, Creator):
             return data
         else:
-            raise TypeError("Invalid format for Creator: {}".format(data))
+            raise TypeError(f"Invalid format for Creator: {data}")
 
-    def __eq__(self, creator_obj):
+    def __eq__(self, creator_obj: "Creator") -> bool:
         """ Compare data of two Creator object. If anything
         if found unequal, return False, else return True.
         """
-        if not self.first_name == creator_obj.first_name or \
-           not self.last_name == creator_obj.last_name or \
-           not self.email == creator_obj.email or \
-           not self.organization_name == creator_obj.organization_name:
+        if (
+            not self.first_name == creator_obj.first_name
+            or not self.last_name == creator_obj.last_name
+            or not self.email == creator_obj.email
+            or not self.organization_name == creator_obj.organization_name
+        ):
             return False
         else:
             return True
 
-    def __str__(self):
-        return str({
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "email": self.email,
-            "organization_name": self.organization_name}
+    def __str__(self) -> str:
+        return str(
+            {
+                "first_name": self.first_name,
+                "last_name": self.last_name,
+                "email": self.email,
+                "organization_name": self.organization_name,
+            }
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()

@@ -1,5 +1,7 @@
 import collections
 import re
+from typing import Iterator
+from warnings import warn
 
 
 class Notes(collections.MutableMapping):
@@ -57,58 +59,63 @@ class Notes(collections.MutableMapping):
         The string corresponding to the notes (xhtml) data
 
     """
+
     def __init__(self, notes_xhtml: str = None):
         self._notes_xhtml = None
         self._data = {}
         self.notes_xhtml = notes_xhtml
 
-    # pattern checking for <p> tags
+    # pattern checking for "<p> key : value </p>" type string
     pattern_notes = re.compile(
         r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<content>.*?)</(?P=prefix)p>",
-        re.IGNORECASE | re.DOTALL
+        re.IGNORECASE | re.DOTALL,
     )
 
-    def update_notes_dict(self):
-        """
-        Updates notes dictionary according to key-value stored
+    def update_notes_dict(self) -> None:
+        """ Updates notes dictionary according to key-value stored
         in notes string.
         """
         if self._notes_xhtml and len(self._notes_xhtml) > 0:
             for match in self.pattern_notes.finditer(self._notes_xhtml):
                 try:
-                    # Python 2.7 does not allow keywords for split.
-                    # Python 3 can have (":", maxsplit=1)
                     key, value = match.group("content").split(":", 1)
                 except ValueError:
                     continue
                 self._data[key.strip()] = value.strip()
 
-    def update_notes_str(self, key, value):
-        """
-        Updates the notes string according to key-value pairs
+    def update_notes_str(self, key: str, value: str) -> None:
+        """ Updates the notes string according to key-value pairs
         passed. If any such 'key' is present inside notes string
         having format '<p> key : oldvalue </p>', then it will be
         updated to store the new value. But if that 'key' is not
         present, an ValueError will be thrown.
         """
+        # if key is not of string type
+        if not isinstance(key, str):
+            raise TypeError(f"'key' passed must be of type string: {key}")
+
         # if notes string is empty
         if self._notes_xhtml is None:
-            raise ValueError("Notes string is not a right place "
-                             "to store key value pairs. Store them "
-                             "at appropriate place in the document.")
+            raise ValueError(
+                f"Notes string is not a right place "
+                f"to store key value pairs. Store them "
+                f"at appropriate place in the document."
+            )
 
         # if value passed is not of type 'str'
         if not isinstance(value, str):
-            print("WARNING : The value must be of type string. \n"
-                  "Converting value to 'string' type and "
-                  "then putting in notes string....")
+            warn(
+                f"The value must be of type string. \n"
+                f"Converting value to 'string' type and "
+                f"then putting in notes string...."
+            )
             value = str(value)
 
         # pattern to search for inside notes string.
         pattern = re.compile(
             r"<(?P<prefix>(\w+:)?)p[^>]*>(\s*){}(\s*):(\s*)"
             r"(?P<content>.*?)(\s*)</(?P=prefix)p>".format(key),
-            re.IGNORECASE | re.DOTALL
+            re.IGNORECASE | re.DOTALL,
         )
         match = re.search(pattern, self._notes_xhtml)
 
@@ -116,28 +123,26 @@ class Notes(collections.MutableMapping):
         # already present inside notes string
         if match is None:
             del self._data[key]
-            raise ValueError("Notes string is not a right place "
-                             "to store key value pairs. Store them "
-                             "at appropriate place in the document.")
+            raise ValueError(
+                f"Notes string is not a right place "
+                f"to store key value pairs. Store them "
+                f"at appropriate place in the document."
+            )
         # otherwise update the content
         else:
-            start = match.start('content')
-            end = match.end('content')
-            modified_str = self._notes_xhtml[:start] + \
-                value + self._notes_xhtml[end:]
+            start = match.start("content")
+            end = match.end("content")
+            modified_str = self._notes_xhtml[:start] + value + self._notes_xhtml[end:]
             self._notes_xhtml = modified_str
 
     @property
-    def notes_xhtml(self):
-        """ Return the html content of notes in the form
-        of a string.
-        """
+    def notes_xhtml(self) -> str:
+        """ Return the html content of notes in the form of a string. """
         return self._notes_xhtml
 
     @notes_xhtml.setter
-    def notes_xhtml(self, value):
-        """ Set the notes_xhtml string
-        """
+    def notes_xhtml(self, value: str) -> None:
+        """ Set the notes_xhtml string """
         if value is None:
             self._notes_xhtml = value
             self._data = {}
@@ -146,37 +151,38 @@ class Notes(collections.MutableMapping):
             self._data = {}
             self.update_notes_dict()
         else:
-            raise TypeError("notes data must be of type "
-                            "string: {}".format(value))
+            raise TypeError(f"notes data must be of type string: {value}")
 
-    def __eq__(self, other):
+    def __eq__(self, other: "Notes") -> bool:
         if not isinstance(other, Notes):
             return False
         return self.notes_xhtml == other.notes_xhtml
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> str:
         return self._data[key]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: str) -> None:
         if key not in self._data:
-            raise ValueError("Notes string is not a right place "
-                             "to store key value pairs. Store them "
-                             "at appropriate place in the document.")
+            raise ValueError(
+                f"Notes string is not a right place "
+                f"to store key value pairs. Store them "
+                f"at appropriate place in the document."
+            )
         else:
             self._data[key] = value
             self.update_notes_str(key, value)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         del self._data[key]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator:
         return iter(self._data)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._data)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.notes_xhtml
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.notes_xhtml

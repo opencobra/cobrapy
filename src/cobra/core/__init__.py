@@ -14,5 +14,5 @@ from cobra.core.reaction import Reaction
 from cobra.core.solution import LegacySolution, Solution, get_solution
 from cobra.core.species import Species
 from cobra.core.summary import MetaboliteSummary, ReactionSummary, Summary
-from cobra.core.user_defined_constraints import (
+from cobra.core.udconstraints import (
     ConstraintComponent, UserDefinedConstraint)
