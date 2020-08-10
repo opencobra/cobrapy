@@ -1,4 +1,4 @@
-"""Test functions of array.py"""
+"""Test functions of array.py."""
 
 import numpy as np
 import pytest
@@ -7,11 +7,12 @@ from cobra.util import create_stoichiometric_matrix
 
 
 def test_dense_matrix(model):
+    """Test dense stoichiometric matrix creation."""
     S = create_stoichiometric_matrix(model, array_type="dense", dtype=int)
     assert S.dtype == int
     assert np.allclose(S.max(), [59])
 
-    S_df = create_stoichiometric_matrix(model, array_type="DataFrame", dtype=int)
+    S_df = create_stoichiometric_matrix(model, array_type="frame", dtype=int)
     assert S_df.values.dtype == int
     assert np.all(S_df.columns == [r.id for r in model.reactions])
     assert np.all(S_df.index == [m.id for m in model.metabolites])
@@ -24,7 +25,8 @@ def test_dense_matrix(model):
 
 
 def test_sparse_matrix(model):
-    scipy = pytest.importorskip("scipy")
+    """Test sparse stoichiometric matrix creation."""
+    _ = pytest.importorskip("scipy")
     sparse_types = ["dok", "lil"]
 
     solution = model.optimize()
