@@ -26,7 +26,7 @@ def test_dense_matrix(model):
 
 def test_sparse_matrix(model):
     """Test sparse stoichiometric matrix creation."""
-    _ = pytest.importorskip("scipy")
+    pytest.importorskip("scipy")
     sparse_types = ["dok", "lil"]
 
     solution = model.optimize()
