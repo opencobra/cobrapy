@@ -8,7 +8,7 @@ import pandas as pd
 
 # Used to avoid cyclic reference and enable third-party static type checkers to work
 if TYPE_CHECKING:
-    import cobra
+    from cobra import Model
 
 
 try:
@@ -18,7 +18,7 @@ except ImportError:
 
 
 def create_stoichiometric_matrix(
-    model: "cobra.core.Model", array_type: str = "dense", dtype: Optional[Any] = None
+    model: "Model", array_type: str = "dense", dtype: Optional[np.dtype] = None
 ) -> Union[np.ndarray, dok_matrix, lil_matrix, pd.DataFrame]:
     """Return a stoichiometric array representation of the given model.
 
@@ -36,8 +36,8 @@ def create_stoichiometric_matrix(
         scipy of the corresponding type. "frame" will give a
         pandas.DataFrame with metabolite as indices and reaction as
         columns.
-    dtype : data-type, optional
-        The desired data type for the array (default numpy.float64).
+    dtype : numpy.dtype, optional
+        The desired numpy data type for the array (default numpy.float64).
 
     Returns
     -------
