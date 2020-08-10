@@ -44,6 +44,11 @@ def create_stoichiometric_matrix(
     matrix of class `dtype`
         The stoichiometric matrix for the given model.
 
+    Raises
+    ------
+    ValueError
+        If sparse matrix is used and scipy is not installed.
+
     """
     if array_type not in ("frame", "dense") and not dok_matrix:
         raise ValueError("Sparse matrices require scipy.")
@@ -119,7 +124,7 @@ def nullspace(A: np.ndarray, atol: float = 1E-13, rtol: float = 0.0) -> np.ndarr
 
     """
     A = np.atleast_2d(A)
-    u, s, vh = np.linalg.svd(A)
+    _, s, vh = np.linalg.svd(A)
     tol = max(atol, rtol * s[0])
     nnz = (s >= tol).sum()
     ns = vh[nnz:].conj().T
