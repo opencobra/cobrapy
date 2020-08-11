@@ -30,10 +30,10 @@ def create_stoichiometric_matrix(
     ----------
     model : cobra.Model
         The cobra model to construct the matrix for.
-    array_type : {"dense", "dok", "lil", "frame"}
+    array_type : {"dense", "dok", "lil", "DataFrame"}
         The type of array to construct. "dense" will return a standard
         numpy.ndarray. "dok", or "lil" will construct a sparse array using
-        scipy of the corresponding type. "frame" will give a
+        scipy of the corresponding type. "DataFrame" will give a
         pandas.DataFrame with metabolite as indices and reaction as
         columns.
     dtype : numpy.dtype, optional
@@ -49,8 +49,12 @@ def create_stoichiometric_matrix(
     ValueError
         If sparse matrix is used and scipy is not installed.
 
+    .. deprecated:: 0.18.1
+              "DataFrame" option for `array_type` will be replaced with
+              "frame" in future versions.
+
     """
-    if array_type not in ("frame", "dense") and not dok_matrix:
+    if array_type not in ("DataFrame", "dense") and not dok_matrix:
         raise ValueError("Sparse matrices require scipy.")
 
     if dtype is None:
@@ -60,7 +64,7 @@ def create_stoichiometric_matrix(
         "dense": np.zeros,
         "dok": dok_matrix,
         "lil": lil_matrix,
-        "frame": np.zeros,
+        "DataFrame": np.zeros,
     }
 
     n_metabolites = len(model.metabolites)
@@ -74,7 +78,7 @@ def create_stoichiometric_matrix(
         for metabolite, stoich in reaction.metabolites.items():
             array[m_ind(metabolite), r_ind(reaction)] = stoich
 
-    if array_type == "frame":
+    if array_type == "DataFrame":
         metabolite_ids = [met.id for met in model.metabolites]
         reaction_ids = [rxn.id for rxn in model.reactions]
         return pd.DataFrame(array, index=metabolite_ids, columns=reaction_ids)
@@ -147,10 +151,10 @@ def constraint_matrices(
     ----------
     model : cobra.Model
         The model from which to obtain the LP problem.
-    array_type : {"dense", "dok", "lil", "frame"}
+    array_type : {"dense", "dok", "lil", "DataFrame"}
         The type of array to construct. "dense" will return a standard
         numpy.ndarray. "dok", or "lil" will construct a sparse array using
-        scipy of the corresponding type. "frame" will give a
+        scipy of the corresponding type. "DataFrame" will give a
         pandas.DataFrame with metabolite as indices and reaction as
         columns.
     zero_tol : float, optional
@@ -182,16 +186,19 @@ def constraint_matrices(
     To accomodate non-zero equalities, the problem will add the variable
     "const_one" which is a variable that equals one.
 
+    .. deprecated:: 0.18.1
+              "DataFrame" option for `array_type` will be replaced with
+              "frame" in future versions.
 
     """
-    if array_type not in ("frame", "dense") and not dok_matrix:
+    if array_type not in ("DataFrame", "dense") and not dok_matrix:
         raise ValueError("Sparse matrices require scipy.")
 
     array_builder = {
         "dense": np.array,
         "dok": dok_matrix,
         "lil": lil_matrix,
-        "frame": pd.DataFrame,
+        "DataFrame": pd.DataFrame,
     }[array_type]
 
     Problem = NamedTuple(

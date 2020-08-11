@@ -12,7 +12,7 @@ def test_dense_matrix(model):
     assert S.dtype == int
     assert np.allclose(S.max(), [59])
 
-    S_df = create_stoichiometric_matrix(model, array_type="frame", dtype=int)
+    S_df = create_stoichiometric_matrix(model, array_type="DataFrame", dtype=int)
     assert S_df.values.dtype == int
     assert np.all(S_df.columns == [r.id for r in model.reactions])
     assert np.all(S_df.index == [m.id for m in model.metabolites])
