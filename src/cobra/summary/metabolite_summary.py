@@ -25,8 +25,6 @@ class MetaboliteSummary(Summary):
 
     Attributes
     ----------
-    flux : pandas.DataFrame
-        The raw flux data frame.
     producing_flux : pandas.DataFrame
         A table of only the producing fluxes.
     producing_flux : pandas.DataFrame

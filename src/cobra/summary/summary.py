@@ -19,11 +19,6 @@ class Summary(ABC):
     """
     Define the abstract base summary.
 
-    Attributes
-    ----------
-    flux: pandas.DataFrame
-        The raw flux data frame.
-
     See Also
     --------
     MetaboliteSummary
