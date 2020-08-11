@@ -1,4 +1,4 @@
-"""Helper functions for array operations."""
+"""Helper functions for array operations and sampling."""
 
 from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Union
 
@@ -87,7 +87,7 @@ def create_stoichiometric_matrix(
         return array
 
 
-def nullspace(A: np.ndarray, atol: float = 1E-13, rtol: float = 0.0) -> np.ndarray:
+def nullspace(A: np.ndarray, atol: float = 1e-13, rtol: float = 0.0) -> np.ndarray:
     r"""Compute an approximate basis for the nullspace of A.
 
     The algorithm used by this function is based on the Singular Value
@@ -100,7 +100,7 @@ def nullspace(A: np.ndarray, atol: float = 1E-13, rtol: float = 0.0) -> np.ndarr
         as a 2-D with shape (1, k).
     atol : float, optional
         The absolute tolerance for a zero singular value. Singular values
-        smaller than `atol` are considered to be zero (default 1E-13).
+        smaller than `atol` are considered to be zero (default 1e-13).
     rtol : float, optional
         The relative tolerance. Singular values less than `rtol * smax` are
         considered to be zero, where `smax` is the largest singular value
@@ -136,10 +136,9 @@ def nullspace(A: np.ndarray, atol: float = 1E-13, rtol: float = 0.0) -> np.ndarr
 
 
 def constraint_matrices(
-    model: "cobra.core.Model",
+    model: "Model",
     array_type: str = "dense",
-    include_vars: bool = False,
-    zero_tol: float = 1E-6,
+    zero_tol: float = 1e-6,
 ) -> NamedTuple:
     """Create a matrix representation of the problem.
 
@@ -159,7 +158,7 @@ def constraint_matrices(
         columns.
     zero_tol : float, optional
         The zero tolerance used to judge whether two bounds are the same
-        (default 1E-6).
+        (default 1e-6).
 
     Returns
     -------
