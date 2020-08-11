@@ -22,9 +22,6 @@ class ReactionSummary(Summary):
     """
     Define the reaction summary.
 
-    Attributes
-    ----------
-
     See Also
     --------
     Summary : Parent that defines further attributes.
