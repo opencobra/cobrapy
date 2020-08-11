@@ -5,9 +5,6 @@ import logging
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional, Union
 
-from cobra.flux_analysis import pfba
-from cobra.flux_analysis.helpers import normalize_cutoff
-
 
 if TYPE_CHECKING:
     from pandas import DataFrame
@@ -59,16 +56,19 @@ class Summary(ABC):
 
         """
         super().__init__(**kwargs)
-        self._model = model
-        self._solution = solution
-        self._threshold = normalize_cutoff(self._model, threshold)
-        self._fva = fva
+        self._flux = None
 
-    def _generate(self) -> None:
+    @abstractmethod
+    def _generate(
+        self,
+        model: "Model",
+        solution: Optional["Solution"] = None,
+        fva: Optional[Union[float, "DataFrame"]] = None,
+    ) -> None:
         """Generate the summary for the COBRA object."""
-        if self._solution is None:
-            logger.info("Generating new parsimonious flux distribution.")
-            self._solution = pfba(self._model)
+        raise NotImplementedError(
+            "This method needs to be implemented by the subclass."
+        )
 
     def __str__(self) -> str:
         """Return a string representation of the summary."""
@@ -109,6 +109,10 @@ class Summary(ABC):
         raise NotImplementedError(
             "This method needs to be implemented by the subclass."
         )
+
+    def to_frame(self) -> DataFrame:
+        """Return the internal data frame describing the summary."""
+        return self._flux.copy()
 
     def _process_flux_dataframe(self, flux_dataframe):
         """Process a flux DataFrame for convenient downstream analysis.
@@ -192,11 +196,3 @@ class Summary(ABC):
             )
 
         return flux_dataframe
-
-    # def __str__(self):
-    #     return self._display().to_string(
-    #         header=True, index=True, na_rep="", formatters=self._styles()
-    #     )
-
-    # def _repr_html_(self):
-    #     self._display().style.format(self._styles())

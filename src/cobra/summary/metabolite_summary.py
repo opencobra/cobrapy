@@ -1,15 +1,23 @@
-# -*- coding: utf-8 -*-
+"""Provide the metabolite summary class."""
 
-"""Define the MetaboliteSummary class."""
 
-from __future__ import absolute_import, division
-
+import logging
 from operator import attrgetter
+from textwrap import shorten
+from typing import TYPE_CHECKING, List, Optional, Union
 
 from pandas import DataFrame
 
-from cobra.flux_analysis.variability import flux_variability_analysis
+from cobra.flux_analysis import flux_variability_analysis, pfba
+from cobra.flux_analysis.helpers import normalize_cutoff
 from cobra.summary import Summary
+
+
+if TYPE_CHECKING:
+    from cobra.core import Metabolite, Model, Reaction, Solution
+
+
+logger = logging.getLogger(__name__)
 
 
 class MetaboliteSummary(Summary):
@@ -29,7 +37,15 @@ class MetaboliteSummary(Summary):
 
     """
 
-    def __init__(self, metabolite, model, **kwargs):
+    def __init__(
+        self,
+        *,
+        metabolite: "Metabolite",
+        model: "Model",
+        solution: Optional["Solution"] = None,
+        fva: Optional[Union[float, "DataFrame"]] = None,
+        **kwargs,
+    ):
         """
         Initialize a metabolite summary.
 
@@ -53,75 +69,209 @@ class MetaboliteSummary(Summary):
 
         """
         super(MetaboliteSummary, self).__init__(model=model, **kwargs)
-        self.metabolite = metabolite
-        self._generate()
-
-    def _display(self):
-        output = self.data_frame.copy()
-        if self.names:
-            output["name"] = [
-                self.model.reactions.get_by_id(r).name for r in output.index
-            ]
-        output["definition"] = [
-            self.model.reactions.get_by_id(r).build_reaction_string(self.names)
-            for r in output.index
+        self._metabolite = metabolite.copy()
+        self._reactions: List["Reaction"] = [
+            r.copy() for r in sorted(metabolite.reactions, key=attrgetter("id"))
         ]
-        return output
+        self.producing_fluxes: Optional[DataFrame] = None
+        self.consuming_fluxes: Optional[DataFrame] = None
+        self._generate(model, solution, fva)
 
-    def _generate(self):
-        """
-        Returns
-        -------
-        flux_summary: pandas.DataFrame
-            The DataFrame of flux summary data.
+    def _generate(
+        self,
+        model: "Model",
+        solution: Optional["Solution"] = None,
+        fva: Optional[Union[float, "DataFrame"]] = None,
+    ):
+        """"""
+        if solution is None:
+            logger.info("Generating new parsimonious flux distribution.")
+            solution = pfba(model)
 
-        """
-        rxns = sorted(self.metabolite.reactions, key=attrgetter("id"))
-        data = [
-            (
-                r.id,
-                self.solution[r.id] * r.metabolites[self.metabolite],
-                r.metabolites[self.metabolite],
+        if isinstance(fva, float):
+            logger.info("Performing flux variability analysis.")
+            fva = flux_variability_analysis(
+                model=model,
+                reaction_list=[r.id for r in self._reactions],
+                fraction_of_optimum=fva,
             )
-            for r in rxns
-        ]
-        flux_summary = DataFrame(data=data, columns=["reaction", "flux", "factor"])
 
-        if self.fva is not None:
-            if not isinstance(self.fva, DataFrame):
-                self.fva = flux_variability_analysis(
-                    self.model, reaction_list=rxns, fraction_of_optimum=self.fva
-                )
+        # Create the basic flux table.
+        flux = DataFrame(
+            data=[
+                (r.id, solution[r.id], r.get_coefficient(self._metabolite.id),)
+                for r in self._reactions
+            ],
+            columns=["reaction", "flux", "factor"],
+            index=[r.id for r in self._reactions],
+        )
+        # Scale fluxes by stoichiometric coefficient.
+        flux["flux"] *= flux["factor"]
 
-            flux_summary = flux_summary.set_index("reaction").join(self.fva)
-            flux_summary.loc[
-                (
-                    flux_summary[["flux", "minimum", "maximum"]].abs()
-                    < self.model.tolerance
-                ),
-                ["flux", "minimum", "maximum"],
-            ] = 0
-            flux_summary[["minimum", "maximum"]] = flux_summary[
-                ["minimum", "maximum"]
-            ].mul(flux_summary["factor"], axis=0)
-            # Negative factors inverse the inequality relationship.
-            negative = flux_summary["factor"] < 0
-            tmp = flux_summary.loc[negative, "maximum"]
-            flux_summary.loc[negative, "maximum"] = flux_summary.loc[
-                negative, "minimum"
-            ]
-            flux_summary.loc[negative, "minimum"] = tmp
-            flux_summary = flux_summary[
-                (flux_summary["flux"].abs() >= self.threshold)
-                | (flux_summary["minimum"].abs() >= self.threshold)
-                | (flux_summary["maximum"].abs() >= self.threshold)
+        if fva is not None:
+            flux = flux.join(fva)
+            view = flux[["flux", "minimum", "maximum"]]
+            # Set fluxes below model tolerance to zero.
+            flux[["flux", "minimum", "maximum"]] = view.where(
+                view.abs() >= model.tolerance, 0
+            )
+            # Create the scaled compound flux.
+            flux[["minimum", "maximum"]] = flux[["minimum", "maximum"]].mul(
+                flux["factor"], axis=0
+            )
+            # Negative factors invert the minimum/maximum relationship.
+            negative = flux["factor"] < 0
+            tmp = flux.loc[negative, "maximum"]
+            flux.loc[negative, "maximum"] = flux.loc[negative, "minimum"]
+            flux.loc[negative, "minimum"] = tmp
+            # Add zero to turn negative zero into positive zero for nicer display later.
+            flux[["flux", "minimum", "maximum"]] += 0
+        else:
+            # Set fluxes below model tolerance to zero.
+            flux.loc[flux["flux"].abs() < model.tolerance, "flux"] = 0
+            # Add zero to turn negative zero into positive zero for nicer display later.
+            flux["flux"] += 0
+
+        # Create production table from producing fluxes or zero fluxes where the
+        # metabolite is a product in the reaction.
+        is_produced = (flux["flux"] > 0) | ((flux["flux"] == 0) & (flux["factor"] > 0))
+        if fva is not None:
+            self.producing_fluxes = flux.loc[
+                is_produced, ["flux", "minimum", "maximum", "reaction"]
             ].copy()
         else:
-            flux_summary = flux_summary[
-                flux_summary["flux"].abs() >= self.threshold
-            ].copy()
+            self.producing_fluxes = flux.loc[is_produced, ["flux", "reaction"]].copy()
+        production = self.producing_fluxes["flux"].abs()
+        self.producing_fluxes["percent"] = production / production.sum()
 
-        is_input = flux_summary["flux"] > 0
-        total_flux = flux_summary.loc[is_input, "flux"].sum()
-        flux_summary["percent"] = flux_summary["flux"].abs() / total_flux
-        self.data_frame = flux_summary[["percent", "flux", "minimum", "maximum"]]
+        # Create consumption table from consuming fluxes or zero fluxes where the
+        # metabolite is a substrate in the reaction.
+        is_consumed = (flux["flux"] < 0) | ((flux["flux"] == 0) & (flux["factor"] < 0))
+        if fva is not None:
+            self.consuming_fluxes = flux.loc[
+                is_consumed, ["flux", "minimum", "maximum", "reaction"]
+            ].copy()
+        else:
+            self.consuming_fluxes = flux.loc[is_consumed, ["flux", "reaction"]].copy()
+        consumption = self.consuming_fluxes["flux"].abs()
+        self.consuming_fluxes["percent"] = consumption / consumption.sum()
+
+        self._flux = flux
+
+    def _display_flux(self, frame: DataFrame, names: bool, threshold: float):
+        if "minimum" in frame.columns and "maximum" in frame.columns:
+            frame = frame.loc[
+                (frame["flux"].abs() >= threshold)
+                | (frame["minimum"].abs() >= threshold)
+                | (frame["maximum"].abs() >= threshold),
+                :,
+            ].copy()
+        else:
+            frame = frame.loc[frame["flux"].abs() >= threshold, :].copy()
+        reactions = {r.id: r for r in self._reactions}
+        frame["definition"] = [
+            reactions[rxn_id].build_reaction_string(names)
+            for rxn_id in frame["reaction"]
+        ]
+        if "minimum" in frame.columns and "maximum" in frame.columns:
+            frame["range"] = list(
+                frame[["minimum", "maximum"]].itertuples(index=False, name=None)
+            )
+            return frame[["percent", "flux", "range", "reaction", "definition"]]
+        else:
+            return frame[["percent", "flux", "reaction", "definition"]]
+
+    @staticmethod
+    def _string_table(frame: DataFrame, float_format: str, column_width: int):
+        frame.columns = [header.title() for header in frame.columns]
+        return frame.to_string(
+            header=True,
+            index=False,
+            na_rep="",
+            formatters={
+                "Percent": "{:.2%}".format,
+                "Flux": f"{{:{float_format}}}".format,
+                "Range": lambda pair: f"[{pair[0]:{float_format}}; {pair[1]:{float_format}}]",
+            },
+            max_colwidth=column_width,
+        )
+
+    @staticmethod
+    def _html_table(frame: DataFrame, float_format: str):
+        frame.columns = [header.title() for header in frame.columns]
+        return frame.to_html(
+            header=True,
+            index=False,
+            na_rep="",
+            formatters={
+                "Percent": "{:.2%}".format,
+                "Flux": f"{{:{float_format}}}".format,
+                "Range": lambda pair: f"[{pair[0]:{float_format}}; {pair[1]:{float_format}}]",
+            },
+        )
+
+    def to_string(
+        self,
+        names: bool = False,
+        threshold: float = 1e-6,
+        float_format: str = ".4G",
+        column_width: int = 79,
+    ) -> str:
+        threshold = normalize_cutoff(self._model, threshold)
+        if names:
+            metabolite = shorten(
+                self._metabolite.name, width=column_width, placeholder="..."
+            )
+        else:
+            metabolite = shorten(
+                self._metabolite.id, width=column_width, placeholder="..."
+            )
+
+        production = self._string_table(
+            self._display_flux(self.producing_fluxes, names, threshold),
+            float_format,
+            column_width,
+        )
+
+        consumption = self._string_table(
+            self._display_flux(self.consuming_fluxes, names, threshold),
+            float_format,
+            column_width,
+        )
+
+        return (
+            f"{metabolite}\n"
+            f"{'=' * len(metabolite)}\n"
+            f"Formula: {self._metabolite.formula}\n\n"
+            f"Producing Reactions\n"
+            f"-------------------\n"
+            f"{production}\n\n"
+            f"Consuming Reactions\n"
+            f"-------------------\n"
+            f"{consumption}"
+        )
+
+    def to_html(
+        self, names: bool = False, threshold: float = 1e-6, float_format: str = ".4G"
+    ) -> str:
+        if names:
+            metabolite = self._metabolite.name
+        else:
+            metabolite = self._metabolite.id
+
+        production = self._html_table(
+            self._display_flux(self.producing_fluxes, names, threshold), float_format,
+        )
+
+        consumption = self._html_table(
+            self._display_flux(self.consuming_fluxes, names, threshold), float_format,
+        )
+
+        return (
+            f"<h3>{metabolite}</h3>"
+            f"<p>{self._metabolite.formula}</p>"
+            f"<h4>Producing Reactions</h4>"
+            f"{production}"
+            f"<h4>Consuming Reactions</h4>"
+            f"{consumption}"
+        )
