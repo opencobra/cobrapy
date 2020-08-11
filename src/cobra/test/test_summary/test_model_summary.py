@@ -1,147 +1,94 @@
-# -*- coding: utf-8 -*-
+"""Unit test the model summary."""
 
-"""Test functionalities of ModelSummary."""
 
-from __future__ import absolute_import
-
-import numpy as np
 import pytest
 
-from cobra.test.test_summary import captured_output, check_in_line
+from cobra.flux_analysis import flux_variability_analysis, pfba
+from cobra.summary import ModelSummary
 
 
-@pytest.mark.parametrize("names", [False, True])
-def test_model_summary_to_table_previous_solution(model, opt_solver, names):
-    """Test Summary._to_table() of previous solution."""
+def test_model_summary_interface(model, opt_solver):
+    """Test that a summary can be created successfully."""
     model.solver = opt_solver
-    solution = model.optimize()
-    rxn_test = model.exchanges[0]
+    ModelSummary(model=model,)
+    ModelSummary(
+        model=model, solution=pfba(model),
+    )
+    ModelSummary(
+        model=model, fva=0.95,
+    )
+    ModelSummary(
+        model=model,
+        fva=flux_variability_analysis(
+            model, reaction_list=["CYTBD", "NADH16", "SUCDi"]
+        ),
+    )
 
-    if names:
-        met_test = list(rxn_test.metabolites.keys())[0].name
-    else:
-        met_test = list(rxn_test.metabolites.keys())[0].id
 
-    solution.fluxes[rxn_test.id] = 321
+def test_model_summary_to_frame(model, opt_solver):
+    """Test that the summary's method ``to_frame`` can be called."""
+    model.solver = opt_solver
+    summary = model.summary()
+    summary.to_frame()
 
-    with captured_output() as (out, _):
-        print(model.summary(solution, names=names))
-        check_in_line(out.getvalue(), [met_test + "321"])
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"names": True},
+        {"float_format": ".1f"},
+        {"threshold": 1e-2},
+        {"column_width": 20},
+    ],
+)
+def test_model_summary_to_string(model, opt_solver, kwargs):
+    """Test that the summary's method ``to_string`` can be called."""
+    model.solver = opt_solver
+    summary = model.summary()
+    summary.to_string(**kwargs)
+
+
+@pytest.mark.parametrize(
+    "kwargs", [{}, {"names": True}, {"float_format": ".1f"}, {"threshold": 1e-2}]
+)
+def test_model_summary_to_html(model, opt_solver, kwargs):
+    """Test that the summary's method ``to_html`` can be called."""
+    model.solver = opt_solver
+    summary = model.summary()
+    summary.to_html(**kwargs)
 
 
 @pytest.mark.parametrize("names", [False, True])
 def test_model_summary_to_frame_previous_solution(model, opt_solver, names):
-    """Test Summary.to_frame() of previous solution."""
+    """Test Summary._to_table() of previous solution."""
     model.solver = opt_solver
-    solution = model.optimize()
-    rxn_test = model.exchanges[0]
-    solution.fluxes[rxn_test.id] = 321
-    out_df = model.summary(solution, names=names).to_frame()
-
-    assert out_df.loc[0, ("OUT_FLUXES", "FLUX")] == 321
+    solution = pfba(model)
+    rxn_test = model.reactions.EX_glc__D_e
+    summary = model.summary(solution=solution)
+    assert summary.to_frame().at[rxn_test.id, "flux"] == 10
 
 
-@pytest.mark.parametrize("names", [False, True])
-def test_model_summary_to_table(model, opt_solver, names):
+def test_model_summary_flux(model, opt_solver):
     """Test model.summary()._to_table()."""
     model.solver = opt_solver
-    # test non-fva version (these should be fixed for textbook model)
-    if names:
-        expected_entry = [
-            "        O2    21.8       H2O       29.2     "
-            "Biomass Objective Function with GAM   0.874   "
-        ]
-    else:
-        expected_entry = [
-            "     o2_e    21.8      h2o_e      29.2     "
-            "Biomass_Ecoli_core   0.874   "
-        ]
-
-    model.optimize()
-
-    with captured_output() as (out, _):
-        print(model.summary(names=names))
-        check_in_line(out.getvalue(), expected_entry)
+    summary = model.summary()
+    assert summary.to_frame().at["EX_o2_e", "flux"] == pytest.approx(21.8, abs=1e-02)
+    assert summary.to_frame().at["EX_h2o_e", "flux"] == pytest.approx(-29.18, abs=1e-02)
 
 
-@pytest.mark.parametrize("names", [False, True])
-def test_model_summary_to_frame(model, opt_solver, names):
-    """Test model.summary().to_frame()."""
-    model.solver = opt_solver
-    # test non-fva version (these should be fixed for textbook model)
-    if names:
-        expected_in_fluxes = ["O2", "D-Glucose", "Ammonium", "Phosphate"]
-        expected_out_fluxes = ["H2O", "CO2", "H+", np.nan]
-    else:
-        expected_in_fluxes = ["o2_e", "glc__D_e", "nh4_e", "pi_e"]
-        expected_out_fluxes = ["h2o_e", "co2_e", "h_e", np.nan]
-
-    model.optimize()
-
-    out_df = model.summary(names=names).to_frame()
-
-    assert out_df[("IN_FLUXES", "ID")].tolist() == expected_in_fluxes
-    assert out_df[("OUT_FLUXES", "ID")].tolist() == expected_out_fluxes
-
-
-@pytest.mark.parametrize("fraction", [0.95])
-def test_model_summary_to_table_with_fva(model, opt_solver, fraction):
+def test_model_summary_fva(model, opt_solver):
     """Test model summary._to_table() (using FVA)."""
-    if opt_solver == "optlang-gurobi":
-        pytest.xfail("FVA currently buggy")
-    # test non-fva version (these should be fixed for textbook model)
-    expected_entry = [
-        "     o2_e    21.8      19.9      23.7       h2o_e     "
-        "29.2         25       30.7     Biomass_Ecoli_core   "
-        "0.874   "
-    ]
-
     model.solver = opt_solver
-    solution = model.optimize()
+    summary = model.summary(fva=0.95)
+    assert summary.to_frame().at["EX_o2_e", "flux"] == pytest.approx(21.8, abs=1e-02)
+    assert summary.to_frame().at["EX_o2_e", "minimum"] == pytest.approx(19.9, abs=1e-02)
+    assert summary.to_frame().at["EX_o2_e", "maximum"] == pytest.approx(
+        23.71, abs=1e-02
+    )
 
-    with captured_output() as (out, _):
-        print(model.summary(solution, fva=fraction))
-        check_in_line(out.getvalue(), expected_entry)
-
-
-@pytest.mark.parametrize("fraction", [0.95])
-def test_model_summary_to_frame_with_fva(model, opt_solver, fraction):
-    """Test model summary.to_frame() (using FVA)."""
-    if opt_solver == "optlang-gurobi":
-        pytest.xfail("FVA currently buggy")
-    # test non-fva version (these should be fixed for textbook model)
-    expected_in_fluxes = [
-        "o2_e",
-        "glc__D_e",
-        "nh4_e",
-        "pi_e",
-        np.nan,
-        np.nan,
-        np.nan,
-        np.nan,
-        np.nan,
-        np.nan,
-        np.nan,
-        np.nan,
-    ]
-    expected_out_fluxes = [
-        "h2o_e",
-        "co2_e",
-        "h_e",
-        "for_e",
-        "ac_e",
-        "acald_e",
-        "pyr_e",
-        "etoh_e",
-        "lac__D_e",
-        "succ_e",
-        "akg_e",
-        "glu__L_e",
-    ]
-
-    model.solver = opt_solver
-    solution = model.optimize()
-    out_df = model.summary(solution, fva=fraction).to_frame()
-
-    assert out_df[("IN_FLUXES", "ID")].tolist() == expected_in_fluxes
-    assert out_df[("OUT_FLUXES", "ID")].tolist() == expected_out_fluxes
+    assert summary.to_frame().at["EX_h2o_e", "flux"] == pytest.approx(-29.18, abs=1e-02)
+    assert summary.to_frame().at["EX_h2o_e", "minimum"] == pytest.approx(
+        -30.72, abs=1e-02
+    )
+    assert summary.to_frame().at["EX_h2o_e", "maximum"] == pytest.approx(-25, abs=1e-02)

@@ -1,21 +1,19 @@
-# -*- coding: utf-8 -*-
+"""Provide the model summary class."""
 
-"""Define the ModelSummary class."""
-
-from __future__ import absolute_import
 
 import logging
-from collections import OrderedDict
 from operator import attrgetter
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-import numpy as np
-import pandas as pd
-from six import iteritems, iterkeys
+from pandas import DataFrame
 
-from cobra.core import get_solution
-from cobra.flux_analysis.variability import flux_variability_analysis
+from cobra.flux_analysis import flux_variability_analysis, pfba
 from cobra.summary import Summary
 from cobra.util.solver import linear_reaction_coefficients
+
+
+if TYPE_CHECKING:
+    from cobra.core import Metabolite, Model, Reaction, Solution
 
 
 logger = logging.getLogger(__name__)
@@ -25,6 +23,12 @@ class ModelSummary(Summary):
     """
     Define the model summary.
 
+    Attributes
+    ----------
+    uptake_flux : pandas.DataFrame
+        A table of only the uptake fluxes.
+    secretion_flux : pandas.DataFrame
+        A table of only the consuming fluxes.
     See Also
     --------
     Summary : Parent that defines further attributes.
@@ -33,14 +37,30 @@ class ModelSummary(Summary):
 
     """
 
-    def __init__(self, model, **kwargs):
+    def __init__(
+        self,
+        *,
+        model: "Model",
+        solution: Optional["Solution"] = None,
+        fva: Optional[Union[float, DataFrame]] = None,
+        **kwargs,
+    ):
         """
         Initialize a model summary.
 
         Parameters
         ----------
         model : cobra.Model
-            The metabolic model for which to generate a summary.
+            The metabolic model for which to generate a metabolite summary.
+        solution : cobra.Solution, optional
+            A previous model solution to use for generating the summary. If
+            ``None``, the summary method will generate a parsimonious flux
+            distribution (default None).
+        fva : pandas.DataFrame or float, optional
+            Whether or not to include flux variability analysis in the output.
+            If given, `fva` should either be a previous FVA solution matching the
+            model or a float between 0 and 1 representing the fraction of the
+            optimum objective to be searched (default None).
 
         Other Parameters
         ----------------
@@ -54,224 +74,352 @@ class ModelSummary(Summary):
         ReactionSummary
 
         """
-        super(ModelSummary, self).__init__(model=model, **kwargs)
+        super().__init__(**kwargs)
+        self._objective = None
+        self._objective_value = None
+        self._boundary = None
+        self._boundary_metabolites = None
+        self.uptake_flux: Optional[DataFrame] = None
+        self.secretion_flux: Optional[DataFrame] = None
+        self._generate(model, solution, fva)
 
-    def _generate(self):
+    def _generate(
+        self,
+        model: "Model",
+        solution: Optional["Solution"],
+        fva: Optional[Union[float, "DataFrame"]],
+    ) -> None:
         """
-        Returns
-        -------
-        flux_summary: pandas.DataFrame
-            The DataFrame of flux summary data.
+        Prepare the data for the summary instance.
+
+        Parameters
+        ----------
+        model : cobra.Model
+            The metabolic model for which to generate a metabolite summary.
+        solution : cobra.Solution, optional
+            A previous model solution to use for generating the summary. If
+            ``None``, the summary method will generate a parsimonious flux
+            distribution.
+        fva : pandas.DataFrame or float, optional
+            Whether or not to include flux variability analysis in the output.
+            If given, `fva` should either be a previous FVA solution matching the
+            model or a float between 0 and 1 representing the fraction of the
+            optimum objective to be searched.
 
         """
-        if self.names:
-            emit = attrgetter("name")
-        else:
-            emit = attrgetter("id")
+        self._objective: Dict["Reaction", float] = {
+            rxn.copy(): coef
+            for rxn, coef in linear_reaction_coefficients(model).items()
+        }
+        if solution is None:
+            logger.info("Generating new parsimonious flux distribution.")
+            solution = pfba(model)
 
-        obj_rxns = linear_reaction_coefficients(self.model)
-        boundary_rxns = self.model.exchanges
-        summary_rxns = set(obj_rxns.keys()).union(boundary_rxns)
-
-        if self.solution is None:
-            self.model.slim_optimize(error_value=None)
-            self.solution = get_solution(self.model, reactions=summary_rxns)
-
-        # the order needs to be maintained
-        ord_obj_rxns = OrderedDict(obj_rxns)
-
-        obj_data = [
-            (emit(rxn), self.solution[rxn.id] * stoich, np.nan, rxn, np.nan, 1.0)
-            for rxn, stoich in iteritems(ord_obj_rxns)
-        ]
-
-        # create a DataFrame of objective reactions
-        obj_df = pd.DataFrame.from_records(
-            data=obj_data,
-            index=[rxn.id for rxn in iterkeys(ord_obj_rxns)],
-            columns=["id", "flux", "metabolite", "reaction", "is_input", "is_obj_rxn"],
-        )
-
-        # create a collection of metabolites from the boundary reactions
-        mets = OrderedDict(
-            (met, rxn)
-            for rxn in boundary_rxns
-            for met in sorted(rxn.metabolites, key=attrgetter("id"))
-        )
-        index = [met.id for met in iterkeys(mets)]
-
-        met_data = [
-            (emit(met), self.solution[rxn.id] * rxn.metabolites[met], met, rxn)
-            for met, rxn in iteritems(mets)
-        ]
-
-        # create a DataFrame of metabolites
-        flux_summary = pd.DataFrame.from_records(
-            data=met_data, index=index, columns=["id", "flux", "metabolite", "reaction"]
-        )
-
-        # Calculate FVA results if requested
-        if self.fva is not None:
-            if len(index) != len(boundary_rxns):
-                logger.warning(
-                    "There exists more than one boundary reaction per "
-                    "metabolite. Please be careful when evaluating flux "
-                    "ranges."
-                )
-
-            if hasattr(self.fva, "columns"):
-                fva_results = self.fva
-            else:
-                fva_results = flux_variability_analysis(
-                    self.model,
-                    reaction_list=boundary_rxns,
-                    fraction_of_optimum=self.fva,
-                )
-
-            # save old index
-            old_index = flux_summary.index
-            # generate new index for consistency with fva_results
-            flux_summary["rxn_id"] = flux_summary.apply(lambda x: x.reaction.id, axis=1)
-            # change to new index
-            flux_summary.set_index(["rxn_id"], inplace=True)
-            flux_summary = pd.concat([flux_summary, fva_results], axis=1, sort=False)
-            flux_summary.rename(
-                columns={"maximum": "fmax", "minimum": "fmin"}, inplace=True
+        if isinstance(fva, float):
+            logger.info("Performing flux variability analysis.")
+            fva = flux_variability_analysis(
+                model=model, reaction_list=model.boundary, fraction_of_optimum=fva,
             )
-            # revert to old index
-            flux_summary.set_index(old_index)
+        self._objective_value: float = sum(
+            solution[rxn.id] * coef for rxn, coef in self._objective.items()
+        )
+        self._boundary: List["Reaction"] = [
+            rxn.copy() for rxn in sorted(model.boundary, key=attrgetter("id"))
+        ]
+        self._boundary_metabolites: List["Metabolite"] = [
+            met.copy() for rxn in self._boundary for met in rxn.metabolites
+        ]
+        flux = DataFrame(
+            data=[
+                (rxn.id, met.id, rxn.get_coefficient(met.id), solution[rxn.id])
+                for rxn, met in zip(self._boundary, self._boundary_metabolites)
+            ],
+            columns=["reaction", "metabolite", "factor", "flux"],
+            index=[r.id for r in self._boundary],
+        )
+        # Scale fluxes by stoichiometric coefficient.
+        flux["flux"] *= flux["factor"]
 
-            def set_min_and_max(row):
-                """Scale and set proper min and max values for flux."""
-                fmax = row.reaction.metabolites[row.metabolite] * row.fmax
-                fmin = row.reaction.metabolites[row.metabolite] * row.fmin
+        if fva is not None:
+            flux = flux.join(fva)
+            view = flux[["flux", "minimum", "maximum"]]
+            # Set fluxes below model tolerance to zero.
+            flux[["flux", "minimum", "maximum"]] = view.where(
+                view.abs() >= model.tolerance, 0
+            )
+            # Create the scaled compound flux.
+            flux[["minimum", "maximum"]] = flux[["minimum", "maximum"]].mul(
+                flux["factor"], axis=0
+            )
+            # Negative factors invert the minimum/maximum relationship.
+            negative = flux["factor"] < 0
+            tmp = flux.loc[negative, "maximum"]
+            flux.loc[negative, "maximum"] = flux.loc[negative, "minimum"]
+            flux.loc[negative, "minimum"] = tmp
+            # Add zero to turn negative zero into positive zero for nicer display later.
+            flux[["flux", "minimum", "maximum"]] += 0
+        else:
+            # Set fluxes below model tolerance to zero.
+            flux.loc[flux["flux"].abs() < model.tolerance, "flux"] = 0
+            # Add zero to turn negative zero into positive zero for nicer display later.
+            flux["flux"] += 0
 
-                if abs(fmin) <= abs(fmax):
-                    row.fmax = fmax
-                    row.fmin = fmin
-                else:
-                    # Reverse fluxes
-                    row.fmax = fmin
-                    row.fmin = fmax
+        # Create production table from producing fluxes or zero fluxes where the
+        # metabolite is a product in the reaction.
+        is_produced = (flux["flux"] > 0) | ((flux["flux"] == 0) & (flux["factor"] > 0))
+        if fva is not None:
+            self.uptake_flux = flux.loc[
+                is_produced, ["flux", "minimum", "maximum", "reaction", "metabolite"]
+            ].copy()
+        else:
+            self.uptake_flux = flux.loc[
+                is_produced, ["flux", "reaction", "metabolite"]
+            ].copy()
+        # TODO (Midnighter): We may later want to compute % of carbon flux.
+        # production = self.producing_fluxes["flux"].abs()
+        # self.producing_fluxes["percent"] = production / production.sum()
 
-                return row
+        # Create consumption table from consuming fluxes or zero fluxes where the
+        # metabolite is a substrate in the reaction.
+        is_consumed = (flux["flux"] < 0) | ((flux["flux"] == 0) & (flux["factor"] < 0))
+        if fva is not None:
+            self.secretion_flux = flux.loc[
+                is_consumed, ["flux", "minimum", "maximum", "reaction", "metabolite"]
+            ].copy()
+        else:
+            self.secretion_flux = flux.loc[
+                is_consumed, ["flux", "reaction", "metabolite"]
+            ].copy()
+        # TODO (Midnighter): We may later want to compute % of carbon flux.
+        # consumption = self.consuming_fluxes["flux"].abs()
+        # self.consuming_fluxes["percent"] = consumption / consumption.sum()
 
-            flux_summary = flux_summary.apply(set_min_and_max, axis=1)
+        self._flux = flux
 
-        flux_summary = self._process_flux_dataframe(flux_summary)
-
-        flux_summary = pd.concat([flux_summary, obj_df], sort=False)
-
-        return flux_summary
-
-    def to_frame(self):
+    def _display_flux(
+        self, frame: DataFrame, names: bool, threshold: float
+    ) -> DataFrame:
         """
+        Transform a flux data frame for display.
+
+        Parameters
+        ----------
+        frame : pandas.DataFrame
+            Either the producing or the consuming fluxes.
+        names : bool
+            Whether or not elements should be displayed by their common names.
+        threshold : float
+            Hide fluxes below the threshold from being displayed.
+
         Returns
         -------
-        A pandas.DataFrame of the summary.
+        pandas.DataFrame
+            The transformed table with flux percentages and reaction definitions.
 
         """
-        flux_df = self._generate()
+        if "minimum" in frame.columns and "maximum" in frame.columns:
+            frame = frame.loc[
+                (frame["flux"].abs() >= threshold)
+                | (frame["minimum"].abs() >= threshold)
+                | (frame["maximum"].abs() >= threshold),
+                :,
+            ].copy()
+        else:
+            frame = frame.loc[frame["flux"].abs() >= threshold, :].copy()
 
-        # obtain separate DataFrames and join them instead of reorganizing the
-        # old DataFrame, since that is easier to understand
-
-        if self.fva is not None:
-            column_names = [
-                "IN_FLUXES-ID",
-                "IN_FLUXES-FLUX",
-                "IN_FLUXES-FLUX_MIN",
-                "IN_FLUXES-FLUX_MAX",
-                "OUT_FLUXES-ID",
-                "OUT_FLUXES-FLUX",
-                "OUT_FLUXES-FLUX_MIN",
-                "OUT_FLUXES-FLUX_MAX",
-                "OBJECTIVES-ID",
-                "OBJECTIVES-FLUX",
+        if names:
+            metabolites = {m.id: m for m in self._boundary_metabolites}
+            frame["metabolite"] = [
+                metabolites[met_id].name for met_id in frame["metabolite"]
             ]
 
-            # generate separate DataFrames
-            met_in_df = (
-                flux_df[flux_df.is_input == 1.0]
-                .loc[:, ["id", "flux", "fmin", "fmax"]]
-                .reset_index(drop=True)
+        if "minimum" in frame.columns and "maximum" in frame.columns:
+            frame["range"] = list(
+                frame[["minimum", "maximum"]].itertuples(index=False, name=None)
             )
-
-            met_out_df = (
-                flux_df[flux_df.is_input == 0.0]
-                .loc[:, ["id", "flux", "fmin", "fmax"]]
-                .reset_index(drop=True)
-            )
-
-            obj_df = (
-                flux_df[flux_df.is_obj_rxn == 1.0]
-                .loc[:, ["id", "flux"]]
-                .reset_index(drop=True)
-            )
-
-            # concatenate DataFrames
-            concat_df = pd.concat([met_in_df, met_out_df, obj_df], axis=1)
-
-            del met_in_df, met_out_df, obj_df
-
-            # generate column names
-            concat_df.columns = pd.MultiIndex.from_tuples(
-                [tuple(c.split("-")) for c in column_names]
-            )
-
+            return frame[["metabolite", "reaction", "flux", "range"]]
         else:
-            column_names = [
-                "IN_FLUXES-ID",
-                "IN_FLUXES-FLUX",
-                "OUT_FLUXES-ID",
-                "OUT_FLUXES-FLUX",
-                "OBJECTIVES-ID",
-                "OBJECTIVES-FLUX",
-            ]
+            return frame[["metabolite", "reaction", "flux"]]
 
-            # generate separate DataFrames
-            met_in_df = (
-                flux_df[flux_df.is_input == 1.0]
-                .loc[:, ["id", "flux"]]
-                .reset_index(drop=True)
-            )
-
-            met_out_df = (
-                flux_df[flux_df.is_input == 0.0]
-                .loc[:, ["id", "flux"]]
-                .reset_index(drop=True)
-            )
-
-            obj_df = (
-                flux_df[flux_df.is_obj_rxn == 1.0]
-                .loc[:, ["id", "flux"]]
-                .reset_index(drop=True)
-            )
-
-            # concatenate DataFrames
-            concat_df = pd.concat([met_in_df, met_out_df, obj_df], axis=1)
-
-            del met_in_df, met_out_df, obj_df
-
-            # generate column names
-            concat_df.columns = pd.MultiIndex.from_tuples(
-                [tuple(c.split("-")) for c in column_names]
-            )
-
-        return concat_df
-
-    def _to_table(self):
+    @staticmethod
+    def _string_table(frame: DataFrame, float_format: str, column_width: int) -> str:
         """
+        Create a pretty string representation of the data frame.
+
+        Parameters
+        ----------
+        frame : pandas.DataFrame
+            A table of fluxes.
+        float_format : str
+            Format string for floats.
+        column_width : int
+            The maximum column width for each row.
+
         Returns
         -------
-        A string of the summary table.
+        str
+            The data frame formatted as a pretty string.
 
         """
-        return self.to_frame().to_string(
+        frame.columns = [header.title() for header in frame.columns]
+        return frame.to_string(
             header=True,
             index=False,
             na_rep="",
-            float_format=self.float_format,
-            sparsify=False,
-            justify="center",
+            formatters={
+                "Flux": f"{{:{float_format}}}".format,
+                "Range": lambda pair: f"[{pair[0]:{float_format}}; "
+                f"{pair[1]:{float_format}}]",
+            },
+            max_colwidth=column_width,
+        )
+
+    @staticmethod
+    def _html_table(frame: DataFrame, float_format: str) -> str:
+        """
+        Create an HTML representation of the data frame.
+
+        Parameters
+        ----------
+        frame : pandas.DataFrame
+            A table of fluxes.
+        float_format : str
+            Format string for floats.
+
+        Returns
+        -------
+        str
+            The data frame formatted as HTML.
+
+        """
+        frame.columns = [header.title() for header in frame.columns]
+        return frame.to_html(
+            header=True,
+            index=False,
+            na_rep="",
+            formatters={
+                "Flux": f"{{:{float_format}}}".format,
+                "Range": lambda pair: f"[{pair[0]:{float_format}}; "
+                f" {pair[1]:{float_format}}]",
+            },
+        )
+
+    def _string_objective(self, names: bool) -> str:
+        """
+        Return a string representation of the objective.
+
+        Parameters
+        ----------
+        names : bool, optional
+            Whether or not elements should be displayed by their common names.
+
+        Returns
+        -------
+        str
+            The objective expression and value as a string.
+
+        """
+        if names:
+            objective = " + ".join(
+                [f"{coef} {rxn.name}" for rxn, coef in self._objective.items()]
+            )
+        else:
+            objective = " + ".join(
+                [f"{coef} {rxn.id}" for rxn, coef in self._objective.items()]
+            )
+        return f"{objective} {self._objective_value}"
+
+    def to_string(
+        self,
+        names: bool = False,
+        threshold: float = 1e-6,
+        float_format: str = ".4G",
+        column_width: int = 79,
+    ) -> str:
+        """
+        Return a pretty string representation of the model summary.
+
+        Parameters
+        ----------
+        names : bool, optional
+            Whether or not elements should be displayed by their common names
+            (default False).
+        threshold : float, optional
+            Hide fluxes below the threshold from being displayed (default 1e-6).
+        float_format : str, optional
+            Format string for floats (default '.4G').
+        column_width : int, optional
+            The maximum column width for each row (default 79).
+
+        Returns
+        -------
+        str
+            The summary formatted as a pretty string.
+
+        """
+        objective = self._string_objective(names)
+
+        uptake = self._string_table(
+            self._display_flux(self.uptake_flux, names, threshold),
+            float_format,
+            column_width,
+        )
+
+        secretion = self._string_table(
+            self._display_flux(self.secretion_flux, names, threshold),
+            float_format,
+            column_width,
+        )
+
+        return (
+            f"Objective\n"
+            f"=========\n"
+            f"{objective}\n\n"
+            f"Uptake\n"
+            f"------\n"
+            f"{uptake}\n\n"
+            f"Secretion\n"
+            f"---------\n"
+            f"{secretion}\n"
+        )
+
+    def to_html(
+        self, names: bool = False, threshold: float = 1e-6, float_format: str = ".4G"
+    ) -> str:
+        """
+        Return a rich HTML representation of the model summary.
+
+        Parameters
+        ----------
+        names : bool, optional
+            Whether or not elements should be displayed by their common names
+            (default False).
+        threshold : float, optional
+            Hide fluxes below the threshold from being displayed (default 1e-6).
+        float_format : str, optional
+            Format string for floats (default '.4G').
+
+        Returns
+        -------
+        str
+            The summary formatted as HTML.
+
+        """
+        objective = self._string_objective(names)
+
+        uptake = self._html_table(
+            self._display_flux(self.uptake_flux, names, threshold), float_format,
+        )
+
+        secretion = self._html_table(
+            self._display_flux(self.secretion_flux, names, threshold), float_format,
+        )
+
+        return (
+            f"<h3>Objective</h3>"
+            f"<p>{objective}</p>"
+            f"<h4>Uptake</h4>"
+            f"{uptake}"
+            f"<h4>Secretion</h4>"
+            f"{secretion}"
         )
