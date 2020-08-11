@@ -27,7 +27,7 @@ class MetaboliteSummary(Summary):
     ----------
     producing_flux : pandas.DataFrame
         A table of only the producing fluxes.
-    producing_flux : pandas.DataFrame
+    consuming_flux : pandas.DataFrame
         A table of only the consuming fluxes.
 
     See Also
@@ -83,8 +83,8 @@ class MetaboliteSummary(Summary):
         self._reactions: List["Reaction"] = [
             r.copy() for r in sorted(metabolite.reactions, key=attrgetter("id"))
         ]
-        self.producing_fluxes: Optional[DataFrame] = None
-        self.consuming_fluxes: Optional[DataFrame] = None
+        self.producing_flux: Optional[DataFrame] = None
+        self.consuming_flux: Optional[DataFrame] = None
         self._generate(model, solution, fva)
 
     def _generate(
@@ -163,25 +163,25 @@ class MetaboliteSummary(Summary):
         # metabolite is a product in the reaction.
         is_produced = (flux["flux"] > 0) | ((flux["flux"] == 0) & (flux["factor"] > 0))
         if fva is not None:
-            self.producing_fluxes = flux.loc[
+            self.producing_flux = flux.loc[
                 is_produced, ["flux", "minimum", "maximum", "reaction"]
             ].copy()
         else:
-            self.producing_fluxes = flux.loc[is_produced, ["flux", "reaction"]].copy()
-        production = self.producing_fluxes["flux"].abs()
-        self.producing_fluxes["percent"] = production / production.sum()
+            self.producing_flux = flux.loc[is_produced, ["flux", "reaction"]].copy()
+        production = self.producing_flux["flux"].abs()
+        self.producing_flux["percent"] = production / production.sum()
 
         # Create consumption table from consuming fluxes or zero fluxes where the
         # metabolite is a substrate in the reaction.
         is_consumed = (flux["flux"] < 0) | ((flux["flux"] == 0) & (flux["factor"] < 0))
         if fva is not None:
-            self.consuming_fluxes = flux.loc[
+            self.consuming_flux = flux.loc[
                 is_consumed, ["flux", "minimum", "maximum", "reaction"]
             ].copy()
         else:
-            self.consuming_fluxes = flux.loc[is_consumed, ["flux", "reaction"]].copy()
-        consumption = self.consuming_fluxes["flux"].abs()
-        self.consuming_fluxes["percent"] = consumption / consumption.sum()
+            self.consuming_flux = flux.loc[is_consumed, ["flux", "reaction"]].copy()
+        consumption = self.consuming_flux["flux"].abs()
+        self.consuming_flux["percent"] = consumption / consumption.sum()
 
         self._flux = flux
 
@@ -331,13 +331,13 @@ class MetaboliteSummary(Summary):
             )
 
         production = self._string_table(
-            self._display_flux(self.producing_fluxes, names, threshold),
+            self._display_flux(self.producing_flux, names, threshold),
             float_format,
             column_width,
         )
 
         consumption = self._string_table(
-            self._display_flux(self.consuming_fluxes, names, threshold),
+            self._display_flux(self.consuming_flux, names, threshold),
             float_format,
             column_width,
         )
@@ -382,11 +382,11 @@ class MetaboliteSummary(Summary):
             metabolite = self._metabolite.id
 
         production = self._html_table(
-            self._display_flux(self.producing_fluxes, names, threshold), float_format,
+            self._display_flux(self.producing_flux, names, threshold), float_format,
         )
 
         consumption = self._html_table(
-            self._display_flux(self.consuming_fluxes, names, threshold), float_format,
+            self._display_flux(self.consuming_flux, names, threshold), float_format,
         )
 
         return (

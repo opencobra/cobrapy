@@ -68,8 +68,8 @@ def test_q8_producing_summary(model, opt_solver):
     model.solver = opt_solver
     summary = model.metabolites.get_by_id("q8_c").summary()
 
-    assert summary.producing_fluxes.at["CYTBD", "percent"] == 1
-    assert summary.producing_fluxes.at["CYTBD", "flux"] == pytest.approx(43.6, abs=1e-2)
+    assert summary.producing_flux.at["CYTBD", "percent"] == 1
+    assert summary.producing_flux.at["CYTBD", "flux"] == pytest.approx(43.6, abs=1e-2)
 
 
 def test_q8_consuming_summary(model, opt_solver):
@@ -77,30 +77,24 @@ def test_q8_consuming_summary(model, opt_solver):
     model.solver = opt_solver
     summary = model.metabolites.get_by_id("q8_c").summary()
 
-    assert summary.consuming_fluxes.at["NADH16", "percent"] == pytest.approx(
+    assert summary.consuming_flux.at["NADH16", "percent"] == pytest.approx(
         0.8838, abs=1e-4
     )
-    assert summary.consuming_fluxes.at["NADH16", "flux"] == pytest.approx(
+    assert summary.consuming_flux.at["NADH16", "flux"] == pytest.approx(
         -38.54, abs=1e-2
     )
 
-    assert summary.consuming_fluxes.at["SUCDi", "percent"] == pytest.approx(
+    assert summary.consuming_flux.at["SUCDi", "percent"] == pytest.approx(
         0.1162, abs=1e-4
     )
-    assert summary.consuming_fluxes.at["SUCDi", "flux"] == pytest.approx(
-        -5.06, abs=1e-2
-    )
+    assert summary.consuming_flux.at["SUCDi", "flux"] == pytest.approx(-5.06, abs=1e-2)
 
 
 def test_fdp_production_with_fva(model, opt_solver):
     """Test that the production summary of fdp is within expected bounds."""
     model.solver = opt_solver
     summary = model.metabolites.get_by_id("fdp_c").summary(fva=0.99)
-    assert summary.producing_fluxes.at["PFK", "percent"] == 1
-    assert summary.producing_fluxes.at["PFK", "flux"] == pytest.approx(7.48, abs=1e-2)
-    assert summary.producing_fluxes.at["PFK", "minimum"] == pytest.approx(
-        6.17, abs=1e-2
-    )
-    assert summary.producing_fluxes.at["PFK", "maximum"] == pytest.approx(
-        9.26, abs=1e-2
-    )
+    assert summary.producing_flux.at["PFK", "percent"] == 1
+    assert summary.producing_flux.at["PFK", "flux"] == pytest.approx(7.48, abs=1e-2)
+    assert summary.producing_flux.at["PFK", "minimum"] == pytest.approx(6.17, abs=1e-2)
+    assert summary.producing_flux.at["PFK", "maximum"] == pytest.approx(9.26, abs=1e-2)
