@@ -16,38 +16,25 @@ logger = logging.getLogger(__name__)
 
 
 class Summary(ABC):
-    """Define the abstract base summary."""
+    """
+    Define the abstract base summary.
 
-    def __init__(
-        self,
-        *,
-        model: "Model",
-        solution: Optional["Solution"] = None,
-        threshold: Optional[float] = None,
-        fva: Optional[Union[float, "DataFrame"]] = None,
-        **kwargs,
-    ) -> None:
+    Attributes
+    ----------
+    flux: pandas.DataFrame
+        The raw flux data frame.
+
+    See Also
+    --------
+    MetaboliteSummary
+    ReactionSummary
+    ModelSummary
+
+    """
+
+    def __init__(self, **kwargs,) -> None:
         """
         Initialize a summary.
-
-        Parameters
-        ----------
-        model : cobra.Model
-            The metabolic model in which to generate a summary description.
-        solution : cobra.Solution, optional
-            A previous model solution to use for generating the summary. If
-            None, the summary method will resolve the model.  Note that the
-            solution object must match the model, i.e., changes to the model
-            such as changed bounds, added or removed reactions are not taken
-            into account by this method (default None).
-        threshold : float, optional
-            Threshold below which fluxes are not reported. May not be smaller
-            than the model tolerance (default None).
-        fva : pandas.DataFrame or float, optional
-            Whether or not to include flux variability analysis in the output.
-            If given, fva should either be a previous FVA solution matching the
-            model or a float between 0 and 1 representing the fraction of the
-            optimum objective to be searched (default None).
 
         Other Parameters
         ----------------
@@ -62,10 +49,27 @@ class Summary(ABC):
     def _generate(
         self,
         model: "Model",
-        solution: Optional["Solution"] = None,
-        fva: Optional[Union[float, "DataFrame"]] = None,
+        solution: Optional["Solution"],
+        fva: Optional[Union[float, "DataFrame"]],
     ) -> None:
-        """Generate the summary for the COBRA object."""
+        """
+        Prepare the data for the summary instance.
+
+        Parameters
+        ----------
+        model : cobra.Model
+            The metabolic model for which to generate a metabolite summary.
+        solution : cobra.Solution, optional
+            A previous model solution to use for generating the summary. If
+            ``None``, the summary method will generate a parsimonious flux
+            distribution.
+        fva : pandas.DataFrame or float, optional
+            Whether or not to include flux variability analysis in the output.
+            If given, `fva` should either be a previous FVA solution matching the
+            model or a float between 0 and 1 representing the fraction of the
+            optimum objective to be searched.
+
+        """
         raise NotImplementedError(
             "This method needs to be implemented by the subclass."
         )
@@ -79,16 +83,32 @@ class Summary(ABC):
         return self.to_html()
 
     @abstractmethod
-    def to_string(self, names: bool = False, float_format: str = ".3G") -> str:
+    def to_string(
+        self,
+        names: bool = False,
+        threshold: float = 1e-6,
+        float_format: str = ".4G",
+        column_width: int = 79,
+    ) -> str:
         """
-        Return a string representation of the summary.
+        Return a pretty string representation of the summary.
 
         Parameters
         ----------
         names : bool, optional
-            Emit entity names rather than identifiers (default False).
+            Whether or not elements should be displayed by their common names
+            (default False).
+        threshold : float, optional
+            Hide fluxes below the threshold from being displayed (default 1e-6).
         float_format : str, optional
-            Format string for floats (default ``3G``).
+            Format string for floats (default '.4G').
+        column_width : int, optional
+            The maximum column width for each row (default 79).
+
+        Returns
+        -------
+        str
+            The summary formatted as a pretty string.
 
         """
         raise NotImplementedError(
@@ -96,22 +116,34 @@ class Summary(ABC):
         )
 
     @abstractmethod
-    def to_html(self, names: bool = False) -> str:
+    def to_html(
+        self, names: bool = False, threshold: float = 1e-6, float_format: str = ".4G"
+    ) -> str:
         """
-        Return a rich HTML representation of the summary.
+        Return a rich HTML representation of the metabolite summary.
 
         Parameters
         ----------
         names : bool, optional
-            Emit entity names rather than identifiers (default False).
+            Whether or not elements should be displayed by their common names
+            (default False).
+        threshold : float, optional
+            Hide fluxes below the threshold from being displayed (default 1e-6).
+        float_format : str, optional
+            Format string for floats (default '.4G').
+
+        Returns
+        -------
+        str
+            The summary formatted as HTML.
 
         """
         raise NotImplementedError(
             "This method needs to be implemented by the subclass."
         )
 
-    def to_frame(self) -> DataFrame:
-        """Return the internal data frame describing the summary."""
+    def to_frame(self) -> "DataFrame":
+        """Return the a data frame representation of the summary."""
         return self._flux.copy()
 
     def _process_flux_dataframe(self, flux_dataframe):

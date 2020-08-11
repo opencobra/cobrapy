@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, List, Optional, Union
 from pandas import DataFrame
 
 from cobra.flux_analysis import flux_variability_analysis, pfba
-from cobra.flux_analysis.helpers import normalize_cutoff
 from cobra.summary import Summary
 
 
@@ -26,8 +25,12 @@ class MetaboliteSummary(Summary):
 
     Attributes
     ----------
-    metabolite: cobra.Metabolite
-        The metabolite to summarize.
+    flux : pandas.DataFrame
+        The raw flux data frame.
+    producing_flux : pandas.DataFrame
+        A table of only the producing fluxes.
+    producing_flux : pandas.DataFrame
+        A table of only the consuming fluxes.
 
     See Also
     --------
@@ -45,16 +48,25 @@ class MetaboliteSummary(Summary):
         solution: Optional["Solution"] = None,
         fva: Optional[Union[float, "DataFrame"]] = None,
         **kwargs,
-    ):
+    ) -> None:
         """
         Initialize a metabolite summary.
 
         Parameters
         ----------
-        metabolite: cobra.Metabolite
+        metabolite : cobra.Metabolite
             The metabolite object whose summary we intend to get.
         model : cobra.Model
             The metabolic model for which to generate a metabolite summary.
+        solution : cobra.Solution, optional
+            A previous model solution to use for generating the summary. If
+            ``None``, the summary method will generate a parsimonious flux
+            distribution (default None).
+        fva : pandas.DataFrame or float, optional
+            Whether or not to include flux variability analysis in the output.
+            If given, `fva` should either be a previous FVA solution matching the
+            model or a float between 0 and 1 representing the fraction of the
+            optimum objective to be searched (default None).
 
         Other Parameters
         ----------------
@@ -68,7 +80,7 @@ class MetaboliteSummary(Summary):
         ModelSummary
 
         """
-        super(MetaboliteSummary, self).__init__(model=model, **kwargs)
+        super().__init__(**kwargs)
         self._metabolite = metabolite.copy()
         self._reactions: List["Reaction"] = [
             r.copy() for r in sorted(metabolite.reactions, key=attrgetter("id"))
@@ -80,10 +92,27 @@ class MetaboliteSummary(Summary):
     def _generate(
         self,
         model: "Model",
-        solution: Optional["Solution"] = None,
-        fva: Optional[Union[float, "DataFrame"]] = None,
-    ):
-        """"""
+        solution: Optional["Solution"],
+        fva: Optional[Union[float, "DataFrame"]],
+    ) -> None:
+        """
+        Prepare the data for the summary instance.
+
+        Parameters
+        ----------
+        model : cobra.Model
+            The metabolic model for which to generate a metabolite summary.
+        solution : cobra.Solution, optional
+            A previous model solution to use for generating the summary. If
+            ``None``, the summary method will generate a parsimonious flux
+            distribution.
+        fva : pandas.DataFrame or float, optional
+            Whether or not to include flux variability analysis in the output.
+            If given, `fva` should either be a previous FVA solution matching the
+            model or a float between 0 and 1 representing the fraction of the
+            optimum objective to be searched.
+
+        """
         if solution is None:
             logger.info("Generating new parsimonious flux distribution.")
             solution = pfba(model)
@@ -158,7 +187,27 @@ class MetaboliteSummary(Summary):
 
         self._flux = flux
 
-    def _display_flux(self, frame: DataFrame, names: bool, threshold: float):
+    def _display_flux(
+        self, frame: DataFrame, names: bool, threshold: float
+    ) -> DataFrame:
+        """
+        Transform a flux data frame for display.
+
+        Parameters
+        ----------
+        frame : pandas.DataFrame
+            Either the producing or the consuming fluxes.
+        names : bool
+            Whether or not elements should be displayed by their common names.
+        threshold : float
+            Hide fluxes below the threshold from being displayed.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The transformed table with flux percentages and reaction definitions.
+
+        """
         if "minimum" in frame.columns and "maximum" in frame.columns:
             frame = frame.loc[
                 (frame["flux"].abs() >= threshold)
@@ -182,7 +231,25 @@ class MetaboliteSummary(Summary):
             return frame[["percent", "flux", "reaction", "definition"]]
 
     @staticmethod
-    def _string_table(frame: DataFrame, float_format: str, column_width: int):
+    def _string_table(frame: DataFrame, float_format: str, column_width: int) -> str:
+        """
+        Create a pretty string representation of the data frame.
+
+        Parameters
+        ----------
+        frame : pandas.DataFrame
+            A table of fluxes.
+        float_format : str
+            Format string for floats.
+        column_width : int
+            The maximum column width for each row.
+
+        Returns
+        -------
+        str
+            The data frame formatted as a pretty string.
+
+        """
         frame.columns = [header.title() for header in frame.columns]
         return frame.to_string(
             header=True,
@@ -191,13 +258,30 @@ class MetaboliteSummary(Summary):
             formatters={
                 "Percent": "{:.2%}".format,
                 "Flux": f"{{:{float_format}}}".format,
-                "Range": lambda pair: f"[{pair[0]:{float_format}}; {pair[1]:{float_format}}]",
+                "Range": lambda pair: f"[{pair[0]:{float_format}}; "
+                f"{pair[1]:{float_format}}]",
             },
             max_colwidth=column_width,
         )
 
     @staticmethod
-    def _html_table(frame: DataFrame, float_format: str):
+    def _html_table(frame: DataFrame, float_format: str) -> str:
+        """
+        Create an HTML representation of the data frame.
+
+        Parameters
+        ----------
+        frame : pandas.DataFrame
+            A table of fluxes.
+        float_format : str
+            Format string for floats.
+
+        Returns
+        -------
+        str
+            The data frame formatted as HTML.
+
+        """
         frame.columns = [header.title() for header in frame.columns]
         return frame.to_html(
             header=True,
@@ -206,7 +290,8 @@ class MetaboliteSummary(Summary):
             formatters={
                 "Percent": "{:.2%}".format,
                 "Flux": f"{{:{float_format}}}".format,
-                "Range": lambda pair: f"[{pair[0]:{float_format}}; {pair[1]:{float_format}}]",
+                "Range": lambda pair: f"[{pair[0]:{float_format}}; "
+                f" {pair[1]:{float_format}}]",
             },
         )
 
@@ -217,7 +302,27 @@ class MetaboliteSummary(Summary):
         float_format: str = ".4G",
         column_width: int = 79,
     ) -> str:
-        threshold = normalize_cutoff(self._model, threshold)
+        """
+        Return a pretty string representation of the metabolite summary.
+
+        Parameters
+        ----------
+        names : bool, optional
+            Whether or not elements should be displayed by their common names
+            (default False).
+        threshold : float, optional
+            Hide fluxes below the threshold from being displayed (default 1e-6).
+        float_format : str, optional
+            Format string for floats (default '.4G').
+        column_width : int, optional
+            The maximum column width for each row (default 79).
+
+        Returns
+        -------
+        str
+            The summary formatted as a pretty string.
+
+        """
         if names:
             metabolite = shorten(
                 self._metabolite.name, width=column_width, placeholder="..."
@@ -254,6 +359,25 @@ class MetaboliteSummary(Summary):
     def to_html(
         self, names: bool = False, threshold: float = 1e-6, float_format: str = ".4G"
     ) -> str:
+        """
+        Return a rich HTML representation of the metabolite summary.
+
+        Parameters
+        ----------
+        names : bool, optional
+            Whether or not elements should be displayed by their common names
+            (default False).
+        threshold : float, optional
+            Hide fluxes below the threshold from being displayed (default 1e-6).
+        float_format : str, optional
+            Format string for floats (default '.4G').
+
+        Returns
+        -------
+        str
+            The summary formatted as HTML.
+
+        """
         if names:
             metabolite = self._metabolite.name
         else:

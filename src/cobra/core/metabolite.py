@@ -217,32 +217,25 @@ class Metabolite(Species):
         """
         self._model.remove_metabolites(self, destructive)
 
-    def summary(
-        self, solution=None, fva=None,
-    ):
+    def summary(self, solution=None, fva=None):
         """
         Create a summary of the producing and consuming fluxes.
-
-        This method requires the model for which this metabolite is a part
-        to be solved.
 
         Parameters
         ----------
         solution : cobra.Solution, optional
             A previous model solution to use for generating the summary. If
-            None, the summary method will resolve the model.  Note that the
-            solution object must match the model, i.e., changes to the model
-            such as changed bounds, added or removed reactions are not taken
-            into account by this method (default None).
+            ``None``, the summary method will generate a parsimonious flux
+            distribution (default None).
         fva : pandas.DataFrame or float, optional
             Whether or not to include flux variability analysis in the output.
-            If given, fva should either be a previous FVA solution matching the
+            If given, `fva` should either be a previous FVA solution matching the
             model or a float between 0 and 1 representing the fraction of the
             optimum objective to be searched (default None).
 
         Returns
         -------
-        cobra.MetaboliteSummary
+        cobra.summary.MetaboliteSummary
 
         See Also
         --------
