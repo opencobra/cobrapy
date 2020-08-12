@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-
 from cobra.core.configuration import Configuration
 from cobra.core.dictlist import DictList
 from cobra.core.gene import Gene
