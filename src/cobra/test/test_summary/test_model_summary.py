@@ -94,3 +94,15 @@ def test_model_summary_fva(model, opt_solver):
         -30.72, abs=1e-02
     )
     assert summary.to_frame().at["EX_h2o_e", "maximum"] == pytest.approx(-25, abs=1e-02)
+
+
+def test_model_summary_flux_in_context(model, opt_solver):
+    """Test that the model summary inside and outside of a context are equal."""
+    model.solver = opt_solver
+    with model:
+        context_summary = model.summary()
+    outside_summary = model.summary()
+
+    assert context_summary.to_frame()["flux"].values == pytest.approx(
+        outside_summary.to_frame()["flux"].values, abs=model.tolerance
+    )

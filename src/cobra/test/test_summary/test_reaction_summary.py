@@ -91,3 +91,15 @@ def test_reaction_summary_flux_fva(
     assert result.to_frame().at[reaction_id, "maximum"] == pytest.approx(
         max_flux, abs=1e-2
     )
+
+
+@pytest.mark.parametrize("reaction_id", ["ACALD", "FUM", "PFK"])
+def test_reaction_summary_flux_in_context(model, reaction_id: str) -> None:
+    """Test that the reaction summary inside and outside of a context are equal."""
+    with model:
+        context_summary = model.reactions.get_by_id(reaction_id).summary()
+    outside_summary = model.reactions.get_by_id(reaction_id).summary()
+
+    assert context_summary.to_frame()["flux"].values == pytest.approx(
+        outside_summary.to_frame()["flux"].values, abs=model.tolerance
+    )

@@ -98,3 +98,16 @@ def test_fdp_production_with_fva(model, opt_solver):
     assert summary.producing_flux.at["PFK", "flux"] == pytest.approx(7.48, abs=1e-2)
     assert summary.producing_flux.at["PFK", "minimum"] == pytest.approx(6.17, abs=1e-2)
     assert summary.producing_flux.at["PFK", "maximum"] == pytest.approx(9.26, abs=1e-2)
+
+
+@pytest.mark.parametrize("metabolite_id", ["q8_c", "fdp_c", "atp_c"])
+def test_metabolite_summary_flux_in_context(model, opt_solver, metabolite_id: str):
+    """Test that the metabolite summary inside and outside of a context are equal."""
+    model.solver = opt_solver
+    with model:
+        context_summary = model.metabolites.get_by_id(metabolite_id).summary()
+    outside_summary = model.metabolites.get_by_id(metabolite_id).summary()
+
+    assert context_summary.to_frame()["flux"].values == pytest.approx(
+        outside_summary.to_frame()["flux"].values, abs=model.tolerance
+    )
