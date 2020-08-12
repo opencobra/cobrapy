@@ -26,9 +26,9 @@ class ModelSummary(Summary):
     Attributes
     ----------
     uptake_flux : pandas.DataFrame
-        A table of only the uptake fluxes.
+        A pandas DataFrame of only the uptake fluxes.
     secretion_flux : pandas.DataFrame
-        A table of only the consuming fluxes.
+        A pandas DataFrame of only the consuming fluxes.
     See Also
     --------
     Summary : Parent that defines further attributes.
@@ -214,7 +214,8 @@ class ModelSummary(Summary):
         Returns
         -------
         pandas.DataFrame
-            The transformed table with flux percentages and reaction definitions.
+            The transformed pandas DataFrame with flux percentages and reaction
+            definitions.
 
         """
         if "minimum" in frame.columns and "maximum" in frame.columns:
@@ -249,7 +250,7 @@ class ModelSummary(Summary):
         Parameters
         ----------
         frame : pandas.DataFrame
-            A table of fluxes.
+            A pandas DataFrame of fluxes.
         float_format : str
             Format string for floats.
         column_width : int
@@ -282,7 +283,7 @@ class ModelSummary(Summary):
         Parameters
         ----------
         frame : pandas.DataFrame
-            A table of fluxes.
+            A pandas DataFrame of fluxes.
         float_format : str
             Format string for floats.
 
