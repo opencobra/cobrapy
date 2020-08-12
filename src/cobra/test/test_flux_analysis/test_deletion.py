@@ -40,9 +40,9 @@ def test_single_gene_deletion_fba(model, all_solvers):
     }
     result = single_gene_deletion(
         model=model, gene_list=list(growth_dict), method="fba", processes=1
-    )["growth"]
+    )
     for gene, value in iteritems(growth_dict):
-        assert np.isclose(result[[(gene,)]], value, atol=1e-02)
+        assert np.isclose(result.knockout[gene].growth, value, atol=1e-02)
 
 
 # Singe gene deletion MOMA
@@ -69,9 +69,9 @@ def test_single_gene_deletion_moma(model, qp_solvers):
 
     result = single_gene_deletion(
         model=model, gene_list=list(growth_dict), method="moma", processes=1
-    )["growth"]
+    )
     for gene, value in iteritems(growth_dict):
-        assert np.isclose(result[[(gene,)]], value, atol=1e-02)
+        assert np.isclose(result.knockout[gene].growth, value, atol=1e-02)
 
 
 def test_single_gene_deletion_moma_reference(model, qp_solvers):
@@ -93,9 +93,9 @@ def test_single_gene_deletion_moma_reference(model, qp_solvers):
         method="moma",
         solution=sol,
         processes=1,
-    )["growth"]
+    )
     for gene, value in iteritems(growth_dict):
-        assert np.isclose(result[[(gene,)]], value, atol=1e-02)
+        assert np.isclose(result.knockout[gene].growth, value, atol=1e-02)
 
 
 # Single gene deletion linear MOMA
@@ -131,9 +131,9 @@ def test_single_gene_deletion_linear_moma(model, all_solvers):
         method="linear moma",
         solution=sol,
         processes=1,
-    )["growth"]
+    )
     for gene, value in iteritems(growth_dict):
-        assert np.isclose(result.knockout[gene], value, atol=1e-02)
+        assert np.isclose(result.knockout[gene].growth, value, atol=1e-02)
 
 
 # Single gene deletion ROOM
@@ -182,10 +182,10 @@ def test_single_reaction_deletion(model, all_solvers):
     }
     result = single_reaction_deletion(
         model=model, reaction_list=list(expected_results), processes=1
-    )["growth"]
-    print(result)
+    )
+
     for reaction, value in iteritems(expected_results):
-        assert np.isclose(result.knockout[reaction], value, atol=1e-05)
+        assert np.isclose(result.knockout[reaction].growth, value, atol=1e-05)
 
 
 # Single reaction deletion ROOM
@@ -317,17 +317,15 @@ def test_double_gene_deletion(model):
             "b4025": 0.863,
         },
     }
-    solution = double_gene_deletion(model, gene_list1=genes, processes=3)["growth"]
-    solution_one_process = double_gene_deletion(model, gene_list1=genes, processes=1)[
-        "growth"
-    ]
+    solution = double_gene_deletion(model, gene_list1=genes, processes=3)
+    solution_one_process = double_gene_deletion(model, gene_list1=genes, processes=1)
     print(solution)
     for rxn_a, sub in iteritems(growth_dict):
         for rxn_b, growth in iteritems(sub):
-            sol = solution.knockout[rxn_a, rxn_b]
-            sol_one = solution_one_process.knockout[rxn_a, rxn_b]
-            assert np.isclose(sol, growth, atol=1e-3)
-            assert np.isclose(sol_one, growth, atol=1e-3)
+            sol = solution.knockout[{rxn_a, rxn_b}]
+            sol_one = solution_one_process.knockout[{rxn_a, rxn_b}]
+            assert np.isclose(sol.growth, growth, atol=1e-3)
+            assert np.isclose(sol_one.growth, growth, atol=1e-3)
 
 
 # Double reaction deletion
@@ -346,19 +344,17 @@ def test_double_reaction_deletion(model):
         "ENO": {"FRUpts2": 0.0},
     }
 
-    solution = double_reaction_deletion(model, reaction_list1=reactions, processes=3)[
-        "growth"
-    ]
+    solution = double_reaction_deletion(model, reaction_list1=reactions, processes=3)
     solution_one_process = double_reaction_deletion(
         model, reaction_list1=reactions, processes=1
-    )["growth"]
+    )
     for (rxn_a, sub) in iteritems(growth_dict):
         for rxn_b, growth in iteritems(sub):
-            sol = solution.knockout[rxn_a, rxn_b]
-            sol_one = solution_one_process.knockout[rxn_a, rxn_b]
+            sol = solution.knockout[{rxn_a, rxn_b}]
+            sol_one = solution_one_process.knockout[{rxn_a, rxn_b}]
             if math.isnan(growth):
-                assert math.isnan(sol)
-                assert math.isnan(sol_one)
+                assert math.isnan(sol.growth)
+                assert math.isnan(sol_one.growth)
             else:
-                assert np.isclose(sol, growth, atol=1e-3)
-                assert np.isclose(sol_one, growth, atol=1e-3)
+                assert np.isclose(sol.growth, growth, atol=1e-3)
+                assert np.isclose(sol_one.growth, growth, atol=1e-3)
