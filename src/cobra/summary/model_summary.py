@@ -7,13 +7,14 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import pandas as pd
 
+from cobra.core import Reaction
 from cobra.flux_analysis import flux_variability_analysis, pfba
 from cobra.summary import Summary
 from cobra.util.solver import linear_reaction_coefficients
 
 
 if TYPE_CHECKING:
-    from cobra.core import Metabolite, Model, Reaction, Solution
+    from cobra.core import Metabolite, Model, Solution
 
 
 logger = logging.getLogger(__name__)
@@ -107,10 +108,7 @@ class ModelSummary(Summary):
             optimum objective to be searched.
 
         """
-        self._objective: Dict["Reaction", float] = {
-            rxn.copy(): coef
-            for rxn, coef in linear_reaction_coefficients(model).items()
-        }
+        coefficients = linear_reaction_coefficients(model)
         if solution is None:
             logger.info("Generating new parsimonious flux distribution.")
             solution = pfba(model)
@@ -120,9 +118,22 @@ class ModelSummary(Summary):
             fva = flux_variability_analysis(
                 model=model, reaction_list=model.boundary, fraction_of_optimum=fva,
             )
-        self._objective_value: float = sum(
-            solution[rxn.id] * coef for rxn, coef in self._objective.items()
-        )
+        if coefficients:
+            self._objective: Dict["Reaction", float] = {
+                rxn.copy(): coef for rxn, coef in coefficients.items()
+            }
+            self._objective_value: float = sum(
+                solution[rxn.id] * coef for rxn, coef in self._objective.items()
+            )
+        else:
+            logger.warning(
+                "Non-linear or non-reaction model objective. Falling back to minimal "
+                "display."
+            )
+            self._objective = {
+                Reaction(id="Expression", name="Expression"): float("nan")
+            }
+            self._objective_value: float = float("nan")
         self._boundary: List["Reaction"] = [
             rxn.copy() for rxn in sorted(model.boundary, key=attrgetter("id"))
         ]
