@@ -5,10 +5,10 @@ import logging
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional, Union
 
+import pandas as pd
+
 
 if TYPE_CHECKING:
-    from pandas import DataFrame
-
     from cobra import Model, Solution
 
 
@@ -45,7 +45,7 @@ class Summary(ABC):
         self,
         model: "Model",
         solution: Optional["Solution"],
-        fva: Optional[Union[float, "DataFrame"]],
+        fva: Optional[Union[float, pd.DataFrame]],
     ) -> None:
         """
         Prepare the data for the summary instance.
@@ -137,6 +137,6 @@ class Summary(ABC):
             "This method needs to be implemented by the subclass."
         )
 
-    def to_frame(self) -> "DataFrame":
+    def to_frame(self) -> pd.DataFrame:
         """Return the a data frame representation of the summary."""
         return self._flux.copy()

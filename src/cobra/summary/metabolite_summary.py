@@ -6,7 +6,7 @@ from operator import attrgetter
 from textwrap import shorten
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from pandas import DataFrame
+import pandas as pd
 
 from cobra.flux_analysis import flux_variability_analysis, pfba
 from cobra.summary import Summary
@@ -44,7 +44,7 @@ class MetaboliteSummary(Summary):
         metabolite: "Metabolite",
         model: "Model",
         solution: Optional["Solution"] = None,
-        fva: Optional[Union[float, "DataFrame"]] = None,
+        fva: Optional[Union[float, pd.DataFrame]] = None,
         **kwargs,
     ) -> None:
         """
@@ -83,15 +83,15 @@ class MetaboliteSummary(Summary):
         self._reactions: List["Reaction"] = [
             r.copy() for r in sorted(metabolite.reactions, key=attrgetter("id"))
         ]
-        self.producing_flux: Optional[DataFrame] = None
-        self.consuming_flux: Optional[DataFrame] = None
+        self.producing_flux: Optional[pd.DataFrame] = None
+        self.consuming_flux: Optional[pd.DataFrame] = None
         self._generate(model, solution, fva)
 
     def _generate(
         self,
         model: "Model",
         solution: Optional["Solution"],
-        fva: Optional[Union[float, "DataFrame"]],
+        fva: Optional[Union[float, pd.DataFrame]],
     ) -> None:
         """
         Prepare the data for the summary instance.
@@ -124,7 +124,7 @@ class MetaboliteSummary(Summary):
             )
 
         # Create the basic flux table.
-        flux = DataFrame(
+        flux = pd.DataFrame(
             data=[
                 (r.id, solution[r.id], r.get_coefficient(self._metabolite.id),)
                 for r in self._reactions
@@ -186,8 +186,8 @@ class MetaboliteSummary(Summary):
         self._flux = flux
 
     def _display_flux(
-        self, frame: DataFrame, names: bool, threshold: float
-    ) -> DataFrame:
+        self, frame: pd.DataFrame, names: bool, threshold: float
+    ) -> pd.DataFrame:
         """
         Transform a flux data frame for display.
 
@@ -229,7 +229,7 @@ class MetaboliteSummary(Summary):
             return frame[["percent", "flux", "reaction", "definition"]]
 
     @staticmethod
-    def _string_table(frame: DataFrame, float_format: str, column_width: int) -> str:
+    def _string_table(frame: pd.DataFrame, float_format: str, column_width: int) -> str:
         """
         Create a pretty string representation of the data frame.
 
@@ -263,7 +263,7 @@ class MetaboliteSummary(Summary):
         )
 
     @staticmethod
-    def _html_table(frame: DataFrame, float_format: str) -> str:
+    def _html_table(frame: pd.DataFrame, float_format: str) -> str:
         """
         Create an HTML representation of the data frame.
 

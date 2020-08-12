@@ -5,7 +5,7 @@ import logging
 from textwrap import dedent, shorten
 from typing import TYPE_CHECKING, Optional, Union
 
-from pandas import DataFrame
+import pandas as pd
 
 from cobra.flux_analysis import flux_variability_analysis, pfba
 from cobra.summary import Summary
@@ -36,7 +36,7 @@ class ReactionSummary(Summary):
         reaction: "Reaction",
         model: "Model",
         solution: Optional["Solution"] = None,
-        fva: Optional[Union[float, DataFrame]] = None,
+        fva: Optional[Union[float, pd.DataFrame]] = None,
         **kwargs,
     ) -> None:
         """
@@ -78,7 +78,7 @@ class ReactionSummary(Summary):
         self,
         model: "Model",
         solution: Optional["Solution"],
-        fva: Optional[Union[float, DataFrame]],
+        fva: Optional[Union[float, pd.DataFrame]],
     ) -> None:
         """
         Prepare the data for the summary instance.
@@ -109,7 +109,7 @@ class ReactionSummary(Summary):
             )
 
         # Create the basic flux table.
-        self._flux = DataFrame(
+        self._flux = pd.DataFrame(
             data={"flux": [solution[self._reaction.id]]}, index=[self._reaction.id],
         )
         if fva is not None:

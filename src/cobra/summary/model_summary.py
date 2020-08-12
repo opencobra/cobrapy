@@ -5,7 +5,7 @@ import logging
 from operator import attrgetter
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from pandas import DataFrame
+import pandas as pd
 
 from cobra.flux_analysis import flux_variability_analysis, pfba
 from cobra.summary import Summary
@@ -42,7 +42,7 @@ class ModelSummary(Summary):
         *,
         model: "Model",
         solution: Optional["Solution"] = None,
-        fva: Optional[Union[float, DataFrame]] = None,
+        fva: Optional[Union[float, pd.DataFrame]] = None,
         **kwargs,
     ):
         """
@@ -79,15 +79,15 @@ class ModelSummary(Summary):
         self._objective_value = None
         self._boundary = None
         self._boundary_metabolites = None
-        self.uptake_flux: Optional[DataFrame] = None
-        self.secretion_flux: Optional[DataFrame] = None
+        self.uptake_flux: Optional[pd.DataFrame] = None
+        self.secretion_flux: Optional[pd.DataFrame] = None
         self._generate(model, solution, fva)
 
     def _generate(
         self,
         model: "Model",
         solution: Optional["Solution"],
-        fva: Optional[Union[float, "DataFrame"]],
+        fva: Optional[Union[float, pd.DataFrame]],
     ) -> None:
         """
         Prepare the data for the summary instance.
@@ -129,7 +129,7 @@ class ModelSummary(Summary):
         self._boundary_metabolites: List["Metabolite"] = [
             met.copy() for rxn in self._boundary for met in rxn.metabolites
         ]
-        flux = DataFrame(
+        flux = pd.DataFrame(
             data=[
                 (rxn.id, met.id, rxn.get_coefficient(met.id), solution[rxn.id])
                 for rxn, met in zip(self._boundary, self._boundary_metabolites)
@@ -197,8 +197,8 @@ class ModelSummary(Summary):
         self._flux = flux
 
     def _display_flux(
-        self, frame: DataFrame, names: bool, threshold: float
-    ) -> DataFrame:
+        self, frame: pd.DataFrame, names: bool, threshold: float
+    ) -> pd.DataFrame:
         """
         Transform a flux data frame for display.
 
@@ -242,7 +242,7 @@ class ModelSummary(Summary):
             return frame[["metabolite", "reaction", "flux"]]
 
     @staticmethod
-    def _string_table(frame: DataFrame, float_format: str, column_width: int) -> str:
+    def _string_table(frame: pd.DataFrame, float_format: str, column_width: int) -> str:
         """
         Create a pretty string representation of the data frame.
 
@@ -275,7 +275,7 @@ class ModelSummary(Summary):
         )
 
     @staticmethod
-    def _html_table(frame: DataFrame, float_format: str) -> str:
+    def _html_table(frame: pd.DataFrame, float_format: str) -> str:
         """
         Create an HTML representation of the data frame.
 
