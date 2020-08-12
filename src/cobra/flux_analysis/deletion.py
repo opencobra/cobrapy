@@ -132,12 +132,11 @@ def _multi_deletion(
         def extract_knockout_results(result_iter):
             result = pd.DataFrame(
                 [
-                    (tuple(sorted(ids)), growth, status,)
+                    (set(ids), growth, status,)
                     for (ids, growth, status) in result_iter
                 ],
                 columns=["ids", "growth", "status"],
             )
-            result.set_index("ids", inplace=True)
             return result
 
         if processes > 1:
@@ -408,7 +407,6 @@ def double_gene_deletion(
 
 
 @pd.api.extensions.register_dataframe_accessor("knockout")
-@pd.api.extensions.register_series_accessor("knockout")
 class KnockoutAccessor:
     """Access unique combinations of reactions in deletion results."""
 
@@ -426,7 +424,7 @@ class KnockoutAccessor:
     @staticmethod
     def _validate(obj):
         # verify it is a deletion results
-        if obj.index.name != "ids":
+        if any(name not in obj.columns for name in ["ids", "growth", "status"]):
             raise AttributeError("Must be DataFrame returned by a deletion method.")
 
     def __getitem__(self, args):
@@ -441,11 +439,25 @@ class KnockoutAccessor:
         pd.DataFrame
             The deletion result where the chosen entities have been deleted.
         """
-        if not any(isinstance(args, t) for t in [list, tuple, set]):
+        if not any(isinstance(args, t) for t in [tuple, list]):
             args = [args]
 
-        if isinstance(args[0], Reaction) or isinstance(args[0], Gene):
-            args = tuple(sorted(set(obj.id for obj in args)))
+        if any(isinstance(args[0], t) for t in [Reaction, Gene, str]):
+            try:
+                args = [{obj.id} for obj in args]
+            except AttributeError:
+                # are already strings
+                args = [{obj} for obj in args]
+        elif isinstance(args[0], set):
+            try:
+                args = [set(elem.id for elem in obj) for obj in args]
+            except AttributeError:
+                args = [set(obj) for obj in args]
         else:
-            args = tuple(sorted(set(args)))
-        return self._result.loc[[args]]
+            raise ValueError(
+                "Allowed indices are single Reactions or Genes, "
+                "lists of Reactions of Genes, or lists of sets "
+                "of Reactions or Genes."
+            )
+        found = [x in args for x in self._result.ids]
+        return self._result[found]
