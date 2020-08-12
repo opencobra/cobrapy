@@ -328,7 +328,7 @@ class ModelSummary(Summary):
             objective = " + ".join(
                 [f"{coef} {rxn.id}" for rxn, coef in self._objective.items()]
             )
-        return f"{objective} {self._objective_value}"
+        return f"{objective} = {self._objective_value}"
 
     def to_string(
         self,
