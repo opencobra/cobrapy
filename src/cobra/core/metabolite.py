@@ -217,45 +217,25 @@ class Metabolite(Species):
         """
         self._model.remove_metabolites(self, destructive)
 
-    def summary(
-        self,
-        solution=None,
-        threshold=0.01,
-        fva=None,
-        names=False,
-        float_format="{:.3g}".format,
-    ):
+    def summary(self, solution=None, fva=None):
         """
         Create a summary of the producing and consuming fluxes.
-
-        This method requires the model for which this metabolite is a part
-        to be solved.
 
         Parameters
         ----------
         solution : cobra.Solution, optional
             A previous model solution to use for generating the summary. If
-            None, the summary method will resolve the model.  Note that the
-            solution object must match the model, i.e., changes to the model
-            such as changed bounds, added or removed reactions are not taken
-            into account by this method (default None).
-        threshold : float, optional
-            Threshold below which fluxes are not reported. May not be smaller
-            than the model tolerance (default 0.01).
+            ``None``, the summary method will generate a parsimonious flux
+            distribution (default None).
         fva : pandas.DataFrame or float, optional
             Whether or not to include flux variability analysis in the output.
-            If given, fva should either be a previous FVA solution matching the
+            If given, `fva` should either be a previous FVA solution matching the
             model or a float between 0 and 1 representing the fraction of the
             optimum objective to be searched (default None).
-        names : bool, optional
-            Emit reaction and metabolite names rather than identifiers (default
-            False).
-        float_format : callable, optional
-            Format string for floats (default ``'{:3G}'.format``).
 
         Returns
         -------
-        cobra.MetaboliteSummary
+        cobra.summary.MetaboliteSummary
 
         See Also
         --------
@@ -263,16 +243,10 @@ class Metabolite(Species):
         Model.summary
 
         """
-        from cobra.core.summary import MetaboliteSummary
+        from cobra.summary import MetaboliteSummary
 
         return MetaboliteSummary(
-            metabolite=self,
-            model=self._model,
-            solution=solution,
-            threshold=threshold,
-            fva=fva,
-            names=names,
-            float_format=float_format,
+            metabolite=self, model=self._model, solution=solution, fva=fva,
         )
 
     def _repr_html_(self):
