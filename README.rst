@@ -18,9 +18,9 @@ COBRApy - Constraint-Based Reconstruction and Analysis in Python
    :target: https://github.com/opencobra/cobrapy/blob/devel/.github/CODE_OF_CONDUCT.md
    :alt: Code of Conduct
 
-.. image:: https://github.com/opencobra/cobrapy/workflows/CI/badge.svg
-   :target: https://github.com/opencobra/cobrapy/workflows/CI
-   :alt: Continuous Integration Status
+.. image:: https://github.com/opencobra/cobrapy/workflows/CI-CD/badge.svg
+   :target: https://github.com/opencobra/cobrapy/workflows/CI-CD
+   :alt: GitHub Actions CI/CD Status
 
 .. image:: https://codecov.io/gh/opencobra/cobrapy/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/opencobra/cobrapy
