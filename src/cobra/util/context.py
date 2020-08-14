@@ -90,6 +90,7 @@ def resettable(f: Callable[[Any], Any]):
         The decorated function.
 
     """
+
     def wrapper(self, new_value):
         context = get_context(self)
         if context:
