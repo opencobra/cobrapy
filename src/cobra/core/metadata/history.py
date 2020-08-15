@@ -39,8 +39,10 @@ class HistoryDateTime:
             )
 
     def set_current_datetime(self) -> None:
+        utcoffset = "+00:00"
         current_datetime = datetime.utcnow()
         self._datetime = current_datetime.strftime("%Y-%m-%dT%H:%M:%S%z")
+        self._datetime += utcoffset
 
     @staticmethod
     def validate_date(date_text: str) -> bool:
@@ -48,10 +50,27 @@ class HistoryDateTime:
         if not isinstance(date_text, str):
             raise TypeError(f"The date passed must be of " f"type string: {date_text}")
 
+        # python 3.6 doesn't allow : (colon) in the utc offset.
         try:
             datetime.strptime(date_text, "%Y-%m-%dT%H:%M:%S%z")
         except ValueError as e:
-            raise ValueError(str(e))
+            # checking for python 3.6
+            if 'Z' in date_text:
+                try:
+                    datetime.strptime(date_text.replace("Z", ""), "%Y-%m-%dT%H:%M:%S")
+                except ValueError as e1:
+                    raise ValueError(str(e1))
+                return True
+            else:
+                utcoff = date_text[20:25]
+                utcoff_p36 = utcoff.replace(":", "")
+                date_p36 = date_text.replace(utcoff, utcoff_p36)
+                try:
+                    datetime.strptime(date_p36, "%Y-%m-%dT%H:%M:%S%z")
+                except ValueError as e2:
+                    raise ValueError(str(e2))
+                return True
+
         return True
 
     def __eq__(self, historydatetime_obj: "HistoryDateTime") -> bool:
