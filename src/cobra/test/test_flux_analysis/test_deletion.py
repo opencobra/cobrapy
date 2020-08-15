@@ -15,13 +15,13 @@ from cobra.flux_analysis.deletion import (
     double_gene_deletion,
     double_reaction_deletion,
     single_gene_deletion,
-    single_reaction_deletion)
+    single_reaction_deletion,
+)
 from cobra.flux_analysis.room import add_room
 
 
 # Single gene deletion FBA
-def test_single_gene_deletion_fba_benchmark(model, benchmark,
-                                            all_solvers):
+def test_single_gene_deletion_fba_benchmark(model, benchmark, all_solvers):
     """Benchmark single gene deletion using FBA."""
     model.solver = all_solvers
     benchmark(single_gene_deletion, model)
@@ -39,20 +39,20 @@ def test_single_gene_deletion_fba(model, all_solvers):
         "b1779": 0.00,
     }
     result = single_gene_deletion(
-        model=model, gene_list=list(growth_dict),  method="fba", processes=1
+        model=model, gene_list=list(growth_dict), method="fba", processes=1
     )["growth"]
     for gene, value in iteritems(growth_dict):
-        assert np.isclose(result[frozenset([gene])], value, atol=1E-02)
+        assert np.isclose(result[frozenset([gene])], value, atol=1e-02)
 
 
 # Singe gene deletion MOMA
-def test_single_gene_deletion_moma_benchmark(model, benchmark,
-                                             qp_solvers):
+def test_single_gene_deletion_moma_benchmark(model, benchmark, qp_solvers):
     """Benchmark single gene deletion using MOMA."""
     model.solver = qp_solvers
-    genes = ['b0008', 'b0114', 'b2276', 'b1779']
-    benchmark(single_gene_deletion, model=model, gene_list=genes,
-              method="moma", processes=1)
+    genes = ["b0008", "b0114", "b2276", "b1779"]
+    benchmark(
+        single_gene_deletion, model=model, gene_list=genes, method="moma", processes=1
+    )
 
 
 def test_single_gene_deletion_moma(model, qp_solvers):
@@ -64,14 +64,14 @@ def test_single_gene_deletion_moma(model, qp_solvers):
         "b0114": 0.71,
         "b0116": 0.56,
         "b2276": 0.11,
-        "b1779": 0.00
+        "b1779": 0.00,
     }
 
     result = single_gene_deletion(
         model=model, gene_list=list(growth_dict), method="moma", processes=1
     )["growth"]
     for gene, value in iteritems(growth_dict):
-        assert np.isclose(result[frozenset([gene])], value, atol=1E-02)
+        assert np.isclose(result[frozenset([gene])], value, atol=1e-02)
 
 
 def test_single_gene_deletion_moma_reference(model, qp_solvers):
@@ -83,7 +83,7 @@ def test_single_gene_deletion_moma_reference(model, qp_solvers):
         "b0114": 0.71,
         "b0116": 0.56,
         "b2276": 0.11,
-        "b1779": 0.00
+        "b1779": 0.00,
     }
 
     sol = model.optimize()
@@ -92,23 +92,23 @@ def test_single_gene_deletion_moma_reference(model, qp_solvers):
         gene_list=list(growth_dict),
         method="moma",
         solution=sol,
-        processes=1
+        processes=1,
     )["growth"]
     for gene, value in iteritems(growth_dict):
-        assert np.isclose(result[frozenset([gene])], value, atol=1E-02)
+        assert np.isclose(result[frozenset([gene])], value, atol=1e-02)
 
 
 # Single gene deletion linear MOMA
 def test_single_gene_deletion_linear_moma_benchmark(model, benchmark, all_solvers):
     """Benchmark single gene deletion using linear MOMA."""
     model.solver = all_solvers
-    genes = ['b0008', 'b0114', 'b2276', 'b1779']
+    genes = ["b0008", "b0114", "b2276", "b1779"]
     benchmark(
         single_gene_deletion,
         model=model,
         gene_list=genes,
         method="linear moma",
-        processes=1
+        processes=1,
     )
 
 

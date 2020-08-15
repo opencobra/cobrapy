@@ -89,9 +89,9 @@ def test_notes(data_directory, tmp_path):
 
     # checks after reading model back again
     assert rx1_after_reading.notes.notes_xhtml == modified_notes_str
-    assert rx1_after_reading.notes['Key1'] == 'New Value 1'
-    assert rx1_after_reading.notes['Key2'] == 'Value2'
-    assert rx1_after_reading.notes['Key3'] == 'New Value 3'
+    assert rx1_after_reading.notes["Key1"] == "New Value 1"
+    assert rx1_after_reading.notes["Key2"] == "Value2"
+    assert rx1_after_reading.notes["Key3"] == "New Value 3"
 
 
 def test_reading_writing_notes(data_directory, tmp_path):

@@ -382,8 +382,7 @@ class Model(Object):
             new.genes.append(new_gene)
 
         new.reactions = DictList()
-        do_not_copy_by_ref = {"_model", "_metabolites",
-                              "_genes", "_annotation"}
+        do_not_copy_by_ref = {"_model", "_metabolites", "_genes", "_annotation"}
         for reaction in self.reactions:
             new_reaction = reaction.__class__()
             for attr, value in iteritems(reaction.__dict__):
@@ -938,35 +937,36 @@ class Model(Object):
         if not isinstance(constraints, list):
             # if single UserDefinedConstraints, convert to a list
             if isinstance(constraints, UserDefinedConstraint):
-                warn(f"The constraints passed must be inside a list: "
-                     f"{constraints}")
+                warn(f"The constraints passed must be inside a list: " f"{constraints}")
                 constraints = [constraints]
             else:
-                raise TypeError(f"The constraints passed must be inside "
-                                f"a list: {constraints}")
+                raise TypeError(
+                    f"The constraints passed must be inside " f"a list: {constraints}"
+                )
 
         for constraint in constraints:
             if not isinstance(constraint, UserDefinedConstraint):
-                raise TypeError(f"The user defined constraints passed must be of "
-                                f"type 'UserDefinedConstraints': {constraint}")
+                raise TypeError(
+                    f"The user defined constraints passed must be of "
+                    f"type 'UserDefinedConstraints': {constraint}"
+                )
 
-            if constraint.lower_bound is None or \
-                    constraint.upper_bound is None:
+            if constraint.lower_bound is None or constraint.upper_bound is None:
                 raise ValueError(f"Bounds must be set for the constraint: {constraint}")
 
             if constraint.id is None or constraint.id == "":
                 constraint.id = "$_internal_const_id" + str(len(self._const_ids))
             self._const_ids.add(constraint.id)
             constraint._model = self
-            cons_exp = 0        # an expression involving variables
+            cons_exp = 0  # an expression involving variables
             list_of_var_cons = []
 
             for item in constraint.constraint_comps:
 
                 # set the exponent of variable/flux
-                if item.variable_type == 'linear':
+                if item.variable_type == "linear":
                     var_pow = 1
-                elif item.variable_type == 'quadratic':
+                elif item.variable_type == "quadratic":
                     var_pow = 2
                 else:
                     raise ValueError(f"Unexpected variable type set for item: {item}")
@@ -989,7 +989,8 @@ class Model(Object):
                 cons_exp,
                 name=constraint.id,
                 lb=constraint.lower_bound,
-                ub=constraint.upper_bound)
+                ub=constraint.upper_bound,
+            )
 
             list_of_var_cons.append(new_constraint)
             self.user_defined_const.append(constraint)
@@ -1009,13 +1010,16 @@ class Model(Object):
                 warn(f"The constraints passed must be inside a list: {constraints}")
                 constraints = [constraints]
             else:
-                raise TypeError(f"The constraints passed must be inside "
-                                f"a list: {constraints}")
+                raise TypeError(
+                    f"The constraints passed must be inside " f"a list: {constraints}"
+                )
 
         for constraint in constraints:
             if not isinstance(constraint, UserDefinedConstraint):
-                raise TypeError("The user defined constraints passed must be of "
-                                "type 'UserDefinedConstraints': {constraint}")
+                raise TypeError(
+                    "The user defined constraints passed must be of "
+                    "type 'UserDefinedConstraints': {constraint}"
+                )
             self._const_ids.remove(constraint.id)
             cons_to_remove = self.constraints[constraint.id]
             self.remove_cons_vars(cons_to_remove)

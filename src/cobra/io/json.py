@@ -189,10 +189,13 @@ def validate_json_model(
 
     validator = jsonschema.Draft7Validator(schema)
 
-    if isinstance(filename, string_types):
-        with open(filename, "r") as file_handle:
-            errors = validator.iter_errors(json.load(file_handle))
-    else:
-        errors = validator.iter_errors(json.load(filename))
+    try:
+        if isinstance(filename, string_types):
+            with open(filename, "r") as file_handle:
+                errors = validator.iter_errors(json.load(file_handle))
+        else:
+            errors = validator.iter_errors(json.load(filename))
+    except OSError:
+        errors = validator.iter_errors(json.loads(filename))
 
     return list(errors)

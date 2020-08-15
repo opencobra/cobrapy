@@ -97,17 +97,17 @@ class Notes(collections.MutableMapping):
         # if notes string is empty
         if self._notes_xhtml is None:
             raise ValueError(
-                f"Notes string is not a right place "
-                f"to store key value pairs. Store them "
-                f"at appropriate place in the document."
+                "Notes string is not a right place "
+                "to store key value pairs. Store them "
+                "at appropriate place in the document."
             )
 
         # if value passed is not of type 'str'
         if not isinstance(value, str):
             warn(
-                f"The value must be of type string. \n"
-                f"Converting value to 'string' type and "
-                f"then putting in notes string...."
+                "The value must be of type string. \n"
+                "Converting value to 'string' type and "
+                "then putting in notes string...."
             )
             value = str(value)
 
@@ -124,9 +124,9 @@ class Notes(collections.MutableMapping):
         if match is None:
             del self._data[key]
             raise ValueError(
-                f"Notes string is not a right place "
-                f"to store key value pairs. Store them "
-                f"at appropriate place in the document."
+                "Notes string is not a right place "
+                "to store key value pairs. Store them "
+                "at appropriate place in the document."
             )
         # otherwise update the content
         else:
@@ -164,9 +164,9 @@ class Notes(collections.MutableMapping):
     def __setitem__(self, key: str, value: str) -> None:
         if key not in self._data:
             raise ValueError(
-                f"Notes string is not a right place "
-                f"to store key value pairs. Store them "
-                f"at appropriate place in the document."
+                "Notes string is not a right place "
+                "to store key value pairs. Store them "
+                "at appropriate place in the document."
             )
         else:
             self._data[key] = value

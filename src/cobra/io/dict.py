@@ -70,13 +70,12 @@ _OPTIONAL_GENE_ATTRIBUTES = {
 _REQUIRED_GROUP_ATTRIBUTES = ["id", "kind", "members"]
 _ORDERED_OPTIONAL_GROUP_KEYS = ["name", "notes", "annotation"]
 _OPTIONAL_GROUP_ATTRIBUTES = {
-    "name": '',
+    "name": "",
     "notes": {},
     "annotation": {},
 }
 
-_REQUIRED_CONSTRAINT_ATTRIBUTES = ["lower_bound",
-                                   "upper_bound", "constraint_comps"]
+_REQUIRED_CONSTRAINT_ATTRIBUTES = ["lower_bound", "upper_bound", "constraint_comps"]
 _ORDERED_OPTIONAL_CONSTRAINT_KEYS = ["id", "name", "notes", "annotation"]
 _OPTIONAL_CONSTRAINT_ATTRIBUTES = {
     "id": None,
@@ -128,9 +127,14 @@ def _fix_type(value):
 
 
 def _annotation_to_dict(annotation: MetaData) -> Dict:
+
+    final_dict = OrderedDict()
+
+    if "sbo" in annotation and annotation["sbo"] != []:
+        final_dict["sbo"] = annotation["sbo"][0]
+
     anno_str = str(annotation.cvterms)
     anno_dict = literal_eval(anno_str)
-    final_dict = {}
     if len(anno_dict) != 0:
         final_dict = {"cvterms": anno_dict}
 
@@ -139,36 +143,38 @@ def _annotation_to_dict(annotation: MetaData) -> Dict:
         history_dict = literal_eval(history_str)
         final_dict["history"] = history_dict
 
-    if 'sbo' in annotation and annotation['sbo'] != []:
-        final_dict['sbo'] = annotation['sbo'][0]
+    if hasattr(annotation, "key_value_data"):
+        keyvalue_str = str(annotation.key_value_data)
+        keyvalue_list = literal_eval(keyvalue_str)
+        if len(keyvalue_list) != 0:
+            final_dict["key_value_data"] = keyvalue_list
 
     return final_dict
 
 
 def _extract_annotation(data: Dict) -> MetaData:
-        cvterms = data["cvterms"] if "cvterms" in data else None
-        history = data["history"] if "history" in data else None
-        keyValueDict = data["history"] if "keyValueDict" in data else None
+    cvterms = data["cvterms"] if "cvterms" in data else None
+    history = data["history"] if "history" in data else None
+    keyValueDict = data["history"] if "key_value_data" in data else None
 
-        if cvterms is not None or history is not None or \
-                keyValueDict is not None:
-            annotation = MetaData(cvterms, history, keyValueDict)
-        else:
-            annotation = MetaData()
-            annotation.cvterms.add_simple_annotations(data)
-        if "sbo" in data:
-            annotation["sbo"] = [data["sbo"]]
-        return annotation
+    if cvterms is not None or history is not None or keyValueDict is not None:
+        annotation = MetaData(cvterms, history, keyValueDict)
+    else:
+        annotation = MetaData()
+        annotation.cvterms.add_simple_annotations(data)
+    if "sbo" in data:
+        annotation["sbo"] = [data["sbo"]]
+    return annotation
 
 
-def _update_optional(cobra_object, new_dict, optional_attribute_dict,
-                     ordered_keys):
+def _update_optional(cobra_object, new_dict, optional_attribute_dict, ordered_keys):
     """update new_dict with optional attributes from cobra_object"""
     for key in ordered_keys:
         default = optional_attribute_dict[key]
         value = getattr(cobra_object, key)
-        if key == 'notes' and (value.notes_xhtml is None or
-                               len(value.notes_xhtml) == 0):
+        if key == "notes" and (
+            value.notes_xhtml is None or len(value.notes_xhtml) == 0
+        ):
             continue
         if value is None or value == default:
             continue
@@ -180,7 +186,7 @@ def _update_optional(cobra_object, new_dict, optional_attribute_dict,
 def metabolite_to_dict(metabolite):
     new_met = OrderedDict()
     for key in _REQUIRED_METABOLITE_ATTRIBUTES:
-        if key == 'id':
+        if key == "id":
             new_met[key] = _fix_type(F_REPLACE["F_SPECIE_REV"](metabolite.id))
         else:
             new_met[key] = _fix_type(getattr(metabolite, key))
@@ -213,7 +219,7 @@ def metabolite_from_dict(metabolite):
 def gene_to_dict(gene):
     new_gene = OrderedDict()
     for key in _REQUIRED_GENE_ATTRIBUTES:
-        if key == 'id':
+        if key == "id":
             new_gene[key] = _fix_type(F_REPLACE["F_GENE_REV"](gene.id))
         else:
             new_gene[key] = _fix_type(getattr(gene, key))
@@ -252,7 +258,7 @@ def reaction_to_dict(reaction):
                 np.isnan(reaction.upper_bound) or np.isinf(reaction.upper_bound)
             ):
                 new_reaction[key] = str(_fix_type(getattr(reaction, key)))
-            elif key == 'id':
+            elif key == "id":
                 new_reaction[key] = _fix_type(F_REPLACE["F_REACTION_REV"](reaction.id))
             else:
                 new_reaction[key] = _fix_type(getattr(reaction, key))
@@ -279,7 +285,10 @@ def reaction_from_dict(reaction, model):
         elif k == "metabolites":
             new_reaction.add_metabolites(
                 OrderedDict(
-                    (model.metabolites.get_by_id(F_REPLACE["F_SPECIE"](str(met))), coeff)
+                    (
+                        model.metabolites.get_by_id(F_REPLACE["F_SPECIE"](str(met))),
+                        coeff,
+                    )
                     for met, coeff in iteritems(v)
                 )
             )
@@ -304,9 +313,12 @@ def const_comp_to_dict(component: ConstraintComponent) -> Dict:
     new_const_comp = OrderedDict()
     for key in _REQUIRED_CONSTRAINT_COMP_ATTRIBUTES:
         new_const_comp[key] = _fix_type(getattr(component, key))
-    _update_optional(component, new_const_comp,
-                     _OPTIONAL_CONSTRAINT_COMP_ATTRIBUTES,
-                     _ORDERED_OPTIONAL_CONSTRAINT_COMP_KEYS)
+    _update_optional(
+        component,
+        new_const_comp,
+        _OPTIONAL_CONSTRAINT_COMP_ATTRIBUTES,
+        _ORDERED_OPTIONAL_CONSTRAINT_COMP_KEYS,
+    )
     return new_const_comp
 
 
@@ -316,10 +328,15 @@ def user_defined_const_to_dict(constraint: UserDefinedConstraint) -> Dict:
         if key != "constraint_comps":
             new_const[key] = _fix_type(getattr(constraint, key))
             continue
-        new_const["constraint_comps"] = list(map(const_comp_to_dict,
-                                                 constraint.constraint_comps))
-    _update_optional(constraint, new_const, _OPTIONAL_CONSTRAINT_ATTRIBUTES,
-                     _ORDERED_OPTIONAL_CONSTRAINT_KEYS)
+        new_const["constraint_comps"] = list(
+            map(const_comp_to_dict, constraint.constraint_comps)
+        )
+    _update_optional(
+        constraint,
+        new_const,
+        _OPTIONAL_CONSTRAINT_ATTRIBUTES,
+        _ORDERED_OPTIONAL_CONSTRAINT_KEYS,
+    )
     return new_const
 
 
@@ -345,9 +362,8 @@ def group_to_dict(group: Group) -> Dict:
     new_group = OrderedDict()
     for key in _REQUIRED_GROUP_ATTRIBUTES:
         if key != "members":
-            if key == 'id':
-                new_group[key] = _fix_type(
-                    F_REPLACE["F_GROUP_REV"](group.id))
+            if key == "id":
+                new_group[key] = _fix_type(F_REPLACE["F_GROUP_REV"](group.id))
             else:
                 new_group[key] = _fix_type(getattr(group, key))
                 continue
@@ -365,8 +381,9 @@ def group_to_dict(group: Group) -> Dict:
             json_member = {"idRef": idRef, "type": type(member).__name__}
             members.append(json_member)
         new_group["members"] = members
-    _update_optional(group, new_group, _OPTIONAL_GROUP_ATTRIBUTES,
-                     _ORDERED_OPTIONAL_GROUP_KEYS)
+    _update_optional(
+        group, new_group, _OPTIONAL_GROUP_ATTRIBUTES, _ORDERED_OPTIONAL_GROUP_KEYS
+    )
     return new_group
 
 
@@ -384,15 +401,18 @@ def group_from_dict(group: Dict, model: Model) -> Group:
             for member in group["members"]:
                 if member["type"] == "Reaction":
                     cobra_obj = model.reactions.get_by_id(
-                        F_REPLACE["F_REACTION"](member["idRef"]))
+                        F_REPLACE["F_REACTION"](member["idRef"])
+                    )
                     cobra_members.append(cobra_obj)
                 elif member["type"] == "Metabolite":
                     cobra_obj = model.metabolites.get_by_id(
-                        F_REPLACE["F_SPECIE"](member["idRef"]))
+                        F_REPLACE["F_SPECIE"](member["idRef"])
+                    )
                     cobra_members.append(cobra_obj)
                 elif member["type"] == "Gene":
                     cobra_obj = model.genes.get_by_id(
-                        F_REPLACE["F_GENE"](member["idRef"]))
+                        F_REPLACE["F_GENE"](member["idRef"])
+                    )
                     cobra_members.append(cobra_obj)
             new_group.add_members(cobra_members)
         elif k == "id":
@@ -431,12 +451,13 @@ def model_to_dict(model, sort=False):
     obj["reactions"] = list(map(reaction_to_dict, model.reactions))
     obj["genes"] = list(map(gene_to_dict, model.genes))
     obj["groups"] = list(map(group_to_dict, model.groups))
-    obj["user_defined_constraints"] = list(map(user_defined_const_to_dict,
-                                               model.user_defined_const))
+    obj["user_defined_constraints"] = list(
+        map(user_defined_const_to_dict, model.user_defined_const)
+    )
 
     # sbml meta info
     sbml_info = OrderedDict()
-    if hasattr(model, '_sbml'):
+    if hasattr(model, "_sbml"):
         for key, value in iteritems(model._sbml):
             if key == "annotation":
                 sbml_info[key] = _fix_type(_annotation_to_dict(value))
@@ -494,16 +515,19 @@ def model_from_dict(obj):
         rxn for rxn in obj["reactions"] if rxn.get("objective_coefficient", 0) != 0
     ]
     coefficients = {
-        model.reactions.get_by_id(F_REPLACE["F_REACTION"](rxn["id"])): rxn["objective_coefficient"]
+        model.reactions.get_by_id(F_REPLACE["F_REACTION"](rxn["id"])): rxn[
+            "objective_coefficient"
+        ]
         for rxn in objective_reactions
     }
-    if 'groups' in obj:
-        model.add_groups(
-            [group_from_dict(group, model) for group in obj['groups']]
-        )
+    if "groups" in obj:
+        model.add_groups([group_from_dict(group, model) for group in obj["groups"]])
     if "user_defined_constraints" in obj:
         model.add_user_defined_constraints(
-            [user_defined_const_from_dict(cons) for cons in obj["user_defined_constraints"]]
+            [
+                user_defined_const_from_dict(cons)
+                for cons in obj["user_defined_constraints"]
+            ]
         )
     set_objective(model, coefficients)
 
@@ -528,6 +552,6 @@ def model_from_dict(obj):
         elif k == "notes":
             notes_data = Notes(v)
             setattr(model, k, notes_data)
-        elif k in {'id', 'name', 'notes', 'compartments'}:
+        elif k in {"id", "name", "notes", "compartments"}:
             setattr(model, k, v)
     return model

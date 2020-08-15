@@ -55,7 +55,7 @@ class HistoryDateTime:
             datetime.strptime(date_text, "%Y-%m-%dT%H:%M:%S%z")
         except ValueError as e:
             # checking for python 3.6
-            if 'Z' in date_text:
+            if "Z" in date_text:
                 try:
                     datetime.strptime(date_text.replace("Z", ""), "%Y-%m-%dT%H:%M:%S")
                 except ValueError as e1:
@@ -67,8 +67,8 @@ class HistoryDateTime:
                 date_p36 = date_text.replace(utcoff, utcoff_p36)
                 try:
                     datetime.strptime(date_p36, "%Y-%m-%dT%H:%M:%S%z")
-                except ValueError as e2:
-                    raise ValueError(str(e2))
+                except ValueError:
+                    raise ValueError(str(e))
                 return True
 
         return True
@@ -115,6 +115,7 @@ class History:
         created_date: HistoryDateTime = None,
         modified_dates: List = None,
     ):
+        self._creators = []
         self._modified_dates = []
 
         self.creators = creators
@@ -146,7 +147,8 @@ class History:
         if not isinstance(value, list):
             raise TypeError(f"'creators' must be a list type: {value}")
         else:
-            self._creators = value
+            for creator in value:
+                self._creators.append(Creator.parse_creator(creator))
 
     @property
     def created_date(self) -> "HistoryDateTime":
@@ -155,7 +157,7 @@ class History:
     @created_date.setter
     def created_date(self, value: Union[str, HistoryDateTime]) -> None:
         if value is None:
-            self._created_date = None
+            self._created_date = HistoryDateTime()
         elif isinstance(value, str):
             self._created_date = HistoryDateTime(value)
         elif isinstance(value, HistoryDateTime):
@@ -187,9 +189,11 @@ class History:
         """Checks if history is set.
         Returns true if at least one attribute is set.
         """
-        return len(self.creators) == 0 and \
-            self.created_date is not None and \
-            len(self.modified_dates) != 0
+        return (
+            len(self.creators) != 0
+            or self.created_date.datetime is not None
+            or len(self.modified_dates) != 0
+        )
 
     def __eq__(self, history_obj: "History") -> bool:
         """ Checking equality of two history objects. """

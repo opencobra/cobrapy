@@ -41,6 +41,20 @@
                     ]
                 }
             ]
+        },
+        "history": {
+            "created_date": "2019-03-06T14:40:55Z",
+            "creators": [
+                {
+                    "email": "koenigmx@hu-berlin.de",
+                    "first_name": "Matthias",
+                    "last_name": "Koenig",
+                    "organization_name": "Humboldt-University Berlin, Institute for Theoretical Biology"
+                }
+            ],
+            "modified_dates": [
+                "2019-03-06T14:40:55Z"
+            ]
         }
     },
     "compartments": {
@@ -6348,8 +6362,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0351 or b1241",
             "id": "R_ACALD",
@@ -6377,8 +6390,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "s0001",
             "id": "R_ACALDt",
@@ -6409,8 +6421,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2296 or b3115 or b1849",
             "id": "R_ACKr",
@@ -6442,8 +6453,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0118 or b1276",
             "id": "R_ACONTa",
@@ -6473,8 +6483,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0118 or b1276",
             "id": "R_ACONTb",
@@ -6499,8 +6508,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_ACt2r",
@@ -6532,8 +6540,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0474",
             "id": "R_ADK1",
@@ -6567,8 +6574,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0726 and b0116 and b0727",
             "id": "R_AKGDH",
@@ -6600,8 +6606,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2587",
             "id": "R_AKGt2r",
@@ -6634,8 +6639,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b1478 or b0356 or b1241",
             "id": "R_ALCD2x",
@@ -6736,8 +6740,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000630"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_ATPM",
@@ -6765,8 +6768,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "( b3738 and b3736 and b3737 and b3735 and b3733 and b3731 and b3732 and b3734 ) or ( b3734 and b3732 and b3731 and b3733 and b3735 and b3737 and b3736 and b3738 and b3739 )",
             "id": "R_ATPS4r",
@@ -6792,8 +6794,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000629"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_BIOMASS_Ecoli_core_w_GAM",
@@ -6839,8 +6840,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "s0001",
             "id": "R_CO2t",
@@ -6873,8 +6873,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0720",
             "id": "R_CS",
@@ -6901,8 +6900,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "( b0978 and b0979 ) or ( b0733 and b0734 )",
             "id": "R_CYTBD",
@@ -6930,8 +6928,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2975 or b3603",
             "id": "R_D_LACt2",
@@ -6963,8 +6960,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2779",
             "id": "R_ENO",
@@ -6988,8 +6984,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_ETOHt2r",
@@ -7013,8 +7008,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_ac_e",
@@ -7035,8 +7029,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_acald_e",
@@ -7057,8 +7050,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_akg_e",
@@ -7079,8 +7071,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_co2_e",
@@ -7101,8 +7092,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_etoh_e",
@@ -7123,8 +7113,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_for_e",
@@ -7145,8 +7134,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_fru_e",
@@ -7167,8 +7155,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_fum_e",
@@ -7189,8 +7176,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_glc__D_e",
@@ -7211,8 +7197,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_gln__L_e",
@@ -7233,8 +7218,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_glu__L_e",
@@ -7255,8 +7239,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_h_e",
@@ -7277,8 +7260,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_h2o_e",
@@ -7299,8 +7281,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_lac__D_e",
@@ -7321,8 +7302,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_mal__L_e",
@@ -7343,8 +7323,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_nh4_e",
@@ -7365,8 +7344,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_o2_e",
@@ -7387,8 +7365,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_pi_e",
@@ -7409,8 +7386,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_pyr_e",
@@ -7431,8 +7407,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_succ_e",
@@ -7460,8 +7435,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b1773 or b2097 or b2925",
             "id": "R_FBA",
@@ -7490,8 +7464,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b3925 or b4232",
             "id": "R_FBP",
@@ -7516,8 +7489,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0904 or b2492",
             "id": "R_FORt2",
@@ -7547,8 +7519,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0904 or b2492",
             "id": "R_FORt",
@@ -7575,8 +7546,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b4153 and b4151 and b4152 and b4154",
             "id": "R_FRD7",
@@ -7601,8 +7571,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2415 and b1818 and b1817 and b1819 and b2416",
             "id": "R_FRUpts2",
@@ -7634,8 +7603,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b4122 or b1612 or b1611",
             "id": "R_FUM",
@@ -7664,8 +7632,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b3528",
             "id": "R_FUMt2_2",
@@ -7698,8 +7665,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b1852",
             "id": "R_G6PDH2r",
@@ -7733,8 +7699,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b1779",
             "id": "R_GAPD",
@@ -7761,8 +7726,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "( b2415 and b1818 and b1817 and b1819 and b2416 ) or ( b2415 and b2417 and b1101 and b2416 ) or ( b2415 and b2417 and b1621 and b2416 )",
             "id": "R_GLCpts",
@@ -7794,8 +7758,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b3870 or b1297",
             "id": "R_GLNS",
@@ -7829,8 +7792,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0810 and b0811 and b0809",
             "id": "R_GLNabc",
@@ -7867,8 +7829,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b1761",
             "id": "R_GLUDy",
@@ -7911,8 +7872,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0485 or b1812 or b1524",
             "id": "R_GLUN",
@@ -7944,8 +7904,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b3212 and b3213",
             "id": "R_GLUSy",
@@ -7972,8 +7931,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b4077",
             "id": "R_GLUt2r",
@@ -8006,8 +7964,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2029",
             "id": "R_GND",
@@ -8039,8 +7996,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0875 or s0001",
             "id": "R_H2Ot",
@@ -8069,8 +8025,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b1136",
             "id": "R_ICDHyr",
@@ -8102,8 +8057,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b4015",
             "id": "R_ICL",
@@ -8134,8 +8088,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2133 or b1380",
             "id": "R_LDH_D",
@@ -8168,8 +8121,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b4014 or b2976",
             "id": "R_MALS",
@@ -8201,8 +8153,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b3528",
             "id": "R_MALt2_2",
@@ -8235,8 +8186,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b3236",
             "id": "R_MDH",
@@ -8270,8 +8220,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b1479",
             "id": "R_ME1",
@@ -8304,8 +8253,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2463",
             "id": "R_ME2",
@@ -8332,8 +8280,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2287 and b2285 and b2283 and b2281 and b2279 and b2277 and b2276 and b2278 and b2280 and b2282 and b2284 and b2286 and b2288",
             "id": "R_NADH16",
@@ -8369,8 +8316,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b3962 or ( b1602 and b1603 )",
             "id": "R_NADTRHD",
@@ -8402,8 +8348,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "s0001 or b0451",
             "id": "R_NH4t",
@@ -8427,8 +8372,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "s0001",
             "id": "R_O2t",
@@ -8462,8 +8406,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0115 and b0114 and b0116",
             "id": "R_PDH",
@@ -8495,8 +8438,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b3916 or b1723",
             "id": "R_PFK",
@@ -8529,8 +8471,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "( b0902 and b3114 ) or ( b0903 and b0902 and b2579 ) or ( b0902 and b0903 ) or ( b3951 and b3952 )",
             "id": "R_PFL",
@@ -8557,8 +8498,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b4025",
             "id": "R_PGI",
@@ -8588,8 +8528,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2926",
             "id": "R_PGK",
@@ -8621,8 +8560,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0767",
             "id": "R_PGL",
@@ -8657,8 +8595,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b4395 or b3612 or b0755",
             "id": "R_PGM",
@@ -8686,8 +8623,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2987 or b3493",
             "id": "R_PIt2r",
@@ -8718,8 +8654,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b3956",
             "id": "R_PPC",
@@ -8753,8 +8688,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b3403",
             "id": "R_PPCK",
@@ -8787,8 +8721,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b1702",
             "id": "R_PPS",
@@ -8823,8 +8756,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2297 or b2458",
             "id": "R_PTAr",
@@ -8856,8 +8788,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b1854 or b1676",
             "id": "R_PYK",
@@ -8883,8 +8814,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_PYRt2",
@@ -8916,8 +8846,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b3386 or b4301",
             "id": "R_RPE",
@@ -8941,8 +8870,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2914 or b4090",
             "id": "R_RPI",
@@ -8970,8 +8898,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b3528",
             "id": "R_SUCCt2_2",
@@ -8996,8 +8923,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_SUCCt3",
@@ -9026,8 +8952,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0723 and b0721 and b0722 and b0724",
             "id": "R_SUCDi",
@@ -9059,8 +8984,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b0728 and b0729",
             "id": "R_SUCOAS",
@@ -9094,8 +9018,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2464 or b0008",
             "id": "R_TALA",
@@ -9121,8 +9044,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b1602 and b1603",
             "id": "R_THD2",
@@ -9150,8 +9072,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2935 or b2465",
             "id": "R_TKT1",
@@ -9183,8 +9104,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2935 or b2465",
             "id": "R_TKT2",
@@ -9216,8 +9136,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b3919",
             "id": "R_TPI",

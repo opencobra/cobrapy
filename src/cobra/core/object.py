@@ -59,8 +59,10 @@ class Object(object):
     @annotation.setter
     def annotation(self, value):
         if not (isinstance(value, dict) or isinstance(value, MetaData)):
-            raise TypeError("The data passed for annotation must be inside "
-                            "a dictionary: {}".format(value))
+            raise TypeError(
+                "The data passed for annotation must be inside "
+                "a dictionary: {}".format(value)
+            )
         else:
             if isinstance(value, MetaData):
                 self._annotation = value

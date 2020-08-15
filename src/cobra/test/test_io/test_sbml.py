@@ -13,6 +13,7 @@ import pytest
 
 import cobra
 from cobra import Model
+from cobra.core.metadata import MetaData
 from cobra.io import read_sbml_model, validate_sbml_model, write_sbml_model
 
 
@@ -233,20 +234,23 @@ def test_from_sbml_string(data_directory):
     TestCobraIO.compare_models(name="read from string", model1=model1, model2=model2)
 
 
-@pytest.mark.skip(reason="Model history currently not written")
 def test_model_history(tmp_path):
     """Testing reading and writing of ModelHistory."""
     model = Model("test")
-    model._sbml = {
+    history = {
         "creators": [
             {
-                "familyName": "Mustermann",
-                "givenName": "Max",
-                "organisation": "Muster University",
+                "last_name": "Mustermann",
+                "first_name": "Max",
+                "organization_name": "Muster University",
                 "email": "muster@university.com",
             }
-        ]
+        ],
+        "created_date": "2019-10-20T12:34:32Z",
+        "modified_dates": ["2019-10-20T12:35:32Z"],
     }
+    annotation = MetaData(history=history)
+    model._sbml = {"annotation": annotation}
 
     sbml_path = join(str(tmp_path), "test.xml")
     with open(sbml_path, "w") as f_out:
@@ -255,13 +259,23 @@ def test_model_history(tmp_path):
     with open(sbml_path, "r") as f_in:
         model2 = read_sbml_model(f_in)
 
-    assert "creators" in model2._sbml
-    assert len(model2._sbml["creators"]) is 1
-    c = model2._sbml["creators"][0]
-    assert c["familyName"] == "Mustermann"
-    assert c["givenName"] == "Max"
-    assert c["organisation"] == "Muster University"
-    assert c["email"] == "muster@university.com"
+    assert "annotation" in model2._sbml
+    assert len(model2._sbml["annotation"].history.creators) is 1
+    c = model2._sbml["annotation"].history.creators[0]
+    assert c.last_name == "Mustermann"
+    assert c.first_name == "Max"
+    assert c.organization_name == "Muster University"
+    assert c.email == "muster@university.com"
+
+    assert (
+        model2._sbml["annotation"].history.created_date.datetime
+        == "2019-10-20T12:34:32Z"
+    )
+    assert len(model2._sbml["annotation"].history._modified_dates) == 1
+    assert (
+        model2._sbml["annotation"].history._modified_dates[0].datetime
+        == "2019-10-20T12:35:32Z"
+    )
 
 
 def test_groups(data_directory, tmp_path):
@@ -447,43 +461,46 @@ def test_smbl_with_notes(data_directory, tmp_path):
         },
     }
     metabolite_annotations = {
-        '2hb_e': {
-            'sbo': ['SBO:0000247'],
-            'inchi': ['InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3,'
-                      '(H,6,7)'],
-            'chebi': ['CHEBI:1148']
+        "2hb_e": {
+            "sbo": ["SBO:0000247"],
+            "inchi": ["InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3," "(H,6,7)"],
+            "chebi": ["CHEBI:1148"],
         },
-        'nad_e': {
-            'sbo': ['SBO:0000247'],
-            'inchi': ['InChI=1S/C21H27N7O14P2/c22-17-12-19('
-                      '25-7-24-17)28(8-26-12)21-16(32)14(30)11('
-                      '41-21)6-39-44(36,37)42-43(34,35)38-5-10-13(29)15('
-                      '31)20(40-10)27-3-1-2-9(4-27)18('
-                      '23)33/h1-4,7-8,10-11,13-16,20-21,29-32H,5-6H2,'
-                      '(H5-,22,23,24,25,33,34,35,36,37)/p-1/t10-,'
-                      '11-,13-,14-,15-,16-,20-,21-/m1/s1'],
-            'chebi': ['CHEBI:57540']
+        "nad_e": {
+            "sbo": ["SBO:0000247"],
+            "inchi": [
+                "InChI=1S/C21H27N7O14P2/c22-17-12-19("
+                "25-7-24-17)28(8-26-12)21-16(32)14(30)11("
+                "41-21)6-39-44(36,37)42-43(34,35)38-5-10-13(29)15("
+                "31)20(40-10)27-3-1-2-9(4-27)18("
+                "23)33/h1-4,7-8,10-11,13-16,20-21,29-32H,5-6H2,"
+                "(H5-,22,23,24,25,33,34,35,36,37)/p-1/t10-,"
+                "11-,13-,14-,15-,16-,20-,21-/m1/s1"
+            ],
+            "chebi": ["CHEBI:57540"],
         },
-        'h_e': {
-            'sbo': ['SBO:0000247'], 'inchi': ['InChI=1S/p+1/i/hH'],
-            'chebi': ['CHEBI:24636']
+        "h_e": {
+            "sbo": ["SBO:0000247"],
+            "inchi": ["InChI=1S/p+1/i/hH"],
+            "chebi": ["CHEBI:24636"],
         },
-        '2obut_e': {
-            'sbo': ['SBO:0000247'],
-            'inchi': ['InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6,'
-                      '7)/p-1'],
-            'chebi': ['CHEBI:16763']
+        "2obut_e": {
+            "sbo": ["SBO:0000247"],
+            "inchi": ["InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6," "7)/p-1"],
+            "chebi": ["CHEBI:16763"],
         },
-        'nadh_e': {
-            'sbo': ['SBO:0000247'],
-            'inchi': ['InChI=1S/C21H29N7O14P2/c22-17-12-19('
-                      '25-7-24-17)28(8-26-12)21-16(32)14(30)11('
-                      '41-21)6-39-44(36,37)42-43(34,35)38-5-10-13('
-                      '29)15(31)20(40-10)27-3-1-2-9(4-27)18('
-                      '23)33/h1,3-4,7-8,10-11,13-16,20-21,29-32H,2,'
-                      '5-6H2,(H2,23,33)(H,34,35)(H,36,37)(H2,22,24,'
-                      '25)/p-2/t10-,11-,13-,14-,15-,16-,20-,21-/m1/s1'],
-            'chebi': ['CHEBI:57945']
+        "nadh_e": {
+            "sbo": ["SBO:0000247"],
+            "inchi": [
+                "InChI=1S/C21H29N7O14P2/c22-17-12-19("
+                "25-7-24-17)28(8-26-12)21-16(32)14(30)11("
+                "41-21)6-39-44(36,37)42-43(34,35)38-5-10-13("
+                "29)15(31)20(40-10)27-3-1-2-9(4-27)18("
+                "23)33/h1,3-4,7-8,10-11,13-16,20-21,29-32H,2,"
+                "5-6H2,(H2,23,33)(H,34,35)(H,36,37)(H2,22,24,"
+                "25)/p-2/t10-,11-,13-,14-,15-,16-,20-,21-/m1/s1"
+            ],
+            "chebi": ["CHEBI:57945"],
         },
     }
     reaction_notes = {

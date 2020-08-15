@@ -23,7 +23,7 @@ class MetaData(collections.MutableMapping):
     history : dict, History
         The history is holding the data about the creator,
         created and modified dates.
-    keyvaluedict : list
+    keyvalue_data : list
         Some key-value pairs which are not suitable to be
         represented anywhere else in the model.
     """
@@ -32,12 +32,12 @@ class MetaData(collections.MutableMapping):
         self,
         cvterms: Union[Dict, "CVTerms"] = None,
         history: Union[Dict, "History"] = None,
-        keyvaluedict: List = None,
+        keyvalue_data: List = None,
     ):
         self._cvterms = CVTerms()
         self.add_cvterms(cvterms)
         self.history = History.parse_history(history)
-        self.keyValueDict = ListOfKeyValue.parse_listofkeyvalue(keyvaluedict)
+        self.key_value_data = ListOfKeyValue.parse_listofkeyvalue(keyvalue_data)
 
     def add_cvterm(self, cvterm, index: int = 0) -> None:
         """Adds a single CVTerm to CVList of given qualifier at given index."""

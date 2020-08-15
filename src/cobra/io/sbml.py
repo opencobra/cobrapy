@@ -27,11 +27,9 @@ Some SBML related issues are still open, please refer to the respective issue:
     https://github.com/opencobra/cobrapy/issues/812)
 """
 
-import datetime
 import logging
 import os
 import re
-import traceback
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 from io import StringIO
@@ -390,10 +388,15 @@ def _sbml_to_model(
             )
 
     # meta information
-    meta = {"model.id": model_id, "level": model.getLevel(),
-            "version": model.getVersion(), "packages": packages,
-            "notes": _parse_notes_info(doc), "annotation": _parse_annotations(doc),
-            "info": info}
+    meta = {
+        "model.id": model_id,
+        "level": model.getLevel(),
+        "version": model.getVersion(),
+        "packages": packages,
+        "notes": _parse_notes_info(doc),
+        "annotation": _parse_annotations(doc),
+        "info": info,
+    }
 
     cobra_model._sbml = meta
 
@@ -1378,8 +1381,7 @@ def _set_notes(sbase: libsbml.SBase, notes: Notes) -> None:
     if notes.notes_xhtml is None or len(notes.notes_xhtml) == 0:
         return
     _check(
-        sbase.setNotes(notes.notes_xhtml),
-        "Setting notes on sbase: {}".format(sbase)
+        sbase.setNotes(notes.notes_xhtml), "Setting notes on sbase: {}".format(sbase)
     )
 
 
@@ -1407,9 +1409,11 @@ def _parse_annotation_info(uri):
             identifier = "%s:%s" % (provider, identifier)
             provider = provider.lower()
     else:
-        LOGGER.warning(f"{uri} does not conform to "
-                       f"'http(s)://identifiers.org/collection/id' or"
-                       f"'http(s)://identifiers.org/COLLECTION:id")
+        LOGGER.warning(
+            f"{uri} does not conform to "
+            f"'http(s)://identifiers.org/collection/id' or"
+            f"'http(s)://identifiers.org/COLLECTION:id"
+        )
         return None
 
     return provider, identifier
@@ -1494,14 +1498,14 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         if model_history.isSetCreatedDate():
             date = model_history.getCreatedDate()  # type: libsbml.Date
             cobra_date = HistoryDateTime(
-                date.getDateAsString())  # type: HistoryDateTime
+                date.getDateAsString()
+            )  # type: HistoryDateTime
             annotation.history.created_date = cobra_date
 
         cobra_modified_dates = []
         for index in range(model_history.getNumModifiedDates()):
             modified_date = model_history.getModifiedDate(index)
-            cobra_modified_date = HistoryDateTime(
-                modified_date.getDateAsString())
+            cobra_modified_date = HistoryDateTime(modified_date.getDateAsString())
             cobra_modified_dates.append(cobra_modified_date)
         annotation.history.modified_dates = cobra_modified_dates
 
@@ -1562,20 +1566,18 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
         cobra object with annotation information
 
     """
-    if not annotation or len(annotation) == 0:
-        return
 
     # standardize annotations
     annotation_data = deepcopy(annotation)
 
     if not isinstance(annotation_data, MetaData):
-        raise TypeError(f"The annotation object must be "
-                        f"of type 'Metadata': {annotation_data}")
+        raise TypeError(
+            f"The annotation object must be " f"of type 'Metadata': {annotation_data}"
+        )
 
-    if 'sbo' in annotation and annotation['sbo'] != []:
+    if "sbo" in annotation and annotation["sbo"] != []:
         sbo_term = annotation["sbo"]
-        _check(sbase.setSBOTerm(sbo_term[0]),
-               "Setting SBOTerm: {}".format(sbo_term[0]))
+        _check(sbase.setSBOTerm(sbo_term[0]), "Setting SBOTerm: {}".format(sbo_term[0]))
 
     # set metaId
     meta_id = "meta_{}".format(sbase.getId())
@@ -1589,8 +1591,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
         elif qualifier.startswith("bqm"):
             qualifier_type = libsbml.MODEL_QUALIFIER
         else:
-            raise CobraSBMLError('Unsupported qualifier: '
-                                 '%s' % qualifier)
+            raise CobraSBMLError("Unsupported qualifier: " "%s" % qualifier)
 
         for ex_res in value:
             cv = libsbml.CVTerm()  # type: libsbml.CVTerm
@@ -1598,9 +1599,9 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
             if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
                 cv.setBiologicalQualifierType(Qualifier[qualifier].value)
             elif qualifier_type == libsbml.MODEL_QUALIFIER:
-                cv.setModelQualifierType(Qualifier[qualifier].value-14)
+                cv.setModelQualifierType(Qualifier[qualifier].value - 14)
             else:
-                raise CobraSBMLError(f'Unsupported qualifier: {qualifier}')
+                raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
             for uri in ex_res.resources:
                 cv.addResource(uri)
 
@@ -1609,8 +1610,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
                 _add_nested_data(cv, ex_res.nested_data)
 
             # finally add the cvterm
-            _check(sbase.addCVTerm(cv),
-                   "Setting cvterm: {}".format(cv))
+            _check(sbase.addCVTerm(cv), "Setting cvterm: {}".format(cv))
 
     # set history
     if annotation.history.is_set_history():
@@ -1624,7 +1624,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
             comp_creator.setOrganisation(creator.organization_name)
             comp_history.addCreator(comp_creator)
 
-        if annotation.history.created_date is not None:
+        if annotation.history.created_date.datetime is not None:
             date = libsbml.Date(annotation.history.created_date.datetime)
             comp_history.setCreatedDate(date)
 
@@ -1633,8 +1633,10 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
             comp_history.addModifiedDate(date)
 
         # finally add the compo_history
-        _check(sbase.setModelHistory(comp_history),
-               "Setting ModelHistory: {}".format(comp_history))
+        _check(
+            sbase.setModelHistory(comp_history),
+            "Setting ModelHistory: {}".format(comp_history),
+        )
 
 
 def _add_nested_data(cvterm: libsbml.CVTerm, nested_data: CVTerms):
@@ -1655,7 +1657,7 @@ def _add_nested_data(cvterm: libsbml.CVTerm, nested_data: CVTerms):
         elif qualifier.startswith("bqm"):
             qualifier_type = libsbml.MODEL_QUALIFIER
         else:
-            raise CobraSBMLError(f'Unsupported qualifier: {qualifier}')
+            raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
 
         for ex_res in value:
             cv = libsbml.CVTerm()  # type: libsbml.CVTerm
@@ -1663,9 +1665,9 @@ def _add_nested_data(cvterm: libsbml.CVTerm, nested_data: CVTerms):
             if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
                 cv.setBiologicalQualifierType(Qualifier[qualifier].value)
             elif qualifier_type == libsbml.MODEL_QUALIFIER:
-                cv.setModelQualifierType(Qualifier[qualifier].value-14)
+                cv.setModelQualifierType(Qualifier[qualifier].value - 14)
             else:
-                raise CobraSBMLError(f'Unsupported qualifier: {qualifier}')
+                raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
             for uri in ex_res.resources:
                 cv.addResource(uri)
 
@@ -1674,8 +1676,7 @@ def _add_nested_data(cvterm: libsbml.CVTerm, nested_data: CVTerms):
                 _add_nested_data(cv, ex_res.nested_data)
 
             # finally add the cvterm
-            _check(cvterm.addNestedCVTerm(cv),
-                   "Adding nested cvterm: {}".format(cv))
+            _check(cvterm.addNestedCVTerm(cv), "Adding nested cvterm: {}".format(cv))
 
 
 # -----------------------------------------------------------------------------
@@ -1687,7 +1688,7 @@ def validate_sbml_model(
     internal_consistency=True,
     check_units_consistency=False,
     check_modeling_practice=False,
-    **kwargs
+    **kwargs,
 ):
     """Validate SBML model and returns the model along with a list of errors.
 

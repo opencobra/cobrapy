@@ -7,8 +7,7 @@ from os.path import join
 import pytest
 
 from cobra.core import Group
-
-from cobra.io import read_sbml_model, write_sbml_model, load_json_model, save_json_model
+from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
 
 def test_group_add_elements(model):
