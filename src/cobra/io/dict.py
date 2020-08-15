@@ -130,7 +130,9 @@ def _fix_type(value):
 def _annotation_to_dict(annotation: MetaData) -> Dict:
     anno_str = str(annotation.cvterms)
     anno_dict = literal_eval(anno_str)
-    final_dict = {"cvterms": anno_dict}
+    final_dict = {}
+    if len(anno_dict) != 0:
+        final_dict = {"cvterms": anno_dict}
 
     if annotation.history.is_set_history():
         history_str = str(annotation.history)

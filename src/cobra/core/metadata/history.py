@@ -9,7 +9,7 @@ class HistoryDateTime:
 
     Parameter
     ---------
-    datetime: str
+    datetime: str, datetime
         date in the form of a string
     """
 
