@@ -358,3 +358,26 @@ def test_double_reaction_deletion(model):
             else:
                 assert np.isclose(sol.growth, growth, atol=1e-3)
                 assert np.isclose(sol_one.growth, growth, atol=1e-3)
+
+
+def test_deletion_accessor(small_model):
+    """Test the DataFrame accessor."""
+    single = single_reaction_deletion(small_model, small_model.reactions[0:10])
+    double = double_reaction_deletion(small_model, small_model.reactions[0:10])
+    rxn1 = small_model.reactions[0]
+    rxn2 = small_model.reactions[1]
+
+    with pytest.raises(ValueError):
+        single.knockout[1]
+
+    with pytest.raises(ValueError):
+        single.knockout[{"a": 1}]
+
+    assert single.knockout[rxn1].ids.iloc[0] == {rxn1.id}
+    assert double.knockout[{rxn1, rxn2}].ids.iloc[0] == {rxn1.id, rxn2.id}
+    assert all(single.knockout[rxn1.id] == single.knockout[rxn1])
+    assert all(double.knockout[{rxn1.id, rxn2.id}] == double.knockout[{rxn1, rxn2}])
+    assert single.knockout[rxn1, rxn2].shape == (2, 3)
+    assert double.knockout[rxn1, rxn2].shape == (2, 3)
+    assert double.knockout[{rxn1, rxn2}].shape == (1, 3)
+    assert double.knockout[{rxn1}, {rxn2}].shape == (2, 3)
