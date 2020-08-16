@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-
-"""Test functions of array.py"""
-
-from __future__ import absolute_import
+"""Test functions of array.py."""
 
 import numpy as np
 import pytest
@@ -10,13 +6,8 @@ import pytest
 from cobra.util import create_stoichiometric_matrix
 
 
-try:
-    import scipy
-except ImportError:
-    scipy = None
-
-
 def test_dense_matrix(model):
+    """Test dense stoichiometric matrix creation."""
     S = create_stoichiometric_matrix(model, array_type="dense", dtype=int)
     assert S.dtype == int
     assert np.allclose(S.max(), [59])
@@ -33,8 +24,9 @@ def test_dense_matrix(model):
     assert np.allclose(mass_balance, 0)
 
 
-@pytest.mark.skipif(not scipy, reason="Sparse array methods require scipy")
 def test_sparse_matrix(model):
+    """Test sparse stoichiometric matrix creation."""
+    pytest.importorskip("scipy")
     sparse_types = ["dok", "lil"]
 
     solution = model.optimize()

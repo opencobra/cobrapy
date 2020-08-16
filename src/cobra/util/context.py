@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
+"""Context manager for the package."""
 
 from functools import partial
 
 
-class HistoryManager(object):
+class HistoryManager:
     """Record a list of actions to be taken at a later time. Used to
     implement context managers that allow temporary changes to a
     :class:`~cobra.core.Model`.

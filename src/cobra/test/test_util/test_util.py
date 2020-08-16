@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-
 """Test functions of util.py"""
-
-from __future__ import absolute_import
 
 from cobra.util import show_versions
 
