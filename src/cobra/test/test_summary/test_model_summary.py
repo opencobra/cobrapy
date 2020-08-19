@@ -99,9 +99,15 @@ def test_model_summary_fva(model, opt_solver):
 def test_model_summary_flux_in_context(model, opt_solver):
     """Test that the model summary inside and outside of a context are equal."""
     model.solver = opt_solver
+    copy = model.copy()
     with model:
+        model.reactions.EX_glc__D_e.bounds = (0, 1000)
+        model.reactions.EX_ac_e.bounds = (-10, 1000)
         context_summary = model.summary()
-    outside_summary = model.summary()
+
+    copy.reactions.EX_glc__D_e.bounds = (0, 1000)
+    copy.reactions.EX_ac_e.bounds = (-10, 1000)
+    outside_summary = copy.summary()
 
     assert context_summary.to_frame()["flux"].values == pytest.approx(
         outside_summary.to_frame()["flux"].values, abs=model.tolerance
