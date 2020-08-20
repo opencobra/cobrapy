@@ -20,6 +20,7 @@ class HistoryManager:
 
     def __init__(self, **kwargs) -> None:
         """Initialize the class."""
+        super().__init__(**kwargs)
         # this acts like a stack
         self._history = []
 
@@ -40,6 +41,9 @@ class HistoryManager:
             entry = self._history.pop()
             entry()
 
+    def size(self) -> int:
+        """Calculate number of operations on the stack."""
+        return len(self._history)
 
 
 def get_context(obj: "Object") -> Optional[HistoryManager]:
@@ -73,7 +77,6 @@ def get_context(obj: "Object") -> Optional[HistoryManager]:
     except (AttributeError, IndexError):
         pass
 
-    return None
 
 def resettable(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
     """
@@ -85,7 +88,7 @@ def resettable(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
 
     Parameters
     ----------
-    f: callable
+    func: callable
         The function to decorate.
 
     Returns
@@ -98,12 +101,12 @@ def resettable(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
     def wrapper(self, new_value):
         context = get_context(self)
         if context:
-            old_value = getattr(self, f.__name__)
+            old_value = getattr(self, func.__name__)
             # Don't clutter the context with unchanged variables
             if old_value == new_value:
                 return
-            context(partial(f, self, old_value))
+            context(partial(func, self, old_value))
 
-        f(self, new_value)
+        func(self, new_value)
 
     return wrapper

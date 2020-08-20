@@ -17,6 +17,8 @@ def test_history_manager() -> None:
     history_manager = HistoryManager()
     # add non-functioning operation
     history_manager(lambda: 1)
+    # check size of the stack
+    assert history_manager.size() == 1
     # reset operations
     history_manager.reset()
 
@@ -26,13 +28,15 @@ def test_get_context(model: "Model") -> None:
     with model as model:
         # reverse optimization direcion
         model.objective_direction = "min"
+        # retrieve context
         context = get_context(model)
-        # should have history
-        assert context._history[-1].args[-1] == "max"
+        # check size of the context
+        if context:
+            assert context.size() == 1
 
     # there shouldn't be any history
-    with pytest.raises(IndexError):
-        context._history[-1]
+    if context:
+        assert context.size() == 0
 
 
 def test_resettable() -> None:
