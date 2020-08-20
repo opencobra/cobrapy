@@ -1,11 +1,17 @@
 """Test functions of context.py."""
 
+from typing import TYPE_CHECKING
+
 import pytest
 
 from cobra.util import HistoryManager, get_context, resettable
 
 
-def test_history_manager():
+if TYPE_CHECKING:
+    from cobra import Model
+
+
+def test_history_manager() -> None:
     """Test initialization and resetting of HistoryManager."""
     # initialize HistoryManager
     history_manager = HistoryManager()
@@ -15,7 +21,7 @@ def test_history_manager():
     history_manager.reset()
 
 
-def test_get_context(model):
+def test_get_context(model: "Model") -> None:
     """Test if context retrieval is working."""
     with model as model:
         # reverse optimization direcion
@@ -29,7 +35,7 @@ def test_get_context(model):
         context._history[-1]
 
 
-def test_resettable():
+def test_resettable() -> None:
     """Test if resettable decorator is functional."""
     # decorate a dummy function
     @resettable

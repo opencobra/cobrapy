@@ -1,7 +1,11 @@
 """Context manager for the package."""
 
 from functools import partial
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Optional
+
+
+if TYPE_CHECKING:
+    from cobra import Object
 
 
 class HistoryManager:
@@ -14,12 +18,12 @@ class HistoryManager:
 
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs) -> None:
         """Initialize the class."""
         # this acts like a stack
         self._history = []
 
-    def __call__(self, operation: Callable[[Any], Any]):
+    def __call__(self, operation: Callable[[Any], Any]) -> None:
         """Add the corresponding operation to the history stack.
 
         Parameters
@@ -30,14 +34,15 @@ class HistoryManager:
         """
         self._history.append(operation)
 
-    def reset(self):
+    def reset(self) -> None:
         """Trigger executions for all items in the stack in reverse order."""
         while self._history:
             entry = self._history.pop()
             entry()
 
 
-def get_context(obj):
+
+def get_context(obj: "Object") -> Optional[HistoryManager]:
     """Search for a context manager.
 
     Parameters
@@ -70,8 +75,7 @@ def get_context(obj):
 
     return None
 
-
-def resettable(f: Callable[[Any], Any]):
+def resettable(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
     """
     Simplify the context management of simple object attributes.
 
