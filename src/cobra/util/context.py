@@ -56,7 +56,8 @@ def get_context(obj: "Object") -> Optional[HistoryManager]:
 
     Returns
     -------
-    None
+    HistoryManager or None
+        HistoryManager instance, or None if no context manager is found.
 
     Raises
     ------
