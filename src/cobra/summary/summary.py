@@ -39,8 +39,8 @@ class Summary(ABC):
         """
         super().__init__(**kwargs)
         self._flux = None
+        self._tolerance = None
 
-    @abstractmethod
     def _generate(
         self,
         model: "Model",
@@ -65,9 +65,7 @@ class Summary(ABC):
             optimum objective to be searched.
 
         """
-        raise NotImplementedError(
-            "This method needs to be implemented by the subclass."
-        )
+        self._tolerance = model.tolerance
 
     def __str__(self) -> str:
         """Return a string representation of the summary."""
@@ -77,11 +75,30 @@ class Summary(ABC):
         """Return a rich HTML representation of the summary."""
         return self.to_html()
 
+    @property
+    def tolerance(self) -> float:
+        """Return the set threshold."""
+        return self._tolerance
+
+    def _normalize_threshold(self, threshold: Optional[float]):
+        """Return a sensible threshold value."""
+        if threshold is None:
+            return self.tolerance
+        else:
+            if threshold < self.tolerance:
+                logger.warning(
+                    "The chosen threshold cannot be less than the model's "
+                    "tolerance value. Using the tolerance instead."
+                )
+                return self.tolerance
+            else:
+                return threshold
+
     @abstractmethod
     def to_string(
         self,
         names: bool = False,
-        threshold: float = 1e-6,
+        threshold: Optional[float] = None,
         float_format: str = ".4G",
         column_width: int = 79,
     ) -> str:
@@ -94,7 +111,8 @@ class Summary(ABC):
             Whether or not elements should be displayed by their common names
             (default False).
         threshold : float, optional
-            Hide fluxes below the threshold from being displayed (default 1e-6).
+            Hide fluxes below the threshold from being displayed. If no value is
+            given, the model tolerance is used (default None).
         float_format : str, optional
             Format string for floats (default '.4G').
         column_width : int, optional
@@ -112,7 +130,10 @@ class Summary(ABC):
 
     @abstractmethod
     def to_html(
-        self, names: bool = False, threshold: float = 1e-6, float_format: str = ".4G"
+        self,
+        names: bool = False,
+        threshold: Optional[float] = None,
+        float_format: str = ".4G",
     ) -> str:
         """
         Return a rich HTML representation of the metabolite summary.
@@ -123,7 +144,8 @@ class Summary(ABC):
             Whether or not elements should be displayed by their common names
             (default False).
         threshold : float, optional
-            Hide fluxes below the threshold from being displayed (default 1e-6).
+            Hide fluxes below the threshold from being displayed. If no value is
+            given, the model tolerance is used (default None).
         float_format : str, optional
             Format string for floats (default '.4G').
 

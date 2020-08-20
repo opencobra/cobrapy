@@ -108,6 +108,8 @@ class ModelSummary(Summary):
             optimum objective to be searched.
 
         """
+        super()._generate(model=model, solution=solution, fva=fva)
+
         coefficients = linear_reaction_coefficients(model)
         if solution is None:
             logger.info("Generating new parsimonious flux distribution.")
@@ -365,7 +367,7 @@ class ModelSummary(Summary):
         self,
         names: bool = False,
         element: str = "C",
-        threshold: float = 1e-6,
+        threshold: Optional[float] = None,
         float_format: str = ".4G",
         column_width: int = 79,
     ) -> str:
@@ -380,7 +382,8 @@ class ModelSummary(Summary):
         element : str, optional
             The atomic element to summarize uptake and secretion for (default 'C').
         threshold : float, optional
-            Hide fluxes below the threshold from being displayed (default 1e-6).
+            Hide fluxes below the threshold from being displayed. If no value is
+            given, the model tolerance is used (default None).
         float_format : str, optional
             Format string for floats (default '.4G').
         column_width : int, optional
@@ -392,6 +395,8 @@ class ModelSummary(Summary):
             The summary formatted as a pretty string.
 
         """
+        threshold = self._normalize_threshold(threshold)
+
         objective = self._string_objective(names)
 
         uptake = self._string_table(
@@ -422,7 +427,7 @@ class ModelSummary(Summary):
         self,
         names: bool = False,
         element: str = "C",
-        threshold: float = 1e-6,
+        threshold: Optional[float] = None,
         float_format: str = ".4G",
     ) -> str:
         """
@@ -436,7 +441,8 @@ class ModelSummary(Summary):
         element : str, optional
             The atomic element to summarize uptake and secretion for (default 'C').
         threshold : float, optional
-            Hide fluxes below the threshold from being displayed (default 1e-6).
+            Hide fluxes below the threshold from being displayed. If no value is
+            given, the model tolerance is used (default None).
         float_format : str, optional
             Format string for floats (default '.4G').
 
@@ -446,6 +452,8 @@ class ModelSummary(Summary):
             The summary formatted as HTML.
 
         """
+        threshold = self._normalize_threshold(threshold)
+
         objective = self._string_objective(names)
 
         uptake = self._html_table(
