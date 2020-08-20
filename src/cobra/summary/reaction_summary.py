@@ -98,6 +98,8 @@ class ReactionSummary(Summary):
             optimum objective to be searched.
 
         """
+        super()._generate(model=model, solution=solution, fva=fva)
+
         if solution is None:
             logger.info("Generating new parsimonious flux distribution.")
             solution = pfba(model)
@@ -152,7 +154,7 @@ class ReactionSummary(Summary):
     def to_string(
         self,
         names: bool = False,
-        threshold: float = 1e-6,
+        threshold: Optional[float] = None,
         float_format: str = ".4G",
         column_width: int = 79,
     ) -> str:
@@ -165,7 +167,8 @@ class ReactionSummary(Summary):
             Whether or not elements should be displayed by their common names
             (default False).
         threshold : float, optional
-            Hide fluxes below the threshold from being displayed (default 1e-6).
+            Hide fluxes below the threshold from being displayed. If no value is
+            given, the model tolerance is used (default None).
         float_format : str, optional
             Format string for floats (default '.4G').
         column_width : int, optional
@@ -177,6 +180,8 @@ class ReactionSummary(Summary):
             The summary formatted as a pretty string.
 
         """
+        threshold = self._normalize_threshold(threshold)
+
         if names:
             header = shorten(self._reaction.name, width=column_width, placeholder="...")
         else:
@@ -195,7 +200,10 @@ class ReactionSummary(Summary):
         )
 
     def to_html(
-        self, names: bool = False, threshold: float = 1e-6, float_format: str = ".4G"
+        self,
+        names: bool = False,
+        threshold: Optional[float] = None,
+        float_format: str = ".4G",
     ) -> str:
         """
         Return a rich HTML representation of the reaction summary.
@@ -206,7 +214,8 @@ class ReactionSummary(Summary):
             Whether or not elements should be displayed by their common names
             (default False).
         threshold : float, optional
-            Hide fluxes below the threshold from being displayed (default 1e-6).
+            Hide fluxes below the threshold from being displayed. If no value is
+            given, the model tolerance is used (default None).
         float_format : str, optional
             Format string for floats (default '.4G').
 
@@ -216,6 +225,8 @@ class ReactionSummary(Summary):
             The summary formatted as HTML.
 
         """
+        threshold = self._normalize_threshold(threshold)
+
         if names:
             header = self._reaction.name
         else:
