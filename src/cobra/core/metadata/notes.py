@@ -182,7 +182,9 @@ class Notes(collections.MutableMapping):
         return len(self._data)
 
     def __str__(self) -> str:
+        if self._notes_xhtml is None:
+            return ""
         return self.notes_xhtml
 
     def __repr__(self) -> str:
-        return self.notes_xhtml
+        return self.__str__()
