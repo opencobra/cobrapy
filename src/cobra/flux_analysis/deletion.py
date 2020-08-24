@@ -5,6 +5,7 @@ import multiprocessing
 from builtins import dict, map
 from functools import partial
 from itertools import product
+from typing import List, Set, Union
 
 import pandas as pd
 from optlang.exceptions import SolverError
@@ -423,7 +424,7 @@ class KnockoutAccessor:
     - list of sets of objects or IDs (to get several multi-deletions)
     """
 
-    def __init__(self, pandas_obj):
+    def __init__(self, pandas_obj: pd.DataFrame) -> None:
         """Set up the accessor.
 
         Parameters:
@@ -435,12 +436,25 @@ class KnockoutAccessor:
         self._result = pandas_obj
 
     @staticmethod
-    def _validate(obj):
+    def _validate(obj: pd.DataFrame) -> None:
         # verify it is a deletion results
         if any(name not in obj.columns for name in ["ids", "growth", "status"]):
             raise AttributeError("Must be DataFrame returned by a deletion method.")
 
-    def __getitem__(self, args):
+    def __getitem__(self, args: Union[
+        Gene,
+        List[Gene],
+        Set[Gene],
+        List[Set[Gene]],
+        Reaction,
+        List[Reaction],
+        Set[Reaction],
+        List[Set[Reaction]],
+        str,
+        List[str],
+        Set[str],
+        List[Set[str]],
+    ]) -> pd.DataFrame:
         """Return the deletion result for a particular set of knocked entities.
 
         Parameters:
