@@ -405,7 +405,23 @@ def double_gene_deletion(
 
 @pd.api.extensions.register_dataframe_accessor("knockout")
 class KnockoutAccessor:
-    """Access unique combinations of reactions in deletion results."""
+    """Access unique combinations of reactions in deletion results.
+
+    This allows acces in the form of `results.knockout[rxn1]` or
+    `results.knockout["rxn1_id"]`. Each individual entry will return a deletion
+    so `results.knockout[rxn1, rxn2]` will return two deletions (for individual
+    knockouts of rxn1 and rxn2 respectively). Multi-deletions can be accessed by passing
+    in sets like `results.knockou[{rxn1, rxn2}]` which denotes the double deletion of
+    both reactions. Thus, the following are allowed index elements:
+
+    - single reactions or genes (depending on whether it is a gene or reaction deletion)
+    - single reaction IDs or gene IDs
+    - lists of single single reaction IDs or gene IDs (will return one row for each
+      element in the list)
+    - sets of reactions or genes (for multi-deletions)
+    - sets of reactions IDs or gene IDs
+    - list of sets of objects or IDs (to get several multi-deletions)
+    """
 
     def __init__(self, pandas_obj):
         """Set up the accessor.
@@ -429,12 +445,21 @@ class KnockoutAccessor:
 
         Parameters:
         -----------
-        args : iterable of str, cobra.Reaction or cobra.Gene
+        args : cobra.Reactions, cobra.Gene, str, set, or list
+            The deletions to be returned. Accepts:
+            - single reactions or genes
+            - single reaction IDs or gene IDs
+            - lists of single single reaction IDs or gene IDs
+            - sets of reactions or genes
+            - sets of reactions IDs or gene IDs
+            - list of sets of objects or IDs
+            See the docs for usage examples.
 
         Returns:
         --------
         pd.DataFrame
-            The deletion result where the chosen entities have been deleted.
+            The deletion result where the chosen entities have been deleted. Each row
+            denotes a deletion.
         """
         if not any(isinstance(args, t) for t in [tuple, list]):
             args = [args]

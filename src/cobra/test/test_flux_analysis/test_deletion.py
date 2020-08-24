@@ -319,7 +319,7 @@ def test_double_gene_deletion(model):
     }
     solution = double_gene_deletion(model, gene_list1=genes, processes=3)
     solution_one_process = double_gene_deletion(model, gene_list1=genes, processes=1)
-    print(solution)
+
     for rxn_a, sub in iteritems(growth_dict):
         for rxn_b, growth in iteritems(sub):
             sol = solution.knockout[{rxn_a, rxn_b}]
