@@ -441,20 +441,23 @@ class KnockoutAccessor:
         if any(name not in obj.columns for name in ["ids", "growth", "status"]):
             raise AttributeError("Must be DataFrame returned by a deletion method.")
 
-    def __getitem__(self, args: Union[
-        Gene,
-        List[Gene],
-        Set[Gene],
-        List[Set[Gene]],
-        Reaction,
-        List[Reaction],
-        Set[Reaction],
-        List[Set[Reaction]],
-        str,
-        List[str],
-        Set[str],
-        List[Set[str]],
-    ]) -> pd.DataFrame:
+    def __getitem__(
+        self,
+        args: Union[
+            Gene,
+            List[Gene],
+            Set[Gene],
+            List[Set[Gene]],
+            Reaction,
+            List[Reaction],
+            Set[Reaction],
+            List[Set[Reaction]],
+            str,
+            List[str],
+            Set[str],
+            List[Set[str]],
+        ],
+    ) -> pd.DataFrame:
         """Return the deletion result for a particular set of knocked entities.
 
         Parameters:
