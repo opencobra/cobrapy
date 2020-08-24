@@ -83,3 +83,8 @@ jobs:
         prerelease: false
     - name: Publish to website
       run: ./scripts/deploy_website.sh
+      shell: bash
+      env:
+        TAG: ${{ steps.tag.outputs.version }}
+        WORKSPACE: ${{ github.workspace }}
+        WEBSITE_DEPLOY_TOKEN: ${{ secrets.WEBSITE_DEPLOY_TOKEN }}
