@@ -32,6 +32,7 @@ and install COBRApy from the ``bioconda`` channel. Soon it should also be
 available from the ``conda-forge`` channel.
 
 .. code-block:: console
+
     conda install -c bioconda cobra
 
 Installation for development
@@ -47,10 +48,11 @@ COBRApy uses `optlang <http://optlang.readthedocs.io>`_ to interface the
 mathematical solvers used to optimize the created COBRA models.  At the time of
 writing the supported solvers are:
 
--  ILOG/CPLEX (available with `Academic
-    <https://www.ibm.com/developerworks/university/academicinitiative/>`_ and
-    `Commercial
-    <http://www.ibm.com/software/integration/optimization/cplex-optimizer/>`_
-    licenses)
--  `Gurobi <http://gurobi.com>`_
--  `GLPK <http://www.gnu.org/software/glpk/>`_ which is automatically installed as swiglpk
+- ILOG/CPLEX (available with `Academic
+  <https://www.ibm.com/developerworks/university/academicinitiative/>`_ and
+  `Commercial
+  <http://www.ibm.com/software/integration/optimization/cplex-optimizer/>`_
+  licenses)
+- `Gurobi <http://gurobi.com>`_
+- `GLPK <http://www.gnu.org/software/glpk/>`_ which is automatically installed
+  as swiglpk
