@@ -1,4 +1,6 @@
-"""Test functions of solver.py"""
+"""Test functions of solver.py."""
+
+from typing import TYPE_CHECKING, List, Optional
 
 import numpy as np
 import pytest
@@ -7,26 +9,34 @@ from cobra.exceptions import OptimizationError
 from cobra.util import solver as su
 
 
+if TYPE_CHECKING:
+    from cobra import Model
+
+
 stable_optlang = ["glpk", "cplex", "gurobi"]
-optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
+optlang_solvers = [f"optlang-{s}" for s in stable_optlang if s in su.solvers]
 
 
-def test_solver_list():
+def test_solver_list() -> None:
+    """Test if solvers are found."""
     assert len(su.solvers) >= 1
     assert "glpk" in su.solvers
 
 
-def test_interface_str():
+def test_interface_str() -> None:
+    """Test string representation of solver interfaces."""
     assert su.interface_to_str("nonsense") == "nonsense"
     assert su.interface_to_str("optlang.glpk_interface") == "glpk"
     assert su.interface_to_str("optlang-cplex") == "cplex"
 
 
-def test_solver_name():
+def test_solver_name() -> None:
+    """Test default solver name."""
     assert su.get_solver_name() == "glpk"
 
 
-def test_choose_solver(model):
+def test_choose_solver(model: "Model") -> Optional[su.SolverNotFound]:
+    """Test if solver switching is working."""
     so = su.choose_solver(model, "glpk")
     assert su.interface_to_str(so) == "glpk"
 
@@ -38,13 +48,17 @@ def test_choose_solver(model):
             su.choose_solver(model, qp=True)
 
 
-def test_linear_reaction_coefficients(model):
+def test_linear_reaction_coefficients(model: "Model") -> None:
+    """Test if linear coefficients are identifiable in objective."""
     coefficients = su.linear_reaction_coefficients(model)
     assert coefficients == {model.reactions.Biomass_Ecoli_core: 1}
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
-def test_fail_non_linear_reaction_coefficients(model, solver):
+def test_fail_non_linear_reaction_coefficients(
+    model: "Model", solver: List[str]
+) -> Optional[ValueError]:
+    """Test failure of non-linear coefficient identification in reaction."""
     model.solver = solver
     try:
         model.objective = model.problem.Objective(
@@ -59,7 +73,8 @@ def test_fail_non_linear_reaction_coefficients(model, solver):
             model.reactions.ACALD.objective_coefficient = 1
 
 
-def test_add_remove(model):
+def test_add_remove(model: "Model") -> None:
+    """Test addition and removal of variables and constraints."""
     v = model.variables
     new_var = model.problem.Variable("test_var", lb=-10, ub=-10)
     new_constraint = model.problem.Constraint(
@@ -75,7 +90,8 @@ def test_add_remove(model):
     assert "test_constraint" not in model.constraints.keys()
 
 
-def test_add_remove_in_context(model):
+def test_add_remove_in_context(model: "Model") -> None:
+    """Test addition and removal of variables and constraints within context."""
     v = model.variables
     new_var = model.problem.Variable("test_var", lb=-10, ub=-10)
 
@@ -89,7 +105,8 @@ def test_add_remove_in_context(model):
     assert "PGM" in model.variables.keys()
 
 
-def test_absolute_expression(model):
+def test_absolute_expression(model: "Model") -> None:
+    """Test addition of an absolute expression."""
     v = model.variables
     with model:
         parts = su.add_absolute_expression(model, 2 * v.PGM, name="test", ub=100)
@@ -103,7 +120,8 @@ def test_absolute_expression(model):
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
-def test_fix_objective_as_constraint(solver, model):
+def test_fix_objective_as_constraint(solver: List[str], model: "Model") -> None:
+    """Test fixing present objective as a constraint."""
     model.solver = solver
     with model as m:
         su.fix_objective_as_constraint(model, 1.0)
@@ -117,7 +135,10 @@ def test_fix_objective_as_constraint(solver, model):
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
-def test_fix_objective_as_constraint_minimize(model, solver):
+def test_fix_objective_as_constraint_minimize(
+    model: "Model", solver: List[str]
+) -> None:
+    """Test fixing present objective as a constraint but as a minimization."""
     model.solver = solver
     model.reactions.Biomass_Ecoli_core.bounds = (0.1, 0.1)
     minimize_glucose = model.problem.Objective(
@@ -125,7 +146,7 @@ def test_fix_objective_as_constraint_minimize(model, solver):
     )
     su.set_objective(model, minimize_glucose)
     su.fix_objective_as_constraint(model)
-    fx_name = "fixed_objective_{}".format(model.objective.name)
+    fx_name = f"fixed_objective_{model.objective.name}"
     constr = model.constraints
     # Ensure that a solution exists on non-GLPK solvers.
     model.slim_optimize()
@@ -136,7 +157,8 @@ def test_fix_objective_as_constraint_minimize(model, solver):
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
-def test_add_lp_feasibility(model, solver):
+def test_add_lp_feasibility(model: "Model", solver: List[str]) -> None:
+    """Test functionality to ensure LP feasibility."""
     model.solver = solver
 
     with model:
@@ -154,7 +176,8 @@ def test_add_lp_feasibility(model, solver):
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
-def test_add_lexicographic_constraints(model, solver):
+def test_add_lexicographic_constraints(model: "Model", solver: List[str]) -> None:
+    """Test addition of lexicographic constraints."""
     model.solver = solver
 
     rxns = ["Biomass_Ecoli_core", "EX_glc__D_e", "EX_o2_e"]
@@ -173,7 +196,8 @@ def test_add_lexicographic_constraints(model, solver):
         su.add_lexicographic_constraints(model, rxns)
 
 
-def test_time_limit(large_model):
+def test_time_limit(large_model: "Model") -> None:
+    """Test time limit while optimizing a model."""
     if su.interface_to_str(large_model.problem) != "glpk":
         pytest.skip("requires GLPK")
 
