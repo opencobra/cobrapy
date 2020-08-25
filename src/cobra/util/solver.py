@@ -4,14 +4,15 @@ All functions integrate well with the context manager, meaning that
 all operations defined here are automatically reverted when used in a
 `with model:` block.
 
-The functions defined here together with the existing model functions should
-allow you to implement custom flux analysis methods with ease.
+The functions defined here together with the existing model functions
+should allow you to implement custom flux analysis methods with ease.
+
 """
 
 import re
-from collections import namedtuple
 from functools import partial
 from types import ModuleType
+from typing import TYPE_CHECKING, Dict, List, NamedTuple, Optional, Tuple, Union
 from warnings import warn
 
 import optlang
@@ -35,6 +36,11 @@ from cobra.exceptions import (
 from cobra.util.context import get_context
 
 
+# Used to avoid cyclic reference and enable third-party static type checkers to work
+if TYPE_CHECKING:
+    from cobra import Model, Reaction
+
+
 # Define all the solvers that are found in optlang.
 solvers = {
     match.split("_interface")[0]: getattr(optlang, match)
@@ -49,23 +55,26 @@ qp_solvers = ["cplex", "gurobi"]
 has_primals = [NUMERIC, FEASIBLE, INFEASIBLE, SUBOPTIMAL, ITERATION_LIMIT, TIME_LIMIT]
 
 
-def linear_reaction_coefficients(model, reactions=None):
-    """Coefficient for the reactions in a linear objective.
+def linear_reaction_coefficients(
+    model: "Model", reactions: Optional[List["Reaction"]] = None
+) -> Union[Dict["Reaction", float], dict]:
+    """Retrieve coefficient for the reactions in a linear objective.
 
     Parameters
     ----------
-    model : cobra model
-        the model object that defined the objective
-    reactions : list
-        an optional list for the reactions to get the coefficients for. All
-        reactions if left missing.
+    model : cobra.Model
+        The cobra model defining the linear objective.
+    reactions : list of cobra.Reaction, optional
+        An optional list of the reactions to get the coefficients for.
+        By default, all reactions are considered (default None).
 
     Returns
     -------
     dict
-        A dictionary where the key is the reaction object and the value is
-        the corresponding coefficient. Empty dictionary if there are no
+        A dictionary where the keys are the reaction objects and the values
+        are the corresponding coefficient. Empty dictionary if there are no
         linear terms in the objective.
+
     """
     linear_coefficients = {}
     reactions = model.reactions if not reactions else reactions
@@ -83,7 +92,7 @@ def linear_reaction_coefficients(model, reactions=None):
     return linear_coefficients
 
 
-def _valid_atoms(model, expression):
+def _valid_atoms(model: "Model", expression: optlang.symbolics.Basic) -> bool:
     """Check whether a sympy expression references the correct variables.
 
     Parameters
@@ -95,34 +104,46 @@ def _valid_atoms(model, expression):
 
     Returns
     -------
-    boolean
+    bool
         True if all referenced variables are contained in model, False
         otherwise.
+
     """
     atoms = expression.atoms(optlang.interface.Variable)
     return all(a.problem is model.solver for a in atoms)
 
 
-def set_objective(model, value, additive=False):
+def set_objective(
+    model: "Model",
+    value: Union[
+        optlang.interface.Objective, optlang.symbolics.Basic, Dict["Reaction", float],
+    ],
+    additive: bool = False,
+) -> Optional[Exception]:
     """Set the model objective.
 
     Parameters
     ----------
     model : cobra model
-       The model to set the objective for
-    value : model.problem.Objective,
-            e.g. optlang.glpk_interface.Objective, sympy.Basic or dict
-
-        If the model objective is linear, the value can be a new Objective
-        object or a dictionary with linear coefficients where each key is a
-        reaction and the element the new coefficient (float).
-
-        If the objective is not linear and `additive` is true, only values
-        of class Objective.
-
-    additive : boolmodel.reactions.Biomass_Ecoli_core.bounds = (0.1, 0.1)
-        If true, add the terms to the current objective, otherwise start with
+       The model to set the objective for.
+    value : optlang.interface.Objective, optlang.symbolics.Basic, dict
+        If the model objective is linear, then the value can be a new
+        optlang.interface.Objective or a dictionary with linear
+        coefficients where each key is a reaction and the corresponding
+        value is the new coefficient (float).
+        If the objective is non-linear and `additive` is True, then only
+        values of class optlang.interface.Objective, are accepted.
+    additive : bool
+        If True, add the terms to the current objective, otherwise start with
         an empty objective.
+
+    Raises
+    ------
+    ValueError
+        If model objective is non-linear and the `value` is a dict.
+    TypeError
+        If the type of `value` is not one of the accepted ones.
+
     """
     interface = model.problem
     reverse_value = model.solver.objective.expression
@@ -133,9 +154,8 @@ def set_objective(model, value, additive=False):
     if isinstance(value, dict):
         if not model.objective.is_Linear:
             raise ValueError(
-                "can only update non-linear objectives "
-                "additively using object of class "
-                "model.problem.Objective, not %s" % type(value)
+                "You can only update non-linear objectives additively using object of "
+                f"class optlang.interface.Objective, not {type(value)}"
             )
 
         if not additive:
@@ -152,7 +172,7 @@ def set_objective(model, value, additive=False):
             value = interface.Objective(
                 value, direction=model.solver.objective.direction, sloppy=False
             )
-        # Check whether expression only uses variables from current model
+        # Check whether expression only uses variables from current model;
         # clone the objective if not, faster than cloning without checking
         if not _valid_atoms(model, value.expression):
             value = interface.Objective.clone(value, model=model.solver)
@@ -162,7 +182,7 @@ def set_objective(model, value, additive=False):
         else:
             model.solver.objective += value.expression
     else:
-        raise TypeError("%r is not a valid objective for %r." % (value, model.solver))
+        raise TypeError(f"{value} is not a valid objective for {model.solver}.")
 
     context = get_context(model)
     if context:
@@ -174,47 +194,48 @@ def set_objective(model, value, additive=False):
         context(reset)
 
 
-def interface_to_str(interface):
+def interface_to_str(interface: Union[str, ModuleType]) -> str:
     """Give a string representation for an optlang interface.
 
     Parameters
     ----------
-    interface : string, ModuleType
+    interface : str, ModuleType
         Full name of the interface in optlang or cobra representation.
-        For instance 'optlang.glpk_interface' or 'optlang-glpk'.
+        For instance, 'optlang.glpk_interface' or 'optlang-glpk'.
 
     Returns
     -------
-    string
-       The name of the interface as a string
+    str
+       The name of the interface as a string.
     """
     if isinstance(interface, ModuleType):
         interface = interface.__name__
     return re.sub(r"optlang.|.interface", "", interface)
 
 
-def get_solver_name(mip=False, qp=False):
+def get_solver_name(mip: bool = False, qp: bool = False) -> Union[str, Exception]:
     """Select a solver for a given optimization problem.
 
     Parameters
     ----------
     mip : bool
-        Does the solver require mixed integer linear programming capabilities?
+        True if the solver requires mixed integer linear programming capabilities.
     qp : bool
-        Does the solver require quadratic programming capabilities?
+        True if the solver requires quadratic programming capabilities.
 
     Returns
     -------
-    string
-        The name of feasible solver.
+    str
+        The name of the feasible solver.
 
     Raises
     ------
     SolverNotFound
         If no suitable solver could be found.
+
     """
     if len(solvers) == 0:
-        raise SolverNotFound("no solvers installed")
+        raise SolverNotFound("No solvers found.")
     # Those lists need to be updated as optlang implements more solvers
     mip_order = ["gurobi", "cplex", "glpk"]
     lp_order = ["glpk", "cplex", "gurobi"]
@@ -230,15 +251,17 @@ def get_solver_name(mip=False, qp=False):
         for solver_name in qp_order:
             if solver_name in solvers:
                 return solver_name
-        raise SolverNotFound("no qp-capable solver found")
+        raise SolverNotFound("No QP-capable solver found.")
     else:
         for solver_name in mip_order:
             if solver_name in solvers:
                 return solver_name
-    raise SolverNotFound("no mip-capable solver found")
+    raise SolverNotFound("No MIP-capable solver found.")
 
 
-def choose_solver(model, solver=None, qp=False):
+def choose_solver(
+    model: "Model", solver: Optional[str] = None, qp: bool = False
+) -> Union[ModuleType, Exception]:
     """Choose a solver given a solver name and model.
 
     This will choose a solver compatible with the model and required
@@ -246,22 +269,24 @@ def choose_solver(model, solver=None, qp=False):
 
     Parameters
     ----------
-    model : a cobra model
+    model : cobra.Model
         The model for which to choose the solver.
     solver : str, optional
-        The name of the solver to be used.
+        The name of the solver to be used (default None).
     qp : boolean, optional
-        Whether the solver needs Quadratic Programming capabilities.
+        True if the solver needs quadratic programming capabilities
+        (default False).
 
     Returns
     -------
-    solver : an optlang solver interface
-        Returns a valid solver for the problem.
+    optlang.interface
+        Valid solver for the problem.
 
     Raises
     ------
     SolverNotFound
         If no suitable solver could be found.
+
     """
     if solver is None:
         solver = model.problem
@@ -275,86 +300,111 @@ def choose_solver(model, solver=None, qp=False):
     return solver
 
 
-def add_cons_vars_to_problem(model, what, **kwargs):
-    """Add variables and constraints to a Model's solver object.
+def add_cons_vars_to_problem(
+    model: "Model",
+    what: Union[
+        List[Union[optlang.interface.Variable, optlang.interface.Constraint]],
+        Tuple[Union[optlang.interface.Variable, optlang.interface.Constraint]],
+    ],
+    **kwargs,
+) -> None:
+    """Add variables and constraints to a model's solver object.
 
     Useful for variables and constraints that can not be expressed with
-    reactions and lower/upper bounds. Will integrate with the Model's context
-    manager in order to revert changes upon leaving the context.
+    reactions and lower/upper bounds. It will integrate with the model's
+    context manager in order to revert changes upon leaving the context.
 
     Parameters
     ----------
-    model : a cobra model
+    model : cobra.Model
        The model to which to add the variables and constraints.
-    what : list or tuple of optlang variables or constraints.
-       The variables or constraints to add to the model. Must be of class
-       `model.problem.Variable` or
-       `model.problem.Constraint`.
+    what : list or tuple of optlang.interface.Variable or
+           optlang.interface.Constraint
+       The variables and constraints to add to the model.
     **kwargs : keyword arguments
-        passed to solver.add()
-    """
-    context = get_context(model)
+       Keyword arguments passed to solver's add() method.
 
+    """
     model.solver.add(what, **kwargs)
+
+    context = get_context(model)
     if context:
         context(partial(model.solver.remove, what))
 
 
-def remove_cons_vars_from_problem(model, what):
-    """Remove variables and constraints from a Model's solver object.
+def remove_cons_vars_from_problem(
+    model: "Model",
+    what: Union[
+        List[Union[optlang.interface.Variable, optlang.interface.Constraint]],
+        Tuple[Union[optlang.interface.Variable, optlang.interface.Constraint]],
+    ],
+) -> None:
+    """Remove variables and constraints from a model's solver object.
 
-    Useful to temporarily remove variables and constraints from a Models's
+    Useful to temporarily remove variables and constraints from a model's
     solver object.
 
     Parameters
     ----------
-    model : a cobra model
+    model : cobra.Model
        The model from which to remove the variables and constraints.
-    what : list or tuple of optlang variables or constraints.
-       The variables or constraints to remove from the model. Must be of
-       class `model.problem.Variable` or
-       `model.problem.Constraint`.
-    """
-    context = get_context(model)
+    what : list or tuple of optlang.interface.Variable or
+           optlang.interface.Constraint
+       The variables and constraints to remove from the model.
 
+    """
     model.solver.remove(what)
+
+    context = get_context(model)
     if context:
         context(partial(model.solver.add, what))
 
 
 def add_absolute_expression(
-    model, expression, name="abs_var", ub=None, difference=0, add=True
-):
+    model: "Model",
+    expression: str,
+    name: str = "abs_var",
+    ub: Optional[float] = None,
+    difference: Optional[float] = 0.0,
+    add: bool = True,
+) -> NamedTuple:
     """Add the absolute value of an expression to the model.
 
-    Also defines a variable for the absolute value that can be used in other
-    objectives or constraints.
+    Also defines a variable for the absolute value that can be used in
+    other objectives or constraints.
 
     Parameters
     ----------
-    model : a cobra model
+    model : cobra.Model
        The model to which to add the absolute expression.
-    expression : A sympy expression
-       Must be a valid expression within the Model's solver object. The
-       absolute value is applied automatically on the expression.
-    name : string
-       The name of the newly created variable.
-    ub : positive float
-       The upper bound for the variable.
-    difference : positive float
-        The difference between the expression and the variable.
-    add : bool
-        Whether to add the variable to the model at once.
+    expression : str
+       Must be a valid symbolic expression within the model's solver object.
+       The absolute value is applied automatically on the expression.
+    name : str, optional
+       The name of the newly created variable (default "abs_var").
+    ub : positive float, optional
+       The upper bound for the variable (default None).
+    difference : positive float, optional
+        The difference between the expression and the variable
+        (default 0.0).
+    add : bool, optional
+        Whether to add the variable to the model at once (default True).
 
     Returns
     -------
-    namedtuple
+    NamedTuple
         A named tuple with variable and two constraints (upper_constraint,
         lower_constraint) describing the new variable and the constraints
         that assign the absolute value of the expression to it.
+
     """
-    Components = namedtuple(
-        "Components", ["variable", "upper_constraint", "lower_constraint"]
+    Components = NamedTuple(
+        "Components",
+        [
+            ("variable", optlang.interface.Variable),
+            ("upper_constraint", optlang.interface.Constraint),
+            ("lower_constraint", optlang.interface.Constraint),
+        ],
     )
     variable = model.problem.Variable(name, lb=0, ub=ub)
     # The following constraints enforce variable > expression and
@@ -374,8 +424,11 @@ def add_absolute_expression(
 
 
 def fix_objective_as_constraint(
-    model, fraction=1, bound=None, name="fixed_objective_{}"
-):
+    model: "Model",
+    fraction: float = 1.0,
+    bound: Optional[float] = None,
+    name: str = "fixed_objective_{}",
+) -> float:
     """Fix current objective as an additional constraint.
 
     When adding constraints to a model, such as done in pFBA which
@@ -392,19 +445,23 @@ def fix_objective_as_constraint(
     Parameters
     ----------
     model : cobra.Model
-        The model to operate on
-    fraction : float
-        The fraction of the optimum the objective is allowed to reach.
-    bound : float, None
-        The bound to use instead of fraction of maximum optimal value. If
-        not None, fraction is ignored.
-    name : str
-        Name of the objective. May contain one `{}` placeholder which is filled
-        with the name of the old objective.
+        The model to operate on.
+    fraction : float, optional
+        The fraction of the optimum the objective is allowed to reach
+        (default 1.0).
+    bound : float, optional
+        The bound to use instead of fraction of maximum optimal value.
+        If not None, `fraction` is ignored (default None).
+    name : str, optional
+        Name of the objective. May contain one "{}" placeholder which is
+        filled with the name of the old objective
+        (default "fixed_objective_{}").
 
     Returns
     -------
+    float
         The value of the optimized objective * fraction
+
     """
     fix_objective_name = name.format(model.objective.name)
     if fix_objective_name in model.constraints:
@@ -422,21 +479,49 @@ def fix_objective_as_constraint(
     return bound
 
 
-def check_solver_status(status, raise_error=False):
-    """Perform standard checks on a solver's status."""
+def check_solver_status(
+    status: str = None, raise_error: bool = False
+) -> Union[None, UserWarning, OptimizationError]:
+    """Perform standard checks on a solver's status.
+
+    Parameters
+    ----------
+    status: str, optional
+        The status string obtained from the solver (default None).
+    raise_error: bool, optional
+        If True, raise error or display warning if False (default False).
+
+    Returns
+    -------
+    None
+
+    Warns
+    -----
+    UserWarning
+        If `status` is not optimal and `raise_error` is set to True.
+
+    Raises
+    ------
+    OptimizationError
+        If `status` is None or is not optimal and `raise_error` is set to
+        True.
+
+    """
     if status == OPTIMAL:
-        return
+        return None
     elif (status in has_primals) and not raise_error:
-        warn("solver status is '{}'".format(status), UserWarning)
+        warn(f"Solver status is '{status}'.", UserWarning)
     elif status is None:
         raise OptimizationError(
-            "model was not optimized yet or solver context switched"
+            "Model is not optimized yet or solver context has been switched."
         )
     else:
-        raise OptimizationError("solver status is '{}'".format(status))
+        raise OptimizationError(f"Solver status is '{status}'.")
 
 
-def assert_optimal(model, message="optimization failed"):
+def assert_optimal(
+    model: "Model", message: str = "Optimization failed"
+) -> Optional[OptimizationError]:
     """Assert model solver status is optimal.
 
     Do nothing if model solver status is optimal, otherwise throw
@@ -446,27 +531,41 @@ def assert_optimal(model, message="optimization failed"):
     ----------
     model : cobra.Model
         The model to check the solver status for.
-    message : str (optional)
-        Message to for the exception if solver status was not optimal.
+    message : str, optional
+        Message for the exception if solver status is not optimal
+        (default "Optimization failed").
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    OptimizationError
+       If solver status is not optimal.
+
     """
     status = model.solver.status
     if status != OPTIMAL:
         exception_cls = OPTLANG_TO_EXCEPTIONS_DICT.get(status, OptimizationError)
-        raise exception_cls("{} ({})".format(message, status))
+        raise exception_cls(f"{message} ({status}).")
 
 
-def add_lp_feasibility(model):
-    """
-    Add a new objective and variables to ensure a feasible solution.
+def add_lp_feasibility(model: "Model") -> None:
+    """Add a new objective and variables to ensure a feasible solution.
 
-    The optimized objective will be zero for a feasible solution and otherwise
-    represent the distance from feasibility (please see [1]_ for more
-    information).
+    The optimized objective will be zero for a feasible solution and
+    otherwise represent the distance from feasibility (please see [1]_
+    for more information).
 
     Parameters
     ----------
     model : cobra.Model
         The model whose feasibility is to be tested.
+
+    Returns
+    -------
+    None
 
     References
     ----------
@@ -492,32 +591,35 @@ def add_lp_feasibility(model):
     model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
 
 
-def add_lexicographic_constraints(model, objectives, objective_direction="max"):
-    """
-    Successively optimize separate targets in a specific order.
+def add_lexicographic_constraints(
+    model: "Model",
+    objectives: List["Reaction"],
+    objective_direction: Union[str, List[str]] = "max",
+) -> pd.Series:
+    """Successively optimize separate targets in a specific order.
 
     For each objective, optimize the model and set the optimal value as a
     constraint. Proceed in the order of the objectives given. Due to the
-    specific order this is called lexicographic FBA [1]_. This
-    procedure is useful for returning unique solutions for a set of important
+    specific order this is called lexicographic FBA [1]_. This procedure
+    is useful for returning unique solutions for a set of important
     fluxes. Typically this is applied to exchange fluxes.
 
     Parameters
     ----------
     model : cobra.Model
         The model to be optimized.
-    objectives : list
+    objectives : list of cobra.Reaction
         A list of reactions (or objectives) in the model for which unique
         fluxes are to be determined.
-    objective_direction : str or list, optional
-        The desired objective direction for each reaction (if a list) or the
-        objective direction to use for all reactions (default maximize).
+    objective_direction : str or list of str, optional
+        The desired objective direction for each reaction (if a list) or
+        the objective direction to use for all reactions (default "max").
 
     Returns
     -------
-    optimized_fluxes : pandas.Series
-        A vector containing the optimized fluxes for each of the given
-        reactions in `objectives`.
+    pandas.Series
+        A pandas Series containing the optimized fluxes for each of the
+        given reactions in `objectives`.
 
     References
     ----------
