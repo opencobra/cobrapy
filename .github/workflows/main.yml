@@ -36,9 +36,8 @@ jobs:
       run:
         tox -- --cov-report=xml
     - name: Report coverage
-      uses: codecov/codecov-action@v1
-      with:
-        fail_ci_if_error: true
+      shell: bash
+      run: bash <(curl -s https://codecov.io/bash)
 
   release:
     needs: test
@@ -84,3 +83,8 @@ jobs:
         prerelease: false
     - name: Publish to website
       run: ./scripts/deploy_website.sh
+      shell: bash
+      env:
+        TAG: ${{ steps.tag.outputs.version }}
+        WORKSPACE: ${{ github.workspace }}
+        WEBSITE_DEPLOY_TOKEN: ${{ secrets.WEBSITE_DEPLOY_TOKEN }}

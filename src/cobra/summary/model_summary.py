@@ -108,6 +108,8 @@ class ModelSummary(Summary):
             optimum objective to be searched.
 
         """
+        super()._generate(model=model, solution=solution, fva=fva)
+
         coefficients = linear_reaction_coefficients(model)
         if solution is None:
             logger.info("Generating new parsimonious flux distribution.")
@@ -186,9 +188,6 @@ class ModelSummary(Summary):
             self.uptake_flux = flux.loc[
                 is_produced, ["flux", "reaction", "metabolite"]
             ].copy()
-        # TODO (Midnighter): We may later want to compute % of carbon flux.
-        # production = self.producing_fluxes["flux"].abs()
-        # self.producing_fluxes["percent"] = production / production.sum()
 
         # Create consumption table from consuming fluxes or zero fluxes where the
         # metabolite is a substrate in the reaction.
@@ -201,14 +200,11 @@ class ModelSummary(Summary):
             self.secretion_flux = flux.loc[
                 is_consumed, ["flux", "reaction", "metabolite"]
             ].copy()
-        # TODO (Midnighter): We may later want to compute % of carbon flux.
-        # consumption = self.consuming_fluxes["flux"].abs()
-        # self.consuming_fluxes["percent"] = consumption / consumption.sum()
 
         self._flux = flux
 
     def _display_flux(
-        self, frame: pd.DataFrame, names: bool, threshold: float
+        self, frame: pd.DataFrame, names: bool, element: str, threshold: float
     ) -> pd.DataFrame:
         """
         Transform a flux data frame for display.
@@ -219,6 +215,8 @@ class ModelSummary(Summary):
             Either the producing or the consuming fluxes.
         names : bool
             Whether or not elements should be displayed by their common names.
+        element : str
+            The atomic element to summarize fluxes for.
         threshold : float
             Hide fluxes below the threshold from being displayed.
 
@@ -239,8 +237,21 @@ class ModelSummary(Summary):
         else:
             frame = frame.loc[frame["flux"].abs() >= threshold, :].copy()
 
+        metabolites = {m.id: m for m in self._boundary_metabolites}
+
+        element_num = f"{element}-Number"
+        frame[element_num] = [
+            metabolites[met_id].elements.get(element, 0)
+            for met_id in frame["metabolite"]
+        ]
+        element_percent = f"{element}-Flux"
+        frame[element_percent] = frame[element_num] * frame["flux"].abs()
+        total = frame[element_percent].sum()
+        if total > 0.0:
+            frame[element_percent] /= total
+        frame[element_percent] = [f"{x:.2%}" for x in frame[element_percent]]
+
         if names:
-            metabolites = {m.id: m for m in self._boundary_metabolites}
             frame["metabolite"] = [
                 metabolites[met_id].name for met_id in frame["metabolite"]
             ]
@@ -249,9 +260,20 @@ class ModelSummary(Summary):
             frame["range"] = list(
                 frame[["minimum", "maximum"]].itertuples(index=False, name=None)
             )
-            return frame[["metabolite", "reaction", "flux", "range"]]
+            return frame[
+                [
+                    "metabolite",
+                    "reaction",
+                    "flux",
+                    "range",
+                    element_num,
+                    element_percent,
+                ]
+            ]
         else:
-            return frame[["metabolite", "reaction", "flux"]]
+            return frame[
+                ["metabolite", "reaction", "flux", element_num, element_percent]
+            ]
 
     @staticmethod
     def _string_table(frame: pd.DataFrame, float_format: str, column_width: int) -> str:
@@ -344,7 +366,8 @@ class ModelSummary(Summary):
     def to_string(
         self,
         names: bool = False,
-        threshold: float = 1e-6,
+        element: str = "C",
+        threshold: Optional[float] = None,
         float_format: str = ".4G",
         column_width: int = 79,
     ) -> str:
@@ -356,8 +379,11 @@ class ModelSummary(Summary):
         names : bool, optional
             Whether or not elements should be displayed by their common names
             (default False).
+        element : str, optional
+            The atomic element to summarize uptake and secretion for (default 'C').
         threshold : float, optional
-            Hide fluxes below the threshold from being displayed (default 1e-6).
+            Hide fluxes below the threshold from being displayed. If no value is
+            given, the model tolerance is used (default None).
         float_format : str, optional
             Format string for floats (default '.4G').
         column_width : int, optional
@@ -369,16 +395,18 @@ class ModelSummary(Summary):
             The summary formatted as a pretty string.
 
         """
+        threshold = self._normalize_threshold(threshold)
+
         objective = self._string_objective(names)
 
         uptake = self._string_table(
-            self._display_flux(self.uptake_flux, names, threshold),
+            self._display_flux(self.uptake_flux, names, element, threshold),
             float_format,
             column_width,
         )
 
         secretion = self._string_table(
-            self._display_flux(self.secretion_flux, names, threshold),
+            self._display_flux(self.secretion_flux, names, element, threshold),
             float_format,
             column_width,
         )
@@ -396,7 +424,11 @@ class ModelSummary(Summary):
         )
 
     def to_html(
-        self, names: bool = False, threshold: float = 1e-6, float_format: str = ".4G"
+        self,
+        names: bool = False,
+        element: str = "C",
+        threshold: Optional[float] = None,
+        float_format: str = ".4G",
     ) -> str:
         """
         Return a rich HTML representation of the model summary.
@@ -406,8 +438,11 @@ class ModelSummary(Summary):
         names : bool, optional
             Whether or not elements should be displayed by their common names
             (default False).
+        element : str, optional
+            The atomic element to summarize uptake and secretion for (default 'C').
         threshold : float, optional
-            Hide fluxes below the threshold from being displayed (default 1e-6).
+            Hide fluxes below the threshold from being displayed. If no value is
+            given, the model tolerance is used (default None).
         float_format : str, optional
             Format string for floats (default '.4G').
 
@@ -417,14 +452,18 @@ class ModelSummary(Summary):
             The summary formatted as HTML.
 
         """
+        threshold = self._normalize_threshold(threshold)
+
         objective = self._string_objective(names)
 
         uptake = self._html_table(
-            self._display_flux(self.uptake_flux, names, threshold), float_format,
+            self._display_flux(self.uptake_flux, names, element, threshold),
+            float_format,
         )
 
         secretion = self._html_table(
-            self._display_flux(self.secretion_flux, names, threshold), float_format,
+            self._display_flux(self.secretion_flux, names, element, threshold),
+            float_format,
         )
 
         return (

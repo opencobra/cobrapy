@@ -2,20 +2,21 @@
 
 set -eu
 
-target=/tmp/cobrapy-website
+target="${TMP}/cobrapy-website"
 
 git clone "https://github.com/opencobra/cobrapy-website.git" "${target}"
-cd "${target}"
+pushd "${target}"
 
-git config user.name "Deployment Bot"
-git config user.email "deploy@travis-ci.org"
+git config user.name "COBRApy Bot"
+git config user.email "opencobra.cobrapy@gmail.com"
 git remote rm origin
-git remote add origin "https://user:${GITHUB_TOKEN}@github.com/opencobra/cobrapy-website.git" &> /dev/null
+git remote add origin "https://user:${WEBSITE_DEPLOY_TOKEN}@github.com/opencobra/cobrapy-website.git" &> /dev/null
 
-git checkout stable
-python "${TRAVIS_BUILD_DIR}"/scripts/publish_release.py "${TRAVIS_BUILD_DIR}"/release-notes "${target}"/content/releases "${TRAVIS_TAG}"
+git checkout master
+python "${WORKSPACE}/scripts/publish_release.py" "${WORKSPACE}/release-notes" "${target}/content/releases" "${TAG}"
 git add .
-git commit -m "feat: publish ${TRAVIS_TAG} on $(date +'%F %T')"
-git push origin stable
-cd "${TRAVIS_BUILD_DIR}"
+git commit -m "feat: publish ${TAG} on $(date --utc --iso-8601=seconds)"
+git push origin master
+
+popd
 

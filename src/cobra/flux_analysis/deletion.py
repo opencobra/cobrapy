@@ -5,11 +5,12 @@ import multiprocessing
 from builtins import dict, map
 from functools import partial
 from itertools import product
+from typing import List, Set, Union
 
 import pandas as pd
 from optlang.exceptions import SolverError
 
-from cobra.core import Configuration
+from cobra.core import Configuration, Gene, Reaction
 from cobra.flux_analysis.moma import add_moma
 from cobra.flux_analysis.room import add_room
 from cobra.manipulation.delete import find_gene_knockout_reactions
@@ -103,7 +104,7 @@ def _multi_deletion(
         A representation of all combinations of entity deletions. The
         columns are 'growth' and 'status', where
 
-        index : frozenset([str])
+        index : tuple(str)
             The gene or reaction identifiers that were knocked out.
         growth : float
             The growth rate of the adjusted model.
@@ -131,13 +132,9 @@ def _multi_deletion(
 
         def extract_knockout_results(result_iter):
             result = pd.DataFrame(
-                [
-                    (frozenset(ids), growth, status)
-                    for (ids, growth, status) in result_iter
-                ],
+                [(set(ids), growth, status,) for (ids, growth, status) in result_iter],
                 columns=["ids", "growth", "status"],
             )
-            result.set_index("ids", inplace=True)
             return result
 
         if processes > 1:
@@ -210,7 +207,7 @@ def single_reaction_deletion(
         A representation of all single reaction deletions. The columns are
         'growth' and 'status', where
 
-        index : frozenset([str])
+        index : tuple(str)
             The reaction identifier that was knocked out.
         growth : float
             The growth rate of the adjusted model.
@@ -260,7 +257,7 @@ def single_gene_deletion(
         A representation of all single gene deletions. The columns are
         'growth' and 'status', where
 
-        index : frozenset([str])
+        index : tuple(str)
             The gene identifier that was knocked out.
         growth : float
             The growth rate of the adjusted model.
@@ -321,7 +318,7 @@ def double_reaction_deletion(
         A representation of all combinations of reaction deletions. The
         columns are 'growth' and 'status', where
 
-        index : frozenset([str])
+        index : tuple(str)
             The reaction identifiers that were knocked out.
         growth : float
             The growth rate of the adjusted model.
@@ -386,7 +383,7 @@ def double_gene_deletion(
         A representation of all combinations of gene deletions. The
         columns are 'growth' and 'status', where
 
-        index : frozenset([str])
+        index : tuple(str)
             The gene identifiers that were knocked out.
         growth : float
             The growth rate of the adjusted model.
@@ -405,3 +402,101 @@ def double_gene_deletion(
         processes=processes,
         **kwargs
     )
+
+
+@pd.api.extensions.register_dataframe_accessor("knockout")
+class KnockoutAccessor:
+    """Access unique combinations of reactions in deletion results.
+
+    This allows acces in the form of `results.knockout[rxn1]` or
+    `results.knockout["rxn1_id"]`. Each individual entry will return a deletion
+    so `results.knockout[rxn1, rxn2]` will return two deletions (for individual
+    knockouts of rxn1 and rxn2 respectively). Multi-deletions can be accessed by passing
+    in sets like `results.knockou[{rxn1, rxn2}]` which denotes the double deletion of
+    both reactions. Thus, the following are allowed index elements:
+
+    - single reactions or genes (depending on whether it is a gene or reaction deletion)
+    - single reaction IDs or gene IDs
+    - lists of single single reaction IDs or gene IDs (will return one row for each
+      element in the list)
+    - sets of reactions or genes (for multi-deletions)
+    - sets of reactions IDs or gene IDs
+    - list of sets of objects or IDs (to get several multi-deletions)
+    """
+
+    def __init__(self, pandas_obj: pd.DataFrame) -> None:
+        """Set up the accessor.
+
+        Parameters:
+        -----------
+        pandas_obj : pd.DataFrame or pd.Series
+            A result from one of the deletion methods.
+        """
+        self._validate(pandas_obj)
+        self._result = pandas_obj
+
+    @staticmethod
+    def _validate(obj: pd.DataFrame) -> None:
+        # verify it is a deletion results
+        if any(name not in obj.columns for name in ["ids", "growth", "status"]):
+            raise AttributeError("Must be DataFrame returned by a deletion method.")
+
+    def __getitem__(
+        self,
+        args: Union[
+            Gene,
+            List[Gene],
+            Set[Gene],
+            List[Set[Gene]],
+            Reaction,
+            List[Reaction],
+            Set[Reaction],
+            List[Set[Reaction]],
+            str,
+            List[str],
+            Set[str],
+            List[Set[str]],
+        ],
+    ) -> pd.DataFrame:
+        """Return the deletion result for a particular set of knocked entities.
+
+        Parameters:
+        -----------
+        args : cobra.Reactions, cobra.Gene, str, set, or list
+            The deletions to be returned. Accepts:
+            - single reactions or genes
+            - single reaction IDs or gene IDs
+            - lists of single single reaction IDs or gene IDs
+            - sets of reactions or genes
+            - sets of reactions IDs or gene IDs
+            - list of sets of objects or IDs
+            See the docs for usage examples.
+
+        Returns:
+        --------
+        pd.DataFrame
+            The deletion result where the chosen entities have been deleted. Each row
+            denotes a deletion.
+        """
+        if not any(isinstance(args, t) for t in [tuple, list]):
+            args = [args]
+
+        if any(isinstance(args[0], t) for t in [Reaction, Gene, str]):
+            try:
+                args = [{obj.id} for obj in args]
+            except AttributeError:
+                # are already strings
+                args = [{obj} for obj in args]
+        elif isinstance(args[0], set):
+            try:
+                args = [set(elem.id for elem in obj) for obj in args]
+            except AttributeError:
+                args = [set(obj) for obj in args]
+        else:
+            raise ValueError(
+                "Allowed indices are single Reactions or Genes, "
+                "lists of Reactions of Genes, or lists of sets "
+                "of Reactions or Genes."
+            )
+        found = [x in args for x in self._result.ids]
+        return self._result[found]

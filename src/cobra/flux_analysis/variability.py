@@ -326,7 +326,7 @@ def find_essential_genes(model, threshold=None, processes=None):
     deletions = single_gene_deletion(model, method="fba", processes=processes)
     essential = deletions.loc[
         deletions["growth"].isna() | (deletions["growth"] < threshold), :
-    ].index
+    ].ids
     return {model.genes.get_by_id(g) for ids in essential for g in ids}
 
 
@@ -360,5 +360,5 @@ def find_essential_reactions(model, threshold=None, processes=None):
     deletions = single_reaction_deletion(model, method="fba", processes=processes)
     essential = deletions.loc[
         deletions["growth"].isna() | (deletions["growth"] < threshold), :
-    ].index
+    ].ids
     return {model.reactions.get_by_id(r) for ids in essential for r in ids}
