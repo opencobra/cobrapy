@@ -75,15 +75,16 @@ def test_create_creator():
 
 def test_historydatetime():
     # valid date
-    datetime_obj = HistoryDatetime("2020-06-26T02:34:11+05:30")
-    assert datetime_obj.datetime == "2020-06-26T02:34:11+05:30"
-    # invalid date (seconds > 59)
-    with pytest.raises(ValueError):
-        datetime_obj.datetime = "2020-06-26T02:34:70+05:30"
+    dt_str1 = "2020-06-26T02:34:11+05:30"
+    datetime_obj = HistoryDatetime(dt_str1)
+    assert datetime_obj.datetime == dt_str1
+
     # valid date
     datetime_obj.datetime = "2020-06-26T12:34:11+00:00"
     assert datetime_obj.datetime == "2020-06-26T12:34:11+00:00"
     datetime_obj.datetime = None
     assert datetime_obj.datetime is None
+
+    # create from python datetime
     datetime_obj.datetime = datetime.now()
     assert datetime_obj.datetime is not None

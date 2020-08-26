@@ -25,9 +25,9 @@ class History:
         created_date: 'HistoryDatetime' = None,
         modified_dates: List['HistoryDatetime'] = None,
     ):
-        self._creators = []
+        self._creators = list()
         self._created_date = None
-        self._modified_dates = []
+        self._modified_dates = list()
 
         # use properties to set fields
         self.creators = creators
@@ -40,9 +40,8 @@ class History:
 
     @creators.setter
     def creators(self, values: Iterable['Creator']) -> None:
-        if not values:
-            self._creators = list()
-        else:
+        self._creators = list()
+        if values:
             self._creators = [Creator.from_data(v) for v in values]
 
     @property
@@ -50,35 +49,19 @@ class History:
         return self._created_date
 
     @created_date.setter
-    def created_date(self, value: Union[str, 'HistoryDateTime']) -> None:
-        if value is None:
-            self._created_date = HistoryDatetime()
-        elif isinstance(value, str):
-            self._created_date = HistoryDatetime(value)
-        elif isinstance(value, HistoryDatetime):
-            self._created_date = value
-        else:
-            raise TypeError(f"'created_date' must be of type DateTime: {value}")
+    def created_date(self, date: Union[str, 'HistoryDateTime']) -> None:
+        self._created_date = HistoryDatetime(date)
 
     @property
     def modified_dates(self) -> List:
         return self._modified_dates
 
     @modified_dates.setter
-    def modified_dates(self, value: Iterable) -> None:
-        if value is None:
-            value = []
-
-        if not isinstance(value, Iterable):
-            raise TypeError(f"'modified_dates' must be an Iterable: {value}")
-
-        for date in value:
-            if isinstance(date, str):
-                self._modified_dates.append(HistoryDatetime(date))
-            elif isinstance(date, HistoryDatetime):
-                self._modified_dates.append(date)
-            else:
-                raise TypeError(f"'modified_date' must be of type DateTime: {date}")
+    def modified_dates(self, dates: Iterable[
+            Union[str, 'HistoryDateTime']]) -> None:
+        self._modified_dates = list()
+        if dates:
+            self._modified_dates = [HistoryDatetime(d) for d in dates]
 
     @staticmethod
     def from_data(data: Union[Dict, 'History']) -> 'History':
@@ -88,12 +71,9 @@ class History:
         elif isinstance(data, History):
             return data
         elif isinstance(data, dict):
-            for key in ["creators", "created_date", "modified_dates"]:
-                if key not in data:
-                    data[key] = None
             return History(**data)
         else:
-            raise TypeError(f"Invalid format for History: '{data}'")
+            raise TypeError(f"Unsupported type for History: '{data}'")
 
     def is_set_history(self) -> bool:
         """Checks if history is set.
@@ -222,7 +202,7 @@ class HistoryDatetime:
     datetime: str, datetime
         date in the form of a string
     """
-    def __init__(self, history_datetime: [str, datetime] = None):
+    def __init__(self, history_datetime: str = None):
         self._datetime = None  # type: str
         self.datetime = history_datetime
 
@@ -232,14 +212,18 @@ class HistoryDatetime:
 
     @datetime.setter
     def datetime(self, value: str) -> None:
-        """ Before setting the date, checks if date is in valid format or not. """
+        self._datetime = self.parse_datetime(value)
+
+    def parse_datetime(self, value: str) -> str:
         if value is None:
-            self._datetime = None
+            return None
+        if isinstance(value, HistoryDatetime):
+            return value.datetime
         elif isinstance(value, str):
             self.validate_datetime(value)
-            self._datetime = value
+            return value
         elif isinstance(value, datetime):
-            self._datetime = value.strftime("%Y-%m-%dT%H:%M:%S%z")
+            return value.strftime("%Y-%m-%dT%H:%M:%S%z")
         else:
             raise TypeError(
                 f"Invalid type passed for datetime. "
@@ -247,10 +231,12 @@ class HistoryDatetime:
                 f"'datetime' objects: {value}"
             )
 
-    def set_current_datetime(self) -> None:
-        """Sets datetime to current UTC time."""
+    @staticmethod
+    def utcnow() -> 'HistoryDatetime':
+        """HistoryDatetime with current UTC time."""
         utcnow = datetime.utcnow()
-        self._datetime = utcnow.strftime("%Y-%m-%dT%H:%M:%S%z")
+        value = utcnow.strftime("%Y-%m-%dT%H:%M:%S%z")
+        return HistoryDatetime(value)
 
     @staticmethod
     def validate_datetime(datetime_str: str) -> bool:
@@ -286,7 +272,7 @@ class HistoryDatetime:
 
         return True
 
-    def __eq__(self, history_datetime: "HistoryDatetime") -> bool:
+    def __eq__(self, history_datetime: 'HistoryDatetime') -> bool:
         return self.datetime == history_datetime.datetime
 
     def __str__(self) -> str:

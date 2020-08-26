@@ -29,8 +29,9 @@ class MetaData(collections.MutableMapping):
         The history stores information about the creator,
         created and modified dates.
     keyvaluepairs : list
-        Some key-value pairs which are not suitable to be
+        Key-value pairs which are not suitable to be
         represented anywhere else in the model.
+        Data is represented as an OrderedDict.
     """
 
     def __init__(
@@ -39,9 +40,14 @@ class MetaData(collections.MutableMapping):
         history: Union[Dict, History] = None,
         keyvaluepairs: List = None,
     ):
-        self._cvterms = CVTerms.from_data(cvterms)
-        self._history = History.from_data(history)
-        self._keyvaluepairs = KeyValuePairs.from_data(keyvaluepairs)
+        self._cvterms = None  # type: CVTerms
+        self._history = None  # type: History
+        self._keyvaluepairs = None  # type: KeyValuePairs
+
+        # use setters
+        self.cvterms = cvterms
+        self.history = history
+        self.keyvaluepairs = keyvaluepairs
 
     @property
     def annotations(self) -> Dict:
@@ -52,13 +58,6 @@ class MetaData(collections.MutableMapping):
         self._cvterms.add_simple_annotations(dict({key: value}))
 
     def __getitem__(self, key: str) -> None:
-        '''
-        if key == "sbo" and len(self.annotations[key]) == 0:
-            # FIXME: what is this doing?
-            value = self._cvterms._annotations[key]
-            del self._cvterms._annotations[key]
-            return value
-        '''
         return self.annotations[key]
 
     def __delitem__(self, key: str) -> None:
@@ -84,14 +83,6 @@ class MetaData(collections.MutableMapping):
     def cvterms(self, cvterms: Union[Dict, CVTerms]) -> None:
         self._cvterms = CVTerms.from_data(cvterms)
 
-    def add_cvterm(self, cvterm, index: int = 0) -> None:
-        """Adds a single CVTerm to CVList of given qualifier at given index."""
-        self.cvterms.add_cvterm(cvterm=cvterm, index=index)
-
-    def add_cvterms(self, cvterms: Union[Dict, CVTerms] = None) -> None:
-        """Adds multiple CVTerm data."""
-        self.cvterms.add_cvterms(cvterms=cvterms)
-
     @property
     def history(self) -> History:
         return self._history
@@ -99,3 +90,11 @@ class MetaData(collections.MutableMapping):
     @history.setter
     def history(self, history: Union[Dict, History]) -> None:
         self._history = History.from_data(history)
+
+    @property
+    def keyvaluepairs(self) -> KeyValuePairs:
+        return self._keyvaluepairs
+
+    @keyvaluepairs.setter
+    def keyvaluepairs(self, keyvaluepairs: Union[Dict, KeyValuePairs]) -> None:
+        self._keyvaluepairs = KeyValuePairs.from_data(keyvaluepairs)
