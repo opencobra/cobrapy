@@ -36,7 +36,7 @@ class MetaData(collections.MutableMapping):
     ):
         self._cvterms = CVTerms()
         self.add_cvterms(cvterms)
-        self.history = History.parse_history(history)
+        self.history = History.from_data(history)
         self.key_value_data = ListOfKeyValue.parse_listofkeyvalue(keyvalue_data)
 
     def add_cvterm(self, cvterm, index: int = 0) -> None:

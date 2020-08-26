@@ -45,7 +45,7 @@ from cobra.core.metadata import (
     Creator,
     CVList,
     CVTerms,
-    HistoryDateTime,
+    HistoryDatetime,
     MetaData,
     Notes,
     Qualifier,
@@ -1491,21 +1491,21 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
                 creator_dict["email"] = creator.getEmail()
             if creator.isSetOrganisation():
                 creator_dict["organization_name"] = creator.getOrganisation()
-            cobra_creator = Creator.parse_creator(creator_dict)
+            cobra_creator = Creator.from_data(creator_dict)
             cobra_creators.append(cobra_creator)
         annotation.history.creators = cobra_creators
 
         if model_history.isSetCreatedDate():
             date = model_history.getCreatedDate()  # type: libsbml.Date
-            cobra_date = HistoryDateTime(
+            cobra_date = HistoryDatetime(
                 date.getDateAsString()
-            )  # type: HistoryDateTime
+            )  # type: HistoryDatetime
             annotation.history.created_date = cobra_date
 
         cobra_modified_dates = []
         for index in range(model_history.getNumModifiedDates()):
             modified_date = model_history.getModifiedDate(index)
-            cobra_modified_date = HistoryDateTime(modified_date.getDateAsString())
+            cobra_modified_date = HistoryDatetime(modified_date.getDateAsString())
             cobra_modified_dates.append(cobra_modified_date)
         annotation.history.modified_dates = cobra_modified_dates
 
