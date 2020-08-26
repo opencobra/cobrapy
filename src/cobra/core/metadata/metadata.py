@@ -122,3 +122,20 @@ class MetaData(MutableMapping):
             d["keyvaluepairs"] = self.keyvaluepairs.to_dict()
 
         return d
+
+    @staticmethod
+    def from_dict(data: Dict) -> 'MetaData':
+        cvterms = data["cvterms"] if "cvterms" in data else None
+        history = data["history"] if "history" in data else None
+        keyValuepairs = data["keyvaluepairs"] if "keyvaluepairs" in data else None
+
+        if cvterms or history or keyValuepairs:
+            annotation = MetaData(cvterms, history, keyValuepairs)
+        else:
+            annotation = MetaData()
+            annotation.cvterms.add_simple_annotations(data)
+
+        if "sbo" in data:
+            annotation["sbo"] = [data["sbo"]]
+
+        return annotation

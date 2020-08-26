@@ -126,24 +126,6 @@ def _fix_type(value):
     return value
 
 
-
-
-
-def _extract_annotation(data: Dict) -> MetaData:
-    cvterms = data["cvterms"] if "cvterms" in data else None
-    history = data["history"] if "history" in data else None
-    keyValueDict = data["history"] if "key_value_data" in data else None
-
-    if cvterms is not None or history is not None or keyValueDict is not None:
-        annotation = MetaData(cvterms, history, keyValueDict)
-    else:
-        annotation = MetaData()
-        annotation.cvterms.add_simple_annotations(data)
-    if "sbo" in data:
-        annotation["sbo"] = [data["sbo"]]
-    return annotation
-
-
 def _update_optional(cobra_object, new_dict, optional_attribute_dict, ordered_keys):
     """update new_dict with optional attributes from cobra_object"""
     for key in ordered_keys:
@@ -180,7 +162,7 @@ def metabolite_from_dict(metabolite):
     new_metabolite = Metabolite()
     for k, v in iteritems(metabolite):
         if k == "annotation":
-            value = _extract_annotation(v)
+            value = MetaData.from_dict(v)
             setattr(new_metabolite, k, value)
         elif k == "notes":
             notes_data = Notes(v)
@@ -210,7 +192,7 @@ def gene_from_dict(gene):
     new_gene = Gene(gene["id"])
     for k, v in iteritems(gene):
         if k == "annotation":
-            value = _extract_annotation(v)
+            value = MetaData.from_dict(v)
             setattr(new_gene, k, value)
         elif k == "notes":
             notes_data = Notes(v)
@@ -271,7 +253,7 @@ def reaction_from_dict(reaction, model):
             )
         else:
             if k == "annotation":
-                value = _extract_annotation(v)
+                value = MetaData.from_dict(v)
                 setattr(new_reaction, k, value)
             elif k == "notes":
                 notes_data = Notes(v)
@@ -325,7 +307,7 @@ def user_defined_const_from_dict(constraint: Dict) -> UserDefinedConstraint:
                 new_comp = ConstraintComponent(**comp)
                 new_user_defined_const.add_constraint_comps([new_comp])
         elif k == "annotation":
-            value = _extract_annotation(v)
+            value = MetaData.from_dict(v)
             setattr(new_user_defined_const, k, value)
         elif k == "notes":
             notes_data = Notes(v)
@@ -368,7 +350,7 @@ def group_from_dict(group: Dict, model: Model) -> Group:
     new_group = Group(group["id"])
     for k, v in iteritems(group):
         if k == "annotation":
-            value = _extract_annotation(v)
+            value = MetaData.from_dict(v)
             setattr(new_group, k, value)
         elif k == "notes":
             notes_data = Notes(v)
@@ -437,7 +419,7 @@ def model_to_dict(model, sort=False):
     if hasattr(model, "_sbml"):
         for key, value in iteritems(model._sbml):
             if key == "annotation":
-                sbml_info[key] = _fix_type(_annotation_to_dict(value))
+                sbml_info[key] = _fix_type(value.to_dict())
             else:
                 sbml_info[key] = _fix_type(value)
         obj["sbml_info"] = sbml_info
@@ -513,7 +495,7 @@ def model_from_dict(obj):
         meta = {}
         for k, v in iteritems(obj["sbml_info"]):
             if k == "annotation":
-                value = _extract_annotation(v)
+                value = MetaData.from_dict(v)
                 meta[k] = value
             elif k == "notes":
                 notes_data = Notes(v)
@@ -524,7 +506,7 @@ def model_from_dict(obj):
 
     for k, v in iteritems(obj):
         if k == "annotation":
-            value = _extract_annotation(v)
+            value = MetaData.from_dict(v)
             setattr(model, k, value)
         elif k == "notes":
             notes_data = Notes(v)
