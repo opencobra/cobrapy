@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
+"""Provide functions for loading and saving metabolic models."""
 
-from __future__ import absolute_import
 
 from cobra.io.dict import model_from_dict, model_to_dict
 from cobra.io.json import from_json, load_json_model, save_json_model, to_json
