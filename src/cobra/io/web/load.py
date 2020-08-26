@@ -4,7 +4,7 @@
 import gzip
 import logging
 import pathlib
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Iterable, Optional, Union
 
 import appdirs
 import diskcache
@@ -26,8 +26,9 @@ logger = logging.getLogger(__name__)
 
 def load_model(
     model_id: str,
-    cache: bool = True,
     repositories: Iterable[AbstractModelRepository] = (BiGGModels(), BioModels()),
+    cache: bool = True,
+    cache_directory: Optional[Union[pathlib.Path, str]] = None,
 ) -> "Model":
     """
     Download an SBML model from a remote repository.
@@ -48,10 +49,13 @@ def load_model(
     model_id : str
         The identifier of the desired metabolic model. This is typically repository
         specific.
-    cache : bool, optional
-        Whether or not to use the local caching mechanism (default yes).
     repositories : iterable, optional
         An iterable of repository accessor instances. The model_id is searched in order.
+    cache : bool, optional
+        Whether or not to use the local caching mechanism (default yes).
+    cache_directory : pathlib.Path or str, optional
+        A path where the cache should reside if caching is desired. The default
+        directory depends on the operating system.
 
     Returns
     -------
@@ -78,14 +82,24 @@ def load_model(
 
     """
     if cache:
-        data = _cached_load(model_id=model_id, repositories=repositories)
+        if cache_directory is None:
+            cache_directory = pathlib.Path(
+                appdirs.user_cache_dir(appname="cobrapy", appauthor="opencobra")
+            )
+        data = _cached_load(
+            model_id=model_id,
+            repositories=repositories,
+            cache_directory=pathlib.Path(cache_directory),
+        )
     else:
         data = _fetch_model(model_id=model_id, repositories=repositories)
     return get_model_from_gzip_sbml(data)
 
 
 def _cached_load(
-    model_id: str, repositories: Iterable[AbstractModelRepository],
+    model_id: str,
+    repositories: Iterable[AbstractModelRepository],
+    cache_directory: pathlib.Path,
 ) -> bytes:
     """
     Attempt to load a gzip-compressed SBML document from the cache.
@@ -100,6 +114,8 @@ def _cached_load(
         specific.
     repositories : iterable
         An iterable of repository accessor instances. The model_id is searched in order.
+    cache_directory : pathlib.Path
+        A path where the cache should reside.
 
     Returns
     -------
@@ -107,13 +123,10 @@ def _cached_load(
         A gzip-compressed, UTF-8 encoded SBML document.
 
     """
-    cache_directory = pathlib.Path(
-        appdirs.user_cache_dir(appname="cobrapy", appauthor="opencobra")
-    )
     if not cache_directory.is_dir():
         logger.debug(f"Creating cache directory '{str(cache_directory)}'.")
         cache_directory.mkdir(parents=True)
-    with diskcache.Cache(directory=cache_directory) as cache:
+    with diskcache.Cache(directory=str(cache_directory)) as cache:
         try:
             return cache[model_id]
         except KeyError:
