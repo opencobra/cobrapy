@@ -145,7 +145,7 @@ class CVTerms(collections.MutableMapping):
             raise TypeError(f"Invalid format for CVTerms: '{data}'")
 
     @staticmethod
-    def parse_cvterms(data: Union[Dict, "CVTerms"]) -> "CVTerms":
+    def from_data(data: Union[Dict, "CVTerms"]) -> "CVTerms":
         """Parses a CVTerms object from given data"""
         if data is None or isinstance(data, dict):
             return CVTerms(data)
@@ -197,7 +197,7 @@ class CVTerms(collections.MutableMapping):
             return
 
         if isinstance(cvterms, dict) or isinstance(cvterms, CVTerms):
-            parsed_cvterms = CVTerms.parse_cvterms(cvterms)
+            parsed_cvterms = CVTerms.from_data(cvterms)
             for key, value in parsed_cvterms.items():
 
                 offset = len(self[key])

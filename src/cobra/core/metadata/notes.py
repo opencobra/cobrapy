@@ -5,7 +5,7 @@ from warnings import warn
 
 
 class Notes(collections.MutableMapping):
-    """ Class representation of 'notes' of COBRA object.
+    """ Class representation of 'notes' of COBR object.
 
     The previous version of COBRApy was parsing out any-
     thing of the form '<p> key : value </p>' and making

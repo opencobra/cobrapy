@@ -80,14 +80,8 @@ class ListOfKeyValue(collections.MutableSequence):
 class KeyValueDict:
     """ Class representation of a single key-value data
     for fbc-v3 key-value pair data.
+
     Parameters
-    ----------
-        id : str
-        name : str
-        key : str
-        value : str
-        uri : str
-    Attributes
     ----------
         id : str
         name : str

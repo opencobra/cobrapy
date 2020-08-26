@@ -131,16 +131,16 @@ class History:
 
         return True
 
-    def __str__(self) -> str:
-        return str(
-            {
+    def to_dict(self):
+        """Returns dictionary representation."""
+        return {
                 "creators": self.creators,
-                "created_date": str(self.created_date),
-                "modified_dates": [
-                    str(modified_date) for modified_date in self.modified_dates
-                ],
+                "created_date": self.created_date,
+                "modified_dates": self._modified_dates
             }
-        )
+
+    def __str__(self) -> str:
+        return str(self.to_dict())
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.creators}>"
@@ -196,15 +196,16 @@ class Creator:
 
         return True
 
-    def __str__(self) -> str:
-        return str(
-            {
+    def to_dict(self):
+        return {
                 "first_name": self.first_name,
                 "last_name": self.last_name,
                 "email": self.email,
                 "organization_name": self.organization_name,
             }
-        )
+
+    def __str__(self) -> str:
+        return str(self.to_dict())
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.first_name} {self.last_name}>"
