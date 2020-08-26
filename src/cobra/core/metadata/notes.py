@@ -156,7 +156,11 @@ class Notes(collections.MutableMapping):
     def __eq__(self, other: "Notes") -> bool:
         if not isinstance(other, Notes):
             return False
-        return self.notes_xhtml == other.notes_xhtml
+        l1 = 0 if self._notes_xhtml is None else len(self._notes_xhtml)
+        l2 = 0 if other._notes_xhtml is None else len(other._notes_xhtml)
+        if l1 == 0 and l2 == 0:
+            return True
+        return self._notes_xhtml == other._notes_xhtml
 
     def __getitem__(self, key: str) -> str:
         return self._data[key]
