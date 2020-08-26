@@ -144,7 +144,7 @@ def _annotation_to_dict(annotation: MetaData) -> Dict:
         final_dict["history"] = history_dict
 
     if hasattr(annotation, "key_value_data"):
-        keyvalue_str = str(annotation.key_value_data)
+        keyvalue_str = str(annotation._key_value_pairs)
         keyvalue_list = literal_eval(keyvalue_str)
         if len(keyvalue_list) != 0:
             final_dict["key_value_data"] = keyvalue_list

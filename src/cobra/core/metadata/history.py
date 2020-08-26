@@ -1,7 +1,7 @@
 """
-The history allows to encode the meta-data about the
-provenance of model objects. E.g., who created or modified
-objects in a model.
+The history allows to encode provenance meta-data about
+model objects. The history allows to encode who created or modified
+objects in a model with respective time stamps.
 """
 from typing import Iterable, Dict, List, Union
 from datetime import datetime
@@ -106,27 +106,27 @@ class History:
             or len(self.modified_dates) != 0
         )
 
-    def __eq__(self, history_obj: "History") -> bool:
+    def __eq__(self, history: 'History') -> bool:
         """ Checking equality of two history objects.
 
         A history is equal if all attributes are equal.
         """
         # check equality of creators
-        if len(self.creators) != len(history_obj.creators):
+        if len(self.creators) != len(history.creators):
             return False
         for k, creator in enumerate(self.creators):
-            if creator != history_obj.creators[k]:
+            if creator != history.creators[k]:
                 return False
 
         # checking equality of created_date
-        if self.created_date != history_obj.created_date:
+        if self.created_date != history.created_date:
             return False
 
         # checking equality of modified_dates
-        if len(self.modified_dates) != len(history_obj.modified_dates):
+        if len(self.modified_dates) != len(history.modified_dates):
             return False
         for k, modified_date in enumerate(self.modified_dates):
-            if modified_date != history_obj.modified_dates[k]:
+            if modified_date != history.modified_dates[k]:
                 return False
 
         return True

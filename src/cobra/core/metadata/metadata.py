@@ -3,7 +3,7 @@ from typing import Dict, Iterator, List, Union
 
 from cobra.core.metadata.cvterm import CVTerms
 from cobra.core.metadata.history import History
-from cobra.core.metadata.keyvaluepair import ListOfKeyValue
+from cobra.core.metadata.keyvaluepairs import KeyValuePairs
 
 
 class MetaData(collections.MutableMapping):
@@ -28,7 +28,7 @@ class MetaData(collections.MutableMapping):
     history : dict, History
         The history stores information about the creator,
         created and modified dates.
-    keyvalue_data : list
+    keyvaluepairs : list
         Some key-value pairs which are not suitable to be
         represented anywhere else in the model.
     """
@@ -37,11 +37,11 @@ class MetaData(collections.MutableMapping):
         self,
         cvterms: Union[Dict, CVTerms] = None,
         history: Union[Dict, History] = None,
-        keyvalue_data: List = None,
+        keyvaluepairs: List = None,
     ):
         self._cvterms = CVTerms.from_data(cvterms)
         self._history = History.from_data(history)
-        self.key_value_data = ListOfKeyValue.parse_listofkeyvalue(keyvalue_data)
+        self._keyvaluepairs = KeyValuePairs.from_data(keyvaluepairs)
 
     @property
     def annotations(self) -> Dict:
