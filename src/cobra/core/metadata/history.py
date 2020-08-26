@@ -75,16 +75,18 @@ class History:
         else:
             raise TypeError(f"Unsupported type for History: '{data}'")
 
-    def is_set_history(self) -> bool:
-        """Checks if history is set.
+    def is_empty(self) -> bool:
+        """Checks if history is empty.
 
-        Returns true if at least one history attribute is set, else None.
+        Returns False if at least one history attribute is set, else True.
         """
-        return (
-            len(self.creators) != 0
-            or self.created_date.datetime is not None
-            or len(self.modified_dates) != 0
-        )
+        if self.creators:
+            return False
+        if self.created_date.datetime:
+            return False
+        if self.modified_dates:
+            return False
+        return True
 
     def __eq__(self, history: 'History') -> bool:
         """ Checking equality of two history objects.
@@ -114,7 +116,7 @@ class History:
     def to_dict(self):
         """Returns dictionary representation."""
         return {
-                "creators": self.creators,
+                "creators": [c.to_dict() for c in self.creators],
                 "created_date": self.created_date,
                 "modified_dates": self._modified_dates
             }

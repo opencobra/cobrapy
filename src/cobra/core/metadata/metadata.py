@@ -1,12 +1,12 @@
-import collections
+from collections import OrderedDict, MutableMapping
 from typing import Dict, Iterator, List, Union
 
 from cobra.core.metadata.cvterm import CVTerms
-from cobra.core.metadata.history import History
+from cobra.core.metadata.history import History, Creator, HistoryDatetime
 from cobra.core.metadata.keyvaluepairs import KeyValuePairs
 
 
-class MetaData(collections.MutableMapping):
+class MetaData(MutableMapping):
     """Meta-data of a cobrapy object.
 
     Meta-data encodes additional information on an object such as annotations
@@ -83,6 +83,9 @@ class MetaData(collections.MutableMapping):
     def cvterms(self, cvterms: Union[Dict, CVTerms]) -> None:
         self._cvterms = CVTerms.from_data(cvterms)
 
+    def add_cvterms(self, cvterms: Union[Dict, CVTerms]) -> None:
+        self._cvterms.add_cvterms(cvterms)
+
     @property
     def history(self) -> History:
         return self._history
@@ -91,10 +94,31 @@ class MetaData(collections.MutableMapping):
     def history(self, history: Union[Dict, History]) -> None:
         self._history = History.from_data(history)
 
+    def add_creator(self, creator: Creator):
+        self.history.creators.append(creator)
+
     @property
     def keyvaluepairs(self) -> KeyValuePairs:
         return self._keyvaluepairs
 
     @keyvaluepairs.setter
     def keyvaluepairs(self, keyvaluepairs: Union[Dict, KeyValuePairs]) -> None:
-        self._keyvaluepairs = KeyValuePairs.from_data(keyvaluepairs)
+        self._keyvaluepairs = KeyValuePairs(keyvaluepairs)
+
+    def to_dict(self) -> Dict:
+        """Creates string dictionary for serialization"""
+        d = OrderedDict()
+        if "sbo" in self and self["sbo"] != []:
+            # set first SBO term as sbo
+            d["sbo"] = self["sbo"][0]
+
+        if self.cvterms:
+            d["cvterms"] = self.cvterms.to_dict()
+
+        if self.history and not self.history.is_empty():
+            d["history"] = self.history.to_dict()
+
+        if self.keyvaluepairs:
+            d["keyvaluepairs"] = self.keyvaluepairs.to_dict()
+
+        return d

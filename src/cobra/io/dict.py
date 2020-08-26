@@ -126,30 +126,7 @@ def _fix_type(value):
     return value
 
 
-def _annotation_to_dict(annotation: MetaData) -> Dict:
 
-    final_dict = OrderedDict()
-
-    if "sbo" in annotation and annotation["sbo"] != []:
-        final_dict["sbo"] = annotation["sbo"][0]
-
-    anno_str = str(annotation.cvterms)
-    anno_dict = literal_eval(anno_str)
-    if len(anno_dict) != 0:
-        final_dict = {"cvterms": anno_dict}
-
-    if annotation.history.is_set_history():
-        history_str = str(annotation.history)
-        history_dict = literal_eval(history_str)
-        final_dict["history"] = history_dict
-
-    if hasattr(annotation, "key_value_data"):
-        keyvalue_str = str(annotation._key_value_pairs)
-        keyvalue_list = literal_eval(keyvalue_str)
-        if len(keyvalue_list) != 0:
-            final_dict["key_value_data"] = keyvalue_list
-
-    return final_dict
 
 
 def _extract_annotation(data: Dict) -> MetaData:
@@ -179,7 +156,7 @@ def _update_optional(cobra_object, new_dict, optional_attribute_dict, ordered_ke
         if value is None or value == default:
             continue
         if key == "annotation":
-            value = _annotation_to_dict(value)
+            value = value.to_dict()
         new_dict[key] = _fix_type(value)
 
 

@@ -88,3 +88,6 @@ class KeyValuePairs(MutableMapping):
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} [{len(self)}]>"
+
+    def to_dict(self) -> dict:
+        return {k: v.to_dict() for k, v in self.mapping.items()}

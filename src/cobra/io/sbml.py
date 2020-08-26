@@ -1613,7 +1613,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
             _check(sbase.addCVTerm(cv), "Setting cvterm: {}".format(cv))
 
     # set history
-    if annotation.history.is_set_history():
+    if not annotation.history.is_empty():
         comp_history = libsbml.ModelHistory()
 
         for creator in annotation.history.creators:

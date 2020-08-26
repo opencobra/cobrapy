@@ -1,4 +1,4 @@
-from os.path import join
+import os
 
 import pytest
 
@@ -47,7 +47,9 @@ modified_notes_str = (
 
 def test_notes(data_directory, tmp_path):
     """reading notes from SBML to cobra model"""
-    model = read_sbml_model(join(data_directory, "e_coli_core_for_annotation.xml"))
+    model_path = os.path.join(data_directory, "e_coli_core_for_annotation.xml")
+    assert os.path.exists(model_path)
+    model = read_sbml_model(model_path)
     rx1 = model.reactions[0]
     # making notes object to test equality check of
     # two notes object
@@ -81,7 +83,7 @@ def test_notes(data_directory, tmp_path):
     assert rx1.notes["Key3"] == "New Value 3"
 
     # writing and reading back the model
-    path_to_file = join(tmp_path, "model_notes.xml")
+    path_to_file = os.path.join(tmp_path, "model_notes.xml")
     write_sbml_model(model, path_to_file)
 
     model_after_reading = read_sbml_model(path_to_file)
@@ -96,14 +98,16 @@ def test_notes(data_directory, tmp_path):
 
 def test_reading_writing_notes(data_directory, tmp_path):
     # reading model with notes
-    model = read_sbml_model(join(data_directory, "e_coli_core_for_annotation.xml"))
+    model = read_sbml_model(
+        os.path.join(data_directory, "e_coli_core_for_annotation.xml")
+    )
 
     # checking notes data
     rx1 = model.reactions[0]
     assert rx1.notes.notes_xhtml == incoming_notes_str
 
     # reading and writing in json format
-    path_to_json = join(str(tmp_path), "json_notes.json")
+    path_to_json = os.path.join(str(tmp_path), "json_notes.json")
     save_json_model(model, path_to_json)
     model_from_json = load_json_model(path_to_json)
     rx1_from_json = model_from_json.reactions[0]

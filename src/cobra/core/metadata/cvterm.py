@@ -9,7 +9,7 @@ from warnings import warn
 
 
 class Qualifier(Enum):
-    """The possible qualifiers inside CVTerm"""
+    """The possible qualifiers inside a CVTerm"""
 
     bqb_is = 0
     bqb_hasPart = 1
@@ -46,13 +46,6 @@ class CVTerm:
             the qualifier relation of resource to the component
        resource : string
             a uri identifying external resource
-
-        Attributes
-        ----------
-        qualifier : Qualifier
-             the qualifier relation of resource to the component
-        uri : string
-             a uri identifying external resource
     """
 
     def __init__(self, qualifier: Qualifier = Qualifier.bqb_is, resource: str = None):
