@@ -92,7 +92,7 @@ class KeyValuePairs(MutableMapping):
         del self.mapping[key]
 
     def __str__(self) -> str:
-        return str(self.mapping)
+        return str(self.to_dict())
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} [{len(self)}]>"
