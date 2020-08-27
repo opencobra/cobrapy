@@ -46,8 +46,7 @@ def create_test_model(model_name="salmonella"):
 
 
 def test_all(args=None):
-    """ alias for running all unit-tests on installed cobra
-    """
+    """alias for running all unit-tests on installed cobra"""
     if pytest:
         args = args if args else []
 

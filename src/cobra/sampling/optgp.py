@@ -234,7 +234,8 @@ class OptGPSampler(HRSampler):
             names = [r.id for r in self.model.reactions]
 
             return pandas.DataFrame(
-                chains[:, self.fwd_idx] - chains[:, self.rev_idx], columns=names,
+                chains[:, self.fwd_idx] - chains[:, self.rev_idx],
+                columns=names,
             )
         else:
             names = [v.name for v in self.model.variables]

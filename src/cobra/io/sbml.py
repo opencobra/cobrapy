@@ -111,7 +111,7 @@ pattern_from_sbml = re.compile(r"__(\d+)__")
 
 def _escape_non_alphanum(nonASCII):
     """converts a non alphanumeric character to a string representation of
-    its ascii number """
+    its ascii number"""
     return "__" + str(ord(nonASCII.group())) + "__"
 
 
@@ -544,7 +544,7 @@ def _sbml_to_model(
 
     # GPR rules
     def process_association(ass):
-        """ Recursively convert gpr association to a gpr string.
+        """Recursively convert gpr association to a gpr string.
         Defined as inline functions to not pass the replacement dict around.
         """
         if ass.isFbcOr():
@@ -1352,6 +1352,7 @@ def _check(value, message):
 # -----------------------------------------------------------------------------
 # Notes
 # -----------------------------------------------------------------------------
+
 def _parse_notes_info(sbase: libsbml.SBase) -> Notes:
     """ Creates Notes object.
 
