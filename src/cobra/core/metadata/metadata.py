@@ -57,7 +57,11 @@ class MetaData(MutableMapping):
     def __setitem__(self, key: str, value: List) -> None:
         self._cvterms.add_simple_annotations(dict({key: value}))
 
-    def __getitem__(self, key: str) -> None:
+    def __getitem__(self, key: str) -> List:
+        if key == "sbo" and len(self.annotations[key]) == 0:
+            value = self._cvterms._annotations[key]
+            del self._cvterms._annotations[key]
+            return value
         return self.annotations[key]
 
     def __delitem__(self, key: str) -> None:

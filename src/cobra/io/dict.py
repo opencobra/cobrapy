@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-from ast import literal_eval
 from collections import OrderedDict
 from operator import attrgetter, itemgetter
 from typing import Dict

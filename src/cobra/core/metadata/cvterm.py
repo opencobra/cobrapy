@@ -2,6 +2,7 @@
 
 import collections
 import re
+from ast import literal_eval
 from collections import defaultdict
 from enum import Enum
 from typing import Dict, Iterator, List, Tuple, Union
@@ -146,6 +147,12 @@ class CVTerms(collections.MutableMapping):
             return data
         else:
             raise TypeError(f"Invalid format for CVTerms: '{data}'")
+
+    def to_dict(self) -> dict:
+        """Represent a CVTerm object in python dict"""
+        annotation_str = str(self)
+        annotation_dict = literal_eval(annotation_str)
+        return annotation_dict
 
     def add_cvterm(self, cvterm: CVTerm, index: int = 0) -> None:
         """

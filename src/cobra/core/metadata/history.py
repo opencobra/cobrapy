@@ -115,10 +115,13 @@ class History:
 
     def to_dict(self):
         """Returns dictionary representation."""
+        modified_dates = []
+        for modified_date in self._modified_dates:
+            modified_dates.append(modified_date.datetime)
         return {
                 "creators": [c.to_dict() for c in self.creators],
-                "created_date": self.created_date,
-                "modified_dates": self._modified_dates
+                "created_date": self.created_date.datetime,
+                "modified_dates": modified_dates
             }
 
     def __str__(self) -> str:
