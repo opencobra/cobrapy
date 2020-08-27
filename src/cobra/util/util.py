@@ -12,7 +12,7 @@ def format_long_string(string, max_length=50):
 
 class AutoVivification(dict):
     """Implementation of perl's autovivification feature. Checkout
-    http://stackoverflow.com/a/652284/280182 """
+    http://stackoverflow.com/a/652284/280182"""
 
     def __getitem__(self, item):
         try:

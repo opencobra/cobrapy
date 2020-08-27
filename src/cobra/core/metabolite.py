@@ -73,8 +73,8 @@ class Metabolite(Species):
 
     @property
     def elements(self):
-        """ Dictionary of elements as keys and their count in the metabolite
-        as integer. When set, the `formula` property is update accordingly """
+        """Dictionary of elements as keys and their count in the metabolite
+        as integer. When set, the `formula` property is update accordingly"""
         tmp_formula = self.formula
         if tmp_formula is None:
             return {}
@@ -246,7 +246,10 @@ class Metabolite(Species):
         from cobra.summary import MetaboliteSummary
 
         return MetaboliteSummary(
-            metabolite=self, model=self._model, solution=solution, fva=fva,
+            metabolite=self,
+            model=self._model,
+            solution=solution,
+            fva=fva,
         )
 
     def _repr_html_(self):

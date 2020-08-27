@@ -128,7 +128,11 @@ class MetaboliteSummary(Summary):
         # Create the basic flux table.
         flux = pd.DataFrame(
             data=[
-                (r.id, solution[r.id], r.get_coefficient(self._metabolite.id),)
+                (
+                    r.id,
+                    solution[r.id],
+                    r.get_coefficient(self._metabolite.id),
+                )
                 for r in self._reactions
             ],
             columns=["reaction", "flux", "factor"],
@@ -394,11 +398,13 @@ class MetaboliteSummary(Summary):
             metabolite = self._metabolite.id
 
         production = self._html_table(
-            self._display_flux(self.producing_flux, names, threshold), float_format,
+            self._display_flux(self.producing_flux, names, threshold),
+            float_format,
         )
 
         consumption = self._html_table(
-            self._display_flux(self.consuming_flux, names, threshold), float_format,
+            self._display_flux(self.consuming_flux, names, threshold),
+            float_format,
         )
 
         return (

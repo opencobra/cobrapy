@@ -12,13 +12,18 @@ def test_reaction_summary_interface(model, opt_solver):
     model.solver = opt_solver
     reaction = model.reactions.get_by_id("FUM")
     ReactionSummary(
-        reaction=reaction, model=model,
+        reaction=reaction,
+        model=model,
     )
     ReactionSummary(
-        reaction=reaction, model=model, solution=pfba(model),
+        reaction=reaction,
+        model=model,
+        solution=pfba(model),
     )
     ReactionSummary(
-        reaction=reaction, model=model, fva=0.95,
+        reaction=reaction,
+        model=model,
+        fva=0.95,
     )
     ReactionSummary(
         reaction=reaction,

@@ -73,8 +73,7 @@ class Model(Object):
     """
 
     def __setstate__(self, state):
-        """Make sure all cobra.Objects in the model point to the model.
-        """
+        """Make sure all cobra.Objects in the model point to the model."""
         self.__dict__.update(state)
         for y in ["reactions", "genes", "metabolites"]:
             for x in getattr(self, y):

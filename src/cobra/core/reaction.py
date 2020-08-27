@@ -130,7 +130,7 @@ class Reaction(Object):
             The expression representing the the forward flux (if associated
             with model), otherwise None. Representing the net flux if
             model.reversible_encoding == 'unsplit' or None if reaction is
-            not associated with a model """
+            not associated with a model"""
         if self.model is not None:
             return 1.0 * self.forward_variable - 1.0 * self.reverse_variable
         else:
@@ -169,7 +169,7 @@ class Reaction(Object):
 
     @property
     def objective_coefficient(self):
-        """ Get the coefficient for this reaction in a linear
+        """Get the coefficient for this reaction in a linear
         objective (float)
 
         Assuming that the objective of the associated model is summation of
@@ -294,7 +294,7 @@ class Reaction(Object):
 
     @property
     def bounds(self):
-        """ Get or set the bounds directly from a tuple
+        """Get or set the bounds directly from a tuple
 
         Convenience method for setting upper and lower bounds in one line
         using a tuple of lower and upper bound. Invalid bounds will raise an
@@ -1174,7 +1174,10 @@ class Reaction(Object):
         from cobra.summary import ReactionSummary
 
         return ReactionSummary(
-            reaction=self, model=self._model, solution=solution, fva=fva,
+            reaction=self,
+            model=self._model,
+            solution=solution,
+            fva=fva,
         )
 
     def __str__(self):

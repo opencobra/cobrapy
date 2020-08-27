@@ -12,13 +12,18 @@ def test_metabolite_summary_interface(model, opt_solver):
     model.solver = opt_solver
     metabolite = model.metabolites.get_by_id("q8_c")
     MetaboliteSummary(
-        metabolite=metabolite, model=model,
+        metabolite=metabolite,
+        model=model,
     )
     MetaboliteSummary(
-        metabolite=metabolite, model=model, solution=pfba(model),
+        metabolite=metabolite,
+        model=model,
+        solution=pfba(model),
     )
     MetaboliteSummary(
-        metabolite=metabolite, model=model, fva=0.95,
+        metabolite=metabolite,
+        model=model,
+        fva=0.95,
     )
     MetaboliteSummary(
         metabolite=metabolite,
