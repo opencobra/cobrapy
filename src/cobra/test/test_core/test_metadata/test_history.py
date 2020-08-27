@@ -1,9 +1,10 @@
 import os
-import pytest
 from datetime import datetime
 
-from cobra.io import read_sbml_model
+import pytest
+
 from cobra.core.metadata.history import Creator, History, HistoryDatetime
+from cobra.io import read_sbml_model
 
 
 def _read_ecoli_annotation_model(data_directory):

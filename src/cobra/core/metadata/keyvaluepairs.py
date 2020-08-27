@@ -1,6 +1,6 @@
 from collections import OrderedDict
-from typing import Dict, Union, Iterable
 from collections.abc import MutableMapping
+from typing import Dict, Iterable, Union
 
 
 class KeyValueEntry:
@@ -16,8 +16,15 @@ class KeyValueEntry:
         value : str
         uri : str
     """
-    def __init__(self, id: str = None, name: str = None,
-                 key: str = None, value: str = None, uri: str = None):
+
+    def __init__(
+        self,
+        id: str = None,
+        name: str = None,
+        key: str = None,
+        value: str = None,
+        uri: str = None,
+    ):
         self.id = id
         self.name = name
         self.key = key
@@ -25,7 +32,7 @@ class KeyValueEntry:
         self.uri = uri
 
     @staticmethod
-    def from_data(data: Union[Dict, 'KeyValueEntry']) -> 'KeyValueEntry':
+    def from_data(data: Union[Dict, "KeyValueEntry"]) -> "KeyValueEntry":
         """ Makes a KeyValueDict object using the data passed. """
         if data is None:
             return KeyValueEntry()
@@ -60,6 +67,7 @@ class KeyValuePairs(MutableMapping):
     entries : Iterable
         an iterable containing entry information
     """
+
     def __init__(self, entries: Iterable[Union[Dict, KeyValueEntry]] = None):
         self.mapping = OrderedDict()  # type: OrderedDict[str, KeyValueEntry]
         if entries:

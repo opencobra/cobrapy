@@ -27,13 +27,15 @@ def test_keyvaluepairs():
         "value": "45",
         "uri": "https://tinyurl.com/ybyr7b62",
     }
-    entry2 = KeyValueEntry.from_data({
-        "id": "id2",
-        "name": "abc_xyz2",
-        "key": "key2",
-        "value": "48",
-        "uri": "https://tinyurl2.com/ybyr7b62",
-    })
+    entry2 = KeyValueEntry.from_data(
+        {
+            "id": "id2",
+            "name": "abc_xyz2",
+            "key": "key2",
+            "value": "48",
+            "uri": "https://tinyurl2.com/ybyr7b62",
+        }
+    )
 
     kvp = KeyValuePairs(entries=[entry1, entry2])
     print(kvp)

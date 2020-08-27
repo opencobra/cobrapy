@@ -3,8 +3,8 @@ The history allows to encode provenance meta-data about
 model objects. The history allows to encode who created or modified
 objects in a model with respective time stamps.
 """
-from typing import Iterable, Dict, List, Union
 from datetime import datetime
+from typing import Dict, Iterable, List, Union
 
 
 class History:
@@ -19,11 +19,12 @@ class History:
     modified_dates : list
         A list of datetimes when the object was modified.
     """
+
     def __init__(
         self,
-        creators: List['Creator'] = None,
-        created_date: 'HistoryDatetime' = None,
-        modified_dates: List['HistoryDatetime'] = None,
+        creators: List["Creator"] = None,
+        created_date: "HistoryDatetime" = None,
+        modified_dates: List["HistoryDatetime"] = None,
     ):
         self._creators = list()
         self._created_date = None
@@ -39,7 +40,7 @@ class History:
         return self._creators
 
     @creators.setter
-    def creators(self, values: Iterable['Creator']) -> None:
+    def creators(self, values: Iterable["Creator"]) -> None:
         self._creators = list()
         if values:
             self._creators = [Creator.from_data(v) for v in values]
@@ -49,7 +50,7 @@ class History:
         return self._created_date
 
     @created_date.setter
-    def created_date(self, date: Union[str, 'HistoryDateTime']) -> None:
+    def created_date(self, date: Union[str, "HistoryDateTime"]) -> None:
         self._created_date = HistoryDatetime(date)
 
     @property
@@ -57,14 +58,13 @@ class History:
         return self._modified_dates
 
     @modified_dates.setter
-    def modified_dates(self, dates: Iterable[
-            Union[str, 'HistoryDateTime']]) -> None:
+    def modified_dates(self, dates: Iterable[Union[str, "HistoryDateTime"]]) -> None:
         self._modified_dates = list()
         if dates:
             self._modified_dates = [HistoryDatetime(d) for d in dates]
 
     @staticmethod
-    def from_data(data: Union[Dict, 'History']) -> 'History':
+    def from_data(data: Union[Dict, "History"]) -> "History":
         """Parse history from data."""
         if data is None:
             return History()
@@ -88,7 +88,7 @@ class History:
             return False
         return True
 
-    def __eq__(self, history: 'History') -> bool:
+    def __eq__(self, history: "History") -> bool:
         """ Checking equality of two history objects.
 
         A history is equal if all attributes are equal.
@@ -119,10 +119,10 @@ class History:
         for modified_date in self._modified_dates:
             modified_dates.append(modified_date.datetime)
         return {
-                "creators": [c.to_dict() for c in self.creators],
-                "created_date": self.created_date.datetime,
-                "modified_dates": modified_dates
-            }
+            "creators": [c.to_dict() for c in self.creators],
+            "created_date": self.created_date.datetime,
+            "modified_dates": modified_dates,
+        }
 
     def __str__(self) -> str:
         return str(self.to_dict())
@@ -155,7 +155,7 @@ class Creator:
         self.organization_name = organization_name  # type: str
 
     @staticmethod
-    def from_data(data: Union[Dict, 'Creator']) -> 'Creator':
+    def from_data(data: Union[Dict, "Creator"]) -> "Creator":
         """Parse creator from data."""
         if not data:
             return Creator()
@@ -183,11 +183,11 @@ class Creator:
 
     def to_dict(self):
         return {
-                "first_name": self.first_name,
-                "last_name": self.last_name,
-                "email": self.email,
-                "organization_name": self.organization_name,
-            }
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "organization_name": self.organization_name,
+        }
 
     def __str__(self) -> str:
         return str(self.to_dict())
@@ -207,6 +207,7 @@ class HistoryDatetime:
     datetime: str, datetime
         date in the form of a string
     """
+
     def __init__(self, history_datetime: str = None):
         self._datetime = None  # type: str
         self.datetime = history_datetime
@@ -237,7 +238,7 @@ class HistoryDatetime:
             )
 
     @staticmethod
-    def utcnow() -> 'HistoryDatetime':
+    def utcnow() -> "HistoryDatetime":
         """HistoryDatetime with current UTC time."""
         utcnow = datetime.utcnow()
         value = utcnow.strftime("%Y-%m-%dT%H:%M:%S%z")
@@ -250,8 +251,9 @@ class HistoryDatetime:
         Raises ValueError if not valid.
         """
         if not isinstance(datetime_str, str):
-            raise TypeError(f"The date passed must be of "
-                            f"type string: {datetime_str}")
+            raise TypeError(
+                f"The date passed must be of " f"type string: {datetime_str}"
+            )
 
         # python 3.6 doesn't allow : (colon) in the utc offset.
         try:
@@ -260,7 +262,9 @@ class HistoryDatetime:
             # checking for python 3.6
             if "Z" in datetime_str:
                 try:
-                    datetime.strptime(datetime_str.replace("Z", ""), "%Y-%m-%dT%H:%M:%S")
+                    datetime.strptime(
+                        datetime_str.replace("Z", ""), "%Y-%m-%dT%H:%M:%S"
+                    )
                 except ValueError as e1:
                     raise ValueError(str(e1))
                     return False
@@ -277,7 +281,7 @@ class HistoryDatetime:
 
         return True
 
-    def __eq__(self, history_datetime: 'HistoryDatetime') -> bool:
+    def __eq__(self, history_datetime: "HistoryDatetime") -> bool:
         return self.datetime == history_datetime.datetime
 
     def __str__(self) -> str:

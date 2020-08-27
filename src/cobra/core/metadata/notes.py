@@ -51,6 +51,7 @@ class Notes(collections.MutableMapping):
     notes_xhtml : string
         The complete notes (xhtml) data in the form of a string.
     """
+
     # pattern checking for "<p> key : value </p>" type string
     PATTERN_PTAG = re.compile(
         r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<content>.*?)</(?P=prefix)p>",
@@ -80,7 +81,7 @@ class Notes(collections.MutableMapping):
         else:
             raise TypeError(f"notes data must be of type string: {value}")
 
-    def __eq__(self, other: 'Notes') -> bool:
+    def __eq__(self, other: "Notes") -> bool:
         if not isinstance(other, Notes):
             return False
         return self._notes_xhtml == other._notes_xhtml

@@ -1,8 +1,8 @@
-from collections import OrderedDict, MutableMapping
+from collections import MutableMapping, OrderedDict
 from typing import Dict, Iterator, List, Union
 
 from cobra.core.metadata.cvterm import CVTerms
-from cobra.core.metadata.history import History, Creator, HistoryDatetime
+from cobra.core.metadata.history import Creator, History, HistoryDatetime
 from cobra.core.metadata.keyvaluepairs import KeyValuePairs
 
 
@@ -128,7 +128,7 @@ class MetaData(MutableMapping):
         return d
 
     @staticmethod
-    def from_dict(data: Dict) -> 'MetaData':
+    def from_dict(data: Dict) -> "MetaData":
         cvterms = data["cvterms"] if "cvterms" in data else None
         history = data["history"] if "history" in data else None
         keyValuepairs = data["keyvaluepairs"] if "keyvaluepairs" in data else None
