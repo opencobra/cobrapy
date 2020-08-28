@@ -186,8 +186,7 @@ def flux_variability_analysis(
         if pfba_factor is not None:
             if pfba_factor < 1.0:
                 warn(
-                    "The 'pfba_factor' should be larger or equal to 1.",
-                    UserWarning,
+                    "The 'pfba_factor' should be larger or equal to 1.", UserWarning,
                 )
             with model:
                 add_pfba(model, fraction_of_optimum=0)
@@ -228,11 +227,7 @@ def flux_variability_analysis(
 
 
 def find_blocked_reactions(
-    model,
-    reaction_list=None,
-    zero_cutoff=None,
-    open_exchanges=False,
-    processes=None,
+    model, reaction_list=None, zero_cutoff=None, open_exchanges=False, processes=None,
 ):
     """
     Find reactions that cannot carry any flux.

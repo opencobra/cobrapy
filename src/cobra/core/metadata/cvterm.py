@@ -2,8 +2,7 @@
 
 import collections
 import re
-from ast import literal_eval
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from enum import Enum
 from typing import Dict, Iterator, List, Tuple, Union
 from warnings import warn
@@ -150,9 +149,13 @@ class CVTerms(collections.MutableMapping):
 
     def to_dict(self) -> dict:
         """Represent a CVTerm object in python dict"""
-        annotation_str = str(self)
-        annotation_dict = literal_eval(annotation_str)
-        return annotation_dict
+        cv_dict = OrderedDict()
+        for key, value in self._cvterms.items():
+            cvlist = []
+            for ex_res in value:
+                cvlist.append(ex_res.to_dict())
+            cv_dict[key] = cvlist
+        return cv_dict
 
     def add_cvterm(self, cvterm: CVTerm, index: int = 0) -> None:
         """
@@ -532,6 +535,17 @@ class ExternalResources:
             raise TypeError(
                 f"The nested data structure does not have valid CVTerm format: {value}"
             )
+
+    def to_dict(self):
+        """Represents a ExternalResource object as python dict"""
+        resources = []
+        for resource in self._resources:
+            resources.append(resource)
+        ex_dic = {"resources": resources}
+        if self.nested_data is None:
+            return ex_dic
+        ex_dic["nested_data"] = self.nested_data.to_dict()
+        return ex_dic
 
     def __eq__(self, other: "ExternalResources") -> bool:
         """

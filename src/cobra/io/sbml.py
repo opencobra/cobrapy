@@ -1353,6 +1353,7 @@ def _check(value, message):
 # Notes
 # -----------------------------------------------------------------------------
 
+
 def _parse_notes_info(sbase: libsbml.SBase) -> Notes:
     """ Creates Notes object.
 
