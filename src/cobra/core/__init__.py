@@ -9,4 +9,3 @@ from cobra.core.object import Object
 from cobra.core.reaction import Reaction
 from cobra.core.solution import LegacySolution, Solution, get_solution
 from cobra.core.species import Species
-from cobra.core.udconstraints import ConstraintComponent, UserDefinedConstraint
