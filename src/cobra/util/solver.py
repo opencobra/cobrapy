@@ -54,6 +54,16 @@ qp_solvers = ["cplex", "gurobi"]
 # optlang solution statuses which still allow retrieving primal values
 has_primals = [NUMERIC, FEASIBLE, INFEASIBLE, SUBOPTIMAL, ITERATION_LIMIT, TIME_LIMIT]
 
+# define a named tuple used for adding absolute expression
+Components = NamedTuple(
+    "Components",
+    [
+        ("variable", optlang.interface.Variable),
+        ("upper_constraint", optlang.interface.Constraint),
+        ("lower_constraint", optlang.interface.Constraint),
+    ],
+)
+
 
 def linear_reaction_coefficients(
     model: "Model", reactions: Optional[List["Reaction"]] = None
@@ -367,7 +377,7 @@ def add_absolute_expression(
     ub: Optional[float] = None,
     difference: Optional[float] = 0.0,
     add: bool = True,
-) -> NamedTuple:
+) -> Components:
     """Add the absolute value of an expression to the model.
 
     Also defines a variable for the absolute value that can be used in
@@ -392,20 +402,12 @@ def add_absolute_expression(
 
     Returns
     -------
-    NamedTuple
+    Components
         A named tuple with variable and two constraints (upper_constraint,
         lower_constraint) describing the new variable and the constraints
         that assign the absolute value of the expression to it.
 
     """
-    Components = NamedTuple(
-        "Components",
-        [
-            ("variable", optlang.interface.Variable),
-            ("upper_constraint", optlang.interface.Constraint),
-            ("lower_constraint", optlang.interface.Constraint),
-        ],
-    )
     variable = model.problem.Variable(name, lb=0, ub=ub)
     # The following constraints enforce variable > expression and
     # variable > -expression
