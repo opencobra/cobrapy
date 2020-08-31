@@ -41,6 +41,9 @@ if TYPE_CHECKING:
     from cobra import Model, Reaction
 
 
+CONS_VARS = Union[optlang.interface.Constraint, optlang.interface.Variable]
+
+
 # Define all the solvers that are found in optlang.
 solvers = {
     match.split("_interface")[0]: getattr(optlang, match)
@@ -54,15 +57,13 @@ qp_solvers = ["cplex", "gurobi"]
 # optlang solution statuses which still allow retrieving primal values
 has_primals = [NUMERIC, FEASIBLE, INFEASIBLE, SUBOPTIMAL, ITERATION_LIMIT, TIME_LIMIT]
 
-# define a named tuple used for adding absolute expression
-Components = NamedTuple(
-    "Components",
-    [
-        ("variable", optlang.interface.Variable),
-        ("upper_constraint", optlang.interface.Constraint),
-        ("lower_constraint", optlang.interface.Constraint),
-    ],
-)
+
+class Components(NamedTuple):
+    """Define an object for adding absolute expressions."""
+
+    variable: optlang.interface.Variable
+    upper_constraint: optlang.interface.Constraint
+    lower_constraint: optlang.interface.Constraint
 
 
 def linear_reaction_coefficients(
@@ -314,10 +315,7 @@ def choose_solver(
 
 def add_cons_vars_to_problem(
     model: "Model",
-    what: Union[
-        List[Union[optlang.interface.Variable, optlang.interface.Constraint]],
-        Tuple[Union[optlang.interface.Variable, optlang.interface.Constraint]],
-    ],
+    what: Union[List[CONS_VARS], Tuple[CONS_VARS], Components],
     **kwargs,
 ) -> None:
     """Add variables and constraints to a model's solver object.
@@ -346,10 +344,7 @@ def add_cons_vars_to_problem(
 
 def remove_cons_vars_from_problem(
     model: "Model",
-    what: Union[
-        List[Union[optlang.interface.Variable, optlang.interface.Constraint]],
-        Tuple[Union[optlang.interface.Variable, optlang.interface.Constraint]],
-    ],
+    what: Union[List[CONS_VARS], Tuple[CONS_VARS], Components],
 ) -> None:
     """Remove variables and constraints from a model's solver object.
 
@@ -413,10 +408,8 @@ def add_absolute_expression(
     variable = model.problem.Variable(name, lb=0, ub=ub)
     # The following constraints enforce variable > expression and
     # variable > -expression
-    upper_constraint = (
-        model.problem.Constraint(
-            expression - variable, ub=difference, name="abs_pos_" + name
-        ),
+    upper_constraint = model.problem.Constraint(
+        expression - variable, ub=difference, name="abs_pos_" + name
     )
     lower_constraint = model.problem.Constraint(
         expression + variable, lb=difference, name="abs_neg_" + name
