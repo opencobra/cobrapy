@@ -137,7 +137,8 @@ def _cached_load(
 
 
 def _fetch_model(
-    model_id: str, repositories: Iterable[AbstractModelRepository],
+    model_id: str,
+    repositories: Iterable[AbstractModelRepository],
 ) -> bytes:
     """
     Attempt to load a gzip-compressed SBML document from the given repositories.

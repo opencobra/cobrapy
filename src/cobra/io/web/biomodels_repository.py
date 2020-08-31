@@ -102,7 +102,9 @@ class BioModels(AbstractModelRepository):
         ) as response:
             response.raise_for_status()
             task_id = self._progress.add_task(
-                description="download", total=model.size, model_id=model_id,
+                description="download",
+                total=model.size,
+                model_id=model_id,
             )
             for chunk in response.iter_bytes():
                 data.write(chunk)
