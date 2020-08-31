@@ -2,10 +2,12 @@
 
 """Test functions of model.py"""
 
+from os.path import join
 
 import pytest
 
 from cobra.core import Group
+from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
 
 def test_group_add_elements(model):
@@ -37,3 +39,17 @@ def test_group_kind():
 
     group.kind = "collection"
     assert group.kind == "collection"
+
+
+def test_read_write_json(data_directory, tmp_path):
+    model = read_sbml_model(join(data_directory, "e_coli_core.xml"))
+    assert model.groups is not None
+    assert len(model.groups) == 10
+    assert len(model.groups[0].members) == 6
+
+    path_to_file = join(tmp_path, "group_ecoli.json")
+    save_json_model(model, path_to_file)
+    model_from_json = load_json_model(path_to_file)
+    assert model_from_json.groups is not None
+    assert len(model_from_json.groups) == 10
+    assert len(model_from_json.groups[0].members) == 6

@@ -2,8 +2,6 @@
 
 """Contains module level fixtures and utility functions."""
 
-from __future__ import absolute_import
-
 from os.path import join
 from pickle import dump, load
 

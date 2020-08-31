@@ -1174,10 +1174,7 @@ class Reaction(Object):
         from cobra.summary import ReactionSummary
 
         return ReactionSummary(
-            reaction=self,
-            model=self._model,
-            solution=solution,
-            fva=fva,
+            reaction=self, model=self._model, solution=solution, fva=fva,
         )
 
     def __str__(self):

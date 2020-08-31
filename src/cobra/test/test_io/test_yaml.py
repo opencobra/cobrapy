@@ -2,12 +2,9 @@
 
 """Test functionalities provided by yaml.py"""
 
-from __future__ import absolute_import
-
 import json
 from os.path import join
 
-import pytest
 from ruamel.yaml import YAML
 
 from cobra import io as cio
@@ -20,9 +17,7 @@ def test_load_yaml_model(data_directory, mini_model):
     assert compare_models(mini_model, yaml_model) is None
 
 
-@pytest.mark.xfail(reason="schema outdated")
 def test_save_yaml_model(tmpdir, mini_model):
-    jsonschema = pytest.importorskip("jsonschema")
     """Test the writing of YAML model."""
     output_file = tmpdir.join("mini.yml")
     cio.save_yaml_model(mini_model, output_file.strpath, sort=True)
@@ -31,5 +26,5 @@ def test_save_yaml_model(tmpdir, mini_model):
     with open(output_file.strpath, "r") as infile:
         yaml_to_dict = yaml.load(infile)
     dict_to_json = json.dumps(yaml_to_dict)
-    loaded = json.loads(dict_to_json)
-    assert jsonschema.validate(loaded, cio.json.json_schema)
+    errors = cio.validate_json_model(filename=dict_to_json, json_schema_version=1)
+    assert len(errors) == 0

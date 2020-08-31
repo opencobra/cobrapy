@@ -27,10 +27,7 @@ class Summary(ABC):
 
     """
 
-    def __init__(
-        self,
-        **kwargs,
-    ) -> None:
+    def __init__(self, **kwargs,) -> None:
         """
         Initialize a summary.
 

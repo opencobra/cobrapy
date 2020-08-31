@@ -10,16 +10,12 @@ from cobra.summary import ModelSummary
 def test_model_summary_interface(model, opt_solver):
     """Test that a summary can be created successfully."""
     model.solver = opt_solver
+    ModelSummary(model=model,)
     ModelSummary(
-        model=model,
+        model=model, solution=pfba(model),
     )
     ModelSummary(
-        model=model,
-        solution=pfba(model),
-    )
-    ModelSummary(
-        model=model,
-        fva=0.95,
+        model=model, fva=0.95,
     )
     ModelSummary(
         model=model,

@@ -1,0 +1,26 @@
+{
+  "bqb_hasVersion": [
+    {
+      "resources": [
+        "https://identifiers.org/chebi/CHEBI:17345",
+        "https://identifiers.org/chebi/CHEBI:17552",
+        "https://identifiers.org/chebi/CHEBI:17627"
+      ]
+    },
+    {
+      "resources": [
+        "https://identifiers.org/kegg.compound/C00035",
+        "https://identifiers.org/kegg.compound/C00044",
+        "https://identifiers.org/kegg.compound/C00144"
+      ]
+    }
+  ],
+  "bqb_isDescribedBy": [
+    {
+      "resources": [
+        "https://identifiers.org/uniprot/Q9UQM7",
+        "https://identifiers.org/uniprot/Q13554"
+      ]
+    }
+  ]
+}

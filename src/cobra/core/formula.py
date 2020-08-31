@@ -16,7 +16,6 @@ element_re = re.compile("([A-Z][a-z]?)([0-9.]+[0-9.]?|(?=[A-Z])?)")
 
 class Formula(Object):
     """Describes a Chemical Formula
-
     Parameters
     ---------
     formula : string
@@ -32,12 +31,10 @@ class Formula(Object):
 
     def __add__(self, other_formula):
         """Combine two molecular formulas.
-
         Parameters
         ----------
         other_formula : Formula, str
             string for a chemical formula
-
         Returns
         -------
         Formula
@@ -84,7 +81,6 @@ class Formula(Object):
     @property
     def weight(self):
         """Calculate the mol mass of the compound
-
         Returns
         -------
         float
