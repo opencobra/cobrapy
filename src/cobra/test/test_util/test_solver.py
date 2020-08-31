@@ -120,7 +120,7 @@ def test_absolute_expression(model: "Model") -> None:
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
-def test_fix_objective_as_constraint(solver: List[str], model: "Model") -> None:
+def test_fix_objective_as_constraint(solver: str, model: "Model") -> None:
     """Test fixing present objective as a constraint."""
     model.solver = solver
     with model as m:
@@ -135,9 +135,7 @@ def test_fix_objective_as_constraint(solver: List[str], model: "Model") -> None:
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
-def test_fix_objective_as_constraint_minimize(
-    model: "Model", solver: List[str]
-) -> None:
+def test_fix_objective_as_constraint_minimize(model: "Model", solver: str) -> None:
     """Test fixing present objective as a constraint but as a minimization."""
     model.solver = solver
     model.reactions.Biomass_Ecoli_core.bounds = (0.1, 0.1)
@@ -157,7 +155,7 @@ def test_fix_objective_as_constraint_minimize(
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
-def test_add_lp_feasibility(model: "Model", solver: List[str]) -> None:
+def test_add_lp_feasibility(model: "Model", solver: str) -> None:
     """Test functionality to ensure LP feasibility."""
     model.solver = solver
 
@@ -176,7 +174,7 @@ def test_add_lp_feasibility(model: "Model", solver: List[str]) -> None:
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
-def test_add_lexicographic_constraints(model: "Model", solver: List[str]) -> None:
+def test_add_lexicographic_constraints(model: "Model", solver: str) -> None:
     """Test addition of lexicographic constraints."""
     model.solver = solver
 

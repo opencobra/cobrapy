@@ -57,7 +57,7 @@ has_primals = [NUMERIC, FEASIBLE, INFEASIBLE, SUBOPTIMAL, ITERATION_LIMIT, TIME_
 
 def linear_reaction_coefficients(
     model: "Model", reactions: Optional[List["Reaction"]] = None
-) -> Union[Dict["Reaction", float], dict]:
+) -> Dict["Reaction", float]:
     """Retrieve coefficient for the reactions in a linear objective.
 
     Parameters
@@ -155,7 +155,7 @@ def set_objective(
         if not model.objective.is_Linear:
             raise ValueError(
                 "You can only update non-linear objectives additively using object of "
-                f"class optlang.interface.Objective, not {type(value)}"
+                f"class optlang.interface.Objective, not of {type(value)}"
             )
 
         if not additive:
@@ -261,7 +261,7 @@ def get_solver_name(mip: bool = False, qp: bool = False) -> Union[str, Exception
 
 def choose_solver(
     model: "Model", solver: Optional[str] = None, qp: bool = False
-) -> Union[ModuleType, Exception]:
+) -> ModuleType:
     """Choose a solver given a solver name and model.
 
     This will choose a solver compatible with the model and required
@@ -479,9 +479,7 @@ def fix_objective_as_constraint(
     return bound
 
 
-def check_solver_status(
-    status: str = None, raise_error: bool = False
-) -> Union[None, UserWarning, OptimizationError]:
+def check_solver_status(status: str = None, raise_error: bool = False) -> None:
     """Perform standard checks on a solver's status.
 
     Parameters
@@ -519,9 +517,7 @@ def check_solver_status(
         raise OptimizationError(f"Solver status is '{status}'.")
 
 
-def assert_optimal(
-    model: "Model", message: str = "Optimization failed"
-) -> Optional[OptimizationError]:
+def assert_optimal(model: "Model", message: str = "Optimization failed") -> None:
     """Assert model solver status is optimal.
 
     Do nothing if model solver status is optimal, otherwise throw
