@@ -54,23 +54,18 @@ def test_linear_reaction_coefficients(model: "Model") -> None:
     assert coefficients == {model.reactions.Biomass_Ecoli_core: 1}
 
 
-@pytest.mark.parametrize("solver", optlang_solvers)
-def test_fail_non_linear_reaction_coefficients(
-    model: "Model", solver: List[str]
-) -> Optional[ValueError]:
+def test_fail_non_linear_reaction_coefficients(model: "Model") -> None:
     """Test failure of non-linear coefficient identification in reaction."""
-    model.solver = solver
-    try:
+    model.solver = "optlang-glpk"
+
+    with pytest.raises(ValueError) as error:
         model.objective = model.problem.Objective(
             model.reactions.ATPM.flux_expression ** 2
         )
-    except ValueError:
-        pass
-    else:
         coefficients = su.linear_reaction_coefficients(model)
         assert coefficients == {}
-        with pytest.raises(ValueError):
-            model.reactions.ACALD.objective_coefficient = 1
+
+    assert "GLPK only supports linear objectives." in str(error.value)
 
 
 def test_add_remove(model: "Model") -> None:
