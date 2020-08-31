@@ -131,7 +131,7 @@ def set_objective(
         Dict["Reaction", float],
     ],
     additive: bool = False,
-) -> Optional[Exception]:
+) -> None:
     """Set the model objective.
 
     Parameters
@@ -225,7 +225,7 @@ def interface_to_str(interface: Union[str, ModuleType]) -> str:
     return re.sub(r"optlang.|.interface", "", interface)
 
 
-def get_solver_name(mip: bool = False, qp: bool = False) -> Union[str, Exception]:
+def get_solver_name(mip: bool = False, qp: bool = False) -> str:
     """Select a solver for a given optimization problem.
 
     Parameters
@@ -377,7 +377,7 @@ def add_absolute_expression(
     expression: str,
     name: str = "abs_var",
     ub: Optional[float] = None,
-    difference: Optional[float] = 0.0,
+    difference: float = 0.0,
     add: bool = True,
 ) -> Components:
     """Add the absolute value of an expression to the model.
