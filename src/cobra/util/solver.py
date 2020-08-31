@@ -126,7 +126,9 @@ def _valid_atoms(model: "Model", expression: optlang.symbolics.Basic) -> bool:
 def set_objective(
     model: "Model",
     value: Union[
-        optlang.interface.Objective, optlang.symbolics.Basic, Dict["Reaction", float],
+        optlang.interface.Objective,
+        optlang.symbolics.Basic,
+        Dict["Reaction", float],
     ],
     additive: bool = False,
 ) -> Optional[Exception]:
