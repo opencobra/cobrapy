@@ -124,7 +124,7 @@ def set_objective(
 
     Parameters
     ----------
-    model : cobra model
+    model : cobra.Model
        The model to set the objective for.
     value : optlang.interface.Objective, optlang.symbolics.Basic, dict
         If the model objective is linear, then the value can be a new

@@ -18,25 +18,25 @@ optlang_solvers = [f"optlang-{s}" for s in stable_optlang if s in su.solvers]
 
 
 def test_solver_list() -> None:
-    """Test if solvers are found."""
+    """Expect that at least the GLPK solver is found."""
     assert len(su.solvers) >= 1
     assert "glpk" in su.solvers
 
 
 def test_interface_str() -> None:
-    """Test string representation of solver interfaces."""
+    """Test the string representation of solver interfaces."""
     assert su.interface_to_str("nonsense") == "nonsense"
     assert su.interface_to_str("optlang.glpk_interface") == "glpk"
     assert su.interface_to_str("optlang-cplex") == "cplex"
 
 
 def test_solver_name() -> None:
-    """Test default solver name."""
+    """Test that the default LP solver name is GLPK."""
     assert su.get_solver_name() == "glpk"
 
 
 def test_choose_solver(model: "Model") -> Optional[su.SolverNotFound]:
-    """Test if solver switching is working."""
+    """Test that solver switching is working."""
     so = su.choose_solver(model, "glpk")
     assert su.interface_to_str(so) == "glpk"
 
@@ -49,7 +49,7 @@ def test_choose_solver(model: "Model") -> Optional[su.SolverNotFound]:
 
 
 def test_linear_reaction_coefficients(model: "Model") -> None:
-    """Test if linear coefficients are identifiable in objective."""
+    """Test that linear coefficients are identifiable in objective."""
     coefficients = su.linear_reaction_coefficients(model)
     assert coefficients == {model.reactions.Biomass_Ecoli_core: 1}
 
