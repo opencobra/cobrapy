@@ -10,10 +10,10 @@ from cobra.util import AutoVivification, format_long_string, show_versions
     [
         (
             (
-                "This is a really long string, but is it long enough."
+                "This is a really long string, but is it long enough. "
                 "I hope it is long enough so that format_long_string() function works."
             ),
-            "This is a really long string, but is it long en...",
+            "This is a really long string, but is it long...",
         ),
         ("This is short string.", "This is short string."),
     ],
