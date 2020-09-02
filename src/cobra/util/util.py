@@ -50,7 +50,7 @@ class AutoVivification(dict):
 
         """
         try:
-            value = super().__getitem__(self, item)
+            value = super().__getitem__(item)
         except KeyError:
             value = self[item] = type(self)()
 
