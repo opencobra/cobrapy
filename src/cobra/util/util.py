@@ -50,10 +50,11 @@ class AutoVivification(dict):
 
         """
         try:
-            return dict.__getitem__(self, item)
+            value = super().__getitem__(self, item)
         except KeyError:
             value = self[item] = type(self)()
-            return value
+
+        return value
 
 
 def show_versions() -> None:
