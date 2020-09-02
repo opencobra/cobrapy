@@ -1,22 +1,26 @@
 """Test functions of util.py ."""
 
+import pytest
+
 from cobra.util import AutoVivification, format_long_string, show_versions
 
 
-def test_format_long_string_with_long_string() -> None:
-    """Test functionality by formatting a long string."""
-    long_string = (
-        "This is a really long string, but is it long enough."
-        "I hope it is long enough so that format_long_string() function works."
-    )
-    expected_output = "This is a really long string, but is it long en..."
-    assert expected_output == format_long_string(long_string)
-
-
-def test_format_long_string_with_short_string() -> None:
-    """Test functionality by formatting a short string."""
-    short_string = "This is short string."
-    assert short_string == format_long_string(short_string)
+@pytest.mark.parametrize(
+    "input_string, expected_string",
+    [
+        (
+            (
+                "This is a really long string, but is it long enough."
+                "I hope it is long enough so that format_long_string() function works."
+            ),
+            "This is a really long string, but is it long en...",
+        ),
+        ("This is short string.", "This is short string."),
+    ],
+)
+def test_format_long_string(input_string: str, expected_string: str) -> None:
+    """Test functionality of format long string."""
+    assert expected_string == format_long_string(input_string)
 
 
 def test_autovivification() -> None:
