@@ -1,5 +1,6 @@
 """General utilities used across the package."""
 
+import textwrap
 from typing import Any
 
 from depinfo import print_dependencies
@@ -21,9 +22,7 @@ def format_long_string(string: str, max_length: int = 50) -> str:
         The shortened string.
 
     """
-    if len(string) > max_length:
-        string = f"{string[: max_length - 3]}..."
-    return string
+    return textwrap.shorten(string, width=max_length, placeholder="...")
 
 
 class AutoVivification(dict):
