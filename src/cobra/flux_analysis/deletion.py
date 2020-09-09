@@ -132,14 +132,7 @@ def _multi_deletion(
 
         def extract_knockout_results(result_iter):
             result = pd.DataFrame(
-                [
-                    (
-                        set(ids),
-                        growth,
-                        status,
-                    )
-                    for (ids, growth, status) in result_iter
-                ],
+                [(set(ids), growth, status,) for (ids, growth, status) in result_iter],
                 columns=["ids", "growth", "status"],
             )
             return result

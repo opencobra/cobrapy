@@ -2,7 +2,11 @@
 
 from __future__ import absolute_import
 
+from collections import defaultdict
+
 from six import string_types
+
+from cobra.core.metadata import CVList, MetaData, Notes
 
 
 class Object(object):
@@ -19,8 +23,8 @@ class Object(object):
         self._id = id
         self.name = name
 
-        self.notes = {}
-        self._annotation = {}
+        self._notes = Notes()
+        self._annotation = MetaData()
 
     @property
     def id(self):
@@ -37,19 +41,38 @@ class Object(object):
         else:
             self._id = value
 
-    def _set_id_with_model(self, value):
-        self._id = value
+    @property
+    def notes(self):
+        return getattr(self, "_notes", None)
+
+    @notes.setter
+    def notes(self, data):
+        if isinstance(data, Notes):
+            self._notes = data
+            return
+        self._notes.notes_xhtml = data
 
     @property
     def annotation(self):
-        return self._annotation
+        return getattr(self, "_annotation", None)
 
     @annotation.setter
-    def annotation(self, annotation):
-        if not isinstance(annotation, dict):
-            raise TypeError("Annotation must be a dict")
+    def annotation(self, value):
+        if not (isinstance(value, dict) or isinstance(value, MetaData)):
+            raise TypeError(
+                "The data passed for annotation must be inside "
+                "a dictionary: {}".format(value)
+            )
         else:
-            self._annotation = annotation
+            if isinstance(value, MetaData):
+                self._annotation = value
+            else:
+                self._annotation.cvterms._annotations = defaultdict(list)
+                self._annotation.cvterms._cvterms = defaultdict(CVList)
+                self._annotation.cvterms.add_simple_annotations(value)
+
+    def _set_id_with_model(self, value):
+        self._id = value
 
     def __getstate__(self):
         """To prevent excessive replication during deepcopy."""

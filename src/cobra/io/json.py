@@ -1,9 +1,11 @@
-# -*- coding: utf-8 -*-
+from pathlib import Path
+from typing import Dict, List, Union
 
-from __future__ import absolute_import
-
+import jsonschema
+from importlib_resources import open_text
 from six import string_types
 
+from cobra import io as cio
 from cobra.io.dict import model_from_dict, model_to_dict
 
 
@@ -14,6 +16,18 @@ except ImportError:
 
 
 JSON_SPEC = "1"
+
+
+def json_schema_v1() -> Dict:
+    with open_text(cio, "schema_v1.json") as handle:
+        schema_v1 = json.load(handle)
+    return schema_v1
+
+
+def json_schema_v2() -> Dict:
+    with open_text(cio, "schema_v2.json") as handle:
+        schema_v2 = json.load(handle)
+    return schema_v2
 
 
 def to_json(model, sort=False, **kwargs):
@@ -41,7 +55,7 @@ def to_json(model, sort=False, **kwargs):
     json.dumps : Base function.
     """
     obj = model_to_dict(model, sort=sort)
-    obj[u"version"] = JSON_SPEC
+    obj["version"] = JSON_SPEC
     return json.dumps(obj, allow_nan=False, **kwargs)
 
 
@@ -76,7 +90,7 @@ def save_json_model(model, filename, sort=False, pretty=False, **kwargs):
     ----------
     model : cobra.Model
         The cobra model to represent.
-    filename : str or file-like
+    filename : str or file-like or Path
         File path or descriptor that the JSON representation should be
         written to.
     sort : bool, optional
@@ -93,7 +107,7 @@ def save_json_model(model, filename, sort=False, pretty=False, **kwargs):
     json.dump : Base function.
     """
     obj = model_to_dict(model, sort=sort)
-    obj[u"version"] = JSON_SPEC
+    obj["version"] = JSON_SPEC
 
     if pretty:
         dump_opts = {
@@ -111,7 +125,7 @@ def save_json_model(model, filename, sort=False, pretty=False, **kwargs):
         }
     dump_opts.update(**kwargs)
 
-    if isinstance(filename, string_types):
+    if isinstance(filename, (string_types, Path)):
         with open(filename, "w") as file_handle:
             json.dump(obj, file_handle, **dump_opts)
     else:
@@ -124,7 +138,7 @@ def load_json_model(filename):
 
     Parameters
     ----------
-    filename : str or file-like
+    filename : str or file-like or Path
         File path or descriptor that contains the JSON document describing the
         cobra model.
 
@@ -137,8 +151,51 @@ def load_json_model(filename):
     --------
     from_json : Load from a string.
     """
-    if isinstance(filename, string_types):
+    if isinstance(filename, (string_types, Path)):
         with open(filename, "r") as file_handle:
             return model_from_dict(json.load(file_handle))
     else:
         return model_from_dict(json.load(filename))
+
+
+def validate_json_model(
+    filename: Union[str, bytes], json_schema_version: int = 1
+) -> List:
+    """
+    Validate a model in json format against the schema with given version
+    Parameters
+    ----------
+    filename : str or file-like
+        File path or descriptor that contains the JSON document describing the
+        cobra model.
+    json_schema_version : int {1, 2}
+        the version of schema to be used for validation.
+        Currently we have v1 and v2 only and v2 is under development
+    Returns
+    -------
+    errors : list
+        The list of errors encountered while validating
+    """
+
+    if json_schema_version == 1:
+        schema = json_schema_v1()
+    elif json_schema_version == 2:
+        schema = json_schema_v2()
+    else:
+        raise ValueError(
+            f"Only v1 and v2 of JSON schema are available. JSON "
+            f"schema v{json_schema_version} is not supported."
+        )
+
+    validator = jsonschema.Draft7Validator(schema)
+
+    try:
+        if isinstance(filename, string_types):
+            with open(filename, "r") as file_handle:
+                errors = validator.iter_errors(json.load(file_handle))
+        else:
+            errors = validator.iter_errors(json.load(filename))
+    except OSError:
+        errors = validator.iter_errors(json.loads(filename))
+
+    return list(errors)

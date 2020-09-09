@@ -2,8 +2,6 @@
 
 """Test data storage and recovery using pickle."""
 
-from __future__ import absolute_import
-
 from os.path import join
 from pickle import dump, load
 
@@ -13,10 +11,10 @@ from cobra.test.test_io.conftest import compare_models
 
 
 try:
-    import cPickle
+    import pickle
 
-    cload = cPickle.load
-    cdump = cPickle.dump
+    cload = pickle.load
+    cdump = pickle.dump
 except ImportError:
     cload = None
     cdump = None

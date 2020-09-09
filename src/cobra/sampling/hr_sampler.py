@@ -285,9 +285,7 @@ class HRSampler(object):
 
                 primals = self.model.solver.primal_values
                 sol = [primals[v.name] for v in self.model.variables]
-                self.warmup[
-                    self.n_warmup,
-                ] = sol
+                self.warmup[self.n_warmup,] = sol
                 self.n_warmup += 1
 
                 # Reset objective
@@ -393,33 +391,13 @@ class HRSampler(object):
         """Get the lower and upper bound distances. Negative is bad."""
 
         prob = self.problem
-        lb_dist = (
-            p
-            - prob.variable_bounds[
-                0,
-            ]
-        ).min()
-        ub_dist = (
-            prob.variable_bounds[
-                1,
-            ]
-            - p
-        ).min()
+        lb_dist = (p - prob.variable_bounds[0,]).min()
+        ub_dist = (prob.variable_bounds[1,] - p).min()
 
         if prob.bounds.shape[0] > 0:
             const = prob.inequalities.dot(p)
-            const_lb_dist = (
-                const
-                - prob.bounds[
-                    0,
-                ]
-            ).min()
-            const_ub_dist = (
-                prob.bounds[
-                    1,
-                ]
-                - const
-            ).min()
+            const_lb_dist = (const - prob.bounds[0,]).min()
+            const_ub_dist = (prob.bounds[1,] - const).min()
             lb_dist = min(lb_dist, const_lb_dist)
             ub_dist = min(ub_dist, const_ub_dist)
 
@@ -508,39 +486,13 @@ class HRSampler(object):
             )
 
         feasibility = np.abs(S.dot(samples.T).T - b).max(axis=1)
-        lb_error = (
-            samples
-            - bounds[
-                0,
-            ]
-        ).min(axis=1)
-        ub_error = (
-            bounds[
-                1,
-            ]
-            - samples
-        ).min(axis=1)
+        lb_error = (samples - bounds[0,]).min(axis=1)
+        ub_error = (bounds[1,] - samples).min(axis=1)
 
         if samples.shape[1] == len(self.model.variables) and prob.inequalities.shape[0]:
             consts = prob.inequalities.dot(samples.T)
-            lb_error = np.minimum(
-                lb_error,
-                (
-                    consts
-                    - prob.bounds[
-                        0,
-                    ]
-                ).min(axis=1),
-            )
-            ub_error = np.minimum(
-                ub_error,
-                (
-                    prob.bounds[
-                        1,
-                    ]
-                    - consts
-                ).min(axis=1),
-            )
+            lb_error = np.minimum(lb_error, (consts - prob.bounds[0,]).min(axis=1),)
+            ub_error = np.minimum(ub_error, (prob.bounds[1,] - consts).min(axis=1),)
 
         valid = (
             (feasibility < self.feasibility_tol)

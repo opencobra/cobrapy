@@ -136,9 +136,7 @@ def nullspace(A: np.ndarray, atol: float = 1e-13, rtol: float = 0.0) -> np.ndarr
 
 
 def constraint_matrices(
-    model: "Model",
-    array_type: str = "dense",
-    zero_tol: float = 1e-6,
+    model: "Model", array_type: str = "dense", zero_tol: float = 1e-6,
 ) -> NamedTuple:
     """Create a matrix representation of the problem.
 
