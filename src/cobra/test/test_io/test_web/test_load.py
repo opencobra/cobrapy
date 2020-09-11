@@ -3,6 +3,7 @@ import pathlib
 
 import pytest
 
+from cobra import Configuration
 from cobra.io import BiGGModels, BioModels, load_model
 
 
@@ -58,12 +59,12 @@ def test_remote_load(model_id: str, num_metabolites: int, num_reactions: int):
     assert len(model.reactions) == num_reactions
 
 
-def test_cache(tmp_path, bigg_models, biomodels):
+def test_cache(monkeypatch, tmp_path, bigg_models, biomodels):
     """Test that remote models are properly cached."""
-    remote_model = load_model("e_coli_core", cache_directory=tmp_path)
-    cached_model = load_model(
-        "e_coli_core", repositories=[bigg_models, biomodels], cache_directory=tmp_path
-    )
+    config = Configuration()
+    monkeypatch.setattr(config, "cache_directory", tmp_path)
+    remote_model = load_model("e_coli_core")
+    cached_model = load_model("e_coli_core", repositories=[bigg_models, biomodels])
     bigg_models.get_sbml.assert_not_called()
     biomodels.get_sbml.assert_not_called()
     assert len(cached_model.metabolites) == len(remote_model.metabolites)

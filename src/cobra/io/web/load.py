@@ -3,14 +3,13 @@
 
 import gzip
 import logging
-import pathlib
-from typing import TYPE_CHECKING, Iterable, Optional, Union
+from typing import TYPE_CHECKING, Iterable
 
-import appdirs
 import diskcache
 import httpx
 import libsbml
 
+from ...core import Configuration
 from ..sbml import _sbml_to_model
 from .abstract_model_repository import AbstractModelRepository
 from .bigg_models_repository import BiGGModels
@@ -22,13 +21,13 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
+configuration = Configuration()
 
 
 def load_model(
     model_id: str,
     repositories: Iterable[AbstractModelRepository] = (BiGGModels(), BioModels()),
     cache: bool = True,
-    cache_directory: Optional[Union[pathlib.Path, str]] = None,
 ) -> "Model":
     """
     Download an SBML model from a remote repository.
@@ -53,9 +52,6 @@ def load_model(
         An iterable of repository accessor instances. The model_id is searched in order.
     cache : bool, optional
         Whether or not to use the local caching mechanism (default yes).
-    cache_directory : pathlib.Path or str, optional
-        A path where the cache should reside if caching is desired. The default
-        directory depends on the operating system.
 
     Returns
     -------
@@ -82,14 +78,9 @@ def load_model(
 
     """
     if cache:
-        if cache_directory is None:
-            cache_directory = pathlib.Path(
-                appdirs.user_cache_dir(appname="cobrapy", appauthor="opencobra")
-            )
         data = _cached_load(
             model_id=model_id,
             repositories=repositories,
-            cache_directory=pathlib.Path(cache_directory),
         )
     else:
         data = _fetch_model(model_id=model_id, repositories=repositories)
@@ -99,7 +90,6 @@ def load_model(
 def _cached_load(
     model_id: str,
     repositories: Iterable[AbstractModelRepository],
-    cache_directory: pathlib.Path,
 ) -> bytes:
     """
     Attempt to load a gzip-compressed SBML document from the cache.
@@ -114,8 +104,6 @@ def _cached_load(
         specific.
     repositories : iterable
         An iterable of repository accessor instances. The model_id is searched in order.
-    cache_directory : pathlib.Path
-        A path where the cache should reside.
 
     Returns
     -------
@@ -123,16 +111,15 @@ def _cached_load(
         A gzip-compressed, UTF-8 encoded SBML document.
 
     """
-    if not cache_directory.is_dir():
-        logger.debug(f"Creating cache directory '{str(cache_directory)}'.")
-        cache_directory.mkdir(parents=True)
-    with diskcache.Cache(directory=str(cache_directory)) as cache:
+    with diskcache.Cache(
+        directory=str(configuration.cache_directory),
+        size_limit=configuration.max_cache_size,
+    ) as cache:
         try:
             return cache[model_id]
         except KeyError:
             data = _fetch_model(model_id=model_id, repositories=repositories)
-            # (Midnighter): We could expire models after some time here.
-            cache.set(key=model_id, value=data)
+            cache.set(key=model_id, value=data, expire=configuration.cache_expiration)
             return data
 
 
