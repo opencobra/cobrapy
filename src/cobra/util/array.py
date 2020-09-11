@@ -1,6 +1,6 @@
 """Helper functions for array operations and sampling."""
 
-from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Union
+from typing import TYPE_CHECKING, NamedTuple, Optional, Union
 
 import numpy as np
 import pandas as pd

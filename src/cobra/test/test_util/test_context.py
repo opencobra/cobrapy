@@ -2,8 +2,6 @@
 
 from typing import TYPE_CHECKING
 
-import pytest
-
 from cobra.util import HistoryManager, get_context, resettable
 
 
