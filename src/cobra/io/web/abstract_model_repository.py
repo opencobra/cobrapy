@@ -36,7 +36,7 @@ class AbstractModelRepository(ABC):
     )
     name: str = "Abstract"
 
-    def __init__(self, *, url: Union[httpx.URL, str], **kwargs):
+    def __init__(self, *, url: Union[httpx.URL, str], **kwargs) -> None:
         """
         Initialize the model repository.
 
@@ -53,6 +53,11 @@ class AbstractModelRepository(ABC):
         """
         super().__init__(**kwargs)
         self._url = httpx.URL(url=url)
+
+    @property
+    def url(self) -> httpx.URL:
+        """Return the repository's URL."""
+        return self._url.copy_with()
 
     @abstractmethod
     def get_sbml(self, model_id: str) -> bytes:

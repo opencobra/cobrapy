@@ -39,18 +39,10 @@ class BioModels(AbstractModelRepository):
 
     def __init__(
         self,
-        *,
-        url: Union[str, httpx.URL] = "https://www.ebi.ac.uk/biomodels/model/",
         **kwargs,
-    ):
+    ) -> None:
         """
         Initialize a BioModels repository interface.
-
-        Parameters
-        ----------
-        url : httpx.URL or str, optional
-            The base URL from where to load the models (default
-            https://www.ebi.ac.uk/biomodels/model/).
 
         Other Parameters
         ----------------
@@ -58,7 +50,7 @@ class BioModels(AbstractModelRepository):
             Passed to the parent constructor in order to enable multiple inheritance.
 
         """
-        super().__init__(url=url, **kwargs)
+        super().__init__(url="https://www.ebi.ac.uk/biomodels/model/", **kwargs)
 
     def get_sbml(self, model_id: str) -> bytes:
         """

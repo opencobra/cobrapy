@@ -24,18 +24,10 @@ class BiGGModels(AbstractModelRepository):
 
     def __init__(
         self,
-        *,
-        url: Union[httpx.URL, str] = "http://bigg.ucsd.edu/static/models/",
         **kwargs,
-    ):
+    ) -> None:
         """
         Initialize a BiGG Models repository interface.
-
-        Parameters
-        ----------
-        url : httpx.URL or str, optional
-            The base URL from where to load the models (default
-            http://bigg.ucsd.edu/static/models/).
 
         Other Parameters
         ----------------
@@ -43,7 +35,7 @@ class BiGGModels(AbstractModelRepository):
             Passed to the parent constructor in order to enable multiple inheritance.
 
         """
-        super().__init__(url=url, **kwargs)
+        super().__init__(url="http://bigg.ucsd.edu/static/models/", **kwargs)
 
     def get_sbml(self, model_id: str) -> bytes:
         """
