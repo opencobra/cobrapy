@@ -67,7 +67,8 @@ class Configuration(metaclass=Singleton):
         self.upper_bound = None
         self.processes = None
         self._cache_directory = None
-        self.max_cache_size = 1024 ** 3
+        # Set the cache size to a maximum of 100 MB.
+        self.max_cache_size = 100 * (1024 ** 2)
         self.cache_expiration = None
 
         self.bounds = -1000.0, 1000.0
