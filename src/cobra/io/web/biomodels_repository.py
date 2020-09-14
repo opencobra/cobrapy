@@ -80,13 +80,11 @@ class BioModels(AbstractModelRepository):
         )
         response.raise_for_status()
         files = BioModelsFilesResponse.parse_obj(response.json())
-        is_found = False
         for model in files.main:
             if model.name.endswith("xml"):
-                is_found = True
                 break
-        if not is_found:
-            RuntimeError(f"'{model_id}' does not seem to contain an SBML document.")
+        else:
+            RuntimeError(f"Could not find an SBML document for '{model_id}'.")
         with self._progress, httpx.stream(
             method="GET",
             url=self._url.join(f"download/{model_id}"),
