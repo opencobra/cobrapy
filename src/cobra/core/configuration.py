@@ -53,7 +53,7 @@ class Configuration(metaclass=Singleton):
         default directory depends on the operating system.
     max_cache_size : int, optional
         The allowed maximum size of the model cache in bytes (default 1 GB).
-    cache_experiation : int, optional
+    cache_expiration : int, optional
         The expiration time in seconds for the model cache if any (default None).
 
     """
