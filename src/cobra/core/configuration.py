@@ -2,11 +2,14 @@
 
 
 import logging
+import pathlib
 import types
 from numbers import Number
 from os import cpu_count
 from textwrap import dedent
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
+
+import appdirs
 
 from cobra.core.singleton import Singleton
 from cobra.exceptions import SolverNotFound
@@ -45,6 +48,13 @@ class Configuration(metaclass=Singleton):
         A default number of processes to use where multiprocessing is
         possible. The default number corresponds to the number of available
         cores (hyperthreads) minus one.
+    cache_directory : pathlib.Path or str, optional
+        A path where the model cache should reside if caching is desired. The
+        default directory depends on the operating system.
+    max_cache_size : int, optional
+        The allowed maximum size of the model cache in bytes (default 1 GB).
+    cache_expiration : int, optional
+        The expiration time in seconds for the model cache if any (default None).
 
     """
 
@@ -56,10 +66,15 @@ class Configuration(metaclass=Singleton):
         self.lower_bound = None
         self.upper_bound = None
         self.processes = None
+        self._cache_directory = None
+        # Set the cache size to a maximum of 100 MB.
+        self.max_cache_size = 100 * (1024 ** 2)
+        self.cache_expiration = None
 
         self.bounds = -1000.0, 1000.0
         self._set_default_solver()
         self._set_default_processes()
+        self._set_default_cache_directory()
 
     def _set_default_solver(self) -> None:
         """Set the default solver from a preferred order."""
@@ -79,6 +94,12 @@ class Configuration(metaclass=Singleton):
             self.processes = 1
         if self.processes > 1:
             self.processes -= 1
+
+    def _set_default_cache_directory(self) -> None:
+        """Set the platform-dependent default cache directory."""
+        self.cache_directory = pathlib.Path(
+            appdirs.user_cache_dir(appname="cobrapy", appauthor="opencobra")
+        )
 
     @property
     def solver(self) -> types.ModuleType:
@@ -115,6 +136,23 @@ class Configuration(metaclass=Singleton):
         self.lower_bound = bounds[0]
         self.upper_bound = bounds[1]
 
+    @property
+    def cache_directory(self) -> pathlib.Path:
+        """Return the model cache directory."""
+        return self._cache_directory
+
+    @cache_directory.setter
+    def cache_directory(self, path: Union[pathlib.Path, str]):
+        """
+        Set the model cache directory.
+
+        The directory path is created if it doesn't exist yet.
+        """
+        self._cache_directory = pathlib.Path(path)
+        if not self._cache_directory.is_dir():
+            logger.debug(f"Creating cache directory '{str(self._cache_directory)}'.")
+            self._cache_directory.mkdir(parents=True)
+
     def __repr__(self) -> str:
         """Return a string representation of the current configuration values."""
         return dedent(
@@ -124,6 +162,9 @@ class Configuration(metaclass=Singleton):
             lower_bound: {self.lower_bound}
             upper_bound: {self.upper_bound}
             processes: {self.processes}
+            cache_directory: {self.cache_directory}
+            max_cache_size: {self.max_cache_size}
+            cache_expiration: {self.cache_expiration}
             """
         )
 
@@ -172,6 +213,21 @@ class Configuration(metaclass=Singleton):
                     <td><pre>processes</pre></td>
                     <td>Number of parallel processes</td>
                     <td>{self.processes}</td>
+                </tr>
+                <tr>
+                    <td><pre>cache_directory</pre></td>
+                    <td>Path for the model cache</td>
+                    <td>{self.cache_directory}</td>
+                </tr>
+                <tr>
+                    <td><pre>max_cache_size</pre></td>
+                    <td>Maximum cache size in bytes</td>
+                    <td>{self.max_cache_size}</td>
+                </tr>
+                <tr>
+                    <td><pre>cache_expiration</pre></td>
+                    <td>Model cache expiration time in seconds (if any)</td>
+                    <td>{self.cache_expiration}</td>
                 </tr>
               </tbody>
             </table>
