@@ -29,7 +29,6 @@ config = cobra.Configuration()
 config.solver = "glpk"
 
 
-
 if __name__ == "__main__":
     # ecoli
     ecoli_model = read_sbml_model("iJO1366.xml.gz")
@@ -51,7 +50,6 @@ if __name__ == "__main__":
     textbook = read_sbml_model("textbook.xml.gz")
     mini = cobra.Model("mini_textbook")
     mini.compartments = textbook.compartments
-
 
     for r in textbook.reactions:
         if r.id in (
@@ -125,7 +123,9 @@ if __name__ == "__main__":
         json_dump(clean_result, outfile)
 
     # fva with pfba constraint
-    fva_result = cobra.flux_analysis.flux_variability_analysis(textbook, pfba_factor=1.1)
+    fva_result = cobra.flux_analysis.flux_variability_analysis(
+        textbook, pfba_factor=1.1
+    )
     clean_result = OrderedDict()
     for key in sorted(fva_result):
         clean_result[key] = {k: round(v, 5) for k, v in fva_result[key].items()}
