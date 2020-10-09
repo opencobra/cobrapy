@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """Define the Model class."""
 
-from __future__ import absolute_import
 
 import logging
 import types
@@ -173,27 +170,30 @@ class Model(Object):
 
     @tolerance.setter
     def tolerance(self, value):
-        solver_tolerances = self._solver.configuration.tolerances
+        solver_tolerances = self.solver.configuration.tolerances
 
         try:
             solver_tolerances.feasibility = value
         except AttributeError:
             logger.info(
-                "The current solver doesn't allow setting" "feasibility tolerance."
+                f"The current solver interface {interface_to_str(self.problem)} "
+                f"doesn't support setting the feasibility tolerance."
             )
 
         try:
             solver_tolerances.optimality = value
         except AttributeError:
             logger.info(
-                "The current solver doesn't allow setting" "optimality tolerance."
+                f"The current solver interface {interface_to_str(self.problem)} "
+                f"doesn't support setting the optimality tolerance."
             )
 
         try:
             solver_tolerances.integrality = value
         except AttributeError:
             logger.info(
-                "The current solver doesn't allow setting" "integrality tolerance."
+                f"The current solver interface {interface_to_str(self.problem)} "
+                f"doesn't support setting the integrality tolerance."
             )
 
         self._tolerance = value
