@@ -450,7 +450,7 @@ class Reaction(Object):
 
         self._gene_reaction_rule = new_rule.strip()
         try:
-            _, gene_names = parse_gpr(self._gene_reaction_rule)
+            _, gene_names = parse_gpr_sympy(self._gene_reaction_rule)
         except (SyntaxError, TypeError) as e:
             if "AND" in new_rule or "OR" in new_rule:
                 warn(
