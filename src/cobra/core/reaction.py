@@ -11,6 +11,7 @@ from copy import copy, deepcopy
 from functools import partial
 from math import isinf
 from operator import attrgetter
+from tokenize import TokenError
 from warnings import warn
 
 from future.utils import raise_from, raise_with_traceback
