@@ -17,7 +17,8 @@ from future.utils import raise_from, raise_with_traceback
 from six import iteritems, iterkeys, string_types
 
 from cobra.core.configuration import Configuration
-from cobra.core.gene import Gene, ast2str, eval_gpr, parse_gpr
+from cobra.core.gene import Gene, ast2str, eval_gpr, parse_gpr, parse_gpr_sympy, \
+    sympy2str, eval_gpr_sympy
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.exceptions import OptimizationError
@@ -451,7 +452,7 @@ class Reaction(Object):
         self._gene_reaction_rule = new_rule.strip()
         try:
             _, gene_names = parse_gpr_sympy(self._gene_reaction_rule)
-        except (SyntaxError, TypeError) as e:
+        except (SyntaxError, TypeError, TokenError) as e:
             if "AND" in new_rule or "OR" in new_rule:
                 warn(
                     "uppercase AND/OR found in rule '%s' for '%s'"
@@ -506,8 +507,8 @@ class Reaction(Object):
 
         """
         names = {i.id: i.name for i in self._genes}
-        ast = parse_gpr(self._gene_reaction_rule)[0]
-        return ast2str(ast, names=names)
+        sympy_expr = parse_gpr_sympy(self._gene_reaction_rule)[0]
+        return sympy2str(sympy_expr, names=names)
 
     @property
     def functional(self):
@@ -521,8 +522,8 @@ class Reaction(Object):
             otherwise False.
         """
         if self._model:
-            tree, _ = parse_gpr(self.gene_reaction_rule)
-            return eval_gpr(
+            tree, _ = parse_gpr_sympy(self.gene_reaction_rule)
+            return eval_gpr_sympy(
                 tree, {gene.id for gene in self.genes if not gene.functional}
             )
         return True

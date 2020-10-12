@@ -43,7 +43,7 @@ from six import iteritems, raise_from, string_types
 
 import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
-from cobra.core.gene import parse_gpr
+from cobra.core.gene import parse_gpr, parse_gpr_sympy
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
 
@@ -747,7 +747,7 @@ def _sbml_to_model(
         # remove outside parenthesis, if any
         if gpr.startswith("(") and gpr.endswith(")"):
             try:
-                parse_gpr(gpr[1:-1].strip())
+                parse_gpr_sympy(gpr[1:-1].strip())
                 gpr = gpr[1:-1].strip()
             except (SyntaxError, TypeError) as e:
                 LOGGER.warning(

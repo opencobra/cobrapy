@@ -6,7 +6,8 @@ from ast import And, NodeTransformer
 
 from six import iteritems, string_types
 
-from cobra.core.gene import ast2str, eval_gpr, parse_gpr
+from cobra.core.gene import ast2str, eval_gpr, parse_gpr, eval_gpr_sympy, \
+    parse_gpr_sympy
 
 
 def prune_unused_metabolites(cobra_model):
@@ -89,7 +90,7 @@ def get_compiled_gene_reaction_rules(cobra_model):
     rules.
 
     """
-    return {r: parse_gpr(r.gene_reaction_rule)[0] for r in cobra_model.reactions}
+    return {r: parse_gpr_sympy(r.gene_reaction_rule)[0] for r in cobra_model.reactions}
 
 
 def find_gene_knockout_reactions(
@@ -117,13 +118,13 @@ def find_gene_knockout_reactions(
     gene_set = {str(i) for i in gene_list}
     if compiled_gene_reaction_rules is None:
         compiled_gene_reaction_rules = {
-            r: parse_gpr(r.gene_reaction_rule)[0] for r in potential_reactions
+            r: parse_gpr_sympy(r.gene_reaction_rule)[0] for r in potential_reactions
         }
 
     return [
         r
         for r in potential_reactions
-        if not eval_gpr(compiled_gene_reaction_rules[r], gene_set)
+        if not eval_gpr_sympy(compiled_gene_reaction_rules[r], gene_set)
     ]
 
 

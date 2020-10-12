@@ -7,6 +7,7 @@ from ast import And, BitAnd, BitOr, BoolOp, Expression, Name, NodeTransformer, O
 from ast import parse as ast_parse
 from sympy import SympifyError
 from sympy.parsing.sympy_parser import parse_expr as sympy_parse, standard_transformations
+from sympy.core.singleton import S
 from keyword import kwlist
 from warnings import warn
 
@@ -79,8 +80,8 @@ def sympy2str(expr, names=None):
 
     Parameters
     ----------
-    expr : str
-        string for a gene reaction rule, e.g "a and b"
+    expr : sympy
+        compiled sympy expression for a gene rule
     names : dict
         Dict where each element id a gene identifier and the value is the
         gene name. Use this to get a rule str which uses names instead. This
@@ -92,8 +93,9 @@ def sympy2str(expr, names=None):
     string
         The gene reaction rule
     """
-    for name in names:
-        expr = expr.subs(name, names[name])
+    if names is not None:
+        for name in names:
+            expr = expr.subs(name, names.get(name, name))
     str_exp = str(expr)
     str_exp = str_exp.replace('&', 'and')
     str_exp = str_exp.replace('|', 'or')
@@ -132,6 +134,30 @@ def eval_gpr(expr, knockouts):
         return True
     else:
         raise TypeError("unsupported operation  " + repr(expr))
+
+
+def eval_gpr_sympy(expr, knockouts):
+    """evaluate compiled sympy of gene_reaction_rule with knockouts
+
+    Parameters
+    ----------
+    expr : Expression
+        The ast of the gene reaction rule
+    knockouts : DictList, set
+        Set of genes that are knocked out
+
+    Returns
+    -------
+    bool
+        True if the gene reaction rule is true with the given knockouts
+        otherwise false
+    """
+    other_genes = expr.atoms().difference(knockouts)
+    for gene in list(knockouts):
+        expr = expr.subs(gene, S.false)
+    for gene in list(other_genes):
+        expr = expr.subs(gene, S.true)
+    return bool(expr)
 
 
 class GPRCleaner(NodeTransformer):
@@ -214,15 +240,16 @@ def parse_gpr_sympy(str_expr):
     escaped_str = number_start_re.sub("__cobra_escape__", escaped_str)
     escaped_str = re.sub(r"\b(or)", "|", escaped_str)
     escaped_str = re.sub(r"\b(and)", " &", escaped_str)
-    # We don't need an equivalent of eval_gpr(tree, set()) for sympy, since it will
-    # throw an error if the expression is invalid and otherwise it will be valid
-    # We probably need eval_gpr to make sure that if none of the genes are knocked out,
-    # it can still be evaluated
+    # We probably don't need an equivalent of eval_gpr(tree, set()) for sympy,
+    # since it will throw an error if the expression is invalid
+    # and otherwise it will be valid.
+    # Adding it in anyway just to be sure
     try:
         sympy_exp = sympy_parse(escaped_str, transformations=standard_transformations,
                                 evaluate=False)
     except SympifyError as exc:
         raise ValueError("unsupported operation  " + repr(escaped_str), exc)
+    eval_gpr_sympy(sympy_exp, set())
     gene_set = set()
     for node in list(sympy_exp.atoms()):
         if node.name.startswith("__cobra_escape__"):
