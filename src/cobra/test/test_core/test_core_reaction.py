@@ -11,7 +11,7 @@ import pytest
 import six
 
 from cobra.core import Configuration, Metabolite, Model, Reaction
-
+from cobra.core.gene import gpr_eq
 
 config = Configuration()
 stable_optlang = ["glpk", "cplex", "gurobi"]
@@ -23,7 +23,7 @@ def test_gpr():
 
     # Set GPR to a reaction not in a model
     reaction.gene_reaction_rule = "(g1 or g2) and g3"
-    assert reaction.gene_reaction_rule == "(g1 or g2) and g3"
+    assert gpr_eq(reaction.gene_reaction_rule, "(g1 or g2) and g3")
     assert len(reaction.genes) == 3
 
     # Adding reaction with a GPR propagates to the model
@@ -39,7 +39,7 @@ def test_gpr():
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         reaction.gene_reaction_rule = "(b1 AND b2) OR (b3 and b4)"
-        assert reaction.gene_reaction_rule == "(b1 and b2) or (b3 and b4)"
+        assert gpr_eq(reaction.gene_reaction_rule, "(b1 and b2) or (b3 and b4)")
         assert len(reaction.genes) == 4
 
     # Ensure regular expressions correctly extract genes from malformed
@@ -318,26 +318,26 @@ def test_iadd(model):
     EX_h2o = model.reactions.EX_h2o_e
     original_PGI_gpr = PGI.gene_reaction_rule
     PGI += EX_h2o
-    assert PGI.gene_reaction_rule == original_PGI_gpr
+    assert gpr_eq(PGI.gene_reaction_rule, original_PGI_gpr)
     assert PGI.metabolites[model.metabolites.h2o_e] == -1.0
     # Original should not change
-    assert EX_h2o.gene_reaction_rule == ""
+    assert gpr_eq(EX_h2o.gene_reaction_rule, "")
     assert EX_h2o.metabolites[model.metabolites.h2o_e] == -1.0
     # Add a reaction not in the model
     new_reaction = Reaction("test")
     new_reaction.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
     PGI += new_reaction
-    assert PGI.gene_reaction_rule == original_PGI_gpr
+    assert gpr_eq(PGI.gene_reaction_rule, original_PGI_gpr)
     assert len(PGI.gene_reaction_rule) == 5
     # And vice versa
     new_reaction += PGI
     assert len(new_reaction.metabolites) == 5  # not
     assert len(new_reaction.genes) == 1
-    assert new_reaction.gene_reaction_rule == original_PGI_gpr
+    assert gpr_eq(new_reaction.gene_reaction_rule, original_PGI_gpr)
     # Combine two GPRs
     model.reactions.ACKr += model.reactions.ACONTa
     expected_rule = "(b2296 or b3115 or b1849) and (b0118 or b1276)"
-    assert model.reactions.ACKr.gene_reaction_rule == expected_rule
+    assert gpr_eq(model.reactions.ACKr.gene_reaction_rule, expected_rule)
     assert len(model.reactions.ACKr.genes) == 5
 
 

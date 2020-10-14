@@ -5,12 +5,14 @@ from __future__ import absolute_import
 import re
 from ast import And, BitAnd, BitOr, BoolOp, Expression, Name, NodeTransformer, Or
 from ast import parse as ast_parse
-from sympy import SympifyError
-from sympy.parsing.sympy_parser import parse_expr as sympy_parse, standard_transformations
+from sympy import SympifyError, simplify_logic
+from sympy.parsing.sympy_parser import parse_expr as sympy_parse, \
+    standard_transformations
 from sympy.core.singleton import S
 from keyword import kwlist
 from warnings import warn
 
+import cobra
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
@@ -96,9 +98,12 @@ def sympy2str(expr, names=None):
     if names is not None:
         for name in names:
             expr = expr.subs(name, names.get(name, name))
-    str_exp = str(expr)
-    str_exp = str_exp.replace('&', 'and')
-    str_exp = str_exp.replace('|', 'or')
+    if expr == S.true or expr == S.false:
+        str_exp = ""
+    else:
+        str_exp = str(expr)
+        str_exp = str_exp.replace('&', 'and')
+        str_exp = str_exp.replace('|', 'or')
     return str_exp
 
 
@@ -238,6 +243,8 @@ def parse_gpr_sympy(str_expr):
             str_expr = str_expr.replace(char, escaped)
     escaped_str = keyword_re.sub("__cobra_escape__", str_expr)
     escaped_str = number_start_re.sub("__cobra_escape__", escaped_str)
+    escaped_str = escaped_str.replace("AND", "and")
+    escaped_str = escaped_str.replace("OR", "or")
     escaped_str = re.sub(r"\b(or)", "|", escaped_str)
     escaped_str = re.sub(r"\b(and)", " &", escaped_str)
     # We probably don't need an equivalent of eval_gpr(tree, set()) for sympy,
@@ -260,6 +267,34 @@ def parse_gpr_sympy(str_expr):
         gene_set.add(node.name)
 
     return sympy_exp, gene_set
+
+
+def gpr_eq(gpr1, gpr2):
+    """compare to see if two GPRs are equivalent, since sympy does not commit to order
+
+     Parameters
+     ----------
+    gpr1 : reaction or string
+         string with the gene reaction rule to parse. Can also be a reaction,
+         in which case the function will focus on reaction.gene_reaction_rule
+    gpr2 : reaction or string
+         string with the gene reaction rule to parse. Can also be a reaction,
+         in which case the function will focus on reaction.gene_reaction_rule
+
+     Returns
+     -------
+     bool
+         True if gprs are equivalent, False if not
+     """
+    if isinstance(gpr1, cobra.core.Reaction):
+        gpr1 = gpr1.gene_reaction_rule
+    if isinstance(gpr2, cobra.core.Reaction):
+        gpr2 = gpr2.gene_reaction_rule
+    if gpr1 == "" and gpr2 == "":
+        return True
+    gpr1_sympy = parse_gpr_sympy(gpr1)[0]
+    gpr2_sympy = parse_gpr_sympy(gpr2)[0]
+    return simplify_logic(gpr1_sympy) == simplify_logic(gpr2_sympy)
 
 
 class Gene(Species):

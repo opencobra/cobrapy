@@ -5,9 +5,9 @@ from __future__ import absolute_import
 from ast import And, NodeTransformer
 
 from six import iteritems, string_types
+from sympy import S
 
-from cobra.core.gene import ast2str, eval_gpr, parse_gpr, eval_gpr_sympy, \
-    parse_gpr_sympy
+from cobra.core.gene import eval_gpr_sympy, parse_gpr_sympy, sympy2str
 
 
 def prune_unused_metabolites(cobra_model):
@@ -221,20 +221,19 @@ def remove_genes(cobra_model, gene_list, remove_reactions=True):
     gene inactivated."""
     gene_set = {cobra_model.genes.get_by_id(str(i)) for i in gene_list}
     gene_id_set = {i.id for i in gene_set}
-    remover = _GeneRemover(gene_id_set)
-    ast_rules = get_compiled_gene_reaction_rules(cobra_model)
+    genes_to_remove = [(gene, S.false) for gene in gene_id_set]
+    compiled_rules = get_compiled_gene_reaction_rules(cobra_model)
     target_reactions = []
-    for reaction, rule in iteritems(ast_rules):
+    for reaction, rule in iteritems(compiled_rules):
         if reaction.gene_reaction_rule is None or len(reaction.gene_reaction_rule) == 0:
             continue
         # reactions to remove
-        if remove_reactions and not eval_gpr(rule, gene_id_set):
+        if remove_reactions and not eval_gpr_sympy(rule, gene_id_set):
             target_reactions.append(reaction)
         else:
             # if the reaction is not removed, remove the gene
             # from its gpr
-            remover.visit(rule)
-            new_rule = ast2str(rule)
+            new_rule = sympy2str(rule.subs(genes_to_remove))
             if new_rule != reaction.gene_reaction_rule:
                 reaction.gene_reaction_rule = new_rule
     for gene in gene_set:

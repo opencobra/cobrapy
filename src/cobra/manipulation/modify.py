@@ -9,7 +9,7 @@ from warnings import warn
 from six import iteritems
 
 from cobra.core import Reaction
-from cobra.core.gene import ast2str
+from cobra.core.gene import sympy2str
 from cobra.manipulation.delete import get_compiled_gene_reaction_rules
 from cobra.util.solver import set_objective
 
@@ -58,10 +58,11 @@ def escape_ID(cobra_model):
     ):
         x.id = _escape_str_id(x.id)
     cobra_model.repair()
-    gene_renamer = _GeneEscaper()
     for rxn, rule in iteritems(get_compiled_gene_reaction_rules(cobra_model)):
         if rule is not None:
-            rxn._gene_reaction_rule = ast2str(gene_renamer.visit(rule))
+            for _atom in rule.atoms():
+                _atom.name = _escape_str_id(_atom.name)
+            rxn._gene_reaction_rule = sympy2str(rule)
 
 
 def rename_genes(cobra_model, rename_dict):
@@ -100,15 +101,11 @@ def rename_genes(cobra_model, rename_dict):
             pass
     cobra_model.repair()
 
-    class Renamer(NodeTransformer):
-        def visit_Name(self, node):
-            node.id = rename_dict.get(node.id, node.id)
-            return node
-
-    gene_renamer = Renamer()
     for rxn, rule in iteritems(get_compiled_gene_reaction_rules(cobra_model)):
         if rule is not None:
-            rxn._gene_reaction_rule = ast2str(gene_renamer.visit(rule))
+            for _atom in rule.atoms():
+                _atom.name = rename_dict.get(_atom.name, _atom.name)
+            rxn._gene_reaction_rule = sympy2str(rule)
 
     for rxn in recompute_reactions:
         rxn.gene_reaction_rule = rxn._gene_reaction_rule

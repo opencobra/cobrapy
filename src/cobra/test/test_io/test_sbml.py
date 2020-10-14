@@ -15,8 +15,8 @@ import pytest
 
 import cobra
 from cobra import Model
+from cobra.core.gene import gpr_eq
 from cobra.io import read_sbml_model, validate_sbml_model, write_sbml_model
-
 
 config = cobra.Configuration()  # for default bounds
 
@@ -131,8 +131,8 @@ class TestCobraIO:
         solution1 = model1.optimize()
         solution2 = model2.optimize()
         assert (
-            solution1.status == "infeasible" and solution2.status == "infeasible"
-        ) or abs(solution1.objective_value - solution2.objective_value) < 0.001
+                   solution1.status == "infeasible" and solution2.status == "infeasible"
+               ) or abs(solution1.objective_value - solution2.objective_value) < 0.001
         # ensure the references are correct
         assert model2.metabolites[0]._model is model2
         assert model2.reactions[0]._model is model2
@@ -435,8 +435,8 @@ def test_smbl_with_notes(data_directory, tmp_path):
             "CHARGE": "-1",
             "FORMULA": "C21H26N7O14P2",
             "SMILES": "NC(=O)c1ccc[n+](c1)[C@@H]1O[C@H](COP([O-])("
-            "=O)OP([O-])(=O)OC[C@H]2O[C@H]([C@H](O)["
-            "C@@H]2O)n2cnc3c(N)ncnc23)[C@@H](O)[C@H]1O",
+                      "=O)OP([O-])(=O)OC[C@H]2O[C@H]([C@H](O)["
+                      "C@@H]2O)n2cnc3c(N)ncnc23)[C@@H](O)[C@H]1O",
         },
         "h_e": {"CHARGE": "1", "FORMULA": "H", "SMILES": "[1H+]"},
         "2obut_e": {"CHARGE": "-1", "FORMULA": "C4H5O3", "SMILES": "CCC(=O)C([O-])=O"},
@@ -444,8 +444,8 @@ def test_smbl_with_notes(data_directory, tmp_path):
             "CHARGE": "-2",
             "FORMULA": "C21H27N7O14P2",
             "SMILES": "NC(=O)C1=CN(C=CC1)[C@@H]1O[C@H](COP([O-])("
-            "=O)OP([O-])(=O)OC[C@H]2O[C@H]([C@H](O)["
-            "C@@H]2O)n2cnc3c(N)ncnc23)[C@@H](O)[C@H]1O",
+                      "=O)OP([O-])(=O)OC[C@H]2O[C@H]([C@H](O)["
+                      "C@@H]2O)n2cnc3c(N)ncnc23)[C@@H](O)[C@H]1O",
         },
     }
     metabolite_annotations = {
@@ -457,12 +457,12 @@ def test_smbl_with_notes(data_directory, tmp_path):
         "nad_e": {
             "sbo": "SBO:0000247",
             "inchi": "InChI=1S/C21H27N7O14P2/c22-17-12-19("
-            "25-7-24-17)28(8-26-12)21-16(32)14(30)11("
-            "41-21)6-39-44(36,37)42-43(34,35)38-5-10-13(29)15("
-            "31)20(40-10)27-3-1-2-9(4-27)18("
-            "23)33/h1-4,7-8,10-11,13-16,20-21,29-32H,5-6H2,"
-            "(H5-,22,23,24,25,33,34,35,36,37)/p-1/t10-,"
-            "11-,13-,14-,15-,16-,20-,21-/m1/s1",
+                     "25-7-24-17)28(8-26-12)21-16(32)14(30)11("
+                     "41-21)6-39-44(36,37)42-43(34,35)38-5-10-13(29)15("
+                     "31)20(40-10)27-3-1-2-9(4-27)18("
+                     "23)33/h1-4,7-8,10-11,13-16,20-21,29-32H,5-6H2,"
+                     "(H5-,22,23,24,25,33,34,35,36,37)/p-1/t10-,"
+                     "11-,13-,14-,15-,16-,20-,21-/m1/s1",
             "chebi": "CHEBI:57540",
         },
         "h_e": {
@@ -478,12 +478,12 @@ def test_smbl_with_notes(data_directory, tmp_path):
         "nadh_e": {
             "sbo": "SBO:0000247",
             "inchi": "InChI=1S/C21H29N7O14P2/c22-17-12-19("
-            "25-7-24-17)28(8-26-12)21-16(32)14(30)11("
-            "41-21)6-39-44(36,37)42-43(34,35)38-5-10-13("
-            "29)15(31)20(40-10)27-3-1-2-9(4-27)18("
-            "23)33/h1,3-4,7-8,10-11,13-16,20-21,29-32H,2,"
-            "5-6H2,(H2,23,33)(H,34,35)(H,36,37)(H2,22,24,"
-            "25)/p-2/t10-,11-,13-,14-,15-,16-,20-,21-/m1/s1",
+                     "25-7-24-17)28(8-26-12)21-16(32)14(30)11("
+                     "41-21)6-39-44(36,37)42-43(34,35)38-5-10-13("
+                     "29)15(31)20(40-10)27-3-1-2-9(4-27)18("
+                     "23)33/h1,3-4,7-8,10-11,13-16,20-21,29-32H,2,"
+                     "5-6H2,(H2,23,33)(H,34,35)(H,36,37)(H2,22,24,"
+                     "25)/p-2/t10-,11-,13-,14-,15-,16-,20-,21-/m1/s1",
             "chebi": "CHEBI:57945",
         },
     }
@@ -519,8 +519,8 @@ def test_smbl_with_notes(data_directory, tmp_path):
         assert note_key in model.reactions[0].notes.keys()
         assert reaction_notes[note_key] == model.reactions[0].notes[note_key]
     assert (
-        model.reactions[0].gene_reaction_rule == "(HGNC:8546 and HGNC:8548) or "
-        "(HGNC:8547 and HGNC:8548)"
+        gpr_eq(model.reactions[0].gene_reaction_rule, "(HGNC:8546 and HGNC:8548) or "
+                                                      "(HGNC:8547 and HGNC:8548)")
     )
     assert len(model.groups) == 1
     for annotation_key in reaction_annotations.keys():
