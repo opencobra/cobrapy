@@ -243,8 +243,6 @@ def parse_gpr_sympy(str_expr):
             str_expr = str_expr.replace(char, escaped)
     escaped_str = keyword_re.sub("__cobra_escape__", str_expr)
     escaped_str = number_start_re.sub("__cobra_escape__", escaped_str)
-    escaped_str = escaped_str.replace("AND", "and")
-    escaped_str = escaped_str.replace("OR", "or")
     escaped_str = re.sub(r"\b(or)", "|", escaped_str)
     escaped_str = re.sub(r"\b(and)", " &", escaped_str)
     # We probably don't need an equivalent of eval_gpr(tree, set()) for sympy,
