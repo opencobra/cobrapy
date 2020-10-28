@@ -1,84 +1,58 @@
-# -*- coding: utf-8 -*-
-
-"""Provide base class for Hit-and-Run samplers.
-
-New samplers should derive from the abstract `HRSampler` class
-where possible to provide a uniform interface."""
-
-from __future__ import absolute_import, division
+"""Provide the base class and associated functions for Hit-and-Run samplers."""
 
 import ctypes
-from collections import namedtuple
-from logging import getLogger
+import logging
 from multiprocessing import Array
 from time import time
+from typing import TYPE_CHECKING, NamedTuple, Optional, Tuple
 
 import numpy as np
+import pandas as pd
 from optlang.interface import OPTIMAL
 from optlang.symbolics import Zero
 
 from cobra.util import constraint_matrices, create_stoichiometric_matrix, nullspace
 
 
-LOGGER = getLogger(__name__)
+if TYPE_CHECKING:
+    from cobra import Model
+
+
+logger = logging.getLogger(__name__)
 
 
 # Maximum number of retries for sampling
 MAX_TRIES = 100
 
 
-Problem = namedtuple(
-    "Problem",
-    [
-        "equalities",
-        "b",
-        "inequalities",
-        "bounds",
-        "variable_fixed",
-        "variable_bounds",
-        "nullspace",
-        "homogeneous",
-    ],
-)
-"""Defines the matrix representation of a sampling problem.
-
-Attributes
-----------
-equalities : numpy.array
-    All equality constraints in the model.
-b : numpy.array
-    The right side of the equality constraints.
-inequalities : numpy.array
-    All inequality constraints in the model.
-bounds : numpy.array
-    The lower and upper bounds for the inequality constraints.
-variable_bounds : numpy.array
-    The lower and upper bounds for the variables.
-homogeneous: boolean
-    Indicates whether the sampling problem is homogenous, e.g. whether there
-    exist no non-zero fixed variables or constraints.
-nullspace : numpy.matrix
-    A matrix containing the nullspace of the equality constraints. Each column
-    is one basis vector.
-
-"""
-
-
-def shared_np_array(shape, data=None, integer=False):
+def shared_np_array(
+    shape: Tuple[int, int], data: Optional[np.ndarray] = None, integer: bool = False
+) -> np.ndarray:
     """Create a new numpy array that resides in shared memory.
 
     Parameters
     ----------
-    shape : tuple of ints
+    shape : tuple of int
         The shape of the new array.
-    data : numpy.array
-        Data to copy to the new array. Has to have the same shape.
-    integer : boolean
-        Whether to use an integer array. Defaults to False which means
-        float array.
+    data : numpy.array, optional
+        Data to copy to the new array. Has to have the same shape
+        (default None).
+    integer : bool, optional
+        Whether to use an integer array. By default, float array is used
+        (default False).
+
+    Returns
+    -------
+    numpy.array
+        The newly created shared numpy array.
+
+    Raises
+    ------
+    ValueError
+        If the input `data` (if provided) size is not equal to the created
+        array.
 
     """
-
     size = np.prod(shape)
 
     if integer:
@@ -92,81 +66,95 @@ def shared_np_array(shape, data=None, integer=False):
 
     if data is not None:
         if len(shape) != len(data.shape):
-            raise ValueError(
-                "`data` must have the same dimensions" "as the created array."
-            )
+            raise ValueError("`data` must have the same shape as the created array.")
+
         same = all(x == y for x, y in zip(shape, data.shape))
 
         if not same:
-            raise ValueError("`data` must have the same shape" "as the created array.")
+            raise ValueError("`data` must have the same shape as the created array.")
+
         np_array[:] = data
 
     return np_array
 
 
-class HRSampler(object):
-    """The abstract base class for hit-and-run samplers.
+class HRSampler:
+    """
+    The abstract base class for hit-and-run samplers.
+
+    New samplers should derive from this class where possible to provide
+    a uniform interface.
 
     Parameters
     ----------
     model : cobra.Model
         The cobra model from which to generate samples.
     thinning : int
-        The thinning factor of the generated sampling chain. A thinning of 10
-        means samples are returned every 10 steps.
+        The thinning factor of the generated sampling chain. A thinning of
+        10 means samples are returned every 10 steps.
     nproj : int > 0, optional
-        How often to reproject the sampling point into the feasibility space.
-        Avoids numerical issues at the cost of lower sampling. If you observe
-        many equality constraint violations with `sampler.validate` you should
-        lower this number.
+        How often to reproject the sampling point into the feasibility
+        space. Avoids numerical issues at the cost of lower sampling. If
+        you observe many equality constraint violations with
+        `sampler.validate` you should lower this number (default None).
     seed : int > 0, optional
-        The random number seed that should be used.
+        Sets the random number seed. Initialized to the current time stamp
+        if None (default None).
 
     Attributes
     ----------
-    model : cobra.Model
-        The cobra model from which the sampes get generated.
     feasibility_tol: float
         The tolerance used for checking equalities feasibility.
     bounds_tol: float
         The tolerance used for checking bounds feasibility.
-    thinning : int
-        The currently used thinning factor.
     n_samples : int
         The total number of samples that have been generated by this
         sampler instance.
     retries : int
         The overall of sampling retries the sampler has observed. Larger
         values indicate numerical instabilities.
-    problem : collections.namedtuple
-        A python object whose attributes define the entire sampling problem in
-        matrix form. See docstring of `Problem`.
+    problem : typing.NamedTuple
+        A NamedTuple whose attributes define the entire sampling problem in
+        matrix form.
     warmup : numpy.matrix
-        A matrix of with as many columns as reactions in the model and more
-        than 3 rows containing a warmup sample in each row. None if no warmup
-        points have been generated yet.
-    nproj : int
-        How often to reproject the sampling point into the feasibility space.
-    seed : int > 0, optional
-        Sets the random number seed. Initialized to the current time stamp if
-        None.
+        A numpy matrix with as many columns as reactions in the model and
+        more than 3 rows containing a warmup sample in each row. None if no
+        warmup points have been generated yet.
     fwd_idx : numpy.array
-        Has one entry for each reaction in the model containing the index of
-        the respective forward variable.
+        A numpy array having one entry for each reaction in the model,
+        containing the index of the respective forward variable.
     rev_idx : numpy.array
-        Has one entry for each reaction in the model containing the index of
-        the respective reverse variable.
+        A numpy array having one entry for each reaction in the model,
+        containing the index of the respective reverse variable.
 
     """
 
-    def __init__(self, model, thinning, nproj=None, seed=None):
-        """Initialize a new sampler object."""
+    def __init__(
+        self,
+        model: "Model",
+        thinning: int,
+        nproj: Optional[int] = None,
+        seed: Optional[int] = None,
+        **kwargs,
+    ) -> None:
+        """Initialize a new sampler object.
 
+        Other Parameters
+        ----------------
+        kwargs :
+            Further keyword arguments are passed on to the parent class.
+
+        Raises
+        ------
+        TypeError
+            If integer problem is found.
+
+        """
         # This currently has to be done to reset the solver basis which is
         # required to get deterministic warmup point generation
-        # (in turn required for a working `seed` arg)
+        # (in turn required for a working `seed`)
         if model.solver.is_integer:
-            raise TypeError("sampling does not work with integer problems :(")
+            raise TypeError("Sampling does not work with integer problems.")
 
         self.model = model.copy()
         self.feasibility_tol = model.tolerance
@@ -201,9 +189,48 @@ class HRSampler(object):
         # Avoid overflow
         self._seed = self._seed % np.iinfo(np.int32).max
 
-    def __build_problem(self):
-        """Build the matrix representation of the sampling problem."""
+    def __build_problem(self) -> NamedTuple:
+        """Build the matrix representation of the sampling problem.
 
+        Returns
+        -------
+        NamedTuple
+            A named tuple consisting of 6 arrays, 1 matrix and 1 boolean:
+            - "equalities" is a matrix `S` such that `S * vars = b`. It
+              includes a row for each constraint and one column for each
+              variable.
+            - "b" is the right side of the equality equation such that
+              `S * vars = b`.
+            - "inequalities" is a matrix M such that `lb <= M * vars <= ub`.
+              It contains a row for each inequality and as many columns as
+              variables.
+            - "bounds" is a compound matrix [lb ub] containing the lower and
+              upper bounds for the inequality constraints in M.
+            - "variable_fixed" is a boolean vector indicating whether the
+              variable at that index is fixed (`lower bound == upper_bound`)
+              and is thus bounded by an equality constraint.
+            - "variable_bounds" is a compound matrix `[lb ub]` containing the
+              lower and upper bounds for all variables.
+            - "nullspace" is a matrix containing the nullspace of the equality
+              constraints. Each column is one basis vector.
+            - "homogeneous" is a boolean which indicates whether the sampling
+              problem is homogeneous, e.g., whether there exists no non-zero
+              fixed variables or constraint.
+
+        """
+        Problem = NamedTuple(
+            "Problem",
+            [
+                ("equalities", np.ndarray),
+                ("b", np.ndarray),
+                ("inequalities", np.ndarray),
+                ("bounds", np.ndarray),
+                ("variable_fixed", np.ndarray),
+                ("variable_bounds", np.ndarray),
+                ("nullspace", np.matrix),
+                ("homogeneous", bool),
+            ],
+        )
         # Set up the mathematical problem
         prob = constraint_matrices(self.model, zero_tol=self.feasibility_tol)
 
@@ -244,7 +271,7 @@ class HRSampler(object):
             homogeneous=homogeneous,
         )
 
-    def generate_fva_warmup(self):
+    def generate_fva_warmup(self) -> None:
         """Generate the warmup points for the sampler.
 
         Generates warmup points by setting each flux as the sole objective
@@ -252,8 +279,13 @@ class HRSampler(object):
         warmup points into the nullspace for non-homogeneous problems (only
         if necessary).
 
-        """
+        Raises
+        ------
+        ValueError
+            If flux cone contains a single point or the problem is
+            inhomogenous.
 
+        """
         self.n_warmup = 0
         reactions = self.model.reactions
         self.warmup = np.zeros((2 * len(reactions), len(self.model.variables)))
@@ -270,7 +302,7 @@ class HRSampler(object):
 
                 # Omit fixed reactions if they are non-homogeneous
                 if r.upper_bound - r.lower_bound < self.bounds_tol:
-                    LOGGER.info("skipping fixed reaction %s" % r.id)
+                    logger.info(f"Skipping fixed reaction {r.id}")
                     continue
 
                 self.model.objective.set_linear_coefficients(
@@ -280,7 +312,7 @@ class HRSampler(object):
                 self.model.slim_optimize()
 
                 if not self.model.solver.status == OPTIMAL:
-                    LOGGER.info("can not maximize reaction %s, skipping it" % r.id)
+                    logger.info(f"Cannot maximize reaction {r.id}, skipping it.")
                     continue
 
                 primals = self.model.solver.primal_values
@@ -305,14 +337,14 @@ class HRSampler(object):
 
         # Catch some special cases
         if len(self.warmup.shape) == 1 or self.warmup.shape[0] == 1:
-            raise ValueError("Your flux cone consists only of a single point!")
+            raise ValueError("Flux cone only consists a single point.")
         elif self.n_warmup == 2:
             if not self.problem.homogeneous:
                 raise ValueError(
-                    "Can not sample from an inhomogenous problem"
-                    " with only 2 search directions :("
+                    "Cannot sample from an inhomogenous problem "
+                    "with only 2 search directions."
                 )
-            LOGGER.info("All search directions on a line, adding another one.")
+            logger.info("All search directions on a line, adding another one.")
             newdir = self.warmup.T.dot([0.25, 0.25])
             self.warmup = np.vstack([self.warmup, newdir])
             self.n_warmup += 1
@@ -322,11 +354,12 @@ class HRSampler(object):
             (self.n_warmup, len(self.model.variables)), self.warmup
         )
 
-    def _reproject(self, p):
+    def _reproject(self, p: np.ndarray) -> np.ndarray:
         """Reproject a point into the feasibility region.
 
         This function is guaranteed to return a new feasible point. However,
-        no guarantees in terms of proximity to the original point can be made.
+        no guarantee can be made in terms of proximity to the original
+        point.
 
         Parameters
         ----------
@@ -336,10 +369,9 @@ class HRSampler(object):
         Returns
         -------
         numpy.array
-            A new feasible point. If `p` was feasible it wil return p.
+            A new feasible point. If `p` is feasible, it will return `p`.
 
         """
-
         nulls = self.problem.nullspace
         equalities = self.problem.equalities
 
@@ -349,39 +381,34 @@ class HRSampler(object):
         ):
             new = p
         else:
-            LOGGER.info(
-                "feasibility violated in sample"
-                " %d, trying to reproject" % self.n_samples
+            logger.info(
+                f"Feasibility violated in sample {self.n_samples}, trying to reproject."
             )
             new = nulls.dot(nulls.T.dot(p))
 
         # Projections may violate bounds
         # set to random point in space in that case
         if any(new != p):
-            LOGGER.info(
-                "reprojection failed in sample"
-                " %d, using random point in space" % self.n_samples
+            logger.info(
+                f"Re-projection failed in sample {self.n_samples}, "
+                "using random point in space."
             )
             new = self._random_point()
 
         return new
 
-    def _random_point(self):
+    def _random_point(self) -> np.ndarray:
         """Find an approximately random point in the flux cone."""
-
         idx = np.random.randint(
             self.n_warmup, size=min(2, np.ceil(np.sqrt(self.n_warmup)))
         )
         return self.warmup[idx, :].mean(axis=0)
 
-    def _is_redundant(self, matrix, cutoff=None):
-        """Identify rdeundant rows in a matrix that can be removed."""
-
+    def _is_redundant(self, matrix: np.matrix, cutoff: Optional[float] = None) -> bool:
+        """Identify redundant rows in a matrix that can be removed."""
         cutoff = 1.0 - self.feasibility_tol
-
         # Avoid zero variances
         extra_col = matrix[:, 0] + 1
-
         # Avoid zero rows being correlated with constant rows
         extra_col[matrix.sum(axis=1) == 0] = 2
         corr = np.corrcoef(np.c_[matrix, extra_col])
@@ -389,9 +416,8 @@ class HRSampler(object):
 
         return (np.abs(corr) > cutoff).any(axis=1)
 
-    def _bounds_dist(self, p):
+    def _bounds_dist(self, p: np.ndarray) -> np.ndarray:
         """Get the lower and upper bound distances. Negative is bad."""
-
         prob = self.problem
         lb_dist = (
             p
@@ -425,7 +451,7 @@ class HRSampler(object):
 
         return np.array([lb_dist, ub_dist])
 
-    def sample(self, n, fluxes=True):
+    def sample(self, n: int, fluxes: bool = True):
         """Abstract sampling function.
 
         Should be overwritten by child classes.
@@ -433,36 +459,38 @@ class HRSampler(object):
         """
         pass
 
-    def batch(self, batch_size, batch_num, fluxes=True):
+    def batch(
+        self, batch_size: int, batch_num: int, fluxes: bool = True
+    ) -> pd.DataFrame:
         """Create a batch generator.
 
-        This is useful to generate n batches of m samples each.
+        This is useful to generate `batch_num` batches of `batch_size`
+        samples each.
 
         Parameters
         ----------
         batch_size : int
-            The number of samples contained in each batch (m).
+            The number of samples contained in each batch.
         batch_num : int
-            The number of batches in the generator (n).
-        fluxes : boolean
-            Whether to return fluxes or the internal solver variables. If set
-            to False will return a variable for each forward and backward flux
-            as well as all additional variables you might have defined in the
-            model.
+            The number of batches in the generator.
+        fluxes : bool, optional
+            Whether to return fluxes or the internal solver variables. If
+            set to False, will return a variable for each forward and
+            backward flux as well as all additional variables you might
+            have defined in the model (default True).
 
         Yields
         ------
         pandas.DataFrame
             A DataFrame with dimensions (batch_size x n_r) containing
-            a valid flux sample for a total of n_r reactions (or variables if
-            fluxes=False) in each row.
+            a valid flux sample for a total of n_r reactions (or variables
+            if fluxes=False) in each row.
 
         """
-
-        for i in range(batch_num):
+        for _ in range(batch_num):
             yield self.sample(batch_size, fluxes=fluxes)
 
-    def validate(self, samples):
+    def validate(self, samples: np.matrix) -> np.ndarray:
         """Validate a set of samples for equality and inequality feasibility.
 
         Can be used to check whether the generated samples and warmup points
@@ -471,22 +499,25 @@ class HRSampler(object):
         Parameters
         ----------
         samples : numpy.matrix
-            Must be of dimension (n_samples x n_reactions). Contains the
+            Must be of dimension (samples x n_reactions). Contains the
             samples to be validated. Samples must be from fluxes.
 
         Returns
         -------
         numpy.array
-            A one-dimensional numpy array of length containing
+            A one-dimensional numpy array containing
             a code of 1 to 3 letters denoting the validation result:
-
             - 'v' means feasible in bounds and equality constraints
             - 'l' means a lower bound violation
             - 'u' means a lower bound validation
             - 'e' means and equality constraint violation
 
-        """
+        Raises
+        ------
+        ValueError
+            If wrong number of columns.
 
+        """
         samples = np.atleast_2d(samples)
         prob = self.problem
 
@@ -502,9 +533,9 @@ class HRSampler(object):
             bounds = prob.variable_bounds
         else:
             raise ValueError(
-                "Wrong number of columns. samples must have a "
+                "Wrong number of columns. Samples must have a "
                 "column for each flux or variable defined in the "
-                "model!"
+                "model."
             )
 
         feasibility = np.abs(S.dot(samples.T).T - b).max(axis=1)
@@ -563,8 +594,14 @@ class HRSampler(object):
 
 
 # Required by ACHRSampler and OptGPSampler
-# Has to be declared outside of class to be used for multiprocessing :(
-def step(sampler, x, delta, fraction=None, tries=0):
+# Has to be declared outside of class to be used for multiprocessing
+def step(
+    sampler: HRSampler,
+    x: np.ndarray,
+    delta: np.ndarray,
+    fraction: Optional[float] = None,
+    tries: int = 0,
+) -> np.ndarray:
     """Sample a new feasible point from the point `x` in direction `delta`."""
 
     prob = sampler.problem
@@ -589,6 +626,7 @@ def step(sampler, x, delta, fraction=None, tries=0):
         alphas = np.hstack([valphas, balphas])
     else:
         alphas = valphas
+
     pos_alphas = alphas[alphas > 0.0]
     neg_alphas = alphas[alphas <= 0.0]
     alpha_range = np.array(
@@ -614,13 +652,12 @@ def step(sampler, x, delta, fraction=None, tries=0):
     ):
         if tries > MAX_TRIES:
             raise RuntimeError(
-                "Can not escape sampling region, model seems"
-                " numerically unstable :( Reporting the "
-                "model to "
+                "Cannot escape sampling region, model seems to be "
+                "numerically unstable. Reporting the model to "
                 "https://github.com/opencobra/cobrapy/issues "
-                "will help us to fix this :)"
+                "will help us to fix this."
             )
-        LOGGER.info("found bounds infeasibility in sample, " "resetting to center")
+        logger.info("Found bounds infeasibility in sample, resetting to center.")
         newdir = sampler.warmup[np.random.randint(sampler.n_warmup)]
         sampler.retries += 1
 
