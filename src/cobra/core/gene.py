@@ -398,7 +398,7 @@ def parse_gpr_sympy_ast_visitor(str_expr):
 
 
 def parse_gpr_sympy(str_expr):
-    return parse_gpr_sympy_ast_func(str_expr)
+    return parse_gpr_sympy_ast_visitor(str_expr)
 
 
 def gpr_eq(gpr1, gpr2):

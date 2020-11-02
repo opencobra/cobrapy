@@ -59,7 +59,7 @@ def escape_ID(cobra_model):
         x.id = _escape_str_id(x.id)
     cobra_model.repair()
     for rxn, rule in iteritems(get_compiled_gene_reaction_rules(cobra_model)):
-        if rule is not None:
+        if rule is not None and rule is not '':
             for _atom in rule.atoms():
                 _atom.name = _escape_str_id(_atom.name)
             rxn._gene_reaction_rule = sympy2str(rule)
@@ -102,7 +102,7 @@ def rename_genes(cobra_model, rename_dict):
     cobra_model.repair()
 
     for rxn, rule in iteritems(get_compiled_gene_reaction_rules(cobra_model)):
-        if rule is not None:
+        if rule is not None and rule is not "":
             for _atom in rule.atoms():
                 _atom.name = rename_dict.get(_atom.name, _atom.name)
             rxn._gene_reaction_rule = sympy2str(rule)
