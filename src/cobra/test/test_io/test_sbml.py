@@ -17,6 +17,7 @@ import cobra
 from cobra import Model
 from cobra.core.gene import gpr_eq
 from cobra.io import read_sbml_model, validate_sbml_model, write_sbml_model
+from cobra.test import cobra_directory
 
 config = cobra.Configuration()  # for default bounds
 
@@ -389,6 +390,26 @@ def test_gprs(data_directory, tmp_path):
         gpr2 = r2.gene_reaction_rule
 
         assert gpr1 == gpr2
+
+
+@pytest.mark.parametrize("model, model_file",
+                         # downloaded from https://www.ebi.ac.uk/biomodels/model
+                         # /download/MODEL1603150001.2?filename=MODEL1603150001_url.xml
+                         [("RECON2.2",  "MODEL1603150001_url.xml"),
+                          # downloaded from
+                          # http://bigg.ucsd.edu/static/models/Recon3D.xml
+                          ("RECON3D", "Recon3D.xml",),
+                         ],
+                         )
+def test_benchmark_sbml_import_very_large_models(model, model_file, benchmark):
+    data_dir = join(cobra_directory, "test", "data", "")
+    model_file = join(data_dir, model_file)
+    print("Benchmarking SBML read of model %s" % model)
+
+    def benchmark_sbml_import_model():
+        read_sbml_model(model_file)
+
+    benchmark.pedantic(benchmark_sbml_import_model, rounds=20)
 
 
 def test_identifiers_annotation():
