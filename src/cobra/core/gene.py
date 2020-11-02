@@ -24,19 +24,15 @@ from warnings import warn
 
 # When https://github.com/symengine/symengine.py/issues/334 is resolved, change it to
 # optlang.symbolics.Symbol
-from sympy import Expr as sp_Expr
-from sympy import Symbol as Symbol
-from sympy.core.singleton import S
+from sympy import Symbol, symbols
 from sympy.logic.boolalg import And as sp_And
 from sympy.logic.boolalg import Equivalent
 from sympy.logic.boolalg import Or as sp_Or
-from sympy.parsing.sympy_parser import parse_expr as parse_expr_sympy
 
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
-
 
 keywords = list(kwlist)
 keywords.remove("and")
@@ -141,6 +137,91 @@ def parse_gpr(str_expr: str) -> Tuple:
     )
     gpr_tree = GPR.from_string(str_expr)
     return gpr_tree, gpr_tree.genes
+
+
+class GPRSympifier(NodeVisitor):
+    """Parses compiled ast of a gene_reaction_rule to sympy and identifies genes
+    """
+
+    def __init__(self):
+        NodeVisitor.__init__(self)
+
+    def visit_Expression(self, node):
+        return self.visit(node.body) if hasattr(node, "body") else None
+
+    def visit_GPR(self, node):
+        return self.visit(node.body) if hasattr(node, "body") else None
+
+    def visit_Name(self, node):
+        if node.id.startswith("__cobra_escape__"):
+            node.id = node.id[16:]
+        for char, escaped in replacements:
+            if escaped in node.id:
+                node.id = node.id.replace(escaped, char)
+        return symbols(fix_str_for_symbols(node.id))
+
+    def visit_BinOp(self, node):
+        if isinstance(node.op, BitAnd):
+            return sp_And(*[node.left, node.right])
+        elif isinstance(node.op, BitOr):
+            return sp_Or(*[node.left, node.right])
+        else:
+            raise TypeError("unsupported operation '%s'" % node.op.__class__.__name__)
+
+    def visit_BoolOp(self, node):
+        if isinstance(node.op, And):
+            return sp_And(*[self.visit(i) for i in node.values])
+        if isinstance(node.op, Or):
+            return sp_Or(*[self.visit(i) for i in node.values])
+
+
+def parse_gpr_sympy_ast_visitor(gpr_to_sympy):
+    """parse GPR into SYMPY using ast and Node Visitor
+
+    Parameters
+    ----------
+    gpr_to_sympy : GPR
+        GPR which contains the gene reaction rule to parse
+
+    Returns
+    -------
+    tuple
+        elements SYMPY expression and gene_ids as a set
+    """
+    tree = gpr_to_sympy
+    sympifier = GPRSympifier()
+    sympy_exp = sympifier.visit(tree)
+    return sympy_exp
+
+
+def parse_sympy_via_names(gpr_to_sympy):
+    sympy_str = ast2sympy_str(gpr_to_sympy)
+    if sympy_str:
+        return eval(sympy_str)
+    else:
+        return None
+
+
+def ast2sympy_str(expr, level=0):
+    if isinstance(expr, Expression) | isinstance(expr, GPR):
+        return ast2sympy_str(expr.body, 0) if hasattr(expr, "body") else ""
+    elif isinstance(expr, Name):
+        return "Symbol(\'" + expr.id + "\')"
+    elif isinstance(expr, BoolOp):
+        op = expr.op
+        if isinstance(op, Or):
+            str_exp = "sp_Or(" + ", ".join(
+                ast2sympy_str(i, level + 1) for i in expr.values
+            ) + ")"
+        elif isinstance(op, And):
+            str_exp = "sp_And(" + ", ".join(
+                ast2sympy_str(i, level + 1) for i in expr.values
+            ) + ")"
+        else:
+            raise TypeError("unsupported operation " + op.__class__.__name)
+        return "(" + str_exp + ")" if level else str_exp
+    elif expr is None or (isinstance(expr, list) and len(expr) == 0):
+        return ""
 
 
 class Gene(Species):
@@ -637,6 +718,7 @@ class GPR(Module):
         else:
             if not hasattr(other, "body"):
                 return False
+            # noinspection PyTypeChecker
             return Equivalent(self.as_symbolic(self), other.as_symbolic(other))
 
 
