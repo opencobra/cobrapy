@@ -3,11 +3,13 @@
 from __future__ import absolute_import
 
 import re
-from ast import And, BitAnd, BitOr, BoolOp, Expression, Name, NodeTransformer, Or
+from ast import And, BitAnd, BitOr, BoolOp, Expression, Name, NodeTransformer, Or, \
+    NodeVisitor
 from ast import parse as ast_parse
-from sympy import SympifyError, simplify_logic
-from sympy.parsing.sympy_parser import parse_expr as sympy_parse, \
+from sympy import SympifyError, simplify_logic, symbols
+from sympy.parsing.sympy_parser import parse_expr as parse_expr_sympy, \
     standard_transformations
+from sympy.logic.boolalg import Or as sp_Or, And as sp_And
 from sympy.core.singleton import S
 from keyword import kwlist
 from warnings import warn
@@ -16,7 +18,6 @@ import cobra
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
-
 
 keywords = list(kwlist)
 keywords.remove("and")
@@ -36,6 +37,15 @@ replacements = (
     ("=", "__COBRA_EQ__"),
 )
 
+# Using unescaped ":", "," or " " causes sympy to make a range or separate items
+str_for_sympy_symbols_dict = {':': r'\:', ',': r'\,', ' ': r'\ '}
+
+
+def fix_str_for_sympy_symbols(unescaped_str):
+    escaped_str = unescaped_str
+    for key, value in str_for_sympy_symbols_dict.items():
+        escaped_str = escaped_str.replace(key, value)
+    return escaped_str
 
 # functions for gene reaction rules
 def ast2str(expr, level=0, names=None):
@@ -222,8 +232,8 @@ def parse_gpr(str_expr):
     return tree, cleaner.gene_set
 
 
-def parse_gpr_sympy(str_expr):
-    """parse gpr into SYMPY
+def parse_gpr_sympy_parse_expr(str_expr):
+    """parse gpr into SYMPY using parse_expr
 
     Parameters
     ----------
@@ -243,15 +253,16 @@ def parse_gpr_sympy(str_expr):
             str_expr = str_expr.replace(char, escaped)
     escaped_str = keyword_re.sub("__cobra_escape__", str_expr)
     escaped_str = number_start_re.sub("__cobra_escape__", escaped_str)
-    escaped_str = re.sub(r"\b(or)", "|", escaped_str)
-    escaped_str = re.sub(r"\b(and)", " &", escaped_str)
     # We probably don't need an equivalent of eval_gpr(tree, set()) for sympy,
     # since it will throw an error if the expression is invalid
     # and otherwise it will be valid.
     # Adding it in anyway just to be sure
     try:
-        sympy_exp = sympy_parse(escaped_str, transformations=standard_transformations,
-                                evaluate=False)
+        escaped_str = re.sub(r"\b(or)", " |", escaped_str)
+        escaped_str = re.sub(r"\b(and)", " &", escaped_str)
+        sympy_exp = parse_expr_sympy(escaped_str,
+                                     transformations=standard_transformations,
+                                     evaluate=False)
     except SympifyError as exc:
         raise ValueError("unsupported operation  " + repr(escaped_str), exc)
     eval_gpr_sympy(sympy_exp, set())
@@ -265,6 +276,129 @@ def parse_gpr_sympy(str_expr):
         gene_set.add(node.name)
 
     return sympy_exp, gene_set
+
+
+def parse_gpr_sympy_ast_func(str_expr):
+    """parse gpr into SYMPY using ast and intermediate function
+
+    Parameters
+    ----------
+    str_expr : string
+        string with the gene reaction rule to parse
+
+    Returns
+    -------
+    tuple
+        elements SYMPY expression and gene_ids as a set
+    """
+    tree, gene_set = parse_gpr(str_expr)
+    return ast2sympy(tree), gene_set
+
+
+def ast2sympy(expr, level=0, names=None):
+    """convert compiled ast to gene_reaction_rule sympy expression
+
+    Parameters
+    ----------
+    expr : str
+        string for a gene reaction rule, e.g "a and b"
+    level : int
+        internal use only
+    names : dict
+        Dict where each element id a gene identifier and the value is the
+        gene name. Use this to get a rule str which uses names instead. This
+        should be done for display purposes only. All gene_reaction_rule
+        strings which are computed with should use the id.
+
+    Returns
+    ------
+    string
+        The gene reaction rule
+    """
+    if isinstance(expr, Expression):
+        return ast2sympy(expr.body, 0, names) if hasattr(expr, "body") else ""
+    elif isinstance(expr, Name):
+        unescaped_name = names.get(expr.id, expr.id) if names else expr.id
+        return symbols(fix_str_for_sympy_symbols(unescaped_name))
+    elif isinstance(expr, BoolOp):
+        op = expr.op
+        if isinstance(op, Or):
+            sympy_exp = sp_Or(*[ast2sympy(i, level + 1, names) for i in expr.values])
+        elif isinstance(op, And):
+            sympy_exp = sp_And(*[ast2sympy(i, level + 1, names) for i in expr.values])
+        else:
+            raise TypeError("unsupported operation " + op.__class__.__name)
+        return sympy_exp
+    elif expr is None:
+        return ""
+    else:
+        raise TypeError("unsupported operation  " + repr(expr))
+
+
+class GPRSympifier(NodeVisitor):
+    """Parses compiled ast of a gene_reaction_rule to sympy and identifies genes
+    """
+
+    def __init__(self):
+        NodeVisitor.__init__(self)
+        self.gene_set = set()
+
+    def visit_Expression(self, node):
+        return self.visit(node.body) if hasattr(node, "body") else None
+
+    def visit_Name(self, node):
+        if node.id.startswith("__cobra_escape__"):
+            node.id = node.id[16:]
+        for char, escaped in replacements:
+            if escaped in node.id:
+                node.id = node.id.replace(escaped, char)
+        self.gene_set.add(node.id)
+        return symbols(fix_str_for_sympy_symbols(node.id))
+
+    def visit_BinOp(self, node):
+        if isinstance(node.op, BitAnd):
+            return sp_And(*[node.left, node.right])
+        elif isinstance(node.op, BitOr):
+            return sp_Or(*[node.left, node.right])
+        else:
+            raise TypeError("unsupported operation '%s'" % node.op.__class__.__name__)
+
+    def visit_BoolOp(self, node):
+        if isinstance(node.op, And):
+            return sp_And(*[self.visit(i) for i in node.values])
+        if isinstance(node.op, Or):
+            return sp_Or(*[self.visit(i) for i in node.values])
+
+
+def parse_gpr_sympy_ast_visitor(str_expr):
+    """parse gpr into SYMPY using ast and Node Visitor
+
+    Parameters
+    ----------
+    str_expr : string
+        string with the gene reaction rule to parse
+
+    Returns
+    -------
+    tuple
+        elements SYMPY expression and gene_ids as a set
+    """
+    str_expr = str_expr.strip()
+    if len(str_expr) == 0:
+        return None, set()
+    for char, escaped in replacements:
+        if char in str_expr:
+            str_expr = str_expr.replace(char, escaped)
+    escaped_str = keyword_re.sub("__cobra_escape__", str_expr)
+    escaped_str = number_start_re.sub("__cobra_escape__", escaped_str)
+    tree = ast_parse(escaped_str, "<string>", "eval")
+    sympifier = GPRSympifier()
+    sympy_exp = sympifier.visit(tree)
+    return sympy_exp, sympifier.gene_set
+
+
+def parse_gpr_sympy(str_expr):
+    return parse_gpr_sympy_ast_func(str_expr)
 
 
 def gpr_eq(gpr1, gpr2):
@@ -292,7 +426,8 @@ def gpr_eq(gpr1, gpr2):
         return True
     gpr1_sympy = parse_gpr_sympy(gpr1)[0]
     gpr2_sympy = parse_gpr_sympy(gpr2)[0]
-    return simplify_logic(gpr1_sympy) == simplify_logic(gpr2_sympy)
+    return simplify_logic(gpr1_sympy, force=True) == simplify_logic(gpr2_sympy,
+                                                                    force=True)
 
 
 class Gene(Species):

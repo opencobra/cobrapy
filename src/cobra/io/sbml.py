@@ -957,7 +957,7 @@ def write_sbml_model(cobra_model, filename, f_replace=F_REPLACE, **kwargs):
     ----------
     cobra_model : cobra.core.Model
         Model instance which is written to SBML
-    filename : string
+    filename : string or filehandle
         path to which the model is written
     f_replace: dict of replacement functions for id replacement
     """
@@ -1682,7 +1682,7 @@ def validate_sbml_model(
 
     Parameters
     ----------
-    filename : str
+    filename : str or filehandle
         The filename (or SBML string) of the SBML model to be validated.
     internal_consistency: boolean {True, False}
         Check internal consistency.
