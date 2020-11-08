@@ -292,7 +292,7 @@ class HRSampler:
         ------
         ValueError
             If flux cone contains a single point or the problem is
-            inhomogenous.
+            inhomogeneous.
 
         """
         self.n_warmup = 0
