@@ -25,6 +25,48 @@ logger = logging.getLogger(__name__)
 MAX_TRIES = 100
 
 
+Problem = NamedTuple(
+    "Problem",
+    [
+        ("equalities", np.ndarray),
+        ("b", np.ndarray),
+        ("inequalities", np.ndarray),
+        ("bounds", np.ndarray),
+        ("variable_fixed", np.ndarray),
+        ("variable_bounds", np.ndarray),
+        ("nullspace", np.matrix),
+        ("homogeneous", bool),
+    ],
+)
+"""Define the matrix representation of a sampling problem.
+
+A named tuple consisting of 6 arrays, 1 matrix and 1 boolean.
+
+Attributes
+----------
+equalities : numpy.array
+    All equality constraints in the model.
+b : numpy.array
+    The right side of the equality constraints.
+inequalities : numpy.array
+    All inequality constraints in the model.
+bounds : numpy.array
+    The lower and upper bounds for the inequality constraints.
+variable_fixed : numpy.array
+    A boolean vector indicating whether the variable at that index is
+    fixed i.e., whether `variable.lower_bound == variable.upper_bound`.
+variable_bounds : numpy.array
+    The lower and upper bounds for the variables.
+nullspace : numpy.matrix
+    A matrix containing the nullspace of the equality constraints.
+    Each column is one basis vector.
+homogeneous: bool
+    Indicates whether the sampling problem is homogeneous, e.g. whether
+    there exist no non-zero fixed variables or constraints.
+
+"""
+
+
 def shared_np_array(
     shape: Tuple[int, int], data: Optional[np.ndarray] = None, integer: bool = False
 ) -> np.ndarray:
@@ -113,7 +155,7 @@ class HRSampler:
     retries : int
         The overall of sampling retries the sampler has observed. Larger
         values indicate numerical instabilities.
-    problem : typing.NamedTuple
+    problem : Problem
         A NamedTuple whose attributes define the entire sampling problem in
         matrix form.
     warmup : numpy.matrix
@@ -189,48 +231,15 @@ class HRSampler:
         # Avoid overflow
         self._seed = self._seed % np.iinfo(np.int32).max
 
-    def __build_problem(self) -> NamedTuple:
+    def __build_problem(self) -> Problem:
         """Build the matrix representation of the sampling problem.
 
         Returns
         -------
-        NamedTuple
-            A named tuple consisting of 6 arrays, 1 matrix and 1 boolean:
-            - "equalities" is a matrix `S` such that `S * vars = b`. It
-              includes a row for each constraint and one column for each
-              variable.
-            - "b" is the right side of the equality equation such that
-              `S * vars = b`.
-            - "inequalities" is a matrix M such that `lb <= M * vars <= ub`.
-              It contains a row for each inequality and as many columns as
-              variables.
-            - "bounds" is a compound matrix [lb ub] containing the lower and
-              upper bounds for the inequality constraints in M.
-            - "variable_fixed" is a boolean vector indicating whether the
-              variable at that index is fixed (`lower bound == upper_bound`)
-              and is thus bounded by an equality constraint.
-            - "variable_bounds" is a compound matrix `[lb ub]` containing the
-              lower and upper bounds for all variables.
-            - "nullspace" is a matrix containing the nullspace of the equality
-              constraints. Each column is one basis vector.
-            - "homogeneous" is a boolean which indicates whether the sampling
-              problem is homogeneous, e.g., whether there exists no non-zero
-              fixed variables or constraint.
+        Problem
+            The matrix representation in the form of a NamedTuple.
 
         """
-        Problem = NamedTuple(
-            "Problem",
-            [
-                ("equalities", np.ndarray),
-                ("b", np.ndarray),
-                ("inequalities", np.ndarray),
-                ("bounds", np.ndarray),
-                ("variable_fixed", np.ndarray),
-                ("variable_bounds", np.ndarray),
-                ("nullspace", np.matrix),
-                ("homogeneous", bool),
-            ],
-        )
         # Set up the mathematical problem
         prob = constraint_matrices(self.model, zero_tol=self.feasibility_tol)
 
