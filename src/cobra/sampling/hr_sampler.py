@@ -612,7 +612,6 @@ def step(
     tries: int = 0,
 ) -> np.ndarray:
     """Sample a new feasible point from the point `x` in direction `delta`."""
-
     prob = sampler.problem
     valid = (np.abs(delta) > sampler.feasibility_tol) & np.logical_not(
         prob.variable_fixed
