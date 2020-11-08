@@ -2,6 +2,7 @@
 
 import ctypes
 import logging
+from abc import ABC, abstractmethod
 from multiprocessing import Array
 from time import time
 from typing import TYPE_CHECKING, NamedTuple, Optional, Tuple
@@ -120,7 +121,7 @@ def shared_np_array(
     return np_array
 
 
-class HRSampler:
+class HRSampler(ABC):
     """
     The abstract base class for hit-and-run samplers.
 
@@ -460,13 +461,32 @@ class HRSampler:
 
         return np.array([lb_dist, ub_dist])
 
-    def sample(self, n: int, fluxes: bool = True):
+    @abstractmethod
+    def sample(self, n: int, fluxes: bool = True) -> pd.DataFrame:
         """Abstract sampling function.
 
         Should be overwritten by child classes.
 
+        Parameters
+        ----------
+        n : int
+            The number of samples that are generated at once.
+        fluxes : bool, optional
+            Whether to return fluxes or the internal solver variables. If
+            set to False, will return a variable for each forward and
+            backward flux as well as all additional variables you might
+            have defined in the model (default True).
+
+        Returns
+        -------
+        pandas.DataFrame
+            Returns a pandas DataFrame with `n` rows, each containing a
+            flux sample.
+
         """
-        pass
+        raise NotImplementedError(
+            "This method needs to be implemented by the subclass."
+        )
 
     def batch(
         self, batch_size: int, batch_num: int, fluxes: bool = True
