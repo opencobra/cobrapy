@@ -3,23 +3,34 @@ import optlang.interface
 
 
 class OptimizationError(Exception):
+    """Exception for Optimization issues."""
+
     def __init__(self, message):
+        """Inherit parent behaviors."""
         super(OptimizationError, self).__init__(message)
 
 
 class Infeasible(OptimizationError):
+    """Exception for Infeasible issues."""
+
     pass
 
 
 class Unbounded(OptimizationError):
+    """Exception for Unbounded issues."""
+
     pass
 
 
 class FeasibleButNotOptimal(OptimizationError):
+    """Exception for Non-Optimal issues."""
+
     pass
 
 
 class UndefinedSolution(OptimizationError):
+    """Exception for Undefined issues."""
+
     pass
 
 
