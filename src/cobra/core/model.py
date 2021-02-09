@@ -565,7 +565,8 @@ class Model(Object):
         A demand reaction is an irreversible reaction that consumes an
         intracellular metabolite.
         A sink is similar to an exchange but specifically for intracellular
-        metabolites.
+        metabolites, i.e., a reversible reaction that adds or removes an
+        intracellular metabolite.
 
         If you set the reaction `type` to something else, you must specify the
         desired identifier of the created reaction along with its upper and
