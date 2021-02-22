@@ -47,6 +47,11 @@ MOCK_MODULES = [
     "ruamel.yaml",
     "ruamel.yaml.compat",
     "ruamel.yaml.main",
+    "appdirs",
+    "httpx",
+    "pydantic",
+    "rich",
+    "diskcache"
 ]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
