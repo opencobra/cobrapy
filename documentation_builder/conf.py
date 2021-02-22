@@ -22,40 +22,6 @@ from unittest.mock import Mock
 SRC_PATH = join(dirname(dirname(__file__)), "src")
 sys.path.insert(0, SRC_PATH)
 
-
-# These modules should correspond to the importable Python packages.
-MOCK_MODULES = [
-    "depinfo",
-    "numpy",
-    "scipy",
-    "scipy.optimize",
-    "scipy.sparse",
-    "scipy.io",
-    "scipy.stats",
-    "pp",
-    "libsbml",
-    "pandas",
-    "tabulate",
-    "optlang",
-    "optlang.interface",
-    "optlang.symbolics",
-    "optlang.symbolics.core",
-    "optlang.exceptions",
-    "future",
-    "future.utils",
-    "ruamel",
-    "ruamel.yaml",
-    "ruamel.yaml.compat",
-    "ruamel.yaml.main",
-    "appdirs",
-    "httpx",
-    "pydantic",
-    "rich",
-    "diskcache"
-]
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = Mock()
-
 # -- General configuration ----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -121,8 +87,8 @@ latex_documents = [
     (
         "index",
         "cobra.tex",
-        u"cobra Documentation",
-        u"The cobrapy core team",
+        "cobra Documentation",
+        "The cobrapy core team",
         "manual",
     )
 ]
