@@ -5,7 +5,7 @@
 - documentation of boundary reactions (#1038)
 
 ## Fixes
-
+- Clarification of pfba in documentation (#1049)
 ## Other
 
 - Documentation is now built again on each release
