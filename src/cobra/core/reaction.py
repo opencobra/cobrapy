@@ -86,9 +86,6 @@ class Reaction(Object):
         # this reaction.
         self._metabolites = {}
 
-        # The set of compartments that partaking metabolites are in.
-        self._compartments = None
-
         # self.model is None or refers to the cobra.Model that
         # contains self
         self._model = None
@@ -999,13 +996,11 @@ class Reaction(Object):
     @property
     def compartments(self):
         """lists compartments the metabolites are in"""
-        if self._compartments is None:
-            self._compartments = {
-                met.compartment
-                for met in self._metabolites
-                if met.compartment is not None
+        return {
+            met.compartment
+            for met in self._metabolites
+            if met.compartment is not None
             }
-        return self._compartments
 
     def get_compartments(self):
         """lists compartments the metabolites are in"""
