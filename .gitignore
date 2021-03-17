@@ -302,3 +302,4 @@ gurobi.log
 /documentation_builder/test*\.*
 /.benchmarks
 /.testmondata
+.vscode/settings.json
