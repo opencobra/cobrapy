@@ -878,3 +878,4 @@ def test_compartment_changes(model):
     assert rxn.reactants[0].compartment in rxn.compartments
     rxn.reactants[0].compartment = "blub"
     assert rxn.reactants[0].compartment in rxn.compartments
+
