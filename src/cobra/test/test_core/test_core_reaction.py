@@ -871,3 +871,10 @@ def test_change_id_is_reflected_in_solver(model):
 
 def test_repr_html_(model):
     assert "<table>" in model.reactions[0]._repr_html_()
+
+
+def test_compartment_changes(model):
+    rxn = model.reactions.EX_ac_e
+    assert rxn.reactants[0].compartment in rxn.compartments
+    rxn.reactants[0].compartment = "blub"
+    assert rxn.reactants[0].compartment in rxn.compartments
