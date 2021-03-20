@@ -398,14 +398,17 @@ def test_set_bounds_scenario_1(model):
     assert acald_reaction.forward_variable.ub == 1000.0
     assert acald_reaction.reverse_variable.lb == 0
     assert acald_reaction.reverse_variable.ub == 1000.0
-    acald_reaction.upper_bound = acald_reaction.lower_bound - 100
+    acald_reaction.bounds = (
+        acald_reaction.lower_bound,
+        acald_reaction.lower_bound - 100,
+    )
     assert acald_reaction.lower_bound == -1100.0
     assert acald_reaction.upper_bound == -1100.0
     assert acald_reaction.forward_variable.lb == 0
     assert acald_reaction.forward_variable.ub == 0
     assert acald_reaction.reverse_variable.lb == 1100.0
     assert acald_reaction.reverse_variable.ub == 1100.0
-    acald_reaction.upper_bound = 100
+    acald_reaction.bounds = (acald_reaction.lower_bound, 100)
     assert acald_reaction.lower_bound == -1100.0
     assert acald_reaction.upper_bound == 100
     assert acald_reaction.forward_variable.lb == 0
@@ -416,37 +419,35 @@ def test_set_bounds_scenario_1(model):
 
 def test_set_bounds_scenario_3(model):
     reac = model.reactions.ACALD
-    reac.upper_bound = -10
-    reac.lower_bound = -10
+    reac.bounds = (-10, -10)
     assert reac.lower_bound == -10
     assert reac.upper_bound == -10
-    reac.lower_bound = -9
+    reac.bounds = (-9, reac.upper_bound)
     assert reac.lower_bound == -9
     assert reac.upper_bound == -9
-    reac.lower_bound = 2
+    reac.bounds = (2, reac.upper_bound)
     assert reac.lower_bound == 2
     assert reac.upper_bound == 2
-    reac.upper_bound = -10
+    reac.bounds = (reac.lower_bound, -10)
     assert reac.lower_bound == -10
     assert reac.upper_bound == -10
-    reac.upper_bound = -11
+    reac.bounds = (reac.lower_bound, -11)
     assert reac.lower_bound == -11
     assert reac.upper_bound == -11
-    reac.upper_bound = 2
+    reac.bounds = (reac.lower_bound, 2)
     assert reac.lower_bound == -11
     assert reac.upper_bound == 2
 
 
 def test_set_bounds_scenario_4(model):
     reac = model.reactions.ACALD
-    reac.lower_bound = reac.upper_bound = 0
-    reac.lower_bound = 2
+    reac.bounds = (2, 0)
     assert reac.lower_bound == 2
     assert reac.upper_bound == 2
     assert reac.forward_variable.lb == 2
     assert reac.forward_variable.ub == 2
     reac.knock_out()
-    reac.upper_bound = -2
+    reac.bounds = (reac.lower_bound, -2)
     assert reac.lower_bound == -2
     assert reac.upper_bound == -2
     assert reac.reverse_variable.lb == 2
@@ -454,8 +455,7 @@ def test_set_bounds_scenario_4(model):
 
 
 def test_set_upper_before_lower_bound_to_0(model):
-    model.reactions.GAPD.upper_bound = 0
-    model.reactions.GAPD.lower_bound = 0
+    model.reactions.GAPD.bounds = (0, 0)
     assert model.reactions.GAPD.lower_bound == 0
     assert model.reactions.GAPD.upper_bound == 0
     assert model.reactions.GAPD.forward_variable.lb == 0
@@ -472,14 +472,17 @@ def test_set_bounds_scenario_2(model):
     assert acald_reaction.forward_variable.ub == 1000.0
     assert acald_reaction.reverse_variable.lb == 0
     assert acald_reaction.reverse_variable.ub == 1000.0
-    acald_reaction.lower_bound = acald_reaction.upper_bound + 100
+    acald_reaction.bounds = (
+        acald_reaction.upper_bound + 100,
+        acald_reaction.upper_bound,
+    )
     assert acald_reaction.lower_bound == 1100.0
     assert acald_reaction.upper_bound == 1100.0
     assert acald_reaction.forward_variable.lb == 1100.0
     assert acald_reaction.forward_variable.ub == 1100.0
     assert acald_reaction.reverse_variable.lb == 0
     assert acald_reaction.reverse_variable.ub == 0
-    acald_reaction.lower_bound = -100
+    acald_reaction.bounds = (-100, acald_reaction.upper_bound)
     assert acald_reaction.lower_bound == -100.0
     assert acald_reaction.upper_bound == 1100.0
     assert acald_reaction.forward_variable.lb == 0
@@ -509,14 +512,14 @@ def test_make_irreversible(model):
     assert acald_reaction.forward_variable.ub == 1000.0
     assert acald_reaction.reverse_variable.lb == 0
     assert acald_reaction.reverse_variable.ub == 1000.0
-    acald_reaction.lower_bound = 0
+    acald_reaction.bounds = (0, acald_reaction.upper_bound)
     assert acald_reaction.lower_bound == 0
     assert acald_reaction.upper_bound == 1000.0
     assert acald_reaction.forward_variable.lb == 0
     assert acald_reaction.forward_variable.ub == 1000.0
     assert acald_reaction.reverse_variable.lb == 0
     assert acald_reaction.reverse_variable.ub == 0
-    acald_reaction.lower_bound = -100
+    acald_reaction.bounds = (-100, acald_reaction.upper_bound)
     assert acald_reaction.lower_bound == -100.0
     assert acald_reaction.upper_bound == 1000.0
     assert acald_reaction.forward_variable.lb == 0
@@ -533,14 +536,14 @@ def test_make_reversible(model):
     assert pfk_reaction.forward_variable.ub == 1000.0
     assert pfk_reaction.reverse_variable.lb == 0
     assert pfk_reaction.reverse_variable.ub == 0
-    pfk_reaction.lower_bound = -100.0
+    pfk_reaction.bounds = (-100.0, pfk_reaction.upper_bound)
     assert pfk_reaction.lower_bound == -100.0
     assert pfk_reaction.upper_bound == 1000.0
     assert pfk_reaction.forward_variable.lb == 0
     assert pfk_reaction.forward_variable.ub == 1000.0
     assert pfk_reaction.reverse_variable.lb == 0
     assert pfk_reaction.reverse_variable.ub == 100.0
-    pfk_reaction.lower_bound = 0
+    pfk_reaction.bounds = (0, pfk_reaction.upper_bound)
     assert pfk_reaction.lower_bound == 0
     assert pfk_reaction.upper_bound == 1000.0
     assert pfk_reaction.forward_variable.lb == 0
@@ -557,12 +560,12 @@ def test_make_irreversible_irreversible_to_the_other_side(model):
     assert pfk_reaction.forward_variable.ub == 1000.0
     assert pfk_reaction.reverse_variable.lb == 0
     assert pfk_reaction.reverse_variable.ub == 0
-    pfk_reaction.upper_bound = -100.0
+    pfk_reaction.bounds = (pfk_reaction.lower_bound, -100.0)
     assert pfk_reaction.forward_variable.lb == 0
     assert pfk_reaction.forward_variable.ub == 0
     assert pfk_reaction.reverse_variable.lb == 100
     assert pfk_reaction.reverse_variable.ub == 100
-    pfk_reaction.lower_bound = -1000.0
+    pfk_reaction.bounds = (-1000.0, pfk_reaction.upper_bound)
     assert pfk_reaction.lower_bound == -1000.0
     assert pfk_reaction.upper_bound == -100.0
     assert pfk_reaction.forward_variable.lb == 0
@@ -574,8 +577,7 @@ def test_make_irreversible_irreversible_to_the_other_side(model):
 def test_make_lhs_irreversible_reversible(model):
     rxn = Reaction("test")
     rxn.add_metabolites({model.metabolites[0]: -1.0, model.metabolites[1]: 1.0})
-    rxn.lower_bound = -1000.0
-    rxn.upper_bound = -100
+    rxn.bounds = (-1000.0, -100)
     model.add_reaction(rxn)
     assert rxn.lower_bound == -1000.0
     assert rxn.upper_bound == -100.0
@@ -583,7 +585,7 @@ def test_make_lhs_irreversible_reversible(model):
     assert rxn.forward_variable.ub == 0.0
     assert rxn.reverse_variable.lb == 100.0
     assert rxn.reverse_variable.ub == 1000.0
-    rxn.upper_bound = 666.0
+    rxn.bounds = (rxn.lower_bound, 666.0)
     assert rxn.lower_bound == -1000.0
     assert rxn.upper_bound == 666.0
     assert rxn.forward_variable.lb == 0.0
@@ -613,8 +615,7 @@ def test_knockout(model):
         assert reaction.lower_bound == 0
         assert reaction.upper_bound == 0
     for k, (lb, ub) in six.iteritems(original_bounds):
-        model.reactions.get_by_id(k).lower_bound = lb
-        model.reactions.get_by_id(k).upper_bound = ub
+        model.reactions.get_by_id(k).bounds = (lb, ub)
     for reaction in model.reactions:
         assert reaction.lower_bound == original_bounds[reaction.id][0]
         assert reaction.upper_bound == original_bounds[reaction.id][1]
@@ -665,7 +666,7 @@ def test_one_left_to_right_reaction_set_positive_ub(tiny_toy_model):
     assert d1.upper_bound == 0
     assert d1.forward_variable.lb == 0
     assert d1.forward_variable.ub == 0
-    d1.upper_bound = 0.1
+    d1.bounds = (d1.lower_bound, 0.1)
     assert d1.forward_variable.lb == 0
     assert d1.forward_variable.ub == 0.1
     assert d1.reverse_variable.lb == 0
@@ -684,7 +685,7 @@ def test_irrev_reaction_set_negative_lb(model):
     assert model.reactions.PFK.forward_variable.ub == 1000.0
     assert model.reactions.PFK.reverse_variable.lb == 0
     assert model.reactions.PFK.reverse_variable.ub == 0
-    model.reactions.PFK.lower_bound = -1000
+    model.reactions.PFK.bounds = (-1000, model.reactions.PFK.upper_bound)
     assert model.reactions.PFK.lower_bound == -1000
     assert model.reactions.PFK.upper_bound == 1000.0
     assert model.reactions.PFK.forward_variable.lb == 0
@@ -701,8 +702,7 @@ def test_twist_irrev_right_to_left_reaction_to_left_to_right(model):
     assert model.reactions.PFK.forward_variable.ub == 1000.0
     assert model.reactions.PFK.reverse_variable.lb == 0
     assert model.reactions.PFK.reverse_variable.ub == 0
-    model.reactions.PFK.lower_bound = -1000
-    model.reactions.PFK.upper_bound = 0
+    model.reactions.PFK.bounds = (-1000, 0)
     assert model.reactions.PFK.lower_bound == -1000
     assert model.reactions.PFK.upper_bound == 0
     assert model.reactions.PFK.forward_variable.lb == 0
@@ -714,14 +714,14 @@ def test_twist_irrev_right_to_left_reaction_to_left_to_right(model):
 def test_set_lb_higher_than_ub_sets_ub_to_new_lb(model):
     for reaction in model.reactions:
         assert reaction.lower_bound <= reaction.upper_bound
-        reaction.lower_bound = reaction.upper_bound + 100
+        reaction.bounds = (reaction.upper_bound + 100, reaction.upper_bound)
         assert reaction.lower_bound == reaction.upper_bound
 
 
 def test_set_ub_lower_than_lb_sets_lb_to_new_ub(model):
     for reaction in model.reactions:
         assert reaction.lower_bound <= reaction.upper_bound
-        reaction.upper_bound = reaction.lower_bound - 100
+        reaction.bounds = (reaction.lower_bound, reaction.lower_bound - 100)
         assert reaction.lower_bound == reaction.upper_bound
 
 
