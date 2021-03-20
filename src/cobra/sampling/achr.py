@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, Optional
 import numpy as np
 import pandas as pd
 
-from .hr_sampler import HRSampler, step
+from .core import step
+from .hr_sampler import HRSampler
 
 
 if TYPE_CHECKING:

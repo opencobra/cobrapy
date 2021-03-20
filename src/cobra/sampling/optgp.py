@@ -10,7 +10,8 @@ import numpy as np
 import pandas
 
 from cobra.core.configuration import Configuration
-from cobra.sampling.hr_sampler import HRSampler, shared_np_array, step
+from cobra.sampling.core import step
+from cobra.sampling.hr_sampler import HRSampler, shared_np_array
 
 
 __all__ = ("OptGPSampler",)
