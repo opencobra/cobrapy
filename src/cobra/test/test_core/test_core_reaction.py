@@ -1,6 +1,7 @@
 """Test functions of cobra.core.reaction ."""
 
 import warnings
+from typing import Iterable
 
 import numpy as np
 import pytest
@@ -13,7 +14,7 @@ config = Configuration()
 stable_optlang = ["glpk", "cplex", "gurobi"]
 
 
-def test_gpr():
+def test_gpr() -> None:
     """Test GPR evaluation."""
     model = Model()
     reaction = Reaction("test")
@@ -49,7 +50,7 @@ def test_gpr():
         assert len(reaction.genes) == 1
 
 
-def test_gpr_modification(model):
+def test_gpr_modification(model: Model) -> None:
     """Test GPR manipulations."""
     reaction = model.reactions.get_by_id("PGI")
     old_gene = list(reaction.genes)[0]
@@ -74,7 +75,7 @@ def test_gpr_modification(model):
     assert reaction.gene_name_reaction_rule == fake_gene.name
 
 
-def test_gene_knock_out(model):
+def test_gene_knock_out(model: Model) -> None:
     """Test gene knockout effect on reaction."""
     rxn = Reaction("rxn")
     rxn.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
@@ -95,19 +96,19 @@ def test_gene_knock_out(model):
     assert not model.reactions.rxn.functional
 
 
-def test_str():
+def test_str() -> None:
     """Test `str` output for a reaction."""
     rxn = Reaction("rxn")
     rxn.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
     assert str(rxn) == "rxn: A --> B"
 
 
-def test_str_from_model(model):
+def test_str_from_model(model: Model) -> None:
     """Test `str` output for a reaction associated with a model."""
     assert model.reactions[0].__str__().startswith("ACALD")
 
 
-def test_add_metabolite_from_solved_model(solved_model):
+def test_add_metabolite_from_solved_model(solved_model: Model) -> None:
     """Test metabolite addition to a reaction from a solved model."""
     solution, model = solved_model
     pgi_reaction = model.reactions.PGI
@@ -160,7 +161,7 @@ def test_add_metabolite_from_solved_model(solved_model):
 
 
 @pytest.mark.parametrize("solver", stable_optlang)
-def test_add_metabolite_benchmark(model, benchmark, solver):
+def test_add_metabolite_benchmark(model: Model, benchmark, solver: Iterable) -> None:
     """Benchmark metabolite addition to a reaction associated with a model."""
     reaction = model.reactions.get_by_id("PGI")
     many_metabolites = dict((m, 1) for m in model.metabolites[0:50])
@@ -169,7 +170,7 @@ def test_add_metabolite_benchmark(model, benchmark, solver):
         reaction.add_metabolites(many_metabolites)
         if not getattr(model, "solver", None):
             stable_optlang[solver].create_problem(model)
-        for m, c in many_metabolites.items():
+        for m, _ in many_metabolites.items():
             try:
                 reaction.subtract_metabolites({m: reaction.get_coefficient(m)})
             except KeyError:
@@ -178,7 +179,7 @@ def test_add_metabolite_benchmark(model, benchmark, solver):
     benchmark(add_remove_metabolite)
 
 
-def test_add_metabolite(model):
+def test_add_metabolite(model: Model) -> None:
     """Test metabolite addition to a reaction from an unsolved model."""
     with pytest.raises(ValueError):
         model.add_metabolites(Metabolite())
@@ -227,13 +228,15 @@ def test_add_metabolite(model):
 
 
 @pytest.mark.parametrize("solver", stable_optlang)
-def test_subtract_metabolite_benchmark(model, benchmark, solver):
+def test_subtract_metabolite_benchmark(
+    model: Model, benchmark, solver: Iterable
+) -> None:
     """Benchmark metabolite deletion from a reaction."""
     benchmark(test_subtract_metabolite, model, solver)
 
 
 @pytest.mark.parametrize("solver", stable_optlang)
-def test_subtract_metabolite(model, solver):
+def test_subtract_metabolite(model: Model, solver: Iterable) -> None:
     """Test metabolite deletion from a reaction associated with an unsolved model."""
     reaction = model.reactions.get_by_id("PGI")
     reaction.subtract_metabolites(reaction.metabolites)
@@ -242,7 +245,7 @@ def test_subtract_metabolite(model, solver):
         assert len(reaction.metabolites) == 0
 
 
-def test_mass_balance(model):
+def test_mass_balance(model: Model) -> None:
     """Test mass balance of metabolites of a reaction."""
     reaction = model.reactions.get_by_id("PGI")
     # Should be balanced now
@@ -254,7 +257,7 @@ def test_mass_balance(model):
     assert imbalance["H"] == 1
 
 
-def test_build_from_string(model):
+def test_build_from_string(model: Model) -> None:
     """Test reaction building from string evaluation."""
     m = len(model.metabolites)
     pgi = model.reactions.get_by_id("PGI")
@@ -299,14 +302,14 @@ def test_build_from_string(model):
         assert pgi.bounds == (0, 1000)
 
 
-def test_bounds_setter(model):
+def test_bounds_setter(model: Model) -> None:
     """Test reaction bounds setter."""
     rxn = model.reactions.get_by_id("PGI")
     with pytest.raises(ValueError):
         rxn.bounds = (1, 0)
 
 
-def test_copy(model):
+def test_copy(model: Model) -> None:
     """Test reaction copying."""
     PGI = model.reactions.PGI
     copied = PGI.copy()
@@ -323,7 +326,7 @@ def test_copy(model):
     assert len(model.get_associated_groups(copied.id)) == 0
 
 
-def test_iadd(model):
+def test_iadd(model: Model) -> None:
     """Test in-place addition of reaction."""
     PGI = model.reactions.PGI
     EX_h2o = model.reactions.EX_h2o_e
@@ -352,7 +355,7 @@ def test_iadd(model):
     assert len(model.reactions.ACKr.genes) == 5
 
 
-def test_add(model):
+def test_add(model: Model) -> None:
     """Test reaction addition to model."""
     # Not in place addition should work on a copy
     new = model.reactions.PGI + model.reactions.EX_h2o_e
@@ -369,27 +372,27 @@ def test_add(model):
         assert gene.model is not model
 
 
-def test_radd(model):
+def test_radd(model: Model) -> None:
     """Test __radd__ for a reaction."""
     new = sum([model.reactions.PGI, model.reactions.EX_h2o_e])
     assert new._model is not model
     assert len(new.metabolites) == 3
 
 
-def test_mul(model):
+def test_mul(model: Model) -> None:
     """Test scalar multiplication of factors with a reaction."""
     new = model.reactions.PGI * 2
     assert set(new.metabolites.values()) == {-2, 2}
 
 
-def test_sub(model):
+def test_sub(model: Model) -> None:
     """Test reaction subtraction."""
     new = model.reactions.PGI - model.reactions.EX_h2o_e
     assert new._model is not model
     assert len(new.metabolites) == 3
 
 
-def test_removal_from_model_retains_bounds(model):
+def test_removal_from_model_retains_bounds(model: Model) -> None:
     """Test reaction removal from a model, retains its bounds."""
     model_cp = model.copy()
     reaction = model_cp.reactions.ACALD
@@ -406,7 +409,7 @@ def test_removal_from_model_retains_bounds(model):
     assert reaction._upper_bound == 1000.0
 
 
-def test_set_bounds_scenario_1(model):
+def test_set_bounds_scenario_1(model: Model) -> None:
     """Test reaction bounds setting for a scenario."""
     acald_reaction = model.reactions.ACALD
     assert acald_reaction.lower_bound == -1000.0
@@ -434,7 +437,7 @@ def test_set_bounds_scenario_1(model):
     assert acald_reaction.reverse_variable.ub == 1100.0
 
 
-def test_set_bounds_scenario_2(model):
+def test_set_bounds_scenario_2(model: Model) -> None:
     """Test reaction bounds setting for a scenario."""
     acald_reaction = model.reactions.ACALD
     assert acald_reaction.lower_bound == -1000.0
@@ -462,7 +465,7 @@ def test_set_bounds_scenario_2(model):
     assert acald_reaction.reverse_variable.ub == 100
 
 
-def test_set_bounds_scenario_3(model):
+def test_set_bounds_scenario_3(model: Model) -> None:
     """Test reaction bounds setting for a scenario."""
     reac = model.reactions.ACALD
     reac.bounds = (-10, -10)
@@ -485,7 +488,7 @@ def test_set_bounds_scenario_3(model):
     assert reac.upper_bound == 2
 
 
-def test_set_bounds_scenario_4(model):
+def test_set_bounds_scenario_4(model: Model) -> None:
     """Test reaction bounds setting for a scenario."""
     reac = model.reactions.ACALD
     reac.bounds = (2, 0)
@@ -501,7 +504,7 @@ def test_set_bounds_scenario_4(model):
     assert reac.reverse_variable.ub == 2
 
 
-def test_set_upper_before_lower_bound_to_0(model):
+def test_set_upper_before_lower_bound_to_0(model: Model) -> None:
     """Test reaction bounds setting to zero."""
     model.reactions.GAPD.bounds = (0, 0)
     assert model.reactions.GAPD.lower_bound == 0
@@ -512,7 +515,7 @@ def test_set_upper_before_lower_bound_to_0(model):
     assert model.reactions.GAPD.reverse_variable.ub == 0
 
 
-def test_change_bounds(model):
+def test_change_bounds(model: Model) -> None:
     """Test reaction bounds change."""
     reac = model.reactions.ACALD
     reac.bounds = (2, 2)
@@ -526,7 +529,7 @@ def test_change_bounds(model):
     assert reac.upper_bound == 2
 
 
-def test_make_irreversible(model):
+def test_make_irreversible(model: Model) -> None:
     """Test reaction irreversibility."""
     acald_reaction = model.reactions.ACALD
     assert acald_reaction.lower_bound == -1000.0
@@ -551,7 +554,7 @@ def test_make_irreversible(model):
     assert acald_reaction.reverse_variable.ub == 100
 
 
-def test_make_reversible(model):
+def test_make_reversible(model: Model) -> None:
     """Test reaction reversibility."""
     pfk_reaction = model.reactions.PFK
     assert pfk_reaction.lower_bound == 0.0
@@ -576,7 +579,7 @@ def test_make_reversible(model):
     assert pfk_reaction.reverse_variable.ub == 0
 
 
-def test_make_irreversible_irreversible_to_the_other_side(model):
+def test_make_irreversible_irreversible_to_the_other_side(model: Model) -> None:
     """Test reaction irreversibility to irreversibility."""
     pfk_reaction = model.reactions.PFK
     assert pfk_reaction.lower_bound == 0.0
@@ -599,7 +602,7 @@ def test_make_irreversible_irreversible_to_the_other_side(model):
     assert pfk_reaction.reverse_variable.ub == 1000.0
 
 
-def test_make_lhs_irreversible_reversible(model):
+def test_make_lhs_irreversible_reversible(model: Model) -> None:
     """Test reaction LHS irreversibility to reversibility."""
     rxn = Reaction("test")
     rxn.add_metabolites({model.metabolites[0]: -1.0, model.metabolites[1]: 1.0})
@@ -620,7 +623,7 @@ def test_make_lhs_irreversible_reversible(model):
     assert rxn.reverse_variable.ub == 1000.0
 
 
-def test_model_less_reaction(model):
+def test_model_less_reaction(model: Model) -> None:
     """Test model without reactions."""
     model.slim_optimize()
     for reaction in model.reactions:
@@ -634,7 +637,7 @@ def test_model_less_reaction(model):
             reaction.reduced_cost
 
 
-def test_knockout(model):
+def test_knockout(model: Model) -> None:
     """Test reaction knockouts."""
     original_bounds = dict()
     for reaction in model.reactions:
@@ -658,7 +661,7 @@ def test_knockout(model):
         assert reaction.upper_bound == original_bounds[reaction.id][1]
 
 
-def test_reaction_without_model():
+def test_reaction_without_model() -> None:
     """Test reaction without model association."""
     r = Reaction("blub")
     assert r.flux_expression is None
@@ -666,7 +669,7 @@ def test_reaction_without_model():
     assert r.reverse_variable is None
 
 
-def test_weird_left_to_right_reaction_issue(tiny_toy_model):
+def test_weird_left_to_right_reaction_issue(tiny_toy_model: Model) -> None:
     """Test absurd left to right reaction."""
     d1 = tiny_toy_model.reactions.get_by_id("ex1")
     assert not d1.reversibility
@@ -686,7 +689,7 @@ def test_weird_left_to_right_reaction_issue(tiny_toy_model):
     assert d1._upper_bound == 0
 
 
-def test_one_left_to_right_reaction_set_positive_ub(tiny_toy_model):
+def test_one_left_to_right_reaction_set_positive_ub(tiny_toy_model: Model) -> None:
     """Test left to right reaction with positive upper bound."""
     d1 = tiny_toy_model.reactions.get_by_id("ex1")
     assert d1.reverse_variable.lb == 0
@@ -708,7 +711,7 @@ def test_one_left_to_right_reaction_set_positive_ub(tiny_toy_model):
     assert d1.upper_bound == 0.1
 
 
-def test_irrev_reaction_set_negative_lb(model):
+def test_irrev_reaction_set_negative_lb(model: Model) -> None:
     """Test reaction irreversibility with negative lower bound."""
     assert not model.reactions.PFK.reversibility
     assert model.reactions.PFK.lower_bound == 0
@@ -726,7 +729,7 @@ def test_irrev_reaction_set_negative_lb(model):
     assert model.reactions.PFK.reverse_variable.ub == 1000
 
 
-def test_twist_irrev_right_to_left_reaction_to_left_to_right(model):
+def test_twist_irrev_right_to_left_reaction_to_left_to_right(model: Model) -> None:
     """Test irreversibility reversal from right to left to left to right."""
     assert not model.reactions.PFK.reversibility
     assert model.reactions.PFK.lower_bound == 0
@@ -744,7 +747,7 @@ def test_twist_irrev_right_to_left_reaction_to_left_to_right(model):
     assert model.reactions.PFK.reverse_variable.ub == 1000
 
 
-def test_set_lb_higher_than_ub_sets_ub_to_new_lb(model):
+def test_set_lb_higher_than_ub_sets_ub_to_new_lb(model: Model) -> None:
     """Test lower bound > upper bound makes upper bound to new lower bound."""
     for reaction in model.reactions:
         assert reaction.lower_bound <= reaction.upper_bound
@@ -752,7 +755,7 @@ def test_set_lb_higher_than_ub_sets_ub_to_new_lb(model):
         assert reaction.lower_bound == reaction.upper_bound
 
 
-def test_set_ub_lower_than_lb_sets_lb_to_new_ub(model):
+def test_set_ub_lower_than_lb_sets_lb_to_new_ub(model: Model) -> None:
     """Test upper bound < lower bound makes lower bound to new upper bound."""
     for reaction in model.reactions:
         assert reaction.lower_bound <= reaction.upper_bound
@@ -760,7 +763,7 @@ def test_set_ub_lower_than_lb_sets_lb_to_new_ub(model):
         assert reaction.lower_bound == reaction.upper_bound
 
 
-def test_add_metabolites_combine_true(model):
+def test_add_metabolites_combine_true(model: Model) -> None:
     """Test metabolite addition to reaction (with combine = True)."""
     test_metabolite = Metabolite("test")
     for reaction in model.reactions:
@@ -798,7 +801,7 @@ def test_add_metabolites_combine_true(model):
 
 
 @pytest.mark.xfail(reason="non-deterministic test")
-def test_add_metabolites_combine_false(model):
+def test_add_metabolites_combine_false(model: Model) -> None:
     """Test metabolite addition to reaction (with combine = False)."""
     test_metabolite = Metabolite("test")
     for reaction in model.reactions:
@@ -821,7 +824,7 @@ def test_add_metabolites_combine_false(model):
         )
 
 
-def test_reaction_imul(model):
+def test_reaction_imul(model: Model) -> None:
     """Test in-place scalar factor multiplication to reaction."""
     with model:
         model.reactions.EX_glc__D_e *= 100
@@ -868,7 +871,7 @@ def test_reaction_imul(model):
 #            ).as_coefficients_dict()
 
 
-def test_remove_from_model(model):
+def test_remove_from_model(model: Model) -> None:
     """Test reaction removal from model."""
     pgi = model.reactions.PGI
     g6p = model.metabolites.g6p_c
@@ -893,7 +896,7 @@ def test_remove_from_model(model):
     assert np.isclose(pgi_flux, model.optimize().fluxes["PGI"])
 
 
-def test_change_id_is_reflected_in_solver(model):
+def test_change_id_is_reflected_in_solver(model: Model) -> None:
     """Test reaction ID change reflection in solver."""
     for i, reaction in enumerate(model.reactions):
         old_reaction_id = reaction.id
@@ -909,12 +912,12 @@ def test_change_id_is_reflected_in_solver(model):
         assert name == reaction.id
 
 
-def test_repr_html_(model):
+def test_repr_html_(model: Model) -> None:
     """Test __repr_html__ functionality."""
     assert "<table>" in model.reactions[0]._repr_html_()
 
 
-def test_compartment_changes(model):
+def test_compartment_changes(model: Model) -> None:
     """Test reaction compartment change."""
     rxn = model.reactions.EX_ac_e
     assert rxn.reactants[0].compartment in rxn.compartments
