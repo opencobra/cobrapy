@@ -8,6 +8,7 @@ import pandas as pd
 from .core import step
 from .hr_sampler import HRSampler
 
+
 if TYPE_CHECKING:
     from cobra import Model
 
