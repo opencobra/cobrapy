@@ -170,9 +170,9 @@ def test_add_metabolite_benchmark(model: Model, benchmark, solver: Iterable) -> 
         reaction.add_metabolites(many_metabolites)
         if not getattr(model, "solver", None):
             stable_optlang[solver].create_problem(model)
-        for m, _ in many_metabolites.items():
+        for met in many_metabolites:
             try:
-                reaction.subtract_metabolites({m: reaction.get_coefficient(m)})
+                reaction.subtract_metabolites({met: reaction.get_coefficient(met)})
             except KeyError:
                 pass
 
@@ -418,24 +418,23 @@ def test_set_bounds_scenario_1(model: Model) -> None:
     assert acald_reaction.forward_variable.ub == 1000.0
     assert acald_reaction.reverse_variable.lb == 0
     assert acald_reaction.reverse_variable.ub == 1000.0
-    with pytest.raises(ValueError):
-        acald_reaction.bounds = (
-            acald_reaction.lower_bound,
-            acald_reaction.lower_bound - 100,
-        )
-        assert acald_reaction.lower_bound == -1100.0
-        assert acald_reaction.upper_bound == -1100.0
-        assert acald_reaction.forward_variable.lb == 0
-        assert acald_reaction.forward_variable.ub == 0
-        assert acald_reaction.reverse_variable.lb == 1100.0
-        assert acald_reaction.reverse_variable.ub == 1100.0
-        acald_reaction.bounds = (acald_reaction.lower_bound, 100)
-        assert acald_reaction.lower_bound == -1100.0
-        assert acald_reaction.upper_bound == 100
-        assert acald_reaction.forward_variable.lb == 0
-        assert acald_reaction.forward_variable.ub == 100
-        assert acald_reaction.reverse_variable.lb == 0
-        assert acald_reaction.reverse_variable.ub == 1100.0
+    acald_reaction.bounds = (
+        acald_reaction.lower_bound - 100,
+        acald_reaction.lower_bound - 100,
+    )
+    assert acald_reaction.lower_bound == -1100.0
+    assert acald_reaction.upper_bound == -1100.0
+    assert acald_reaction.forward_variable.lb == 0
+    assert acald_reaction.forward_variable.ub == 0
+    assert acald_reaction.reverse_variable.lb == 1100.0
+    assert acald_reaction.reverse_variable.ub == 1100.0
+    acald_reaction.upper_bound = 100
+    assert acald_reaction.lower_bound == -1100.0
+    assert acald_reaction.upper_bound == 100
+    assert acald_reaction.forward_variable.lb == 0
+    assert acald_reaction.forward_variable.ub == 100
+    assert acald_reaction.reverse_variable.lb == 0
+    assert acald_reaction.reverse_variable.ub == 1100.0
 
 
 def test_set_bounds_scenario_2(model: Model) -> None:
@@ -447,24 +446,23 @@ def test_set_bounds_scenario_2(model: Model) -> None:
     assert acald_reaction.forward_variable.ub == 1000.0
     assert acald_reaction.reverse_variable.lb == 0
     assert acald_reaction.reverse_variable.ub == 1000.0
-    with pytest.raises(ValueError):
-        acald_reaction.bounds = (
-            acald_reaction.upper_bound + 100,
-            acald_reaction.upper_bound,
-        )
-        assert acald_reaction.lower_bound == 1100.0
-        assert acald_reaction.upper_bound == 1100.0
-        assert acald_reaction.forward_variable.lb == 1100.0
-        assert acald_reaction.forward_variable.ub == 1100.0
-        assert acald_reaction.reverse_variable.lb == 0
-        assert acald_reaction.reverse_variable.ub == 0
-        acald_reaction.bounds = (-100, acald_reaction.upper_bound)
-        assert acald_reaction.lower_bound == -100.0
-        assert acald_reaction.upper_bound == 1100.0
-        assert acald_reaction.forward_variable.lb == 0
-        assert acald_reaction.forward_variable.ub == 1100.0
-        assert acald_reaction.reverse_variable.lb == 0
-        assert acald_reaction.reverse_variable.ub == 100
+    acald_reaction.bounds = (
+        acald_reaction.upper_bound + 100,
+        acald_reaction.upper_bound + 100,
+    )
+    assert acald_reaction.lower_bound == 1100.0
+    assert acald_reaction.upper_bound == 1100.0
+    assert acald_reaction.forward_variable.lb == 1100.0
+    assert acald_reaction.forward_variable.ub == 1100.0
+    assert acald_reaction.reverse_variable.lb == 0
+    assert acald_reaction.reverse_variable.ub == 0
+    acald_reaction.lower_bound = -100
+    assert acald_reaction.lower_bound == -100.0
+    assert acald_reaction.upper_bound == 1100.0
+    assert acald_reaction.forward_variable.lb == 0
+    assert acald_reaction.forward_variable.ub == 1100.0
+    assert acald_reaction.reverse_variable.lb == 0
+    assert acald_reaction.reverse_variable.ub == 100
 
 
 def test_set_bounds_scenario_3(model: Model) -> None:
@@ -473,39 +471,37 @@ def test_set_bounds_scenario_3(model: Model) -> None:
     reac.bounds = (-10, -10)
     assert reac.lower_bound == -10
     assert reac.upper_bound == -10
-    with pytest.raises(ValueError):
-        reac.bounds = (-9, reac.upper_bound)
-        assert reac.lower_bound == -9
-        assert reac.upper_bound == -9
-        reac.bounds = (2, reac.upper_bound)
-        assert reac.lower_bound == 2
-        assert reac.upper_bound == 2
-        reac.bounds = (reac.lower_bound, -10)
-        assert reac.lower_bound == -10
-        assert reac.upper_bound == -10
-        reac.bounds = (reac.lower_bound, -11)
-        assert reac.lower_bound == -11
-        assert reac.upper_bound == -11
-        reac.bounds = (reac.lower_bound, 2)
-        assert reac.lower_bound == -11
-        assert reac.upper_bound == 2
+    reac.bounds = (-9, -9)
+    assert reac.lower_bound == -9
+    assert reac.upper_bound == -9
+    reac.bounds = (2, 2)
+    assert reac.lower_bound == 2
+    assert reac.upper_bound == 2
+    reac.bounds = (-10, -10)
+    assert reac.lower_bound == -10
+    assert reac.upper_bound == -10
+    reac.bounds = (-11, -11)
+    assert reac.lower_bound == -11
+    assert reac.upper_bound == -11
+    reac.upper_bound = 2
+    assert reac.lower_bound == -11
+    assert reac.upper_bound == 2
 
 
 def test_set_bounds_scenario_4(model: Model) -> None:
     """Test reaction bounds setting for a scenario."""
     reac = model.reactions.ACALD
-    with pytest.raises(ValueError):
-        reac.bounds = (2, 0)
-        assert reac.lower_bound == 2
-        assert reac.upper_bound == 2
-        assert reac.forward_variable.lb == 2
-        assert reac.forward_variable.ub == 2
-        reac.knock_out()
-        reac.bounds = (reac.lower_bound, -2)
-        assert reac.lower_bound == -2
-        assert reac.upper_bound == -2
-        assert reac.reverse_variable.lb == 2
-        assert reac.reverse_variable.ub == 2
+    reac.bounds = (2, 2)
+    assert reac.lower_bound == 2
+    assert reac.upper_bound == 2
+    assert reac.forward_variable.lb == 2
+    assert reac.forward_variable.ub == 2
+    reac.knock_out()
+    reac.bounds = (-2, -2)
+    assert reac.lower_bound == -2
+    assert reac.upper_bound == -2
+    assert reac.reverse_variable.lb == 2
+    assert reac.reverse_variable.ub == 2
 
 
 def test_set_upper_before_lower_bound_to_0(model: Model) -> None:
@@ -542,14 +538,14 @@ def test_make_irreversible(model: Model) -> None:
     assert acald_reaction.forward_variable.ub == 1000.0
     assert acald_reaction.reverse_variable.lb == 0
     assert acald_reaction.reverse_variable.ub == 1000.0
-    acald_reaction.bounds = (0, acald_reaction.upper_bound)
+    acald_reaction.lower_bound = 0
     assert acald_reaction.lower_bound == 0
     assert acald_reaction.upper_bound == 1000.0
     assert acald_reaction.forward_variable.lb == 0
     assert acald_reaction.forward_variable.ub == 1000.0
     assert acald_reaction.reverse_variable.lb == 0
     assert acald_reaction.reverse_variable.ub == 0
-    acald_reaction.bounds = (-100, acald_reaction.upper_bound)
+    acald_reaction.lower_bound = -100
     assert acald_reaction.lower_bound == -100.0
     assert acald_reaction.upper_bound == 1000.0
     assert acald_reaction.forward_variable.lb == 0
@@ -567,14 +563,14 @@ def test_make_reversible(model: Model) -> None:
     assert pfk_reaction.forward_variable.ub == 1000.0
     assert pfk_reaction.reverse_variable.lb == 0
     assert pfk_reaction.reverse_variable.ub == 0
-    pfk_reaction.bounds = (-100.0, pfk_reaction.upper_bound)
+    pfk_reaction.lower_bound = -100.0
     assert pfk_reaction.lower_bound == -100.0
     assert pfk_reaction.upper_bound == 1000.0
     assert pfk_reaction.forward_variable.lb == 0
     assert pfk_reaction.forward_variable.ub == 1000.0
     assert pfk_reaction.reverse_variable.lb == 0
     assert pfk_reaction.reverse_variable.ub == 100.0
-    pfk_reaction.bounds = (0, pfk_reaction.upper_bound)
+    pfk_reaction.lower_bound = 0
     assert pfk_reaction.lower_bound == 0
     assert pfk_reaction.upper_bound == 1000.0
     assert pfk_reaction.forward_variable.lb == 0
@@ -592,19 +588,18 @@ def test_make_irreversible_irreversible_to_the_other_side(model: Model) -> None:
     assert pfk_reaction.forward_variable.ub == 1000.0
     assert pfk_reaction.reverse_variable.lb == 0
     assert pfk_reaction.reverse_variable.ub == 0
-    with pytest.raises(ValueError):
-        pfk_reaction.bounds = (pfk_reaction.lower_bound, -100.0)
-        assert pfk_reaction.forward_variable.lb == 0
-        assert pfk_reaction.forward_variable.ub == 0
-        assert pfk_reaction.reverse_variable.lb == 100
-        assert pfk_reaction.reverse_variable.ub == 100
-        pfk_reaction.bounds = (-1000.0, pfk_reaction.upper_bound)
-        assert pfk_reaction.lower_bound == -1000.0
-        assert pfk_reaction.upper_bound == -100.0
-        assert pfk_reaction.forward_variable.lb == 0
-        assert pfk_reaction.forward_variable.ub == 0
-        assert pfk_reaction.reverse_variable.lb == 100
-        assert pfk_reaction.reverse_variable.ub == 1000.0
+    pfk_reaction.bounds = (-100.0, -100.0)
+    assert pfk_reaction.forward_variable.lb == 0
+    assert pfk_reaction.forward_variable.ub == 0
+    assert pfk_reaction.reverse_variable.lb == 100
+    assert pfk_reaction.reverse_variable.ub == 100
+    pfk_reaction.lower_bound = -1000.0
+    assert pfk_reaction.lower_bound == -1000.0
+    assert pfk_reaction.upper_bound == -100.0
+    assert pfk_reaction.forward_variable.lb == 0
+    assert pfk_reaction.forward_variable.ub == 0
+    assert pfk_reaction.reverse_variable.lb == 100
+    assert pfk_reaction.reverse_variable.ub == 1000.0
 
 
 def test_make_lhs_irreversible_reversible(model: Model) -> None:
@@ -619,7 +614,7 @@ def test_make_lhs_irreversible_reversible(model: Model) -> None:
     assert rxn.forward_variable.ub == 0.0
     assert rxn.reverse_variable.lb == 100.0
     assert rxn.reverse_variable.ub == 1000.0
-    rxn.bounds = (rxn.lower_bound, 666.0)
+    rxn.upper_bound = 666.0
     assert rxn.lower_bound == -1000.0
     assert rxn.upper_bound == 666.0
     assert rxn.forward_variable.lb == 0.0
@@ -705,7 +700,7 @@ def test_one_left_to_right_reaction_set_positive_ub(tiny_toy_model: Model) -> No
     assert d1.upper_bound == 0
     assert d1.forward_variable.lb == 0
     assert d1.forward_variable.ub == 0
-    d1.bounds = (d1.lower_bound, 0.1)
+    d1.upper_bound = 0.1
     assert d1.forward_variable.lb == 0
     assert d1.forward_variable.ub == 0.1
     assert d1.reverse_variable.lb == 0
@@ -725,7 +720,7 @@ def test_irrev_reaction_set_negative_lb(model: Model) -> None:
     assert model.reactions.PFK.forward_variable.ub == 1000.0
     assert model.reactions.PFK.reverse_variable.lb == 0
     assert model.reactions.PFK.reverse_variable.ub == 0
-    model.reactions.PFK.bounds = (-1000, model.reactions.PFK.upper_bound)
+    model.reactions.PFK.lower_bound = -1000
     assert model.reactions.PFK.lower_bound == -1000
     assert model.reactions.PFK.upper_bound == 1000.0
     assert model.reactions.PFK.forward_variable.lb == 0
@@ -756,18 +751,16 @@ def test_set_lb_higher_than_ub_sets_ub_to_new_lb(model: Model) -> None:
     """Test lower bound > upper bound makes upper bound to new lower bound."""
     for reaction in model.reactions:
         assert reaction.lower_bound <= reaction.upper_bound
-        with pytest.raises(ValueError):
-            reaction.bounds = (reaction.upper_bound + 100, reaction.upper_bound)
-            assert reaction.lower_bound == reaction.upper_bound
+        reaction.bounds = (reaction.upper_bound + 100, reaction.upper_bound + 100)
+        assert reaction.lower_bound == reaction.upper_bound
 
 
 def test_set_ub_lower_than_lb_sets_lb_to_new_ub(model: Model) -> None:
     """Test upper bound < lower bound makes lower bound to new upper bound."""
     for reaction in model.reactions:
         assert reaction.lower_bound <= reaction.upper_bound
-        with pytest.raises(ValueError):
-            reaction.bounds = (reaction.lower_bound, reaction.lower_bound - 100)
-            assert reaction.lower_bound == reaction.upper_bound
+        reaction.bounds = (reaction.lower_bound - 100, reaction.lower_bound - 100)
+        assert reaction.lower_bound == reaction.upper_bound
 
 
 def test_add_metabolites_combine_true(model: Model) -> None:
