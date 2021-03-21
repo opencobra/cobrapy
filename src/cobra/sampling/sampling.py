@@ -73,7 +73,7 @@ def sample(model, n, method="optgp", thinning=100, processes=1, seed=None):
     """
 
     if method == "optgp":
-        sampler = OptGPSampler(model, processes, thinning=thinning, seed=seed)
+        sampler = OptGPSampler(model, processes=processes, thinning=thinning, seed=seed)
     elif method == "achr":
         sampler = ACHRSampler(model, thinning=thinning, seed=seed)
     else:
