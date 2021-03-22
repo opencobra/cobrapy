@@ -38,6 +38,10 @@ COBRApy - Constraint-Based Reconstruction and Analysis in Python
    :target: https://github.com/ambv/black
    :alt: Black
 
+.. image:: https://zenodo.org/badge/6510063.svg
+   :target: https://zenodo.org/badge/latestdoi/6510063
+   :alt: Zenodo DOI
+
 What is COBRApy?
 ================
 
