@@ -240,17 +240,6 @@ class Reaction(Object):
     @lower_bound.setter
     @resettable
     def lower_bound(self, value):
-        if self._upper_bound < value:
-            warn(
-                "You are constraining the reaction '{}' to a fixed flux "
-                "value of {}. Did you intend to do this? We are planning to "
-                "remove this behavior in a future release. Please let us "
-                "know your opinion at "
-                "https://github.com/opencobra/cobrapy/issues/793."
-                "".format(self.id, value),
-                DeprecationWarning,
-            )
-            self.upper_bound = value
         # Validate bounds before setting them.
         self._check_bounds(value, self._upper_bound)
         self._lower_bound = value
@@ -273,17 +262,6 @@ class Reaction(Object):
     @upper_bound.setter
     @resettable
     def upper_bound(self, value):
-        if self._lower_bound > value:
-            warn(
-                "You are constraining the reaction '{}' to a fixed flux "
-                "value of {}. Did you intend to do this? We are planning to "
-                "remove this behavior in a future release. Please let us "
-                "know your opinion at "
-                "https://github.com/opencobra/cobrapy/issues/793."
-                "".format(self.id, value),
-                DeprecationWarning,
-            )
-            self.lower_bound = value
         # Validate bounds before setting them.
         self._check_bounds(self._lower_bound, value)
         self._upper_bound = value
