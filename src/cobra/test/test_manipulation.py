@@ -6,6 +6,7 @@ from itertools import chain
 import pytest
 
 from cobra.core import Metabolite, Model, Reaction
+from cobra.core.gene import gpr_eq
 from cobra.manipulation import *
 
 
@@ -38,10 +39,10 @@ class TestManipulation:
         assert model.genes.foo.name == original_name
         # make sure the reactions are correct
         assert len(model.genes.foo.reactions) == 2
-        assert model.reactions.ACALD.gene_reaction_rule == "b0351 or foo"
-        assert model.reactions.TPI.gene_reaction_rule == "b3919"
+        assert gpr_eq(model.reactions.ACALD.gene_reaction_rule,"b0351 or foo")
+        assert gpr_eq(model.reactions.TPI.gene_reaction_rule, "b3919")
         assert model.reactions.TPI.genes == {model.genes.b3919}
-        assert model.reactions.TKT1.gene_reaction_rule == "b2935 or b3919"
+        assert gpr_eq(model.reactions.TKT1.gene_reaction_rule, "b3919 or b2935")
         assert model.reactions.TKT1.genes == {model.genes.b2935, model.genes.b3919}
         assert model.genes.b3919.reactions == {
             model.reactions.get_by_id(i) for i in ("TKT1", "TKT2", "TPI")
@@ -143,26 +144,26 @@ class TestManipulation:
         remove_genes(m, ["a"], remove_reactions=False)
         assert "a" not in m.genes
         assert "x" in m.genes
-        assert rxns.r1.gene_reaction_rule == ""
-        assert rxns.r2.gene_reaction_rule == ""
-        assert rxns.r3.gene_reaction_rule == "b and c"
-        assert rxns.r4.gene_reaction_rule == "(f and b) or (b and c)"
-        assert rxns.r5.gene_reaction_rule == "x"
-        assert rxns.r6.gene_reaction_rule == "y"
+        assert gpr_eq(rxns.r1.gene_reaction_rule, "")
+        assert gpr_eq(rxns.r2.gene_reaction_rule, "")
+        assert gpr_eq(rxns.r3.gene_reaction_rule, "b and c")
+        assert gpr_eq(rxns.r4.gene_reaction_rule, "(f and b) or (b and c)")
+        assert gpr_eq(rxns.r5.gene_reaction_rule, "x")
+        assert gpr_eq(rxns.r6.gene_reaction_rule, "y")
         assert rxns.r7.genes == {m.genes.x, m.genes.z}
-        assert rxns.r8.gene_reaction_rule == ""
+        assert gpr_eq(rxns.r8.gene_reaction_rule, "")
         remove_genes(m, ["x"], remove_reactions=True)
         assert len(m.reactions) == 7
         assert "r5" not in m.reactions
         assert "x" not in m.genes
-        assert rxns.r1.gene_reaction_rule == ""
-        assert rxns.r2.gene_reaction_rule == ""
-        assert rxns.r3.gene_reaction_rule == "b and c"
-        assert rxns.r4.gene_reaction_rule == "(f and b) or (b and c)"
-        assert rxns.r6.gene_reaction_rule == "y"
-        assert rxns.r7.gene_reaction_rule == "z"
+        assert gpr_eq(rxns.r1.gene_reaction_rule, "")
+        assert gpr_eq(rxns.r2.gene_reaction_rule, "")
+        assert gpr_eq(rxns.r3.gene_reaction_rule, "b and c")
+        assert gpr_eq(rxns.r4.gene_reaction_rule, "(f and b) or (b and c)")
+        assert gpr_eq(rxns.r6.gene_reaction_rule, "y")
+        assert gpr_eq(rxns.r7.gene_reaction_rule, "z")
         assert rxns.r7.genes == {m.genes.z}
-        assert rxns.r8.gene_reaction_rule == ""
+        assert gpr_eq(rxns.r8.gene_reaction_rule, "")
 
     def test_sbo_annotation(self, model):
         rxns = model.reactions
