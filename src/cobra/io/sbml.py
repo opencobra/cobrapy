@@ -39,7 +39,6 @@ from copy import deepcopy
 from sys import platform
 
 import libsbml
-from six import iteritems, raise_from, string_types
 
 import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
@@ -262,7 +261,7 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
             "\nIf the model is valid and cannot be read please open an issue "
             "at https://github.com/opencobra/cobrapy/issues ."
         )
-        raise_from(cobra_error, original_error)
+        raise cobra_error from original_error
 
 
 def _get_doc_from_filename(filename):
@@ -276,7 +275,7 @@ def _get_doc_from_filename(filename):
     -------
     libsbml.SBMLDocument
     """
-    if isinstance(filename, string_types):
+    if isinstance(filename, str):
         if ("win" in platform) and (len(filename) < 260) and os.path.exists(filename):
             # path (win)
             doc = libsbml.readSBMLFromFile(
@@ -963,7 +962,7 @@ def write_sbml_model(cobra_model, filename, f_replace=F_REPLACE, **kwargs):
     """
     doc = _model_to_sbml(cobra_model, f_replace=f_replace, **kwargs)
 
-    if isinstance(filename, string_types):
+    if isinstance(filename, str):
         # write to path
         libsbml.writeSBMLToFile(doc, filename)
 
@@ -1090,7 +1089,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
     # Compartments
     # FIXME: use first class compartment model (and write notes & annotations)
     #     (https://github.com/opencobra/cobrapy/issues/811)
-    for cid, name in iteritems(cobra_model.compartments):
+    for cid, name in cobra_model.compartments.items():
         compartment = model.createCompartment()  # type: libsbml.Compartment
         compartment.setId(cid)
         compartment.setName(name)
@@ -1158,7 +1157,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         _sbase_notes_dict(reaction, cobra_reaction.notes)
 
         # stoichiometry
-        for metabolite, stoichiometry in iteritems(cobra_reaction._metabolites):
+        for metabolite, stoichiometry in cobra_reaction._metabolites.items():
             sid = metabolite.id
             if f_replace and F_SPECIE_REV in f_replace:
                 sid = f_replace[F_SPECIE_REV](sid)
@@ -1544,7 +1543,7 @@ def _parse_annotations(sbase):
                 provider, identifier = data
 
             if provider in annotation:
-                if isinstance(annotation[provider], string_types):
+                if isinstance(annotation[provider], str):
                     annotation[provider] = [annotation[provider]]
                 # FIXME: use a list
                 if identifier not in annotation[provider]:
@@ -1610,12 +1609,12 @@ def _sbase_annotations(sbase, annotation):
         # handling of non-string annotations (e.g. integers)
         if isinstance(value, (float, int)):
             value = str(value)
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             annotation_data[key] = [("is", value)]
 
     for key, value in annotation_data.items():
         for idx, item in enumerate(value):
-            if isinstance(item, string_types):
+            if isinstance(item, str):
                 value[idx] = ("is", item)
 
     # set metaId
@@ -1623,7 +1622,7 @@ def _sbase_annotations(sbase, annotation):
     sbase.setMetaId(meta_id)
 
     # rdf_items = []
-    for provider, data in iteritems(annotation_data):
+    for provider, data in annotation_data.items():
 
         # set SBOTerm
         if provider in ["SBO", "sbo"]:
