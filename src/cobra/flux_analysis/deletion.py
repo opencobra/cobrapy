@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import multiprocessing
 from builtins import dict, map
 from functools import partial
 from itertools import product
+from multiprocessing import Pool
 from typing import List, Set, Union
 
 import pandas as pd
@@ -149,14 +149,11 @@ def _multi_deletion(
                 gene=_gene_deletion_worker, reaction=_reaction_deletion_worker
             )[entity]
             chunk_size = len(args) // processes
-            pool = multiprocessing.Pool(
-                processes, initializer=_init_worker, initargs=(model,)
-            )
-            results = extract_knockout_results(
-                pool.imap_unordered(worker, args, chunksize=chunk_size)
-            )
-            pool.close()
-            pool.join()
+
+            with Pool(processes, initializer=_init_worker, initargs=(model,)) as pool:
+                results = extract_knockout_results(
+                    pool.imap_unordered(worker, args, chunksize=chunk_size)
+                )
         else:
             worker = dict(gene=_gene_deletion, reaction=_reaction_deletion)[entity]
             results = extract_knockout_results(map(partial(worker, model), args))
