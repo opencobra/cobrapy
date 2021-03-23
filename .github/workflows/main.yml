@@ -88,3 +88,11 @@ jobs:
         TAG: ${{ steps.tag.outputs.version }}
         WORKSPACE: ${{ github.workspace }}
         WEBSITE_DEPLOY_TOKEN: ${{ secrets.WEBSITE_DEPLOY_TOKEN }}
+    - name: Dispatch update on biosimulators
+      uses: benc-uk/workflow-dispatch@v1
+      with:
+        workflow: Continuous integration
+        repo: biosimulators/Biosimulators_COBRApy
+        token: ${{ secrets.BIOSIM_DISPATCH_TOKEN }}
+        inputs: '{ "simulatorVersion": "${{ steps.tag.outputs.version }}", "latest": true }'
+
