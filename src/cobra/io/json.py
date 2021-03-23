@@ -2,8 +2,6 @@
 
 from __future__ import absolute_import
 
-from six import string_types
-
 from cobra.io.dict import model_from_dict, model_to_dict
 
 
@@ -111,7 +109,7 @@ def save_json_model(model, filename, sort=False, pretty=False, **kwargs):
         }
     dump_opts.update(**kwargs)
 
-    if isinstance(filename, string_types):
+    if isinstance(filename, str):
         with open(filename, "w") as file_handle:
             json.dump(obj, file_handle, **dump_opts)
     else:
@@ -137,7 +135,7 @@ def load_json_model(filename):
     --------
     from_json : Load from a string.
     """
-    if isinstance(filename, string_types):
+    if isinstance(filename, str):
         with open(filename, "r") as file_handle:
             return model_from_dict(json.load(file_handle))
     else:

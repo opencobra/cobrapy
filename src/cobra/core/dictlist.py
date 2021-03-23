@@ -6,7 +6,6 @@ import re
 from itertools import islice
 
 from numpy import bool_
-from six import PY3, iteritems, string_types
 
 
 class DictList(list):
@@ -81,7 +80,7 @@ class DictList(list):
         def get_item(item):
             if isinstance(item, int):
                 return self[item]
-            elif isinstance(item, string_types):
+            elif isinstance(item, str):
                 return self.get_by_id(item)
             elif item in self:
                 return item
@@ -299,7 +298,7 @@ class DictList(list):
 
         """
         # because values are unique, start and stop are not relevant
-        if isinstance(id, string_types):
+        if isinstance(id, str):
             try:
                 return self._dict[id]
             except KeyError:
@@ -339,7 +338,7 @@ class DictList(list):
         list.insert(self, index, object)
         # all subsequent entries now have been shifted up by 1
         _dict = self._dict
-        for i, j in iteritems(_dict):
+        for i, j in _dict.items():
             if j >= index:
                 _dict[i] = j + 1
         _dict[object.id] = index
@@ -353,7 +352,7 @@ class DictList(list):
         if len(args) == 0 or args == [-1]:  # removing from the end of the list
             return value
         _dict = self._dict
-        for i, j in iteritems(_dict):
+        for i, j in _dict.items():
             if j > index:
                 _dict[i] = j - 1
         return value
@@ -385,10 +384,8 @@ class DictList(list):
             def key(i):
                 return i.id
 
-        if PY3:
-            list.sort(self, key=key, reverse=reverse)
-        else:
-            list.sort(self, cmp=cmp, key=key, reverse=reverse)
+        list.sort(self, key=key, reverse=reverse)
+
         self._generate_index()
 
     def __getitem__(self, i):
@@ -437,7 +434,7 @@ class DictList(list):
             return
         _dict = self._dict
         _dict.pop(removed.id)
-        for i, j in iteritems(_dict):
+        for i, j in _dict.items():
             if j > index:
                 _dict[i] = j - 1
 

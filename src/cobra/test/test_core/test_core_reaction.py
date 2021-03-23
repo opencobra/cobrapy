@@ -5,7 +5,6 @@ from typing import Iterable
 
 import numpy as np
 import pytest
-import six
 
 from cobra.core import Configuration, Metabolite, Model, Reaction
 
@@ -645,7 +644,7 @@ def test_knockout(model: Model) -> None:
         reaction.knock_out()
         assert reaction.lower_bound == 0
         assert reaction.upper_bound == 0
-    for k, (lb, ub) in six.iteritems(original_bounds):
+    for k, (lb, ub) in original_bounds.items():
         model.reactions.get_by_id(k).bounds = (lb, ub)
     for reaction in model.reactions:
         assert reaction.lower_bound == original_bounds[reaction.id][0]

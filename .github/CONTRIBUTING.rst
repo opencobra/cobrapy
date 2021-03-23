@@ -98,8 +98,13 @@ Ready to contribute? Here's how to set up cobrapy for local development.
 
        tox
 
-   You can run all tests in parallel using detox. To get detox, just pip install
-   it into your virtualenv.
+
+   You can also run all ``tox`` tests in parallel. As of ``tox 3.7``, you can run
+
+   .. code-block:: console
+
+       tox --parallel
+
 
 7. Push your branch to GitHub.
 

@@ -14,7 +14,6 @@ from operator import attrgetter
 from warnings import warn
 
 from future.utils import raise_from, raise_with_traceback
-from six import iteritems, iterkeys, string_types
 
 from cobra.core.configuration import Configuration
 from cobra.core.gene import Gene, ast2str, eval_gpr, parse_gpr
@@ -700,7 +699,7 @@ class Reaction(Object):
         bounds are swapped.
         """
         self._metabolites = {
-            met: value * coefficient for met, value in iteritems(self._metabolites)
+            met: value * coefficient for met, value in self._metabolites.items()
         }
 
         if coefficient < 0:
@@ -724,12 +723,12 @@ class Reaction(Object):
     @property
     def reactants(self):
         """Return a list of reactants for the reaction."""
-        return [k for k, v in iteritems(self._metabolites) if v < 0]
+        return [k for k, v in self._metabolites.items() if v < 0]
 
     @property
     def products(self):
         """Return a list of products for the reaction"""
-        return [k for k, v in iteritems(self._metabolites) if v >= 0]
+        return [k for k, v in self._metabolites.items() if v >= 0]
 
     def get_coefficient(self, metabolite_id):
         """
@@ -787,7 +786,7 @@ class Reaction(Object):
         new_metabolites = []
         _id_to_metabolites = dict([(x.id, x) for x in self._metabolites])
 
-        for metabolite, coefficient in iteritems(metabolites_to_add):
+        for metabolite, coefficient in metabolites_to_add.items():
 
             # Make sure metabolites being added belong to the same model, or
             # else copy them.
@@ -818,7 +817,7 @@ class Reaction(Object):
                         else:
                             # do we want to handle creation here?
                             raise e
-                elif isinstance(metabolite, string_types):
+                elif isinstance(metabolite, str):
                     # if we want to handle creation, this should be changed
                     raise ValueError(
                         "Reaction '%s' does not belong to a "
@@ -867,7 +866,7 @@ class Reaction(Object):
                 # Reset them with add_metabolites
                 mets_to_reset = {
                     key: old_coefficients[model.metabolites.get_by_any(key)[0]]
-                    for key in iterkeys(metabolites_to_add)
+                    for key in metabolites_to_add.keys()
                 }
 
                 context(
@@ -909,7 +908,7 @@ class Reaction(Object):
 
         """
         self.add_metabolites(
-            {k: -v for k, v in iteritems(metabolites)},
+            {k: -v for k, v in metabolites.items()},
             combine=combine,
             reversibly=reversibly,
         )
@@ -961,15 +960,15 @@ class Reaction(Object):
         This should be empty for balanced reactions.
         """
         reaction_element_dict = defaultdict(int)
-        for metabolite, coefficient in iteritems(self._metabolites):
+        for metabolite, coefficient in self._metabolites.items():
             if metabolite.charge is not None:
                 reaction_element_dict["charge"] += coefficient * metabolite.charge
             if metabolite.elements is None:
                 raise ValueError("No elements found in metabolite %s" % metabolite.id)
-            for element, amount in iteritems(metabolite.elements):
+            for element, amount in metabolite.elements.items():
                 reaction_element_dict[element] += coefficient * amount
         # filter out 0 values
-        return {k: v for k, v in iteritems(reaction_element_dict) if v != 0}
+        return {k: v for k, v in reaction_element_dict.items() if v != 0}
 
     @property
     def compartments(self):
