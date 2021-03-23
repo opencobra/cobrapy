@@ -17,5 +17,6 @@ jobs:
         with:
           workflow: Continuous integration
           repo: biosimulators/Biosimulators_COBRApy
+          ref: dev
           token: ${{ secrets.BIOSIM_DISPATCH_TOKEN }}
           inputs: '{ "simulatorVersion": "${{ steps.tag.outputs.version }}", "simulatorVersionLatest": "true" }'
