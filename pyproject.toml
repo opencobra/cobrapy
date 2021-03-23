@@ -3,7 +3,30 @@ requires = [
   'setuptools>=40.6.0',
   'wheel'
 ]
+build-backend = "setuptools.build_meta"
 
 [tool.black]
 line-length = 88
 python-version = ['py36']
+include = '\.pyi?$'
+exclude = '''
+
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | documentation_builder
+    | release-notes
+    | scripts
+    | benchmarks
+  )/
+)
+'''
