@@ -8,7 +8,6 @@ from itertools import product
 import pandas as pd
 from numpy import abs, full, linspace, nan
 from optlang.interface import OPTIMAL
-from six import iteritems
 
 from cobra.exceptions import OptimizationError
 from cobra.flux_analysis import flux_variability_analysis as fva
@@ -243,8 +242,7 @@ def reaction_elements(reaction):
         times that metabolite's stoichiometric coefficient.
     """
     c_elements = [
-        coeff * met.elements.get("C", 0)
-        for met, coeff in iteritems(reaction.metabolites)
+        coeff * met.elements.get("C", 0) for met, coeff in reaction.metabolites.items()
     ]
     return [elem for elem in c_elements if elem != 0]
 
@@ -258,7 +256,7 @@ def reaction_weight(reaction):
             "metabolite products or educts."
         )
 
-    met, coeff = next(iteritems(reaction.metabolites))
+    met, coeff = next(iter(reaction.metabolites.items()))
 
     return [coeff * met.formula_weight]
 

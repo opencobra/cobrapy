@@ -6,7 +6,6 @@ import io
 
 from ruamel.yaml.compat import StringIO
 from ruamel.yaml.main import YAML
-from six import string_types
 
 from cobra.io.dict import model_from_dict, model_to_dict
 
@@ -104,7 +103,7 @@ def save_yaml_model(model, filename, sort=False, **kwargs):
     """
     obj = model_to_dict(model, sort=sort)
     obj["version"] = YAML_SPEC
-    if isinstance(filename, string_types):
+    if isinstance(filename, str):
         with io.open(filename, "w") as file_handle:
             yaml.dump(obj, file_handle, **kwargs)
     else:
@@ -130,7 +129,7 @@ def load_yaml_model(filename):
     --------
     from_yaml : Load from a string.
     """
-    if isinstance(filename, string_types):
+    if isinstance(filename, str):
         with io.open(filename, "r") as file_handle:
             return model_from_dict(yaml.load(file_handle))
     else:

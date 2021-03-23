@@ -6,8 +6,6 @@ from ast import NodeTransformer
 from itertools import chain
 from warnings import warn
 
-from six import iteritems
-
 from cobra.core import Reaction
 from cobra.core.gene import ast2str
 from cobra.manipulation.delete import get_compiled_gene_reaction_rules
@@ -59,7 +57,7 @@ def escape_ID(cobra_model):
         x.id = _escape_str_id(x.id)
     cobra_model.repair()
     gene_renamer = _GeneEscaper()
-    for rxn, rule in iteritems(get_compiled_gene_reaction_rules(cobra_model)):
+    for rxn, rule in get_compiled_gene_reaction_rules(cobra_model).items():
         if rule is not None:
             rxn._gene_reaction_rule = ast2str(gene_renamer.visit(rule))
 
@@ -68,7 +66,7 @@ def rename_genes(cobra_model, rename_dict):
     """renames genes in a model from the rename_dict"""
     recompute_reactions = set()  # need to recomptue related genes
     remove_genes = []
-    for old_name, new_name in iteritems(rename_dict):
+    for old_name, new_name in rename_dict.items():
         # undefined if there a value matches a different key
         # because dict is unordered
         try:
@@ -106,7 +104,7 @@ def rename_genes(cobra_model, rename_dict):
             return node
 
     gene_renamer = Renamer()
-    for rxn, rule in iteritems(get_compiled_gene_reaction_rules(cobra_model)):
+    for rxn, rule in get_compiled_gene_reaction_rules(cobra_model).items():
         if rule is not None:
             rxn._gene_reaction_rule = ast2str(gene_renamer.visit(rule))
 

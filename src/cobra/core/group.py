@@ -6,8 +6,6 @@ from __future__ import absolute_import
 
 from warnings import warn
 
-from six import string_types
-
 from cobra.core.dictlist import DictList
 from cobra.core.object import Object
 
@@ -89,7 +87,7 @@ class Group(Object):
 
         """
 
-        if isinstance(new_members, string_types) or hasattr(new_members, "id"):
+        if isinstance(new_members, str) or hasattr(new_members, "id"):
             warn("need to pass in a list")
             new_members = [new_members]
 
@@ -105,7 +103,7 @@ class Group(Object):
             A list of cobra objects to remove from the group
         """
 
-        if isinstance(to_remove, string_types) or hasattr(to_remove, "id"):
+        if isinstance(to_remove, str) or hasattr(to_remove, "id"):
             warn("need to pass in a list")
             to_remove = [to_remove]
 

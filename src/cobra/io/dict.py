@@ -7,7 +7,6 @@ from operator import attrgetter, itemgetter
 
 import numpy as np
 from numpy import bool_, float_
-from six import iteritems, string_types
 
 from cobra.core import Gene, Metabolite, Model, Reaction
 from cobra.util.solver import set_objective
@@ -70,7 +69,7 @@ _OPTIONAL_MODEL_ATTRIBUTES = {
 def _fix_type(value):
     """convert possible types to str, float, and bool"""
     # Because numpy floats can not be pickled to json
-    if isinstance(value, string_types):
+    if isinstance(value, str):
         return str(value)
     if isinstance(value, float_):
         return float(value)
@@ -113,7 +112,7 @@ def metabolite_to_dict(metabolite):
 
 def metabolite_from_dict(metabolite):
     new_metabolite = Metabolite()
-    for k, v in iteritems(metabolite):
+    for k, v in metabolite.items():
         setattr(new_metabolite, k, v)
     return new_metabolite
 
@@ -130,7 +129,7 @@ def gene_to_dict(gene):
 
 def gene_from_dict(gene):
     new_gene = Gene(gene["id"])
-    for k, v in iteritems(gene):
+    for k, v in gene.items():
         setattr(new_gene, k, v)
     return new_gene
 
@@ -165,14 +164,14 @@ def reaction_to_dict(reaction):
 
 def reaction_from_dict(reaction, model):
     new_reaction = Reaction()
-    for k, v in iteritems(reaction):
+    for k, v in reaction.items():
         if k in {"objective_coefficient", "reversibility", "reaction"}:
             continue
         elif k == "metabolites":
             new_reaction.add_metabolites(
                 OrderedDict(
                     (model.metabolites.get_by_id(str(met)), coeff)
-                    for met, coeff in iteritems(v)
+                    for met, coeff in v.items()
                 )
             )
         else:
@@ -263,7 +262,7 @@ def model_from_dict(obj):
         for rxn in objective_reactions
     }
     set_objective(model, coefficients)
-    for k, v in iteritems(obj):
+    for k, v in obj.items():
         if k in {"id", "name", "notes", "compartments", "annotation"}:
             setattr(model, k, v)
     return model

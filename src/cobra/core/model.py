@@ -11,9 +11,7 @@ from functools import partial
 from warnings import warn
 
 import optlang
-import six
 from optlang.symbolics import Basic, Zero
-from six import iteritems, string_types
 
 from cobra.core.configuration import Configuration
 from cobra.core.dictlist import DictList
@@ -150,7 +148,7 @@ class Model(Object):
         not_valid_interface = SolverNotFound(
             "%s is not a valid solver interface. Pick from %s." % (value, list(solvers))
         )
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             try:
                 interface = solvers[interface_to_str(value)]
             except KeyError:
@@ -292,7 +290,7 @@ class Model(Object):
         # Set the given media bounds
         media_rxns = list()
         exchange_rxns = frozenset(self.exchanges)
-        for rxn_id, bound in iteritems(medium):
+        for rxn_id, bound in medium.items():
             rxn = self.reactions.get_by_id(rxn_id)
             if rxn not in exchange_rxns:
                 logger.warn(
@@ -354,7 +352,7 @@ class Model(Object):
         do_not_copy_by_ref = {"_reaction", "_model"}
         for metabolite in self.metabolites:
             new_met = metabolite.__class__()
-            for attr, value in iteritems(metabolite.__dict__):
+            for attr, value in metabolite.__dict__.items():
                 if attr not in do_not_copy_by_ref:
                     new_met.__dict__[attr] = copy(value) if attr == "formula" else value
             new_met._model = new
@@ -363,7 +361,7 @@ class Model(Object):
         new.genes = DictList()
         for gene in self.genes:
             new_gene = gene.__class__(None)
-            for attr, value in iteritems(gene.__dict__):
+            for attr, value in gene.__dict__.items():
                 if attr not in do_not_copy_by_ref:
                     new_gene.__dict__[attr] = (
                         copy(value) if attr == "formula" else value
@@ -375,13 +373,13 @@ class Model(Object):
         do_not_copy_by_ref = {"_model", "_metabolites", "_genes"}
         for reaction in self.reactions:
             new_reaction = reaction.__class__()
-            for attr, value in iteritems(reaction.__dict__):
+            for attr, value in reaction.__dict__.items():
                 if attr not in do_not_copy_by_ref:
                     new_reaction.__dict__[attr] = copy(value)
             new_reaction._model = new
             new.reactions.append(new_reaction)
             # update awareness
-            for metabolite, stoic in iteritems(reaction._metabolites):
+            for metabolite, stoic in reaction._metabolites.items():
                 new_met = new.metabolites.get_by_id(metabolite.id)
                 new_reaction._metabolites[new_met] = stoic
                 new_met._reaction.add(new_reaction)
@@ -396,7 +394,7 @@ class Model(Object):
         # then update their members.
         for group in self.groups:
             new_group = group.__class__(group.id)
-            for attr, value in iteritems(group.__dict__):
+            for attr, value in group.__dict__.items():
                 if attr not in do_not_copy_by_ref:
                     new_group.__dict__[attr] = copy(value)
             new_group._model = new
@@ -455,9 +453,7 @@ class Model(Object):
         metabolite_list = [x for x in metabolite_list if x.id not in self.metabolites]
 
         bad_ids = [
-            m
-            for m in metabolite_list
-            if not isinstance(m.id, string_types) or len(m.id) < 1
+            m for m in metabolite_list if not isinstance(m.id, str) or len(m.id) < 1
         ]
         if len(bad_ids) != 0:
             raise ValueError("invalid identifiers in {}".format(repr(bad_ids)))
@@ -742,7 +738,7 @@ class Model(Object):
             Remove orphaned genes and metabolites from the model as well
 
         """
-        if isinstance(reactions, string_types) or hasattr(reactions, "id"):
+        if isinstance(reactions, str) or hasattr(reactions, "id"):
             warn("need to pass in a list")
             reactions = [reactions]
 
@@ -826,7 +822,7 @@ class Model(Object):
                 return False
             return True
 
-        if isinstance(group_list, string_types) or hasattr(group_list, "id"):
+        if isinstance(group_list, str) or hasattr(group_list, "id"):
             warn("need to pass in a list")
             group_list = [group_list]
 
@@ -862,7 +858,7 @@ class Model(Object):
             A list of `cobra.Group` objects to remove from the model.
         """
 
-        if isinstance(group_list, string_types) or hasattr(group_list, "id"):
+        if isinstance(group_list, str) or hasattr(group_list, "id"):
             warn("need to pass in a list")
             group_list = [group_list]
 
@@ -1027,7 +1023,7 @@ class Model(Object):
                 reaction = self.reactions.get_by_id(reaction.id)
                 forward_variable = reaction.forward_variable
                 reverse_variable = reaction.reverse_variable
-            for metabolite, coeff in six.iteritems(reaction.metabolites):
+            for metabolite, coeff in reaction.metabolites.items():
                 if metabolite.id in self.constraints:
                     constraint = self.constraints[metabolite.id]
                 else:
@@ -1042,7 +1038,7 @@ class Model(Object):
         for reaction in reaction_list:
             reaction = self.reactions.get_by_id(reaction.id)
             reaction.update_variable_bounds()
-        for constraint, terms in six.iteritems(constraint_terms):
+        for constraint, terms in constraint_terms.items():
             constraint.set_linear_coefficients(terms)
 
     def slim_optimize(self, error_value=float("nan"), message=None):
@@ -1332,7 +1328,5 @@ class Model(Object):
             num_reactions=len(self.reactions),
             num_groups=len(self.groups),
             objective=format_long_string(str(self.objective.expression), 100),
-            compartments=", ".join(
-                v if v else k for k, v in iteritems(self.compartments)
-            ),
+            compartments=", ".join(v if v else k for k, v in self.compartments.items()),
         )

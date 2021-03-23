@@ -6,7 +6,6 @@ from __future__ import absolute_import
 
 import numpy as np
 import pytest
-from six import iteritems
 
 from cobra.exceptions import Infeasible
 from cobra.flux_analysis.variability import (

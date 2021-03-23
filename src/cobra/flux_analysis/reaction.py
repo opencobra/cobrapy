@@ -7,8 +7,6 @@ from __future__ import absolute_import, division
 from operator import attrgetter
 from warnings import warn
 
-from six import iteritems
-
 from cobra.core import Reaction
 
 
@@ -119,7 +117,7 @@ def assess_component(model, reaction, side, flux_coefficient_cutoff=0.001, solve
         # Otherwise assess the ability of the model to produce each precursor
         # individually.  Now assess the ability of the model to produce each
         # reactant for a reaction
-        for demand_reaction, (component, coeff) in iteritems(demand_reactions):
+        for demand_reaction, (component, coeff) in demand_reactions.items():
             # Calculate the maximum amount of the
             with m:
                 m.objective = demand_reaction

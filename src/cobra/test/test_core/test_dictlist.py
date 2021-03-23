@@ -9,7 +9,6 @@ from copy import copy, deepcopy
 from pickle import HIGHEST_PROTOCOL, dumps, loads
 
 import pytest
-from six.moves import range
 
 from cobra.core import DictList, Object
 

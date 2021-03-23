@@ -5,7 +5,6 @@
 from __future__ import absolute_import
 
 from optlang.symbolics import Zero
-from six import iteritems
 
 from cobra.flux_analysis.helpers import normalize_cutoff
 
@@ -68,14 +67,12 @@ def _flip_coefficients(model, rxns):
         const = model.constraints.get("constraint_{}".format(rxn.id))
         var = model.variables.get("auxiliary_{}".format(rxn.id))
         coefs = const.get_linear_coefficients(const.variables)
-        const.set_linear_coefficients(
-            {k: -v for k, v in iteritems(coefs) if k is not var}
-        )
+        const.set_linear_coefficients({k: -v for k, v in coefs.items() if k is not var})
 
     # flip objective
     objective = model.objective
     objective_coefs = objective.get_linear_coefficients(objective.variables)
-    objective.set_linear_coefficients({k: -v for k, v in iteritems(objective_coefs)})
+    objective.set_linear_coefficients({k: -v for k, v in objective_coefs.items()})
 
 
 def fastcc(model, flux_threshold=1.0, zero_cutoff=None):

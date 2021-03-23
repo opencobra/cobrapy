@@ -4,8 +4,6 @@ from __future__ import absolute_import
 
 from ast import And, NodeTransformer
 
-from six import iteritems, string_types
-
 from cobra.core.gene import ast2str, eval_gpr, parse_gpr
 
 
@@ -111,7 +109,7 @@ def find_gene_knockout_reactions(
     """
     potential_reactions = set()
     for gene in gene_list:
-        if isinstance(gene, string_types):
+        if isinstance(gene, str):
             gene = cobra_model.genes.get_by_id(gene)
         potential_reactions.update(gene._reaction)
     gene_set = {str(i) for i in gene_list}
@@ -223,7 +221,7 @@ def remove_genes(cobra_model, gene_list, remove_reactions=True):
     remover = _GeneRemover(gene_id_set)
     ast_rules = get_compiled_gene_reaction_rules(cobra_model)
     target_reactions = []
-    for reaction, rule in iteritems(ast_rules):
+    for reaction, rule in ast_rules.items():
         if reaction.gene_reaction_rule is None or len(reaction.gene_reaction_rule) == 0:
             continue
         # reactions to remove

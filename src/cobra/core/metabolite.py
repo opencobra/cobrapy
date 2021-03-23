@@ -8,7 +8,6 @@ import re
 from warnings import warn
 
 from future.utils import raise_from, raise_with_traceback
-from six import iteritems
 
 from cobra.core.formula import elements_and_molecular_weights
 from cobra.core.species import Species
@@ -119,7 +118,7 @@ class Metabolite(Species):
             return element if number == 1 else element + str(number)
 
         self.formula = "".join(
-            stringify(e, n) for e, n in sorted(iteritems(elements_dict))
+            stringify(e, n) for e, n in sorted(elements_dict.items())
         )
 
     @property
