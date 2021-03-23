@@ -214,12 +214,8 @@ class OptGPSampler(HRSampler):
             # limit errors, something weird going on with multiprocessing
             args = list(zip([n_process] * self.processes, range(self.processes)))
 
-            # No with statement or starmap here since Python 2.x
-            # does not support it :(
-            mp = Pool(self.processes, initializer=mp_init, initargs=(self,))
-            results = mp.map(_sample_chain, args, chunksize=1)
-            mp.close()
-            mp.join()
+            with Pool(self.processes, initializer=mp_init, initargs=(self,)) as pool:
+                results = pool.map(_sample_chain, args, chunksize=1)
 
             chains = np.vstack([r[1] for r in results])
             self.retries += sum(r[0] for r in results)
