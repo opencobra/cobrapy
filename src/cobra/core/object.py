@@ -2,8 +2,6 @@
 
 from __future__ import absolute_import
 
-from six import string_types
-
 
 class Object(object):
     """Defines common behavior of object in cobra.core"""
@@ -30,7 +28,7 @@ class Object(object):
     def id(self, value):
         if value == self.id:
             pass
-        elif not isinstance(value, string_types):
+        elif not isinstance(value, str):
             raise TypeError("ID must be a string")
         elif getattr(self, "_model", None) is not None:
             self._set_id_with_model(value)
