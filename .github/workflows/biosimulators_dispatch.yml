@@ -6,12 +6,7 @@ on:
 
 jobs:
   dispatch:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ubuntu-latest]
-        python-version: [3.8]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Get tag
