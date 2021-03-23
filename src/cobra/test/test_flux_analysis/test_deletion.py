@@ -9,7 +9,6 @@ import math
 import numpy as np
 import pytest
 from pandas import Series
-from six import iteritems
 
 from cobra.flux_analysis.deletion import (
     double_gene_deletion,
@@ -41,7 +40,7 @@ def test_single_gene_deletion_fba(model, all_solvers):
     result = single_gene_deletion(
         model=model, gene_list=list(growth_dict), method="fba", processes=1
     )
-    for gene, value in iteritems(growth_dict):
+    for gene, value in growth_dict.items():
         assert np.isclose(result.knockout[gene].growth, value, atol=1e-02)
 
 
@@ -70,7 +69,7 @@ def test_single_gene_deletion_moma(model, qp_solvers):
     result = single_gene_deletion(
         model=model, gene_list=list(growth_dict), method="moma", processes=1
     )
-    for gene, value in iteritems(growth_dict):
+    for gene, value in growth_dict.items():
         assert np.isclose(result.knockout[gene].growth, value, atol=1e-02)
 
 
@@ -94,7 +93,7 @@ def test_single_gene_deletion_moma_reference(model, qp_solvers):
         solution=sol,
         processes=1,
     )
-    for gene, value in iteritems(growth_dict):
+    for gene, value in growth_dict.items():
         assert np.isclose(result.knockout[gene].growth, value, atol=1e-02)
 
 
@@ -132,7 +131,7 @@ def test_single_gene_deletion_linear_moma(model, all_solvers):
         solution=sol,
         processes=1,
     )
-    for gene, value in iteritems(growth_dict):
+    for gene, value in growth_dict.items():
         assert np.isclose(result.knockout[gene].growth, value, atol=1e-02)
 
 
@@ -184,7 +183,7 @@ def test_single_reaction_deletion(model, all_solvers):
         model=model, reaction_list=list(expected_results), processes=1
     )
 
-    for reaction, value in iteritems(expected_results):
+    for reaction, value in expected_results.items():
         assert np.isclose(result.knockout[reaction].growth, value, atol=1e-05)
 
 
@@ -320,8 +319,8 @@ def test_double_gene_deletion(model):
     solution = double_gene_deletion(model, gene_list1=genes, processes=3)
     solution_one_process = double_gene_deletion(model, gene_list1=genes, processes=1)
 
-    for rxn_a, sub in iteritems(growth_dict):
-        for rxn_b, growth in iteritems(sub):
+    for rxn_a, sub in growth_dict.items():
+        for rxn_b, growth in sub.items():
             sol = solution.knockout[{rxn_a, rxn_b}]
             sol_one = solution_one_process.knockout[{rxn_a, rxn_b}]
             assert np.isclose(sol.growth, growth, atol=1e-3)
@@ -348,8 +347,8 @@ def test_double_reaction_deletion(model):
     solution_one_process = double_reaction_deletion(
         model, reaction_list1=reactions, processes=1
     )
-    for (rxn_a, sub) in iteritems(growth_dict):
-        for rxn_b, growth in iteritems(sub):
+    for (rxn_a, sub) in growth_dict.items():
+        for rxn_b, growth in sub.items():
             sol = solution.knockout[{rxn_a, rxn_b}]
             sol_one = solution_one_process.knockout[{rxn_a, rxn_b}]
             if math.isnan(growth):
