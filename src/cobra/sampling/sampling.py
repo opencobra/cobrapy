@@ -26,7 +26,7 @@ def sample(
 
     1. 'optgp' (default) which uses the OptGPSampler that supports parallel
         sampling. Requires large numbers of samples to be performant
-        (n < 1000). For smaller samples 'achr' might be better suited.
+        (`n` > 1000). For smaller samples, 'achr' might be better suited.
         For details, refer [1]_ .
 
     2. 'achr' which uses artificial centering hit-and-run. This is a single
