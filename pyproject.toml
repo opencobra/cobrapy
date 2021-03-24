@@ -23,9 +23,7 @@ exclude = '''
     | buck-out
     | build
     | dist
-    | documentation_builder
     | release-notes
-    | scripts
     | benchmarks
   )/
 )
