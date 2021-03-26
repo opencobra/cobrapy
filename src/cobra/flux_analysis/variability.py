@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
+"""Provide variability based methods such as flux variability or gene essentiality."""
 
-from __future__ import absolute_import
 
 import logging
-from builtins import map
 from multiprocessing import Pool
 from warnings import warn
 
@@ -19,8 +17,8 @@ from cobra.flux_analysis.parsimonious import add_pfba
 from cobra.util import solver as sutil
 
 
-LOGGER = logging.getLogger(__name__)
-CONFIGURATION = Configuration()
+logger = logging.getLogger(__name__)
+configuration = Configuration()
 
 
 def _init_worker(model, loopless, sense):
@@ -52,7 +50,7 @@ def _fva_step(reaction_id):
     # handle infeasible case
     if value is None:
         value = float("nan")
-        LOGGER.warning(
+        logger.warning(
             "Could not get flux for reaction %s,  setting "
             "it to NaN. This is usually due to numerical instability.",
             rxn.id,
@@ -143,7 +141,7 @@ def flux_variability_analysis(
         reaction_ids = [r.id for r in model.reactions.get_by_any(reaction_list)]
 
     if processes is None:
-        processes = CONFIGURATION.processes
+        processes = configuration.processes
     num_reactions = len(reaction_ids)
     processes = min(processes, num_reactions)
 
