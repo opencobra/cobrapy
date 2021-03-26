@@ -2,7 +2,11 @@
 
 
 import logging
+import os
+import pickle
 from multiprocessing import Pool
+from platform import system
+from tempfile import mkstemp
 from warnings import warn
 
 from numpy import zeros
@@ -28,6 +32,13 @@ def _init_worker(model, loopless, sense):
     _model = model
     _model.solver.objective.direction = sense
     _loopless = loopless
+
+
+def _init_win_worker(filename):
+    """Retrieve worker arguments from file."""
+    with open(filename, mode="rb") as handle:
+        args = pickle.load(handle)
+    _init_worker(*args)
 
 
 def _fva_step(reaction_id):
@@ -157,7 +168,7 @@ def flux_variability_analysis(
         # Safety check before setting up FVA.
         model.slim_optimize(
             error_value=None,
-            message="There is no optimal solution for the " "chosen objective!",
+            message="There is no optimal solution for the chosen objective!",
         )
         # Add the previous objective as a variable to the model then set it to
         # zero. This also uses the fraction to create the lower/upper bound for
@@ -207,15 +218,34 @@ def flux_variability_analysis(
                 # slight overhead but seems the most clean.
                 chunk_size = len(reaction_ids) // processes
 
-                with Pool(
-                    processes,
-                    initializer=_init_worker,
-                    initargs=(model, loopless, what[:3]),
-                ) as pool:
-                    for rxn_id, value in pool.imap_unordered(
-                        _fva_step, reaction_ids, chunksize=chunk_size
-                    ):
-                        fva_result.at[rxn_id, what] = value
+                if system() == "Windows":
+                    # Initializing the pool workers directly for some reason takes a
+                    # very long time on Windows. Serializing arguments to a file is
+                    # surprisingly much faster. See also the discussion in
+                    # https://github.com/opencobra/cobrapy/issues/997
+                    file_buffer = mkstemp(prefix="cobra_fva_", suffix=".pkl")
+                    with os.fdopen(file_buffer[0], mode="wb") as handle:
+                        pickle.dump((model, loopless, what[:3]), handle)
+                    with Pool(
+                        processes,
+                        initializer=_init_win_worker,
+                        initargs=file_buffer[1:],
+                    ) as pool:
+                        for rxn_id, value in pool.imap_unordered(
+                            _fva_step, reaction_ids, chunksize=chunk_size
+                        ):
+                            fva_result.at[rxn_id, what] = value
+                    os.remove(file_buffer[1])
+                else:
+                    with Pool(
+                        processes,
+                        initializer=_init_worker,
+                        initargs=(model, loopless, what[:3]),
+                    ) as pool:
+                        for rxn_id, value in pool.imap_unordered(
+                            _fva_step, reaction_ids, chunksize=chunk_size
+                        ):
+                            fva_result.at[rxn_id, what] = value
             else:
                 _init_worker(model, loopless, what[:3])
                 for rxn_id, value in map(_fva_step, reaction_ids):
