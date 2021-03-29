@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-import logging
-from builtins import dict, map
 from functools import partial
 from itertools import product
 from multiprocessing import Pool
@@ -17,8 +13,7 @@ from cobra.manipulation.delete import find_gene_knockout_reactions
 from cobra.util import solver as sutil
 
 
-LOGGER = logging.getLogger(__name__)
-CONFIGURATION = Configuration()
+configuration = Configuration()
 
 
 def _reactions_knockouts_with_restore(model, reactions):
@@ -119,7 +114,7 @@ def _multi_deletion(
         )
 
     if processes is None:
-        processes = CONFIGURATION.processes
+        processes = configuration.processes
 
     with model:
         if "moma" in method:
