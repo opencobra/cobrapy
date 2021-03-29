@@ -2,7 +2,6 @@
 
 
 import logging
-import pickle
 from warnings import warn
 
 from numpy import zeros
@@ -29,13 +28,6 @@ def _init_worker(model, loopless, sense):
     _model = model
     _model.solver.objective.direction = sense
     _loopless = loopless
-
-
-def _init_win_worker(filename):
-    """Retrieve worker arguments from file."""
-    with open(filename, mode="rb") as handle:
-        args = pickle.load(handle)
-    _init_worker(*args)
 
 
 def _fva_step(reaction_id):
