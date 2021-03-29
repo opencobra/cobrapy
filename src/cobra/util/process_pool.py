@@ -79,8 +79,9 @@ class ProcessPool:
         exc_tb: Optional[TracebackType],
     ) -> Optional[bool]:
         """Clean up resources when leaving a context."""
+        result = self._pool.__exit__(exc_type, exc_val, exc_tb)
         self._clean_up()
-        return self._pool.__exit__(exc_type, exc_val, exc_tb)
+        return result
 
     def close(self) -> None:
         """
@@ -90,8 +91,10 @@ class ProcessPool:
         been completed, the worker processes will exit.
 
         """
-        self._clean_up()
-        self._pool.close()
+        try:
+            self._pool.close()
+        finally:
+            self._clean_up()
 
     def _clean_up(self) -> None:
         """Remove the dump file if it exists."""
