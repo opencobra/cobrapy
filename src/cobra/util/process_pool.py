@@ -2,8 +2,8 @@
 
 
 import multiprocessing
+import os
 import pickle
-from os import remove
 from os.path import isfile
 from platform import system
 from tempfile import mkstemp
@@ -46,13 +46,16 @@ class ProcessPool:
 
         """
         super().__init__(**kwargs)
-        self._file = None
+        self._filename = None
         if initializer is not None and system() == "Windows":
-            self._file = mkstemp(suffix=".pkl")[1]
-            with open(self._file, mode="wb") as handle:
+            descriptor, self._filename = mkstemp(suffix=".pkl")
+            # We use the file descriptor to the open file returned by `mkstemp` to
+            # ensure that the resource is closed and can later be removed. Otherwise
+            # Windows will cause a `PermissionError`.
+            with os.fdopen(descriptor, mode="wb") as handle:
                 pickle.dump((initializer,) + initargs, handle)
             initializer = _init_win_worker
-            initargs = (self._file,)
+            initargs = (self._filename,)
         self._pool = multiprocessing.Pool(
             processes=processes,
             initializer=initializer,
@@ -92,5 +95,5 @@ class ProcessPool:
 
     def _clean_up(self) -> None:
         """Remove the dump file if it exists."""
-        if self._file is not None and isfile(self._file):
-            remove(self._file)
+        if self._filename is not None and isfile(self._filename):
+            os.remove(self._filename)
