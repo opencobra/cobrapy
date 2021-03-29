@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 __all__ = ("OptGPSampler",)
 
 
-CONFIGURATION = Configuration()
+configuration = Configuration()
 
 
 def mp_init(obj: "OptGPSampler") -> None:
@@ -163,7 +163,7 @@ class OptGPSampler(HRSampler):
         self.generate_fva_warmup()
 
         if processes is None:
-            self.processes = CONFIGURATION.processes
+            self.processes = configuration.processes
         else:
             self.processes = processes
 
