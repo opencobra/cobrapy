@@ -9,10 +9,10 @@ import pytest
 from cobra.flux_analysis.room import add_room
 
 
-@pytest.mark.parametrize("linear, delta, eps", [
-    (True, 0.03, 1e-3), (False, 0.03, 1e-3),
-    (True, 0.1, 1e-2), (False, 0.1, 1e-2)
-])
+@pytest.mark.parametrize(
+    "linear, delta, eps",
+    [(True, 0.03, 1e-3), (False, 0.03, 1e-3), (True, 0.1, 1e-2), (False, 0.1, 1e-2)],
+)
 def test_room_sanity(model, all_solvers, linear, delta, eps):
     """Test optimization criterion and optimality for ROOM."""
     model.solver = all_solvers
@@ -40,7 +40,8 @@ def test_room_sanity(model, all_solvers, linear, delta, eps):
     rxn_count_naive = (flux_change > delta * sol.fluxes.abs() + eps + 1e-6).sum()
     rxn_count_room = (flux_change_room > delta * sol.fluxes.abs() + eps + 1e-6).sum()
     rxn_count_room_ref = (
-        flux_change_room_ref > delta * sol.fluxes.abs() + eps + 1e-6).sum()
+        flux_change_room_ref > delta * sol.fluxes.abs() + eps + 1e-6
+    ).sum()
 
     # Expect the ROOM solution to have less changed reactions then a pFBA or FBA
     assert rxn_count_room <= rxn_count_naive
