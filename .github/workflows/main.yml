@@ -34,7 +34,7 @@ jobs:
         python -m pip install tox tox-gh-actions
     - name: Test with tox
       run:
-        tox -- --cov-report=xml
+        tox -- --cov-report=xml --benchmark-skip
     - name: Report coverage
       shell: bash
       run: bash <(curl -s https://codecov.io/bash)

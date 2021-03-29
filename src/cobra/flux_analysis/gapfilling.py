@@ -1,12 +1,16 @@
-# -*- coding: utf-8 -*-
+"""Provide a class for gap filling."""
 
-from __future__ import absolute_import
+
+import logging
 
 from optlang.interface import OPTIMAL
-from optlang.symbolics import Zero, add
+from optlang.symbolics import Zero
 
 from cobra.core import Model
-from cobra.util import fix_objective_as_constraint
+from cobra.util import fix_objective_as_constraint, interface_to_str
+
+
+logger = logging.getLogger(__name__)
 
 
 class GapFiller(object):
@@ -96,12 +100,20 @@ class GapFiller(object):
         self.lower_bound = lower_bound
         self.model = model.copy()
         tolerances = self.model.solver.configuration.tolerances
-        tolerances.integrality = integer_threshold
+        try:
+            tolerances.integrality = integer_threshold
+        except AttributeError:
+            logger.warning(
+                f"The current solver interface {interface_to_str(self.model.problem)} "
+                f"doesn't support setting the integrality tolerance."
+            )
+        # TODO (Midnighter): One could debate how useful it is to compare against this
+        #  threshold when it is not supported by the chosen solver.
+        self.integer_threshold = integer_threshold
         self.universal = universal.copy() if universal else Model("universal")
         self.penalties = dict(universal=1, exchange=100, demand=1)
         if penalties is not None:
             self.penalties.update(penalties)
-        self.integer_threshold = integer_threshold
         self.indicators = list()
         self.costs = dict()
         self.extend_model(exchange_reactions, demand_reactions)

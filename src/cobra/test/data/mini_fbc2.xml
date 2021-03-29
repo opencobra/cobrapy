@@ -877,8 +877,8 @@
       <parameter sboTerm="SBO:0000626" id="cobra_default_lb" value="-1000" constant="true"/>
       <parameter sboTerm="SBO:0000626" id="cobra_default_ub" value="1000" constant="true"/>
       <parameter sboTerm="SBO:0000626" id="cobra_0_bound" value="0" constant="true"/>
-      <parameter sboTerm="SBO:0000625" id="minus_inf" value="-INF" constant="true"/>
-      <parameter sboTerm="SBO:0000625" id="plus_inf" value="INF" constant="true"/>
+      <parameter sboTerm="SBO:0000626" id="minus_inf" value="-INF" constant="true"/>
+      <parameter sboTerm="SBO:0000626" id="plus_inf" value="INF" constant="true"/>
       <parameter sboTerm="SBO:0000625" id="R_ATPM_lower_bound" value="8.39" units="mmol_per_gDW_per_hr" constant="true"/>
       <parameter sboTerm="SBO:0000625" id="R_EX_glc__D_e_lower_bound" value="-10" units="mmol_per_gDW_per_hr" constant="true"/>
     </listOfParameters>
