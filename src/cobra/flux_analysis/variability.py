@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
+"""Provide variability based methods such as flux variability or gene essentiality."""
 
-from __future__ import absolute_import
 
 import logging
-from builtins import map
-from multiprocessing import Pool
 from warnings import warn
 
 from numpy import zeros
@@ -16,11 +13,12 @@ from cobra.flux_analysis.deletion import single_gene_deletion, single_reaction_d
 from cobra.flux_analysis.helpers import normalize_cutoff
 from cobra.flux_analysis.loopless import loopless_fva_iter
 from cobra.flux_analysis.parsimonious import add_pfba
+from cobra.util import ProcessPool
 from cobra.util import solver as sutil
 
 
-LOGGER = logging.getLogger(__name__)
-CONFIGURATION = Configuration()
+logger = logging.getLogger(__name__)
+configuration = Configuration()
 
 
 def _init_worker(model, loopless, sense):
@@ -52,7 +50,7 @@ def _fva_step(reaction_id):
     # handle infeasible case
     if value is None:
         value = float("nan")
-        LOGGER.warning(
+        logger.warning(
             "Could not get flux for reaction %s,  setting "
             "it to NaN. This is usually due to numerical instability.",
             rxn.id,
@@ -143,7 +141,7 @@ def flux_variability_analysis(
         reaction_ids = [r.id for r in model.reactions.get_by_any(reaction_list)]
 
     if processes is None:
-        processes = CONFIGURATION.processes
+        processes = configuration.processes
     num_reactions = len(reaction_ids)
     processes = min(processes, num_reactions)
 
@@ -159,7 +157,7 @@ def flux_variability_analysis(
         # Safety check before setting up FVA.
         model.slim_optimize(
             error_value=None,
-            message="There is no optimal solution for the " "chosen objective!",
+            message="There is no optimal solution for the chosen objective!",
         )
         # Add the previous objective as a variable to the model then set it to
         # zero. This also uses the fraction to create the lower/upper bound for
@@ -208,8 +206,7 @@ def flux_variability_analysis(
                 # objective direction for all reactions. This creates a
                 # slight overhead but seems the most clean.
                 chunk_size = len(reaction_ids) // processes
-
-                with Pool(
+                with ProcessPool(
                     processes,
                     initializer=_init_worker,
                     initargs=(model, loopless, what[:3]),
