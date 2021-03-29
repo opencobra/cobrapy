@@ -1,12 +1,13 @@
 """Provide the OptGP sampler class and helper functions."""
 
-from multiprocessing import Pool
+
 from typing import TYPE_CHECKING, Dict, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 
 from ..core.configuration import Configuration
+from ..util import ProcessPool
 from .core import step
 from .hr_sampler import HRSampler, shared_np_array
 
@@ -214,7 +215,9 @@ class OptGPSampler(HRSampler):
             # limit errors, something weird going on with multiprocessing
             args = list(zip([n_process] * self.processes, range(self.processes)))
 
-            with Pool(self.processes, initializer=mp_init, initargs=(self,)) as pool:
+            with ProcessPool(
+                self.processes, initializer=mp_init, initargs=(self,)
+            ) as pool:
                 results = pool.map(_sample_chain, args, chunksize=1)
 
             chains = np.vstack([r[1] for r in results])
