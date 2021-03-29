@@ -1,6 +1,5 @@
 from functools import partial
 from itertools import product
-from multiprocessing import Pool
 from typing import List, Set, Union
 
 import pandas as pd
@@ -10,6 +9,7 @@ from cobra.core import Configuration, Gene, Reaction
 from cobra.flux_analysis.moma import add_moma
 from cobra.flux_analysis.room import add_room
 from cobra.manipulation.delete import find_gene_knockout_reactions
+from cobra.util import ProcessPool
 from cobra.util import solver as sutil
 
 
@@ -145,7 +145,9 @@ def _multi_deletion(
             )[entity]
             chunk_size = len(args) // processes
 
-            with Pool(processes, initializer=_init_worker, initargs=(model,)) as pool:
+            with ProcessPool(
+                processes, initializer=_init_worker, initargs=(model,)
+            ) as pool:
                 results = extract_knockout_results(
                     pool.imap_unordered(worker, args, chunksize=chunk_size)
                 )
