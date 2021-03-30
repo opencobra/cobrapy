@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Packages on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/packages/</link>
+    <description>Recent content in Packages on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 07 Aug 2019 13:03:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/packages/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>dfba</title>
+      <link>https://opencobra.github.io/cobrapy/packages/dfba/</link>
+      <pubDate>Wed, 07 Aug 2019 13:03:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/dfba/</guid>
+      <description>The dfba project provides an object-oriented software package for dynamic flux-balance analysis (DFBA) simulations using implementations of the direct method or Algorithm 1 described in the paper Harwood et al., 2016. The main algorithms for solving embedded LP problems are written in C++ and use the GLPK (GNU Linear Programming (LP) Kit) and SUNDIALS (Suite of Nonlinear and Differential/Algebraic Equation Solvers) CVODE or IDA. Extension modules to cobrapy are provided for easy generation and simulation of DFBA models.</description>
+    </item>
+    
+    <item>
+      <title>pytfa</title>
+      <link>https://opencobra.github.io/cobrapy/packages/pytfa/</link>
+      <pubDate>Mon, 29 Jan 2018 13:03:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/pytfa/</guid>
+      <description>Thermodynamics-based Flux Analysis, in Python.
+Implements: Henry, Christopher S., Linda J. Broadbelt, and Vassily Hatzimanikatis. &amp;ldquo;Thermodynamics-based metabolic flux analysis.&amp;rdquo; Biophysical journal 92.5 (2007): 1792-1805. DOI: https://doi.org/10.1529/biophysj.106.093138</description>
+    </item>
+    
+    <item>
+      <title>mminte</title>
+      <link>https://opencobra.github.io/cobrapy/packages/mminte/</link>
+      <pubDate>Mon, 24 Apr 2017 11:00:05 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/mminte/</guid>
+      <description>MMinte (pronounced /‘minti/) is a set of widgets that allows you to explore the pairwise interactions (positive or negative) that occur in a microbial community. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. You can run the MMinte widgets as an integrated pipeline or run each widget independently.</description>
+    </item>
+    
+    <item>
+      <title>escher</title>
+      <link>https://opencobra.github.io/cobrapy/packages/escher/</link>
+      <pubDate>Mon, 27 Mar 2017 12:13:48 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/escher/</guid>
+      <description>Escher is a web-based tool for building, viewing, and sharing visualizations of biological pathways. These &amp;lsquo;pathway maps&amp;rsquo; are a great way to contextualize data about metabolism.</description>
+    </item>
+    
+    <item>
+      <title>MICOM</title>
+      <link>https://opencobra.github.io/cobrapy/packages/micom/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:51 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/micom/</guid>
+      <description>MICOM is a Python package for metabolic modeling of microbial communities and is developed in the Human Systems Biology Group at the INMEGEN, Mexico abd Institute for Systems Biology, Seattle, USA.
+MICOM allows you to construct a community model from a list on input COBRA models and manages exchange fluxes between individuals and individuals with the environment. It explicitly accounts for different abundances of individuals in the community and the tradeoff between individual and community-wide biomass production.</description>
+    </item>
+    
+    <item>
+      <title>corda</title>
+      <link>https://opencobra.github.io/cobrapy/packages/corda/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:47 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/corda/</guid>
+      <description>CORDA, short for Cost Optimization Reaction Dependency Assessment is a method for the reconstruction of metabolic networks from a given reference model (a database of all known reactions) and a confidence mapping for reactions developed by A. Schultz and A. Qutub. The package allows you to quickly reconstruct metabolic models for tissues, patients or specific experimental conditions from a set of transcription or proteome measurements and is developed in the Human Systems Biology Group at the INMEGEN, Mexico.</description>
+    </item>
+    
+    <item>
+      <title>minspan</title>
+      <link>https://opencobra.github.io/cobrapy/packages/minspan/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:42 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/minspan/</guid>
+      <description>This project calculates the minimal spanning vectors of the null space.</description>
+    </item>
+    
+    <item>
+      <title>dd-decaf</title>
+      <link>https://opencobra.github.io/cobrapy/packages/dd-decaf/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:33 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/dd-decaf/</guid>
+      <description>DD-DeCaF is a Horizon 2020 project (grant agreement No 686070) bringing together leading academic partners from five European universities with five innovative European companies to address the challenge of building a comprehensive design tool. DD-DeCaF aims to develop cutting edge methods in order to use large scale data to design cell factories and communities for biotechnological applications. The project is built as a number of micro-services which can be used separately and via the web-based user-interface.</description>
+    </item>
+    
+    <item>
+      <title>d3flux</title>
+      <link>https://opencobra.github.io/cobrapy/packages/d3flux/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:03 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/d3flux/</guid>
+      <description>This package implements a d3.js based visualization tool for cobrapy models.</description>
+    </item>
+    
+    <item>
+      <title>cameo</title>
+      <link>https://opencobra.github.io/cobrapy/packages/cameo/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/cameo/</guid>
+      <description>Cameo is a high-level python library developed to aid the strain design process in metabolic engineering projects. The library provides a modular framework of simulation methods, strain design methods, access to models, that targets developers that want custom analysis workflows.
+Computationally heavy methods have been parallelized and can be run on a clusters using the IPython parallelization framework (see example and documentation for more details). The default fallback is python&amp;rsquo;s multiprocessing library.</description>
+    </item>
+    
+    <item>
+      <title>cobrame</title>
+      <link>https://opencobra.github.io/cobrapy/packages/cobrame/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/cobrame/</guid>
+      <description>COBRA Toolbox for constructing and manipulating genome-scale models of metabolism and expression (ME-models).</description>
+    </item>
+    
+    <item>
+      <title>mackinac</title>
+      <link>https://opencobra.github.io/cobrapy/packages/mackinac/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/mackinac/</guid>
+      <description>Reconstructing and analyzing a large number of genome-scale metabolic models is a fundamental part of the integrated study of microbial communities; however, two of the most widely used frameworks for building and analyzing models use different metabolic network representations. Mackinac is a Python package that combines ModelSEED’s ability to automatically reconstruct metabolic models with COBRApy’s advanced analysis capabilities to bridge the differences between the two frameworks and facilitate the study of the metabolic potential of microorganisms.</description>
+    </item>
+    
+    <item>
+      <title>optlang</title>
+      <link>https://opencobra.github.io/cobrapy/packages/optlang/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/optlang/</guid>
+      <description>Optlang is a Python package for solving mathematical optimization problems, i.e. maximizing or minimizing an objective function over a set of variables subject to a number of constraints. Optlang provides a common interface to a series of optimization tools, so different solver backends can be changed in a transparent way. Optlang&amp;rsquo;s object-oriented API takes advantage of the symbolic math library sympy to allow objective functions and constraints to be easily formulated from symbolic expressions of variables</description>
+    </item>
+    
+    <item>
+      <title>memote</title>
+      <link>https://opencobra.github.io/cobrapy/packages/memote/</link>
+      <pubDate>Fri, 06 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/memote/</guid>
+      <description>Our goal in promoting this tool is to achieve two major shifts in the metabolic model building community:
+ Models should be version-controlled such that changes can be tracked and if necessary reverted. Ideally, they should be available through a public repository such as GitHub that will allow other researchers to inspect, share, and contribute to the model. Models should, for the benefit of the community and for research gain, live up to certain standards and minimal functionality.</description>
+    </item>
+    
+    <item>
+      <title>SAMMI</title>
+      <link>https://opencobra.github.io/cobrapy/packages/sammi/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/sammi/</guid>
+      <description>SAMMI is an interactive tool for the visualization of constraint-based models. While automated features allow for easy network partitioning, navigation, and node positioning, SAMMI also offers a wide array of manual map editing features. This combination allows for fast, context-specific visualization of metabolic networks as well as the development of standardized, large-scale, visually appealing maps.</description>
+    </item>
+    
+  </channel>
+</rss>

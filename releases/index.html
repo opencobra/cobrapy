@@ -1,0 +1,986 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="description" content="Constraint-based Metabolic Modeling in Python.">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+	<meta name="generator" content="Hugo 0.82.0" />
+	<title>cobrapy - constraint-based metabolic modeling in Python</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.3.0/material.teal-indigo.min.css">
+	<link rel="stylesheet" href="../css/styles.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <link rel="icon" type="image/png" href="../media/favicon.png" />
+</head>
+<body>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+<header class="mdl-layout__header mdl-shadow--6dp mdl-color-text--black">
+<div class="mdl-layout__header-row mdl-color-text--black">
+	<span class="mdl-layout-title">Menu</span>
+	<div class="mdl-layout-spacer"></div>
+	<nav class="mdl-navigation mdl-layout--large-screen-only">
+		<a class="mdl-navigation__link mdl-color-text--black" href="../">Home</a>
+        <a class="mdl-navigation__link" href="../releases">Releases</a>
+		<a class="mdl-navigation__link mdl-color-text--black" href="../packages">Packages</a>
+        <a class="mdl-navigation__link mdl-color-text--black" href="../pubs">Publications</a>
+        <a class="mdl-navigation__link mdl-color-text--black" href="https://cobrapy.readthedocs.io/">Docs</a>
+	</nav>
+</div>
+</header>
+<div class="mdl-layout__drawer">
+	<span class="mdl-layout-title"><img src="../media/logo.png" width="100%"></span>
+	<nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="../">Home</a>
+        <a class="mdl-navigation__link" href="../releases">Releases</a>
+		<a class="mdl-navigation__link" href="../packages">Packages</a>
+        <a class="mdl-navigation__link" href="../pubs">Publications</a>
+        <a class="mdl-navigation__link" href="https://cobrapy.readthedocs.io/en/stable/">Docs</a>
+	</nav>
+</div>
+<main class="mdl-layout__content">
+<div class="page-content mdl-grid">
+
+<div class="mdl-cell mdl-cell--12-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__title mdl-color--indigo-900" style="height:auto">
+            <div class="mdl-card__title-text mdl-color-text--white">Releases</div>
+        </div>
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.21.0">
+                    <h1 class="mdl-color-text--accent header">0.21.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <h1 id="release-notes-for-cobrapy-0210">Release notes for cobrapy 0.21.0</h1>
+<h2 id="other">Other</h2>
+<ul>
+<li>Update libSBML dependency to <code>python-libsbml==5.19.0</code>.</li>
+<li>Docstring and style changes.</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.20.0">
+                    <h1 class="mdl-color-text--accent header">0.20.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <p><h1 id="release-notes-for-cobrapy-0200">Release notes for cobrapy 0.20.0</h1>
+<h2 id="new-features">New features</h2>
+<p>There is a new function inspired by
+<a href="https://github.com/biosustain/cameo/">cameo</a> that can load models directly
+from <a href="http://bigg.ucsd.edu/">BiGG</a> or
+<a href="https://www.ebi.ac.uk/biomodels/">BioModels</a> and by default will cache them
+locally (#995).</p></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.20.0">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.19.0">
+                    <h1 class="mdl-color-text--accent header">0.19.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <p><h1 id="release-notes-for-cobrapy-0190">Release notes for cobrapy 0.19.0</h1>
+<p>We now have an official code of conduct and a committee of three people to handle
+reports! You can contact them at <a href="mailto:conduct@opencobra.org">conduct@opencobra.org</a>.
+You can also contact them individually at:</p>
+<ul>
+<li><a href="mailto:MAC9JC@virginia.edu">Maureen Carey</a></li>
+<li><a href="mailto:svegal@biosustain.dtu.dk">Svetlana Kutuzova</a></li>
+<li><a href="mailto:GLM5UH@virginia.edu">Greg Medlock</a></li>
+</ul></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.19.0">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.17.1">
+                    <h1 class="mdl-color-text--accent header">0.17.1</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <h1 id="release-notes-for-cobrapy-0171">Release notes for cobrapy 0.17.1</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Prevent an error with infeasible solutions in (loopless) FVA.</li>
+<li>Correct a sampling problem with Gurobi as the solver.</li>
+<li>Adjust sampling documentation.</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.17.0">
+                    <h1 class="mdl-color-text--accent header">0.17.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <h1 id="release-notes-for-cobrapy-0170">Release notes for cobrapy 0.17.0</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Improve handling of and problems with SBML notes.</li>
+<li>Log SBML messages to a module logger rather than the root logger.</li>
+<li>Repair documentation building.</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.16.0">
+                    <h1 class="mdl-color-text--accent header">0.16.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <p><h1 id="release-notes-for-cobrapy-0160">Release notes for cobrapy 0.16.0</h1>
+<h2 id="new-features">New features</h2>
+<ul>
+<li>Summaries now return an object with string and HTML representations instead of
+simply printing output (#855). This is a breaking change but should not affect
+anyone in a harmful way.</li>
+</ul>
+<h2 id="fixes">Fixes</h2></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.16.0">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.15.4">
+                    <h1 class="mdl-color-text--accent header">0.15.4</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <h1 id="release-notes-for-cobrapy-0154">Release notes for cobrapy 0.15.4</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>This release brings a number of bug fixes for SBML I/O (#852).</li>
+</ul>
+<h2 id="backwards-incompatible-changes">Backwards incompatible changes</h2>
+<ul>
+<li>The deprecated <code>objective_coefficient</code> was removed (#871).</li>
+</ul>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.15.3">
+                    <h1 class="mdl-color-text--accent header">0.15.3</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <h1 id="release-notes-for-cobrapy-0153">Release notes for cobrapy 0.15.3</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Correct multiple issues with the new SBML parser (#822, #839, #840, #843,
+#844).</li>
+<li>Function <code>validate_sbml_model</code> properly captures errors and warnings.</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.15.2">
+                    <h1 class="mdl-color-text--accent header">0.15.2</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <p><h1 id="release-notes-for-cobrapy-0152">Release notes for cobrapy 0.15.2</h1>
+<h2 id="new-features">New features</h2>
+<ul>
+<li>We introduce a new <code>tolerance</code> attribute both on the global <code>Configuration</code>
+object as well as <code>Model</code>. The default for this is 1E-07. Many functions that
+use a zero cut-off will now use the set model tolerance value by default.
+This value can still be set manually via function arguments but attempting to
+set a threshold that is lower than the model tolerance now raises an error.</li>
+</ul></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.15.2">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.15.1">
+                    <h1 class="mdl-color-text--accent header">0.15.1</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <h1 id="release-notes-for-cobrapy-0151">Release notes for cobrapy 0.15.1</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Fix copying of models with groups.</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.14.2">
+                    <h1 class="mdl-color-text--accent header">0.14.2</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <h1 id="release-notes-for-cobrapy-0142">Release notes for cobrapy 0.14.2</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Better identification of the external compartment.</li>
+<li>Fix the installation of all optional dependencies, i.e., <code>pip install cobra[all]</code>.</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.14.0">
+                    <h1 class="mdl-color-text--accent header">0.14.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <p><h1 id="release-notes-for-cobrapy-0140">Release notes for cobrapy 0.14.0</h1>
+<h2 id="new-features">New features</h2>
+<ul>
+<li>Adding boundary reactions is now much more flexible and accepts
+user-defined identifiers.</li>
+<li>It is now possible to run FVA and loopless FVA in parallel.</li>
+<li>Some utilities and an example of how to perform static optimization dynamic
+FBA.</li>
+</ul></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.14.0">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.14.1">
+                    <h1 class="mdl-color-text--accent header">0.14.1</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <h1 id="release-notes-for-cobrapy-0141">Release notes for cobrapy 0.14.1</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Always create an XML declaration when reading SBML from a byte stream.</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.13.4">
+                    <h1 class="mdl-color-text--accent header">0.13.4</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <h1 id="release-notes-for-cobrapy-0134">Release notes for cobrapy 0.13.4</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Internal re-organization of the test suite.</li>
+<li>Upgrade the <code>ruamel.yaml</code> version making it compatible with Python 3.7.</li>
+<li>Fix a bug with a regular expression in the Matlab interface.</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.13.3">
+                    <h1 class="mdl-color-text--accent header">0.13.3</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <h1 id="release-notes-for-cobrapy-0133">Release notes for cobrapy 0.13.3</h1>
+<ul>
+<li>Make a clean release for PyPI, website, and GitHub.</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.13.0">
+                    <h1 class="mdl-color-text--accent header">0.13.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <p><h1 id="release-notes-for-cobrapy-0130">Release notes for cobrapy 0.13.0</h1>
+<h2 id="new-features">New features</h2>
+<ul>
+<li>New properties for the <code>cobra.Model</code> that give access to specific boundary
+reactions.</li>
+<li>New functions for handling media and computing minimal media. Please read the
+new documentation chapter on media.</li>
+</ul>
+<h2 id="backwards-incompatible-changes">Backwards incompatible changes</h2></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.13.0">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.12.1">
+                    <h1 class="mdl-color-text--accent header">0.12.1</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <p><h1 id="release-notes-for-cobrapy-0121">Release notes for cobrapy 0.12.1</h1>
+<h2 id="new-features">New features</h2>
+<ul>
+<li>Fix/feature that allows summaries to work properly for models with multiple
+exchange reactions for the same metabolite.</li>
+<li>Require a later optlang version so that Gurobi can now be used for quadratic
+problems.</li>
+<li>cobrapy can now extract primal values from a wider range of solver states.
+This is particularly useful to investigate problems in non-optimal states.</li>
+</ul></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.12.1">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.12.0">
+                    <h1 class="mdl-color-text--accent header">0.12.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <p><h1 id="release-notes-for-cobrapy-0120">Release notes for cobrapy 0.12.0</h1>
+<h2 id="new-features">New features</h2>
+<ul>
+<li>Add geometric FBA as a method.</li>
+<li>Add (linear) ROOM as a flux simulation method.</li>
+<li>Allow a reference solution to be used with deletion methods when using MOMA or
+ROOM.</li>
+</ul>
+<h2 id="fixes">Fixes</h2></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.12.0">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.11.3">
+                    <h1 class="mdl-color-text--accent header">0.11.3</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <p><h1 id="release-notes-for-cobrapy-0113">Release notes for cobrapy 0.11.3</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Improve convergence and stability of sampling.</li>
+<li>Reverse inplace operations after leaving a context.</li>
+</ul>
+<h2 id="docs">Docs</h2></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.11.3">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.11.2">
+                    <h1 class="mdl-color-text--accent header">0.11.2</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <h1 id="release-notes-for-cobrapy-0112">Release notes for cobrapy 0.11.2</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Correctly set the constraint for a previous minimization objective in FVA.</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.11.1">
+                    <h1 class="mdl-color-text--accent header">0.11.1</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <h1 id="release-notes-for-cobrapy-0111">Release notes for cobrapy 0.11.1</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Catch all <code>optlang</code> errors and re-raise them as <code>OptimizationError</code> with
+corresponding message.</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.11.0">
+                    <h1 class="mdl-color-text--accent header">0.11.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <p><h1 id="release-notes-for-cobrapy-0110">Release notes for cobrapy 0.11.0</h1>
+<h2 id="new-features">New features</h2>
+<ul>
+<li>Add an argument <code>processes</code> to the functions <code>find_essential_genes</code> and
+<code>find_essential_reactions</code>.</li>
+<li>Automatic documentation generation should hopefully mean that it&rsquo;s never
+out-of-date.</li>
+</ul>
+<h2 id="backwards-incompatible-changes">Backwards incompatible changes</h2></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.11.0">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.10.0">
+                    <h1 class="mdl-color-text--accent header">0.10.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <p><h1 id="release-notes-for-cobrapy-0100">Release notes for cobrapy 0.10.0</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>The solvers packaged with cobrapy have been removed.</li>
+<li>cobra is now a pure Python package and no longer has compiled extensions.</li>
+<li>Massively simplified continuous testing and deployment.</li>
+<li>The <code>solver</code> argument and configuration keyword arguments have been removed.
+Please set the solver on the model and configure it before calling
+optimization functions.</li>
+</ul></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.10.0">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.10.1">
+                    <h1 class="mdl-color-text--accent header">0.10.1</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <h1 id="release-notes-for-cobrapy-0101">Release notes for cobrapy 0.10.1</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li><code>pandas</code> has dropped support for Python 3.4 and we are doing the same for our
+automated tests. If you are running Python 3.4 and have a working installation
+of numpy and pandas, adding cobrapy on top of that is no problem.</li>
+<li>Updated some URLs in the links.</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.9.1">
+                    <h1 class="mdl-color-text--accent header">0.9.1</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <p><h1 id="release-notes-for-cobrapy-091">Release notes for cobrapy 0.9.1</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>All around improvements to cobrapy&rsquo;s continuous integration.</li>
+<li>Pin the scipy version to 0.19.1 until we can upgrade our sparse matrix code to
+scipy 1.0.</li>
+</ul>
+<h2 id="new-features">New features</h2></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.9.1">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.9.0">
+                    <h1 class="mdl-color-text--accent header">0.9.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <p><h1 id="release-notes-for-cobrapy-090">Release notes for cobrapy 0.9.0</h1>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li><code>Model.compartment</code> is now a dynamic property fetching the
+compartments from all metabolites therefore always
+up-to-date. Assigning a dictionary to the same property updates the
+internal dictionary of compartment descriptions. This change removes
+the need for the check for missing compartments from
+<code>validation.check_metabolite_compartment_formula</code>.</li>
+</ul></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.9.0">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.8.2">
+                    <h1 class="mdl-color-text--accent header">0.8.2</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <p><h2 id="fixes">Fixes</h2>
+<ul>
+<li>Guarantee that sampler._reproject always returns a feasible point
+and will not attempt to reproject already feasible
+points. <a href="https://github.com/opencobra/cobrapy/pull/564">#564</a></li>
+<li><code>Model.summary</code> no longer fails when calling after the model has
+changed. Fixed by letting the summary function re-compute a solution
+(default) or letting user supply a prior computed solution
+object. <a href="https://github.com/opencobra/cobrapy/pull/566">#566</a></li>
+</ul></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.8.2">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.8.1">
+                    <h1 class="mdl-color-text--accent header">0.8.1</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <h2 id="fixes">Fixes</h2>
+<ul>
+<li>Fix bug related to inhomogeneous sampling <a href="https://github.com/opencobra/cobrapy/issues/558">#558</a>.</li>
+<li>During flux sampling, store the nullspace rather than the entire projection
+(N * N.T) which reduces the memory footprint since it uses memory in
+the order of <code>2 * n_reaction * n_metabolites</code> instead of <code>4 * n_reactions^2</code> (no change in speed). <a href="https://github.com/opencobra/cobrapy/pull/556">PR #556</a>.</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.8.0">
+                    <h1 class="mdl-color-text--accent header">0.8.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <p><h2 id="fixes">Fixes</h2>
+<ul>
+<li>Tests no longer generates warnings about using deprecated functions.</li>
+<li>Gapfilling integrality thresholds now supported for all optlang solvers.</li>
+</ul></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.8.0">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.7.0">
+                    <h1 class="mdl-color-text--accent header">0.7.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <p><h2 id="fixes">Fixes</h2>
+<ul>
+<li><code>cobra.flux_analysis.reaction.assess</code>
+<a href="https://github.com/opencobra/cobrapy/issues/537">was broken</a>
+following the release of 0.6.0 and has now been fixed (and now with
+unit tests).</li>
+</ul></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.7.0">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.6.2">
+                    <h1 class="mdl-color-text--accent header">0.6.2</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <p><h2 id="fixes">Fixes</h2>
+<ul>
+<li>Fix in the ordering and rounding of FVA summary
+<a href="https://github.com/opencobra/cobrapy/pull/525">#525</a></li>
+<li>Shared memory, improve speed during sampling
+<a href="https://github.com/opencobra/cobrapy/pull/521">#521</a></li>
+</ul></p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.6.2">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.6.1">
+                    <h1 class="mdl-color-text--accent header">0.6.1</h1>
+                </a>
+                <h2 class="mdl-color-text--indigo-800 header">patch release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a bug fix release. It is considered stable but does not include
+any significant new features. All changes are backwards-compatible.
+</p>
+            <h2 id="fixes">Fixes</h2>
+<ul>
+<li>Debug <code>metabolite.add_metabolites</code> with <code>combine=False</code>
+(<a href="https://github.com/opencobra/cobrapy/issues/503">#503</a>)</li>
+<li>Fix broken printing of metabolites
+(<a href="https://github.com/opencobra/cobrapy/issues/502">#502</a>), by
+removing unnecessary <code>Frozendict</code></li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.6.0">
+                    <h1 class="mdl-color-text--accent header">0.6.0</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <p>In this release we have made major changes to pretty much all corners of cobrapy and we hope that you will enjoy the new features as much as we do, and that any negative impacts on existing workflows will be limited.
+The major change is the ongoing move away from cobrapy&rsquo;s internal solver interfaces to those provided by optlang which provides a single unified interface to glpk, cplex and gurobi enhanced by the ability to deal with symbolic expressions.</p>
+        </div>
+        
+        <div class="mdl-card__actions">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
+                href="0.6.0">Read more</a>
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="mdl-cell mdl-cell--6-col">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__supporting-text">
+            <span class="spaced"><a href="https://github.com/opencobra/cobrapy/releases/tag/0.5.11">
+                    <h1 class="mdl-color-text--accent header">0.5.11</h1>
+                </a>
+                <h2 class="mdl-color-text--teal-600 header">minor release</h2>
+            </span>
+            <p class="mdl-typography--caption mdl-color-text--grey-500">This is a stable release. It may include new functionality
+or backwards-incompatible changes.
+</p>
+            <p>This was the last release of the 0.5 series which was based on cobrapy&rsquo;s own solver interfaces.</p>
+<p>For a list of features please see the
+<a href="http://cobrapy.readthedocs.io/en/0.5.11/">documentation</a>.</p>
+
+        </div>
+        
+    </div>
+</div>
+
+	</main>
+</div>
+</body>
+</html>
+

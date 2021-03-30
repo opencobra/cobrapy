@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>community modeling on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/community-modeling/</link>
+    <description>Recent content in community modeling on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 24 Apr 2017 11:00:05 -0600</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/tags/community-modeling/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>mminte</title>
+      <link>https://opencobra.github.io/cobrapy/packages/mminte/</link>
+      <pubDate>Mon, 24 Apr 2017 11:00:05 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/mminte/</guid>
+      <description>MMinte (pronounced /‘minti/) is a set of widgets that allows you to explore the pairwise interactions (positive or negative) that occur in a microbial community. From an association network and 16S rDNA sequence data, MMinte identifies corresponding genomes, reconstructs metabolic models, estimates growth under specific metabolic conditions, analyzes pairwise interactions, assigns interaction types to network links, and generates the corresponding network of interactions. You can run the MMinte widgets as an integrated pipeline or run each widget independently.</description>
+    </item>
+    
+    <item>
+      <title>MICOM</title>
+      <link>https://opencobra.github.io/cobrapy/packages/micom/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:51 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/micom/</guid>
+      <description>MICOM is a Python package for metabolic modeling of microbial communities and is developed in the Human Systems Biology Group at the INMEGEN, Mexico abd Institute for Systems Biology, Seattle, USA.
+MICOM allows you to construct a community model from a list on input COBRA models and manages exchange fluxes between individuals and individuals with the environment. It explicitly accounts for different abundances of individuals in the community and the tradeoff between individual and community-wide biomass production.</description>
+    </item>
+    
+  </channel>
+</rss>

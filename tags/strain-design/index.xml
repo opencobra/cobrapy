@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>strain design on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/strain-design/</link>
+    <description>Recent content in strain design on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 27 Mar 2017 11:52:33 -0600</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/tags/strain-design/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>dd-decaf</title>
+      <link>https://opencobra.github.io/cobrapy/packages/dd-decaf/</link>
+      <pubDate>Mon, 27 Mar 2017 11:52:33 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/dd-decaf/</guid>
+      <description>DD-DeCaF is a Horizon 2020 project (grant agreement No 686070) bringing together leading academic partners from five European universities with five innovative European companies to address the challenge of building a comprehensive design tool. DD-DeCaF aims to develop cutting edge methods in order to use large scale data to design cell factories and communities for biotechnological applications. The project is built as a number of micro-services which can be used separately and via the web-based user-interface.</description>
+    </item>
+    
+    <item>
+      <title>cameo</title>
+      <link>https://opencobra.github.io/cobrapy/packages/cameo/</link>
+      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/cameo/</guid>
+      <description>Cameo is a high-level python library developed to aid the strain design process in metabolic engineering projects. The library provides a modular framework of simulation methods, strain design methods, access to models, that targets developers that want custom analysis workflows.
+Computationally heavy methods have been parallelized and can be run on a clusters using the IPython parallelization framework (see example and documentation for more details). The default fallback is python&amp;rsquo;s multiprocessing library.</description>
+    </item>
+    
+  </channel>
+</rss>

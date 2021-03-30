@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Releases on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/releases/</link>
+    <description>Recent content in Releases on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 06 Feb 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/releases/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>0.21.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.21.0/</link>
+      <pubDate>Sat, 06 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.21.0/</guid>
+      <description>Release notes for cobrapy 0.21.0 Other  Update libSBML dependency to python-libsbml==5.19.0. Docstring and style changes.  </description>
+    </item>
+    
+    <item>
+      <title>0.20.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.20.0/</link>
+      <pubDate>Wed, 07 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.20.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0200&#34;&gt;Release notes for cobrapy 0.20.0&lt;/h1&gt;
+&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;
+&lt;p&gt;There is a new function inspired by
+&lt;a href=&#34;https://github.com/biosustain/cameo/&#34;&gt;cameo&lt;/a&gt; that can load models directly
+from &lt;a href=&#34;http://bigg.ucsd.edu/&#34;&gt;BiGG&lt;/a&gt; or
+&lt;a href=&#34;https://www.ebi.ac.uk/biomodels/&#34;&gt;BioModels&lt;/a&gt; and by default will cache them
+locally (#995).&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.19.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.19.0/</link>
+      <pubDate>Mon, 24 Aug 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.19.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0190&#34;&gt;Release notes for cobrapy 0.19.0&lt;/h1&gt;
+&lt;p&gt;We now have an official code of conduct and a committee of three people to handle
+reports! You can contact them at &lt;a href=&#34;mailto:conduct@opencobra.org&#34;&gt;conduct@opencobra.org&lt;/a&gt;.
+You can also contact them individually at:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;mailto:MAC9JC@virginia.edu&#34;&gt;Maureen Carey&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;mailto:svegal@biosustain.dtu.dk&#34;&gt;Svetlana Kutuzova&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;mailto:GLM5UH@virginia.edu&#34;&gt;Greg Medlock&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.17.1</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.17.1/</link>
+      <pubDate>Sat, 26 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.17.1/</guid>
+      <description>Release notes for cobrapy 0.17.1 Fixes  Prevent an error with infeasible solutions in (loopless) FVA. Correct a sampling problem with Gurobi as the solver. Adjust sampling documentation.  </description>
+    </item>
+    
+    <item>
+      <title>0.17.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.17.0/</link>
+      <pubDate>Fri, 18 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.17.0/</guid>
+      <description>Release notes for cobrapy 0.17.0 Fixes  Improve handling of and problems with SBML notes. Log SBML messages to a module logger rather than the root logger. Repair documentation building.  </description>
+    </item>
+    
+    <item>
+      <title>0.16.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.16.0/</link>
+      <pubDate>Thu, 08 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.16.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0160&#34;&gt;Release notes for cobrapy 0.16.0&lt;/h1&gt;
+&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Summaries now return an object with string and HTML representations instead of
+simply printing output (#855). This is a breaking change but should not affect
+anyone in a harmful way.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.15.4</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.15.4/</link>
+      <pubDate>Tue, 16 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.15.4/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0154&#34;&gt;Release notes for cobrapy 0.15.4&lt;/h1&gt;
+&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;This release brings a number of bug fixes for SBML I/O (#852).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;backwards-incompatible-changes&#34;&gt;Backwards incompatible changes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;The deprecated &lt;code&gt;objective_coefficient&lt;/code&gt; was removed (#871).&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.15.3</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.15.3/</link>
+      <pubDate>Fri, 26 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.15.3/</guid>
+      <description>Release notes for cobrapy 0.15.3 Fixes  Correct multiple issues with the new SBML parser (#822, #839, #840, #843, #844). Function validate_sbml_model properly captures errors and warnings.  </description>
+    </item>
+    
+    <item>
+      <title>0.15.2</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.15.2/</link>
+      <pubDate>Wed, 17 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.15.2/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0152&#34;&gt;Release notes for cobrapy 0.15.2&lt;/h1&gt;
+&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;We introduce a new &lt;code&gt;tolerance&lt;/code&gt; attribute both on the global &lt;code&gt;Configuration&lt;/code&gt;
+object as well as &lt;code&gt;Model&lt;/code&gt;. The default for this is 1E-07. Many functions that
+use a zero cut-off will now use the set model tolerance value by default.
+This value can still be set manually via function arguments but attempting to
+set a threshold that is lower than the model tolerance now raises an error.&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.15.1</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.15.1/</link>
+      <pubDate>Sun, 24 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.15.1/</guid>
+      <description>Release notes for cobrapy 0.15.1 Fixes  Fix copying of models with groups.  </description>
+    </item>
+    
+    <item>
+      <title>0.14.2</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.14.2/</link>
+      <pubDate>Mon, 28 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.14.2/</guid>
+      <description>Release notes for cobrapy 0.14.2 Fixes  Better identification of the external compartment. Fix the installation of all optional dependencies, i.e., pip install cobra[all].  </description>
+    </item>
+    
+    <item>
+      <title>0.14.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.14.0/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.14.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0140&#34;&gt;Release notes for cobrapy 0.14.0&lt;/h1&gt;
+&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Adding boundary reactions is now much more flexible and accepts
+user-defined identifiers.&lt;/li&gt;
+&lt;li&gt;It is now possible to run FVA and loopless FVA in parallel.&lt;/li&gt;
+&lt;li&gt;Some utilities and an example of how to perform static optimization dynamic
+FBA.&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.14.1</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.14.1/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.14.1/</guid>
+      <description>Release notes for cobrapy 0.14.1 Fixes  Always create an XML declaration when reading SBML from a byte stream.  </description>
+    </item>
+    
+    <item>
+      <title>0.13.4</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.13.4/</link>
+      <pubDate>Sun, 26 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.13.4/</guid>
+      <description>Release notes for cobrapy 0.13.4 Fixes  Internal re-organization of the test suite. Upgrade the ruamel.yaml version making it compatible with Python 3.7. Fix a bug with a regular expression in the Matlab interface.  </description>
+    </item>
+    
+    <item>
+      <title>0.13.3</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.13.3/</link>
+      <pubDate>Mon, 23 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.13.3/</guid>
+      <description>Release notes for cobrapy 0.13.3  Make a clean release for PyPI, website, and GitHub.  </description>
+    </item>
+    
+    <item>
+      <title>0.13.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.13.0/</link>
+      <pubDate>Mon, 04 Jun 2018 13:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.13.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0130&#34;&gt;Release notes for cobrapy 0.13.0&lt;/h1&gt;
+&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;New properties for the &lt;code&gt;cobra.Model&lt;/code&gt; that give access to specific boundary
+reactions.&lt;/li&gt;
+&lt;li&gt;New functions for handling media and computing minimal media. Please read the
+new documentation chapter on media.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;backwards-incompatible-changes&#34;&gt;Backwards incompatible changes&lt;/h2&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.12.1</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.12.1/</link>
+      <pubDate>Mon, 04 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.12.1/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0121&#34;&gt;Release notes for cobrapy 0.12.1&lt;/h1&gt;
+&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Fix/feature that allows summaries to work properly for models with multiple
+exchange reactions for the same metabolite.&lt;/li&gt;
+&lt;li&gt;Require a later optlang version so that Gurobi can now be used for quadratic
+problems.&lt;/li&gt;
+&lt;li&gt;cobrapy can now extract primal values from a wider range of solver states.
+This is particularly useful to investigate problems in non-optimal states.&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.12.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.12.0/</link>
+      <pubDate>Thu, 24 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.12.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0120&#34;&gt;Release notes for cobrapy 0.12.0&lt;/h1&gt;
+&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Add geometric FBA as a method.&lt;/li&gt;
+&lt;li&gt;Add (linear) ROOM as a flux simulation method.&lt;/li&gt;
+&lt;li&gt;Allow a reference solution to be used with deletion methods when using MOMA or
+ROOM.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.11.3</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.11.3/</link>
+      <pubDate>Wed, 07 Mar 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.11.3/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0113&#34;&gt;Release notes for cobrapy 0.11.3&lt;/h1&gt;
+&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Improve convergence and stability of sampling.&lt;/li&gt;
+&lt;li&gt;Reverse inplace operations after leaving a context.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;docs&#34;&gt;Docs&lt;/h2&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.11.2</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.11.2/</link>
+      <pubDate>Wed, 07 Feb 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.11.2/</guid>
+      <description>Release notes for cobrapy 0.11.2 Fixes  Correctly set the constraint for a previous minimization objective in FVA.  </description>
+    </item>
+    
+    <item>
+      <title>0.11.1</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.11.1/</link>
+      <pubDate>Tue, 06 Feb 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.11.1/</guid>
+      <description>Release notes for cobrapy 0.11.1 Fixes  Catch all optlang errors and re-raise them as OptimizationError with corresponding message.  </description>
+    </item>
+    
+    <item>
+      <title>0.11.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.11.0/</link>
+      <pubDate>Thu, 01 Feb 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.11.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0110&#34;&gt;Release notes for cobrapy 0.11.0&lt;/h1&gt;
+&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Add an argument &lt;code&gt;processes&lt;/code&gt; to the functions &lt;code&gt;find_essential_genes&lt;/code&gt; and
+&lt;code&gt;find_essential_reactions&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Automatic documentation generation should hopefully mean that it&amp;rsquo;s never
+out-of-date.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;backwards-incompatible-changes&#34;&gt;Backwards incompatible changes&lt;/h2&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.10.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.10.0/</link>
+      <pubDate>Mon, 18 Dec 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.10.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0100&#34;&gt;Release notes for cobrapy 0.10.0&lt;/h1&gt;
+&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;The solvers packaged with cobrapy have been removed.&lt;/li&gt;
+&lt;li&gt;cobra is now a pure Python package and no longer has compiled extensions.&lt;/li&gt;
+&lt;li&gt;Massively simplified continuous testing and deployment.&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;solver&lt;/code&gt; argument and configuration keyword arguments have been removed.
+Please set the solver on the model and configure it before calling
+optimization functions.&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.10.1</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.10.1/</link>
+      <pubDate>Mon, 18 Dec 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.10.1/</guid>
+      <description>Release notes for cobrapy 0.10.1 Fixes  pandas has dropped support for Python 3.4 and we are doing the same for our automated tests. If you are running Python 3.4 and have a working installation of numpy and pandas, adding cobrapy on top of that is no problem. Updated some URLs in the links.  </description>
+    </item>
+    
+    <item>
+      <title>0.9.1</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.9.1/</link>
+      <pubDate>Mon, 30 Oct 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.9.1/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-091&#34;&gt;Release notes for cobrapy 0.9.1&lt;/h1&gt;
+&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;All around improvements to cobrapy&amp;rsquo;s continuous integration.&lt;/li&gt;
+&lt;li&gt;Pin the scipy version to 0.19.1 until we can upgrade our sparse matrix code to
+scipy 1.0.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.9.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.9.0/</link>
+      <pubDate>Sun, 08 Oct 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.9.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-090&#34;&gt;Release notes for cobrapy 0.9.0&lt;/h1&gt;
+&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Model.compartment&lt;/code&gt; is now a dynamic property fetching the
+compartments from all metabolites therefore always
+up-to-date. Assigning a dictionary to the same property updates the
+internal dictionary of compartment descriptions. This change removes
+the need for the check for missing compartments from
+&lt;code&gt;validation.check_metabolite_compartment_formula&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.8.2</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.8.2/</link>
+      <pubDate>Thu, 10 Aug 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.8.2/</guid>
+      <description>&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Guarantee that sampler._reproject always returns a feasible point
+and will not attempt to reproject already feasible
+points. &lt;a href=&#34;https://github.com/opencobra/cobrapy/pull/564&#34;&gt;#564&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Model.summary&lt;/code&gt; no longer fails when calling after the model has
+changed. Fixed by letting the summary function re-compute a solution
+(default) or letting user supply a prior computed solution
+object. &lt;a href=&#34;https://github.com/opencobra/cobrapy/pull/566&#34;&gt;#566&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.8.1</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.8.1/</link>
+      <pubDate>Wed, 26 Jul 2017 12:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.8.1/</guid>
+      <description>Fixes  Fix bug related to inhomogeneous sampling #558. During flux sampling, store the nullspace rather than the entire projection (N * N.T) which reduces the memory footprint since it uses memory in the order of 2 * n_reaction * n_metabolites instead of 4 * n_reactions^2 (no change in speed). PR #556.  </description>
+    </item>
+    
+    <item>
+      <title>0.8.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.8.0/</link>
+      <pubDate>Fri, 21 Jul 2017 12:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.8.0/</guid>
+      <description>&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Tests no longer generates warnings about using deprecated functions.&lt;/li&gt;
+&lt;li&gt;Gapfilling integrality thresholds now supported for all optlang solvers.&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.7.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.7.0/</link>
+      <pubDate>Fri, 14 Jul 2017 12:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.7.0/</guid>
+      <description>&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;cobra.flux_analysis.reaction.assess&lt;/code&gt;
+&lt;a href=&#34;https://github.com/opencobra/cobrapy/issues/537&#34;&gt;was broken&lt;/a&gt;
+following the release of 0.6.0 and has now been fixed (and now with
+unit tests).&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.6.2</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.6.2/</link>
+      <pubDate>Wed, 21 Jun 2017 11:09:08 -0500</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.6.2/</guid>
+      <description>&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Fix in the ordering and rounding of FVA summary
+&lt;a href=&#34;https://github.com/opencobra/cobrapy/pull/525&#34;&gt;#525&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Shared memory, improve speed during sampling
+&lt;a href=&#34;https://github.com/opencobra/cobrapy/pull/521&#34;&gt;#521&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>0.6.1</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.6.1/</link>
+      <pubDate>Sun, 07 May 2017 12:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.6.1/</guid>
+      <description>Fixes  Debug metabolite.add_metabolites with combine=False (#503) Fix broken printing of metabolites (#502), by removing unnecessary Frozendict  </description>
+    </item>
+    
+    <item>
+      <title>0.6.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.6.0/</link>
+      <pubDate>Thu, 04 May 2017 12:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.6.0/</guid>
+      <description>In this release we have made major changes to pretty much all corners of cobrapy and we hope that you will enjoy the new features as much as we do, and that any negative impacts on existing workflows will be limited.
+The major change is the ongoing move away from cobrapy&amp;rsquo;s internal solver interfaces to those provided by optlang which provides a single unified interface to glpk, cplex and gurobi enhanced by the ability to deal with symbolic expressions.</description>
+    </item>
+    
+    <item>
+      <title>0.5.11</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.5.11/</link>
+      <pubDate>Mon, 30 Jan 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.5.11/</guid>
+      <description>This was the last release of the 0.5 series which was based on cobrapy&amp;rsquo;s own solver interfaces.
+For a list of features please see the documentation.</description>
+    </item>
+    
+  </channel>
+</rss>

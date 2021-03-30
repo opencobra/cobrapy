@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="description" content="Constraint-based Metabolic Modeling in Python.">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+	<meta name="generator" content="Hugo 0.82.0" />
+	<title>cobrapy - constraint-based metabolic modeling in Python</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.3.0/material.teal-indigo.min.css">
+	<link rel="stylesheet" href="../../css/styles.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <link rel="icon" type="image/png" href="../../media/favicon.png" />
+</head>
+<body>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+<header class="mdl-layout__header mdl-shadow--6dp mdl-color-text--black">
+<div class="mdl-layout__header-row mdl-color-text--black">
+	<span class="mdl-layout-title">Menu</span>
+	<div class="mdl-layout-spacer"></div>
+	<nav class="mdl-navigation mdl-layout--large-screen-only">
+		<a class="mdl-navigation__link mdl-color-text--black" href="../../">Home</a>
+        <a class="mdl-navigation__link" href="../../releases">Releases</a>
+		<a class="mdl-navigation__link mdl-color-text--black" href="../../packages">Packages</a>
+        <a class="mdl-navigation__link mdl-color-text--black" href="../../pubs">Publications</a>
+        <a class="mdl-navigation__link mdl-color-text--black" href="https://cobrapy.readthedocs.io/">Docs</a>
+	</nav>
+</div>
+</header>
+<div class="mdl-layout__drawer">
+	<span class="mdl-layout-title"><img src="../../media/logo.png" width="100%"></span>
+	<nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="../../">Home</a>
+        <a class="mdl-navigation__link" href="../../releases">Releases</a>
+		<a class="mdl-navigation__link" href="../../packages">Packages</a>
+        <a class="mdl-navigation__link" href="../../pubs">Publications</a>
+        <a class="mdl-navigation__link" href="https://cobrapy.readthedocs.io/en/stable/">Docs</a>
+	</nav>
+</div>
+<main class="mdl-layout__content">
+<div class="page-content mdl-grid">
+
+<div class="mdl-cell mdl-cell--12-col">
+<a class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect back" href="../../releases" id="back">
+<i class="material-icons">arrow_back</i></a>
+<span class="mdl-tooltip mdl-tooltip--right" for="back">Return to Releases...</span>
+<p></p>
+<div class="mdl-card mdl-shadow--4dp">
+<div class="mdl-card__supporting-text">
+<h1 class="mdl-color-text--accent header">0.6.0</h1>
+<h2 class="mdl-color-text--primary header">by The COBRApy Team</h2><br>
+<div><p>In this release we have made major changes to pretty much all corners
+of cobrapy and we hope that you will enjoy the new features as much as
+we do, and that any negative impacts on existing workflows will be
+limited.</p>
+<p>The major change is the ongoing move away from cobrapy&rsquo;s internal
+solver interfaces to those provided by
+<a href="https://github.com/biosustain/optlang">optlang</a> which provides a
+single unified interface to glpk, cplex and gurobi enhanced by the
+ability to deal with symbolic expressions. This means formulating
+complex constraints no longer implies defining the necessary matrix
+algebra, but instead simply writing the expression and assigning that
+as an objective to the model.</p>
+<p>We feel that this, and the clarified scope and focus attained by
+separating the topic of linear programming (optlang) and metabolic
+flux analysis (cobrapy) to two packages is natural and makes both of
+these tasks less confusing and more fun. We hope that you after
+trying, feel the same and that in any case you let us know what you
+think by
+<a href="https://github.com/opencobra/cobrapy/issues">raising an issue</a> or
+talking directly to us on <a href="gitter.im/opencobra/cobrapy">gitter</a> or
+<a href="https://groups.google.com/forum/#!forum/cobra-pie">google groups</a>.</p>
+<h2 id="new-features">New features</h2>
+<h3 id="the-optlang-solver-interface">The optlang solver interface</h3>
+<p>The main change is the addition of <code>model.solver</code> which is the optlang
+interface to the chosen solver (cplex and glpk are currently well
+supported, gurobi interface is at the time of writing mostly working
+but improvements are still expected). The solver interface manages
+variables, constraints and the objective of the model and the task of
+turning these into a model formulation to be optimized by the
+solver. From cobrapy&rsquo;s point-of-view, this means that all aspects
+concerning generating problems, configuring solvers are handed over to
+optlang and consequently the whole <code>cobra.solver</code> has been deprecated,
+slated for removal in the next major release of cobrapy.</p>
+<p>Importantly, configuring the solver by passing <code>**solver_args</code> or
+<code>solver='solver'</code> is now instead done by assigning solver to
+<code>model.solver</code> and then configuring via <code>model.solver.configuration</code>.</p>
+<p>Creating new algorithms has been greatly facilitated as it no longer
+requires formulating objectives and constraints by matrix algebra but
+instead directly by expressions, e.g. see the implementation of
+<code>cobra.flux_analysis.moma.add_moma</code> and
+<code>cobra.flux_analysis.loopless.loopless_solution</code>.</p>
+<p>Instead of having only reactions as variables and metabolites as
+constraints, with optlang, cobrapy now supports arbitrary constraints
+and variables and these can be added/removed by <code>model.add_cons_vars</code>
+and <code>model.remove_cons_vars</code> which take care of adding these to
+<code>model.problem</code> which is the optlang&rsquo;s mathematical model associated
+with the cobra model.</p>
+<p>Reactions are now modeled by two variables, forward and reverse, and
+these can be seen by accessing <code>reaction.{forward,reverse}_variable</code>
+and the combined <code>reaction.flux_expression</code>.</p>
+<p>Objectives can now easily be made quite advanced by simply crafting
+the right expression and assigning this as usual to <code>model.objective</code>,
+see the
+<a href="http://cobrapy.readthedocs.io/en/latest/constraints_objectives.html">contraints and objectives notebook</a>.</p>
+<h3 id="temporary-changes-to-a-model">Temporary changes to a model</h3>
+<p>Models are large complex objects and copying such objects is
+inevitably slow. To avoid that, cobrapy has drawn on the experience
+from the development of cameo to introduce the <code>HistoryManager</code> class
+and the concept of models as contexts. Now, most changes that can be
+made to a model such as changing the objective, setting reaction
+bounds, adding and removing reactions, is reversed upon exit when done
+inside a context, see the updated
+<a href="http://cobrapy.readthedocs.io/en/latest/getting_started.html">getting started notebook</a>.</p>
+<h3 id="improved-solution-handling">Improved solution handling</h3>
+<p>Previously, cobra models lugged around their latest solution to enable
+providing <code>reaction.{flux,reduced_cost}</code> (formerly
+<code>reaction.{x,y}</code>). This was problematic because if the model had
+changed since last optimization, then this would effectively give the
+wrong result. On top of that, it was not easy to make a change,
+optimize and get values, and then undo that change to the model
+without having to copy the whole model object. To solve this, and many
+similar problem, we have completely refactored <code>cobra.Solution</code> so
+that <code>model.optimize()</code> now returns a solution and it is the user&rsquo;s
+responsibility to manage this object. <code>reaction.flux</code> gets its values
+directly from the <code>model.problem</code>. To sugar the new solution class,
+fluxes, reduced costs, and shadow prices are now pandas series!</p>
+<h2 id="sampling">Sampling</h2>
+<p>Cobrapy now has flux sampling supported by
+<code>cobra.flux_analysis.sampling</code> see
+<a href="http://cobrapy.readthedocs.io/en/latest/sampling.html">the sampling notebook</a>.</p>
+<h2 id="loopless-models-and-solutions">Loopless models and solutions</h2>
+<p>Added implementations of
+<a href="http://dx.doi.org/10.1093/bioinformatics/btv096">CycleFreeFlux</a> and
+the loopless model of
+<a href="http://dx.doi.org/10.1016/j.bpj.2010.12.3707">Schellenberger et al.</a>. See
+the
+<a href="http://cobrapy.readthedocs.io/en/latest/loopless.html">notebook on loopless</a>
+and <a href="http://cobrapy.readthedocs.io/en/latest/simulating.html">simulating</a></p>
+<h2 id="dataframes-as-return-values">DataFrames as return values</h2>
+<p><code>flux_variability_analysis</code>, <code>single_{gene,reaction}_deletion</code>,
+<code>cobra.flux_analysis.sampling</code> and
+<code>cobra.util.create_stoichiometric_matrix</code> now return pandas data frames
+instead of nested dicts as these are more convenient and fun to work
+with. Pandas (and numpy) are therefore now hard requirements for
+cobrapy, which should not be a problem for neither linux, windows or
+mac users as there are reliable wheels for these packages now.</p>
+<h3 id="model-medium">Model medium</h3>
+<p><code>model.medium</code> is now a dict and setter for getting boundary feeding
+reactions and their bounds</p>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Handle multiple IDs in Matlab models
+<a href="https://github.com/opencobra/cobrapy/issues">#345</a></li>
+<li><code>DictList.query</code> behavior changed so that attribute is <code>None</code> if the
+search parameter is not a regex or string, to enable
+<code>reactions.query(lambda x: x.boundary)</code></li>
+<li>Set charge from notes if not defined elsewhere
+<a href="https://github.com/opencobra/cobrapy/issues">#352</a></li>
+<li>Warnings are no longer issued on package import if soft requirement
+scipy, python-libsbml is not available.</li>
+</ul>
+<h2 id="deprecated-features">Deprecated features</h2>
+<p>These features are now deprecated and slated for complete removal in
+the next major cobrapy release.</p>
+<ul>
+<li>The whole <code>cobra.solver</code> module is now deprecated, see New features.</li>
+<li><code>ArrayBasedModel</code> / <code>Model.to_array_based_model</code> are
+deprecated. This formulation makes little sense when handing over
+the matrix algebra to optlang, for the stoichiometry matrix (aka S),
+see <code>cobra.util.array.create_stoichiometric_matrix</code>.</li>
+<li><code>Metabolite.y</code> in favor of <code>Metabolite.shadow_price</code></li>
+<li><code>Model.add_reaction</code> in favor of <code>Model.add_reactions</code></li>
+<li><code>Reaction.x</code> in favor of <code>Reaction.flux</code></li>
+<li><code>Reaction.y</code> in favor of <code>Reaction.reduced_cost</code></li>
+<li><code>Solution.{x, y, x_dict, y_dict, f}</code> in favor of <code>Solution.{fluxes, reduced_costs}</code>. The setters are also deprecated.</li>
+<li><code>phenotype_phase_plane</code> in favor of <code>production_envelope</code>. The
+plotting capabilities are deprecated, to be re-implemented somewhere
+else.</li>
+<li><code>convert_to_irreverible</code>, <code>revert_to_irreversible</code>, <code>canonical_form</code>
+deprecated without replacement.</li>
+<li><code>check_reaction_bounds</code> deprecated without replacement.</li>
+</ul>
+<h2 id="backwards-incompatible-changes">Backwards incompatible changes</h2>
+<ul>
+<li>optknock was completely removed, users are advised to use cameo for
+this functionality</li>
+<li>dual_problem was removed</li>
+<li>gapfilling algorithms were removed without replacement, to be
+re-introduced in a different package</li>
+<li><code>cobra.topology</code> was removed, possibly to be reintroduced in a
+different package</li>
+<li>flux_variability_analysis results must be transformed to have them
+work as the previous nested dict,
+i.e. <code>flux_variability_analysis(model).T</code> should give behavior as
+previously.</li>
+<li>In a major linting effort we renamed capitalized modules to lower-case,
+e.g. <code>cobra.core.Model</code> to <code>cobra.core.model</code>. Imports from <code>cobra</code>
+are unchanged though.</li>
+<li>objective coefficients of reactions can now only be set once the
+reaction is attached to a model.</li>
+<li><code>Reaction.{x,y}</code>, <code>Metabolite.y</code> are defunct for legacy solvers.</li>
+</ul>
+</div>
+</div>
+<div class="mdl-card__actions mdl-card--border">
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="https://github.com/opencobra/cobrapy/releases/tag/0.6.0">See on Github</a>
+</div>
+</div><br></div>
+	</main>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,193 @@
+html > body, h1, h2, .mdl-button {
+    font-family: 'Roboto', 'Arial', sans-serif !important;
+}
+
+a {
+	text-decoration: none;
+    font-weight: bold;
+}
+
+#hero {
+    padding: 5vw 5vw 0vw 5vw;
+}
+
+#hero img {
+    display: block;
+    max-width: 500px;
+    margin: auto;
+    width: 100%;
+}
+
+.mdl-cell .intro {
+    padding: 2em;
+    text-align: center;
+    margin: auto;
+    max-width: 700px;
+}
+
+.intro p, .intro li {
+    font-weight: 300;
+    font-size: 1.5em;
+    line-height: 150%;
+}
+
+.intro pre {
+    font-size: 1.2em;
+}
+
+.highlight pre {
+    padding: 1em;
+    margin: 0.5em auto;
+    max-width: 600px;
+    display: block;
+    white-space: pre;
+    overflow: auto;
+    text-align: left;
+}
+
+.dark, .dark a {
+    color: white;
+}
+
+.mdl-layout__drawer, .mdl-layout__header {
+    background-color: #fff;
+    border-right-color: #fff;
+}
+
+.mdl-layout__header .mdl-layout__drawer-button {
+    color: #000;
+}
+
+.mdl-navigation .mdl-navigation__link {
+    color: #000;
+    font-weight: bold;
+    font-size: 1.15rem;
+}
+
+.mdl-navigation .mdl-navigation__link:hover {
+    background-color: #ccc;
+}
+
+.mdl-layout-title img {
+    width: 80%;
+    align: middle;
+    margin-top: 2em;
+}
+
+.mdl-grid {
+    padding: 0;
+    max-width: 1400px;
+}
+
+.mdl-cell {
+    padding: 0.5vw;
+}
+
+.mdl-card {
+    font-family: 'Roboto', 'Arial', sans-serif !important;
+    width: 100%;
+    min-height: 10px;
+    height: 100%;
+}
+
+.mdl-card__supporting-text {
+    padding: 1rem;
+    width: auto;
+}
+
+.mdl-card__supporting-text h1 {
+    font-size: 18px;
+    line-height: normal;
+    margin: 0.75em 0;
+}
+
+.mdl-card__supporting-text h2 {
+    font-size: 16px;
+    margin: 0;
+    line-height: normal;
+    margin: 0.75em 0;
+}
+
+.mdl-card__supporting-text h3 {
+    font-size: 14px;
+    font-weight: bold;
+    line-height: normal;
+    margin: 0.75em 0;
+}
+
+.mdl-card__supporting-text .header {
+    margin: 0.25em 0;
+}
+
+.mdl-card__actions {
+    margin-top: auto;
+}
+
+.mdl-button--primary img {
+	margin: auto 0.5em auto 0;
+}
+
+.mdl-mini-footer {
+    padding: 1em;
+}
+
+.mdl-mini-footer a {
+    font-weight: bold;
+    color: #ddd;
+}
+
+.mdl-mini-footer a:hover {
+    color: #fff;
+}
+
+#back {
+	margin: 5px;
+}
+
+table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.spaced {
+    display: flex;
+    flex-wrap: wrap;
+    vertical-align: middle;
+    justify-content: space-between;
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.tags a {
+    margin: 1em;
+}
+
+.mdl-badge[data-badge]:after {
+    width: 18px;
+    height: 18px;
+    right: -18px;
+    top: -8px;
+}
+
+.spaced img {
+    margin: 5px 1em 5px 0;
+}
+
+.mdl-layout__tab-bar, .mdl-layout__tab-bar-button {
+    background-color: #fff;
+}
+
+@media screen and (max-width: 1024px) {
+.mdl-layout__tab-bar {
+    width: calc(100% - 120px);
+    padding: 0 0 0 60px;
+}
+}
+
+.mdl-button {
+    font-weight: bold;
+}

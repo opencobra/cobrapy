@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Introes on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/intro/</link>
+    <description>Recent content in Introes on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://opencobra.github.io/cobrapy/intro/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title></title>
+      <link>https://opencobra.github.io/cobrapy/intro/description/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/intro/description/</guid>
+      <description>cobrapy is a python package that provides a simple interface to metabolic constraint-based reconstruction and analysis.
+&amp;gt;&amp;gt;&amp;gt; import cobra &amp;gt;&amp;gt;&amp;gt; model = cobra.io.read_sbml_model(&amp;#39;Ec_core_flux1.xml&amp;#39;) &amp;gt;&amp;gt;&amp;gt; model.metabolites[:3] [&amp;lt;Metabolite 13dpg_c at 0x112b2d160&amp;gt;, &amp;lt;Metabolite 2pg_c at 0x1024eb048&amp;gt;, &amp;lt;Metabolite 3pg_c at 0x112b2d748&amp;gt;] The package includes simple, object-oriented interfaces for model construction (including reading to/from sbml, matlab, and json formats) and implements commonly used COBRA methods such as flux balance analysis, flux variability analysis, and gene deletion analyses.</description>
+    </item>
+    
+    <item>
+      <title>Installation</title>
+      <link>https://opencobra.github.io/cobrapy/intro/installation/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/intro/installation/</guid>
+      <description>You can install cobrapy on linux, Mac OSX and Windows with pip.
+On Linux and Mac a simple:
+$ pip install cobra will be enough. On Windows substitute pip with pip.exe.
+Or install cobrapy with conda from conda-forge:
+$ conda install -c conda-forge cobra For futher help refer to the detailed installation instructions.</description>
+    </item>
+    
+    <item>
+      <title>Getting Help</title>
+      <link>https://opencobra.github.io/cobrapy/intro/help/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/intro/help/</guid>
+      <description>The documentation is browsable online at readthedocs and can also be downloaded.
+Please use the Google Group for help. Alternatively, you can use gitter.im for quick questions and discussions about cobrapy (faster response times).
+File bug reports and contribute to development on our github page.
+If you use cobrapy in a scientific publication, please cite our publication 😄</description>
+    </item>
+    
+  </channel>
+</rss>

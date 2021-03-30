@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>thermodynamics-based flux analysis on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/thermodynamics-based-flux-analysis/</link>
+    <description>Recent content in thermodynamics-based flux analysis on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 29 Jan 2018 13:03:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/tags/thermodynamics-based-flux-analysis/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>pytfa</title>
+      <link>https://opencobra.github.io/cobrapy/packages/pytfa/</link>
+      <pubDate>Mon, 29 Jan 2018 13:03:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/pytfa/</guid>
+      <description>Thermodynamics-based Flux Analysis, in Python.
+Implements: Henry, Christopher S., Linda J. Broadbelt, and Vassily Hatzimanikatis. &amp;ldquo;Thermodynamics-based metabolic flux analysis.&amp;rdquo; Biophysical journal 92.5 (2007): 1792-1805. DOI: https://doi.org/10.1529/biophysj.106.093138</description>
+    </item>
+    
+  </channel>
+</rss>

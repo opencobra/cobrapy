@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="description" content="Constraint-based Metabolic Modeling in Python.">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+	<meta name="generator" content="Hugo 0.82.0" />
+	<title>cobrapy - constraint-based metabolic modeling in Python</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.3.0/material.teal-indigo.min.css">
+	<link rel="stylesheet" href="../../css/styles.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <link rel="icon" type="image/png" href="../../media/favicon.png" />
+</head>
+<body>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+<header class="mdl-layout__header mdl-shadow--6dp mdl-color-text--black">
+<div class="mdl-layout__header-row mdl-color-text--black">
+	<span class="mdl-layout-title">Menu</span>
+	<div class="mdl-layout-spacer"></div>
+	<nav class="mdl-navigation mdl-layout--large-screen-only">
+		<a class="mdl-navigation__link mdl-color-text--black" href="../../">Home</a>
+        <a class="mdl-navigation__link" href="../../releases">Releases</a>
+		<a class="mdl-navigation__link mdl-color-text--black" href="../../packages">Packages</a>
+        <a class="mdl-navigation__link mdl-color-text--black" href="../../pubs">Publications</a>
+        <a class="mdl-navigation__link mdl-color-text--black" href="https://cobrapy.readthedocs.io/">Docs</a>
+	</nav>
+</div>
+</header>
+<div class="mdl-layout__drawer">
+	<span class="mdl-layout-title"><img src="../../media/logo.png" width="100%"></span>
+	<nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="../../">Home</a>
+        <a class="mdl-navigation__link" href="../../releases">Releases</a>
+		<a class="mdl-navigation__link" href="../../packages">Packages</a>
+        <a class="mdl-navigation__link" href="../../pubs">Publications</a>
+        <a class="mdl-navigation__link" href="https://cobrapy.readthedocs.io/en/stable/">Docs</a>
+	</nav>
+</div>
+<main class="mdl-layout__content">
+<div class="page-content mdl-grid">
+
+<div class="mdl-cell mdl-cell--12-col">
+<a class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect back" href="../../releases" id="back">
+<i class="material-icons">arrow_back</i></a>
+<span class="mdl-tooltip mdl-tooltip--right" for="back">Return to Releases...</span>
+<p></p>
+<div class="mdl-card mdl-shadow--4dp">
+<div class="mdl-card__supporting-text">
+<h1 class="mdl-color-text--accent header">0.19.0</h1>
+<h2 class="mdl-color-text--primary header">by The COBRApy Team</h2><br>
+<div><h1 id="release-notes-for-cobrapy-0190">Release notes for cobrapy 0.19.0</h1>
+<p>We now have an official code of conduct and a committee of three people to handle
+reports! You can contact them at <a href="mailto:conduct@opencobra.org">conduct@opencobra.org</a>.
+You can also contact them individually at:</p>
+<ul>
+<li><a href="mailto:MAC9JC@virginia.edu">Maureen Carey</a></li>
+<li><a href="mailto:svegal@biosustain.dtu.dk">Svetlana Kutuzova</a></li>
+<li><a href="mailto:GLM5UH@virginia.edu">Greg Medlock</a></li>
+</ul>
+<p>Many thanks to them for taking on this responsibility.</p>
+<h2 id="new-features">New features</h2>
+<ul>
+<li>Deletion result DataFrames as returned by functions from <code>cobra.deletions</code>
+now have a new <code>knockout</code> accessor. See the docs on usage examples.</li>
+<li>All summaries are now persistent objects. The same summary can be displayed in
+multiple ways. The underlying data for the summary can also be accessed.</li>
+<li>The model summary now displays elementary (by default carbon) uptake and secretion.</li>
+<li>The JSON schema is now available as a stand-alone JSON file.</li>
+</ul>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Remove the frozenset indexing in deletion DataFrames that is now unsupported
+in pandas.</li>
+<li>Summaries for models, metabolites, and reactions are now calculated instantaneously
+and thus also work with model contexts.</li>
+<li>JSON models can now contain infinity and NaN values as bounds.</li>
+<li>The Matlab bridge for reading Matlab models should be restored. Any testing or
+problem reports are greatly appreciated.</li>
+</ul>
+<h2 id="deprecated-features">Deprecated features</h2>
+<ul>
+<li>We are progressively updating our codebase. That means that more and more parts will
+require Python 3.6+.</li>
+</ul>
+<h2 id="backwards-incompatible-changes">Backwards incompatible changes</h2>
+<ul>
+<li>Deletion result DataFrames have no frozenset index anymore but now carry the
+deleted elements in the <code>ids</code> column.</li>
+</ul></div>
+</div>
+<div class="mdl-card__actions mdl-card--border">
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent" href="https://github.com/opencobra/cobrapy/releases/tag/0.19.0">See on Github</a>
+</div>
+</div><br></div>
+	</main>
+</div>
+</body>
+</html>
+

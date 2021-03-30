@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>dfba on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/dfba/</link>
+    <description>Recent content in dfba on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 07 Aug 2019 13:03:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/tags/dfba/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>dfba</title>
+      <link>https://opencobra.github.io/cobrapy/packages/dfba/</link>
+      <pubDate>Wed, 07 Aug 2019 13:03:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/dfba/</guid>
+      <description>The dfba project provides an object-oriented software package for dynamic flux-balance analysis (DFBA) simulations using implementations of the direct method or Algorithm 1 described in the paper Harwood et al., 2016. The main algorithms for solving embedded LP problems are written in C++ and use the GLPK (GNU Linear Programming (LP) Kit) and SUNDIALS (Suite of Nonlinear and Differential/Algebraic Equation Solvers) CVODE or IDA. Extension modules to cobrapy are provided for easy generation and simulation of DFBA models.</description>
+    </item>
+    
+  </channel>
+</rss>

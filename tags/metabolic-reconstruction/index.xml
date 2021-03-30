@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>metabolic reconstruction on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/metabolic-reconstruction/</link>
+    <description>Recent content in metabolic reconstruction on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 06 Jan 2017 11:00:01 -0600</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/tags/metabolic-reconstruction/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>memote</title>
+      <link>https://opencobra.github.io/cobrapy/packages/memote/</link>
+      <pubDate>Fri, 06 Jan 2017 11:00:01 -0600</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/memote/</guid>
+      <description>Our goal in promoting this tool is to achieve two major shifts in the metabolic model building community:
+ Models should be version-controlled such that changes can be tracked and if necessary reverted. Ideally, they should be available through a public repository such as GitHub that will allow other researchers to inspect, share, and contribute to the model. Models should, for the benefit of the community and for research gain, live up to certain standards and minimal functionality.</description>
+    </item>
+    
+  </channel>
+</rss>
