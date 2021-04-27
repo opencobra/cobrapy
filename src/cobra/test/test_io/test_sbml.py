@@ -74,7 +74,7 @@ trial_names = [node.name for node in trials]
 
 @pytest.mark.parametrize("trial", trials)
 def test_validate(trial, data_directory):
-    """ Test validation function. """
+    """Test validation function."""
     if trial.validation_function is None:
         pytest.skip("not implemented")
     test_file = join(data_directory, trial.test_file)
@@ -82,7 +82,7 @@ def test_validate(trial, data_directory):
 
 
 class TestCobraIO:
-    """ Tests the read and write functions. """
+    """Tests the read and write functions."""
 
     @classmethod
     def compare_models(cls, name, model1, model2):
@@ -309,7 +309,7 @@ def test_missing_flux_bounds2(data_directory):
 
 
 def test_validate(data_directory):
-    """Test the validation code. """
+    """Test the validation code."""
     sbml_path = join(data_directory, "mini_fbc2.xml")
     with open(sbml_path, "r") as f_in:
         model1, errors = validate_sbml_model(f_in, check_modeling_practice=True)
@@ -319,7 +319,7 @@ def test_validate(data_directory):
 
 
 def test_validation_warnings(data_directory):
-    """Test the validation warnings. """
+    """Test the validation warnings."""
     sbml_path = join(data_directory, "validation.xml")
     with open(sbml_path, "r") as f_in:
         model1, errors = validate_sbml_model(f_in, check_modeling_practice=True)
@@ -330,7 +330,7 @@ def test_validation_warnings(data_directory):
 
 
 def test_infinity_bounds(data_directory, tmp_path):
-    """Test infinity bound example. """
+    """Test infinity bound example."""
     sbml_path = join(data_directory, "fbc_ex1.xml")
     model = read_sbml_model(sbml_path)
 
@@ -354,7 +354,7 @@ def test_infinity_bounds(data_directory, tmp_path):
 
 
 def test_boundary_conditions(data_directory):
-    """Test infinity bound example. """
+    """Test infinity bound example."""
     sbml_path1 = join(data_directory, "fbc_ex1.xml")
     model1 = read_sbml_model(sbml_path1)
     sol1 = model1.optimize()
