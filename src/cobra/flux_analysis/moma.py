@@ -114,7 +114,7 @@ def add_moma(model, solution=None, linear=True):
         raise ValueError("model is already adjusted for MOMA")
 
     # Fall back to default QP solver if current one has no QP capability
-    if not linear:
+    if not linear and sutil.interface_to_str(model.problem) not in sutil.qp_solvers:
         model.solver = sutil.choose_solver(model, qp=True)
 
     if solution is None:

@@ -54,7 +54,7 @@ except ImportError:
 
 
 class CobraSBMLError(Exception):
-    """ SBML error class. """
+    """SBML error class."""
 
     pass
 
@@ -115,7 +115,7 @@ def _escape_non_alphanum(nonASCII):
 
 
 def _number_to_chr(numberStr):
-    """converts an ascii number to a character """
+    """converts an ascii number to a character"""
     return chr(int(numberStr.group(1)))
 
 

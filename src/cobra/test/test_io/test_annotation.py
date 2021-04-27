@@ -4,7 +4,7 @@ from cobra.io import read_sbml_model, write_sbml_model
 
 
 def _check_sbml_annotations(model):
-    """Checks the annotations from the annotation.xml. """
+    """Checks the annotations from the annotation.xml."""
     assert model is not None
 
     # model annotation

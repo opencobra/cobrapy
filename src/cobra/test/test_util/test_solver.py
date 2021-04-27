@@ -1,5 +1,6 @@
 """Test functions of solver.py."""
 
+import logging
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
@@ -11,7 +12,6 @@ from cobra.util import solver as su
 
 if TYPE_CHECKING:
     from cobra import Model
-
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = [f"optlang-{s}" for s in stable_optlang if s in su.solvers]
@@ -203,3 +203,13 @@ def test_time_limit(large_model: "Model") -> None:
 
     with pytest.raises(OptimizationError):
         sol = large_model.optimize(raise_error=True)
+
+
+@pytest.mark.parametrize(
+    "solver", [s for s in su.solvers if s in ["osqp", "coinor_cbc"]]
+)
+def test_specialized_solver_warning(solver, caplog):
+    """Test the warning for specialized solvers."""
+    with caplog.at_level(logging.WARNING):
+        su.check_solver(solver)
+    assert "are specialized solvers for" in caplog.text
