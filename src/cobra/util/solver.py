@@ -333,7 +333,7 @@ def check_solver(obj):
         If the solver is not valid.
     """
     not_valid_interface = SolverNotFound(
-        "%s is not a valid solver interface. Pick from %s." % (obj, list(solvers))
+        f"{obj} is not a valid solver interface. Pick one from {', '.join(solvers)}."
     )
     if isinstance(obj, str):
         try:
@@ -349,10 +349,11 @@ def check_solver(obj):
 
     if interface_to_str(interface) in ["osqp", "coinor_cbc"]:
         logger.warning(
-            "OSQB and CBC are specialized solvers for QP and MIP problems and may "
-            "not perform well on general LP problems. So we recommend to change the "
-            "solver back to a general purpose solver like "
-            "`model.solver = 'glpk'` for instance."
+            "OSQP and CBC are specialized solvers for quadratic programming (QP) and "
+            "mixed-integer programming (MIP) problems and may not perform well on "
+            "general LP problems. So unless you intend to solve a QP or MIP problem, "
+            "we recommend to change the solver back to a general purpose solver "
+            "like `model.solver = 'glpk'` for instance."
         )
 
     return interface

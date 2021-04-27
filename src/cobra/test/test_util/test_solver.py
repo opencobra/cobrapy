@@ -13,8 +13,6 @@ from cobra.util import solver as su
 if TYPE_CHECKING:
     from cobra import Model
 
-logger = logging.getLogger(__name__)
-
 stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = [f"optlang-{s}" for s in stable_optlang if s in su.solvers]
 
