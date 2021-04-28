@@ -6,7 +6,24 @@
     <description>Recent content in Releases on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 06 Feb 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/releases/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 28 Apr 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/releases/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>0.22.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.22.0/</link>
+      <pubDate>Wed, 28 Apr 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.22.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0220&#34;&gt;Release notes for cobrapy 0.22.0&lt;/h1&gt;
+&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Add support for the OSQP and COIN-OR CBC solvers (#946)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Fix the &lt;code&gt;Reaction.compartments&lt;/code&gt; attribute not updating after metabolite changes (#1055)&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
     <item>
       <title>0.21.0</title>
       <link>https://opencobra.github.io/cobrapy/releases/0.21.0/</link>
