@@ -58,17 +58,6 @@ def _escape_str_id(id_str: str) -> str:
 class _GeneEscaper(NodeTransformer):
     """Class to represent a gene ID escaper."""
 
-    def __init__(self, **kwargs) -> None:
-        """Initialize a new object.
-
-        Other Parameters
-        ----------------
-        **kwargs :
-            Further keyword arguments are passed on to the parent class.
-
-        """
-        super().__init__(**kwargs)
-
     def visit_Name(self, node: "Gene") -> "Gene":
         """Escape string ID.
 
