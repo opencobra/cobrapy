@@ -105,6 +105,48 @@ def escape_ID(model: "Model") -> None:
             rxn._gene_reaction_rule = ast2str(gene_renamer.visit(rule))
 
 
+class _Renamer(NodeTransformer):
+    """
+    Class to represent a gene renamer.
+
+    Parameters
+    ----------
+    rename_dict: dict of {str: str}
+        The dictionary having keys as old gene names
+        and value as new gene names.
+
+    """
+
+    def __init__(self, rename_dict: Dict[str, str], **kwargs) -> None:
+        """Initialize a new object.
+
+        Other Parameters
+        ----------------
+        **kwargs:
+            Further keyword arguments are passed on to the parent class.
+
+        """
+        super().__init__(**kwargs)
+        self.rename_dict = rename_dict
+
+    def visit_Name(self, node: "Gene") -> "Gene":
+        """Rename a gene.
+
+        Parameters
+        ----------
+        node: cobra.Gene
+            The gene to rename.
+
+        Returns
+        -------
+        cobra.Gene
+            The renamed gene object.
+
+        """
+        node.id = self.rename_dict.get(node.id, node.id)
+        return node
+
+
 def rename_genes(model: "Model", rename_dict: Dict[str, str]) -> None:
     """Rename genes in a model from the `rename_dict`.
 
@@ -150,38 +192,7 @@ def rename_genes(model: "Model", rename_dict: Dict[str, str]) -> None:
             pass
     model.repair()
 
-    class Renamer(NodeTransformer):
-        """Class to represent a gene renamer."""
-
-        def __init__(self, **kwargs) -> None:
-            """Initialize a new object.
-
-            Other Parameters
-            ----------------
-            **kwargs:
-                Further keyword arguments are passed on to the parent class.
-
-            """
-            super().__init__(**kwargs)
-
-        def visit_Name(self, node: "Gene") -> "Gene":
-            """Rename a gene.
-
-            Parameters
-            ----------
-            node: cobra.Gene
-                The gene to rename.
-
-            Returns
-            -------
-            cobra.Gene
-                The renamed gene object.
-
-            """
-            node.id = rename_dict.get(node.id, node.id)
-            return node
-
-    gene_renamer = Renamer()
+    gene_renamer = _Renamer(rename_dict)
     for rxn, rule in get_compiled_gene_reaction_rules(model).items():
         if rule is not None:
             rxn._gene_reaction_rule = ast2str(gene_renamer.visit(rule))
