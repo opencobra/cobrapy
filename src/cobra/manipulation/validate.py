@@ -41,7 +41,7 @@ def check_mass_balance(model: "Model") -> Dict["Reaction", Dict["Metabolite", fl
 
 
 def check_metabolite_compartment_formula(model: "Model") -> List[str]:
-    """Check metabolite compartments of `model`.
+    """Check metabolite formulae of `model`.
 
     Parameters
     ----------
