@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
-
 """Define module level fixtures."""
 
-
-from __future__ import absolute_import
+from typing import List
 
 import pytest
 from pandas import Series
@@ -14,13 +11,11 @@ from cobra.util import solver as sutil
 
 # The scipy interface is currently unstable and may yield errors or infeasible
 # solutions.
-
-
 @pytest.fixture(
     scope="session",
     params=[s for s in ["glpk", "cplex", "gurobi"] if s in sutil.solvers],
 )
-def all_solvers(request):
+def all_solvers(request) -> List[str]:
     """Return the avaialble solvers."""
     return request.param
 
@@ -29,15 +24,14 @@ def all_solvers(request):
     scope="session",
     params=[s for s in ["cplex", "gurobi", "osqp"] if s in sutil.solvers],
 )
-def qp_solvers(request):
+def qp_solvers(request) -> List[str]:
     """Return the available QP solvers."""
     return request.param
 
 
 @pytest.fixture(scope="module")
-def room_model():
-    """
-    Generate ROOM model as described in [1]_
+def room_model() -> Model:
+    """Generate ROOM model as described in [1]_ .
 
     References
     ----------
@@ -76,9 +70,8 @@ def room_model():
 
 
 @pytest.fixture(scope="module")
-def room_solution():
-    """
-    Generate ROOM solution as described in [1]_
+def room_solution() -> Solution:
+    """Generate ROOM solution as described in [1]_ .
 
     References
     ----------
