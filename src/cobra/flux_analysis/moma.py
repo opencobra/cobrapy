@@ -1,23 +1,26 @@
-# -*- coding: utf-8 -*-
-
 """Provide minimization of metabolic adjustment (MOMA)."""
 
-from __future__ import absolute_import
+from typing import TYPE_CHECKING, Optional
 
 from optlang.symbolics import Zero, add
 
-from cobra.flux_analysis.parsimonious import pfba
-from cobra.util import solver as sutil
+from ..util import solver as sutil
+from .parsimonious import pfba
 
 
-def moma(model, solution=None, linear=True):
-    """
-    Compute a single solution based on (linear) MOMA.
+if TYPE_CHECKING:
+    from cobra.core import Model, Solution
+
+
+def moma(
+    model: "Model", solution: Optional["Solution"] = None, linear: bool = True
+) -> "Solution":
+    """Compute a single solution based on (linear) MOMA.
 
     Compute a new flux distribution that is at a minimal distance to a
-    previous reference solution. Minimization of metabolic adjustment (MOMA) is
-    generally used to assess the impact
-    of knock-outs. Thus the typical usage is to provide a wildtype flux
+    previous reference solution `solution`. Minimization of metabolic
+    adjustment (MOMA) is generally used to assess the impact
+    of knock-outs. Thus, the typical usage is to provide a wild-type flux
     distribution as reference and a model in knock-out state.
 
     Parameters
@@ -25,7 +28,7 @@ def moma(model, solution=None, linear=True):
     model : cobra.Model
         The model state to compute a MOMA-based solution for.
     solution : cobra.Solution, optional
-        A (wildtype) reference solution.
+        A (wild-type) reference solution (default None).
     linear : bool, optional
         Whether to use the linear MOMA formulation or not (default True).
 
@@ -46,8 +49,11 @@ def moma(model, solution=None, linear=True):
     return solution
 
 
-def add_moma(model, solution=None, linear=True):
-    r"""Add constraints and objective representing for MOMA.
+def add_moma(
+    model: "Model", solution: Optional["Solution"] = None, linear: bool = True
+) -> None:
+    r"""
+    Add MOMA constraints and objective representing to the `model`.
 
     This adds variables and constraints for the minimization of metabolic
     adjustment (MOMA) to the model.
@@ -58,38 +64,39 @@ def add_moma(model, solution=None, linear=True):
         The model to add MOMA constraints and objective to.
     solution : cobra.Solution, optional
         A previous solution to use as a reference. If no solution is given,
-        one will be computed using pFBA.
+        one will be computed using pFBA (default None).
     linear : bool, optional
         Whether to use the linear MOMA formulation or not (default True).
 
     Notes
     -----
-    In the original MOMA [1]_ specification one looks for the flux distribution
-    of the deletion (v^d) closest to the fluxes without the deletion (v).
+    In the original MOMA [1]_ specification, one looks for the flux
+    distribution of the deletion (v^d) closest to the fluxes without the
+    deletion (v).
     In math this means:
 
-    minimize \sum_i (v^d_i - v_i)^2
-    s.t. Sv^d = 0
-         lb_i <= v^d_i <= ub_i
+    minimize: \sum_i (v^d_i - v_i)^2
+    s.t.    : Sv^d = 0
+              lb_i \le v^d_i \le ub_i
 
     Here, we use a variable transformation v^t := v^d_i - v_i. Substituting
     and using the fact that Sv = 0 gives:
 
-    minimize \sum_i (v^t_i)^2
-    s.t. Sv^d = 0
-         v^t = v^d_i - v_i
-         lb_i <= v^d_i <= ub_i
+    minimize: \sum_i (v^t_i)^2
+    s.t.    : Sv^d = 0
+              v^t = v^d_i - v_i
+              lb_i \le v^d_i \le ub_i
 
-    So basically we just re-center the flux space at the old solution and then
-    find the flux distribution closest to the new zero (center). This is the
-    same strategy as used in cameo.
+    So, basically we just re-center the flux space at the old solution and
+    then find the flux distribution closest to the new zero (center). This
+    is the same strategy as used in cameo.
 
-    In the case of linear MOMA [2]_, we instead minimize \sum_i abs(v^t_i). The
-    linear MOMA is typically significantly faster. Also quadratic MOMA tends
-    to give flux distributions in which all fluxes deviate from the reference
-    fluxes a little bit whereas linear MOMA tends to give flux distributions
-    where the majority of fluxes are the same reference with few fluxes
-    deviating a lot (typical effect of L2 norm vs L1 norm).
+    In the case of linear MOMA [2]_, we instead minimize \sum_i abs(v^t_i).
+    The linear MOMA is typically significantly faster. Also, quadratic MOMA
+    tends to give flux distributions in which all fluxes deviate from the
+    reference fluxes a little bit whereas linear MOMA tends to give flux
+    distributions where the majority of fluxes are the same reference with
+    few fluxes deviating a lot (typical effect of L2 norm vs L1 norm).
 
     The former objective function is saved in the optlang solver interface as
     ``"moma_old_objective"`` and this can be used to immediately extract the
@@ -111,7 +118,7 @@ def add_moma(model, solution=None, linear=True):
            The COBRA Toolbox.” Nature Protocols 2 (March 29, 2007): 727.
     """
     if "moma_old_objective" in model.solver.variables:
-        raise ValueError("model is already adjusted for MOMA")
+        raise ValueError("The model is already adjusted for MOMA.")
 
     # Fall back to default QP solver if current one has no QP capability
     if not linear and sutil.interface_to_str(model.problem) not in sutil.qp_solvers:
