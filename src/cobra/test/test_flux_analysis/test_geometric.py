@@ -1,21 +1,16 @@
-# -*- coding: utf-8 -*-
-
 """Test functionalities of Geometric FBA."""
 
-from __future__ import absolute_import
-
 import numpy as np
+import pandas as pd
 import pytest
-from pandas import Series
 
-from cobra.core import Metabolite, Model, Reaction, Solution
+from cobra.core import Metabolite, Model, Reaction
 from cobra.flux_analysis import geometric_fba
 
 
 @pytest.fixture(scope="module")
-def geometric_fba_model():
-    """
-    Generate geometric FBA model as described in [1]_
+def geometric_fba_model() -> Model:
+    """Generate geometric FBA model as described in [1]_ .
 
     References
     ----------
@@ -52,17 +47,17 @@ def geometric_fba_model():
     return test_model
 
 
-def test_geometric_fba_benchmark(model, benchmark, all_solvers):
+def test_geometric_fba_benchmark(model: Model, benchmark, all_solvers) -> None:
     """Benchmark geometric_fba."""
     model.solver = all_solvers
     benchmark(geometric_fba, model, processes=1)
 
 
-def test_geometric_fba(geometric_fba_model, all_solvers):
+def test_geometric_fba(geometric_fba_model: Model, all_solvers) -> None:
     """Test geometric_fba."""
     geometric_fba_model.solver = all_solvers
     geometric_fba_sol = geometric_fba(geometric_fba_model, processes=1)
-    expected = Series(
+    expected = pd.Series(
         {"v1": 1.0, "v2": 0.33, "v3": 0.33, "v4": 0.33, "v5": 1.0},
         index=["v1", "v2", "v3", "v4", "v5"],
     )
