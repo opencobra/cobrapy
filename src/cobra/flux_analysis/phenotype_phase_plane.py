@@ -237,7 +237,7 @@ def _total_yield(
     input_elements: List[float],
     output_flux: List[float],
     output_elements: List[float],
-) -> Union[float, np.nan]:
+) -> float:
     """Compute total output per input unit.
 
     Units are typically mol carbon atoms or gram of source and product.
@@ -256,7 +256,7 @@ def _total_yield(
 
     Returns
     -------
-    float or numpy.nan
+    float
         The ratio between output (mol carbon atoms or grams of product) and
         input (mol carbon atoms or grams of source compounds). If input flux
         of carbon sources is zero then numpy.nan is returned.
