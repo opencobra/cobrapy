@@ -1,7 +1,8 @@
-"""Provide a class for gap filling."""
+"""Provide the base class and utility function for gap filling."""
 
 
 import logging
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 from optlang.interface import OPTIMAL
 from optlang.symbolics import Zero
@@ -10,11 +11,16 @@ from cobra.core import Model
 from cobra.util import fix_objective_as_constraint, interface_to_str
 
 
+if TYPE_CHECKING:
+    from cobra import Reaction
+
+
 logger = logging.getLogger(__name__)
 
 
-class GapFiller(object):
-    """Class for performing gap filling.
+class GapFiller:
+    r"""
+    The base class for performing gap filling.
 
     This class implements gap filling based on a mixed-integer approach,
     very similar to that described in [1]_ and the 'no-growth but growth'
@@ -22,45 +28,54 @@ class GapFiller(object):
     variables for using the reactions in the universal model, z_i and then
     solve problem
 
-    minimize \sum_i c_i * z_i
-    s.t. Sv = 0
-         v_o >= t
-         lb_i <= v_i <= ub_i
-         v_i = 0 if z_i = 0
+    minimize: \sum_i c_i * z_i
+    s.t.    : Sv = 0
+              v_o \ge t
+              lb_i \le v_i \le ub_i
+              v_i = 0 if z_i = 0
 
-    where lb, ub are the upper, lower flux bounds for reaction i, c_i is a
-    cost parameter and the objective v_o is greater than the lower bound t.
-    The default costs are 1 for reactions from the universal model, 100 for
-    exchange (uptake) reactions added and 1 for added demand reactions.
+    where lb, ub are respectively the upper, lower flux bounds for reaction i,
+    c_i is a cost parameter and the objective v_o is greater than the lower
+    bound t. The default costs are 1 for reactions from the universal model,
+    100 for exchange (uptake) reactions added and 1 for added demand reactions.
 
-    Note that this is a mixed-integer linear program and as such will
+    Note that this is a mixed-integer linear program and as such will be
     expensive to solve for large models. Consider using alternatives [3]_
-    such as CORDA instead [4,5]_.
+    such as CORDA instead [4,5]_ .
 
     Parameters
     ----------
     model : cobra.Model
         The model to perform gap filling on.
-    universal : cobra.Model
+    universal : cobra.Model, optional
         A universal model with reactions that can be used to complete the
-        model.
-    lower_bound : float
-        The minimally accepted flux for the objective in the filled model.
-    penalties : dict, None
+        `model` (default None).
+    lower_bound : float, optional
+        The minimally accepted flux for the objective in the filled model
+        (default 0.05).
+    penalties : dict, optional
         A dictionary with keys being 'universal' (all reactions included in
         the universal model), 'exchange' and 'demand' (all additionally
         added exchange and demand reactions) for the three reaction types.
         Can also have reaction identifiers for reaction specific costs.
-        Defaults are 1, 100 and 1 respectively.
-    integer_threshold : float
+        Defaults are 1, 100 and 1 respectively (default None).
+    exchange_reactions : bool, optional
+        Consider adding exchange (uptake) reactions for all metabolites
+        in the model (default False).
+    demand_reactions : bool, optional
+        Consider adding demand reactions for all metabolites (default True).
+    integer_threshold : float, optional
         The threshold at which a value is considered non-zero (aka
         integrality threshold). If gapfilled models fail to validate,
-        you may want to lower this value.
-    exchange_reactions : bool
-        Consider adding exchange (uptake) reactions for all metabolites
-        in the model.
-    demand_reactions : bool
-        Consider adding demand reactions for all metabolites.
+        you may want to lower this value (default 1E-6).
+
+    Attributes
+    ----------
+    indicators: list of optlang.interface.Variable
+        The list of symbolic indicator variables.
+    costs: dict of {optlang.interface.Variable: float}
+        The dictionary with symbolic variables as keys and their cost as
+        values.
 
     References
     ----------
@@ -70,32 +85,42 @@ class GapFiller(object):
        to Refining Genome Annotation.” Proceedings of the National Academy
        of Sciences 103, no. 46 (2006): 17480–17484.
 
-       [2] Kumar, Vinay Satish, and Costas D. Maranas. “GrowMatch: An
+    .. [2] Kumar, Vinay Satish, and Costas D. Maranas. “GrowMatch: An
        Automated Method for Reconciling In Silico/In Vivo Growth
        Predictions.” Edited by Christos A. Ouzounis. PLoS Computational
        Biology 5, no. 3 (March 13, 2009): e1000308.
        doi:10.1371/journal.pcbi.1000308.
 
-       [3] http://opencobra.github.io/cobrapy/tags/gapfilling/
+    .. [3] http://opencobra.github.io/cobrapy/tags/gapfilling/
 
-       [4] Schultz, André, and Amina A. Qutub. “Reconstruction of
+    .. [4] Schultz, André, and Amina A. Qutub. “Reconstruction of
        Tissue-Specific Metabolic Networks Using CORDA.” Edited by Costas D.
        Maranas. PLOS Computational Biology 12, no. 3 (March 4, 2016):
        e1004808. doi:10.1371/journal.pcbi.1004808.
 
-       [5] Diener, Christian https://github.com/cdiener/corda
+    .. [5] Diener, Christian https://github.com/cdiener/corda
+
     """
 
     def __init__(
         self,
-        model,
-        universal=None,
-        lower_bound=0.05,
-        penalties=None,
-        exchange_reactions=False,
-        demand_reactions=True,
-        integer_threshold=1e-6,
-    ):
+        model: Model,
+        universal: Optional[Model] = None,
+        lower_bound: float = 0.05,
+        penalties: Optional[Dict[str, "Reaction"]] = None,
+        exchange_reactions: bool = False,
+        demand_reactions: bool = True,
+        integer_threshold: float = 1e-6,
+        **kwargs,
+    ) -> None:
+        """Initialize a new GapFiller object.
+
+        Other Parameters
+        ----------------
+        kwargs :
+            Further keyword arguments are passed on to the parent class.
+
+        """
         self.original_model = model
         self.lower_bound = lower_bound
         self.model = model.copy()
@@ -114,26 +139,30 @@ class GapFiller(object):
         self.penalties = dict(universal=1, exchange=100, demand=1)
         if penalties is not None:
             self.penalties.update(penalties)
-        self.indicators = list()
-        self.costs = dict()
+        self.indicators = []
+        self.costs = {}
         self.extend_model(exchange_reactions, demand_reactions)
         fix_objective_as_constraint(self.model, bound=lower_bound)
         self.add_switches_and_objective()
 
-    def extend_model(self, exchange_reactions=False, demand_reactions=True):
-        """Extend gapfilling model.
+    def extend_model(
+        self, exchange_reactions: bool = False, demand_reactions: bool = True
+    ) -> None:
+        """Extend gap filling model.
 
         Add reactions from universal model and optionally exchange and
         demand reactions for all metabolites in the model to perform
-        gapfilling on.
+        gap filling on.
 
         Parameters
         ----------
-        exchange_reactions : bool
+        exchange_reactions : bool, optional
             Consider adding exchange (uptake) reactions for all metabolites
-            in the model.
-        demand_reactions : bool
-            Consider adding demand reactions for all metabolites.
+            in the model (default False).
+        demand_reactions : bool, optional
+            Consider adding demand reactions for all metabolites
+            (default True).
+
         """
         for rxn in self.universal.reactions:
             rxn.gapfilling_type = "universal"
@@ -156,7 +185,7 @@ class GapFiller(object):
                         type="exchange_smiley",
                         lb=-1000,
                         ub=0,
-                        reaction_id="EX_{}".format(met.id),
+                        reaction_id=f"EX_{met.id}",
                     )
                     rxn.gapfilling_type = "exchange"
             if demand_reactions:
@@ -165,7 +194,7 @@ class GapFiller(object):
                     type="demand_smiley",
                     lb=0,
                     ub=1000,
-                    reaction_id="DM_{}".format(met.id),
+                    reaction_id=f"DM_{met.id}",
                 )
                 rxn.gapfilling_type = "demand"
 
@@ -174,12 +203,13 @@ class GapFiller(object):
         )
         self.model.add_reactions(new_reactions)
 
-    def update_costs(self):
-        """Update the coefficients for the indicator variables in the objective.
+    def update_costs(self) -> None:
+        """Update coefficients for the indicator variables in the objective.
 
         Done incrementally so that second time the function is called,
         active indicators in the current solutions gets higher cost than the
         unused indicators.
+
         """
         for var in self.indicators:
             if var not in self.costs:
@@ -189,16 +219,16 @@ class GapFiller(object):
                     self.costs[var] += var.cost
         self.model.objective.set_linear_coefficients(self.costs)
 
-    def add_switches_and_objective(self):
-        """Update gapfilling model with switches and the indicator objective."""
-        constraints = list()
+    def add_switches_and_objective(self) -> None:
+        """Update gap filling model with switches and indicator objective."""
+        constraints = []
         big_m = max(max(abs(b) for b in r.bounds) for r in self.model.reactions)
         prob = self.model.problem
         for rxn in self.model.reactions:
             if not hasattr(rxn, "gapfilling_type"):
                 continue
             indicator = prob.Variable(
-                name="indicator_{}".format(rxn.id), lb=0, ub=1, type="binary"
+                name=f"indicator_{rxn.id}", lb=0, ub=1, type="binary"
             )
             if rxn.id in self.penalties:
                 indicator.cost = self.penalties[rxn.id]
@@ -212,13 +242,13 @@ class GapFiller(object):
             constraint_lb = prob.Constraint(
                 rxn.flux_expression - big_m * indicator,
                 ub=0,
-                name="constraint_lb_{}".format(rxn.id),
+                name=f"constraint_lb_{rxn.id}",
                 sloppy=True,
             )
             constraint_ub = prob.Constraint(
                 rxn.flux_expression + big_m * indicator,
                 lb=0,
-                name="constraint_ub_{}".format(rxn.id),
+                name=f"constraint_ub_{rxn.id}",
                 sloppy=True,
             )
 
@@ -230,27 +260,28 @@ class GapFiller(object):
         self.model.objective.set_linear_coefficients({i: 1 for i in self.indicators})
         self.update_costs()
 
-    def fill(self, iterations=1):
-        """Perform the gapfilling by iteratively solving the model, updating
-        the costs and recording the used reactions.
+    def fill(self, iterations: int = 1) -> List[List["Reaction"]]:
+        """Perform the gap filling.
 
+        With every iteration, it solves the model, updates the costs and
+        records the used reactions.
 
         Parameters
         ----------
-        iterations : int
-            The number of rounds of gapfilling to perform. For every
+        iterations : int, optional
+            The number of rounds of gap filling to perform. For every
             iteration, the penalty for every used reaction increases
             linearly. This way, the algorithm is encouraged to search for
             alternative solutions which may include previously used
-            reactions. I.e., with enough iterations pathways including 10
+            reactions i.e., with enough iterations pathways including 10
             steps will eventually be reported even if the shortest pathway
-            is a single reaction.
+            is a single reaction (default 1).
 
         Returns
         -------
-        iterable
-            A list of lists where each element is a list reactions that were
-            used to gapfill the model.
+        list of list of cobra.Reaction
+            A list of lists where each element is a list of reactions that
+            were used to gap fill the model.
 
         Raises
         ------
@@ -258,11 +289,12 @@ class GapFiller(object):
             If the model fails to be validated (i.e. the original model with
             the proposed reactions added, still cannot get the required flux
             through the objective).
+
         """
-        used_reactions = list()
-        for i in range(iterations):
+        used_reactions = []
+        for _ in range(iterations):
             self.model.slim_optimize(
-                error_value=None, message="gapfilling optimization failed"
+                error_value=None, message="gap filling optimization failed"
             )
             solution = [
                 self.model.reactions.get_by_id(ind.rxn_id)
@@ -271,14 +303,27 @@ class GapFiller(object):
             ]
             if not self.validate(solution):
                 raise RuntimeError(
-                    "failed to validate gapfilled model, "
-                    "try lowering the integer_threshold"
+                    "Failed to validate gap filled model, "
+                    "try lowering the integer threshold."
                 )
             used_reactions.append(solution)
             self.update_costs()
         return used_reactions
 
-    def validate(self, reactions):
+    def validate(self, reactions: List["Reaction"]) -> bool:
+        """Validate the model.
+
+        Parameters
+        ----------
+        reactions: list of cobra.Reaction
+            The reactions to add to the model for validation.
+
+        Returns
+        -------
+        bool
+            Whether the model is valid or not.
+
+        """
         with self.original_model as model:
             mets = [x.metabolites for x in reactions]
             all_keys = set().union(*(d.keys() for d in mets))
@@ -292,64 +337,64 @@ class GapFiller(object):
 
 
 def gapfill(
-    model,
-    universal=None,
-    lower_bound=0.05,
-    penalties=None,
-    demand_reactions=True,
-    exchange_reactions=False,
-    iterations=1,
+    model: Model,
+    universal: Optional[Model] = None,
+    lower_bound: float = 0.05,
+    penalties: Optional[Dict[str, "Reaction"]] = None,
+    demand_reactions: bool = True,
+    exchange_reactions: bool = False,
+    iterations: int = 1,
 ):
-    """Perform gapfilling on a model.
+    """Perform gap filling on a model.
 
-        See documentation for the class GapFiller.
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to perform gap filling on.
+    universal : cobra.Model, optional
+        A universal model with reactions that can be used to complete the
+        model. Only gapfill considering demand and exchange reactions if
+        left missing (default None).
+    lower_bound : float, optional
+        The minimally accepted flux for the objective in the filled model.
+        (default 0.05).
+    penalties : dict, optional
+        A dictionary with keys being 'universal' (all reactions included in
+        the universal model), 'exchange' and 'demand' (all additionally
+        added exchange and demand reactions) for the three reaction types.
+        Can also have reaction identifiers for reaction specific costs.
+        Defaults are 1, 100 and 1 respectively (default None).
+    exchange_reactions : bool, optional
+        Consider adding exchange (uptake) reactions for all metabolites
+        in the model (default False).
+    demand_reactions : bool, optional
+        Consider adding demand reactions for all metabolites (default True).
+    iterations : int, optional
+        The number of rounds of gap filling to perform. For every iteration,
+        the penalty for every used reaction increases linearly. This way,
+        the algorithm is encouraged to search for alternative solutions
+        which may include previously used reactions i.e., with enough
+        iterations pathways including 10 steps will eventually be reported
+        even if the shortest pathway is a single reaction (default 1).
 
-        Parameters
-        ----------
-        model : cobra.Model
-            The model to perform gap filling on.
-        universal : cobra.Model, None
-            A universal model with reactions that can be used to complete the
-            model. Only gapfill considering demand and exchange reactions if
-            left missing.
-        lower_bound : float
-            The minimally accepted flux for the objective in the filled model.
-        penalties : dict, None
-            A dictionary with keys being 'universal' (all reactions included in
-            the universal model), 'exchange' and 'demand' (all additionally
-            added exchange and demand reactions) for the three reaction types.
-            Can also have reaction identifiers for reaction specific costs.
-            Defaults are 1, 100 and 1 respectively.
-        iterations : int
-            The number of rounds of gapfilling to perform. For every iteration,
-            the penalty for every used reaction increases linearly. This way,
-            the algorithm is encouraged to search for alternative solutions
-            which may include previously used reactions. I.e., with enough
-            iterations pathways including 10 steps will eventually be reported
-            even if the shortest pathway is a single reaction.
-        exchange_reactions : bool
-            Consider adding exchange (uptake) reactions for all metabolites
-            in the model.
-        demand_reactions : bool
-            Consider adding demand reactions for all metabolites.
+    Returns
+    -------
+    list of list of cobra.Reaction
+        A list of lists with on set of reactions that completes the model per
+        requested iteration.
 
-        Returns
-        -------
-        iterable
-            list of lists with on set of reactions that completes the model per
-            requested iteration.
+    Examples
+    --------
+    >>> import cobra.test as ct
+    >>> from cobra import Model
+    >>> from cobra.flux_analysis import gapfill
+    >>> model = ct.create_test_model("salmonella")
+    >>> universal = Model("universal")
+    >>> universal.add_reactions([model.reactions.GF6PTA.copy()])
+    >>> model.remove_reactions([model.reactions.GF6PTA])
+    >>> gapfill(model, universal)
+    [[<Reaction GF6PTA at 0x12206a280>]]
 
-        Examples
-        --------
-
-    import cobra as ct
-        >>> from cobra import Model
-        >>> from cobra.flux_analysis import gapfill
-        >>> model = ct.create_test_model("salmonella")
-        >>> universal = Model('universal')
-        >>> universal.add_reactions(model.reactions.GF6PTA.copy())
-        >>> model.remove_reactions([model.reactions.GF6PTA])
-        >>> gapfill(model, universal)
     """
     gapfiller = GapFiller(
         model,
