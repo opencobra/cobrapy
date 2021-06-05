@@ -55,7 +55,7 @@ def assess(
     reaction = model.reactions.get_by_any(reaction)[0]
     with model as m:
         m.objective = reaction
-        if _optimize_or_value(m) >= flux_coefficient_cutoff:
+        if m.slim_optimize(error_value=0.0) >= flux_coefficient_cutoff:
             return True
         else:
             results = dict()
@@ -117,7 +117,7 @@ def assess_component(
     get_components = attrgetter(side)
     with model as m:
         m.objective = reaction
-        if _optimize_or_value(m) >= flux_coefficient_cutoff:
+        if m.slim_optimize(error_value=0.0) >= flux_coefficient_cutoff:
             return True
         simulation_results = {}
         # build the demand reactions and add all at once
@@ -133,7 +133,7 @@ def assess_component(
             joint_demand += demand_reaction
         m.add_reactions([joint_demand])
         m.objective = joint_demand
-        if _optimize_or_value(m) >= flux_coefficient_cutoff:
+        if m.slim_optimize(error_value=0.0) >= flux_coefficient_cutoff:
             return True
 
         # Otherwise assess the ability of the model to produce each precursor
@@ -143,7 +143,7 @@ def assess_component(
             # Calculate the maximum amount of the
             with m:
                 m.objective = demand_reaction
-                flux = _optimize_or_value(m)
+                flux = m.slim_optimize(error_value=0.0)
             # metabolite that can be produced.
             if flux_coefficient_cutoff > flux:
                 # Scale the results to a single unit
@@ -164,6 +164,11 @@ def _optimize_or_value(model: "Model", value: float = 0.0) -> float:
     """Perform quick optimization and return the objective value.
 
     The objective value is returned at `value` error value.
+
+    .. deprecated:: 0.22.0
+              `_optimize_or_value` will be removed in cobrapy 1.0.0, its
+              functionality can be achieved by using
+              `cobra.Model.slim_optimize`.
 
     Parameters
     ----------
