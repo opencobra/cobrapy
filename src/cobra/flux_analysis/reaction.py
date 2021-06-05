@@ -15,6 +15,7 @@ def assess(
     model: "Model",
     reaction: Union[Reaction, str],
     flux_coefficient_cutoff: float = 0.001,
+    solver: str = None,
 ) -> Union[bool, Dict]:
     """Assess production capacity.
 
@@ -22,6 +23,11 @@ def assess(
     `reaction` and absorb the production of the `reaction` while the
     `reaction` is operating at, or above, the specified
     `flux_coefficient_cutoff`.
+
+    .. deprecated:: 0.10.0a1
+              `solver` argument will be removed in cobrapy 1.0.0, it is
+              replaced by globally setting the solver via
+              cobra.Configuration .
 
     Parameters
     ----------
@@ -32,6 +38,9 @@ def assess(
     flux_coefficient_cutoff : float, optional
         The minimum flux that reaction must carry to be considered active
         (default 0.001).
+    solver : str, optional
+        The solver name. If None, the default solver will be used
+        (default None).
 
     Returns
     -------
@@ -64,12 +73,18 @@ def assess_component(
     reaction: Union[Reaction, str],
     side: str,
     flux_coefficient_cutoff: float = 0.001,
+    solver: str = None,
 ) -> Union[bool, Dict]:
     """Assess production capacity of components.
 
     Assess the ability of the `model` to provide sufficient precursors,
     or absorb products, for a `reaction` operating at, or beyond,
     the specified `flux_coefficient_cutoff`.
+
+    .. deprecated:: 0.10.0a1
+              `solver` argument will be removed in cobrapy 1.0.0, it is
+              replaced by globally setting the solver via
+              cobra.Configuration .
 
     Parameters
     ----------
@@ -82,6 +97,9 @@ def assess_component(
     flux_coefficient_cutoff : float, optional
         The minimum flux that reaction must carry to be considered active
         (default 0.001).
+    solver : str, optional
+        The solver name. If None, the default solver will be used
+        (default None).
 
     Returns
     -------
