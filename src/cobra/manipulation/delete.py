@@ -2,6 +2,7 @@
 
 from ast import And, Module, NodeTransformer
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from warnings import warn
 
 from ..core.gene import ast2str, eval_gpr, parse_gpr
 
@@ -132,7 +133,15 @@ def find_gene_knockout_reactions(
     list of cobra.Reaction
        The list of cobra.Reaction objects which will be disabled.
 
+    .. deprecated:: 0.22.1
+        Internal function that has outlived its purpose.
+
     """
+    warn(
+        "The function `find_gene_knockout_reactions` has outlived its purpose. "
+        "It will be removed in the next minor version (0.23.0).",
+        DeprecationWarning,
+    )
     potential_reactions = set()
     for gene in gene_list:
         if isinstance(gene, str):
