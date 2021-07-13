@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
-
 """Test functionalities of reaction and gene deletions."""
 
-from __future__ import absolute_import
 
 import math
 
 import numpy as np
+import pandas as pd
 import pytest
 from pandas import Series
 
@@ -325,6 +323,33 @@ def test_double_gene_deletion(model):
             sol_one = solution_one_process.knockout[{rxn_a, rxn_b}]
             assert np.isclose(sol.growth, growth, atol=1e-3)
             assert np.isclose(sol_one.growth, growth, atol=1e-3)
+
+
+def test_double_gene_knockout_bug(large_model):
+    """Test that the bug reported in #1102 is fixed."""
+    genes = ["b0118", "b1276"]
+    expected = (
+        pd.DataFrame(
+            data={
+                "ids": [
+                    {"b0118"},
+                    {"b1276"},
+                    {"b1276", "b0118"},
+                ],
+                "growth": [0.98, 0.98, 0.0],
+                "status": ["optimal"] * 3,
+            }
+        )
+        .sort_values("ids")
+        .reset_index()
+    )
+    result = (
+        double_gene_deletion(large_model, genes, processes=1)
+        .sort_values("ids")
+        .reset_index()
+    )
+    assert result["growth"].values == pytest.approx(expected["growth"].values, abs=0.01)
+    assert (result["status"] == expected["status"]).all()
 
 
 # Double reaction deletion
