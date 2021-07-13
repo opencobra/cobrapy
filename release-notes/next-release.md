@@ -2,15 +2,9 @@
 
 ## New features
 
-- documentation of boundary reactions (#1038)
-
 ## Fixes
-- Clarification of pfba in documentation (#1049)
-- Fixed the Reaction.compartments attribute not updating after metabolite changes (#1055) 
 
 ## Other
-
-- Documentation is now built again on each release
 
 ## Deprecated features
 
