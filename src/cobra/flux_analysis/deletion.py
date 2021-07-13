@@ -1,14 +1,13 @@
 from functools import partial
 from itertools import product
-from typing import List, Set, Union
+from typing import List, Set, Tuple, Union
 
 import pandas as pd
 from optlang.exceptions import SolverError
 
-from cobra.core import Configuration, Gene, Reaction
+from cobra.core import Configuration, Gene, Model, Reaction
 from cobra.flux_analysis.moma import add_moma
 from cobra.flux_analysis.room import add_room
-from cobra.manipulation.delete import find_gene_knockout_reactions
 from cobra.util import ProcessPool
 from cobra.util import solver as sutil
 
@@ -16,15 +15,7 @@ from cobra.util import solver as sutil
 configuration = Configuration()
 
 
-def _reactions_knockouts_with_restore(model, reactions):
-    with model:
-        for reaction in reactions:
-            reaction.knock_out()
-        growth = _get_growth(model)
-    return [r.id for r in reactions], growth, model.solver.status
-
-
-def _get_growth(model):
+def _get_growth(model: Model) -> Tuple[float, str]:
     try:
         if "moma_old_objective" in model.solver.variables:
             model.slim_optimize()
@@ -33,37 +24,42 @@ def _get_growth(model):
             growth = model.slim_optimize()
     except SolverError:
         growth = float("nan")
-    return growth
+    return growth, model.solver.status
 
 
-def _reaction_deletion(model, ids):
-    return _reactions_knockouts_with_restore(
-        model, [model.reactions.get_by_id(r_id) for r_id in ids]
-    )
+def _reaction_deletion(
+    model: Model, reaction_ids: List[str]
+) -> Tuple[List[str], float, str]:
+    with model:
+        for rxn_id in reaction_ids:
+            model.reactions.get_by_id(rxn_id).knock_out()
+        growth, status = _get_growth(model)
+    return reaction_ids, growth, status
 
 
-def _gene_deletion(model, ids):
-    all_reactions = []
-    for g_id in ids:
-        all_reactions.extend(
-            find_gene_knockout_reactions(model, (model.genes.get_by_id(g_id),))
-        )
-    _, growth, status = _reactions_knockouts_with_restore(model, all_reactions)
-    return (ids, growth, status)
-
-
-def _reaction_deletion_worker(ids):
+def _reaction_deletion_worker(ids: List[str]) -> Tuple[List[str], float, str]:
     global _model
+
     return _reaction_deletion(_model, ids)
 
 
-def _gene_deletion_worker(ids):
+def _gene_deletion(model: Model, gene_ids: List[str]) -> Tuple[List[str], float, str]:
+    with model:
+        for gene_id in gene_ids:
+            model.genes.get_by_id(gene_id).knock_out()
+        growth, status = _get_growth(model)
+    return gene_ids, growth, status
+
+
+def _gene_deletion_worker(ids: List[str]) -> Tuple[List[str], float, str]:
     global _model
+
     return _gene_deletion(_model, ids)
 
 
 def _init_worker(model):
     global _model
+
     _model = model
 
 
