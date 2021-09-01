@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
+"""Test assessing functions in flux_analysis.reaction."""
 
-"""Test _assess functions in reaction.py"""
+from typing import List
 
-from __future__ import absolute_import
-
-from cobra.core import Metabolite, Reaction
+from cobra.core import Metabolite, Model, Reaction
 from cobra.flux_analysis.reaction import assess
 
 
-def test_assess(model, all_solvers):
+def test_assess(model: Model, all_solvers: List[str]) -> None:
     """Test assess functions."""
     with model:
         assert assess(model, model.reactions.GLCpts, solver=all_solvers) is True
