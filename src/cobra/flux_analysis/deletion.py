@@ -1,21 +1,41 @@
+"""Provide functions for reactions and gene deletions."""
+
 from functools import partial
 from itertools import product
-from typing import List, Set, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
 
 import pandas as pd
 from optlang.exceptions import SolverError
 
-from cobra.core import Configuration, Gene, Model, Reaction
-from cobra.flux_analysis.moma import add_moma
-from cobra.flux_analysis.room import add_room
-from cobra.util import ProcessPool
-from cobra.util import solver as sutil
+from ..core import Configuration, Gene, Model, Reaction
+from ..util import ProcessPool
+from ..util import solver as sutil
+from .moma import add_moma
+from .room import add_room
+
+
+if TYPE_CHECKING:
+    from cobra import Solution
 
 
 configuration = Configuration()
 
 
 def _get_growth(model: Model) -> Tuple[float, str]:
+    """Return the growth from the `model`.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to obtain growth for.
+
+    Returns
+    -------
+    float
+        The obtained growth value. Returns nan if there is some error while
+        optimizing.
+
+    """
     try:
         if "moma_old_objective" in model.solver.variables:
             model.slim_optimize()
@@ -30,6 +50,22 @@ def _get_growth(model: Model) -> Tuple[float, str]:
 def _reaction_deletion(
     model: Model, reaction_ids: List[str]
 ) -> Tuple[List[str], float, str]:
+    """Perform reaction deletion.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to perform reaction deletion on.
+    ids : list of str
+        The reaction IDs to knock-out.
+
+    Returns
+    -------
+    tuple of (list of str, float, str)
+        A tuple containing reaction IDs knocked out, growth of the model and
+        the solver status.
+
+    """
     with model:
         for rxn_id in reaction_ids:
             model.reactions.get_by_id(rxn_id).knock_out()
@@ -38,12 +74,42 @@ def _reaction_deletion(
 
 
 def _reaction_deletion_worker(ids: List[str]) -> Tuple[List[str], float, str]:
+    """Perform reaction deletions on worker process.
+
+    Parameters
+    ----------
+    ids : list of str
+        The reaction IDs to knock-out.
+
+    Returns
+    -------
+    tuple of (list of str, float, str)
+        A tuple containing reaction IDs knocked out, growth of the model and
+        the solver status.
+
+    """
     global _model
 
     return _reaction_deletion(_model, ids)
 
 
 def _gene_deletion(model: Model, gene_ids: List[str]) -> Tuple[List[str], float, str]:
+    """Perform gene deletions.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to perform gene deletion on.
+    ids : list of str
+        The gene IDs to knock-out.
+
+    Returns
+    -------
+    tuple of (list of str, float, str)
+        A tuple containing gene IDs knocked out, growth of the model and
+        the solver status.
+
+    """
     with model:
         for gene_id in gene_ids:
             model.genes.get_by_id(gene_id).knock_out()
@@ -52,41 +118,61 @@ def _gene_deletion(model: Model, gene_ids: List[str]) -> Tuple[List[str], float,
 
 
 def _gene_deletion_worker(ids: List[str]) -> Tuple[List[str], float, str]:
+    """Perform gene deletions on worker process.
+
+    Parameters
+    ----------
+    ids : list of str
+        The gene IDs to knock-out.
+
+    Returns
+    -------
+    tuple of (list of str, float, str)
+        A tuple containing gene IDs knocked out, growth of the model and
+        the solver status.
+
+    """
     global _model
 
     return _gene_deletion(_model, ids)
 
 
-def _init_worker(model):
+def _init_worker(model: Model) -> None:
+    """Initialize worker process."""
     global _model
 
     _model = model
 
 
 def _multi_deletion(
-    model, entity, element_lists, method="fba", solution=None, processes=None, **kwargs
-):
-    """
-    Provide a common interface for single or multiple knockouts.
+    model: Model,
+    entity: str,
+    element_lists: List[Union[Gene, Reaction]],
+    method: str = "fba",
+    solution: Optional["Solution"] = None,
+    processes: Optional[int] = None,
+    **kwargs,
+) -> pd.DataFrame:
+    """Provide a common interface for single or multiple knockouts.
 
     Parameters
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-    entity : 'gene' or 'reaction'
-        The entity to knockout (``cobra.Gene`` or ``cobra.Reaction``).
-    element_lists : list
-        List of iterables ``cobra.Reaction``s or ``cobra.Gene``s (or their IDs)
-        to be deleted.
-    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
-        Method used to predict the growth rate.
+    entity : {"gene", "reaction"}
+        The entity to knockout.
+    element_lists : list of cobra.Gene or cobra.Reaction
+        List of cobra.Gene or cobra.Reaction to be deleted.
+    method : {"fba", "moma", "linear moma", "room", "linear room"}, optional
+        Method used to predict the growth rate (default "fba").
     solution : cobra.Solution, optional
-        A previous solution to use as a reference for (linear) MOMA or ROOM.
+        A previous solution to use as a reference for (linear) MOMA or ROOM
+        (default None).
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
-        will be set to the number of CPUs found.
-    kwargs :
+        will be set to `configuration.processes` (default None).
+    **kwargs :
         Passed on to underlying simulation functions.
 
     Returns
@@ -101,12 +187,13 @@ def _multi_deletion(
             The growth rate of the adjusted model.
         status : str
             The solution's status.
+
     """
     solver = sutil.interface_to_str(model.problem.__name__)
     if method == "moma" and solver not in sutil.qp_solvers:
         raise RuntimeError(
-            "Cannot use MOMA since '{}' is not QP-capable."
-            "Please choose a different solver or use FBA only.".format(solver)
+            f"Cannot use MOMA since '{solver}' is not QP-capable. "
+            "Please choose a different solver or use FBA only."
         )
 
     if processes is None:
@@ -153,50 +240,85 @@ def _multi_deletion(
         return results
 
 
-def _entities_ids(entities):
+def _entities_ids(entities: List[Union[str, Gene, Reaction]]) -> List[str]:
+    """Return the IDs of the `entities`.
+
+    Parameters
+    ----------
+    entities : list of str or cobra.Gene or cobra.Reaction
+        The list of entities whose IDs need to be returned.
+
+    Returns
+    -------
+    list of str
+        The IDs of the `entities`.
+
+    """
     try:
         return [e.id for e in entities]
     except AttributeError:
         return list(entities)
 
 
-def _element_lists(entities, *ids):
+def _element_lists(
+    entities: List[Union[str, Gene, Reaction]], *ids: List[str]
+) -> List[str]:
+    """Return the elements.
+
+    Parameters
+    ----------
+    entities : list of str or cobra.Gene or cobra.Reaction
+        The list of entities.
+    *ids : list of str
+        The list of IDs.
+
+    Returns
+    -------
+    list of str
+        The list of IDs.
+
+    """
     lists = list(ids)
     if lists[0] is None:
         lists[0] = entities
     result = [_entities_ids(lists[0])]
-    for l in lists[1:]:
-        if l is None:
+    for _list in lists[1:]:
+        if _list is None:
             result.append(result[-1])
         else:
-            result.append(_entities_ids(l))
+            result.append(_entities_ids(_list))
     return result
 
 
 def single_reaction_deletion(
-    model, reaction_list=None, method="fba", solution=None, processes=None, **kwargs
-):
-    """
-    Knock out each reaction from a given list.
+    model: Model,
+    reaction_list: Optional[List[Reaction]] = None,
+    method: str = "fba",
+    solution: Optional["Solution"] = None,
+    processes: Optional[int] = None,
+    **kwargs,
+) -> pd.DataFrame:
+    """Knock out each reaction from `reaction_list`.
 
     Parameters
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-    reaction_list : iterable, optional
-        ``cobra.Reaction``s to be deleted. If not passed,
-        all the reactions from the model are used.
+    reaction_list : list of cobra.Reaction, optional
+        The reactions be knocked out. If not passed, all the reactions from
+        the model are used (default None).
     method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
-        Method used to predict the growth rate.
+        Method used to predict the growth rate (default "fba").
     solution : cobra.Solution, optional
-        A previous solution to use as a reference for (linear) MOMA or ROOM.
+        A previous solution to use as a reference for (linear) MOMA or ROOM
+        (default None).
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
-        will be set to the number of CPUs found.
-    kwargs :
+        will be set to `configuration.processes` (default None).
+    **kwargs :
         Keyword arguments are passed on to underlying simulation functions
-        such as ``add_room``.
+        such as `add_room`.
 
     Returns
     -------
@@ -219,34 +341,39 @@ def single_reaction_deletion(
         method=method,
         solution=solution,
         processes=processes,
-        **kwargs
+        **kwargs,
     )
 
 
 def single_gene_deletion(
-    model, gene_list=None, method="fba", solution=None, processes=None, **kwargs
-):
-    """
-    Knock out each gene from a given list.
+    model: Model,
+    gene_list: Optional[List[Gene]] = None,
+    method: str = "fba",
+    solution: Optional["Solution"] = None,
+    processes: Optional[int] = None,
+    **kwargs,
+) -> pd.DataFrame:
+    """Knock out each gene from `gene_list`.
 
     Parameters
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-    gene_list : iterable
-        ``cobra.Gene``s to be deleted. If not passed,
-        all the genes from the model are used.
-    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
-        Method used to predict the growth rate.
+    gene_list : list of cobra.Gene
+        The gene objects to be deleted. If not passed, all the genes from the
+        model are used.
+    method : {"fba", "moma", "linear moma", "room", "linear room"}, optional
+        Method used to predict the growth rate (default "fba").
     solution : cobra.Solution, optional
-        A previous solution to use as a reference for (linear) MOMA or ROOM.
+        A previous solution to use as a reference for (linear) MOMA or ROOM
+        (default None).
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
-        will be set to the number of CPUs found.
-    kwargs :
+        will be set to `configuration.processes` (default None).
+    **kwargs :
         Keyword arguments are passed on to underlying simulation functions
-        such as ``add_room``.
+        such as `add_room`.
 
     Returns
     -------
@@ -269,21 +396,20 @@ def single_gene_deletion(
         method=method,
         solution=solution,
         processes=processes,
-        **kwargs
+        **kwargs,
     )
 
 
 def double_reaction_deletion(
-    model,
-    reaction_list1=None,
-    reaction_list2=None,
-    method="fba",
-    solution=None,
-    processes=None,
-    **kwargs
-):
-    """
-    Knock out each reaction pair from the combinations of two given lists.
+    model: Model,
+    reaction_list1: Optional[List[Reaction]] = None,
+    reaction_list2: Optional[List[Reaction]] = None,
+    method: str = "fba",
+    solution: Optional["Solution"] = None,
+    processes: Optional[int] = None,
+    **kwargs,
+) -> pd.DataFrame:
+    """Knock out each reaction pair from the combinations of two given lists.
 
     We say 'pair' here but the order order does not matter.
 
@@ -291,23 +417,24 @@ def double_reaction_deletion(
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-    reaction_list1 : iterable, optional
-        First iterable of ``cobra.Reaction``s to be deleted. If not passed,
-        all the reactions from the model are used.
-    reaction_list2 : iterable, optional
-        Second iterable of ``cobra.Reaction``s to be deleted. If not passed,
-        all the reactions from the model are used.
+    reaction_list1 : list of cobra.Reaction, optional
+        The first reaction list to be deleted. If not passed,
+        all the reactions from the model are used (default None).
+    reaction_list2 : list of cobra.Reaction, optional
+        The second reaction list to be deleted. If not passed,
+        all the reactions from the model are used (default None).
     method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
-        Method used to predict the growth rate.
+        Method used to predict the growth rate (default "fba").
     solution : cobra.Solution, optional
-        A previous solution to use as a reference for (linear) MOMA or ROOM.
+        A previous solution to use as a reference for (linear) MOMA or ROOM
+        (default None).
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
-        will be set to the number of CPUs found.
-    kwargs :
+        will be set to `configuration.processes` (default None).
+    **kwargs :
         Keyword arguments are passed on to underlying simulation functions
-        such as ``add_room``.
+        such as `add_room`.
 
     Returns
     -------
@@ -323,7 +450,6 @@ def double_reaction_deletion(
             The solution's status.
 
     """
-
     reaction_list1, reaction_list2 = _element_lists(
         model.reactions, reaction_list1, reaction_list2
     )
@@ -334,21 +460,20 @@ def double_reaction_deletion(
         method=method,
         solution=solution,
         processes=processes,
-        **kwargs
+        **kwargs,
     )
 
 
 def double_gene_deletion(
-    model,
-    gene_list1=None,
-    gene_list2=None,
-    method="fba",
-    solution=None,
-    processes=None,
-    **kwargs
-):
-    """
-    Knock out each gene pair from the combination of two given lists.
+    model: Model,
+    gene_list1: Optional[List[Gene]] = None,
+    gene_list2: Optional[List[Gene]] = None,
+    method: str = "fba",
+    solution: Optional["Solution"] = None,
+    processes: Optional[int] = None,
+    **kwargs,
+) -> pd.DataFrame:
+    """Knock out each gene pair from the combination of two given lists.
 
     We say 'pair' here but the order order does not matter.
 
@@ -356,23 +481,24 @@ def double_gene_deletion(
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-    gene_list1 : iterable, optional
-        First iterable of ``cobra.Gene``s to be deleted. If not passed,
-        all the genes from the model are used.
-    gene_list2 : iterable, optional
-        Second iterable of ``cobra.Gene``s to be deleted. If not passed,
-        all the genes from the model are used.
-    method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
-        Method used to predict the growth rate.
+    gene_list1 : list of cobra.Gene, optional
+        The first gene list to be deleted. If not passed,
+        all the genes from the model are used (default None).
+    gene_list2 : list of cobra.Gene, optional
+        The second gene list to be deleted. If not passed,
+        all the genes from the model are used (default None).
+    method : {"fba", "moma", "linear moma", "room", "linear room"}, optional
+        Method used to predict the growth rate (default None).
     solution : cobra.Solution, optional
-        A previous solution to use as a reference for (linear) MOMA or ROOM.
+        A previous solution to use as a reference for (linear) MOMA or ROOM
+        (default None).
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not passed,
-        will be set to the number of CPUs found.
-    kwargs :
+        will be set to `configuration.processes` (default None).
+    **kwargs :
         Keyword arguments are passed on to underlying simulation functions
-        such as ``add_room``.
+        such as `add_room`.
 
     Returns
     -------
@@ -388,7 +514,6 @@ def double_gene_deletion(
             The solution's status.
 
     """
-
     gene_list1, gene_list2 = _element_lists(model.genes, gene_list1, gene_list2)
     return _multi_deletion(
         model,
@@ -397,43 +522,60 @@ def double_gene_deletion(
         method=method,
         solution=solution,
         processes=processes,
-        **kwargs
+        **kwargs,
     )
 
 
 @pd.api.extensions.register_dataframe_accessor("knockout")
 class KnockoutAccessor:
-    """Access unique combinations of reactions in deletion results.
+    """
+    Access unique combinations of reactions in deletion results.
 
     This allows acces in the form of `results.knockout[rxn1]` or
-    `results.knockout["rxn1_id"]`. Each individual entry will return a deletion
-    so `results.knockout[rxn1, rxn2]` will return two deletions (for individual
-    knockouts of rxn1 and rxn2 respectively). Multi-deletions can be accessed by passing
-    in sets like `results.knockou[{rxn1, rxn2}]` which denotes the double deletion of
+    `results.knockout["rxn1_id"]`. Each individual entry will return a
+    deletion so `results.knockout[rxn1, rxn2]` will return two deletions
+    (for individual knockouts of rxn1 and rxn2 respectively).
+    Multi-deletions can be accessed by passing in sets like
+    `results.knockout[{rxn1, rxn2}]` which denotes the double deletion of
     both reactions. Thus, the following are allowed index elements:
 
-    - single reactions or genes (depending on whether it is a gene or reaction deletion)
+    - single reactions or genes (depending on whether it is a gene or
+      reaction deletion)
     - single reaction IDs or gene IDs
-    - lists of single single reaction IDs or gene IDs (will return one row for each
+    - lists of single single reaction IDs or gene IDs (will return one row
+      for each
       element in the list)
     - sets of reactions or genes (for multi-deletions)
     - sets of reactions IDs or gene IDs
     - list of sets of objects or IDs (to get several multi-deletions)
+
+    Parameters:
+    -----------
+    pandas_obj : pandas.DataFrame or pandas.Series
+        A result from one of the deletion methods.
+
     """
 
-    def __init__(self, pandas_obj: pd.DataFrame) -> None:
-        """Set up the accessor.
-
-        Parameters:
-        -----------
-        pandas_obj : pd.DataFrame or pd.Series
-            A result from one of the deletion methods.
-        """
+    def __init__(self, pandas_obj: Union[pd.DataFrame, pd.Series]) -> None:
+        """Set up the accessor."""
         self._validate(pandas_obj)
         self._result = pandas_obj
 
     @staticmethod
     def _validate(obj: pd.DataFrame) -> None:
+        """Validate the object given.
+
+        Parameters
+        ----------
+        obj : pandas.DataFrame
+            The object to validate.
+
+        Raises
+        ------
+        AttributeError
+            If the object supplied is not a DataFrame.
+
+        """
         # verify it is a deletion results
         if any(name not in obj.columns for name in ["ids", "growth", "status"]):
             raise AttributeError("Must be DataFrame returned by a deletion method.")
@@ -457,9 +599,9 @@ class KnockoutAccessor:
     ) -> pd.DataFrame:
         """Return the deletion result for a particular set of knocked entities.
 
-        Parameters:
-        -----------
-        args : cobra.Reactions, cobra.Gene, str, set, or list
+        Parameters
+        ----------
+        args : cobra.Reaction, cobra.Gene, str, set, or list
             The deletions to be returned. Accepts:
             - single reactions or genes
             - single reaction IDs or gene IDs
@@ -469,11 +611,17 @@ class KnockoutAccessor:
             - list of sets of objects or IDs
             See the docs for usage examples.
 
-        Returns:
-        --------
-        pd.DataFrame
-            The deletion result where the chosen entities have been deleted. Each row
-            denotes a deletion.
+        Returns
+        -------
+        pandas.DataFrame
+            The deletion result where the chosen entities have been deleted.
+            Each row denotes a deletion.
+
+        Raises
+        ------
+        ValueError
+            If any other object is used as index for lookup.
+
         """
         if not any(isinstance(args, t) for t in [tuple, list]):
             args = [args]
@@ -491,9 +639,9 @@ class KnockoutAccessor:
                 args = [set(obj) for obj in args]
         else:
             raise ValueError(
-                "Allowed indices are single Reactions or Genes, "
-                "lists of Reactions of Genes, or lists of sets "
-                "of Reactions or Genes."
+                "Allowed indices are single cobra.Reaction or cobra.Gene, "
+                "lists of cobra.Reaction of cobra.Gene, or lists of sets "
+                "of cobra.Reaction or cobra.Gene."
             )
         found = [x in args for x in self._result.ids]
         return self._result[found]
