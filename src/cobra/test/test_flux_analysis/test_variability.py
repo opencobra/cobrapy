@@ -1,12 +1,12 @@
-# -*- coding: utf-8 -*-
-
 """Test functionalities of Flux Variability Analysis."""
 
-from __future__ import absolute_import
+from typing import List
 
 import numpy as np
+import pandas as pd
 import pytest
 
+from cobra import Model
 from cobra.exceptions import Infeasible
 from cobra.flux_analysis.variability import (
     find_blocked_reactions,
@@ -17,7 +17,9 @@ from cobra.flux_analysis.variability import (
 
 
 # FVA
-def test_flux_variability_benchmark(large_model, benchmark, all_solvers):
+def test_flux_variability_benchmark(
+    large_model: Model, benchmark, all_solvers: List[str]
+) -> None:
     """Benchmark FVA."""
     large_model.solver = all_solvers
     benchmark(
@@ -28,7 +30,12 @@ def test_flux_variability_benchmark(large_model, benchmark, all_solvers):
     )
 
 
-def test_pfba_flux_variability(model, pfba_fva_results, fva_results, all_solvers):
+def test_pfba_flux_variability(
+    model: Model,
+    pfba_fva_results: pd.DataFrame,
+    fva_results: pd.DataFrame,
+    all_solvers: List[str],
+) -> None:
     """Test FVA using pFBA."""
     model.solver = all_solvers
     with pytest.warns(UserWarning):
@@ -49,7 +56,8 @@ def test_pfba_flux_variability(model, pfba_fva_results, fva_results, all_solvers
     assert comparison["maximum"].all()
 
 
-def test_loopless_pfba_fva(model):
+def test_loopless_pfba_fva(model: Model) -> None:
+    """Test loopless FVA using pFBA."""
     loop_reactions = [model.reactions.get_by_id(rid) for rid in ("FRD7", "SUCDi")]
     fva_loopless = flux_variability_analysis(
         model, pfba_factor=1.1, reaction_list=loop_reactions, loopless=True, processes=1
@@ -57,7 +65,9 @@ def test_loopless_pfba_fva(model):
     assert np.allclose(fva_loopless["maximum"], fva_loopless["minimum"])
 
 
-def test_flux_variability(model, fva_results, all_solvers):
+def test_flux_variability(
+    model: Model, fva_results: pd.DataFrame, all_solvers: List[str]
+) -> None:
     """Test FVA."""
     model.solver = all_solvers
     fva_out = flux_variability_analysis(
@@ -67,7 +77,9 @@ def test_flux_variability(model, fva_results, all_solvers):
     assert np.allclose(fva_out, fva_results)
 
 
-def test_parallel_flux_variability(model, fva_results, all_solvers):
+def test_parallel_flux_variability(
+    model: Model, fva_results: pd.DataFrame, all_solvers: List[str]
+) -> None:
     """Test parallel FVA."""
     model.solver = all_solvers
     fva_out = flux_variability_analysis(model, processes=2)
@@ -76,7 +88,9 @@ def test_parallel_flux_variability(model, fva_results, all_solvers):
 
 
 # Loopless FVA
-def test_flux_variability_loopless_benchmark(model, benchmark, all_solvers):
+def test_flux_variability_loopless_benchmark(
+    model: Model, benchmark, all_solvers: List[str]
+) -> None:
     """Benchmark loopless FVA."""
     model.solver = all_solvers
     benchmark(
@@ -87,7 +101,7 @@ def test_flux_variability_loopless_benchmark(model, benchmark, all_solvers):
     )
 
 
-def test_flux_variability_loopless(model, all_solvers):
+def test_flux_variability_loopless(model: Model, all_solvers: List[str]) -> None:
     """Test loopless FVA."""
     model.solver = all_solvers
     loop_reactions = [model.reactions.get_by_id(rid) for rid in ("FRD7", "SUCDi")]
@@ -101,13 +115,13 @@ def test_flux_variability_loopless(model, all_solvers):
 
 
 # Internals (essentiality, blocked reactions)
-def test_fva_data_frame(model):
+def test_fva_data_frame(model: Model) -> None:
     """Test DataFrame obtained from FVA."""
     df = flux_variability_analysis(model)
     assert np.all([df.columns.values == ["minimum", "maximum"]])
 
 
-def test_fva_infeasible(model):
+def test_fva_infeasible(model: Model) -> None:
     """Test FVA infeasibility."""
     infeasible_model = model.copy()
     infeasible_model.reactions.get_by_id("EX_glc__D_e").lower_bound = 0
@@ -116,7 +130,7 @@ def test_fva_infeasible(model):
         flux_variability_analysis(infeasible_model)
 
 
-def test_fva_minimization(model):
+def test_fva_minimization(model: Model) -> None:
     """Test minimization using FVA."""
     model.objective = model.reactions.EX_glc__D_e
     model.objective_direction = "min"
@@ -125,20 +139,20 @@ def test_fva_minimization(model):
     assert solution.at["EX_glc__D_e", "maximum"] == -9.5
 
 
-def test_find_blocked_reactions_solver_none(model):
+def test_find_blocked_reactions_solver_none(model: Model) -> None:
     """Test find_blocked_reactions() [no specific solver]."""
     result = find_blocked_reactions(model, model.reactions[40:46])
     assert result == ["FRUpts2"]
 
 
-def test_essential_genes(model):
+def test_essential_genes(model: Model) -> None:
     """Test find_essential_genes()."""
     essential_genes = {"b2779", "b1779", "b0720", "b2416", "b2926", "b1136", "b2415"}
     observed_essential_genes = {g.id for g in find_essential_genes(model)}
     assert observed_essential_genes == essential_genes
 
 
-def test_essential_reactions(model):
+def test_essential_reactions(model: Model) -> None:
     """Test find_blocked_reactions()."""
     essential_reactions = {
         "GLNS",
@@ -164,7 +178,7 @@ def test_essential_reactions(model):
     assert observed_essential_reactions == essential_reactions
 
 
-def test_find_blocked_reactions(model, all_solvers):
+def test_find_blocked_reactions(model: Model, all_solvers: List[str]) -> None:
     """Test find_blocked_reactions()."""
     model.solver = all_solvers
     result = find_blocked_reactions(model, model.reactions[40:46])
