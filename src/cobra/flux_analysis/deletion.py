@@ -1,4 +1,4 @@
-"""Provide functions for reactions and gene deletions."""
+"""Provide functions for reaction and gene deletions."""
 
 from functools import partial
 from itertools import product
@@ -292,7 +292,7 @@ def _element_lists(
 
 def single_reaction_deletion(
     model: Model,
-    reaction_list: Optional[List[Reaction]] = None,
+    reaction_list: Optional[List[Union[Reaction, str]]] = None,
     method: str = "fba",
     solution: Optional["Solution"] = None,
     processes: Optional[int] = None,
@@ -304,7 +304,7 @@ def single_reaction_deletion(
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-    reaction_list : list of cobra.Reaction, optional
+    reaction_list : list of cobra.Reaction or str, optional
         The reactions be knocked out. If not passed, all the reactions from
         the model are used (default None).
     method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
@@ -347,7 +347,7 @@ def single_reaction_deletion(
 
 def single_gene_deletion(
     model: Model,
-    gene_list: Optional[List[Gene]] = None,
+    gene_list: Optional[List[Union[Gene, str]]] = None,
     method: str = "fba",
     solution: Optional["Solution"] = None,
     processes: Optional[int] = None,
@@ -359,9 +359,9 @@ def single_gene_deletion(
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-    gene_list : list of cobra.Gene
+    gene_list : list of cobra.Gene or str, optional
         The gene objects to be deleted. If not passed, all the genes from the
-        model are used.
+        model are used (default None).
     method : {"fba", "moma", "linear moma", "room", "linear room"}, optional
         Method used to predict the growth rate (default "fba").
     solution : cobra.Solution, optional
@@ -402,8 +402,8 @@ def single_gene_deletion(
 
 def double_reaction_deletion(
     model: Model,
-    reaction_list1: Optional[List[Reaction]] = None,
-    reaction_list2: Optional[List[Reaction]] = None,
+    reaction_list1: Optional[List[Union[Reaction, str]]] = None,
+    reaction_list2: Optional[List[Union[Reaction, str]]] = None,
     method: str = "fba",
     solution: Optional["Solution"] = None,
     processes: Optional[int] = None,
@@ -417,10 +417,10 @@ def double_reaction_deletion(
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-    reaction_list1 : list of cobra.Reaction, optional
+    reaction_list1 : list of cobra.Reaction or str, optional
         The first reaction list to be deleted. If not passed,
         all the reactions from the model are used (default None).
-    reaction_list2 : list of cobra.Reaction, optional
+    reaction_list2 : list of cobra.Reaction or str, optional
         The second reaction list to be deleted. If not passed,
         all the reactions from the model are used (default None).
     method: {"fba", "moma", "linear moma", "room", "linear room"}, optional
@@ -466,8 +466,8 @@ def double_reaction_deletion(
 
 def double_gene_deletion(
     model: Model,
-    gene_list1: Optional[List[Gene]] = None,
-    gene_list2: Optional[List[Gene]] = None,
+    gene_list1: Optional[List[Union[Gene, str]]] = None,
+    gene_list2: Optional[List[Union[Gene, str]]] = None,
     method: str = "fba",
     solution: Optional["Solution"] = None,
     processes: Optional[int] = None,
@@ -481,10 +481,10 @@ def double_gene_deletion(
     ----------
     model : cobra.Model
         The metabolic model to perform deletions in.
-    gene_list1 : list of cobra.Gene, optional
+    gene_list1 : list of cobra.Gene or str, optional
         The first gene list to be deleted. If not passed,
         all the genes from the model are used (default None).
-    gene_list2 : list of cobra.Gene, optional
+    gene_list2 : list of cobra.Gene or str, optional
         The second gene list to be deleted. If not passed,
         all the genes from the model are used (default None).
     method : {"fba", "moma", "linear moma", "room", "linear room"}, optional
