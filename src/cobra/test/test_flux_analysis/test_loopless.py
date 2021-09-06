@@ -1,5 +1,7 @@
 """Test functionalities of removing loops in model."""
 
+from typing import Callable
+
 import pytest
 from optlang.interface import INFEASIBLE, OPTIMAL
 
@@ -33,14 +35,14 @@ def construct_ll_test_model() -> Model:
     scope="function",
     params=[s for s in ["glpk", "cplex", "gurobi"] if s in sutil.solvers],
 )
-def ll_test_model(request: str) -> Model:
+def ll_test_model(request: pytest.FixtureRequest) -> Model:
     """Return test model set with different solvers."""
     test_model = construct_ll_test_model()
     test_model.solver = request.param
     return test_model
 
 
-def test_loopless_benchmark_before(benchmark) -> None:
+def test_loopless_benchmark_before(benchmark: Callable) -> None:
     """Benchmark initial condition."""
     test_model = construct_ll_test_model()
 
@@ -52,7 +54,7 @@ def test_loopless_benchmark_before(benchmark) -> None:
     benchmark(_)
 
 
-def test_loopless_benchmark_after(benchmark) -> None:
+def test_loopless_benchmark_after(benchmark: Callable) -> None:
     """Benchmark final condition."""
     test_model = construct_ll_test_model()
     benchmark(loopless_solution, test_model)
