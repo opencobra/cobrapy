@@ -2,27 +2,43 @@
 
 
 import logging
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
 from warnings import warn
 
-from numpy import zeros
+import numpy as np
+import pandas as pd
 from optlang.symbolics import Zero
-from pandas import DataFrame
 
-from cobra.core import Configuration, get_solution
-from cobra.flux_analysis.deletion import single_gene_deletion, single_reaction_deletion
-from cobra.flux_analysis.helpers import normalize_cutoff
-from cobra.flux_analysis.loopless import loopless_fva_iter
-from cobra.flux_analysis.parsimonious import add_pfba
-from cobra.util import ProcessPool
-from cobra.util import solver as sutil
+from ..core import Configuration, get_solution
+from ..util import ProcessPool
+from ..util import solver as sutil
+from .deletion import single_gene_deletion, single_reaction_deletion
+from .helpers import normalize_cutoff
+from .loopless import loopless_fva_iter
+from .parsimonious import add_pfba
+
+
+if TYPE_CHECKING:
+    from cobra import Gene, Model, Reaction
 
 
 logger = logging.getLogger(__name__)
 configuration = Configuration()
 
 
-def _init_worker(model, loopless, sense):
-    """Initialize a global model object for multiprocessing."""
+def _init_worker(model: "Model", loopless: bool, sense: str) -> None:
+    """Initialize a global model object for multiprocessing.
+
+    Parameters
+    ----------
+    model: cobra.Model
+        The model to operate on.
+    loopless: bool
+        Whether to use loopless version.
+    sense: {"max", "min"}
+        Whether to maximise or minimise objective.
+
+    """
     global _model
     global _loopless
     _model = model
@@ -30,7 +46,20 @@ def _init_worker(model, loopless, sense):
     _loopless = loopless
 
 
-def _fva_step(reaction_id):
+def _fva_step(reaction_id: str) -> Tuple[str, float]:
+    """Take a step for calculating FVA.
+
+    Parameters
+    ----------
+    reaction_id: str
+        The ID of the reaction.
+
+    Returns
+    -------
+    tuple of (str, float)
+        The reaction ID with the flux value.
+
+    """
     global _model
     global _loopless
     rxn = _model.reactions.get_by_id(reaction_id)
@@ -51,9 +80,8 @@ def _fva_step(reaction_id):
     if value is None:
         value = float("nan")
         logger.warning(
-            "Could not get flux for reaction %s,  setting "
-            "it to NaN. This is usually due to numerical instability.",
-            rxn.id,
+            f"Could not get flux for reaction {rxn.id}, setting it to NaN. "
+            "This is usually due to numerical instability."
         )
     _model.solver.objective.set_linear_coefficients(
         {rxn.forward_variable: 0, rxn.reverse_variable: 0}
@@ -62,15 +90,14 @@ def _fva_step(reaction_id):
 
 
 def flux_variability_analysis(
-    model,
-    reaction_list=None,
-    loopless=False,
-    fraction_of_optimum=1.0,
-    pfba_factor=None,
-    processes=None,
-):
-    """
-    Determine the minimum and maximum possible flux value for each reaction.
+    model: "Model",
+    reaction_list: Optional[List[Union["Reaction", str]]] = None,
+    loopless: bool = False,
+    fraction_of_optimum: float = 1.0,
+    pfba_factor: Optional[float] = None,
+    processes: Optional[int] = None,
+) -> pd.DataFrame:
+    """Determine the minimum and maximum flux value for each reaction.
 
     Parameters
     ----------
@@ -78,27 +105,28 @@ def flux_variability_analysis(
         The model for which to run the analysis. It will *not* be modified.
     reaction_list : list of cobra.Reaction or str, optional
         The reactions for which to obtain min/max fluxes. If None will use
-        all reactions in the model (default).
-    loopless : boolean, optional
+        all reactions in the model (default None).
+    loopless : bool, optional
         Whether to return only loopless solutions. This is significantly
-        slower. Please also refer to the notes.
+        slower. Please also refer to the notes (default False).
     fraction_of_optimum : float, optional
         Must be <= 1.0. Requires that the objective value is at least the
         fraction times maximum objective value. A value of 0.85 for instance
         means that the objective has to be at least at 85% percent of its
-        maximum.
+        maximum (default 1.0).
     pfba_factor : float, optional
         Add an additional constraint to the model that requires the total sum
         of absolute fluxes must not be larger than this value times the
         smallest possible sum of absolute fluxes, i.e., by setting the value
         to 1.1 the total sum of absolute fluxes must not be more than
         10% larger than the pFBA solution. Since the pFBA solution is the
-        one that optimally minimizes the total flux sum, the ``pfba_factor``
+        one that optimally minimizes the total flux sum, the `pfba_factor`
         should, if set, be larger than one. Setting this value may lead to
-        more realistic predictions of the effective flux bounds.
+        more realistic predictions of the effective flux bounds
+        (default None).
     processes : int, optional
         The number of parallel processes to run. If not explicitly passed,
-        will be set from the global configuration singleton.
+        will be set from the global configuration singleton (default None).
 
     Returns
     -------
@@ -113,12 +141,12 @@ def flux_variability_analysis(
     the flux distribution containing all minimal/maximal fluxes does not have
     to be a feasible solution for the model. Fluxes are minimized/maximized
     individually and a single minimal flux might require all others to be
-    suboptimal.
+    sub-optimal.
 
     Using the loopless option will lead to a significant increase in
     computation time (about a factor of 100 for large models). However, the
     algorithm used here (see [2]_) is still more than 1000x faster than the
-    "naive" version using ``add_loopless(model)``. Also note that if you have
+    "naive" version using `add_loopless(model)`. Also note that if you have
     included constraints that force a loop (for instance by setting all fluxes
     in a loop to be non-zero) this loop will be included in the solution.
 
@@ -134,6 +162,7 @@ def flux_variability_analysis(
        Desouki AA, Jarre F, Gelius-Dietrich G, Lercher MJ.
        Bioinformatics. 2015 Jul 1;31(13):2159-65.
        doi: 10.1093/bioinformatics/btv096.
+
     """
     if reaction_list is None:
         reaction_ids = [r.id for r in model.reactions]
@@ -142,13 +171,14 @@ def flux_variability_analysis(
 
     if processes is None:
         processes = configuration.processes
+
     num_reactions = len(reaction_ids)
     processes = min(processes, num_reactions)
 
-    fva_result = DataFrame(
+    fva_result = pd.DataFrame(
         {
-            "minimum": zeros(num_reactions, dtype=float),
-            "maximum": zeros(num_reactions, dtype=float),
+            "minimum": np.zeros(num_reactions, dtype=float),
+            "maximum": np.zeros(num_reactions, dtype=float),
         },
         index=reaction_ids,
     )
@@ -224,44 +254,45 @@ def flux_variability_analysis(
 
 
 def find_blocked_reactions(
-    model,
-    reaction_list=None,
-    zero_cutoff=None,
-    open_exchanges=False,
-    processes=None,
-):
-    """
-    Find reactions that cannot carry any flux.
+    model: "Model",
+    reaction_list: Optional[List[Union["Reaction", str]]] = None,
+    zero_cutoff: Optional[float] = None,
+    open_exchanges: bool = False,
+    processes: Optional[int] = None,
+) -> List["Reaction"]:
+    """Find reactions that cannot carry any flux.
 
     The question whether or not a reaction is blocked is highly dependent
     on the current exchange reaction settings for a COBRA model. Hence an
     argument is provided to open all exchange reactions.
 
-    Notes
-    -----
-    Sink and demand reactions are left untouched. Please modify them manually.
-
     Parameters
     ----------
     model : cobra.Model
         The model to analyze.
-    reaction_list : list, optional
+    reaction_list : list of cobra.Reaction or str, optional
         List of reactions to consider, the default includes all model
-        reactions.
+        reactions (default None).
     zero_cutoff : float, optional
-        Flux value which is considered to effectively be zero
-        (default model.tolerance).
+        Flux value which is considered to effectively be zero. The default
+        is set to use `model.tolerance` (default None).
     open_exchanges : bool, optional
-        Whether or not to open all exchange reactions to very high flux ranges.
+        Whether or not to open all exchange reactions to very high flux
+        ranges (default False).
     processes : int, optional
-        The number of parallel processes to run. Can speed up the computations
-        if the number of reactions is large. If not explicitly
-        passed, it will be set from the global configuration singleton.
+        The number of parallel processes to run. Can speed up the
+        computations if the number of reactions is large. If not explicitly
+        passed, it will be set from the global configuration singleton
+        (default None).
 
     Returns
     -------
-    list
+    list of cobra.Reaction
         List with the identifiers of blocked reactions.
+
+    Notes
+    -----
+    Sink and demand reactions are left untouched. Please modify them manually.
 
     """
     zero_cutoff = normalize_cutoff(model, zero_cutoff)
@@ -294,9 +325,12 @@ def find_blocked_reactions(
         return flux_span[flux_span.abs().max(axis=1) < zero_cutoff].index.tolist()
 
 
-def find_essential_genes(model, threshold=None, processes=None):
-    """
-    Return a set of essential genes.
+def find_essential_genes(
+    model: "Model",
+    threshold: Optional[float] = None,
+    processes: Optional[int] = None,
+) -> Set["Gene"]:
+    """Return a set of essential genes.
 
     A gene is considered essential if restricting the flux of all reactions
     that depend on it to zero causes the objective, e.g., the growth rate,
@@ -308,19 +342,18 @@ def find_essential_genes(model, threshold=None, processes=None):
         The model to find the essential genes for.
     threshold : float, optional
         Minimal objective flux to be considered viable. By default this is
-        1% of the maximal objective.
-    processes : int, optional
-        The number of parallel processes to run. If not passed,
-        will be set to the number of CPUs found.
+        1% of the maximal objective (default None).
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not explicitly
-        passed, it will be set from the global configuration singleton.
+        passed, it will be set from the global configuration singleton
+        (default None).
 
     Returns
     -------
-    set
-        Set of essential genes
+    set of cobra.Gene
+        Set of essential genes.
+
     """
     if threshold is None:
         threshold = model.slim_optimize(error_value=None) * 1e-02
@@ -331,7 +364,11 @@ def find_essential_genes(model, threshold=None, processes=None):
     return {model.genes.get_by_id(g) for ids in essential for g in ids}
 
 
-def find_essential_reactions(model, threshold=None, processes=None):
+def find_essential_reactions(
+    model: "Model",
+    threshold: Optional[float] = None,
+    processes: Optional[int] = None,
+) -> Set["Reaction"]:
     """Return a set of essential reactions.
 
     A reaction is considered essential if restricting its flux to zero
@@ -345,16 +382,18 @@ def find_essential_reactions(model, threshold=None, processes=None):
         The model to find the essential reactions for.
     threshold : float, optional
         Minimal objective flux to be considered viable. By default this is
-        1% of the maximal objective.
+        1% of the maximal objective (default None).
     processes : int, optional
         The number of parallel processes to run. Can speed up the computations
         if the number of knockouts to perform is large. If not explicitly
-        passed, it will be set from the global configuration singleton.
+        passed, it will be set from the global configuration singleton
+        (default None).
 
     Returns
     -------
-    set
-        Set of essential reactions
+    set of cobra.Reaction
+        Set of essential reactions.
+
     """
     if threshold is None:
         threshold = model.slim_optimize(error_value=None) * 1e-02
