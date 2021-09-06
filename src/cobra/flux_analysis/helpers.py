@@ -14,7 +14,7 @@ def normalize_cutoff(model: "Model", zero_cutoff: Optional[float] = None) -> flo
     ----------
     model : cobra.Model
         The model to operate on.
-    zero_cutoff: float, optional
+    zero_cutoff : positive float, optional
         The zero cutoff value. If not specified, defaults to
         `model.tolerance` (default None).
 
