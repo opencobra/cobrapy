@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-
-"""Test functionalities of loopless.py"""
-
-from __future__ import absolute_import
+"""Test functionalities of removing loops in model."""
 
 import pytest
 from optlang.interface import INFEASIBLE, OPTIMAL
@@ -12,7 +8,7 @@ from cobra.flux_analysis.loopless import add_loopless, loopless_solution
 from cobra.util import solver as sutil
 
 
-def construct_ll_test_model():
+def construct_ll_test_model() -> Model:
     """Construct test model."""
     test_model = Model()
     test_model.add_metabolites(Metabolite("A"))
@@ -37,14 +33,14 @@ def construct_ll_test_model():
     scope="function",
     params=[s for s in ["glpk", "cplex", "gurobi"] if s in sutil.solvers],
 )
-def ll_test_model(request):
+def ll_test_model(request: str) -> Model:
     """Return test model set with different solvers."""
     test_model = construct_ll_test_model()
     test_model.solver = request.param
     return test_model
 
 
-def test_loopless_benchmark_before(benchmark):
+def test_loopless_benchmark_before(benchmark) -> None:
     """Benchmark initial condition."""
     test_model = construct_ll_test_model()
 
@@ -56,13 +52,13 @@ def test_loopless_benchmark_before(benchmark):
     benchmark(_)
 
 
-def test_loopless_benchmark_after(benchmark):
+def test_loopless_benchmark_after(benchmark) -> None:
     """Benchmark final condition."""
     test_model = construct_ll_test_model()
     benchmark(loopless_solution, test_model)
 
 
-def test_loopless_solution(ll_test_model):
+def test_loopless_solution(ll_test_model: Model) -> None:
     """Test loopless_solution()."""
     solution_feasible = loopless_solution(ll_test_model)
     ll_test_model.reactions.v3.lower_bound = 1
@@ -72,14 +68,14 @@ def test_loopless_solution(ll_test_model):
     assert solution_infeasible.fluxes["v3"] == 1.0
 
 
-def test_loopless_solution_fluxes(model):
-    """Test fluxes of loopless_solution()"""
+def test_loopless_solution_fluxes(model: Model) -> None:
+    """Test fluxes of loopless_solution()."""
     fluxes = model.optimize().fluxes
     ll_solution = loopless_solution(model, fluxes=fluxes)
     assert len(ll_solution.fluxes) == len(model.reactions)
 
 
-def test_add_loopless(ll_test_model):
+def test_add_loopless(ll_test_model: Model) -> None:
     """Test add_loopless()."""
     add_loopless(ll_test_model)
     feasible_status = ll_test_model.optimize().status
