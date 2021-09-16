@@ -1,6 +1,7 @@
 """Test functionalities of pFBA."""
 
 import warnings
+from typing import Callable, List
 
 import pytest
 
@@ -9,13 +10,15 @@ from cobra.exceptions import Infeasible
 from cobra.flux_analysis.parsimonious import add_pfba, pfba
 
 
-def test_pfba_benchmark(large_model: Model, benchmark, all_solvers) -> None:
+def test_pfba_benchmark(
+    large_model: Model, benchmark: Callable, all_solvers: List[str]
+) -> None:
     """Benchmark pFBA functionality."""
     large_model.solver = all_solvers
     benchmark(pfba, large_model)
 
 
-def test_pfba(model: Model, all_solvers) -> None:
+def test_pfba(model: Model, all_solvers: List[str]) -> None:
     """Test pFBA functionality."""
     model.solver = all_solvers
     with model:
