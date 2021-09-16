@@ -1,5 +1,7 @@
 """Test functionalities of MOMA."""
 
+from typing import List
+
 import numpy as np
 import pytest
 
@@ -7,7 +9,7 @@ from cobra import Model
 from cobra.flux_analysis.moma import add_moma
 
 
-def test_moma_sanity(model: Model, qp_solvers) -> None:
+def test_moma_sanity(model: Model, qp_solvers: List[str]) -> None:
     """Test optimization criterion and optimality for MOMA."""
     model.solver = qp_solvers
     sol = model.optimize()
@@ -36,7 +38,7 @@ def test_moma_sanity(model: Model, qp_solvers) -> None:
     assert np.isclose(moma_ssq, moma_ref_ssq)
 
 
-def test_linear_moma_sanity(model: Model, all_solvers) -> None:
+def test_linear_moma_sanity(model: Model, all_solvers: List[str]) -> None:
     """Test optimization criterion and optimality for linear MOMA."""
     model.solver = all_solvers
     sol = model.optimize()
