@@ -1,9 +1,11 @@
 """Define module level fixtures."""
 
+import json
+from os.path import join
 from typing import List
 
+import pandas as pd
 import pytest
-from pandas import Series
 
 from cobra.core import Model, Reaction, Solution
 from cobra.util import solver as sutil
@@ -27,6 +29,24 @@ def all_solvers(request) -> List[str]:
 def qp_solvers(request) -> List[str]:
     """Return the available QP solvers."""
     return request.param
+
+
+@pytest.fixture(scope="module")
+def fva_results(data_directory) -> pd.DataFrame:
+    """Load and return saved FVA results for textbook model."""
+    with open(join(data_directory, "textbook_fva.json"), "r") as infile:
+        df = pd.DataFrame(json.load(infile))
+    df.sort_index(inplace=True)
+    return df[["minimum", "maximum"]]
+
+
+@pytest.fixture(scope="module")
+def pfba_fva_results(data_directory) -> pd.DataFrame:
+    """Load and return saved pFBA FVA results for textbook model."""
+    with open(join(data_directory, "textbook_pfba_fva.json"), "r") as infile:
+        df = pd.DataFrame(json.load(infile))
+    df.sort_index(inplace=True)
+    return df[["minimum", "maximum"]]
 
 
 @pytest.fixture(scope="module")
@@ -80,7 +100,7 @@ def room_solution() -> Solution:
      PNAS 2005 102 (21) 7695-7700; doi:10.1073/pnas.0406346102
 
     """
-    fluxes = Series(
+    fluxes = pd.Series(
         {
             "b1": 10.0,
             "b2": 5.0,
@@ -93,7 +113,7 @@ def room_solution() -> Solution:
             "v6": 5.0,
         }
     )
-    reduced_costs = Series(
+    reduced_costs = pd.Series(
         {
             "b1": 0.0,
             "b2": 0.0,
@@ -106,7 +126,7 @@ def room_solution() -> Solution:
             "v6": 0.0,
         }
     )
-    shadow_prices = Series(
+    shadow_prices = pd.Series(
         {
             "b1": 0.0,
             "b2": 0.0,
