@@ -1,7 +1,7 @@
 """Provide parsimonious FBA implementation."""
 
 from itertools import chain
-from typing import TYPE_CHECKING, Callable, Dict, List, Union
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Union
 from warnings import warn
 
 from optlang.symbolics import Zero
@@ -45,7 +45,7 @@ def pfba(
     model: "Model",
     fraction_of_optimum: float = 1.0,
     objective: Union[Dict, "Objective", None] = None,
-    reactions: List["Reaction"] = None,
+    reactions: Optional[List["Reaction"]] = None,
 ) -> "Solution":
     """Perform basic pFBA (parsimonious Enzyme Usage Flux Balance Analysis).
 
@@ -70,7 +70,7 @@ def pfba(
     reactions : list of cobra.Reaction, optional
         List of cobra.Reaction. Implies `return_frame` to be true. Only
         return fluxes for the given reactions. Faster than fetching all
-        fluxes if only a few are needed.
+        fluxes if only a few are needed (default None).
 
     Returns
     -------
