@@ -131,4 +131,4 @@ def test_single_point_space(model: Model) -> None:
     model.reactions.Biomass_Ecoli_core.lower_bound = pfba_sol.fluxes.Biomass_Ecoli_core
 
     with pytest.raises(ValueError):
-        s = sample(model, 1)
+        sample(model, 1)
