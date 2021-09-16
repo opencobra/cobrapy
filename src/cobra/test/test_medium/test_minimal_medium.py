@@ -1,5 +1,7 @@
 """Test functionalities of minimal medium creation and analysis."""
 
+from typing import Callable
+
 import pandas as pd
 import pytest
 
@@ -14,7 +16,7 @@ def test_minimal_medium_linear(model: Model) -> None:
     assert all(med > 1e-6)
 
 
-def test_minimal_medium_linear_benchmark(model: Model, benchmark) -> None:
+def test_minimal_medium_linear_benchmark(model: Model, benchmark: Callable) -> None:
     """Benchmark linear minimal medium."""
     benchmark(minimal_medium, model, 0.8)
 
@@ -30,7 +32,7 @@ def test_minimal_medium_mip(model: Model) -> None:
     assert all(med > 1e-6)
 
 
-def test_minimal_medium_mip_benchmark(model: Model, benchmark) -> None:
+def test_minimal_medium_mip_benchmark(model: Model, benchmark: Callable) -> None:
     """Benchmark mixed-integer minimal medium."""
     benchmark(minimal_medium, model, 0.8, True)
 
