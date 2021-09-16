@@ -1,5 +1,7 @@
 """Test functionalities of ROOM."""
 
+from typing import List
+
 import pytest
 
 from cobra import Model
@@ -11,7 +13,7 @@ from cobra.flux_analysis.room import add_room
     [(True, 0.03, 1e-3), (False, 0.03, 1e-3), (True, 0.1, 1e-2), (False, 0.1, 1e-2)],
 )
 def test_room_sanity(
-    model: Model, all_solvers, linear: bool, delta: float, eps: float
+    model: Model, all_solvers: List[str], linear: bool, delta: float, eps: float
 ) -> None:
     """Test optimization criterion and optimality for ROOM."""
     model.solver = all_solvers
