@@ -42,7 +42,7 @@ import libsbml
 
 import cobra
 from cobra.core import Gene, Group, Metabolite, Model, Reaction
-from cobra.core.gene import parse_gpr
+from cobra.core.gene import parse_gpr, ast2str
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
 
@@ -1202,19 +1202,15 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         # GPR
         gpr = cobra_reaction.gene_reaction_rule
         if gpr is not None and len(gpr) > 0:
-
+            # we will parse the GPR to format them correctly for libSBML
+            # avoids cases where a GPR can be parsed by cobrapy but not libSBML
+            tree, gids = parse_gpr(gpr)
             # replace ids in string
             if f_replace and F_GENE_REV in f_replace:
-                gpr = gpr.replace("(", "( ")
-                gpr = gpr.replace(")", " )")
-                tokens = gpr.split()
-
-                for k in range(len(tokens)):
-                    if tokens[k] not in ["and", "or", "(", ")"]:
-                        tokens[k] = f_replace[F_GENE_REV](tokens[k])
-                gpr_new = " ".join(tokens)
+                idmap = {gid: f_replace[F_GENE_REV](gid) for gid in gids}
+                gpr_new = ast2str(tree, names=idmap)
             else:
-                gpr_new = gpr
+                gpr_new = ast2str(tree)
 
             gpa = (
                 r_fbc.createGeneProductAssociation()
