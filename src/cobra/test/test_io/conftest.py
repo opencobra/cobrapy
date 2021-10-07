@@ -4,8 +4,9 @@
 
 from __future__ import absolute_import
 
+from optlang.interface import OPTIMAL
 from os.path import join
-from pickle import dump, load
+from pickle import load
 
 import pytest
 
@@ -78,7 +79,7 @@ def compare_models(model_1, model_2):
     # ensure they have the same solution max
     solution_1 = model_1.optimize()
     solution_2 = model_2.optimize()
-    if solution_1.status == "optimal" and solution_2.status == "optimal":
+    if solution_1.status == OPTIMAL and solution_2.status == OPTIMAL:
         assert abs(
             solution_1.objective_value - solution_2.objective_value
         ) == pytest.approx(0.0)
