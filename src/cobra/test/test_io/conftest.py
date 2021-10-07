@@ -4,11 +4,11 @@
 
 from __future__ import absolute_import
 
-from optlang.interface import OPTIMAL
 from os.path import join
 from pickle import load
 
 import pytest
+from optlang.interface import OPTIMAL
 
 
 @pytest.fixture(scope="module")
