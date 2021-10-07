@@ -78,9 +78,12 @@ def compare_models(model_1, model_2):
     # ensure they have the same solution max
     solution_1 = model_1.optimize()
     solution_2 = model_2.optimize()
-    assert abs(
-        solution_1.objective_value - solution_2.objective_value
-    ) == pytest.approx(0.0)
+    if solution_1.status == "optimal" and solution_2.status == "optimal":
+        assert abs(
+            solution_1.objective_value - solution_2.objective_value
+        ) == pytest.approx(0.0)
+    else:
+        assert solution_1.status == solution_2.status
 
     # ensure the references are correct
     # metabolite -> model reference
