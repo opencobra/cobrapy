@@ -529,3 +529,14 @@ def test_smbl_with_notes(data_directory, tmp_path):
             reaction_annotations[annotation_key]
             == model.reactions[0].annotation[annotation_key]
         )
+
+
+def test_stable_gprs(data_directory, tmp_path):
+    mini = read_sbml_model(join(data_directory, "mini_fbc2.xml"))
+    mini.reactions.GLCpts.gene_reaction_rule = "((b2415 and b2417)or (b2416))"
+    fixed = join(str(tmp_path), "fixed_gpr.xml")
+    write_sbml_model(mini, fixed)
+    fixed_model = read_sbml_model(fixed)
+    assert (
+        fixed_model.reactions.GLCpts.gene_reaction_rule == "(b2415 and b2417) or b2416"
+    )

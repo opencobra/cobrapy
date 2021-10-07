@@ -743,17 +743,8 @@ def _sbml_to_model(
                 if f_replace and F_GENE in f_replace:
                     gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(" "))
 
-        # remove outside parenthesis, if any
-        if gpr.startswith("(") and gpr.endswith(")"):
-            try:
-                parse_gpr(gpr[1:-1].strip())
-                gpr = gpr[1:-1].strip()
-            except (SyntaxError, TypeError) as e:
-                LOGGER.warning(
-                    "Removing parenthesis from gpr %s leads to "
-                    "an error, so keeping parenthesis",
-                    gpr,
-                )
+        # remove outside parenthesis and format into standard form
+        gpr = ast2str(parse_gpr(gpr)[0])
 
         cobra_reaction.gene_reaction_rule = gpr
 
