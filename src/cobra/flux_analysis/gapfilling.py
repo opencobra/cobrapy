@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 from optlang.interface import OPTIMAL
 from optlang.symbolics import Zero
 
-from cobra.core import Model
-from cobra.util import fix_objective_as_constraint, interface_to_str
+from ..core import Model
+from ..util import fix_objective_as_constraint, interface_to_str
 
 
 if TYPE_CHECKING:

@@ -1,5 +1,7 @@
 """Test functionalities of FASTCC."""
 
+from typing import Callable, List
+
 import pytest
 
 from cobra import Model, Reaction
@@ -76,13 +78,15 @@ def opposing_model() -> Model:
     return test_model
 
 
-def test_fastcc_benchmark(model: Model, benchmark, all_solvers) -> None:
+def test_fastcc_benchmark(
+    model: Model, benchmark: Callable, all_solvers: List[str]
+) -> None:
     """Benchmark fastcc."""
     model.solver = all_solvers
     benchmark(fastcc, model)
 
 
-def test_figure1(figure1_model: Model, all_solvers) -> None:
+def test_figure1(figure1_model: Model, all_solvers: List[str]) -> None:
     """Test FASTCC."""
     figure1_model.solver = all_solvers
     consistent_model = fastcc(figure1_model)
@@ -90,7 +94,7 @@ def test_figure1(figure1_model: Model, all_solvers) -> None:
     assert expected_reactions == {rxn.id for rxn in consistent_model.reactions}
 
 
-def test_opposing(opposing_model: Model, all_solvers) -> None:
+def test_opposing(opposing_model: Model, all_solvers: List[str]) -> None:
     """Test FASTCC."""
     opposing_model.solver = all_solvers
     consistent_model = fastcc(opposing_model)
@@ -98,7 +102,9 @@ def test_opposing(opposing_model: Model, all_solvers) -> None:
     assert expected_reactions == {rxn.id for rxn in consistent_model.reactions}
 
 
-def test_fastcc_against_fva_nonblocked_rxns(model: Model, all_solvers) -> None:
+def test_fastcc_against_fva_nonblocked_rxns(
+    model: Model, all_solvers: List[str]
+) -> None:
     """Test non-blocked reactions obtained by FASTCC against FVA."""
     model.solver = all_solvers
     fastcc_consistent_model = fastcc(model)

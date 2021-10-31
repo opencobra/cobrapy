@@ -1,12 +1,18 @@
 """Test functions of array.py."""
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
 
 from cobra.util import create_stoichiometric_matrix
 
 
-def test_dense_matrix(model):
+if TYPE_CHECKING:
+    from cobra import Model
+
+
+def test_dense_matrix(model: "Model") -> None:
     """Test dense stoichiometric matrix creation."""
     S = create_stoichiometric_matrix(model, array_type="dense", dtype=int)
     assert S.dtype == int
@@ -24,7 +30,7 @@ def test_dense_matrix(model):
     assert np.allclose(mass_balance, 0)
 
 
-def test_sparse_matrix(model):
+def test_sparse_matrix(model: "Model") -> None:
     """Test sparse stoichiometric matrix creation."""
     pytest.importorskip("scipy")
     sparse_types = ["dok", "lil"]

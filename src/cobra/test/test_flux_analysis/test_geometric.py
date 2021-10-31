@@ -1,5 +1,7 @@
 """Test functionalities of Geometric FBA."""
 
+from typing import Callable, List
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -47,13 +49,15 @@ def geometric_fba_model() -> Model:
     return test_model
 
 
-def test_geometric_fba_benchmark(model: Model, benchmark, all_solvers) -> None:
+def test_geometric_fba_benchmark(
+    model: Model, benchmark: Callable, all_solvers: List[str]
+) -> None:
     """Benchmark geometric_fba."""
     model.solver = all_solvers
     benchmark(geometric_fba, model, processes=1)
 
 
-def test_geometric_fba(geometric_fba_model: Model, all_solvers) -> None:
+def test_geometric_fba(geometric_fba_model: Model, all_solvers: List[str]) -> None:
     """Test geometric_fba."""
     geometric_fba_model.solver = all_solvers
     geometric_fba_sol = geometric_fba(geometric_fba_model, processes=1)

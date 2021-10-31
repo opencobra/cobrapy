@@ -1,6 +1,6 @@
 """Test functionalities of OptGPSampler."""
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 import pytest
@@ -23,12 +23,12 @@ def optgp(model: "Model") -> OptGPSampler:
     return sampler
 
 
-def test_optgp_init_benchmark(model: "Model", benchmark) -> None:
+def test_optgp_init_benchmark(model: "Model", benchmark: Callable) -> None:
     """Benchmark inital OptGP sampling."""
     benchmark(lambda: OptGPSampler(model, processes=2))
 
 
-def test_optgp_sample_benchmark(optgp: "Model", benchmark) -> None:
+def test_optgp_sample_benchmark(optgp: "Model", benchmark: Callable) -> None:
     """Benchmark OptGP sampling."""
     benchmark(optgp.sample, 1)
 

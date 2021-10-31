@@ -2,7 +2,6 @@
 
 
 from io import BytesIO
-from typing import Union
 
 import httpx
 

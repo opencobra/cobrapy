@@ -1,6 +1,6 @@
 """Test functionalities of ACHRSampler."""
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 import pytest
@@ -12,12 +12,12 @@ if TYPE_CHECKING:
     from cobra import Model
 
 
-def test_achr_init_benchmark(model: "Model", benchmark) -> None:
+def test_achr_init_benchmark(model: "Model", benchmark: Callable) -> None:
     """Benchmark inital ACHR sampling."""
     benchmark(lambda: ACHRSampler(model))
 
 
-def test_achr_sample_benchmark(achr: ACHRSampler, benchmark) -> None:
+def test_achr_sample_benchmark(achr: ACHRSampler, benchmark: Callable) -> None:
     """Benchmark ACHR sampling."""
     benchmark(achr.sample, 1)
 

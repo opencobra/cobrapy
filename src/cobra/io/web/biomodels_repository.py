@@ -3,7 +3,7 @@
 
 import gzip
 from io import BytesIO
-from typing import List, Union
+from typing import List
 
 import httpx
 import pydantic

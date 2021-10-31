@@ -1,6 +1,6 @@
 """Test functionalities of Flux Variability Analysis."""
 
-from typing import List
+from typing import Callable, List
 
 import numpy as np
 import pandas as pd
@@ -18,7 +18,7 @@ from cobra.flux_analysis.variability import (
 
 # FVA
 def test_flux_variability_benchmark(
-    large_model: Model, benchmark, all_solvers: List[str]
+    large_model: Model, benchmark: Callable, all_solvers: List[str]
 ) -> None:
     """Benchmark FVA."""
     large_model.solver = all_solvers
@@ -40,7 +40,10 @@ def test_pfba_flux_variability(
     model.solver = all_solvers
     with pytest.warns(UserWarning):
         flux_variability_analysis(
-            model, pfba_factor=0.1, reaction_list=model.reactions[1::3], processes=1
+            model,
+            pfba_factor=0.1,
+            reaction_list=model.reactions[1::3],
+            processes=1,
         )
     fva_out = flux_variability_analysis(
         model, pfba_factor=1.1, reaction_list=model.reactions, processes=1
@@ -60,7 +63,11 @@ def test_loopless_pfba_fva(model: Model) -> None:
     """Test loopless FVA using pFBA."""
     loop_reactions = [model.reactions.get_by_id(rid) for rid in ("FRD7", "SUCDi")]
     fva_loopless = flux_variability_analysis(
-        model, pfba_factor=1.1, reaction_list=loop_reactions, loopless=True, processes=1
+        model,
+        pfba_factor=1.1,
+        reaction_list=loop_reactions,
+        loopless=True,
+        processes=1,
     )
     assert np.allclose(fva_loopless["maximum"], fva_loopless["minimum"])
 
@@ -89,7 +96,7 @@ def test_parallel_flux_variability(
 
 # Loopless FVA
 def test_flux_variability_loopless_benchmark(
-    model: Model, benchmark, all_solvers: List[str]
+    model: Model, benchmark: Callable, all_solvers: List[str]
 ) -> None:
     """Benchmark loopless FVA."""
     model.solver = all_solvers
@@ -147,7 +154,15 @@ def test_find_blocked_reactions_solver_none(model: Model) -> None:
 
 def test_essential_genes(model: Model) -> None:
     """Test find_essential_genes()."""
-    essential_genes = {"b2779", "b1779", "b0720", "b2416", "b2926", "b1136", "b2415"}
+    essential_genes = {
+        "b2779",
+        "b1779",
+        "b0720",
+        "b2416",
+        "b2926",
+        "b1136",
+        "b2415",
+    }
     observed_essential_genes = {g.id for g in find_essential_genes(model)}
     assert observed_essential_genes == essential_genes
 

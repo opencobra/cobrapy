@@ -2,7 +2,7 @@
 
 
 import math
-from typing import List
+from typing import Callable, List
 
 import numpy as np
 import pandas as pd
@@ -20,7 +20,7 @@ from cobra.flux_analysis.room import add_room
 
 # Single gene deletion FBA
 def test_single_gene_deletion_fba_benchmark(
-    model: Model, benchmark, all_solvers: List[str]
+    model: Model, benchmark: Callable, all_solvers: List[str]
 ) -> None:
     """Benchmark single gene deletion using FBA."""
     model.solver = all_solvers
@@ -47,7 +47,7 @@ def test_single_gene_deletion_fba(model: Model, all_solvers: List[str]) -> None:
 
 # Singe gene deletion MOMA
 def test_single_gene_deletion_moma_benchmark(
-    model: Model, benchmark, qp_solvers: List[str]
+    model: Model, benchmark: Callable, qp_solvers: List[str]
 ) -> None:
     """Benchmark single gene deletion using MOMA."""
     model.solver = qp_solvers
@@ -108,7 +108,7 @@ def test_single_gene_deletion_moma_reference(
 
 # Single gene deletion linear MOMA
 def test_single_gene_deletion_linear_moma_benchmark(
-    model: Model, benchmark, all_solvers: List[str]
+    model: Model, benchmark: Callable, all_solvers: List[str]
 ) -> None:
     """Benchmark single gene deletion using linear MOMA."""
     model.solver = all_solvers
@@ -148,7 +148,7 @@ def test_single_gene_deletion_linear_moma(model: Model, all_solvers: List[str]) 
 
 # Single gene deletion ROOM
 def test_single_gene_deletion_room_benchmark(
-    model: Model, benchmark, all_solvers: List[str]
+    model: Model, benchmark: Callable, all_solvers: List[str]
 ) -> None:
     """Benchmark single gene deletion using ROOM."""
     if all_solvers == "glpk":
@@ -166,7 +166,7 @@ def test_single_gene_deletion_room_benchmark(
 
 # Single gene deletion linear ROOM
 def test_single_gene_deletion_linear_room_benchmark(
-    model: Model, benchmark, all_solvers: List[str]
+    model: Model, benchmark: Callable, all_solvers: List[str]
 ) -> None:
     """Benchmark single gene deletion using linear ROOM."""
     model.solver = all_solvers
@@ -182,7 +182,7 @@ def test_single_gene_deletion_linear_room_benchmark(
 
 # Single reaction deletion
 def test_single_reaction_deletion_benchmark(
-    model: Model, benchmark, all_solvers: List[str]
+    model: Model, benchmark: Callable, all_solvers: List[str]
 ) -> None:
     """Benchmark single reaction deletion."""
     model.solver = all_solvers
@@ -271,7 +271,9 @@ def test_single_reaction_deletion_linear_room(
 
 
 # Double gene deletion
-def test_double_gene_deletion_benchmark(large_model: Model, benchmark) -> None:
+def test_double_gene_deletion_benchmark(
+    large_model: Model, benchmark: Callable
+) -> None:
     """Benchmark double gene deletion."""
     genes = [
         "b0726",
@@ -374,7 +376,7 @@ def test_double_gene_deletion(model: Model) -> None:
             assert np.isclose(sol_one.growth, growth, atol=1e-3)
 
 
-def test_double_gene_knockout_bug(large_model):
+def test_double_gene_knockout_bug(large_model: Model) -> None:
     """Test that the bug reported in #1102 is fixed."""
     genes = ["b0118", "b1276"]
     expected = (
@@ -402,7 +404,9 @@ def test_double_gene_knockout_bug(large_model):
 
 
 # Double reaction deletion
-def test_double_reaction_deletion_benchmark(large_model: Model, benchmark) -> None:
+def test_double_reaction_deletion_benchmark(
+    large_model: Model, benchmark: Callable
+) -> None:
     """Benchmark double reaction deletion."""
     reactions = large_model.reactions[1::100]
     benchmark(double_reaction_deletion, large_model, reaction_list1=reactions)
