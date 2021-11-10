@@ -14,9 +14,10 @@ from operator import attrgetter
 from warnings import warn
 
 from future.utils import raise_from, raise_with_traceback
+from sympy import Expr
 
 from cobra.core.configuration import Configuration
-from cobra.core.gene import Gene, ast2str, eval_gpr, parse_gpr
+from cobra.core.gene import Gene, ast2str, eval_gpr, parse_gpr, parse_gpr_sympy
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.exceptions import OptimizationError
@@ -76,6 +77,7 @@ class Reaction(Object):
     ):
         Object.__init__(self, id, name)
         self._gene_reaction_rule = ""
+        self._gpr_expression = Expr()
         self.subsystem = subsystem
 
         # The cobra.Genes that are used to catalyze the reaction
@@ -415,13 +417,21 @@ class Reaction(Object):
     def gene_reaction_rule(self):
         return self._gene_reaction_rule
 
+    # My understanding is that all imports will create a model before getting to
+    # this. This setter may be called without a model when someone is practicing or
+    # experimenting, like the tutorial. In that case, the downstream targets to parse
+    # GPR will assume there is a model, and create a temporary one when there is not
+
+    # What happens when you create two reactions that have same genes without models?
+    # Do the genes end up the same entities and know that they have the same reactions?
     @gene_reaction_rule.setter
-    def gene_reaction_rule(self, new_rule):
+    def gene_reaction_rule(self, new_rule: str):
 
         # TODO: Do this :)
         if get_context(self):
             warn("Context management not implemented for " "gene reaction rules")
 
+        # This whole section just gets the gene names
         self._gene_reaction_rule = new_rule.strip()
         try:
             _, gene_names = parse_gpr(self._gene_reaction_rule)
@@ -446,11 +456,11 @@ class Reaction(Object):
         else:
             model_genes = self._model.genes
             self._genes = set()
-            for id in gene_names:
-                if model_genes.has_id(id):
-                    self._genes.add(model_genes.get_by_id(id))
+            for g_id in gene_names:
+                if model_genes.has_id(g_id):
+                    self._genes.add(model_genes.get_by_id(g_id))
                 else:
-                    new_gene = Gene(id)
+                    new_gene = Gene(g_id)
                     new_gene._model = self._model
                     self._genes.add(new_gene)
                     model_genes.append(new_gene)
