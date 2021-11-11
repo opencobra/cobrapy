@@ -202,7 +202,7 @@ class GPRCleaner(NodeTransformer):
 str_for_sympy_symbols_dict = {':': r'\:', ',': r'\,', ' ': r'\ '}
 
 
-def fix_str_for_sympy_symbols(unescaped_str):
+def fix_str_for_symbols(unescaped_str):
     escaped_str = unescaped_str
     for key, value in str_for_sympy_symbols_dict.items():
         escaped_str = escaped_str.replace(key, value)
@@ -271,6 +271,63 @@ def parse_gpr_sympy(str_expr, GPRGene_dict):
     sympy_exp = sympifier.visit(tree)
     return sympy_exp, sympifier.gene_set
 
+
+class GPRSympifierToString(NodeVisitor):
+    """Parses compiled ast of a gene_reaction_rule to sympy and identifies genes
+    """
+
+    def __init__(self):
+        NodeVisitor.__init__(self)
+        self.gene_set = set()
+
+    def visit_Expression(self, node):
+        return self.visit(node.body) if hasattr(node, "body") else None
+
+    def visit_Name(self, node):
+        if node.id.startswith("__cobra_escape__"):
+            node.id = node.id[16:]
+        for char, escaped in replacements:
+            if escaped in node.id:
+                node.id = node.id.replace(escaped, char)
+        self.gene_set.add(node.id)
+        return str(node.id)
+
+    def visit_BoolOp(self, node):
+        _children = [self.visit(i) for i in node.values]
+        if isinstance(node.op, And):
+            return 'And(' + ", ".join(_children) + ')'
+        if isinstance(node.op, Or):
+            return 'Or(' + ", ".join(_children) + ')'
+
+
+def parse_gpr_sympy_str(str_expr, GPRGene_dict=None):
+    """parse gpr into SYMPY using ast and Node Visitor
+    Parameters
+    ----------
+    str_expr : string
+        string with the gene reaction rule to parse
+    GPRGene_dict: dict
+        dictionary from gene id to GPRGeneSymbol
+    Returns
+    -------
+    tuple
+        elements SYMPY expression and gene_ids as a set
+    """
+    str_expr = str_expr.strip()
+    if len(str_expr) == 0:
+        return None, set()
+    if GPRGene_dict is None:
+        GPRGene_dict = dict()
+    for char, escaped in replacements:
+        if char in str_expr:
+            str_expr = str_expr.replace(char, escaped)
+    escaped_str = keyword_re.sub("__cobra_escape__", str_expr)
+    escaped_str = number_start_re.sub("__cobra_escape__", escaped_str)
+    tree = ast_parse(escaped_str, "<string>", "eval")
+    sympifier = GPRSympifierToString()
+    sympy_exp = sympifier.visit(tree)
+    GPRGene_dict.update({i: Symbol(fix_str_for_symbols(i)) for i in sympifier.gene_set})
+    return parse_expr_sympy(sympy_exp, local_dict=GPRGene_dict)
 
 
 def parse_gpr(str_expr):
