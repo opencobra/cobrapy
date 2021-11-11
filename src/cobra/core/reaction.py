@@ -14,10 +14,9 @@ from operator import attrgetter
 from warnings import warn
 
 from future.utils import raise_from, raise_with_traceback
-from sympy import Expr
 
 from cobra.core.configuration import Configuration
-from cobra.core.gene import Gene, ast2str, eval_gpr, parse_gpr, parse_gpr_sympy
+from cobra.core.gene import Gene, ast2str, eval_gpr, parse_gpr
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.exceptions import OptimizationError
@@ -77,7 +76,7 @@ class Reaction(Object):
     ):
         Object.__init__(self, id, name)
         self._gene_reaction_rule = ""
-        self._gpr_expression = Expr()
+        self._gpr = None
         self.subsystem = subsystem
 
         # The cobra.Genes that are used to catalyze the reaction
@@ -417,13 +416,6 @@ class Reaction(Object):
     def gene_reaction_rule(self):
         return self._gene_reaction_rule
 
-    # My understanding is that all imports will create a model before getting to
-    # this. This setter may be called without a model when someone is practicing or
-    # experimenting, like the tutorial. In that case, the downstream targets to parse
-    # GPR will assume there is a model, and create a temporary one when there is not
-
-    # What happens when you create two reactions that have same genes without models?
-    # Do the genes end up the same entities and know that they have the same reactions?
     @gene_reaction_rule.setter
     def gene_reaction_rule(self, new_rule: str):
 
@@ -434,7 +426,8 @@ class Reaction(Object):
         # This whole section just gets the gene names
         self._gene_reaction_rule = new_rule.strip()
         try:
-            _, gene_names = parse_gpr(self._gene_reaction_rule)
+            self._gpr, gene_names = parse_gpr(self._gene_reaction_rule)
+            self._gene_reaction_rule = ast2str(self._gpr)
         except (SyntaxError, TypeError) as e:
             if "AND" in new_rule or "OR" in new_rule:
                 warn(
@@ -490,8 +483,11 @@ class Reaction(Object):
 
         """
         names = {i.id: i.name for i in self._genes}
-        ast = parse_gpr(self._gene_reaction_rule)[0]
-        return ast2str(ast, names=names)
+        return ast2str(self._gpr, names=names)
+
+    @property
+    def gpr(self):
+        return self._gpr
 
     @property
     def functional(self):
@@ -505,9 +501,8 @@ class Reaction(Object):
             otherwise False.
         """
         if self._model:
-            tree, _ = parse_gpr(self.gene_reaction_rule)
             return eval_gpr(
-                tree, {gene.id for gene in self.genes if not gene.functional}
+                self._gpr, {gene.id for gene in self.genes if not gene.functional}
             )
         return True
 

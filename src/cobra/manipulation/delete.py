@@ -103,7 +103,7 @@ def get_compiled_gene_reaction_rules(model: "Model") -> Dict["Reaction", Module]
         objects as keys.
 
     """
-    return {r: parse_gpr(r.gene_reaction_rule)[0] for r in model.reactions}
+    return {r: r.gpr for r in model.reactions}
 
 
 def find_gene_knockout_reactions(
@@ -146,11 +146,11 @@ def find_gene_knockout_reactions(
     for gene in gene_list:
         if isinstance(gene, str):
             gene = model.genes.get_by_id(gene)
-        potential_reactions.update(gene._reaction)
+        potential_reactions.update(gene.reaction)
     gene_set = {str(i) for i in gene_list}
     if compiled_gene_reaction_rules is None:
         compiled_gene_reaction_rules = {
-            r: parse_gpr(r.gene_reaction_rule)[0] for r in potential_reactions
+            r: r.gpr for r in potential_reactions
         }
 
     return [
