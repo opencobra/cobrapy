@@ -933,8 +933,8 @@
       - pyr_c: 1.0
     - lower_bound: 0.0
     - upper_bound: 1000.0
-    - gene_reaction_rule: ( b2415 and b2417 and b1101 and b2416 ) or ( b2415 and b2417
-        and b1621 and b2416 ) or ( b2415 and b1818 and b1817 and b1819 and b2416 )
+    - gene_reaction_rule: (b2415 and b2417 and b1101 and b2416) or (b2415 and b2417
+        and b1621 and b2416) or (b2415 and b1818 and b1817 and b1819 and b2416)
     - annotation: !!omap
       - bigg.reaction: GLCpts
   - !!omap

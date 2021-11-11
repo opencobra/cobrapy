@@ -3,7 +3,8 @@
 from __future__ import absolute_import
 
 import re
-from ast import And, BitAnd, BitOr, BoolOp, Expression, Name, NodeTransformer, Or, NodeVisitor
+from ast import And, BitAnd, BitOr, BoolOp, Expression, Name, NodeTransformer, Or, \
+    NodeVisitor
 from ast import parse as ast_parse
 from keyword import kwlist
 from warnings import warn
@@ -19,7 +20,7 @@ from sympy.core.singleton import S
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
-import cobra # otherwise using cobra.manipulation.remove_genes leads to annoying errors
+import cobra  # otherwise using cobra.manipulation.remove_genes leads to annoying errors
 
 keywords = list(kwlist)
 keywords.remove("and")
@@ -80,13 +81,13 @@ def ast2str(expr, level=0, names=None):
         raise TypeError("unsupported operation  " + repr(expr))
 
 
-def sympy2str(expr, aliases=None):
+def sympy2str(expr, names=None):
     """convert compiled sympy to gene_reaction_rule str
     Parameters
     ----------
-    expr : sympy
+    expr : sympy Expr
         compiled sympy expression for a gene rule
-    aliases : dict
+    names : dict
         Dict where each element id a gene identifier and the value is the
         gene alias. Use this to get a rule str which uses aliases instead. This
         should be done for display purposes only. All gene_reaction_rule
@@ -96,9 +97,9 @@ def sympy2str(expr, aliases=None):
     string
         The gene reaction rule
     """
-    if aliases is not None:
-        for alias in aliases:
-            expr = expr.subs(alias, aliases.get(alias, alias))
+    if names is not None:
+        aliases = {id: names.get(id, id) for id in names.keys()}
+        expr = expr.xreplace(aliases)
     if expr == S.true or expr == S.false:
         str_exp = ""
     else:
@@ -167,6 +168,32 @@ def eval_gpr_sympy(expr, knockouts=None):
     for gene in knockouts:
         gene_knockouts[gene] = S.false
     return bool(expr.subs(gene_knockouts))
+
+
+def eval_gpr_sympy_xreplace(expr, knockouts=None):
+    """evaluate compiled sympy of gene_reaction_rule with knockouts
+    Parameters
+    ----------
+    expr : Sympy Expression
+        The compiled sympy expression of the gene reaction rule
+    knockouts : DictList, set
+        Set of genes that are knocked out
+    Returns
+    -------
+    bool
+        True if the gene reaction rule is true with the given knockouts
+        otherwise false
+    """
+
+    # Does eval_gpr keep track of the status of the genes
+    # rxn1.gpr = 'A & B'
+    # model.genes.get_by_id('A').functional=False
+    # eval_gpr(rxn1) ?
+    if knockouts is None:
+        knockouts = []
+    gene_knockouts = {gene: gene not in knockouts for gene in expr.free_symbols}
+    expr.xreplace(gene_knockouts)
+    return bool(expr)
 
 
 class GPRCleaner(NodeTransformer):
@@ -376,10 +403,10 @@ class Gene(Species):
     def __init__(self, id=None, name="", functional=True):
         Species.__init__(self, id=id, name=name)
         self._functional = functional
-        self._gpr_gene = GPRGene(gene=self)
-        self._gpr_gene.is_gene_functional = S.false
-        if functional:
-            self._gpr_gene.is_gene_functional = S.true
+        # self._gpr_gene = GPRGene(gene=self)
+        # self._gpr_gene.is_gene_functional = S.false
+        # if functional:
+        #    self._gpr_gene.is_gene_functional = S.true
 
     @property
     def functional(self):
@@ -396,121 +423,10 @@ class Gene(Species):
         if not isinstance(value, bool):
             raise ValueError("expected boolean")
         self._functional = value
-        if value:
-            self._gpr_gene.is_gene_functional = S.true
-        else:
-            self._gpr_gene.is_gene_functional = S.false
-
-    def knock_out(self):
-        """Knockout gene by marking it as non-functional and setting all
-        associated reactions bounds to zero.
-
-        The change is reverted upon exit if executed within the model as
-        context.
-        """
-        self.functional = False
-        for reaction in self.reactions:
-            if not reaction.functional:
-                reaction.bounds = (0, 0)
-
-    def remove_from_model(
-        self, model=None, make_dependent_reactions_nonfunctional=True
-    ):
-        """Removes the association
-
-        Parameters
-        ----------
-        model : cobra model
-           The model to remove the gene from
-        make_dependent_reactions_nonfunctional : bool
-           If True then replace the gene with 'False' in the gene
-           association, else replace the gene with 'True'
-
-
-        .. deprecated :: 0.4
-            Use cobra.manipulation.delete_model_genes to simulate knockouts
-            and cobra.manipulation.remove_genes to remove genes from
-            the model.
-
-        """
-        warn("Use cobra.manipulation.remove_genes instead")
-        cobra.manipulation.remove_genes(self.model, [self])
-
-    def _repr_html_(self):
-        return """
-        <table>
-            <tr>
-                <td><strong>Gene identifier</strong></td><td>{id}</td>
-            </tr><tr>
-                <td><strong>Name</strong></td><td>{name}</td>
-            </tr><tr>
-                <td><strong>Memory address</strong></td>
-                <td>{address}</td>
-            </tr><tr>
-                <td><strong>Functional</strong></td><td>{functional}</td>
-            </tr><tr>
-                <td><strong>In {n_reactions} reaction(s)</strong></td><td>
-                    {reactions}</td>
-            </tr>
-        </table>""".format(
-            id=self.id,
-            name=self.name,
-            functional=self.functional,
-            address="0x0%x" % id(self),
-            n_reactions=len(self.reactions),
-            reactions=format_long_string(", ".join(r.id for r in self.reactions), 200),
-        )
-
-
-class sym_Gene(Symbol, Species):
-    """A Gene in a cobra model
-
-    Parameters
-    ----------
-    id : string
-        The identifier to associate the gene with
-    name: string
-        A longer human readable name for the gene
-    functional: bool
-        Indicates whether the gene is functional.  If it is not functional
-        then it cannot be used in an enzyme complex nor can its products be
-        used.
-    """
-
-    def __init__(self, id=None, name="", functional=True):
-        super().__init__(name=id)
-        super(Species, self)
-        self.alias = name
-        self._functional = functional
-
-    @property
-    def id(self):
-        """id actually points to name, since sympy needs name, and cobrapy uses id
-        """
-        return self.name
-
-    @id.setter
-    @resettable
-    def id(self, value):
-        if not isinstance(value, str):
-            raise ValueError("expected string")
-        self.name = value
-
-    @property
-    def functional(self):
-        """A flag indicating if the gene is functional.
-
-        Changing the flag is reverted upon exit if executed within the model
-        as context.
-        """
-        return self._functional
-
-    @functional.setter
-    @resettable
-    def functional(self, value):
-        if not isinstance(value, bool):
-            raise ValueError("expected boolean")
-        self._functional = value
+        # if value:
+        #     self._gpr_gene.is_gene_functional = S.true
+        # else:
+        #     self._gpr_gene.is_gene_functional = S.false
 
     def knock_out(self):
         """Knockout gene by marking it as non-functional and setting all
@@ -553,7 +469,41 @@ class sym_Gene(Symbol, Species):
                 )
         if self._model is None:
             raise Exception("%s is not in a model" % repr(self))
-        cobra.manipulation.remove_genes(self._model, [self])
+
+        if make_dependent_reactions_nonfunctional:
+            gene_state = "False"
+        else:
+            gene_state = "True"
+        the_gene_re = re.compile("(^|(?<=( |\()))%s(?=( |\)|$))" % re.escape(self.id))
+
+        # remove reference to the gene in all groups
+        associated_groups = self._model.get_associated_groups(self)
+        for group in associated_groups:
+            group.remove_members(self)
+
+        self._model.genes.remove(self)
+        self._model = None
+
+        for the_reaction in list(self._reaction):
+            the_reaction._gene_reaction_rule = the_gene_re.sub(
+                gene_state, the_reaction.gene_reaction_rule
+            )
+            the_reaction._genes.remove(self)
+            # Now, deactivate the reaction if its gene association evaluates
+            # to False
+            the_gene_reaction_relation = the_reaction.gene_reaction_rule
+            for other_gene in the_reaction._genes:
+                other_gene_re = re.compile(
+                    "(^|(?<=( |\()))%s(?=( |\)|$))" % re.escape(other_gene.id)
+                )
+                the_gene_reaction_relation = other_gene_re.sub(
+                    "True", the_gene_reaction_relation
+                )
+
+            if not eval(the_gene_reaction_relation):
+                the_reaction.lower_bound = 0
+                the_reaction.upper_bound = 0
+        self._reaction.clear()
 
     def _repr_html_(self):
         return """
@@ -573,14 +523,9 @@ class sym_Gene(Symbol, Species):
             </tr>
         </table>""".format(
             id=self.id,
-            name=self.alias,
+            name=self.name,
             functional=self.functional,
             address="0x0%x" % id(self),
             n_reactions=len(self.reactions),
             reactions=format_long_string(", ".join(r.id for r in self.reactions), 200),
         )
-
-
-class GPRGene(Symbol):
-    def __init__(self, gene: Gene):
-        super().__init__(name=gene.id)

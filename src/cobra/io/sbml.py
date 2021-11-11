@@ -743,9 +743,6 @@ def _sbml_to_model(
                 if f_replace and F_GENE in f_replace:
                     gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(" "))
 
-        # remove outside parenthesis and format into standard form
-        gpr = ast2str(parse_gpr(gpr)[0])
-
         cobra_reaction.gene_reaction_rule = gpr
 
     cobra_model.add_reactions(reactions)
