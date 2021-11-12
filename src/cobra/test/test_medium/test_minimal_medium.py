@@ -108,3 +108,17 @@ def test_model_medium(model: Model) -> None:
     new_medium["bogus_rxn"] = 0
     with pytest.raises(KeyError):
         model.medium = new_medium
+
+
+def test_medium_does_not_affect_exports(model: Model) -> None:
+    """Test that the medium setter does not overwrite exports."""
+    med = model.medium
+    # Set a fixed export rate
+    model.reactions.EX_ac_e.lower_bound = 0.1
+    model.medium = med
+    assert model.reactions.EX_ac_e.lower_bound == 0.1
+
+    # should be overwritten if actually in the medium
+    med["EX_ac_e"] = 1
+    model.medium = med
+    assert model.reactions.EX_ac_e.lower_bound == -1

@@ -290,7 +290,10 @@ class Model(Object):
 
         # Turn off reactions not present in media
         for rxn in exchange_rxns - media_rxns:
-            set_active_bound(rxn, 0)
+            is_export = rxn.reactants and not rxn.products
+            set_active_bound(
+                rxn, min(0, -rxn.lower_bound if is_export else rxn.upper_bound)
+            )
 
     def __add__(self, other_model):
         """Add the content of another model to this model (+).
