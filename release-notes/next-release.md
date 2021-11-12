@@ -5,6 +5,7 @@
 ## Fixes
 
 - now uses the internal semantic GPR parser in the SBML module
+- setting a growth medium will not reset export flux bounds anymore
 
 ## Other
 
