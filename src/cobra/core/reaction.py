@@ -40,7 +40,7 @@ uppercase_OR = re.compile(r"\bOR\b")
 gpr_clean = re.compile(" {2,}")
 # This regular expression finds any single letter compartment enclosed in
 # square brackets at the beginning of the string. For example [c] : foo --> bar
-compartment_finder = re.compile("^\s*(\[[A-Za-z]\])\s*:*")
+compartment_finder = re.compile("^\\s*(\\[[A-Za-z]\\])\\s*:*")
 # Regular expressions to match the arrows
 _reversible_arrow_finder = re.compile("<(-+|=+)>")
 _forward_arrow_finder = re.compile("(-+|=+)>")
@@ -467,13 +467,13 @@ class Reaction(Object):
 
         # Make the genes aware that it is involved in this reaction
         for g in self._genes:
-            g._reaction.add(self)
+            g.reaction.add(self)
 
         # make the old genes aware they are no longer involved in this reaction
         for g in old_genes:
             if g not in self._genes:  # if an old gene is not a new gene
                 try:
-                    g._reaction.remove(self)
+                    g.reaction.remove(self)
                 except KeyError:
                     warn(
                         "could not remove old gene %s from reaction %s"
@@ -563,9 +563,9 @@ class Reaction(Object):
 
         """
         for x in self._metabolites:
-            x._reaction.add(self)
+            x.reaction.add(self)
         for x in self._genes:
-            x._reaction.add(self)
+            x.reaction.add(self)
 
     def remove_from_model(self, remove_orphans=False):
         """Removes the reaction from a model.
@@ -628,10 +628,10 @@ class Reaction(Object):
         self.__dict__.update(state)
         for x in state["_metabolites"]:
             setattr(x, "_model", self._model)
-            x._reaction.add(self)
+            x.reaction.add(self)
         for x in state["_genes"]:
             setattr(x, "_model", self._model)
-            x._reaction.add(self)
+            x.reaction.add(self)
 
     def copy(self):
         """Copy a reaction
@@ -838,7 +838,7 @@ class Reaction(Object):
                 self._metabolites[metabolite] = coefficient
                 # make the metabolite aware that it is involved in this
                 # reaction
-                metabolite._reaction.add(self)
+                metabolite.reaction.add(self)
 
         # from cameo ...
         model = self.model
@@ -857,7 +857,7 @@ class Reaction(Object):
             if the_coefficient == 0:
                 # make the metabolite aware that it no longer participates
                 # in this reaction
-                metabolite._reaction.remove(self)
+                metabolite.reaction.remove(self)
                 self._metabolites.pop(metabolite)
 
         context = get_context(self)
@@ -1001,7 +1001,7 @@ class Reaction(Object):
 
         """
         self._genes.add(cobra_gene)
-        cobra_gene._reaction.add(self)
+        cobra_gene.reaction.add(self)
         cobra_gene._model = self._model
 
     def _dissociate_gene(self, cobra_gene):
@@ -1013,7 +1013,7 @@ class Reaction(Object):
 
         """
         self._genes.discard(cobra_gene)
-        cobra_gene._reaction.discard(self)
+        cobra_gene.reaction.discard(self)
 
     def knock_out(self):
         """Knockout reaction by setting its bounds to zero."""
