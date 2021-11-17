@@ -39,14 +39,13 @@ def test_gpr() -> None:
         assert reaction.gene_reaction_rule == "(b1 and b2) or (b3 and b4)"
         assert len(reaction.genes) == 4
 
-    # Ensure regular expressions correctly extract genes from malformed
-    # GPR string
+    # Malformed GPR strings will lead to empty GPRs with no genes
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         reaction.gene_reaction_rule = "(a1 or a2"
-        assert len(reaction.genes) == 2
+        assert len(reaction.genes) == 0
         reaction.gene_reaction_rule = "(forT or "
-        assert len(reaction.genes) == 1
+        assert len(reaction.genes) == 0
 
 
 def test_gpr_modification(model: Model) -> None:

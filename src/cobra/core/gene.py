@@ -550,8 +550,14 @@ class GPR(Module):
                 )
                 string_gpr = uppercase_AND.sub("and", string_gpr)
                 string_gpr = uppercase_OR.sub("or", string_gpr)
-            tree = ast_parse(string_gpr, "<string>", "eval")
-            warn("malformed gene_reaction_rule '%s' for %s" % (string_gpr, repr(self)))
+            try:
+                tree = ast_parse(string_gpr, "<string>", "eval")
+            except SyntaxError as e:
+                warn("malformed gene_reaction_rule '%s' for %s" %
+                     (string_gpr, repr(self)))
+                warn('GPR will be empty')
+                warn(e.msg)
+                return None
         cleaner = GPRCleaner()
         cleaner.visit(tree)
         self._genes = cleaner.gene_set
