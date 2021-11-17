@@ -16,7 +16,7 @@ from warnings import warn
 from future.utils import raise_from, raise_with_traceback
 
 from cobra.core.configuration import Configuration
-from cobra.core.gene import Gene, ast2str, eval_gpr, parse_gpr
+from cobra.core.gene import Gene, GPR
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.exceptions import OptimizationError
@@ -76,7 +76,7 @@ class Reaction(Object):
     ):
         Object.__init__(self, id, name)
         self._gene_reaction_rule = ""
-        self._gpr = None
+        self._gpr = GPR()
         self.subsystem = subsystem
 
         # The cobra.Genes that are used to catalyze the reaction
@@ -414,7 +414,7 @@ class Reaction(Object):
 
     @property
     def gene_reaction_rule(self):
-        return self._gene_reaction_rule
+        return self._gpr.gene_reaction_rule
 
     @gene_reaction_rule.setter
     def gene_reaction_rule(self, new_rule: str):
@@ -423,26 +423,8 @@ class Reaction(Object):
         if get_context(self):
             warn("Context management not implemented for " "gene reaction rules")
 
-        # This whole section just gets the gene names
-        self._gene_reaction_rule = new_rule.strip()
-        try:
-            self._gpr, gene_names = parse_gpr(self._gene_reaction_rule)
-            self._gene_reaction_rule = ast2str(self._gpr)
-        except (SyntaxError, TypeError) as e:
-            if "AND" in new_rule or "OR" in new_rule:
-                warn(
-                    "uppercase AND/OR found in rule '%s' for '%s'"
-                    % (new_rule, repr(self))
-                )
-                new_rule = uppercase_AND.sub("and", new_rule)
-                new_rule = uppercase_OR.sub("or", new_rule)
-                self.gene_reaction_rule = new_rule
-                return
-            warn("malformed gene_reaction_rule '%s' for %s" % (new_rule, repr(self)))
-            tmp_str = and_or_search.sub("", self._gene_reaction_rule)
-            gene_names = set((gpr_clean.sub(" ", tmp_str).split(" ")))
-        if "" in gene_names:
-            gene_names.remove("")
+        self._gpr = GPR(string_gpr=new_rule)
+        gene_names = self._gpr.geneset
         old_genes = self._genes
         if self._model is None:
             self._genes = {Gene(i) for i in gene_names}
@@ -483,7 +465,7 @@ class Reaction(Object):
 
         """
         names = {i.id: i.name for i in self._genes}
-        return ast2str(self._gpr, names=names)
+        return self._gpr.str_names(names=names)
 
     @property
     def gpr(self):
@@ -501,9 +483,7 @@ class Reaction(Object):
             otherwise False.
         """
         if self._model:
-            return eval_gpr(
-                self._gpr, {gene.id for gene in self.genes if not gene.functional}
-            )
+            return self._gpr.eval({gene.id for gene in self.genes if not gene.functional})
         return True
 
     @property
