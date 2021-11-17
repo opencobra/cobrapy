@@ -1,11 +1,8 @@
 """Provide functions for pruning reactions, metabolites and genes."""
-
-from ast import And, Module, NodeTransformer
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from _ast import BoolOp, Name, And, Module
+from ast import NodeTransformer
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union, Set
 from warnings import warn
-
-from ..core.gene import ast2str, eval_gpr, parse_gpr
-
 
 if TYPE_CHECKING:
     from cobra import Gene, Metabolite, Model, Reaction
@@ -156,7 +153,7 @@ def find_gene_knockout_reactions(
     return [
         r
         for r in potential_reactions
-        if not eval_gpr(compiled_gene_reaction_rules[r], gene_set)
+        if not compiled_gene_reaction_rules[r].eval(gene_set)
     ]
 
 
@@ -243,12 +240,12 @@ class _GeneRemover(NodeTransformer):
 
     Parameters
     ----------
-    target_genes: list of cobra.Gene
-        A list of genes to be removed.
+    target_genes: list or set of cobra.Gene
+        A set of genes to be removed.
 
     """
 
-    def __init__(self, target_genes: List["Gene"], **kwargs) -> None:
+    def __init__(self, target_genes: Set["Gene"], **kwargs) -> None:
         """Initialize a new object.
 
         Other Parameters
@@ -260,12 +257,12 @@ class _GeneRemover(NodeTransformer):
         super().__init__(**kwargs)
         self.target_genes = {str(i) for i in target_genes}
 
-    def visit_Name(self, node: "Gene") -> Optional["Gene"]:
+    def visit_Name(self, node: "Name") -> Optional["Name"]:
         """Remove a gene.
 
         Parameters
         ----------
-        node: cobra.Gene
+        node: ast.Name
             The gene to remove.
 
         Returns
@@ -276,18 +273,19 @@ class _GeneRemover(NodeTransformer):
         """
         return None if node.id in self.target_genes else node
 
-    def visit_BoolOp(self, node: "Gene") -> Optional["Gene"]:
+    def visit_BoolOp(self, node: "BoolOp") -> Optional[Union["BoolOp", "Name"]]:
         """Rules for boolean operations.
 
         Parameters
         ----------
-        node: cobra.Gene
+        node: ast.Name
             The gene to apply rules to.
 
         Returns
         -------
-        cobra.Gene or None
-            None if size of node values is less after applying rule.
+        ast.Name or None
+            None if size of Or node values is zero after applying rule,
+            or size of And node values is lower after applying rule.
 
         """
         original_n = len(node.values)
@@ -297,14 +295,15 @@ class _GeneRemover(NodeTransformer):
         # AND with any entities removed
         if len(node.values) < original_n and isinstance(node.op, And):
             return None
-        # if one entity in an OR was removed, just that entity passed up
+        # if one entity in an OR was left, just that entity passed up
         if len(node.values) == 1:
             return node.values[0]
         return node
 
 
 def remove_genes(
-    model: "Model", gene_list: List["Gene"], remove_reactions: bool = True
+    model: "Model", gene_list: Union[List["Gene"], Set["Gene"], List[str], Union[str]],
+    remove_reactions: bool = True
 ) -> None:
     """Remove genes entirely from the model.
 
@@ -315,7 +314,7 @@ def remove_genes(
     ----------
     model: cobra.Model
         The model to remove genes from.
-    gene_list: list of cobra.Gene
+    gene_list: list of cobra.Gene or gene ids
         The list of gene objects to remove.
     remove_reactions: bool, optional
         Whether to remove reactions associated with genes in `gene_list`
@@ -331,15 +330,14 @@ def remove_genes(
         if reaction.gene_reaction_rule is None or len(reaction.gene_reaction_rule) == 0:
             continue
         # reactions to remove
-        if remove_reactions and not eval_gpr(rule, gene_id_set):
+        if remove_reactions and not rule.eval(gene_id_set):
             target_reactions.append(reaction)
         else:
             # if the reaction is not removed, remove the gene
             # from its gpr
             remover.visit(rule)
-            new_rule = ast2str(rule)
-            if new_rule != reaction.gene_reaction_rule:
-                reaction.gene_reaction_rule = new_rule
+            if str(rule) != reaction.gene_reaction_rule:
+                reaction.gpr = rule
     for gene in gene_set:
         model.genes.remove(gene)
         # remove reference to the gene in all groups
