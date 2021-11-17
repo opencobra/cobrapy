@@ -471,6 +471,13 @@ class Reaction(Object):
     def gpr(self):
         return self._gpr
 
+    # Using this setter will lead to speed up instead of
+    # using str(GPR) and then ast2str(str(GPR)) which was what some versions of the code
+    # where doing
+    @gpr.setter
+    def gpr(self, value):
+        self._gpr = value
+
     @property
     def functional(self):
         """All required enzymes for reaction are functional.

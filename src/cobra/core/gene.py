@@ -3,11 +3,12 @@
 from __future__ import absolute_import
 
 import re
+from _ast import AST
 from ast import And, BitAnd, BitOr, BoolOp, Expression, Name, NodeTransformer, Or, \
     NodeVisitor, Module
 from ast import parse as ast_parse
 from keyword import kwlist
-from typing import Union
+from typing import Union, Set
 from warnings import warn
 # When https://github.com/symengine/symengine.py/issues/334 is resolved, change it to
 # optlang.symbolics.Symbol
@@ -561,7 +562,7 @@ class GPR(Module):
     # @staticmethod
     # def from_sbml(sbml_exp):
 
-    def eval(self, knockouts: Union[DictList, set] = None):
+    def eval(self, knockouts: Union[DictList, Set] = None):
         if knockouts is None:
             knockouts = set()
         return eval_gpr(self.body, knockouts=knockouts)
