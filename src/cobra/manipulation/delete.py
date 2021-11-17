@@ -335,9 +335,10 @@ def remove_genes(
         else:
             # if the reaction is not removed, remove the gene
             # from its gpr
-            remover.visit(rule)
-            if str(rule) != reaction.gene_reaction_rule:
-                reaction.gpr = rule
+            new_rule = rule.copy()
+            remover.visit(new_rule)
+            if str(new_rule) != reaction.gene_reaction_rule:
+                reaction.gpr = new_rule
     for gene in gene_set:
         model.genes.remove(gene)
         # remove reference to the gene in all groups

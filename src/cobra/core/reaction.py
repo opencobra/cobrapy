@@ -28,7 +28,6 @@ from cobra.util.solver import (
 )
 from cobra.util.util import format_long_string
 
-
 config = Configuration()
 
 # precompiled regular expressions
@@ -412,6 +411,40 @@ class Reaction(Object):
     def genes(self):
         return frozenset(self._genes)
 
+    def _update_genes(self, new_gene_names: set = None):
+        if new_gene_names is None:
+            return
+        else:
+            old_genes = self._genes.copy()
+            if self._model is None:
+                self._genes = {Gene(i) for i in new_gene_names}
+            else:
+                model_genes = self._model.genes
+                self._genes = set()
+                for g_id in new_gene_names:
+                    if model_genes.has_id(g_id):
+                        self._genes.add(model_genes.get_by_id(g_id))
+                    else:
+                        new_gene = Gene(g_id)
+                        new_gene._model = self._model
+                        self._genes.add(new_gene)
+                        model_genes.append(new_gene)
+
+            # Make the genes aware that it is involved in this reaction
+            for g in self._genes:
+                g.reaction.add(self)
+
+            # make the old genes aware they are no longer involved in this reaction
+            for g in old_genes:
+                if g not in self._genes:  # if an old gene is not a new gene
+                    try:
+                        g.reaction.remove(self)
+                    except KeyError:
+                        warn(
+                            "could not remove old gene %s from reaction %s"
+                            % (g.id, self.id)
+                        )
+
     @property
     def gene_reaction_rule(self):
         return self._gpr.gene_reaction_rule
@@ -425,35 +458,7 @@ class Reaction(Object):
 
         self._gpr = GPR(string_gpr=new_rule)
         gene_names = self._gpr.geneset
-        old_genes = self._genes
-        if self._model is None:
-            self._genes = {Gene(i) for i in gene_names}
-        else:
-            model_genes = self._model.genes
-            self._genes = set()
-            for g_id in gene_names:
-                if model_genes.has_id(g_id):
-                    self._genes.add(model_genes.get_by_id(g_id))
-                else:
-                    new_gene = Gene(g_id)
-                    new_gene._model = self._model
-                    self._genes.add(new_gene)
-                    model_genes.append(new_gene)
-
-        # Make the genes aware that it is involved in this reaction
-        for g in self._genes:
-            g.reaction.add(self)
-
-        # make the old genes aware they are no longer involved in this reaction
-        for g in old_genes:
-            if g not in self._genes:  # if an old gene is not a new gene
-                try:
-                    g.reaction.remove(self)
-                except KeyError:
-                    warn(
-                        "could not remove old gene %s from reaction %s"
-                        % (g.id, self.id)
-                    )
+        self._update_genes(new_gene_names=gene_names)
 
     @property
     def gene_name_reaction_rule(self):
@@ -473,10 +478,12 @@ class Reaction(Object):
 
     # Using this setter will lead to speed up instead of
     # using str(GPR) and then ast2str(str(GPR)) which was what some versions of the code
-    # where doing
+    # were doing
     @gpr.setter
     def gpr(self, value):
         self._gpr = value
+        gene_names = self._gpr.geneset
+        self._update_genes(new_gene_names=gene_names)
 
     @property
     def functional(self):
@@ -490,7 +497,8 @@ class Reaction(Object):
             otherwise False.
         """
         if self._model:
-            return self._gpr.eval({gene.id for gene in self.genes if not gene.functional})
+            return self._gpr.eval(
+                {gene.id for gene in self.genes if not gene.functional})
         return True
 
     @property
@@ -1081,7 +1089,7 @@ class Reaction(Object):
                 else:
                     self.bounds = config.lower_bound, 0
         reactant_str = reaction_str[: arrow_match.start()].strip()
-        product_str = reaction_str[arrow_match.end() :].strip()
+        product_str = reaction_str[arrow_match.end():].strip()
 
         self.subtract_metabolites(self.metabolites, combine=True)
 
