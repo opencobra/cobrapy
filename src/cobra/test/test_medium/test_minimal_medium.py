@@ -110,8 +110,8 @@ def test_model_medium(model: Model) -> None:
         model.medium = new_medium
 
 
-def test_medium_does_not_affect_exports(model: Model) -> None:
-    """Test that the medium setter does not overwrite exports."""
+def test_medium_does_not_affect_reactant_exports(model: Model) -> None:
+    """Test that the medium setter does not overwrite exports defined as reactants."""
     med = model.medium
     # Set a fixed export rate
     model.reactions.EX_ac_e.lower_bound = 0.1
@@ -122,3 +122,19 @@ def test_medium_does_not_affect_exports(model: Model) -> None:
     med["EX_ac_e"] = 1
     model.medium = med
     assert model.reactions.EX_ac_e.lower_bound == -1
+
+
+def test_medium_does_not_affect_product_exports(model: Model) -> None:
+    """Test that the medium setter does not overwrite exports defined as products."""
+    med = model.medium
+    # Reverse reaction definition
+    model.reactions.EX_ac_e *= -1
+    # Set a fixed export rate
+    model.reactions.EX_ac_e.bounds = -1, -0.1
+    model.medium = med
+    assert model.reactions.EX_ac_e.bounds == (-1, -0.1)
+
+    # should be overwritten if actually in the medium
+    med["EX_ac_e"] = 1
+    model.medium = med
+    assert model.reactions.EX_ac_e.upper_bound == 1
