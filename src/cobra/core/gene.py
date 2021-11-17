@@ -10,6 +10,7 @@ from ast import parse as ast_parse
 from keyword import kwlist
 from typing import Union, Set
 from warnings import warn
+from copy import deepcopy
 # When https://github.com/symengine/symengine.py/issues/334 is resolved, change it to
 # optlang.symbolics.Symbol
 from sympy import Symbol as Symbol
@@ -23,7 +24,6 @@ from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
-import cobra  # otherwise using cobra.manipulation.remove_genes leads to annoying errors
 
 keywords = list(kwlist)
 keywords.remove("and")
@@ -182,6 +182,15 @@ class GPRCleaner(NodeTransformer):
             return BoolOp(Or(), (node.left, node.right))
         else:
             raise TypeError("unsupported operation '%s'" % node.op.__class__.__name__)
+
+
+class UpdateGenes(NodeVisitor):
+    def __init__(self):
+        NodeVisitor.__init__(self)
+        self.gene_set = set()
+
+    def visit_Name(self, node):
+        self.gene_set.add(node.id)
 
 
 # Using unescaped ":", "," or " " causes sympy to make a range or separate items
@@ -553,7 +562,16 @@ class GPR(Module):
 
     @property
     def geneset(self):
+        self.updategenes()
         return frozenset(self._genes)
+
+    def updategenes(self):
+        if hasattr(self, "body"):
+            cleaner = GPRCleaner()
+            cleaner.visit(self.body)
+            self._genes = cleaner.gene_set
+            if "" in self._genes:
+                self._genes.remove("")
 
     @property
     def gene_reaction_rule(self):
@@ -608,6 +626,11 @@ class GPR(Module):
             </tr>
         </table>
         """.format(gpr=format_long_string(self.gene_reaction_rule, 100))
+
+    def copy(self):
+        """Copy a GPR
+        """
+        return deepcopy(self)
 
     def __repr__(self):
         return '%s.%s(%r)' % (self.__class__.__module__,
