@@ -457,8 +457,11 @@ class Reaction(Object):
             warn("Context management not implemented for " "gene reaction rules")
 
         self._gpr = GPR(string_gpr=new_rule)
-        gene_names = self._gpr.geneset
-        self._update_genes(new_gene_names=gene_names)
+        if self._gpr is not None:
+            gene_names = self._gpr.geneset
+            self._update_genes(new_gene_names=gene_names)
+        else:
+            self._update_genes(new_gene_names=set())
 
     @property
     def gene_name_reaction_rule(self):
