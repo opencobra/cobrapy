@@ -518,6 +518,8 @@ class GPR(Module):
             This function also sets self._genes with the gene ids in the AST
 
         """
+        uppercase_AND = re.compile(r"\bAND\b")
+        uppercase_OR = re.compile(r"\bOR\b")
         str_expr = string_gpr.strip()
         if len(str_expr) == 0:
             self.body = []
@@ -527,10 +529,24 @@ class GPR(Module):
                 str_expr = str_expr.replace(char, escaped)
         escaped_str = keyword_re.sub("__cobra_escape__", str_expr)
         escaped_str = number_start_re.sub("__cobra_escape__", escaped_str)
-        tree = ast_parse(escaped_str, "<string>", "eval")
+
+        try:
+            tree = ast_parse(escaped_str, "<string>", "eval")
+        except (SyntaxError, TypeError) as e:
+            if "AND" in string_gpr or "OR" in string_gpr:
+                warn(
+                    "uppercase AND/OR found in rule '%s' for '%s'"
+                    % (string_gpr, repr(self))
+                )
+                string_gpr = uppercase_AND.sub("and", string_gpr)
+                string_gpr = uppercase_OR.sub("or", string_gpr)
+            tree = ast_parse(string_gpr, "<string>", "eval")
+            warn("malformed gene_reaction_rule '%s' for %s" % (string_gpr, repr(self)))
         cleaner = GPRCleaner()
         cleaner.visit(tree)
         self._genes = cleaner.gene_set
+        if "" in self._genes:
+            self._genes.remove("")
         self.body = tree.body
         self.eval()  # ensure the rule can be evaluated
 
