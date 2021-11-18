@@ -85,12 +85,11 @@ def escape_ID(model: "Model") -> None:
     """
     for x in chain([model], model.metabolites, model.reactions, model.genes):
         x.id = _escape_str_id(x.id)
-    model.repair()
     gene_renamer = _GeneEscaper()
     for rxn in model.reactions:
         if rxn.gpr is not None:
             gene_renamer.visit(rxn.gpr)
-            rxn.update_genes_from_gpr()
+    model.repair()
 
 
 class _Renamer(NodeTransformer):
@@ -179,13 +178,13 @@ def rename_genes(model: "Model", rename_dict: Dict[str, str]) -> None:
             # that are not associated with a rxn
             # cobra_model.genes.append(Gene(new_name))
             pass
-    model.repair()
 
     gene_renamer = _Renamer(rename_dict)
     for rxn in model.reactions:
         if rxn.gpr is not None:
             gene_renamer.visit(rxn.gpr)
-        rxn.update_genes_from_gpr()
+
+    model.repair()
 
     for i in remove_genes:
         model.genes.remove(i)
