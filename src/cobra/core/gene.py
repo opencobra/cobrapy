@@ -642,7 +642,6 @@ class GPR(Module):
     #     # ...
 
 
-
 # functions for gene reaction rules
 def ast2str(expr: Union[Expression, GPR, BoolOp, Name, list], level: int = 0,
             names: dict = None) -> str:
