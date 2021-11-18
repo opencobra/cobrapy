@@ -579,10 +579,6 @@ class GPR(Module):
             if "" in self._genes:
                 self._genes.remove("")
 
-    @property
-    def gene_reaction_rule(self):
-        return str(self)
-
     # @staticmethod
     # def from_sbml(sbml_exp):
 
@@ -590,6 +586,23 @@ class GPR(Module):
         if knockouts is None:
             knockouts = set()
         return eval_gpr(self.body, knockouts=knockouts)
+
+    def to_string(self, names: dict = None) -> str:
+        """convert compiled ast to gene_reaction_rule str
+
+         Parameters
+         ----------
+         self : GPR
+            compiled ast Module describing GPR
+         names: dict
+            dictionary of gene ids to gene names. If this is empty, returns gene ids
+
+         Returns
+         ------
+         string
+             The gene reaction rule
+         """
+        return ast2str(self, names=names)
 
     def __str__(self):
         """convert compiled ast to gene_reaction_rule str
@@ -604,26 +617,8 @@ class GPR(Module):
          string
              The gene reaction rule
          """
-        return ast2str(self)
+        return self.to_string(names={})
 
-    def str_names(self, names: dict = None) -> str:
-        """convert compiled ast to gene_reaction_rule str
-
-         Parameters
-         ----------
-         self : GPR
-            compiled ast Module describing GPR
-         names: dict
-            dictionary of gene ids to gene names
-
-         Returns
-         ------
-         string
-             The gene reaction rule
-         """
-        return ast2str(self, names=names)
-
-    #
     def __repr_html__(self):
         return """
         <table>
@@ -641,10 +636,11 @@ class GPR(Module):
     def __repr__(self):
         return '%s.%s(%r)' % (self.__class__.__module__,
                               self.__class__.__qualname__,
-                              ast2str(self))
+                              self.to_string())
 
     # def as_symbolic(self):
     #     # ...
+
 
 
 # functions for gene reaction rules

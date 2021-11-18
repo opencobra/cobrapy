@@ -80,6 +80,7 @@ def undelete_model_genes(model: "Model") -> None:
     model._trimmed = False
 
 
+#TODO - remove this
 def get_compiled_gene_reaction_rules(model: "Model") -> Dict["Reaction", Module]:
     """Generate a dictionary of compiled gene-reaction rules.
 

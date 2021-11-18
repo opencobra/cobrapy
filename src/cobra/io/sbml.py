@@ -1188,17 +1188,14 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         )
 
         # GPR
-        gpr = cobra_reaction.gene_reaction_rule
-        if gpr is not None and len(gpr) > 0:
-            # we will parse the GPR to format them correctly for libSBML
-            # avoids cases where a GPR can be parsed by cobrapy but not libSBML
-            tree, gids = parse_gpr(gpr)
+        gpr = cobra_reaction.gpr
+        if gpr is not None and hasattr(gpr, "body"):
             # replace ids in string
             if f_replace and F_GENE_REV in f_replace:
-                idmap = {gid: f_replace[F_GENE_REV](gid) for gid in gids}
-                gpr_new = ast2str(tree, names=idmap)
+                idmap = {gid: f_replace[F_GENE_REV](gid) for gid in gpr.geneset}
+                gpr_new = gpr.to_string(names=idmap)
             else:
-                gpr_new = ast2str(tree)
+                gpr_new = gpr.to_string()
 
             gpa = (
                 r_fbc.createGeneProductAssociation()

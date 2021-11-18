@@ -29,10 +29,6 @@ class Species(Object):
     def reactions(self):
         return frozenset(self._reaction)
 
-    @property
-    def reaction(self):
-        return self._reaction
-
     def __getstate__(self):
         """Remove the references to container reactions when serializing to
         avoid problems associated with recursion.
