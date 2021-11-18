@@ -4,8 +4,6 @@ from ast import NodeTransformer
 from itertools import chain
 from typing import TYPE_CHECKING, Dict
 
-from ..core.gene import ast2str
-from .delete import get_compiled_gene_reaction_rules
 
 
 if TYPE_CHECKING:
@@ -89,9 +87,10 @@ def escape_ID(model: "Model") -> None:
         x.id = _escape_str_id(x.id)
     model.repair()
     gene_renamer = _GeneEscaper()
-    for rxn, rule in get_compiled_gene_reaction_rules(model).items():
-        if rule is not None:
-            gene_renamer.visit(rule)
+    for rxn in model.reactions:
+        if rxn.gpr is not None:
+            gene_renamer.visit(rxn.gpr)
+            rxn.update_genes_from_gpr()
 
 
 class _Renamer(NodeTransformer):
@@ -183,9 +182,10 @@ def rename_genes(model: "Model", rename_dict: Dict[str, str]) -> None:
     model.repair()
 
     gene_renamer = _Renamer(rename_dict)
-    for rxn, rule in get_compiled_gene_reaction_rules(model).items():
-        if rule is not None:
-            gene_renamer.visit(rule)
+    for rxn in model.reactions:
+        if rxn.gpr is not None:
+            gene_renamer.visit(rxn.gpr)
+        rxn.update_genes_from_gpr()
 
     for i in remove_genes:
         model.genes.remove(i)
