@@ -4,8 +4,6 @@ from ast import NodeTransformer
 from itertools import chain
 from typing import TYPE_CHECKING, Dict
 
-
-
 if TYPE_CHECKING:
     from cobra import Gene, Model
 

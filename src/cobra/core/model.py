@@ -278,7 +278,7 @@ class Model(Object):
         for rxn_id, bound in medium.items():
             rxn = self.reactions.get_by_id(rxn_id)
             if rxn not in exchange_rxns:
-                logger.warn(
+                logger.warning(
                     "%s does not seem to be an"
                     " an exchange reaction. Applying bounds anyway.",
                     rxn.id,

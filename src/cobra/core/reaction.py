@@ -38,7 +38,7 @@ uppercase_OR = re.compile(r"\bOR\b")
 gpr_clean = re.compile(" {2,}")
 # This regular expression finds any single letter compartment enclosed in
 # square brackets at the beginning of the string. For example [c] : foo --> bar
-compartment_finder = re.compile("^\s*(\[[A-Za-z]\])\s*:*")
+compartment_finder = re.compile(r"^\s*(\[[A-Za-z]\])\s*:*")
 # Regular expressions to match the arrows
 _reversible_arrow_finder = re.compile("<(-+|=+)>")
 _forward_arrow_finder = re.compile("(-+|=+)>")

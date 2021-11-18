@@ -167,7 +167,7 @@ def find_gene_knockout_reactions(
 
 def delete_model_genes(
     model: "Model",
-    gene_list: List["Gene"],
+    gene_list: Union[List["Gene"], Set["Gene"], List[str], Set[str]],
     cumulative_deletions: bool = True,
     disable_orphans: bool = False,
 ) -> None:
