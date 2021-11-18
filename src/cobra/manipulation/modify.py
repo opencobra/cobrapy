@@ -91,7 +91,7 @@ def escape_ID(model: "Model") -> None:
     gene_renamer = _GeneEscaper()
     for rxn, rule in get_compiled_gene_reaction_rules(model).items():
         if rule is not None:
-            rxn._gene_reaction_rule = ast2str(gene_renamer.visit(rule))
+            gene_renamer.visit(rule)
 
 
 class _Renamer(NodeTransformer):
@@ -118,6 +118,7 @@ class _Renamer(NodeTransformer):
         super().__init__(**kwargs)
         self.rename_dict = rename_dict
 
+    # That's not right
     def visit_Name(self, node: "Gene") -> "Gene":
         """Rename a gene.
 
@@ -184,9 +185,7 @@ def rename_genes(model: "Model", rename_dict: Dict[str, str]) -> None:
     gene_renamer = _Renamer(rename_dict)
     for rxn, rule in get_compiled_gene_reaction_rules(model).items():
         if rule is not None:
-            rxn._gene_reaction_rule = ast2str(gene_renamer.visit(rule))
+            gene_renamer.visit(rule)
 
-    for rxn in recompute_reactions:
-        rxn.gene_reaction_rule = rxn._gene_reaction_rule
     for i in remove_genes:
         model.genes.remove(i)
