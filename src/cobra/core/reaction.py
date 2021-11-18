@@ -410,39 +410,41 @@ class Reaction(Object):
     def genes(self):
         return frozenset(self._genes)
 
-    def _update_genes(self, new_gene_names: set = None):
+    def update_genes_from_gpr(self, new_gene_names: set = None):
         if new_gene_names is None:
-            return
-        else:
-            old_genes = self._genes.copy()
-            if self._model is None:
-                self._genes = {Gene(i) for i in new_gene_names}
+            if self._gpr is not None:
+                new_gene_names = self._gpr.geneset
             else:
-                model_genes = self._model.genes
-                self._genes = set()
-                for g_id in new_gene_names:
-                    if model_genes.has_id(g_id):
-                        self._genes.add(model_genes.get_by_id(g_id))
-                    else:
-                        new_gene = Gene(g_id)
-                        new_gene._model = self._model
-                        self._genes.add(new_gene)
-                        model_genes.append(new_gene)
+                new_gene_names = set()
+        old_genes = self._genes.copy()
+        if self._model is None:
+            self._genes = {Gene(i) for i in new_gene_names}
+        else:
+            model_genes = self._model.genes
+            self._genes = set()
+            for g_id in new_gene_names:
+                if model_genes.has_id(g_id):
+                    self._genes.add(model_genes.get_by_id(g_id))
+                else:
+                    new_gene = Gene(g_id)
+                    new_gene._model = self._model
+                    self._genes.add(new_gene)
+                    model_genes.append(new_gene)
 
-            # Make the genes aware that it is involved in this reaction
-            for g in self._genes:
-                g._reaction.add(self)
+        # Make the genes aware that it is involved in this reaction
+        for g in self._genes:
+            g._reaction.add(self)
 
-            # make the old genes aware they are no longer involved in this reaction
-            for g in old_genes:
-                if g not in self._genes:  # if an old gene is not a new gene
-                    try:
-                        g._reaction.remove(self)
-                    except KeyError:
-                        warn(
-                            "could not remove old gene %s from reaction %s"
-                            % (g.id, self.id)
-                        )
+        # make the old genes aware they are no longer involved in this reaction
+        for g in old_genes:
+            if g not in self._genes:  # if an old gene is not a new gene
+                try:
+                    g._reaction.remove(self)
+                except KeyError:
+                    warn(
+                        "could not remove old gene %s from reaction %s"
+                        % (g.id, self.id)
+                    )
 
     @property
     def gene_reaction_rule(self):
@@ -456,11 +458,7 @@ class Reaction(Object):
             warn("Context management not implemented for " "gene reaction rules")
 
         self._gpr = GPR(string_gpr=new_rule)
-        if self._gpr is not None:
-            gene_names = self._gpr.geneset
-            self._update_genes(new_gene_names=gene_names)
-        else:
-            self._update_genes(new_gene_names=set())
+        self.update_genes_from_gpr()
 
     @property
     def gene_name_reaction_rule(self):
@@ -472,7 +470,7 @@ class Reaction(Object):
 
         """
         names = {i.id: i.name for i in self._genes}
-        return self._gpr.str_names(names=names)
+        return self._gpr.to_string(names=names)
 
     @property
     def gpr(self):
@@ -485,7 +483,7 @@ class Reaction(Object):
     def gpr(self, value):
         self._gpr = value
         gene_names = self._gpr.geneset
-        self._update_genes(new_gene_names=gene_names)
+        self.update_genes_from_gpr(new_gene_names=gene_names)
 
     @property
     def functional(self):

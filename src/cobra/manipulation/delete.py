@@ -80,7 +80,6 @@ def undelete_model_genes(model: "Model") -> None:
     model._trimmed = False
 
 
-#TODO - remove this
 def get_compiled_gene_reaction_rules(model: "Model") -> Dict["Reaction", Module]:
     """Generate a dictionary of compiled gene-reaction rules.
 
@@ -100,7 +99,15 @@ def get_compiled_gene_reaction_rules(model: "Model") -> Dict["Reaction", Module]
         The dictionary of cobra.Reaction objects as keys and ast.Module
         objects as keys.
 
+    .. deprecated::
+        Internal function that has outlived its purpose.
+
     """
+    warn(
+        "The function `get_compiled_gene_reaction_rules` has outlived its purpose. "
+        "It will be removed soon.",
+        DeprecationWarning,
+    )
     return {r: r.gpr for r in model.reactions}
 
 
@@ -144,7 +151,7 @@ def find_gene_knockout_reactions(
     for gene in gene_list:
         if isinstance(gene, str):
             gene = model.genes.get_by_id(gene)
-        potential_reactions.update(gene.reaction)
+        potential_reactions.update(gene._reaction)
     gene_set = {str(i) for i in gene_list}
     if compiled_gene_reaction_rules is None:
         compiled_gene_reaction_rules = {
@@ -325,21 +332,18 @@ def remove_genes(
     gene_set = {model.genes.get_by_id(str(i)) for i in gene_list}
     gene_id_set = {i.id for i in gene_set}
     remover = _GeneRemover(gene_id_set)
-    ast_rules = get_compiled_gene_reaction_rules(model)
     target_reactions = []
-    for reaction, rule in ast_rules.items():
-        if reaction.gene_reaction_rule is None or len(reaction.gene_reaction_rule) == 0:
+    for rxn in model.reactions:
+        if rxn.gene_reaction_rule is None or len(rxn.gene_reaction_rule) == 0:
             continue
         # reactions to remove
-        if remove_reactions and not rule.eval(gene_id_set):
-            target_reactions.append(reaction)
+        if remove_reactions and not rxn.gpr.eval(gene_id_set):
+            target_reactions.append(rxn)
         else:
             # if the reaction is not removed, remove the gene
             # from its gpr
-            new_rule = rule.copy()
-            remover.visit(new_rule)
-            if str(new_rule) != reaction.gene_reaction_rule:
-                reaction.gpr = new_rule
+            remover.visit(rxn.gpr)
+            rxn.update_genes_from_gpr()
     for gene in gene_set:
         model.genes.remove(gene)
         # remove reference to the gene in all groups
