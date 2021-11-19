@@ -422,7 +422,10 @@ class GPR(Module):
     def eval(self, knockouts: Union[DictList, Set] = None):
         if knockouts is None:
             knockouts = set()
-        return self.__eval_gpr(self.body, knockouts=knockouts)
+        if hasattr(self, "body"):
+            return self.__eval_gpr(self.body, knockouts=knockouts)
+        else:
+            return True
 
     def __ast2str(
         self,
