@@ -20,6 +20,5 @@ def test_gpr_functions():
     gpr1 = GPR()
     # Completely empty GPRs will return True
     assert gpr1.eval()
-    assert(gpr1.to_string() == "")
+    assert gpr1.to_string() == ""
     gpr2 = gpr1.copy()
-
