@@ -84,8 +84,9 @@ def _get_removed(m: Model) -> Set[str]:
 
 
 def _gene_knockout_computation(
-    m: Model, gene_ids: Union[List[str], Set[str]],
-    expected_reaction_ids: Union[List[str], Set[str]]
+    m: Model,
+    gene_ids: Union[List[str], Set[str]],
+    expected_reaction_ids: Union[List[str], Set[str]],
 ) -> None:
     """Compute gene knockout."""
     genes = [m.genes.get_by_id(i) for i in gene_ids]

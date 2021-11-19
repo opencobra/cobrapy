@@ -1,8 +1,10 @@
 """Provide functions for pruning reactions, metabolites and genes."""
-from _ast import BoolOp, Name, And, Module
 from ast import NodeTransformer
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union, Set
+from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, Union
 from warnings import warn
+
+from _ast import And, BoolOp, Module, Name
+
 
 if TYPE_CHECKING:
     from cobra import Gene, Metabolite, Model, Reaction
@@ -154,9 +156,7 @@ def find_gene_knockout_reactions(
         potential_reactions.update(gene._reaction)
     gene_set = {str(i) for i in gene_list}
     if compiled_gene_reaction_rules is None:
-        compiled_gene_reaction_rules = {
-            r: r.gpr for r in potential_reactions
-        }
+        compiled_gene_reaction_rules = {r: r.gpr for r in potential_reactions}
 
     return [
         r
@@ -310,8 +310,9 @@ class _GeneRemover(NodeTransformer):
 
 
 def remove_genes(
-    model: "Model", gene_list: Union[List["Gene"], Set["Gene"], List[str], Union[str]],
-    remove_reactions: bool = True
+    model: "Model",
+    gene_list: Union[List["Gene"], Set["Gene"], List[str], Union[str]],
+    remove_reactions: bool = True,
 ) -> None:
     """Remove genes entirely from the model.
 

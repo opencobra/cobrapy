@@ -16,7 +16,7 @@ from warnings import warn
 from future.utils import raise_from, raise_with_traceback
 
 from cobra.core.configuration import Configuration
-from cobra.core.gene import Gene, GPR
+from cobra.core.gene import GPR, Gene
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.exceptions import OptimizationError
@@ -27,6 +27,7 @@ from cobra.util.solver import (
     set_objective,
 )
 from cobra.util.util import format_long_string
+
 
 config = Configuration()
 
@@ -498,7 +499,8 @@ class Reaction(Object):
         """
         if self._model:
             return self._gpr.eval(
-                {gene.id for gene in self.genes if not gene.functional})
+                {gene.id for gene in self.genes if not gene.functional}
+            )
         return True
 
     @property
@@ -1089,7 +1091,7 @@ class Reaction(Object):
                 else:
                     self.bounds = config.lower_bound, 0
         reactant_str = reaction_str[: arrow_match.start()].strip()
-        product_str = reaction_str[arrow_match.end():].strip()
+        product_str = reaction_str[arrow_match.end() :].strip()
 
         self.subtract_metabolites(self.metabolites, combine=True)
 

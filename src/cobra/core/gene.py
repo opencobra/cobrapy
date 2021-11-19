@@ -27,6 +27,7 @@ from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
 
+
 keywords = list(kwlist)
 keywords.remove("and")
 keywords.remove("or")
@@ -134,7 +135,8 @@ def parse_gpr(str_expr):
     this function will be removed.
     """
     warn(
-        "parse_gpr() will be removed soon." "Use GPR(string_gpr=str_expr) in the future",
+        "parse_gpr() will be removed soon."
+        "Use GPR(string_gpr=str_expr) in the future",
         DeprecationWarning,
     )
     str_expr = str_expr.strip()
@@ -422,10 +424,12 @@ class GPR(Module):
             knockouts = set()
         return self.__eval_gpr(self.body, knockouts=knockouts)
 
-    def __ast2str(self,
-                  expr: Union[Expression, BoolOp, Name, list], level: int = 0,
-                  names: dict = None
-                  ) -> str:
+    def __ast2str(
+        self,
+        expr: Union[Expression, BoolOp, Name, list],
+        level: int = 0,
+        names: dict = None,
+    ) -> str:
         """convert compiled ast to gene_reaction_rule str
 
         Parameters
@@ -453,10 +457,12 @@ class GPR(Module):
             op = expr.op
             if isinstance(op, Or):
                 str_exp = " or ".join(
-                    self.__ast2str(i, level + 1, names) for i in expr.values)
+                    self.__ast2str(i, level + 1, names) for i in expr.values
+                )
             elif isinstance(op, And):
                 str_exp = " and ".join(
-                    self.__ast2str(i, level + 1, names) for i in expr.values)
+                    self.__ast2str(i, level + 1, names) for i in expr.values
+                )
             else:
                 raise TypeError("unsupported operation " + op.__class__.__name)
             return "(" + str_exp + ")" if level else str_exp
