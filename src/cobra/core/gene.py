@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import re
+from _ast import AST
 from ast import (
     And,
     BitAnd,
@@ -21,7 +22,6 @@ from keyword import kwlist
 from typing import Set, Union
 from warnings import warn
 
-from _ast import AST
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable

@@ -1,9 +1,7 @@
 """Provide functions for pruning reactions, metabolites and genes."""
-from ast import NodeTransformer
+from ast import And, BoolOp, Module, Name, NodeTransformer
 from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, Union
 from warnings import warn
-
-from _ast import And, BoolOp, Module, Name
 
 
 if TYPE_CHECKING:
