@@ -6,8 +6,7 @@ from typing import Iterable
 import numpy as np
 import pytest
 
-from cobra.core import Configuration, Metabolite, Model, Reaction
-
+from cobra.core import Configuration, Metabolite, Model, Reaction, GPR
 
 config = Configuration()
 stable_optlang = ["glpk", "cplex", "gurobi"]
@@ -17,7 +16,15 @@ def test_gpr() -> None:
     """Test GPR evaluation."""
     model = Model()
     reaction = Reaction("test")
+    reaction.update_genes_from_gpr()
 
+    # Set GPR to an empty string
+    reaction.gene_reaction_rule = ""
+    assert isinstance(reaction.gpr.body, list)
+    assert len(reaction.gpr.body) == 0
+    # Set GPR directly (shouldn't really be used, but just a test)
+    reaction.gpr = GPR()
+    assert reaction.gene_reaction_rule
     # Set GPR to a reaction not in a model
     reaction.gene_reaction_rule = "(g1 or g2) and g3"
     assert reaction.gene_reaction_rule == "(g1 or g2) and g3"
