@@ -21,16 +21,6 @@ from keyword import kwlist
 from typing import Set, Union
 from warnings import warn
 
-# When https://github.com/symengine/symengine.py/issues/334 is resolved, change it to
-# optlang.symbolics.Symbol
-from sympy import Symbol as Symbol
-from sympy import SympifyError, simplify_logic, symbols
-from sympy.core.singleton import S
-from sympy.logic.boolalg import And as sp_And
-from sympy.logic.boolalg import Or as sp_Or
-from sympy.parsing.sympy_parser import parse_expr as parse_expr_sympy
-from sympy.parsing.sympy_parser import standard_transformations
-
 from _ast import AST
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
@@ -54,34 +44,6 @@ replacements = (
     ("-", "__COBRA_DASH__"),
     ("=", "__COBRA_EQ__"),
 )
-
-
-def sympy2str(expr, names=None):
-    """convert compiled sympy to gene_reaction_rule str
-    Parameters
-    ----------
-    expr : sympy Expr
-        compiled sympy expression for a gene rule
-    names : dict
-        Dict where each element id a gene identifier and the value is the
-        gene alias. Use this to get a rule str which uses aliases instead. This
-        should be done for display purposes only. All gene_reaction_rule
-        strings which are computed with should use the id.
-    Returns
-    ------
-    string
-        The gene reaction rule
-    """
-    if names is not None:
-        aliases = {id: names.get(id, id) for id in names.keys()}
-        expr = expr.xreplace(aliases)
-    if expr == S.true or expr == S.false:
-        str_exp = ""
-    else:
-        str_exp = str(expr)
-        str_exp = str_exp.replace("&", "and")
-        str_exp = str_exp.replace("|", "or")
-    return str_exp
 
 
 def eval_gpr(expr, knockouts):
@@ -125,50 +87,6 @@ def eval_gpr(expr, knockouts):
         raise TypeError("unsupported operation  " + repr(expr))
 
 
-def eval_gpr_sympy(expr, knockouts=None):
-    """evaluate compiled sympy of gene_reaction_rule with knockouts
-    Parameters
-    ----------
-    expr : Sympy Expression
-        The compiled sympy expression of the gene reaction rule
-    knockouts : DictList, set
-        Set of genes that are knocked out
-    Returns
-    -------
-    bool
-        True if the gene reaction rule is true with the given knockouts
-        otherwise false
-    """
-
-    if knockouts is None:
-        knockouts = []
-    gene_knockouts = {i: S.true for i in expr.free_symbols}
-    for gene in knockouts:
-        gene_knockouts[gene] = S.false
-    return bool(expr.subs(gene_knockouts))
-
-
-def eval_gpr_sympy_xreplace(expr, knockouts=None):
-    """evaluate compiled sympy of gene_reaction_rule with knockouts
-    Parameters
-    ----------
-    expr : Sympy Expression
-        The compiled sympy expression of the gene reaction rule
-    knockouts : DictList, set
-        Set of genes that are knocked out
-    Returns
-    -------
-    bool
-        True if the gene reaction rule is true with the given knockouts
-        otherwise false
-    """
-    if knockouts is None:
-        knockouts = []
-    gene_knockouts = {gene: gene not in knockouts for gene in expr.free_symbols}
-    expr.xreplace(gene_knockouts)
-    return bool(expr)
-
-
 class GPRCleaner(NodeTransformer):
     """Parses compiled ast of a gene_reaction_rule and identifies genes
 
@@ -196,136 +114,6 @@ class GPRCleaner(NodeTransformer):
             return BoolOp(Or(), (node.left, node.right))
         else:
             raise TypeError("unsupported operation '%s'" % node.op.__class__.__name__)
-
-
-# Using unescaped ":", "," or " " causes sympy to make a range or separate items
-str_for_sympy_symbols_dict = {":": r"\:", ",": r"\,", " ": r"\ "}
-
-
-def fix_str_for_symbols(unescaped_str):
-    escaped_str = unescaped_str
-    for key, value in str_for_sympy_symbols_dict.items():
-        escaped_str = escaped_str.replace(key, value)
-    return escaped_str
-
-
-class GPRSympifier(NodeVisitor):
-    """Parses compiled ast of a gene_reaction_rule to sympy and identifies genes"""
-
-    def __init__(self, sym_dict: dict):
-        NodeVisitor.__init__(self)
-        self.gene_set = set()
-        self.sym_dict = sym_dict
-
-    def visit_Expression(self, node):
-        return self.visit(node.body) if hasattr(node, "body") else None
-
-    def visit_Name(self, node):
-        if node.id.startswith("__cobra_escape__"):
-            node.id = node.id[16:]
-        for char, escaped in replacements:
-            if escaped in node.id:
-                node.id = node.id.replace(escaped, char)
-        self.gene_set.add(node.id)
-        return self.sym_dict[node.id]
-
-    def visit_BinOp(self, node):
-        if isinstance(node.op, BitAnd):
-            return sp_And(*[node.left, node.right], evaluate=False)
-        elif isinstance(node.op, BitOr):
-            return sp_Or(*[node.left, node.right], evaluate=False)
-        else:
-            raise TypeError("unsupported operation '%s'" % node.op.__class__.__name__)
-
-    def visit_BoolOp(self, node):
-        if isinstance(node.op, And):
-            return sp_And(*[self.visit(i) for i in node.values], evaluate=False)
-        if isinstance(node.op, Or):
-            return sp_Or(*[self.visit(i) for i in node.values], evaluate=False)
-
-
-def parse_gpr_sympy(str_expr, GPRGene_dict):
-    """parse gpr into SYMPY using ast and Node Visitor
-    Parameters
-    ----------
-    str_expr : string
-        string with the gene reaction rule to parse
-    GPRGene_dict: dict
-        dictionary from gene id to GPRGeneSymbol
-    Returns
-    -------
-    tuple
-        elements SYMPY expression and gene_ids as a set
-    """
-    str_expr = str_expr.strip()
-    if len(str_expr) == 0:
-        return None, set()
-    for char, escaped in replacements:
-        if char in str_expr:
-            str_expr = str_expr.replace(char, escaped)
-    escaped_str = keyword_re.sub("__cobra_escape__", str_expr)
-    escaped_str = number_start_re.sub("__cobra_escape__", escaped_str)
-    tree = ast_parse(escaped_str, "<string>", "eval")
-    sympifier = GPRSympifier(GPRGene_dict)
-    sympy_exp = sympifier.visit(tree)
-    return sympy_exp, sympifier.gene_set
-
-
-class GPRSympifierToString(NodeVisitor):
-    """Parses compiled ast of a gene_reaction_rule to sympy and identifies genes"""
-
-    def __init__(self):
-        NodeVisitor.__init__(self)
-        self.gene_set = set()
-
-    def visit_Expression(self, node):
-        return self.visit(node.body) if hasattr(node, "body") else None
-
-    def visit_Name(self, node):
-        if node.id.startswith("__cobra_escape__"):
-            node.id = node.id[16:]
-        for char, escaped in replacements:
-            if escaped in node.id:
-                node.id = node.id.replace(escaped, char)
-        self.gene_set.add(node.id)
-        return str(node.id)
-
-    def visit_BoolOp(self, node):
-        _children = [self.visit(i) for i in node.values]
-        if isinstance(node.op, And):
-            return "And(" + ", ".join(_children) + ")"
-        if isinstance(node.op, Or):
-            return "Or(" + ", ".join(_children) + ")"
-
-
-def parse_gpr_sympy_str(str_expr, GPRGene_dict=None):
-    """parse gpr into SYMPY using ast and Node Visitor
-    Parameters
-    ----------
-    str_expr : string
-        string with the gene reaction rule to parse
-    GPRGene_dict: dict
-        dictionary from gene id to GPRGeneSymbol
-    Returns
-    -------
-    tuple
-        elements SYMPY expression and gene_ids as a set
-    """
-    str_expr = str_expr.strip()
-    if len(str_expr) == 0:
-        return None, set()
-    if GPRGene_dict is None:
-        GPRGene_dict = dict()
-    for char, escaped in replacements:
-        if char in str_expr:
-            str_expr = str_expr.replace(char, escaped)
-    escaped_str = keyword_re.sub("__cobra_escape__", str_expr)
-    escaped_str = number_start_re.sub("__cobra_escape__", escaped_str)
-    tree = ast_parse(escaped_str, "<string>", "eval")
-    sympifier = GPRSympifierToString()
-    sympy_exp = sympifier.visit(tree)
-    GPRGene_dict.update({i: Symbol(fix_str_for_symbols(i)) for i in sympifier.gene_set})
-    return parse_expr_sympy(sympy_exp, local_dict=GPRGene_dict)
 
 
 def parse_gpr(str_expr):
