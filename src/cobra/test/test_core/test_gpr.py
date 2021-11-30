@@ -230,3 +230,18 @@ def test_deprecated_gpr():
         assert eval_gpr(gpr1, {"b"})
     with pytest.deprecated_call():
         assert not eval_gpr(gpr1, {"c"})
+
+def test_gpr_as_symbolic() -> None:
+    pass
+
+
+def test_gpr_equality() -> None:
+    assert GPR() == GPR()
+    assert GPR() != GPR('a')
+    assert GPR('a') == GPR('a')
+
+
+def test_gpr_equality_with_bolean_logic() -> None:
+    gpr1 = GPR('a & b')
+    gpr2 = GPR('b & a')
+    assert gpr1 == gpr2

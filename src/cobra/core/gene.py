@@ -27,7 +27,8 @@ from warnings import warn
 from sympy import Expr as sp_Expr
 from sympy import Symbol as Symbol
 from sympy.core.singleton import S
-from sympy.logic.boolalg import And as sp_And, Equivalent
+from sympy.logic.boolalg import And as sp_And
+from sympy.logic.boolalg import Equivalent
 from sympy.logic.boolalg import Or as sp_Or
 from sympy.parsing.sympy_parser import parse_expr as parse_expr_sympy
 
@@ -580,7 +581,9 @@ class GPR(Module):
         )
 
     def as_symbolic(
-        self, expr: Union[Expression, BoolOp, Name, list], GPRGene_dict=None
+        self,
+        expr: Union[Expression, BoolOp, Name, list] = None,
+        GPRGene_dict: dict = None,
     ) -> Union[sp_Or, sp_And, None]:
         """parse gpr into SYMPY using afst and Node Visitor
         Parameters
@@ -594,9 +597,11 @@ class GPR(Module):
         tuple
             elements SYMPY expression or None if the GPR is empty
         """
+        if expr is None:
+            expr = self
+        if GPRGene_dict is None:
+            GPRGene_dict = {gid: Symbol(name=gid) for gid in expr.geneset}
         if isinstance(expr, Expression) | isinstance(expr, GPR):
-            if GPRGene_dict is None:
-                GPRGene_dict = {gid: Symbol(name=gid) for gid in expr.geneset}
             return (
                 self.as_symbolic(expr.body, GPRGene_dict)
                 if hasattr(expr, "body")
@@ -609,17 +614,11 @@ class GPR(Module):
                 op = expr.op
                 if isinstance(op, Or):
                     sym_exp = sp_Or(
-                        *[
-                            parse_gpr_sympy_like_ast2str(i, GPRGene_dict)
-                            for i in expr.values
-                        ]
+                        *[self.as_symbolic(i, GPRGene_dict) for i in expr.values]
                     )
                 elif isinstance(op, And):
                     sym_exp = sp_And(
-                        *[
-                            parse_gpr_sympy_like_ast2str(i, GPRGene_dict)
-                            for i in expr.values
-                        ]
+                        *[self.as_symbolic(i, GPRGene_dict) for i in expr.values]
                     )
                 else:
                     raise TypeError("unsupported operation " + op.__class__.__name)
@@ -638,8 +637,7 @@ class GPR(Module):
         else:
             if not hasattr(other, "body"):
                 return False
-            return Equivalent(self.as_symbolic(self.body),
-                              other.as_symbolic(other.body))
+            return Equivalent(self.as_symbolic(self), other.as_symbolic(other))
 
 
 def eval_gpr(expr, knockouts):
