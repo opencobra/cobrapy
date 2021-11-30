@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 import re
 from ast import (
+    AST,
     And,
     BitAnd,
     BitOr,
@@ -12,7 +13,6 @@ from ast import (
     Module,
     Name,
     NodeTransformer,
-    NodeVisitor,
     Or,
 )
 from ast import parse as ast_parse
@@ -21,7 +21,6 @@ from keyword import kwlist
 from typing import FrozenSet, Set, Union
 from warnings import warn
 
-from _ast import AST
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
