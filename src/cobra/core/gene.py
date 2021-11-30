@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 
 import re
-from _ast import AST
 from ast import (
     And,
     BitAnd,
@@ -19,13 +18,15 @@ from ast import (
 from ast import parse as ast_parse
 from copy import deepcopy
 from keyword import kwlist
-from typing import Set, Union, FrozenSet
+from typing import FrozenSet, Set, Union
 from warnings import warn
 
+from _ast import AST
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
+
 
 keywords = list(kwlist)
 keywords.remove("and")
@@ -287,7 +288,8 @@ class GPR(Module):
             elif isinstance(gpr_from, (AST, Name, Or, And)):
                 self.body = gpr_from
             else:
-                raise (TypeError, 'GPR requires string or AST')
+                raise (TypeError, "GPR requires string or AST")
+
     #       elif isinstance(gpr_from, "sbml")
 
     def from_string(self, string_gpr) -> None:
