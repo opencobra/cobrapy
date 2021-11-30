@@ -305,7 +305,7 @@ class GPR(Module):
                 raise TypeError("GPR requires AST Expression or Module")
 
     @classmethod
-    def from_string(cls: type, string_gpr: str) -> "GPR":
+    def from_string(cls, string_gpr: str) -> "GPR":
         """Construct a GPR from a string.
 
         Parameters
@@ -323,7 +323,8 @@ class GPR(Module):
 
         """
         if not isinstance(string_gpr, str):
-            raise TypeError(f"{cls.__name__}.from_string requires a str argument, not {type(string_gpr)}.")
+            raise TypeError(f"{cls.__name__}.from_string "
+                            f"requires a str argument, not {type(string_gpr)}.")
         gpr = cls()
         uppercase_AND = re.compile(r"\bAND\b")
         uppercase_OR = re.compile(r"\bOR\b")
@@ -387,7 +388,7 @@ class GPR(Module):
             if "" in self._genes:
                 self._genes.remove("")
 
-    def __eval_gpr(
+    def _eval_gpr(
         self,
         expr: Union[Expression, list, BoolOp, Name],
         knockouts: Union[DictList, set],
@@ -407,21 +408,21 @@ class GPR(Module):
             True if the gene reaction rule is true with the given knockouts
             otherwise false
         """
-        # just always call the recursions as self.__eval_gpr(a, b)
+        # just always call the recursions as self._eval_gpr(a, b)
         if isinstance(expr, (Expression, GPR)):
             if not hasattr(expr, "body"):
                 return True
-            return self.__eval_gpr(expr.body, knockouts)
+            return self._eval_gpr(expr.body, knockouts)
         elif isinstance(expr, Name):
             return expr.id not in knockouts
         elif isinstance(expr, BoolOp):
             op = expr.op
             if isinstance(op, Or):
                 # noinspection PyTypeChecker
-                return any(self.__eval_gpr(i, knockouts) for i in expr.values)
+                return any(self._eval_gpr(i, knockouts) for i in expr.values)
             elif isinstance(op, And):
                 # noinspection PyTypeChecker
-                return all(self.__eval_gpr(i, knockouts) for i in expr.values)
+                return all(self._eval_gpr(i, knockouts) for i in expr.values)
             else:
                 raise TypeError(f"Unsupported operation: {op.__class__.__name__}")
         elif expr is None:
@@ -432,7 +433,7 @@ class GPR(Module):
     def eval(self, knockouts: Union[DictList, Set, str, Iterable] = None) -> bool:
         """Evaluate compiled ast of gene_reaction_rule with knockouts.
 
-        This function calls __eval_gpr, but allows more flexibility in input, including
+        This function calls _eval_gpr, but allows more flexibility in input, including
         name, and list.
 
         Parameters
@@ -452,11 +453,11 @@ class GPR(Module):
         if knockouts is str:
             knockouts = list(knockouts)
         if hasattr(self, "body"):
-            return self.__eval_gpr(self.body, knockouts=knockouts)
+            return self._eval_gpr(self.body, knockouts=knockouts)
         else:
             return True
 
-    def __ast2str(
+    def _ast2str(
         self,
         expr: Union[Expression, BoolOp, Name, list],
         level: int = 0,
@@ -482,7 +483,7 @@ class GPR(Module):
             The gene reaction rule
         """
         if isinstance(expr, (Expression, GPR)):
-            return self.__ast2str(expr.body, 0, names) if hasattr(expr, "body") else ""
+            return self._ast2str(expr.body, 0, names) if hasattr(expr, "body") else ""
         elif isinstance(expr, Name):
             return names.get(expr.id, expr.id) if names else expr.id
         elif isinstance(expr, BoolOp):
@@ -490,12 +491,12 @@ class GPR(Module):
             if isinstance(op, Or):
                 # noinspection PyTypeChecker
                 str_exp = " or ".join(
-                    self.__ast2str(i, level + 1, names) for i in expr.values
+                    self._ast2str(i, level + 1, names) for i in expr.values
                 )
             elif isinstance(op, And):
                 # noinspection PyTypeChecker
                 str_exp = " and ".join(
-                    self.__ast2str(i, level + 1, names) for i in expr.values
+                    self._ast2str(i, level + 1, names) for i in expr.values
                 )
             else:
                 # noinspection PyTypeChecker
@@ -526,7 +527,7 @@ class GPR(Module):
         Calls __aststr()
         """
         # noinspection PyTypeChecker
-        return self.__ast2str(self, names=names)
+        return self._ast2str(self, names=names)
 
     def copy(self):
         """Copy a GPR."""
@@ -554,7 +555,7 @@ class GPR(Module):
         """
         return self.to_string(names={})
 
-    def __repr_html__(self):
+    def _repr_html__(self):
         return """<p><strong>GPR</strong></p><p>{gpr}</p>""".format(
             gpr=format_long_string(self.to_string(), 100)
         )
