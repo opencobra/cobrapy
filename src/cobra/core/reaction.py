@@ -411,10 +411,10 @@ class Reaction(Object):
     def genes(self):
         return frozenset(self._genes)
 
-    def update_genes_from_gpr(self, new_gene_names: set = None):
+    def _update_genes_from_gpr(self, new_gene_names: set = None):
         if new_gene_names is None:
             if self._gpr is not None:
-                new_gene_names = self._gpr.geneset
+                new_gene_names = self._gpr.genes
             else:
                 new_gene_names = set()
         old_genes = self._genes.copy()
@@ -453,13 +453,22 @@ class Reaction(Object):
 
     @gene_reaction_rule.setter
     def gene_reaction_rule(self, new_rule: str):
+        """Set a new GPR for the reaction, using a string expression
+
+        Parameters
+        ----------
+        new_rule : string, which will be parsed by the string
+        parser in GPR, GPR.from_string(new_rule). It makes a new GPR, and does not
+        modify the existing one.
+
+        """
 
         # TODO: Do this :)
         if get_context(self):
             warn("Context management not implemented for " "gene reaction rules")
 
-        self._gpr = GPR(string_gpr=new_rule)
-        self.update_genes_from_gpr()
+        self._gpr = GPR(gpr_from=new_rule)
+        self._update_genes_from_gpr()
 
     @property
     def gene_name_reaction_rule(self):
@@ -475,16 +484,22 @@ class Reaction(Object):
 
     @property
     def gpr(self):
+        """Return the GPR associated with the reaction
+
+        """
         return self._gpr
 
-    # Using this setter will lead to speed up instead of
-    # using str(GPR) and then ast2str(str(GPR)) which was what some versions of the code
-    # were doing
     @gpr.setter
-    def gpr(self, value):
+    def gpr(self, value: GPR):
+        """Set a new GPR for the reaction, using GPR() class
+
+        Parameters
+        ----------
+        value : GPR() class.
+
+        """
         self._gpr = value
-        gene_names = self._gpr.geneset
-        self.update_genes_from_gpr(new_gene_names=gene_names)
+        self._update_genes_from_gpr()
 
     @property
     def functional(self):

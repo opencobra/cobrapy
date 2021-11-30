@@ -19,14 +19,13 @@ from ast import (
 from ast import parse as ast_parse
 from copy import deepcopy
 from keyword import kwlist
-from typing import Set, Union
+from typing import Set, Union, FrozenSet
 from warnings import warn
 
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
-
 
 keywords = list(kwlist)
 keywords.remove("and")
@@ -70,22 +69,7 @@ def eval_gpr(expr, knockouts):
         "eval_gpr() will be removed soon." "Use GPR().eval(knockouts) in the future",
         DeprecationWarning,
     )
-    if isinstance(expr, Expression) or isinstance(expr, GPR):
-        return eval_gpr(expr.body, knockouts)
-    elif isinstance(expr, Name):
-        return expr.id not in knockouts
-    elif isinstance(expr, BoolOp):
-        op = expr.op
-        if isinstance(op, Or):
-            return any(eval_gpr(i, knockouts) for i in expr.values)
-        elif isinstance(op, And):
-            return all(eval_gpr(i, knockouts) for i in expr.values)
-        else:
-            raise TypeError("unsupported operation " + op.__class__.__name__)
-    elif expr is None:
-        return True
-    else:
-        raise TypeError("unsupported operation  " + repr(expr))
+    return expr.eval(knockouts=knockouts)
 
 
 class GPRCleaner(NodeTransformer):
@@ -139,19 +123,8 @@ def parse_gpr(str_expr):
         "Use GPR(string_gpr=str_expr) in the future",
         DeprecationWarning,
     )
-    str_expr = str_expr.strip()
-    if len(str_expr) == 0:
-        return None, set()
-    for char, escaped in replacements:
-        if char in str_expr:
-            str_expr = str_expr.replace(char, escaped)
-    escaped_str = keyword_re.sub("__cobra_escape__", str_expr)
-    escaped_str = number_start_re.sub("__cobra_escape__", escaped_str)
-    tree = ast_parse(escaped_str, "<string>", "eval")
-    cleaner = GPRCleaner()
-    cleaner.visit(tree)
-    eval_gpr(tree, set())  # ensure the rule can be evaluated
-    return tree, cleaner.gene_set
+    gpr_tree = GPR.__init__(gpr_from=str_expr)
+    return gpr_tree, GPR.genes
 
 
 class Gene(Species):
@@ -301,15 +274,21 @@ class GPR(Module):
 
     Parameters
     ----------
-    string_gpr : string
+    gpr_from : string or AST or Name or Or or And or list
         A GPR in string format, which will be parsed into AST
     """
 
-    def __init__(self, string_gpr=None, *args, **kwargs):
+    def __init__(self, gpr_from=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._genes = set()
-        if string_gpr:
-            self.from_string(string_gpr)
+        if gpr_from:
+            if isinstance(gpr_from, str):
+                self.from_string(gpr_from)
+            elif isinstance(gpr_from, (AST, Name, Or, And)):
+                self.body = gpr_from
+            else:
+                raise (TypeError, 'GPR requires string or AST')
+    #       elif isinstance(gpr_from, "sbml")
 
     def from_string(self, string_gpr) -> None:
         """
@@ -370,11 +349,11 @@ class GPR(Module):
         self.eval()  # ensure the rule can be evaluated
 
     @property
-    def geneset(self):
-        self.updategenes()
+    def genes(self) -> FrozenSet:
+        self.update_genes()
         return frozenset(self._genes)
 
-    def updategenes(self):
+    def update_genes(self):
         if hasattr(self, "body"):
             cleaner = GPRCleaner()
             cleaner.visit(self.body)
@@ -492,6 +471,17 @@ class GPR(Module):
         """
         return self.__ast2str(self, names=names)
 
+    def copy(self):
+        """Copy a GPR"""
+        return deepcopy(self)
+
+    def __repr__(self):
+        return "%s.%s(%r)" % (
+            self.__class__.__module__,
+            self.__class__.__qualname__,
+            self.to_string(),
+        )
+
     def __str__(self):
         """convert compiled ast to gene_reaction_rule str
 
@@ -515,18 +505,7 @@ class GPR(Module):
             </tr>
         </table>
         """.format(
-            gpr=format_long_string(self.gene_reaction_rule, 100)
-        )
-
-    def copy(self):
-        """Copy a GPR"""
-        return deepcopy(self)
-
-    def __repr__(self):
-        return "%s.%s(%r)" % (
-            self.__class__.__module__,
-            self.__class__.__qualname__,
-            self.to_string(),
+            gpr=format_long_string(self.to_string(), 100)
         )
 
     # def as_symbolic(self):
@@ -560,23 +539,7 @@ def ast2str(
     this function will be removed.
     """
     warn(
-        "eval_gpr() will be removed soon." "Use GPR().eval(knockouts=) in the future",
+        "ast2satr() will be removed soon. Use gpr.to_string(names=names) in the future",
         DeprecationWarning,
     )
-    if isinstance(expr, Expression) | isinstance(expr, GPR):
-        return ast2str(expr.body, 0, names) if hasattr(expr, "body") else ""
-    elif isinstance(expr, Name):
-        return names.get(expr.id, expr.id) if names else expr.id
-    elif isinstance(expr, BoolOp):
-        op = expr.op
-        if isinstance(op, Or):
-            str_exp = " or ".join(ast2str(i, level + 1, names) for i in expr.values)
-        elif isinstance(op, And):
-            str_exp = " and ".join(ast2str(i, level + 1, names) for i in expr.values)
-        else:
-            raise TypeError("unsupported operation " + op.__class__.__name)
-        return "(" + str_exp + ")" if level else str_exp
-    elif expr is None or (isinstance(expr, list) and len(expr) == 0):
-        return ""
-    else:
-        raise TypeError("unsupported operation  " + repr(expr))
+    return expr.to_string(names=names)
