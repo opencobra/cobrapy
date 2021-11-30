@@ -22,6 +22,17 @@ from keyword import kwlist
 from typing import FrozenSet, Iterable, Set, Tuple, Union
 from warnings import warn
 
+# When https://github.com/symengine/symengine.py/issues/334 is resolved, change it to
+# optlang.symbolics.Symbol
+from sympy import Symbol as Symbol
+from sympy import SympifyError, simplify_logic, symbols
+from sympy.core.singleton import S
+from sympy.logic.boolalg import And as sp_And
+from sympy.logic.boolalg import Or as sp_Or
+from sympy.parsing.sympy_parser import parse_expr as parse_expr_sympy
+from sympy.parsing.sympy_parser import standard_transformations
+
+from _ast import AST
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
@@ -94,6 +105,17 @@ class GPRCleaner(NodeTransformer):
             return BoolOp(Or(), (node.left, node.right))
         else:
             raise TypeError("unsupported operation '%s'" % node.op.__class__.__name__)
+
+
+# Using unescaped ":", "," or " " causes sympy to make a range or separate items
+str_for_sympy_symbols_dict = {":": r"\:", ",": r"\,", " ": r"\ "}
+
+
+def fix_str_for_symbols(unescaped_str):
+    escaped_str = unescaped_str
+    for key, value in str_for_sympy_symbols_dict.items():
+        escaped_str = escaped_str.replace(key, value)
+    return escaped_str
 
 
 def parse_gpr(str_expr: str) -> Tuple:
